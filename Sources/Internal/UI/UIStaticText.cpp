@@ -54,9 +54,9 @@ namespace DAVA
                                                     DAVA::Color(1.0f, 0.0f, 1.0f, 0.4f),
                                                     DAVA::Color(0.0f,1.0f,0.0f,0.4f)};
 #endif
-UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
-    : UIControl(rect, rectInAbsoluteCoordinates)
-    , shadowOffset(0, 0)
+    UIStaticText::UIStaticText(const Rect& rect)
+        : UIControl(rect)
+        , shadowOffset(0, 0)
 {
     SetInputEnabled(false, false);
     textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));

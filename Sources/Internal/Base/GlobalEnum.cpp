@@ -43,8 +43,7 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "FileSystem/Logger.h"
-
-
+#include "UI/UIWebView.h"
 #include "Render/RHI/rhi_type.h"
 
 using namespace DAVA;
@@ -368,7 +367,13 @@ ENUM_DECLARE(rhi::PrimitiveType)
     ENUM_ADD(rhi::PRIMITIVE_LINELIST);
 };
 
-
+ENUM_DECLARE(UIWebView::eDataDetectorType)
+{
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_PHONE_NUMBERS, "PhoneNumbers");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_LINKS, "Links");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_ADDRESSES, "Addresses");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_CALENDAR_EVENTS, "CalendarEvents");
+};
 
 /*
 void f()

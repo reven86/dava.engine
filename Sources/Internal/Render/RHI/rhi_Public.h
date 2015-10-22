@@ -55,7 +55,7 @@ InitParam
     uint32          maxIndexBufferCount;
     uint32          maxVertexBufferCount;
     uint32          maxConstBufferCount;
-    uint32          maxTextureCount;
+    uint32 maxTextureCount;
 
     uint32 shaderConstRingBufferSize;
 

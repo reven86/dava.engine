@@ -52,7 +52,7 @@ StyleSheetSelectorProperty::~StyleSheetSelectorProperty()
     SafeRelease(styleSheet);
 }
 
-int StyleSheetSelectorProperty::GetCount() const
+uint32 StyleSheetSelectorProperty::GetCount() const
 {
     return 0;
 }

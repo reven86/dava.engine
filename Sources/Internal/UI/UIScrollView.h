@@ -43,7 +43,7 @@ class ScrollHelper;
 class UIScrollView : public UIControl, public UIScrollBarDelegate
 {
 public:
-	UIScrollView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    UIScrollView(const Rect& rect = Rect());
 
 protected:
     virtual ~UIScrollView();
@@ -51,7 +51,6 @@ protected:
 public:
 	virtual void AddControl(UIControl *control);
     virtual void RemoveControl(UIControl *control);
-    virtual List<UIControl* > GetSubcontrols();
     
 	// Add the control directly to the Scroll View Container.
 	void AddControlToContainer(UIControl* control);
@@ -74,10 +73,10 @@ public:
     void ScrollToVerticalPosition(float32 vertPos, float32 timeSec = 0.3f);
     void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
 
-	virtual UIControl *Clone();
-	virtual void CopyDataFrom(UIControl *srcControl);
-	
-	virtual void SetRect(const Rect &rect);
+    UIScrollView* Clone() override;
+    virtual void CopyDataFrom(UIControl* srcControl);
+
+    virtual void SetRect(const Rect &rect);
 	virtual void SetSize(const Vector2 &newSize);
 	
 	void SetPadding(const Vector2 & padding);

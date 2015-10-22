@@ -50,12 +50,6 @@ bool NPAPICoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
     return screenMode == Core::eScreenMode::WINDOWED;
 }
 
-void* NPAPICoreMacOSPlatform::GetOpenGLView()
-{
-	// No OpenGL View exists on the NPAPI Plugin - layer only.
-	return NULL;
-}
-
 void NPAPICoreMacOSPlatform::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
 {
 	// One and only Display Mode is available on NPAPI plugin.

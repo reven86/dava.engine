@@ -69,7 +69,7 @@ protected:
     virtual ~StyleSheetRootProperty();
     
 public:
-    int GetCount() const override;
+    DAVA::uint32 GetCount() const override;
     AbstractProperty *GetProperty(int index) const override;
 
     void Accept(PropertyVisitor *visitor) override;

@@ -2723,24 +2723,6 @@
 		028C1A4D1BD66A6100B2266F /* UIFileSystemDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CCD1BD66A5F00B2266F /* UIFileSystemDialog.h */; };
 		028C1A4E1BD66A6100B2266F /* UIFileSystemDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CCD1BD66A5F00B2266F /* UIFileSystemDialog.h */; };
 		028C1A4F1BD66A6100B2266F /* UIFileSystemDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CCD1BD66A5F00B2266F /* UIFileSystemDialog.h */; };
-		028C1A501BD66A6100B2266F /* UIHierarchy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CCE1BD66A5F00B2266F /* UIHierarchy.cpp */; };
-		028C1A511BD66A6100B2266F /* UIHierarchy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CCE1BD66A5F00B2266F /* UIHierarchy.cpp */; };
-		028C1A521BD66A6100B2266F /* UIHierarchy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CCE1BD66A5F00B2266F /* UIHierarchy.cpp */; };
-		028C1A531BD66A6100B2266F /* UIHierarchy.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CCF1BD66A5F00B2266F /* UIHierarchy.h */; };
-		028C1A541BD66A6100B2266F /* UIHierarchy.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CCF1BD66A5F00B2266F /* UIHierarchy.h */; };
-		028C1A551BD66A6100B2266F /* UIHierarchy.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CCF1BD66A5F00B2266F /* UIHierarchy.h */; };
-		028C1A561BD66A6100B2266F /* UIHierarchyCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD01BD66A5F00B2266F /* UIHierarchyCell.cpp */; };
-		028C1A571BD66A6100B2266F /* UIHierarchyCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD01BD66A5F00B2266F /* UIHierarchyCell.cpp */; };
-		028C1A581BD66A6100B2266F /* UIHierarchyCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD01BD66A5F00B2266F /* UIHierarchyCell.cpp */; };
-		028C1A591BD66A6100B2266F /* UIHierarchyCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CD11BD66A5F00B2266F /* UIHierarchyCell.h */; };
-		028C1A5A1BD66A6100B2266F /* UIHierarchyCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CD11BD66A5F00B2266F /* UIHierarchyCell.h */; };
-		028C1A5B1BD66A6100B2266F /* UIHierarchyCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CD11BD66A5F00B2266F /* UIHierarchyCell.h */; };
-		028C1A5C1BD66A6100B2266F /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD21BD66A5F00B2266F /* UIHierarchyNode.cpp */; };
-		028C1A5D1BD66A6100B2266F /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD21BD66A5F00B2266F /* UIHierarchyNode.cpp */; };
-		028C1A5E1BD66A6100B2266F /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD21BD66A5F00B2266F /* UIHierarchyNode.cpp */; };
-		028C1A5F1BD66A6100B2266F /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CD31BD66A5F00B2266F /* UIHierarchyNode.h */; };
-		028C1A601BD66A6100B2266F /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CD31BD66A5F00B2266F /* UIHierarchyNode.h */; };
-		028C1A611BD66A6100B2266F /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CD31BD66A5F00B2266F /* UIHierarchyNode.h */; };
 		028C1A621BD66A6100B2266F /* UIHoleTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD41BD66A5F00B2266F /* UIHoleTransition.cpp */; };
 		028C1A631BD66A6100B2266F /* UIHoleTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD41BD66A5F00B2266F /* UIHoleTransition.cpp */; };
 		028C1A641BD66A6100B2266F /* UIHoleTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CD41BD66A5F00B2266F /* UIHoleTransition.cpp */; };
@@ -3982,12 +3964,6 @@
 		028C0CCB1BD66A5F00B2266F /* UIFadeTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFadeTransition.h; sourceTree = "<group>"; };
 		028C0CCC1BD66A5F00B2266F /* UIFileSystemDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFileSystemDialog.cpp; sourceTree = "<group>"; };
 		028C0CCD1BD66A5F00B2266F /* UIFileSystemDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFileSystemDialog.h; sourceTree = "<group>"; };
-		028C0CCE1BD66A5F00B2266F /* UIHierarchy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchy.cpp; sourceTree = "<group>"; };
-		028C0CCF1BD66A5F00B2266F /* UIHierarchy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchy.h; sourceTree = "<group>"; };
-		028C0CD01BD66A5F00B2266F /* UIHierarchyCell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchyCell.cpp; sourceTree = "<group>"; };
-		028C0CD11BD66A5F00B2266F /* UIHierarchyCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchyCell.h; sourceTree = "<group>"; };
-		028C0CD21BD66A5F00B2266F /* UIHierarchyNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchyNode.cpp; sourceTree = "<group>"; };
-		028C0CD31BD66A5F00B2266F /* UIHierarchyNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchyNode.h; sourceTree = "<group>"; };
 		028C0CD41BD66A5F00B2266F /* UIHoleTransition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHoleTransition.cpp; sourceTree = "<group>"; };
 		028C0CD51BD66A5F00B2266F /* UIHoleTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHoleTransition.h; sourceTree = "<group>"; };
 		028C0CD61BD66A5F00B2266F /* UIJoypad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIJoypad.cpp; sourceTree = "<group>"; };
@@ -5477,12 +5453,6 @@
 				028C0CCB1BD66A5F00B2266F /* UIFadeTransition.h */,
 				028C0CCC1BD66A5F00B2266F /* UIFileSystemDialog.cpp */,
 				028C0CCD1BD66A5F00B2266F /* UIFileSystemDialog.h */,
-				028C0CCE1BD66A5F00B2266F /* UIHierarchy.cpp */,
-				028C0CCF1BD66A5F00B2266F /* UIHierarchy.h */,
-				028C0CD01BD66A5F00B2266F /* UIHierarchyCell.cpp */,
-				028C0CD11BD66A5F00B2266F /* UIHierarchyCell.h */,
-				028C0CD21BD66A5F00B2266F /* UIHierarchyNode.cpp */,
-				028C0CD31BD66A5F00B2266F /* UIHierarchyNode.h */,
 				028C0CD41BD66A5F00B2266F /* UIHoleTransition.cpp */,
 				028C0CD51BD66A5F00B2266F /* UIHoleTransition.h */,
 				028C0CD61BD66A5F00B2266F /* UIJoypad.cpp */,
@@ -5854,7 +5824,6 @@
 				028C18F01BD66A6000B2266F /* ParticleEffectSystem.h in Headers */,
 				028C15991BD66A6000B2266F /* LibPVRHelper.h in Headers */,
 				028C15121BD66A6000B2266F /* RenderPassNames.h in Headers */,
-				028C1A611BD66A6100B2266F /* UIHierarchyNode.h in Headers */,
 				028C18D81BD66A6000B2266F /* FoliageSystem.h in Headers */,
 				028C10DD1BD66A6000B2266F /* Rect.h in Headers */,
 				028C18CC1BD66A6000B2266F /* DebugRenderSystem.h in Headers */,
@@ -6023,7 +5992,6 @@
 				028C11281BD66A6000B2266F /* DeadlineTimerTemplate.h in Headers */,
 				028C15691BD66A6000B2266F /* VegetationSpatialData.h in Headers */,
 				028C11791BD66A6000B2266F /* NetService.h in Headers */,
-				028C1A5B1BD66A6100B2266F /* UIHierarchyCell.h in Headers */,
 				028C11E51BD66A6000B2266F /* LocalNotification.h in Headers */,
 				028C0F241BD66A6000B2266F /* DVAssert.h in Headers */,
 				028C17A31BD66A6000B2266F /* CustomPropertiesComponent.h in Headers */,
@@ -6215,7 +6183,6 @@
 				028C0E911BD66A6000B2266F /* Atomic.h in Headers */,
 				028C10D41BD66A6000B2266F /* Polygon3.h in Headers */,
 				028C193E1BD66A6000B2266F /* UserNode.h in Headers */,
-				028C1A551BD66A6100B2266F /* UIHierarchy.h in Headers */,
 				028C1B601BD66A6100B2266F /* StringUtils.h in Headers */,
 				028C0D5C1BD66A6000B2266F /* LinearAnimation.h in Headers */,
 				028C105F1BD66A6000B2266F /* GamepadDevice.h in Headers */,
@@ -6312,7 +6279,6 @@
 				028C11A71BD66A6000B2266F /* ProtoTypes.h in Headers */,
 				028C0E021BD66A6000B2266F /* FastNameMap.h in Headers */,
 				028C174D1BD66A6000B2266F /* GameObjectAnimations.h in Headers */,
-				028C1A5F1BD66A6100B2266F /* UIHierarchyNode.h in Headers */,
 				028C112C1BD66A6000B2266F /* Endpoint.h in Headers */,
 				028C14B61BD66A6000B2266F /* DynamicBufferAllocator.h in Headers */,
 				028C0F6A1BD66A6000B2266F /* Downloader.h in Headers */,
@@ -6566,7 +6532,6 @@
 				028C14EF1BD66A6000B2266F /* RenderBatch.h in Headers */,
 				028C10061BD66A6000B2266F /* Parser.h in Headers */,
 				028C1B371BD66A6100B2266F /* UnitTests.h in Headers */,
-				028C1A591BD66A6100B2266F /* UIHierarchyCell.h in Headers */,
 				028C0E2F1BD66A6000B2266F /* IntrospectionFlags.h in Headers */,
 				028C12491BD66A6000B2266F /* DeviceInfo.h in Headers */,
 				028C17711BD66A6000B2266F /* ActionComponent.h in Headers */,
@@ -6745,7 +6710,6 @@
 				028C19DB1BD66A6000B2266F /* UIPriorityStyleSheet.h in Headers */,
 				028C19C91BD66A6000B2266F /* UILinearLayoutComponent.h in Headers */,
 				028C11CE1BD66A6000B2266F /* MMNetProto.h in Headers */,
-				028C1A531BD66A6100B2266F /* UIHierarchy.h in Headers */,
 				028C1B221BD66A6100B2266F /* UIYamlLoader.h in Headers */,
 				028C175F1BD66A6000B2266F /* AnimationData.h in Headers */,
 				028C15221BD66A6000B2266F /* ShadowVolumeRenderLayer.h in Headers */,
@@ -6931,7 +6895,6 @@
 				028C18EF1BD66A6000B2266F /* ParticleEffectSystem.h in Headers */,
 				028C15981BD66A6000B2266F /* LibPVRHelper.h in Headers */,
 				028C15111BD66A6000B2266F /* RenderPassNames.h in Headers */,
-				028C1A601BD66A6100B2266F /* UIHierarchyNode.h in Headers */,
 				028C18D71BD66A6000B2266F /* FoliageSystem.h in Headers */,
 				028C10DC1BD66A6000B2266F /* Rect.h in Headers */,
 				028C18CB1BD66A6000B2266F /* DebugRenderSystem.h in Headers */,
@@ -7099,7 +7062,6 @@
 				028C11271BD66A6000B2266F /* DeadlineTimerTemplate.h in Headers */,
 				028C15681BD66A6000B2266F /* VegetationSpatialData.h in Headers */,
 				028C11781BD66A6000B2266F /* NetService.h in Headers */,
-				028C1A5A1BD66A6100B2266F /* UIHierarchyCell.h in Headers */,
 				028C11E41BD66A6000B2266F /* LocalNotification.h in Headers */,
 				028C0F231BD66A6000B2266F /* DVAssert.h in Headers */,
 				028C17A21BD66A6000B2266F /* CustomPropertiesComponent.h in Headers */,
@@ -7290,7 +7252,6 @@
 				028C0E901BD66A6000B2266F /* Atomic.h in Headers */,
 				028C10D31BD66A6000B2266F /* Polygon3.h in Headers */,
 				028C193D1BD66A6000B2266F /* UserNode.h in Headers */,
-				028C1A541BD66A6100B2266F /* UIHierarchy.h in Headers */,
 				028C1B5F1BD66A6100B2266F /* StringUtils.h in Headers */,
 				028C0D5B1BD66A6000B2266F /* LinearAnimation.h in Headers */,
 				028C105E1BD66A6000B2266F /* GamepadDevice.h in Headers */,
@@ -7510,7 +7471,6 @@
 				028C101D1BD66A6000B2266F /* XMLParser.cpp in Sources */,
 				028C159C1BD66A6000B2266F /* LibTgaHelper.cpp in Sources */,
 				028C15061BD66A6000B2266F /* RenderObject.cpp in Sources */,
-				028C1A5E1BD66A6100B2266F /* UIHierarchyNode.cpp in Sources */,
 				028C0F991BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F631BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
 				028C10231BD66A6000B2266F /* XMLParser.mm in Sources */,
@@ -7547,7 +7507,6 @@
 				028C0D351BD66A6000B2266F /* AnimatedObject.cpp in Sources */,
 				028C117F1BD66A6000B2266F /* PeerDesription.cpp in Sources */,
 				028C0FBD1BD66A6000B2266F /* FileList.cpp in Sources */,
-				028C1A521BD66A6100B2266F /* UIHierarchy.cpp in Sources */,
 				028C124E1BD66A6000B2266F /* DeviceInfoPrivateBase.cpp in Sources */,
 				028C18631BD66A6000B2266F /* SceneAnimationMixer.cpp in Sources */,
 				028C0D861BD66A6000B2266F /* dlmalloc.c in Sources */,
@@ -7866,7 +7825,6 @@
 				028C1B631BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
 				028C18241BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,
 				028C1A9A1BD66A6100B2266F /* UIPackagesCache.cpp in Sources */,
-				028C1A581BD66A6100B2266F /* UIHierarchyCell.cpp in Sources */,
 				028C154B1BD66A6000B2266F /* VegetationGeometry.cpp in Sources */,
 				028C11B21BD66A6000B2266F /* TCPServerTransport.cpp in Sources */,
 				028C0D411BD66A6000B2266F /* AnimationManager.cpp in Sources */,
@@ -7984,7 +7942,6 @@
 				028C101B1BD66A6000B2266F /* XMLParser.cpp in Sources */,
 				028C159A1BD66A6000B2266F /* LibTgaHelper.cpp in Sources */,
 				028C15041BD66A6000B2266F /* RenderObject.cpp in Sources */,
-				028C1A5C1BD66A6100B2266F /* UIHierarchyNode.cpp in Sources */,
 				028C0F971BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F611BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
 				028C10211BD66A6000B2266F /* XMLParser.mm in Sources */,
@@ -8021,7 +7978,6 @@
 				028C0D331BD66A6000B2266F /* AnimatedObject.cpp in Sources */,
 				028C117D1BD66A6000B2266F /* PeerDesription.cpp in Sources */,
 				028C0FBB1BD66A6000B2266F /* FileList.cpp in Sources */,
-				028C1A501BD66A6100B2266F /* UIHierarchy.cpp in Sources */,
 				028C124C1BD66A6000B2266F /* DeviceInfoPrivateBase.cpp in Sources */,
 				028C18611BD66A6000B2266F /* SceneAnimationMixer.cpp in Sources */,
 				028C0D841BD66A6000B2266F /* dlmalloc.c in Sources */,
@@ -8336,7 +8292,6 @@
 				028C1B611BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
 				028C18221BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,
 				028C1A981BD66A6100B2266F /* UIPackagesCache.cpp in Sources */,
-				028C1A561BD66A6100B2266F /* UIHierarchyCell.cpp in Sources */,
 				028C15491BD66A6000B2266F /* VegetationGeometry.cpp in Sources */,
 				028C11B01BD66A6000B2266F /* TCPServerTransport.cpp in Sources */,
 				028C0D3F1BD66A6000B2266F /* AnimationManager.cpp in Sources */,
@@ -8454,7 +8409,6 @@
 				028C101C1BD66A6000B2266F /* XMLParser.cpp in Sources */,
 				028C159B1BD66A6000B2266F /* LibTgaHelper.cpp in Sources */,
 				028C15051BD66A6000B2266F /* RenderObject.cpp in Sources */,
-				028C1A5D1BD66A6100B2266F /* UIHierarchyNode.cpp in Sources */,
 				028C0F981BD66A6000B2266F /* BaseFamily.cpp in Sources */,
 				028C0F621BD66A6000B2266F /* CurlDownloader.cpp in Sources */,
 				028C10221BD66A6000B2266F /* XMLParser.mm in Sources */,
@@ -8491,7 +8445,6 @@
 				028C0D341BD66A6000B2266F /* AnimatedObject.cpp in Sources */,
 				028C117E1BD66A6000B2266F /* PeerDesription.cpp in Sources */,
 				028C0FBC1BD66A6000B2266F /* FileList.cpp in Sources */,
-				028C1A511BD66A6100B2266F /* UIHierarchy.cpp in Sources */,
 				028C124D1BD66A6000B2266F /* DeviceInfoPrivateBase.cpp in Sources */,
 				028C18621BD66A6000B2266F /* SceneAnimationMixer.cpp in Sources */,
 				028C0D851BD66A6000B2266F /* dlmalloc.c in Sources */,
@@ -8806,7 +8759,6 @@
 				028C1B621BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
 				028C18231BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,
 				028C1A991BD66A6100B2266F /* UIPackagesCache.cpp in Sources */,
-				028C1A571BD66A6100B2266F /* UIHierarchyCell.cpp in Sources */,
 				028C154A1BD66A6000B2266F /* VegetationGeometry.cpp in Sources */,
 				028C11B11BD66A6000B2266F /* TCPServerTransport.cpp in Sources */,
 				028C0D401BD66A6000B2266F /* AnimationManager.cpp in Sources */,

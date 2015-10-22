@@ -47,14 +47,13 @@
 #endif
 
 namespace DAVA {
-
-UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates)
-    : UIControl(rect, rectInAbsoluteCoordinates)
+UIWebView::UIWebView(const Rect& rect)
+    : UIControl(rect)
     , webViewControl(0)
     , isNativeControlVisible(false)
 {
     webViewControl = new WebViewControl(*this);
-    Rect newRect = GetRect(true);
+    Rect newRect = GetAbsoluteRect();
     webViewControl->Initialize(newRect);
     UpdateControlRect();
 
@@ -184,7 +183,7 @@ void UIWebView::SetGestures(bool value)
 
 void UIWebView::UpdateControlRect()
 {
-    Rect rect = GetRect(true);
+    Rect rect = GetAbsoluteRect();
 
     webViewControl->SetRect(rect);
 }
@@ -256,7 +255,7 @@ YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader *loader)
     return node;
 }
 
-UIControl* UIWebView::Clone()
+UIWebView* UIWebView::Clone()
 {
     UIWebView* webView = new UIWebView(GetRect());
     webView->CopyDataFrom(this);
@@ -267,7 +266,7 @@ void UIWebView::CopyDataFrom(UIControl *srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
 
-    UIWebView* webView = (UIWebView*) srcControl;
+    UIWebView* webView = DynamicTypeCheck<UIWebView*>(srcControl);
     SetNativeControlVisible(webView->GetNativeControlVisible());
     SetDataDetectorTypes(webView->GetDataDetectorTypes());
 }
