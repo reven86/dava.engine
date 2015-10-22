@@ -89,6 +89,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::DocumentActivated, previewWidget, &PreviewWidget::OnDocumentActivated);
     connect(documentGroup, &DocumentGroup::DocumentDeactivated, previewWidget, &PreviewWidget::OnDocumentDeactivated);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, previewWidget, &PreviewWidget::SetSelectedNodes);
 
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);

@@ -92,7 +92,6 @@ struct MagnetLineInfo
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
-class KeyboardProxy;
 
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
 
@@ -104,7 +103,6 @@ public:
     explicit EditorSystemsManager(PackageNode* package);
     ~EditorSystemsManager();
 
-    const KeyboardProxy* GetKeyboardProxy() const;
     PackageNode* GetPackage();
 
     DAVA::UIControl* GetRootControl();
@@ -140,7 +138,7 @@ private:
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const;
 
-    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
     void SetPreviewMode(bool mode);
     DAVA::RefPtr<RootControl> rootControl;
@@ -148,12 +146,9 @@ private:
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
-    std::unique_ptr<KeyboardProxy> keyboardProxy;
-
     PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
-    DAVA::Set<ControlNode*> recentlyRemovedControls;
     bool previewMode = true;
 };
 

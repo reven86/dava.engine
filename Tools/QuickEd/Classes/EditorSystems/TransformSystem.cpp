@@ -69,7 +69,7 @@ struct TransformSystem::MoveInfo
 namespace
 {
 const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
-const DAVA::Vector2 magnetRange = DAVA::Vector2(10.0f, 10.0f);
+const DAVA::Vector2 magnetRange = DAVA::Vector2(7.0f, 7.0f);
 const DAVA::float32 moveStepByKeyboard = 1.0f;
 const DAVA::float32 expandedMoveStepByKeyboard = 10.0f;
 const DAVA::Vector2 borderInParentToMagnet = DAVA::Vector2(20.0f, 20.0f);
@@ -135,8 +135,8 @@ void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         UIControl* parent = control->GetParent();
         parentGeometricData = parent->GetGeometricData();
         controlGeometricData = control->GetGeometricData();
+
         DVASSERT(parentGeometricData.scale.x > 0.0f && parentGeometricData.scale.y > 0.0f);
-        DVASSERT(parentGeometricData.size.x > 0.0f && parentGeometricData.size.y > 0.0f);
         DVASSERT(controlGeometricData.scale.x > 0.0f && controlGeometricData.scale.y > 0.0f);
         DVASSERT(controlGeometricData.size.x > 0.0f && controlGeometricData.size.y > 0.0f);
 
@@ -175,8 +175,10 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     {
         if (currentInput->point != prevPos)
         {
-            ProcessDrag(currentInput->point);
-            prevPos = currentInput->point;
+            if (ProcessDrag(currentInput->point))
+            {
+                prevPos = currentInput->point;
+            }
         }
         return false;
     }
@@ -190,7 +192,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
 void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
     nodesToMove.clear();
     for (ControlNode* selectedControl : selectedControlNodes)
     {
@@ -205,8 +207,7 @@ bool TransformSystem::ProcessKey(const int32 key)
     if (!selectedControlNodes.empty())
     {
         float step = moveStepByKeyboard;
-        const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-        if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+        if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
         {
             step = expandedMoveStepByKeyboard;
         }
@@ -244,12 +245,10 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
         return false;
     }
     Vector2 delta(pos - prevPos);
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveAllSelectedControls(delta, !keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT));
+        MoveAllSelectedControls(delta, !IsKeyPressed(KeyboardProxy::KEY_SHIFT));
         return true;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -260,8 +259,8 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
     {
-        bool withPivot = keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_ALT);
-        bool rateably = keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT);
+        bool withPivot = IsKeyPressed(KeyboardProxy::KEY_ALT);
+        bool rateably = IsKeyPressed(KeyboardProxy::KEY_SHIFT);
         ResizeControl(delta, withPivot, rateably);
         return true;
     }
@@ -272,8 +271,7 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     }
     case HUDAreaInfo::ROTATE_AREA:
     {
-        Rotate(pos);
-        return true;
+        return Rotate(pos);
     }
     default:
         return false;
@@ -285,16 +283,14 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
     //at furst we need to magnet control under cursor or unmagnet it
+    if (canAdjust)
     {
         Vector2 scaledDelta = delta / parentGeometricData.scale;
         Vector2 deltaPosition(RotateVector(scaledDelta, -parentGeometricData.angle));
         Vector2 adjustedPosition(deltaPosition);
         adjustedPosition += extraDelta;
         extraDelta.SetZero();
-        if (canAdjust)
-        {
-            adjustedPosition = AdjustMoveToNearestBorder(adjustedPosition, magnets, &parentGeometricData, activeControlNode->GetControl());
-        }
+        adjustedPosition = AdjustMoveToNearestBorder(adjustedPosition, magnets, &parentGeometricData, activeControlNode->GetControl());
         AbstractProperty* property = positionProperty;
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + adjustedPosition);
@@ -305,7 +301,7 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
     for (auto& nodeToMove : nodesToMove)
     {
         ControlNode* node = nodeToMove->node;
-        if (node == activeControlNode)
+        if (canAdjust && node == activeControlNode)
         {
             continue; //we already move it in this function
         }
@@ -331,19 +327,23 @@ List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* paren
     List<MagnetLine> magnets;
 
     Rect parentBox(Vector2(), parentGD->size);
-    DVASSERT(box.dx > 0.0f && box.dy > 0.0f);
 
-    magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
-    magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
-    magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
-
-    const float32 border = borderInParentToMagnet[axis];
-    float32 requiredSizeToMagnetToBorders = 5 * border;
-    if (parentGD->GetUnrotatedRect().GetSize()[axis] > requiredSizeToMagnetToBorders)
+    if (parentBox.GetSize()[axis] > 0.0f)
     {
-        const float32 borderShare = border / parentBox.GetSize()[axis];
-        magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
-        magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
+        magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
+        magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
+
+        const float32 border = borderInParentToMagnet[axis];
+        float32 requiredSizeToMagnetToBorders = 5 * border;
+        if (parentGD->GetUnrotatedRect().GetSize()[axis] > requiredSizeToMagnetToBorders)
+        {
+            const float32 borderShare = border / parentBox.GetSize()[axis];
+            magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
+            magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
+        }
     }
 
     for (UIControl* neighbour : neighbours)
@@ -351,7 +351,9 @@ List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* paren
         Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
 
         magnets.emplace_back(0.0f, box, 0.0f, neighbourBox, axis);
+        magnets.emplace_back(0.0f, box, 0.5f, neighbourBox, axis);
         magnets.emplace_back(0.5f, box, 0.5f, neighbourBox, axis);
+        magnets.emplace_back(1.0f, box, 0.5f, neighbourBox, axis);
         magnets.emplace_back(1.0f, box, 1.0f, neighbourBox, axis);
         magnets.emplace_back(0.0f, box, 1.0f, neighbourBox, axis);
         magnets.emplace_back(1.0f, box, 0.0f, neighbourBox, axis);
@@ -361,7 +363,6 @@ List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* paren
         magnets.emplace_back(1.0f, box, -neighbourSpacingShare, neighbourBox, axis);
         magnets.emplace_back(0.0f, box, 1.0f + neighbourSpacingShare, neighbourBox, axis);
     }
-    DVASSERT(!magnets.empty());
 
     return magnets;
 }
@@ -518,10 +519,7 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     deltaSize += extraDelta; //transform to virtual coordinates
     extraDelta.SetZero();
 
-    Vector2 adjustedSize = deltaSize;
-    adjustedSize = AdjustResizeToBorder(adjustedSize, transformPoint, directions);
-    adjustedSize = AdjustResizeToMinimumSize(adjustedSize);
-
+    Vector2 adjustedSize = AdjustResizeToBorderAndToMinimum(deltaSize, transformPoint, directions);
     //adjust delta position to new delta size
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
@@ -560,36 +558,47 @@ Vector2 TransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        if (finalSize[axis] < scaledMinimum[axis])
+        if (deltaSize[axis] > 0.0f)
         {
+            continue;
+        }
+        if (origSize[axis] > scaledMinimum[axis])
+        {
+            if (finalSize[axis] > scaledMinimum[axis])
+            {
+                continue;
+            }
             extraDelta[axis] += finalSize[axis] - scaledMinimum[axis];
-            if (deltaSize[axis] < 0.0f && origSize[axis] < scaledMinimum[axis])
-            {
-                deltaSize[axis] = 0.0f;
-            }
-            else
-            {
-                deltaSize[axis] = scaledMinimum[axis] - origSize[axis]; //truncate delta
-            }
+            deltaSize[axis] = scaledMinimum[axis] - origSize[axis];
+        }
+        else
+        {
+            extraDelta[axis] += deltaSize[axis];
+            deltaSize[axis] = 0.0f;
         }
     }
 
     return deltaSize;
 }
 
-Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
+Vector2 TransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
 {
     Vector<MagnetLineInfo> magnets;
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-    bool canAdjustResize = !keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
 
+    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
+    Vector2 adjustedDeltaToBorder(deltaSize);
     if (canAdjustResize)
     {
-        deltaSize = AdjustResizeToBorder(deltaSize, transformPoint, directions, magnets);
+        adjustedDeltaToBorder = AdjustResizeToBorder(deltaSize, transformPoint, directions, magnets);
+    }
+    Vector2 adjustedSize = AdjustResizeToMinimumSize(adjustedDeltaToBorder);
+    if (adjustedDeltaToBorder != adjustedSize)
+    {
+        magnets.clear();
     }
     systemManager->MagnetLinesChanged.Emit(magnets);
 
-    return deltaSize;
+    return adjustedSize;
 }
 
 DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 transformPoint, Directions directions, Vector<MagnetLineInfo>& magnets)
@@ -626,38 +635,41 @@ DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
             };
             magnetLines.remove_if(removePredicate);
 
-            std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
-                float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
-                float32 shareRight = right.controlSharePos - transformPoint[right.axis];
-                float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
-                float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
-                return fabs(distanceLeft) < fabs(distanceRight);
-            };
-
-            MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
-            float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
-            float32 rangeForPosition = magnetRange[axis] * share;
-            float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
-            float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
-
-            Vector2 oldDeltaSize(deltaSize);
-
-            if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
+            if (!magnetLines.empty())
             {
-                float32 interval = nearestLine.interval * directions[axis] * -1;
-                DVASSERT(share > 0.0f);
-                interval /= share;
-                float32 scaledDistance = interval / controlGD.scale[axis];
-                deltaSize[axis] += scaledDistance;
-                extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
-            }
+                std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
+                    float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
+                    float32 shareRight = right.controlSharePos - transformPoint[right.axis];
+                    float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
+                    float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
+                    return fabs(distanceLeft) < fabs(distanceRight);
+                };
 
-            for (MagnetLine& line : magnetLines)
-            {
-                float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
-                line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare / directions[line.axis];
+                MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
+                float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
+                float32 rangeForPosition = magnetRange[axis] * share;
+                float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
+                float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
+
+                Vector2 oldDeltaSize(deltaSize);
+
+                if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
+                {
+                    float32 interval = nearestLine.interval * directions[axis] * -1;
+                    DVASSERT(share > 0.0f);
+                    interval /= share;
+                    float32 scaledDistance = interval / controlGD.scale[axis];
+                    deltaSize[axis] += scaledDistance;
+                    extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
+                }
+
+                for (MagnetLine& line : magnetLines)
+                {
+                    float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
+                    line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare / directions[line.axis];
+                }
+                ExtractMatchedLines(magnets, magnetLines, control, axis);
             }
-            ExtractMatchedLines(magnets, magnetLines, control, axis);
         }
     }
     return deltaSize;
@@ -718,8 +730,7 @@ DAVA::Vector2 TransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
     bool found = false;
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-    if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         const float32 maxPivot = 1.0f;
 
@@ -768,14 +779,22 @@ DAVA::Vector2 TransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     return finalPivot;
 }
 
-void TransformSystem::Rotate(Vector2 pos)
+bool TransformSystem::Rotate(Vector2 pos)
 {
     Vector2 rotatePoint(controlGeometricData.GetUnrotatedRect().GetPosition());
     rotatePoint += controlGeometricData.pivotPoint * controlGeometricData.scale;
     Vector2 l1(prevPos - rotatePoint);
     Vector2 l2(pos - rotatePoint);
-    float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
+
+    if (l2.Length() < 15)
+    {
+        return false;
+    }
+
+    float32 angleRad = atan2(l1.x * l2.y - l2.x * l1.y, l1.x * l2.x + l1.y * l2.y);
     float32 deltaAngle = RadToDeg(angleRad);
+    //after modification deltaAngle is less than mouse delta positions
+
     deltaAngle += extraDelta.dx;
     extraDelta.SetZero();
     float32 originalAngle = angleProperty->GetValue().AsFloat();
@@ -784,13 +803,13 @@ void TransformSystem::Rotate(Vector2 pos)
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    return true;
 }
 
 float32 TransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
 {
     float32 finalAngle = originalAngle + deltaAngle;
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-    if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         static const int step = angleSegment; //fixed angle step
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);

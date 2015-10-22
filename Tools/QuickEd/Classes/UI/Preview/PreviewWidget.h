@@ -67,6 +67,7 @@ public slots:
     void OnDocumentChanged(Document* document);
     void OnDocumentActivated(Document* document);
     void OnDocumentDeactivated(Document* document);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private slots:
     // Zoom.
@@ -94,6 +95,8 @@ private:
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
     QList<int> percentages;
+
+    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

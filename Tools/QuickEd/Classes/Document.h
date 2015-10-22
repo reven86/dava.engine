@@ -94,6 +94,7 @@ public slots:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
+    void OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
 
     PackageNode* package = nullptr;
@@ -101,6 +102,7 @@ private:
     QUndoStack* undoStack = nullptr;
 
     EditorSystemsManager systemManager;
+    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

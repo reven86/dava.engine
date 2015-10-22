@@ -32,16 +32,12 @@
 #include "Math/Vector.h"
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Model/PackageHierarchy/PackageListener.h"
-#include "Model/ControlProperties/RootProperty.h"
 
-class HUDSystem final : public BaseEditorSystem, private PackageListener
+class HUDSystem final : public BaseEditorSystem
 {
 public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
-
-    class ControlContainer;
 
     void OnActivated() override;
     void OnDeactivated() override;
@@ -56,8 +52,6 @@ private:
     };
     struct HUD;
 
-    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
-
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
@@ -70,7 +64,6 @@ private:
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void SetCanDrawRect(bool canDrawRect_);
-    void SetEditingEnabled(bool arg);
     void UpdateAreasVisibility();
     HUDAreaInfo activeAreaInfo;
 
@@ -80,12 +73,12 @@ private:
     bool canDrawRect = false; //selection rect state
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
-    DAVA::RefPtr<ControlContainer> selectionRectControl;
+    DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
-    bool editingEnabled = false;
     DAVA::float32 dpr = 1.0f;
+    bool hudVisible = false;
     SelectionContainer selectionContainer;
 };
 

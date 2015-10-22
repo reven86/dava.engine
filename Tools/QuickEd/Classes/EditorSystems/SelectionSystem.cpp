@@ -75,6 +75,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     case UIEvent::PHASE_BEGAN:
         mousePressed = true;
         return ProcessMousePress(currentInput->point);
+
     case UIEvent::PHASE_ENDED:
         if (!mousePressed)
         {
@@ -82,6 +83,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
         }
         mousePressed = false;
         return false;
+
     case UIEvent::PHASE_KEYCHAR:
     {
         if (currentInput->tid == DVKEY_TAB)
@@ -120,8 +122,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
             selected.insert(node);
         }
     }
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-    if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         //deselect all not selected by rect
         std::set_difference(selectionContainer.selectedNodes.begin(), selectionContainer.selectedNodes.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
@@ -145,33 +146,28 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
         return control->GetSystemVisible() && control->IsPointInside(point);
     };
     systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-    if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
     {
         deselected = selectionContainer.selectedNodes;
     }
     if (!nodesUnderPoint.empty())
     {
-        PackageBaseNode* node = *nodesUnderPoint.rbegin();
-        if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_CTRL))
+        auto node = nodesUnderPoint.back();
+        if (IsKeyPressed(KeyboardProxy::KEY_ALT))
         {
-            if (selectionContainer.selectedNodes.find(node) != selectionContainer.selectedNodes.end())
+            ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPoint, point);
+            if (nullptr != selectedNode)
             {
-                deselected.insert(node);
+                node = selectedNode;
             }
             else
             {
-                selected.insert(node);
+                return true; //selection was required but cancelled
             }
         }
-        else if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_ALT))
+        if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && selectionContainer.IsSelected(node))
         {
-            ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPoint, point);
-            ;
-            if (nullptr != selectedNode)
-            {
-                selected.insert(selectedNode);
-            }
+            deselected.insert(node);
         }
         else
         {

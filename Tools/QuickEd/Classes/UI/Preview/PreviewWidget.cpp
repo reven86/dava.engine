@@ -153,9 +153,14 @@ ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& no
         ControlNode* controlNode = *it;
         QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
         QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), &menu);
+        action->setCheckable(true);
         menu.addAction(action);
         void* ptr = static_cast<void*>(controlNode);
         action->setData(QVariant::fromValue(ptr));
+        if (selectionContainer.IsSelected(controlNode))
+        {
+            action->setChecked(true);
+        }
     }
     QAction* selectedAction = menu.exec(globalPos);
     if (nullptr != selectedAction)
@@ -205,6 +210,11 @@ void PreviewWidget::OnDocumentDeactivated(Document* document)
 {
     PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
     context->canvasPosition = scrollAreaController->GetPosition();
+}
+
+void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    selectionContainer.MergeSelection(selected, deselected);
 }
 
 void PreviewWidget::OnMonitorChanged()
