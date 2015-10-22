@@ -29,6 +29,8 @@
 
 #include "DAVAEngine.h"
 
+#if !defined(__DAVAENGINE_NGT_PLUGIN__)
+
 #include <QApplication>
 #include <QCryptographicHash>
 #include <QFont>
@@ -297,3 +299,5 @@ void FixOSXFonts()
     }
 #endif
 }
+
+#endif

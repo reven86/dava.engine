@@ -1,8 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 project               ( NGTToolTemplate ) # to change the project name
 
-cmake_policy(SET CMP0043 NEW)
-
 set                   ( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( USE_DYNAMIC_CRT 1)
@@ -81,8 +79,6 @@ endif()
 BW_SET_TEST_DST_DIR(${TOOL_OUTPUT_DIR})
 BW_SET_ASSET_PIPELINE_DST_DIR(${TOOL_OUTPUT_DIR})
 BW_SET_EXECUTABLE_DST_DIR(${TOOL_OUTPUT_DIR})
-
-cmake_policy(SET CMP0043 NEW)
 
 add_subdirectory ( Application )
 
