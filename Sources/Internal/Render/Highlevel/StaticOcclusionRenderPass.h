@@ -39,6 +39,9 @@
 
 namespace DAVA
 {
+// use only for debug purposes
+// enabling this will save each rendered frame to documents folder
+#define SAVE_OCCLUSION_IMAGES 0
 
 struct StaticOcclusionFrameResult;
 class StaticOcclusionData;

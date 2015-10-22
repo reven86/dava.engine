@@ -26,6 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "FileSystem/FileSystem.h"
+#include "Render/Image/Image.h"
+#include "Render/RenderCallbacks.h"
 #include "Render/ShaderCache.h"
 #include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/StaticOcclusionRenderPass.h"
@@ -35,8 +38,7 @@
 
 namespace DAVA
 {
-
-static const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;// / 4;
+static const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;
 
 StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
 {
@@ -45,8 +47,6 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, sortingFlags));
-    //    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
-    //    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 
     rhi::Texture::Descriptor descriptor;
 
@@ -63,14 +63,16 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     depthBuffer = rhi::CreateTexture(descriptor);
 
     passConfig.colorBuffer[0].texture = colorBuffer;
-    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+
     passConfig.depthStencilBuffer.texture = depthBuffer;
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 
     passConfig.viewport.width = OCCLUSION_RENDER_TARGET_SIZE;
     passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE;
+    passConfig.priority = PRIORITY_SERVICE_3D;
 }
 
 StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
@@ -83,6 +85,28 @@ bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const Ren
 {
     return a->layerSortingKey < b->layerSortingKey;
 }
+
+#if (SAVE_OCCLUSION_IMAGES)
+
+rhi::HTexture sharedColorBuffer = rhi::HTexture(rhi::InvalidHandle);
+Map<rhi::HSyncObject, String> renderPassFileNames;
+
+void OnOcclusionRenderPassCompleted(rhi::HSyncObject syncObj)
+{
+    DVASSERT(renderPassFileNames.count(syncObj) > 0);
+    DVASSERT(sharedColorBuffer != rhi::HTexture(rhi::InvalidHandle));
+
+    void* data = rhi::MapTexture(sharedColorBuffer, 0);
+
+    Image* img = Image::CreateFromData(OCCLUSION_RENDER_TARGET_SIZE, OCCLUSION_RENDER_TARGET_SIZE,
+                                       PixelFormat::FORMAT_RGBA8888, reinterpret_cast<uint8*>(data));
+    img->Save(renderPassFileNames.at(syncObj));
+    SafeRelease(img);
+
+    rhi::UnmapTexture(sharedColorBuffer);
+    rhi::DeleteSyncObject(syncObj);
+}
+#endif
 
 void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
                                                    StaticOcclusionFrameResult& target, const StaticOcclusionData& data,
@@ -194,7 +218,26 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
         ++k;
     }
 
+#if (SAVE_OCCLUSION_IMAGES)
+    sharedColorBuffer = colorBuffer;
+    auto syncObj = rhi::CreateSyncObject();
+    rhi::EndPacketList(packetList, syncObj);
+
+    auto pos = occlusionCamera->GetPosition();
+    auto dir = occlusionCamera->GetDirection();
+    auto folder = DAVA::Format("~doc:/occlusion/block-%03d", blockIndex);
+    FileSystem::Instance()->CreateDirectoryW(FilePath(folder), true);
+    auto fileName = DAVA::Format("/[%d,%d,%d] from (%d,%d,%d).png",
+                                 int(dir.x), int(dir.y), int(dir.z), int(pos.x), int(pos.y), int(pos.z));
+    renderPassFileNames.insert({ syncObj, folder + fileName });
+
+    RenderCallbacks::RegisterSyncCallback(syncObj, &OnOcclusionRenderPassCompleted);
+#else
+
     rhi::EndPacketList(packetList);
+
+#endif
+
     rhi::EndRenderPass(renderPass);
 }
 

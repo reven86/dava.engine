@@ -317,7 +317,13 @@ bool StaticOcclusion::RenderCurrentBlock()
 {
     uint64 renders = 0;
     uint64 actualRenders = 0;
+
+#if (SAVE_OCCLUSION_IMAGES)
+    uint64 maxRenders = 1; // Max(256u, renderPassConfigs.size() / 4);
+#else
     uint64 maxRenders = 16; // Max(256u, renderPassConfigs.size() / 4);
+#endif
+
     while ((renders < maxRenders) && !renderPassConfigs.empty())
     {
         auto i = renderPassConfigs.begin();
@@ -359,10 +365,12 @@ bool StaticOcclusion::ProcessRecorderQueries()
             {
                 if (rhi::QueryValue(fr->queryBuffer, index))
                 {
+                    /*
                     if (!currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex()))
                     {
                         Logger::Info("Object: %u is visible from block %u", uint32(req->GetStaticOcclusionIndex()), fr->blockIndex);
                     }
+					*/
                     currentData->EnableVisibilityForObject(fr->blockIndex, req->GetStaticOcclusionIndex());
                 }
                 ++processedRequests;
