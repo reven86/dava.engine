@@ -27,26 +27,22 @@
 =====================================================================================*/
 
 
-#ifndef __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
-#define __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
+#ifndef __DAVAENGINE_LOCALIZATION_WINUAP_H__
+#define __DAVAENGINE_LOCALIZATION_WINUAP_H__
 
-#include "Platform/DeviceInfo.h"
+#include "Base/BaseTypes.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 namespace DAVA
 {
-//Common implementation of device info
-class DeviceInfoPrivateBase
+class LocalizationWinUAP
 {
 public:
-    int32 GetCpuCount();
-    DeviceInfo::HIDConnectionSignal& GetHIDConnectionSignal(DeviceInfo::eHIDType type);
-    // default implementation, could be changed in inheritors
-    virtual bool IsTouchPresented();
-
-private:
-    Map<DeviceInfo::eHIDType, DeviceInfo::HIDConnectionSignal> hidConnectionSignals;
+    static void SelectPreferedLocalization();
+    static String GetDeviceLang(void);
+};
 };
 
-} // namespace DAVA
+#endif //__DAVAENGINE_WIN_UAP__
 
-#endif // __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
+#endif //__DAVAENGINE_LOCALIZATION_WINUAP_H__
