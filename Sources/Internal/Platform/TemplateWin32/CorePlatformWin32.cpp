@@ -334,6 +334,8 @@ namespace DAVA
     {
 		if (GetScreenMode() != screenMode) // check if we try to switch mode
 		{
+            HWND hWindow = static_cast<HWND>(GetNativeView());
+
             switch (screenMode)
             {
             case DAVA::Core::eScreenMode::FULLSCREEN:

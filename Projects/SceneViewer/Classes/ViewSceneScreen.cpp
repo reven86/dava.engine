@@ -129,8 +129,8 @@ void ViewSceneScreen::LoadResources()
 
     Rect screenRect = GetRect();
     Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    screenRect.dx = screenSize.dx;
-    screenRect.dy = screenSize.dy;
+    screenRect.dx = static_cast<float32>(screenSize.dx);
+    screenRect.dy = static_cast<float32>(screenSize.dy);
     SetRect(screenRect);
     ScopedPtr<UI3DView> sceneView(new UI3DView(screenRect));
     sceneView->SetScene(scene);
