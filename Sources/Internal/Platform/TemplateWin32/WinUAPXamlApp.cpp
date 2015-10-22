@@ -307,28 +307,29 @@ void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender,
     }
 }
 
-UIEvent::eButtonID WinUAPXamlApp::GetMouseButtonIndex(Windows::UI::Core::PointerEventArgs ^ args, bool& isButtonPressed)
+WinUAPXamlApp::MouseButtonState WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Core::PointerEventArgs ^ args)
 {
-    UIEvent::eButtonID result = UIEvent::BUTTON_NONE;
+    MouseButtonState result{UIEvent::BUTTON_NONE, false};
 
     PointerPointProperties ^ pointProperties = args->CurrentPoint->Properties;
     if (isLeftButtonPressed != pointProperties->IsLeftButtonPressed)
     {
-        result = UIEvent::BUTTON_1;
-        isButtonPressed = pointProperties->IsLeftButtonPressed;
+        result.button = UIEvent::BUTTON_1;
+        result.isPressed = pointProperties->IsLeftButtonPressed;
     }
 
     if (isRightButtonPressed != pointProperties->IsRightButtonPressed)
     {
-        result = UIEvent::BUTTON_2;
-        isButtonPressed = pointProperties->IsRightButtonPressed;
+        result.button = UIEvent::BUTTON_2;
+        result.isPressed = pointProperties->IsRightButtonPressed;
     }
 
     if (isMiddleButtonPressed != pointProperties->IsMiddleButtonPressed)
     {
-        result = UIEvent::BUTTON_3;
-        isButtonPressed = pointProperties->IsMiddleButtonPressed;
+        result.button = UIEvent::BUTTON_3;
+        result.isPressed = pointProperties->IsMiddleButtonPressed;
     }
+
     isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
     isRightButtonPressed = pointProperties->IsRightButtonPressed;
     isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
@@ -347,8 +348,8 @@ void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Wind
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        bool isButtonPressed;
-        pointerOrButtonIndex = GetMouseButtonIndex(args, isButtonPressed);
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(args);
+        pointerOrButtonIndex = mouseBtnChange.button;
     }
 
     core->RunOnMainThread([this, x, y, pointerOrButtonIndex, type]() {
@@ -365,8 +366,8 @@ void WinUAPXamlApp::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Win
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        bool isButtonPressed;
-        pointerOrButtonIndex = GetMouseButtonIndex(args, isButtonPressed);
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(args);
+        pointerOrButtonIndex = mouseBtnChange.button;
     }
 
     auto fn = [this, x, y, pointerOrButtonIndex, type]() {
@@ -389,11 +390,11 @@ void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Window
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        bool isButtonPressed;
-        pointerOrButtonIndex = GetMouseButtonIndex(args, isButtonPressed);
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(args);
+        pointerOrButtonIndex = mouseBtnChange.button;
         if (UIEvent::BUTTON_NONE != pointerOrButtonIndex)
         {
-            phase = isButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+            phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         }
         else if (!isLeftButtonPressed) // drag only with left mouse button(PC, Mac)
         {
