@@ -48,8 +48,7 @@
 #endif
 
 namespace DAVA {
-
-UIWebView::UIWebView(const Rect &rect)
+UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
     , webViewControl(0)
     , isNativeControlVisible(false)
@@ -244,7 +243,7 @@ YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader *loader)
     return node;
 }
 
-UIWebView *UIWebView::Clone()
+UIWebView* UIWebView::Clone()
 {
     UIWebView* webView = new UIWebView(GetRect());
     webView->CopyDataFrom(this);

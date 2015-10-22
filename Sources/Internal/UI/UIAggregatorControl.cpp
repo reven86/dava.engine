@@ -36,13 +36,12 @@ using namespace DAVA;
 
 #define AGGREGATOR_PATH "aggregatorPath"
 
-UIAggregatorControl::UIAggregatorControl(const Rect &rect)
+UIAggregatorControl::UIAggregatorControl(const Rect& rect)
     : UIControl(rect)
 {
 }
 
-
-UIAggregatorControl *UIAggregatorControl::Clone()
+UIAggregatorControl* UIAggregatorControl::Clone()
 {
 	UIAggregatorControl* c = new UIAggregatorControl(Rect(relativePosition.x, relativePosition.y, size.x, size.y));
 	c->CopyDataFrom(this);

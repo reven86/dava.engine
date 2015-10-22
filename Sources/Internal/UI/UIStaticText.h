@@ -63,7 +63,7 @@ public:
 protected:
     virtual ~UIStaticText();
 public:
-    UIStaticText(const Rect &rect = Rect());
+    UIStaticText(const Rect& rect = Rect());
 
     virtual void Draw(const UIGeometricData &geometricData) override;
     virtual void SetParentColor(const Color &parentColor) override;

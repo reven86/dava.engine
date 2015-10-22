@@ -45,8 +45,8 @@ public:
     void InsertProperty(ValueType *property, DAVA::int32 index);
     void RemoveProperty(ValueType *property);
     DAVA::uint32 GetCount() const override;
-    ValueType *GetProperty(DAVA::int32 index) const override;
-    
+    ValueType* GetProperty(DAVA::int32 index) const override;
+
     void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor *visitor) override;
     
@@ -130,7 +130,7 @@ inline DAVA::uint32 SectionProperty<ValueType>::GetCount() const
 }
 
 template <typename ValueType>
-inline ValueType *SectionProperty<ValueType>::GetProperty(DAVA::int32 index) const
+inline ValueType* SectionProperty<ValueType>::GetProperty(DAVA::int32 index) const
 {
     if (0 <= index && index < static_cast<DAVA::int32>(children.size()))
         return children[index];

@@ -1007,21 +1007,19 @@ void WebViewControl::Initialize(const Rect& rect)
 {
 	CoreWin32PlatformBase *core = static_cast<CoreWin32PlatformBase *>(Core::Instance());
 	DVASSERT(core);
-    
+
     int32 isVisibleStyle = (renderToTexture) ? WS_VISIBLE : 0;
 
     HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
-	// Create the browser holder window.
-	browserWindow = ::CreateWindowEx(0, L"Static", L"", 
-        WS_CHILD 
-        | isVisibleStyle
-        | WS_CLIPCHILDREN, // Excludes the area occupied by child windows when drawing occurs within the parent window. This style is used when creating the parent window.
-		0, 0, static_cast<int>(rect.dx), static_cast<int>(rect.dy), 
-        (HWND)core->GetNativeView(), nullptr, hInstance, nullptr);
+    // Create the browser holder window.
+    browserWindow = ::CreateWindowEx(0, L"Static", L"",
+                                     WS_CHILD | isVisibleStyle | WS_CLIPCHILDREN, // Excludes the area occupied by child windows when drawing occurs within the parent window. This style is used when creating the parent window.
+                                     0, 0, static_cast<int>(rect.dx), static_cast<int>(rect.dy),
+                                     (HWND)core->GetNativeView(), nullptr, hInstance, nullptr);
 
-	SetRect(rect);
+    SetRect(rect);
 
-	// Initialize the browser itself.
+    // Initialize the browser itself.
 	InititalizeBrowserContainer();
 }
 

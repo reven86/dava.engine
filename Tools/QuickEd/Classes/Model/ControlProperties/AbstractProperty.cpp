@@ -50,7 +50,7 @@ void AbstractProperty::SetParent(AbstractProperty *parent)
     this->parent = parent;
 }
 
-int32 AbstractProperty::GetIndex(AbstractProperty *property) const
+int32 AbstractProperty::GetIndex(AbstractProperty* property) const
 {
     for (uint32 i = 0; i < GetCount(); i++)
     {

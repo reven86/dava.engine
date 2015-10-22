@@ -501,36 +501,38 @@ void PrivateWebViewWinUAP::RenderToTexture()
     auto self{shared_from_this()};
     InMemoryRandomAccessStream^ inMemoryStream = ref new InMemoryRandomAccessStream();
     auto taskCapture = create_task(nativeWebView->CapturePreviewToStreamAsync(inMemoryStream));
-    taskCapture.then([this, self, inMemoryStream, width, height]()
-    {
-        unsigned int streamSize = static_cast<unsigned int>(inMemoryStream->Size);
-        DataReader^ reader = ref new DataReader(inMemoryStream->GetInputStreamAt(0));
-        auto taskLoad = create_task(reader->LoadAsync(streamSize));
-        taskLoad.then([this, self, reader, width, height, streamSize](task<unsigned int>)
-        {
-            size_t index = 0;
-            std::vector<uint8> buf(streamSize, 0);
-            while (reader->UnconsumedBufferLength > 0)
-            {
-                buf[index] = reader->ReadByte();
-                index += 1;
-            }
+    taskCapture.then([this, self, inMemoryStream, width, height]() {
+                   unsigned int streamSize = static_cast<unsigned int>(inMemoryStream->Size);
+                   DataReader ^ reader = ref new DataReader(inMemoryStream->GetInputStreamAt(0));
+                   auto taskLoad = create_task(reader->LoadAsync(streamSize));
+                   taskLoad.then([this, self, reader, width, height, streamSize](task<unsigned int>) {
+                       size_t index = 0;
+                       std::vector<uint8> buf(streamSize, 0);
+                       while (reader->UnconsumedBufferLength > 0)
+                       {
+                           buf[index] = reader->ReadByte();
+                           index += 1;
+                       }
 
-            RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(buf.data(), width, height));
-            if (sprite.Valid())
-            {
-                core->RunOnMainThread([this, self, sprite]() {
-                    if (uiWebView != nullptr)
-                    {
-                        uiWebView->SetSprite(sprite.Get(), 0);
-                    }
-                });
-            }
-        });
-    }).then([this, self](task<void> t) {
-        try {
+                       RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(buf.data(), width, height));
+                       if (sprite.Valid())
+                       {
+                           core->RunOnMainThread([this, self, sprite]() {
+                               if (uiWebView != nullptr)
+                               {
+                                   uiWebView->SetSprite(sprite.Get(), 0);
+                               }
+                           });
+                       }
+                   });
+               })
+    .then([this, self](task<void> t) {
+        try
+        {
             t.get();
-        } catch (Platform::COMException^ e) {
+        }
+        catch (Platform::COMException ^ e)
+        {
             HRESULT hr = e->HResult;
             Logger::Error("[WebView] RenderToTexture failed: 0x%08X", hr);
         }

@@ -4,7 +4,6 @@
 
 namespace DAVA
 {
-    
 UIFlowLayoutComponent::UIFlowLayoutComponent()
 {
     SetEnabled(true);
@@ -17,7 +16,7 @@ UIFlowLayoutComponent::UIFlowLayoutComponent()
     }
 }
 
-UIFlowLayoutComponent::UIFlowLayoutComponent(const UIFlowLayoutComponent &src)
+UIFlowLayoutComponent::UIFlowLayoutComponent(const UIFlowLayoutComponent& src)
     : flags(src.flags)
 {
     for (int32 i = 0; i < Vector2::AXIS_COUNT; i++)
@@ -29,7 +28,6 @@ UIFlowLayoutComponent::UIFlowLayoutComponent(const UIFlowLayoutComponent &src)
 
 UIFlowLayoutComponent::~UIFlowLayoutComponent()
 {
-    
 }
 
 UIFlowLayoutComponent* UIFlowLayoutComponent::Clone() const
@@ -93,7 +91,7 @@ bool UIFlowLayoutComponent::IsDynamicHorizontalInLinePadding() const
 {
     return flags.test(FLAG_DYNAMIC_HORIZONTAL_IN_LINE_PADDING);
 }
-    
+
 void UIFlowLayoutComponent::SetDynamicHorizontalInLinePadding(bool dynamic)
 {
     flags.set(FLAG_DYNAMIC_HORIZONTAL_IN_LINE_PADDING, dynamic);
@@ -164,7 +162,7 @@ float32 UIFlowLayoutComponent::GetSpacingByAxis(int32 axis)
 {
     return spacing[axis];
 }
-    
+
 bool UIFlowLayoutComponent::IsUseRtl() const
 {
     return flags.test(FLAG_USE_RTL);
@@ -180,7 +178,7 @@ bool UIFlowLayoutComponent::IsSkipInvisibleControls() const
 {
     return flags.test(FLAG_SKIP_INVISIBLE_CONTROLS);
 }
-    
+
 void UIFlowLayoutComponent::SetSkipInvisibleControls(bool skip)
 {
     flags.set(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
@@ -204,5 +202,4 @@ void UIFlowLayoutComponent::SetLayoutDirty()
         GetControl()->SetLayoutDirty();
     }
 }
-
 }

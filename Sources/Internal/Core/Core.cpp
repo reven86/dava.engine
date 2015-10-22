@@ -604,12 +604,12 @@ bool Core::IsConsoleMode()
 	return isConsoleMode;
 }
 
-void *Core::GetNativeView() const
+void* Core::GetNativeView() const
 {
     return nativeView;
 }
 
-void Core::SetNativeView(void *newNativeView)
+void Core::SetNativeView(void* newNativeView)
 {
     nativeView = newNativeView;
 }

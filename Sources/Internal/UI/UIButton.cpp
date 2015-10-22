@@ -43,7 +43,7 @@ namespace DAVA
 static const UIControl::eControlState stateArray[] = {UIControl::STATE_NORMAL, UIControl::STATE_PRESSED_OUTSIDE, UIControl::STATE_PRESSED_INSIDE, UIControl::STATE_DISABLED, UIControl::STATE_SELECTED, UIControl::STATE_HOVER};
 static const String statePostfix[] = {"Normal", "PressedOutside", "PressedInside", "Disabled", "Selected", "Hover"};
 
-UIButton::UIButton(const Rect &rect)
+UIButton::UIButton(const Rect& rect)
     : UIControl(rect)
     , selectedBackground(NULL)
     , selectedTextBlock(NULL)

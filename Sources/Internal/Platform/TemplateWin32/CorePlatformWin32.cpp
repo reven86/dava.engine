@@ -160,13 +160,13 @@ namespace DAVA
 		}
 
 		// create window
-		HWND hWindow = CreateWindow( className, L"", style, windowLeft, windowTop, 
-			realWidth, realHeight,	NULL, NULL, hInstance, NULL);
+        HWND hWindow = CreateWindow(className, L"", style, windowLeft, windowTop,
+                                    realWidth, realHeight, NULL, NULL, hInstance, NULL);
 
         SetNativeView(hWindow);
 
-		ShowWindow(hWindow, SW_SHOW);
-		UpdateWindow(hWindow);
+        ShowWindow(hWindow, SW_SHOW);
+        UpdateWindow(hWindow);
 
 		// fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
@@ -327,8 +327,8 @@ namespace DAVA
         HWND hWindow = static_cast<HWND>(GetNativeView());
         AdjustWindowRect(&clientSize, GetWindowLong(hWindow, GWL_STYLE), FALSE);
 
-		return clientSize;
-	}
+        return clientSize;
+    }
 
 	void CoreWin32Platform::ToggleFullscreen()
 	{
@@ -337,8 +337,8 @@ namespace DAVA
 
         HWND hWindow = static_cast<HWND>(GetNativeView());
 
-		if ( isFullscreen )
-		{
+        if (isFullscreen)
+        {
 			currentMode = fullscreenMode;
 			GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
 
@@ -430,8 +430,8 @@ namespace DAVA
 	void CoreWin32Platform::SetIcon(int32 iconId)
 	{
         HWND hWindow = static_cast<HWND>(GetNativeView());
-		HINSTANCE hInst= GetModuleHandle(0);
-		HICON smallIcon = static_cast<HICON>(LoadImage(hInst,
+        HINSTANCE hInst = GetModuleHandle(0);
+        HICON smallIcon = static_cast<HICON>(LoadImage(hInst,
 			MAKEINTRESOURCE(iconId),
 			IMAGE_ICON,
 			0,

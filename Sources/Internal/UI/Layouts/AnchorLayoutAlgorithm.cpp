@@ -35,29 +35,26 @@
 
 namespace DAVA
 {
-    
-AnchorLayoutAlgorithm::AnchorLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_)
+AnchorLayoutAlgorithm::AnchorLayoutAlgorithm(Vector<ControlLayoutData>& layoutData_, bool isRtl_)
     : layoutData(layoutData_)
     , isRtl(isRtl_)
 {
-    
 }
 
 AnchorLayoutAlgorithm::~AnchorLayoutAlgorithm()
 {
-    
 }
 
-void AnchorLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls)
+void AnchorLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis, bool onlyForIgnoredControls)
 {
     Apply(data, axis, onlyForIgnoredControls, data.GetFirstChildIndex(), data.GetLastChildIndex());
 }
-    
-void AnchorLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls, int32 firstIndex, int32 lastIndex)
+
+void AnchorLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis, bool onlyForIgnoredControls, int32 firstIndex, int32 lastIndex)
 {
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
-        ControlLayoutData &childData = layoutData[i];
+        ControlLayoutData& childData = layoutData[i];
         if (!onlyForIgnoredControls || childData.HaveToSkipControl(false))
         {
             const UISizePolicyComponent* sizeHint = childData.GetControl()->GetComponent<UISizePolicyComponent>();
@@ -162,5 +159,4 @@ void AnchorLayoutAlgorithm::ApplyAnchor(ControlLayoutData& data, Vector2::eAxis 
         }
     }
 }
-
 }

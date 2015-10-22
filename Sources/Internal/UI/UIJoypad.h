@@ -35,7 +35,7 @@
 
 namespace DAVA
 {
-    /**
+/**
      \ingroup controlsystem
      \brief Joypad realisation for the touch screen supported platforms.
         Incomplete!!!.
@@ -47,22 +47,24 @@ class UIJoypad : public UIControl
     {
         TOUCH_INVALID_ID = -1
     };
+
 public:
-    UIJoypad(const Rect &rect = Rect());
+    UIJoypad(const Rect& rect = Rect());
+
 protected:
     virtual ~UIJoypad();
 public:
     UIJoypad* Clone() override;
-    void CopyDataFrom(DAVA::UIControl *srcControl) override;
+    void CopyDataFrom(DAVA::UIControl* srcControl) override;
 
-    void AddControl(UIControl *control) override;
-    void RemoveControl(UIControl *control) override;
+    void AddControl(UIControl* control) override;
+    void RemoveControl(UIControl* control) override;
 
-    void LoadFromYamlNode(const YamlNode *node, UIYamlLoader *loader) override;
-    YamlNode *SaveToYamlNode(UIYamlLoader *loader) override;
+    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
+    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
 
-    void Input(UIEvent *currentInput) override; // Can be overrided for control additioanl functionality implementation
-    void InputCancelled(UIEvent *currentInput) override; // Can be overrided for control additioanl functionality implementation
+    void Input(UIEvent* currentInput) override; // Can be overrided for control additioanl functionality implementation
+    void InputCancelled(UIEvent* currentInput) override; // Can be overrided for control additioanl functionality implementation
 
     const Vector2& GetDigitalPosition();
     const Vector2& GetAnalogPosition();
@@ -70,8 +72,8 @@ public:
     Sprite* GetStickSprite() const;
     int32 GetStickSpriteFrame() const;
 
-    void SetStickSprite(Sprite *stickSprite, int32 frame);
-    void SetStickSprite(const FilePath &stickSpriteName, int32 frame);
+    void SetStickSprite(Sprite* stickSprite, int32 frame);
+    void SetStickSprite(const FilePath& stickSpriteName, int32 frame);
     void SetStickSpriteFrame(int32 frame);
 
     float32 GetDeadAreaSize() const;
@@ -90,7 +92,7 @@ protected:
 
 private:
     int32 mainTouch;
-    float deadAreaSize;// dead area size in pixels (must be positive value)
+    float deadAreaSize; // dead area size in pixels (must be positive value)
     float32 digitalSense;
     bool needRecalcDigital;
     bool needRecalcAnalog;
@@ -98,13 +100,13 @@ private:
 
     Vector2 digitalVector;
     Vector2 analogVector;
+
 public:
     INTROSPECTION_EXTEND(UIJoypad, UIControl,
         PROPERTY("deadAreaSize", "Dead Area Size", GetDeadAreaSize, SetDeadAreaSize, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("digitalSense", "Digital Sense", GetDigitalSense, SetDigitalSense, I_SAVE | I_VIEW | I_EDIT)
         );
 };
-
 };
 
 #endif

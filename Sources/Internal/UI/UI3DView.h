@@ -44,40 +44,40 @@ class Scene;
 class UI3DView : public UIControl
 {
 public:
-    UI3DView(const Rect &rect = Rect());
+    UI3DView(const Rect& rect = Rect());
+
 protected:
     virtual ~UI3DView();
 public:
     void SetScene(Scene * scene);
     Scene * GetScene() const;
 
-    inline const Rect & GetLastViewportRect()
+    inline const Rect& GetLastViewportRect()
     {
         return viewportRc;
     }
 
-    void AddControl(UIControl *control) override;
+    void AddControl(UIControl* control) override;
     void Update(float32 timeElapsed) override;
-    void Draw(const UIGeometricData &geometricData) override;
+    void Draw(const UIGeometricData& geometricData) override;
 
     void WillBecomeVisible() override;
     void WillBecomeInvisible() override;
 
-    void SetSize(const Vector2 &newSize) override;
+    void SetSize(const Vector2& newSize) override;
     UI3DView* Clone() override;
 
-    void Input(UIEvent *currentInput) override;
+    void Input(UIEvent* currentInput) override;
 
 protected:
     Scene * scene;
     Rect viewportRc;
     bool registeredInUIControlSystem;
+
 public:
     INTROSPECTION_EXTEND(UI3DView, UIControl,
-        nullptr
-        );
+                         nullptr);
 };
-
 };
 
 #endif

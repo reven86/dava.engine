@@ -153,7 +153,7 @@ public:
         RETURN_KEY_EMERGENCY_CALL
     };
 
-    UITextField(const Rect &rect = Rect());
+    UITextField(const Rect& rect = Rect());
 
     void WillAppear() override;
     void DidAppear() override;

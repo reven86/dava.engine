@@ -34,8 +34,8 @@
 
 namespace DAVA
 {
-
-ControlLayoutData::ControlLayoutData(UIControl *control_) : control(control_)
+ControlLayoutData::ControlLayoutData(UIControl* control_)
+    : control(control_)
 {
     position = control->GetPosition() - control->GetPivotPoint();
     size = control->GetSize();
@@ -47,17 +47,17 @@ void ControlLayoutData::ApplyLayoutToControl()
     {
         control->SetPosition(position + control->GetPivotPoint());
     }
-    
+
     if (HasFlag(FLAG_SIZE_CHANGED))
     {
         control->SetSize(size);
         control->OnSizeChanged();
     }
-    
+
     control->ResetLayoutDirty();
 }
 
-UIControl *ControlLayoutData::GetControl() const
+UIControl* ControlLayoutData::GetControl() const
 {
     return control;
 }

@@ -37,7 +37,7 @@ namespace DAVA
 {
 static const String UIJOYPAD_STICK_NAME = "stick";
 
-UIJoypad::UIJoypad(const Rect &rect)
+UIJoypad::UIJoypad(const Rect& rect)
     : UIControl(rect)
     , stick(nullptr)
     , mainTouch(TOUCH_INVALID_ID)
@@ -62,14 +62,14 @@ UIJoypad::~UIJoypad()
 {
 }
 
-UIJoypad *UIJoypad::Clone()
+UIJoypad* UIJoypad::Clone()
 {
-    UIJoypad *control = new UIJoypad();
+    UIJoypad* control = new UIJoypad();
     control->CopyDataFrom(this);
     return control;
 }
 
-void UIJoypad::CopyDataFrom(UIControl *srcControl)
+void UIJoypad::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
     UIJoypad* src = DynamicTypeCheck<UIJoypad*>(srcControl);
@@ -82,7 +82,7 @@ void UIJoypad::CopyDataFrom(UIControl *srcControl)
     currentPos = Vector2();
 }
 
-void UIJoypad::AddControl(UIControl *control)
+void UIJoypad::AddControl(UIControl* control)
 {
     UIControl::AddControl(control);
     if (control->GetName() == UIJOYPAD_STICK_NAME && stick.Get() != control)
@@ -91,7 +91,7 @@ void UIJoypad::AddControl(UIControl *control)
     }
 }
 
-void UIJoypad::RemoveControl(UIControl *control)
+void UIJoypad::RemoveControl(UIControl* control)
 {
     if (control == stick.Get())
     {
@@ -287,10 +287,10 @@ void UIJoypad::Input(UIEvent *currentInput)
 	{
         Rect r = GetGeometricData().GetUnrotatedRect();
         currentPos = currentInput->point - r.GetPosition();
-		
-		currentPos -= Vector2(r.dx * 0.5f, r.dy * 0.5f);
 
-		if(currentPos.x < deadAreaSize &&  currentPos.x > -deadAreaSize && currentPos.y < deadAreaSize &&  currentPos.y > -deadAreaSize)
+        currentPos -= Vector2(r.dx * 0.5f, r.dy * 0.5f);
+
+        if(currentPos.x < deadAreaSize &&  currentPos.x > -deadAreaSize && currentPos.y < deadAreaSize &&  currentPos.y > -deadAreaSize)
 		{
 			currentPos.x = 0;
 			currentPos.y = 0;
@@ -306,8 +306,8 @@ void UIJoypad::Input(UIEvent *currentInput)
         stick->SetPosition(GetSize() / 2.0f + currentPos);
     }
 
-	needRecalcAnalog = true;
-	needRecalcDigital = true;
+    needRecalcAnalog = true;
+    needRecalcDigital = true;
 	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
@@ -325,8 +325,8 @@ void UIJoypad::InputCancelled(UIEvent *currentInput)
             stick->SetPosition(GetSize() / 2.0f + currentPos);
         }
 
-		needRecalcAnalog = true;
-		needRecalcDigital = true;
+        needRecalcAnalog = true;
+        needRecalcDigital = true;
 	}
 }
 

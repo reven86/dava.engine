@@ -700,7 +700,7 @@ void UIList::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     InitAfterYaml();
 }
 
-UIList *UIList::Clone()
+UIList* UIList::Clone()
 {
     UIList *c = new UIList(GetRect(), this->orientation);
     c->CopyDataFrom(this);

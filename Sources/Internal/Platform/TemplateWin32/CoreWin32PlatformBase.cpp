@@ -38,7 +38,6 @@
 
 namespace DAVA
 {
-
 CoreWin32PlatformBase::CoreWin32PlatformBase()
 {
 }

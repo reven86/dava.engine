@@ -58,7 +58,7 @@ uint32 ValueProperty::GetCount() const
     return static_cast<int32>(children.size());
 }
 
-AbstractProperty *ValueProperty::GetProperty(int32 index) const
+AbstractProperty* ValueProperty::GetProperty(int32 index) const
 {
     if (0 <= index && index < static_cast<int32>(children.size()))
     {

@@ -42,11 +42,10 @@
 
 namespace DAVA 
 {
-
-UI3DView::UI3DView(const Rect &rect)
+UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
     , scene(nullptr)
-    ,   registeredInUIControlSystem(false)
+    , registeredInUIControlSystem(false)
 {
 
 }
@@ -133,7 +132,7 @@ void UI3DView::SetSize(const DAVA::Vector2 &newSize)
     }
 }
 
-UI3DView *UI3DView::Clone()
+UI3DView* UI3DView::Clone()
 {
     UI3DView* ui3DView = new UI3DView(GetRect());
     ui3DView->CopyDataFrom(this);
