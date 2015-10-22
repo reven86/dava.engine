@@ -42,11 +42,10 @@ public:
 	NPAPICoreMacOSPlatform();
 	virtual ~NPAPICoreMacOSPlatform();
 
-	virtual eScreenMode GetScreenMode();
-	virtual void SwitchScreenToMode(eScreenMode screenMode);
-	virtual void ToggleFullscreen();
+    eScreenMode GetScreenMode() override;
+    bool SwitchScreenToMode(eScreenMode screenMode) override;
 
-	virtual DisplayMode GetCurrentDisplayMode();
+    virtual DisplayMode GetCurrentDisplayMode();
 
 	virtual void* GetOpenGLView();
 };
