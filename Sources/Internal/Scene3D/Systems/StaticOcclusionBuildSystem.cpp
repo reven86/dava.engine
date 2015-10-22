@@ -143,10 +143,11 @@ void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<E
 {
     if (GetAnimationComponent(entity)) //skip animated hierarchies
         return;
+
     if (GetRenderComponent(entity))
         dest.push_back(entity);
 
-    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+    for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
         CollectEntitiesForOcclusionRecursively(dest, entity->GetChild(i));
 }
     
@@ -157,10 +158,11 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
 
     //global preparations
     SetCamera(GetScene()->GetCurrentCamera());
+
     // Prepare render objects
     Vector<Entity*> sceneEntities;
     Vector<RenderObject*> renderObjectsArray;
-    Landscape * landscape = 0;
+    Landscape* landscape = nullptr;
     CollectEntitiesForOcclusionRecursively(sceneEntities, GetScene());
 
     uint32 size = (uint32)sceneEntities.size();

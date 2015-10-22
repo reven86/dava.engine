@@ -45,7 +45,6 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     uint32 sortingFlags = RenderBatchArray::SORT_THIS_FRAME | RenderBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK;
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, sortingFlags));
 
     rhi::Texture::Descriptor descriptor;
@@ -219,26 +218,24 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     }
 
 #if (SAVE_OCCLUSION_IMAGES)
-    sharedColorBuffer = colorBuffer;
     auto syncObj = rhi::CreateSyncObject();
-    rhi::EndPacketList(packetList, syncObj);
 
     auto pos = occlusionCamera->GetPosition();
     auto dir = occlusionCamera->GetDirection();
     auto folder = DAVA::Format("~doc:/occlusion/block-%03d", blockIndex);
     FileSystem::Instance()->CreateDirectoryW(FilePath(folder), true);
-    auto fileName = DAVA::Format("/[%d,%d,%d] from (%d,%d,%d).png",
-                                 int(dir.x), int(dir.y), int(dir.z), int(pos.x), int(pos.y), int(pos.z));
+    auto fileName = DAVA::Format("/[%d,%d,%d] from (%d,%d,%d).png", int(dir.x), int(dir.y), int(dir.z), int(pos.x), int(pos.y), int(pos.z));
     renderPassFileNames.insert({ syncObj, folder + fileName });
+    sharedColorBuffer = colorBuffer;
 
     RenderCallbacks::RegisterSyncCallback(syncObj, &OnOcclusionRenderPassCompleted);
+    rhi::EndPacketList(packetList, syncObj);
+    rhi::EndRenderPass(renderPass);
 #else
 
     rhi::EndPacketList(packetList);
+    rhi::EndRenderPass(renderPass);
 
 #endif
-
-    rhi::EndRenderPass(renderPass);
 }
-
 };

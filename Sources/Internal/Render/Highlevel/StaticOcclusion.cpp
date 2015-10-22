@@ -204,7 +204,7 @@ uint32 StaticOcclusion::GetTotalStepsCount()
 
 void StaticOcclusion::BuildRenderPassConfigsForCurrentBlock()
 {
-    const uint32 stepCount = 3;
+    const uint32 stepCount = 10;
 
     uint32 blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
     AABBox3 cellBox = GetCellBox(currentFrameX, currentFrameY, currentFrameZ);
@@ -321,7 +321,7 @@ bool StaticOcclusion::RenderCurrentBlock()
 #if (SAVE_OCCLUSION_IMAGES)
     uint64 maxRenders = 1;
 #else
-    uint64 maxRenders = 16 + rand() % 16;
+    uint64 maxRenders = 8;
 #endif
 
     while ((renders < maxRenders) && !renderPassConfigs.empty())
