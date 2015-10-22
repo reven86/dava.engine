@@ -175,8 +175,10 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     {
         if (currentInput->point != prevPos)
         {
-            ProcessDrag(currentInput->point);
-            prevPos = currentInput->point;
+            if (ProcessDrag(currentInput->point))
+            {
+                prevPos = currentInput->point;
+            }
         }
         return false;
     }
@@ -269,8 +271,7 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     }
     case HUDAreaInfo::ROTATE_AREA:
     {
-        Rotate(pos);
-        return true;
+        return Rotate(pos);
     }
     default:
         return false;
@@ -779,14 +780,19 @@ DAVA::Vector2 TransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     return finalPivot;
 }
 
-void TransformSystem::Rotate(Vector2 pos)
+bool TransformSystem::Rotate(Vector2 pos)
 {
     Vector2 rotatePoint(controlGeometricData.GetUnrotatedRect().GetPosition());
     rotatePoint += controlGeometricData.pivotPoint * controlGeometricData.scale;
     Vector2 l1(prevPos - rotatePoint);
     Vector2 l2(pos - rotatePoint);
 
-    float32 angleRad = atan2(l1.x * l2.y - l2.x * l1.y, l1.x * l1.x + l1.y * l2.y);
+    if (l2.Length() < 15)
+    {
+        return false;
+    }
+
+    float32 angleRad = atan2(l1.x * l2.y - l2.x * l1.y, l1.x * l2.x + l1.y * l2.y);
     float32 deltaAngle = RadToDeg(angleRad);
     //after modification deltaAngle is less than mouse delta positions
 
@@ -798,6 +804,7 @@ void TransformSystem::Rotate(Vector2 pos)
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    return true;
 }
 
 float32 TransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
