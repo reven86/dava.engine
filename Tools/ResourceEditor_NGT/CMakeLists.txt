@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
-project( RE_NGT )
+project( ResourceEditor_NGT )
 
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
@@ -65,8 +65,6 @@ setup_main_executable()
 
 BW_GET_EXECUTABLE_DST_DIR(EXE_DIR)
 BW_SET_BINARY_DIR(${PROJECT_NAME} ${EXE_DIR})
-
-message("Byn dir  :" ${CMAKE_CURRENT_BINARY_DIR})
 
 if (WIN32)
   set(PLUGINS_FOLDER "${TOOL_OUTPUT_DIR}/plugins")
