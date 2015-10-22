@@ -198,7 +198,7 @@ void PreviewWidget::OnDocumentActivated(Document* document)
         document->SetContext(this, context);
         QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
         scrollAreaController->SetPosition(position);
-        //!!!!document->GetSystemManager()->GetControlByMenu = std::bind(this, &PreviewWidget::OnSelectControlByMenu);
+        document->GetSystemManager()->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
     }
     else
     {
@@ -286,7 +286,7 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
 {
-    //TODO: implement this method
+    ////TODO: implement this method
 }
 
 void PreviewWidget::SetDPR(qreal arg)

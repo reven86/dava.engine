@@ -33,6 +33,7 @@
 #include "EditorSystems/BaseEditorSystem.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Math/Rect.h"
+#include "UI/UIEvent.h"
 #include <Functional/SignalBase.h>
 
 class EditorSystemsManager;
@@ -57,7 +58,7 @@ private:
     void OnSelectByRect(const DAVA::Rect& rect);
     void SelectAllControls();
     void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);
-    bool ProcessMousePress(const DAVA::Vector2& point);
+    bool ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::eButtonID buttonID);
 
     bool mousePressed = false;
     SelectionContainer selectionContainer;

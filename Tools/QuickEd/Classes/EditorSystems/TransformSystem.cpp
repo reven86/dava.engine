@@ -167,8 +167,6 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     {
         extraDelta.SetZero();
         prevPos = currentInput->point;
-        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-        currentHash = static_cast<size_t>(us.count());
         return activeArea != HUDAreaInfo::NO_AREA;
     }
     case UIEvent::PHASE_DRAG:
@@ -183,6 +181,10 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         return false;
     }
     case UIEvent::PHASE_ENDED:
+        if (activeArea == HUDAreaInfo::ROTATE_AREA)
+        {
+            ClampAngle();
+        }
         systemManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
         return false;
     default:
@@ -206,10 +208,10 @@ bool TransformSystem::ProcessKey(const int32 key)
 {
     if (!selectedControlNodes.empty())
     {
-        float step = moveStepByKeyboard;
+        float step = expandedMoveStepByKeyboard;
         if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
         {
-            step = expandedMoveStepByKeyboard;
+            step = moveStepByKeyboard;
         }
         Vector2 deltaPos;
         switch (key)
@@ -260,7 +262,7 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
     {
         bool withPivot = IsKeyPressed(KeyboardProxy::KEY_ALT);
-        bool rateably = IsKeyPressed(KeyboardProxy::KEY_SHIFT);
+        bool rateably = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         ResizeControl(delta, withPivot, rateably);
         return true;
     }
@@ -315,7 +317,7 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
     }
     if (!propertiesToChange.empty())
     {
-        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
     }
     systemManager->MagnetLinesChanged.Emit(magnets);
 }
@@ -544,7 +546,7 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     Vector2 finalSize(originalSize + adjustedSize);
     propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
 
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
 }
 
 Vector2 TransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
@@ -585,7 +587,7 @@ Vector2 TransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSize, Vec
 {
     Vector<MagnetLineInfo> magnets;
 
-    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
+    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_SHIFT) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
     Vector2 adjustedDeltaToBorder(deltaSize);
     if (canAdjustResize)
     {
@@ -687,7 +689,7 @@ void TransformSystem::MovePivot(Vector2 delta)
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
 }
 
 namespace
@@ -802,14 +804,14 @@ bool TransformSystem::Rotate(Vector2 pos)
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
     return true;
 }
 
 float32 TransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
 {
     float32 finalAngle = originalAngle + deltaAngle;
-    if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         static const int step = angleSegment; //fixed angle step
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
@@ -905,4 +907,23 @@ void TransformSystem::UpdateNeighboursToMove()
             CollectNeighbours(neighbours, selectedControlNodes, parent);
         }
     }
+}
+
+void TransformSystem::ClampAngle()
+{
+    float32 angle = angleProperty->GetValue().AsFloat();
+    if (fabs(angle) > 360)
+    {
+        angle += angle > 0.0f ? TRANSFORM_EPSILON : -TRANSFORM_EPSILON;
+        angle = static_cast<int32>(angle) % 360;
+    }
+    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(angle));
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
+}
+
+size_t TransformSystem::CalculateHash() const
+{
+    microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+    return static_cast<size_t>(us.count());
 }
