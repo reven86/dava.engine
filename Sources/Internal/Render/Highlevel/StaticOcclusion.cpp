@@ -173,8 +173,13 @@ bool StaticOcclusion::ProccessBlock()
             {
                 auto dt = static_cast<double>(currentTime - stats::blockProcessingTime) / 1e+9;
                 stats::buildDuration += dt;
-                Logger::Info("Block %u/%u, dt: %.4llfs, duration: %.4llf, renders: %llu/%llu, visible objects: %llu",
-                             blockIndex, totalBlocks, static_cast<double>(dt), stats::buildDuration,
+
+                auto averageTime = stats::buildDuration / static_cast<double>(blockIndex);
+                auto remainingBlocks = totalBlocks - blockIndex;
+                auto remainingTime = static_cast<double>(remainingBlocks) * averageTime;
+
+                Logger::Info("Block %u/%u, dt: %.4llfs, tot.: %.4llf, rem.:%.4llf renders: %llu/%llu, objects: %llu",
+                             blockIndex, totalBlocks, static_cast<double>(dt), stats::buildDuration, remainingTime,
                              stats::actualRenderPasses, stats::totalRenderPasses, stats::visibleObjects);
             }
             stats::blockProcessingTime = currentTime;
@@ -275,7 +280,10 @@ void StaticOcclusion::BuildRenderPassConfigsForCurrentBlock()
                         if (landscape->PlacePoint(renderPosition, pointOnLandscape))
                         {
                             if (renderPosition.z < pointOnLandscape.z)
+                            {
+                                printf(".");
                                 continue;
+                            }
                         }
                     }
 
@@ -329,7 +337,7 @@ bool StaticOcclusion::RenderCurrentBlock()
 #if (SAVE_OCCLUSION_IMAGES)
     uint64 maxRenders = 1;
 #else
-    uint64 maxRenders = Core::Instance()->IsConsoleMode() ? 1024 : 64;
+    uint64 maxRenders = 32;
 #endif
 
     while ((renders < maxRenders) && !renderPassConfigs.empty())
