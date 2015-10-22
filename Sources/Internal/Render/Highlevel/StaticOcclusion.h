@@ -105,8 +105,9 @@ public:
     uint32 GetTotalStepsCount();
 
 private:    
-    AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);            
-    
+    AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
+
+    void MarkQueriesAsCompletedForObjectInBlock(uint16 objectIndex, uint32 blockIndex);
     bool ProcessRecorderQueries();
 
     struct RenderPassCameraConfig

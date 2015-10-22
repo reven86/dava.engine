@@ -84,20 +84,24 @@ void StaticOcclusionTool::Process()
 {
     if (commandAction == ACTION_BUILD)
     {
-        SceneEditor2 *scene = new SceneEditor2();
-        if(scene->Load(scenePathname))
+        SceneEditor2* scene = new SceneEditor2();
+        if (scene->Load(scenePathname))
         {
+            scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
             scene->staticOcclusionBuildSystem->Build();
-            while(scene->staticOcclusionBuildSystem->IsInBuild())
+            RenderObjectsFlusher::Flush();
+
+            while (scene->staticOcclusionBuildSystem->IsInBuild())
             {
                 scene->Update(0.1f);
+                RenderObjectsFlusher::Flush();
             }
 
             scene->Save();
         }
         SafeRelease(scene);
-    	RenderObjectsFlusher::Flush();
-	}
+        RenderObjectsFlusher::Flush();
+    }
 }
 
 DAVA::FilePath StaticOcclusionTool::GetQualityConfigPath() const

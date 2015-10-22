@@ -38,7 +38,8 @@
 
 namespace DAVA
 {
-static const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;
+static const uint32 OCCLUSION_RENDER_TARGET_SIZE_X = 1024;
+static const uint32 OCCLUSION_RENDER_TARGET_SIZE_Y = 1024;
 
 StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
 {
@@ -50,8 +51,8 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     rhi::Texture::Descriptor descriptor;
 
     descriptor.isRenderTarget = 1;
-    descriptor.width = OCCLUSION_RENDER_TARGET_SIZE;
-    descriptor.height = OCCLUSION_RENDER_TARGET_SIZE;
+    descriptor.width = OCCLUSION_RENDER_TARGET_SIZE_X;
+    descriptor.height = OCCLUSION_RENDER_TARGET_SIZE_Y;
     descriptor.autoGenMipmaps = false;
     descriptor.type = rhi::TEXTURE_TYPE_2D;
     descriptor.format = rhi::TEXTURE_FORMAT_R8G8B8A8;
@@ -69,8 +70,8 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 
-    passConfig.viewport.width = OCCLUSION_RENDER_TARGET_SIZE;
-    passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE;
+    passConfig.viewport.width = OCCLUSION_RENDER_TARGET_SIZE_X;
+    passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE_Y;
     passConfig.priority = PRIORITY_SERVICE_3D;
 }
 
@@ -97,7 +98,7 @@ void OnOcclusionRenderPassCompleted(rhi::HSyncObject syncObj)
 
     void* data = rhi::MapTexture(sharedColorBuffer, 0);
 
-    Image* img = Image::CreateFromData(OCCLUSION_RENDER_TARGET_SIZE, OCCLUSION_RENDER_TARGET_SIZE,
+    Image* img = Image::CreateFromData(OCCLUSION_RENDER_TARGET_SIZE_X, OCCLUSION_RENDER_TARGET_SIZE_Y,
                                        PixelFormat::FORMAT_RGBA8888, reinterpret_cast<uint8*>(data));
     img->Save(renderPassFileNames.at(syncObj));
     SafeRelease(img);

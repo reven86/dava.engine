@@ -168,11 +168,14 @@ bool StaticOcclusion::ProccessBlock()
             if (stats::blockProcessingTime == 0)
                 stats::blockProcessingTime = currentTime;
 
-            auto dt = static_cast<double>(currentTime - stats::blockProcessingTime) / 1e+9;
-            stats::buildDuration += dt;
-            Logger::Info("Block %u/%u, dt: %.4llfs, duration: %.4llf, renders: %llu/%llu",
-                         blockIndex, totalBlocks, static_cast<double>(dt), stats::buildDuration,
-                         stats::actualRenderPasses, stats::totalRenderPasses);
+            if (blockIndex > 0)
+            {
+                auto dt = static_cast<double>(currentTime - stats::blockProcessingTime) / 1e+9;
+                stats::buildDuration += dt;
+                Logger::Info("Block %u/%u, dt: %.4llfs, duration: %.4llf, renders: %llu/%llu",
+                             blockIndex, totalBlocks, static_cast<double>(dt), stats::buildDuration,
+                             stats::actualRenderPasses, stats::totalRenderPasses);
+            }
             stats::blockProcessingTime = currentTime;
 
             BuildRenderPassConfigsForCurrentBlock();
@@ -321,7 +324,7 @@ bool StaticOcclusion::RenderCurrentBlock()
 #if (SAVE_OCCLUSION_IMAGES)
     uint64 maxRenders = 1;
 #else
-    uint64 maxRenders = 8;
+    uint64 maxRenders = Core::Instance()->IsConsoleMode() ? 32 : 8;
 #endif
 
     while ((renders < maxRenders) && !renderPassConfigs.empty())
@@ -340,6 +343,21 @@ bool StaticOcclusion::RenderCurrentBlock()
     stats::actualRenderPasses += actualRenders;
 
     return renderPassConfigs.empty();
+}
+
+void StaticOcclusion::MarkQueriesAsCompletedForObjectInBlock(uint16 objectIndex, uint32 blockIndex)
+{
+    for (auto& ofr : occlusionFrameResults)
+    {
+        if (ofr.blockIndex == blockIndex)
+        {
+            for (auto& req : ofr.frameRequests)
+            {
+                if ((req != nullptr) && (req->GetStaticOcclusionIndex() == objectIndex))
+                    req = nullptr;
+            }
+        }
+    }
 }
 
 bool StaticOcclusion::ProcessRecorderQueries()
@@ -365,13 +383,11 @@ bool StaticOcclusion::ProcessRecorderQueries()
             {
                 if (rhi::QueryValue(fr->queryBuffer, index))
                 {
-                    /*
-                    if (!currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex()))
-                    {
-                        Logger::Info("Object: %u is visible from block %u", uint32(req->GetStaticOcclusionIndex()), fr->blockIndex);
-                    }
-					*/
+                    bool alreadyVisible = currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex());
+                    DVASSERT(!alreadyVisible);
+                    // Logger::Info("Object: %u is visible from block %u", uint32(req->GetStaticOcclusionIndex()), fr->blockIndex);
                     currentData->EnableVisibilityForObject(fr->blockIndex, req->GetStaticOcclusionIndex());
+                    MarkQueriesAsCompletedForObjectInBlock(req->GetStaticOcclusionIndex(), fr->blockIndex);
                 }
                 ++processedRequests;
                 req = nullptr;
