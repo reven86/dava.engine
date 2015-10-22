@@ -42,7 +42,7 @@ class UISlider : public UIControl
 protected:
 	virtual ~UISlider();
 public:
-	UISlider(const Rect & rect = Rect());
+    UISlider(const Rect& rect = Rect());
 
     virtual void SetSize(const DAVA::Vector2 &newSize);
 
@@ -75,10 +75,8 @@ public:
 
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 
-	virtual List<UIControl*> GetSubcontrols();
-
-	virtual UIControl *Clone();
-	virtual void CopyDataFrom(UIControl *srcControl);
+    UISlider* Clone() override;
+    virtual void CopyDataFrom(UIControl *srcControl);
 
     // Synchronize thumb size/position according to the thumb sprite.
     void SyncThumbWithSprite();

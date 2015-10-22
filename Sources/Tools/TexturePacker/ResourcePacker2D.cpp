@@ -181,7 +181,7 @@ bool ResourcePacker2D::ReadMD5FromFile(const FilePath& md5file, MD5::MD5Digest& 
     ScopedPtr<File> file(File::Create(md5file, File::OPEN | File::READ));
     if (file)
     {
-        auto bytesRead = file->Read(digest.digest.data(), digest.digest.size());
+        auto bytesRead = file->Read(digest.digest.data(), static_cast<uint32>(digest.digest.size()));
         DVASSERT(bytesRead == MD5::MD5Digest::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
         return true;
     }
@@ -196,7 +196,7 @@ bool ResourcePacker2D::WriteMD5ToFile(const FilePath& md5file, const MD5::MD5Dig
     ScopedPtr<File> file(File::Create(md5file, File::CREATE | File::WRITE));
     DVASSERT(file && "Can't create md5 file");
 
-    auto bytesWritten = file->Write(digest.digest.data(), digest.digest.size());
+    auto bytesWritten = file->Write(digest.digest.data(), static_cast<uint32>(digest.digest.size()));
     DVASSERT(bytesWritten == MD5::MD5Digest::DIGEST_SIZE && "16 bytes should be always written for md5 file");
 
     return true;

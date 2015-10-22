@@ -87,6 +87,7 @@ namespace DAVA
 static ApplicationCore * core = nullptr;
 
 Core::Core()
+    : nativeView(nullptr)
 {
     globalFrameIndex = 1;
     isActive = false;
@@ -602,7 +603,17 @@ bool Core::IsConsoleMode()
 {
 	return isConsoleMode;
 }
-	
+
+void* Core::GetNativeView() const
+{
+    return nativeView;
+}
+
+void Core::SetNativeView(void* newNativeView)
+{
+    nativeView = newNativeView;
+}
+
 void Core::EnableConsoleMode()
 {
 	isConsoleMode = true;
