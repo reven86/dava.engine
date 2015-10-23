@@ -33,9 +33,9 @@ using namespace DAVA;
 
 namespace
 {
-const Vector2 PIVOT_CONTROL_SIZE(20.0f, 20.0f);
-const Vector2 FRAME_RECT_SIZE(15.0f, 15.0f);
-const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
+const Vector2 PIVOT_CONTROL_SIZE(15.0f, 15.0f);
+const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
+const Vector2 ROTATE_CONTROL_SIZE(15.0f, 15);
 }
 
 void FixPositionForScroll(UIControl* controlInHud)
@@ -180,6 +180,7 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     SetName("Frame Rect Control");
     background->SetSprite("~res:/Gfx/HUDControls/Rect", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void FrameRectControl::InitFromGD(const UIGeometricData& geometricData)
@@ -227,7 +228,8 @@ PivotPointControl::PivotPointControl()
 {
     SetName("pivot point control");
     background->SetSprite("~res:/Gfx/HUDControls/Pivot", 0);
-    background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
@@ -247,8 +249,9 @@ RotateControl::RotateControl()
     : ControlContainer(HUDAreaInfo::ROTATE_AREA)
 {
     SetName("rotate control");
-    background->SetSprite("~res:/Gfx/HUDControls/Rotate", 2);
-    background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    background->SetSprite("~res:/Gfx/HUDControls/Rotate", 0);
+    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void RotateControl::InitFromGD(const UIGeometricData& geometricData)
@@ -281,7 +284,6 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
         Rect borderRect = CreateFrameBorderRect(i, rect);
         (*chilrenIt)->SetRect(borderRect);
     }
-    FixPositionForScroll(this);
     UIControl::Draw(geometricData);
 }
 

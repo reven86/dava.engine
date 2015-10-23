@@ -183,13 +183,19 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
+    eSearchOrder searchOrder = IsKeyPressed(KeyboardProxy::KEY_ALT) ? SEARCH_BACKWARD : SEARCH_FORWARD;
     switch (currentInput->phase)
     {
     case UIEvent::PHASE_MOVE:
-        ProcessCursor(currentInput->point);
+        ProcessCursor(currentInput->point, searchOrder);
         return false;
     case UIEvent::PHASE_BEGAN:
     {
+        ProcessCursor(currentInput->point, searchOrder);
+        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA)
+        {
+            return true;
+        }
         //check that we can draw rect
         Vector<ControlNode*> nodes;
         Vector<ControlNode*> nodesUnderPoint;
@@ -223,11 +229,12 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
                 size.y *= -1.0f;
             }
             selectionRectControl->SetRect(Rect(point, size));
+            FixPositionForScroll(selectionRectControl.Get());
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
     case UIEvent::PHASE_ENDED:
-        ProcessCursor(currentInput->point);
+        ProcessCursor(currentInput->point, searchOrder);
         selectionRectControl->SetSize(Vector2());
         bool retVal = dragRequested;
         SetCanDrawRect(false);

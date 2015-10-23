@@ -88,8 +88,7 @@ private:
 
     void ClampAngle();
 
-    size_t CalculateHash() const;
-
+    size_t currentHash = 0;
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 prevPos;

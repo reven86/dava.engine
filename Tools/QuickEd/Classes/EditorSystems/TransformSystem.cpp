@@ -165,9 +165,11 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::PHASE_BEGAN:
     {
+        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+        currentHash = static_cast<size_t>(us.count());
         extraDelta.SetZero();
         prevPos = currentInput->point;
-        return activeArea != HUDAreaInfo::NO_AREA;
+        return false;
     }
     case UIEvent::PHASE_DRAG:
     {
@@ -317,7 +319,7 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
     }
     if (!propertiesToChange.empty())
     {
-        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
+        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
     }
     systemManager->MagnetLinesChanged.Emit(magnets);
 }
@@ -546,7 +548,7 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     Vector2 finalSize(originalSize + adjustedSize);
     propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
 
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
 }
 
 Vector2 TransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
@@ -689,7 +691,7 @@ void TransformSystem::MovePivot(Vector2 delta)
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
 }
 
 namespace
@@ -804,7 +806,7 @@ bool TransformSystem::Rotate(Vector2 pos)
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
     return true;
 }
 
@@ -919,11 +921,5 @@ void TransformSystem::ClampAngle()
     }
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(angle));
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), CalculateHash());
-}
-
-size_t TransformSystem::CalculateHash() const
-{
-    microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-    return static_cast<size_t>(us.count());
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
 }
