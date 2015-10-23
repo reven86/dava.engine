@@ -144,7 +144,6 @@ void StaticOcclusionDataComponent::Deserialize(KeyedArchive *archive, Serializat
 
         auto numElements = data.blockCount * data.objectCount / 32;
         auto dataSize = sizeof(uint32) * numElements;
-        auto ptr = new uint32[numElements];
         DVASSERT(dataSize == archive->GetByteArraySize("sodc.data"));
         data.SetData(reinterpret_cast<const uint32*>(archive->GetByteArray("sodc.data")), dataSize);
 

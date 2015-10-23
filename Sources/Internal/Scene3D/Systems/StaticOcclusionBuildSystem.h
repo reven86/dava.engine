@@ -64,6 +64,7 @@ public:
 
     bool IsInBuild() const;
     uint32 GetBuildStatus() const;
+    const String& GetBuildStatusInfo() const;
 
 private:            
     void StartBuildOcclusion();    

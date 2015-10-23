@@ -2578,6 +2578,7 @@ void QtMainWindow::OnBuildStaticOcclusion()
         else
         {
             waitOcclusionDlg->SetValue(scene->staticOcclusionBuildSystem->GetBuildStatus());
+            waitOcclusionDlg->SetMessage(QString::fromStdString(scene->staticOcclusionBuildSystem->GetBuildStatusInfo()));
         }
     }
     

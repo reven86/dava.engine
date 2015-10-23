@@ -66,10 +66,7 @@ public:
     StaticOcclusionData & operator= (const StaticOcclusionData & other);
 
     void SetData(const uint32* _data, uint32 dataSize);
-    const uint32* GetData() const
-    {
-        return dataHolder.data();
-    }
+    const uint32* GetData() const;
 
 public:
     AABBox3 bbox;
@@ -104,6 +101,8 @@ public:
     uint32 GetCurrentStepsCount();
     uint32 GetTotalStepsCount();
 
+    const String& GetInfoMessage() const;
+
 private:    
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
 
@@ -120,6 +119,15 @@ private:
         uint32 blockIndex = 0;
     };
 
+    struct Statistics
+    {
+        uint64 blockProcessingTime = 0;
+        double buildDuration = 0.0;
+        uint64 buildStartTime = 0;
+        uint64 totalRenderPasses = 0;
+    } stats;
+
+    void UpdateInfoString();
     void BuildRenderPassConfigsForCurrentBlock();
     bool RenderCurrentBlock(); // returns true, if all passes for block completed
     bool PerformRender(const RenderPassCameraConfig&);
@@ -133,6 +141,7 @@ private:
     float32* cellHeightOffset = nullptr;
     Vector<StaticOcclusionFrameResult> occlusionFrameResults;
     Vector<RenderPassCameraConfig> renderPassConfigs;
+    String lastInfoMessage;
     AABBox3 occlusionAreaRect;
     uint32 xBlockCount = 0;
     uint32 yBlockCount = 0;

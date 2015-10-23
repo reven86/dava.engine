@@ -81,11 +81,6 @@ StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
     rhi::DeleteTexture(depthBuffer);
 }
 
-bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const RenderBatch *  b)
-{
-    return a->layerSortingKey < b->layerSortingKey;
-}
-
 #if (SAVE_OCCLUSION_IMAGES)
 
 rhi::HTexture sharedColorBuffer = rhi::HTexture(rhi::InvalidHandle);
@@ -137,37 +132,25 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
             {
                 meshBatches.push_back(batch);
             }
-            else if (objectType == RenderObject::TYPE_PARTICLE_EMTITTER)
-            {
-                Logger::Info("Emitter skipped");
-            }
         }
     }
         
     // Sort
+    std::unordered_set<uint32> invisibleObjects;
     Vector3 cameraPosition = occlusionCamera->GetPosition();
 
     for (auto batch : meshBatches)
     {
         RenderObject * renderObject = batch->GetRenderObject();
         Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
-        float realDistance = (position - cameraPosition).Length();
+        float32 realDistance = (position - cameraPosition).Length();
         uint32 distance = ((uint32)(realDistance * 100.0f));
         uint32 distanceBits = distance;
-        
         batch->layerSortingKey = distanceBits;
-    }
-    std::sort(meshBatches.begin(), meshBatches.end(), CompareFunction);
 
-    std::set<uint32> invisibleObjects;
-
-    for (auto batch : meshBatches)
-    {
         auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
-
-        bool isAlreadyVisible = (occlusionId == INVALID_STATIC_OCCLUSION_INDEX) ||
-        data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
-
+        bool occlusionIndexIsInvalid = occlusionId == INVALID_STATIC_OCCLUSION_INDEX;
+        bool isAlreadyVisible = occlusionIndexIsInvalid || data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
         if (!isAlreadyVisible)
         {
             invisibleObjects.insert(occlusionId);
@@ -176,6 +159,10 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
 
     if (invisibleObjects.empty())
         return;
+
+    std::sort(meshBatches.begin(), meshBatches.end(), [](const RenderBatch* a, const RenderBatch* b) {
+        return a->layerSortingKey < b->layerSortingKey;
+    });
 
     target.blockIndex = blockIndex;
     target.queryBuffer = rhi::CreateQueryBuffer(meshBatches.size());
@@ -186,10 +173,9 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     rhi::BeginRenderPass(renderPass);
     rhi::BeginPacketList(packetList);
 
-    for (uint32 k = 0; k < (uint32)terrainBatches.size(); ++k)
+    for (auto batch : terrainBatches)
     {
         rhi::Packet packet;
-        RenderBatch* batch = terrainBatches[k];
         RenderObject* renderObject = batch->GetRenderObject();
         renderObject->BindDynamicParameters(occlusionCamera);
         NMaterial* mat = batch->GetMaterial();
@@ -225,7 +211,8 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     auto dir = occlusionCamera->GetDirection();
     auto folder = DAVA::Format("~doc:/occlusion/block-%03d", blockIndex);
     FileSystem::Instance()->CreateDirectoryW(FilePath(folder), true);
-    auto fileName = DAVA::Format("/[%d,%d,%d] from (%d,%d,%d).png", int(dir.x), int(dir.y), int(dir.z), int(pos.x), int(pos.y), int(pos.z));
+    auto fileName = DAVA::Format("/[%d,%d,%d] from (%d,%d,%d).png",
+                                 int32(dir.x), int32(dir.y), int32(dir.z), int32(pos.x), int32(pos.y), int32(pos.z));
     renderPassFileNames.insert({ syncObj, folder + fileName });
     sharedColorBuffer = colorBuffer;
 

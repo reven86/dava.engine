@@ -60,7 +60,7 @@ void StaticOcclusionSystem::UndoOcclusionVisibility()
 {
     for (auto ro : indexedRenderObjects)
     {
-        if (ro)
+        if (ro != nullptr)
         {
             ro->SetFlags(ro->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
         }
@@ -319,7 +319,7 @@ void StaticOcclusionSystem::InvalidateOcclusionIndicesRecursively(Entity *entity
 {
     RenderObject* renderObject = GetRenderObject(entity);
 
-    if (renderObject)
+    if (renderObject != nullptr)
     {
         renderObject->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
         renderObject->SetFlags(renderObject->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
@@ -393,10 +393,8 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
 
 void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)
 {
-    StaticOcclusionDebugDrawComponent* debugDrawComponent =
-    static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
-
-    DVASSERT(debugDrawComponent);    
+    StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
+    DVASSERT(debugDrawComponent != nullptr);
     GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
     entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);    
 }
@@ -405,8 +403,8 @@ void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)
 void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component * component, uint32 event)
 {
     Entity * entity = component->GetEntity();
-    StaticOcclusionDebugDrawComponent *debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
-    StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
+    StaticOcclusionComponent* staticOcclusionComponent = GetStaticOcclusionComponent(entity);
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
         // Update new transform pointer, and mark that transform is changed
@@ -455,8 +453,7 @@ void StaticOcclusionDebugDrawSystem::UpdateGeometry(StaticOcclusionDebugDrawComp
 
 void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawVertices(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
 {
-    if (target->vertices != rhi::InvalidHandle)
-        rhi::DeleteVertexBuffer(target->vertices);
+    rhi::DeleteVertexBuffer(target->vertices);
 
     uint32 xSubdivisions = source->GetSubdivisionsX();
     uint32 ySubdivisions = source->GetSubdivisionsY();
@@ -495,9 +492,7 @@ void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawVertices(Stat
 
 void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGridIndice(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
 {
-    if (target->gridIndices != rhi::InvalidHandle)
-        rhi::DeleteIndexBuffer(target->gridIndices);
-
+    rhi::DeleteIndexBuffer(target->gridIndices);
     uint32 xSubdivisions = source->GetSubdivisionsX();
     uint32 ySubdivisions = source->GetSubdivisionsY();
     uint32 zSubdivisions = source->GetSubdivisionsZ();
@@ -527,8 +522,7 @@ void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGridIndice(St
 
 void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCoverIndice(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
 {
-    if (target->coverIndices != rhi::InvalidHandle)
-        rhi::DeleteIndexBuffer(target->coverIndices);
+    rhi::DeleteIndexBuffer(target->coverIndices);
 
     uint32 xSubdivisions = source->GetSubdivisionsX();
     uint32 ySubdivisions = source->GetSubdivisionsY();

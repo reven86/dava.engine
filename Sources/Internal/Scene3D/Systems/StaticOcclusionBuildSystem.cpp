@@ -252,7 +252,6 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion()
 
     Scene* scene = GetScene();
     scene->staticOcclusionSystem->CollectOcclusionObjectsRecursively(scene);
-    // SafeDelete(staticOcclusion);
 }
     
 bool StaticOcclusionBuildSystem::IsInBuild() const
@@ -271,6 +270,17 @@ uint32 StaticOcclusionBuildSystem::GetBuildStatus() const
         ret = (currentStepsCount * 100) / totalStepsCount;
     }                        
     return ret;
+}
+
+const String& StaticOcclusionBuildSystem::GetBuildStatusInfo() const
+{
+    static const String defaultMessage = "Static occlusion system not started";
+    if (staticOcclusion == nullptr)
+    {
+        return defaultMessage;
+    }
+
+    return staticOcclusion->GetInfoMessage();
 }
 
 void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)

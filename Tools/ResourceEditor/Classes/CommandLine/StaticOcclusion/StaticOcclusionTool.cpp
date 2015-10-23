@@ -82,8 +82,8 @@ void StaticOcclusionTool::DumpParams() const
 
 void StaticOcclusionTool::Process() 
 {
-    static const rhi::HTexture nullTexture;
-    static const rhi::Viewport nullViewport(0, 0, 1, 1);
+    const rhi::HTexture nullTexture;
+    const rhi::Viewport nullViewport(0, 0, 1, 1);
 
     if (commandAction == ACTION_BUILD)
     {
@@ -100,7 +100,6 @@ void StaticOcclusionTool::Process()
                 RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
                 scene->Update(0.1f);
                 Renderer::EndFrame();
-                // RenderObjectsFlusher::Flush();
             }
 
             scene->Save();

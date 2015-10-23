@@ -39,37 +39,6 @@
 
 namespace DAVA
 {
-const Vector3 viewDirections[6] =
-{
-  Vector3(1.0f, 0.0f, 0.0f), //  x 0
-  Vector3(0.0f, 1.0f, 0.0f), //  y 1
-  Vector3(-1.0f, 0.0f, 0.0f), // -x 2
-  Vector3(0.0f, -1.0f, 0.0f), // -y 3
-  Vector3(0.0f, 0.0f, 1.0f), // +z 4
-  Vector3(0.0f, 0.0f, -1.0f), // -z 5
-};
-
-const uint32 effectiveSideCount[6] = { 3, 3, 3, 3, 1, 1 };
-
-const uint32 effectiveSides[6][3] =
-{
-  { 0, 1, 3 },
-  { 1, 0, 2 },
-  { 2, 1, 3 },
-  { 3, 0, 2 },
-  { 4, 4, 4 },
-  { 5, 5, 5 },
-};
-
-namespace stats
-{
-static uint64 blockProcessingTime = 0;
-static double buildDuration = 0.0;
-static uint64 buildStartTime = 0;
-static uint64 totalRenderPasses = 0;
-static uint64 actualRenderPasses = 0;
-static uint64 visibleObjects = 0;
-}
 
 StaticOcclusion::StaticOcclusion()    
 {
@@ -91,6 +60,7 @@ StaticOcclusion::~StaticOcclusion()
 
 void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, RenderSystem* _renderSystem, Landscape* _landscape)
 {
+    lastInfoMessage = "Preparing to build static occlusion...";
     staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD);
         
     currentData = _currentData;
@@ -100,11 +70,10 @@ void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, Ren
     yBlockCount = currentData->sizeY;
     zBlockCount = currentData->sizeZ;
 
-    stats::buildStartTime = SystemTimer::Instance()->GetAbsoluteNano();
-    stats::buildDuration = 0.0;
-    stats::blockProcessingTime = 0;
-    stats::actualRenderPasses = 0;
-    stats::totalRenderPasses = 0;
+    stats.buildStartTime = SystemTimer::Instance()->GetAbsoluteNano();
+    stats.blockProcessingTime = stats.buildStartTime;
+    stats.buildDuration = 0.0;
+    stats.totalRenderPasses = 0;
 
     currentFrameX = -1; // we increasing this, before rendering, so we will start from zero
     currentFrameY = 0;
@@ -153,49 +122,29 @@ bool StaticOcclusion::ProccessBlock()
     if (!ProcessRecorderQueries())
     {
         RenderCurrentBlock();
+        UpdateInfoString();
         return false;
     }
-
-    auto currentTime = SystemTimer::Instance()->GetAbsoluteNano();
 
     if (renderPassConfigs.empty())
     {
         AdvanceToNextBlock();
-        if (currentFrameZ < zBlockCount)
+
+        auto currentTime = SystemTimer::Instance()->GetAbsoluteNano();
+        stats.buildDuration += static_cast<double>(currentTime - stats.blockProcessingTime) / 1e+9;
+        stats.blockProcessingTime = currentTime;
+
+        if (currentFrameZ >= zBlockCount) // all blocks processed
         {
-            auto blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
-            auto totalBlocks = xBlockCount * yBlockCount * zBlockCount;
-
-            if (stats::blockProcessingTime == 0)
-                stats::blockProcessingTime = currentTime;
-
-            if (blockIndex > 0)
-            {
-                auto dt = static_cast<double>(currentTime - stats::blockProcessingTime) / 1e+9;
-                stats::buildDuration += dt;
-
-                auto averageTime = stats::buildDuration / static_cast<double>(blockIndex);
-                auto remainingBlocks = totalBlocks - blockIndex;
-                auto remainingTime = static_cast<double>(remainingBlocks) * averageTime;
-
-                Logger::Info("Block %u/%u, dt: %.4llfs, tot.: %.4llf, rem.:%.4llf renders: %llu/%llu, objects: %llu",
-                             blockIndex, totalBlocks, static_cast<double>(dt), stats::buildDuration, remainingTime,
-                             stats::actualRenderPasses, stats::totalRenderPasses, stats::visibleObjects);
-            }
-            stats::blockProcessingTime = currentTime;
-
-            BuildRenderPassConfigsForCurrentBlock();
-        }
-        else
-        {
-            // all blocks processed
-            auto dt = static_cast<double>(currentTime - stats::buildStartTime) / 1e+9;
-            Logger::Info("Occlusion build time: %.4llfs", dt);
+            UpdateInfoString();
             return true;
         }
+
+        BuildRenderPassConfigsForCurrentBlock();
     }
 
     RenderCurrentBlock();
+    UpdateInfoString();
 
     return false;
 }
@@ -203,7 +152,6 @@ bool StaticOcclusion::ProccessBlock()
 uint32 StaticOcclusion::GetCurrentStepsCount()
 {
     return currentFrameX + (currentFrameY * xBlockCount) + (currentFrameZ * xBlockCount * yBlockCount);
-    
 }
 
 uint32 StaticOcclusion::GetTotalStepsCount()
@@ -211,13 +159,36 @@ uint32 StaticOcclusion::GetTotalStepsCount()
     return xBlockCount * yBlockCount * zBlockCount;
 }
 
+const String& StaticOcclusion::GetInfoMessage() const
+{
+    return lastInfoMessage;
+}
+
 void StaticOcclusion::BuildRenderPassConfigsForCurrentBlock()
 {
     const uint32 stepCount = 10;
 
-    stats::totalRenderPasses = 0;
-    stats::actualRenderPasses = 0;
-    stats::visibleObjects = 0;
+    const Vector3 viewDirections[6] =
+    {
+      Vector3(1.0f, 0.0f, 0.0f), //  x 0
+      Vector3(0.0f, 1.0f, 0.0f), //  y 1
+      Vector3(-1.0f, 0.0f, 0.0f), // -x 2
+      Vector3(0.0f, -1.0f, 0.0f), // -y 3
+      Vector3(0.0f, 0.0f, 1.0f), // +z 4
+      Vector3(0.0f, 0.0f, -1.0f), // -z 5
+    };
+
+    const uint32 effectiveSideCount[6] = { 3, 3, 3, 3, 1, 1 };
+
+    const uint32 effectiveSides[6][3] =
+    {
+      { 0, 1, 3 },
+      { 1, 0, 2 },
+      { 2, 1, 3 },
+      { 3, 0, 2 },
+      { 4, 4, 4 },
+      { 5, 5, 5 },
+    };
 
     uint32 blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
     AABBox3 cellBox = GetCellBox(currentFrameX, currentFrameY, currentFrameZ);
@@ -280,10 +251,7 @@ void StaticOcclusion::BuildRenderPassConfigsForCurrentBlock()
                         if (landscape->PlacePoint(renderPosition, pointOnLandscape))
                         {
                             if (renderPosition.z < pointOnLandscape.z)
-                            {
-                                printf(".");
                                 continue;
-                            }
                         }
                     }
 
@@ -307,6 +275,8 @@ void StaticOcclusion::BuildRenderPassConfigsForCurrentBlock()
             }
         }
     }
+
+    stats.totalRenderPasses = renderPassConfigs.size();
 }
 
 bool StaticOcclusion::PerformRender(const RenderPassCameraConfig& rpc)
@@ -332,28 +302,21 @@ bool StaticOcclusion::PerformRender(const RenderPassCameraConfig& rpc)
 bool StaticOcclusion::RenderCurrentBlock()
 {
     uint64 renders = 0;
-    uint64 actualRenders = 0;
 
 #if (SAVE_OCCLUSION_IMAGES)
     uint64 maxRenders = 1;
 #else
-    uint64 maxRenders = 32;
+    uint64 maxRenders = 48;
 #endif
 
     while ((renders < maxRenders) && !renderPassConfigs.empty())
     {
         auto i = renderPassConfigs.begin();
         std::advance(i, rand() % renderPassConfigs.size());
-        if (PerformRender(*i))
-        {
-            ++actualRenders;
-        }
+        PerformRender(*i);
         renderPassConfigs.erase(i);
         ++renders;
     }
-
-    stats::totalRenderPasses += renders;
-    stats::actualRenderPasses += actualRenders;
 
     return renderPassConfigs.empty();
 }
@@ -398,10 +361,8 @@ bool StaticOcclusion::ProcessRecorderQueries()
                 {
                     bool alreadyVisible = currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex());
                     DVASSERT(!alreadyVisible);
-                    // Logger::Info("Object: %u is visible from block %u", uint32(req->GetStaticOcclusionIndex()), fr->blockIndex);
                     currentData->EnableVisibilityForObject(fr->blockIndex, req->GetStaticOcclusionIndex());
                     MarkQueriesAsCompletedForObjectInBlock(req->GetStaticOcclusionIndex(), fr->blockIndex);
-                    ++stats::visibleObjects;
                 }
                 ++processedRequests;
                 req = nullptr;
@@ -423,7 +384,34 @@ bool StaticOcclusion::ProcessRecorderQueries()
 
     return occlusionFrameResults.empty();
 }
-   
+
+// helper function, see implementation below
+
+String FormatTime(double fSeconds);
+
+void StaticOcclusion::UpdateInfoString()
+{
+    auto totalBlocks = xBlockCount * yBlockCount * zBlockCount;
+    auto blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
+    if (blockIndex >= totalBlocks)
+    {
+        lastInfoMessage = Format("Completed. Total time spent: %s", FormatTime(stats.buildDuration).c_str());
+    }
+    else if (blockIndex >= 0)
+    {
+        float fTotalRenders = static_cast<float>(stats.totalRenderPasses);
+        float fRemainingRenders = static_cast<float>(renderPassConfigs.size());
+        float rendersCompleted = (stats.totalRenderPasses == 0) ? 1.0f : (1.0f - fRemainingRenders / fTotalRenders);
+
+        auto averageTime = stats.buildDuration / static_cast<double>(blockIndex);
+        auto remainingBlocks = totalBlocks - blockIndex;
+        auto remainingTime = static_cast<double>(remainingBlocks) * averageTime;
+        lastInfoMessage = Format("Processing block: %u from %u (%d%% completed) \n\nTotal time spent: %s\nEstimated remaining time: %s",
+                                 blockIndex + 1, totalBlocks, static_cast<int>(100.0f * rendersCompleted),
+                                 FormatTime(stats.buildDuration).c_str(), FormatTime(remainingTime).c_str());
+    }
+}
+
 StaticOcclusionData::StaticOcclusionData()
 : sizeX(5)
 , sizeY(5)
@@ -515,11 +503,27 @@ uint32 * StaticOcclusionData::GetBlockVisibilityData(uint32 blockIndex)
     return dataHolder.data() + index;
 }
 
+const uint32* StaticOcclusionData::GetData() const
+{
+    return dataHolder.data();
+}
+
 void StaticOcclusionData::SetData(const uint32* _data, uint32 dataSize)
 {
     auto elements = dataSize / sizeof(uint32);
     dataHolder.resize(elements);
     std::copy(_data, _data + elements, dataHolder.begin());
 }
-    
+
+String FormatTime(double fSeconds)
+{
+    uint64 seconds = static_cast<uint64>(fSeconds);
+    uint64 minutes = seconds / 60;
+    seconds -= minutes * 60;
+    uint64 hours = minutes / 60;
+    minutes -= hours * 60;
+    char buffer[1024] = {};
+    sprintf(buffer, "%02llu:%02llu:%02llu", hours, minutes, seconds);
+    return String(buffer);
+}
 };

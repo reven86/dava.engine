@@ -55,8 +55,6 @@ public:
     void DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
                             StaticOcclusionFrameResult& target, const StaticOcclusionData&, uint32 blockIndex);
 
-    static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
-
 public:
     rhi::HTexture colorBuffer;
     rhi::HTexture depthBuffer;
