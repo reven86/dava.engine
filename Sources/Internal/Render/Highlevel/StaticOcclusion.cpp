@@ -397,7 +397,7 @@ void StaticOcclusion::UpdateInfoString()
     {
         lastInfoMessage = Format("Completed. Total time spent: %s", FormatTime(stats.buildDuration).c_str());
     }
-    else if (blockIndex >= 0)
+    else
     {
         float fTotalRenders = static_cast<float>(stats.totalRenderPasses);
         float fRemainingRenders = static_cast<float>(renderPassConfigs.size());
