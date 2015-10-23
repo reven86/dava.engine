@@ -153,7 +153,7 @@ void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
     ev.device = UIEvent::Device::KEYBOARD;
     ev.tid = key;
 
-    UIControlSystem::Instance()->OnInput({ev}, allEvents);
+    UIControlSystem::Instance()->OnInput(&ev);
 
     InputSystem::Instance()->GetKeyboard().OnKeyPressed(key);
 }
@@ -166,7 +166,7 @@ void QtLayer::KeyReleased(char16 key)
     ev.device = UIEvent::Device::KEYBOARD;
     ev.tid = key;
 
-    UIControlSystem::Instance()->OnInput({ev}, allEvents);
+    UIControlSystem::Instance()->OnInput(&ev);
 
     InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(key);
 }
@@ -234,7 +234,10 @@ void QtLayer::MouseEvent(const UIEvent & event)
 
     MoveTouchsToVector(event, touches);
 
-    UIControlSystem::Instance()->OnInput(touches, allEvents);
+    for (auto& touch : touches)
+    {
+        UIControlSystem::Instance()->OnInput(&touch);
+    }
     touches.clear();
 }
 
