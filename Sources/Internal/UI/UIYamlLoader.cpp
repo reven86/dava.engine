@@ -691,7 +691,7 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentN
 
 void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode)
 {
-    const List<UIControl*>& children = parentControl->GetRealChildren();
+    const List<UIControl*>& children = parentControl->GetChildren();
     if (children.empty())
         return;
 

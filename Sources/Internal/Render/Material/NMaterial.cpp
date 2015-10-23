@@ -1124,7 +1124,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     static const float32 DEFAULT_LIGHTMAP_SIZE = 128.f;
     if (archive->IsKeyExists("illumination.lightmapSize"))
     {
-        float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize", DEFAULT_LIGHTMAP_SIZE);
+        float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize", static_cast<int32>(DEFAULT_LIGHTMAP_SIZE));
         if (HasLocalProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE))
             SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize);
         else

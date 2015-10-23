@@ -17,21 +17,9 @@ if "%1" == "" (echo "Add path which contains CMakeLists.txt") & (exit /B)
 
 if not exist "%SOURCE_DIR%CMakeLists.txt" (echo "Can't find CMakeLists.txt in %SOURCE_DIR%") & (exit /B)
 
-if not "%2" == "ARM" (
-if not "%2" == "Win32" (
-if not "%2" == "Win64" (
-if not "%2" == "" ( (echo "Add platform Win64 or ARM default Win32") & (exit /B) ) ) ) )
-
 if "%2" == "Win64" set APPEND_A_PLATFORM=-A"x64"
-
-if "%2" == "ARM" set APPEND_A_PLATFORM=-A"ARM"
-
+if "%2" == "ARM"   set APPEND_A_PLATFORM=-A"ARM"
 if "%2" == "Win32" set APPEND_A_PLATFORM=-A"Win32"
 
-if "%2" == "" set APPEND_A_PLATFORM=-A"Win32"
-
-echo %CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_TOOLCHAIN_FILE=%SCRIPT_DIR%/../../Sources/CMake/Toolchains/win_uap.toolchain.cmake %APPEND_A_PLATFORM% %SOURCE_DIR%
-
+@echo on
 %CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_TOOLCHAIN_FILE=%SCRIPT_DIR%/../../Sources/CMake/Toolchains/win_uap.toolchain.cmake %APPEND_A_PLATFORM% %SOURCE_DIR%
-
-::%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_VS_WINRT_COMPONENT=FALSE -A"Win32|ARM|x64" -DCMAKE_VS_EFFECTIVE_PLATFORMS=Win32;ARM;x64 %SOURCE_DIR%

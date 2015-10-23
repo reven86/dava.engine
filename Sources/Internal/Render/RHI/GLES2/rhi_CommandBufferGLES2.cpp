@@ -223,6 +223,7 @@ gles2_RenderPass_Begin( Handle pass )
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
         _FrameStarted = true;
         ++_FrameNumber;
+        ProgGLES2::InvalidateAllConstBufferInstances();
     }
 
     _Frame.back().pass.push_back( pass );
@@ -708,6 +709,7 @@ CommandBufferGLES2_t::Execute()
     uint32      cur_vdecl       = VertexLayout::InvalidUID;
     uint32      cur_base_vert   = 0;
     Handle      last_ps         = InvalidHandle;
+    uint32 cur_gl_prog = 0;
     Handle      vp_const[MAX_CONST_BUFFER_COUNT];
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
@@ -863,6 +865,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 if( cur_vb != vb )
                 {
                     VertexBufferGLES2::SetToRHI( vb );
+                    PipelineStateGLES2::InvalidateVattrCache();
                     vdecl_pending = true;
                     cur_base_vert = 0;
 
@@ -920,6 +923,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     cur_vdecl       = vdecl;
                     cur_base_vert   = 0;
                     last_ps = InvalidHandle;
+                    cur_gl_prog = PipelineStateGLES2::ProgramUid(ps);
                     vdecl_pending = true;
                 }
 
@@ -1024,16 +1028,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 unsigned    buf_i = (unsigned)(arg[0]);
                 const void* inst  = (const void*)arg[2];
 
-                if( inst != vp_const_data[buf_i] )
-                {
-                    vp_const[buf_i]      = (Handle)(arg[1]);
-                    vp_const_data[buf_i] = inst;
-                }
-                else
-                {
-                    vp_const[buf_i] = InvalidHandle;
-                }
-                
+                vp_const[buf_i] = (Handle)(arg[1]);
+                vp_const_data[buf_i] = inst;
+
                 c += 3;
             }   break;
 
@@ -1042,16 +1039,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 unsigned    buf_i = (unsigned)(arg[0]);
                 const void* inst  = (const void*)arg[2];
 
-                if( inst != fp_const_data[buf_i] )
-                {
-                    fp_const[buf_i]      = (Handle)(arg[1]);
-                    fp_const_data[buf_i] = inst;
-                }
-                else
-                {
-                    fp_const[buf_i] = InvalidHandle;
-                }
-                
+                fp_const[buf_i] = (Handle)(arg[1]);
+                fp_const_data[buf_i] = inst;
+
                 c += 3;
             }   break;
 
@@ -1085,12 +1075,12 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( vp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( vp_const[i], vp_const_data[i] );
+                        ConstBufferGLES2::SetToRHI(vp_const[i], cur_gl_prog, vp_const_data[i]);
                 }
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( fp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
+                        ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
                 }
 
                 if( cur_query_i != InvalidIndex )
@@ -1146,12 +1136,12 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( vp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( vp_const[i], vp_const_data[i] );
+                        ConstBufferGLES2::SetToRHI(vp_const[i], cur_gl_prog, vp_const_data[i]);
                 }
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( fp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
+                        ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
                 }
 
                 if( vdecl_pending  ||  firstVertex != cur_base_vert )
@@ -1448,8 +1438,6 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 
         _ExecuteQueuedCommands(); 
     }
-
-    ProgGLES2::InvalidateAllConstBufferInstances();
 }
 
 
@@ -1529,7 +1517,7 @@ InitializeRenderThreadGLES2( uint32 frameCount )
         _GLES2_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFunc));
         _GLES2_RenderThread->SetName("RHI.gl-render");
         _GLES2_RenderThread->Start();
-        _GLES2_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
+        //        _GLES2_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
         _GLES2_RenderThredStartedSync.Wait();
     }
 }
@@ -1683,8 +1671,14 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::SET_ACTIVE_TEXTURE :
             {
-                EXEC_GL(glActiveTexture( GLenum(arg[0]) ));
-                cmd->status = err;
+                int t = int(arg[0]);
+
+                if (t != _GLES2_LastActiveTexture)
+                {
+                    EXEC_GL(glActiveTexture(GLenum(t)));
+                    _GLES2_LastActiveTexture = t;
+                    cmd->status = err;
+                }
             }   break;
 
             case GLCommand::BIND_TEXTURE :

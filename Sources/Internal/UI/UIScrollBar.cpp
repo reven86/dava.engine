@@ -39,14 +39,13 @@ namespace DAVA
 
 //use these names for children controls to define UIScrollBar in .yaml
 static const String UISCROLLBAR_SLIDER_NAME = "slider";
-	
-    
-UIScrollBar::UIScrollBar(const Rect &rect, eScrollOrientation requiredOrientation, bool rectInAbsoluteCoordinates/* = false*/)
-:   UIControl(rect, rectInAbsoluteCoordinates)
-,   orientation(requiredOrientation)
-,   delegate(NULL)
-,   slider(NULL)
-,   resizeSliderProportionally(true)
+
+UIScrollBar::UIScrollBar(const Rect& rect, eScrollOrientation requiredOrientation)
+    : UIControl(rect)
+    , orientation(requiredOrientation)
+    , delegate(NULL)
+    , slider(NULL)
+    , resizeSliderProportionally(true)
 {
 	InitControls(rect);
 }
@@ -100,17 +99,7 @@ void UIScrollBar::RemoveControl(UIControl *control)
     UIControl::RemoveControl(control);
 }
 
-List<UIControl* > UIScrollBar::GetSubcontrols()
-{
-	List<UIControl* > subControls;
-
-	// Lookup for the contols by their names.
-	AddControlToList(subControls, UISCROLLBAR_SLIDER_NAME);
-
-	return subControls;
-}
-
-UIControl* UIScrollBar::Clone()
+UIScrollBar* UIScrollBar::Clone()
 {
 	UIScrollBar *t = new UIScrollBar(GetRect());
 	t->CopyDataFrom(this);

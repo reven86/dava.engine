@@ -876,8 +876,12 @@ rhi::TextureAddrMode TexturePacker::GetDescriptorWrapMode()
 	{
         return rhi::TEXADDR_WRAP;
 	}
-	
-	// Default Wrap mode
+    else if (CommandLineParser::Instance()->IsFlagSet("--wrapMirror"))
+    {
+        return rhi::TEXADDR_MIRROR;
+    }
+
+    // Default Wrap mode
     return rhi::TEXADDR_CLAMP;
 }
 
