@@ -69,8 +69,7 @@ VertexBufferGLES2_t
 RHI_IMPL_RESOURCE(VertexBufferGLES2_t,VertexBuffer::Descriptor);
 
 typedef ResourcePool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true>   VertexBufferGLES2Pool;
-RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true);
-
+RHI_IMPL_POOL_SIZE(VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true, 3072);
 
 //------------------------------------------------------------------------------
 
