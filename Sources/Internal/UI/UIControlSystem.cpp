@@ -463,8 +463,8 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
 
         if (startRemoveIt != end(touchEvents))
         {
-            std::for_each(startRemoveIt, end(touchEvents), [](UIEvent& ev) {
-                UIControlSystem::Instance()->CancelInput(&ev);
+            std::for_each(startRemoveIt, end(touchEvents), [this](UIEvent& ev) {
+                CancelInput(&ev);
             });
             touchEvents.erase(startRemoveIt, end(touchEvents));
         }
