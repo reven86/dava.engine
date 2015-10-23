@@ -1333,11 +1333,11 @@ bool VariantType::operator==(const VariantType& other) const
                         isEqual = true;
                         if(keyedArchive != otherKeyedArchive)
                         {
-                            const KeyedArchive::ObjectMap& data = keyedArchive->GetArchieveData();
-                            const KeyedArchive::ObjectMap& otherData = otherKeyedArchive->GetArchieveData();
+                            const auto& data = keyedArchive->GetArchieveData();
+                            const auto& otherData = otherKeyedArchive->GetArchieveData();
                             for(const auto &obj : data)
                             {
-                                KeyedArchive::ObjectMap::const_iterator findIt = otherData.find(obj.first);
+                                auto findIt = otherData.find(obj.first);
                                 if(findIt != otherData.end())
                                 {
                                     if(obj.second != findIt->second)

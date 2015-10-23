@@ -689,7 +689,7 @@ void KeyedArchive::Dump() const
 	Logger::FrameworkDebug("============================================================");
 }
 
-const KeyedArchive::ObjectMap& KeyedArchive::GetArchieveData() const
+const UnorderedMap<String, VariantType*>& KeyedArchive::GetArchieveData() const
 {
     return objectMap;
 }

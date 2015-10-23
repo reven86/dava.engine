@@ -1034,11 +1034,10 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
                 if(currentProperties)
                 {
                     KeyedArchive * newProperties = GetOrCreateCustomProperties(childNode)->GetArchive();
-                    const KeyedArchive::ObjectMap& oldMap = currentProperties->GetArchieveData();
-                    KeyedArchive::ObjectMap::const_iterator itEnd = oldMap.end();
-                    for (KeyedArchive::ObjectMap::const_iterator it = oldMap.begin(); it != itEnd; ++it)
+                    const auto& oldMap = currentProperties->GetArchieveData();
+                    for (const auto& it : oldMap)
                     {
-                        newProperties->SetVariant(it->first, *it->second);
+                        newProperties->SetVariant(it.first, *it.second);
                     }
                 }
 				

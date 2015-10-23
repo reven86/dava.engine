@@ -940,22 +940,22 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     if (archive->IsKeyExists("textures"))
     {
-        const KeyedArchive::ObjectMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (KeyedArchive::ObjectMap::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
+        const auto& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (const auto& it : texturesMap)
         {
-            String relativePathname = it->second->AsString();
+            String relativePathname = it.second->AsString();
             MaterialTextureInfo *texInfo = new MaterialTextureInfo();            
             texInfo->path = serializationContext->GetScenePath() + relativePathname;
-            localTextures[FastName(it->first)] = texInfo;            
+            localTextures[FastName(it.first)] = texInfo;
         }
     }
 
     if (archive->IsKeyExists("flags"))
     {
-        const KeyedArchive::ObjectMap& flagsMap = archive->GetArchive("flags")->GetArchieveData();
-        for (KeyedArchive::ObjectMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
+        const auto& flagsMap = archive->GetArchive("flags")->GetArchieveData();
+        for (const auto& it : flagsMap)
         {
-			AddFlag(FastName(it->first), it->second->AsInt32());
+            AddFlag(FastName(it.first), it.second->AsInt32());
         }
     }
 }
@@ -1002,24 +1002,22 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
     if (archive->IsKeyExists("textures"))
     {
-        const KeyedArchive::ObjectMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (KeyedArchive::ObjectMap::const_iterator it = texturesMap.begin();
-             it != texturesMap.end();
-             ++it)
+        const auto& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (const auto& it : texturesMap)
         {
-            String relativePathname = it->second->AsString();
+            String relativePathname = it.second->AsString();
             MaterialTextureInfo *texInfo = new MaterialTextureInfo();
             texInfo->path = serializationContext->GetScenePath() + relativePathname;
-            localTextures[FastName(it->first)] = texInfo;
+            localTextures[FastName(it.first)] = texInfo;
         }
     }
 
     if (archive->IsKeyExists("setFlags"))
     {
-        const KeyedArchive::ObjectMap& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
-        for (KeyedArchive::ObjectMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
+        const auto& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
+        for (const auto& it : flagsMap)
         {
-            AddFlag(FastName(it->first), it->second->AsInt32());
+            AddFlag(FastName(it.first), it.second->AsInt32());
         }
     }
     //NMaterial hell - for some reason property types were saved as GL_XXX defines O_o
@@ -1051,16 +1049,16 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
     if (archive->IsKeyExists("properties"))
     {
-        const KeyedArchive::ObjectMap& propsMap = archive->GetArchive("properties")->GetArchieveData();
-        for (KeyedArchive::ObjectMap::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
-        {            
-            const VariantType* propVariant = it->second;
+        const auto& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        for (const auto& it : propsMap)
+        {
+            const VariantType* propVariant = it.second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
             DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) + sizeof(uint32)));
 
             const uint8* ptr = propVariant->AsByteArray();
-            
-            FastName propName = FastName(it->first);
+
+            FastName propName = FastName(it.first);
             uint32 propType = *(uint32*)ptr; ptr += sizeof(uint32);
             uint8 propSize = *(uint8*)ptr; ptr += sizeof(uint8);
             float32 *data = (float32*)ptr;            
