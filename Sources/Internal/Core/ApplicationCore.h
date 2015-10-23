@@ -94,7 +94,7 @@ namespace DAVA
 	\code
 	void GameCore::OnAppStarted()
 	{
-		RenderManager::Instance()->SetFPS(30);
+		Renderer::SetDesiredFPS(30);
 
 		mainMenuScreen.Set(new MainMenuScreen());
 		gameScreen.Set(new GameScreen());
@@ -203,7 +203,7 @@ protected:
 		\code
 			void GameCore::OnAppStarted()
 			{
-				RenderManager::Instance()->SetFPS(30);
+				Renderer::SetDesiredFPS(30);
 
 				mainMenuScreen.Set(new MainMenuScreen());
 				gameScreen.Set(new GameScreen());
@@ -226,15 +226,14 @@ protected:
 		We do not recommend to save game progress in this function, because on some platforms it can create problems. 
 		Our recommendation to perform in-game progress saves during the game immediately after changes that are important. 
 	 */
-	virtual void OnAppFinished() = 0;
-    
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) 
-	/**
+    virtual void OnAppFinished();
+
+    /**
 		\brief Called when application goes to background on mobile platforms
 	 */
-	virtual void OnBackground() = 0;
+    virtual void OnBackground();
 
-	/**
+    /**
 	 \brief Called when application returns to foreground on mobile platforms
 	 */
 	virtual void OnForeground();
@@ -242,15 +241,24 @@ protected:
     /**
      \brief Called when application goes to background due to device lock on iOS platforms
 	 */
-	virtual void OnDeviceLocked() = 0;
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-	
-	/**	
+    virtual void OnDeviceLocked();
+
+    /**
+     \brief Called when application lost focus (desktop platforms)
+     */
+    virtual void OnFocusLost();
+
+    /**
+     \brief Called when application has received focus (desktop platforms)
+     */
+    virtual void OnFocusReceived();
+
+    /**	
 		\brief this function is called every frame to let you update your application. 
 		Normally this function can handle high-level tasks that is common between all application screens. 
 		Logic of the particular game screen should be inside that screen and it's Update function. 
 	 
-		To modify the frequency of Update calls you can use \ref RenderManager::Instance()->SetFPS() function
+		To modify the frequency of Update calls you can use \ref Renderer::SetDesiredFPS() function
 	 
 		\param[in] timeElapsed time in seconds that passed from the previous frame
 	 */

@@ -44,7 +44,10 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
+    Renderer::GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
+    DynamicBufferAllocator::SetPageSize(1024 * 1024); //1 mb
+    
+    UIControlSystem::Instance()->SetClearColor(Color(.3f, .3f, .3f, 1.f));
 }
 
 void GameCore::OnAppFinished()
@@ -68,7 +71,6 @@ void GameCore::OnBackground()
 void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
-	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
 }
 
 void GameCore::Update(float32 timeElapsed)

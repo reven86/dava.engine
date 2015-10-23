@@ -47,10 +47,7 @@ WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selecti
     , selectionSystem(_selectionSystem)
     , collisionSystem(_collisionSystem)
     , underCursorPathEntity(nullptr)
-{
-    wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
-        DAVA::RenderStateData::STATE_COLORMASK_ALL |
-        DAVA::RenderStateData::STATE_DEPTH_TEST);
+{    
 
     sceneEditor = static_cast<SceneEditor2 *>(GetScene());
 }
@@ -493,8 +490,6 @@ void WayEditSystem::Draw()
         
         DAVA::WaypointComponent* wpComponent = GetWaypointComponent(e);
         DVASSERT(wpComponent);
-
-        RenderManager::SetDynamicParam(PARAM_WORLD, &e->GetWorldTransform(), (pointer_size)&e->GetWorldTransform());
         
         AABBox3 worldBox = selectionSystem->GetSelectionAABox(e);
 
@@ -516,10 +511,8 @@ void WayEditSystem::Draw()
             greenValue = 1.0f;
         }
         
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 0.3f));
-        DAVA::RenderHelper::Instance()->FillBox(worldBox, wayDrawState);
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 1.0f));
-        DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, wayDrawState);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
     }
 }
 

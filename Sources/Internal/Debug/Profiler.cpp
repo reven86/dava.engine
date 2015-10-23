@@ -27,12 +27,14 @@
 =====================================================================================*/
 
 
-#include "Profiler.h"
+    #include "Profiler.h"
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
     #include "Concurrency/Spinlock.h"
+    #include "Concurrency/Mutex.h"
     #include "Base/BaseTypes.h"
     #include "Platform/SystemTimer.h"
+    #include "FileSystem/File.h"
     using namespace DAVA;
 
 
@@ -307,11 +309,14 @@ void
 StartCounter( uint32 counterId, const char* counterName )
 {
     DVASSERT( counterId < maxCounterCount );
-
-    Counter*    counter = curCounter + counterId;
+    
+    if( curCounter )
+    {
+        Counter*    counter = curCounter + counterId;
         
-    counter->SetName( counterName );
-    counter->Start();
+        counter->SetName( counterName );
+        counter->Start();
+    }
 }
 
 
@@ -322,9 +327,12 @@ StopCounter( uint32 counterId )
 {
     DVASSERT( counterId < maxCounterCount );
 
-    Counter*    counter = curCounter + counterId;
+    if( curCounter )
+    {
+        Counter*    counter = curCounter + counterId;
         
-    counter->Stop();
+        counter->Stop();
+    }
 }
 
 
@@ -645,6 +653,149 @@ GetAverageCounters( std::vector<CounterInfo>* info )
     }
     
     return success;
+}
+
+
+//------------------------------------------------------------------------------
+
+struct
+Event
+{
+    enum 
+    Phase
+    {
+        phaseBegin      = 1,
+        phaseEnd        = 2, 
+        phaseInstant    = 3
+    };
+
+    uint16      pid;
+    uint16      tid;
+    uint64      time;
+    const char* category;
+    const char* name;
+    Phase       phase;
+};
+
+static std::vector<Event>   _Event;
+static DAVA::Mutex          _EventSync;
+
+void
+BeginEvent( unsigned tid, const char* category, const char* name )
+{
+    Event   evt;
+
+    evt.pid      = 1;
+    evt.tid      = tid;
+    evt.time     = CurTimeUs();
+    evt.category = category;
+    evt.name     = name;
+    evt.phase    = Event::phaseBegin;
+
+    _EventSync.Lock();
+    _Event.push_back( evt );
+    _EventSync.Unlock();
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+EndEvent( unsigned tid, const char* category, const char* name )
+{
+    Event   evt;
+
+    evt.pid      = 1;
+    evt.tid      = tid;
+    evt.time     = CurTimeUs();
+    evt.category = category;
+    evt.name     = name;
+    evt.phase    = Event::phaseEnd;
+
+    _EventSync.Lock();
+    _Event.push_back( evt );
+    _EventSync.Unlock();
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+InstantEvent( unsigned tid, const char* category, const char* name )
+{
+    Event   evt;
+
+    evt.pid      = 1;
+    evt.tid      = tid;
+    evt.time     = CurTimeUs();
+    evt.category = category;
+    evt.name     = name;
+    evt.phase    = Event::phaseInstant;
+
+    _EventSync.Lock();
+    _Event.push_back( evt );
+    _EventSync.Unlock();
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+DumpEvents()
+{
+    Logger::Info( "{ \"traceEvents\": [ " );
+    for( std::vector<Event>::const_iterator e=_Event.begin(),e_end=_Event.end(); e!=e_end; ++e )
+    {
+        const char* ph = "";
+
+        switch( e->phase )
+        {
+            case Event::phaseBegin   : ph = "B"; break;
+            case Event::phaseEnd     : ph = "E"; break;
+            case Event::phaseInstant : ph = "I"; break;
+        }
+        Logger::Info
+        ( 
+            "{ \"pid\":%u, \"tid\":%u, \"ts\":%lu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s", 
+            unsigned(e->pid), unsigned(e->tid), (long)(e->time), ph, e->category, e->name,
+            (e!=_Event.end()-1)?", ":""
+        );
+    }
+    Logger::Info( "] }" );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+SaveEvents( const char* fileName )
+{
+    File*   json = File::Create( fileName, File::CREATE|File::WRITE );
+
+    json->WriteLine( "{ \"traceEvents\": [ " );
+    for( std::vector<Event>::const_iterator e=_Event.begin(),e_end=_Event.end(); e!=e_end; ++e )
+    {
+        char        buf[1024];
+        const char* ph = "";
+
+        switch( e->phase )
+        {
+            case Event::phaseBegin   : ph = "B"; break;
+            case Event::phaseEnd     : ph = "E"; break;
+            case Event::phaseInstant : ph = "I"; break;
+        }
+        Snprintf
+        ( 
+            buf, 1024,
+            "{ \"pid\":%u, \"tid\":%u, \"ts\":%lu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s", 
+            unsigned(e->pid), unsigned(e->tid), (long)(e->time), ph, e->category, e->name,
+            (e!=_Event.end()-1)?", ":""
+        );
+        json->WriteLine( buf );
+    }
+    json->WriteLine( "] }" );
+
+    json->Release();
 }
 
 

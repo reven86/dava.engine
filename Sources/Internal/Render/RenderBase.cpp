@@ -28,60 +28,10 @@
 
 
 #include "Render/RenderBase.h"
-#include "Render/RenderManager.h"
 #include "Concurrency/Thread.h"
 
 namespace DAVA
 {
-const String BLEND_MODE_NAMES[BLEND_MODE_COUNT] =
-{
-	"BLEND_NONE",
-	"BLEND_ZERO",
-	"BLEND_ONE",
-	"BLEND_DST_COLOR",
-	"BLEND_ONE_MINUS_DST_COLOR",
-	"BLEND_SRC_ALPHA",
-	"BLEND_ONE_MINUS_SRC_ALPHA",
-	"BLEND_DST_ALPHA",
-	"BLEND_ONE_MINUS_DST_ALPHA",
-	"BLEND_SRC_ALPHA_SATURATE",
-	"BLEND_SRC_COLOR",
-	"BLEND_ONE_MINUS_SRC_COLOR"
-};
-
-#if defined(__DAVAENGINE_OPENGL__)
-const GLint BLEND_MODE_MAP[BLEND_MODE_COUNT] =
-{
-	0,	// not a valid blend mode
-	GL_ZERO,
-	GL_ONE,
-	GL_DST_COLOR,
-	GL_ONE_MINUS_DST_COLOR,
-	GL_SRC_ALPHA,
-	GL_ONE_MINUS_SRC_ALPHA,
-	GL_DST_ALPHA,
-	GL_ONE_MINUS_DST_ALPHA,
-	GL_SRC_ALPHA_SATURATE,
-	GL_SRC_COLOR,
-	GL_ONE_MINUS_SRC_COLOR,
-};
-#elif defined(__DAVAENGINE_DIRECTX9__)
-const GLint BLEND_MODE_MAP[BLEND_MODE_COUNT] =
-{
-	0,	// not a valid blend mode
-	D3DBLEND_ZERO,
-	D3DBLEND_ONE,
-	D3DBLEND_DESTCOLOR,
-	D3DBLEND_INVDESTCOLOR,
-	D3DBLEND_SRCALPHA,
-	D3DBLEND_INVSRCALPHA,
-	D3DBLEND_DESTALPHA,
-	D3DBLEND_INVDESTALPHA,
-	D3DBLEND_SRCALPHASAT,
-	D3DBLEND_SRCCOLOR,
-	D3DBLEND_INVSRCCOLOR,
-};
-#endif
 
 const String CMP_FUNC_NAMES[CMP_TEST_MODE_COUNT] =
 {
@@ -95,132 +45,18 @@ const String CMP_FUNC_NAMES[CMP_TEST_MODE_COUNT] =
 	"CMP_ALWAYS"
 };
 
-#if defined(__DAVAENGINE_OPENGL__)
-const GLint COMPARE_FUNCTION_MAP[CMP_TEST_MODE_COUNT] =
-{
-	GL_NEVER,
-	GL_LESS,
-	GL_EQUAL,
-	GL_LEQUAL,
-	GL_GREATER,
-	GL_NOTEQUAL,
-	GL_GEQUAL,
-	GL_ALWAYS,
-};
-#elif defined(__DAVAENGINE_DIRECTX9__)
-const GLint COMPARE_FUNCTION_MAP[CMP_TEST_MODE_COUNT] =
-{
-	D3DCMP_NEVER,
-	D3DCMP_LESS,
-	D3DCMP_EQUAL,
-	D3DCMP_LESSEQUAL,
-	D3DCMP_GREATER,
-	D3DCMP_NOTEQUAL,
-	D3DCMP_GREATEREQUAL,
-	D3DCMP_ALWAYS,
-};
-#endif
-
-const String FACE_NAMES[FACE_COUNT] =
-{
-	"FACE_FRONT",
-	"FACE_BACK",
-	"FACE_FRONT_AND_BACK"
-};
-
-#if defined(__DAVAENGINE_OPENGL__)
-const GLint CULL_FACE_MAP[FACE_COUNT] =
-{
-	GL_FRONT,
-	GL_BACK,
-	GL_FRONT_AND_BACK,
-};
-#elif defined(__DAVAENGINE_DIRECTX9__)
-const int32 CULL_FACE_MAP[FACE_COUNT] =
-{
-	D3DCULL_CCW,
-	D3DCULL_CW,
-	D3DCULL_NONE,
-};
-#endif
-
 const String STENCIL_OP_NAMES[STENCILOP_COUNT] =
 {
 	"STENCILOP_KEEP",
 	"STENCILOP_ZERO",
 	"STENCILOP_REPLACE",
+    "STENCILOP_INVERT",
 	"STENCILOP_INCR",
-	"STENCILOP_INCR_WRAP",
-	"STENCILOP_DECR",
-	"STENCILOP_DECR_WRAP",
-	"STENCILOP_INVERT"
-};
-
-#if defined(__DAVAENGINE_OPENGL__)
-const GLint STENCIL_OP_MAP[STENCILOP_COUNT] =
-{
-	GL_KEEP,
-	GL_ZERO,
-	GL_REPLACE,
-	GL_INCR,
-	GL_INCR_WRAP,
-	GL_DECR,
-	GL_DECR_WRAP,
-	GL_INVERT
-};
-#elif defined(__DAVAENGINE_DIRECTX9__)
-const int32 STENCIL_OP_MAP[STENCILOP_COUNT] =
-{
-	D3DSTENCILOP_KEEP,
-	D3DSTENCILOP_ZERO,
-	D3DSTENCILOP_REPLACE,
-	D3DSTENCILOP_INCRSAT,
-	D3DSTENCILOP_INCR,
-	D3DSTENCILOP_DECRSAT,
-	D3DSTENCILOP_DECR,
-	D3DSTENCILOP_INVERT
-};
-#endif
-    
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    const GLint TEXTURE_WRAP_MAP[WRAP_COUNT] =
-    {
-        GL_CLAMP_TO_EDGE,
-        GL_REPEAT
-    };
-#elif defined(__DAVAENGINE_DIRECTX9__)
-    const int32 TEXTURE_WRAP_MAP[WRAP_COUNT] =
-    {
-        D3DTADDRESS_CLAMP,
-        D3DTADDRESS_WRAP
-    };
-#endif
-    
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    const GLint TEXTURE_FILTER_MAP[FILTER_COUNT] =
-    {
-        GL_NEAREST,
-        GL_LINEAR,
-        GL_NEAREST_MIPMAP_NEAREST,
-        GL_LINEAR_MIPMAP_NEAREST,
-        GL_NEAREST_MIPMAP_LINEAR,
-        GL_LINEAR_MIPMAP_LINEAR
-    };
-#elif defined(__DAVAENGINE_DIRECTX9__)
-    const int32 TEXTURE_FILTER_MAP[FILTER_COUNT] =
-    {
-        D3DTEXF_POINT,
-        D3DTEXF_LINEAR,
-        
-        D3DTEXF_ANISOTROPIC,
-        D3DTEXF_PYRAMIDALQUAD,
-        D3DTEXF_GAUSSIANQUAD,
-        D3DTEXF_CONVOLUTIONMONO
-    };
-#endif
-
+    "STENCILOP_DECR",
+	"STENCILOP_INCR_WRAP",	
+	"STENCILOP_DECR_WRAP"
+	
+};   
 
 const String FILL_MODE_NAMES[FILLMODE_COUNT] =
 {
@@ -229,174 +65,85 @@ const String FILL_MODE_NAMES[FILLMODE_COUNT] =
 	"FILLMODE_SOLID"
 };
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-//FILLMODE_MAP is not implemented for WinStore (OpenGL ES with ANGLE)
-#endif
-
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__))
-const GLint FILLMODE_MAP[FILLMODE_COUNT] =
-{
-	GL_POINT,
-	GL_LINE,
-	GL_FILL
-};
-#elif defined(__DAVAENGINE_DIRECTX9__)
-const int32 FILLMODE_MAP[FILLMODE_COUNT] =
-{
-	D3DFILL_POINT,
-	D3DFILL_WIREFRAME,
-	D3DFILL_SOLID
-};
-#endif
-    
-#if defined(__DAVAENGINE_OPENGL__)
-const GLint BUFFERDRAWTYPE_MAP[BDT_COUNT] =
-{
-    GL_STATIC_DRAW,
-    GL_DYNAMIC_DRAW,
-};
-#elif defined(__DAVAENGINE_DIRECTX9__)
-const int32 BUFFERDRAWTYPE_MAP[BDT_COUNT] =
-{
-    0,
-    0,
-};
-#endif
-
-/*
- FastName("modelViewProjectionMatrix"),
- FastName("modelViewMatrix"),
- FastName("projectionMatrix"),
- FastName("normalMatrix"),
- FastName("flatColor"),
- FastName("globalTime"),
- FastName("worldTranslate"),
- FastName("worldScale"),
- */
-
-const FastName DYNAMIC_PARAM_NAMES[] =
-    {
-        FastName("unknownSemantic"),
-        FastName("worldMatrix"),//PARAM_WORLD,
-        FastName("invWorldMatrix"), //PARAM_INV_WORLD,
-        FastName("worldInvTransposeMatrix"), //PARAM_WORLD_INV_TRANSPOSE,
-        
-        FastName("viewMatrix"), //PARAM_VIEW,
-        FastName("invViewMatrix"), //PARAM_INV_VIEW,
-        FastName("projMatrix"), //PARAM_PROJ,
-        FastName("invProjMatrix"), //PARAM_INV_PROJ,
-        
-        FastName("worldViewMatrix"), //PARAM_WORLD_VIEW,
-        FastName("invWorldViewMatrix"), //PARAM_INV_WORLD_VIEW,
-        FastName("worldViewInvTransposeMatrix"), //PARAM_NORMAL, // NORMAL MATRIX
-        
-        FastName("viewProjMatrix"), //PARAM_VIEW_PROJ,
-        FastName("invViewProjMatrix"), //PARAM_INV_VIEW_PROJ,
-        
-        FastName("worldViewProjMatrix"), //PARAM_WORLD_VIEW_PROJ,
-        FastName("invWorldViewProjMatrix"), //PARAM_INV_WORLD_VIEW_PROJ,
-        
-        FastName("flatColor"),
-        FastName("globalTime"),
-        FastName("worldScale"),
-
-        FastName("cameraPosition"), // PARAM_CAMERA_POS,
-        FastName("cameraDirection"), // PARAM_CAMERA_DIR,
-        FastName("cameraUp"), // PARAM_CAMERA_UP,
-        
-        FastName("lightPosition0"),
-        FastName("lightColor0"),
-        FastName("lightAmbientColor0"),
-
-        FastName("localBoundingBox"),
-        FastName("worldViewObjectCenter"),
-        FastName("boundingBoxSize"),
-
-        FastName("trunkOscillationParams"),
-        FastName("leafOscillationParams"),
-        FastName("speedTreeLightSmoothing"),
-
-        FastName("sphericalHarmonics[0]"),
-
-        FastName("jointPositions[0]"),
-        FastName("jointQuaternions[0]"),
-        FastName("jointsCount"),
-
-        FastName("rtSize"),
-        FastName("rtPixelSize"),
-        FastName("rtHalfPixelSize"),
-        FastName("rtAspectRatio")
-
-//        FastName("objectPosition"),
-//        FastName("objectScale"),
-    };
-
-RenderGuard::RenderGuard()
-{
-    wrongCall = false;
-}
-
-RenderGuard::~RenderGuard()
-{
-
-}
-
-void RenderGuard::LowLevelRenderCall()
-{
-    if(!Thread::IsMainThread())
-    {
-        DVASSERT(0 && "Application tried to call GL or DX in separate thread without lock");
-    }
-    if (!RenderManager::Instance()->IsInsideDraw())
-    {
-        DVASSERT(0 && "Application tried to call GL or DX not between BeginFrame / EndFrame.");
-    }
-}
-
-eBlendMode GetBlendModeByName(const String & blendStr)
-{
-    for(uint32 i = 0; i < BLEND_MODE_COUNT; i++)
-        if(blendStr == BLEND_MODE_NAMES[i])
-            return (eBlendMode)i;
-
-    return BLEND_MODE_COUNT;
-}
-
-eCmpFunc GetCmpFuncByName(const String & cmpFuncStr)
+rhi::CmpFunc GetCmpFuncByName(const String & cmpFuncStr)
 {
     for(uint32 i = 0; i < CMP_TEST_MODE_COUNT; i++)
         if(cmpFuncStr == CMP_FUNC_NAMES[i])
-            return (eCmpFunc)i;
+            return (rhi::CmpFunc)i;
 
-    return CMP_TEST_MODE_COUNT;
+    return (rhi::CmpFunc)CMP_TEST_MODE_COUNT;
 }
 
-eFace GetFaceByName(const String & faceStr)
-{
-    for(uint32 i = 0; i < FACE_COUNT; i++)
-        if(faceStr == FACE_NAMES[i])
-            return (eFace)i;
-
-    return FACE_COUNT;
-}
-
-eStencilOp GetStencilOpByName(const String & stencilOpStr)
+rhi::StencilOperation GetStencilOpByName(const String & stencilOpStr)
 {
     for(uint32 i = 0; i < STENCILOP_COUNT; i++)
         if(stencilOpStr == STENCIL_OP_NAMES[i])
-            return (eStencilOp)i;
+            return (rhi::StencilOperation)i;
 
-    return STENCILOP_COUNT;
+    return (rhi::StencilOperation)STENCILOP_COUNT;
 }
 
-eFillMode GetFillModeByName(const String & fillModeStr)
-{
-    for(uint32 i = 0; i < FILLMODE_COUNT; i++)
-        if(fillModeStr == FILL_MODE_NAMES[i])
-            return (eFillMode)i;
 
-    return FILLMODE_COUNT;
+/*RHI_COMPLETE - make this stuff correspond with PolygonGroup::UpdateDataPointersAndStreams*/
+inline uint32 GetPossibleTexcoordSemantic(uint32 index)
+{
+    switch (index)
+    {
+    case 0:
+        return EVF_TEXCOORD0;// | EVF_CUBETEXCOORD0;
+    case 1:
+        return EVF_TEXCOORD1;// | EVF_CUBETEXCOORD1;
+    case 2:
+        return EVF_TEXCOORD2;// | EVF_CUBETEXCOORD2;
+    case 3:
+        return EVF_PIVOT; //    | EVF_TEXCOORD3 | EVF_CUBETEXCOORD3;
+    case 4:
+        return EVF_ANGLE_SIN_COS;
+    case 5:
+        return EVF_FLEXIBILITY;
+    }
+    
+    return 0;
+}
+
+
+uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout)
+{
+    uint32 res = 0;
+    for (uint32 i = 0, sz = layout.ElementCount(); i < sz; ++i)
+    {
+        rhi::VertexSemantics semantic = layout.ElementSemantics(i);
+        switch (semantic)
+        {
+        case rhi::VS_POSITION:
+            res |= EVF_VERTEX;
+            break;
+        case rhi::VS_NORMAL:
+            res |= EVF_NORMAL;
+            break;
+        case rhi::VS_COLOR:
+            res |= EVF_COLOR;
+            break;
+        case rhi::VS_TEXCOORD:
+            res |= GetPossibleTexcoordSemantic(layout.ElementSemanticsIndex(i));
+            break;
+        case rhi::VS_TANGENT:
+            res |= EVF_TANGENT;
+            break;
+        case rhi::VS_BINORMAL:
+            res |= EVF_BINORMAL;
+            break;
+        case rhi::VS_BLENDWEIGHT:
+            res |= EVF_JOINTWEIGHT;
+            break;
+        case rhi::VS_BLENDINDEX:
+            res |= EVF_JOINTINDEX;
+            break;
+        default: break;
+        }
+
+    }    
+    return res;
 }
 
 };

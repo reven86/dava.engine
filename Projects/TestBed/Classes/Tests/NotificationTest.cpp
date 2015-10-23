@@ -136,7 +136,6 @@ void NotificationScreen::Update(float32 timeElapsed)
 
 void NotificationScreen::Draw(const UIGeometricData &geometricData)
 {
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void NotificationScreen::UpdateNotification()

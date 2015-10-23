@@ -101,11 +101,16 @@ public:
 	const T & GetValue(float32 t) 
 	{
 		int32 keysSize = (int32)PropertyLine<T>::keys.size();
-		if(t > PropertyLine<T>::keys[keysSize - 1].t)
+        DVASSERT(keysSize);
+        if(t > PropertyLine<T>::keys[keysSize - 1].t)
 		{
 			return PropertyLine<T>::keys[keysSize - 1].value;
 		}
-		if (PropertyLine<T>::keys.size() == 2)
+        if (t <= PropertyLine<T>::keys[0].t)
+        {
+            return PropertyLine<T>::keys[0].value;
+        }
+        if (PropertyLine<T>::keys.size() == 2)
 		{
 			if (t < PropertyLine<T>::keys[1].t)
 			{

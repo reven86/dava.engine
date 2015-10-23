@@ -53,8 +53,8 @@ void CursorSystem::OnDeactivated()
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
-    DavaGLWidget* davaGLWidget = EditorCore::Instance()->GetMainWindow()->GetGLWidget();
-    auto view = davaGLWidget->GetGLWindow();
+    DavaGLWidget* davaGLWidget = EditorCore::Instance()->GetMainWindow()->previewWidget->GetGLWidget();
+    auto view = davaGLWidget->GetGLView();
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
         view->unsetCursor();

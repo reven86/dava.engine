@@ -43,7 +43,6 @@ class PropertiesWidget;
 class LibraryWidget;
 class PreviewWidget;
 
-class DavaGLWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
 class Document;
@@ -65,14 +64,15 @@ public:
     explicit MainWindow(QWidget *parent = 0);
 
     ~MainWindow();
+
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
-    DavaGLWidget* GetGLWidget();
-    DialogReloadSprites* GetDialogReloadSprites();
+
+    DialogReloadSprites *GetDialogReloadSprites() const;
     QCheckBox* GetCheckboxEmulation();
 
 protected:

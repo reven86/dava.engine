@@ -79,14 +79,15 @@ private:
     using HIDConvPair = std::pair<NativeHIDType, DeviceInfo::eHIDType>;
     Vector<HIDConvPair> HidConvSet =
     {
-    {UNKNOWN, DeviceInfo::HID_UNKNOWN_TYPE},
-    {POINTER, DeviceInfo::HID_POINTER_TYPE},
-    {MOUSE, DeviceInfo::HID_MOUSE_TYPE},
-    {JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE},
-    {GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE},
-    {KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE},
-    {KEYPAD, DeviceInfo::HID_KEYPAD_TYPE},
-    {SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE}};
+      { UNKNOWN, DeviceInfo::HID_UNKNOWN_TYPE },
+      { POINTER, DeviceInfo::HID_POINTER_TYPE },
+      { MOUSE, DeviceInfo::HID_MOUSE_TYPE },
+      { JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE },
+      { GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE },
+      { KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE },
+      { KEYPAD, DeviceInfo::HID_KEYPAD_TYPE },
+      { SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE }
+    };
 
     Windows::Devices::Enumeration::DeviceWatcher ^ CreateDeviceWatcher(NativeHIDType type);
     void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation ^ information);

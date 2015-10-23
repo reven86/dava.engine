@@ -69,7 +69,7 @@ void CoreWin32PlatformBase::Quit()
 }
 
 void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
-{
+{ 
     RECT wndRect;
     GetWindowRect(hWnd, &wndRect);
     int centerX = (int)((wndRect.left + wndRect.right) >> 1);

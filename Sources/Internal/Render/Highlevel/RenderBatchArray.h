@@ -33,94 +33,70 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderBatch.h"
-#include "Render/Highlevel/RenderLayer.h"
-#include "Render/Highlevel/RenderFastNames.h"
-#include "Render/Highlevel/VisibilityArray.h"
 
 namespace DAVA
 {
 
-class RenderLayerBatchArray;
-class RenderPassBatchArray
+class RenderBatchArray
 {
 public:
-    RenderPassBatchArray();
-    ~RenderPassBatchArray();
-    
-    void InitPassLayers(RenderPass * pass);
-    void InitPassLayersWithSingleLayer(RenderPass * renderPass, RenderLayerBatchArray * singleLayer);
-    void Clear();
-
-    void PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera);
-    inline void AddRenderBatch(RenderLayerID id, RenderBatch * renderBatch);
-    inline RenderLayerBatchArray * Get(RenderLayerID id) { return layerBatchArrays[id]; };
-
-private:
-    Vector<Matrix4> cameraWorldMatrices;
-    RenderLayerBatchArray* layerBatchArrays[RENDER_LAYER_ID_COUNT];
-    friend class RenderLayerBatchArray;
-};
-
-class RenderLayerBatchArray
-{
-public:
-    RenderLayerBatchArray(uint32 sortingFlags);
-    virtual ~RenderLayerBatchArray();
-    
     enum
     {
         SORT_ENABLED = 1 << 0,
         SORT_BY_MATERIAL = 1 << 1,
         SORT_BY_DISTANCE_BACK_TO_FRONT = 1 << 2,
         SORT_BY_DISTANCE_FRONT_TO_BACK = 1 << 3,
-        
+
         SORT_REQUIRED = 1 << 4,
     };
-    
-    static const uint32 SORT_THIS_FRAME = SORT_ENABLED | SORT_REQUIRED;
-    
-    void Clear();
-    inline void AddRenderBatch(RenderBatch * batch);
-    uint32 GetRenderBatchCount();
-    RenderBatch * Get(uint32 index);
 
-    inline void ForceLayerSort();
-	const FastName & GetName();
+    static const uint32 SORT_THIS_FRAME = SORT_ENABLED | SORT_REQUIRED;
+
+    RenderBatchArray();
+    
+    inline void Clear();
+    inline void AddRenderBatch(RenderBatch * batch);
+    inline uint32 GetRenderBatchCount() const;
+    inline RenderBatch * Get(uint32 index) const;
 
     void Sort(Camera * camera);
-
-	void SetVisible(bool visible);
-	bool GetVisible();
-    
-    inline void SetFlags(uint32 flags);
+    inline void SetSortingFlags(uint32 flags);
     
 private:
     Vector<RenderBatch*> renderBatchArray;
-    uint32 flags;
+    uint32 sortFlags;
     static bool MaterialCompareFunction(const RenderBatch * a, const RenderBatch * b);
 public:
-    INTROSPECTION(RenderLayerBatchArray,
+    INTROSPECTION(RenderBatchArray,
         COLLECTION(renderBatchArray, "Render Batch Array", I_EDIT)
     );
 };
-	
-	inline void RenderPassBatchArray::AddRenderBatch(RenderLayerID id, RenderBatch * renderBatch)
-	{
-        //layerBatchArrays[id]->renderBatchArray->push_back(renderBatch);
-		layerBatchArrays[id]->AddRenderBatch(renderBatch);
-	}
-	
-	inline void RenderLayerBatchArray::AddRenderBatch(RenderBatch * batch)
-	{
-		renderBatchArray.push_back(batch);
-	}
 
-    inline void RenderLayerBatchArray::SetFlags(uint32 _flags)
-    {
-        flags = _flags;
-    }
+inline void RenderBatchArray::Clear()
+{
+    renderBatchArray.clear();
+}
 
-    
+inline void RenderBatchArray::AddRenderBatch(RenderBatch * batch)
+{
+	renderBatchArray.push_back(batch);
+}
+
+inline void RenderBatchArray::SetSortingFlags(uint32 _flags)
+{
+    sortFlags = _flags;
+}
+
+inline uint32 RenderBatchArray::GetRenderBatchCount() const
+{
+    return (uint32)renderBatchArray.size();
+}
+
+inline RenderBatch * RenderBatchArray::Get(uint32 index) const
+{
+    return renderBatchArray[index];
+}
+
 } // ns
 
 #endif	/* __DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__ */

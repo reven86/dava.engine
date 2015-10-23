@@ -29,10 +29,10 @@
 
 #include "UI/UIParticles.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 namespace DAVA {
 
@@ -232,12 +232,32 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
     effect->SetExtertnalValue("scale", geometricData.scale.x);
     system->Process(updateTime);
     updateTime = 0.0f;
-    
-    RenderSystem2D::Instance()->UpdateClip();
-
+        
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &Vector3::Zero, (pointer_size)&Vector3::Zero);
     effect->effectRenderObject->PrepareToRender(defaultCamera);
-    for (int32 i=0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i<sz; ++i)
-        effect->effectRenderObject->GetActiveRenderBatch(i)->Draw(PASS_FORWARD, defaultCamera);
+    effect->effectRenderObject->BindDynamicParameters(defaultCamera);
+    
+    rhi::Packet packet;
+    for (int32 i = 0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i < sz; ++i)
+    {
+        RenderBatch * batch = effect->effectRenderObject->GetActiveRenderBatch(i);
+        NMaterial *material = batch->GetMaterial();
+        material->PreBuildMaterial(PASS_FORWARD);
+        material->BindParams(packet);
+        packet.vertexStreamCount = 1;
+        packet.vertexStream[0] = batch->vertexBuffer;
+        packet.baseVertex = batch->vertexBase;
+        packet.vertexCount = batch->vertexCount;
+        packet.indexBuffer = batch->indexBuffer;
+        packet.primitiveType = batch->primitiveType;
+        packet.primitiveCount = batch->indexCount / 3;
+        packet.vertexLayoutUID = batch->vertexLayoutId;
+        packet.startIndex = batch->startIndex;
+        DVASSERT(packet.primitiveCount);
+        packet.debugMarker = "UIParticles";
+        RenderSystem2D::Instance()->DrawPacket(packet);
+    }                
+
 }
 
 void UIParticles::SetExtertnalValue(const String& name, float32 value)
@@ -261,7 +281,7 @@ void UIParticles::LoadEffect(const FilePath& path)
         serializationContext.SetScenePath(FilePath(path.GetDirectory()));
         serializationContext.SetVersion(10);
         serializationContext.SetScene(nullptr);
-        serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);
+        serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
         entity->Load(archive->children[0]->archive, &serializationContext);
         ParticleEffectComponent *effSrc = GetEffectComponent(entity);
         if (effSrc)
@@ -275,7 +295,6 @@ void UIParticles::LoadEffect(const FilePath& path)
         DVASSERT(!effect);
         effect = newEffect;
         effect->effectRenderObject->SetWorldTransformPtr(&matrix);
-        effect->effectRenderObject->Set2DMode(true);
         needHandleAutoStart = true;
     }
 }

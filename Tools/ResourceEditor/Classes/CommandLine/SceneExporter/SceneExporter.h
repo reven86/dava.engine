@@ -30,7 +30,6 @@
 #ifndef __SCENE_EXPORTER_H__
 #define __SCENE_EXPORTER_H__
 
-#include "DAVAEngine.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
 
@@ -71,16 +70,12 @@ protected:
     void CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog);
 
     bool ExportLandscape(Scene *scene, Set<String> &errorLog);
-    bool ExportVegetation(Scene *scene, Set<String> &errorLog);
-    
+
 protected:
-    
     SceneUtils sceneUtils;
-
-    eGPUFamily exportForGPU;
-	bool optimizeOnExport;
-
-	TextureConverter::eConvertQuality quality;
+    eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
+	TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
+	bool optimizeOnExport = false;
 };
 
 

@@ -30,6 +30,8 @@
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Utils/Utils.h"
+#include "Render/Renderer.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 namespace DAVA 
 {
@@ -94,12 +96,12 @@ const float32 & SpeedTreeObject::GetLightSmoothing() const
 void SpeedTreeObject::BindDynamicParameters(Camera * camera)
 {
     RenderObject::BindDynamicParameters(camera);
-    RenderManager::SetDynamicParam(PARAM_SPEED_TREE_TRUNK_OSCILLATION, &trunkOscillation, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_SPEED_TREE_LEAFS_OSCILLATION, &leafOscillation, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_SPEED_TREE_LIGHT_SMOOTHING, &lightSmoothing, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_TRUNK_OSCILLATION, &trunkOscillation, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_LEAFS_OSCILLATION, &leafOscillation, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_LIGHT_SMOOTHING, &lightSmoothing, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
     DVASSERT(sphericalHarmonics.size() == SPHERICAL_HARMONICS_BASIS_MAX_SIZE);
-    RenderManager::SetDynamicParam(PARAM_SPHERICAL_HARMONICS, &sphericalHarmonics[0], UPDATE_SEMANTIC_ALWAYS);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPHERICAL_HARMONICS, &sphericalHarmonics[0], DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 }
 
 void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
@@ -107,8 +109,17 @@ void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        NMaterial::eFlagValue flagValue = (renderBatchArray[k].lodIndex > maxAnimatedLod) ? NMaterial::FlagOff : NMaterial::FlagOn;
-        renderBatchArray[k].renderBatch->GetMaterial()->SetFlag(FLAG_WIND_ANIMATION, flagValue);
+        int32 flagValue = (renderBatchArray[k].lodIndex > maxAnimatedLod) ? 0 : 1;
+
+        auto material = renderBatchArray[k].renderBatch->GetMaterial();
+        if (material->HasLocalFlag(FLAG_WIND_ANIMATION))
+        {
+            material->SetFlag(FLAG_WIND_ANIMATION, flagValue);
+        }
+        else
+        {
+            material->AddFlag(FLAG_WIND_ANIMATION, flagValue);
+        }
     }
 }
 
@@ -154,9 +165,18 @@ void SpeedTreeObject::Load(KeyedArchive *archive, SerializationContext *serializ
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
     
+    //RHI_COMPLETE TODO: Remove setting WIND_ANIMATION flag. We need to add/set flag manualy (and save it) to reduce material prebuild count
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
-        renderBatchArray[k].renderBatch->GetMaterial()->SetFlag(FLAG_WIND_ANIMATION, NMaterial::FlagOn);
+    {
+        NMaterial *material = renderBatchArray[k].renderBatch->GetMaterial();
+        if (!material->HasLocalFlag(FLAG_WIND_ANIMATION))
+            material->AddFlag(FLAG_WIND_ANIMATION, 1);
+        else
+            material->SetFlag(FLAG_WIND_ANIMATION, 1);
+
+        material->PreBuildMaterial(PASS_FORWARD);
+    }
 }
 
 AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
@@ -200,11 +220,13 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
 
 bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch * batch)
 {
+
     if(batch && batch->GetMaterial())
     {
-        const NMaterialTemplate * material = batch->GetMaterial()->GetMaterialTemplate();
-        return (material->name == NMaterialName::SPEEDTREE_LEAF) || (material->name == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
+        const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();
+        return (materialFXName == NMaterialName::SPEEDTREE_LEAF) || (materialFXName == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
     }
+
     return false;
 }
 

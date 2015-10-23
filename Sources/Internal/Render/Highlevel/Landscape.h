@@ -36,7 +36,6 @@
 #include "Render/RenderBase.h"
 #include "Scene3D/Entity.h"
 #include "Render/Highlevel/Frustum.h"
-#include "Render/Highlevel/LandscapeCursor.h"
 #include "Render/Highlevel/RenderObject.h"
 
 #include "FileSystem/FilePath.h"
@@ -53,7 +52,6 @@ namespace DAVA
 class Scene;
 class Image;
 class Texture;
-class RenderDataObject;
 class Shader;
 class SceneFileV2;
 class Heightmap;
@@ -97,9 +95,6 @@ class LinearQuadTree
 {
 public:
     
-    
-    
-
 };
 
 /**    
@@ -123,10 +118,20 @@ public:
         TOP = 2,
         BOTTOM = 3,
     };
-    
 	Landscape();
 	virtual ~Landscape();
-    
+
+    const static FastName PARAM_TEXTURE_TILING;
+    const static FastName PARAM_TILE_COLOR0;
+    const static FastName PARAM_TILE_COLOR1;
+    const static FastName PARAM_TILE_COLOR2;
+    const static FastName PARAM_TILE_COLOR3;
+
+    const static FastName TEXTURE_COLOR;
+    const static FastName TEXTURE_TILE;
+    const static FastName TEXTURE_TILEMASK;
+    const static FastName TEXTURE_SPECULAR;
+
     /**
         \brief Set lod coefficients for dynamic roam landscape
         Default values: (60, 120, 240, 480)
@@ -134,35 +139,11 @@ public:
      */
     void SetLods(const Vector4 & lods);
     
-    
-    const static FastName PARAM_TILE_COLOR0;
-	const static FastName PARAM_TILE_COLOR1;
-	const static FastName PARAM_TILE_COLOR2;
-	const static FastName PARAM_TILE_COLOR3;
-
-    
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
         \param[in] landscapeBox axial-aligned bounding box of the landscape block
      */
     virtual void BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathname, const AABBox3 & landscapeBox);
-    
-    enum eTextureLevel
-    {
-        TEXTURE_COLOR = 0,  // in case of BLENDED_SHADER in alpha channel it can be tile mask for TILED_TEXTURES
-        TEXTURE_TILE_MASK,
-        TEXTURE_TILE0,   
-        TEXTURE_TILE1,
-        TEXTURE_TILE2,
-        TEXTURE_TILE3,
-        // TEXTURE_BUMP,
-        
-        TEXTURE_DETAIL, 
-        
-        TEXTURE_TILE_FULL, 
-        
-        TEXTURE_COUNT
-    };
 
 	//TODO: think about how to switch normal generation for landscape on/off
 	//ideally it should be runtime option and normal generaiton should happen when material that requires landscape has been set
@@ -176,75 +157,16 @@ public:
         Vector3 tangent;
 #endif
 	};
-    
-    /**
-        \brief Set texture for the specific texture level
-        
-     To render landscape you need to set textures.  
-        For RENDERING_MODE_TEXTURE you need to set only TEXTURE_TEXTURE0.
-        For RENDERING_MODE_DETAIL_SHADER you have to set TEXTURE_TEXTURE0 and TEXTURE_DETAIL
-        For RENDERING_MODE_BLENDED_SHADER you have to set TEXTURE_TEXTURE0, TEXTURE_TEXTURE1, TEXTURE_TEXTUREMASK
-          
-        \param[in] level level of texture you want to set
-        \param[in] textureName name of texture you want to open and set to specific level
-     */
-    void SetTexture(eTextureLevel level, const FilePath & textureName);
 
-    
-    /**
-     \brief Set texture for the specific texture level
-     
-     To render landscape you need to set textures.  
-     For RENDERING_MODE_TEXTURE you need to set only TEXTURE_TEXTURE0.
-     For RENDERING_MODE_DETAIL_SHADER you have to set TEXTURE_TEXTURE0 and TEXTURE_DETAIL
-     For RENDERING_MODE_BLENDED_SHADER you have to set TEXTURE_TEXTURE0, TEXTURE_TEXTURE1, TEXTURE_TEXTUREMASK
-     
-     \param[in] level level of texture you want to set
-     \param[in] texture you want to set to specific level
-     */
-    void SetTexture(eTextureLevel level, Texture * texture);
+    struct LanscapeBufferData
+    {
+        rhi::HVertexBuffer buffer;
+        LandscapeVertex *data;
+        uint32 dataSize;
 
-	/**
-        \brief Get texture that was previously set in SetTexture.
-        \param[in] level 
-        \returns current texture
-	 */
-	virtual Texture * GetTexture(eTextureLevel level);
-    
-	/**
-        \brief Get texture name that was previously set in SetTexture.
-        \param[in] level level of texture you want to get name
-        \returns current texture name
-	 */
-    const FilePath & GetTextureName(eTextureLevel level);
+    };
 
-	/**
-        \brief Set texture name for export.
-        \param[in] level level of texture you want to set name
-        \param[in] newTextureName new texture name
-	 */
-    void SetTextureName(eTextureLevel level, const FilePath &newTextureName);
-    
-    
-	/**
-        \brief Set tiling for specific texture level.
-        This function gives you can control of tiling for specific landscape level.
-     */    
-    void SetTextureTiling(eTextureLevel level, const Vector2 & tiling);
-
-    /**
-        \brief Get tiling for specified texture level.
-        \returns Tiling for specified texture level.
-     */
-    Vector2 GetTextureTiling(eTextureLevel level); 
-
-    void SetTileColor(eTextureLevel level, const Color & color);
-    Color GetTileColor(eTextureLevel level);
-
-    /**
-        \brief Overloaded draw function to draw landscape
-     */
-	virtual void Draw(Camera * camera);
+    void PrepareToRender(Camera * camera) override;
 
 	/**
         \brief Get landscape mesh geometry.
@@ -259,174 +181,117 @@ public:
         \returns pathname of heightmap
      */
     const FilePath & GetHeightmapPathname();
-	
 	void SetHeightmapPathname(const FilePath & newPath);
 	
 	float32 GetLandscapeSize() const;
-	
 	void SetLandscapeSize(float32 newSize);
 
 	float32 GetLandscapeHeight() const;
-	
 	void SetLandscapeHeight(float32 newHeight);
     
-    void Create(NMaterial *fromMaterial = NULL);
+    void GetDataNodes(Set<DataNode*> & dataNodes) override;
+
     void Save(KeyedArchive * archive, SerializationContext * serializationContext);
     void Load(KeyedArchive * archive, SerializationContext * serializationContext);
-
-    DAVA_DEPRECATED(void LoadFog(KeyedArchive * archive, SerializationContext * serializationContext));
-    DAVA_DEPRECATED(void LoadMaterialProps(KeyedArchive * archive, SerializationContext * serializationContext));
     
     // TODO: Need comment here
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
 	Vector3 GetPoint(int16 x, int16 y, uint16 height) const;
 
-	void CursorEnable();
-	void CursorDisable();
-
     Heightmap *GetHeightmap();
     virtual void SetHeightmap(Heightmap *height);
     
-//    virtual void UpdateFullTiledTexture();
-//    FilePath SaveFullTiledTexture();
-    Texture *CreateLandscapeTexture();
-    LandscapeCursor *GetCursor();
-    
+    NMaterial * GetMaterial();
+    void SetMaterial(NMaterial * material);
+
 	virtual RenderObject * Clone(RenderObject *newObject);
+    virtual void RecalcBoundingBox();
 
 	int32 GetDrawIndices() const;
 	
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
+	// RHI_COMPLETE need remove this
+    void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
+    
+	void SetForceFirstLod(bool force);
+
 protected:
-	
-	const static FastName PARAM_CAMERA_POSITION;
-	const static FastName PARAM_TEXTURE0_TILING;
-	const static FastName PARAM_TEXTURE1_TILING;
-	const static FastName PARAM_TEXTURE2_TILING;
-	const static FastName PARAM_TEXTURE3_TILING;
-	const static FastName PARAM_PROP_SPECULAR_COLOR;
-	const static FastName PARAM_SPECULAR_SHININESS;
-	const static FastName TEXTURE_SPECULAR_MAP;
-	const static FastName TECHNIQUE_TILEMASK_NAME;
-    
-    class LandscapeQuad
+	static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
+	static const int32 RENDER_QUAD_WIDTH = 129;
+	static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
+    static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
+
+    struct LandscapeQuad
     {
-    public:
-        LandscapeQuad()
-        {
-            x = y = size = lod = 0;
-            rdoQuad = -1;
-            frame = 0;
-			startClipPlane = 0;
-        }
-        
-        int16   x, y;
-        //int16   xbuf, ybuf;
-        int16   size;
-        int8    lod;
-        int16   rdoQuad;
         AABBox3 bbox;
-		uint8 startClipPlane;
-        uint32  frame;
+        int16 x = 0;
+		int16 y = 0;
+        int16 size = 0;
+        int16 rdoQuad = -1;
+        uint32 frame = 0;
+		uint8 startClipPlane = 0;
+        int8 lod = 0;
     };
-   
-    static const int32 RENDER_QUAD_WIDTH = 129;
-    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 INDEX_ARRAY_COUNT = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6;
     
+    //RHI_COMPLETE need remove this
+    void CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 nodeSize,
+                               Vector< LandQuadTreeNode<LandscapeQuad> * > & nodes);
 
     void RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels);
     LandQuadTreeNode<LandscapeQuad> * FindNodeWithXY(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 quadX, int16 quadY, int16 quadSize);
     void FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode);
     void MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 & depth);
 
-    void BindMaterial(int32 lodLayer, Camera* camera);
-    void UnbindMaterial();
+    void GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags, Camera * camera);
+    void GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
+    void GenFans();
     
-    void DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
-    void Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags);
-    void DrawFans();
+    int16 AllocateQuadVertexBuffer(LandscapeQuad * quad);
+    void AllocateGeometryData();
+    void ReleaseGeometryData();
 
-    Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
-    
-    int16 AllocateRDOQuad(LandscapeQuad * quad);
-    void ReleaseAllRDOQuads();
-
-	int GetMaxLod(float32 quadDistance);
-	float32 GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad);
-	
-	void SetupMaterialProperties();
-	
-	void SetSpecularColor(const Color& color);
-	Color GetSpecularColor();
-	void SetSpecularShininess(const float32& shininess);
-	float32 GetSpecularShininess();
-	void SetSpecularMapPath(const FilePath& path);
-	FilePath GetSpecularMapPath();
+    void RestoreGeometry();
     
     void SetLandscapeSize(const Vector3 & newSize);
-	
-    Vector<LandscapeVertex *> landscapeVerticesArray;
-    Vector<RenderDataObject *> landscapeRDOArray;
-    
-    uint16 * indices;
-    //Texture * textures[TEXTURE_COUNT];
-    //Vector<FilePath> textureNames;
-    
-    int32 lodLevelsCount;
-    float32 lodDistance[8]; //
-    float32 lodSqDistance[8];
-    
-    LandQuadTreeNode<LandscapeQuad> quadTreeHead;
 
-    Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
-    
-    int32 allocatedMemoryForQuads;
-    
-    Vector3 cameraPos;
-    Frustum *frustum;
-    
-    ePrimitiveType primitypeType;
-    
-    //Vector2 textureTiling[TEXTURE_COUNT];
-    //Color tileColor[TEXTURE_COUNT];
-    
-	LandscapeCursor * cursor;
-        
-    int16 queueRdoQuad;
-    int32 queueRenderCount;
-    uint16 * queueDrawIndices;
-    
     void FlushQueue();
     void ClearQueue();
-    
     bool BuildHeightmap();
     void BuildLandscape();
-    Heightmap *heightmap;
+
+	void OnCreateLandscapeTextureCompleted(rhi::HSyncObject);
+	void UnregisterCreateTextureCallback();
+
+	void UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap);
+
+	void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
+
+private:
+    LandQuadTreeNode<LandscapeQuad> quadTreeHead;
+    Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
+    Vector<LandQuadTreeNode<LandscapeQuad>*> lod0quads;
+    Vector<LandQuadTreeNode<LandscapeQuad>*> lodNot0quads;
+    Vector<rhi::HVertexBuffer> vertexBuffers;
+    Vector<LanscapeBufferData> bufferRestoreData;
     FilePath heightmapPath;
-    
-	static const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
-    
-    Vector<LandQuadTreeNode<LandscapeQuad> *>lod0quads;
-    Vector<LandQuadTreeNode<LandscapeQuad> *>lodNot0quads;
 
-    int32 prevLodLayer;
-    
-    int32 flashQueueCounter;
-    
-    int32 nearLodIndex;
-    int32 farLodIndex;
-    
-	NMaterial* tileMaskMaterial;
-	//NMaterial* fullTiledMaterial;
-	//NMaterial* currentMaterial;
-	
-	uint32 drawIndices;
-	
-	void SetDefaultValues();
+    Frustum *frustum = nullptr;
+    Heightmap *heightmap = nullptr;
+	NMaterial* landscapeMaterial = nullptr;
+    FoliageSystem* foliageSystem = nullptr;
 
-    FoliageSystem* foliageSystem;
+    std::vector<uint16> indices;
+    float32 lodSqDistance[8];
+
+    uint32 vertexLayoutUID = 0;
+    int32 lodLevelsCount = 0;
+    int32 allocatedMemoryForQuads = 0;
+    int32 queueIndexCount = 0;
+    int32 flushQueueCounter = 0;
+	uint32 drawIndices = 0;
+    int16 queueRdoQuad = 0;	
+	bool forceFirstLod = false;
 
 public:
    
@@ -440,8 +305,3 @@ public:
 };
 
 #endif // __DAVAENGINE_LANDSCAPE_NODE_H__
-
-
-
-
-

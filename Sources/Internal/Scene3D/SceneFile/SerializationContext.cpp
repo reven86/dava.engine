@@ -32,460 +32,62 @@
 
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/RenderSystem.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Render/Material/NMaterial.h"
-#include "Render/Material.h"
 
 #include "Utils/StringFormat.h"
 
 #include "Render/Material/NMaterialNames.h"
+#include "Render/Texture.h"
 
 namespace DAVA
 {
-	class MaterialNameMapper
-	{
-	public:
+SerializationContext::SerializationContext()
+    : globalMaterialKey(0)
+{
+}
 
-		static FastName MapName(Material* mat)
-		{
-			FastName name;
-			
-			switch(mat->type)
-			{
-				case Material::MATERIAL_UNLIT_TEXTURE:
-				{
-					if(mat->GetAlphablend())
-                    {
-                        name = NMaterialName::TEXTURED_ALPHABLEND;
-                    }
-                    else if(mat->GetAlphatest())
-                    {
-                        name = NMaterialName::TEXTURED_ALPHATEST;
-                    }
-                    else
-                    {
-                        name = NMaterialName::TEXTURED_OPAQUE;
-                    }
-                    
-					break;
-				}
-					
-				case Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP:
-				{
-					if(mat->GetAlphatest())
-                    {
-                        name = NMaterialName::TEXTURE_LIGHTMAP_ALPHATEST;
-                    }
-                    else
-                    {
-                        name = NMaterialName::TEXTURE_LIGHTMAP_OPAQUE;
-                    }
+SerializationContext::~SerializationContext()
+{
+    for (Map<uint64, DataNode*>::iterator it = dataBlocks.begin();
+         it != dataBlocks.end();
+         ++it)
+    {
+        SafeRelease(it->second);
+    }
 
-					break;
-				}
-					
-				case Material::MATERIAL_UNLIT_TEXTURE_DECAL:
-				{
-					if(mat->GetAlphablend())
-                    {
-                        name = NMaterialName::DECAL_ALPHABLEND;
-                    }
-                    else if(mat->GetAlphatest())
-                    {
-                        name = NMaterialName::DECAL_ALPHATEST;
-                    }
-					else
-					{
-						name = NMaterialName::DECAL_OPAQUE;
-					}
+    for (Map<uint64, NMaterial*>::iterator it = importedMaterials.begin();
+         it != importedMaterials.end();
+         ++it)
+    {
+        SafeRelease(it->second);
+    }
 
-					break;
-				}
-					
-				case Material::MATERIAL_UNLIT_TEXTURE_DETAIL:
-				{
-					if(mat->GetAlphablend())
-                    {
-                        name = NMaterialName::DETAIL_ALPHABLEND;
-                    }
-                    else if(mat->GetAlphatest())
-                    {
-                        name = NMaterialName::DETAIL_ALPHATEST;
-                    }
-					else
-					{
-						name = NMaterialName::DETAIL_OPAQUE;
-					}
-                    
-					break;
-				}
-					
-				case Material::MATERIAL_VERTEX_LIT_TEXTURE:
-				{
-					if(mat->GetAlphatest())
-                    {
-                        name = NMaterialName::VERTEXLIT_ALPHATEST;
-                    }
-                    else
-                    {
-                        name = NMaterialName::VERTEXLIT_OPAQUE;
-                    }
-					break;
-				}
-					
-				case Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE:
-				{
-					if(mat->GetAlphatest())
-                    {
-                        name = NMaterialName::PIXELLIT_ALPHATEST;
-                    }
-                    else
-                    {
-                        name = NMaterialName::PIXELLIT_OPAQUE;
-                    }
+    DVASSERT(materialBindings.size() == 0 && "Serialization context destroyed without resolving material bindings!");
+    materialBindings.clear();
+}
 
-					break;
-				}
-					
-				case Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR:
-				{
-					if(mat->GetAlphatest())
-                    {
-                        name = NMaterialName::PIXELLIT_SPECULAR_ALPHATEST;
-                    }
-                    else
-                    {
-                        name = NMaterialName::PIXELLIT_SPECULAR_OPAQUE;
-                    }
+void SerializationContext::ResolveMaterialBindings()
+{
+    size_t instanceCount = materialBindings.size();
+    for (size_t i = 0; i < instanceCount; ++i)
+    {
+        MaterialBinding& binding = materialBindings[i];
+        uint64 parentKey = (binding.parentKey) ? binding.parentKey : globalMaterialKey;
+        if (!parentKey)
+            continue;
 
-					break;
-				}
-					
-				case Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR_MAP:
-				{
-					if(mat->GetAlphatest())
-                    {
-                        name = NMaterialName::PIXELLIT_SPECULARMAP_ALPHATEST;
-                    }
-                    else
-                    {
-                        name = NMaterialName::PIXELLIT_SPECULARMAP_OPAQUE;
-                    }
+        NMaterial* parentMat = static_cast<NMaterial*>(GetDataBlock(parentKey));
 
-					break;
-				}
-					
-				case Material::MATERIAL_VERTEX_COLOR_ALPHABLENDED:
-				{
-					if(mat->GetAlphablend())
-                    {
-                        name = NMaterialName::VERTEXCOLOR_ALPHABLEND;
-                    }
-                    else
-                    {
-                        name = NMaterialName::VERTEXCOLOR_OPAQUE;
-                    }
-
-					break;
-				}
-					
-				case Material::MATERIAL_VERTEX_COLOR_ALPHABLENDED_FRAME_BLEND:
-				{
-					if(mat->GetAlphablend())
-                    {
-                        name = NMaterialName::VERTEXCOLOR_FRAMEBLEND_ALPHABLEND;
-                    }
-                    else
-                    {
-                        name = NMaterialName::VERTEXCOLOR_FRAMEBLEND_OPAQUE;
-                    }
-					
-					break;
-
-				}
-					
-				case Material::MATERIAL_SPEED_TREE_LEAF:
-				{
-					name = NMaterialName::SPEEDTREE_LEAF;
-					break;
-				}
-					
-				case Material::MATERIAL_SKYBOX:
-				{
-					name = NMaterialName::SKYBOX;
-					break;
-				}
-					
-				default:
-					break;
-			};
-			
-			return name;
-		}
-        
-	};
-
-	SerializationContext::SerializationContext()
-	{ }
-
-	SerializationContext::~SerializationContext()
-	{
-		for(Map<uint64, DataNode*>::iterator it = dataBlocks.begin();
-			it != dataBlocks.end();
-			++it)
-		{
-			SafeRelease(it->second);
-		}
-		
-		for(Map<uint64, NMaterial*>::iterator it = importedMaterials.begin();
-			it != importedMaterials.end();
-			++it)
-		{
-			SafeRelease(it->second);
-		}
-
-		DVASSERT(materialBindings.size() == 0 && "Serialization context destroyed without resolving material bindings!");
-		materialBindings.clear();
-	}
-	
-	void SerializationContext::ResolveMaterialBindings()
-	{
-		size_t instanceCount = materialBindings.size();
-		for(size_t i = 0; i < instanceCount; ++i)
-		{
-			MaterialBinding& binding = materialBindings[i];
-			NMaterial* parentMat = static_cast<NMaterial*>(GetDataBlock(binding.parentKey));
-			
-			DVASSERT(parentMat);
-			if(parentMat)
-			{
-				binding.instanceMaterial->SetParent(parentMat, false);
-			}
-		}
-		
-		materialBindings.clear();
-	}
-
-	NMaterial* SerializationContext::ConvertOldMaterialToNewMaterial(Material* oldMaterial,
-																	 InstanceMaterialState* oldMaterialState,
-																	 uint64 oldMaterialId)
-	{
-        if(!oldMaterial) return NULL;
-        
-		//VI: need to build the following material structure:
-		//VI:     INSTANCE_WITH_COMMON_PROPS_AND_TEXTURES
-		//VI:     (this instance has
-		//VI:     same name as old material) ->
-		//VI:                                  OBJECT_INSTANCE
-		//VI:                                  (this instance is
-		//VI:                                  assigned to object
-		//VI:                                  and has specific
-		//VI:                                  properties set)
-		
-		NMaterial* material = static_cast<NMaterial*>(GetImportedMaterial(oldMaterialId));
-		if(NULL == material)
-		{
-			FastName newMaterialName = MaterialNameMapper::MapName(oldMaterial);
-			DVASSERT(newMaterialName.IsValid());
-			
-			material = NMaterial::CreateMaterial(FastName(oldMaterial->GetName()),
-													  newMaterialName,
-													  GetDefaultMaterialQuality());
-			
-						
-			if(oldMaterial->IsTextureShiftEnabled())
-			{
-				material->SetFlag(NMaterial::FLAG_TEXTURESHIFT, NMaterial::FlagOn);
-			}
-			
-			if(oldMaterial->IsFlatColorEnabled() &&
-               Material::MATERIAL_SKYBOX != oldMaterial->type)
-			{
-				material->SetFlag(NMaterial::FLAG_FLATCOLOR, NMaterial::FlagOn);
-			}
-			
-			Material::eViewOptions viewOptions = oldMaterial->GetViewOption();
-			switch(viewOptions)
-			{
-				case Material::MATERIAL_VIEW_TEXTURE_ONLY:
-				{
-					material->SetFlag(NMaterial::FLAG_TEXTUREONLY, NMaterial::FlagOn);
-					break;
-				}
-				case Material::MATERIAL_VIEW_LIGHTMAP_ONLY:
-				{
-					material->SetFlag(NMaterial::FLAG_LIGHTMAPONLY, NMaterial::FlagOn);
-					break;
-				}
-
-				default:
-					break;
-			}
-			
-			if(oldMaterial->GetSetupLightmap())
-			{
-				material->SetFlag(NMaterial::FLAG_SETUPLIGHTMAP, NMaterial::FlagOn);
-			}
-			
-			if (Material::MATERIAL_UNLIT_TEXTURE_DECAL == oldMaterial->type)
-			{
-				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DECAL));
-				material->SetTexture(NMaterial::TEXTURE_DECAL, tex);
-				
-				if(tex->isPink)
-				{
-					SafeRelease(tex);
-				}
-			}
-			else if(Material::MATERIAL_UNLIT_TEXTURE_DETAIL == oldMaterial->type)
-			{
-				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DETAIL));
-				material->SetTexture(NMaterial::TEXTURE_DETAIL, tex);
-				
-				if(tex->isPink)
-				{
-					SafeRelease(tex);
-				}
-			}
-			
-			if (Material::MATERIAL_FLAT_COLOR != oldMaterial->type &&
-				Material::MATERIAL_SKYBOX != oldMaterial->type)
-			{
-				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DIFFUSE));
-				material->SetTexture(NMaterial::TEXTURE_ALBEDO, tex);
-				
-				if(tex->isPink)
-				{
-					SafeRelease(tex);
-				}
-			}
-			
-			if(Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE == oldMaterial->type ||
-			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR == oldMaterial->type ||
-			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR_MAP == oldMaterial->type)
-			{
-				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_NORMALMAP));
-				material->SetTexture(NMaterial::TEXTURE_NORMAL, tex);
-				
-				if(tex->isPink)
-				{
-					SafeRelease(tex);
-				}
-			}
-            
-            if(Material::MATERIAL_SKYBOX == oldMaterial->type)
-            {
-                Texture* tex = PrepareTexture(Texture::TEXTURE_CUBE, oldMaterial->GetTexture(Material::TEXTURE_DIFFUSE));
-                material->SetTexture(NMaterial::TEXTURE_CUBEMAP, tex);
-                
-                if(tex->isPink)
-                {
-                    SafeRelease(tex);
-                }
-            }
-
-			if(oldMaterial->IsFlatColorEnabled() &&
-               Material::MATERIAL_SKYBOX != oldMaterial->type)
-			{
-				material->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &oldMaterialState->GetFlatColor());
-			}
-			
-			if(oldMaterial->IsTextureShiftEnabled())
-			{
-				material->SetPropertyValue(NMaterial::PARAM_TEXTURE0_SHIFT, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetTextureShift());
-			}
-			
-			if(Material::MATERIAL_VERTEX_LIT_TEXTURE == oldMaterial->type ||
-			   Material::MATERIAL_VERTEX_LIT_DETAIL == oldMaterial->type ||
-			   Material::MATERIAL_VERTEX_LIT_DECAL == oldMaterial->type ||
-			   Material::MATERIAL_VERTEX_LIT_LIGHTMAP == oldMaterial->type ||
-			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE == oldMaterial->type ||
-			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR == oldMaterial->type ||
-			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR_MAP == oldMaterial->type)
-			{
-				float32 shininess = oldMaterial->GetShininess();
-				material->SetPropertyValue(NMaterial::PARAM_MATERIAL_SPECULAR_SHININESS, Shader::UT_FLOAT, 1, &shininess);
-
-				Color ambientColor = oldMaterial->GetAmbientColor();
-				Color diffuseColor = oldMaterial->GetDiffuseColor();
-				Color specularColor = oldMaterial->GetSpecularColor();
-				
-				material->SetPropertyValue(NMaterial::PARAM_PROP_AMBIENT_COLOR, Shader::UT_FLOAT_VEC4, 1, &ambientColor);
-				material->SetPropertyValue(NMaterial::PARAM_PROP_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC4, 1, &diffuseColor);
-				material->SetPropertyValue(NMaterial::PARAM_PROP_SPECULAR_COLOR, Shader::UT_FLOAT_VEC4, 1, &specularColor);
-			}
-			else //VI: copy fog settings for static lit materials only! For tanks fog propeties will be set from scene
-			{
-				if(oldMaterial->IsFogEnabled())
-				{
-					Color fogColor = oldMaterial->GetFogColor();
-					float32 fogDensity = oldMaterial->GetFogDensity();
-					
-					material->SetPropertyValue(NMaterial::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &fogColor);
-					material->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &fogDensity);
-				}
-			}
-			
-			//VI: material will be released by ~SerializationContext
-			SetImportedMaterial(oldMaterialId, material);
-		}
-		
-		NMaterial* instanceMaterial = NMaterial::CreateMaterialInstance();
-		
-		if(Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP == oldMaterial->type)
-		{
-			if(oldMaterialState)
-			{
-				instanceMaterial->GetIlluminationParams()->lightmapSize = oldMaterialState->GetLightmapSize();
-			}
-			
-			Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterialState ? oldMaterialState->GetLightmap() : NULL);
-			instanceMaterial->SetTexture(NMaterial::TEXTURE_LIGHTMAP, tex);
-			
-			if(tex->isPink)
-			{
-				SafeRelease(tex);
-			}
-		}
-
-        if(Material::MATERIAL_SPEED_TREE_LEAF == oldMaterial->type)
+        DVASSERT(parentMat);
+        if (parentMat != binding.childMaterial) //global material case
         {
-            instanceMaterial->SetPropertyValue(FastName("treeLeafColorMul"), Shader::UT_FLOAT_VEC4, 1, &(oldMaterial->treeLeafColor));
-            instanceMaterial->SetPropertyValue(FastName("treeLeafOcclusionMul"), Shader::UT_FLOAT, 1, &(oldMaterial->treeLeafOcclusionMul));
-            instanceMaterial->SetPropertyValue(FastName("treeLeafOcclusionOffset"), Shader::UT_FLOAT, 1, &(oldMaterial->treeLeafOcclusionOffset));
+            binding.childMaterial->SetParent(parentMat);
         }
-		if(oldMaterialState)
-		{
-			if(Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP == oldMaterial->type)
-			{
-				instanceMaterial->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetUVOffset());
-				instanceMaterial->SetPropertyValue(NMaterial::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetUVScale());
-			}
-		}
-		
-		instanceMaterial->SetParent(material);
-						
-		return instanceMaterial;
-	}
-			
-	Texture* SerializationContext::PrepareTexture(uint32 textureTypeHint,
-												  Texture* tx)
-	{
-		if(tx)
-		{
-			if(tx->isPink)
-			{
-				tx->Retain();
-			}
+    }
 
-			return tx;
-		}
-
-		return Texture::CreatePink((Texture::TextureType)textureTypeHint);
-//		return (tx) ? tx : Texture::CreatePink((Texture::TextureType)textureTypeHint);
-	}
-
+    materialBindings.clear();
+}
 
 void SerializationContext::AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos)
 {
@@ -504,15 +106,15 @@ void SerializationContext::AddRequestedPolygonGroupFormat(PolygonGroup *group, i
 
 void SerializationContext::LoadPolygonGroupData(File *file)
 {
-    int32 prerequiredVertexFormat = QualitySettingsSystem::Instance()->GetPrerequiredVertexFormat();
+    bool cutUnusedStreams = QualitySettingsSystem::Instance()->GetAllowCutUnusedVertexStreams();
     for (Map<PolygonGroup*, PolygonGroupLoadInfo>::iterator it = loadedPolygonGroups.begin(), e = loadedPolygonGroups.end(); it!=e; ++it)
     {
-        if (it->second.onScene)
+        if (it->second.onScene || !cutUnusedStreams)
         {
             file->Seek(it->second.filePos, File::SEEK_FROM_START);
             KeyedArchive * archive = new KeyedArchive();
             archive->Load(file);
-            it->first->LoadPolygonData(archive, this, it->second.requestedFormat | prerequiredVertexFormat);
+            it->first->LoadPolygonData(archive, this, it->second.requestedFormat, cutUnusedStreams);
             SafeRelease(archive);
         }
     }

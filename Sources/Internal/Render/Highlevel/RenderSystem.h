@@ -36,9 +36,7 @@
 #include "Entity/SceneSystem.h"
 #include "Render/Highlevel/IRenderUpdatable.h"
 #include "Render/Highlevel/SpatialTree.h"
-#include "Render/Highlevel/RenderLayerManager.h"
-#include "Render/Highlevel/RenderPassManager.h"
-#include "Render/Highlevel/ShadowBlendMode.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA
 {
@@ -51,9 +49,7 @@ class Camera;
 class Light;
 class ParticleEmitterSystem;
 class RenderHierarchy;
-class RenderPassBatchArray;
 class NMaterial;
-class NMaterialProperty;
 
 class RenderSystem
 {
@@ -61,10 +57,6 @@ public:
     RenderSystem();
     virtual ~RenderSystem();
     
-    /**
-        \brief Get Render Pass Manager to have ability to get all render passes from RenderSystem.
-     */
-    inline const RenderPassManager * GetRenderPassManager() const;
     /**
         \brief Get Render Hierarchy. It allow you to work with current render hierarchy and perform all main tasks with geometry on the level.
      */
@@ -79,16 +71,6 @@ public:
         \brief Unregister render objects for permanent rendering
      */
     void RemoveFromRender(RenderObject * renderObject);
-    
-    /**
-        \brief Render this object only on this frame
-     */
-    void RenderOnce(RenderObject * renderObject);
-    
-    /**
-        \brief Render this batch only on this frame.
-     */
-    void RenderOnce(RenderBatch * renderBatch);
     
     /**
         \brief Register batch
@@ -115,7 +97,7 @@ public:
     NMaterial *GetGlobalMaterial() const;
     
     void Update(float32 timeElapsed);
-    void Render(uint32 clearBuffers);
+    void Render();
     
     void MarkForUpdate(RenderObject * renderObject);
     void MarkForUpdate(Light * lightNode);
@@ -133,15 +115,7 @@ public:
     void RemoveLight(Light * light);
     Vector<Light*> & GetLights();
     void SetForceUpdateLights();
-
-	//RenderLayer * AddRenderLayer(const FastName & layerName, uint32 sortingFlags, const FastName & passName, const FastName & afterLayer);
-	//RenderPass * GetRenderPass(const FastName & passName);
     
-    void SetShadowRectColor(const Color &color);
-    const Color & GetShadowRectColor() const;
-	void SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode);
-	ShadowPassBlendMode::eBlend GetShadowBlendMode();
-	
 	void DebugDrawHierarchy(const Matrix4& cameraMatrix);
 
     RenderHierarchy * GetRenderHierarchy(){return renderHierarchy;}
@@ -150,6 +124,8 @@ public:
     
     inline RenderPass* GetMainRenderPass() const;
     
+    inline RenderHelper * GetDebugDrawer() const { return debugDrawer; }
+
 private:
 	void CreateSpatialTree();
     void ProcessClipping();
@@ -165,9 +141,6 @@ private:
     Vector<Light*> movedLights;
     RenderPass* mainRenderPass;
     
-    RenderPassManager renderPassManager;
-    
-    
     Vector<RenderObject*> renderObjectArray;	
     Vector<Light*> lights;
     bool forceUpdateLights;
@@ -180,19 +153,15 @@ private:
 
     NMaterial *globalMaterial;
 
+    RenderHelper * debugDrawer;
+
     friend class RenderPass;
-};
-    
-inline const RenderPassManager * RenderSystem::GetRenderPassManager() const
-{
-    return &renderPassManager;
 };
 
 inline RenderHierarchy * RenderSystem::GetRenderHierarchy() const
 {
     return renderHierarchy;
 }
-
     
 inline void RenderSystem::SetMainCamera(Camera * _camera)
 {

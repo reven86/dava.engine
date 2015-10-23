@@ -130,8 +130,8 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
         if (childRect != childControl->GetRect())
         {
             childControl->SetRect(childRect);
+        }
     }
-}
 }
 
 Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 currentContentOffset)
@@ -140,7 +140,7 @@ Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 current
 	// Get control's farest position inside scrollContainer
     const List<UIControl*>& childslist = parentControl->GetChildren();
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
-    {	
+    {
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
             continue;

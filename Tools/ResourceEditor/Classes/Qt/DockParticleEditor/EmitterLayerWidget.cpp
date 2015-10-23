@@ -36,7 +36,6 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
-
 #include <QHBoxLayout>
 #include <QGraphicsWidget>
 #include <QFile>
@@ -56,10 +55,10 @@ const EmitterLayerWidget::LayerTypeMap EmitterLayerWidget::layerTypeMap[] =
 
 const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[]=
 {
-	{BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA, "Alpha blend"},
-	{BLEND_ONE, BLEND_ONE, "Additive"},
-	{BLEND_SRC_ALPHA, BLEND_ONE, "Alpha additive"},
-	{BLEND_ONE_MINUS_DST_COLOR, BLEND_ONE, "Soft additive"}
+    {BLENDING_ALPHABLEND, "Alpha blend"},
+    {BLENDING_ADDITIVE, "Additive" },
+    {BLENDING_ALPHA_ADDITIVE, "Alpha additive"},
+    {BLENDING_SOFT_ADDITIVE, "Soft additive"},
 	/*{BLEND_DST_COLOR, BLEND_ZERO, "Multiplicative"},
 	{BLEND_DST_COLOR, BLEND_SRC_COLOR, "2x Multiplicative"}*/
 };
@@ -258,35 +257,26 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 	mainBox->addWidget(blendOptionsLabel);	
 	
 	presetLabel = new QLabel("Preset");
-	srcFactorLabel = new QLabel("SRC Factor");
-	dstFactorLabel = new QLabel("DST Factor");	
-	presetComboBox = new QComboBox();
-	srcFactorComboBox = new QComboBox();
-	dstFactorComboBox = new QComboBox();
-	srcFactorComboBox->setEnabled(false);
-	dstFactorComboBox->setEnabled(false);
-	FillBlendCombos();
+	
+	presetComboBox = new QComboBox();		
+    int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
+    for (int32 i = 0; i < presetsCount; i++)
+    {
+        presetComboBox->addItem(blendPresetsMap[i].presetName);
+    }
 	
 	QHBoxLayout *blendLayout = new QHBoxLayout();
 	QVBoxLayout *presetLayout = new QVBoxLayout();
-	QVBoxLayout *srcLayout = new QVBoxLayout();
-	QVBoxLayout *dstLayout = new QVBoxLayout();
+	
 
 	presetLayout->addWidget(presetLabel);
 	presetLayout->addWidget(presetComboBox);
-	srcLayout->addWidget(srcFactorLabel);
-	srcLayout->addWidget(srcFactorComboBox);
-	dstLayout->addWidget(dstFactorLabel);
-	dstLayout->addWidget(dstFactorComboBox);
 	
-	blendLayout->addLayout(presetLayout);
-	blendLayout->addLayout(srcLayout);
-	blendLayout->addLayout(dstLayout);
+	
+	blendLayout->addLayout(presetLayout);	
 	mainBox->addLayout(blendLayout);
 	
-	connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnPresetChanged()));
-	connect(srcFactorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
-	connect(dstFactorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+    connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));	
 
 	
 	fogCheckBox = new QCheckBox("Enable fog");	
@@ -450,8 +440,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     }
 	spritePathLabel->installEventFilter(this);
 
-	sprite = NULL;
-	blockSignals = false;
+	spriteUpdateTimer = new QTimer(this);
+	connect(spriteUpdateTimer, SIGNAL(timeout()), this, SLOT(OnSpriteUpdateTimerExpired()));
 }
 
 EmitterLayerWidget::~EmitterLayerWidget()
@@ -561,9 +551,7 @@ EmitterLayerWidget::~EmitterLayerWidget()
 		this,
 		SLOT(OnLodsChanged()));		
 
-	disconnect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnPresetChanged()));
-	disconnect(srcFactorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
-	disconnect(dstFactorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+    disconnect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));	
 	disconnect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 	disconnect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
@@ -588,10 +576,9 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effe
     this->effect = effect;
 	this->emitter = emitter;
 	this->layer = layer;
+
 	SetActiveScene(scene);
-	
 	Update(updateMinimized);
-	
 }
 
 void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
@@ -706,22 +693,6 @@ void EmitterLayerWidget::OnSpriteBtn()
 	OnValueChanged();
 }
 
-void EmitterLayerWidget::OnPresetChanged()
-{
-	if (blockSignals)
-		return;	
-	int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
-	int32 presetId = presetComboBox->currentIndex();
-	if (presetId>=presetsCount) //custom was selected
-		return;
-	blockSignals = true;
-	//-1 is because we don't even show blend none
-	srcFactorComboBox->setCurrentIndex(blendPresetsMap[presetId].srcFactor-1);
-	dstFactorComboBox->setCurrentIndex(blendPresetsMap[presetId].dstFactor-1);
-	blockSignals = false;
-	OnValueChanged();
-}
-
 void EmitterLayerWidget::OnValueChanged()
 {
 	if (blockSignals)
@@ -781,9 +752,7 @@ void EmitterLayerWidget::OnValueChanged()
 
 	ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
 
-	//+1 is because we dont even show blend none
-	eBlendMode srcFactor = (eBlendMode)(srcFactorComboBox->currentIndex()+1);
-	eBlendMode dstFactor = (eBlendMode)(dstFactorComboBox->currentIndex()+1);
+    eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
 
 	int32 particleOrientation = 0;
 	if (cameraFacingCheckBox->isChecked())
@@ -811,8 +780,7 @@ void EmitterLayerWidget::OnValueChanged()
 						 scaleVelocityFactorSpinBox->value(),
 						 isLoopedCheckBox->isChecked(),
 						 sprite,
-						 srcFactor,
-						 dstFactor,
+                         blending,
 						 fogCheckBox->isChecked(),
 						 frameBlendingCheckBox->isChecked(),
 						 particleOrientation,
@@ -880,6 +848,25 @@ void EmitterLayerWidget::OnLodsChanged()
 	emit ValueChanged();
 }
 
+void EmitterLayerWidget::OnSpriteUpdateTimerExpired()
+{
+	DVASSERT(!spriteUpdateTexturesStack.empty());
+
+	if (rhi::SyncObjectSignaled(spriteUpdateTexturesStack.top().first))
+	{
+		ScopedPtr<Image> image(spriteUpdateTexturesStack.top().second->CreateImageFromMemory());
+		spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
+
+		while (!spriteUpdateTexturesStack.empty())
+		{
+			SafeRelease(spriteUpdateTexturesStack.top().second);
+			spriteUpdateTexturesStack.pop();
+		}
+
+		spriteUpdateTimer->stop();
+	}
+}
+
 void EmitterLayerWidget::Update(bool updateMinimized)
 {
     blockSignals = true;
@@ -914,20 +901,16 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     if (sprite)
     {
-        Texture * renderTexture = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-        RenderHelper::Instance()->Set2DRenderTarget(renderTexture);
-        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
-        Sprite::DrawState drawState;
-        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
-        RenderSystem2D::Instance()->Draw(sprite, &drawState);
-        RenderSystem2D::Instance()->Flush();
-
-        RenderManager::Instance()->SetRenderTarget(0);
-        Image* image = renderTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-        spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
-        SafeRelease(image);
-        SafeRelease(renderTexture);
+		Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+		RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
+		{
+			Sprite::DrawState drawState = { };
+			drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
+			RenderSystem2D::Instance()->Draw(sprite, &drawState, Color::White);
+		}
+		RenderSystem2D::Instance()->EndRenderTargetPass();
+		spriteUpdateTexturesStack.push({rhi::GetCurrentFrameSyncObject(), renderTarget});
+		spriteUpdateTimer->start(0);
     }
     else
     {
@@ -949,19 +932,16 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     worldAlignCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
 
     //blend and fog
-    eBlendMode sFactor = layer->srcBlendFactor;
-    eBlendMode dFactor = layer->dstBlendFactor;
-    //-1 as we don't have BLEND_NONE
-    srcFactorComboBox->setCurrentIndex(sFactor-1);
-    dstFactorComboBox->setCurrentIndex(dFactor-1);
+
     int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
     int32 presetId;
     for (presetId=0; presetId<presetsCount; presetId++)
     {
-        if ((blendPresetsMap[presetId].srcFactor == sFactor)&&(blendPresetsMap[presetId].dstFactor == dFactor))
+        if (blendPresetsMap[presetId].blending == layer->blending)
             break;
     }
     presetComboBox->setCurrentIndex(presetId);
+
 
     fogCheckBox->setChecked(layer->enableFog);
 
@@ -1142,22 +1122,6 @@ void EmitterLayerWidget::FillLayerTypes()
 	}
 }
 
-void EmitterLayerWidget::FillBlendCombos()
-{
-	int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
-	for (int32 i=0; i<presetsCount; i++)
-	{
-		presetComboBox->addItem(blendPresetsMap[i].presetName);
-	}
-	presetComboBox->addItem("Custom");
-
-	for (int32 i = 1; i<BLEND_MODE_COUNT; i++) //start from 1 to avoid none
-	{
-		srcFactorComboBox->addItem(BLEND_MODE_NAMES[i].c_str());
-		dstFactorComboBox->addItem(BLEND_MODE_NAMES[i].c_str());
-	}
-}
-
 int32 EmitterLayerWidget::LayerTypeToIndex(ParticleLayer::eType layerType)
 {
 	int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
@@ -1210,11 +1174,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 	//blend and fog settings are set in inner emitter layers
 	blendOptionsLabel->setVisible(!isSuperemitter);
 	presetLabel->setVisible(!isSuperemitter);
-	presetComboBox->setVisible(!isSuperemitter);
-	srcFactorLabel->setVisible(!isSuperemitter);
-	srcFactorComboBox->setVisible(!isSuperemitter);
-	dstFactorLabel->setVisible(!isSuperemitter);
-	dstFactorComboBox->setVisible(!isSuperemitter);
+	presetComboBox->setVisible(!isSuperemitter);	
 	fogCheckBox->setVisible(!isSuperemitter);
 	frameBlendingCheckBox->setVisible(!isSuperemitter);
 

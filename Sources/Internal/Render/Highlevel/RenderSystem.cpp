@@ -32,20 +32,15 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/RenderPass.h"
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
-#include "Render/Highlevel/ShadowRect.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Light.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/Highlevel/SpatialTree.h"
 #include "Render/ShaderCache.h"
 
-// TODO: Move class to other place
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Utils/Utils.h"
 #include "Debug/Stats.h"
 
@@ -53,19 +48,18 @@ namespace DAVA
 {
 
 RenderSystem::RenderSystem()
-    :   renderPassManager()
-    ,   forceUpdateLights(false)
+    :   forceUpdateLights(false)
     ,   mainCamera(0)
     ,   drawCamera(0)
     ,   globalMaterial(NULL)
 {
-    //mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_FORWARD);
-    mainRenderPass = new MainForwardRenderPass(PASS_FORWARD, RENDER_PASS_FORWARD_ID);
-    //renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
+    mainRenderPass = new MainForwardRenderPass(PASS_FORWARD);
 
     renderHierarchy = new QuadTree(10);
 	hierarchyInitialized = false;   
 	markedObjects.reserve(100);
+
+    debugDrawer = new RenderHelper();
 }
 
 RenderSystem::~RenderSystem()
@@ -77,6 +71,8 @@ RenderSystem::~RenderSystem()
     
     SafeDelete(renderHierarchy);	
     SafeDelete(mainRenderPass);
+
+    SafeDelete(debugDrawer);
 }
     
 
@@ -136,7 +132,6 @@ void RenderSystem::AddRenderObject(RenderObject * renderObject)
         RenderBatch *batch = renderObject->GetRenderBatch(i);
         RegisterBatch(batch);
     }
-
 }
 
 void RenderSystem::RemoveRenderObject(RenderObject * renderObject)
@@ -163,43 +158,61 @@ void RenderSystem::UnregisterBatch(RenderBatch * batch)
 }
     
 void RenderSystem::RegisterMaterial(NMaterial * material)
-{
-    NMaterial * topParent = NULL;
+{     
+    NMaterial * topParent = nullptr;
 
-    // search for top material that isn't global
-    while(NULL != material && material->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
+    while (nullptr != material)
     {
         topParent = material;
         material = material->GetParent();
     }
 
     // set globalMaterial to be parent for top material
-    if(NULL != topParent)
+    if (nullptr != topParent && topParent != globalMaterial)
     {
-        topParent->SetParent(globalMaterial, false);
+        topParent->SetParent(globalMaterial);
     }
 }
     
 void RenderSystem::UnregisterMaterial(NMaterial * material)
 {
-    
+    /*
+    if (!material) return;
+
+    while (material->GetParent() && material->GetParent() != globalMaterial)
+    {
+        material = material->GetParent();
+    }
+
+    if (material->GetParent())
+    {
+        material->SetParent(nullptr);
+    }
+    */
 }
     
-void RenderSystem::SetGlobalMaterial(NMaterial *material)
+void RenderSystem::SetGlobalMaterial(NMaterial * newGlobalMaterial)
 {
-    SafeRelease(globalMaterial);
-    globalMaterial = SafeRetain(material);
-
-    uint32 count = static_cast<uint32>(renderObjectArray.size());
-    for(uint32 i = 0; i < count; ++i)
+    Set<DataNode*> dataNodes;
+    for (RenderObject* obj : renderObjectArray)
     {
-        RenderObject *obj = renderObjectArray[i];
-        uint32 countBatch = obj->GetRenderBatchCount();
-        for(uint32 j = 0; j < countBatch; ++j)
+        obj->GetDataNodes(dataNodes);
+    }
+    for (DataNode* dataNode : dataNodes)
+    {
+        NMaterial* batchMaterial = dynamic_cast<NMaterial*>(dataNode);
+        if (batchMaterial)
         {
-            RegisterMaterial(obj->GetRenderBatch(j)->GetMaterial());
+            while (batchMaterial->GetParent() && batchMaterial->GetParent() != globalMaterial && batchMaterial->GetParent() != newGlobalMaterial)
+            {
+                batchMaterial = batchMaterial->GetParent();
+            }
+            batchMaterial->SetParent(newGlobalMaterial);
         }
     }
+
+    SafeRelease(globalMaterial);
+    globalMaterial = SafeRetain(newGlobalMaterial);
 }
 
 NMaterial* RenderSystem::GetGlobalMaterial() const
@@ -365,53 +378,11 @@ void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 		renderHierarchy->DebugDraw(cameraMatrix);
 }
 
-void RenderSystem::Render(uint32 clearBuffers)
+void RenderSystem::Render()
 {
     TIME_PROFILE("RenderSystem::Render");
 
-    
-    mainRenderPass->Draw(this, clearBuffers);
-    
-    
-    //Logger::FrameworkDebug("OccludedRenderBatchCount: %d", RenderManager::Instance()->GetStats().occludedRenderBatchCount);
-}
-    
-void RenderSystem::SetShadowRectColor(const Color &color)
-{
-    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
-    DVASSERT(shadowVolume);
-
-    ShadowRect *shadowRect = shadowVolume->GetShadowRect();
-    DVASSERT(shadowRect);
-
-    shadowRect->SetColor(color);
-}
-    
-const Color & RenderSystem::GetShadowRectColor() const
-{
-    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
-    DVASSERT(shadowVolume);
-    
-    ShadowRect *shadowRect = shadowVolume->GetShadowRect();
-    DVASSERT(shadowRect);
-    
-    return shadowRect->GetColor();
-}
-	
-void RenderSystem::SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode)
-{
-	ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
-    DVASSERT(shadowVolume);
-
-	shadowVolume->SetBlendMode(blendMode);
-}
-	
-ShadowPassBlendMode::eBlend RenderSystem::GetShadowBlendMode()
-{
-	ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
-    DVASSERT(shadowVolume);
-
-	return shadowVolume->GetBlendMode();
+    mainRenderPass->Draw(this);
 }
 
 };

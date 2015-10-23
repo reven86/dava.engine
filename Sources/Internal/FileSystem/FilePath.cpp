@@ -112,9 +112,9 @@ void FilePath::InitializeBundleName()
 	FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
     SetBundleName(execDirectory);
     if (workingDirectory != execDirectory)
-	{
+    {
         AddResourcesFolder(workingDirectory);
-	}
+    }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
     //additional resource path for resources

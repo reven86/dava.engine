@@ -31,7 +31,6 @@
 #include "Qt/Settings/SettingsManager.h"
 
 // framework
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 #define LOWEST_GRID_STEP 0.1f
@@ -39,11 +38,7 @@
 
 SceneGridSystem::SceneGridSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
-{
-	renderState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
-        DAVA::RenderStateData::STATE_COLORMASK_ALL |
-        DAVA::RenderStateData::STATE_DEPTH_WRITE | 
-        DAVA::RenderStateData::STATE_DEPTH_TEST);
+{	
 }
 
 SceneGridSystem::~SceneGridSystem()
@@ -64,13 +59,6 @@ void SceneGridSystem::Draw()
 
     if(gridStep >= LOWEST_GRID_STEP && gridMax >= LOWEST_GRID_SIZE)
     {
-	    DAVA::RenderManager* rm = DAVA::RenderManager::Instance();
-	    DAVA::RenderHelper* rh = DAVA::RenderHelper::Instance();
-
-        rm->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
-	    rm->FlushState();
-	
-	    rm->SetColor(0.4f, 0.4f, 0.4f, 1.0f);
 	    for(DAVA::float32 x = -gridMax; x <= gridMax; x += gridStep)
 	    {
 		    DAVA::Vector3 v1(x, -gridMax, 0);
@@ -81,15 +69,13 @@ void SceneGridSystem::Draw()
 		
 		    if (x!= 0.0f)
 		    {
-			    rh->DrawLine(v1, v2, 1.0f, renderState);
-			    rh->DrawLine(v3, v4, 1.0f, renderState);
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(v1, v2, DAVA::Color(0.4f, 0.4f, 0.4f, 1.0f));
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(v3, v4, DAVA::Color(0.4f, 0.4f, 0.4f, 1.0f));
 		    }
 	    }
 	
-	    rm->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
-	    rh->DrawLine(DAVA::Vector3(-gridMax, 0, 0), DAVA::Vector3(gridMax, 0, 0), 1.0f, renderState);
-	    rh->DrawLine(DAVA::Vector3(0, -gridMax, 0), DAVA::Vector3(0, gridMax, 0), 1.0f, renderState);
-	    rm->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(DAVA::Vector3(-gridMax, 0, 0), DAVA::Vector3(gridMax, 0, 0), DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f));
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(DAVA::Vector3(0, -gridMax, 0), DAVA::Vector3(0, gridMax, 0), DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f));
     }
 }
 

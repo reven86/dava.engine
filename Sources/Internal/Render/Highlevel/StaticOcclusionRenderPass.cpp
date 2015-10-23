@@ -25,9 +25,6 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
-
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/StaticOcclusionRenderPass.h"
 #include "Render/Highlevel/RenderBatchArray.h"
@@ -37,77 +34,88 @@
 namespace DAVA
 {
 
-StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * _occlusion, RenderPassID id)
-    : RenderPass(name, id)
-    , occlusion(_occlusion)
+static const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;// / 4;
+
+StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
 {
+    uint32 sortingFlags = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
+
+    rhi::Texture::Descriptor descriptor;
     
-    AddRenderLayer(new RenderLayer(LAYER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_OPAQUE_ID), LAST_LAYER);
-    AddRenderLayer(new RenderLayer(LAYER_AFTER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_OPAQUE_ID), LAST_LAYER);
-    AddRenderLayer(new RenderLayer(LAYER_ALPHA_TEST_LAYER, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_ALPHA_TEST_LAYER_ID), LAST_LAYER);
-    AddRenderLayer(new RenderLayer(LAYER_WATER, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_WATER_ID), LAST_LAYER);    
-    AddRenderLayer(new RenderLayer(LAYER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_TRANSLUCENT_ID), LAST_LAYER);
-    AddRenderLayer(new RenderLayer(LAYER_AFTER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_TRANSLUCENT_ID), LAST_LAYER);
-    
-    renderPassBatchArray->InitPassLayers(this);
+    descriptor.width = OCCLUSION_RENDER_TARGET_SIZE;
+    descriptor.height = OCCLUSION_RENDER_TARGET_SIZE;
+    descriptor.autoGenMipmaps = false;
+    descriptor.type = rhi::TEXTURE_TYPE_2D;
+    descriptor.format = rhi::TEXTURE_FORMAT_R8G8B8A8;
+    colorBuffer = rhi::CreateTexture(descriptor);
+        
+    descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
+    depthBuffer = rhi::CreateTexture(descriptor);
+
+    passConfig.colorBuffer[0].texture = colorBuffer;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+    passConfig.depthStencilBuffer.texture = depthBuffer;
+    passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+
+    passConfig.viewport.width = OCCLUSION_RENDER_TARGET_SIZE;
+    passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE;
 }
-    
+
 StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
 {
-    
+    rhi::DeleteTexture(colorBuffer);
+    rhi::DeleteTexture(depthBuffer);
 }
 
-
-
-
-    
 bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const RenderBatch *  b)
 {
     return a->layerSortingKey < b->layerSortingKey;
-}
+}    
     
-void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffers)
+void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, Camera *occlusionCamera, StaticOcclusionFrameResult& target)
 {
     Camera *mainCamera = occlusionCamera;
     Camera *drawCamera = occlusionCamera;
 
-    DVASSERT(drawCamera);
-    DVASSERT(mainCamera);
-    drawCamera->SetupDynamicParameters();            
-    if (mainCamera!=drawCamera)    
-        mainCamera->PrepareDynamicParameters();
+    SetupCameraParams(mainCamera, drawCamera);
 
-    PrepareVisibilityArrays(mainCamera, renderSystem);
-
-    ClearBuffers(clearBuffers);
+    PrepareVisibilityArrays(mainCamera, renderSystem);    
 	
     Vector<RenderBatch*> terrainBatches;
     Vector<RenderBatch*> batches;
     
     terrainBatches.clear();
-    batches.clear();
+    batches.clear();    
     
     uint32 size = (uint32)renderLayers.size();
     for (uint32 k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
-        RenderLayerBatchArray * renderLayerBatchArray = renderPassBatchArray->Get(layer->GetRenderLayerID());
+        const RenderBatchArray & renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
     
-        uint32 batchCount = (uint32)renderLayerBatchArray->GetRenderBatchCount();
+        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch * batch = renderLayerBatchArray->Get(batchIndex);
+            RenderBatch * batch = renderBatchArray.Get(batchIndex);
             if (batch->GetRenderObject()->GetType() == RenderObject::TYPE_LANDSCAPE)
             {
                 terrainBatches.push_back(batch);
-            }else
+            }
+            else
             {
                 batches.push_back(batch);
             }
         }
     }
-    
-    //glColorMask(false, false, false, false);
+        
     // Sort
     Vector3 cameraPosition = mainCamera->GetPosition();
     
@@ -125,107 +133,52 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
     }
     std::sort(batches.begin(), batches.end(), CompareFunction);
     
-//    size = (uint32)terrainBatches.size();
-//    for (uint32 k = 0; k < size; ++k)
-//    {
-//        RenderBatch * batch = terrainBatches[k];
-//        batch->Draw(name, camera);
-//    }
-//    
-//    size = (uint32)batches.size();
-//    for (uint32 k = 0; k < size; ++k)
-//    {
-//        RenderBatch * batch = batches[k];
-//        batch->Draw(name, camera);
-//    }
+    rhi::HQueryBuffer queryBuffer = rhi::CreateQueryBuffer(batches.size());
     
-    //
-//    glDepthFunc(GL_LEQUAL);
-//    glDepthMask(GL_FALSE);
+    target.queryBuffer = queryBuffer;
+    
+    passConfig.queryBuffer = queryBuffer;
+    renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+    rhi::BeginRenderPass(renderPass);
+    rhi::BeginPacketList(packetList);
+    
 
-    OcclusionQueryPool & manager = occlusion->GetOcclusionQueryPool();
+    rhi::Packet packet;
     size = (uint32)terrainBatches.size();
     for (uint32 k = 0; k < size; ++k)
-    {
-        OcclusionQueryPoolHandle handle = manager.CreateQueryObject();
-        OcclusionQuery & query = manager.Get(handle);
-        
+    {                
         RenderBatch * batch = terrainBatches[k];
         
-        query.BeginQuery();
-        batch->Draw(name, mainCamera);
-        query.EndQuery();
-        
-        occlusion->RecordFrameQuery(batch, handle);
+        RenderObject* renderObject = batch->GetRenderObject();
+        renderObject->BindDynamicParameters(mainCamera);
+        NMaterial *mat = batch->GetMaterial();
+        DVASSERT(mat); //bad idea to have landscape not staged for occlusion render pass
+        batch->BindGeometryData(packet);
+        DVASSERT(packet.primitiveCount);
+        mat->BindParams(packet);
+        rhi::AddPacket(packetList, packet);                                
     }
     
-    size = (uint32)batches.size();
+    size = (uint32)batches.size();    
+    target.frameRequests.resize(size, nullptr);
     for (uint32 k = 0; k < size; ++k)
-    {
-        OcclusionQueryPoolHandle handle = manager.CreateQueryObject();
-        OcclusionQuery & query = manager.Get(handle);
-        
+    {                
         RenderBatch * batch = batches[k];
-        
-        query.BeginQuery();
-        batch->Draw(name, mainCamera);
-        query.EndQuery();
-        
-        //glFlush();
-        
-        
-//        while (!query.IsResultAvailable())
-//        {
-//        }
-//        uint32 result;
-//        query.GetQuery(&result);
-//        
-//        if ((debugK) && (debugI == 0) && (debugJ == 0))
-//        {
-//            //RenderManager::Instance()->SetRenderTarget((Sprite*)0);
-//            const Matrix4 * oldProj = (const Matrix4*)RenderManager::Instance()->GetDynamicParam(PARAM_PROJ);
-//            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
-//            ImageLoader::Save(image, Format("~doc:/renderobj_%d_%d_%d.png", debugSide, k, result));
-//            SafeRelease(image);
-//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, UPDATE_SEMANTIC_ALWAYS);
-// 
-//            //RenderManager::Instance()->RestoreRenderTarget();
-//        }
-//
-//        if ((debugK) && (debugI == 1) && (debugJ == 0))
-//        {
-//            const Matrix4 * oldProj = (const Matrix4*)RenderManager::Instance()->GetDynamicParam(PARAM_PROJ);
-//            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
-//            ImageLoader::Save(image, Format("~doc:/renderobj2_%d_%d.png", debugSide, k));
-//            SafeRelease(image);
-//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, UPDATE_SEMANTIC_ALWAYS);
-//        }
-        
-//        if ((debugK) && (debugI == 1) && (debugJ == 1))
-//        {
-//            RenderManager::Instance()->SetRenderTarget((Sprite*)0);
-//            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
-//            ImageLoader::Save(image, Format("~doc:/renderobj3_%d_%d.png", debugSide, k));
-//            SafeRelease(image);
-//            RenderManager::Instance()->RestoreRenderTarget();
-//        }
-//        
-//        if ((debugK) && (debugI == 5) && (debugJ == 5))
-//        {
-//            RenderManager::Instance()->SetRenderTarget((Sprite*)0);
-//            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
-//            ImageLoader::Save(image, Format("~doc:/renderobj4_%d_%d.png", debugSide, k));
-//            SafeRelease(image);
-//            RenderManager::Instance()->RestoreRenderTarget();
-//        }
-        
-        occlusion->RecordFrameQuery(batch, handle);
-    }
-    
-    //
-//    glDepthMask(GL_TRUE);
-//    glDepthFunc(GL_LESS);
-//    glColorMask(true, true, true, true);
+        RenderObject* renderObject = batch->GetRenderObject();
+        renderObject->BindDynamicParameters(mainCamera);
+        NMaterial *mat = batch->GetMaterial();
+        if (mat)
+        {
+            batch->BindGeometryData(packet);
+            DVASSERT(packet.primitiveCount);
+            mat->BindParams(packet);         
+            packet.queryIndex = k;
+            target.frameRequests[k] = renderObject;
+            rhi::AddPacket(packetList, packet);
+        }      
+    }    
+    rhi::EndPacketList(packetList);
+    rhi::EndRenderPass(renderPass);
 }
 
 };

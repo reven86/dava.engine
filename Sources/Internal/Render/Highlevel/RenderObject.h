@@ -76,8 +76,8 @@ public:
         TYPE_LANDSCAPE,         // Landscape object
         TYPE_CUSTOM_DRAW,       // Custom drawn object
 		TYPE_SPRITE,			// Sprite Node
-		TYPE_PARTICLE_EMTITTER,  // Particle Emitter
-		TYPE_SKYBOX,
+		TYPE_PARTICLE_EMTITTER, // Particle Emitter
+		TYPE__DELETED__SKYBOX,  //keept for legasy, skybox removed in RHI
         TYPE_VEGETATION,
         TYPE_SPEED_TREE
     };

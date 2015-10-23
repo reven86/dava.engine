@@ -1,0 +1,58 @@
+#include "common.cgh"
+
+
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION    
+    VPROG_IN_NORMAL
+    #if SKINNING
+        VPROG_IN_BLENDINDEX(1)
+    #endif
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    VPROG_OUT_POSITION
+VPROG_OUT_END
+
+property float4x4 worldViewProjMatrix : dynamic,a : ;
+property float4x4 worldViewMatrix : dynamic,a : ;
+property float4x4 projMatrix : dynamic,a : ;
+property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
+
+
+
+#if SKINNING
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin1 : bigarray ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
+#endif
+
+property float silhouetteScale : static,a : ;
+property float silhouetteExponent : static,a : ;
+
+VPROG_BEGIN
+
+#if SKINNING
+    // compute final state - for now just effected by 1 bone - later blend everything here
+    int     index                    = int(VP_IN_BLENDINDEX);
+    float4  weightedVertexPosition   = jointPositions[index];
+    float4  weightedVertexQuaternion = jointQuaternions[index];
+
+
+    float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
+    float4 position = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
+
+    tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_NORMAL.xyz);    
+    float3 normal = VP_IN_NORMAL + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec);    
+#else
+    float4 position = float4(VP_IN_POSITION, 1.0);
+    float3 normal = VP_IN_NORMAL;
+#endif
+
+    normal = normalize(mul(float4(normal, 0.0), worldViewInvTransposeMatrix).xyz);
+    float4 PosView = mul(position, worldViewMatrix);
+
+    float distanceScale = length(PosView.xyz) / 100.0;
+
+    PosView.xyz += normal * pow(silhouetteScale * distanceScale, silhouetteExponent);
+    VP_OUT_POSITION = mul(PosView, projMatrix);
+
+VPROG_END

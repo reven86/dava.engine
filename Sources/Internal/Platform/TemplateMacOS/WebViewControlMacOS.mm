@@ -209,7 +209,7 @@ WebViewControl::WebViewControl(DAVA::UIWebView& ptr) :
 
     NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
     [openGLView addSubview:localWebView];
-    
+
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
 }

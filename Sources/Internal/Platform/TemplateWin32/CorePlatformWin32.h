@@ -42,29 +42,23 @@ class CoreWin32Platform : public CoreWin32PlatformBase
 {
 public:
 	eScreenMode GetScreenMode() override;
-	void SwitchScreenToMode(eScreenMode screenMode) override; 
-	void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
+    bool SetScreenMode(eScreenMode screenMode) override;
+    void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
 
 	DisplayMode GetCurrentDisplayMode() override;
 
 	bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
 	void Run();
 
-	void ToggleFullscreen() override;
-
 	void SetIcon(int32 iconId) override;
-
-#if defined(__DAVAENGINE_DIRECTX9__)
-	LPDIRECT3D9 d3d9;
-#endif 
 
 	DisplayMode currentMode;
 	DisplayMode fullscreenMode;
 	DisplayMode windowedMode;
 	bool isFullscreen;
 	RECT		windowPositionBeforeFullscreen;
-private:
 
+private:
 	static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 

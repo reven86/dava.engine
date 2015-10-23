@@ -35,7 +35,7 @@
 namespace DAVA
 {
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField)
-    : privateImpl(PrivateTextFieldWinUAP::Create(uiTextField))
+    : privateImpl(std::make_shared<PrivateTextFieldWinUAP>(uiTextField))
 {}
 
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
@@ -126,7 +126,7 @@ void TextFieldPlatformImpl::SetMultiline(bool value)
 
 void TextFieldPlatformImpl::SetInputEnabled(bool value)
 {
-    privateImpl->SetInputEnabled(!value);
+    privateImpl->SetInputEnabled(value);
 }
 
 void TextFieldPlatformImpl::SetRenderToTexture(bool value)

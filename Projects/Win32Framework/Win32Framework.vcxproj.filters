@@ -64,9 +64,6 @@
     <Filter Include="Internal\Utils">
       <UniqueIdentifier>{190e9a7b-9cd9-4a83-86a7-64af948b776d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Render\Effects">
-      <UniqueIdentifier>{61100d52-442d-45fd-b286-f3baf188d2bb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\Autotesting">
       <UniqueIdentifier>{9c48b596-2306-460c-82bd-f3a4279468b9}</UniqueIdentifier>
     </Filter>
@@ -111,9 +108,6 @@
     </Filter>
     <Filter Include="Internal\Render\Highlevel\Vegetation">
       <UniqueIdentifier>{e44970a1-4a1f-4e97-aaf5-44659db3a9de}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Internal\Thread">
-      <UniqueIdentifier>{e940db21-ebe2-45bb-bc09-5f3e66960d95}</UniqueIdentifier>
     </Filter>
     <Filter Include="Internal\DLC\Patcher">
       <UniqueIdentifier>{99a0f84c-8f10-4225-b742-de1df099c7ae}</UniqueIdentifier>
@@ -180,6 +174,24 @@
     </Filter>
     <Filter Include="Internal\Functional">
       <UniqueIdentifier>{1ed60acd-379f-473d-95ba-060107948670}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI">
+      <UniqueIdentifier>{35bbdebb-d80e-428e-b07d-b79b391d0449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\Common">
+      <UniqueIdentifier>{ae2c9b07-a3b0-42ab-9a74-1ce0ba9970d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\Common\MCPP">
+      <UniqueIdentifier>{d176b79a-badf-4f45-a963-0200f54425c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\DX9">
+      <UniqueIdentifier>{3489c4b7-c7bf-4ad0-bbd9-b492f64fa1bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\GLES2">
+      <UniqueIdentifier>{00466469-de6a-4d8a-b762-d6345840b949}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\DX11">
+      <UniqueIdentifier>{b48afc8e-9353-403b-a35d-d68a17d86a0f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -417,40 +429,10 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\D3D9Helpers.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\DynamicIndexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\DynamicVertexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\IndexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\OGLHelpers.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderBase.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderEffect.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderGrayscaleEffect.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderHelper.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderManager.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderResource.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RGBColor.h">
@@ -459,16 +441,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Shader.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\StaticIndexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\StaticVertexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Texture.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\VertexBuffer.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Font.h">
@@ -478,9 +451,6 @@
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\FTFont.h">
-      <Filter>Internal\Render\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\GraphicsFont.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\GridSprite.h">
@@ -538,9 +508,6 @@
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SkeletonNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SpriteNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h">
@@ -645,26 +612,8 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Bitstream.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderDataObject.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Effects\ColorOnlyEffect.h">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Effects\MultiTextureEffect.h">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Effects\TextureMulColorEffect.h">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Effects\TextureMulColorAlphaTestEffect.h">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Data.h">
       <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\UberShader.h">
-      <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene2D\TextGameObject.h">
       <Filter>Internal\Scene2D</Filter>
@@ -687,9 +636,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFileV2.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneManager.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ShadowVolumeNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
@@ -701,9 +647,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Debug\Stats.h">
       <Filter>Internal\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\SharedFBO.h">
-      <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Math\RectPacker.h">
       <Filter>Internal\Math</Filter>
@@ -774,19 +717,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialGraph.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialGraphNode.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterial.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialConsts.h">
       <Filter>Internal\Render\Material</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Entity\Component.h">
@@ -849,15 +780,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Heightmap.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\LandscapeChunk.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\LandscapeCursor.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderDataSource.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\IRenderUpdatable.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
@@ -918,13 +840,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h">
       <Filter>Internal\Base\Radix</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowRect.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolume.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\FilePath.h">
@@ -932,9 +848,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\GlobalEventSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.h">
-      <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.h">
       <Filter>Internal\Render\Highlevel</Filter>
@@ -980,9 +893,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\UpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderState.h">
-      <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Entity.h">
       <Filter>Internal\Scene3D</Filter>
@@ -1038,17 +948,8 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialOptimazer.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h">
       <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.h">
-      <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.h">
-      <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h">
       <Filter>Internal\Core</Filter>
@@ -1092,12 +993,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderHierarchy.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ImposterManager.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ImposterNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFile\SerializationContext.h">
       <Filter>Internal\Scene3D\SceneFile</Filter>
     </ClInclude>
@@ -1108,9 +1003,6 @@
       <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\UniqueStateSet.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderStateData.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.h">
@@ -1152,25 +1044,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialTemplate.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\RenderTechnique.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\MaterialSystem.h">
-      <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderPassManager.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderLayerManager.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\VisibilityArray.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialNames.h">
@@ -1261,9 +1135,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.h">
       <Filter>Internal\Render\Material</Filter>
     </ClInclude>
@@ -1276,28 +1147,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationSpatialData.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\TextureSheet.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometry.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometrySerializationData.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomSLGeometry.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationFixedGeometry.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometry.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationMaterialTransformer.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationPropertyNames.h">
@@ -1342,15 +1192,6 @@
     <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\DownloadManager.h">
       <Filter>Internal\DLC\Downloader</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h">
-      <Filter>Internal\Render\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.h">
-      <Filter>Internal\Render\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.h">
-      <Filter>Internal\Render\2D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockRender.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
@@ -1359,9 +1200,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
       <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h">
-      <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -1780,6 +1618,117 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\dbg_Draw.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\rhi_Public.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\rhi_ShaderCache.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\rhi_ShaderSource.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\rhi_Type.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX9\_dx9.h">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DX9.h">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\GLES2\_gl.h">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_GLES2.h">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_ProgGLES2.h">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\DynamicBindings.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\DynamicBufferAllocator.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RenderCallbacks.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Renderer.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RuntimeTextures.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\dbg_StatSet.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\PreProcess.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\RegExp.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_FormatConversion.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Impl.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Pool.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Private.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_RingBuffer.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\_mcpp.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\internal.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\mcpp_lib.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\mcpp_out.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\noconfig.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\system.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenshoter.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\FXCache.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\GraphicFont.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometryData.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderLayer.h">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX11\_dx11.h">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.h">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1914,9 +1863,6 @@
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp">
       <Filter>Internal\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp">
-      <Filter>Internal\Particles</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>
@@ -1932,58 +1878,16 @@
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\D3D9Helpers.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\DynamicIndexBuffer.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\DynamicVertexBuffer.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RenderBase.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderEffect.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderGrayscaleEffect.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RenderHelper.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManager.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManagerDX.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManagerGL.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderResource.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Shader.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\ShaderDX.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\ShaderGL.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\StaticIndexBuffer.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\StaticVertexBuffer.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Texture.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\TextureDX9.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Font.cpp">
@@ -1993,9 +1897,6 @@
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\FTFont.cpp">
-      <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\GraphicsFont.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Sprite.cpp">
@@ -2032,9 +1933,6 @@
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimation.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimationKey.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimationList.cpp">
@@ -2118,41 +2016,14 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\Utils.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManagerFactory.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\Bitstream.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderDataObject.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Effects\ColorOnlyEffect.cpp">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Effects\MultiTextureEffect.cpp">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Effects\TextureMulColorEffect.cpp">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Effects\TextureMulColorAlphaTestEffect.cpp">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\Data.cpp">
       <Filter>Internal\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\UberShader.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SpriteNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIFileSystemDialog.cpp">
       <Filter>Internal\UI</Filter>
@@ -2175,9 +2046,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFileV2.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneManager.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ShadowVolumeNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
@@ -2192,9 +2060,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Debug\Stats.cpp">
       <Filter>Internal\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\SharedFBO.cpp">
-      <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp">
       <Filter>Internal\Math</Filter>
@@ -2240,15 +2105,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.cpp">
       <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraph.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraphNode.cpp">
-      <Filter>Internal\Render\Material</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterial.cpp">
       <Filter>Internal\Render\Material</Filter>
@@ -2313,12 +2169,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Heightmap.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\LandscapeChunk.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\LandscapeCursor.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ParticleEffectComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
@@ -2361,13 +2211,7 @@
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp">
       <Filter>Internal\Base\Radix</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowRect.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolume.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\FilePath.cpp">
@@ -2378,9 +2222,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\GlobalEventSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
@@ -2436,9 +2277,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\UpdateSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderState.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Entity.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
@@ -2493,17 +2331,8 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialOptimazer.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\AllocatorFactory.cpp">
       <Filter>Internal\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.cpp">
-      <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp">
       <Filter>Internal\Core</Filter>
@@ -2543,12 +2372,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderHierarchy.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ImposterManager.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ImposterNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFile\SerializationContext.cpp">
       <Filter>Internal\Scene3D\SceneFile</Filter>
@@ -2598,22 +2421,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialTemplate.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\RenderTechnique.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\MaterialSystem.cpp">
-      <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderPassManager.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderLayerManager.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\Color.cpp">
@@ -2704,9 +2512,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.cpp">
       <Filter>Internal\Render\Material</Filter>
     </ClCompile>
@@ -2715,24 +2520,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp">
       <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\TextureSheet.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometry.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometrySerializationData.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomSLGeometry.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationFixedGeometry.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometry.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
@@ -2782,26 +2569,11 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlEmitter.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\OGLHelpers.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp">
-      <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.cpp">
-      <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp">
-      <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockRender.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.cpp">
       <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneCache.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -3129,6 +2901,186 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.cpp">
       <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\_dx9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_CommandBufferDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DepthStencilStateDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_IndexBufferDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PipelineStateDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_QueryBufferDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_SamplerStateDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_TextureDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_VertexBufferDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_CommandBufferGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_DepthStencilStateGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_GLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_IndexBufferGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PipelineStateGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_ProgGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_QueryBufferGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_TextureGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_VertexBufferGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\DynamicBindings.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\DynamicBufferAllocator.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RenderCallbacks.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Renderer.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RuntimeTextures.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\dbg_Draw.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\dbg_FontNormal.cxx">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\dbg_FontSmall.cxx">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\dbg_StatSet.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\PreProcess.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\RegExp.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Impl.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Render.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_ShaderCache.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_ShaderSource.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_VertexLayout.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\_mcpp.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\directive.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\eval.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\expand.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\mbchar.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\mcpp_main.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\preproc.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\support.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\system.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIScreenshoter.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\FXCache.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\GraphicFont.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometryData.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderLayer.cpp">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\_dx11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_CommandBufferDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DepthStencilStateDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_IndexBufferDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PipelineStateDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_QueryBufferDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_SamplerStateDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_TextureDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_VertexBufferDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

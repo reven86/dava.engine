@@ -32,230 +32,111 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Base/Singleton.h"
 #include "Render/RenderBase.h"
-
-#include "Render/Texture.h"
+#include "Render/RHI/rhi_Public.h"
 #include "Animation/Interpolation.h"
 
 namespace DAVA
-{
-	
-class RenderDataObject;
-class RenderDataStream;
-    
+{	
     
 /**
-    \brief You can use this class to perform various important drawing operations in 2D & 3D.
+    \brief You can use this class to perform various important drawing operations in 3D.
     In most cases we use these functions for debug rendering, but in some cases it can be usefull in production. 
     Keep in mind that output of all line-drawing functions can depend on hardware and look differently on different systems
  */
 
-class RenderHelper : public Singleton<RenderHelper>
-{
-public:
-	RenderHelper();
-    ~RenderHelper();
-    
-    /**
-        \brief Draws line from pt1 to pt2
-        \param pt1 starting point 
-        \param pt2 ending point
-	 */
-    void DrawLine(const Vector2 & pt1, const Vector2 & pt2, UniqueHandle renderState);
-	
-	
-    /**
-	 \brief Draws line from pt1 to pt2
-	 \param pt1 starting point
-	 \param pt2 ending point
-	 */
-	void DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, UniqueHandle renderState);
-    
-	/**
-        \brief Draws line in 3D from pt1 to pt2
-        \param pt1 starting point 
-        \param pt2 ending point
-	 */
-	void DrawLine(const Vector3 & pt1, const Vector3 & pt2, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-    /**
-	 \brief Draws multiple lines.
-	 \param linePoints list of points in the format (startX, startY, endX, endY), (startX, startY, endX, endY)...
-	 */
-    void DrawLines(const Vector<float32>& linePoints, UniqueHandle renderState);
-    
-    /**
-        \brief Draws given rect in 2D space
-        \param pt1 starting point 
-        \param pt2 ending point
-	 */    
-    void DrawRect(const Rect & rect, UniqueHandle renderState);
-    
-    /**
-        \brief Fills given rect in 2D space
-        \param pt1 starting point 
-        \param pt2 ending point
-	 */ 
-    void FillRect(const Rect & rect, UniqueHandle renderState);
+    class NMaterial;
+    class RenderHelper
+    {
+        enum eDrawFlags
+        {
+            FLAG_DRAW_SOLID     = 1,
+            FLAG_DRAW_NO_DEPTH  = 2,
+        };
 
-    /**
-     \brief Draws grid in the given rect
-     \param rect rect to fill grid with
-     \param gridSize distance between grid lines
-     \param color grid color
-	 */
-    void DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, UniqueHandle renderState);
+    public:
+        enum eDrawType
+        {
+            DRAW_WIRE_DEPTH      = 0,
+            DRAW_SOLID_DEPTH     = FLAG_DRAW_SOLID,
+            DRAW_WIRE_NO_DEPTH   = FLAG_DRAW_NO_DEPTH,
+            DRAW_SOLID_NO_DEPTH  = FLAG_DRAW_SOLID | FLAG_DRAW_NO_DEPTH,
 
-	// point helpers
-    
-    /**
-        \brief Draws given point in 2D space
-        \param pt given point 
-	 */
-	void DrawPoint(const Vector2 & pt, float32 ptSize /*= 1.0f*/, UniqueHandle renderState);
-    
-    /**
-        \brief Draws given point in 3D space
-        \param pt given point 
-	 */
-	void DrawPoint(const Vector3 & pt, float32 ptSize /*= 1.0f*/, UniqueHandle renderState);
-    
-    /**
-        \brief Draws circle in 2D space
-        \param center center of the circle
-        \param radius radius of the circle
-     */
-	void DrawCircle(const Vector2 & center, float32 radius, UniqueHandle renderState);
-    
-    
-    /**
-        \brief Draws circle in 3D space on XY plane
-        \param center center of the circle
-        \param radius radius of the circle
-     */
-	void DrawCircle(const Vector3 & center, float32 radius, UniqueHandle renderState);
-	
-	/**
-        \brief Draws circle in 3D space on XYZ plane
-        \param center center of the circle
-		\param emVector direction vector of the circle
-        \param radius radius of the circle
-		\param useFilling flag that indicates if figure have to be filled with current color
-		
-     */	 
-	void DrawCircle3D(const Vector3 & center, const Vector3 &directionVector, float32 radius, bool useFilling /*= false*/, UniqueHandle renderState);
+            DRAW_TYPE_COUNT
+        };
 
-	/**
-        \brief Draws cylinder in 3D space on XY plane
-        \param center center of the cylinder
-        \param radius radius of the cylinder
-		\param useFilling flag that indicates if figure have to be filled with current color
-     */
-	void DrawCylinder(const Vector3 & center, float32 radius, bool useFilling /*= false*/, UniqueHandle renderState);
-	
-	// polygon & line helper functions
-	
-    /**
-        \brief Draws all concecutive lines from given polygon
-        \param polygon the polygon we want to draw
-        \param closed you should set this flag to true if you want to connect last point of polygon with first point
-     */
-    void DrawPolygon(const Polygon2 & polygon, bool closed, UniqueHandle renderState);
-    /**
-        \brief Draws all concecutive lines from given polygon
-        \param polygon the polygon we want to draw
-        \param closed you should set this flag to true if you want to connect last point of polygon with first point
-     */
-    void DrawPolygon(const Polygon3 & polygon, bool closed, UniqueHandle renderState);
+        RenderHelper();
+        ~RenderHelper();
 
-    /**
-        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderManager::Instance()->SetColor function. 
-        \param polygon the polygon we want to draw
-     */
-    void FillPolygon(const Polygon2 & polygon, UniqueHandle renderState);
-    
-    /**
-        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderManager::Instance()->SetColor function. 
-        \param polygon the polygon we want to draw
-     */
-    void FillPolygon(const Polygon3 & polygon, UniqueHandle renderState);
-    
-    /**
-        \brief Draws all concecutive lines from given polygon after transformation
-        \param polygon the polygon we want to draw
-        \param closed you should set this flag to true if you want to connect last point of polygon with first point
-        \param transform transform that will be applied to polygon before it will be drawn
-     */
-	void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, UniqueHandle renderState);
-    
-    /**
-        \brief Draws all points from given polygon
-        \param polygon the polygon we want to draw
-     */
-    void DrawPolygonPoints( const Polygon2 & polygon, UniqueHandle renderState);
+        void Present(rhi::HPacketList packetList, const Matrix4 * view, const Matrix4 * projection);
+        void Clear();
+        bool IsEmpty();
 
-    /**
-        \brief Draws all points from given polygon
-        \param polygon the polygon we want to draw
-     */
-    void DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle renderState);
-    
-    /**
-        \brief Draws 2D bounding box
-        \param box given bounding box
-     */
-	void DrawBox(const AABBox2 & box, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
+        void InvalidateMaterials();
 
-    /**
-        \brief Draws 3D bounding box
-        \param box given bounding box
-     */
-	void DrawBox(const AABBox3 & box, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
+        void DrawLine(const Vector3 & pt1, const Vector3 & pt2, const Color & color, eDrawType drawType = DRAW_WIRE_DEPTH);
+        void DrawPolygon(const Polygon3 & polygon, const Color & color, eDrawType drawType);
+        void DrawAABox(const AABBox3 & box, const Color & color, eDrawType drawType);
+        void DrawAABoxTransformed(const AABBox3 & box, const Matrix4 & matrix, const Color & color, eDrawType drawType);
+        void DrawAABoxCorners(const AABBox3 & box, const Color & color, eDrawType drawType);
+        void DrawAABoxCornersTransformed(const AABBox3 & box, const Matrix4 & matrix, const Color & color, eDrawType drawType);
+        void DrawIcosahedron(const Vector3 & position, float32 radius, const Color & color, eDrawType drawType);
+        void DrawArrow(const Vector3 & from, const Vector3 & to, float32 arrowLength, const Color & color, eDrawType drawType);
+        void DrawCircle(const Vector3 & center, const Vector3 &direction, float32 radius, uint32 segmentCount, const Color & color, eDrawType drawType);
+        void DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, const Color & color, eDrawType drawType);
+        void DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect, const Color & color, eDrawType drawType);
 
-    /**
-        \brief Fills 3D bounding box
-        \param box given bounding box
-     */
-	void FillBox(const AABBox3 & box, UniqueHandle renderState);
+        static void CreateClearPass(rhi::HTexture handle, int32 passPriority, const Color & clearColor, const rhi::Viewport & viewport);
 
-    /**
-	 \brief Draws 3D bounding box with corners
-	 \param box given bounding box
-     */
-	void DrawCornerBox(const AABBox3 & bbox, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-	
-	void DrawSphere(const Vector3 &center, float32 radius, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-	void FillSphere(const Vector3 &center, float32 radius, UniqueHandle renderState);
+    protected:
+        enum eDrawCommandID
+        {
+            COMMAND_DRAW_LINE = 0,
+            COMMAND_DRAW_POLYGON,
+            COMMAND_DRAW_BOX,
+            COMMAND_DRAW_BOX_CORNERS,
+            COMMAND_DRAW_CIRCLE,
+            COMMAND_DRAW_ICOSA,
+            COMMAND_DRAW_ARROW,
 
-	void DrawArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-	void FillArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
+            COMMAND_COUNT
+        };
+        struct DrawCommand
+        {
+            DrawCommand(eDrawCommandID _id, eDrawType _drawType, const Vector<float32> & _params)
+                : id(_id), drawType(_drawType), params(_params)
+            {}
 
-	void DrawDodecahedron(const Vector3 &center, float32 radius, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-	void FillDodecahedron(const Vector3 &center, float32 radius, UniqueHandle renderState);
-	
-    // Other debug functions  
-	void DrawBSpline(BezierSpline3 * bSpline, int segments /*= 20*/, float ts /*= 0.0f*/, float te /*= 1.0f*/, UniqueHandle renderState);
-	void DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect, UniqueHandle renderState);
-    //static void DrawLineWithEndPoints(const Vector3 & pt1, const Vector3 & pt2); 
-	//static void DrawStrippedLine(Polygon2 & polygon, float lineLen, float spaceLen, float halfWidth, Texture * texture, float initialPos);
+            eDrawCommandID id;
+            eDrawType drawType;
+            Vector<float32> params;
+        };
+        struct ColoredVertex
+        {
+            Vector3 position;
+            uint32 color;
+        };
 
-    void Set2DRenderTarget(Texture * renderTarget);
-    void DrawTexture(Texture * texture, UniqueHandle renderState, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+        void QueueCommand(const DrawCommand && command);
+        void GetRequestedVertexCount(const DrawCommand & command, uint32 & vertexCount, uint32 & indexCount);
+        bool PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr);
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
-	void GetLineWidthRange(int32& rangeMin, int32& rangeMax);
-#endif
+        void QueueDrawBoxCommand(eDrawCommandID commandID, const AABBox3 & box, const Matrix4 * matrix, const Color & color, eDrawType drawType);
 
-private:
-    RenderDataObject * renderDataObject;
-    RenderDataStream * vertexStream;
-    RenderDataStream * texCoordStream;
-    float32 vertices[32];
-    float32 texCoords[8];
+        void FillIndeciesFromArray(uint16 * buffer, uint16 baseIndex, uint16 * indexArray, uint32 indexCount);
+        void FillPolygonIndecies(uint16 * buffer, uint16 baseIndex, uint32 indexCount, uint32 vertexCount, bool isWire);
 
-    Matrix4 tempProjectionMatrix;
-};
-	
+        void FillBoxVBuffer(ColoredVertex * buffer, const Vector3 & basePoint, const Vector3 & xAxis, const Vector3 & yAxis, const Vector3 & zAxis, uint32 nativeColor);
+        void FillBoxCornersVBuffer(ColoredVertex * buffer, const Vector3 & basePoint, const Vector3 & xAxis, const Vector3 & yAxis, const Vector3 & zAxis, uint32 nativeColor);
+        void FillCircleVBuffer(ColoredVertex * buffer, const Vector3 & center, const Vector3 & direction, float32 radius, uint32 pointCount, uint32 nativeColor);
+        void FillArrowVBuffer(ColoredVertex * buffer, const Vector3 & from, const Vector3 & to, uint32 nativeColor);
+
+        uint32 coloredVertexLayoutUID;
+
+        Vector<DrawCommand> commandQueue;
+        std::array< std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
+        NMaterial * materials[DRAW_TYPE_COUNT];
+    };
 }
 
 #endif // __DAVAENGINE_OBJC_FRAMEWORK_RENDER_HELPER_H__

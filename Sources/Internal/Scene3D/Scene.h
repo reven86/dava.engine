@@ -49,7 +49,6 @@ namespace DAVA
   */  
     
 class Texture;
-class Material;
 class StaticMesh;
 class AnimatedMesh;
 class SceneNodeAnimationList;
@@ -59,8 +58,6 @@ class Light;
 class ShadowRect;
 class QuadTree;
 class MeshInstanceNode;
-class ImposterManager;
-class ImposterNode;
 class Component;
 class SceneSystem;
 class RenderSystem;
@@ -75,7 +72,6 @@ class LightUpdateSystem;
 class SwitchSystem;
 class SoundUpdateSystem;
 class ActionUpdateSystem;
-class SkyboxSystem;
 class MaterialSystem;
 class StaticOcclusionSystem;
 class StaticOcclusionDebugDrawSystem;
@@ -129,9 +125,9 @@ public:
         SCENE_SYSTEM_SWITCH_FLAG            = 1 << 7,
         SCENE_SYSTEM_SOUND_UPDATE_FLAG      = 1 << 8,
         SCENE_SYSTEM_ACTION_UPDATE_FLAG     = 1 << 9,
-        SCENE_SYSTEM_SKYBOX_FLAG            = 1 << 10,
+        
         SCENE_SYSTEM_STATIC_OCCLUSION_FLAG  = 1 << 11,
-        SCENE_SYSTEM_MATERIAL_FLAG          = 1 << 12,
+//        SCENE_SYSTEM_MATERIAL_FLAG          = 1 << 12,
         SCENE_SYSTEM_FOLIAGE_FLAG           = 1 << 13,
         SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG  = 1 << 14,
         SCENE_SYSTEM_WIND_UPDATE_FLAG       = 1 << 15,
@@ -150,7 +146,7 @@ public:
     };
     
     
-	Scene(uint32 systemsMask = SCENE_SYSTEM_ALL_MASK);
+    Scene(uint32 systemsMask  = SCENE_SYSTEM_ALL_MASK );
 	
     /**
         \brief Function to register entity in scene. This function is called when you add entity to scene.
@@ -190,10 +186,8 @@ public:
 	SwitchSystem * switchSystem;
 	RenderSystem * renderSystem;
 	SoundUpdateSystem * soundSystem;
-	ActionUpdateSystem* actionSystem;
-	SkyboxSystem* skyboxSystem;
+	ActionUpdateSystem* actionSystem;	
 	StaticOcclusionSystem * staticOcclusionSystem;
-    MaterialSystem *materialSystem;
     SpeedTreeUpdateSystem* speedTreeUpdateSystem;
     FoliageSystem* foliageSystem;
     VersionInfo::SceneVersion version;
@@ -236,22 +230,16 @@ public:
         You can use SetCustomDrawCamera function if you want to test frustum clipping, and view the scene from different angles.
      */
     void SetCustomDrawCamera(Camera * camera);
-    Camera * GetDrawCamera() const;
-
-	void AddDrawTimeShadowVolume(ShadowVolumeNode * shadowVolume);
+    Camera * GetDrawCamera() const;	
     
     Set<Light*> & GetLights();
-	Light * GetNearestDynamicLight(Light::eType type, Vector3 position);
-
-	void RegisterImposter(ImposterNode * imposter);
-	void UnregisterImposter(ImposterNode * imposter);
+	Light * GetNearestDynamicLight(Light::eType type, Vector3 position);	
 
 	void CreateComponents();
 	void CreateSystems();
 
 	EventSystem * GetEventSystem() const;
 	RenderSystem * GetRenderSystem() const;
-    MaterialSystem * GetMaterialSystem() const;
     AnimationSystem * GetAnimationSystem() const;
 
     SceneFileV2::eError LoadScene(const DAVA::FilePath & pathname);
@@ -263,10 +251,6 @@ public:
     void SetGlobalMaterial(DAVA::NMaterial* globalMaterial);
     
     void OnSceneReady(Entity * rootNode);
-
-    void SetClearBuffers(uint32 buffers);
-    uint32 GetClearBuffers() const;
-
     
     void Input(UIEvent *event);
     
@@ -277,6 +261,9 @@ public:
     virtual void Deactivate();
 
     EntityCache cache;
+
+    rhi::RenderPassConfig& GetMainPassConfig();
+    void SetMainPassViewport(const Rect& viewport);
     
 protected:
     void UpdateLights();
@@ -296,28 +283,16 @@ protected:
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
 
-    uint32 clearBuffers;
-
 	Vector<AnimatedMesh*> animatedMeshes;
 	Vector<Camera*> cameras;
     
-    static Texture* stubTexture2d;
-    static Texture* stubTextureCube;
-    static Texture* stubTexture2dLightmap; //this texture should be all-pink without checkers
-    
-    bool isDefaultGlobalMaterial;
     NMaterial* sceneGlobalMaterial;
-    //TODO: think about data-driven initialization. Need to set default properties from outside and save/load per scene
-    void InitGlobalMaterial();
     void ImportShadowColor(Entity * rootNode);
 
     Camera * mainCamera;
     Camera * drawCamera;
-
-	Vector<ShadowVolumeNode*> shadowVolumes;
-    Set<Light*> lights;
-
-	ImposterManager * imposterManager;
+	
+    Set<Light*> lights;	
     
     friend class Entity;
 };

@@ -40,7 +40,6 @@ class RulerToolPanel;
 class VisibilityToolPanel;
 class TilemaskEditorPanel;
 class HeightmapEditorPanel;
-class GrassEditorPanel;
 
 class LandscapeEditorControlsPlaceholder: public QWidget
 {
@@ -72,7 +71,6 @@ private:
 	VisibilityToolPanel* visibilityToolPanel;
 	TilemaskEditorPanel* tilemaskEditorPanel;
 	HeightmapEditorPanel* heightmapEditorPanel;
-    GrassEditorPanel *grassEditorPanel;
 
 	void InitUI();
 	void ConnectToSignals();

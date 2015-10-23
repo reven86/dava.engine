@@ -41,7 +41,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/ImageConvert.h"
 
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 
 #include "UI/UIWebView.h"
 #include "Platform/TemplateWin32/PrivateWebViewWinUAP.h"
@@ -101,7 +101,7 @@ private:
 };
 
 UriResolver::UriResolver(const String& htmlData_, const FilePath& basePath)
-    : htmlData(ref new Platform::String(StringToWString(htmlData_).c_str()))
+    : htmlData(ref new Platform::String(UTF8Utils::EncodeToWideString(htmlData_).c_str()))
 {
     // WinUAP app have access only to isolated storage which includes:
     //  - executable directory

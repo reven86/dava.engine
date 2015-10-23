@@ -56,7 +56,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     {
         DVASSERT(isSingleLine);
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+        BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
         DVASSERT(textFieldHolder->textCtrl != nullptr);
@@ -81,7 +81,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         [textFieldHolder setTextField:(DAVA::UITextField *)nil];
         
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+        BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
 
         if (!isSingleLine)
         {
@@ -653,7 +653,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
             textView.contentInset = UIEdgeInsetsMake(-10, -5, 0, 0);
 
             HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-            BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+            BackgroundView* backgroundView = [[appDelegate renderViewController] backgroundView];
             [backgroundView PrepareView: textFieldHolder->textCtrl];
             
             [textFieldHolder addSubview:textView];

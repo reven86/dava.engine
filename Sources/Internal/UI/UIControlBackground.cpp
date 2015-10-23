@@ -31,10 +31,11 @@
 #include "Debug/DVAssert.h"
 #include "UI/UIControl.h"
 #include "Core/Core.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
+#include "Render/Renderer.h"
 
 #include <limits>
 
@@ -57,8 +58,7 @@ UIControlBackground::UIControlBackground()
 ,   stretchData(NULL)
 ,   margins(NULL)
 ,   drawColor(Color::White)
-,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
-,   renderState(RenderState::RENDERSTATE_2D_BLEND)
+,   material(SafeRetain(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL))
 {
 }
 
@@ -86,14 +86,14 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
     leftStretchCap = srcBackground->leftStretchCap;
     topStretchCap = srcBackground->topStretchCap;
 
-    SetShader(srcBackground->shader);
+    SetMaterial(srcBackground->material);
 }
 
 
 UIControlBackground::~UIControlBackground()
 {
     SafeRelease(spr);
-    SafeRelease(shader);
+    SafeRelease(material);
     SafeDelete(margins);
     ReleaseDrawData();
 }
@@ -282,15 +282,12 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
     geometricData.AddGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
 
-    RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
-
-    RenderSystem2D::Instance()->UpdateClip();
-
     Sprite::DrawState drawState;
-    drawState.SetRenderState(renderState);
+
+    drawState.SetMaterial(material);
     if (spr)
     {
-        drawState.SetShader(shader);
+        //drawState.SetShader(shader);
         drawState.frame = frame;
         if (spriteModification)
         {
@@ -360,7 +357,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             }
 
             lastDrawPos = drawState.position;
-            RenderSystem2D::Instance()->Draw(spr, &drawState);
+            RenderSystem2D::Instance()->Draw(spr, &drawState, drawColor);
         }
         break;
 
@@ -399,7 +396,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 //			spr->SetPivotPoint(geometricData.pivotPoint.x / (geometricData.size.x / spr->GetSize().dx), geometricData.pivotPoint.y / (geometricData.size.y / spr->GetSize().dy));
 //			spr->SetAngle(geometricData.angle);
             
-            RenderSystem2D::Instance()->Draw(spr, &drawState);
+            RenderSystem2D::Instance()->Draw(spr, &drawState, drawColor);
         }
         break;
 
@@ -498,32 +495,32 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 
             lastDrawPos = drawState.position;
             
-            RenderSystem2D::Instance()->Draw(spr, &drawState);
+            RenderSystem2D::Instance()->Draw(spr, &drawState, drawColor);
         }
         break;
 
         case DRAW_FILL:
-            RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+            //RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
             if (geometricData.angle != 0.0f)
             {
                 Polygon2 poly;
                 geometricData.GetPolygon(poly);
-                RenderHelper::Instance()->FillPolygon(poly, drawState.GetRenderState());
+                RenderSystem2D::Instance()->FillPolygon(poly, drawColor);
             }
             else
             {
-                RenderHelper::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawState.GetRenderState());
+                RenderSystem2D::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawColor);
             }
         break;
 
         case DRAW_STRETCH_BOTH:
         case DRAW_STRETCH_HORIZONTAL:
         case DRAW_STRETCH_VERTICAL:
-            RenderSystem2D::Instance()->DrawStretched(spr, &drawState, Vector2(leftStretchCap, topStretchCap), type, geometricData, &stretchData);
+            RenderSystem2D::Instance()->DrawStretched(spr, &drawState, Vector2(leftStretchCap, topStretchCap), type, geometricData, &stretchData, drawColor);
         break;
 
         case DRAW_TILED:
-            RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData);
+            RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData, drawColor);
         break;
         default:
             break;
@@ -531,15 +528,15 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 #if defined(LOCALIZATION_DEBUG)
     lastDrawState = drawState;
 #endif
-    RenderManager::Instance()->ResetColor();
-
 }
+
 #if defined(LOCALIZATION_DEBUG)
 const Sprite::DrawState & UIControlBackground::GetLastDrawState() const
 {
     return lastDrawState;
 }
 #endif
+
 void UIControlBackground::ReleaseDrawData()
 {
     SafeDelete(tiledData);
@@ -566,13 +563,15 @@ float32 UIControlBackground::GetTopBottomStretchCap() const
     return topStretchCap;
 }
 
-void UIControlBackground::SetShader(Shader *_shader)
+void UIControlBackground::SetMaterial(NMaterial* _material)
 {
-    if(shader != _shader)
-    {
-        SafeRelease(shader);
-        shader = SafeRetain(_shader);
-    }
+    SafeRelease(material);
+    material = SafeRetain(_material);
+}
+
+inline NMaterial* UIControlBackground::GetMaterial() const
+{
+    return material;
 }
 
 void UIControlBackground::SetMargins(const UIMargins* uiMargins)
