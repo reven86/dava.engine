@@ -68,8 +68,7 @@ public:
 RHI_IMPL_RESOURCE(IndexBufferGLES2_t,IndexBuffer::Descriptor);
 
 typedef ResourcePool<IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,true>   IndexBufferGLES2Pool;
-RHI_IMPL_POOL(IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,true);
-
+RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true, 3072);
 
 //------------------------------------------------------------------------------
 
