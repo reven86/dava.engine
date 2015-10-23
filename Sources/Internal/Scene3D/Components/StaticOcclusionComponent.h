@@ -62,7 +62,6 @@ public:
 
 private:
     StaticOcclusionData data;
-    uint32 sizeInKbytes = 0;
 
 public:
 	INTROSPECTION_EXTEND(StaticOcclusionDataComponent, Component,
