@@ -930,6 +930,8 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
     int     b       = int(blue*255.0f);
     int     a       = int(alpha*255.0f);
 
+    DVASSERT((r >= 0) && (r <= 0xff) && (g >= 0) && (g <= 0xff) && (b >= 0) && (b <= 0xff) && (a >= 0) && (a <= 0xff));
+
     switch( HostApi() )
     {
         case RHI_DX9 :
@@ -939,7 +941,6 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
         case RHI_DX11:
             color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
             //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
-
             break;
 
         case RHI_GLES2 :

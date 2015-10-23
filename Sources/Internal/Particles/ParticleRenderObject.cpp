@@ -254,8 +254,8 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
             if (group.layer->colorOverLife)
                 currColor = group.layer->colorOverLife->GetValue(current->life / current->lifeTime);
             if (group.layer->alphaOverLife)
-                currColor.a = group.layer->alphaOverLife->GetValue(current->life / current->lifeTime);            
-            uint32 color = rhi::NativeColorRGBA(currColor.r, currColor.g, currColor.b, currColor.a);
+                currColor.a = group.layer->alphaOverLife->GetValue(current->life / current->lifeTime);
+            uint32 color = rhi::NativeColorRGBA(currColor.r, currColor.g, currColor.b, Min(currColor.a, 1.0f));
             float32 sin_angle;
             float32 cos_angle;
             SinCosFast(-current->angle, sin_angle, cos_angle); //- is because artists consider positive rotation to be clockwise

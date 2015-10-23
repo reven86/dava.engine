@@ -1,0 +1,3358 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DAVAClassRegistrator.cpp" />
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DAVAEngine.cpp" />
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Animation\AnimatedObject.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Animation\Animation.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Animation\AnimationManager.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Animation\BezierSplineAnimation.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Animation\Interpolation.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Animation\KeyframeAnimation.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Animation\LinearAnimation.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Animation\LinearPropertyAnimation.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\dlmalloc.c">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\AutotestingDB.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\AutotestingSystem.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\AutotestingSystemLua.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\AutotestingSystemSwig.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\GameAPI.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\KeyedArchiveSwig.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\MongodbUpdateObject.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\Polygon2Swig.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\RectSwig.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\UIControlSwig.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Autotesting\VectorSwig.cpp">
+      <Filter>Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\AllocatorFactory.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\BaseMath.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\BaseObject.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\BaseObjectChecker.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\Data.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\DynamicObjectCache.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\EnumMap.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\EventDispatcher.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\FastName.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\FixedSizePoolAllocator.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\GlobalEnum.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\IndexBitVector.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\IntrospectionBase.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\IntrospectionDynamic.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\Message.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\ObjectFactory.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\Observable.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\Result.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Base\Radix\Radix.cpp">
+      <Filter>Base\Radix</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Collision\CollisionObject2.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Collision\CollisionPolygons.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Collision\Collisions.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Concurrency\ConditionVariable.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Concurrency\Mutex.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Concurrency\PosixThreads.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Concurrency\Thread.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Concurrency\ThreadPosix.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Concurrency\ThreadWin32.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Core\ApplicationCore.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Core\Core.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Core\CoreMacOS.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Core\CoreMacOS_CarbonWindow.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Core\CoreMacOS_OpenGL.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Core\PerformanceSettings.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Database\MongodbClient.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Database\MongodbObject.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DataStorage\Android\DataStorageAndroid.cpp">
+      <Filter>DataStorage\Android</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
+      <Filter>DataStorage\Android</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DataStorage\iOS\DataStorageIOS.cpp">
+      <Filter>DataStorage\iOS</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp">
+      <Filter>DataStorage\iOS</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DataStorage\MacOS\DataStorageMacOS.cpp">
+      <Filter>DataStorage\MacOS</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
+      <Filter>DataStorage\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Debug\Backtrace.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Debug\DVAssertMessage.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Debug\DVAssertMessageAndroid.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Debug\DVAssertMessageWin.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Debug\Profiler.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Debug\Replay.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Debug\Stats.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\DLC.cpp">
+      <Filter>DLC</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Downloader\CurlDownloader.cpp">
+      <Filter>DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Downloader\Downloader.cpp">
+      <Filter>DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Downloader\DownloaderCommon.cpp">
+      <Filter>DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Downloader\DownloadManager.cpp">
+      <Filter>DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Patcher\BSDiff.cpp">
+      <Filter>DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Patcher\PatchFile.cpp">
+      <Filter>DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Patcher\ZLibStream.cpp">
+      <Filter>DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Patcher\bsdiff\bs_diff.c">
+      <Filter>DLC\Patcher\bsdiff</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\DLC\Patcher\bsdiff\bs_patch.c">
+      <Filter>DLC\Patcher\bsdiff</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Entity\BaseFamily.cpp">
+      <Filter>Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Entity\Component.cpp">
+      <Filter>Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Entity\SceneSystem.cpp">
+      <Filter>Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\Bitstream.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\DynamicMemoryFile.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\File.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\FileList.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\FilePath.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\FileSystem.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\KeyedArchive.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\KeyedArchiver.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\KeyedUnarchiver.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\LocalizationSystem.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\Logger.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\LoggerAndroid.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\LoggerWin.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\ResourceArchive.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\StaticMemoryFile.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\VariantType.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\XMLParser.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\YamlArchive.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\YamlEmitter.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\YamlNode.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\YamlParser.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\FileSystem\ZipFile.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Input\Accelerometer.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Input\AccelerometerAndroid.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Input\GamepadDevice.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Input\InputSystem.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Input\KeyboardDevice.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Job\JobManager.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Job\JobQueue.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Job\JobThread.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\AABBox2.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\AABBox3.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\BezierSpline.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\Color.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\Math2D.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\Matrix4.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\Polygon2.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\Polygon3.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\RectPacker.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\Spline.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\Vector.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Math\Neon\NeonMath.cpp">
+      <Filter>Math\Neon</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\MemoryManager\AllocatorBridge.cpp">
+      <Filter>MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\MemoryManager\MallocHook.cpp">
+      <Filter>MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\MemoryManager\MemoryManager.cpp">
+      <Filter>MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\MemoryManager\OperatorNewHook.cpp">
+      <Filter>MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\NetConfig.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\NetCore.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\NetService.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\PeerDesription.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\PeerDesriptionSerialize.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\ServiceRegistrar.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\AddressResolver.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\DeadlineTimer.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\Endpoint.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\IfAddress.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\IOLoop.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\IPAddress.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\NetworkUtils.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\TCPAcceptor.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\TCPSocket.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Base\UDPSocket.cpp">
+      <Filter>Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Private\Announcer.cpp">
+      <Filter>Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Private\Discoverer.cpp">
+      <Filter>Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Private\NetController.cpp">
+      <Filter>Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Private\ProtoDecoder.cpp">
+      <Filter>Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Private\ProtoDriver.cpp">
+      <Filter>Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Private\TCPClientTransport.cpp">
+      <Filter>Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Private\TCPServerTransport.cpp">
+      <Filter>Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Services\LogConsumer.cpp">
+      <Filter>Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Services\NetLogger.cpp">
+      <Filter>Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.cpp">
+      <Filter>Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp">
+      <Filter>Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp">
+      <Filter>Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotification.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationAndroid.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationController.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationControllerAndroid.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationDelayed.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationIOS.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationNotImplemented.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationProgress.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationText.cpp">
+      <Filter>Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Particles\Particle.cpp">
+      <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Particles\ParticleEmitter.cpp">
+      <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Particles\ParticleForce.cpp">
+      <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Particles\ParticleLayer.cpp">
+      <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Particles\ParticlePropertyLine.cpp">
+      <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Particles\ParticleRenderObject.cpp">
+      <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\DateTime.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\DeviceInfo.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\DeviceInfoPrivateBase.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\Process.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\SystemTimer.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\CorePlatformWinUAP.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\DeviceInfoWinUAP.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\DispatcherWinUAP.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\DPIHelperWin32.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\MovieViewControlWinUAP.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\PrivateMovieViewWinUAP.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\PrivateTextFieldWinUAP.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\PrivateWebViewWinUAP.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\WebViewControlWinUAP.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\WinUAPXamlApp.cpp">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\CursorWin32.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\CursorWinUAP.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\D3D9Helpers.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\DynamicIndexBuffer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\DynamicVertexBuffer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\GPUFamilyDescriptor.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\MipmapReplacer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\OcclusionQuery.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\OGLHelpers.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\PixelFormatDescriptor.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderBase.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderDataObject.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderEffect.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderGrayscaleEffect.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderHelper.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderManager.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderManagerDX.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderManagerFactory.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderManagerGL.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderOptions.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderResource.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\RenderState.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Shader.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\ShaderCache.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\ShaderDX.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\ShaderGL.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\SharedFBO.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\StaticIndexBuffer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\StaticVertexBuffer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Texture.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\TextureDescriptor.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\TextureDX9.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\UberShader.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\DFFont.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\Font.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\FontManager.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\FTFont.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\GraphicsFont.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\Sprite.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlock.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlockDistanceRender.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlockRender.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlockSoftwareRender.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\TextLayout.cpp">
+      <Filter>Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp">
+      <Filter>Render\2D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp">
+      <Filter>Render\2D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\3D\AnimatedMesh.cpp">
+      <Filter>Render\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\3D\EdgeAdjacency.cpp">
+      <Filter>Render\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\3D\MeshUtils.cpp">
+      <Filter>Render\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\3D\PolygonGroup.cpp">
+      <Filter>Render\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\3D\StaticMesh.cpp">
+      <Filter>Render\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Effects\ColorOnlyEffect.cpp">
+      <Filter>Render\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Effects\MultiTextureEffect.cpp">
+      <Filter>Render\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Effects\TextureMulColorAlphaTestEffect.cpp">
+      <Filter>Render\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Effects\TextureMulColorEffect.cpp">
+      <Filter>Render\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Camera.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\CullingSystem.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Frustum.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Heightmap.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Landscape.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\LandscapeChunk.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\LandscapeCursor.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Light.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Mesh.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderBatch.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderBatchArray.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderHierarchy.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderLayer.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderLayerManager.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderObject.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderPass.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderPassManager.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderSystem.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\ShadowRect.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\ShadowVolume.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SkinnedMesh.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SkyboxRenderObject.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SpatialTree.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SpeedTreeObject.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SpriteObject.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SpriteRenderBatch.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\StaticOcclusion.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\StaticOcclusionRenderPass.cpp">
+      <Filter>Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\TextureSheet.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometry.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometrySerializationData.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomSLGeometry.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationFixedGeometry.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometry.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationPropertyNames.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Image\Image.cpp">
+      <Filter>Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Image\ImageSystem.cpp">
+      <Filter>Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Image\LibDdsHelper.cpp">
+      <Filter>Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Image\LibJpegHelper.cpp">
+      <Filter>Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Image\LibPngHelper.cpp">
+      <Filter>Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Image\LibPVRHelper.cpp">
+      <Filter>Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Image\LibTgaHelper.cpp">
+      <Filter>Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Image\LibWebPHelper.cpp">
+      <Filter>Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\MaterialCompiler.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\MaterialGraph.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\MaterialGraphNode.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\MaterialOptimazer.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterial.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialConsts.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialHelper.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialNames.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialTemplate.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Render\Material\RenderTechnique.cpp">
+      <Filter>Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene2D\GameObject.cpp">
+      <Filter>Scene2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene2D\GameObjectAnimations.cpp">
+      <Filter>Scene2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene2D\GameObjectManager.cpp">
+      <Filter>Scene2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene2D\TextGameObject.cpp">
+      <Filter>Scene2D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\AnimationData.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\BillboardNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\BoneNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\DataNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Entity.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\EntityFamily.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\ImposterManager.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\ImposterNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\LodNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\MeshInstance.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\MeshInstanceNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\ParticleEffectNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\ParticleEmitterNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\PathManip.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\PolygonGroupInstance.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Scene.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneAnimationMixer.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneCache.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneFile.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneFileV2.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneManager.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneNodeAnimation.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneNodeAnimationKey.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneNodeAnimationList.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\ShadowVolumeNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SkeletonNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SpriteNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SwitchNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\UserNode.cpp">
+      <Filter>Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\ActionComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\AnimationComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\BulletComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\CameraComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\ComponentHelpers.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\CustomPropertiesComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\DebugRenderComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\LightComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\LodComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\ParticleEffectComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\QualitySettingsComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\RenderComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\SkeletonComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\SoundComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\SpeedTreeComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\SwitchComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\TransformComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\UpdatableComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\UserComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\WaveComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\WindComponent.cpp">
+      <Filter>Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.cpp">
+      <Filter>Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.cpp">
+      <Filter>Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.cpp">
+      <Filter>Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.cpp">
+      <Filter>Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.cpp">
+      <Filter>Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.cpp">
+      <Filter>Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Converters\LodToLod2Converter.cpp">
+      <Filter>Scene3D\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Converters\SwitchToRenerObjectConverter.cpp">
+      <Filter>Scene3D\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Converters\TreeToAnimatedTreeConverter.cpp">
+      <Filter>Scene3D\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneFile\SerializationContext.cpp">
+      <Filter>Scene3D\SceneFile</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\SceneFile\VersionInfo.cpp">
+      <Filter>Scene3D\SceneFile</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\AnimationSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\BaseProcessSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\DebugRenderSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\EventSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\GlobalEventSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\LightUpdateSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\LodSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\MaterialSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SkyboxSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SpeedTreeUpdateSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\StaticOcclusionSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SwitchSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\TransformSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\UpdateSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\WaveSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\WindSystem.cpp">
+      <Filter>Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.cpp">
+      <Filter>Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.cpp">
+      <Filter>Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
+      <Filter>Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Sound\FMODFileSoundEvent.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Sound\FMODSoundEvent.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Sound\FMODSoundSystem.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Timer\RawTimer.cpp">
+      <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\AbstractUIPackageBuilder.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\DefaultUIPackageBuilder.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\ScrollHelper.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\TheoraPlayer.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UI3DView.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIAggregatorControl.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIButton.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIControl.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIControlBackground.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIControlHelpers.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIControlPackageContext.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIControlSystem.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIEvent.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIFadeTransition.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIFileSystemDialog.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIHierarchy.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIHierarchyCell.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIHierarchyNode.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIHoleTransition.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIJoypad.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIList.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIListCell.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UILoadingTransition.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIMoveInTransition.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIMovieView.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIPackage.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIPackageLoader.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIPackagesCache.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIParticles.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIPopup.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIScreen.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIScreenManagerMacOS.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIScreenTransition.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIScrollBar.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIScrollView.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIScrollViewContainer.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UISlider.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UISpinner.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIStaticText.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UISwitch.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UITextField.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UITextFieldWinUAP.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIWebView.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\UIYamlLoader.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Components\UIComponent.cpp">
+      <Filter>UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Components\UIControlFamily.cpp">
+      <Filter>UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\ControlLayoutData.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\LayoutHelpers.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\LinearLayoutAlgorithm.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\SizeMeasuringAlgorithm.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\UIFlowLayoutComponent.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\UILayoutSystem.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp">
+      <Filter>UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
+      <Filter>UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheet.cpp">
+      <Filter>UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.cpp">
+      <Filter>UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp">
+      <Filter>UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp">
+      <Filter>UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp">
+      <Filter>UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp">
+      <Filter>UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp">
+      <Filter>UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UnitTests\TestClass.cpp">
+      <Filter>UnitTests</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\UnitTests\TestCore.cpp">
+      <Filter>UnitTests</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\BiDiHelper.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\CRC32.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\MD5.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\StringFormat.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\StringUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\UTF8Utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\Utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\UtilsAndroid.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dava.framework\Sources\Internal\Utils\UtilsWin32.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DAVAClassRegistrator.h" />
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DAVAConfig.h" />
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DAVAEngine.h" />
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DAVAVersion.h" />
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DoxygenDocumenation.h" />
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\AnimatedObject.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\Animation.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\AnimationManager.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\BezierSplineAnimation.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\Interpolation.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\KeyframeAnimation.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\LinearAnimation.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\LinearPropertyAnimation.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Animation\NamedAnimationsList.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Autotesting\AutotestingDB.h">
+      <Filter>Autotesting</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Autotesting\AutotestingSystem.h">
+      <Filter>Autotesting</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Autotesting\AutotestingSystemConfig.h">
+      <Filter>Autotesting</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Autotesting\AutotestingSystemLua.h">
+      <Filter>Autotesting</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Autotesting\dlmalloc.h">
+      <Filter>Autotesting</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Autotesting\GameAPI.h">
+      <Filter>Autotesting</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Autotesting\MongodbUpdateObject.h">
+      <Filter>Autotesting</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\AbstractQuadTree.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\AllocatorFactory.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\BaseMath.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\BaseObject.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\BaseObjectChecker.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\BaseTypes.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Data.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\DynamicObjectCache.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\EnumMap.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\EventDispatcher.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Exception.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\FastName.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\FastNameMap.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\FixedSizePoolAllocator.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\GlobalEnum.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Hash.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\HashMap.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\IndexBitVector.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Introspection.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\IntrospectionBase.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\IntrospectionCollection.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\IntrospectionDynamic.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\IntrospectionFlags.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\IntrospectionProperty.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Message.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Meta.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Noncopyable.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\NullType.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\ObjectCreator.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\ObjectFactory.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Observable.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Observer.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Platform.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\RefPtr.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Result.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\ScopedPtr.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Serializable.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Singleton.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\StaticSingleton.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\TemplateHelpers.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\TypeHolders.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\TypeList.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Base\Radix\Radix.h">
+      <Filter>Base\Radix</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Collision\CollisionObject2.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Collision\CollisionPolygons.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Collision\Collisions.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\Atomic.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\AtomicGNU.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\AtomicWindows.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\Concurrency.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\ConcurrentObject.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\ConditionVariable.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\LockGuard.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\Mutex.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\PosixThreads.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\Semaphore.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\Spinlock.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\Thread.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\ThreadLocalPtr.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Concurrency\UniqueLock.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Core\ApplicationCore.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Core\Core.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Core\CoreMacOS_CarbonWindow.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Core\CoreMacOS_OpenGL.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Core\DisplayMode.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Core\PerformanceSettings.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Database\MongodbClient.h">
+      <Filter>Database</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Database\MongodbObject.h">
+      <Filter>Database</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DataStorage\DataStorage.h">
+      <Filter>DataStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DataStorage\Android\SharedPreferences.h">
+      <Filter>DataStorage\Android</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h">
+      <Filter>DataStorage\iOS</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DataStorage\MacOS\DataStorageMacOS.h">
+      <Filter>DataStorage\MacOS</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DataStorage\Windows\DataStorageWindows.h">
+      <Filter>DataStorage\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\Backtrace.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\DVAssert.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\DVAssertMessage.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\DVAssertMessageAndroid.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\List.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\ListAllocator.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\Profiler.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\Replay.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\Stats.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\UIAlertView_Modal.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Debug\UIDismissionHandlerAlertView.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\DLC.h">
+      <Filter>DLC</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\Downloader\CurlDownloader.h">
+      <Filter>DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\Downloader\Downloader.h">
+      <Filter>DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\Downloader\DownloaderCommon.h">
+      <Filter>DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\Downloader\DownloadManager.h">
+      <Filter>DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\Patcher\BSDiff.h">
+      <Filter>DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\Patcher\PatchFile.h">
+      <Filter>DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\Patcher\ZLibStream.h">
+      <Filter>DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\DLC\Patcher\bsdiff\bs_common.h">
+      <Filter>DLC\Patcher\bsdiff</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Entity\BaseFamily.h">
+      <Filter>Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Entity\Component.h">
+      <Filter>Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Entity\SceneSystem.h">
+      <Filter>Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\Bitstream.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\DynamicMemoryFile.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\File.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\FileList.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\FilePath.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\FileSystem.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\KeyedArchive.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\KeyedArchiver.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\KeyedUnarchiver.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\LocalizationAndroid.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\LocalizationIPhone.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\LocalizationSystem.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\Logger.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\Parser.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\ResourceArchive.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\StaticMemoryFile.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\VariantType.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\XMLParser.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\YamlArchive.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\YamlEmitter.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\YamlNode.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\YamlParser.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\FileSystem\ZipFile.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Functional\Function.h">
+      <Filter>Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Functional\Functional.h">
+      <Filter>Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Functional\Signal.h">
+      <Filter>Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Functional\SignalBase.h">
+      <Filter>Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Input\Accelerometer.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Input\AccelerometerAndroid.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Input\GamepadDevice.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Input\InputCallback.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Input\InputSystem.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Input\KeyboardDevice.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Job\JobManager.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Job\JobQueue.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Job\JobThread.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\AABBox2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\AABBox3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\BezierSpline.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Circle.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Color.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Math2D.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Math2DTemplateClasses.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\MathConstants.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\MathDefines.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\MathHelpers.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Matrix2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Matrix3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Matrix4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\OOBBox.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Plane.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Polygon2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Polygon3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Quaternion.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Ray.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Rect.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\RectPacker.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Sphere.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Spline.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Vector.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Math\Neon\NeonMath.h">
+      <Filter>Math\Neon</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\MemoryManager\AllocatorBridge.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\MemoryManager\AllocPools.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\MemoryManager\InternalAllocator.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\MemoryManager\MallocHook.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\MemoryManager\MemoryManager.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\MemoryManager\MemoryManagerTypes.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\MemoryManager\MemoryProfiler.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\MemoryManager\TrackingAllocator.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\IChannel.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\IController.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\NetConfig.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\NetCore.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\NetService.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\NetworkCommon.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\PeerDesription.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\ServiceRegistrar.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\AddressResolver.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\Buffer.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\DeadlineTimer.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\DeadlineTimerTemplate.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\Endpoint.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\IfAddress.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\IOLoop.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\IPAddress.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\NetworkUtils.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\TCPAcceptor.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\TCPAcceptorTemplate.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\TCPSocket.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\TCPSocketTemplate.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\UDPSocket.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Base\UDPSocketTemplate.h">
+      <Filter>Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\Announcer.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\Discoverer.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\ITransport.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\NetController.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\ProtoDecoder.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\ProtoDriver.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\ProtoTypes.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\TCPClientTransport.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Private\TCPServerTransport.h">
+      <Filter>Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Services\LogConsumer.h">
+      <Filter>Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Services\NetLogger.h">
+      <Filter>Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Services\SimpleEchoServer.h">
+      <Filter>Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.h">
+      <Filter>Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Services\MMNet\MMNetClient.h">
+      <Filter>Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Services\MMNet\MMNetProto.h">
+      <Filter>Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Network\Services\MMNet\MMNetServer.h">
+      <Filter>Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotification.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationAndroid.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationController.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationDelayed.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationImpl.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationIOS.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationNotImplemented.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationProgress.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Notification\LocalNotificationText.h">
+      <Filter>Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Particles\Particle.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Particles\ParticleEmitter.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Particles\ParticleForce.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Particles\ParticleGroup.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Particles\ParticleLayer.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Particles\ParticlePropertyLine.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Particles\ParticleRenderObject.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\DateTime.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\DeviceInfo.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\DeviceInfoPrivateBase.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\DPIHelper.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\MovieViewControlStub.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\OpenUDIDApple.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\Process.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\SystemTimer.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\CorePlatformWinUAP.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\DeviceInfoWinUAP.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\DispatcherWinUAP.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\MovieViewControlWinUAP.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\PrivateMovieViewWinUAP.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\PrivateTextFieldWinUAP.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\PrivateWebViewWinUAP.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\WebViewControlWinUAP.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Platform\TemplateWin32\WinUAPXamlApp.h">
+      <Filter>Platform\TemplateWin32</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Cursor.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\D3D9Helpers.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\DynamicIndexBuffer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\DynamicVertexBuffer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\GPUFamilyDescriptor.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\IndexBuffer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\MipmapReplacer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\OcclusionQuery.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\OGLHelpers.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\PixelFormatDescriptor.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\PVRDefines.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderBase.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderDataObject.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderEffect.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderGrayscaleEffect.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderHelper.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderManager.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderOptions.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderResource.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderState.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RenderStateData.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\RGBColor.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Shader.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\ShaderCache.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\SharedFBO.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\StaticIndexBuffer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\StaticVertexBuffer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Texture.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\TextureDescriptor.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\TextureStateData.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\UberShader.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\UniqueStateSet.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\VertexBuffer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\DFFont.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\Font.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\FontManager.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\FTFont.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\GraphicsFont.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\GridSprite.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\Sprite.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlock.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlockDistanceRender.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlockGraphicsRender.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlockRender.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\TextBlockSoftwareRender.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\TextLayout.h">
+      <Filter>Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\Systems\RenderSystem2D.h">
+      <Filter>Render\2D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h">
+      <Filter>Render\2D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\3D\AnimatedMesh.h">
+      <Filter>Render\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\3D\EdgeAdjacency.h">
+      <Filter>Render\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\3D\MeshUtils.h">
+      <Filter>Render\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\3D\PolygonGroup.h">
+      <Filter>Render\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\3D\StaticMesh.h">
+      <Filter>Render\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Effects\ColorOnlyEffect.h">
+      <Filter>Render\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Effects\MultiTextureEffect.h">
+      <Filter>Render\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Effects\TextureMulColorAlphaTestEffect.h">
+      <Filter>Render\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Effects\TextureMulColorEffect.h">
+      <Filter>Render\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Camera.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\CullingSystem.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Frustum.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Heightmap.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\IRenderUpdatable.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Landscape.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\LandscapeChunk.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\LandscapeCursor.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Light.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Mesh.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderBatch.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderBatchArray.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderDataSource.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderFastNames.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderHierarchy.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderLayer.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderLayerManager.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderObject.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderPass.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderPassManager.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\RenderSystem.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\ShadowBlendMode.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\ShadowRect.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\ShadowVolume.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SkinnedMesh.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SkyboxRenderObject.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SpatialTree.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SpeedTreeObject.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SpriteObject.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\SpriteRenderBatch.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\StaticOcclusion.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\StaticOcclusionRenderPass.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\VisibilityArray.h">
+      <Filter>Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\TextureSheet.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometry.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometrySerializationData.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomSLGeometry.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationFixedGeometry.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometry.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationMaterialTransformer.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationPropertyNames.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Highlevel\Vegetation\VegetationSpatialData.h">
+      <Filter>Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\CRCAdditionInterface.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\Image.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\ImageConvert.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\ImageFormatInterface.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\ImageSystem.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\LibDdsHelper.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\LibJpegHelper.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\LibPngHelper.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\LibPVRHelper.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\LibTgaHelper.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Image\LibWebPHelper.h">
+      <Filter>Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\MaterialCompiler.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\MaterialGraph.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\MaterialGraphNode.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\MaterialOptimazer.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterial.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialConsts.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialHelper.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialNames.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\NMaterialTemplate.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Render\Material\RenderTechnique.h">
+      <Filter>Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene2D\GameObject.h">
+      <Filter>Scene2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene2D\GameObjectAnimations.h">
+      <Filter>Scene2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene2D\GameObjectManager.h">
+      <Filter>Scene2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene2D\TextGameObject.h">
+      <Filter>Scene2D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\AnimationData.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\BillboardNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\BoneNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\DataNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Drawable.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Entity.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\EntityFamily.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\ImposterManager.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\ImposterNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\LodNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\MeshInstance.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\MeshInstanceNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\ParticleEffectNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\ParticleEmitterNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\PathManip.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\PolygonGroupInstance.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Scene.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneAnimationMixer.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneCache.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneFile.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneFileV2.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneManager.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneNodeAnimation.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneNodeAnimationKey.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneNodeAnimationList.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\ShadowVolumeNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SkeletonNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SpriteNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SwitchNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\UserNode.h">
+      <Filter>Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\ActionComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\AnimationComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\BulletComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\CameraComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\ComponentHelpers.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\CustomPropertiesComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\DebugRenderComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\LightComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\LodComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\ParticleEffectComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\QualitySettingsComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\RenderComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\SkeletonComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\SoundComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\SpeedTreeComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\SwitchComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\TransformComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\UpdatableComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\UserComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\WaveComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\WindComponent.h">
+      <Filter>Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.h">
+      <Filter>Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.h">
+      <Filter>Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.h">
+      <Filter>Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.h">
+      <Filter>Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.h">
+      <Filter>Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.h">
+      <Filter>Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Converters\LodToLod2Converter.h">
+      <Filter>Scene3D\Converters</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Converters\SwitchToRenerObjectConverter.h">
+      <Filter>Scene3D\Converters</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Converters\TreeToAnimatedTreeConverter.h">
+      <Filter>Scene3D\Converters</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneFile\SerializationContext.h">
+      <Filter>Scene3D\SceneFile</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\SceneFile\VersionInfo.h">
+      <Filter>Scene3D\SceneFile</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\AnimationSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\BaseProcessSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\DebugRenderSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\EventSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\FoliageSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\GlobalEventSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\LodSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\MaterialSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SkeletonSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SkyboxSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SpeedTreeUpdateSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\StaticOcclusionSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\SwitchSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\TransformSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\UpdateSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\WaveSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\WindSystem.h">
+      <Filter>Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.h">
+      <Filter>Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.h">
+      <Filter>Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
+      <Filter>Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Sound\FMODFileSoundEvent.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Sound\FMODSoundEvent.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Sound\FMODUtils.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Sound\SoundEvent.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Sound\SoundSystem.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Timer\RawTimer.h">
+      <Filter>Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\AbstractUIPackageBuilder.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\DefaultUIPackageBuilder.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\IMovieViewControl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\IWebViewControl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\ScrollHelper.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\TheoraPlayer.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UI3DView.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIAggregatorControl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIButton.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIControl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIControlBackground.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIControlHelpers.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIControlPackageContext.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIControlSystem.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIEvent.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIFadeTransition.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIFileSystemDialog.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIHierarchy.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIHierarchyCell.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIHierarchyNode.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIHoleTransition.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIJoypad.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIList.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIListCell.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UILoadingTransition.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIMoveInTransition.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIMovieView.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIPackage.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIPackageLoader.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIPackagesCache.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIParticles.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIPopup.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScreen.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScreenManager.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScreenManageriPhone.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScreenManageriPhoneImpl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScreenManagerMacOS.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScreenTransition.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScrollBar.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScrollView.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIScrollViewContainer.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UISlider.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UISpinner.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIStaticText.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UISwitch.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UITextField.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UITextFieldiPhone.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UITextFieldWinUAP.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIWebView.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\UIYamlLoader.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\VectorSpinnerAdapter.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Components\UIComponent.h">
+      <Filter>UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Components\UIControlFamily.h">
+      <Filter>UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\ControlLayoutData.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\LayoutHelpers.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\LinearLayoutAlgorithm.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\SizeMeasuringAlgorithm.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\UIAnchorComponent.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\UIFlowLayoutComponent.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\UILayoutSystem.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Layouts\UISizePolicyComponent.h">
+      <Filter>UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
+      <Filter>UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheet.h">
+      <Filter>UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.h">
+      <Filter>UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h">
+      <Filter>UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h">
+      <Filter>UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetStructs.h">
+      <Filter>UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetSystem.h">
+      <Filter>UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h">
+      <Filter>UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UnitTests\TestClass.h">
+      <Filter>UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UnitTests\TestClassFactory.h">
+      <Filter>UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UnitTests\TestCore.h">
+      <Filter>UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\UnitTests\UnitTests.h">
+      <Filter>UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\BiDiHelper.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\CRC32.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\MD5.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\NSStringUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\Random.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\StringFormat.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\StringUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\UTF8Utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\Utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\dava.framework\Sources\Internal\Utils\UtilsAndroid.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\dava.framework\Sources\Internal\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DataStorage\Android">
+      <UniqueIdentifier>{FA34C4E8-9370-4B57-8B07-3E6DAA8C36CD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStorage\iOS">
+      <UniqueIdentifier>{5CC9CC8C-3586-48EA-A7AA-EA960F4BCBB3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStorage\MacOS">
+      <UniqueIdentifier>{8749A43E-097E-41AA-8124-CE3D55CAC047}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStorage\Windows">
+      <UniqueIdentifier>{5AA1A107-3A0B-4D77-96F5-8A2C2B1DB38F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\TemplateWin32">
+      <UniqueIdentifier>{55E6F9E3-F38C-42A6-91E3-67D39CDB72F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DLC\Downloader">
+      <UniqueIdentifier>{5B2A6A52-964E-4D49-89AE-93C9C2C8D82E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DLC\Patcher">
+      <UniqueIdentifier>{4A77082B-6644-419C-90D6-66B7141C5F6D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene3D\Components\Controller">
+      <UniqueIdentifier>{382B791F-FAB5-4C76-950C-0BBD26ADE468}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene3D\Components\Waypoint">
+      <UniqueIdentifier>{936978D1-5508-4991-A675-FC5675933CC6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\2D\Systems">
+      <UniqueIdentifier>{73FB7450-7334-45C0-91E2-BB896C54498A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Highlevel\Vegetation">
+      <UniqueIdentifier>{BEF797D6-CCFB-4C56-BE12-FA0239D05092}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene3D\Systems\Controller">
+      <UniqueIdentifier>{0E2946E5-054D-436D-A2AF-545D59EEBC6D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\Radix">
+      <UniqueIdentifier>{7820A1DF-6CFC-41D1-B485-CAF99A252031}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DLC\Patcher\bsdiff">
+      <UniqueIdentifier>{6F394099-5F6C-42C8-8B25-2E5A167BB3EE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Neon">
+      <UniqueIdentifier>{F4AF1054-37D9-4475-8141-96DFCB859914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\Services\MMNet">
+      <UniqueIdentifier>{2A8D538A-D907-4840-AFAD-99F1794BC216}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene3D\Components">
+      <UniqueIdentifier>{20CD2684-2111-47E6-AADF-9FA5341C6104}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene3D\Converters">
+      <UniqueIdentifier>{0FBDB638-FD13-4FBF-8E75-0618F28283C3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene3D\SceneFile">
+      <UniqueIdentifier>{DDBD6AF5-761F-4E01-8541-5495F5E11A8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene3D\Systems">
+      <UniqueIdentifier>{6D07B9B3-0231-4B76-ADCB-348B36F00F46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{A52E4E58-6AAF-4F9D-AE2F-3323E652BA18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Autotesting">
+      <UniqueIdentifier>{65A2B0CB-9493-413E-916F-63ABC6F44DB2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base">
+      <UniqueIdentifier>{FF27A11E-6677-4FB2-B3D5-65462D4AE7DB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{30762028-4D2D-4B99-8A41-17D73F1AD48D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Concurrency">
+      <UniqueIdentifier>{72024760-27DF-4F72-B58F-D6B06188A9F9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{08631384-0BA1-415E-B3DA-2DDEBB7E9243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Database">
+      <UniqueIdentifier>{B2D7E265-E181-4CD0-B868-8BAA619C78E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStorage">
+      <UniqueIdentifier>{A23AD073-AF5F-46C1-B53C-95C719FDC4E8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debug">
+      <UniqueIdentifier>{17E4F5AD-160F-4EE8-B231-1FA102842990}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DLC">
+      <UniqueIdentifier>{B5C8921D-2AD2-467A-BD9D-DC0AFFC339A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Entity">
+      <UniqueIdentifier>{CBB852FE-8042-430F-8F90-6F5E443AB5D4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FileSystem">
+      <UniqueIdentifier>{BF0D7E3C-8714-46E6-906C-53721219A446}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functional">
+      <UniqueIdentifier>{5B14E16C-FB77-40F8-8C0F-03CF9C570D63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{DEF63F39-B0DC-49EF-A1C3-D0C893C6AFEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Job">
+      <UniqueIdentifier>{B9F16FCF-286E-41EB-8701-6943E1FF5374}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{52024748-DB82-44EF-A7AC-E6ECE3958251}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MemoryManager">
+      <UniqueIdentifier>{43C43BB4-5B8B-430C-8E1F-4DA85616C950}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{07085157-9653-4898-840F-0422FC717EFE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Notification">
+      <UniqueIdentifier>{535EAE37-B1CD-4964-B4B6-B8F95059477C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles">
+      <UniqueIdentifier>{76B64224-B649-43AB-90DD-DEC1120F051C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{0C25DED5-356D-4B67-B117-4D5BBBD76297}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{E18364ED-FE52-4BC1-8B72-CF47C37AD43B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene2D">
+      <UniqueIdentifier>{55BB6928-2DB4-4DA6-9B75-E65CF8DF6CFC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene3D">
+      <UniqueIdentifier>{2C173DC3-5D98-4120-986B-66D2070598EE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{3F8393F9-9A39-4F8A-9092-EB05D2AAAE84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Timer">
+      <UniqueIdentifier>{31785728-6A2C-429A-B957-9A824935499D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{F54E472E-4E21-45FA-A17F-CC57EFA07BCC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UnitTests">
+      <UniqueIdentifier>{EA592113-7B91-4C79-AA41-69D658759879}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{4FDF0082-D5B8-432C-B9B5-60B4C8EA8C68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Components">
+      <UniqueIdentifier>{094F1810-7F40-4FA7-826A-1CB08F641735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Layouts">
+      <UniqueIdentifier>{84E1E793-3431-4DA9-A0A3-08A2DBD33102}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Styles">
+      <UniqueIdentifier>{020E3858-47A6-4E99-AFFC-36E1DE59BBA3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\Base">
+      <UniqueIdentifier>{9351D6F0-0D0B-435E-A637-49097E1E7BDB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\Private">
+      <UniqueIdentifier>{A58E3EB3-C6F8-40D1-B727-55375FA1F404}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\Services">
+      <UniqueIdentifier>{81E98231-6EC1-478F-8E1C-065FE4E16F4E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\2D">
+      <UniqueIdentifier>{DFFC236D-E029-4EEE-93A0-513C245F5469}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\3D">
+      <UniqueIdentifier>{FEF88F17-8D85-463E-8096-0288EC0F3BA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Effects">
+      <UniqueIdentifier>{752C8138-9F96-4695-8D21-E84A818B9517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Highlevel">
+      <UniqueIdentifier>{5A04F162-8D1B-485D-8670-ABA2E6276032}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Image">
+      <UniqueIdentifier>{953D228E-3FB5-4A2A-92F8-381F5B8B8FCD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Material">
+      <UniqueIdentifier>{6E1177FF-657D-4B87-B9E5-E6F75A7D2970}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

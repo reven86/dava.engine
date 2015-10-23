@@ -104,38 +104,38 @@ DAVA::String androidLogTag;
 DAVA::String androidPackageName;
 
 DAVA::JNI::JavaClass* gArrayListClass = nullptr;
-    DAVA::JNI::JavaClass* gInputEventClass = nullptr;
+DAVA::JNI::JavaClass* gInputEventClass = nullptr;
 
-	DAVA::Function< jobject(jobject, jint) > gArrayListGetMethod;
-	DAVA::Function< jint(jobject) > gArrayListSizeMethod;
+DAVA::Function<jobject(jobject, jint)> gArrayListGetMethod;
+DAVA::Function<jint(jobject)> gArrayListSizeMethod;
 
-	jfieldID gInputEventTidField;
-	jfieldID gInputEventXField;
-	jfieldID gInputEventYField;
-	jfieldID gInputEventTimeField;
-	jfieldID gInputEventTapCountField;
+jfieldID gInputEventTidField;
+jfieldID gInputEventXField;
+jfieldID gInputEventYField;
+jfieldID gInputEventTimeField;
+jfieldID gInputEventTapCountField;
 
-    AndroidDelegate* androidDelegate = nullptr;
-    ANativeWindow * nativeWindow = nullptr;
+AndroidDelegate* androidDelegate = nullptr;
+ANativeWindow* nativeWindow = nullptr;
+}
+namespace DAVA
+{
+namespace JNI
+{
+JavaVM* GetJVM()
+{
+    if (androidDelegate == nullptr)
+    {
+        LOGE("androidDelegate == nullptr file %s(%d)", __FILE__, __LINE__);
+        return nullptr;
     }
-    namespace DAVA
+    JavaVM* jvm = androidDelegate->GetVM();
+    if (jvm == nullptr)
     {
-    namespace JNI
-    {
-    JavaVM* GetJVM()
-    {
-        if (androidDelegate == nullptr)
-        {
-            LOGE("androidDelegate == nullptr file %s(%d)", __FILE__, __LINE__);
-            return nullptr;
-        }
-        JavaVM* jvm = androidDelegate->GetVM();
-        if (jvm == nullptr)
-        {
-            LOGE("jvm == nullptr file %s(%d)", __FILE__, __LINE__);
-            return nullptr;
-        }
-        return jvm;
+        LOGE("jvm == nullptr file %s(%d)", __FILE__, __LINE__);
+        return nullptr;
+    }
+    return jvm;
 }
 } // end namespace JNI
 } // end namespace DAVA

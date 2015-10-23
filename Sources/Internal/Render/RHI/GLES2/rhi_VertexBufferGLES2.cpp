@@ -69,8 +69,7 @@ VertexBufferGLES2_t
 RHI_IMPL_RESOURCE(VertexBufferGLES2_t,VertexBuffer::Descriptor);
 
 typedef ResourcePool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true>   VertexBufferGLES2Pool;
-RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true);
-
+RHI_IMPL_POOL_SIZE(VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true, 3072);
 
 //------------------------------------------------------------------------------
 
@@ -177,10 +176,10 @@ gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
 void            
 gles2_VertexBuffer_Delete( Handle vb )
 {
-    VertexBufferGLES2_t*    self = VertexBufferGLES2Pool::Get( vb );
-
-    if( self )
+    if (vb != InvalidHandle)
     {
+        VertexBufferGLES2_t* self = VertexBufferGLES2Pool::Get(vb);
+
         self->MarkRestored();
         self->Destroy();
         VertexBufferGLES2Pool::Free( vb );

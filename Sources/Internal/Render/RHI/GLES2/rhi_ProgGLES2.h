@@ -67,19 +67,19 @@ public:
         
         struct Desc {};
 
-
-                            ConstBuf()
-                              : location(-1),
-                                count(0),
-                                data(nullptr),
-                                inst(nullptr)
+        ConstBuf()
+            : location(-1)
+            , count(0)
+            , data(nullptr)
+            , inst(nullptr)
+            , lastInst(nullptr)
                             {}
                             ~ConstBuf()
                             {
                                 ConstBuf::Destroy();
                             }
-    
-        bool                Construct( unsigned loc, unsigned count );
+
+        bool                Construct(uint32 prog, void** lastBoundData, unsigned loc, unsigned count);
         void                Destroy();
 
         unsigned            ConstCount() const;
@@ -87,20 +87,26 @@ public:
         bool                SetConst( unsigned const_i, unsigned const_sub_i, const float* cdata, unsigned data_count );
         
         const void*         Instance() const;
-        void                SetToRHI( const void* instData ) const;
+        void                SetToRHI(uint32 progUid, const void* instData) const;
         void                InvalidateInstance();
+
+        static void         AdvanceFrame();    
+
     
-    
-    private:        
-        
-        unsigned            location;
+    private:
+        uint32 glProg;
+        uint16 location;
         #if DV_USE_UNIFORMBUFFER_OBJECT
         unsigned            ubo;
         #endif
 
-        unsigned            count;
+        uint16 count;
         float*              data;
         mutable float*      inst;
+        mutable void**      lastInst;
+        mutable uint32      frame;
+
+        static uint32       CurFrame;
     };
 
 
@@ -115,9 +121,11 @@ private:
     };
 
     ConstBufInfo        cbuf[MAX_CONST_BUFFER_COUNT];
+    void* cbufLastBoundData[MAX_CONST_BUFFER_COUNT];
     unsigned            texunitLoc[16];
     
     unsigned            shader;
+    uint32 prog;
     const ProgType      type;
     mutable unsigned    texunitInited:1;
     unsigned            texunitCount;

@@ -111,6 +111,7 @@ void ClientNetProxy::OnChannelOpen(DAVA::Net::IChannel* channel)
 {
     DVASSERT(openedChannel == nullptr);
     openedChannel = channel;
+    StateChanged();
 }
 
 void ClientNetProxy::OnChannelClosed(DAVA::Net::IChannel* channel, const char8*)
@@ -138,7 +139,9 @@ void ClientNetProxy::OnPacketReceived(DAVA::Net::IChannel* channel, const void* 
     DVASSERT(openedChannel == channel);
     if (length > 0)
     {
-        std::unique_ptr<CachePacket> packet = CachePacket::Create(static_cast<const uint8*>(packetData), length);
+        std::unique_ptr<CachePacket> packet =
+        CachePacket::Create(static_cast<const uint8*>(packetData), static_cast<uint32>(length));
+
         if (packet != nullptr)
         {
             switch (packet->type)

@@ -51,6 +51,8 @@ typedef ResourcePool<ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER,ProgGLES2::ConstB
 RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf, RESOURCE_CONST_BUFFER, ProgGLES2::ConstBuf::Desc, false, 12 * 1024);
 
 static RingBuffer   DefaultConstRingBuffer;
+uint32       ProgGLES2::ConstBuf::CurFrame = 0;
+
 
 //==============================================================================
 
@@ -111,16 +113,19 @@ DumpShaderText( const char* code, unsigned code_sz )
 
 //==============================================================================
 
-ProgGLES2::ProgGLES2( ProgType t )
-  : type(t),
-    shader(0),
-    texunitInited(false)
+ProgGLES2::ProgGLES2(ProgType t)
+    : type(t)
+    , prog(0)
+    , shader(0)
+    , texunitInited(false)
 {
     for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
         cbuf[i].location = InvalidIndex;
         cbuf[i].count    = 0;
     }
+
+    memset(cbufLastBoundData, 0, sizeof(cbufLastBoundData));
 }
 
 
@@ -168,6 +173,8 @@ ProgGLES2::Construct( const char* srcCode )
             Logger::Info( info );
             DumpShaderText( srcCode, strlen(srcCode) );
         }
+
+        memset(cbufLastBoundData, 0, sizeof(cbufLastBoundData));
     }
     
     return success;
@@ -287,6 +294,7 @@ ProgGLES2::GetProgParams( unsigned progUid )
         }
     }
 
+    prog = progUid;
     texunitInited = false;
 }
 
@@ -317,6 +325,7 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
     Handle  handle = InvalidHandle;
 
     DVASSERT(bufIndex < countof(cbuf));
+    DVASSERT(prog != 0)
 //    DVASSERT(cbuf[bufIndex].location != InvalidIndex);
     
     if( bufIndex < countof(cbuf)  &&  cbuf[bufIndex].location != InvalidIndex )
@@ -325,7 +334,7 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
 
         ConstBuf*   cb = ConstBufGLES2Pool::Get( handle );
 
-        if( !cb->Construct( cbuf[bufIndex].location, cbuf[bufIndex].count ) )
+        if (!cb->Construct(prog, (void**)(&(cbufLastBoundData[bufIndex])), cbuf[bufIndex].location, cbuf[bufIndex].count))
         {
             ConstBufGLES2Pool::Free( handle );
             handle = InvalidHandle;
@@ -363,15 +372,18 @@ ProgGLES2::SetupTextureUnits( unsigned baseUnit ) const
 
 //------------------------------------------------------------------------------
 
-bool
-ProgGLES2::ConstBuf::Construct( unsigned loc, unsigned cnt )
+bool ProgGLES2::ConstBuf::Construct(uint32 prog, void** lastBoundData, unsigned loc, unsigned cnt)
 {
     bool success = true;
-    
-    location    = loc;
-    count       = cnt;
+
+    glProg = prog;
+    location = (uint16)loc;
+    count = (uint16)cnt;
     data        = (float*)(::malloc( cnt*4*sizeof(float) ));
     inst        = nullptr;
+    lastInst    = lastBoundData;
+    *lastInst   = nullptr;
+    frame       = 0;
 
     return success;
 }
@@ -388,6 +400,7 @@ ProgGLES2::ConstBuf::Destroy()
 
         data     = nullptr;
         inst     = nullptr;
+        lastInst = nullptr;
         location = -1;
         count    = 0;
     }
@@ -413,7 +426,7 @@ ProgGLES2::ConstBuf::SetConst( unsigned const_i, unsigned const_count, const flo
     if( const_i + const_count <= count )
     {
         memcpy( data + const_i*4, cdata, const_count*4*sizeof(float) );
-        inst    = nullptr;
+        inst = nullptr;
         success = true;
     }
 
@@ -444,11 +457,18 @@ ProgGLES2::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, const flo
 const void*
 ProgGLES2::ConstBuf::Instance() const
 {
+    if( frame != CurFrame )
+    {
+        inst = nullptr;
+        *lastInst = nullptr;
+    }
+
     if( !inst )
     {
-//SCOPED_NAMED_TIMING("gl.cb-inst");
+        //SCOPED_NAMED_TIMING("gl.cb-inst");
         inst = DefaultConstRingBuffer.Alloc( count*4*sizeof(float) );
         memcpy( inst, data, 4*count*sizeof(float) );
+        frame = CurFrame;
     }
 
     return inst;
@@ -457,11 +477,16 @@ ProgGLES2::ConstBuf::Instance() const
 
 //------------------------------------------------------------------------------
 
-void
-ProgGLES2::ConstBuf::SetToRHI( const void* instData ) const
+void ProgGLES2::ConstBuf::SetToRHI(uint32 progUid, const void* instData) const
 {
+    DVASSERT(progUid == glProg);
+    if (instData != *lastInst)
+    {
 //SCOPED_NAMED_TIMING("gl-Uniform4fv");
-    GL_CALL(glUniform4fv( location, count, (GLfloat*)instData ));
+        GL_CALL(glUniform4fv(location, count, (GLfloat*)instData));
+        *lastInst = (void*)(instData);
+    }
+
     StatSet::IncStat( stat_SET_CB, 1 );
 }
 
@@ -472,6 +497,16 @@ void
 ProgGLES2::ConstBuf::InvalidateInstance()
 {
     inst = nullptr;
+    *lastInst = nullptr;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ProgGLES2::ConstBuf::AdvanceFrame()
+{
+    ++CurFrame;
 }
 
 
@@ -489,10 +524,14 @@ ProgGLES2::ShaderUid() const
 void
 ProgGLES2::InvalidateAllConstBufferInstances()
 {
+    ConstBuf::AdvanceFrame();
+    DefaultConstRingBuffer.Reset();
+/*
     for( ConstBufGLES2Pool::Iterator b=ConstBufGLES2Pool::Begin(),b_end=ConstBufGLES2Pool::End(); b!=b_end; ++b )
     {
         b->InvalidateInstance();
     }
+*/
 }
 
 
@@ -570,13 +609,12 @@ InitializeRingBuffer( uint32 size )
     DefaultConstRingBuffer.Initialize( size );
 }
 
-void
-SetToRHI( const Handle cb, const void* instData )
+void SetToRHI(const Handle cb, uint32 progUid, const void* instData)
 {
     const ProgGLES2::ConstBuf*  self = ConstBufGLES2Pool::Get( cb );
 
 //Logger::Info( "  set-cb %u  inst= %p", unsigned(RHI_HANDLE_INDEX(cb)), instData );
-    self->SetToRHI( instData );
+    self->SetToRHI(progUid, instData);
 }
 
 const void*

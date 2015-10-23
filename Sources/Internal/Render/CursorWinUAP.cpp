@@ -37,11 +37,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-
-void Cursor::SetCursorPinning(bool pin)
+InputSystem::eMouseCaptureMode Cursor::GetMouseCaptureMode()
 {
     CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    winCore->SetCursorPinning(pin);
+    return winCore->GetMouseCaptureMode();
+}
+
+bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
+{
+    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
+    return winCore->SetMouseCaptureMode(mode);
+}
+
+bool Cursor::GetSystemCursorVisibility()
+{
+    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
+    return winCore->GetCursorVisibility();
+}
+
+bool Cursor::SetSystemCursorVisibility(bool show)
+{
+    DVASSERT("Cursor::SetSystemCursorVisibility not implemented");
+    return false;
 }
 
 Cursor* Cursor::Create(const FilePath & cursorPathname, const Vector2 & hotSpot)

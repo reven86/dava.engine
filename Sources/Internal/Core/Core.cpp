@@ -95,6 +95,7 @@ namespace DAVA
 static ApplicationCore * core = nullptr;
 
 Core::Core()
+    : nativeView(nullptr)
 {
     globalFrameIndex = 1;
     isActive = false;
@@ -199,6 +200,7 @@ void Core::CreateRenderer()
     rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
     rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
     rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
+    rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -281,22 +283,17 @@ Core::eScreenOrientation Core::GetScreenOrientation()
     
 Core::eScreenMode Core::GetScreenMode()
 {
-    Logger::FrameworkDebug("[Core::GetScreenMode] return screen mode MODE_UNSUPPORTED");
-    return MODE_UNSUPPORTED;
+    return eScreenMode::FULLSCREEN;
 }
 
-void Core::SwitchScreenToMode(eScreenMode screenMode)
+bool Core::SetScreenMode(eScreenMode screenMode)
 {
-    Logger::FrameworkDebug("[Core::SwitchScreenToMode] do not supported by platform implementation of core");
+    return screenMode == eScreenMode::FULLSCREEN;
 }
 
 void Core::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
 {   
 
-}
-void Core::ToggleFullscreen()
-{
-    
 }
 
 DisplayMode Core::FindBestMode(const DisplayMode & requestedMode)
@@ -699,7 +696,17 @@ bool Core::IsConsoleMode()
 {
     return isConsoleMode;
 }
-    
+
+void* Core::GetNativeView() const
+{
+    return nativeView;
+}
+
+void Core::SetNativeView(void* newNativeView)
+{
+    nativeView = newNativeView;
+}
+
 void Core::EnableConsoleMode()
 {
     isConsoleMode = true;

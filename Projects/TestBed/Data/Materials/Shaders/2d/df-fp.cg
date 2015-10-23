@@ -18,7 +18,7 @@ FPROG_BEGIN
     float4 in_color = FP_IN(color);
     float2 in_uv = FP_IN(uv);
 
-    float distance = FP_TEXTURE2D( tex, in_uv ).a;
+    float distance = FP_A8(FP_TEXTURE2D( tex, in_uv ));
     float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
     alpha = min(alpha, in_color.a);
 

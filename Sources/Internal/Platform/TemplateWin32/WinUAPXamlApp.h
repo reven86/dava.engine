@@ -40,6 +40,7 @@
 #include "Core/DisplayMode.h"
 
 #include "UI/UIEvent.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -69,15 +70,20 @@ public:
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
-    void ToggleFullscreen();
     Windows::Foundation::Size GetCurrentScreenSize();
-    void SetCursorPinning(bool isPinning);
-    void SetCursorVisible(bool isVisible);
+
+    bool GetCursorVisible();
+    bool SetCursorVisible(bool isVisible);
+
+    bool IsPhoneApiDetected();
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
+
+bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
 public:
     void SetQuitFlag();
@@ -180,8 +186,8 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
+    InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
-    bool isCursorPinning = false;
     bool isRightButtonPressed = false;
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
@@ -215,6 +221,21 @@ inline DispatcherWinUAP* WinUAPXamlApp::MainThreadDispatcher()
 inline void WinUAPXamlApp::SetQuitFlag()
 {
     quitFlag = true;
+}
+
+inline bool WinUAPXamlApp::IsPhoneApiDetected()
+{
+    return isPhoneApiDetected;
+}
+
+inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetMouseCaptureMode()
+{
+    return mouseCaptureMode;
+}
+
+inline bool WinUAPXamlApp::GetCursorVisible()
+{
+    return isMouseCursorShown;
 }
 
 }   // namespace DAVA

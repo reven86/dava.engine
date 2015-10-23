@@ -38,8 +38,6 @@ namespace DAVA {
 // The purpose of UIWebView class is displaying embedded Web Page Controls.
 class UIWebView : public UIControl
 {
-protected:
-	virtual ~UIWebView();
 public:
     // Data detector types. May be a combination of several flags.
     enum eDataDetectorType
@@ -52,9 +50,13 @@ public:
         DATA_DETECTOR_ALL               = 0xFF
     };
 
-	UIWebView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-		
-	// Open the URL.
+    UIWebView(const Rect& rect = Rect());
+
+protected:
+    virtual ~UIWebView();
+
+public:
+    // Open the URL.
     void OpenFile(const FilePath &path);
 	void OpenURL(const String& urlToOpen);
 	// Load html page
@@ -84,7 +86,7 @@ public:
     void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
 	YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
 
-    UIControl* Clone() override;
+    UIWebView* Clone() override;
     void CopyDataFrom(UIControl *srcControl) override;
     
     void SystemDraw(const UIGeometricData &geometricData) override;
@@ -97,9 +99,6 @@ protected:
 public:
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
-
-    void SetNativeControlVisible(bool isVisible);
-    bool GetNativeControlVisible() const;
 
 	void SetDelegate(IUIWebViewDelegate* delegate);
 	void SetBackgroundTransparency(bool enabled);
@@ -114,7 +113,8 @@ public:
     int32 GetDataDetectorTypes() const;
 
 protected:
-
+    void SetNativeControlVisible(bool isVisible);
+    bool GetNativeControlVisible() const;
     // Set the visibility of native control.
     void UpdateNativeControlVisible(bool value);
 
@@ -129,8 +129,7 @@ private:
     int32 dataDetectorTypes;
 public:
     INTROSPECTION_EXTEND(UIWebView, UIControl,
-            PROPERTY("dataDetectorTypes", "dataDetectorTypes", GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT)
-    );
+                         PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT));
 };
 };
 

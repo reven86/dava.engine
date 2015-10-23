@@ -174,7 +174,7 @@ DAVA::uint32 ProgramOptions::GetOptionsCount(const char* optionName) const
     {
         if (opt.name == optionName)
         {
-            DAVA::uint32 count = opt.values.size();
+            DAVA::uint32 count = static_cast<DAVA::uint32>(opt.values.size());
             return (count > 0) ? count : 1; //real arguments or default
         }
     }

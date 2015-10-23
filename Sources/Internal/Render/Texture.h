@@ -245,8 +245,7 @@ public:							// properties for fast access
     uint32      textureType:2;
 
     bool        isRenderTarget:1;
-    bool        isPink:1;
-
+    bool isPink : 1;
 
     FastName		debugInfo;
 

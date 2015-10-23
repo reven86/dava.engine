@@ -67,18 +67,12 @@ if ( WINDOWS_UAP )
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
 
-    #libs paths	
-    set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
-    if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
-        set ( LIBS_ARCH_SELECTOR "arm" )
-    elseif ( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64" )
-        set ( LIBS_ARCH_SELECTOR "x64" )
-    else ()
-        set ( LIBS_ARCH_SELECTOR "x86" )
-    endif ()
-
-    set ( DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG   "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}/${LIBS_ARCH_SELECTOR}/Debug" )
-    set ( DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}/${LIBS_ARCH_SELECTOR}/Release" )
+    #libs paths
+    set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" )
+    
+    #root deployment location for resources
+    set ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION "DXFL-DX11" )
+    add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}" )
     
 else ()
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
