@@ -752,11 +752,39 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
 #else
 #error "Unknown platform"
 #endif
+
+    auto PointerToString = [](void* ptr, char* buf) -> size_t {
+        auto hex = [](uint8 n) -> char { return n < 10 ? n + '0' : n - 10 + 'A'; };
+
+        uintptr_t v = reinterpret_cast<uintptr_t>(ptr);
+        for (size_t i = 0; i < sizeof(uintptr_t); ++i)
+        {
+            uint8 byte = static_cast<uint8>(v);
+            *buf = hex(byte & 0x0F);
+            buf += 1;
+            *buf = hex(byte >> 4);
+            buf += 1;
+            v >>= 8;
+        }
+        return sizeof(uintptr_t) * 2;
+    };
+
+    // Convert backtrace to string and compute that string's hash to greatly decrease hash collision
+    // TODO: think about another method of backtrace identification
+    const size_t MAX_BACKTRACE_STRING_LENGTH = sizeof(void*) * 2 * BACKTRACE_DEPTH;
+    char8 bktraceString[MAX_BACKTRACE_STRING_LENGTH];
+    char8* strPtr = bktraceString;
+    size_t bktraceStringLength = 0;
+
     for (size_t idst = 0, isrc = nskip + 1;idst < BACKTRACE_DEPTH;++idst, ++isrc)
     {
         backtrace->frames[idst] = frames[isrc];
+
+        size_t n = PointerToString(frames[isrc], strPtr);
+        strPtr += n;
+        bktraceStringLength += n;
     }
-    backtrace->hash = HashValue_N(reinterpret_cast<const char*>(backtrace->frames.data()), static_cast<uint32>(backtrace->frames.size()));
+    backtrace->hash = HashValue_N(bktraceString, static_cast<uint32>(bktraceStringLength));
     backtrace->nref = 1;
     backtrace->symbolsCollected = false;
 }
