@@ -41,7 +41,6 @@ public:
     int32 GetCpuCount();
     DeviceInfo::HIDConnectionSignal& GetHIDConnectionSignal(DeviceInfo::eHIDType type);
     // default implementation, could be changed in inheritors
-    virtual bool IsTouchPresented();
 
 private:
     Map<DeviceInfo::eHIDType, DeviceInfo::HIDConnectionSignal> hidConnectionSignals;

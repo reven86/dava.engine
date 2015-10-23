@@ -44,9 +44,4 @@ DeviceInfo::eHIDType type)
     return hidConnectionSignals[type];
 }
 
-bool DeviceInfoPrivateBase::IsTouchPresented()
-{
-    return true;
-}
-
 } // namespace DAVA

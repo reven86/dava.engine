@@ -148,6 +148,11 @@ void DeviceInfo::InitializeScreenInfo()
     GetPrivateImpl()->InitializeScreenInfo();
 }
 
+bool DeviceInfo::IsTouchPresented()
+{
+    return GetPrivateImpl()->IsTouchPresented();
+}
+
 bool DeviceInfo::IsHIDConnected(eHIDType type)
 {
     return GetPrivateImpl()->IsHIDConnected(type);

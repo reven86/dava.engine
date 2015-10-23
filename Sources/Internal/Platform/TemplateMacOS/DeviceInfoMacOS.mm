@@ -182,8 +182,10 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 
 bool DeviceInfoPrivate::IsTouchPresented()
 {
+    //TODO: remove this empty realization and implement detection touch
     return false;
 }
+
 }
 
 #endif

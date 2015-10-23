@@ -299,8 +299,7 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 
 bool DeviceInfoPrivate::IsTouchPresented()
 {
-    Windows::Devices::Input::TouchCapabilities touch;
-    return (1 == touch.TouchPresent); //  Touch is always present in MSVS simulator
+    return isTouchPresent; //  Touch is always present in MSVS simulator
 }
 
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)

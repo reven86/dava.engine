@@ -62,7 +62,7 @@ public:
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
-    bool IsTouchPresented() override final;
+    bool IsTouchPresented();
 
 private:
     enum NativeHIDType
