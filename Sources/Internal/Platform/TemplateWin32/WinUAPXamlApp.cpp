@@ -309,7 +309,7 @@ void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender,
 
 WinUAPXamlApp::MouseButtonState WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Core::PointerEventArgs ^ args)
 {
-    MouseButtonState result{UIEvent::BUTTON_NONE, false};
+    MouseButtonState result;
 
     PointerPointProperties ^ pointProperties = args->CurrentPoint->Properties;
     if (isLeftButtonPressed != pointProperties->IsLeftButtonPressed)

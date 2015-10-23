@@ -120,8 +120,8 @@ private:
 
     struct MouseButtonState
     {
-        UIEvent::eButtonID button;
-        bool isPressed;
+        UIEvent::eButtonID button = UIEvent::BUTTON_NONE;
+        bool isPressed = false;
     };
 
     MouseButtonState UpdateMouseButtonsState(Windows::UI::Core::PointerEventArgs ^ args);
