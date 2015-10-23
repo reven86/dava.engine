@@ -151,6 +151,8 @@ public:
 	static Sprite* PureCreate(const FilePath & spriteName, Sprite* forPointer = NULL);
 	void InitFromFile(File *file);
 
+    void SetResourceSizeIndex(DAVA::int32 newIndex);
+
 	/**
 	 \brief Function to create sprite from the already created texture.
 
@@ -273,7 +275,7 @@ protected:
 	virtual ~Sprite();
 	
     static Sprite* GetSpriteFromMap(const FilePath & pathname);
-    static FilePath GetScaledName(const FilePath & spriteName);
+    static FilePath GetScaledName(const FilePath & spriteName, DAVA::int32 resourceIndex);
     static File* LoadLocalizedFile(const FilePath & spritePathname, FilePath & texturePath);
 
 	void RegisterTextureStates();
