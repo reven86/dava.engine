@@ -31,7 +31,7 @@
 #define __RHI_RINGBUFFER_H__
 
     #include "../rhi_Type.h"
-
+    #include "FileSystem/Logger.h"
 
 namespace rhi
 {
@@ -150,6 +150,17 @@ RingBuffer::Alloc( unsigned cnt, unsigned align )
 inline void
 RingBuffer::Reset()
 {
+    if (memUsed > size / 2)
+        DAVA::Logger::Warning("const-buffer high-watermark passed (%u of %u used)", memUsed, size);
+
+    /*
+static unsigned peak=0;
+if( memUsed > peak )
+{
+peak = memUsed;
+DAVA::Logger::Info("ring-buf peak : used %u Kb in %u blocks",memUsed/1024,allocCount);
+}
+*/
     memUsed    = 0;
     allocCount = 0;
 }
