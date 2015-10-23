@@ -403,7 +403,7 @@ void StaticOcclusion::UpdateInfoString()
         float fRemainingRenders = static_cast<float>(renderPassConfigs.size());
         float rendersCompleted = (stats.totalRenderPasses == 0) ? 1.0f : (1.0f - fRemainingRenders / fTotalRenders);
 
-        auto averageTime = stats.buildDuration / static_cast<double>(blockIndex);
+        auto averageTime = (blockIndex == 0) ? 0.0 : (stats.buildDuration / static_cast<double>(blockIndex));
         auto remainingBlocks = totalBlocks - blockIndex;
         auto remainingTime = static_cast<double>(remainingBlocks) * averageTime;
         lastInfoMessage = Format("Processing block: %u from %u (%d%% completed) \n\nTotal time spent: %s\nEstimated remaining time: %s",
