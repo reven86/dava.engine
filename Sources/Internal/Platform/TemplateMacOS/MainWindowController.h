@@ -46,7 +46,7 @@
 }
 
 - (bool)isFullScreen;
-- (void)setFullScreen:(bool)_fullScreen;
+- (bool)setFullScreen:(bool)_fullScreen;
 
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;

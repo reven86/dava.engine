@@ -50,8 +50,12 @@ bool KeyboardDevice::IsKeyPressed(int32 keyCode) const
 	if (DVKEY_ALT == keyCode)
 	{
 		auto current_frame =  Windows::UI::Core::CoreWindow::GetForCurrentThread();
-		auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
-        return Windows::UI::Core::CoreVirtualKeyStates::Down == isAlt;
+        if (current_frame)
+        {
+            // dragon: or else it crashes on win10-device
+            auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
+            return Windows::UI::Core::CoreVirtualKeyStates::Down == isAlt;
+        }
     }
 #elif defined (__DAVAENGINE_WIN32__)
 	if(DVKEY_ALT == keyCode)

@@ -32,7 +32,6 @@
 #include "Scene/System/TextDrawSystem.h"
 
 // framework
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 RotateHood::RotateHood() : HoodObject(4.0f)
@@ -67,33 +66,24 @@ RotateHood::RotateHood() : HoodObject(4.0f)
 
 		lx = x;
 		ly = y;
-	}
-	
-    DAVA::RenderStateData hoodStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, hoodStateData);
-    
-	hoodStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-							DAVA::RenderStateData::STATE_COLORMASK_ALL;
-	hoodStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	hoodStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	hoodDrawState = DAVA::RenderManager::Instance()->CreateRenderState(hoodStateData);
+    }
 }
 
 RotateHood::~RotateHood()
 { }
 
-void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
+void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem)
 {
 	DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
 	DAVA::Vector3 curPos = axisX->curPos;
 
-	// x
+    DAVA::Color lineColor = colorX;
+
+    // x
 	if(selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ) 
 	{
 		if(0 == modifRotate)
 		{
-			DAVA::RenderManager::Instance()->SetColor(colorSBlend);
-
 			DAVA::Polygon3 poly;
 			poly.AddPoint(curPos);
 			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
@@ -101,16 +91,14 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 				poly.AddPoint(axisXc[i]->curFrom);
 			}
 			poly.AddPoint(axisXc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
-			DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
-		}
+            drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
+        }
 		// draw rotate circle
 		else
 		{
 			DAVA::float32 step = modifRotate / 24;
 			DAVA::Color modifColor = colorX;
 			modifColor.a = 0.3f;
-
-			DAVA::RenderManager::Instance()->SetColor(modifColor);
 
 			DAVA::Polygon3 poly;
 			DAVA::float32 y;
@@ -128,27 +116,24 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 			y = radius * sinf(modifRotate) * objScale;
 			z = radius * cosf(modifRotate) * objScale;
 			poly.AddPoint(DAVA::Vector3(curPos.x, curPos.y + y, curPos.z + z));
-			DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
-		}
+            drawer->DrawPolygon(poly, modifColor, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
+        }
 
-		DAVA::RenderManager::Instance()->SetColor(colorS);
-	}
-	else
-		DAVA::RenderManager::Instance()->SetColor(colorX);
+        lineColor = colorS;
+    }
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisX->curFrom, axisX->curTo, 1.0f, hoodDrawState);
-	for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+    drawer->DrawLine(axisX->curFrom, axisX->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
 	{
-		DAVA::RenderHelper::Instance()->DrawLine(axisXc[i]->curFrom, axisXc[i]->curTo, 1.0f, hoodDrawState);
-	}
+        drawer->DrawLine(axisXc[i]->curFrom, axisXc[i]->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    }
 
-	// y
+    lineColor = colorY;
+    // y
 	if(selectedAxis == ST_AXIS_Y || selectedAxis == ST_AXIS_XZ) 
 	{
 		if(0 == modifRotate)
 		{
-			DAVA::RenderManager::Instance()->SetColor(colorSBlend);
-
 			DAVA::Polygon3 poly;
 			poly.AddPoint(curPos);
 			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
@@ -156,16 +141,14 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 				poly.AddPoint(axisYc[i]->curFrom);
 			}
 			poly.AddPoint(axisYc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
-			DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
-		}
+            drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
+        }
 		// draw rotate circle
 		else
 		{
 			DAVA::float32 step = modifRotate / 24;
 			DAVA::Color modifColor = colorY;
 			modifColor.a = 0.3f;
-
-			DAVA::RenderManager::Instance()->SetColor(modifColor);
 
 			DAVA::Polygon3 poly;
 			DAVA::float32 x;
@@ -183,27 +166,24 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 			x = radius * cosf(modifRotate) * objScale;
 			z = radius * sinf(modifRotate) * objScale;
 			poly.AddPoint(DAVA::Vector3(curPos.x + x, curPos.y, curPos.z + z));
-			DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
-		}
-	
-		DAVA::RenderManager::Instance()->SetColor(colorS);
-	}
-	else
-		DAVA::RenderManager::Instance()->SetColor(colorY);
+            drawer->DrawPolygon(poly, modifColor, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
+        }
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisY->curFrom, axisY->curTo, 1.0f, hoodDrawState);
-	for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+        lineColor = colorS;
+    }
+
+    drawer->DrawLine(axisY->curFrom, axisY->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
 	{
-		DAVA::RenderHelper::Instance()->DrawLine(axisYc[i]->curFrom, axisYc[i]->curTo, 1.0f, hoodDrawState);
-	}
+        drawer->DrawLine(axisYc[i]->curFrom, axisYc[i]->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    }
 
-	// z
+    lineColor = colorZ;
+    // z
 	if(selectedAxis == ST_AXIS_Z || selectedAxis == ST_AXIS_XY)
 	{
 		if(0 == modifRotate)
 		{
-			DAVA::RenderManager::Instance()->SetColor(colorSBlend);
-
 			DAVA::Polygon3 poly;
 			poly.AddPoint(curPos);
 			for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
@@ -211,16 +191,14 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 				poly.AddPoint(axisZc[i]->curFrom);
 			}
 			poly.AddPoint(axisZc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
-			DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
-		}
+            drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
+        }
 		// draw rotate circle
 		else
 		{
 			DAVA::float32 step = modifRotate / 24;
 			DAVA::Color modifColor = colorZ;
 			modifColor.a = 0.3f;
-
-			DAVA::RenderManager::Instance()->SetColor(modifColor);
 
 			DAVA::Polygon3 poly;
 			DAVA::float32 x;
@@ -238,33 +216,26 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 			x = radius * sinf(modifRotate) * objScale;
 			y = radius * cosf(modifRotate) * objScale;
 			poly.AddPoint(DAVA::Vector3(curPos.x + x, curPos.y + y, curPos.z));
-			DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
-		}
-	
-		DAVA::RenderManager::Instance()->SetColor(colorS);
-	}
-	else
-		DAVA::RenderManager::Instance()->SetColor(colorZ);
+            drawer->DrawPolygon(poly, modifColor, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
+        }
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisZ->curFrom, axisZ->curTo, 1.0f, hoodDrawState);
-	for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+        lineColor = colorS;
+    }
+
+    drawer->DrawLine(axisZ->curFrom, axisZ->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
 	{
-		DAVA::RenderHelper::Instance()->DrawLine(axisZc[i]->curFrom, axisZc[i]->curTo, 1.0f, hoodDrawState);
-	}
+        drawer->DrawLine(axisZc[i]->curFrom, axisZc[i]->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    }
 
 	// draw axis spheres
 	DAVA::float32 radius = axisX->curScale * baseSize / 24;
 
-	DAVA::RenderManager::Instance()->SetColor(colorX);
-	DAVA::RenderHelper::Instance()->FillDodecahedron(axisX->curTo, radius, hoodDrawState);
+    drawer->DrawIcosahedron(axisX->curTo, radius, colorX, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
+    drawer->DrawIcosahedron(axisY->curTo, radius, colorY, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
+    drawer->DrawIcosahedron(axisZ->curTo, radius, colorZ, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
-	DAVA::RenderManager::Instance()->SetColor(colorY);
-	DAVA::RenderHelper::Instance()->FillDodecahedron(axisY->curTo, radius, hoodDrawState);
-
-	DAVA::RenderManager::Instance()->SetColor(colorZ);
-	DAVA::RenderHelper::Instance()->FillDodecahedron(axisZ->curTo, radius, hoodDrawState);
-
-	DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
+    DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
 	if(0 != modifRotate)
 	{

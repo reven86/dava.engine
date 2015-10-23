@@ -40,9 +40,11 @@
 #include "Tests/StaticTextTest.h"
 #include "Tests/StaticWebViewTest.h"
 #include "Tests/UIMovieTest.h"
+#include "Tests/FontTest.h"
 #include "Tests/WebViewTest.h"
 #include "Tests/FunctionSignalTest.h"
 #include "Tests/KeyboardTest.h"
+#include "Tests/FullscreenTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -64,9 +66,11 @@ void GameCore::RegisterTests()
     new StaticTextTest();
     new StaticWebViewTest();
     new UIMovieTest();
+    new FontTest();
     new WebViewTest();
-	new FunctionSignalTest();
+    new FunctionSignalTest();
     new KeyboardTest();
+    new FullscreenTest();
 //$UNITTEST_CTOR
 }
 
@@ -142,7 +146,6 @@ void GameCore::OnAppFinished()
 void GameCore::BeginFrame()
 {
     ApplicationCore::BeginFrame();
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 }
 
 void GameCore::RunTests()

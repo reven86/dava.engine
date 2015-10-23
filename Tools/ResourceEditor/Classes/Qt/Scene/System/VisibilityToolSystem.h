@@ -68,16 +68,12 @@ public:
 	void SaveTexture(const FilePath& filePath);
 
 protected:
-	static const uint32 CROSS_TEXTURE_SIZE = 64;
+    static const float32 CROSS_TEXTURE_SIZE;
 
-	Texture* crossTexture;
-	uint32 curToolSize;
-
-	Rect updatedRectAccumulator;
+    Texture* crossTexture;
+    uint32 curToolSize;
 
 	bool editingIsEnabled;
-
-	Image* originalImage;
 
 	eVisibilityToolState state;
 
@@ -88,32 +84,24 @@ protected:
 
 	Vector2 visibilityPoint;
 
-	Landscape::eTextureLevel textureLevel;
+    const FastName& textureLevel;
 
-	void AddRectToAccumulator(const Rect& rect);
-	void ResetAccumulatorRect();
-	Rect GetUpdatedRect();
-
-	void StoreOriginalState();
-	void CreateUndoPoint();
-
-	void PrepareConfig();
+    void PrepareConfig();
 	void SetState(eVisibilityToolState newState);
 
 	void SetVisibilityPointInternal();
 	void SetVisibilityAreaInternal();
 
-	
-	void PerformHeightTest(Vector3 spectatorCoords,
-						   Vector2 circleCenter,
-						   float32 circleRadius,
-						   float32 density,
-						   const Vector<float32>& heightValues,
-						   Vector<Vector3>* colorizedPoints);
-	bool IsCircleContainsPoint(const Vector2& circleCenter,
-							   float32 circleRadius,
-							   const Vector2& point);
-	void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points);
+    void PerformHeightTest(const Vector3& spectatorCoords,
+                           const Vector2& circleCenter,
+                           float32 circleRadius,
+                           float32 density,
+                           const Vector<float32>& heightValues,
+                           Vector<Vector3>& colorizedPoints);
+
+    void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3>& points);
+    void DrawVisibilityPoint();
+    void RenderVisibilityPoint(bool clearTarget);
 
     void ExcludeEntities(EntityGroup *entities) const;
     

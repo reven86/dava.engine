@@ -43,16 +43,16 @@ using namespace std::chrono;
 namespace
 {
 const Array<Array<int, Vector2::AXIS_COUNT>, HUDAreaInfo::CORNERS_COUNT> cornersDirection =
-{{
-{{-1, -1}}, // TOP_LEFT_AREA
-{{0, -1}}, // TOP_CENTER_AREA
-{{1, -1}}, //TOP_RIGHT_AREA
-{{-1, 0}}, //CENTER_LEFT_AREA
-{{1, 0}}, //CENTER_RIGHT_AREA
-{{-1, 1}}, //BOTTOM_LEFT_AREA
-{{0, 1}}, //BOTTOM_CENTER_AREA
-{{1, 1}} //BOTTOM_RIGHT_AREA
-}};
+{ {
+{ { -1, -1 } }, // TOP_LEFT_AREA
+{ { 0, -1 } }, // TOP_CENTER_AREA
+{ { 1, -1 } }, //TOP_RIGHT_AREA
+{ { -1, 0 } }, //CENTER_LEFT_AREA
+{ { 1, 0 } }, //CENTER_RIGHT_AREA
+{ { -1, 1 } }, //BOTTOM_LEFT_AREA
+{ { 0, 1 } }, //BOTTOM_CENTER_AREA
+{ { 1, 1 } } //BOTTOM_RIGHT_AREA
+} };
 
 Vector2 RotateVector(Vector2 in, const UIGeometricData& gd)
 {

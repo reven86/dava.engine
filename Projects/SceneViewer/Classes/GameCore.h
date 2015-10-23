@@ -62,8 +62,8 @@ public:
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
     virtual void BeginFrame();
-    
-    
+    virtual void EndFrame();
+
     void SetScenePath(const FilePath & path) { scenePath = path; };
     const FilePath & GetScenePath() const { return scenePath; };
 

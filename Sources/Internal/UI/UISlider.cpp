@@ -29,7 +29,6 @@
 
 #include "UI/UISlider.h"
 #include "UI/UIButton.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/YamlNode.h"
 #include "Base/ObjectFactory.h"

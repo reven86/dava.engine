@@ -110,23 +110,20 @@ void ActionDisableTilemaskEditor::Redo()
 	SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
 }
 
-
-ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, const Rect& updatedRect)
-:	Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
+ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* _landscapeProxy, const Rect& _updatedRect)
+    : Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
 {
-    RenderManager::Instance()->SetColor(Color::White);
-    
-	this->updatedRect = updatedRect;
-	this->landscapeProxy = SafeRetain(landscapeProxy);
+    updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
+    landscapeProxy = SafeRetain(_landscapeProxy);
 
-	Image* originalMask = landscapeProxy->GetTilemaskImageCopy();
+    texture[0] = texture[1] = nullptr;
 
-	undoImageMask = Image::CopyImageRegion(originalMask, updatedRect);
+    Image* originalMask = landscapeProxy->GetTilemaskImageCopy();
 
-    RenderManager::Instance()->SetColor(Color::White);
-    Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+    undoImageMask = Image::CopyImageRegion(originalMask, updatedRect);
 
-	redoImageMask = Image::CopyImageRegion(currentImageMask, updatedRect);
+    Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK)->CreateImageFromMemory();
+    redoImageMask = Image::CopyImageRegion(currentImageMask, updatedRect);
 	SafeRelease(currentImageMask);
 }
 
@@ -135,15 +132,17 @@ ModifyTilemaskCommand::~ModifyTilemaskCommand()
 	SafeRelease(undoImageMask);
 	SafeRelease(redoImageMask);
 	SafeRelease(landscapeProxy);
+
+    SafeRelease(texture[0]);
+    SafeRelease(texture[1]);
 }
 
 void ModifyTilemaskCommand::Undo()
 {
-    ApplyImageToTexture(undoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK));
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE), 0);
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK), 1);
 
-	landscapeProxy->UpdateFullTiledTexture();
-	landscapeProxy->DecreaseTilemaskChanges();
+    landscapeProxy->DecreaseTilemaskChanges();
 
 	Rect r = Rect(Vector2(0, 0), Vector2(undoImageMask->GetWidth(), undoImageMask->GetHeight()));
 	Image* mask = landscapeProxy->GetTilemaskImageCopy();
@@ -152,11 +151,10 @@ void ModifyTilemaskCommand::Undo()
 
 void ModifyTilemaskCommand::Redo()
 {
-	ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK));
+    ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE), 0);
+    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK), 1);
 
-	landscapeProxy->UpdateFullTiledTexture();
-	landscapeProxy->IncreaseTilemaskChanges();
+    landscapeProxy->IncreaseTilemaskChanges();
 
 	Rect r = Rect(Vector2(0, 0), Vector2(redoImageMask->GetWidth(), redoImageMask->GetHeight()));
 	Image* mask = landscapeProxy->GetTilemaskImageCopy();
@@ -168,26 +166,24 @@ Entity* ModifyTilemaskCommand::GetEntity() const
 	return NULL;
 }
 
-void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex)
+void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex, int32 internalHandleIndex)
 {
-    Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-                                               image->GetWidth(), image->GetHeight(), false);
-    
-    RenderHelper::Instance()->Set2DRenderTarget(dstTex);
-    RenderManager::Instance()->SetColor(Color::White);
-    
-    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_OPAQUE, updatedRect);
-    
-    RenderManager::Instance()->SetRenderTarget(0);
+    SafeRelease(texture[internalHandleIndex]);
+
+    texture[internalHandleIndex] = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
+                                                           image->GetWidth(), image->GetHeight(), false);
+
+    RenderSystem2D::Instance()->BeginRenderTargetPass(dstTex, false);
+    RenderSystem2D::Instance()->DrawTexture(texture[internalHandleIndex], RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, updatedRect);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
-
 SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy,
-										 Landscape::eTextureLevel level,
-										 const Color& color)
-:	Command2(CMDID_SET_TILE_COLOR, "Set tile color")
-,	level(level)
-,	redoColor(color)
+                                         const FastName& level,
+                                         const Color& color)
+    : Command2(CMDID_SET_TILE_COLOR, "Set tile color")
+    , level(level)
+    , redoColor(color)
 {
 	this->landscapeProxy = SafeRetain(landscapeProxy);
 	undoColor = landscapeProxy->GetLandscapeTileColor(level);

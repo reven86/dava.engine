@@ -146,8 +146,8 @@ public:
     {
         bool boolValue;
         int32 int32Value;
-        uint32  uint32Value;
-		float32 floatValue;
+        uint32 uint32Value;
+        float32 floatValue;
         float64 float64Value;
 
         int64 int64Value;

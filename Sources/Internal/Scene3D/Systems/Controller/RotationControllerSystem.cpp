@@ -92,7 +92,9 @@ void RotationControllerSystem::Input(UIEvent *event)
     const uint32 size = static_cast<uint32>(entities.size());
     if(0 == size) return;
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     if(event->tid == UIEvent::BUTTON_2 || event->tid == UIEvent::BUTTON_3)
+#endif
     {
         if (UIEvent::Phase::BEGAN == event->phase)
         {
@@ -112,6 +114,9 @@ void RotationControllerSystem::Input(UIEvent *event)
             {
                 if(GetCamera(entities[i]) == camera)
                 {
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+                    RotateDirection(camera);
+#else
                     if(event->tid == DAVA::UIEvent::BUTTON_2)
                     {
                         RotateDirection(camera);
@@ -128,6 +133,7 @@ void RotationControllerSystem::Input(UIEvent *event)
                             RotatePosition(camera);
                         }
                     }
+#endif
                 }
             }
         }

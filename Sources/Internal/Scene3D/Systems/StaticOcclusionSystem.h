@@ -33,74 +33,17 @@
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
 #include "Base/Message.h"
-#include "Render/RenderStateData.h"
 
 namespace DAVA
 {
 class Camera;
 class RenderObject;
-class StaticOcclusion;
+class StaticOcclusionComponent;
 class StaticOcclusionData;
 class StaticOcclusionDataComponent;
+class StaticOcclusionDebugDrawComponent;
 class NMaterial;
 class PolygonGroup;
-
-class MessageQueue
-{
-public:
-    MessageQueue();
-    
-    void DispatchMessages();
-    void AddMessage(const Message & message);
-private:
-    std::queue<Message> messageQueue;
-};
-    
-// System that allow to build occlusion information. Required only in editor.
-class StaticOcclusionBuildSystem : public SceneSystem
-{
-public:
-    StaticOcclusionBuildSystem(Scene * scene);
-    virtual ~StaticOcclusionBuildSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
-    virtual void Process(float32 timeElapsed);
-    void ImmediateEvent(Component * component, uint32 event) override;
-    
-    inline void SetCamera(Camera * camera);
-
-    void Build();
-    void RebuildCurrentCell();
-    void Cancel();
-
-    bool IsInBuild() const;
-    uint32 GetBuildStatus() const;
-
-private:
-    MessageQueue messageQueue;
-    
-    
-    void StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
-    void OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData);
-    void FinishBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
-    void SceneForceLod(int32 layerIndex);
-
-    void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity);
-    void UpdateMaterialsForOcclusionRecursively(Entity *entity);
-    void RestoreOcclusionMaterials();
-    
-    Camera * camera;
-    Vector<Entity*> entities;
-    StaticOcclusion * staticOcclusion;
-    StaticOcclusionDataComponent * componentInProgress;
-    uint32 activeIndex;
-    uint32 buildStepsCount;
-    uint32 buildStepRemains;
-    uint32 renewIndex;
-
-    Map<NMaterial* , RenderStateData> originalRenderStateData;
-};
     
 // System that allow to use occlusion information during rendering
 class StaticOcclusionSystem : public SceneSystem
@@ -134,8 +77,8 @@ private:
     Camera * camera;
     StaticOcclusionData * activePVSSet;
     uint32 activeBlockIndex;
-    
-    
+    bool isInPvs = false;
+
     // Final system part
     void ProcessStaticOcclusion(Camera * camera);
     void ProcessStaticOcclusionForOneDataSet(uint32 blockIndex, StaticOcclusionData * data);
@@ -155,18 +98,21 @@ public:
     virtual void RemoveEntity(Entity * entity);
     void ImmediateEvent(Component * component, uint32 event) override;
 
+    /*HVertexBuffer CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);
+    PolygonGroup* CreateStaticOcclusionDebugDrawCover(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, PolygonGroup *gridPolygonGroup);*/
 
-    static PolygonGroup* CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);
-    static PolygonGroup* CreateStaticOcclusionDebugDrawCover(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, PolygonGroup *gridPolygonGroup);
     ~StaticOcclusionDebugDrawSystem();    
 private:
-    NMaterial *debugOpaqueMaterial, *debugAlphablendMaterial;
+    void UpdateGeometry(StaticOcclusionDebugDrawComponent* component);
+
+    void CreateStaticOcclusionDebugDrawVertices(StaticOcclusionDebugDrawComponent* target, StaticOcclusionComponent* source);
+    void CreateStaticOcclusionDebugDrawGridIndice(StaticOcclusionDebugDrawComponent* target, StaticOcclusionComponent* source);
+    void CreateStaticOcclusionDebugDrawCoverIndice(StaticOcclusionDebugDrawComponent* target, StaticOcclusionComponent* source);
+
+    NMaterial *gridMaterial, *coverMaterial;
+    uint32 vertexLayoutId;
 };
     
-inline void StaticOcclusionBuildSystem::SetCamera(Camera * _camera)
-{
-    camera = _camera;
-}
 
 inline void StaticOcclusionSystem::SetCamera(Camera * _camera)
 {

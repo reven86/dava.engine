@@ -169,9 +169,7 @@ protected:
 	DAVA::TexturesMap sceneTextures;
 	DAVA::TexturesMap particleTextures;
 
-    DAVA::Vector<DAVA::Material *>materialsAtScene;
     DAVA::Vector<DAVA::DataNode *>dataNodesAtScene;
-
     
     DAVA::Vector<SpeedTreeInfo> speedTreeLeafInfo;
     
@@ -184,7 +182,7 @@ protected:
     LODInfo lodInfoSelection;
     LODInfo lodInfoInFrame;
 
-    DAVA::VisibilityArray visibilityArray;
+    DAVA::Vector<DAVA::RenderObject*> visibilityArray;
     DAVA::Set<DAVA::RenderObject *> selectedRenderObjects;
 
 	bool isUpToDate;
