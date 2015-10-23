@@ -33,11 +33,9 @@
 #include "UI/UIScreenManager.h"
 #include "UI/UIScreenManageriPhoneImpl.h"
 #include "Base/BaseObject.h"
-//#include "EAGLViewController.h"
-//#include "EAGLView.h"
 
-@class EAGLViewController;
-@class EAGLView;
+@class RenderViewController;
+@class RenderView;
 
 namespace DAVA 
 {
@@ -210,7 +208,7 @@ void UIScreenManager::StopGLAnimation()
 {
 	Screen & glController = screens[glControllerId];
 	UIViewController * controller = (UIViewController *)glController.value;
-	EAGLView * view = (EAGLView *)controller.view;
+    RenderView* view = (RenderView*)controller.view;
     [view performSelector: @selector(stopAnimation)];
 }
 
@@ -218,7 +216,7 @@ void UIScreenManager::StartGLAnimation()
 {
 	Screen & glController = screens[glControllerId];
 	UIViewController * controller = (UIViewController *)glController.value;
-	EAGLView * view = (EAGLView *)controller.view;
+    RenderView* view = (RenderView*)controller.view;
     [view performSelector: @selector(startAnimation)];
 }
 
@@ -226,7 +224,7 @@ void UIScreenManager::BlockDrawing()
 {
 	Screen & glController = screens[glControllerId];
 	UIViewController * controller = (UIViewController *)glController.value;
-	EAGLView * view = (EAGLView *)controller.view;
+    RenderView* view = (RenderView*)controller.view;
     [view performSelector: @selector(blockDrawing)];
 }
     
@@ -234,7 +232,7 @@ void UIScreenManager::UnblockDrawing()
 {
     Screen & glController = screens[glControllerId];
     UIViewController * controller = (UIViewController *)glController.value;
-    EAGLView * view = (EAGLView *)controller.view;
+    RenderView* view = (RenderView*)controller.view;
     [view performSelector: @selector(unblockDrawing)];
 }
 	

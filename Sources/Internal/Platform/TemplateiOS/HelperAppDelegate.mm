@@ -39,6 +39,7 @@
 extern  void FrameworkWillTerminate();
 extern  void FrameworkDidLaunched();
 
+static RenderView* renderView = nil;
 
 int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 {
@@ -84,11 +85,9 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     return DAVA::Core::DEVICE_HANDSET;
 }
 
-
-
 @implementation HelperAppDelegate
 
-@synthesize glController;
+@synthesize renderViewController;
 
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
@@ -99,14 +98,32 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 {
 	UIWindow *wnd = application.keyWindow;
 	wnd.frame = [::UIScreen mainScreen].bounds;
-	
-	glController = [[EAGLViewController alloc] init];
-	DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, glController);
-	DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);
-    
-    [application.keyWindow setRootViewController:glController];
-	
-	DAVA::Core::Instance()->SystemAppStarted();
+
+    renderViewController = [[RenderViewController alloc] init];
+
+    DVASSERT(DAVA::Core::Instance()->GetOptions()->IsKeyExists("renderer"));
+    rhi::Api rhiRenderer = (rhi::Api)DAVA::Core::Instance()->GetOptions()->GetInt32("renderer");
+    if (rhiRenderer == rhi::RHI_GLES2)
+    {
+        renderView = [renderViewController createGLView];
+    }
+    else if (rhiRenderer == rhi::RHI_METAL)
+    {
+        renderView = [renderViewController createMetalView];
+    }
+
+    DAVA::Core::Instance()->rendererParams.window = [renderView layer];
+
+    DAVA::Size2i screenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    DAVA::Core::Instance()->rendererParams.width = screenSize.dx;
+    DAVA::Core::Instance()->rendererParams.height = screenSize.dy;
+
+    DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, renderViewController);
+    DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);
+
+    [application.keyWindow setRootViewController:renderViewController];
+
+    DAVA::Core::Instance()->SystemAppStarted();
     
     return YES;
 }
@@ -135,13 +152,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(false);
     }
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
-    //  see Background Apps May Not Execute Commands on the Graphics Hardware
-    
-    glFinish();
-#endif
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -158,13 +168,8 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 //        NSLog(@"Sent to background by home button/switching to other app");
 //    }
 	DAVA::Core::Instance()->GoBackground(isLock);
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
-    //  see Background Apps May Not Execute Commands on the Graphics Hardware
-    
-    glFinish();
-#endif
+
+    rhi::SuspendRendering();
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
@@ -178,6 +183,8 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(true);
     }
+
+    rhi::ResumeRendering();
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application

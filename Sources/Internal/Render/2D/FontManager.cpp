@@ -77,10 +77,10 @@ void FontManager::RegisterFont(Font* font)
 	if (!Core::Instance()->GetOptions()->GetBool("trackFont"))
 		return;
 
-	if (registeredFonts.find(font) != registeredFonts.end())
-		return;
-	
-	registeredFonts[font] = "";
+    if (registeredFonts.find(font) == registeredFonts.end())
+    {
+        registeredFonts.insert({ font, DAVA::String() });
+    }
 }
 
 void FontManager::UnregisterFont(Font *font)
@@ -124,12 +124,12 @@ void FontManager::SetFontName(Font* font, const String& name)
         SafeRelease(findIt->second);
     }
     fontMap[name] = SafeRetain(font);
-    
-	if (registeredFonts.find(font) == registeredFonts.end())
-		return;
-    
-    //TODO: check if font hash is still needed for anything
-    registeredFonts[font] = name;
+
+    // check if font already registered
+    if (registeredFonts.find(font) != registeredFonts.end())
+    {
+        registeredFonts[font] = name;
+    }
 }
 	
 Font* FontManager::GetFont(const String &name) const

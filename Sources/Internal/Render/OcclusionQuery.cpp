@@ -25,12 +25,9 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
-
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Utils/Utils.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -46,22 +43,26 @@ OcclusionQuery::OcclusionQuery()
     
 void OcclusionQuery::Init()
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glGenQueries(1, &id));
 #else
         RENDER_VERIFY(glGenQueriesEXT(1, &id));
 #endif
         //Logger::Debug("Init query: %d", id);
+#endif // RHI_COMPLETE
 }
     
 void OcclusionQuery::Release()
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glDeleteQueries(1, &id));
 #else
         RENDER_VERIFY(glDeleteQueriesEXT(1, &id));
 #endif
         //Logger::Debug("Release query: %d", id);
+#endif // RHI_COMPLETE
 }
 
 OcclusionQuery::~OcclusionQuery()
@@ -75,26 +76,31 @@ OcclusionQuery::~OcclusionQuery()
 
 void OcclusionQuery::BeginQuery()
 {
+#if RHI_COMPLETE
 // Temporarly written, should be refactored and moved to RenderBase.h defines
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBeginQuery(GL_SAMPLES_PASSED, id));
 #else
     RENDER_VERIFY(glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id));
 #endif
+#endif // RHI_COMPLETE
 }
     
 void OcclusionQuery::EndQuery()
 {
+#if RHI_COMPLETE
 // Temporarly written, should be refactored and moved to RenderBase.h defines
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glEndQuery(GL_SAMPLES_PASSED));
 #else
     RENDER_VERIFY(glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT));
 #endif
+#endif // RHI_COMPLETE
 }
     
 bool OcclusionQuery::IsResultAvailable()
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     GLint available;
     RENDER_VERIFY(glGetQueryObjectiv(id,
@@ -114,16 +120,19 @@ bool OcclusionQuery::IsResultAvailable()
                                      &available));
     return (available != 0);
 #endif
-	return false;
+#endif // RHI_COMPLETE
+    return true;
 }
     
 void OcclusionQuery::GetQuery(uint32 * resultValue)
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glGetQueryObjectuiv(id, GL_QUERY_RESULT_ARB, resultValue));
 #else
     RENDER_VERIFY(glGetQueryObjectuivEXT(id, GL_QUERY_RESULT_EXT, resultValue));
 #endif
+#endif // RHI_COMPLETE
 }
    
 /////////////////////////////////////////////////////////////////////
@@ -216,7 +225,7 @@ FrameOcclusionQueryManager::FrameQuery * FrameOcclusionQueryManager::GetQuery(co
 
 void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     frameBegan = true;
@@ -229,7 +238,7 @@ void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
 
 void FrameOcclusionQueryManager::ProccesRenderedFrame() //OnEndFrame
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     frameBegan = false;
@@ -281,7 +290,7 @@ void FrameOcclusionQueryManager::ProccesRenderedFrame() //OnEndFrame
 
 void FrameOcclusionQueryManager::BeginQuery(const FastName & queryName)
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     FrameQuery * frameQuery = GetQuery(queryName);
@@ -301,7 +310,7 @@ void FrameOcclusionQueryManager::BeginQuery(const FastName & queryName)
 
 void FrameOcclusionQueryManager::EndQuery(const FastName & queryName)
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     FrameOcclusionQueryManager::FrameQuery * frameQuery = GetQuery(queryName);
@@ -324,7 +333,7 @@ bool FrameOcclusionQueryManager::IsQueryOpen(const FastName & queryName)
 
 uint32 FrameOcclusionQueryManager::GetFrameStats(const FastName & queryName) const
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return 0;
 
     DVASSERT(!frameBegan); //should be called on after EndFrame() and before BeginFrame()

@@ -8,14 +8,11 @@
  name: "Decal Opaque"
  path: Decal.Opaque.material
 -
- name: "Detail Alphablend"
- path: Detail.Alphablend.material
+ name: "Detail AllQualities Lightmap Opaque (HIGH: Texture Lightmap Detail Opaque, LOW: Texture Lightmap Opaque)"
+ path: DetailAllQualities.Lightmap.Opaque.material
 -
- name: "Detail Alphatest"
- path: Detail.Alphatest.material
--
- name: "Detail Opaque"
- path: Detail.Opaque.material
+ name: "Detail AllQualities Opaque (HIGH: Texture Detail Opaque, LOW: Texture Opaque)"
+ path: DetailAllQualities.Opaque.material
 -
  name: "PixelLit Alphatest"
  path: PixelLit.Alphatest.material
@@ -38,8 +35,14 @@
  name: "SpeedTreeLeaf"
  path: SpeedTreeLeaf.material
 -
+ name: "SpeedTreeLeaf Opaque"
+ path: SpeedTreeLeaf.Opaque.material
+-
  name: "SphericalLit AllQualities SpeedTreeLeaf"
  path: SphericalLitAllQualities.SpeedTreeLeaf.material
+-
+ name: "SphericalLit AllQualities SpeedTreeLeaf Opaque"
+ path: SphericalLitAllQualities.SpeedTreeLeaf.Opaque.material
 -
  name: "SphericalLit AllQualities Textured Alphatest"
  path: SphericalLitAllQualities.Textured.Alphatest.material
@@ -47,14 +50,29 @@
  name: "SphericalLit AllQualities Textured Opaque"
  path: SphericalLitAllQualities.Textured.Opaque.material
 -
+ name: "SphericalLit AllQualities Textured VertexColor Alphatest"
+ path: SphericalLitAllQualities.Textured.VertexColor.Alphatest.material
+-
+ name: "SphericalLit AllQualities Textured VertexColor Opaque"
+ path: SphericalLitAllQualities.Textured.VertexColor.Opaque.material
+-
  name: "Textured Alphablend"
  path: Textured.Alphablend.material
+-
+ name: "Textured Alphablend with Alphamask"
+ path: Textured.Alphablend.Alphamask.material
 -
  name: "Textured Alphatest"
  path: Textured.Alphatest.material
 -
  name: "Textured Opaque"
  path: Textured.Opaque.material
+-
+ name: "Textured VertexColor Alphatest"
+ path: Textured.VertexColor.Alphatest.material
+-
+ name: "Textured VertexColor Opaque"
+ path: Textured.VertexColor.Opaque.material
 -
  name: "TextureLightmap Alphablend"
  path: TextureLightmap.Alphablend.material

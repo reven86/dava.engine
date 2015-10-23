@@ -36,7 +36,6 @@
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 #include "Render/OcclusionQuery.h"
-#include "Render/Highlevel/VisibilityArray.h"
 
 namespace DAVA
 {
@@ -44,7 +43,6 @@ class Camera;
 class StaticOcclusionRenderPass;
 class RenderObject;
 class RenderHierarchy;
-class RenderPassBatchArray;
 class OcclusionQueryPool;
 class RenderBatch;
 class RenderSystem;
@@ -75,85 +73,50 @@ public:
     float32* cellHeightOffset;
 };
 
+struct StaticOcclusionFrameResult
+{
+    uint32 blockIndex;
+    rhi::HQueryBuffer queryBuffer;
+    Vector<RenderObject*> frameRequests;
+};
+
 class StaticOcclusion
 {
 public:
-    enum eIndexRenew
-    {
-        RENEW_OCCLUSION_INDICES,
-        LEAVE_OLD_INDICES,
-    };
-    
     StaticOcclusion();
     ~StaticOcclusion();
-    
-    inline void SetScene(Scene * _scene);
-    inline void SetRenderSystem(RenderSystem * _renderSystem);
-    
-    void BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
-                                  Landscape * landscape,
-                                  StaticOcclusionData * currentData,
-                                  eIndexRenew renewIndexEnum);
-    
-    void SetEqualVisibilityVector(Map<RenderObject*,
-                                  Vector<RenderObject*> > & equalVisibility);
 
-    
-    inline OcclusionQueryPool & GetOcclusionQueryPool();
-    //uint32 * GetCellVisibilityData(Camera * camera);
-    
-    uint32 RenderFrame();
-    void RenderFrame(uint32 cellX, uint32 cellY, uint32 cellZ);
+    void StartBuildOcclusion(StaticOcclusionData* currentData, RenderSystem* renderSystem, Landscape* landscape);
+    bool ProccessBlock(); //return true if finished building
 
-    void FillOcclusionDataObject(StaticOcclusionData * data);
-    
-    void RecordFrameQuery(RenderBatch * batch, OcclusionQueryPoolHandle handle);
-    
-    //Vector<Vector3> renderPositions;
-    //Vector<Vector3> renderDirections;
-    
-    inline Texture * GetRTTexture() const;
-    
+    uint32 GetCurrentStepsCount();
+    uint32 GetTotalStepsCount();
+
 private:
-    void ProcessRecordedBatches();
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
-        
-    OcclusionQueryPool queryPool;
-    Vector<std::pair<RenderBatch*, OcclusionQueryPoolHandle> > recordedBatches;
-    Set<RenderObject*> frameGlobalVisibleInfo;
-    
+
+    void RenderCurrentBlock();
+    void ProcessRecorderQueries();
+
     AABBox3  occlusionAreaRect;
     float32 *cellHeightOffset;
     uint32 xBlockCount;
     uint32 yBlockCount;
     uint32 zBlockCount;
-    uint32 objectCount;
+    //uint32 objectCount;
     uint32 currentFrameX;
     uint32 currentFrameY;
     uint32 currentFrameZ;
     Camera * cameras[6];
-    StaticOcclusionRenderPass * staticOcclusionRenderPass;
-    Texture * renderTargetTexture;
+    StaticOcclusionRenderPass* staticOcclusionRenderPass;
 
     StaticOcclusionData * currentData;
-    
-    // for testing purposes
-    RenderSystem * renderSystem;
-    Scene * scene;
-    Vector<RenderObject*> renderObjectsArray;
-    Landscape * landscape;
-    Map<RenderObject*, Vector<RenderObject*> > equalVisibilityArray;
+
+    Vector<StaticOcclusionFrameResult> occlusionFrameResults;
+
+    RenderSystem* renderSystem;
+    Landscape* landscape;
 };
-    
-inline OcclusionQueryPool & StaticOcclusion::GetOcclusionQueryPool()
-{
-    return queryPool;
-}
-
-inline void StaticOcclusion::SetScene(Scene * _scene) { scene = _scene; };
-inline void StaticOcclusion::SetRenderSystem(RenderSystem * _renderSystem) {renderSystem = _renderSystem; };
-inline Texture * StaticOcclusion::GetRTTexture() const { return renderTargetTexture; };
-
 };
 
 #endif //__DAVAENGINE_STATIC_OCCLUSION__

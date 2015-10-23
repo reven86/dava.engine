@@ -29,7 +29,6 @@
 
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
@@ -91,30 +90,23 @@ void UI3DView::Update(float32 timeElapsed)
 
 void UI3DView::Draw(const UIGeometricData & geometricData)
 {
+    if (!scene)
+        return;
     RenderSystem2D::Instance()->Flush();
 
 	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
 
 	if (uiDrawQueryWasOpen)
-		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+        FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
     viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
-    
-    Rect viewportSave = RenderManager::Instance()->GetViewport();
-    RenderManager::Instance()->SetViewport(viewportRc);
-    
-    if (scene)
-        scene->Draw();
-        
-    RenderManager::Instance()->SetViewport(viewportSave);
-	
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-    RenderSystem2D::Instance()->Setup2DMatrices();
+    viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+    scene->SetMainPassViewport(viewportRc);
 
-	if (uiDrawQueryWasOpen)
+    scene->Draw();
+
+    if (uiDrawQueryWasOpen)
 		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }
     
@@ -137,23 +129,6 @@ UI3DView* UI3DView::Clone()
     UI3DView* ui3DView = new UI3DView(GetRect());
     ui3DView->CopyDataFrom(this);
     return ui3DView;
-}
-
-void UI3DView::WillBecomeVisible()
-{
-    if (!registeredInUIControlSystem)
-    {
-        registeredInUIControlSystem = true;
-        UIControlSystem::Instance()->UI3DViewAdded();
-    }
-}
-void UI3DView::WillBecomeInvisible()
-{
-    if (registeredInUIControlSystem)
-    {
-        registeredInUIControlSystem = false;
-        UIControlSystem::Instance()->UI3DViewRemoved();
-    }
 }
     
 void UI3DView::Input(UIEvent *currentInput)

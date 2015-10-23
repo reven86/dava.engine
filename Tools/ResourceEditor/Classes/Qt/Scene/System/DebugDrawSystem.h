@@ -93,8 +93,6 @@ private:
 
 	bool hangingObjectsModeEnabled;
     bool switchesWithDifferentLodsEnabled;
-	
-	DAVA::UniqueHandle debugDrawState;
 };
 
 inline void DebugDrawSystem::EnableHangingObjectsMode( bool enabled )

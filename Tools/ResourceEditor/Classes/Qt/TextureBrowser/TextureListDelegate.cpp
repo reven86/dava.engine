@@ -347,9 +347,9 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
         {
             r.moveLeft(r.x() - FORMAT_INFO_WIDTH);
 
-            if(descriptor->compression[i].format != DAVA::FORMAT_INVALID)
-			{
-				QColor c = gpuInfoColors[i];
+            if (descriptor->compression[i].format != DAVA::FORMAT_INVALID)
+            {
+                QColor c = gpuInfoColors[i];
 
 				painter->setPen(Qt::NoPen);
 				painter->setBrush(c);

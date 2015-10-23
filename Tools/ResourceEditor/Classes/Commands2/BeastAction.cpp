@@ -33,6 +33,7 @@
 #include "Beast/BeastProxy.h"
 #include "Beast/LightmapsPacker.h"
 #include "Qt/Settings/SettingsManager.h"
+#include "CommandLine/SceneUtils/SceneUtils.h"
 
 #include "DAVAEngine.h"
 
@@ -90,8 +91,12 @@ void BeastAction::Redo()
 			}
 		}
 
-		Sleep(15);
-	}
+        if (Core::Instance()->IsConsoleMode())
+        {
+            RenderObjectsFlusher::Flush();
+        }
+        Sleep(15);
+    }
 
 	if(NULL != waitDialog)
 	{
@@ -100,8 +105,8 @@ void BeastAction::Redo()
 
     Finish(canceled);
 
-	if(NULL != waitDialog)
-	{
+    if (waitDialog != nullptr)
+    {
 		waitDialog->Reset();
 	}
 }
@@ -137,7 +142,7 @@ void BeastAction::Finish(bool canceled)
 	Landscape *land = FindLandscape(workingScene);
 	if(land)
 	{
-		FilePath textureName = land->GetTextureName(DAVA::Landscape::TEXTURE_COLOR);
+        FilePath textureName = land->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
         if (textureName.Exists())
         {
             textureName.ReplaceFilename("temp_beast.png");

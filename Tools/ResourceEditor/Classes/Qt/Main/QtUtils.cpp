@@ -74,12 +74,12 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
 DAVA::String SizeInBytesToString(DAVA::float32 size)
 {
     DAVA::String retString = "";
-    
-    if(1000000 < size)
+
+    if (1000000 < size)
     {
         retString = Format("%0.2f MB", size / (1024 * 1024) );
     }
-    else if(1000 < size)
+    else if (1000 < size)
     {
         retString = Format("%0.2f KB", size / 1024);
     }
@@ -143,8 +143,9 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 
 void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title)
 {
-    bool forceClose = CommandLineParser::CommandIsFound(String("-force"))
-                      || CommandLineParser::CommandIsFound(String("-forceclose"));
+    bool forceClose = CommandLineParser::CommandIsFound(String("-force")) ||
+    CommandLineParser::CommandIsFound(String("-forceclose"));
+
     if (!forceClose && !Core::Instance()->IsConsoleMode())
     {
         QMessageBox::critical(QApplication::activeWindow(), title.c_str(), errorMessage.c_str());
@@ -181,33 +182,27 @@ int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int b
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),
                                        (QMessageBox::StandardButton)buttons, (QMessageBox::StandardButton)defaultButton);
+
     return answer;
 }
 
 void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 {
-	if(NULL != toolbar && NULL != action)
-	{
+    if (NULL != toolbar && NULL != action)
+    {
 		QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
-		if(NULL != toolBnt)
-		{
-			if(showText)
-			{
-				toolBnt->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-			}
-			else
-			{
-				toolBnt->setToolButtonStyle(Qt::ToolButtonIconOnly);
-			}
-		}
+        if (NULL != toolBnt)
+        {
+            toolBnt->setToolButtonStyle(showText ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
+        }
 	}
 }
 
 DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::String & what, const DAVA::String & on)
 {
 	String::size_type pos = sourceString.find(what);
-	if(pos != String::npos)
-	{
+    if (pos != String::npos)
+    {
 		String newString = sourceString;
 		newString = newString.replace(pos, what.length(), on);
 		return newString;
@@ -241,7 +236,7 @@ void ShowFileInExplorer(const QString& path)
 
 void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
 {
-    if(sprite)
+    if (sprite)
     {
         SaveTextureToFile(sprite->GetTexture(), path);
     }
@@ -249,9 +244,9 @@ void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
 
 void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
 {
-    if(texture)
+    if (texture)
     {
-        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_OPAQUE);
+        DAVA::Image* img = texture->CreateImageFromMemory();
         SaveImageToFile(img, path);
         img->Release();
     }

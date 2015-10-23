@@ -1,0 +1,28 @@
+FPROG_IN_BEGIN
+    FPROG_IN_TEXCOORD0(uv,2)
+    FPROG_IN_COLOR0(color,4)
+FPROG_IN_END
+    
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+DECL_FP_SAMPLER2D(tex)
+
+FPROG_BEGIN
+
+    float4 in_color = FP_IN(color);
+
+    float2 in_uv = FP_IN(uv);
+    float4 resColor = FP_TEXTURE2D( tex, in_uv );
+    resColor = resColor * in_color;
+
+    float alpha = resColor.a;
+    if( alpha < 0.5 )
+        FP_DISCARD_FRAGMENT;
+    else
+        resColor.a = 1.0;
+
+    FP_OUT_COLOR = resColor;
+
+FPROG_END
