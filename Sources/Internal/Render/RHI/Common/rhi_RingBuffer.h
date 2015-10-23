@@ -81,7 +81,7 @@ RingBuffer::RingBuffer()
 inline void
 RingBuffer::Initialize( unsigned sz )
 {
-    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFERS);
+    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFER);
 
     size        = sz;
     dataPtr     = (uint8*)::malloc( sz );

@@ -146,12 +146,17 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_BULLET, "bullet");
     RegisterAllocPoolName(ALLOC_POOL_BASEOBJECT, "base object");
     RegisterAllocPoolName(ALLOC_POOL_POLYGONGROUP, "polygon group");
-    RegisterAllocPoolName(ALLOC_POOL_RHI_BUFFERS, "rhi buffers");
     RegisterAllocPoolName(ALLOC_POOL_COMPONENT, "component");
     RegisterAllocPoolName(ALLOC_POOL_ENTITY, "entity");
     RegisterAllocPoolName(ALLOC_POOL_LANDSCAPE, "landscape");
     RegisterAllocPoolName(ALLOC_POOL_IMAGE, "image");
     RegisterAllocPoolName(ALLOC_POOL_TEXTURE, "texture");
+
+    RegisterAllocPoolName(ALLOC_POOL_RHI_BUFFER, "rhi buffer");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_VERTEX_MAP, "rhi vertex map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_INDEX_MAP, "rhi index map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_TEXTURE_MAP, "rhi texture map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_RESOURCE_POOL, "rhi res pool");
 }
 
 MemoryManager* MemoryManager::Instance()

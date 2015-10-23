@@ -213,7 +213,7 @@ Update( Handle vb, const void* data, uint32 offset, uint32 size )
 void*
 Map( Handle vb, uint32 offset, uint32 size )
 {
-    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFERS);
+    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_VERTEX_MAP);
     return (*_Impl.impl_VertexBuffer_Map)( vb, offset, size );
 }
 
@@ -276,7 +276,7 @@ Update( Handle vb, const void* data, uint32 offset, uint32 size )
 void*
 Map( Handle vb, uint32 offset, uint32 size )
 {
-    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFERS);
+    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_INDEX_MAP);
     return (*_Impl.impl_IndexBuffer_Map)( vb, offset, size );
 }
 
@@ -393,7 +393,7 @@ Delete( Handle tex )
 void*
 Map( Handle tex, unsigned level, TextureFace face )
 {
-    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFERS);
+    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_TEXTURE_MAP);
     return (*_Impl.impl_Texture_Map)( tex, level, face );
 }
 
