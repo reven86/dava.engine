@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/Singleton.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -107,7 +108,11 @@ public:
 	void UnregisterAllAvailableResourceSizes();
     
 	inline const Vector2 & GetPhysicalDrawOffset() const;
-    
+
+    Signal<const Size2i&> physicalSizeChanged;
+    Signal<const Size2i&> virtualSizeChanged;
+    Signal<const Size2i&> inputAreaSizeChanged;
+
 private:
     inline Rect ConvertRect(const Rect & rect, float32 factor) const;
     

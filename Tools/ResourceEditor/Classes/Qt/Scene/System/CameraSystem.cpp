@@ -42,7 +42,6 @@
 #include "Scene3D/Scene.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
@@ -78,8 +77,7 @@ SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	, animateToNewPosTime(0)
 	, distanceToCamera(0.f)
 	, activeSpeedIndex(0)
-{
-	renderState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL | RenderStateData::STATE_DEPTH_WRITE);
+{	
 }
 
 SceneCameraSystem::~SceneCameraSystem()
@@ -378,8 +376,6 @@ void SceneCameraSystem::Draw()
 
 		if(nullptr != collSystem)
 		{
-			DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));		
-
 			DAVA::Set<DAVA::Entity *>::iterator it = sceneCameras.begin();
 			for(; it != sceneCameras.end(); ++it)
 			{
@@ -395,11 +391,9 @@ void SceneCameraSystem::Draw()
 					transform.Identity();
 					transform.SetTranslationVector(camera->GetPosition());
 					collBox.GetTransformedBox(transform, worldBox);	
-					DAVA::RenderHelper::Instance()->FillBox(worldBox, renderState);
+                    sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
 				}
 			}
-
-			DAVA::RenderManager::Instance()->ResetColor();
 		}
 	}
 }

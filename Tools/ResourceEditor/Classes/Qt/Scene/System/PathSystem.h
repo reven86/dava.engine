@@ -71,7 +71,7 @@ protected:
     void Draw();
     void DrawInEditableMode();
     void DrawInViewOnlyMode();
-    void DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish);
+    void DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish, const DAVA::Color & color);
 
     void ProcessCommand(const Command2 *command, bool redo);
 
@@ -82,8 +82,6 @@ protected:
     void CollapsePathEntity(const DAVA::Entity*);
 
     SceneEditor2* sceneEditor;
-
-    DAVA::UniqueHandle pathDrawState;
     
     DAVA::Vector<DAVA::Entity *> pathes;
    

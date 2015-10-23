@@ -33,28 +33,20 @@ namespace DAVA
 {
 const FastName VegetationPropertyNames::UNIFORM_TILEPOS("tilePos");
 const FastName VegetationPropertyNames::UNIFORM_WORLD_SIZE("worldSize");
-//const FastName VegetationPropertyNames::UNIFORM_CLUSTER_SCALE_DENSITY_MAP("clusterScaleDensityMap[0]");
 const FastName VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE("heightmapScale");
 const FastName VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE("lodSwitchScale");
 const FastName VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE("perturbationForce");
 const FastName VegetationPropertyNames::UNIFORM_PERTURBATION_POINT("perturbationPoint");
 const FastName VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE_DISTANCE("perturbationForceDistance");
-const FastName VegetationPropertyNames::UNIFORM_BILLBOARD_DIRECTION("billboardDirection");
     
-const FastName VegetationPropertyNames::FLAG_FRAMEBUFFER_FETCH("FRAMEBUFFER_FETCH");
-const FastName VegetationPropertyNames::FLAG_BILLBOARD_DRAW("MATERIAL_GRASS_BILLBOARD");
-const FastName VegetationPropertyNames::FLAG_GRASS_TRANSFORM("MATERIAL_GRASS_TRANSFORM");
-const FastName VegetationPropertyNames::FLAG_GRASS_BLEND("MATERIAL_GRASS_BLEND");
-const FastName VegetationPropertyNames::FLAG_GRASS_OPAQUE("MATERIAL_GRASS_OPAQUE");
-const FastName VegetationPropertyNames::FLAG_VEGETATION_DRAW_LOD_COLOR("VEGETATION_DRAW_LOD_COLOR");
-const FastName VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE("MATERIAL_GRASS_TRANSFORM_WAVE");
+const FastName VegetationPropertyNames::FLAG_LOD_COLOR("LOD_COLOR");
     
 const FastName VegetationPropertyNames::VEGETATION_QUALITY_NAME_HIGH("HIGH");
 const FastName VegetationPropertyNames::VEGETATION_QUALITY_NAME_LOW("LOW");
 const FastName VegetationPropertyNames::VEGETATION_QUALITY_GROUP_NAME("Vegetation");
     
 const FastName VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP("vegetationmap");
-const FastName VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP("densitymap");
 
-const FastName VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET("vegWaveOffset[0]");
+const FastName VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET_X("vegWaveOffsetx");
+const FastName VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET_Y("vegWaveOffsety");
 };

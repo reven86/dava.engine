@@ -153,7 +153,7 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
 
         if (newLineBeforeThis && index > firstIndex)
         {
-            lines.emplace_back(LineInfo{firstIndex, index - 1, childrenInLine, usedSize});
+            lines.emplace_back(LineInfo{ firstIndex, index - 1, childrenInLine, usedSize });
             firstIndex = index;
             childrenInLine = 0;
             usedSize = 0.0f;
@@ -165,14 +165,14 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
         {
             if (index > firstIndex)
             {
-                lines.emplace_back(LineInfo{firstIndex, index - 1, childrenInLine, usedSize});
+                lines.emplace_back(LineInfo{ firstIndex, index - 1, childrenInLine, usedSize });
                 firstIndex = index;
                 childrenInLine = 1;
                 usedSize = childSize;
             }
             else
             {
-                lines.emplace_back(LineInfo{firstIndex, index, 1, childSize});
+                lines.emplace_back(LineInfo{ firstIndex, index, 1, childSize });
                 firstIndex = index + 1;
                 childrenInLine = 0;
                 usedSize = 0.0f;
@@ -187,7 +187,7 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
 
     if (firstIndex <= data.GetLastChildIndex())
     {
-        lines.emplace_back(LineInfo{firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize});
+        lines.emplace_back(LineInfo{ firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize });
     }
 }
 

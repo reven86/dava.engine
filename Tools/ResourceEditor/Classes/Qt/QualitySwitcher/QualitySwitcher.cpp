@@ -169,19 +169,11 @@ void QualitySwitcher::ApplyMa()
     {
         SceneEditor2 *sceneEditor = tabWidget->GetTabScene(tab);
 
-        DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> > materialsTree;
-        sceneEditor->materialSystem->BuildMaterialsTree(materialsTree);
+        const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
 
-        DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> >::iterator begin = materialsTree.begin();
-        DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> >::iterator end = materialsTree.end();
-
-        for(; begin != end; begin++)
+        for (auto material : topParents)
         {
-            DAVA::NMaterial *material = begin->first;
-            if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
-            {
-                material->ReloadQuality();
-            }
+            material->InvalidateRenderVariants();
         }
 
         sceneEditor->renderSystem->SetForceUpdateLights();

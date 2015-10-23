@@ -28,7 +28,7 @@
 
 
 #include "GridVisualizer.h"
-#include "Render/RenderHelper.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 using namespace DAVA;
 // Construction/destruction.
 GridVisualizer::GridVisualizer() :
@@ -58,5 +58,5 @@ void GridVisualizer::DrawGridIfNeeded(const Rect& rect, UniqueHandle renderState
         return;
     }
 
-    RenderHelper::Instance()->DrawGrid(rect, gridSize, gridColor, renderState);
+    RenderSystem2D::Instance()->DrawGrid(rect, gridSize, gridColor);
 }

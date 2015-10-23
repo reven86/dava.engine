@@ -28,7 +28,7 @@
 
 
 #include "StaticOcclusionTool.h"
-
+#include "CommandLine/SceneUtils/SceneUtils.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Scene/SceneEditor2.h"
 
@@ -82,7 +82,7 @@ void StaticOcclusionTool::DumpParams() const
 
 void StaticOcclusionTool::Process() 
 {
-    if(commandAction == ACTION_BUILD)
+    if (commandAction == ACTION_BUILD)
     {
         SceneEditor2 *scene = new SceneEditor2();
         if(scene->Load(scenePathname))
@@ -96,7 +96,8 @@ void StaticOcclusionTool::Process()
             scene->Save();
         }
         SafeRelease(scene);
-    }
+    	RenderObjectsFlusher::Flush();
+	}
 }
 
 DAVA::FilePath StaticOcclusionTool::GetQualityConfigPath() const

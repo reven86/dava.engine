@@ -33,8 +33,7 @@
 #include <QObject>
 #include "UI/UIEvent.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/Systems/StaticOcclusionSystem.h"
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
+#include "Scene3D/Systems/StaticOcclusionBuildSystem.h"
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
@@ -50,7 +49,6 @@
 #include "Scene/System/TilemaskEditorSystem.h"
 #include "Scene/System/CustomColorsSystem.h"
 #include "Scene/System/VisibilityToolSystem.h"
-#include "Scene/System/GrassEditorSystem.h"
 #include "Scene/System/RulerToolSystem.h"
 #include "Scene/System/StructureSystem.h"
 #include "Scene/System/EditorParticlesSystem.h"
@@ -88,7 +86,6 @@ public:
 		LANDSCAPE_TOOL_TILEMAP_EDITOR		= 1 << 3,
 		LANDSCAPE_TOOL_RULER				= 1 << 4,
 		LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN	= 1 << 5,
-        LANDSCAPE_TOOL_GRASS_EDITOR     	= 1 << 6,
 
 		LANDSCAPE_TOOLS_ALL					= 0x7FFFFFFF
 	};
@@ -109,7 +106,6 @@ public:
 	CustomColorsSystem* customColorsSystem;
 	VisibilityToolSystem* visibilityToolSystem;
 	RulerToolSystem* rulerToolSystem;
-    GrassEditorSystem *grassEditorSystem;
 	StructureSystem *structureSystem;
 	EditorParticlesSystem *particlesSystem;
 	EditorLightSystem *editorLightSystem;
@@ -172,16 +168,13 @@ public:
 	//Insert entity to begin of scene hierarchy to display editor entities at one place on top og scene tree
 	void AddEditorEntity(Entity *editorEntity);
 
-	void SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend);
-	DAVA::ShadowPassBlendMode::eBlend GetShadowBlendMode() const;
+    const RenderStats& GetRenderStats() const;
 
-    const RenderManager::Stats & GetRenderStats() const;
+    void DisableTools(int32 toolFlags, bool saveChanges = true);
+    bool IsToolsEnabled(int32 toolFlags);
+    int32 GetEnabledTools();
 
-	void DisableTools(int32 toolFlags, bool saveChanges = true);
-	bool IsToolsEnabled(int32 toolFlags);
-	int32 GetEnabledTools();
-
-	SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
+    SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
     Entity * Clone(Entity *dstNode /* = NULL */) override;
 
     void Activate() override;
@@ -204,13 +197,12 @@ protected:
 
 	DAVA::FilePath curScenePath;
 	CommandStack commandStack;
-    
-    RenderManager::Stats renderStats;
+    RenderStats renderStats;
 
-	DAVA::Vector<DAVA::Entity *> editorEntities;
+    DAVA::Vector<DAVA::Entity*> editorEntities;
 
-	virtual void EditorCommandProcess(const Command2 *command, bool redo);
-	virtual void Draw();
+    virtual void EditorCommandProcess(const Command2* command, bool redo);
+    virtual void Draw();
 
     void ExtractEditorEntities();
 	void InjectEditorEntities();

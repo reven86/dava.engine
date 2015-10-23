@@ -35,17 +35,17 @@
 namespace DAVA
 {
 
-template<> struct Hash<FastName>
+template<> struct Hash < FastName >
 {
-	size_t operator()(const FastName &name) const
-	{
-		return name.Index();
-	}
+    size_t operator()(const FastName &name) const
+    {
+        return name.Index();
+    }
 
-	bool Compare(const FastName &name1, const FastName &name2) const
-	{
-		return name1.Index() == name2.Index();
-	}
+    bool Compare(const FastName &name1, const FastName &name2) const
+    {
+        return name1.Index() == name2.Index();
+    }
 };
 
 class FastNameSet : public HashMap<FastName, int>

@@ -30,8 +30,8 @@
 #include "Scene2D/GameObjectManager.h"
 #include "FileSystem/Logger.h"
 #include "Collision/CollisionObject2.h"
-#include "Render/RenderManager.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/Renderer.h"
 
 /*
 	/TODO optimize object manager
@@ -275,7 +275,7 @@ void GameObjectManager::Draw()
     Matrix4 worldMx;
     worldMx.glTranslate(cameraPosition.x, cameraPosition.y, 0.f);
     worldMx = worldMx * Matrix4::MakeScale(Vector3(cameraScale.x, cameraScale.y, 1.f));
-    RenderManager::SetDynamicParam(PARAM_WORLD, &worldMx, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMx, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     
     const List<GameObject*>::iterator currentObjEnd = objects.end();
 	for(List<GameObject*>::iterator currentObj = objects.begin(); currentObj != currentObjEnd; ++currentObj)
@@ -286,8 +286,6 @@ void GameObjectManager::Draw()
         else
 		    object->Draw();
 	}
-
-    RenderManager::Instance()->ResetColor();
 }
 
 void GameObjectManager::SetCameraPosition(float32 _cameraPositionX, float32 _cameraPositionY)

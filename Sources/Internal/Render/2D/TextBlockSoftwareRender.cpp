@@ -29,63 +29,17 @@
 
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/RenderCallbacks.h"
 #include "Core/Core.h"
 #include "Utils/Utils.h"
 
 namespace DAVA 
-{
-    
-TextBlockSoftwareTexInvalidater::TextBlockSoftwareTexInvalidater(TextBlock *textBlock) :
-  textBlock(textBlock)
-{
-}
-    
-TextBlockSoftwareTexInvalidater::~TextBlockSoftwareTexInvalidater()
-{
-    // Create a copy of textureSet here, as textureSet will be cleaned by texture itself inside the SetInvalidater call.
-    Set<Texture*> setCopy = textureSet;
-    Set<Texture*>::iterator it = setCopy.begin();
-    for(; it != setCopy.end(); ++it)
-    {
-        (*it)->SetInvalidater(NULL);
-    }
-    DVASSERT(textureSet.size() == 0);
-}
-    
-void TextBlockSoftwareTexInvalidater::InvalidateTexture(DAVA::Texture *texture)
-{
-    textBlock->ForcePrepare(texture);
-}
-
-void TextBlockSoftwareTexInvalidater::RemoveTexture(Texture *tex)
-{
-    Set<Texture*>::iterator it = textureSet.find(tex);
-    if(it != textureSet.end())
-    {
-        textureSet.erase(it);
-    }
-    else
-    {
-        Logger::Error("[TextBlockSoftwareTexInvalidater::RemoveTexToSet] trying to remove texture not in set");
-    }
-}
-    
-void TextBlockSoftwareTexInvalidater::AddTexture(Texture *tex)
-{
-    Set<Texture*>::iterator it = textureSet.find(tex);
-    if(it == textureSet.end())
-    {
-        textureSet.insert(tex);
-    }
-    else
-    {
-        Logger::Error("[TextBlockSoftwareTexInvalidater::AddTexToSet] trying to add texture already in set");
-    }
-}
+{    
     
 TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock) :
 	TextBlockRender(textBlock)
 {
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
 	buf = NULL;
 	ftFont = (FTFont*)textBlock->font;
 #if defined(LOCALIZATION_DEBUG)
@@ -95,14 +49,15 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock) :
     textOffsetBR.y = 0;
 #endif
 }
-	
-void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
+TextBlockSoftwareRender::~TextBlockSoftwareRender()
 {
-    // Prevent releasing sprite when texture is invalidated
-    if(!texture)
-    {
-        TextBlockRender::Prepare(NULL);
-    }
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
+}
+void TextBlockSoftwareRender::Prepare()
+{
+    
+    TextBlockRender::Prepare();
+    
 
     int32 width = Max(textBlock->cacheDx, 1);
     int32 height = Max(textBlock->cacheDy, 1);
@@ -136,23 +91,37 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
 		}
 	}
 	
-    if(!texture)
-    {
-        Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, width, height, false, addInfo.c_str());
-        if(textBlock->textureInvalidater)
-        {
-            tex->SetInvalidater(textBlock->textureInvalidater);
-        }
-        sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
-        SafeRelease(tex);
-    }
-    else
-    {
-        texture->ReloadFromData(FORMAT_A8, (uint8*)buf, width, height);
-    }
     
+    Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, width, height, false, addInfo.c_str());    
+    sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
+    SafeRelease(tex);
+        
 	SafeDeleteArray(buf);
 }
+
+void TextBlockSoftwareRender::Restore()
+{
+    if (!sprite)
+        return;
+    Texture* tex = sprite->GetTexture();
+    if (!tex)
+        return;
+    if (!rhi::NeedRestoreTexture(tex->handle))
+        return;
+
+    int32 width = Max(textBlock->cacheDx, 1);
+    int32 height = Max(textBlock->cacheDy, 1);
+    int32 bsz = width * height;
+    buf = new int8[bsz];
+    memset(buf, 0, bsz * sizeof(int8));
+
+    DrawText();
+
+    tex->ReloadFromData(FORMAT_A8, (uint8*)buf, width, height);
+
+    SafeDeleteArray(buf);
+}
+
 	
 Font::StringMetrics TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {

@@ -74,9 +74,9 @@ public:
     void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
 
     UIScrollView* Clone() override;
-    virtual void CopyDataFrom(UIControl *srcControl);
-	
-	virtual void SetRect(const Rect &rect);
+    virtual void CopyDataFrom(UIControl* srcControl);
+
+    virtual void SetRect(const Rect &rect);
 	virtual void SetSize(const Vector2 &newSize);
 	
 	void SetPadding(const Vector2 & padding);

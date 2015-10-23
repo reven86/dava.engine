@@ -28,6 +28,7 @@
 
 
 #include "CommandLine/Dump/SceneDumper.h"
+#include "CommandLine/SceneUtils/SceneUtils.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/2D/Sprite.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -67,11 +68,15 @@ SceneDumper::SceneDumper(const FilePath &scenePath, Set<String> &errorLog)
         errorLog.emplace(Format("[SceneDumper::SceneDumper] Can't open file %s", scenePathname.GetStringValue().c_str()));
 		SafeRelease(scene);
 	}
+
+	RenderObjectsFlusher::Flush();
 }
+
 
 SceneDumper::~SceneDumper()
 {
 	SafeRelease(scene);
+	RenderObjectsFlusher::Flush();
 }
 
 void SceneDumper::DumpLinksRecursive(Entity *entity, SceneDumper::SceneLinks &links) const
@@ -119,6 +124,10 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 {
 	if (nullptr == renderObject) return;
 
+    
+    Set<FilePath> descriptorPathnames;
+    
+    
 	switch (renderObject->GetType())
 	{
 		case RenderObject::TYPE_LANDSCAPE:
@@ -129,11 +138,11 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 		}
 		case RenderObject::TYPE_VEGETATION:
 		{
-			VegetationRenderObject *vegetation = static_cast<VegetationRenderObject *>(renderObject);
+            VegetationRenderObject *vegetation = static_cast<VegetationRenderObject *>(renderObject);
 			links.insert(vegetation->GetHeightmapPath());
-			links.insert(vegetation->GetLightmapPath());
-			links.insert(vegetation->GetTextureSheetPath());
-			links.insert(vegetation->GetVegetationTexture());
+            links.insert(vegetation->GetCustomGeometryPath());
+
+            descriptorPathnames.insert(vegetation->GetLightmapPath());
 			break;
 		}
 
@@ -141,6 +150,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 			break;
 	}
 
+    //Enumerate textures from materials
+    Set<MaterialTextureInfo *> materialTextures;
 	const uint32 count = renderObject->GetRenderBatchCount();
 	for (uint32 rb = 0; rb < count; ++rb)
 	{
@@ -149,49 +160,51 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
 		while (nullptr != material)
 		{
-			uint32 texCount = material->GetTextureCount();
-			for (uint32 t = 0; t < texCount; ++t)
-			{
-				const auto & descriptorPath = material->GetTexturePath(t);
-				if (descriptorPath.IsEmpty())
-				{
-					continue;
-				}
-
-				links.insert(descriptorPath);
-
-				TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPath);
-				if (descriptor)
-				{
-					bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
-					if (descriptor->IsCubeMap() && !isCompressedSource)
-					{
-						Vector<FilePath> faceNames;
-						descriptor->GetFacePathnames(faceNames);
-
-						links.insert(faceNames.cbegin(), faceNames.cend());
-					}
-					else
-					{
-						links.insert(descriptor->GetSourceTexturePathname());
-					}
-
-					for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
-					{
-						const auto & compression = descriptor->compression[gpu];
-						if (compression.format != FORMAT_INVALID)
-						{
-							links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
-						}
-					}
-
-					delete descriptor;
-				}
-			}
-
+            material->CollectLocalTextures(materialTextures);
 			material = material->GetParent();
 		}
 	}
+    
+    // enumerate drscriptor pathnames
+    for(const auto & matTex: materialTextures)
+    {
+        descriptorPathnames.insert(matTex->path);
+    }
+    
+    
+    // create pathames for textures
+    for(const auto & descriptorPath: descriptorPathnames)
+    {
+        DVASSERT(descriptorPath.IsEmpty() == false);
+        
+        links.insert(descriptorPath);
+        
+        std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPath));
+        if (descriptor)
+        {
+            bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
+            if (descriptor->IsCubeMap() && !isCompressedSource)
+            {
+                Vector<FilePath> faceNames;
+                descriptor->GetFacePathnames(faceNames);
+                
+                links.insert(faceNames.cbegin(), faceNames.cend());
+            }
+            else
+            {
+                links.insert(descriptor->GetSourceTexturePathname());
+            }
+            
+            for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
+            {
+                const auto & compression = descriptor->compression[gpu];
+                if (compression.format != FORMAT_INVALID)
+                {
+                    links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+                }
+            }
+        }
+    }
 }
 
 void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links) const

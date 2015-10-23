@@ -31,7 +31,7 @@
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
 #include "UI/UIControlSystem.h"
-#include "Render/RenderManager.h"
+#include "Render/Cursor.h"
 
 namespace DAVA 
 {
@@ -97,12 +97,21 @@ void InputSystem::OnAfterUpdate()
     keyboard->OnAfterUpdate();
 }
 
-void InputSystem::SetCursorPining(bool isPin)
+InputSystem::eMouseCaptureMode InputSystem::GetMouseCaptureMode()
 {
-    pinCursor = isPin;
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
+    return Cursor::GetMouseCaptureMode();
+#else
+    return eMouseCaptureMode::OFF;
+#endif
+}
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    Cursor::SetCursorPinning(isPin);
+bool InputSystem::SetMouseCaptureMode(eMouseCaptureMode mode)
+{
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
+    return Cursor::SetMouseCaptureMode(mode);
+#else
+    return mode == eMouseCaptureMode::OFF;
 #endif
 }
 

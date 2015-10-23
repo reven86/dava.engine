@@ -9,6 +9,9 @@ macro ( qt_deploy )
         set( BINARY_ITEMS Qt5Core.dll
                           Qt5Gui.dll
                           Qt5Widgets.dll
+                          Qt5Qml.dll
+                          Qt5Quick.dll
+                          Qt5Network.dll
                           )
 
         foreach ( ITEM  ${BINARY_ITEMS} )
@@ -79,16 +82,25 @@ if( QT5_LIB_PATH )
         find_package ( Qt5Concurrent )
         find_package ( Qt5Gui )
         find_package ( Qt5Widgets )
+        find_package ( Qt5Qml )
+        find_package ( Qt5Quick )
+        find_package ( Qt5Network )
 
         if( Qt5Concurrent_FOUND AND
             Qt5Gui_FOUND        AND
-            Qt5Widgets_FOUND   )
+            Qt5Widgets_FOUND    AND
+            Qt5Qml_FOUND        AND
+            Qt5Quick_FOUND      AND
+            Qt5Network_FOUND )
 
             set ( QT5_FOUND    1 )
             set ( QT_LIBRARIES Qt5::Core
                                Qt5::Gui
                                Qt5::Widgets
-                               Qt5::Concurrent )
+                               Qt5::Concurrent
+                               Qt5::Qml
+                               Qt5::Quick
+                               Qt5::Network )
 
         endif()
 

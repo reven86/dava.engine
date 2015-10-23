@@ -31,44 +31,28 @@
 #define __CREATE_PLANE_LOD_COOMAND_H__
 
 #include "Commands2/Command2.h"
+#include "CreatePlaneLODCommandHelper.h"
 #include "DAVAEngine.h"
 
 class CreatePlaneLODCommand : public Command2
 {
 public:
-	CreatePlaneLODCommand(DAVA::LodComponent * lodComponent, DAVA::int32 fromLodLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
-    ~CreatePlaneLODCommand();
+	CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request);
 
-    virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const;
-    
-    static void DrawToTexture(DAVA::Entity * entity, DAVA::Camera * camera, DAVA::Texture * toTexture, DAVA::int32 fromLodLayer = -1, const DAVA::Rect & viewport = DAVA::Rect(0, 0, -1, -1), bool clearTarget = true);
+    virtual void Undo() override;
+	virtual void Redo() override;
+	virtual DAVA::Entity* GetEntity() const override;
 
     DAVA::RenderBatch * GetRenderBatch() const;
     
 protected:
-
-    void CreatePlaneImage();
-    void CreatePlaneBatch();
-
     void CreateTextureFiles();
     void DeleteTextureFiles();
 
     static bool IsHorisontalMesh(const DAVA::AABBox3 & bbox);
 
-    DAVA::LodComponent * lodComponent;
-    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
-    
-    DAVA::RenderBatch * planeBatch;
-    DAVA::Image *planeImage;
-    
-    DAVA::int32 newLodIndex;
-    DAVA::int32 newSwitchIndex;
-
-    DAVA::int32 fromLodLayer;
-    DAVA::uint32 textureSize;
-    DAVA::FilePath textureSavePath;
+private:
+	CreatePlaneLODCommandHelper::RequestPointer request;
 };
 
 
