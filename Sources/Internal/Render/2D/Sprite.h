@@ -267,7 +267,7 @@ protected:
 	virtual ~Sprite();
 	
     static Sprite* GetSpriteFromMap(const FilePath & pathname);
-    static FilePath GetScaledName(const FilePath & spriteName, DAVA::int32 resourceIndex);
+    static FilePath GetScaledName(const FilePath & spriteName, DAVA::int32 forcedResourceIndex);
     static File* LoadLocalizedFile(const FilePath & spritePathname, FilePath & texturePath);
 
     static File* GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex);
