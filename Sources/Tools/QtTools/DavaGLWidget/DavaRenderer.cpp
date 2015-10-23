@@ -31,6 +31,8 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "DavaRenderer.h"
 
+#include "Debug/DVAssertMessage.h"
+
 DavaRenderer::DavaRenderer()
 {
     DAVA::Core::Instance()->rendererParams.acquireContextFunc = []()
@@ -50,5 +52,8 @@ DavaRenderer::~DavaRenderer()
 
 void DavaRenderer::paint()
 {
-    DAVA::QtLayer::Instance()->ProcessFrame();
+    if (!DAVA::DVAssertMessage::IsMessageDisplayed())
+    {
+        DAVA::QtLayer::Instance()->ProcessFrame();
+    }
 }
