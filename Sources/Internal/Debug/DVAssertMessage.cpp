@@ -36,7 +36,7 @@ using namespace DAVA;
 
 namespace
 {
-DAVA::Atomic<bool> messageDisplayed = false;
+DAVA::Atomic<bool> messageDisplayed(false);
 }
 
 bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
