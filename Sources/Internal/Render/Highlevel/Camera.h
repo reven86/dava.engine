@@ -132,13 +132,13 @@ public:
         This function normally is called internally from RenderPass class (or from SetupDynamicParameters). In most cases you'll not need it. 
          \param[in] externalClipPlane - if not NULL replaces near clipping plane with this and build projection matrix accordingly
      */
-	void PrepareDynamicParameters(Vector4 *externalClipPlane = NULL);
+	void PrepareDynamicParameters(bool invertProjection, Vector4 *externalClipPlane = NULL);
 	/** 
         \brief Function applies camera transformations (projection, model-view matrices) to RenderManager
         This function normally is called internally from RenderPass class. In most cases you'll not need it. 
         \param[in] externalClipPlane - if not NULL replaces near clipping plane with this and build projection matrix accordingly
      */
-	void SetupDynamicParameters(Vector4 *externalClipPlane = NULL);
+    void SetupDynamicParameters(bool invertProjection, Vector4 *externalClipPlane = NULL);
 	
 	/**     
         \brief Restore camera transform to original camera transform that was set using 
@@ -285,6 +285,8 @@ public:
      */
     const Matrix4 & GetMatrix() const;  
 	
+    const Matrix4 & GetProjectionMatrix() const;
+
     /**
         \brief Rebuild camera from all values that set inside it.
      */
@@ -297,7 +299,7 @@ public:
 	void ExtractCameraToValues();
 	
 
-    void RebuildProjectionMatrix();
+    void RebuildProjectionMatrix(bool invertProjection = false);
 	void RebuildViewMatrix();
 
     /**
@@ -310,7 +312,7 @@ public:
         \brief Get project * camera matrix
         \returns matrix 
      */
-    const Matrix4 &GetViewProjMatrix();
+    const Matrix4 &GetViewProjMatrix(bool invertProjection = false);
     
     /**
         \brief Function to return 2D position of 3D point that is transformed to screen. 
@@ -338,16 +340,10 @@ public:
     
     /**
         \brief Get camera zoom factor. 
-        You can use zoom factor to have dependencies between camera zoom and visualisation of object
+        You can use zoom factor to have dependencies between camera zoom and visualization of object
         \returns tanf(fov / 2). 
      */
-    float32 GetZoomFactor() const;
-    
-    /**
-        \brief Request camera to invert cull order direction.
-     */
-    void SetCullInvert(bool enabled);
-
+    float32 GetZoomFactor() const;        
     
     /**
         \brief Draw debug camera information if debug flags enabled
@@ -368,8 +364,7 @@ public:
         REQUIRE_REBUILD = 1,
         REQUIRE_REBUILD_MODEL = 1 << 1,
         REQUIRE_REBUILD_PROJECTION = 1 << 2,
-        REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1 << 3,
-        INVERT_CULL = 1 << 4,
+        REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1 << 3    
     };
     
     
@@ -403,15 +398,7 @@ public:
 	
 	void ExtractValuesFromMatrix();
 	void ConstructMatrixFromValues();
-	void Recalc();	
-    
-	
-	/** calls glFrustum for projection matrix */
-	void ApplyFrustum();
-	
-	/** operates on model-view matrix */
-	void ApplyTransform();
-    
+	void Recalc();	    		    
     
     void CalculateZoomFactor();
     

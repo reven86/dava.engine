@@ -102,7 +102,7 @@ uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
         for (uint32 i = 0; i < rbCount; ++i)
         {
             PolygonGroup * pg = ro->GetRenderBatch(i)->GetPolygonGroup();
-            if (pg && pg->renderDataObject && pg->renderDataObject->GetVertexBufferID() && pg->renderDataObject->GetIndexBufferID())
+            if (pg && pg->vertexBuffer != rhi::InvalidHandle && pg->indexBuffer != rhi::InvalidHandle)
             {
                 ret += pg->ReleaseGeometryData();
             }
@@ -114,7 +114,7 @@ uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
 
 void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true*/)
 {
-    DVASSERT(group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST); //only triangle lists for now    
+    DVASSERT(group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST); //only triangle lists for now    
     DVASSERT(group->GetFormat()&EVF_TEXCOORD0);
     DVASSERT(group->GetFormat()&EVF_NORMAL);
 
@@ -324,6 +324,8 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
 
 SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::JointConfig> & outJoints)
 {
+    SkinnedMesh * newRenderObject = new SkinnedMesh();
+
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> > collapseDataMap;
 
     Vector<Entity *> childrenNodes;
@@ -381,9 +383,7 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
                 }
             }
         }
-    }
-
-    SkinnedMesh * newRenderObject = new SkinnedMesh();
+    }    
 
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator it = collapseDataMap.begin();
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator itEnd = collapseDataMap.end();
@@ -433,9 +433,9 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
             indexOffset += currentBatchIndexCount;
         }
 
-        NMaterial * material = NMaterial::CreateMaterialInstance();
+        NMaterial * material = new NMaterial();
         material->SetParent(key.materialParent);
-        material->SetFlag(NMaterial::FLAG_SKINNING, NMaterial::FlagOn);
+        material->AddFlag(NMaterialFlagName::FLAG_SKINNING, 1);
 
         RenderBatch * newBatch = new RenderBatch();
         polygonGroup->RecalcAABBox();
@@ -450,6 +450,8 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
         newBatch->Release();
     }
 
+
+    
     return newRenderObject;
 }
 

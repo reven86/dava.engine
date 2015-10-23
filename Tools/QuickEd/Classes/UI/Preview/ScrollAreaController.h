@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__
 #define __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__
 
@@ -37,8 +36,9 @@
 #include "Base/ScopedPtr.h"
 #include "UI/UIControl.h"
 
-namespace DAVA{
-    class Vector2;
+namespace DAVA
+{
+class Vector2;
 }
 
 class ScrollAreaController : public QObject
@@ -49,30 +49,30 @@ public:
     Q_PROPERTY(QSize viewSize READ GetViewSize WRITE SetViewSize NOTIFY ViewSizeChanged);
     Q_PROPERTY(QPoint position READ GetPosition WRITE SetPosition NOTIFY PositionChanged);
 
-    ScrollAreaController(QObject *parent = nullptr);
+    ScrollAreaController(QObject* parent = nullptr);
     ~ScrollAreaController() = default;
-    
+
     void SetNestedControl(DAVA::UIControl* nestedControl);
 
     DAVA::UIControl* GetBackgroundControl();
     QSize GetCanvasSize() const;
     QSize GetViewSize() const;
     QPoint GetPosition() const;
-    
+
 public slots:
-    void SetViewSize(const QSize &size);
-    void SetPosition(const QPoint &position);
+    void SetViewSize(const QSize& size);
+    void SetPosition(const QPoint& position);
     void UpdateCanvasContentSize();
 
 signals:
-    void CanvasSizeChanged(const QSize &canvasSize);
-    void ViewSizeChanged(const QSize &size);
-    void PositionChanged(const QPoint &position);
-    
+    void CanvasSizeChanged(const QSize& canvasSize);
+    void ViewSizeChanged(const QSize& size);
+    void PositionChanged(const QPoint& position);
+
 private:
     void UpdatePosition();
     DAVA::ScopedPtr<DAVA::UIControl> backgroundControl;
-    DAVA::UIControl *nestedControl = nullptr;
+    DAVA::UIControl* nestedControl = nullptr;
     QSize canvasSize = QSize(0, 0);
     QSize viewSize = QSize(0, 0);
     QPoint position = QPoint(0, 0);

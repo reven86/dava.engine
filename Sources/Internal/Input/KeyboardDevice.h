@@ -191,11 +191,10 @@ protected:
 	KeyboardDevice();
 			
 public:
-    
     bool IsKeyPressed(int32 keyCode) const;
-    
+
     int32 GetDavaKeyForSystemKey(int32 systemKeyCode) const;
-    
+
     void OnKeyPressed(int32 keyCode);
     void OnKeyUnpressed(int32 keyCode);
 
@@ -210,8 +209,8 @@ public:
 protected:
     
     void PrepareKeyTranslator();
-        
-    Bitset<DVKEY_COUNT> keyStatus;//keys pressed for the current frame
+
+    Bitset<DVKEY_COUNT> keyStatus; //keys pressed for the current frame
     Bitset<DVKEY_COUNT> realKeyStatus;
     Array<int32, MAX_KEYS> keyTranslator;
 };

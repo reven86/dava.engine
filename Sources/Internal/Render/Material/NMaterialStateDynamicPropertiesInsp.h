@@ -25,14 +25,14 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
-
 #ifndef __DAVAENGINE_NMATERIALSTATEDYNAMICPROPERTYSINSP_NAMES_H__
 #define __DAVAENGINE_NMATERIALSTATEDYNAMICPROPERTYSINSP_NAMES_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/HashMap.h"
 #include "Base/FastNameMap.h"
+#include "Base/Introspection.h"
+#include "Render/RHI/rhi_ShaderSource.h"
 
 namespace DAVA
 {
@@ -41,35 +41,24 @@ class NMaterial;
 class NMaterialStateDynamicPropertiesInsp : public InspInfoDynamic
 {
 public:
-    Vector<FastName> MembersList(void *object) const;
-    InspDesc MemberDesc(void *object, const FastName &member) const;
-    int MemberFlags(void *object, const FastName &member) const;
-    VariantType MemberValueGet(void *object, const FastName &member) const;
-    void MemberValueSet(void *object, const FastName &member, const VariantType &value);
-    
-protected:
+    DynamicData Prepare(void *object, int filter) const override;
+    Vector<FastName> MembersList(const DynamicData& ddata) const override;
+    InspDesc MemberDesc(const DynamicData& ddata, const FastName &key) const override;
+    int MemberFlags(const DynamicData& ddata, const FastName &key) const override;
+    VariantType MemberValueGet(const DynamicData& ddata, const FastName &key) const override;
+    void MemberValueSet(const DynamicData& ddata, const FastName &key, const VariantType &value) override;
+
+private:
     struct PropData
     {
-        enum PropSource
-        {
-            SOURCE_UNKNOWN = 0x0,
-            SOURCE_SELF = 0x1,
-            SOURCE_PARENT = 0x2,
-            SOURCE_SHADER = 0x4
-        };
-        
-        PropData() : source(SOURCE_UNKNOWN)
-        { }
-        
-        int source;
-        Shader::eUniformType type;
-        uint8 size;
-        uint8* data;
+        uint32 size;
+        rhi::ShaderProp::Type type;
+        const float32* defaultValue;
     };
-    
-    bool IsColor(const FastName &propName) const;
-    VariantType GetVariant(const FastName &propName, const PropData &propData) const;
-    const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state, bool global) const;
+    using PropDataMap = FastNameMap<PropData>;
+    bool IsColor(const FastName &key) const;
+    void FindMaterialPropertiesRecursive(NMaterial* state, PropDataMap& props) const;
+    void FillGlobalMaterialMemebers(NMaterial* state, PropDataMap& props) const;
 };
 
 };

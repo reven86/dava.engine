@@ -33,8 +33,8 @@
 #include "Render/Image/LibDdsHelper.h"
 
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Renderer.h"
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>
 
@@ -308,11 +308,7 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
     }
     
     //check hardware support, in case of rgb use nvtt to reorder bytes
-    bool isHardwareSupport = false;
-    if (IsAtcFormat(format))
-        isHardwareSupport = RenderManager::Instance()->GetCaps().isATCSupported;
-    else
-        isHardwareSupport = RenderManager::Instance()->GetCaps().isDXTSupported;
+    bool isHardwareSupport = PixelFormatDescriptor::GetPixelFormatDescriptor(GetPixelFormatByNVTTFormat(format)).isHardwareSupported;
     
     if (!forceSoftwareConvertation && isHardwareSupport)
     {
@@ -496,7 +492,7 @@ Size2i NvttHelper::GetImageSize(nvtt::Decompressor & dec)
 
 uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 {
-    uint32 faceId = Texture::CUBE_FACE_INVALID;
+    uint32 faceId = Texture::INVALID_CUBEMAP_FACE;
     
     if(faceIndex >= 0 && faceIndex < 6)
     {
@@ -526,12 +522,12 @@ uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
         }
         
         static uint32 faceIndexMap[] = {
-            Texture::CUBE_FACE_POSITIVE_X,
-            Texture::CUBE_FACE_NEGATIVE_X,
-            Texture::CUBE_FACE_POSITIVE_Y,
-            Texture::CUBE_FACE_NEGATIVE_Y,
-            Texture::CUBE_FACE_POSITIVE_Z,
-            Texture::CUBE_FACE_NEGATIVE_Z
+            rhi::TEXTURE_FACE_POSITIVE_X,
+            rhi::TEXTURE_FACE_NEGATIVE_X,
+            rhi::TEXTURE_FACE_POSITIVE_Y,
+            rhi::TEXTURE_FACE_NEGATIVE_Y,
+            rhi::TEXTURE_FACE_POSITIVE_Z,
+            rhi::TEXTURE_FACE_NEGATIVE_Z
         };
         
         faceId = faceIndexMap[faceIdIndex];

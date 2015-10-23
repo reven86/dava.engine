@@ -60,22 +60,25 @@ public:
 	bool ChangesPresent();
 		
 protected:
-	
-	uint32 curToolSize;
-	Texture* toolImageTexture;
+    bool CouldApplyImage(Image* image, const String& imageName) const;
 
+    int32 curToolSize;
+	Texture* toolImageTexture = nullptr;
+
+    Texture * loadedTexture = nullptr;
+    
 	Color drawColor;
-	int32 colorIndex;
+	int32 colorIndex = 0;
 
 	Rect updatedRectAccumulator;
 	
-	bool editingIsEnabled;
+	bool editingIsEnabled = false;
 	
-	Image* originalImage;
+	Image* originalImage = nullptr;
 	
 	void UpdateToolImage(bool force = false);
-	void UpdateBrushTool(float32 timeElapsed);
-	Image* CreateToolImage(int32 sideSize, const FilePath& filePath);
+	void UpdateBrushTool();
+	void CreateToolImage(const FilePath& filePath);
 	
 	void AddRectToAccumulator(const Rect& rect);
 	void ResetAccumulatorRect();

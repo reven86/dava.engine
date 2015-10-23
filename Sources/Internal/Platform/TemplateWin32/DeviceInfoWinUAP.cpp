@@ -59,6 +59,7 @@ using namespace ::Windows::Devices::HumanInterfaceDevice;
 using namespace ::Windows::Security::ExchangeActiveSyncProvisioning;
 using namespace ::Windows::Networking::Connectivity;
 using namespace ::Windows::System::UserProfile;
+using namespace ::Windows::UI::Xaml;
 
 namespace DAVA
 {
@@ -79,11 +80,6 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     productName = WideString(deviceInfo.SystemProductName->Data());
     gpu = GPUFamily();
     uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
-    cpuCount = static_cast<int32>(std::thread::hardware_concurrency());
-    if (0 == cpuCount)
-    {
-        cpuCount = 1;
-    }
 
     watchers.emplace_back(CreateDeviceWatcher(POINTER));
     watchers.emplace_back(CreateDeviceWatcher(MOUSE));
@@ -211,15 +207,16 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
     auto func = [this]()
     {
-        CoreWindow^ window = CoreWindow::GetForCurrentThread();
-        DVASSERT(window != nullptr);
+        // should be started on UI thread
+        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        DVASSERT(coreWindow != nullptr);
+        
+        screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
+        screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
 
-        using Windows::Graphics::Display::DisplayInformation;
         DisplayInformation^ displayInfo = DisplayInformation::GetForCurrentView();
+        DVASSERT(displayInfo != nullptr);
         screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
-
-        screenInfo.width = static_cast<int32>(window->Bounds.Width);
-        screenInfo.height = static_cast<int32>(window->Bounds.Height);
         DisplayOrientations curOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
         if (DisplayOrientations::Portrait == curOrientation || DisplayOrientations::PortraitFlipped == curOrientation)
         {
@@ -268,8 +265,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     storage.removable = true;
 
     auto removableStorages = WaitAsync(KnownFolders::RemovableDevices->GetFoldersAsync());
-    size_t size = removableStorages->Size;
-    for (size_t i = 0; i < size; ++i)
+    for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
         Platform::String^ path = removableStorages->GetAt(i)->Path;
         storage.path = WStringToString(path->Data());
@@ -284,11 +280,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     return result;
 }
 
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    return cpuCount;
-}
-
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
     auto func = [type](HIDConvPair pair)->bool {
@@ -298,29 +289,18 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
     return IsEnabled(it->first);
 }
 
-// warning!!! notification occur in DeviceWatcher's thread
-// for notify in main's thread use MainThreadRedirector
-// it pass call from Watcher's thread in main
-// for example DeviceInfo::SetHIDConnectionCallback(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
-void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
-{
-    auto func = [type](HIDConvPair pair)->bool {
-        return pair.second == type;
-    };
-    auto it = std::find_if(HidConvSet.begin(), HidConvSet.end(), func);
-    hids[it->first].callbacks.emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(callback));
-}
-
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 {
     auto func = [type](HIDConvPair pair)->bool {
         return pair.first == type;
     };
-    for (auto& iter : (hids[type].callbacks))
-    {
-        auto it = std::find_if(HidConvSet.begin(), HidConvSet.end(), func);
-        (iter)(it->second, isConnected);
-    }
+    DeviceInfo::eHIDType hidType = std::find_if(HidConvSet.begin(), HidConvSet.end(), func)->second;
+
+    //pass notification in main thread
+    CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+
+    DeviceInfo::HIDConnectionSignal* signal = &GetHIDConnectionSignal(hidType);
+    core->RunOnMainThread([=] { signal->Emit(hidType, isConnected); });
 }
 
 eGPUFamily DeviceInfoPrivate::GPUFamily()
@@ -404,7 +384,7 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
     auto it = hids.find(type);
     if (it != hids.end())
     {
-        it->second.hidCount++;
+        it->second++;
         NotifyAllClients(type, true);
     }
 }
@@ -414,14 +394,14 @@ void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpd
     auto it = hids.find(type);
     if (it != hids.end())
     {
-        it->second.hidCount--;
+        it->second--;
         NotifyAllClients(type, false);
     }
 }
 
 bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
 {
-    return (hids[type].hidCount > 0);
+    return (hids[type] > 0);
 }
 
 }

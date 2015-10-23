@@ -110,8 +110,7 @@ protected:
 	DAVA::Set<DAVA::Entity *> sceneCameras;
 
     DAVA::float32 distanceToCamera;
-
-    DAVA::UniqueHandle renderState;
+    
 	DAVA::uint32 activeSpeedIndex;
 };
 

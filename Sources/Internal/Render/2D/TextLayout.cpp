@@ -51,7 +51,7 @@ TextLayout::~TextLayout()
 {
 }
 
-void TextLayout::Reset(const WideString& _input, const Font& _font)
+void TextLayout::Reset(const WideString& _input)
 {
     if (inputText != _input)
     {
@@ -65,15 +65,37 @@ void TextLayout::Reset(const WideString& _input, const Font& _font)
         StringUtils::GetLineBreaks(preparedText, breaks);
         DVASSERT_MSG(breaks.size() == preparedText.length(), "Incorrect breaks information");
     }
-    
+    characterSizes.clear();
+    Seek(0);
+}
+
+void TextLayout::Reset(const WideString& input, const Font& font)
+{
+    Reset(input);
+    CalculateCharSizes(font);
+}
+
+void TextLayout::SetCharSizes(const Vector<float32>& charSizes)
+{
+    characterSizes = charSizes;
+    PrepareCharSizes();
+}
+
+void TextLayout::CalculateCharSizes(const Font& font)
+{
     // Update characters sizes from font
     characterSizes.clear();
-    _font.GetStringMetrics(preparedText, &characterSizes);
-    DVASSERT(characterSizes.size() == preparedText.length());
+    font.GetStringMetrics(preparedText, &characterSizes);
+    PrepareCharSizes();
+}
 
+void TextLayout::PrepareCharSizes()
+{
+    DVASSERT(characterSizes.size() == preparedText.length());
     if (useBiDi)
     {
-        for (uint32 i = 0; i < characterSizes.size(); ++i)
+        size_t size = characterSizes.size();
+        for (size_t i = 0; i < size; ++i)
         {
             if (bidiHelper.IsBiDiSpecialCharacter(preparedText[i]))
             {
@@ -81,8 +103,6 @@ void TextLayout::Reset(const WideString& _input, const Font& _font)
             }
         }
     }
-    
-    Seek(0);
 }
 
 void TextLayout::Seek(const uint32 _position)
@@ -98,6 +118,7 @@ bool TextLayout::IsEndOfText()
 
 bool TextLayout::NextByWords(const float32 lineWidth)
 {
+    DVASSERT(characterSizes.size() == preparedText.length());
     float32 targetWidth = std::floor(lineWidth);
     float32 currentWidth = 0;
     uint32 textLength = (uint32)preparedText.length();
@@ -150,6 +171,7 @@ bool TextLayout::NextByWords(const float32 lineWidth)
 
 bool TextLayout::NextBySymbols(const float32 lineWidth)
 {
+    DVASSERT(characterSizes.size() == preparedText.length());
     float32 targetWidth = std::floor(lineWidth);
     float32 currentLineDx = 0;
     size_t totalSize = preparedText.length();
@@ -194,6 +216,18 @@ const WideString TextLayout::GetVisualText(const bool trimEnd) const
 const WideString TextLayout::GetVisualLine(const bool trimEnd) const
 {
     return BuildVisualString(preparedLine, trimEnd);
+}
+
+void TextLayout::FillList(Vector<WideString>& outputList, float32 lineWidth, bool splitBySymbols, bool trimEnd)
+{
+    while (!IsEndOfText())
+    {
+        if (splitBySymbols || !NextByWords(lineWidth))
+        {
+            NextBySymbols(lineWidth);
+        }
+        outputList.push_back(GetVisualLine(trimEnd));
+    }
 }
 
 const WideString TextLayout::BuildVisualString(const WideString& _input, const bool trimEnd) const

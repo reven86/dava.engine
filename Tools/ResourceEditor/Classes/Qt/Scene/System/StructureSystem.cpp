@@ -592,32 +592,33 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 
 void StructureSystem::CopyLightmapSettings(DAVA::NMaterial *fromState, DAVA::NMaterial *toState) const
 {
-	Texture* lightmap = fromState->GetTexture(NMaterial::TEXTURE_LIGHTMAP);
-	bool needReleaseTexture = false;
-	if(!lightmap)
+
+    if (fromState->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
 	{
-		lightmap = Texture::CreatePink();
-		needReleaseTexture = true;
+        Texture* lightmap = fromState->GetLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
+        if (toState->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
+            toState->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
+        else            
+            toState->AddTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);		
 	}
 	
-	toState->SetTexture(NMaterial::TEXTURE_LIGHTMAP, lightmap);
-	
-	if(needReleaseTexture)
-	{
-		SafeRelease(lightmap);
-	}
-	
-	NMaterialProperty* uvScale = fromState->GetMaterialProperty(NMaterial::PARAM_UV_SCALE);
-	if(uvScale)
-	{
-		toState->SetPropertyValue(NMaterial::PARAM_UV_SCALE, uvScale->type, uvScale->size, uvScale->data);
-	}
-	
-	NMaterialProperty* uvOffset = fromState->GetMaterialProperty(NMaterial::PARAM_UV_OFFSET);
-	if(uvScale)
-	{
-		toState->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, uvOffset->type, uvOffset->size, uvOffset->data);
-	}
+    if (fromState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))
+    {
+        const float* data = fromState->GetLocalPropValue(NMaterialParamName::PARAM_UV_SCALE);
+        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))       
+            toState->SetPropertyValue(NMaterialParamName::PARAM_UV_SCALE, data);
+        else
+            toState->AddProperty(NMaterialParamName::PARAM_UV_SCALE, data, rhi::ShaderProp::TYPE_FLOAT2);
+    }
+
+    if (fromState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))
+    {
+        const float* data = fromState->GetLocalPropValue(NMaterialParamName::PARAM_UV_OFFSET);
+        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))        
+            toState->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, data);        
+        else
+            toState->AddProperty(NMaterialParamName::PARAM_UV_OFFSET, data, rhi::ShaderProp::TYPE_FLOAT2);
+    }		
 }
 
 struct BatchInfo

@@ -86,7 +86,7 @@ public:
     ScopedPtr<DynamicMemoryFile> serializationBuffer;
 
 private:
-    static List<ScopedPtr<DynamicMemoryFile>> sendingPackets;
+    static Map<const uint8*, ScopedPtr<DynamicMemoryFile>> sendingPackets;
 };
 
 class AddRequestPacket : public CachePacket

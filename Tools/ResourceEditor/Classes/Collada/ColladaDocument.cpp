@@ -30,7 +30,7 @@
 #include "stdafx.h"
 #include "ColladaDocument.h"
 #include "Scene3D/SceneFile.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 
 ///*
 // INCLUDE DevIL

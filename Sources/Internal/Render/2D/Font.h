@@ -57,7 +57,7 @@ public:
 	enum eFontType 
 	{
 			TYPE_FT = 0		//!< freetype-based
-		,	TYPE_GRAPHICAL	//!< sprite-based
+		,	TYPE_GRAPHIC	//!< sprite-based
 		,	TYPE_DISTANCE	//!< distance-based
 	};
 
@@ -200,9 +200,7 @@ protected:
 	static int32 globalFontDPI;
 	
 	float32	size;
-
 	int32 verticalSpacing;
-	
 	eFontType fontType;
 };
     

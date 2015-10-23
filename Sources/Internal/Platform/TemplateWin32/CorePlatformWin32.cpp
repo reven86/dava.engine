@@ -30,6 +30,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
+#include "Debug/Profiler.h"
 
 #include "Concurrency/Thread.h"
 #include "Input/KeyboardDevice.h"
@@ -37,7 +38,6 @@
 #include "Platform/DeviceInfo.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/SystemTimer.h"
-#include "Render/RenderManager.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
@@ -59,13 +59,11 @@ namespace DAVA
 		{
 			core->Run();
 			core->ReleaseSingletons();
-			
 		}
 
 		return 0;
 	
 	}
-
 	int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	{
 		CoreWin32Platform * core = new CoreWin32Platform();
@@ -84,8 +82,6 @@ namespace DAVA
 
 	bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
 	{	
-		this->hInstance = hInstance;
-
 		//single instance check
 		TCHAR fileName[MAX_PATH];
 		GetModuleFileName(NULL, fileName, MAX_PATH);
@@ -98,11 +94,6 @@ namespace DAVA
 			}
 		}
         SetLastError(0);
-		//hMutex = CreateMutex(NULL, FALSE, fileName);
-		//if(ERROR_ALREADY_EXISTS == GetLastError())
-		//{
-		//	return false;
-		//}
 
 		windowedMode = DisplayMode(800, 600, 16, 0);
 		fullscreenMode = DisplayMode(800, 600, 16, 0);
@@ -162,22 +153,18 @@ namespace DAVA
 		}
 
 		// create window
-		hWindow = CreateWindow( className, L"", style, windowLeft, windowTop, 
-			realWidth, realHeight,	NULL, NULL, hInstance, NULL);
+        HWND hWindow = CreateWindow(className, L"", style, windowLeft, windowTop,
+                                    realWidth, realHeight, NULL, NULL, hInstance, NULL);
+
+        SetNativeView(hWindow);
+
+        rendererParams.window = hWindow;
 
 		ShowWindow(hWindow, SW_SHOW);
 		UpdateWindow(hWindow);
 
 		// fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
-	
-#if defined(__DAVAENGINE_DIRECTX9__)
-		RenderManager::Create(Core::RENDERER_DIRECTX9);
-#elif defined(__DAVAENGINE_OPENGL__)
-		RenderManager::Create(Core::RENDERER_OPENGL);
-#endif
-		RenderManager::Instance()->Create(hInstance, hWindow);
-        RenderSystem2D::Instance()->Init();
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
@@ -210,6 +197,9 @@ namespace DAVA
 			currentMode = fullscreenMode;
 		}
 
+        rendererParams.width = currentMode.width;
+        rendererParams.height = currentMode.height;
+
 		clientSize.top = 0;
 		clientSize.left = 0;
 		clientSize.right = currentMode.width;
@@ -223,7 +213,7 @@ namespace DAVA
 		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
-	
+
         RAWINPUTDEVICE Rid;
 
         Rid.usUsagePage = 0x01; 
@@ -246,8 +236,6 @@ namespace DAVA
             Logger::Info("system not supported touch input");
         }
 
-        RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
-        RenderManager::Instance()->Init(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
@@ -287,15 +275,13 @@ namespace DAVA
 					}
 				}
 			}
-
-            RenderManager::Instance()->Lock();
-			Core::SystemProcessFrame();
-			RenderManager::Instance()->Unlock();
+            
+			Core::SystemProcessFrame();			
 
             uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
             int32 sleepMs = 1;
 
-            int32 fps = RenderManager::Instance()->GetFPS();
+            int32 fps = Renderer::GetDesiredFPS();
             if(fps > 0)
             {
                 sleepMs = (1000 / fps) - elapsedTime;
@@ -305,7 +291,9 @@ namespace DAVA
                 }
             }
 
+            TRACE_BEGIN_EVENT(11,"core","Sleep");
             Sleep(sleepMs);
+            TRACE_END_EVENT(11,"core","Sleep");
 
 			if (willQuit)
 			{	
@@ -324,65 +312,70 @@ namespace DAVA
 		clientSize.left = 0;
 		clientSize.right = dm.width;
 		clientSize.bottom = dm.height;
+        HWND hWindow = static_cast<HWND>(GetNativeView());
+        AdjustWindowRect(&clientSize, GetWindowLong(hWindow, GWL_STYLE), FALSE);
 
-		AdjustWindowRect(&clientSize, GetWindowLong(hWindow, GWL_STYLE), FALSE);
+        return clientSize;
+    }
 
-		return clientSize;
-	}
-
-	void CoreWin32Platform::ToggleFullscreen()
+    Core::eScreenMode CoreWin32Platform::GetScreenMode()
 	{
-		// Setup styles based on windowed / fullscreen mode
-		isFullscreen = !isFullscreen;
+        if (isFullscreen)
+        {
+            return Core::eScreenMode::FULLSCREEN;
+        }
+        else
+        {
+            return Core::eScreenMode::WINDOWED;
+        }
+    }
 
-		if ( isFullscreen )
-		{
-			currentMode = fullscreenMode;
-			GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
-
-			SetMenu( hWindow, NULL );
-			SetWindowLong( hWindow, GWL_STYLE, FULLSCREEN_STYLE );
-			SetWindowPos( hWindow, NULL, 0, 0, currentMode.width, currentMode.height, SWP_NOZORDER );
-		} 
-		else
-		{
-			SetWindowLong( hWindow, GWL_STYLE, WINDOWED_STYLE );
-
-			currentMode = windowedMode;
-			RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
-	
-			SetWindowPos( hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowedRect.right - windowedRect.left, windowedRect.bottom - windowedRect.top, SWP_NOACTIVATE | SWP_SHOWWINDOW );
-		}
-		
-		Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
-
-		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
-		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
-	}
-
-	Core::eScreenMode CoreWin32Platform::GetScreenMode()
-	{
-		if (isFullscreen)return Core::MODE_FULLSCREEN;
-		else return Core::MODE_WINDOWED;
-	}
-
-	void CoreWin32Platform::SwitchScreenToMode(eScreenMode screenMode)
-	{
+    bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
+    {
 		if (GetScreenMode() != screenMode) // check if we try to switch mode
 		{
-			if (screenMode == Core::MODE_FULLSCREEN)
-			{
-				ToggleFullscreen();
-			}else if (screenMode == Core::MODE_WINDOWED)
-			{
-				ToggleFullscreen();
-			}
-		}else
-		{
-		}
-	}
+            HWND hWindow = static_cast<HWND>(GetNativeView());
+
+            switch (screenMode)
+            {
+            case DAVA::Core::eScreenMode::FULLSCREEN:
+            {
+                isFullscreen = true;
+                currentMode = fullscreenMode;
+                GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
+                SetMenu(hWindow, NULL);
+                SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
+                SetWindowPos(hWindow, NULL, 0, 0, currentMode.width, currentMode.height, SWP_NOZORDER);
+                break;
+            }
+            case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
+            {
+                Logger::Error("Unsupported screen mode");
+                return false;
+            }
+            case DAVA::Core::eScreenMode::WINDOWED:
+            {
+                isFullscreen = false;
+                SetWindowLong(hWindow, GWL_STYLE, WINDOWED_STYLE);
+                currentMode = windowedMode;
+                RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
+                SetWindowPos(hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowedRect.right - windowedRect.left, windowedRect.bottom - windowedRect.top, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                break;
+            }
+            default:
+            {
+                DVASSERT_MSG(false, "Incorrect screen mode");
+                Logger::Error("Incorrect screen mode");
+                return false;
+            }
+            }
+
+            Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
+            VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+            VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        }
+        return true;
+    }
 
 	void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode> & availableDisplayModes)
 	{
@@ -427,8 +420,9 @@ namespace DAVA
 
 	void CoreWin32Platform::SetIcon(int32 iconId)
 	{
-		HINSTANCE hInst= GetModuleHandle(0);
-		HICON smallIcon = static_cast<HICON>(LoadImage(hInst,
+        HWND hWindow = static_cast<HWND>(GetNativeView());
+        HINSTANCE hInst = GetModuleHandle(0);
+        HICON smallIcon = static_cast<HICON>(LoadImage(hInst,
 			MAKEINTRESOURCE(iconId),
 			IMAGE_ICON,
 			0,
@@ -514,8 +508,8 @@ namespace DAVA
             }
         }
 
-		if(!isFind)
-		{
+        if (!isFind)
+        {
 			UIEvent newTouch;
 			newTouch.tid = button;
             newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
@@ -530,8 +524,8 @@ namespace DAVA
             outTouches->push_back(*it);
         }
 
-        if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
-		{
+        if (phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
+        {
             for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
             {
                 if (it->tid == button)
@@ -542,8 +536,8 @@ namespace DAVA
             }
         }
 
-		return phase;
-	}
+        return phase;
+    }
 
 	static bool mouseCursorShown = true;
 	static USHORT mouseButtonsDownMask = 0;
@@ -638,6 +632,7 @@ namespace DAVA
             UIControlSystem::Instance()->OnInput(touches, events);
         }
 
+#if RHI_COMPLETE
         if (RenderManager::Instance()->GetCursor() != nullptr && mouseCursorShown)
         {
             ShowCursor(false);
@@ -648,9 +643,10 @@ namespace DAVA
             ShowCursor(false);
             mouseCursorShown = false;
         }
+#endif // RHI_COMPLETE
 
-		HandleMouseButtonsReleased(buttsFlags);
-	}
+        HandleMouseButtonsReleased(buttsFlags);
+    }
 
     void CoreWin32Platform::OnTouchEvent(UIEvent::eInputPhase phase, UIEvent::PointerDeviceID deviceId, uint32 fingerId, float32 x, float32 y, float presure)
     {
@@ -776,10 +772,12 @@ namespace DAVA
                 LONG y = inp.data.mouse.lLastY;
 
                 bool isMove = x || y;
+                bool isInside = false;
 
-                if(InputSystem::Instance()->IsCursorPining())
+                if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
                 {
                     SetCursorPosCenterInternal(hWnd);
+                    isInside = true;
                 }
                 else
                 {
@@ -788,12 +786,11 @@ namespace DAVA
                     ScreenToClient(hWnd, &p);
                     x += p.x;
                     y += p.y;
+
+                    RECT clientRect;
+                    GetClientRect(hWnd, &clientRect);
+                    isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom);
                 }
-
-                RECT clientRect;
-                GetClientRect(hWnd, &clientRect);
-
-                bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
 
                 core->OnMouseEvent(UIEvent::PointerDeviceID::MOUSE, inp.data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), inp.data.mouse.usButtonData); // only move, drag and wheel events
             }
@@ -846,8 +843,8 @@ namespace DAVA
             {
                 ShowCursor(true);
                 mouseCursorShown = true;
-			}
-			break;
+            }
+            break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return 0;
@@ -860,7 +857,6 @@ namespace DAVA
                 if(!loWord || hiWord)
                 {
                     Logger::FrameworkDebug("[PlatformWin32] deactivate application");
-                    RenderResource::SaveAllResourcesToSystemMem();
 					
                     if(core)
 					{

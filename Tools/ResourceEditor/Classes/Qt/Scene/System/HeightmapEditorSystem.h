@@ -70,7 +70,7 @@ public:
 	void SetAverageStrength(float32 averageStrength);
 	float32 GetAverageStrength();
 	void SetToolImage(const FilePath& toolImagePath, int32 index);
-	int32 GetToolImage();
+	int32 GetToolImageIndex();
 	void SetDrawingType(eHeightmapDrawType type);
 	eHeightmapDrawType GetDrawingType();
 
@@ -84,7 +84,7 @@ protected:
 protected:
 	Texture* squareTexture;
 	uint32 curToolSize;
-	Image* toolImage;
+	Image* curToolImage;
 	
 	eHeightmapDrawType drawingType;
 	float32 strength;
@@ -103,13 +103,10 @@ protected:
 	
 	Heightmap* originalHeightmap;
 
-	eHeightmapDrawType activeDrawingType;
-
-	Landscape::eTextureLevel textureLevel;
-
-	void UpdateToolImage(bool force = false);
+	eHeightmapDrawType activeDrawingType;	
+    
+	void UpdateToolImage();
 	void UpdateBrushTool(float32 timeElapsed);
-	Image* CreateToolImage(int32 sideSize, const FilePath& filePath);
 	
 	void AddRectToAccumulator(Rect& accumulator, const Rect& rect);
 	void ResetAccumulatorRect(Rect& accumulator);
@@ -119,8 +116,7 @@ protected:
 	void CreateHeightmapUndo();
 
 	void FinishEditing();
-	
-	UniqueHandle noBlendDrawState;
+		
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__) */

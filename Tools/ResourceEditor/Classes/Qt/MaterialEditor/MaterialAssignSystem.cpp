@@ -36,7 +36,6 @@
 #include "Tools/MimeData/MimeDataHelper2.h"
 
 #include "Base/BaseTypes.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 
 //Qt
 #include <QMessageBox>
@@ -50,69 +49,6 @@ void MaterialAssignSystem::AssignMaterial(SceneEditor2 *scene, DAVA::NMaterial *
 {
     scene->Exec(new MaterialSwitchParentCommand(instance, newMaterialParent));
 }
-
-void MaterialAssignSystem::AssignMaterialToGroup(SceneEditor2 *scene, const EntityGroup *group, DAVA::NMaterial *newMaterialParent)
-{
-    MaterialSystem *matSystem = scene->GetMaterialSystem();
-
-    DAVA::Set<DAVA::NMaterial *> allMaterials;
-
-    const size_t count = group->Size();
-    for(size_t i = 0; i < count; ++i)
-    {
-        matSystem->BuildMaterialList(group->GetEntity(i), allMaterials);
-    }
-
-    AssignMaterial(scene, allMaterials, newMaterialParent);
-}
-
-
-void MaterialAssignSystem::AssignMaterialToEntity(SceneEditor2 *scene, DAVA::Entity *entity, DAVA::NMaterial *newMaterialParent)
-{
-    MaterialSystem *matSystem = scene->GetMaterialSystem();
-
-    DAVA::Set<DAVA::NMaterial *> allMaterials;
-    matSystem->BuildMaterialList(entity, allMaterials);
-
-    AssignMaterial(scene, allMaterials, newMaterialParent);
-}
-
-void MaterialAssignSystem::AssignMaterial(SceneEditor2 *scene, const DAVA::Set<DAVA::NMaterial *> & allMaterials, DAVA::NMaterial *newMaterialParent)
-{
-    DAVA::Set<DAVA::NMaterial *> materials;
-    DAVA::Set<DAVA::NMaterial *> instances;
-
-    auto endIt = allMaterials.end();
-    for(auto it = allMaterials.begin(); it != endIt; ++it)
-    {
-        if((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_INSTANCE)
-        {
-            instances.insert(*it);
-        }
-        else
-        {
-            materials.insert(*it);
-        }
-    }
-
-    DAVA::NMaterial *selectedMaterial = SelectMaterial(materials);
-    if(selectedMaterial)
-    {
-        scene->BeginBatch("Switch Material Parent");
-        
-        auto endIt = instances.end();
-        for(auto it = instances.begin(); it != endIt; ++it)
-        {
-            if((*it)->GetParent() == selectedMaterial)
-            {
-                scene->Exec(new MaterialSwitchParentCommand(*it, newMaterialParent));
-            }
-        }
-        
-        scene->EndBatch();
-    }
-}
-
 
 DAVA::NMaterial * MaterialAssignSystem::SelectMaterial(const DAVA::Set<DAVA::NMaterial *> & materials)
 {

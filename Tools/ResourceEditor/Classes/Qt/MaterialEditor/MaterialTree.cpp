@@ -74,7 +74,6 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
 	{
 		EntityGroup curSelection = sceneEditor->selectionSystem->GetSelection();
         OnSelectionChanged( sceneEditor, &curSelection, NULL );
-		//treeModel->SetSelection(&curSelection);
 	}
 	else
 	{
@@ -85,15 +84,6 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
     setSortingEnabled(true);
 }
 
-void MaterialTree::AssignMaterialToSelection( DAVA::NMaterial *material )
-{
-    SceneEditor2 *curScene = treeModel->GetScene();
-    Q_ASSERT( curScene );
-    if ( !curScene )
-        return ;
-    EntityGroup selection = curScene->selectionSystem->GetSelection();
-    MaterialAssignSystem::AssignMaterialToGroup(curScene, &selection, material);
-}
 
 DAVA::NMaterial* MaterialTree::GetMaterial(const QModelIndex &index) const
 {
@@ -118,31 +108,24 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
 
     if (NULL != curScene && materials.size() > 0)
     {
-        curScene->selectionSystem->Clear();
+        std::function<void(DAVA::NMaterial *)> fn = [&fn, &curScene](DAVA::NMaterial *material) {
+            DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
+            if (nullptr != entity)
+            {
+                curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+            }
+            const Vector<NMaterial *>& children = material->GetChildren();
+            for (auto child : children)
+            {
+                fn(child);
+            }
+        };
 
+        curScene->selectionSystem->Clear();
         for (int i = 0; i < materials.size(); i++)
         {
             DAVA::NMaterial * material = materials.at(i);
-            
-		    if(material->GetMaterialType() == NMaterial::MATERIALTYPE_INSTANCE)
-		    {
-			    DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
-			    curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
-		    }
-		    else
-		    {
-			    DAVA::Set<DAVA::NMaterial *> instances;
-			    curScene->materialSystem->BuildInstancesList(material, instances);
-
-			    auto it = instances.begin();
-			    auto end = instances.end();
-
-			    for(; it != end; ++it)
-			    {
-				    DAVA::Entity *entity = curScene->materialSystem->GetEntity(*it);
-				    curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
-			    }
-		    }
+            fn(material);
         }
 
         QtMainWindow::Instance()->GetUI()->sceneTree->LookAtSelection();
@@ -172,79 +155,10 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
 
 	contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
 
-/*
-	// add/remove
-	contextMenu.addSeparator();
-	contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
-
-	// lock/unlock
-	contextMenu.addSeparator();
-
-	// save model as
-	contextMenu.addSeparator();
-	contextMenu.addAction(QIcon(":/QtIcons/save_as.png"), "Save Entity As...", this, SLOT(SaveEntityAs()));
-*/
-
-    // "Assign to Selection" item
-    {
-        const QModelIndexList& selection = selectionModel()->selectedIndexes();
-        int nMaterials = 0;
-        int nInstances = 0;
-
-        foreach( const QModelIndex& index, selection )
-        {
-            DAVA::NMaterial *material = treeModel->GetMaterial(index);
-            if ( material )
-            {
-                switch ( material->GetMaterialType() )
-                {
-                case DAVA::NMaterial::MATERIALTYPE_MATERIAL:
-                    nMaterials++;
-                    break;
-                case DAVA::NMaterial::MATERIALTYPE_INSTANCE:
-                    nInstances++;
-                    break;
-                default:
-                    break;
-                }
-            }
-            if ( nMaterials > 0 && nInstances > 0 )
-                break;
-        }
-
-        const bool isVisible = nMaterials > 0;
-        const bool isEnabled = ( nMaterials == 1 ) && ( nInstances == 0 );
-        
-        if ( isVisible )
-        {
-            const QModelIndex first = selection[0];
-            DAVA::NMaterial *material = treeModel->GetMaterial(first);
-            QVariant materialAsVariant = QVariant::fromValue<DAVA::NMaterial *>(material);
-            QAction * actionAssign = contextMenu.addAction("Assign to Selection", this, SLOT(OnAssignToSelection()));
-
-            if ( isEnabled )
-                actionAssign->setData(materialAsVariant);
-            actionAssign->setEnabled( isEnabled );
-        }
-    }
-
     emit ContextMenuPrepare(&contextMenu);
 	contextMenu.exec(mapToGlobal(pos));
 }
 
-void MaterialTree::OnAssignToSelection()
-{
-    QAction *act = qobject_cast<QAction *>( sender() );
-    if ( !act )
-        return ;
-    QVariant indexAsVariant = act->data();
-    if ( !indexAsVariant.isValid() )
-        return ;
-    DAVA::NMaterial *material = indexAsVariant.value<DAVA::NMaterial *>();
-    if ( !material )
-        return ;
-    AssignMaterialToSelection( material );
-}
 
 void MaterialTree::dragEnterEvent(QDragEnterEvent * event)
 {

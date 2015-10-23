@@ -32,7 +32,6 @@
 
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
-#include "Render/RenderManager.h"
 
 namespace DAVA
 {
@@ -53,10 +52,7 @@ public:
 
 private:
 	Vector<Entity*> entities;
-    Camera * camera;
-	
-	UniqueHandle depthWriteState;
-	UniqueHandle depthTestState;
+    Camera * camera;	
 };
 
 }

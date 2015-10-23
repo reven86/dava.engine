@@ -39,15 +39,13 @@
 #include "Autotesting/AutotestingSystem.h"
 #include "Version.h"
 
+#include "UI/Layouts/UILayoutSystem.h"
+
 using namespace DAVA;
 
 GameCore::GameCore()
     : cursor(nullptr)
 {
-    // Editor Settings might be used by any singleton below during initialization, so
-    // initialize it before any other one.
-    new EditorSettings();
-
     new GridVisualizer();
     new RulerController();
     new AutotestingSystem();
@@ -57,6 +55,7 @@ GameCore::GameCore()
 
 	//Initialize internal resources of application
 	ResourcesManageHelper::InitInternalResources();
+    UIControlSystem::Instance()->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 }
 
 GameCore::~GameCore()
@@ -72,7 +71,7 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     cursor = nullptr;
-	RenderManager::Instance()->SetFPS(60);
+	Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
@@ -98,7 +97,6 @@ void GameCore::OnBackground()
 void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
-    RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
 }
 
 void GameCore::Update(float32 timeElapsed)
@@ -123,9 +121,9 @@ void GameCore::UnpackHelp()
 	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
     if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
     {
-		ResourceArchive * helpRA = new ResourceArchive();
-		if(helpRA->Open("~res:/Help.docs"))
-		{
+        ResourceArchive* helpRA = new ResourceArchive();
+        if (helpRA->Open("~res:/Help.docs"))
+        {
 			FileSystem::Instance()->DeleteDirectory(docsPath);
 			FileSystem::Instance()->CreateDirectory(docsPath, true);
 		
@@ -133,6 +131,6 @@ void GameCore::UnpackHelp()
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
 
-		SafeRelease(helpRA);
-	}
+        SafeRelease(helpRA);
+    }
 }

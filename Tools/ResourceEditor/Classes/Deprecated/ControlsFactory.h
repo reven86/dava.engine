@@ -119,7 +119,6 @@ public:
 
     static void CustomizeListCell(UIListCell *c, const WideString &text, bool setLightFont = true);
     static void CustomizeListCellAlternative(UIListCell *c, const WideString &text);
-    static void CustomizeSceneGraphCell(UIHierarchyCell *c);
     
     static void CustomizeMenuPopupCell(UIListCell *c, const WideString &text);
     
@@ -134,7 +133,6 @@ public:
     static void CustomizeDialog(UIControl *c);
     
     static void SetScrollbar(UIList *l);
-    static void SetScrollbar(UIHierarchy *l);
     
     static void RemoveScrollbar(UIList *l);
     

@@ -37,8 +37,6 @@
 // framework
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
-#include "Render/RenderManager.h"
-#include "Render/RenderHelper.h"
 #include "Particles/ParticleEmitter.h"
 #include "Scene3D/Components/RenderComponent.h"
 
@@ -47,13 +45,7 @@
 
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
-{
-	DAVA::RenderManager* rm = DAVA::RenderManager::Instance();
-	
-	renderState = rm->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
-										  DAVA::RenderStateData::STATE_COLORMASK_ALL |
-										  DAVA::RenderStateData::STATE_DEPTH_TEST);
-
+{	
     selectedEffectEntity = NULL;
     selectedEmitter = NULL;
 }
@@ -73,11 +65,8 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
 	SceneCollisionSystem *collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
 	
-	if (collisionSystem)
-	{		
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f));		
-		
-		
+    if (collisionSystem)
+    {
 		if(NULL != effectEntity)
 		{
 			DAVA::AABBox3 wordBox;
@@ -85,10 +74,8 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 			collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);	
 			// Get sphere radius (size) of debug effect
 			DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
-			DAVA::RenderHelper::Instance()->FillDodecahedron(wordBox.GetCenter(), radius, renderState);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(wordBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
 		}
-		
-		DAVA::RenderManager::Instance()->ResetColor();
 	}
 }
 
@@ -112,8 +99,7 @@ void EditorParticlesSystem::Draw()
         TransformPerserveLength(center, effectMatrix);
         center+=selectedEffectEntity->GetWorldTransform().GetTranslationVector();
         
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f));
-		DAVA::RenderHelper::Instance()->FillDodecahedron(center, 0.1f, renderState);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, 0.1f, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 		DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
 
 		switch (selectedEmitter->emitterType)
@@ -138,12 +124,7 @@ void EditorParticlesSystem::Draw()
                 
         default: break;
 		}
-		
-		DAVA::RenderManager::Instance()->ResetColor();
-	}
-	
-	//DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
-	//DAVA::RenderManager::Instance()->SetState(oldState);
+	}	
 }
 
 void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -155,8 +136,7 @@ void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, 
     if (emitter->emissionVector)
         emissionVector = emitter->emissionVector->GetValue(time);
 
-    RenderManager::Instance()->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
-	DAVA::RenderHelper::Instance()->DrawCircle3D(center, emissionVector, emitterRadius, true, renderState);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emissionVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -179,8 +159,7 @@ void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::Par
 		emitterVector = emitterVector * wMat;
 	}
 
-    RenderManager::Instance()->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
-	DAVA::RenderHelper::Instance()->DrawCircle3D(center, emitterVector, emitterRadius, true, renderState);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emitterVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void EditorParticlesSystem::DrawSizeBox(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -196,73 +175,11 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity *effectEntity, DAVA::Partic
 		emitterSize = emitter->size->GetValue(time);
 	}
 	
-	float halfSizeX = emitterSize.x / 2;
-	float halfSizeY = emitterSize.y / 2;
-	float halfSizeZ = emitterSize.z / 2;
-	
-	// Calculate box min and max values
-	p[0] = DAVA::Vector3(halfSizeX, halfSizeY, -halfSizeZ);
-	p[1] = DAVA::Vector3(halfSizeX, halfSizeY, halfSizeZ);
-	p[2] = DAVA::Vector3(-halfSizeX, halfSizeY, halfSizeZ);
-	p[3] = DAVA::Vector3(-halfSizeX, halfSizeY, -halfSizeZ);
-
-	p[4] = DAVA::Vector3(halfSizeX, -halfSizeY, -halfSizeZ);
-	p[5] = DAVA::Vector3(halfSizeX, -halfSizeY, halfSizeZ);
-	p[6] = DAVA::Vector3(-halfSizeX, -halfSizeY, halfSizeZ);
-	p[7] = DAVA::Vector3(-halfSizeX, -halfSizeY, -halfSizeZ);
-
 	DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
 	wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
 
-	for(int i = 0; i < 8; ++i)
-	{
-		p[i] = p[i] * wMat;
-        p[i] += center;
-	}
-
-    RenderManager::Instance()->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
-
-	DAVA::Polygon3 poly;
-	poly.AddPoint(p[0]);
-	poly.AddPoint(p[1]);
-	poly.AddPoint(p[2]);
-	poly.AddPoint(p[3]);
-	RenderHelper::Instance()->FillPolygon(poly, renderState);
-
-	poly.Clear();
-	poly.AddPoint(p[0]);
-	poly.AddPoint(p[1]);
-	poly.AddPoint(p[5]);
-	poly.AddPoint(p[4]);
-	RenderHelper::Instance()->FillPolygon(poly, renderState);
-
-	poly.Clear();
-	poly.AddPoint(p[1]);
-	poly.AddPoint(p[2]);
-	poly.AddPoint(p[6]);
-	poly.AddPoint(p[5]);
-	RenderHelper::Instance()->FillPolygon(poly, renderState);
-
-	poly.Clear();
-	poly.AddPoint(p[2]);
-	poly.AddPoint(p[3]);
-	poly.AddPoint(p[7]);
-	poly.AddPoint(p[6]);
-	RenderHelper::Instance()->FillPolygon(poly, renderState);
-
-	poly.Clear();
-	poly.AddPoint(p[0]);
-	poly.AddPoint(p[3]);
-	poly.AddPoint(p[7]);
-	poly.AddPoint(p[4]);
-	RenderHelper::Instance()->FillPolygon(poly, renderState);
-
-	poly.Clear();
-	poly.AddPoint(p[4]);
-	poly.AddPoint(p[5]);
-	poly.AddPoint(p[6]);
-	poly.AddPoint(p[7]);
-	RenderHelper::Instance()->FillPolygon(poly, renderState);
+    RenderHelper * drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    drawer->DrawAABoxTransformed(AABBox3(center - emitterSize / 2, center + emitterSize / 2), wMat, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void EditorParticlesSystem::DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -293,7 +210,7 @@ void EditorParticlesSystem::DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::Pa
 	wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
 	emitterVector = emitterVector * wMat;
 
-	DAVA::RenderHelper::Instance()->FillArrow(center, emitterVector, arrowSize, 1, renderState);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(center, emitterVector, arrowSize, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void EditorParticlesSystem::AddEntity(DAVA::Entity * entity)

@@ -142,8 +142,7 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 									  float32 scaleVelocityFactor,
 									  bool isLooped,
 									  Sprite* sprite,
-									  eBlendMode srcFactor,
-									  eBlendMode dstFactor,
+									  eBlending blending,									  
 									  bool enableFog,
 									  bool enableFrameBlending,
 									  int32 particleOrientation,
@@ -193,8 +192,7 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 	this->scaleVelocityBase = scaleVelocityBase;
 	this->scaleVelocityFactor = scaleVelocityFactor;
 	this->sprite = sprite;
-	this->srcFactor = srcFactor;
-	this->dstFactor = dstFactor;
+    this->blending = blending;	
 	this->enableFog = enableFog;
 	this->enableFrameBlending = enableFrameBlending;
 	this->life = life;
@@ -246,8 +244,7 @@ void CommandUpdateParticleLayer::Redo()
 	layer->scaleVelocityBase = scaleVelocityBase;
 	layer->scaleVelocityFactor = scaleVelocityFactor;
 	layer->isLooped = isLooped;
-	layer->srcBlendFactor = srcFactor;
-	layer->dstBlendFactor = dstFactor;
+    layer->blending = blending;	
 	layer->enableFog = enableFog;
 	layer->enableFrameBlend = enableFrameBlending;
 	PropertyLineHelper::SetValueLine(layer->life , life);

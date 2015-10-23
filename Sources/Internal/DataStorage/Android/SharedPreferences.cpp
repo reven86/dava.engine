@@ -84,8 +84,8 @@ String SharedPreferences::GetStringValue(const String &key)
 
     jstring jvalue = getString(jkey, jdefvalue);
 
-    String retValue;
-    JNI::CreateStringFromJni(env, jvalue, retValue);
+    String retValue = JNI::ToString(jvalue);
+
     env->DeleteLocalRef(jkey);
     env->DeleteLocalRef(jdefvalue);
 

@@ -44,7 +44,7 @@ class Entity;
 class MipMapReplacer
 {
 public:
-    static void ReplaceMipMaps(Entity * entity, const FastName & textureName = NMaterial::TEXTURE_ALBEDO);
+    static void ReplaceMipMaps(Entity * entity, const FastName & textureName = NMaterialTextureName::TEXTURE_ALBEDO);
 
 private:
     static void EnumerateTexturesRecursive(Entity * entity, Set<Texture *> & textures, const FastName & textureName);

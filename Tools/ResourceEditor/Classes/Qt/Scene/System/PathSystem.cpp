@@ -78,8 +78,6 @@ PathSystem::PathSystem(DAVA::Scene * scene)
     , currentPath(NULL)
     , isEditingEnabled(false)
 {
-    pathDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_COLORMASK_ALL |
-                                                                          DAVA::RenderStateData::STATE_DEPTH_TEST);
     sceneEditor = static_cast<SceneEditor2 *>(GetScene());
 }
 
@@ -182,8 +180,6 @@ void PathSystem::Draw()
 
 void PathSystem::DrawInEditableMode()
 {
-    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-
     for (DAVA::Entity* path : pathes)
     {
         PathComponent* pc = GetPathComponent(path);
@@ -191,8 +187,6 @@ void PathSystem::DrawInEditableMode()
         {
             continue;
         }
-        
-        RenderManager::Instance()->SetColor(pc->GetColor());
         
         const DAVA::uint32 childrenCount = path->GetChildrenCount();
         for(DAVA::uint32 c = 0; c < childrenCount; ++c)
@@ -212,7 +206,7 @@ void PathSystem::DrawInEditableMode()
                     {
                         Vector3 finishPosition = GetTransformComponent(nextEntity)->GetWorldTransform().GetTranslationVector();
                         finishPosition.z += WAYPOINTS_DRAW_LIFTING;
-                        DrawArrow(startPosition, finishPosition);
+                        DrawArrow(startPosition, finishPosition, pc->GetColor());
                     }
                 }
             }
@@ -222,7 +216,6 @@ void PathSystem::DrawInEditableMode()
 
 void PathSystem::DrawInViewOnlyMode()
 {
-    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
     EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
@@ -236,8 +229,6 @@ void PathSystem::DrawInViewOnlyMode()
         {
             continue;
         }
-     
-        RenderManager::SetDynamicParam(PARAM_WORLD, &path->GetWorldTransform(), (pointer_size)&path->GetWorldTransform());
 
         const Vector<PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
         for (auto waypoint : waypoints)
@@ -246,30 +237,27 @@ void PathSystem::DrawInViewOnlyMode()
             const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
             bool isStarting = waypoint->IsStarting();
             
-            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f));
-            DAVA::RenderHelper::Instance()->FillBox(wpBoundingBox, pathDrawState);
-            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f));
-            DAVA::RenderHelper::Instance()->DrawBox(wpBoundingBox, 1.0f, pathDrawState);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         
             //draw edges
             if (!waypoint->edges.empty())
             {
-                RenderManager::Instance()->SetColor(pathComponent->GetColor());
                 startPosition.z += WAYPOINTS_DRAW_LIFTING;
                 for (auto edge : waypoint->edges)
                 {
                     Vector3 finishPosition = edge->destination->position;
                     finishPosition.z += WAYPOINTS_DRAW_LIFTING;
-                    DrawArrow(startPosition, finishPosition);
+                    DrawArrow(startPosition * path->GetWorldTransform(), finishPosition * path->GetWorldTransform(), pathComponent->GetColor());
                 }
             }
         }
     }
 }
 
-void PathSystem::DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish)
+void PathSystem::DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish, const Color & color)
 {
-    RenderHelper::Instance()->DrawArrow(start, finish, (finish - start).Length() / 4.f, 7.f, pathDrawState);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(start, finish, Min((finish - start).Length() / 4.f, 4.f), color, RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void PathSystem::Process(DAVA::float32 timeElapsed)

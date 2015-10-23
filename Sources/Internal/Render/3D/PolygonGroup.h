@@ -32,10 +32,9 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Render/VertexBuffer.h"
-#include "Render/RenderDataObject.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Render/RHI/rhi_Public.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -87,7 +86,7 @@ public:
     inline void GetFlexibility(int32 i, float32 & v);
     inline void GetAngle(int32 i, Vector2 & v);
 
-    inline ePrimitiveType GetPrimitiveType();
+    inline rhi::PrimitiveType GetPrimitiveType();
 	
 	//! Setters
 	inline void	SetCoord(int32 i, const Vector3 & v);
@@ -114,7 +113,7 @@ public:
 	inline const AABBox3 & GetBoundingBox() const;
     
     
-    inline void SetPrimitiveType(ePrimitiveType type);
+    inline void SetPrimitiveType(rhi::PrimitiveType type);
     
 	
 	int32	vertexCount;
@@ -122,9 +121,8 @@ public:
 	int32	textureCoordCount;
 	int32	vertexStride;
 	int32	vertexFormat;
-	int32	indexFormat;
-	int32	triangleCount;
-    ePrimitiveType primitiveType;
+	int32	indexFormat;	
+    rhi::PrimitiveType primitiveType;
 	int32	cubeTextureCoordCount;
 	
 	Vector3		*vertexArray;
@@ -132,11 +130,11 @@ public:
 	Vector3		*normalArray;
 	Vector3		*tangentArray;
 	Vector3		*binormalArray;
-	uint32		*jointIdxArray;
-	uint32		*jointWeightArray;
+	float32		*jointIdxArray;
+	float32		*jointWeightArray;
 	Vector3		**cubeTextureCoordArray;
 
-	int32		*jointCountArray;
+	uint32		*jointCountArray;
 	
     Vector3     *pivotArray;
     float32     *flexArray;
@@ -167,22 +165,6 @@ public:
         TODO: refresh buffers function??? 
      */
     void    ApplyMatrix(const Matrix4 & matrix);
-
-    /*
-        If you want you can build tangents for your submesh
-        This function rebuild the polygroup from ground with binormal  
-     */
-    void    BuildTangentsBinormals(uint32 flagsToAdd);
-    
-    /**
-        \brief Function to generate normal, tangent, binormal vectors using triangle vertices, and texture coords.
-        This is helper function that is used inside BuildTangents function
-     */
-    static void TangentVectors( const Vector3 &v0, const Vector3 &v1, const Vector3 &v2, 
-                           const Vector2 &t0, const Vector2 &t1, const Vector2 &t2, 
-                        Vector3 &sdir, Vector3 &tdir, Vector3 &normal);
-
-    
     /*
         Go through all vertices and optimize it, remove redundant vertices. 
      */ 
@@ -195,24 +177,26 @@ public:
     
     
     
-    void    BuildBuffers();
-    
-    void    DebugDraw();
-    
-    
-    RenderDataObject * renderDataObject;
+    void BuildBuffers();
+    void RestoreBuffers();
+           
     
     void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);    
-    void LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags);
+    void LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags, bool cutUnusedStreams);
+
+
+    rhi::HVertexBuffer vertexBuffer;
+    rhi::HIndexBuffer indexBuffer;
+    uint32 vertexLayoutId;
 
 private:
     void    UpdateDataPointersAndStreams();
 	void	CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
 	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
  	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
-
-    void BuildBuffersInternal();
-
+    
+    
+    
     
     
 public:
@@ -223,8 +207,7 @@ public:
         MEMBER(textureCoordCount, "Texture Coord Count", I_VIEW | I_SAVE)
         MEMBER(vertexStride, "Vertex Stride", I_VIEW | I_SAVE)
         MEMBER(vertexFormat, "Vertex Format", I_VIEW | I_SAVE)
-        MEMBER(indexFormat, "Index Format", I_VIEW | I_SAVE)
-        MEMBER(triangleCount, "Triangle Count", I_VIEW | I_SAVE)
+        MEMBER(indexFormat, "Index Format", I_VIEW | I_SAVE)        
 //        MEMBER(primitiveType, "Primitive Type", INTROSPECTION_SERIALIZABLE)
 
 //        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)
@@ -298,16 +281,18 @@ inline void PolygonGroup::SetAngle(int32 i, const Vector2 & _v)
 
 inline void	PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
 {
-    DVASSERT(jointIndex >= 0 && jointIndex < 4);
-	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
-	t[jointIndex] = boneIndexValue;
+    DVASSERT(jointIndex >= 0 && jointIndex < 4);    
+    *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneIndexValue);
+//	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
+//	t[jointIndex] = boneIndexValue;
 }
 	
 inline void	PolygonGroup::SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
-    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
-	t[jointIndex] = (uint8)(255 * boneWeightValue);
+    *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneWeightValue);    
+//    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
+//	t[jointIndex] = (uint8)(255 * boneWeightValue);
 }
 	
 inline void PolygonGroup::SetJointCount(int32 vIndex, int32 jointCount)
@@ -320,7 +305,7 @@ inline void	PolygonGroup::SetIndex(int32 i, int16 index)
 	indexArray[i] = index;
 }
     
-inline void	PolygonGroup::SetPrimitiveType(ePrimitiveType type)
+inline void	PolygonGroup::SetPrimitiveType(rhi::PrimitiveType type)
 {
     primitiveType = type;
 }
@@ -409,7 +394,7 @@ inline const AABBox3 & PolygonGroup::GetBoundingBox() const
 	return aabbox;
 }
 	
-inline ePrimitiveType PolygonGroup::GetPrimitiveType()
+inline rhi::PrimitiveType PolygonGroup::GetPrimitiveType()
 {
     return primitiveType;
 }

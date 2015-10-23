@@ -48,28 +48,34 @@ namespace DAVA
 //-----------------------------------------------------------------------------
 #if defined(USE_CPP11_CONCURRENCY)
 
-//MutexTemplate - adapter for lockable objects
 template <typename MutexT>
-class MutexTemplate
+class MutexBase
 {
     friend class ConditionVariable;
 public:
-    MutexTemplate() = default;
-    MutexTemplate(const MutexTemplate&) = delete;
-    MutexTemplate& operator=(const MutexTemplate&) = delete;
+    MutexBase() = default;
+    MutexBase(const MutexBase&) = delete;
+    MutexBase& operator=(const MutexBase&) = delete;
 
     void Lock() { mutex.lock(); }
     void Unlock() { mutex.unlock(); }
     bool TryLock() { return mutex.try_lock(); }
 
 private:
-    using MutexType = MutexT;
-    MutexType mutex;
+    MutexT mutex;
 };
 
-//Mutexes types
-using Mutex = MutexTemplate<std::mutex>;
-using RecursiveMutex = MutexTemplate<std::recursive_mutex>;
+class Mutex final : public MutexBase<std::mutex>
+{
+public:
+    Mutex() = default;
+};
+
+class RecursiveMutex final : public MutexBase<std::recursive_mutex>
+{
+public:
+    RecursiveMutex() = default;
+};
 
 #else 
 

@@ -46,14 +46,14 @@ namespace
     };
 }
 
-LibraryWidget::LibraryWidget(QWidget *parent)
+LibraryWidget::LibraryWidget(QWidget* parent)
     : QDockWidget(parent)
     , document(nullptr)
 {
     setupUi(this);
 }
 
-void LibraryWidget::OnDocumentChanged(Document *arg)
+void LibraryWidget::OnDocumentChanged(Document* arg)
 {
     document = arg;
     LoadContext();
@@ -67,7 +67,7 @@ void LibraryWidget::LoadContext()
     }
     else
     {
-        LibraryContext *context = static_cast<LibraryContext*>(document->GetContext(this));
+        LibraryContext* context = static_cast<LibraryContext*>(document->GetContext(this));
         if (nullptr == context)
         {
             context = new LibraryContext(document);

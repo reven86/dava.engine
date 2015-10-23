@@ -28,197 +28,82 @@
 
 
 #include "Render/PixelFormatDescriptor.h"
-#include "Render/RenderManager.h"
 #include "Utils/Utils.h"
-
-#if defined (__DAVAENGINE_OPENGL__)
-
-
-#if defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
-#ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
-#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
-#endif //GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
-#ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
-#endif //GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-#endif //__DAVAENGINE_ANDROID__
+#include "Render/Renderer.h"
 
 namespace DAVA 
 {
 
-#if !defined(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
-	#define  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG    0
-#endif
-#if !defined(GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG)
-	#define  GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-	#define  GL_COMPRESSED_RGB_S3TC_DXT1_EXT    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
-	#define  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
-	#define  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-	#define  GL_COMPRESSED_RGB_S3TC_DXT1_EXT    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
-	#define  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT    0
-#endif
-
-#if !defined(GL_ETC1_RGB8_OES)
-	#define  GL_ETC1_RGB8_OES    0
-#endif
-
-#if !defined(GL_ATC_RGB_AMD)
-	#define  GL_ATC_RGB_AMD    0
-#endif
-
-#if !defined(GL_ATC_RGBA_EXPLICIT_ALPHA_AMD)
-	#define  GL_ATC_RGBA_EXPLICIT_ALPHA_AMD    0
-#endif
-
-#if !defined(GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD)
-	#define  GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD    0
-#endif
-
-#if !defined(GL_COMPRESSED_R11_EAC)
-	#define  GL_COMPRESSED_R11_EAC    0
-#endif
-
-#if !defined(GL_COMPRESSED_SIGNED_R11_EAC)
-	#define  GL_COMPRESSED_SIGNED_R11_EAC    0
-#endif
-
-#if !defined(GL_COMPRESSED_RG11_EAC)
-	#define  GL_COMPRESSED_RG11_EAC    0
-#endif
-
-#if !defined(GL_COMPRESSED_SIGNED_RG11_EAC)
-	#define  GL_COMPRESSED_SIGNED_RG11_EAC    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGB8_ETC2)
-	#define  GL_COMPRESSED_RGB8_ETC2    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGBA8_ETC2_EAC)
-	#define  GL_COMPRESSED_RGBA8_ETC2_EAC    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2)
-	#define  GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG)
-	#define  GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG    0
-#endif
-
-#if !defined(GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG)
-	#define  GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG    0
-#endif
-
-
 PixelFormatDescriptor PixelFormatDescriptor::pixelDescriptors[FORMAT_COUNT];
 
+const rhi::TextureFormat TEXTURE_UNSUPPORTED_FORMAT = rhi::TextureFormat(-1);
+
 PixelFormatDescriptor::PixelFormatDescriptor()
-	:   format(0)
-	,   internalformat(0)
-	,   type(0)
-	,   formatID(FORMAT_INVALID)
-	,   pixelSize(0)
-	,   isHardwareSupported(false)
-	,   isCompressedFormat(false)
+    : format(TEXTURE_UNSUPPORTED_FORMAT)
+    , formatID(FORMAT_INVALID)
+    , pixelSize(0)
+    , isHardwareSupported(false)
 {
 }
-
-bool PixelFormatDescriptor::IsFormatCompressed(const PixelFormat formatID)
-{
-	const PixelFormatDescriptor & descriptor = GetPixelFormatDescriptor(formatID);
-	return descriptor.isCompressedFormat;
-}
-
 
 void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 {
-	RenderManager::Caps caps;
-    if(RenderManager::Instance())
-    {
-        caps = RenderManager::Instance()->GetCaps();
-    }
-
     DVASSERT(FORMAT_COUNT == 33); // add new format below
 
-	SetPixelDescription(FORMAT_INVALID, FastName("WRONG FORMAT"), 0);
-	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, GL_UNSIGNED_BYTE, GL_RGBA, GL_RGBA, true, false);
-	SetPixelDescription(FORMAT_RGBA5551, FastName("RGBA5551"), 16, GL_UNSIGNED_SHORT_5_5_5_1, GL_RGBA, GL_RGBA, true, false);
-	SetPixelDescription(FORMAT_RGBA4444, FastName("RGBA4444"), 16, GL_UNSIGNED_SHORT_4_4_4_4, GL_RGBA, GL_RGBA, true, false);
-	SetPixelDescription(FORMAT_RGB888, FastName("RGB888"), 24, GL_UNSIGNED_BYTE, GL_RGB, GL_RGB, true, false);
-	SetPixelDescription(FORMAT_RGB565, FastName("RGB565"), 16, GL_UNSIGNED_SHORT_5_6_5, GL_RGB, GL_RGB, true, false);
-	SetPixelDescription(FORMAT_A8, FastName("A8"), 8, GL_UNSIGNED_BYTE, GL_ALPHA, GL_ALPHA, true, false);
+	//SetPixelDescription(FORMAT_INVALID, FastName("WRONG FORMAT"), 0);
+	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, rhi::TEXTURE_FORMAT_R8G8B8A8);
+	SetPixelDescription(FORMAT_RGBA5551, FastName("RGBA5551"), 16, rhi::TEXTURE_FORMAT_R5G5B5A1);
+	SetPixelDescription(FORMAT_RGBA4444, FastName("RGBA4444"), 16, rhi::TEXTURE_FORMAT_R4G4B4A4);
+    SetPixelDescription(FORMAT_RGB888, FastName("RGB888"), 24, rhi::TEXTURE_FORMAT_R8G8B8);
+    SetPixelDescription(FORMAT_RGB565, FastName("RGB565"), 16, rhi::TEXTURE_FORMAT_R5G6B5);
 
-#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
-    SetPixelDescription(FORMAT_A16, FastName("A16"), 16, GL_UNSIGNED_SHORT, GL_ALPHA, GL_ALPHA, false, false);
-#else 
-    SetPixelDescription(FORMAT_A16, FastName("A16"), 16, GL_UNSIGNED_SHORT, GL_ALPHA, GL_ALPHA, true, false);
-#endif
+    SetPixelDescription(FORMAT_A8, FastName("A8"), 8, rhi::TEXTURE_FORMAT_R8);
+    SetPixelDescription(FORMAT_A16, FastName("A16"), 16, rhi::TEXTURE_FORMAT_R16);
     
-	SetPixelDescription(FORMAT_RGBA16161616, FastName("RGBA16161616"), 64, GetHalfFloatID(), GL_RGBA, GL_RGBA, caps.isFloat16Supported);
-    
-    
-	SetPixelDescription(FORMAT_RGBA32323232, FastName("RGBA32323232"), 128, GL_FLOAT, GL_RGBA, GL_RGBA, caps.isFloat32Supported);
+    SetPixelDescription(FORMAT_RGBA16161616, FastName("RGBA16161616"), 64, rhi::TEXTURE_FORMAT_A16R16G16B16);
+    SetPixelDescription(FORMAT_RGBA32323232, FastName("RGBA32323232"), 128, rhi::TEXTURE_FORMAT_A32R32G32B32);
 
-	SetPixelDescription(FORMAT_PVR4, FastName("PVR4"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, caps.isPVRTCSupported, true);
-	SetPixelDescription(FORMAT_PVR2, FastName("PVR2"), 2, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG, caps.isPVRTCSupported, true);
+    SetPixelDescription(FORMAT_PVR4, FastName("PVR4"), 4, rhi::TEXTURE_FORMAT_PVRTC_4BPP_RGBA);
+    SetPixelDescription(FORMAT_PVR2, FastName("PVR2"), 2, rhi::TEXTURE_FORMAT_PVRTC_2BPP_RGBA);
 
-	SetPixelDescription(FORMAT_DXT1, FastName("DXT1"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, caps.isDXTSupported, true);
-	SetPixelDescription(FORMAT_DXT1A, FastName("DXT1a"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, caps.isDXTSupported, true);
-	SetPixelDescription(FORMAT_DXT3, FastName("DXT3"), 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, caps.isDXTSupported, true);
-	SetPixelDescription(FORMAT_DXT5, FastName("DXT5"), 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, caps.isDXTSupported, true);
-	SetPixelDescription(FORMAT_DXT5NM, FastName("DXT5nm"), 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, caps.isDXTSupported, true);
+    SetPixelDescription(FORMAT_DXT1, FastName("DXT1"), 4, rhi::TEXTURE_FORMAT_DXT1);
+    SetPixelDescription(FORMAT_DXT1A, FastName("DXT1a"), 4, (rhi::TextureFormat)(-1));
+    SetPixelDescription(FORMAT_DXT3, FastName("DXT3"), 8, rhi::TEXTURE_FORMAT_DXT3);
+    SetPixelDescription(FORMAT_DXT5, FastName("DXT5"), 8, rhi::TEXTURE_FORMAT_DXT5);
+    SetPixelDescription(FORMAT_DXT5NM, FastName("DXT5nm"), 8, TEXTURE_UNSUPPORTED_FORMAT);
 
-	SetPixelDescription(FORMAT_ETC1, FastName("ETC1"), 8, GL_UNSIGNED_BYTE, GL_ETC1_RGB8_OES, GL_ETC1_RGB8_OES, caps.isETCSupported, true);
+    SetPixelDescription(FORMAT_ETC1, FastName("ETC1"), 8, rhi::TEXTURE_FORMAT_ETC1);
 
-	SetPixelDescription(FORMAT_ATC_RGB, FastName("ATC_RGB"), 4, GL_UNSIGNED_BYTE, GL_ATC_RGB_AMD, GL_ATC_RGB_AMD, caps.isATCSupported, true);
-	SetPixelDescription(FORMAT_ATC_RGBA_EXPLICIT_ALPHA, FastName("ATC_RGBA_EXPLICIT_ALPHA"), 8, GL_UNSIGNED_BYTE, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD, caps.isATCSupported, true);
-	SetPixelDescription(FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, FastName("ATC_RGBA_INTERPOLATED_ALPHA"), 8, GL_UNSIGNED_BYTE, GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD, GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD, caps.isATCSupported, true);
+    SetPixelDescription(FORMAT_ATC_RGB, FastName("ATC_RGB"), 4, rhi::TEXTURE_FORMAT_ATC_RGB);
+    SetPixelDescription(FORMAT_ATC_RGBA_EXPLICIT_ALPHA, FastName("ATC_RGBA_EXPLICIT_ALPHA"), 8, rhi::TEXTURE_FORMAT_ATC_RGBA_EXPLICIT);
+    SetPixelDescription(FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, FastName("ATC_RGBA_INTERPOLATED_ALPHA"), 8, rhi::TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED);
 
-	SetPixelDescription(FORMAT_PVR2_2, FastName("PVR2_2"), 2, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG, GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG, caps.isPVRTC2Supported, true);	
-	SetPixelDescription(FORMAT_PVR4_2, FastName("PVR4_2"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG, GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG, caps.isPVRTC2Supported, true);
+    SetPixelDescription(FORMAT_PVR2_2, FastName("PVR2_2"), 2, rhi::TEXTURE_FORMAT_PVRTC2_2BPP_RGBA);
+    SetPixelDescription(FORMAT_PVR4_2, FastName("PVR4_2"), 4, rhi::TEXTURE_FORMAT_PVRTC2_4BPP_RGBA);
 
-	SetPixelDescription(FORMAT_EAC_R11_UNSIGNED, FastName("EAC_R11"), 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_R11_EAC, GL_COMPRESSED_R11_EAC, caps.isOpenGLES3Supported, true);
-	SetPixelDescription(FORMAT_EAC_R11_SIGNED, FastName("EAC_R11_SIGNED"), 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_SIGNED_R11_EAC, GL_COMPRESSED_SIGNED_R11_EAC, caps.isOpenGLES3Supported, true);
-	SetPixelDescription(FORMAT_EAC_RG11_UNSIGNED, FastName("EAC_RG11"), 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_RG11_EAC, GL_COMPRESSED_RG11_EAC, caps.isOpenGLES3Supported, true);
-	SetPixelDescription(FORMAT_EAC_RG11_SIGNED, FastName("EAC_RG11_SIGNED"), 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_SIGNED_RG11_EAC, GL_COMPRESSED_SIGNED_RG11_EAC, caps.isOpenGLES3Supported, true);
+    SetPixelDescription(FORMAT_EAC_R11_UNSIGNED, FastName("EAC_R11"), 8, rhi::TEXTURE_FORMAT_EAC_R11_UNSIGNED);
+    SetPixelDescription(FORMAT_EAC_R11_SIGNED, FastName("EAC_R11_SIGNED"), 8, rhi::TEXTURE_FORMAT_EAC_R11_SIGNED);
+    SetPixelDescription(FORMAT_EAC_RG11_UNSIGNED, FastName("EAC_RG11"), 8, rhi::TEXTURE_FORMAT_EAC_R11G11_UNSIGNED);
+    SetPixelDescription(FORMAT_EAC_RG11_SIGNED, FastName("EAC_RG11_SIGNED"), 8, rhi::TEXTURE_FORMAT_EAC_R11G11_SIGNED);
 
-	SetPixelDescription(FORMAT_ETC2_RGB, FastName("ETC2_RGB"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGB8_ETC2, GL_COMPRESSED_RGB8_ETC2, caps.isOpenGLES3Supported, true);
-	SetPixelDescription(FORMAT_ETC2_RGBA, FastName("ETC2_RGBA"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA8_ETC2_EAC, GL_COMPRESSED_RGBA8_ETC2_EAC, caps.isOpenGLES3Supported, true);
-	SetPixelDescription(FORMAT_ETC2_RGB_A1, FastName("ETC2_RGB_A1"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2, caps.isOpenGLES3Supported, true);
+    SetPixelDescription(FORMAT_ETC2_RGB, FastName("ETC2_RGB"), 4, rhi::TEXTURE_FORMAT_ETC2_R8G8B8);
+    SetPixelDescription(FORMAT_ETC2_RGBA, FastName("ETC2_RGBA"), 4, rhi::TEXTURE_FORMAT_ETC2_R8G8B8A8);
+    SetPixelDescription(FORMAT_ETC2_RGB_A1, FastName("ETC2_RGB_A1"), 4, rhi::TEXTURE_FORMAT_ETC2_R8G8B8A1);
 
 #if defined (__DAVAENGINE_WIN32__)
-    SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, GL_UNSIGNED_BYTE, GL_BGR, GL_RGB, false, false);
+    SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, TEXTURE_UNSUPPORTED_FORMAT);
 #endif
 }
 
-void PixelFormatDescriptor::SetPixelDescription(const PixelFormat formatID, const FastName &name, uint8 size, GLenum type, GLenum format, GLenum internalFormat, bool hardwareSupported, bool compressed)
+void PixelFormatDescriptor::SetPixelDescription(const PixelFormat formatID, const FastName &name, uint8 size, rhi::TextureFormat format)
 {
     DVASSERT((0 <= formatID) && (formatID < FORMAT_COUNT));
     
     pixelDescriptors[formatID].formatID = formatID;
     pixelDescriptors[formatID].name = name;
     pixelDescriptors[formatID].pixelSize = size;
-    pixelDescriptors[formatID].format = format;
-    pixelDescriptors[formatID].internalformat = internalFormat;
-    pixelDescriptors[formatID].type = type;
-	pixelDescriptors[formatID].isHardwareSupported = hardwareSupported;
-	pixelDescriptors[formatID].isCompressedFormat = compressed;
+    pixelDescriptors[formatID].format = format;    
+    pixelDescriptors[formatID].isHardwareSupported = rhi::TextureFormatSupported(format);
 }
 
 const PixelFormatDescriptor & PixelFormatDescriptor::GetPixelFormatDescriptor(const PixelFormat formatID)
@@ -264,5 +149,3 @@ PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName &formatNa
 }
  
 };
-
-#endif //#if defined (__DAVAENGINE_OPENGL__)

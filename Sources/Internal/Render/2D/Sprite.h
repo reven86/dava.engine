@@ -37,7 +37,7 @@
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
-#include "Render/RenderDataObject.h"
+#include "Render/Material/NMaterial.h"
 
 #include "FileSystem/FilePath.h"
 
@@ -52,7 +52,7 @@ enum eSpriteModification
 	ESM_VFLIP = 1<<1
 };
 
-class Shader;
+
 class Texture;
 class RenderSystem2D;
 
@@ -98,19 +98,13 @@ public:
 		inline void SetPerPixelAccuracyUsage(bool needToUse);
 		void BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState);
         
-        //NOTE: be careful: this method doesn't retain shader.
-        inline void SetShader(Shader* _shader);
-        //NOTE: be careful: this method doesn't retain render state.
-        inline void SetRenderState(UniqueHandle _renderState);
         
-        inline Shader* GetShader() const;
-        inline UniqueHandle GetRenderState() const;
-
+        inline void SetMaterial(NMaterial* material);        
+        inline NMaterial* GetMaterial() const;        
         
     private:
     
-        Shader* shader;
-        UniqueHandle renderState;
+        NMaterial *material;
 
 	};
 
@@ -181,8 +175,6 @@ public:
 
 	Texture* GetTexture() const;
 	Texture* GetTexture(int32 frameNumber) const;
-
-	UniqueHandle GetTextureHandle(int32 frameNumber) const;
 
 	int32 GetFrameCount() const;
 
@@ -278,9 +270,6 @@ protected:
     static FilePath GetScaledName(const FilePath & spriteName, DAVA::int32 resourceIndex);
     static File* LoadLocalizedFile(const FilePath & spritePathname, FilePath & texturePath);
 
-	void RegisterTextureStates();
-	void UnregisterTextureStates();
-
     static File* GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex);
 
     void ReloadExistingTextures();
@@ -300,8 +289,6 @@ protected:
 	FilePath *textureNames;
 	int32 *frameTextureIndex;
 	int32 textureCount;
-
-	Vector<UniqueHandle> textureHandles;
 	
 	float32 **frameVertices;
 	float32 **texCoords;
@@ -411,24 +398,15 @@ inline int32 Sprite::GetResourceSizeIndex() const
 	return resourceSizeIndex;
 }
 
-inline Shader* Sprite::DrawState::GetShader() const
+inline NMaterial* Sprite::DrawState::GetMaterial() const
 {
-    return shader;
+    return material;
 }
 
-inline UniqueHandle Sprite::DrawState::GetRenderState() const
-{
-    return renderState;
-}
 
-void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
+void Sprite::DrawState::SetMaterial(NMaterial* _material)
 {
-    renderState = _renderState;
-}
-
-void Sprite::DrawState::SetShader(Shader* _shader)
-{
-    shader = _shader;
+    material = _material;
 }
 
 
