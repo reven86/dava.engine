@@ -32,6 +32,7 @@
 
 #include "Scene/System/HoodSystem/HoodCollObject.h"
 #include "Scene/SceneTypes.h"
+#include "Render/RenderHelper.h"
 
 #include "Render/UniqueStateSet.h"
 
@@ -51,7 +52,7 @@ struct HoodObject
 
 	virtual void UpdatePos(const DAVA::Vector3 &pos);
 	virtual void UpdateScale(const DAVA::float32 &scale);
-	virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem) = 0;
+	virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper * drawer, TextDrawSystem *textDrawSystem) = 0;
 
 	HoodCollObject* CreateLine(const DAVA::Vector3 &from, const DAVA::Vector3 &to);
 	DAVA::Rect DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObject *x, HoodCollObject *y, HoodCollObject *z);
@@ -60,8 +61,7 @@ struct HoodObject
 
 protected:
 	DAVA::Vector3 GetAxisTextPos(HoodCollObject *axis);
-	
-	DAVA::UniqueHandle hoodDrawState;
+		
 };
 
 #endif

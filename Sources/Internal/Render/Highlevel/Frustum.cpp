@@ -29,6 +29,7 @@
 
 #include "Render/RenderHelper.h"
 #include "Render/Highlevel/Frustum.h"
+#include <Render/2D/Systems/RenderSystem2D.h>
 
 namespace DAVA
 {
@@ -367,7 +368,7 @@ bool Frustum::IsInside(const Vector3 & point, const float32 radius) const
 }
 
 // 
-void Frustum::DebugDraw()
+void Frustum::DebugDraw(RenderHelper * drawer)
 {
 	Vector3 p[50];
 
@@ -410,21 +411,20 @@ void Frustum::DebugDraw()
 								planeArray[EFP_FAR],
 								planeArray[EFP_TOP]);
 
-
-    RenderHelper::Instance()->DrawLine(	p[0], p[1], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[1], p[2], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[2], p[3], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[3], p[0], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
+    drawer->DrawLine(p[0], p[1], Color::White);
+    drawer->DrawLine(p[1], p[2], Color::White);
+    drawer->DrawLine(p[2], p[3], Color::White);
+    drawer->DrawLine(p[3], p[0], Color::White);
 	
-	RenderHelper::Instance()->DrawLine(	p[4], p[5], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[5], p[6], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine( p[6], p[7], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[7], p[4], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
+    drawer->DrawLine(p[4], p[5], Color::White);
+    drawer->DrawLine(p[5], p[6], Color::White);
+    drawer->DrawLine(p[6], p[7], Color::White);
+    drawer->DrawLine(p[7], p[4], Color::White);
 
-	RenderHelper::Instance()->DrawLine(	p[0], p[4], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[1], p[5], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[2], p[6], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[3], p[7], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
+    drawer->DrawLine(p[0], p[4], Color::White);
+    drawer->DrawLine(p[1], p[5], Color::White);
+    drawer->DrawLine(p[2], p[6], Color::White);
+    drawer->DrawLine(p[3], p[7], Color::White);
 }
 
 }; 

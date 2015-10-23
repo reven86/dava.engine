@@ -192,7 +192,6 @@ public:
      \brief register current native thread handle and remember it's Id as Id of MainThread.
      */
     static void	InitMainThread();
-    static void InitGLThread();
 
     /**
     \brief bind current thread to specified processor. Thread cannot be run on other processors.

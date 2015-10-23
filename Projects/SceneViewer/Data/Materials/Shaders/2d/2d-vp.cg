@@ -1,0 +1,33 @@
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION
+#if TEXTURED
+    VPROG_IN_TEXCOORD
+#endif //TEXTURED
+    VPROG_IN_COLOR0
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    VPROG_OUT_POSITION
+#if TEXTURED
+    VPROG_OUT_TEXCOORD0(uv,2)
+#endif //TEXTURED
+    VPROG_OUT_COLOR0(color,4)
+VPROG_OUT_END
+
+property float4x4 worldViewProjMatrix : dynamic,instance : ;
+
+VPROG_BEGIN
+
+    float3 in_pos      = VP_IN_POSITION;
+#if TEXTURED
+    float2 in_texcoord = VP_IN_TEXCOORD;
+#endif //TEXTURED
+    float4 in_color    = VP_IN_COLOR0;
+
+    VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
+#if TEXTURED
+    VP_OUT(uv) = in_texcoord;
+#endif //TEXTURED
+    VP_OUT(color) =  in_color;
+
+VPROG_END

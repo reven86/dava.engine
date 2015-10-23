@@ -139,15 +139,15 @@ bool ResourcesManageHelper::ValidateResourcePath(const QString& resourcePath)
 
 QString ResourcesManageHelper::GetGraphicsFontPath(Font* font)
 {
-    if (font && (font->GetFontType() == Font::TYPE_GRAPHICAL))
+    if (font && (font->GetFontType() == Font::TYPE_GRAPHIC))
     {
-		GraphicsFont *gFont = dynamic_cast<GraphicsFont*>(font);
+		GraphicFont *gFont = dynamic_cast<GraphicFont*>(font);
 		// Get graphics font sprite if it's available
-        Sprite *fontSprite = gFont->GetFontSprite();
-        if (fontSprite)
+        Texture *fontTexture = gFont->GetTexture();
+        if (fontTexture)
         {
 			// Save graphics font sprite path
-        	return QString::fromStdString(fontSprite->GetRelativePathname().GetAbsolutePathname());
+            return QString::fromStdString(fontTexture->GetPathname().GetAbsolutePathname());
     	}
 	}
 

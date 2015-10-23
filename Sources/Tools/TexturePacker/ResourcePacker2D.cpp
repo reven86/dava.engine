@@ -49,7 +49,6 @@ namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.1";
 
-static const String FLAG_RECURSIVE = "--recursive";
 
 enum AssetClientCode : int
 {
@@ -61,6 +60,27 @@ enum AssetClientCode : int
     SERVER_ERROR = 5,
     CANNOT_READ_FILES = 6
 };
+
+const String& GetCodeAsString(AssetClientCode code)
+{
+    static Array<String, 7> codeStrings = { { "OK",
+                                              "WRONG_COMMAND_LINE",
+                                              "WRONG_IP",
+                                              "TIMEOUT",
+                                              "CANNOT_CONNECT",
+                                              "SERVER_ERROR",
+                                              "CANNOT_READ_FILES" } };
+    static String codeUnknown("CODE_UNKNOWN");
+
+    if (code >= 0 && code < static_cast<int>(codeStrings.size()))
+    {
+        return codeStrings[code];
+    }
+    else
+    {
+        return codeUnknown;
+    }
+}
 
 String ResourcePacker2D::GetProcessFolderName()
 {
@@ -161,7 +181,7 @@ bool ResourcePacker2D::ReadMD5FromFile(const FilePath& md5file, MD5::MD5Digest& 
     ScopedPtr<File> file(File::Create(md5file, File::OPEN | File::READ));
     if (file)
     {
-        auto bytesRead = file->Read(digest.digest.data(), digest.digest.size());
+        auto bytesRead = file->Read(digest.digest.data(), static_cast<uint32>(digest.digest.size()));
         DVASSERT(bytesRead == MD5::MD5Digest::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
         return true;
     }
@@ -176,7 +196,7 @@ bool ResourcePacker2D::WriteMD5ToFile(const FilePath& md5file, const MD5::MD5Dig
     ScopedPtr<File> file(File::Create(md5file, File::CREATE | File::WRITE));
     DVASSERT(file && "Can't create md5 file");
 
-    auto bytesWritten = file->Write(digest.digest.data(), digest.digest.size());
+    auto bytesWritten = file->Write(digest.digest.data(), static_cast<uint32>(digest.digest.size()));
     DVASSERT(bytesWritten == MD5::MD5Digest::DIGEST_SIZE && "16 bytes should be always written for md5 file");
 
     return true;
@@ -655,7 +675,11 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         }
         else
         {
-            Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f, exitCode);
+            Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d (%s)",
+                         inputPath.GetAbsolutePathname().c_str(),
+                         (float64)(getTime) / 1000.0f,
+                         exitCode,
+                         GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
             const String& procOutput = cacheClient.GetOutput();
             if (!procOutput.empty())
             {
@@ -720,7 +744,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         arguments.push_back(AssetCache::KeyToString(key));
 
         arguments.push_back("-f");
-        arguments.push_back('\"' + fileListString + '\"');
+        arguments.push_back(fileListString);
 
         if (!cacheClientIp.empty())
         {
@@ -761,7 +785,10 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
             }
             else
             {
-                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f, exitCode);
+                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d (%s)", inputPath.GetAbsolutePathname().c_str(),
+                             (float64)(getTime) / 1000.0f,
+                             exitCode,
+                             GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
                 const String& procOutput = cacheClient.GetOutput();
                 if (!procOutput.empty())
                 {

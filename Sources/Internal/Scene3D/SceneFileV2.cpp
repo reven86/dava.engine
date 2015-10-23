@@ -31,7 +31,6 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/MeshInstanceNode.h"
 #include "Render/Texture.h"
-#include "Render/Material.h"
 #include "Render/3D/AnimatedMesh.h"
 #include "Scene3D/PathManip.h"
 #include "Scene3D/SkeletonNode.h"
@@ -65,13 +64,10 @@
 #include "Base/TemplateHelpers.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/ShadowVolume.h"
-#include "Scene3D/SpriteNode.h"
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
 
 #include "Render/Material/NMaterial.h"
-#include "Scene3D/Systems/MaterialSystem.h"
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -83,7 +79,10 @@
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 #include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
 
+#include "Job/JobManager.h"
+
 #include <functional>
+
 
 namespace DAVA
 {
@@ -150,7 +149,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     header.version = VersionInfo::Instance()->GetCurrentVersion().version;
     header.nodeCount = scene->GetChildrenCount();
 
-    if(NULL != scene->GetGlobalMaterial())
+    if(scene->GetGlobalMaterial())
     {
         header.nodeCount++;
     }
@@ -246,7 +245,17 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     NMaterial *globalMaterial = scene->GetGlobalMaterial();
     if (nullptr != globalMaterial)
     {
-        serializableNodesCount++;
+		if (nodes.count(globalMaterial) > 0)
+		{
+			// remove global material from set, 
+			// as it should be saved exclusively
+			// on the top of data nodes
+			nodes.erase(globalMaterial);
+		}
+		else 
+		{
+			serializableNodesCount++;
+		}
     }
 
     // save datanodes count
@@ -255,7 +264,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     // save global material on top of datanodes
     if (nullptr != globalMaterial)
     {
-        if(globalMaterial->GetNodeID() == DataNode::INVALID_ID)
+        if (globalMaterial->GetNodeID() == DataNode::INVALID_ID)
         {
             globalMaterial->SetNodeID(++maxDataNodeID);
         }
@@ -275,12 +284,9 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
         }
     }
     
-    // save hierarchy
-    if(isDebugLogEnabled)
-        Logger::FrameworkDebug("+ save hierarchy");
 
     // save global material settings
-    if(NULL != scene->GetGlobalMaterial())
+    if (nullptr != globalMaterial)
     {
         KeyedArchive * archive = new KeyedArchive();
         uint64 globalMaterialId = scene->GetGlobalMaterial()->GetNodeID();
@@ -291,6 +297,10 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
         SafeRelease(archive);
     }
+
+    // save hierarchy
+    if(isDebugLogEnabled)
+        Logger::FrameworkDebug("+ save hierarchy");
 
     for (int ci = 0; ci < scene->GetChildrenCount(); ++ci)
     {
@@ -452,7 +462,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
 	serializationContext.SetScenePath(filename.GetDirectory());
 	serializationContext.SetVersion(header.version);
 	serializationContext.SetScene(scene);
-	serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);
+	serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
     
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load data objects");
@@ -467,22 +477,41 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
             LoadDataNode(scene, nullptr, file);
 		}
 		
+        // load global material
+        {
+            uint32 filePos = file->GetPos();
+            KeyedArchive * archive = new KeyedArchive();
+            archive->Load(file);
+
+            String name = archive->GetString("##name");
+            if (name == "GlobalMaterial")
+            {
+                uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
+                NMaterial * globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));                
+
+                scene->SetGlobalMaterial(globalMaterial);
+                serializationContext.SetGlobalMaterialKey(globalMaterialId);
+                
+                --header.nodeCount;
+            }
+            else
+            {
+                file->Seek(filePos, File::SEEK_FROM_START);
+            }
+
+            SafeRelease(archive);
+        }
+
 		serializationContext.ResolveMaterialBindings();
     }
     
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
 
-    NMaterial *globalMaterial = NULL;
     scene->children.reserve(header.nodeCount);
     for (int ci = 0; ci < header.nodeCount; ++ci)
     {
-        LoadHierarchy(0, &globalMaterial, scene, file, 1);
-    }
-
-    if(NULL != globalMaterial)
-    {
-        scene->SetGlobalMaterial(globalMaterial);
+        LoadHierarchy(0, scene, file, 1);
     }
 		    
     //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
@@ -505,7 +534,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
 
 SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 {
-    SceneArchive *res = NULL;
+    SceneArchive *res = nullptr;
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
@@ -737,7 +766,7 @@ bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
     return true;
 }
 
-void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * parent, File * file, int32 level)
+void SceneFileV2::LoadHierarchy(Scene * scene, Entity * parent, File * file, int32 level)
 {
     bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
     KeyedArchive * archive = new KeyedArchive();
@@ -748,14 +777,16 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
     bool removeChildren = false;
     bool skipNode = false;
     
-    Entity * node = NULL;
+    Entity * node = nullptr;
     if (name == "LandscapeNode")
     {
         node = LoadLandscape(scene, archive);
-    }else if (name == "Camera")
+    }
+    else if (name == "Camera")
     {
         node = LoadCamera(scene, archive);
-    }else if ((name == "LightNode"))// || (name == "EditorLightNode"))
+    }
+    else if ((name == "LightNode"))// || (name == "EditorLightNode"))
     {
         node = LoadLight(scene, archive);
         removeChildren = true;
@@ -764,14 +795,6 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
 	{
 		node = LoadEntity(scene, archive);
 	}
-    else if(name == "GlobalMaterial")
-    {
-        if(NULL != globalMaterial)
-        {
-            uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
-            *globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
-        }
-    }
 	else
     {
         BaseObject *obj = ObjectFactory::Instance()->New<BaseObject>(name);
@@ -790,7 +813,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
         }
     }
 
-    if(NULL != node)
+    if(nullptr != node)
     {
         if(isDebugLogEnabled)
         {
@@ -807,7 +830,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
         node->children.reserve(childrenCount);
         for(int ci = 0; ci < childrenCount; ++ci)
         {
-            LoadHierarchy(scene, globalMaterial, node, file, level + 1);
+            LoadHierarchy(scene, node, file, level + 1);
         }
 
         if(removeChildren && childrenCount)
@@ -966,12 +989,12 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
     if(currentNode->GetChildrenCount() == 1)
     {
 		uint32 allowed_comp_count = 0;
-		if(NULL != currentNode->GetComponent(Component::TRANSFORM_COMPONENT))
+		if(nullptr != currentNode->GetComponent(Component::TRANSFORM_COMPONENT))
 		{
 			allowed_comp_count++;
 		}
 
-		if(NULL != currentNode->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
+		if(nullptr != currentNode->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
 		{
 			allowed_comp_count++;
 		}
@@ -1041,22 +1064,6 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
     MeshInstanceNode * oldMeshInstanceNode = dynamic_cast<MeshInstanceNode*>(node);
     if (oldMeshInstanceNode)
     {
-        Vector<PolygonGroupWithMaterial*> polygroups = oldMeshInstanceNode->GetPolygonGroups();
-
-        for (uint32 k = 0; k < (uint32)polygroups.size(); ++k)
-        {
-            PolygonGroupWithMaterial * group = polygroups[k];
-            if (group->GetMaterial() && (group->GetMaterial()->type == Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP))
-            {
-                if (oldMeshInstanceNode->GetLightmapCount() == 0)
-                {
-                    Logger::FrameworkDebug(Format("%s - lightmaps:%d", oldMeshInstanceNode->GetFullName().c_str(), 0).c_str());
-                }
-                
-                //DVASSERT(oldMeshInstanceNode->GetLightmapCount() > 0);
-                //DVASSERT(oldMeshInstanceNode->GetLightmapDataForIndex(0)->lightmap != 0)
-            }
-        }
         Entity * newMeshInstanceNode = new Entity();
         oldMeshInstanceNode->Entity::Clone(newMeshInstanceNode);
 
@@ -1064,43 +1071,20 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 		newMeshInstanceNode->RemoveComponent(Component::TRANSFORM_COMPONENT);
         newMeshInstanceNode->AddComponent(clonedComponent);
         
-        //Vector<PolygonGroupWithMaterial*> polygroups = oldMeshInstanceNode->GetPolygonGroups();
-        
         Mesh * mesh = new Mesh();
-        
+
+        Vector<PolygonGroupWithMaterial*> polygroups = oldMeshInstanceNode->GetPolygonGroups();
         for (uint32 k = 0; k < (uint32)polygroups.size(); ++k)
         {
             PolygonGroupWithMaterial * group = polygroups[k];
-            
-			Material* oldMaterial = group->GetMaterial();
-            if(!oldMaterial) continue;
-            
-            NMaterial* nMaterial = serializationContext.ConvertOldMaterialToNewMaterial(oldMaterial, 0, (uint64)oldMaterial);
-            mesh->AddPolygonGroup(group->GetPolygonGroup(), nMaterial);
-            
-            
-            if (group->GetMaterial()->type == Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP)
+            NMaterial * material = group->GetMaterial();
+            if (material)
             {
-//                if (oldMeshInstanceNode->GetLightmapCount() == 0)
-//                {
-//                    Logger::FrameworkDebug(Format("%s - lightmaps:%d", oldMeshInstanceNode->GetFullName().c_str(), 0));
-//                }
-                
-                //DVASSERT(oldMeshInstanceNode->GetLightmapCount() > 0);
-                //DVASSERT(oldMeshInstanceNode->GetLightmapDataForIndex(0)->lightmap != 0)
-            }
-            
-            if (oldMeshInstanceNode->GetLightmapCount() > 0)
-            {
-                RenderBatch * batch = mesh->GetRenderBatch(k);
-                //MaterialTechnique * tech = material->GetTechnique(PASS_FORWARD);
-
-                //tech->GetRenderState()->SetTexture(oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap, 1);
-                batch->GetMaterial()->SetTexture(NMaterial::TEXTURE_LIGHTMAP, oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap);
-
-                
-                batch->GetMaterial()->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, &oldMeshInstanceNode->GetLightmapDataForIndex(k)->uvOffset);
-                batch->GetMaterial()->SetPropertyValue(NMaterial::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, &oldMeshInstanceNode->GetLightmapDataForIndex(k)->uvScale);
+                NMaterial * batchMaterial = new NMaterial();
+                batchMaterial->SetParent(material);
+                batchMaterial->SetMaterialName(FastName(Format("Instance-%u",
+                                                               static_cast<uint32>(material->GetChildren().size()))));
+                mesh->AddPolygonGroup(group->GetPolygonGroup(), batchMaterial);
             }
         }
         
@@ -1132,9 +1116,6 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
                 SafeRelease(newShadowVolume);
             }
         }
-        
-        
-        
         
         RenderComponent * renderComponent = new RenderComponent;
         renderComponent->SetRenderObject(mesh);
@@ -1293,31 +1274,6 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 		return true;
 	}
 
-	SpriteNode * spr = dynamic_cast<SpriteNode*>(node);
-	if(spr)
-	{
-		Entity * newNode = new Entity();
-		spr->Clone(newNode);
-
-		SpriteObject *spriteObject = new SpriteObject(spr->GetSprite(), spr->GetFrame(), spr->GetScale(), spr->GetPivot());
-		spriteObject->SetSpriteType((SpriteObject::eSpriteType)spr->GetType());
-
-		newNode->AddComponent(new RenderComponent(spriteObject));
-
-		Entity * parent = spr->GetParent();
-		DVASSERT(parent);
-		if(parent)
-		{
-			parent->InsertBeforeNode(newNode, spr);
-			parent->RemoveNode(spr);
-		}
-
-		spriteObject->Release();
-		newNode->Release();
-		return true;
-	}
-
-
 	return false;
 } 
     
@@ -1342,7 +1298,7 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 }
 
 void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
-{
+{      
     RenderObject * ro = GetRenderObject(node);
     if (ro)
     {
@@ -1358,18 +1314,13 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
 
             while (material)
             {
-                flagValue = material->GetFlagValue(FLAG_FOG_EXP);
-                if ((flagValue & NMaterial::FlagInherited) == 0)
-                {
-                    material->ResetFlag(FLAG_FOG_EXP);
-                }
+                /*if (material->HasLocalFlag(FLAG_FOG_EXP))
+                    material->RemoveFlag(FLAG_FOG_EXP);                */
 
-                flagValue = material->GetFlagValue(FLAG_TILED_DECAL);
-                if ((flagValue & NMaterial::FlagInherited) == 0)
+                if (material->HasLocalFlag(FLAG_TILED_DECAL))
                 {
-                    NMaterial::eFlagValue flag = ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn) ? NMaterial::FlagOn : NMaterial::FlagOff;
-                    material->SetFlag(NMaterial::FLAG_TILED_DECAL_MASK, flag);
-                    material->ResetFlag(FLAG_TILED_DECAL);
+                    material->AddFlag(NMaterialFlagName::FLAG_TILED_DECAL_MASK, material->GetLocalFlagValue(FLAG_TILED_DECAL));
+                    material->RemoveFlag(FLAG_TILED_DECAL);
                 }
 
                 material = material->GetParent();
@@ -1411,14 +1362,12 @@ void SceneFileV2::ConvertAlphatestValueMaterials(Entity * node)
 
             while (material)
             {
-                if (material->GetMaterialType() == NMaterial::MATERIALTYPE_MATERIAL)
+                for (auto & alphatestTemplate : alphatestValueMaterials)
                 {
-                    for (auto & alphatestTemplate : alphatestValueMaterials)
+                    if (alphatestTemplate == material->GetLocalFXName())
                     {
-                        if (alphatestTemplate == material->GetMaterialTemplateName())
-                        {
-                            material->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &alphatestThresholdValue);
-                        }
+                        if (!material->HasLocalProperty(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD))
+                            material->AddProperty(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD, &alphatestThresholdValue, rhi::ShaderProp::TYPE_FLOAT1);
                     }
                 }
                 material = material->GetParent();
@@ -1460,6 +1409,7 @@ void SceneFileV2::RebuildTangentSpace(Entity *entity)
 
 void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMaterialParent)
 {
+
     RenderObject * ro = GetRenderObject(entity);
     if(ro)
     {
@@ -1481,8 +1431,13 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
                     shadowPg->Release();
                 }
 
-                NMaterial* shadowMaterial = NMaterial::CreateMaterialInstance();
+                NMaterial* shadowMaterial = new NMaterial();
                 shadowMaterial->SetParent(shadowMaterialParent);
+
+                shadowMaterial->SetMaterialName(FastName(Format("%s-%u",
+                                                                shadowMaterialParent->GetMaterialName().c_str(),
+                                                                static_cast<DAVA::uint32>(shadowMaterialParent->GetChildren().size()))));
+
                 shadowBatch->SetMaterial(shadowMaterial);
                 shadowMaterial->Release();
 
@@ -1498,6 +1453,7 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
         Entity * child = entity->GetChild(i);
         ConvertShadowVolumes(child, shadowMaterialParent);
     }
+
 }
 
 void SceneFileV2::OptimizeScene(Entity * rootNode)
@@ -1513,7 +1469,9 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 
     if (header.version < SHADOW_VOLUME_SCENE_VERSION)
     {
-        NMaterial * shadowMaterial = NMaterial::CreateMaterial(FastName("Shadow_Material"), NMaterialName::SHADOW_VOLUME, NMaterial::DEFAULT_QUALITY_NAME);
+        NMaterial * shadowMaterial = new NMaterial();
+        shadowMaterial->SetMaterialName(FastName("Shadow_Material"));
+        shadowMaterial->SetFXName(NMaterialName::SHADOW_VOLUME);
         ConvertShadowVolumes(rootNode, shadowMaterial);
         shadowMaterial->Release();
     }
@@ -1561,9 +1519,10 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 
 void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 {
+
     RenderObject *ro = GetRenderObject(entity);
 
-    if (ro && ro->GetType()!=RenderObject::TYPE_SKYBOX)
+    if (ro)
     {
         for (int32 i=0, sz=ro->GetRenderBatchCount(); i<sz; ++i)
         {
@@ -1591,7 +1550,7 @@ SceneArchive::~SceneArchive()
     }
 }
 
-SceneArchive::SceneArchiveHierarchyNode::SceneArchiveHierarchyNode():archive(NULL)
+SceneArchive::SceneArchiveHierarchyNode::SceneArchiveHierarchyNode():archive(nullptr)
 {
 }
 

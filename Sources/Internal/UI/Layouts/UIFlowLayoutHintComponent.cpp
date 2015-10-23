@@ -34,19 +34,17 @@
 
 namespace DAVA
 {
-    
 UIFlowLayoutHintComponent::UIFlowLayoutHintComponent()
 {
 }
 
-UIFlowLayoutHintComponent::UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent &src)
+UIFlowLayoutHintComponent::UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src)
     : flags(src.flags)
 {
 }
 
 UIFlowLayoutHintComponent::~UIFlowLayoutHintComponent()
 {
-    
 }
 
 UIFlowLayoutHintComponent* UIFlowLayoutHintComponent::Clone() const
@@ -83,5 +81,4 @@ void UIFlowLayoutHintComponent::SetLayoutDirty()
         GetControl()->SetLayoutDirty();
     }
 }
-    
 }

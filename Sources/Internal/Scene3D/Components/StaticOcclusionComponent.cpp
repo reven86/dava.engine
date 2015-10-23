@@ -165,6 +165,10 @@ StaticOcclusionDebugDrawComponent::StaticOcclusionDebugDrawComponent(RenderObjec
 StaticOcclusionDebugDrawComponent::~StaticOcclusionDebugDrawComponent()
 {
     SafeRelease(renderObject);
+    
+    rhi::DeleteVertexBuffer(vertices);
+    rhi::DeleteIndexBuffer(gridIndices);
+    rhi::DeleteIndexBuffer(coverIndices);
 }    
     
 RenderObject * StaticOcclusionDebugDrawComponent::GetRenderObject() const

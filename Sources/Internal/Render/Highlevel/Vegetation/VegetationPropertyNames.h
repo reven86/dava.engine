@@ -48,30 +48,22 @@ public:
 
     static const FastName UNIFORM_TILEPOS;
     static const FastName UNIFORM_WORLD_SIZE;
-    //static const FastName UNIFORM_CLUSTER_SCALE_DENSITY_MAP;
     static const FastName UNIFORM_HEIGHTMAP_SCALE;
     static const FastName UNIFORM_SWITCH_LOD_SCALE;
     static const FastName UNIFORM_PERTURBATION_FORCE;
     static const FastName UNIFORM_PERTURBATION_POINT;
     static const FastName UNIFORM_PERTURBATION_FORCE_DISTANCE;
-    static const FastName UNIFORM_BILLBOARD_DIRECTION;
     
-    static const FastName FLAG_FRAMEBUFFER_FETCH;
-    static const FastName FLAG_BILLBOARD_DRAW;
-    static const FastName FLAG_GRASS_TRANSFORM;
-    static const FastName FLAG_GRASS_BLEND;
-    static const FastName FLAG_GRASS_OPAQUE;
-    static const FastName FLAG_VEGETATION_DRAW_LOD_COLOR;
-    static const FastName FLAG_GRASS_TRANSFORM_WAVE;
+    static const FastName FLAG_LOD_COLOR;
     
     static const FastName VEGETATION_QUALITY_NAME_HIGH;
     static const FastName VEGETATION_QUALITY_NAME_LOW;
     static const FastName VEGETATION_QUALITY_GROUP_NAME;
     
     static const FastName UNIFORM_SAMPLER_VEGETATIONMAP;
-    static const FastName UNIFORM_SAMPLER_DENSITYMAP;
     
-    static const FastName UNIFORM_VEGWAVEOFFSET;
+    static const FastName UNIFORM_VEGWAVEOFFSET_X;
+    static const FastName UNIFORM_VEGWAVEOFFSET_Y;
 };
 
 };

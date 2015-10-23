@@ -59,6 +59,7 @@ using namespace ::Windows::Devices::HumanInterfaceDevice;
 using namespace ::Windows::Security::ExchangeActiveSyncProvisioning;
 using namespace ::Windows::Networking::Connectivity;
 using namespace ::Windows::System::UserProfile;
+using namespace ::Windows::UI::Xaml;
 
 namespace DAVA
 {
@@ -206,15 +207,16 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
     auto func = [this]()
     {
-        CoreWindow^ window = CoreWindow::GetForCurrentThread();
-        DVASSERT(window != nullptr);
+        // should be started on UI thread
+        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        DVASSERT(coreWindow != nullptr);
+        
+        screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
+        screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
 
-        using Windows::Graphics::Display::DisplayInformation;
         DisplayInformation^ displayInfo = DisplayInformation::GetForCurrentView();
+        DVASSERT(displayInfo != nullptr);
         screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
-
-        screenInfo.width = static_cast<int32>(window->Bounds.Width);
-        screenInfo.height = static_cast<int32>(window->Bounds.Height);
         DisplayOrientations curOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
         if (DisplayOrientations::Portrait == curOrientation || DisplayOrientations::PortraitFlipped == curOrientation)
         {
@@ -263,8 +265,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     storage.removable = true;
 
     auto removableStorages = WaitAsync(KnownFolders::RemovableDevices->GetFoldersAsync());
-    size_t size = removableStorages->Size;
-    for (size_t i = 0; i < size; ++i)
+    for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
         Platform::String^ path = removableStorages->GetAt(i)->Path;
         storage.path = WStringToString(path->Data());

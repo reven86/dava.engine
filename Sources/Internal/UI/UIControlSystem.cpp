@@ -26,12 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "FileSystem/Logger.h"
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
@@ -39,102 +37,103 @@
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/Layouts/UILayoutSystem.h"
+#include "Render/Renderer.h"
+#include "Render/RenderHelper.h"
+#include "UI/UIScreenshoter.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
 
 UIControlSystem::~UIControlSystem()
 {
-	SafeRelease(currentScreen); 
-	SafeRelease(popupContainer);
+    SafeRelease(currentScreen);
+    SafeRelease(popupContainer);
     SafeDelete(styleSheetSystem);
     SafeDelete(layoutSystem);
+    SafeDelete(screenshoter);
 }
-	
+
 UIControlSystem::UIControlSystem()
     : layoutSystem(nullptr)
+    , clearColor(Color::Clear)
 {
-	screenLockCount = 0;
-	frameSkip = 0;
-	transitionType = 0;
-	
-	nextScreenTransition = 0;
-	currentScreen = 0;
-	nextScreen = 0;
-	prevScreen = NULL;
-	removeCurrentScreen = false;
+    screenLockCount = 0;
+    frameSkip = 0;
+    transitionType = 0;
+
+    nextScreenTransition = 0;
+    currentScreen = 0;
+    nextScreen = 0;
+    prevScreen = NULL;
+    removeCurrentScreen = false;
     hovered = NULL;
     focusedControl = NULL;
-	//mainControl = 0;
+    //mainControl = 0;
 
-	popupContainer = new UIControl(Rect(0, 0, 1, 1));
+    popupContainer = new UIControl(Rect(0, 0, 1, 1));
     popupContainer->SetName("UIControlSystem_popupContainer");
-	popupContainer->SetInputEnabled(false);
-	
-	exclusiveInputLocker = NULL;
-	
-	lockInputCounter = 0;
-	
-	baseGeometricData.position = Vector2(0, 0);
-	baseGeometricData.size = Vector2(0, 0);
-	baseGeometricData.pivotPoint = Vector2(0, 0);
-	baseGeometricData.scale = Vector2(1.0f, 1.0f);
-	baseGeometricData.angle = 0;
+    popupContainer->SetInputEnabled(false);
 
-    ui3DViewCount = 0;
+    exclusiveInputLocker = NULL;
+
+    lockInputCounter = 0;
+
+    baseGeometricData.position = Vector2(0, 0);
+    baseGeometricData.size = Vector2(0, 0);
+    baseGeometricData.pivotPoint = Vector2(0, 0);
+    baseGeometricData.scale = Vector2(1.0f, 1.0f);
+    baseGeometricData.angle = 0;
 
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
+    screenshoter = new UIScreenshoter();
 }
-	
-void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
-{
-	if (_nextScreen == currentScreen)
-	{
-		if (nextScreen != 0)
-		{
-			SafeRelease(nextScreenTransition);
-			SafeRelease(nextScreen);
-		}
-		return;
-	}
 
-	if (nextScreen)
-	{
-		Logger::Warning("2 screen switches during one frame.");
-	}
-    
-	// 2 switches on one frame can cause memory leak
-	SafeRelease(nextScreenTransition);
-	SafeRelease(nextScreen);
-    
-	nextScreenTransition = SafeRetain(_transition);
-	
-	if (_nextScreen == 0)
-	{
-		removeCurrentScreen = true;
-	}
-	
-	nextScreen = SafeRetain(_nextScreen);
-}
-	
-	
-void UIControlSystem::ReplaceScreen(UIScreen *newMainControl)
+void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
 {
-	prevScreen = currentScreen;
-	currentScreen = newMainControl;
+    if (_nextScreen == currentScreen)
+    {
+        if (nextScreen != 0)
+        {
+            SafeRelease(nextScreenTransition);
+            SafeRelease(nextScreen);
+        }
+        return;
+    }
+
+    if (nextScreen)
+    {
+        Logger::Warning("2 screen switches during one frame.");
+    }
+
+    // 2 switches on one frame can cause memory leak
+    SafeRelease(nextScreenTransition);
+    SafeRelease(nextScreen);
+
+    nextScreenTransition = SafeRetain(_transition);
+
+    if (_nextScreen == 0)
+    {
+        removeCurrentScreen = true;
+    }
+
+    nextScreen = SafeRetain(_nextScreen);
+}
+
+void UIControlSystem::ReplaceScreen(UIScreen* newMainControl)
+{
+    prevScreen = currentScreen;
+    currentScreen = newMainControl;
     NotifyListenersDidSwitch(currentScreen);
 }
 
-	
-UIScreen *UIControlSystem::GetScreen()
+UIScreen* UIControlSystem::GetScreen()
 {
-	return currentScreen;	
+    return currentScreen;
 }
-	
-void UIControlSystem::AddPopup(UIPopup *newPopup)
+
+void UIControlSystem::AddPopup(UIPopup* newPopup)
 {
     Set<UIPopup*>::const_iterator it = popupsToRemove.find(newPopup);
     if (popupsToRemove.end() != it)
@@ -146,8 +145,8 @@ void UIControlSystem::AddPopup(UIPopup *newPopup)
     newPopup->LoadGroup();
     popupContainer->AddControl(newPopup);
 }
-	
-void UIControlSystem::RemovePopup(UIPopup *popup)
+
+void UIControlSystem::RemovePopup(UIPopup* popup)
 {
     if (popupsToRemove.count(popup))
     {
@@ -155,7 +154,7 @@ void UIControlSystem::RemovePopup(UIPopup *popup)
         return;
     }
 
-    const List<UIControl*> &popups = popupContainer->GetChildren();
+    const List<UIControl*>& popups = popupContainer->GetChildren();
     if (popups.end() == std::find(popups.begin(), popups.end(), DynamicTypeCheck<UIPopup*>(popup)))
     {
         Logger::Error("[UIControlSystem::RemovePopup] attempt to remove uknown popup.");
@@ -165,78 +164,78 @@ void UIControlSystem::RemovePopup(UIPopup *popup)
 
     popupsToRemove.insert(popup);
 }
-	
+
 void UIControlSystem::RemoveAllPopups()
 {
     popupsToRemove.clear();
-	const List<UIControl*> &totalChilds = popupContainer->GetChildren();
-	for (List<UIControl*>::const_iterator it = totalChilds.begin(); it != totalChilds.end(); it++)
-	{
-		popupsToRemove.insert(DynamicTypeCheck<UIPopup*>(*it));
-	}
-}
-	
-UIControl *UIControlSystem::GetPopupContainer()
-{
-	return popupContainer;
+    const List<UIControl*>& totalChilds = popupContainer->GetChildren();
+    for (List<UIControl*>::const_iterator it = totalChilds.begin(); it != totalChilds.end(); it++)
+    {
+        popupsToRemove.insert(DynamicTypeCheck<UIPopup*>(*it));
+    }
 }
 
-	
+UIControl* UIControlSystem::GetPopupContainer()
+{
+    return popupContainer;
+}
+
 void UIControlSystem::Reset()
 {
-	SetScreen(0);
+    SetScreen(0);
 }
-	
+
 void UIControlSystem::ProcessScreenLogic()
 {
-	/*
+    /*
 	 if next screen or we need to removecurrent screen
 	 */
-	if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
-	{
+    if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
+    {
         UIScreen* nextScreenProcessed = 0;
         UIScreenTransition* transitionProcessed = 0;
-        
+
         nextScreenProcessed = nextScreen;
         transitionProcessed = nextScreenTransition;
         nextScreen = 0; // functions called by this method can request another screen switch (for example, LoadResources)
         nextScreenTransition = 0;
-        
-		LockInput();
-		
-		CancelAllInputs();
+
+        LockInput();
+
+        CancelAllInputs();
 
         NotifyListenersWillSwitch(nextScreenProcessed);
-        
-		// If we have transition set
-		if (transitionProcessed)
-		{
-			LockSwitch();
 
-			// check if we have not loading transition
-			if (!transitionProcessed->IsLoadingTransition())
-			{
-				// start transition and set currentScreen 
-				transitionProcessed->StartTransition(currentScreen, nextScreenProcessed);
-				currentScreen = transitionProcessed;
-			}else
-			{
-				// if we got loading transition
-				UILoadingTransition * loadingTransition = dynamic_cast<UILoadingTransition*> (transitionProcessed);
+        // If we have transition set
+        if (transitionProcessed)
+        {
+            LockSwitch();
+
+            // check if we have not loading transition
+            if (!transitionProcessed->IsLoadingTransition())
+            {
+                // start transition and set currentScreen
+                transitionProcessed->StartTransition(currentScreen, nextScreenProcessed);
+                currentScreen = transitionProcessed;
+            }
+            else
+            {
+                // if we got loading transition
+                UILoadingTransition* loadingTransition = dynamic_cast<UILoadingTransition*>(transitionProcessed);
                 DVASSERT(loadingTransition);
 
-				// Firstly start transition
-				loadingTransition->StartTransition(currentScreen, nextScreenProcessed);
-				
-				// Manage transfer to loading transition through InTransition of LoadingTransition
+                // Firstly start transition
+                loadingTransition->StartTransition(currentScreen, nextScreenProcessed);
+
+                // Manage transfer to loading transition through InTransition of LoadingTransition
                 if (loadingTransition->GetInTransition())
                 {
                     loadingTransition->GetInTransition()->StartTransition(currentScreen, loadingTransition);
                     currentScreen = SafeRetain(loadingTransition->GetInTransition());
                 }
-                else 
+                else
                 {
-                    if(currentScreen)
+                    if (currentScreen)
                     {
                         if (currentScreen->IsOnScreen())
                             currentScreen->SystemWillBecomeInvisible();
@@ -247,7 +246,7 @@ void UIControlSystem::ProcessScreenLogic()
                         }
                         currentScreen->SystemDidDisappear();
                     }
-                        // if we have next screen we load new resources, if it equal to zero we just remove screen
+                    // if we have next screen we load new resources, if it equal to zero we just remove screen
                     loadingTransition->LoadGroup();
                     loadingTransition->SystemWillAppear();
                     currentScreen = loadingTransition;
@@ -255,83 +254,83 @@ void UIControlSystem::ProcessScreenLogic()
                     if (loadingTransition->IsOnScreen())
                         loadingTransition->SystemWillBecomeVisible();
                 }
-			}
-		}
-        else	// if there is no transition do change immediatelly
-		{	
-			// if we have current screen we call events, unload resources for it group
-			if(currentScreen)
-			{
+            }
+        }
+        else // if there is no transition do change immediatelly
+        {
+            // if we have current screen we call events, unload resources for it group
+            if (currentScreen)
+            {
                 if (currentScreen->IsOnScreen())
                     currentScreen->SystemWillBecomeInvisible();
-				currentScreen->SystemWillDisappear();
-				if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
-				{
-					currentScreen->UnloadGroup();
-				}
-				currentScreen->SystemDidDisappear();
-			}
-			// if we have next screen we load new resources, if it equal to zero we just remove screen
-			if (nextScreenProcessed)
-			{
-				nextScreenProcessed->LoadGroup();
-				nextScreenProcessed->SystemWillAppear();
-			}
-			currentScreen = nextScreenProcessed;
+                currentScreen->SystemWillDisappear();
+                if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
+                {
+                    currentScreen->UnloadGroup();
+                }
+                currentScreen->SystemDidDisappear();
+            }
+            // if we have next screen we load new resources, if it equal to zero we just remove screen
+            if (nextScreenProcessed)
+            {
+                nextScreenProcessed->LoadGroup();
+                nextScreenProcessed->SystemWillAppear();
+            }
+            currentScreen = nextScreenProcessed;
             NotifyListenersDidSwitch(currentScreen);
             if (nextScreenProcessed)
             {
-				nextScreenProcessed->SystemDidAppear();
+                nextScreenProcessed->SystemDidAppear();
                 if (nextScreenProcessed->IsOnScreen())
                     nextScreenProcessed->SystemWillBecomeVisible();
             }
-			
-			UnlockInput();
-		}
-		frameSkip = FRAME_SKIP;
-		removeCurrentScreen = false;
-	}
-	
-	/*
+
+            UnlockInput();
+        }
+        frameSkip = FRAME_SKIP;
+        removeCurrentScreen = false;
+    }
+
+    /*
 	 if we have popups to remove, we removes them here
 	 */
-	for (Set<UIPopup*>::iterator it = popupsToRemove.begin(); it != popupsToRemove.end(); it++)
-	{
-		UIPopup *p = *it;
-		if (p) 
-		{
-			p->Retain();
-			popupContainer->RemoveControl(p);
-			p->UnloadGroup();
+    for (Set<UIPopup*>::iterator it = popupsToRemove.begin(); it != popupsToRemove.end(); it++)
+    {
+        UIPopup* p = *it;
+        if (p)
+        {
+            p->Retain();
+            popupContainer->RemoveControl(p);
+            p->UnloadGroup();
             p->Release();
-		}
-	}
-	popupsToRemove.clear();
+        }
+    }
+    popupsToRemove.clear();
 }
 
 void UIControlSystem::Update()
 {
-	TIME_PROFILE("UIControlSystem::Update");
+    TIME_PROFILE("UIControlSystem::Update");
 
     updateCounter = 0;
-	ProcessScreenLogic();
-	
-	float32 timeElapsed = SystemTimer::FrameDelta();
+    ProcessScreenLogic();
 
-	if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
-	{
-		if(currentScreen)
-		{
-			currentScreen->SystemUpdate(timeElapsed);
-		}
+    float32 timeElapsed = SystemTimer::FrameDelta();
 
-		popupContainer->SystemUpdate(timeElapsed);
-	}
-	
-	SafeRelease(prevScreen);
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
+    {
+        if (currentScreen)
+        {
+            currentScreen->SystemUpdate(timeElapsed);
+        }
+
+        popupContainer->SystemUpdate(timeElapsed);
+    }
+
+    SafeRelease(prevScreen);
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
-	
+
 void UIControlSystem::Draw()
 {
     TIME_PROFILE("UIControlSystem::Draw");
@@ -339,62 +338,62 @@ void UIControlSystem::Draw()
     FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
-    if (!ui3DViewCount)
+
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = (uint32)Renderer::GetFramebufferWidth();
+    viewport.height = (uint32)Renderer::GetFramebufferHeight();
+    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
+
+    if (currentScreen)
     {
-        UniqueHandle prevState = RenderManager::Instance()->currentState.stateHandle;
-        RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-        RenderManager::Instance()->FlushState();            
-        RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);        
-        RenderManager::Instance()->SetRenderState(prevState);
+        currentScreen->SystemDraw(baseGeometricData);
     }
 
-	if (currentScreen)
-	{
-		currentScreen->SystemDraw(baseGeometricData);
-	}
+    popupContainer->SystemDraw(baseGeometricData);
 
-	popupContainer->SystemDraw(baseGeometricData);
-	
-	if(frameSkip > 0)
-	{
-		frameSkip--;
-	}
+    if (frameSkip > 0)
+    {
+        frameSkip--;
+    }
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
-}
-	
-void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)
-{
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-	{
-		if((*it).tid == eventID)
-		{
-			CancelInput(&(*it));
-			
-			if(targetControl->IsPointInside((*it).point))
-			{
-				(*it).controlState = UIEvent::CONTROL_STATE_INSIDE;
-				targetControl->touchesInside++;
-			}
-			else 
-			{
-				(*it).controlState = UIEvent::CONTROL_STATE_OUTSIDE;
-			}
-			(*it).touchLocker = targetControl;
-			targetControl->currentInputID = eventID;
-			if(targetControl->GetExclusiveInput())
-			{
-				SetExclusiveInputLocker(targetControl, eventID);
-			}
-			else 
-			{
-				SetExclusiveInputLocker(NULL, -1);
-			}
 
-			targetControl->totalTouches++;
-		}
-	}
+    GetScreenshoter()->OnFrame();
+}
+
+void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl* targetControl)
+{
+    for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
+    {
+        if ((*it).tid == eventID)
+        {
+            CancelInput(&(*it));
+
+            if (targetControl->IsPointInside((*it).point))
+            {
+                (*it).controlState = UIEvent::CONTROL_STATE_INSIDE;
+                targetControl->touchesInside++;
+            }
+            else
+            {
+                (*it).controlState = UIEvent::CONTROL_STATE_OUTSIDE;
+            }
+            (*it).touchLocker = targetControl;
+            targetControl->currentInputID = eventID;
+            if (targetControl->GetExclusiveInput())
+            {
+                SetExclusiveInputLocker(targetControl, eventID);
+            }
+            else
+            {
+                SetExclusiveInputLocker(NULL, -1);
+            }
+
+            targetControl->totalTouches++;
+        }
+    }
 }
 
 void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<UIEvent>& allInputs)
@@ -431,11 +430,11 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
             {
                 UIEvent ev = *it;
                 ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-				Replay::Instance()->RecordEvent(&ev);
-			}
-		}
+                Replay::Instance()->RecordEvent(&ev);
+            }
+        }
 
-		//check all touches for active state
+        //check all touches for active state
         for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); ++it)
         {
             (*it).activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
@@ -444,22 +443,22 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
             {
                 if ((*it).tid == (*wit).tid)
                 {
-					if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
-					{
-						(*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
-					}
-					else 
-					{
-						(*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-					}
-					
-					(*it).phase = (*wit).phase;
-					CopyTouchData(&(*it), &(*wit));
-					break;
-				}
-			}
-			if((*it).activeState == UIEvent::ACTIVITY_STATE_INACTIVE)
-			{
+                    if ((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
+                    {
+                        (*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
+                    }
+                    else
+                    {
+                        (*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
+                    }
+
+                    (*it).phase = (*wit).phase;
+                    CopyTouchData(&(*it), &(*wit));
+                    break;
+                }
+            }
+            if ((*it).activeState == UIEvent::ACTIVITY_STATE_INACTIVE)
+            {
                 for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); ++wit)
                 {
                     if ((*it).tid == (*wit).tid)
@@ -467,80 +466,80 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
                         if ((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
                         {
                             (*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
-						}
-						else 
-						{
-							(*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-						}
-						
-						(*it).phase = (*wit).phase;
-						CopyTouchData(&(*it), &(*wit));
-						break;
-					}
-				}
-			}
-		}
-		
-		//add new touches
-		for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
-		{
-			bool isFind = false;
-			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-			{
-				if((*it).tid == (*wit).tid)
-				{
-					isFind = true;
+                        }
+                        else
+                        {
+                            (*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
+                        }
+
+                        (*it).phase = (*wit).phase;
+                        CopyTouchData(&(*it), &(*wit));
+                        break;
+                    }
+                }
+            }
+        }
+
+        //add new touches
+        for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++)
+        {
+            bool isFind = false;
+            for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
+            {
+                if ((*it).tid == (*wit).tid)
+                {
+                    isFind = true;
                     break;
-				}
-			}
-			if(!isFind)
-			{
-				totalInputs.push_back((*wit));
-                
+                }
+            }
+            if (!isFind)
+            {
+                totalInputs.push_back((*wit));
+
                 Vector<UIEvent>::reference curr(totalInputs.back());
-				curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
+                curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
                 //curr.phase = UIEvent::PHASE_BEGAN;
                 curr.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(curr.physPoint);
-			}
-		}
-		for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
-		{
-			bool isFind = false;
-			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-			{
-				if((*it).tid == (*wit).tid)
-				{
-					isFind = true;
+            }
+        }
+        for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++)
+        {
+            bool isFind = false;
+            for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
+            {
+                if ((*it).tid == (*wit).tid)
+                {
+                    isFind = true;
                     break;
-				}
-			}
-			if(!isFind)
-			{
-				totalInputs.push_back((*wit));
-                
+                }
+            }
+            if (!isFind)
+            {
+                totalInputs.push_back((*wit));
+
                 Vector<UIEvent>::reference curr(totalInputs.back());
-				curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
+                curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
                 curr.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(curr.physPoint);
-			}
-		}
-		
-		//removes inactive touches and cancelled touches
-		for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end();)
-		{
-			if((*it).activeState == UIEvent::ACTIVITY_STATE_INACTIVE || (*it).phase == UIEvent::PHASE_CANCELLED)
-			{
+            }
+        }
+
+        //removes inactive touches and cancelled touches
+        for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end();)
+        {
+            if ((*it).activeState == UIEvent::ACTIVITY_STATE_INACTIVE || (*it).phase == UIEvent::PHASE_CANCELLED)
+            {
                 if ((*it).phase != UIEvent::PHASE_ENDED)
                 {
                     CancelInput(&(*it));
                 }
-				totalInputs.erase(it);
-				it = totalInputs.begin();
-				if(it == totalInputs.end())
-				{
-					break;
-				}
+                totalInputs.erase(it);
+                it = totalInputs.begin();
+                if (it == totalInputs.end())
+                {
+                    break;
+                }
                 continue;
-			}
+            }
             ++it;
         }
 
@@ -548,59 +547,59 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
         {
             // use index "i" because inside loop "totalInputs" can be changed
             // during DVASSERT_MSG
-            for(size_t i = 0; i < totalInputs.size(); ++i)
+            for (size_t i = 0; i < totalInputs.size(); ++i)
             {
                 UIEvent& event = totalInputs[i];
-                if(event.activeState == UIEvent::ACTIVITY_STATE_CHANGED)
+                if (event.activeState == UIEvent::ACTIVITY_STATE_CHANGED)
                 {
-                    if(!popupContainer->SystemInput(&event))
+                    if (!popupContainer->SystemInput(&event))
                     {
                         currentScreen->SystemInput(&event);
                     }
                 }
-                if(totalInputs.empty())
+                if (totalInputs.empty())
                 {
                     break;
                 }
             }
-		}
-	}
+        }
+    }
 }
 
-void UIControlSystem::OnInput(UIEvent * event)
+void UIControlSystem::OnInput(UIEvent* event)
 {
-	if(currentScreen)
-	{
-		if(!popupContainer->SystemInput(event))
-		{
-			currentScreen->SystemInput(event);
-		}
-	}
+    if (currentScreen)
+    {
+        if (!popupContainer->SystemInput(event))
+        {
+            currentScreen->SystemInput(event);
+        }
+    }
 }
-void UIControlSystem::CancelInput(UIEvent *touch)
+void UIControlSystem::CancelInput(UIEvent* touch)
 {
-	if(touch->touchLocker)
-	{
-		touch->touchLocker->SystemInputCancelled(touch);
-	}
-	if (touch->touchLocker != currentScreen)
-	{
-		currentScreen->SystemInputCancelled(touch);
-	}
+    if (touch->touchLocker)
+    {
+        touch->touchLocker->SystemInputCancelled(touch);
+    }
+    if (touch->touchLocker != currentScreen)
+    {
+        currentScreen->SystemInputCancelled(touch);
+    }
 }
 void UIControlSystem::CancelAllInputs()
 {
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
-	{
-		CancelInput(&(*it));
-	}
-	totalInputs.clear();
+    for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
+    {
+        CancelInput(&(*it));
+    }
+    totalInputs.clear();
 }
 
-void UIControlSystem::CancelInputs(UIControl *control, bool hierarchical)
+void UIControlSystem::CancelInputs(UIControl* control, bool hierarchical)
 {
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-	{
+    for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
+    {
         if (!hierarchical)
         {
             if (it->touchLocker == control)
@@ -610,164 +609,163 @@ void UIControlSystem::CancelInputs(UIControl *control, bool hierarchical)
             }
             continue;
         }
-        UIControl * parentLockerControl = it->touchLocker;
-        while(parentLockerControl)
+        UIControl* parentLockerControl = it->touchLocker;
+        while (parentLockerControl)
         {
-            if(control == parentLockerControl)
+            if (control == parentLockerControl)
             {
                 CancelInput(&(*it));
                 break;
             }
             parentLockerControl = parentLockerControl->GetParent();
         }
-	}
+    }
 }
 
 //void UIControlSystem::SetTransitionType(int newTransitionType)
 //{
 //	transitionType = newTransitionType;
 //}
-	
+
 int32 UIControlSystem::LockInput()
 {
-	lockInputCounter++;
-	if (lockInputCounter > 0)
-	{
-		CancelAllInputs();
-	}
-	return lockInputCounter;
+    lockInputCounter++;
+    if (lockInputCounter > 0)
+    {
+        CancelAllInputs();
+    }
+    return lockInputCounter;
 }
 
 int32 UIControlSystem::UnlockInput()
 {
-	DVASSERT(lockInputCounter != 0);
+    DVASSERT(lockInputCounter != 0);
 
-	lockInputCounter--;
-	if (lockInputCounter == 0)
-	{
-		// VB: Done that because hottych asked to do that.
-		CancelAllInputs();
-	}
-	return lockInputCounter;
+    lockInputCounter--;
+    if (lockInputCounter == 0)
+    {
+        // VB: Done that because hottych asked to do that.
+        CancelAllInputs();
+    }
+    return lockInputCounter;
 }
-	
+
 int32 UIControlSystem::GetLockInputCounter() const
 {
-	return lockInputCounter;
+    return lockInputCounter;
 }
 
-const Vector<UIEvent> & UIControlSystem::GetAllInputs()
+const Vector<UIEvent>& UIControlSystem::GetAllInputs()
 {
-	return totalInputs;
+    return totalInputs;
 }
-	
-void UIControlSystem::SetExclusiveInputLocker(UIControl *locker, int32 lockEventId)
+
+void UIControlSystem::SetExclusiveInputLocker(UIControl* locker, int32 lockEventId)
 {
-	SafeRelease(exclusiveInputLocker);
+    SafeRelease(exclusiveInputLocker);
     if (locker != NULL)
     {
         for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
         {
             if (it->tid != lockEventId && it->touchLocker != locker)
-            {//cancel all inputs excepts current input and inputs what allready handles by this locker.
+            { //cancel all inputs excepts current input and inputs what allready handles by this locker.
                 CancelInput(&(*it));
             }
         }
     }
 
-	exclusiveInputLocker = SafeRetain(locker);
+    exclusiveInputLocker = SafeRetain(locker);
 }
-	
-UIControl *UIControlSystem::GetExclusiveInputLocker()
+
+UIControl* UIControlSystem::GetExclusiveInputLocker()
 {
-	return exclusiveInputLocker;
+    return exclusiveInputLocker;
 }
-    
+
 void UIControlSystem::ScreenSizeChanged()
 {
     popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
 }
 
-void UIControlSystem::SetHoveredControl(UIControl *newHovered)
+void UIControlSystem::SetHoveredControl(UIControl* newHovered)
 {
-    if (hovered != newHovered) 
+    if (hovered != newHovered)
     {
-        if (hovered) 
+        if (hovered)
         {
             hovered->SystemDidRemoveHovered();
             hovered->Release();
         }
         hovered = SafeRetain(newHovered);
-        if (hovered) 
+        if (hovered)
         {
             hovered->SystemDidSetHovered();
         }
     }
 }
-    
-UIControl *UIControlSystem::GetHoveredControl(UIControl *newHovered)
+
+UIControl* UIControlSystem::GetHoveredControl(UIControl* newHovered)
 {
     return hovered;
 }
-    
-void UIControlSystem::SetFocusedControl(UIControl *newFocused, bool forceSet)
+
+void UIControlSystem::SetFocusedControl(UIControl* newFocused, bool forceSet)
 {
     if (focusedControl)
     {
-        if (forceSet || focusedControl->IsLostFocusAllowed(newFocused)) 
+        if (forceSet || focusedControl->IsLostFocusAllowed(newFocused))
         {
             focusedControl->SystemOnFocusLost(newFocused);
             SafeRelease(focusedControl);
             focusedControl = SafeRetain(newFocused);
-            if (focusedControl) 
+            if (focusedControl)
             {
                 focusedControl->SystemOnFocused();
             }
         }
     }
-    else 
+    else
     {
         focusedControl = SafeRetain(newFocused);
-        if (focusedControl) 
+        if (focusedControl)
         {
             focusedControl->SystemOnFocused();
         }
     }
-
 }
-    
-UIControl *UIControlSystem::GetFocusedControl()
+
+UIControl* UIControlSystem::GetFocusedControl()
 {
     return focusedControl;
 }
 
-const UIGeometricData &UIControlSystem::GetBaseGeometricData() const
+const UIGeometricData& UIControlSystem::GetBaseGeometricData() const
 {
-	return baseGeometricData;	
+    return baseGeometricData;
 }
 
 void UIControlSystem::ReplayEvents()
 {
-	while(Replay::Instance()->IsEvent())
-	{
-		int32 activeCount = Replay::Instance()->PlayEventsCount();
-		Vector<UIEvent> activeInputs;
-		while(activeCount--)
-		{
-			UIEvent ev = Replay::Instance()->PlayEvent();
-			activeInputs.push_back(ev);
-		}
+    while (Replay::Instance()->IsEvent())
+    {
+        int32 activeCount = Replay::Instance()->PlayEventsCount();
+        Vector<UIEvent> activeInputs;
+        while (activeCount--)
+        {
+            UIEvent ev = Replay::Instance()->PlayEvent();
+            activeInputs.push_back(ev);
+        }
 
-		int32 allCount = Replay::Instance()->PlayEventsCount();
-		Vector<UIEvent> allInputs;
-		while(allCount--)
-		{
-			UIEvent ev = Replay::Instance()->PlayEvent();
-			allInputs.push_back(ev);
-		}
+        int32 allCount = Replay::Instance()->PlayEventsCount();
+        Vector<UIEvent> allInputs;
+        while (allCount--)
+        {
+            UIEvent ev = Replay::Instance()->PlayEvent();
+            allInputs.push_back(ev);
+        }
 
-		if(activeCount || allCount)
-		{
+        if (activeCount || allCount)
+        {
             OnInput(activeInputs, allInputs);
         }
     }
@@ -775,43 +773,43 @@ void UIControlSystem::ReplayEvents()
 
 int32 UIControlSystem::LockSwitch()
 {
-	screenLockCount++;
-	return screenLockCount;
+    screenLockCount++;
+    return screenLockCount;
 }
 
 int32 UIControlSystem::UnlockSwitch()
 {
-	screenLockCount--;
-	DVASSERT(screenLockCount >= 0);
-	return screenLockCount;
+    screenLockCount--;
+    DVASSERT(screenLockCount >= 0);
+    return screenLockCount;
 }
 
-void UIControlSystem::AddScreenSwitchListener(ScreenSwitchListener * listener)
+void UIControlSystem::AddScreenSwitchListener(ScreenSwitchListener* listener)
 {
-	screenSwitchListeners.push_back(listener);
+    screenSwitchListeners.push_back(listener);
 }
 
-void UIControlSystem::RemoveScreenSwitchListener(ScreenSwitchListener * listener)
+void UIControlSystem::RemoveScreenSwitchListener(ScreenSwitchListener* listener)
 {
-	Vector<ScreenSwitchListener *>::iterator it = std::find(screenSwitchListeners.begin(), screenSwitchListeners.end(), listener);
-	if(it != screenSwitchListeners.end())
-		screenSwitchListeners.erase(it);
+    Vector<ScreenSwitchListener*>::iterator it = std::find(screenSwitchListeners.begin(), screenSwitchListeners.end(), listener);
+    if (it != screenSwitchListeners.end())
+        screenSwitchListeners.erase(it);
 }
 
-void UIControlSystem::NotifyListenersWillSwitch( UIScreen* screen )
-{
-    Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
-    for(uint32 i = 0; i < listenersCount; ++i)
-        screenSwitchListenersCopy[i]->OnScreenWillSwitch( screen );
-}
-
-void UIControlSystem::NotifyListenersDidSwitch( UIScreen* screen )
+void UIControlSystem::NotifyListenersWillSwitch(UIScreen* screen)
 {
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
     uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
-    for(uint32 i = 0; i < listenersCount; ++i)
-        screenSwitchListenersCopy[i]->OnScreenDidSwitch( screen );
+    for (uint32 i = 0; i < listenersCount; ++i)
+        screenSwitchListenersCopy[i]->OnScreenWillSwitch(screen);
+}
+
+void UIControlSystem::NotifyListenersDidSwitch(UIScreen* screen)
+{
+    Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
+    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
+    for (uint32 i = 0; i < listenersCount; ++i)
+        screenSwitchListenersCopy[i]->OnScreenDidSwitch(screen);
 }
 
 void UIControlSystem::CopyTouchData(UIEvent* dst, const UIEvent* src)
@@ -821,16 +819,6 @@ void UIControlSystem::CopyTouchData(UIEvent* dst, const UIEvent* src)
     dst->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(src->physPoint);
     dst->tapCount = src->tapCount;
     dst->inputHandledType = src->inputHandledType;
-}
-
-void UIControlSystem::UI3DViewAdded()
-{
-    ui3DViewCount++;
-}
-void UIControlSystem::UI3DViewRemoved()
-{
-    DVASSERT(ui3DViewCount);
-    ui3DViewCount--;
 }
 
 bool UIControlSystem::IsRtl() const
@@ -843,7 +831,7 @@ void UIControlSystem::SetRtl(bool rtl)
     layoutSystem->SetRtl(rtl);
 }
 
-UILayoutSystem *UIControlSystem::GetLayoutSystem() const
+UILayoutSystem* UIControlSystem::GetLayoutSystem() const
 {
     return layoutSystem;
 }
@@ -853,4 +841,14 @@ UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
     return styleSheetSystem;
 }
 
+UIScreenshoter* UIControlSystem::GetScreenshoter()
+{
+    return screenshoter;
+}
+
+void UIControlSystem::SetClearColor(const DAVA::Color& _clearColor)
+{
+    clearColor = _clearColor;
+}
 };
+

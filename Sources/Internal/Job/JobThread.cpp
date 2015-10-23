@@ -39,6 +39,7 @@ JobThread::JobThread(JobQueueWorker *_workerQueue, Semaphore *_workerDoneSem)
     , threadFinished(false)
 {
     thread = Thread::Create(Message(this, &JobThread::ThreadFunc));
+    thread->SetName("DAVA::JobThread");
     thread->Start();
 }
 

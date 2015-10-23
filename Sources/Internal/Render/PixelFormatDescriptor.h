@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
@@ -65,27 +66,23 @@ public:
     static const char * GetPixelFormatString(const PixelFormat format);
     static PixelFormat GetPixelFormatByName(const FastName &formatName);
 
-	static const PixelFormatDescriptor & GetPixelFormatDescriptor(const PixelFormat formatID);
-	static bool IsFormatCompressed(const PixelFormat formatID);
+	static const PixelFormatDescriptor & GetPixelFormatDescriptor(const PixelFormat formatID);	
 
 protected:
-	static void SetPixelDescription(const PixelFormat formatID, const FastName & name, uint8 size, GLenum type = 0, GLenum format = 0, GLenum internalFormat = 0, bool hardwareSupported = false, bool compressed = false);
+	static void SetPixelDescription(const PixelFormat formatID, const FastName & name, uint8 size, rhi::TextureFormat format);
 
 protected:
 	static PixelFormatDescriptor pixelDescriptors[FORMAT_COUNT];
 
 public:
 
-	GLenum format;
-	GLenum internalformat;
-	GLenum type;
-
+	rhi::TextureFormat format;
+    
 	PixelFormat formatID;
 	FastName name;
 	uint8 pixelSize;
 
-	bool isHardwareSupported:1;
-	bool isCompressedFormat:1;
+	bool isHardwareSupported;	
 };
 
 #endif //#if defined (__DAVAENGINE_OPENGL__)

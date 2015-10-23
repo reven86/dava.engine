@@ -42,16 +42,15 @@
 // UIMovieView is not implemented for this platform yet, using stub one.
 #   define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
 #   include "Platform/MovieViewControlStub.h"
-#   include "Render/RenderManager.h"
 #   include "Render/RenderHelper.h"
 #endif
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {
-
-UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates)
-    : UIControl(rect, rectInAbsoluteCoordinates)
-    , movieViewControl(new MovieViewControl)
+UIMovieView::UIMovieView(const Rect& rect)
+    : UIControl(rect)
+    , movieViewControl(new MovieViewControl())
 {
     movieViewControl->Initialize(rect);
 }
@@ -112,18 +111,15 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
     UIControl::SystemDraw(geometricData);
 
 #if defined(DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW)
-    Color curDebugDrawColor = GetDebugDrawColor();
+    static Color drawColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
 
-    Rect absRect = GetRect(true);
-    RenderManager::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
-    RenderHelper::Instance()->DrawRect(absRect, RenderState::RENDERSTATE_2D_BLEND);
+    Rect absRect = GetAbsoluteRect();
+    RenderSystem2D::Instance()->DrawRect(absRect, drawColor);
 
     float32 minRadius = Min(GetSize().x, GetSize().y);
-    RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, RenderState::RENDERSTATE_2D_BLEND);
-    RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderState::RENDERSTATE_2D_BLEND);
-    RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderState::RENDERSTATE_2D_BLEND);
-
-    SetDebugDrawColor(curDebugDrawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, drawColor);
 #endif
 }
 
@@ -139,7 +135,7 @@ void UIMovieView::WillBecomeInvisible()
     movieViewControl->SetVisible(false);
 }
 
-UIControl* UIMovieView::Clone()
+UIMovieView* UIMovieView::Clone()
 {
     UIMovieView* uiMoviewView = new UIMovieView(GetRect());
     uiMoviewView->CopyDataFrom(this);

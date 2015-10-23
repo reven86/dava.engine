@@ -40,46 +40,33 @@ namespace DAVA
 {
 class Scene;
 class StaticMesh;
-class Material;
 class Texture;
 class SceneFileV2;
 class PolygonGroup;
 class MeshInstanceNode;
 class Light;
-class InstanceMaterialState;
 class NMaterial;
-class NMaterialInstance;
 
 class PolygonGroupWithMaterial : public RenderBatch
 {
 protected:
     virtual ~PolygonGroupWithMaterial();
+
 public:
-    PolygonGroupWithMaterial();
-    
-    void Setup(StaticMesh * mesh, int32 polygroupIndex, Material * material, TransformComponent * transform);
+    void Setup(StaticMesh * mesh, int32 polygroupIndex, NMaterial * material, TransformComponent * transform);
+
     virtual uint64 GetSortID();
 
-    
     StaticMesh * GetMesh();
     int32 GetPolygroupIndex();
     PolygonGroup * GetPolygonGroup();
-    Material * GetMaterial();
-    NMaterial * GetNMaterial();
-    NMaterialInstance * GetNMaterialInstance();
-    
-    //Component * Clone();
 
 private:
-	Material * material;
-    NMaterial * nMaterial;
-    NMaterialInstance * nMaterialInstance;
-    TransformComponent *  transform;
-    
-    StaticMesh * mesh;
-    int32 polygroupIndex;
-    
     friend class MeshInstanceNode;
+
+    StaticMesh* mesh = nullptr;
+    TransformComponent* transform = nullptr;
+    int32 polygroupIndex = 0;
 };
 
     
@@ -99,7 +86,7 @@ public:
 	MeshInstanceNode();
 
 	
-	void AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupIndex, Material* material);
+	void AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupIndex, NMaterial* material);
 
     virtual void Update(float32 timeElapsed);
     virtual void Draw();
@@ -157,11 +144,6 @@ public:
 	void ClearLightmaps();
 
 	bool HasLightmaps();
-    
-	/**
-        \brief Replace material for polygon group. 
-	 */
-    void ReplaceMaterial(Material *material, int32 index);
 
 	void CreateDynamicShadowNode();
 	void DeleteDynamicShadowNode();
@@ -185,7 +167,6 @@ public:
     virtual void RegisterNearestLight(Light * node);
 
 	Vector<PolygonGroupWithMaterial*> polygroups;
-	InstanceMaterialState * materialState;
 
 protected:
     virtual void UpdateLights();

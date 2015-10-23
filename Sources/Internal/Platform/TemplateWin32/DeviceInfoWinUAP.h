@@ -38,7 +38,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-
 class DeviceInfoPrivate : public DeviceInfoPrivateBase
 {
 public:
@@ -65,7 +64,6 @@ public:
     bool IsHIDConnected(DeviceInfo::eHIDType type);
 
 private:
-
     enum NativeHIDType
     {
         UNKNOWN = 0x00,
@@ -80,20 +78,20 @@ private:
     const uint16 USAGE_PAGE = 0x01;
     using HIDConvPair = std::pair<NativeHIDType, DeviceInfo::eHIDType>;
     Vector<HIDConvPair> HidConvSet =
-    { 
-        {UNKNOWN,        DeviceInfo::HID_UNKNOWN_TYPE},
-        {POINTER,        DeviceInfo::HID_POINTER_TYPE},
-        {MOUSE,          DeviceInfo::HID_MOUSE_TYPE},
-        {JOYSTICK,       DeviceInfo::HID_JOYSTICK_TYPE},
-        {GAMEPAD,        DeviceInfo::HID_GAMEPAD_TYPE},
-        {KEYBOARD,       DeviceInfo::HID_KEYBOARD_TYPE},
-        {KEYPAD,         DeviceInfo::HID_KEYPAD_TYPE},
-        {SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE}
+    {
+      { UNKNOWN, DeviceInfo::HID_UNKNOWN_TYPE },
+      { POINTER, DeviceInfo::HID_POINTER_TYPE },
+      { MOUSE, DeviceInfo::HID_MOUSE_TYPE },
+      { JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE },
+      { GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE },
+      { KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE },
+      { KEYPAD, DeviceInfo::HID_KEYPAD_TYPE },
+      { SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE }
     };
 
-    Windows::Devices::Enumeration::DeviceWatcher^ CreateDeviceWatcher(NativeHIDType type);
-    void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation^ information);
-    void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate^ information);
+    Windows::Devices::Enumeration::DeviceWatcher ^ CreateDeviceWatcher(NativeHIDType type);
+    void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation ^ information);
+    void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate ^ information);
     bool IsEnabled(NativeHIDType type);
     void NotifyAllClients(NativeHIDType type, bool isConnected);
     eGPUFamily GPUFamily();
@@ -101,7 +99,7 @@ private:
     bool isTouchPresent = false;
     bool isMobileMode = false;
     Map<NativeHIDType, uint16> hids;
-    Vector<Windows::Devices::Enumeration::DeviceWatcher^> watchers;
+    Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 
     DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
     DeviceInfo::ScreenInfo screenInfo;
@@ -114,7 +112,6 @@ private:
     WideString productName;
     int32 zBufferSize = 24;
 };
-
 };
 
 #endif //  (__DAVAENGINE_WIN_UAP__)

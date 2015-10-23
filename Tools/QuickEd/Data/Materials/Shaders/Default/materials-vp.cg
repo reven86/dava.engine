@@ -1,0 +1,730 @@
+#include "common.cgh"
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vprog-input
+
+VPROG_IN_BEGIN
+    
+    VPROG_IN_POSITION
+    
+    #if VERTEX_LIT || PIXEL_LIT
+    VPROG_IN_NORMAL
+    #endif
+
+    #if MATERIAL_TEXTURE
+        #if MATERIAL_SKYBOX
+        VPROG_IN_TEXCOORD0(3)
+        #else
+        VPROG_IN_TEXCOORD0(2)
+        #endif
+    #endif
+
+    #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
+    VPROG_IN_TEXCOORD1(2)
+    #endif
+
+    #if VERTEX_COLOR
+    VPROG_IN_COLOR0
+    #endif
+    
+    #if PIXEL_LIT
+    VPROG_IN_TANGENT
+    VPROG_IN_BINORMAL
+    #endif
+    
+    #if SKINNING
+    VPROG_IN_BLENDINDEX(1)
+    #endif
+
+
+    #if SPEED_TREE_LEAF
+    VPROG_IN_TEXCOORD3(3)
+    #if WIND_ANIMATION
+    VPROG_IN_TEXCOORD4(2)
+    #endif
+    #endif
+
+
+    
+    #if WIND_ANIMATION
+    VPROG_IN_TEXCOORD5(1)
+    #endif
+
+    #if FRAME_BLEND
+    VPROG_IN_TEXCOORD3(1)
+    #endif
+
+
+
+VPROG_IN_END
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vprog-output
+
+VPROG_OUT_BEGIN
+
+    VPROG_OUT_POSITION
+
+    #if MATERIAL_SKYBOX
+    VPROG_OUT_TEXCOORD0(varTexCoord0,3)
+    #elif MATERIAL_TEXTURE
+    VPROG_OUT_TEXCOORD0(varTexCoord0,2)
+    #endif
+
+    #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
+    VPROG_OUT_TEXCOORD1(varTexCoord1,2)
+    #endif
+
+    #if MATERIAL_DETAIL
+    VPROG_OUT_TEXCOORD2(varDetailTexCoord,2)
+    #endif
+
+    #if TILED_DECAL_MASK
+    VPROG_OUT_TEXCOORD2(varDecalTileTexCoord,2)
+    #endif
+    
+    
+    #if VERTEX_LIT
+        VPROG_OUT_COLOR0(varDiffuseColor,1)
+        #if BLINN_PHONG
+            VPROG_OUT_TEXCOORD4(varSpecularColor,1)
+            //varying lowp float varSpecularColor;
+        #elif NORMALIZED_BLINN_PHONG
+            VPROG_OUT_TEXCOORD4(varSpecularColor,4)
+            //varying lowp vec3 varSpecularColor;
+            //varying lowp float varNdotH;
+        #endif
+    #endif
+
+    #if PIXEL_LIT
+//        VPROG_OUT_TEXCOORD4(varLightPosition,3)
+        #if FAST_NORMALIZATION
+        VPROG_OUT_COLOR0(varHalfVec,3)
+        #endif
+        VPROG_OUT_COLOR1(varToLightVec,3)
+        #if DISTANCE_ATTENUATION
+        VPROG_OUT_TEXCOORD6(varPerPixelAttenuation,1)
+        #endif
+        VPROG_OUT_TEXCOORD7(varToCameraVec,3) 
+    #endif
+
+    #if SETUP_LIGHTMAP
+kkk        
+        uniform float lightmapSize;
+        varying lowp float varLightmapSize;
+    #endif
+    
+    #if VERTEX_COLOR || SPHERICAL_LIT
+        VPROG_OUT_COLOR1(varVertexColor,4)
+    #endif
+    
+    #if FRAME_BLEND
+        VPROG_OUT_TEXCOORD3(varTime,1)        
+    #endif
+
+    #if VERTEX_FOG
+        VPROG_OUT_TEXCOORD5(varFog,4)
+//        varying lowp float varFogAmoung;
+//        varying lowp vec3 varFogColor;
+    #endif
+
+
+
+VPROG_OUT_END
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// properties
+
+#if !SPEED_TREE_LEAF || CUT_LEAF
+property float4x4 worldViewProjMatrix : dynamic,a : ;
+#endif
+
+#if VERTEX_LIT || PIXEL_LIT || VERTEX_FOG || SPEED_TREE_LEAF || SPHERICAL_LIT
+property float4x4 worldViewMatrix : dynamic,a : ;
+#endif
+
+#if VERTEX_LIT || PIXEL_LIT /*|| (VERTEX_FOG && FOG_ATMOSPHERE)*/
+property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
+#if DISTANCE_ATTENUATION
+property float lightIntensity0 : static,a : ; 
+#endif
+#endif
+#if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
+property float4 lightPosition0 : dynamic,a : ;
+#endif
+
+
+#if VERTEX_LIT
+property float materialSpecularShininess : static,a : ;
+property float inSpecularity : static,a : ;
+property float inGlossiness : static,a : ;
+property float physicalFresnelReflectance : static,a : ;
+property float3 metalFresnelReflectance : static,a : ;
+#endif
+
+#if SKINNING
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin1 : bigarray ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
+#endif
+
+#include "vp-fog-props.cgh"
+
+#if MATERIAL_LIGHTMAP
+property float2 uvOffset : static,a : ;
+property float2 uvScale : static,a : ;
+#endif
+
+#if WIND_ANIMATION
+property float2 trunkOscillationParams : dynamic,a : ;
+#endif
+
+#if SPEED_TREE_LEAF
+property float3 worldScale : dynamic,a : ;
+property float4x4 projMatrix : dynamic,a : ;
+
+    #if CUT_LEAF
+        property float cutDistance : static,a : ;
+    #endif
+
+    #if !SPHERICAL_LIT  //legacy for old tree lighting
+        property float4 treeLeafColorMul : static,a : def_value=0.5,0.5,0.5,0.5 ;
+        property float treeLeafOcclusionOffset : static,a : def_value=0 ;
+        property float treeLeafOcclusionMul : static,a : def_value=0.5 ;
+    #endif
+    
+    #if WIND_ANIMATION
+        property float2 leafOscillationParams : dynamic,a : ; //x: A*sin(T); y: A*cos(T);
+    #endif
+    
+    #if SPHERICAL_LIT
+        property float speedTreeLightSmoothing : dynamic,a : ;
+    #endif
+#endif
+
+#if SPHERICAL_LIT
+property float3 worldViewObjectCenter : dynamic,a : ;
+property float4x4 invViewMatrix : dynamic,a : ;
+property float3 boundingBoxSize : dynamic,a : ;
+
+    #if SPHERICAL_HARMONICS_9
+        property float4 sphericalHarmonics[7] : dynamic,a : ;
+    #elif SPHERICAL_HARMONICS_4
+        property float4 sphericalHarmonics[3] : dynamic,a : ;
+    #else
+        property float4 sphericalHarmonics : dynamic,a : ;
+    #endif
+    
+#endif
+
+#if TILED_DECAL_MASK
+property float2 decalTileCoordScale : static,a : ;
+#endif
+
+#if MATERIAL_DETAIL
+property float2 detailTileCoordScale : static,a : ;
+#endif
+
+#if TEXTURE0_SHIFT_ENABLED
+property float2 texture0Shift : static,a : ;
+#endif 
+#if TEXTURE0_ANIMATION_SHIFT
+property float2 tex0ShiftPerSecond : static,a : ;
+#endif
+
+#if VERTEX_FOG 
+property float3 cameraPosition : dynamic,a : ;
+property float4x4 worldMatrix : dynamic,a : ;
+#endif
+
+#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT
+property float globalTime : dynamic,a : ;
+#endif
+
+
+// prototypes, to shut up Metal shader-compiler
+float  FresnelShlick( float NdotL, float Cspec );
+float3 FresnelShlickVec3( float NdotL, float3 Cspec );
+float3 JointTransformTangent( float3 inVec, float4 jointQuaternion );
+float4 Wave( float time, float4 pos, float2 uv );
+
+
+
+float
+FresnelShlick( float NdotL, float Cspec )
+{
+    float fresnel_exponent = 5.0;
+    return (1.0 - Cspec) * pow(1.0 - NdotL, fresnel_exponent) + Cspec;
+}
+
+float3
+FresnelShlickVec3( float NdotL, float3 Cspec )
+{
+    float fresnel_exponent = 5.0;
+    return (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent)) + Cspec;
+}
+
+float3
+JointTransformTangent( float3 inVec, float4 jointQuaternion )
+{
+    float3 t = 2.0 * cross( jointQuaternion.xyz, inVec );
+    return inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t); 
+}
+
+
+float4
+Wave( float time, float4 pos, float2 uv )
+{
+//  float time = globalTime;
+//  vec4 pos = inPosition;
+//  vec2 uv = inTexCoord0;
+#if 1
+    float4 off;
+    float sinOff = pos.x + pos.y + pos.z;
+    float t = -time * 3.0;
+    float cos1 = cos(t * 1.45 + sinOff);
+    float cos2 = cos(t * 3.12 + sinOff);
+    float cos3 = cos(t * 2.2 + sinOff);
+    float fx= uv.x;
+    float fy= uv.x * uv.y;
+    
+    off.y = pos.y + cos2 * fx * 0.5 - fy * 0.9;
+    off.x = pos.x + cos1 * fx * 0.5;
+    off.z = pos.z + cos3 * fx * 0.5;
+    off.w = pos.w;
+#else
+    float4 off;
+    float t = -time;
+    float sin2 = sin(4.0 * sqrt(uv.x + uv.x + uv.y * uv.y) + time);
+    
+    off.x = pos.x;// + cos1 * fx * 0.5;
+    off.y = pos.y + sin2 * 0.5;// - fy * 0.9;
+    off.z = pos.z;// + cos3 * fx * 0.5;
+    off.w = pos.w;
+#endif
+    
+    return off;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// main
+
+VPROG_BEGIN
+
+#if SKINNING
+    // compute final state - for now just effected by 1 bone - later blend everything here
+    int     index                    = int(VP_IN_BLENDINDEX);
+    float4  weightedVertexPosition   = jointPositions[index];
+    float4  weightedVertexQuaternion = jointQuaternions[index];
+#endif
+
+    
+    #if SPEED_TREE_LEAF
+    float3 inPivot = VP_IN_TEXCOORD3;
+    #if WIND_ANIMATION
+    float2 inAngleSinCos = VP_IN_TEXCOORD4;
+    #endif
+    #endif
+    #if WIND_ANIMATION
+    float inFlexibility = VP_IN_TEXCOORD5;
+    #endif
+
+    #if VERTEX_COLOR
+    float4 inVertexColor = VP_IN_COLOR0;
+    #endif
+
+#if MATERIAL_SKYBOX
+    
+    float4 vecPos = mul( VP_IN_POSITION, worldViewProjMatrix );
+    VP_OUT_POSITION = float4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
+
+#elif SKYOBJECT
+    
+    float4x4 mwpWOtranslate = float4x4(worldViewProjMatrix[0], worldViewProjMatrix[1], worldViewProjMatrix[2], float4(0.0, 0.0, 0.0, 1.0));
+    float4   vecPos         = mul( float4(VP_IN_POSITION,1.0), mwpWOtranslate );
+    VP_OUT_POSITION = float4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
+
+#elif SPEED_TREE_LEAF
+
+    float4  eyeCoordsPosition4;
+
+    #if CUT_LEAF
+        float4 tangentInCameraSpace = mul( float4(inPivot,1.0), worldViewMatrix );
+        if (tangentInCameraSpace.z < -cutDistance)
+        {
+            VP_OUT_POSITION = mul( float4(inPivot,1.0), worldViewProjMatrix );
+        }
+        else
+        {
+    #endif
+
+            float3 offset = VP_IN_POSITION.xyz - inPivot;
+            float3 pivot = inPivot;
+            
+            
+            #if WIND_ANIMATION
+            
+            //inAngleSinCos:        x: cos(T0);  y: sin(T0);
+            //leafOscillationParams:  x: A*sin(T); y: A*cos(T);
+            float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
+            pivot += windVectorFlex;
+            
+            float2 SinCos = inAngleSinCos * leafOscillationParams; //vec2(A*sin(t)*cos(t0), A*cos(t)*sin(t0))
+            float sinT = SinCos.x + SinCos.y;     //sin(t+t0)*A = sin*cos + cos*sin
+            float cosT = 1.0 - 0.5 * sinT * sinT; //cos(t+t0)*A = 1 - 0.5*sin^2
+            
+            float4 SinCosT = float4(sinT, cosT, cosT, sinT); //temp vec for mul
+            float4 offsetXY = float4(offset.x, offset.y, offset.x, offset.y); //temp vec for mul
+            float4 rotatedOffsetXY = offsetXY * SinCosT; //vec4(x*sin, y*cos, x*cos, y*sin)
+            
+            offset.x = rotatedOffsetXY.z - rotatedOffsetXY.w; //x*cos - y*sin
+            offset.y = rotatedOffsetXY.x + rotatedOffsetXY.y; //x*sin + y*cos
+
+            #endif //end of (not WIND_ANIMATION and SPEED_TREE_LEAF)
+
+            
+            float4 eyeCoordsPivot = mul( float4(pivot,1.0), worldViewMatrix );
+            eyeCoordsPosition4 = float4(worldScale * offset, 0.0) + eyeCoordsPivot;
+            VP_OUT_POSITION = mul(eyeCoordsPosition4,projMatrix);
+        
+    #if CUT_LEAF
+        }
+    #endif // not CUT_LEAF
+
+#else // not SPEED_TREE_LEAF
+
+    #if WIND_ANIMATION
+
+        float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
+        VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz + windVectorFlex, 1.0), worldViewProjMatrix );
+        
+    #else // WIND_ANIMATION
+
+        #if WAVE_ANIMATION
+            VP_OUT_POSITION = mul( Wave(globalTime, VP_IN_POSITION, inTexCoord0), worldViewProjMatrix );
+        #else
+            #if SKINNING
+//weightedVertexPosition.w=3.0;
+                float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
+                float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
+                VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
+//VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0)+0.000001*skinnedPosition, worldViewProjMatrix );
+            #else
+                VP_OUT_POSITION = mul( float4(VP_IN_POSITION,1.0), worldViewProjMatrix );
+            #endif
+        #endif
+
+    #endif // WIND_ANIMATION
+
+#endif //end "not SPEED_TREE_LEAF
+
+
+#if SPEED_TREE_LEAF
+    float3 eyeCoordsPosition = eyeCoordsPosition4.xyz;
+#elif VERTEX_LIT || PIXEL_LIT || VERTEX_FOG || SPHERICAL_LIT
+    #if SKINNING
+        float3 eyeCoordsPosition = mul( skinnedPosition, worldViewMatrix ).xyz; // view direction in view space
+    #else
+        // view direction in view space
+        float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
+    #endif
+#endif
+
+
+#if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
+    float3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+#endif
+
+
+#if VERTEX_LIT
+    
+    float3  inNormal = VP_IN_NORMAL;
+    
+    float3 normal = normalize(mul(float4(inNormal, 0.0), worldViewInvTransposeMatrix).xyz); // normal in eye coordinates
+   
+    #if DISTANCE_ATTENUATION
+        float attenuation = lightIntensity0;
+        float distAttenuation = length(toLightDir);
+        attenuation /= (distAttenuation * distAttenuation); // use inverse distance for distance attenuation
+    #endif
+    
+    toLightDir = normalize(toLightDir);
+    
+    
+    #if BLINN_PHONG
+        
+        VP_OUT(varDiffuseColor) = max(0.0, dot(normal, toLightDir));
+
+        // Blinn-phong reflection
+        float3 toCameraDir = normalize(-eyeCoordsPosition);
+        float3 H = normalize(toLightDir + toCameraDir);
+        float nDotHV = max(0.0, dot(normal, H));
+        varSpecularColor = pow(nDotHV, materialSpecularShininess);
+        
+    #elif NORMALIZED_BLINN_PHONG
+        
+        float3 toCameraNormalized = normalize(-eyeCoordsPosition);
+        float3 H = normalize(toLightDir + toCameraNormalized);
+
+        float NdotL = max (dot (normal, toLightDir), 0.0);
+        float NdotH = max (dot (normal, H), 0.0);
+        float LdotH = max (dot (toLightDir, H), 0.0);
+        float NdotV = max (dot (normal, toCameraNormalized), 0.0);
+
+        //float3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
+        float3 fresnelOut  = FresnelShlickVec3(NdotV, metalFresnelReflectance);
+        float  specularity = inSpecularity;
+
+        float Dbp = NdotL;
+        float Geo = 1.0 / LdotH * LdotH;
+        
+        VP_OUT(varDiffuseColor) = NdotL / _PI;
+        
+        VP_OUT(varSpecularColor).xyz = Dbp * Geo * fresnelOut * specularity;
+        VP_OUT(varSpecularColor).w = NdotH;
+    
+    #endif
+    
+#endif // VERTEX_LIT
+
+
+#if PIXEL_LIT
+
+    float3  inNormal    = VP_IN_NORMAL;
+    float3  inTangent   = VP_IN_TANGENT;
+    float3  inBinormal  = VP_IN_BINORMAL;
+    
+    #if SKINNING
+        float3 n = normalize( mul( float4(JointTransformTangent(inNormal, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ).xyz );
+        float3 t = normalize( mul( float4(JointTransformTangent(inTangent, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ).xyz );
+        float3 b = normalize( mul( float4(JointTransformTangent(inBinormal, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ).xyz );
+    #else
+        float3 n = normalize( mul( float4(inNormal,1.0), worldViewInvTransposeMatrix ).xyz );
+        float3 t = normalize( mul( float4(inTangent,1.0), worldViewInvTransposeMatrix ).xyz );
+        float3 b = normalize( mul( float4(inBinormal,1.0), worldViewInvTransposeMatrix ).xyz );
+    #endif
+    
+    #if DISTANCE_ATTENUATION
+        VP_OUT(varPerPixelAttenuation) = length(toLightDir);
+    #endif
+    //lightDir = normalize(lightDir);
+    
+    // transform light and half angle vectors by tangent basis
+    float3 v;
+    v.x = dot (toLightDir, t);
+    v.y = dot (toLightDir, b);
+    v.z = dot (toLightDir, n);
+    
+    #if !FAST_NORMALIZATION
+        VP_OUT(varToLightVec) = v;
+    #else
+        VP_OUT(varToLightVec) = normalize(v);
+    #endif
+
+    float3 toCameraDir = -eyeCoordsPosition;
+
+    v.x = dot (toCameraDir, t);
+    v.y = dot (toCameraDir, b);
+    v.z = dot (toCameraDir, n);
+    
+    #if !FAST_NORMALIZATION
+        VP_OUT(varToCameraVec) = v;
+    #else
+        VP_OUT(varToCameraVec) = normalize(v);
+    #endif
+    
+    /* Normalize the halfVector to pass it to the fragment shader */
+    // No need to divide by two, the result is normalized anyway.
+    // float3 halfVector = normalize((E + lightDir) / 2.0);
+    #if FAST_NORMALIZATION
+        float3 halfVector = normalize(normalize(toCameraDir) + normalize(toLightDir));
+        v.x = dot (halfVector, t);
+        v.y = dot (halfVector, b);
+        v.z = dot (halfVector, n);
+        
+        // No need to normalize, t,b,n and halfVector are normal vectors.
+        VP_OUT(varHalfVec) = v;
+    #endif
+
+//    varLightPosition.x = dot (lightPosition0.xyz, t);
+//    varLightPosition.y = dot (lightPosition0.xyz, b);
+//    varLightPosition.z = dot (lightPosition0.xyz, n);
+    
+
+#endif // PIXEL_LIT
+
+
+#if VERTEX_FOG
+
+    FogParam    fog_param;
+
+    fog_param.color     = fogColor.rgb;
+    fog_param.limit     = fogLimit;
+    #if FOG_LINEAR
+    fog_param.start     = fogStart;
+    fog_param.end       = fogEnd;
+    #else
+    fog_param.density   = fogDensity;
+    #endif
+    #if FOG_HALFSPACE
+    fog_param.halfspace_height  = fogHalfspaceHeight;
+    fog_param.halfspace_falloff = fogHalfspaceFalloff;
+    fog_param.halfspace_density = fogHalfspaceDensity;
+    fog_param.halfspace_limit   = fogHalfspaceLimit;
+    #endif
+
+    #if FOG_ATMOSPHERE
+    fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+
+    fog_param.atmosphere_distance = fogAtmosphereDistance;
+    #if !FOG_ATMOSPHERE_MAP
+    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
+    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
+    fog_param.atmosphere_scattering = fogAtmosphereScattering;
+    #endif
+    
+    #endif
+    
+    fog_param.view_position  = eyeCoordsPosition;
+    fog_param.world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
+    fog_param.eye_position   = cameraPosition;
+    
+    VP_OUT(varFog) = CalculateVertexFog( fog_param );
+#endif // VERTEX_FOG
+
+
+#if VERTEX_COLOR
+    VP_OUT(varVertexColor) = VP_IN_COLOR0;
+#endif
+
+
+#if SPHERICAL_LIT
+
+    #define A0      (0.282094)
+    #define A1      (0.325734)
+
+    #define Y2_2(n) (0.273136 * (n.y * n.x))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.y * n.x)) * 0.785398 / PI
+    #define Y2_1(n) (0.273136 * (n.y * n.z))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.y * n.z)) * 0.785398 / PI
+    #define Y20(n)  (0.078847 * (3.0 * n.z * n.z - 1.0))                    // (1.0 / 4.0) * sqrt(5.0 / PI) * ((3.0 * n.z * n.z - 1.0)) * 0.785398 / PI
+    #define Y21(n)  (0.273136 * (n.z * n.x))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.z * n.x)) * 0.785398 / PI
+    #define Y22(n)  (0.136568 * (n.x * n.x - n.y * n.y))                    // (1.0 / 4.0) * sqrt(15.0 / PI) * ((n.x * n.x - n.y * n.y)) * 0.785398 / PI
+
+    #if SPHERICAL_HARMONICS_4 || SPHERICAL_HARMONICS_9
+        float3 sphericalLightFactor = A0 * sphericalHarmonics[0].xyz;
+    #else
+        float3 sphericalLightFactor = A0 * sphericalHarmonics.xyz;
+    #endif
+    
+    #if SPEED_TREE_LEAF
+        float3 localSphericalLightFactor = sphericalLightFactor;
+    #endif
+    
+    #if !CUT_LEAF
+
+        #if SPHERICAL_HARMONICS_4 || SPHERICAL_HARMONICS_9
+
+            float3x3 invViewMatrix3 = float3x3(float3(invViewMatrix[0].xyz), float3(invViewMatrix[1].xyz), float3(invViewMatrix[2].xyz));
+            float3 normal = invViewMatrix3 * (eyeCoordsPosition - worldViewObjectCenter);
+            normal /= boundingBoxSize;
+            float3 n = normalize(normal);
+
+            float3x3 shMatrix = float3x3(float3(sphericalHarmonics[0].w,  sphericalHarmonics[1].xy),
+                                         float3(sphericalHarmonics[1].zw, sphericalHarmonics[2].x),
+                                         float3(sphericalHarmonics[2].yzw));
+            sphericalLightFactor += A1 * shMatrix * float3(n.y, n.z, n.x);
+        
+            #if SPEED_TREE_LEAF
+                float3 localNormal = mul( (eyeCoordsPosition - float3(eyeCoordsPivot)), invViewMatrix3 );
+                float3 ln = normalize(localNormal);
+                localSphericalLightFactor += A1 * shMatrix * float3(ln.y, ln.z, ln.x);
+            #endif
+
+            #if SPHERICAL_HARMONICS_9
+                sphericalLightFactor += Y2_2(n) * float3(sphericalHarmonics[3].xyz);
+                sphericalLightFactor += Y2_1(n) * float3(sphericalHarmonics[3].w,  sphericalHarmonics[4].xy);
+                sphericalLightFactor += Y20(n)  * float3(sphericalHarmonics[4].zw, sphericalHarmonics[5].x);
+                sphericalLightFactor += Y21(n)  * float3(sphericalHarmonics[5].yzw);
+                sphericalLightFactor += Y22(n)  * float3(sphericalHarmonics[6].xyz);
+            #endif
+
+            #if SPEED_TREE_LEAF
+                sphericalLightFactor = lerp(sphericalLightFactor, localSphericalLightFactor, speedTreeLightSmoothing);
+            #endif
+        
+        #endif // SPHERICAL_HARMONICS_4 || SPHERICAL_HARMONICS_9
+
+    #endif // !CUT_LEAF
+
+    VP_OUT(varVertexColor) = float4(sphericalLightFactor * 2.0, 1.0);
+
+    #undef A0     
+    #undef A1     
+
+    #undef Y2_2
+    #undef Y2_1
+    #undef Y20 
+    #undef Y21 
+    #undef Y22 
+
+#elif SPEED_TREE_LEAF //legacy for old tree lighting
+    
+    VP_OUT(varVertexColor).xyz = inVertexColor.xyz * treeLeafColorMul.xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
+
+#endif
+
+#if MATERIAL_SKYBOX || MATERIAL_TEXTURE
+    VP_OUT(varTexCoord0) = VP_IN_TEXCOORD0;
+#endif    
+
+#if MATERIAL_TEXTURE
+    #if TEXTURE0_SHIFT_ENABLED
+        VP_OUT(varTexCoord0) += texture0Shift;
+    #endif
+
+        
+    #if TEXTURE0_ANIMATION_SHIFT
+        VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
+    #endif
+
+        
+    #if TILED_DECAL_MASK
+        varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
+    #endif
+#endif
+    
+#if MATERIAL_DETAIL
+    varDetailTexCoord = VP_OUT(varTexCoord0) * detailTileCoordScale;
+#endif
+
+
+#if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
+    
+    #if SETUP_LIGHTMAP
+        varLightmapSize      = lightmapSize;
+        VP_OUT(varTexCoord1) = VP_IN_TEXCOORD1;
+    #elif MATERIAL_LIGHTMAP
+        VP_OUT(varTexCoord1) = uvScale*VP_IN_TEXCOORD1 + uvOffset;
+    #else
+        VP_OUT(varTexCoord1) = VP_IN_TEXCOORD1;
+    #endif
+#endif
+
+
+#if FRAME_BLEND
+    VP_OUT(varTime) = VP_IN_TEXCOORD3;
+#endif
+
+#if FORCE_2D_MODE
+    VP_OUT_POSITION.z=0.0;
+#endif
+
+VPROG_END
+
+
+
+
