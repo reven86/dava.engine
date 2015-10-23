@@ -16,19 +16,18 @@ typedef struct FMOD_OUTPUT_STATE FMOD_OUTPUT_STATE;
 
 /*
     Output callbacks
-*/ 
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_GETNUMDRIVERSCALLBACK)(FMOD_OUTPUT_STATE *output_state, int *numdrivers);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_GETDRIVERNAMECALLBACK)(FMOD_OUTPUT_STATE *output_state, int id, char *name, int namelen);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_GETDRIVERCAPSCALLBACK)(FMOD_OUTPUT_STATE *output_state, int id, FMOD_CAPS *caps);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_INITCALLBACK)         (FMOD_OUTPUT_STATE *output_state, int selecteddriver, FMOD_INITFLAGS flags, int *outputrate, int outputchannels, FMOD_SOUND_FORMAT *outputformat, int dspbufferlength, int dspnumbuffers, void *extradriverdata);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_CLOSECALLBACK)        (FMOD_OUTPUT_STATE *output_state);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_UPDATECALLBACK)       (FMOD_OUTPUT_STATE *output_state);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_GETHANDLECALLBACK)    (FMOD_OUTPUT_STATE *output_state, void **handle);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_GETPOSITIONCALLBACK)  (FMOD_OUTPUT_STATE *output_state, unsigned int *pcm);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_LOCKCALLBACK)         (FMOD_OUTPUT_STATE *output_state, unsigned int offset, unsigned int length, void **ptr1, void **ptr2, unsigned int *len1, unsigned int *len2);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_UNLOCKCALLBACK)       (FMOD_OUTPUT_STATE *output_state, void *ptr1, void *ptr2, unsigned int len1, unsigned int len2);
-typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_READFROMMIXER)        (FMOD_OUTPUT_STATE *output_state, void *buffer, unsigned int length);
-
+*/
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_GETNUMDRIVERSCALLBACK)(FMOD_OUTPUT_STATE* output_state, int* numdrivers);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_GETDRIVERNAMECALLBACK)(FMOD_OUTPUT_STATE* output_state, int id, char* name, int namelen);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_GETDRIVERCAPSCALLBACK)(FMOD_OUTPUT_STATE* output_state, int id, FMOD_CAPS* caps);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_INITCALLBACK)(FMOD_OUTPUT_STATE* output_state, int selecteddriver, FMOD_INITFLAGS flags, int* outputrate, int outputchannels, FMOD_SOUND_FORMAT* outputformat, int dspbufferlength, int dspnumbuffers, void* extradriverdata);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_CLOSECALLBACK)(FMOD_OUTPUT_STATE* output_state);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_UPDATECALLBACK)(FMOD_OUTPUT_STATE* output_state);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_GETHANDLECALLBACK)(FMOD_OUTPUT_STATE* output_state, void** handle);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_GETPOSITIONCALLBACK)(FMOD_OUTPUT_STATE* output_state, unsigned int* pcm);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_LOCKCALLBACK)(FMOD_OUTPUT_STATE* output_state, unsigned int offset, unsigned int length, void** ptr1, void** ptr2, unsigned int* len1, unsigned int* len2);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_UNLOCKCALLBACK)(FMOD_OUTPUT_STATE* output_state, void* ptr1, void* ptr2, unsigned int len1, unsigned int len2);
+typedef FMOD_RESULT(F_CALLBACK* FMOD_OUTPUT_READFROMMIXER)(FMOD_OUTPUT_STATE* output_state, void* buffer, unsigned int length);
 
 /*
 [STRUCTURE] 
@@ -49,21 +48,20 @@ typedef FMOD_RESULT (F_CALLBACK *FMOD_OUTPUT_READFROMMIXER)        (FMOD_OUTPUT_
 */
 typedef struct FMOD_OUTPUT_DESCRIPTION
 {
-    const char                        *name;                  /* [in] Name of the output. */
-    unsigned int                       version;               /* [in] Plugin writer's version number. */
-    int                                polling;               /* [in] If TRUE (non zero), this tells FMOD to start a thread and call getposition / lock / unlock for feeding data.  If 0, the output is probably callback based, so all the plugin needs to do is call readfrommixer to the appropriate pointer. */ 
-    FMOD_OUTPUT_GETNUMDRIVERSCALLBACK  getnumdrivers;         /* [in] For sound device enumeration.  This callback is to give System::getNumDrivers somthing to return. */
-    FMOD_OUTPUT_GETDRIVERNAMECALLBACK  getdrivername;         /* [in] For sound device enumeration.  This callback is to give System::getDriverName somthing to return. */
-    FMOD_OUTPUT_GETDRIVERCAPSCALLBACK  getdrivercaps;         /* [in] For sound device enumeration.  This callback is to give System::getDriverCaps somthing to return. */
-    FMOD_OUTPUT_INITCALLBACK           init;                  /* [in] Initialization function for the output device.  This is called from System::init. */
-    FMOD_OUTPUT_CLOSECALLBACK          close;                 /* [in] Cleanup / close down function for the output device.  This is called from System::close. */
-    FMOD_OUTPUT_UPDATECALLBACK         update;                /* [in] Update function that is called once a frame by the user.  This is called from System::update. */
-    FMOD_OUTPUT_GETHANDLECALLBACK      gethandle;             /* [in] This is called from System::getOutputHandle.  This is just to return a pointer to the internal system device object that the system may be using.*/
-    FMOD_OUTPUT_GETPOSITIONCALLBACK    getposition;           /* [in] This is called from the FMOD software mixer thread if 'polling' = true.  This returns a position value in samples so that FMOD knows where and when to fill its buffer. */
-    FMOD_OUTPUT_LOCKCALLBACK           lock;                  /* [in] This is called from the FMOD software mixer thread if 'polling' = true.  This function provides a pointer to data that FMOD can write to when software mixing. */
-    FMOD_OUTPUT_UNLOCKCALLBACK         unlock;                /* [in] This is called from the FMOD software mixer thread if 'polling' = true.  This optional function accepts the data that has been mixed and copies it or does whatever it needs to before sending it to the hardware. */
+    const char* name; /* [in] Name of the output. */
+    unsigned int version; /* [in] Plugin writer's version number. */
+    int polling; /* [in] If TRUE (non zero), this tells FMOD to start a thread and call getposition / lock / unlock for feeding data.  If 0, the output is probably callback based, so all the plugin needs to do is call readfrommixer to the appropriate pointer. */
+    FMOD_OUTPUT_GETNUMDRIVERSCALLBACK getnumdrivers; /* [in] For sound device enumeration.  This callback is to give System::getNumDrivers somthing to return. */
+    FMOD_OUTPUT_GETDRIVERNAMECALLBACK getdrivername; /* [in] For sound device enumeration.  This callback is to give System::getDriverName somthing to return. */
+    FMOD_OUTPUT_GETDRIVERCAPSCALLBACK getdrivercaps; /* [in] For sound device enumeration.  This callback is to give System::getDriverCaps somthing to return. */
+    FMOD_OUTPUT_INITCALLBACK init; /* [in] Initialization function for the output device.  This is called from System::init. */
+    FMOD_OUTPUT_CLOSECALLBACK close; /* [in] Cleanup / close down function for the output device.  This is called from System::close. */
+    FMOD_OUTPUT_UPDATECALLBACK update; /* [in] Update function that is called once a frame by the user.  This is called from System::update. */
+    FMOD_OUTPUT_GETHANDLECALLBACK gethandle; /* [in] This is called from System::getOutputHandle.  This is just to return a pointer to the internal system device object that the system may be using.*/
+    FMOD_OUTPUT_GETPOSITIONCALLBACK getposition; /* [in] This is called from the FMOD software mixer thread if 'polling' = true.  This returns a position value in samples so that FMOD knows where and when to fill its buffer. */
+    FMOD_OUTPUT_LOCKCALLBACK lock; /* [in] This is called from the FMOD software mixer thread if 'polling' = true.  This function provides a pointer to data that FMOD can write to when software mixing. */
+    FMOD_OUTPUT_UNLOCKCALLBACK unlock; /* [in] This is called from the FMOD software mixer thread if 'polling' = true.  This optional function accepts the data that has been mixed and copies it or does whatever it needs to before sending it to the hardware. */
 } FMOD_OUTPUT_DESCRIPTION;
-
 
 /*
 [STRUCTURE] 
@@ -84,10 +82,8 @@ typedef struct FMOD_OUTPUT_DESCRIPTION
 */
 struct FMOD_OUTPUT_STATE
 {
-    void                      *plugindata;      /* [in] Plugin writer created data the output author wants to attach to this object. */
-    FMOD_OUTPUT_READFROMMIXER  readfrommixer;   /* [out] Function to update mixer and write the result to the provided pointer.  Used from callback based output only.  Polling based output uses lock/unlock/getposition. */
+    void* plugindata; /* [in] Plugin writer created data the output author wants to attach to this object. */
+    FMOD_OUTPUT_READFROMMIXER readfrommixer; /* [out] Function to update mixer and write the result to the provided pointer.  Used from callback based output only.  Polling based output uses lock/unlock/getposition. */
 };
 
 #endif
-
-

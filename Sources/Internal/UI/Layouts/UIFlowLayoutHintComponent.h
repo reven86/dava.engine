@@ -39,29 +39,28 @@ class UIFlowLayoutHintComponent : public UIComponent
 {
 public:
     IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_HINT_COMPONENT);
-    
+
     UIFlowLayoutHintComponent();
-    UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent &src);
-    
+    UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src);
+
 protected:
     virtual ~UIFlowLayoutHintComponent();
-    
+
 private:
-    UIFlowLayoutHintComponent &operator=(const UIFlowLayoutHintComponent &) = delete;
-    
+    UIFlowLayoutHintComponent& operator=(const UIFlowLayoutHintComponent&) = delete;
+
 public:
     UIFlowLayoutHintComponent* Clone() const override;
-    
+
     bool IsNewLineBeforeThis() const;
     void SetNewLineBeforeThis(bool flag);
-    
+
     bool IsNewLineAfterThis() const;
     void SetNewLineAfterThis(bool flag);
-    
+
 private:
-    
     void SetLayoutDirty();
-    
+
 private:
     enum eFlags
     {
@@ -69,18 +68,14 @@ private:
         FLAG_NEW_LINE_AFTER_THIS,
         FLAG_COUNT
     };
-    
+
     Bitset<eFlags::FLAG_COUNT> flags;
 
-    
 public:
     INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
                          PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT)
-                         );
-    
+                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT));
 };
-    
 }
 
 

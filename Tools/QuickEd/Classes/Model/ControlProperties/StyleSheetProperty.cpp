@@ -69,9 +69,9 @@ StyleSheetProperty::~StyleSheetProperty()
     properties.clear();
 }
 
-int StyleSheetProperty::GetCount() const
+uint32 StyleSheetProperty::GetCount() const
 {
-    return static_cast<int>(properties.size());
+    return properties.size();
 }
 
 AbstractProperty *StyleSheetProperty::GetProperty(int index) const

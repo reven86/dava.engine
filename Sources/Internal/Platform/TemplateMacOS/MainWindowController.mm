@@ -35,7 +35,6 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-
 namespace DAVA 
 {
 	int Core::Run(int argc, char *argv[], AppHandle handle)
@@ -47,13 +46,13 @@ namespace DAVA
 		core->CreateSingletons();
 
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
-		
-		int retVal = NSApplicationMain(argc,  (const char **) argv);
+
+        int retVal = NSApplicationMain(argc,  (const char **) argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
         // core->ReleaseSingletons() is called from there
-        
-		[globalPool release];
+
+        [globalPool release];
 		globalPool = 0;
 		return retVal;
 	}
@@ -108,11 +107,6 @@ namespace DAVA
 		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
 		// mouseLocation.y = 
 		return mouseLocation;
-	}
-	
-	void* CoreMacOSPlatform::GetOpenGLView()
-	{
-		return mainWindowController->openGLView;
 	}
 }
 
@@ -177,6 +171,7 @@ namespace DAVA
     [openGLView setFrame: rect];
     
 	core = Core::GetApplicationCore();
+    Core::Instance()->SetNativeView(openGLView);
     RenderManager::Instance()->DetectRenderingCapabilities();
     RenderSystem2D::Instance()->Init();
 

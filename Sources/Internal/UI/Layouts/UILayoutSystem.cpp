@@ -71,30 +71,30 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
     autoupdatesEnabled = enabled;
 }
 
-void UILayoutSystem::ApplyLayout(UIControl *control, bool considerDenendenceOnChildren)
+void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnChildren)
 {
-    UIControl *container = control;
+    UIControl* container = control;
     if (considerDenendenceOnChildren)
     {
         container = FindNotDependentOnChildrenControl(container);
     }
 
     CollectControls(container);
-    
+
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);
-    
+
     ApplySizesAndPositions();
-    
+
     layoutData.clear();
 }
 
-UIControl *UILayoutSystem::FindNotDependentOnChildrenControl(UIControl *control) const
+UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
 {
-    UIControl *result = control;
+    UIControl* result = control;
     while (result->GetParent() != nullptr)
     {
-        UISizePolicyComponent *sizePolicy = result->GetParent()->GetComponent<UISizePolicyComponent>();
+        UISizePolicyComponent* sizePolicy = result->GetParent()->GetComponent<UISizePolicyComponent>();
         if (sizePolicy != nullptr && (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y)))
         {
             result = result->GetParent();
@@ -104,7 +104,7 @@ UIControl *UILayoutSystem::FindNotDependentOnChildrenControl(UIControl *control)
             break;
         }
     }
-    
+
     return result;
 }
 
@@ -154,27 +154,27 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
 {
     for (auto it = layoutData.begin(); it != layoutData.end(); ++it)
     {
-        UIFlowLayoutComponent *flowLayoutComponent = it->GetControl()->GetComponent<UIFlowLayoutComponent>();
+        UIFlowLayoutComponent* flowLayoutComponent = it->GetControl()->GetComponent<UIFlowLayoutComponent>();
         if (flowLayoutComponent && flowLayoutComponent->IsEnabled())
         {
             FlowLayoutAlgorithm(layoutData, isRtl).Apply(*it, axis);
         }
         else
         {
-            UILinearLayoutComponent *linearLayoutComponent = it->GetControl()->GetComponent<UILinearLayoutComponent>();
+            UILinearLayoutComponent* linearLayoutComponent = it->GetControl()->GetComponent<UILinearLayoutComponent>();
             if (linearLayoutComponent != nullptr && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
             {
                 LinearLayoutAlgorithm alg(layoutData, isRtl);
-                
+
                 alg.SetInverse(isRtl && linearLayoutComponent->IsUseRtl() && linearLayoutComponent->GetOrientation() == UILinearLayoutComponent::HORIZONTAL);
                 alg.SetSkipInvisible(linearLayoutComponent->IsSkipInvisibleControls());
-                
+
                 alg.SetPadding(linearLayoutComponent->GetPadding());
                 alg.SetSpacing(linearLayoutComponent->GetSpacing());
-                
+
                 alg.SetDynamicPadding(linearLayoutComponent->IsDynamicPadding());
                 alg.SetDynamicSpacing(linearLayoutComponent->IsDynamicSpacing());
-                
+
                 alg.Apply(*it, axis);
             }
             else
@@ -187,7 +187,7 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
 
 void UILayoutSystem::ApplySizesAndPositions()
 {
-    for (ControlLayoutData &data : layoutData)
+    for (ControlLayoutData& data : layoutData)
     {
         data.ApplyLayoutToControl();
     }

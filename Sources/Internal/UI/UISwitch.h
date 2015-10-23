@@ -64,7 +64,6 @@ public:
 
 	YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 
-    virtual List<UIControl* > GetSubcontrols();
     virtual void AddControl(UIControl *control) override;
     virtual void RemoveControl(UIControl *control) override;
     virtual UISwitch *Clone() override;
