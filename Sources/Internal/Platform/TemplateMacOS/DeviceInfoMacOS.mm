@@ -180,6 +180,10 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
     return false;
 }
 
+bool DeviceInfoPrivate::IsTouchPresented()
+{
+    return false;
+}
 }
 
 #endif

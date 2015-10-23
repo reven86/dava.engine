@@ -62,6 +62,7 @@ public:
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
+    bool IsTouchPresented() override final;
 
 private:
     enum NativeHIDType
@@ -108,7 +109,7 @@ private:
     String manufacturer;
     String modelName;
     String uDID;
-    WideString productName;
+    WideString deviceName;
     int32 zBufferSize = 24;
 };
 };
