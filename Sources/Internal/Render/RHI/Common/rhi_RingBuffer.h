@@ -127,7 +127,7 @@ RingBuffer::Alloc( unsigned cnt, unsigned align )
 {
     DVASSERT(cur);
 
-    unsigned    sz  = L_ALIGNED_SIZE(cnt*sizeof(float),align);
+    unsigned    sz  = L_ALIGNED_SIZE(static_cast<unsigned>(cnt*sizeof(float)),align);
     uint8*      buf = cur + sz;
     uint8*      p   = cur;
 

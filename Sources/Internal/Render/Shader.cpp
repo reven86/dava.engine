@@ -197,7 +197,7 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
     {
         bufferPropertyLayouts[prop.bufferindex + vertexConstBuffersCount].props.push_back(prop);
     }
-    for (size_t i = 0, sz = constBuffers.size(); i < sz; ++i)
+    for (uint32 i = 0, sz = static_cast<uint32>(constBuffers.size()); i < sz; ++i)
     {
         if (i < vertexConstBuffersCount)
         {

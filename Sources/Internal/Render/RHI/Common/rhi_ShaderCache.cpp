@@ -1061,7 +1061,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
 
 //DAVA::Logger::Info( "src=\n%s\n", src );
     _PreprocessedText = preprocessedText;
-    mcpp__set_input( src, strlen(src) );
+    mcpp__set_input( src, static_cast<unsigned>(strlen(src)) );
 
     mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
     mcpp_lib_main( countof(argv), (char**)argv );

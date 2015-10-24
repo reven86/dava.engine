@@ -156,8 +156,8 @@ void NMaterial::BindParams(rhi::Packet& target)
         materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
     }
 
-    target.vertexConstCount = activeVariantInstance->vertexConstBuffers.size();
-    target.fragmentConstCount = activeVariantInstance->fragmentConstBuffers.size();
+    target.vertexConstCount = static_cast<uint32>(activeVariantInstance->vertexConstBuffers.size());
+    target.fragmentConstCount = static_cast<uint32>(activeVariantInstance->fragmentConstBuffers.size());
     /*bind material const buffers*/
     for (size_t i = 0, sz = activeVariantInstance->vertexConstBuffers.size(); i < sz; ++i)
         target.vertexConst[i] = activeVariantInstance->vertexConstBuffers[i];
@@ -700,8 +700,8 @@ void NMaterial::RebuildTextureBindings()
         const rhi::ShaderSamplerList& fragmentSamplerList = currShader->GetFragmentSamplerList();
         const rhi::ShaderSamplerList& vertexSamplerList = currShader->GetVertexSamplerList();
 
-        textureDescr.fragmentTextureCount = fragmentSamplerList.size();       
-        samplerDescr.fragmentSamplerCount = fragmentSamplerList.size();
+        textureDescr.fragmentTextureCount = static_cast<uint32>(fragmentSamplerList.size());
+        samplerDescr.fragmentSamplerCount = static_cast<uint32>(fragmentSamplerList.size());
         for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
         {       
             RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->GetFragmentSamplerList()[i].uid);
@@ -730,8 +730,8 @@ void NMaterial::RebuildTextureBindings()
         }
 
 
-        textureDescr.vertexTextureCount = vertexSamplerList.size();
-        samplerDescr.vertexSamplerCount = vertexSamplerList.size();
+        textureDescr.vertexTextureCount = static_cast<uint32>(vertexSamplerList.size());
+        samplerDescr.vertexSamplerCount = static_cast<uint32>(vertexSamplerList.size());
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
             Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);

@@ -150,7 +150,7 @@ PreProcessText( const char* text, std::string* result )
     };
 
     _PreprocessedText = result;
-    mcpp__set_input( text, strlen(text) );
+    mcpp__set_input( text, static_cast<unsigned>(strlen(text)) );
 
     mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
     mcpp_lib_main( countof(argv), (char**)argv );
@@ -179,7 +179,7 @@ PreProcessText( const char* text, const char** arg, unsigned argCount, std::stri
         argv[argc++] = MCPP_Text;
 
         _PreprocessedText = result;
-        mcpp__set_input( text, strlen(text) );
+        mcpp__set_input( text, static_cast<unsigned>(strlen(text)) );
 
         mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
         mcpp_lib_main( argc, (char**)argv );

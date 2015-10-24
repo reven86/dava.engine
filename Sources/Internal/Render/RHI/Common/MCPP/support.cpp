@@ -1923,7 +1923,7 @@ static char *   get_line(
 #endif
     static int  cr_converted;
     int     converted = FALSE;
-    int     len;                            /* Line length - alpha  */
+    size_t  len;                            /* Line length - alpha  */
     char *  ptr;
     int     cat_line = 0;           /* Number of catenated lines    */
 
@@ -1977,7 +1977,7 @@ static char *   get_line(
             /* Translation phase 2  */
             len -= 2;
             if (len >= 0) {
-                if ((*(ptr + len) == '\\') && ! last_is_mbchar( ptr, len)) {
+                if ((*(ptr + len) == '\\') && ! last_is_mbchar( ptr, static_cast<int>(len))) {
                             /* <backslash><newline> (not MBCHAR)    */
                     ptr = infile->bptr += len;  /* Splice the lines */
                     wrong_line = TRUE;
@@ -2070,7 +2070,7 @@ int     cnv_digraph(
  */
 {
     int     count = 0;
-    int     i;
+    size_t  i;
     int     c1, c2;
 
     while ((i = strcspn( in, "%:<")), (c1 = *(in + i)) != '\0') {
@@ -2406,7 +2406,7 @@ LINE_COL *  get_src_location(
             cols--;
             col -= *cols;
         }
-        line = l_col_p->start_line + (cols - l_col_p->len);
+        line = static_cast<long>(l_col_p->start_line + (cols - l_col_p->len));
     }
 
     p_line_col->line = line;

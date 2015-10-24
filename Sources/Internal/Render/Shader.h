@@ -60,7 +60,7 @@ struct DynamicPropertyBinding
     uint32 reg;
     uint32 regCount; //offset for props less than 1 reg size
     uint32 arraySize;
-    uint32 updateSemantic;
+	pointer_size updateSemantic;
     rhi::HConstBuffer buffer;
     DynamicBindings::eUniformSemantic dynamicPropertySemantic;
 };

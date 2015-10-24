@@ -1184,7 +1184,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
         do
         {
         _FrameSync.Lock();
-        frame_cnt = _Frame.size();
+        frame_cnt = static_cast<unsigned>(_Frame.size());
 //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
         _FrameSync.Unlock();
         }

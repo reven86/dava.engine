@@ -544,14 +544,15 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     rhi::Texture::Descriptor descriptor;
     descriptor.autoGenMipmaps = false;
     descriptor.isRenderTarget = false;
-    descriptor.levelCount = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE)  ? images->size()  : images->size()/6;
+    size_t levelCount = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? images->size() : images->size() / 6;
+    descriptor.levelCount = static_cast<uint32>(levelCount);
     descriptor.width = (*images)[0]->width;
     descriptor.height = (*images)[0]->height;
     descriptor.type = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? rhi::TEXTURE_TYPE_2D : rhi::TEXTURE_TYPE_CUBE;
     descriptor.format = formatDescriptor.format;
 
-
-    descriptor.levelCount = (descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? (uint32)images->size() / 6 : (uint32)images->size();
+    levelCount = (descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? (uint32)images->size() / 6 : (uint32)images->size();
+    descriptor.levelCount = static_cast<uint32>(levelCount);
 
     for (Image * img : (*images))
         descriptor.levelCount = Max(descriptor.levelCount, img->mipmapLevel + 1);

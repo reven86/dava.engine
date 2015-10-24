@@ -214,7 +214,7 @@ namespace DAVA
 
                 case COMMAND_DRAW_POLYGON:
                 {
-                    const uint32 pointCount = (command.params.size() - 4) / 3;
+                    const uint32 pointCount = static_cast<uint32>((command.params.size() - 4) / 3);
 
                     const Vector3 * const polygonPoints = reinterpret_cast<const Vector3 *>(command.params.data() + 4);
                     for (uint32 i = 0; i < pointCount; ++i)
@@ -335,20 +335,22 @@ namespace DAVA
 
             case COMMAND_DRAW_POLYGON:
             {
-                vertexCount = (command.params.size() - 4) / 3;
+                vertexCount = static_cast<uint32>((command.params.size() - 4) / 3);
                 indexCount = isSolidDraw ? (vertexCount - 2) * 3 : (vertexCount - 1) * 2;
             } break;
 
             case COMMAND_DRAW_BOX:
             {
                 vertexCount = 8;
-                indexCount = isSolidDraw ? gSolidBoxIndexes.size() : gWireBoxIndexes.size();
+                size_t count = isSolidDraw ? gSolidBoxIndexes.size() : gWireBoxIndexes.size();
+                indexCount = static_cast<uint32>(count);
             } break;
 
             case COMMAND_DRAW_BOX_CORNERS:
             {
                 vertexCount = 32;
-                indexCount = isSolidDraw ? gSolidBoxCornersIndexes.size() : gWireBoxCornersIndexes.size();
+                size_t count = isSolidDraw ? gSolidBoxCornersIndexes.size() : gWireBoxCornersIndexes.size();
+                indexCount = static_cast<uint32>(count);
             } break;
 
             case COMMAND_DRAW_CIRCLE:
@@ -359,14 +361,16 @@ namespace DAVA
 
             case COMMAND_DRAW_ICOSA:
             {
-                vertexCount = gIcosaVertexes.size();
-                indexCount = isSolidDraw ? gSolidIcosaIndexes.size() : gWireIcosaIndexes.size();
+                vertexCount = static_cast<uint32>(gIcosaVertexes.size());
+                size_t count = isSolidDraw ? gSolidIcosaIndexes.size() : gWireIcosaIndexes.size();
+                indexCount = static_cast<uint32>(count);
             } break;
             
             case COMMAND_DRAW_ARROW:
             {
                 vertexCount = 5;
-                indexCount = isSolidDraw ? gSolidArrowIndexes.size() : gWireArrowIndexes.size();
+                size_t count = isSolidDraw ? gSolidArrowIndexes.size() : gWireArrowIndexes.size();
+                indexCount = static_cast<uint32>(count);
             } break;
 
             default:

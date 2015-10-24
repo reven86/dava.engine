@@ -876,13 +876,13 @@ void VegetationRenderObject::CreateRenderData()
                                                 GetVegetationUnitWorldSize(RESOLUTION_SCALE[0]),
                                                 customGeometryPath,
                                                 RESOLUTION_CELL_SQUARE.data(),
-                                                RESOLUTION_CELL_SQUARE.size(),
+                                                static_cast<uint32>(RESOLUTION_CELL_SQUARE.size()),
                                                 RESOLUTION_SCALE.data(),
-                                                RESOLUTION_SCALE.size(),
+                                                static_cast<uint32>(RESOLUTION_SCALE.size()),
                                                 RESOLUTION_TILES_PER_ROW.data(),
-                                                RESOLUTION_TILES_PER_ROW.size(),
+                                                static_cast<uint32>(RESOLUTION_TILES_PER_ROW.size()),
                                                 RESOLUTION_CLUSTER_STRIDE.data(),
-                                                RESOLUTION_CLUSTER_STRIDE.size(),
+                                                static_cast<uint32>(RESOLUTION_CLUSTER_STRIDE.size()),
                                                 worldSize,
                                                 customGeometryData);
 
@@ -902,11 +902,11 @@ void VegetationRenderObject::CreateRenderData()
     vertexCount = (uint32)vertexData.size();
     indexCount = (uint32)indexData.size();
 
-    uint32 vertexBufferSize = vertexData.size() * sizeof(VegetationVertex);
+    uint32 vertexBufferSize = (uint32)(vertexData.size() * sizeof(VegetationVertex));
     vertexBuffer = rhi::CreateVertexBuffer(vertexBufferSize);
     rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
 
-    uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
+    uint32 indexBufferSize = (uint32)(indexData.size() * sizeof(VegetationIndex));
     rhi::IndexBuffer::Descriptor indexDesc;
     indexDesc.size = indexBufferSize;
     indexDesc.indexSize = rhi::INDEX_SIZE_32BIT;
@@ -951,13 +951,13 @@ void VegetationRenderObject::RestoreRenderData()
     if (rhi::NeedRestoreVertexBuffer(vertexBuffer))
     {
         const Vector<VegetationVertex>& vertexData = renderData->GetVertices();
-        uint32 vertexBufferSize = vertexData.size() * sizeof(VegetationVertex);
+        uint32 vertexBufferSize = static_cast<uint32>(vertexData.size() * sizeof(VegetationVertex));
         rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
     }
     if (rhi::NeedRestoreIndexBuffer(indexBuffer))
     {
         const Vector<VegetationIndex>& indexData = renderData->GetIndices();
-        uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
+        uint32 indexBufferSize = static_cast<uint32>(indexData.size() * sizeof(VegetationIndex));
         rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
     }
     if (heightmap && heightmapTexture) //RHI_COMPLETE later change it to normal restoration and change init heightmap texture to normal logic
