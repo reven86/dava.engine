@@ -73,7 +73,21 @@ if ( WINDOWS_UAP )
     #root deployment location for resources
     set ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION "DXFL-DX11" )
     add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}" )
-    
+
+    #set target platform version
+    #by default CMake sets the last installed SDK's version
+    #but we use predefined platform version and allow to override it
+    if ( WINDOWS_UAP_TARGET_PLATFORM_VERSION )
+        set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
+    else ()
+        set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION} )
+        set ( WINDOWS_UAP_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION} )
+    endif ()
+
+    #set extensions version
+    set ( WINDOWS_UAP_MOBILE_EXT_SDK_VERSION ${CMAKE_VS_TARGET_PLATFORM_VERSION} )
+    set ( WINDOWS_UAP_IOT_EXT_SDK_VERSION    ${CMAKE_VS_TARGET_PLATFORM_VERSION} )
+
 else ()
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/includes" )
