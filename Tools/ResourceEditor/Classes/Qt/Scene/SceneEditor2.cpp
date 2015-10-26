@@ -432,7 +432,8 @@ void SceneEditor2::Draw()
 		selectionSystem->Draw();
 		hoodSystem->Draw();
 		textDrawSystem->Draw();
-	}
+        visibilityToolSystem->Draw();
+    }
 }
 
 void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)

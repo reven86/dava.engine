@@ -56,7 +56,9 @@ public:
 	virtual void Process(DAVA::float32 timeElapsed);
 	virtual void Input(DAVA::UIEvent *event);
 
-	void SetVisibilityPoint();
+    void Draw();
+
+    void SetVisibilityPoint();
     void ComputeVisibilityArea();
     void CancelComputing();
 
@@ -71,8 +73,8 @@ private:
         Vector2 relativePosition;
         Vector3 worldPosition;
         Color color = Color(1.0f, 0.5f, 0.25f, 1.0f);
-        float angleUp = PI_05;
-        float angleDown = PI_05;
+        float angleUp = PI / 6.0f;
+        float angleDown = PI / 6.0f;
         float radius = 0.0f; // point for now
         Vector<std::pair<Point2i, Color>> result;
     };

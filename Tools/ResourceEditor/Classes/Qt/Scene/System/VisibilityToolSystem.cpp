@@ -341,33 +341,37 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
     }
 }
 
-void VisibilityToolSystem::RenderVisibilityPoint(const CheckPoint& point, bool clearTarget)
+void VisibilityToolSystem::Draw()
 {
-    Rect drawRect(point.relativePosition * landscapeSize - 0.5f * CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
-
-    VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), clearTarget);
-    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, drawRect);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    for (const auto& point : checkPoints)
+    {
+        drawer->DrawIcosahedron(point.worldPosition, 0.5f, Color::White,
+                                RenderHelper::eDrawType::DRAW_WIRE_DEPTH);
+    }
 }
 
 void VisibilityToolSystem::DrawVisibilityPoint()
 {
-    checkPoints.clear();
+    checkPoints.clear(); // TODO : support many points
 
     VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
     visibilityToolProxy->UpdateVisibilityPointSet(true);
     visibilityToolProxy->SetVisibilityPoint(cursorPosition);
 
     Vector2 xy = drawSystem->TexturePointToLandscapePoint(textureLevel, landscapeSize * cursorPosition);
-    float z = drawSystem->GetHeightAtTexturePoint(textureLevel, landscapeSize * cursorPosition) + 0.5f;
+    float z = drawSystem->GetHeightAtTexturePoint(textureLevel, landscapeSize * cursorPosition) + 2.5f;
 
     CheckPoint point;
     point.relativePosition = cursorPosition;
     point.worldPosition = Vector3(xy, z);
     checkPoints.push_back(point);
 
-    RenderVisibilityPoint(point, true);
+    Rect drawRect(point.relativePosition * landscapeSize - 0.5f * CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
+
+    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), true);
+    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, drawRect);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
 void VisibilityToolSystem::DrawVisibilityAreaPoints(const CheckPoint& point, bool clear)
@@ -435,25 +439,36 @@ void VisibilityToolSystem::PerformVisibilityTest(const VisibilityTests::value_ty
 {
     auto& sourcePoint = checkPoints.at(test.first);
 
-    float32 baseZ = drawSystem->GetHeightAtTexturePoint(textureLevel, test.second) + 0.5f; // TODO: use Z from point
+    float32 baseZ = drawSystem->GetHeightAtTexturePoint(textureLevel, test.second) + 0.25f; // TODO: use Z from point
     Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, test.second), baseZ);
-
-    const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint.worldPosition, target);
-    EntityGroup entityGroup(*intersectedObjects);
-    ExcludeEntities(&entityGroup);
 
     Color resultColor = Color::Transparent; // assume occluded by default
 
-    if (entityGroup.Size() == 0)
-    {
-        Vector3 p;
-        if (collisionSystem->LandRayTest(sourcePoint.worldPosition, target, p) == false)
-        {
-            resultColor = sourcePoint.color;
-        }
-    }
+    Vector3 direction = target - sourcePoint.worldPosition;
+    float32 angle = atan2(direction.z, direction.xy().Length());
 
-    sourcePoint.result.emplace_back(Point2i(int(test.second.x), int(test.second.y)), resultColor);
+    bool angleInRange = ((angle >= 0.0f) && (angle <= sourcePoint.angleUp)) || ((angle <= 0.0f) && (angle >= -sourcePoint.angleDown));
+
+    if (angleInRange)
+    {
+        const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint.worldPosition, target);
+        EntityGroup entityGroup(*intersectedObjects);
+        ExcludeEntities(&entityGroup);
+
+        if (entityGroup.Size() == 0)
+        {
+            Vector3 p;
+            if (collisionSystem->LandRayTest(sourcePoint.worldPosition, target, p) == false)
+            {
+                resultColor = sourcePoint.color;
+            }
+        }
+        sourcePoint.result.emplace_back(Point2i(int(test.second.x), int(test.second.y)), resultColor);
+    }
+    else
+    {
+        sourcePoint.result.emplace_back(Point2i(int(test.second.x), int(test.second.y)), Color(0.25f, 1.0f, 0.25f, 1.0f));
+    }
 }
 
 void VisibilityToolSystem::ProcessNextVisibilityTests()
