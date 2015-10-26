@@ -131,8 +131,6 @@ private:
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
-    void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
-
     void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
 
     struct MouseButtonState
@@ -141,7 +139,7 @@ private:
         bool isPressed = false;
     };
 
-    MouseButtonState UpdateMouseButtonsState(Windows::UI::Core::PointerEventArgs ^ args);
+    MouseButtonState UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties);
 
     void PreStartAppSettings();
 
@@ -214,7 +212,7 @@ private:
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
-    static const wchar_t xamlTextBoxStyles[];
+    static const wchar_t* xamlTextBoxStyles;
 };
 
 //////////////////////////////////////////////////////////////////////////

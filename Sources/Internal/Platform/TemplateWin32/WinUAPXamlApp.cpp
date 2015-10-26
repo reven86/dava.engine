@@ -428,11 +428,10 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
     });
 }
 
-WinUAPXamlApp::MouseButtonState WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Core::PointerEventArgs ^ args)
+WinUAPXamlApp::MouseButtonState WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties)
 {
     MouseButtonState result;
 
-    PointerPointProperties ^ pointProperties = args->CurrentPoint->Properties;
     if (isLeftButtonPressed != pointProperties->IsLeftButtonPressed)
     {
         result.button = UIEvent::BUTTON_1;
@@ -457,37 +456,38 @@ WinUAPXamlApp::MouseButtonState WinUAPXamlApp::UpdateMouseButtonsState(Windows::
     return result;
 }
 
-void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRoutedEventArgs ^ args)
 {
-    PointerPoint^ pointPtr = args->CurrentPoint;
-    PointerPointProperties^ pointProperties = pointPtr->Properties;
-    PointerDeviceType type = pointPtr->PointerDevice->PointerDeviceType;
-
-    float32 x = pointPtr->Position.X;
-    float32 y = pointPtr->Position.Y;
-    int32 pointerOrButtonIndex = pointPtr->PointerId;
+    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
+    float32 x = pointerPoint->Position.X;
+    float32 y = pointerPoint->Position.Y;
+    int32 pointerOrButtonIndex = pointerPoint->PointerId;
+    PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(args);
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
         pointerOrButtonIndex = mouseBtnChange.button;
     }
 
-    core->RunOnMainThread([this, x, y, pointerOrButtonIndex, type]() {
+    auto fn = [this, x, y, pointerOrButtonIndex, type]() {
         DAVATouchEvent(UIEvent::Phase::BEGAN, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
-    });
+    };
+
+    core->RunOnMainThread(fn);
 }
 
 void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
-    float32 x = args->CurrentPoint->Position.X;
-    float32 y = args->CurrentPoint->Position.Y;
-    int32 pointerOrButtonIndex = args->CurrentPoint->PointerId;
-    PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
+    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
+    float32 x = pointerPoint->Position.X;
+    float32 y = pointerPoint->Position.Y;
+    int32 pointerOrButtonIndex = pointerPoint->PointerId;
+    PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(args);
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
         pointerOrButtonIndex = mouseBtnChange.button;
     }
 
@@ -505,12 +505,14 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
         return;
     }
 
-    UIEvent::eInputPhase phase = UIEvent::PHASE_DRAG;
+    UIEvent::Phase phase = UIEvent::Phase::DRAG;
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
+    int32 pointerOrButtonIndex = pointerPoint->PointerId;
+
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(args);
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
         pointerOrButtonIndex = mouseBtnChange.button;
         if (UIEvent::BUTTON_NONE != pointerOrButtonIndex)
         {
@@ -528,9 +530,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
 
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
-    int32 id = pointerPoint->PointerId;
-    core->RunOnMainThread([this, phase, x, y, id, type]() {
-        DAVATouchEvent(phase, x, y, id, ToDavaDeviceId(type));
+
+    core->RunOnMainThread([this, phase, x, y, pointerOrButtonIndex, type]() {
+        DAVATouchEvent(phase, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
     });
 }
 
@@ -567,7 +569,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object ^ /*sender*/,
         float32 y = pointerPoint->Position.Y;
         int32 id = pointerPoint->PointerId;
         core->RunOnMainThread([this, x, y, id, type]() {
-            DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id, ToDavaDeviceId(type));
+            DAVATouchEvent(UIEvent::Phase::ENDED, x, y, id, ToDavaDeviceId(type));
         });
     }
 }
@@ -702,16 +704,15 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
-    int32 id = isLeftButtonPressed + isRightButtonPressed + isMiddleButtonPressed;
 
-    core->RunOnMainThread([this, x, y, id]() {
-        if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
+    core->RunOnMainThread([this, x, y]() {
+        if (isLeftButtonPressed)
         {
-            DAVATouchEvent(UIEvent::Phase::DRAG, x, y, button, UIEvent::Device::MOUSE);
+            DAVATouchEvent(UIEvent::Phase::DRAG, x, y, UIEvent::BUTTON_1, UIEvent::Device::MOUSE);
         }
         else
         {
-            DAVATouchEvent(UIEvent::Phase::MOVE, x, y, button, UIEvent::Device::MOUSE);
+            DAVATouchEvent(UIEvent::Phase::MOVE, x, y, UIEvent::BUTTON_NONE, UIEvent::Device::MOUSE);
         }
     });
 }
@@ -934,7 +935,7 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 }
 
-const wchar_t WinUAPXamlApp::xamlTextBoxStyles[] = LR"(
+const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
