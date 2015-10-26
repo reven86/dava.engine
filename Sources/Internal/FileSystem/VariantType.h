@@ -146,8 +146,8 @@ public:
     {
         bool boolValue;
         int32 int32Value;
-        uint32  uint32Value;
-		float32 floatValue;
+        uint32 uint32Value;
+        float32 floatValue;
         float64 float64Value;
 
         int64 int64Value;
@@ -249,7 +249,7 @@ public:
      Archive is copying into the variable.
 	 \param[in] archive	archive to set (Archive is retains inside variable type)
 	 */
-	void SetKeyedArchive(KeyedArchive *archive);
+    void SetKeyedArchive(KeyedArchive *archive);
     
     /**
      \brief Function to set int64 value to variant type variable
@@ -376,7 +376,7 @@ public:
 	 \brief Function to return array size from variable
 	 \returns array size in bytes variable, or generate assert if variable type is different
 	 */
-	int32 AsByteArraySize() const;
+    int32 AsByteArraySize() const;
 
     /**
 	 \brief Function to return keyed archive from variable. Returns pointer to the KeyedArchive inside.

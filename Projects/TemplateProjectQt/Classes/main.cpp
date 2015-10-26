@@ -26,61 +26,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Platform/Qt5/QtLayer.h"
+#include "Core/Core.h"
 
 #include <QApplication>
-
 #include "MainWindow.h"
-
-#include "DAVAEngine.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
-
-void RunGui(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);
 #elif defined (__DAVAENGINE_WIN32__)
-    HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(nullptr);
-    DAVA::Core::Run(argc, argv, hInstance);
+    DAVA::Core::Run(argc, argv);
 #else
-    DVASSERT(false && "Wrong platform")
+    static_assert(!"Wrong platform");
 #endif
-
-    RunGui(argc, argv);
-
-    return 0;
-}
-
-void RunGui(int argc, char *argv[])
-{
     new DAVA::QtLayer();
-
-#ifdef Q_OS_MAC
-    // Must be called before creating QApplication instance
-    DAVA::QtLayer::MakeAppForeground(false);
-    QTimer::singleShot(0, []{DAVA::QtLayer::MakeAppForeground();});
-    QTimer::singleShot(0, [] {
-        DAVA::QtLayer::RestoreMenuBar();
-    });
-#endif
-
-    new DavaLoop();
-    new FrameworkLoop();
 
     QApplication a(argc, argv);
 
-    MainWindow *w = new MainWindow();
-    w->show();
+    MainWindow w;
+    w.show();
 
-    DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
-
-    QApplication::exec();
-
-    FrameworkLoop::Instance()->Release();
-    DAVA::QtLayer::Instance()->Release();
-    DavaLoop::Instance()->Release();
-
-    delete w;
+    return QApplication::exec();
 }

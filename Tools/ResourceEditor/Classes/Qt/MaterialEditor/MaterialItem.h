@@ -49,7 +49,7 @@ public:
 		IS_PART_OF_SELECTION	= 0x2,
 	};
 
-	MaterialItem(DAVA::NMaterial * material);
+    MaterialItem(DAVA::NMaterial* material, bool dragEnabled, bool dropEnabled);
     virtual ~MaterialItem();
 
     QVariant data(int role = Qt::UserRole + 1) const;

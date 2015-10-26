@@ -130,8 +130,8 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
         if (childRect != childControl->GetRect())
         {
             childControl->SetRect(childRect);
+        }
     }
-}
 }
 
 Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 currentContentOffset)
@@ -140,7 +140,7 @@ Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 current
 	// Get control's farest position inside scrollContainer
     const List<UIControl*>& childslist = parentControl->GetChildren();
     for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
-    {	
+    {
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
             continue;
@@ -285,9 +285,9 @@ void UIScrollView::RecalculateContentSize()
         DVASSERT(!autoUpdate);
         return;
     }
-	
-	Rect contentRect = scrollContainer->GetRect();
-	Rect parentRect = GetRect();
+
+    Rect contentRect = scrollContainer->GetRect();
+    Rect parentRect = GetRect();
 	
 	// Move all scrollContainer content with negative positions iside its rect
 	PushContentToBounds(scrollContainer);
@@ -462,7 +462,7 @@ void UIScrollView::SetHorizontalScrollPosition(float32 horzPos)
     }
 
     Vector2 pos = scrollContainer->GetPosition();
-	pos.x = horzPos;
+    pos.x = horzPos;
     if (scrollContainer->GetPosition() != pos)
     {
         scrollContainer->SetPosition(pos);
@@ -477,14 +477,14 @@ void UIScrollView::SetVerticalScrollPosition(float32 vertPos)
     {
         return;
     }
-    
+
     Vector2 pos = scrollContainer->GetPosition();
-	pos.y = vertPos;
+    pos.y = vertPos;
     if (scrollContainer->GetPosition() != pos)
     {
         scrollContainer->SetPosition(pos);
     }
-    
+
     scrollVertical->SetPosition(vertPos);
 }
 
@@ -534,5 +534,4 @@ void UIScrollView::SetCenterContent(bool center_)
 {
     centerContent = center_;
 }
-
 };

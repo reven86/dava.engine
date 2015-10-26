@@ -45,14 +45,14 @@ public:
     UIScrollViewContainer(const Rect& rect = Rect());
 
     UIScrollViewContainer* Clone() override;
-    virtual void CopyDataFrom(UIControl *srcControl);
-	
+    virtual void CopyDataFrom(UIControl* srcControl);
+
 public:
 	virtual void Update(float32 timeElapsed);
 	virtual void Input(UIEvent *currentTouch);
     virtual void InputCancelled(UIEvent *currentInput);
 	virtual bool SystemInput(UIEvent *currentInput);
-    virtual void SetSize(const Vector2 &size);
+    virtual void SetSize(const Vector2& size);
     virtual void WillDisappear();
 
 

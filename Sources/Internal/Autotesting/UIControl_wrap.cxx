@@ -3204,13 +3204,15 @@ fail:
 static int _wrap_new_UIControl(lua_State* L) {
   int argc;
   int argv[2] = {
-  1, 2};
+      1, 2
+  };
 
   argc = lua_gettop(L);
   if (argc == 0) {
       return _wrap_new_UIControl__SWIG_1(L);
   }
-  if (argc == 1) {
+  if (argc == 1)
+  {
     int _v;
     {
       void *ptr;

@@ -58,10 +58,9 @@ protected:
 	Sprite::DrawState	localDrawState;
 	Sprite::DrawState	globalDrawState;
 	Color				color;
-	eBlendMode			srcOp;
-	eBlendMode			destOp;
-	
-	struct
+    eBlending blending;
+
+    struct
 	{
 		uint32		groupId: 27;
 		uint8		visible : 1;
@@ -114,9 +113,9 @@ public:
 	
 	inline void		SetColor(float32 r, float32 g, float32 b, float32 a);
 	inline void		SetColor(const Color & _color);
-	inline Color&	GetColor(); 
-    inline void		SetBlendMode(eBlendMode	srcOp, eBlendMode destOp);
-	
+	inline Color&	GetColor();
+    inline void SetBlendMode(eBlending blending);
+
     inline bool GetVisible() const;
 	inline void SetVisible(bool isVisible,  bool hierarchic = true);
 
@@ -412,10 +411,9 @@ inline Color& GameObject::GetColor()
 	return color;
 }
 
-inline void GameObject::SetBlendMode(eBlendMode	_srcOp, eBlendMode _destOp)
+inline void GameObject::SetBlendMode(eBlending _blending)
 {
-	srcOp = _srcOp;
-	destOp = _destOp;
+    blending = _blending;
 }
 
 inline bool GameObject::GetVisible() const

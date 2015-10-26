@@ -74,12 +74,12 @@ public:
     void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
 
     UIScrollView* Clone() override;
-    virtual void CopyDataFrom(UIControl *srcControl);
-	
-	virtual void SetRect(const Rect &rect);
-	virtual void SetSize(const Vector2 &newSize);
-	
-	void SetPadding(const Vector2 & padding);
+    virtual void CopyDataFrom(UIControl* srcControl);
+
+    virtual void SetRect(const Rect& rect);
+    virtual void SetSize(const Vector2& newSize);
+
+    void SetPadding(const Vector2 & padding);
 	const Vector2 GetPadding() const;
 	
 	const Vector2 GetContentSize() const;
@@ -99,10 +99,10 @@ public:
     void OnScrollViewContainerSizeChanged();
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
-    
+
     bool IsAutoUpdate() const;
     void SetAutoUpdate(bool auto_);
-    
+
     bool IsCenterContent() const;
     void SetCenterContent(bool center_);
 
@@ -121,7 +121,7 @@ protected:
 	UIScrollViewContainer *scrollContainer;
 	ScrollHelper *scrollHorizontal;
 	ScrollHelper *scrollVertical;
-    
+
     bool autoUpdate;
     bool centerContent;
 
@@ -131,9 +131,7 @@ private:
 public:
     INTROSPECTION_EXTEND(UIScrollView, UIControl,
                          PROPERTY("autoUpdate", "Auto Update", IsAutoUpdate, SetAutoUpdate, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("centerContent", "Center Content", IsCenterContent, SetCenterContent, I_SAVE | I_VIEW | I_EDIT)
-                         );
-
+                         PROPERTY("centerContent", "Center Content", IsCenterContent, SetCenterContent, I_SAVE | I_VIEW | I_EDIT));
 };
 };
 

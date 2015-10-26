@@ -60,12 +60,9 @@ public:
 	virtual Entity* Clone(Entity *dstNode = NULL);
 
     PolygonGroup * GetPolygonGroup() { return shadowPolygonGroup; };
+
 private:
-	Shader * shader;
-
-    int32 uniformLightPosition0;
-
-	//shadow mesh generation
+    //shadow mesh generation
 	PolygonGroup * shadowPolygonGroup;
 	//int32 newIndexCount;
 	//int32 newVertexCount;

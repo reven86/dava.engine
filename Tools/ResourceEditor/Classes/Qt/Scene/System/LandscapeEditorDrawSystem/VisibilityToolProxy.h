@@ -44,12 +44,6 @@ public:
 	int32 GetSize();
 
 	Texture* GetTexture();
-	void UpdateRect(const Rect& rect);
-
-	void ResetTextureChanged();
-	bool IsTextureChanged();
-
-	Rect GetChangedRect();
 
 	void SetVisibilityPoint(const Vector2& visibilityPoint);
 	Vector2 GetVisibilityPoint();
@@ -59,9 +53,8 @@ public:
 
 protected:
 	Texture* visibilityToolTexture;
-	Rect changedRect;
-	bool spriteChanged;
-	int32 size;
+
+    int32 size;
 	Vector2 visibilityPoint;
 	bool isVisibilityPointSet;
 };

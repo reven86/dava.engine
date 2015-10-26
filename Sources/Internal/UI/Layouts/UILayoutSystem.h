@@ -50,15 +50,15 @@ public:
 
     bool IsAutoupdatesEnabled() const;
     void SetAutoupdatesEnabled(bool enabled);
-    
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
-    
+
+    void ApplyLayout(UIControl* control, bool considerDenendenceOnChildren = false);
+
 private:
-    UIControl *FindNotDependentOnChildrenControl(UIControl *control) const;
-    
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
-    
+    UIControl* FindNotDependentOnChildrenControl(UIControl* control) const;
+
+    void CollectControls(UIControl* control);
+    void CollectControlChildren(UIControl* control, int32 parentIndex);
+
     void ProcessAxis(Vector2::eAxis axis);
     void DoMeasurePhase(Vector2::eAxis axis);
     void DoLayoutPhase(Vector2::eAxis axis);

@@ -308,7 +308,7 @@
 	\code
 	void GameCore::OnAppStarted()
 	{
-		RenderManager::Instance()->SetFPS(30);
+		Renderer::SetDesiredFPS(30);
 
 		mainMenuScreen.Set(new MainMenuScreen());
 		gameScreen.Set(new GameScreen());

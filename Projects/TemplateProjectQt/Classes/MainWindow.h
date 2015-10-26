@@ -32,8 +32,6 @@
 
 #include <QMainWindow>
 
-class DavaGLWidget;
-
 namespace Ui
 {
     class MainWindow;
@@ -51,15 +49,10 @@ private:
     void CreateGlWidget();
 
 private slots:
-    void OnGlInitialized();
     void OnGlWidgedResized(int width, int height, int dpr);
 
 private:
     Ui::MainWindow *ui;
-
-    DavaGLWidget *glWidget;
-
-    static const quint8 NUMBER_OF_SCREEN;
 };
 
 #endif // MAINWINDOW_H

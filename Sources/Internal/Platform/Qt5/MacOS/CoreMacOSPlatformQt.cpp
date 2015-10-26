@@ -69,17 +69,13 @@ int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
 
 Core::eScreenMode CoreMacOSPlatformQt::GetScreenMode()
 {
-    return Core::MODE_WINDOWED;
+    return Core::eScreenMode::WINDOWED;
 }
 
-void CoreMacOSPlatformQt::ToggleFullscreen()
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatformQt::ToggleFullscreen()] has no sence for Qt");
-}
-
-void CoreMacOSPlatformQt::SwitchScreenToMode(eScreenMode screenMode)
+bool CoreMacOSPlatformQt::SetScreenMode(eScreenMode screenMode)
 {
     Logger::FrameworkDebug("[CoreMacOSPlatformQt::SwitchScreenToMode()] has no sence for Qt");
+    return screenMode == Core::eScreenMode::WINDOWED;
 }
 
 void CoreMacOSPlatformQt::Quit()
