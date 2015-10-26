@@ -233,4 +233,17 @@ const UIStyleSheetPropertyDescriptor& UIStyleSheetPropertyDataBase::GetStyleShee
 {
     return properties[index];
 }
+
+int32 UIStyleSheetPropertyDataBase::FindStyleSheetPropertyByMember(const InspMember* memberInfo)
+{
+    for (size_t index = 0; index < properties.size(); index++)
+    {
+        UIStyleSheetPropertyDescriptor& descr = properties[index];
+        if (descr.memberInfo == memberInfo)
+        {
+            return static_cast<int32>(index);
+        }
+    }
+    return -1;
+}
 }
