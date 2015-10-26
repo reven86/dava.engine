@@ -26,45 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#if defined(__DAVAENGINE_NGT_PLUGIN__)
+#include "SceneEnumerator.h"
+#include "SceneObserver.h"
 
-#include <core_generic_plugin/generic_plugin.hpp>
-#include <core_generic_plugin/interfaces/i_command_line_parser.hpp>
+#include "Classes/Qt/Main/mainwindow.h"
+#include "Classes/Qt/Project/ProjectManager.h"
+#include "Classes/Qt/TextureBrowser/TextureCache.h"
+#include "Classes/Qt/LicenceDialog/LicenceDialog.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/CommandLine/CommandLineManager.h"
+#include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Classes/Deprecated/EditorConfig.h"
+#include "Classes/Deprecated/SceneValidator.h"
+#include "Classes/Deprecated/ControlsFactory.h"
 
-#include "version.h"
-#include "Main/mainwindow.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "Project/ProjectManager.h"
-#include "TeamcityOutput/TeamcityOutput.h"
-#include "CommandLine/CommandLineParser.h"
-#include "TexturePacker/ResourcePacker2D.h"
-#include "TextureCompression/PVRConverter.h"
-#include "CommandLine/CommandLineManager.h"
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Tools/version.h"
+#include "Tools/QtTools/DavaGLWidget/davaglwidget.h"
+#include "Tools/QtTools/RunGuard/RunGuard.h"
+#include "Tools/QtTools/FrameworkBinding/DavaLoop.h"
+#include "Tools/QtTools/FrameworkBinding/FrameworkLoop.h"
+#include "Tools/CommandLine/CommandLineParser.h"
+#include "Tools/TeamcityOutput/TeamcityOutput.h"
+#include "Tools/TexturePacker/ResourcePacker2D.h"
+#include "Tools/TextureCompression/PVRConverter.h"
+
 #include "FileSystem/ResourceArchive.h"
-#include "TextureBrowser/TextureCache.h"
-#include "LicenceDialog/LicenceDialog.h"
-
-#include "Qt/Settings/SettingsManager.h"
-#include "QtTools/RunGuard/RunGuard.h"
-
-#include "Deprecated/EditorConfig.h"
-#include "Deprecated/SceneValidator.h"
-#include "Deprecated/ControlsFactory.h"
-
 #include "Platform/Qt5/QtLayer.h"
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
 #else
-#include "Beast/BeastProxy.h"
+#include "Classes/Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
-
-#include "QtTools/FrameworkBinding/DavaLoop.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
 #include <QCryptographicHash>
 #include <QFont>
+
+#include <core_generic_plugin/generic_plugin.hpp>
+#include <core_generic_plugin/interfaces/i_command_line_parser.hpp>
+#include <core_qt_common/qt_window.hpp>
+#include <core_qt_common/i_qt_framework.hpp>
+#include <core_ui_framework/i_ui_application.hpp>
 
 namespace
 {
@@ -101,6 +103,8 @@ void UnpackHelpDoc()
 
 class ResourceEditorPlugin : public PluginMain
 {
+    std::vector<IInterface*> typesId;
+
 public:
     ResourceEditorPlugin(IComponentContext& contextManager)
     {
@@ -108,6 +112,8 @@ public:
 
     bool PostLoad(IComponentContext& context) override
     {
+        typesId.emplace_back(context.registerInterface<INTERFACE_VERSION(ISceneObserver, 0, 0)>(new SceneObserver()));
+        typesId.emplace_back(context.registerInterface<INTERFACE_VERSION(ISceneEnumerator, 0, 0)>(new SceneEnumerator()));
         return true;
     }
 
@@ -132,6 +138,7 @@ public:
 
     void Unload(IComponentContext& context) override
     {
+        std::for_each(typesId.begin(), typesId.end(), [&context](IInterface* typeId) { context.deregisterInterface(typeId); });
     }
 
 private:
@@ -181,6 +188,7 @@ private:
         //a.setAttribute(Qt::AA_ShareOpenGLContexts);
 
         Q_INIT_RESOURCE(QtToolsResources);
+        Q_INIT_RESOURCE(QtIcons);
 
         new SceneValidator();
         new TextureCache();
@@ -205,7 +213,7 @@ private:
 
         QTimer::singleShot(0, [&] {
             // create and init UI
-            mainWindow = new QtMainWindow();
+            QtMainWindow* mainWindow = new QtMainWindow();
 
             mainWindow->EnableGlobalTimeout(true);
             glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
@@ -216,7 +224,16 @@ private:
             QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
             QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
 
-            mainWindow->show();
+            IQtFramework* qtFramework = Context::queryInterface<IQtFramework>();
+            DVASSERT(qtFramework != nullptr);
+
+            mainWindow_ = new QtWindow(*qtFramework, std::unique_ptr<QMainWindow>(mainWindow));
+            mainWindow_->show();
+
+            IUIApplication* application = Context::queryInterface<IUIApplication>();
+            DVASSERT(application != nullptr);
+
+            application->addWindow(*mainWindow_);
 
             DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
@@ -227,7 +244,7 @@ private:
     void FinaliseRE()
     {
         glWidget->setParent(nullptr);
-        mainWindow->Release();
+        static_cast<QtMainWindow*>(mainWindow_->window())->Release();
 
         TextureCache::Instance()->Release();
         SceneValidator::Instance()->Release();
@@ -245,9 +262,7 @@ private:
     }
 
     DavaGLWidget* glWidget = nullptr;
-    QtMainWindow* mainWindow = nullptr;
+    QtWindow* mainWindow_ = nullptr;
 };
 
 PLG_CALLBACK_FUNC(ResourceEditorPlugin)
-
-#endif

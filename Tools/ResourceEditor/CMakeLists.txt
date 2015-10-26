@@ -76,6 +76,8 @@ define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEE
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
+set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
 set( LIBRARIES            ${BEAST_LIB} )
@@ -86,25 +88,8 @@ DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/con
                            COPY_DIR    ${DEPLOY_DIR}
                          )
 
-if (BUILD_RE_PLUGIN)
-  
-    append_deploy_dependency(${PROJECT_NAME})
-    add_definitions(-D__DAVAENGINE_NGT_PLUGIN__
-                               -DNGT_INTEGRATION)
-    list(APPEND TARGET_LIBRARIES  core_generic_plugin core_qt_common core_ui_framework)
-    set( QML_SCAN_DIR ${NGT_PLUGINS_PATH})
-
-    setup_main_dynlib()
-
-    BW_GET_EXECUTABLE_DST_DIR(EXE_DIR)
-    BW_SET_BINARY_DIR(${PROJECT_NAME} "${EXE_DIR}/plugins")
-    if (MACOS)
-        BW_COPY_PLUGIN_TO_BUNDLE(${PROJECT_NAME})
-    endif()
-
-else()
-    set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
-    set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
-
-    setup_main_executable()
+if (BUILD_AS_PLUGIN)
+    add_definitions(-D__DAVAENGINE_NGT_PLUGIN__)
 endif()
+
+setup_main_executable()

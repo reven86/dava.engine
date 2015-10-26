@@ -70,6 +70,9 @@
    <property name="windowTitle">
     <string>Properties</string>
    </property>
+   <property name="layoutTags" stdset="0">
+    <string>left</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
