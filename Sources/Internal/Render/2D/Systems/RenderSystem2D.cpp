@@ -538,6 +538,8 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     }
     // End define draw color
 
+    uint32 useColorRGBA = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
+
     // Begin fill vertex and index buffers
     uint32 vi = vertexIndex;
     uint32 ii = indexIndex;
@@ -551,7 +553,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
             v.uv.x = batchDesc.texCoordPointer[i * batchDesc.texCoordStride];
             v.uv.y = batchDesc.texCoordPointer[i * batchDesc.texCoordStride + 1];
-            v.color = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
+            v.color = (batchDesc.colorPointer == nullptr) ? useColorRGBA : batchDesc.colorPointer[i * batchDesc.colorStride];
         }
     }
     else
@@ -564,7 +566,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
             v.uv.x = 0.f;
             v.uv.y = 0.f;
-            v.color = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
+            v.color = (batchDesc.colorPointer == nullptr) ? useColorRGBA : batchDesc.colorPointer[i * batchDesc.colorStride];
         }
     }
     for (uint32 i = 0; i < batchDesc.indexCount; ++i)
@@ -1017,7 +1019,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const 
 
     if (!sprite->clipPolygon)
     {
-        batch.vertexPointer = spriteTempVertices;
+        batch.vertexPointer = spriteTempVertices.data();
         batch.texCoordPointer = sprite->texCoords[frame];
         batch.indexPointer = spriteIndeces;
     }
@@ -1247,7 +1249,45 @@ void RenderSystem2D::FillRect(const Rect & rect, const Color& color)
     batch.indexCount = 6;
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
-    batch.vertexPointer = spriteTempVertices;
+    batch.vertexPointer = spriteTempVertices.data();
+    batch.indexPointer = indices;
+    PushBatch(batch);
+}
+
+void RenderSystem2D::FillGradientRect(const Rect& rect, const Color& xy, const Color& wy, const Color& xh, const Color& wh)
+{
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    {
+        return;
+    }
+
+    static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
+    spriteTempVertices[0] = rect.x;
+    spriteTempVertices[1] = rect.y;
+
+    spriteTempVertices[2] = rect.x + rect.dx;
+    spriteTempVertices[3] = rect.y;
+
+    spriteTempVertices[4] = rect.x;
+    spriteTempVertices[5] = rect.y + rect.dy;
+
+    spriteTempVertices[6] = rect.x + rect.dx;
+    spriteTempVertices[7] = rect.y + rect.dy;
+
+    spriteTempColors[0] = xy.GetRGBA();
+    spriteTempColors[1] = wy.GetRGBA();
+    spriteTempColors[2] = xh.GetRGBA();
+    spriteTempColors[3] = wh.GetRGBA();
+
+    BatchDescriptor batch;
+    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.vertexCount = 4;
+    batch.colorStride = 1;
+    batch.indexCount = 6;
+    batch.vertexStride = 2;
+    batch.texCoordStride = 2;
+    batch.vertexPointer = spriteTempVertices.data();
+    batch.colorPointer = spriteTempColors.data();
     batch.indexPointer = indices;
     PushBatch(batch);
 }
@@ -1271,7 +1311,7 @@ void RenderSystem2D::DrawRect(const Rect & rect, const Color& color)
     batch.indexCount = 8;
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
-    batch.vertexPointer = spriteTempVertices;
+    batch.vertexPointer = spriteTempVertices.data();
     batch.indexPointer = indices;
     batch.primitiveType = rhi::PRIMITIVE_LINELIST;
     PushBatch(batch);
@@ -1338,7 +1378,7 @@ void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, const Co
     batch.indexCount = 2;
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
-    batch.vertexPointer = spriteTempVertices;
+    batch.vertexPointer = spriteTempVertices.data();
     batch.indexPointer = indices;
     batch.primitiveType = rhi::PRIMITIVE_LINELIST;
     PushBatch(batch);
@@ -1360,7 +1400,7 @@ void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, float32 
     batch.indexCount = 2;
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
-    batch.vertexPointer = spriteTempVertices;
+    batch.vertexPointer = spriteTempVertices.data();
     batch.indexPointer = indices;
     batch.primitiveType = rhi::PRIMITIVE_LINELIST;
     PushBatch(batch);
@@ -1524,7 +1564,7 @@ void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Co
     batch.indexCount = 6;
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
-    batch.vertexPointer = spriteTempVertices;
+    batch.vertexPointer = spriteTempVertices.data();
     batch.texCoordPointer = texCoords;
     batch.indexPointer = indices;
     PushBatch(batch);
