@@ -23,6 +23,7 @@ include_directories   ( "${DAVA_ROOT_DIR}/Sources/Tools")
 include_directories   ( "${DAVA_ROOT_DIR}/Sources/Internal")
 include_directories   ( "${DAVA_ROOT_DIR}/Tools/ResourceEditor")
 include_directories   ( "${DAVA_ROOT_DIR}/Tools/ResourceEditor/Classes")
+include_directories   ( "${DAVA_ROOT_DIR}/Tools/ResourceEditor/Classes/bullet")
 include_directories   ( "${DAVA_ROOT_DIR}/Tools/ResourceEditor/Classes/Qt")
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
@@ -41,8 +42,11 @@ add_definitions       (
 -DQT_THREAD_SUPPORT
 -DDAVA_QT
 -DNGT_INTEGRATION
--D__DAVAENGINE_BEAST__
 )
+
+if (WIN32)
+  add_definitions(-D__DAVAENGINE_BEAST__)
+endif()
 
 define_source_folders          ( SRC_ROOT "Classes"  "Interfaces" GLOBAL_ERASE_FOLDER )
 generate_source_groups_project ( SRC_ROOT "Classes"  "Interfaces" "DataQt")

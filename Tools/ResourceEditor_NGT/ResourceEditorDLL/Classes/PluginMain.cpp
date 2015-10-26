@@ -65,6 +65,7 @@
 #include <core_generic_plugin/generic_plugin.hpp>
 #include <core_generic_plugin/interfaces/i_command_line_parser.hpp>
 #include <core_qt_common/qt_window.hpp>
+#include <core_qt_common/i_qt_framework.hpp>
 #include <core_ui_framework/i_ui_application.hpp>
 
 namespace

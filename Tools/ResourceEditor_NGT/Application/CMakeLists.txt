@@ -32,9 +32,7 @@ elseif (MACOS)
 endif()
 
 ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory
-            "${PLUGINS_FOLDER}")
-ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${PLUGINS_FOLDER}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_CURRENT_LIST_DIR}/plugins.txt"
             "${PLUGINS_FOLDER}")
