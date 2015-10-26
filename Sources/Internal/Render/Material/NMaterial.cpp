@@ -1047,6 +1047,11 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     { { NMaterialParamName::PARAM_FLAT_COLOR,
         NMaterialParamName::PARAM_DECAL_TILE_COLOR } };
 
+    Array<FastName, 1> propertyFloat1toFloat2 =
+    {
+      { NMaterialParamName::PARAM_DECAL_TILE_SCALE }
+    };
+
     if (archive->IsKeyExists("properties"))
     {
         const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
@@ -1083,6 +1088,15 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
                             data[3] = 1.f;
 
                             AddProperty(propName, data, rhi::ShaderProp::TYPE_FLOAT4, 1);
+                            continue;
+                        }
+                    }
+                    else if (propertyTypeRemapping[i].newType == rhi::ShaderProp::TYPE_FLOAT1)
+                    {
+                        if (std::find(propertyFloat1toFloat2.begin(), propertyFloat1toFloat2.end(), propName) != propertyFloat1toFloat2.end())
+                        {
+                            Vector2 v2(*data, *data);
+                            AddProperty(propName, v2.data, rhi::ShaderProp::TYPE_FLOAT2, 1);
                             continue;
                         }
                     }
