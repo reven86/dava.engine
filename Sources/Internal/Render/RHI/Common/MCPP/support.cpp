@@ -1923,7 +1923,7 @@ static char *   get_line(
 #endif
     static int  cr_converted;
     int     converted = FALSE;
-    size_t  len;                            /* Line length - alpha  */
+    int     len;                            /* Line length - alpha  */
     char *  ptr;
     int     cat_line = 0;           /* Number of catenated lines    */
 
@@ -1945,7 +1945,7 @@ static char *   get_line(
             mcpp_fprintf( MCPP_DBG, "\n#line %ld (%s)", src_line, cur_fullname);
             dump_string( NULL, ptr);
         }
-        len = strlen( ptr);
+        len = static_cast<int>(strlen( ptr));
         if (NBUFF - 1 <= ptr - infile->buffer + len
                 && *(ptr + len - 1) != '\n') {
                 /* The line does not yet end, though the buffer is full.    */
@@ -1973,7 +1973,7 @@ static char *   get_line(
             if (mcpp_mode == POST_STD && option_flags.dig)
                 converted += cnv_digraph( ptr);
             if (converted)
-                len = strlen( ptr);
+                len = static_cast<int>(strlen( ptr));
             /* Translation phase 2  */
             len -= 2;
             if (len >= 0) {

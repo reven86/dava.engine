@@ -413,9 +413,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 DVASSERT(sampler.size()<10);
                 char ch = line[mbegin+1];
                 int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
-                DVASSERT(sn>=sl);
+                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin+1]=ch;
-                if( sn > sl )
+                if( sn > static_cast<size_t>(sl))
                     memset( line+mbegin+sl, ' ', sn-sl );
                 sampler.resize( sampler.size()+1 );
                 sampler.back().uid  = FastName(sname);
@@ -442,9 +442,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 DVASSERT(sampler.size()<10);
                 char ch = line[mbegin+1];
                 int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
-                DVASSERT(sn>=sl);
+                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin+1]=ch;
-                if( sn > sl )
+                if( sn > static_cast<size_t>(sl) )
                     memset( line+mbegin+sl, ' ', sn-sl );
                 sampler.resize( sampler.size()+1 );
                 sampler.back().uid  = FastName(sname);
@@ -474,9 +474,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     {
                         int sl = sprintf( line+mbegin, "%u", s );
                         size_t sn = sname.length();
-                        DVASSERT(sn>=sl);
+                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                         line[mbegin+sl] = ',';
-                        if( sn > sl )
+                        if( sn > static_cast<size_t>(sl) )
                             memset( line+mbegin+sl, ' ', sn-sl );
                         
                         break;
@@ -504,9 +504,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 DVASSERT(sampler.size()<10);
                 char ch = line[mbegin+1];
                 int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
-                DVASSERT(sn>=sl);
+                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin+1]=ch;
-                if( sn > sl )
+                if( sn > static_cast<size_t>(sl) )
                     memset( line+mbegin+sl, ' ', sn-sl );
                 sampler.resize( sampler.size()+1 );
                 sampler.back().uid  = FastName(sname);
@@ -536,9 +536,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     {
                         int sl = sprintf( line+mbegin, "%u", s );
                         size_t sn = sname.length();
-                        DVASSERT(sn>=sl);
+                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                         line[mbegin+sl] = ',';
-                        if( sn > sl )
+                        if( sn > static_cast<size_t>(sl) )
                             memset( line+mbegin+sl, ' ', sn-sl );
                         
                         break;
@@ -569,9 +569,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     {
                         int sl = sprintf( line+mbegin, "%u", s );
                         size_t sn = sname.length();
-                        DVASSERT(sn>=sl);
+                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                         line[mbegin+sl] = ',';
-                        if( sn > sl )
+                        if( sn > static_cast<size_t>(sl) )
                             memset( line+mbegin+sl, ' ', sn-sl );
                         
                         break;
