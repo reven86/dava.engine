@@ -67,7 +67,7 @@ void EdgeAdjacency::InitFromPolygonGroup(PolygonGroup * _polygonGroup, int32 ind
 {
 	polygonGroup = _polygonGroup;
 
-#ifdef __DAVAENGINE_DEBUG__	
+#ifdef __DAVAENGINE_DEBUG__
     DVASSERT(rhi::PRIMITIVE_TRIANGLELIST == polygonGroup->GetPrimitiveType());
 #endif
 

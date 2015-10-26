@@ -70,19 +70,19 @@ class RenderObject : public AnimatedObject
 public:
     enum eType
     {
-        TYPE_RENDEROBJECT = 0,  // Base Render Object
-        TYPE_MESH,              // Normal mesh
-        TYPE_SKINNED_MESH,      // Animated mesh for skinned animations
-        TYPE_LANDSCAPE,         // Landscape object
-        TYPE_CUSTOM_DRAW,       // Custom drawn object
-		TYPE_SPRITE,			// Sprite Node
-		TYPE_PARTICLE_EMTITTER, // Particle Emitter
-		TYPE__DELETED__SKYBOX,  //keept for legasy, skybox removed in RHI
+        TYPE_RENDEROBJECT = 0, // Base Render Object
+        TYPE_MESH, // Normal mesh
+        TYPE_SKINNED_MESH, // Animated mesh for skinned animations
+        TYPE_LANDSCAPE, // Landscape object
+        TYPE_CUSTOM_DRAW, // Custom drawn object
+        TYPE_SPRITE, // Sprite Node
+        TYPE_PARTICLE_EMTITTER, // Particle Emitter
+        TYPE__DELETED__SKYBOX, //keept for legasy, skybox removed in RHI
         TYPE_VEGETATION,
         TYPE_SPEED_TREE
     };
-    
-	enum eFlags
+
+    enum eFlags
 	{
 		VISIBLE = 1 << 0,        
 		ALWAYS_CLIPPING_VISIBLE = 1 << 4,

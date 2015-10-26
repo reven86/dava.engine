@@ -104,7 +104,7 @@ protected:
 
     SceneEditor2 *sceneEditor;
     SceneSelectionSystem *selectionSystem;
-    SceneCollisionSystem *collisionSystem;    
+    SceneCollisionSystem* collisionSystem;
 
     DAVA::Vector<DAVA::Entity *> waypointEntities;
     DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]

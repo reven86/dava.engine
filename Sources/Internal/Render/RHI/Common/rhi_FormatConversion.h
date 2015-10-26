@@ -31,19 +31,18 @@
 
 namespace rhi
 {
-
 inline void
-_FlipRGBA4_ABGR4( void* data, uint32 size )
+_FlipRGBA4_ABGR4(void* data, uint32 size)
 {
     // flip RGBA-ABGR order
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
+    for (uint8 *d = (uint8 *)data, *d_end = (uint8 *)data + size; d != d_end; d += 2)
     {
-        uint8   t0 = d[0];
-        uint8   t1 = d[1];
-        
-        t0 = ((t0&0x0F)<<4) | ((t0&0xF0)>>4);
-        t1 = ((t1&0x0F)<<4) | ((t1&0xF0)>>4);
-        
+        uint8 t0 = d[0];
+        uint8 t1 = d[1];
+
+        t0 = ((t0 & 0x0F) << 4) | ((t0 & 0xF0) >> 4);
+        t1 = ((t1 & 0x0F) << 4) | ((t1 & 0xF0) >> 4);
+
         d[0] = t1;
         d[1] = t0;
     }
@@ -54,14 +53,14 @@ _FlipRGBA4_ABGR4( void* data, uint32 size )
 inline void
 _ABGR1555toRGBA5551(void* data, uint32 size)
 {
-    for (uint16* d = (uint16*)data, *d_end = (uint16*)data + size / sizeof(uint16); d != d_end; ++d)
+    for (uint16 *d = (uint16 *)data, *d_end = (uint16 *)data + size / sizeof(uint16); d != d_end; ++d)
     {
         const uint16 in = *d;
         uint16 r = (in & 0xF800) >> 11;
         uint16 g = (in & 0x07C0) >> 1;
         uint16 b = (in & 0x003E) << 9;
         uint16 a = (in & 0x0001) << 15;
-        
+
         *d = r | g | b | a;
     }
 }
@@ -71,14 +70,14 @@ _ABGR1555toRGBA5551(void* data, uint32 size)
 inline void
 _RGBA5551toABGR1555(void* data, uint32 size)
 {
-    for (uint16* d = (uint16*)data, *d_end = (uint16*)data + size / sizeof(uint16); d != d_end; ++d)
+    for (uint16 *d = (uint16 *)data, *d_end = (uint16 *)data + size / sizeof(uint16); d != d_end; ++d)
     {
         const uint16 in = *d;
         uint16 r = (in & 0x001F) << 11;
         uint16 g = (in & 0x03E0) << 1;
         uint16 b = (in & 0x7C00) >> 9;
         uint16 a = (in & 0x8000) >> 15;
-        
+
         *d = r | g | b | a;
     }
 }
@@ -86,43 +85,42 @@ _RGBA5551toABGR1555(void* data, uint32 size)
 //------------------------------------------------------------------------------
 
 inline void
-_SwapRB8( void* data, uint32 size )
+_SwapRB8(void* data, uint32 size)
 {
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=4 )
+    for (uint8 *d = (uint8 *)data, *d_end = (uint8 *)data + size; d != d_end; d += 4)
     {
-        uint8   t = d[0];
-        
+        uint8 t = d[0];
+
         d[0] = d[2];
         d[2] = t;
     }
 }
 
-
 //------------------------------------------------------------------------------
 
 inline void
-_SwapRB4( void* data, uint32 size )
+_SwapRB4(void* data, uint32 size)
 {
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
+    for (uint8 *d = (uint8 *)data, *d_end = (uint8 *)data + size; d != d_end; d += 2)
     {
-        uint8   t0 = d[0];
-        uint8   t1 = d[1];
-        
-        d[0] = (t0&0xF0) | (t1&0x0F);
-        d[1] = (t1&0xF0) | (t0&0x0F);
+        uint8 t0 = d[0];
+        uint8 t1 = d[1];
+
+        d[0] = (t0 & 0xF0) | (t1 & 0x0F);
+        d[1] = (t1 & 0xF0) | (t0 & 0x0F);
     }
 }
 
 //------------------------------------------------------------------------------
 
 inline void
-_SwapRB5551( void* data, uint32 size )
+_SwapRB5551(void* data, uint32 size)
 {
-    for (uint8* d = (uint8*)data, *d_end = (uint8*)data + size; d != d_end; d += 2)
+    for (uint8 *d = (uint8 *)data, *d_end = (uint8 *)data + size; d != d_end; d += 2)
     {
-        uint8   t0 = d[0];
-        uint8   t1 = d[1];
-        
+        uint8 t0 = d[0];
+        uint8 t1 = d[1];
+
         d[0] = ((t1 & 0x7C) >> 2) | (t0 & 0xE0);
         d[1] = ((t0 & 0x1F) << 2) | (t1 & 0x83);
     }
@@ -131,5 +129,5 @@ _SwapRB5551( void* data, uint32 size )
 //------------------------------------------------------------------------------
 
 #endif //__RHI_FORMAT_CONVERT_H__
-    
+
 } //namespace rhi

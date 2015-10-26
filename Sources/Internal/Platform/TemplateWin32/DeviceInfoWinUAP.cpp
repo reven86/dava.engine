@@ -205,12 +205,11 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
-    auto func = [this]()
-    {
+    auto func = [this]() {
         // should be started on UI thread
-        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        CoreWindow ^ coreWindow = Window::Current->CoreWindow;
         DVASSERT(coreWindow != nullptr);
-        
+
         screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
         screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
 

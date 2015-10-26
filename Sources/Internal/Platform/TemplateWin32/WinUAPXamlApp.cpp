@@ -93,10 +93,9 @@ WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {
-    deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)
-                                                             {
-                                                                 MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
-                                                             });
+    deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY) {
+        MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
+    });
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
@@ -210,7 +209,7 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 
         CreateBaseXamlUI();
 
-        WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
+        WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction ^ action) { Run(); });
         renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
     }
 
@@ -363,18 +362,15 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
 {
     CoreWindowActivationState state = args->WindowActivationState;
 
-    core->RunOnMainThread([this, state]()
-    {
+    core->RunOnMainThread([this, state]() {
         switch (state)
         {
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(true)
-                               : Core::Instance()->FocusReceived();
+            isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
             break;
         case CoreWindowActivationState::Deactivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(false)
-                               : Core::Instance()->FocusLost();
+            isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
             break;
         default:
@@ -386,8 +382,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
     bool visible = args->Visible;
-    core->RunOnMainThread([this, visible]()
-    {
+    core->RunOnMainThread([this, visible]() {
         if (visible)
         {
             if (!isPhoneApiDetected)
@@ -425,14 +420,13 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
         scaleX = swapChainPanel->CompositionScaleX;
         scaleY = swapChainPanel->CompositionScaleY;
     }
-    core->RunOnMainThread([this, width, height, scaleX, scaleY]()
-                          {
-                              UpdateScreenSizeAndScale(width, height, scaleX, scaleY);
-                              DeviceInfo::InitializeScreenInfo();
-                              ResetRender();
-                              ReInitCoordinatesSystem();
-                              UIScreenManager::Instance()->ScreenSizeChanged();
-                          });
+    core->RunOnMainThread([this, width, height, scaleX, scaleY]() {
+        UpdateScreenSizeAndScale(width, height, scaleX, scaleY);
+        DeviceInfo::InitializeScreenInfo();
+        ResetRender();
+        ReInitCoordinatesSystem();
+        UIScreenManager::Instance()->ScreenSizeChanged();
+    });
 }
 
 void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
@@ -450,8 +444,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^ /*sender*/
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
     int32 id = pointerPoint->PointerId;
-    core->RunOnMainThread([this, x, y, id, type]()
-    {
+    core->RunOnMainThread([this, x, y, id, type]() {
         DAVATouchEvent(UIEvent::PHASE_BEGAN, x, y, id, ToDavaDeviceId(type));
     });
 }
@@ -476,8 +469,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
         int32 id = pointerPoint->PointerId;
-        core->RunOnMainThread([this, x, y, id, type]()
-        {
+        core->RunOnMainThread([this, x, y, id, type]() {
             DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id, ToDavaDeviceId(type));
         });
     }
@@ -504,8 +496,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
     int32 id = pointerPoint->PointerId;
-    core->RunOnMainThread([this, phase, x, y, id, type]()
-    {
+    core->RunOnMainThread([this, phase, x, y, id, type]() {
         DAVATouchEvent(phase, x, y, id, ToDavaDeviceId(type));
     });
 }
@@ -542,8 +533,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object ^ /*sender*/,
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
         int32 id = pointerPoint->PointerId;
-        core->RunOnMainThread([this, x, y, id, type]()
-        {
+        core->RunOnMainThread([this, x, y, id, type]() {
             DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id, ToDavaDeviceId(type));
         });
     }
@@ -555,22 +545,20 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     int32 wheelDelta = pointerPoint->Properties->MouseWheelDelta;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
 
-    core->RunOnMainThread([this, wheelDelta, type]()
-    {
+    core->RunOnMainThread([this, wheelDelta, type]() {
         UIEvent newTouch;
         newTouch.tid = 0;
         newTouch.physPoint.x = 0;
         newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
         newTouch.phase = UIEvent::PHASE_WHEEL;
         newTouch.deviceId = ToDavaDeviceId(type);
-        UIControlSystem::Instance()->OnInput({newTouch}, events);
+        UIControlSystem::Instance()->OnInput({ newTouch }, events);
     });
 }
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, BackPressedEventArgs ^ args)
 {
-    core->RunOnMainThread([this]()
-    {
+    core->RunOnMainThread([this]() {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
@@ -607,8 +595,7 @@ void WinUAPXamlApp::OnKeyDown(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
     }
 
     int32 key = static_cast<int32>(args->VirtualKey);
-    core->RunOnMainThread([this, key]()
-    {
+    core->RunOnMainThread([this, key]() {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
@@ -629,8 +616,7 @@ void WinUAPXamlApp::OnKeyUp(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
 
     // Note: should be propagated to main thread
     VirtualKey key = args->VirtualKey;
-    core->RunOnMainThread([this, key]()
-    {
+    core->RunOnMainThread([this, key]() {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
@@ -654,8 +640,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     float32 y = static_cast<float32>(args->MouseDelta.Y);
     int32 id = isLeftButtonPressed + isRightButtonPressed + isMiddleButtonPressed;
 
-    core->RunOnMainThread([this, x, y, id]()
-    {
+    core->RunOnMainThread([this, x, y, id]() {
         if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
         {
             DAVATouchEvent(UIEvent::PHASE_DRAG, x, y, id, UIEvent::PointerDeviceID::MOUSE);
@@ -719,12 +704,12 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->Activated += ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
-    auto slowSize = ref new SizeChangedEventHandler([this](Object ^ sender, SizeChangedEventArgs ^ e)
-                                                    { deferredSizeScaleEvents->UpdateSize(sender, e);
-                                                    });
-    auto slowScale = ref new TypedEventHandler<SwapChainPanel ^, Object ^>([this](SwapChainPanel ^ panel, Object ^ args)
-                                                                           { deferredSizeScaleEvents->UpdateScale(panel, args);
-                                                                           });
+    auto slowSize = ref new SizeChangedEventHandler([this](Object ^ sender, SizeChangedEventArgs ^ e) {
+        deferredSizeScaleEvents->UpdateSize(sender, e);
+    });
+    auto slowScale = ref new TypedEventHandler<SwapChainPanel ^, Object ^>([this](SwapChainPanel ^ panel, Object ^ args) {
+        deferredSizeScaleEvents->UpdateScale(panel, args);
+    });
     swapChainPanel->SizeChanged += slowSize;
     swapChainPanel->CompositionScaleChanged += slowScale;
 

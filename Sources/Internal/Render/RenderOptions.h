@@ -90,10 +90,9 @@ public:
 	void SetOption(RenderOption option, bool value);
     FastName GetOptionName(RenderOption option);
     RenderOptions();
-private:	
 
-	bool options[OPTIONS_COUNT];
-    
+private:
+    bool options[OPTIONS_COUNT];
 };
 
 };

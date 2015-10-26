@@ -33,49 +33,44 @@
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
-    using DAVA::Logger;
+using DAVA::Logger;
 
     #include "_dx9.h"
-
 
 namespace rhi
 {
 //==============================================================================
 
-
 class
 VertexBufferDX9_t
-  : public ResourceImpl<VertexBufferDX9_t,VertexBuffer::Descriptor>
+: public ResourceImpl<VertexBufferDX9_t, VertexBuffer::Descriptor>
 {
 public:
-                            VertexBufferDX9_t();
-                            ~VertexBufferDX9_t();
+    VertexBufferDX9_t();
+    ~VertexBufferDX9_t();
 
-    bool                    Create( const VertexBuffer::Descriptor& desc, bool force_immediate=false );
-    void                    Destroy( bool force_immediate=false);
+    bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
+    void Destroy(bool force_immediate = false);
 
-    unsigned                size;
+    unsigned size;
     IDirect3DVertexBuffer9* buffer;
-    unsigned                isMapped:1;
+    unsigned isMapped : 1;
 
     IDirect3DVertexBuffer9* prevBuffer;
 };
-RHI_IMPL_RESOURCE(VertexBufferDX9_t,VertexBuffer::Descriptor);
+RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor);
 
+typedef ResourcePool<VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true> VertexBufferDX9Pool;
 
-typedef ResourcePool<VertexBufferDX9_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true>   VertexBufferDX9Pool;
-
-RHI_IMPL_POOL(VertexBufferDX9_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true);
-
+RHI_IMPL_POOL(VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true);
 
 VertexBufferDX9_t::VertexBufferDX9_t()
-  : size(0),
-    buffer(nullptr),
-    isMapped(false),
-    prevBuffer(nullptr)
+    : size(0)
+    , buffer(nullptr)
+    , isMapped(false)
+    , prevBuffer(nullptr)
 {
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -83,88 +78,88 @@ VertexBufferDX9_t::~VertexBufferDX9_t()
 {
 }
 
-
 //------------------------------------------------------------------------------
 
-bool
-VertexBufferDX9_t::Create( const VertexBuffer::Descriptor& desc, bool force_immediate )
+bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_immediate)
 {
     DVASSERT(desc.size);
-    bool    success = false;
+    bool success = false;
 
-    if( desc.size )
+    if (desc.size)
     {
-        DWORD   usage = D3DUSAGE_WRITEONLY;
+        DWORD usage = D3DUSAGE_WRITEONLY;
 
-        switch( desc.usage )
+        switch (desc.usage)
         {
-            case USAGE_DEFAULT      : usage = D3DUSAGE_WRITEONLY; break;
-            case USAGE_STATICDRAW   : usage = D3DUSAGE_WRITEONLY; break;
-            case USAGE_DYNAMICDRAW  : usage = D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC; break;
+        case USAGE_DEFAULT:
+            usage = D3DUSAGE_WRITEONLY;
+            break;
+        case USAGE_STATICDRAW:
+            usage = D3DUSAGE_WRITEONLY;
+            break;
+        case USAGE_DYNAMICDRAW:
+            usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
+            break;
         }
-        
-        uint32      cmd_cnt = 2;
-        DX9Command  cmd[2]  = 
-        { 
-            { DX9Command::CREATE_VERTEX_BUFFER, { desc.size, usage, 0, D3DPOOL_DEFAULT, uint64_t(&buffer), NULL } },
-            { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&buffer), uint64_t(desc.initialData), desc.size } }
+
+        uint32 cmd_cnt = 2;
+        DX9Command cmd[2] =
+        {
+          { DX9Command::CREATE_VERTEX_BUFFER, { desc.size, usage, 0, D3DPOOL_DEFAULT, uint64_t(&buffer), NULL } },
+          { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&buffer), uint64_t(desc.initialData), desc.size } }
         };
 
-        if( !desc.initialData )
+        if (!desc.initialData)
         {
             cmd[1].func = DX9Command::NOP;
-            cmd_cnt     = 1;
+            cmd_cnt = 1;
         }
-        
-        ExecDX9( cmd, cmd_cnt, force_immediate );
 
-        if( SUCCEEDED(cmd[0].retval) )
+        ExecDX9(cmd, cmd_cnt, force_immediate);
+
+        if (SUCCEEDED(cmd[0].retval))
         {
-            size     = desc.size;
+            size = desc.size;
             isMapped = false;
 
-            success  = true;
+            success = true;
         }
         else
         {
-            Logger::Error( "FAILED to create vertex-buffer:\n%s\n", D3D9ErrorText(cmd[0].retval) );
+            Logger::Error("FAILED to create vertex-buffer:\n%s\n", D3D9ErrorText(cmd[0].retval));
         }
     }
 
     return success;
 }
 
-
 //------------------------------------------------------------------------------
 
-void
-VertexBufferDX9_t::Destroy( bool force_immediate )
+void VertexBufferDX9_t::Destroy(bool force_immediate)
 {
-    if( buffer )
+    if (buffer)
     {
-        DX9Command  cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buffer)) } };
+        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buffer)) } };
 
         prevBuffer = buffer;
-        ExecDX9( cmd, countof(cmd), force_immediate );
+        ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;
     }
 
     size = 0;
 }
 
-
 //==============================================================================
-
 
 //------------------------------------------------------------------------------
 
 static Handle
-dx9_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
+dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 {
-    Handle              handle = VertexBufferDX9Pool::Alloc();
-    VertexBufferDX9_t*  vb     = VertexBufferDX9Pool::Get( handle );
-    
-    if( vb->Create( desc ) )
+    Handle handle = VertexBufferDX9Pool::Alloc();
+    VertexBufferDX9_t* vb = VertexBufferDX9Pool::Get(handle);
+
+    if (vb->Create(desc))
     {
         VertexBuffer::Descriptor creationDesc(desc);
         creationDesc.initialData = nullptr;
@@ -172,76 +167,73 @@ dx9_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
     }
     else
     {
-        VertexBufferDX9Pool::Free( handle );
+        VertexBufferDX9Pool::Free(handle);
         handle = InvalidHandle;
     }
-    
+
     return handle;
 }
 
-
 //------------------------------------------------------------------------------
 
-static void            
-dx9_VertexBuffer_Delete( Handle vb )
+static void
+dx9_VertexBuffer_Delete(Handle vb)
 {
-    VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
+    VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
 
-    if( self )
+    if (self)
     {
         self->MarkRestored();
         self->Destroy();
-        VertexBufferDX9Pool::Free( vb );
+        VertexBufferDX9Pool::Free(vb);
     }
 }
 
-
 //------------------------------------------------------------------------------
-    
+
 static bool
-dx9_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned size )
+dx9_VertexBuffer_Update(Handle vb, const void* data, unsigned offset, unsigned size)
 {
-    bool                success = false;
-    VertexBufferDX9_t*  self    = VertexBufferDX9Pool::Get( vb );
+    bool success = false;
+    VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
 
     DVASSERT(!self->isMapped);
 
-    if( offset+size <= self->size )
+    if (offset + size <= self->size)
     {
-        void*       ptr  = nullptr;
-        DX9Command  cmd1 = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
-        
-        ExecDX9( &cmd1, 1 );
-        if( SUCCEEDED(cmd1.retval) )
-        {
-            memcpy( ptr, data, size );
+        void* ptr = nullptr;
+        DX9Command cmd1 = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
 
-            DX9Command  cmd2 = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)) } };
-            
-            ExecDX9( &cmd2, 1 );
+        ExecDX9(&cmd1, 1);
+        if (SUCCEEDED(cmd1.retval))
+        {
+            memcpy(ptr, data, size);
+
+            DX9Command cmd2 = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)) } };
+
+            ExecDX9(&cmd2, 1);
             success = true;
-            
-            self->MarkRestored();            
+
+            self->MarkRestored();
         }
     }
 
     return success;
 }
 
-
 //------------------------------------------------------------------------------
 
 static void*
-dx9_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
+dx9_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
 {
-    void*               ptr  = nullptr;
-    VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
-    DX9Command          cmd  = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
+    void* ptr = nullptr;
+    VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
+    DX9Command cmd = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
 
     DVASSERT(!self->isMapped);
-    ExecDX9( &cmd, 1 );
+    ExecDX9(&cmd, 1);
 
-    if( SUCCEEDED(cmd.retval) )
+    if (SUCCEEDED(cmd.retval))
     {
         self->isMapped = true;
     }
@@ -249,84 +241,73 @@ dx9_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
     return ptr;
 }
 
-
 //------------------------------------------------------------------------------
 
 static void
-dx9_VertexBuffer_Unmap( Handle vb )
+dx9_VertexBuffer_Unmap(Handle vb)
 {
-    VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
-    DX9Command          cmd  = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)) } };
-    
-    DVASSERT(self->isMapped);
-    ExecDX9( &cmd, 1 );
+    VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
+    DX9Command cmd = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)) } };
 
-    if( SUCCEEDED(cmd.retval) )
+    DVASSERT(self->isMapped);
+    ExecDX9(&cmd, 1);
+
+    if (SUCCEEDED(cmd.retval))
     {
         self->isMapped = false;
-        self->MarkRestored();        
+        self->MarkRestored();
     }
 }
-
 
 //------------------------------------------------------------------------------
 
 static bool
-dx9_VertexBuffer_NeedRestore( Handle vb )
+dx9_VertexBuffer_NeedRestore(Handle vb)
 {
-    VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
-    
+    VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
+
     return self->NeedRestore();
 }
-
-
 
 //------------------------------------------------------------------------------
 
 namespace VertexBufferDX9
 {
-
-void
-Init( uint32 maxCount )
+void Init(uint32 maxCount)
 {
-    VertexBufferDX9Pool::Reserve( maxCount );
+    VertexBufferDX9Pool::Reserve(maxCount);
 }
 
-void
-SetupDispatch( Dispatch* dispatch )
+void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_VertexBuffer_Create      = &dx9_VertexBuffer_Create;
-    dispatch->impl_VertexBuffer_Delete      = &dx9_VertexBuffer_Delete;
-    dispatch->impl_VertexBuffer_Update      = &dx9_VertexBuffer_Update;
-    dispatch->impl_VertexBuffer_Map         = &dx9_VertexBuffer_Map;
-    dispatch->impl_VertexBuffer_Unmap       = &dx9_VertexBuffer_Unmap;
+    dispatch->impl_VertexBuffer_Create = &dx9_VertexBuffer_Create;
+    dispatch->impl_VertexBuffer_Delete = &dx9_VertexBuffer_Delete;
+    dispatch->impl_VertexBuffer_Update = &dx9_VertexBuffer_Update;
+    dispatch->impl_VertexBuffer_Map = &dx9_VertexBuffer_Map;
+    dispatch->impl_VertexBuffer_Unmap = &dx9_VertexBuffer_Unmap;
     dispatch->impl_VertexBuffer_NeedRestore = &dx9_VertexBuffer_NeedRestore;
 }
 
-
-void 
-SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride  )
+void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride)
 {
-    VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
-    HRESULT             hr   = _D3D9_Device->SetStreamSource( stream_i, self->buffer, offset, stride );
+    VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
+    HRESULT hr = _D3D9_Device->SetStreamSource(stream_i, self->buffer, offset, stride);
 
     DVASSERT(!self->isMapped);
 
-    if( FAILED(hr) )    
-        Logger::Error( "SetStreamSource failed:\n%s\n", D3D9ErrorText(hr) );
+    if (FAILED(hr))
+        Logger::Error("SetStreamSource failed:\n%s\n", D3D9ErrorText(hr));
 }
 
-void
-ReleaseAll()
+void ReleaseAll()
 {
-    for( VertexBufferDX9Pool::Iterator b=VertexBufferDX9Pool::Begin(),b_end=VertexBufferDX9Pool::End(); b!=b_end; ++b )
+    for (VertexBufferDX9Pool::Iterator b = VertexBufferDX9Pool::Begin(), b_end = VertexBufferDX9Pool::End(); b != b_end; ++b)
     {
-        b->Destroy( true );
+        b->Destroy(true);
     }
 }
 
-void
-ReCreateAll()
+void ReCreateAll()
 {
     VertexBufferDX9Pool::ReCreateAll();
 }
@@ -336,8 +317,6 @@ NeedRestoreCount()
 {
     return VertexBufferDX9_t::NeedRestoreCount();
 }
-
 }
-
 
 } // namespace rhi

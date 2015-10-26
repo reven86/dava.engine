@@ -87,8 +87,8 @@ public:
     inline void GetAngle(int32 i, Vector2 & v);
 
     inline rhi::PrimitiveType GetPrimitiveType();
-	
-	//! Setters
+
+    //! Setters
 	inline void	SetCoord(int32 i, const Vector3 & v);
 	inline void	SetNormal(int32 i, const Vector3 & v);
 	inline void	SetTangent(int32 i, const Vector3 & v);
@@ -111,31 +111,29 @@ public:
 	inline int32 GetIndexCount();
 	
 	inline const AABBox3 & GetBoundingBox() const;
-    
-    
+
     inline void SetPrimitiveType(rhi::PrimitiveType type);
-    
-	
-	int32	vertexCount;
+
+    int32	vertexCount;
 	int32	indexCount;
 	int32	textureCoordCount;
 	int32	vertexStride;
 	int32	vertexFormat;
-	int32	indexFormat;	
+    int32 indexFormat;
     rhi::PrimitiveType primitiveType;
-	int32	cubeTextureCoordCount;
+    int32	cubeTextureCoordCount;
 	
 	Vector3		*vertexArray;
 	Vector2		**textureCoordArray;
 	Vector3		*normalArray;
 	Vector3		*tangentArray;
 	Vector3		*binormalArray;
-	float32		*jointIdxArray;
-	float32		*jointWeightArray;
-	Vector3		**cubeTextureCoordArray;
+    float32* jointIdxArray;
+    float32* jointWeightArray;
+    Vector3		**cubeTextureCoordArray;
 
-	uint32		*jointCountArray;
-	
+    uint32* jointCountArray;
+
     Vector3     *pivotArray;
     float32     *flexArray;
     Vector2     *angleArray;
@@ -174,16 +172,12 @@ public:
         Use greedy algorithm to convert mesh from triangle lists to triangle strips
      */
     void    ConvertToStrips();
-    
-    
-    
+
     void BuildBuffers();
     void RestoreBuffers();
-           
-    
-    void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);    
-    void LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags, bool cutUnusedStreams);
 
+    void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);
+    void LoadPolygonData(KeyedArchive* keyedArchive, SerializationContext* serializationContext, int32 requiredFlags, bool cutUnusedStreams);
 
     rhi::HVertexBuffer vertexBuffer;
     rhi::HIndexBuffer indexBuffer;
@@ -194,25 +188,20 @@ private:
 	void	CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
 	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
  	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
-    
-    
-    
-    
-    
-public:
-    
-    INTROSPECTION_EXTEND(PolygonGroup, DataNode,
-        MEMBER(vertexCount, "Vertex Count", I_VIEW | I_SAVE)
-        MEMBER(indexCount, "Index Count", I_VIEW | I_SAVE)
-        MEMBER(textureCoordCount, "Texture Coord Count", I_VIEW | I_SAVE)
-        MEMBER(vertexStride, "Vertex Stride", I_VIEW | I_SAVE)
-        MEMBER(vertexFormat, "Vertex Format", I_VIEW | I_SAVE)
-        MEMBER(indexFormat, "Index Format", I_VIEW | I_SAVE)        
-//        MEMBER(primitiveType, "Primitive Type", INTROSPECTION_SERIALIZABLE)
 
-//        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)
-//        MEMBER(indices, "Indices", INTROSPECTION_SERIALIZABLE)
-    );
+public:
+    INTROSPECTION_EXTEND(PolygonGroup, DataNode,
+                         MEMBER(vertexCount, "Vertex Count", I_VIEW | I_SAVE)
+                         MEMBER(indexCount, "Index Count", I_VIEW | I_SAVE)
+                         MEMBER(textureCoordCount, "Texture Coord Count", I_VIEW | I_SAVE)
+                         MEMBER(vertexStride, "Vertex Stride", I_VIEW | I_SAVE)
+                         MEMBER(vertexFormat, "Vertex Format", I_VIEW | I_SAVE)
+                         MEMBER(indexFormat, "Index Format", I_VIEW | I_SAVE)
+                         //        MEMBER(primitiveType, "Primitive Type", INTROSPECTION_SERIALIZABLE)
+
+                         //        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)
+                         //        MEMBER(indices, "Indices", INTROSPECTION_SERIALIZABLE)
+                         );
 };
 
 // Static Mesh Implementation
@@ -281,18 +270,18 @@ inline void PolygonGroup::SetAngle(int32 i, const Vector2 & _v)
 
 inline void	PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
 {
-    DVASSERT(jointIndex >= 0 && jointIndex < 4);    
+    DVASSERT(jointIndex >= 0 && jointIndex < 4);
     *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneIndexValue);
-//	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
-//	t[jointIndex] = boneIndexValue;
+    //	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
+    //	t[jointIndex] = boneIndexValue;
 }
 	
 inline void	PolygonGroup::SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
-    *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneWeightValue);    
-//    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
-//	t[jointIndex] = (uint8)(255 * boneWeightValue);
+    *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneWeightValue);
+    //    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
+    //	t[jointIndex] = (uint8)(255 * boneWeightValue);
 }
 	
 inline void PolygonGroup::SetJointCount(int32 vIndex, int32 jointCount)
@@ -304,8 +293,8 @@ inline void	PolygonGroup::SetIndex(int32 i, int16 index)
 {
 	indexArray[i] = index;
 }
-    
-inline void	PolygonGroup::SetPrimitiveType(rhi::PrimitiveType type)
+
+inline void PolygonGroup::SetPrimitiveType(rhi::PrimitiveType type)
 {
     primitiveType = type;
 }
@@ -393,7 +382,7 @@ inline const AABBox3 & PolygonGroup::GetBoundingBox() const
 {
 	return aabbox;
 }
-	
+
 inline rhi::PrimitiveType PolygonGroup::GetPrimitiveType()
 {
     return primitiveType;

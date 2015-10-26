@@ -36,7 +36,7 @@
 using namespace std;
 using namespace DAVA;
 
-Vector<String> split(const String &s, char8 delim)
+Vector<String> split(const String& s, char8 delim)
 {
     Vector<String> elems;
     stringstream ss(s);
@@ -90,7 +90,7 @@ void Usage()
     cout << endl;
 }
 
-int main(int argc, const char * argv[])
+int main(int argc, const char* argv[])
 {
     if (argc < 2)
     {

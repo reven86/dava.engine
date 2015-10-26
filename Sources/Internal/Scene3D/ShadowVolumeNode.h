@@ -60,9 +60,9 @@ public:
 	virtual Entity* Clone(Entity *dstNode = NULL);
 
     PolygonGroup * GetPolygonGroup() { return shadowPolygonGroup; };
-private:	
 
-	//shadow mesh generation
+private:
+    //shadow mesh generation
 	PolygonGroup * shadowPolygonGroup;
 	//int32 newIndexCount;
 	//int32 newVertexCount;

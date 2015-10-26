@@ -58,8 +58,8 @@ public:
         RENDER_LAYER_ID_COUNT
     };
 
-    static eRenderLayerID GetLayerIDByName(const FastName & name);
-    static const FastName & GetLayerNameByID(eRenderLayerID layer);
+    static eRenderLayerID GetLayerIDByName(const FastName& name);
+    static const FastName& GetLayerNameByID(eRenderLayerID layer);
 
     // LAYERS SORTING FLAGS
     static const uint32 LAYER_SORTING_FLAGS_OPAQUE;
@@ -74,22 +74,22 @@ public:
 
     RenderLayer(eRenderLayerID id, uint32 sortingFlags);
     virtual ~RenderLayer();
-    
-    inline eRenderLayerID GetRenderLayerID() const;
-	inline uint32 GetSortingFlags() const;
 
-    virtual void Draw(Camera* camera, const RenderBatchArray & batchArray, rhi::HPacketList packetList);
-    
+    inline eRenderLayerID GetRenderLayerID() const;
+    inline uint32 GetSortingFlags() const;
+
+    virtual void Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList);
+
 protected:
     eRenderLayerID layerID;
     uint32 sortFlags;
-    
+
 public:
     INTROSPECTION(RenderLayer, NULL
-        //COLLECTION(renderBatchArray, "Render Batch Array", I_VIEW)
-    );
+                  //COLLECTION(renderBatchArray, "Render Batch Array", I_VIEW)
+                  );
 };
-    
+
 inline RenderLayer::eRenderLayerID RenderLayer::GetRenderLayerID() const
 {
     return layerID;

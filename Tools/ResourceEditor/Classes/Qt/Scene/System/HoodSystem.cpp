@@ -53,8 +53,8 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	collConfiguration = new btDefaultCollisionConfiguration();
 	collDispatcher = new btCollisionDispatcher(collConfiguration);
 	collBroadphase = new btAxisSweep3(worldMin,worldMax);
-	collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
-	collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+    collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
+    collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	collWorld = new btCollisionWorld(collDispatcher, collBroadphase, collConfiguration);
 	collWorld->setDebugDrawer(collDebugDraw);
 
@@ -340,8 +340,7 @@ void HoodSystem::Input(DAVA::UIEvent *event)
 
 void HoodSystem::Draw()
 {
-
-	if(NULL != curHood && IsVisible())
+    if(NULL != curHood && IsVisible())
 	{
 		TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
 
@@ -358,20 +357,19 @@ void HoodSystem::Draw()
 				}
 			}
 
-			curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
+            curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
 
-			// zero pos point
+            // zero pos point
             GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
-	
-			// debug draw axis collision word
+
+            // debug draw axis collision word
 			//collWorld->debugDrawWorld();
 		}
 		else
 		{
             normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
-		}
+        }
 	}
-
 }
 
 void HoodSystem::ProcessCommand(const Command2 *command, bool redo)

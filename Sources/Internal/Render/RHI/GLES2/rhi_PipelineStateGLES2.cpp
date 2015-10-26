@@ -34,293 +34,308 @@
     #include "rhi_GLES2.h"
     
     #include "FileSystem/Logger.h"
-    using DAVA::Logger;
+using DAVA::Logger;
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
 
-
 namespace rhi
 {
-
 namespace PipelineStateGLES2
 {
-    static int      cachedBlendEnabled  = -1;
-    static GLenum   cachedBlendSrc      = (GLenum)0;
-    static GLenum   cachedBlendDst      = (GLenum)0;
-    static uint32   cachedProgram       = 0;
+static int cachedBlendEnabled = -1;
+static GLenum cachedBlendSrc = (GLenum)0;
+static GLenum cachedBlendDst = (GLenum)0;
+static uint32 cachedProgram = 0;
 }
-
 
 struct
 VertexDeclGLES2
 {
-                    VertexDeclGLES2()
-                      : elemCount(0),
-                        stride(0),
-                        vattrInited(false)
-                    {}
+    VertexDeclGLES2()
+        : elemCount(0)
+        , stride(0)
+        , vattrInited(false)
+    {
+    }
 
-    void            Construct( const VertexLayout& layout )
-                    {
-                        elemCount = 0;
+    void Construct(const VertexLayout& layout)
+    {
+        elemCount = 0;
 
-                        for( unsigned i=0; i!=layout.ElementCount(); ++i )
-                        {
-                            if( layout.ElementSemantics(i) == VS_PAD )
-                                continue;
+        for (unsigned i = 0; i != layout.ElementCount(); ++i)
+        {
+            if (layout.ElementSemantics(i) == VS_PAD)
+                continue;
 
-                            switch( layout.ElementDataType(i) )
-                            {
-                                case VDT_FLOAT :
-                                {
-                                    elem[elemCount].type       = GL_FLOAT;
-                                    elem[elemCount].normalized = GL_FALSE;
-                                }   break;
-/*
+            switch (layout.ElementDataType(i))
+            {
+            case VDT_FLOAT:
+            {
+                elem[elemCount].type = GL_FLOAT;
+                elem[elemCount].normalized = GL_FALSE;
+            }
+            break;
+            /*
                                 case VDT_HALF :
                                 {
                                     elem[elemCount].type       = GL_HALF_FLOAT;
                                     elem[elemCount].normalized = GL_FALSE;
                                 }   break;
-*/                                
-                                case VDT_INT16N :
-                                {
-                                    elem[elemCount].type       = GL_SHORT;
-                                    elem[elemCount].normalized = GL_TRUE;
-                                }   break;
-                                
-                                case VDT_UINT8N :
-                                {
-                                    elem[elemCount].type       = GL_UNSIGNED_BYTE;
-                                    elem[elemCount].normalized = GL_TRUE;
-                                }   break;
-                                
-                                case VDT_INT8N :
-                                {
-                                    elem[elemCount].type       = GL_BYTE;
-                                    elem[elemCount].normalized = GL_TRUE;
-                                }   break;
-                                
-                                case VDT_UINT8 :
-                                {
-                                    elem[elemCount].type       = GL_UNSIGNED_BYTE;
-                                    elem[elemCount].normalized = GL_FALSE;
-                                }   break;
-                                    
-                                default :
-                                {}
-                            }
+*/
+            case VDT_INT16N:
+            {
+                elem[elemCount].type = GL_SHORT;
+                elem[elemCount].normalized = GL_TRUE;
+            }
+            break;
 
-                            switch( layout.ElementSemantics(i) )
-                            {
-                                case VS_POSITION    : strcpy( elem[elemCount].name, "attr_position" ); break;
-                                case VS_NORMAL      : strcpy( elem[elemCount].name, "attr_normal" ); break;
-                                case VS_TEXCOORD    : sprintf( elem[elemCount].name, "attr_texcoord%u", layout.ElementSemanticsIndex(i) ); break;
-                                case VS_COLOR       : sprintf( elem[elemCount].name, "attr_color%u", layout.ElementSemanticsIndex(i) ); break;
-                                case VS_TANGENT     : strcpy( elem[elemCount].name, "attr_tangent" ); break;
-                                case VS_BINORMAL    : strcpy( elem[elemCount].name, "attr_binormal" ); break;
-                                case VS_BLENDWEIGHT : strcpy( elem[elemCount].name, "attr_blendweight" ); break;
-                                case VS_BLENDINDEX  : strcpy( elem[elemCount].name, "attr_blendindex" ); break;
-                                    
-                                default             : strcpy( elem[elemCount].name, "<unsupported>" );
-                            }
-                            
-                            elem[elemCount].count  = layout.ElementDataCount( i );
-                            elem[elemCount].offset = (void*)(uint64(layout.ElementOffset( i )));
-                            elem[elemCount].index  = InvalidIndex;
-                            
-                            ++elemCount;
-                        }
-                        
-                        stride      = layout.Stride();
-                        vattrInited = false;
-                    }
-    void            InitVattr( int gl_prog, bool force_immediate=false )
-                    {
-                        GLCommand   cmd[16];
+            case VDT_UINT8N:
+            {
+                elem[elemCount].type = GL_UNSIGNED_BYTE;
+                elem[elemCount].normalized = GL_TRUE;
+            }
+            break;
 
-                        for( unsigned i=0; i!=elemCount; ++i )
-                        {
-                            cmd[i].func   = GLCommand::GET_ATTRIB_LOCATION;
-                            cmd[i].arg[0] = gl_prog;
-                            cmd[i].arg[1] = uint64_t(elem[i].name);
-                        }
+            case VDT_INT8N:
+            {
+                elem[elemCount].type = GL_BYTE;
+                elem[elemCount].normalized = GL_TRUE;
+            }
+            break;
 
-                        ExecGL( cmd, elemCount, force_immediate );
+            case VDT_UINT8:
+            {
+                elem[elemCount].type = GL_UNSIGNED_BYTE;
+                elem[elemCount].normalized = GL_FALSE;
+            }
+            break;
 
-                        for( unsigned i=0; i!=elemCount; ++i )
-                            elem[i].index = cmd[i].retval;
+            default:
+            {
+            }
+            }
 
-                        vattrInited = true;
-                    }
-                    void SetToRHI(uint32 firstVertex) const
-                    {
-                        DVASSERT(vattrInited);
+            switch (layout.ElementSemantics(i))
+            {
+            case VS_POSITION:
+                strcpy(elem[elemCount].name, "attr_position");
+                break;
+            case VS_NORMAL:
+                strcpy(elem[elemCount].name, "attr_normal");
+                break;
+            case VS_TEXCOORD:
+                sprintf(elem[elemCount].name, "attr_texcoord%u", layout.ElementSemanticsIndex(i));
+                break;
+            case VS_COLOR:
+                sprintf(elem[elemCount].name, "attr_color%u", layout.ElementSemanticsIndex(i));
+                break;
+            case VS_TANGENT:
+                strcpy(elem[elemCount].name, "attr_tangent");
+                break;
+            case VS_BINORMAL:
+                strcpy(elem[elemCount].name, "attr_binormal");
+                break;
+            case VS_BLENDWEIGHT:
+                strcpy(elem[elemCount].name, "attr_blendweight");
+                break;
+            case VS_BLENDINDEX:
+                strcpy(elem[elemCount].name, "attr_blendindex");
+                break;
 
-                        uint32  base                    = firstVertex * stride;
-                        int     attr_used[VATTR_COUNT];
+            default:
+                strcpy(elem[elemCount].name, "<unsupported>");
+            }
 
-                        memset( attr_used, 0, sizeof(attr_used) );
+            elem[elemCount].count = layout.ElementDataCount(i);
+            elem[elemCount].offset = (void*)(uint64(layout.ElementOffset(i)));
+            elem[elemCount].index = InvalidIndex;
 
-                        struct
-                        vattr_t
-                        {
-                            bool            enabled;
-                            GLint           size;
-                            GLenum          type;
-                            GLboolean       normalized;
-                            const GLvoid*   pointer;
-                        };
+            ++elemCount;
+        }
 
-                        static vattr_t  vattr[VATTR_COUNT];
-                        static unsigned cur_stride = 0;
-                        static bool     needInit   = true;
+        stride = layout.Stride();
+        vattrInited = false;
+    }
+    void InitVattr(int gl_prog, bool force_immediate = false)
+    {
+        GLCommand cmd[16];
 
-                        if( needInit )
-                        {
-//                            for( vattr_t* a=vattr,*a_end=vattr+countof(vattr); a!=a_end; ++a )
-//                                a->enabled = false;
-                            memset( vattr, 0, sizeof(vattr) );
-                                                        
-                            for( unsigned i=0; i!=VATTR_COUNT; ++i )
-                                GL_CALL(glDisableVertexAttribArray( i ));
+        for (unsigned i = 0; i != elemCount; ++i)
+        {
+            cmd[i].func = GLCommand::GET_ATTRIB_LOCATION;
+            cmd[i].arg[0] = gl_prog;
+            cmd[i].arg[1] = uint64_t(elem[i].name);
+        }
 
-                            needInit = false;
-                        }
-                        
-//Trace("gl.vattr-array\n");
-//Trace("  base= %u  stride= %u  first_v= %u\n",base,stride,firstVertex);
+        ExecGL(cmd, elemCount, force_immediate);
 
-                        for( unsigned i=0; i!=elemCount; ++i )
-                        {
-                            unsigned    idx = elem[i].index;
+        for (unsigned i = 0; i != elemCount; ++i)
+            elem[i].index = cmd[i].retval;
 
-                            if( idx != InvalidIndex )
-                                attr_used[idx] = 1;
-                        }
-                        
-                        for( unsigned i=0; i!=countof(attr_used); ++i )
-                        {
-                            if( !attr_used[i] )
-                            {
-                                if( vattr[i].enabled )
-                                {
-                                    //{SCOPED_NAMED_TIMING("gl-DisableVertexAttribArray")}
-                                    GL_CALL(glDisableVertexAttribArray( i ));
-                                    vattr[i].enabled = false;
-                                }
-                            }
-                        }
+        vattrInited = true;
+    }
+    void SetToRHI(uint32 firstVertex) const
+    {
+        DVASSERT(vattrInited);
 
-                        for( unsigned i=0; i!=elemCount; ++i )
-                        {
-                            unsigned    idx = elem[i].index;
+        uint32 base = firstVertex * stride;
+        int attr_used[VATTR_COUNT];
 
-                            if( idx != InvalidIndex )
-                            {
-//Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
-                                if( !vattr[idx].enabled )
-                                {
-                                    //{SCOPED_NAMED_TIMING("gl-EnableVertexAttribArray")}
-                                    GL_CALL(glEnableVertexAttribArray( idx ));
-                                    vattr[idx].enabled = true;
-                                }
+        memset(attr_used, 0, sizeof(attr_used));
 
-                                if(     !VAttrCacheValid
-                                    ||  vattr[idx].size != elem[i].count
-                                    ||  vattr[idx].type != elem[i].type
-                                    ||  vattr[idx].normalized != (GLboolean)(elem[i].normalized)
-                                    ||  cur_stride != stride
-                                    ||  vattr[idx].pointer != (const GLvoid*)(base + (uint8_t*)(elem[i].offset))
-                                  )
-                                {
-//{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
-                                    GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, (const GLvoid*)(base + (uint8_t*)(elem[i].offset)) ));
+        struct
+        vattr_t
+        {
+            bool enabled;
+            GLint size;
+            GLenum type;
+            GLboolean normalized;
+            const GLvoid* pointer;
+        };
 
-                                    vattr[idx].size         = elem[i].count;
-                                    vattr[idx].type         = elem[i].type;
-                                    vattr[idx].normalized   = (GLboolean)(elem[i].normalized);
-                                    vattr[idx].pointer      = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));                                    
-                                }
-                            }
-                        }
-                        VAttrCacheValid = true;
+        static vattr_t vattr[VATTR_COUNT];
+        static unsigned cur_stride = 0;
+        static bool needInit = true;
 
-                        cur_stride = stride;                    
-                    }
-    static void     InvalidateVAttrCache()
-                    {
-                        VAttrCacheValid = false;
-                    }
+        if (needInit)
+        {
+            //                            for( vattr_t* a=vattr,*a_end=vattr+countof(vattr); a!=a_end; ++a )
+            //                                a->enabled = false;
+            memset(vattr, 0, sizeof(vattr));
+
+            for (unsigned i = 0; i != VATTR_COUNT; ++i)
+                GL_CALL(glDisableVertexAttribArray(i));
+
+            needInit = false;
+        }
+
+        //Trace("gl.vattr-array\n");
+        //Trace("  base= %u  stride= %u  first_v= %u\n",base,stride,firstVertex);
+
+        for (unsigned i = 0; i != elemCount; ++i)
+        {
+            unsigned idx = elem[i].index;
+
+            if (idx != InvalidIndex)
+                attr_used[idx] = 1;
+        }
+
+        for (unsigned i = 0; i != countof(attr_used); ++i)
+        {
+            if (!attr_used[i])
+            {
+                if (vattr[i].enabled)
+                {
+                    //{SCOPED_NAMED_TIMING("gl-DisableVertexAttribArray")}
+                    GL_CALL(glDisableVertexAttribArray(i));
+                    vattr[i].enabled = false;
+                }
+            }
+        }
+
+        for (unsigned i = 0; i != elemCount; ++i)
+        {
+            unsigned idx = elem[i].index;
+
+            if (idx != InvalidIndex)
+            {
+                //Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
+                if (!vattr[idx].enabled)
+                {
+                    //{SCOPED_NAMED_TIMING("gl-EnableVertexAttribArray")}
+                    GL_CALL(glEnableVertexAttribArray(idx));
+                    vattr[idx].enabled = true;
+                }
+
+                if (!VAttrCacheValid || vattr[idx].size != elem[i].count || vattr[idx].type != elem[i].type || vattr[idx].normalized != (GLboolean)(elem[i].normalized) || cur_stride != stride || vattr[idx].pointer != (const GLvoid*)(base + (uint8_t*)(elem[i].offset)))
+                {
+                    //{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
+                    GL_CALL(glVertexAttribPointer(idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, (const GLvoid*)(base + (uint8_t*)(elem[i].offset))));
+
+                    vattr[idx].size = elem[i].count;
+                    vattr[idx].type = elem[i].type;
+                    vattr[idx].normalized = (GLboolean)(elem[i].normalized);
+                    vattr[idx].pointer = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));
+                }
+            }
+        }
+        VAttrCacheValid = true;
+
+        cur_stride = stride;
+    }
+    static void InvalidateVAttrCache()
+    {
+        VAttrCacheValid = false;
+    }
 
     struct
     Elem
     {
-        char        name[32];
-        unsigned    index;
-    
-        unsigned    type;
-        unsigned    count;
-        int         normalized;
-        void*       offset;
+        char name[32];
+        unsigned index;
+
+        unsigned type;
+        unsigned count;
+        int normalized;
+        void* offset;
     };
 
-    Elem            elem[VATTR_COUNT];
-    unsigned        elemCount;
-    unsigned        stride;
-    uint32          vattrInited:1;
+    Elem elem[VATTR_COUNT];
+    unsigned elemCount;
+    unsigned stride;
+    uint32 vattrInited : 1;
 
-    static bool     VAttrCacheValid;
+    static bool VAttrCacheValid;
 };
 
-bool    VertexDeclGLES2::VAttrCacheValid = false;
-
+bool VertexDeclGLES2::VAttrCacheValid = false;
 
 class
 PipelineStateGLES2_t
 {
 public:
-                        PipelineStateGLES2_t()
-                        {}
+    PipelineStateGLES2_t()
+    {
+    }
 
     struct
     VertexProgGLES2
-      : public ProgGLES2
+    : public ProgGLES2
     {
     public:
+        VertexProgGLES2()
+            : ProgGLES2(PROG_VERTEX)
+        {
+        }
 
-                                VertexProgGLES2()
-                                  : ProgGLES2(PROG_VERTEX)
-                                {}
-
-                                void SetToRHI(uint32 layoutUID, uint32 firstVertex = 0) const
-                                {
-                                    if( layoutUID == VertexLayout::InvalidUID )
-                                    {
-                                        vdecl.SetToRHI( firstVertex );
-                                    }
-                                    else
-                                    {
-                                        for( std::vector<PipelineStateGLES2_t::VertexProgGLES2::vdecl_t>::iterator v=altVdecl.begin(),v_end=altVdecl.end(); v!=v_end; ++v )
-                                        {
-                                            if( v->layoutUID == layoutUID )
-                                            {
-                                                v->vdecl.SetToRHI( firstVertex );
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
+        void SetToRHI(uint32 layoutUID, uint32 firstVertex = 0) const
+        {
+            if (layoutUID == VertexLayout::InvalidUID)
+            {
+                vdecl.SetToRHI(firstVertex);
+            }
+            else
+            {
+                for (std::vector<PipelineStateGLES2_t::VertexProgGLES2::vdecl_t>::iterator v = altVdecl.begin(), v_end = altVdecl.end(); v != v_end; ++v)
+                {
+                    if (v->layoutUID == layoutUID)
+                    {
+                        v->vdecl.SetToRHI(firstVertex);
+                        break;
+                    }
+                }
+            }
+        }
 
         VertexDeclGLES2 vdecl;
-        DAVA::FastName  uid;
-        
+        DAVA::FastName uid;
+
         struct
         vdecl_t
         {
             VertexDeclGLES2 vdecl;
-            uint32          layoutUID;
+            uint32 layoutUID;
         };
 
         mutable std::vector<vdecl_t> altVdecl;
@@ -328,18 +343,15 @@ public:
 
     struct
     FragmentProgGLES2
-      : public ProgGLES2
+    : public ProgGLES2
     {
     public:
+        FragmentProgGLES2()
+            : ProgGLES2(PROG_FRAGMENT)
+        {
+        }
 
-                                FragmentProgGLES2()
-                                  : ProgGLES2(PROG_FRAGMENT)
-                                {}
-                            
-
-
-
-        DAVA::FastName  uid;
+        DAVA::FastName uid;
     };
 
     struct
@@ -373,22 +385,22 @@ public:
 
     program_t prog;
 
-    GLenum              blendSrc;
-    GLenum              blendDst;
-    bool                blendEnabled;
+    GLenum blendSrc;
+    GLenum blendDst;
+    bool blendEnabled;
 
-    GLboolean           maskR;
-    GLboolean           maskG;
-    GLboolean           maskB;
-    GLboolean           maskA;
+    GLboolean maskR;
+    GLboolean maskG;
+    GLboolean maskB;
+    GLboolean maskA;
 
     bool needPrepareTextureLoc = true;
 
     static std::vector<ProgramEntry> _ProgramEntry;
 };
 
-typedef ResourcePool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false>  PipelineStateGLES2Pool;
-RHI_IMPL_POOL(PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false);
+typedef ResourcePool<PipelineStateGLES2_t, RESOURCE_PIPELINE_STATE, PipelineState::Descriptor, false> PipelineStateGLES2Pool;
+RHI_IMPL_POOL(PipelineStateGLES2_t, RESOURCE_PIPELINE_STATE, PipelineState::Descriptor, false);
 
 std::vector<PipelineStateGLES2_t::ProgramEntry> PipelineStateGLES2_t::_ProgramEntry;
 
@@ -400,11 +412,11 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
     bool doAdd = true;
     uint32 vprogSrcHash;
     uint32 fprogSrcHash;
-    static std::vector<uint8>   vprog_bin;
-    static std::vector<uint8>   fprog_bin;
+    static std::vector<uint8> vprog_bin;
+    static std::vector<uint8> fprog_bin;
 
-    rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
-    rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
+    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
+    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
     vprogSrcHash = DAVA::HashValue_N((const char*)(&vprog_bin[0]), strlen((const char*)(&vprog_bin[0])));
     fprogSrcHash = DAVA::HashValue_N((const char*)(&fprog_bin[0]), strlen((const char*)(&fprog_bin[0])));
@@ -535,24 +547,48 @@ gles2_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         ps->blendEnabled = desc.blending.rtBlend[0].blendEnabled;
 
-        switch( desc.blending.rtBlend[0].colorSrc )
+        switch (desc.blending.rtBlend[0].colorSrc)
         {
-            case BLENDOP_ZERO           : ps->blendSrc = GL_ZERO; break;
-            case BLENDOP_ONE            : ps->blendSrc = GL_ONE; break;
-            case BLENDOP_SRC_ALPHA      : ps->blendSrc = GL_SRC_ALPHA; break;
-            case BLENDOP_INV_SRC_ALPHA  : ps->blendSrc = GL_ONE_MINUS_SRC_ALPHA; break;
-            case BLENDOP_SRC_COLOR      : ps->blendSrc = GL_SRC_COLOR; break;
-            case BLENDOP_DST_COLOR      : ps->blendSrc = GL_DST_COLOR; break;
+        case BLENDOP_ZERO:
+            ps->blendSrc = GL_ZERO;
+            break;
+        case BLENDOP_ONE:
+            ps->blendSrc = GL_ONE;
+            break;
+        case BLENDOP_SRC_ALPHA:
+            ps->blendSrc = GL_SRC_ALPHA;
+            break;
+        case BLENDOP_INV_SRC_ALPHA:
+            ps->blendSrc = GL_ONE_MINUS_SRC_ALPHA;
+            break;
+        case BLENDOP_SRC_COLOR:
+            ps->blendSrc = GL_SRC_COLOR;
+            break;
+        case BLENDOP_DST_COLOR:
+            ps->blendSrc = GL_DST_COLOR;
+            break;
         }
-    
-        switch( desc.blending.rtBlend[0].colorDst )
+
+        switch (desc.blending.rtBlend[0].colorDst)
         {
-            case BLENDOP_ZERO           : ps->blendDst = GL_ZERO; break;
-            case BLENDOP_ONE            : ps->blendDst = GL_ONE; break;
-            case BLENDOP_SRC_ALPHA      : ps->blendDst = GL_SRC_ALPHA; break;
-            case BLENDOP_INV_SRC_ALPHA  : ps->blendDst = GL_ONE_MINUS_SRC_ALPHA; break;
-            case BLENDOP_SRC_COLOR      : ps->blendDst = GL_SRC_COLOR; break;
-            case BLENDOP_DST_COLOR      : ps->blendDst = GL_DST_COLOR; break;
+        case BLENDOP_ZERO:
+            ps->blendDst = GL_ZERO;
+            break;
+        case BLENDOP_ONE:
+            ps->blendDst = GL_ONE;
+            break;
+        case BLENDOP_SRC_ALPHA:
+            ps->blendDst = GL_SRC_ALPHA;
+            break;
+        case BLENDOP_INV_SRC_ALPHA:
+            ps->blendDst = GL_ONE_MINUS_SRC_ALPHA;
+            break;
+        case BLENDOP_SRC_COLOR:
+            ps->blendDst = GL_SRC_COLOR;
+            break;
+        case BLENDOP_DST_COLOR:
+            ps->blendDst = GL_DST_COLOR;
+            break;
         }
 
         ps->maskR = desc.blending.rtBlend[0].writeMask & COLORMASK_R;
@@ -562,53 +598,46 @@ gles2_PipelineState_Create(const PipelineState::Descriptor& desc)
     }
     else
     {
-        PipelineStateGLES2Pool::Free( handle );
+        PipelineStateGLES2Pool::Free(handle);
         handle = InvalidHandle;
     }
 
-    
     return handle;
-} 
-
+}
 
 //------------------------------------------------------------------------------
 
 static Handle
-gles2_PipelineState_CreateVertexConstBuffer( Handle ps, unsigned bufIndex )
+gles2_PipelineState_CreateVertexConstBuffer(Handle ps, unsigned bufIndex)
 {
-    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get(ps);
 
     return ps2->prog.vprog->InstanceConstBuffer(bufIndex);
 }
 
-
 //------------------------------------------------------------------------------
 
 static Handle
-gles2_PipelineState_CreateFragmentConstBuffer( Handle ps, unsigned bufIndex )
+gles2_PipelineState_CreateFragmentConstBuffer(Handle ps, unsigned bufIndex)
 {
-    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get(ps);
 
     return ps2->prog.fprog->InstanceConstBuffer(bufIndex);
 }
 
-
 namespace PipelineStateGLES2
 {
-
-void
-SetupDispatch( Dispatch* dispatch )
+void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_PipelineState_Create                     = &gles2_PipelineState_Create;
-    dispatch->impl_PipelineState_Delete                     = &gles2_PipelineState_Delete;
-    dispatch->impl_PipelineState_CreateVertexConstBuffer    = &gles2_PipelineState_CreateVertexConstBuffer;
-    dispatch->impl_PipelineState_CreateFragmentConstBuffer  = &gles2_PipelineState_CreateFragmentConstBuffer;
+    dispatch->impl_PipelineState_Create = &gles2_PipelineState_Create;
+    dispatch->impl_PipelineState_Delete = &gles2_PipelineState_Delete;
+    dispatch->impl_PipelineState_CreateVertexConstBuffer = &gles2_PipelineState_CreateVertexConstBuffer;
+    dispatch->impl_PipelineState_CreateFragmentConstBuffer = &gles2_PipelineState_CreateFragmentConstBuffer;
 }
 
-void
-SetToRHI( Handle ps, uint32 layoutUID )
+void SetToRHI(Handle ps, uint32 layoutUID)
 {
-    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get(ps);
 
     DVASSERT(ps2);
 
@@ -628,34 +657,34 @@ SetToRHI( Handle ps, uint32 layoutUID )
         }
     }
 
-    if( ps2->blendEnabled )
+    if (ps2->blendEnabled)
     {
-        if( cachedBlendEnabled != GL_TRUE )
+        if (cachedBlendEnabled != GL_TRUE)
         {
-            GL_CALL(glEnable( GL_BLEND ));
+            GL_CALL(glEnable(GL_BLEND));
             cachedBlendEnabled = GL_TRUE;
         }
-        if( ps2->blendSrc != cachedBlendSrc  ||  ps2->blendDst != cachedBlendDst )
+        if (ps2->blendSrc != cachedBlendSrc || ps2->blendDst != cachedBlendDst)
         {
-            GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
+            GL_CALL(glBlendFunc(ps2->blendSrc, ps2->blendDst));
             cachedBlendSrc = ps2->blendSrc;
             cachedBlendDst = ps2->blendDst;
         }
     }
     else
     {
-        if( cachedBlendEnabled != GL_FALSE )
+        if (cachedBlendEnabled != GL_FALSE)
         {
-            GL_CALL(glDisable( GL_BLEND ));
+            GL_CALL(glDisable(GL_BLEND));
             cachedBlendEnabled = GL_FALSE;
         }
     }
 
-    static GLboolean    mask[4] = { false, false, false, false };
-    
-    if( ps2->maskR != mask[0]  ||  ps2->maskG != mask[1]  ||  ps2->maskB != mask[2]  ||  ps2->maskA != mask[3] )
+    static GLboolean mask[4] = { false, false, false, false };
+
+    if (ps2->maskR != mask[0] || ps2->maskG != mask[1] || ps2->maskB != mask[2] || ps2->maskA != mask[3])
     {
-        glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );
+        glColorMask(ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA);
         mask[0] = ps2->maskR;
         mask[1] = ps2->maskG;
         mask[2] = ps2->maskB;
@@ -663,46 +692,45 @@ SetToRHI( Handle ps, uint32 layoutUID )
     }
 }
 
-void
-SetVertexDeclToRHI( Handle ps, uint32 layoutUID, uint32 firstVertex )
+void SetVertexDeclToRHI(Handle ps, uint32 layoutUID, uint32 firstVertex)
 {
     //Trace("SetVertexDeclToRHI  layoutUID= %u\n",layoutUID);
-    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get(ps);
 
-    if( layoutUID != VertexLayout::InvalidUID )
+    if (layoutUID != VertexLayout::InvalidUID)
     {
-        bool    do_add = true;
+        bool do_add = true;
 
         for (std::vector<PipelineStateGLES2_t::VertexProgGLES2::vdecl_t>::iterator v = ps2->prog.vprog->altVdecl.begin(), v_end = ps2->prog.vprog->altVdecl.end(); v != v_end; ++v)
         {
-            if( v->layoutUID == layoutUID )
+            if (v->layoutUID == layoutUID)
             {
                 do_add = false;
                 break;
             }
         }
 
-        if( do_add )
+        if (do_add)
         {
-            const VertexLayout*                             layout = VertexLayout::Get( layoutUID );
-            PipelineStateGLES2_t::VertexProgGLES2::vdecl_t  vdecl;
-            
+            const VertexLayout* layout = VertexLayout::Get(layoutUID);
+            PipelineStateGLES2_t::VertexProgGLES2::vdecl_t vdecl;
+
             vdecl.layoutUID = layoutUID;
-            vdecl.vdecl.Construct( *layout );
+            vdecl.vdecl.Construct(*layout);
             vdecl.vdecl.InitVattr(ps2->prog.glProg, true);
             ps2->prog.vprog->altVdecl.push_back(vdecl);
         }
-    }    
+    }
 
-//if( layoutUID != VertexLayout::InvalidUID )
-//VertexLayout::Get( layoutUID )->Dump();
+    //if( layoutUID != VertexLayout::InvalidUID )
+    //VertexLayout::Get( layoutUID )->Dump();
     ps2->prog.vprog->SetToRHI(layoutUID, firstVertex);
 }
 
 uint32
-VertexSamplerCount( Handle ps )
+VertexSamplerCount(Handle ps)
 {
-    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get(ps);
 
     return ps2->prog.vprog->SamplerCount();
 }
@@ -715,19 +743,17 @@ ProgramUid(Handle ps)
     return ps2->prog.glProg;
 }
 
-void
-InvalidateCache()
+void InvalidateCache()
 {
-    cachedBlendEnabled  = -1;
-    cachedBlendSrc      = (GLenum)0;
-    cachedBlendDst      = (GLenum)0;
-    cachedProgram       = 0;
+    cachedBlendEnabled = -1;
+    cachedBlendSrc = (GLenum)0;
+    cachedBlendDst = (GLenum)0;
+    cachedProgram = 0;
 
     VertexDeclGLES2::InvalidateVAttrCache();
 }
 
-void
-InvalidateVattrCache()
+void InvalidateVattrCache()
 {
     VertexDeclGLES2::InvalidateVAttrCache();
 }

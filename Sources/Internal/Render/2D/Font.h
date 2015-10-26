@@ -54,14 +54,16 @@ class YamlNode;
 class Font : public BaseObject
 {
 public:
-	enum eFontType 
-	{
-			TYPE_FT = 0		//!< freetype-based
-		,	TYPE_GRAPHIC	//!< sprite-based
-		,	TYPE_DISTANCE	//!< distance-based
-	};
+    enum eFontType
+    {
+        TYPE_FT = 0 //!< freetype-based
+        ,
+        TYPE_GRAPHIC //!< sprite-based
+        ,
+        TYPE_DISTANCE //!< distance-based
+    };
 
-	/**
+    /**
 		\brief Structure with sizes of string
 		Contents draw rect (buffer, sprite bounds), height, baseline, width.
 	*/

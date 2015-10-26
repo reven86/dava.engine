@@ -38,40 +38,39 @@ using namespace DAVA;
 
 static_assert(sizeof(wchar_t) == 2, "check size of wchar_t on current platform");
 
-void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
+void UTF8Utils::EncodeToWideString(const uint8* string, size_t size, WideString& result)
 {
-	assert(nullptr != string);
-	result.clear();
-	result.reserve(size); // minimum they will be same
+    assert(nullptr != string);
+    result.clear();
+    result.reserve(size); // minimum they will be same
     utf8::utf8to16(string, string + size, std::back_inserter(result));
 };
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-	String result;
-	result.reserve(wstring.size()); // minimum they will be same
-	utf8::utf16to8(wstring.begin(), wstring.end(), std::back_inserter(result));
-	return result;
+    String result;
+    result.reserve(wstring.size()); // minimum they will be same
+    utf8::utf16to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+    return result;
 };
 
 #else
 
 static_assert(sizeof(wchar_t) == 4, "check size of wchar_t on current platform");
 
-void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
+void UTF8Utils::EncodeToWideString(const uint8* string, size_t size, WideString& result)
 {
-	assert(nullptr != string);
-	result.clear();
-	result.reserve(size); // minimum they will be same
+    assert(nullptr != string);
+    result.clear();
+    result.reserve(size); // minimum they will be same
     utf8::utf8to32(string, string + size, std::back_inserter(result));
 };
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-	String result;
-	result.reserve(wstring.size()); // minimum they will be same
-	utf8::utf32to8(wstring.begin(), wstring.end(), std::back_inserter(result));
-	return result;
+    String result;
+    result.reserve(wstring.size()); // minimum they will be same
+    utf8::utf32to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+    return result;
 };
 #endif
-

@@ -39,29 +39,20 @@
 
 namespace DAVA
 {
-
 struct StaticOcclusionFrameResult;
 
 class StaticOcclusionRenderPass : public RenderPass
 {
 public:
-    StaticOcclusionRenderPass(const FastName & name);
+    StaticOcclusionRenderPass(const FastName& name);
     ~StaticOcclusionRenderPass();
-    
-    void DrawOcclusionFrame(RenderSystem * renderSystem, Camera *occlusionCamera, StaticOcclusionFrameResult& target);
+
+    void DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera, StaticOcclusionFrameResult& target);
     static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
-    
-private:    
 
+private:
     rhi::HTexture colorBuffer, depthBuffer;
-    
 };
-    
-
-
-
-
-
 };
 
 #endif //__DAVAENGINE_STATIC_OCCLUSION_RENDER_PASS__

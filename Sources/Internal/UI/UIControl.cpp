@@ -228,7 +228,6 @@ const List<UIControl*>& UIControl::GetChildren() const
     return childs;
 }
 
-
 bool UIControl::AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive)
 {
     UIControl* control = FindByName(controlName, isRecursive);
@@ -511,7 +510,6 @@ UIGeometricData UIControl::GetLocalGeometricData() const
     return drawData;
 }
 
-
 Vector2 UIControl::GetAbsolutePosition()
 {
     return GetGeometricData().position;
@@ -572,7 +570,6 @@ void UIControl::SetAngleInDegrees(float32 angleInDeg)
 {
     SetAngle(DegToRad(angleInDeg));
 }
-
 
 Rect UIControl::GetAbsoluteRect()
 {

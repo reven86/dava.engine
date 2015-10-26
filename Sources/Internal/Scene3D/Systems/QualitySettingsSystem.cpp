@@ -333,7 +333,6 @@ FilePath QualitySettingsSystem::GetSFXQualityConfigPath(size_t index) const
     return ret;
 }
 
-
 bool QualitySettingsSystem::GetAllowCutUnusedVertexStreams()
 {
     return cutUnusedVertexStreams;

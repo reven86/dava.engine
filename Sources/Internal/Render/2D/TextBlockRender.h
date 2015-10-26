@@ -43,9 +43,9 @@ class TextBlockRender: public BaseObject
 public:
 	TextBlockRender(TextBlock*);
 	virtual ~TextBlockRender();
-	
-	virtual void Prepare();
-	virtual void PreDraw() {};
+
+    virtual void Prepare();
+    virtual void PreDraw() {};
 	virtual void Draw(const Color& /*textColor*/, const Vector2* /*offset*/){};
 	
 	Sprite* GetSprite() const {return sprite;};

@@ -37,11 +37,11 @@
 class CreatePlaneLODCommand : public Command2
 {
 public:
-	CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request);
+    CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request);
 
     virtual void Undo() override;
-	virtual void Redo() override;
-	virtual DAVA::Entity* GetEntity() const override;
+    virtual void Redo() override;
+    virtual DAVA::Entity* GetEntity() const override;
 
     DAVA::RenderBatch * GetRenderBatch() const;
     
@@ -52,7 +52,7 @@ protected:
     static bool IsHorisontalMesh(const DAVA::AABBox3 & bbox);
 
 private:
-	CreatePlaneLODCommandHelper::RequestPointer request;
+    CreatePlaneLODCommandHelper::RequestPointer request;
 };
 
 
