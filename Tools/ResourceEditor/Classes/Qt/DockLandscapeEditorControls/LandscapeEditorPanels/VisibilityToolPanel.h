@@ -37,7 +37,8 @@
 using namespace DAVA;
 
 class QPushButton;
-class SliderWidget;
+class QListWidget;
+class VisibilityPointLayout;
 
 class VisibilityToolPanel: public LandscapeEditorBasePanel
 {
@@ -51,12 +52,11 @@ public:
 	~VisibilityToolPanel();
 
 private slots:
-    void SetVisibilityToolButtonsState(SceneEditor2* scene,
-                                       VisibilityToolSystem::State state);
+    void SetVisibilityToolButtonsState(SceneEditor2* scene, VisibilityToolSystem::State state);
 
+    void AddVisibilityPoint();
+    void ComputeVisibilityArea();
     void SaveTexture();
-	void SetVisibilityPoint();
-	void SetVisibilityArea();
 
 protected:
 	virtual bool GetEditorEnabled();
@@ -74,12 +74,15 @@ protected:
 	virtual void DisconnectFromShortcuts();
 
 private:
-    QPushButton* buttonSetVisibilityPoint = nullptr;
-    QPushButton* buttonSetVisibilityArea = nullptr;
-    QPushButton* buttonSaveTexture = nullptr;
-
     int32 AreaSizeUIToSystem(int32 uiValue);
 	int32 AreaSizeSystemToUI(int32 systemValue);
+
+private:
+    QPushButton* buttonAddVisibilityPoint = nullptr;
+    QPushButton* buttonComputeVisibilityArea = nullptr;
+    QPushButton* buttonSaveTexture = nullptr;
+    QListWidget* pointsList = nullptr;
+    Vector<VisibilityPointLayout> points;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPANEL__) */

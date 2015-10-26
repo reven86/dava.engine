@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include "Base/AlignedAllocator.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/CollisionSystem.h"
@@ -51,8 +52,8 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	btVector3 worldMax(1000,1000,1000);
 
 	collConfiguration = new btDefaultCollisionConfiguration();
-	collDispatcher = new btCollisionDispatcher(collConfiguration);
-	collBroadphase = new btAxisSweep3(worldMin,worldMax);
+    collDispatcher = CreateObjectAligned<btCollisionDispatcher, 16>(collConfiguration);
+    collBroadphase = new btAxisSweep3(worldMin,worldMax);
 	collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
 	collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	collWorld = new btCollisionWorld(collDispatcher, collBroadphase, collConfiguration);
@@ -87,8 +88,9 @@ HoodSystem::~HoodSystem()
 	delete collWorld;
 	delete collDebugDraw;
 	delete collBroadphase;
-	delete collDispatcher;
 	delete collConfiguration;
+
+    DestroyObjectAligned(collDispatcher);
 }
 
 DAVA::Vector3 HoodSystem::GetPosition() const

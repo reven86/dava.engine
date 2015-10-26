@@ -32,18 +32,19 @@
 #include "Scene/SceneEditor2.h"
 #include "Tools/SliderWidget/SliderWidget.h"
 #include "Tools/QtWaitDialog/QtWaitDialog.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Constants.h"
 #include "Main/QtUtils.h"
 #include "Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
-
-#include "Tools/PathDescriptor/PathDescriptor.h"
-
-
 #include "QtTools/FileDialog/FileDialog.h"
-
 #include <QLayout>
 #include <QPushButton>
 #include <QLabel>
+#include <QListWidget>
+
+class VisibilityPointLayout : public QWidget
+{
+};
 
 VisibilityToolPanel::VisibilityToolPanel(QWidget* parent)
     : LandscapeEditorBasePanel(parent)
@@ -69,56 +70,54 @@ bool VisibilityToolPanel::GetEditorEnabled()
 
 void VisibilityToolPanel::SetWidgetsState(bool enabled)
 {
-	buttonSetVisibilityPoint->setEnabled(enabled);
-	buttonSetVisibilityArea->setEnabled(enabled);
-	buttonSaveTexture->setEnabled(enabled);
+    buttonAddVisibilityPoint->setEnabled(enabled);
+    buttonComputeVisibilityArea->setEnabled(enabled);
+    buttonSaveTexture->setEnabled(enabled);
 }
 
 void VisibilityToolPanel::BlockAllSignals(bool block)
 {
-	buttonSetVisibilityPoint->blockSignals(block);
-	buttonSetVisibilityArea->blockSignals(block);
-	buttonSaveTexture->blockSignals(block);
+    buttonAddVisibilityPoint->blockSignals(block);
+    buttonComputeVisibilityArea->blockSignals(block);
+    buttonSaveTexture->blockSignals(block);
 }
 
 void VisibilityToolPanel::InitUI()
 {
 	QVBoxLayout* layout = new QVBoxLayout(this);
 
-	buttonSetVisibilityPoint = new QPushButton(this);
-	buttonSetVisibilityArea = new QPushButton(this);
-	buttonSaveTexture = new QPushButton(this);
-	QSpacerItem* spacer = new QSpacerItem(10, 10, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    buttonAddVisibilityPoint = new QPushButton(this);
+    buttonComputeVisibilityArea = new QPushButton(this);
+    buttonSaveTexture = new QPushButton(this);
+    pointsList = new QListWidget(this);
 
-	layout->addWidget(buttonSetVisibilityPoint);
-	layout->addWidget(buttonSetVisibilityArea);
-	layout->addWidget(buttonSaveTexture);
-	layout->addSpacerItem(spacer);
+    layout->addWidget(buttonAddVisibilityPoint);
+    layout->addWidget(pointsList);
+    layout->addWidget(buttonComputeVisibilityArea);
+    layout->addWidget(buttonSaveTexture);
 
 	setLayout(layout);
 
 	SetWidgetsState(false);
 	BlockAllSignals(true);
 
-	buttonSetVisibilityPoint->setText(ResourceEditor::VISIBILITY_TOOL_SET_POINT_CAPTION.c_str());
-	buttonSetVisibilityPoint->setCheckable(true);
-
-    buttonSetVisibilityArea->setText(ResourceEditor::VISIBILITY_TOOL_COMPUTE_VISIBILITY_CAPTION.c_str());
+    buttonAddVisibilityPoint->setText(ResourceEditor::VISIBILITY_TOOL_ADD_POINT_CAPTION.c_str());
+    buttonAddVisibilityPoint->setCheckable(true);
+    buttonComputeVisibilityArea->setText(ResourceEditor::VISIBILITY_TOOL_COMPUTE_VISIBILITY_CAPTION.c_str());
     buttonSaveTexture->setText(ResourceEditor::VISIBILITY_TOOL_SAVE_TEXTURE_CAPTION.c_str());
 }
 
 void VisibilityToolPanel::ConnectToSignals()
 {
-    connect(SceneSignals::Instance(),
-            SIGNAL(VisibilityToolStateChanged(SceneEditor2*, VisibilityToolSystem::State)),
-            this,
-            SLOT(SetVisibilityToolButtonsState(SceneEditor2*, VisibilityToolSystem::State)));
+    connect(SceneSignals::Instance(), SIGNAL(VisibilityToolStateChanged(SceneEditor2*, VisibilityToolSystem::State)),
+            this, SLOT(SetVisibilityToolButtonsState(SceneEditor2*, VisibilityToolSystem::State)));
+
     connect(SceneSignals::Instance(), SIGNAL(VisibilityToolToggled(SceneEditor2*)),
 			this, SLOT(EditorToggled(SceneEditor2*)));
 
 	connect(buttonSaveTexture, SIGNAL(clicked()), this, SLOT(SaveTexture()));
-	connect(buttonSetVisibilityPoint, SIGNAL(clicked()), this, SLOT(SetVisibilityPoint()));
-	connect(buttonSetVisibilityArea, SIGNAL(clicked()), this, SLOT(SetVisibilityArea()));
+    connect(buttonAddVisibilityPoint, SIGNAL(clicked()), this, SLOT(AddVisibilityPoint()));
+    connect(buttonComputeVisibilityArea, SIGNAL(clicked()), this, SLOT(ComputeVisibilityArea()));
 }
 
 void VisibilityToolPanel::StoreState()
@@ -135,7 +134,7 @@ void VisibilityToolPanel::RestoreState()
     SetWidgetsState(enabled);
 	
 	BlockAllSignals(true);
-    buttonSetVisibilityPoint->setChecked(state == VisibilityToolSystem::State::SetPoint);
+    buttonAddVisibilityPoint->setChecked(state == VisibilityToolSystem::State::AddingPoint);
     BlockAllSignals(!enabled);
 }
 
@@ -161,25 +160,24 @@ void VisibilityToolPanel::SetVisibilityToolButtonsState(SceneEditor2* scene, Vis
 		return;
 	}
 
-    bool b = buttonSetVisibilityPoint->signalsBlocked();
-    buttonSetVisibilityPoint->blockSignals(true);
-    buttonSetVisibilityPoint->setChecked(state == VisibilityToolSystem::State::SetPoint);
-    buttonSetVisibilityPoint->blockSignals(b);
-	
-	b = buttonSetVisibilityArea->signalsBlocked();
-	buttonSetVisibilityArea->blockSignals(true);
-	buttonSetVisibilityArea->blockSignals(b);
+    bool b = buttonAddVisibilityPoint->signalsBlocked();
+    buttonAddVisibilityPoint->blockSignals(true);
+    buttonAddVisibilityPoint->setChecked(state == VisibilityToolSystem::State::AddingPoint);
+    buttonAddVisibilityPoint->blockSignals(b);
+
+    b = buttonComputeVisibilityArea->signalsBlocked();
+    buttonComputeVisibilityArea->blockSignals(true);
+    buttonComputeVisibilityArea->blockSignals(b);
 }
 
 void VisibilityToolPanel::SaveTexture()
 {
 	FilePath currentPath = FileSystem::Instance()->GetUserDocumentsPath();
-	QString filePath = FileDialog::getSaveFileName(NULL,
-													QString(ResourceEditor::VISIBILITY_TOOL_SAVE_CAPTION.c_str()),
-													QString(currentPath.GetAbsolutePathname().c_str()),
-													PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
+    QString filePath = FileDialog::getSaveFileName(nullptr, QString(ResourceEditor::VISIBILITY_TOOL_SAVE_CAPTION.c_str()),
+                                                   QString(currentPath.GetAbsolutePathname().c_str()),
+                                                   PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
-	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
+    FilePath selectedPathname = PathnameToDAVAStyle(filePath);
 
 	if(!selectedPathname.IsEmpty())
 	{
@@ -187,12 +185,21 @@ void VisibilityToolPanel::SaveTexture()
 	}
 }
 
-void VisibilityToolPanel::SetVisibilityPoint()
+void VisibilityToolPanel::AddVisibilityPoint()
 {
-	GetActiveScene()->visibilityToolSystem->SetVisibilityPoint();
+    auto vts = GetActiveScene()->visibilityToolSystem;
+
+    if (vts->GetState() == VisibilityToolSystem::State::AddingPoint)
+    {
+        vts->CancelAddingCheckPoint();
+    }
+    else
+    {
+        vts->StartAddingVisibilityPoint();
+    }
 }
 
-void VisibilityToolPanel::SetVisibilityArea()
+void VisibilityToolPanel::ComputeVisibilityArea()
 {
     QtWaitDialog* waitDialog = new QtWaitDialog(this);
     waitDialog->Show("Visibility", "Please wait while we computing visibility...", true, true);
@@ -220,10 +227,10 @@ void VisibilityToolPanel::ConnectToShortcuts()
 {
 	LandscapeEditorShortcutManager* shortcutManager = LandscapeEditorShortcutManager::Instance();
 
-	connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_POINT), SIGNAL(activated()),
-			this, SLOT(SetVisibilityPoint()));
-	connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_AREA), SIGNAL(activated()),
-			this, SLOT(SetVisibilityArea()));
+    connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_POINT), SIGNAL(activated()),
+            this, SLOT(AddVisibilityPoint()));
+    connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_AREA), SIGNAL(activated()),
+            this, SLOT(ComputeVisibilityArea()));
 
     shortcutManager->SetBrushSizeShortcutsEnabled(false);
     shortcutManager->SetVisibilityToolShortcutsEnabled(true);
@@ -233,11 +240,11 @@ void VisibilityToolPanel::DisconnectFromShortcuts()
 {
 	LandscapeEditorShortcutManager* shortcutManager = LandscapeEditorShortcutManager::Instance();
 
-	disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_POINT), SIGNAL(activated()),
-			   this, SLOT(SetVisibilityPoint()));
-	disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_AREA), SIGNAL(activated()),
-			   this, SLOT(SetVisibilityArea()));
-	
-	shortcutManager->SetBrushSizeShortcutsEnabled(false);
+    disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_POINT), SIGNAL(activated()),
+               this, SLOT(AddVisibilityPoint()));
+    disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_AREA), SIGNAL(activated()),
+               this, SLOT(ComputeVisibilityArea()));
+
+    shortcutManager->SetBrushSizeShortcutsEnabled(false);
 	shortcutManager->SetVisibilityToolShortcutsEnabled(false);
 }

@@ -42,7 +42,7 @@ public:
     enum class State : uint32
     {
         NotActive,
-        SetPoint,
+        AddingPoint,
         ComputingVisibility
     };
 
@@ -53,12 +53,14 @@ public:
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
 
-	virtual void Process(DAVA::float32 timeElapsed);
-	virtual void Input(DAVA::UIEvent *event);
+    void Process(DAVA::float32 timeElapsed);
+    void Input(DAVA::UIEvent* event);
 
     void Draw();
 
-    void SetVisibilityPoint();
+    uint32 StartAddingVisibilityPoint();
+    void CancelAddingCheckPoint();
+
     void ComputeVisibilityArea();
     void CancelComputing();
 
@@ -77,18 +79,19 @@ private:
         float angleDown = PI / 6.0f;
         float radius = 0.0f; // point for now
         Vector<std::pair<Point2i, Color>> result;
+        uint32 numPoints = 0;
     };
     using CheckPoints = Vector<CheckPoint>;
     using VisibilityTests = Vector<std::pair<uint32, Vector2>>;
 
     void SetState(State newState);
 
-    void SetVisibilityPointInternal();
-	void SetVisibilityAreaInternal();
+    void CommitLatestCheckPoint();
+    void SetVisibilityAreaInternal();
 
-    void DrawVisibilityAreaPoints(const CheckPoint& point, bool shouldClearTarget);
-    void DrawVisibilityPoint();
-    void RenderVisibilityPoint(const CheckPoint& point, bool clearTarget);
+    void DrawResults();
+    void DrawVisibilityAreaPoints();
+    void DrawVisibilityAreaMark(const CheckPoint& point);
 
     void ExcludeEntities(EntityGroup *entities) const;
 
@@ -105,6 +108,7 @@ private:
     uint32 textureStepSizeY = 4;
     uint32 textureSize = 0;
     uint32 pointsRowSize = 0;
+    uint32 totalRowsInPoints = 0;
     uint32 totalVisibilityTests = 0;
     bool editingIsEnabled = false;
 };

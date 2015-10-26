@@ -42,13 +42,13 @@
 
 #include "Render/Material/NMaterialNames.h"
 
-const Vector2 CROSS_TEXTURE_SIZE = Vector2(64.0f, 64.0f);
+const Vector2 CROSS_TEXTURE_SIZE = Vector2(32.0f, 32.0f);
 
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
     , textureLevel(Landscape::TEXTURE_COLOR)
 {
-    crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
+    crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursorWhite.png");
     crossTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
 }
 
@@ -86,6 +86,7 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
     landscapeSize = static_cast<float>(visibilityToolTexture->GetWidth());
     textureSize = static_cast<uint32>(landscapeSize + 0.5f);
     pointsRowSize = textureSize / textureStepSizeX;
+    totalRowsInPoints = textureSize / textureStepSizeY;
 
     drawSystem->EnableCursor();
 	drawSystem->SetCursorSize(0);
@@ -124,12 +125,7 @@ void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
     {
         if (remainingVisibilityTests.empty())
         {
-            bool clearTarget = true;
-            for (const auto& point : checkPoints)
-            {
-                DrawVisibilityAreaPoints(point, clearTarget);
-                clearTarget = false;
-            }
+            DrawResults();
             SetState(State::NotActive);
         }
         else
@@ -155,7 +151,7 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 
 	UpdateCursorPosition();
 
-    if (state != State::SetPoint)
+    if (state != State::AddingPoint)
     {
 		return;
 	}
@@ -164,7 +160,7 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 	{
 		if (event->tid == DVKEY_ESCAPE)
 		{
-            SetState(State::NotActive);
+            CancelAddingCheckPoint();
         }
 	}
 	else if (event->tid == UIEvent::BUTTON_1)
@@ -184,10 +180,10 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
             {
                 if (editingIsEnabled)
 				{
-                    if (state == State::SetPoint)
+                    if (state == State::AddingPoint)
                     {
-						SetVisibilityPointInternal();
-					}
+                        CommitLatestCheckPoint();
+                    }
 					editingIsEnabled = false;
 				}
 				break;
@@ -206,7 +202,7 @@ void VisibilityToolSystem::SetState(State newState)
     else
         state = newState;
 
-    if (state == State::SetPoint)
+    if (state == State::AddingPoint)
     {
         drawSystem->SetCursorTexture(crossTexture);
         drawSystem->SetCursorSize(Max(CROSS_TEXTURE_SIZE.x, CROSS_TEXTURE_SIZE.y) / landscapeSize);
@@ -224,9 +220,29 @@ void VisibilityToolSystem::SetState(State newState)
     SceneSignals::Instance()->EmitVisibilityToolStateChanged(dynamic_cast<SceneEditor2*>(GetScene()), state);
 }
 
-void VisibilityToolSystem::SetVisibilityPoint()
+inline float randf()
 {
-    SetState(State::SetPoint);
+    return float(rand()) / float(RAND_MAX);
+}
+
+uint32 VisibilityToolSystem::StartAddingVisibilityPoint()
+{
+    SetState(State::AddingPoint);
+    checkPoints.emplace_back();
+
+    Color newColor(0.9f + 0.1f * randf(), 0.9f + 0.1f * randf(), 0.9f + 0.1f * randf(), 1.0f);
+    newColor.color[checkPoints.size() % 3] *= 0.25f + 0.5f * randf();
+    checkPoints.back().color = newColor;
+
+    return static_cast<uint32>(checkPoints.size() - 1);
+}
+
+void VisibilityToolSystem::CancelAddingCheckPoint()
+{
+    DVASSERT(checkPoints.size() > 0);
+
+    checkPoints.pop_back();
+    SetState(State::NotActive);
 }
 
 void VisibilityToolSystem::ComputeVisibilityArea()
@@ -234,9 +250,29 @@ void VisibilityToolSystem::ComputeVisibilityArea()
     SetState(State::ComputingVisibility);
 }
 
-void VisibilityToolSystem::SetVisibilityPointInternal()
+void VisibilityToolSystem::CommitLatestCheckPoint()
 {
-    DrawVisibilityPoint();
+    VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
+    visibilityToolProxy->UpdateVisibilityPointSet(true);
+    visibilityToolProxy->SetVisibilityPoint(cursorPosition);
+
+    Vector2 xy = drawSystem->TexturePointToLandscapePoint(textureLevel, landscapeSize * cursorPosition);
+    float z = drawSystem->GetHeightAtTexturePoint(textureLevel, landscapeSize * cursorPosition) + 2.5f;
+
+    CheckPoint& point = checkPoints.back();
+    point.relativePosition = cursorPosition;
+    point.worldPosition = Vector3(xy, z);
+    point.result.resize(pointsRowSize * totalRowsInPoints);
+    point.numPoints = 0;
+
+    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), true);
+    for (const auto& pt : checkPoints)
+    {
+        Rect drawRect(pt.relativePosition * landscapeSize - 0.5f * CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
+        RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, drawRect);
+    }
+    RenderSystem2D::Instance()->EndRenderTargetPass();
+
     SetState(State::NotActive);
 }
 
@@ -249,16 +285,23 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
 	}
 
     remainingVisibilityTests.reserve(checkPoints.size() * textureSize * textureSize);
-    for (uint32 i = 0, e = checkPoints.size(); i < e; ++i)
+
+    for (uint32 y = 0; y < textureSize; y += textureStepSizeY)
     {
-        for (uint32 y = 0; y < textureSize; y += textureStepSizeY)
+        for (uint32 x = 0; x < textureSize; x += textureStepSizeX)
         {
-            for (uint32 x = 0; x < textureSize; x += textureStepSizeX)
+            for (uint32 i = 0, e = checkPoints.size(); i < e; ++i)
             {
                 remainingVisibilityTests.emplace_back(i, Vector2(float(x), float(y)));
             }
         }
     }
+
+    for (auto& p : checkPoints)
+    {
+        p.numPoints = 0;
+    }
+
     totalVisibilityTests = remainingVisibilityTests.size();
 }
 
@@ -351,60 +394,81 @@ void VisibilityToolSystem::Draw()
     }
 }
 
-void VisibilityToolSystem::DrawVisibilityPoint()
-{
-    checkPoints.clear(); // TODO : support many points
-
-    VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
-    visibilityToolProxy->UpdateVisibilityPointSet(true);
-    visibilityToolProxy->SetVisibilityPoint(cursorPosition);
-
-    Vector2 xy = drawSystem->TexturePointToLandscapePoint(textureLevel, landscapeSize * cursorPosition);
-    float z = drawSystem->GetHeightAtTexturePoint(textureLevel, landscapeSize * cursorPosition) + 2.5f;
-
-    CheckPoint point;
-    point.relativePosition = cursorPosition;
-    point.worldPosition = Vector3(xy, z);
-    checkPoints.push_back(point);
-
-    Rect drawRect(point.relativePosition * landscapeSize - 0.5f * CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
-
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), true);
-    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, drawRect);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
-}
-
-void VisibilityToolSystem::DrawVisibilityAreaPoints(const CheckPoint& point, bool clear)
+void VisibilityToolSystem::DrawResults()
 {
     auto rs = RenderSystem2D::Instance();
     auto vtp = drawSystem->GetVisibilityToolProxy();
+    rs->BeginRenderTargetPass(vtp->GetTexture(), true);
 
-    rs->BeginRenderTargetPass(vtp->GetTexture(), clear);
+    DrawVisibilityAreaPoints();
 
+    for (const auto& point : checkPoints)
+    {
+        DrawVisibilityAreaMark(point);
+    }
+    rs->EndRenderTargetPass();
+}
+
+void VisibilityToolSystem::DrawVisibilityAreaPoints()
+{
+    uint32 numPoints = checkPoints.front().numPoints;
+    for (const auto& p : checkPoints)
+    {
+        DVASSERT(p.numPoints == numPoints);
+        numPoints = p.numPoints;
+    }
+
+    auto multiplyColor = [](Color& cIn, const Color& cOver) {
+        float alpha = cIn.a;
+        cIn *= cOver;
+        cIn.a = Max(alpha, cOver.a);
+    };
+
+    auto rs = RenderSystem2D::Instance();
+    auto vtp = drawSystem->GetVisibilityToolProxy();
     float dx = static_cast<float>(textureStepSizeX);
     float dy = static_cast<float>(textureStepSizeX);
 
-    uint32 totalRows = point.result.size() / pointsRowSize;
-    for (uint32 i = 0, e = point.result.size(); i < e; ++i)
+    for (uint32 i = 0; i < numPoints; ++i)
     {
         uint32 c0 = i % pointsRowSize;
         uint32 r0 = i / pointsRowSize;
         uint32 c1 = Min(c0 + 1, pointsRowSize - 1);
-        uint32 r1 = Min(r0 + 1, totalRows - 1);
+        uint32 r1 = Min(r0 + 1, totalRowsInPoints - 1);
         DVASSERT(c0 + r0 * pointsRowSize == i);
-        const auto& p00 = point.result[c0 + r0 * pointsRowSize];
-        const auto& p01 = point.result[c1 + r0 * pointsRowSize];
-        const auto& p10 = point.result[c0 + r1 * pointsRowSize];
-        const auto& p11 = point.result[c1 + r1 * pointsRowSize];
-        float fx = static_cast<float>(p00.first.x);
-        float fy = static_cast<float>(p00.first.y);
-        rs->FillGradientRect(Rect(fx, fy, dx, dy), p00.second, p01.second, p10.second, p11.second);
+
+        Color c00 = Color(1.0f, 1.0f, 1.0f, 0.0f);
+        Color c01 = Color(1.0f, 1.0f, 1.0f, 0.0f);
+        Color c10 = Color(1.0f, 1.0f, 1.0f, 0.0f);
+        Color c11 = Color(1.0f, 1.0f, 1.0f, 0.0f);
+
+        int x = 0;
+        int y = 0;
+
+        for (const auto& p : checkPoints)
+        {
+            const auto& p00 = p.result[c0 + r0 * pointsRowSize];
+            const auto& p01 = p.result[c1 + r0 * pointsRowSize];
+            const auto& p10 = p.result[c0 + r1 * pointsRowSize];
+            const auto& p11 = p.result[c1 + r1 * pointsRowSize];
+            multiplyColor(c00, p00.second);
+            multiplyColor(c01, p01.second);
+            multiplyColor(c10, p10.second);
+            multiplyColor(c11, p11.second);
+            x = p00.first.x;
+            y = p00.first.y;
+        }
+
+        float fx = static_cast<float>(x);
+        float fy = static_cast<float>(y);
+        rs->FillGradientRect(Rect(fx, fy, dx, dy), c00, c01, c10, c11);
     }
+}
 
+void VisibilityToolSystem::DrawVisibilityAreaMark(const CheckPoint& point)
+{
     Rect pointRect(point.relativePosition * landscapeSize - 0.5f * CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
-    rs->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, pointRect);
-
-    rs->EndRenderTargetPass();
+    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, pointRect);
 }
 
 void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
@@ -442,7 +506,7 @@ void VisibilityToolSystem::PerformVisibilityTest(const VisibilityTests::value_ty
     float32 baseZ = drawSystem->GetHeightAtTexturePoint(textureLevel, test.second) + 0.25f; // TODO: use Z from point
     Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, test.second), baseZ);
 
-    Color resultColor = Color::Transparent; // assume occluded by default
+    Color resultColor = Color::Transparent;
 
     Vector3 direction = target - sourcePoint.worldPosition;
     float32 angle = atan2(direction.z, direction.xy().Length());
@@ -463,12 +527,9 @@ void VisibilityToolSystem::PerformVisibilityTest(const VisibilityTests::value_ty
                 resultColor = sourcePoint.color;
             }
         }
-        sourcePoint.result.emplace_back(Point2i(int(test.second.x), int(test.second.y)), resultColor);
     }
-    else
-    {
-        sourcePoint.result.emplace_back(Point2i(int(test.second.x), int(test.second.y)), Color(0.25f, 1.0f, 0.25f, 1.0f));
-    }
+
+    sourcePoint.result[sourcePoint.numPoints++] = { Point2i(int(test.second.x), int(test.second.y)), resultColor };
 }
 
 void VisibilityToolSystem::ProcessNextVisibilityTests()
