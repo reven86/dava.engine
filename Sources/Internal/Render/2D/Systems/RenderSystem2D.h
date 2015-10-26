@@ -214,6 +214,17 @@ public:
     void FillRect(const Rect& rect, const Color& color);
 
     /**
+    \brief Fills given rect in 2D space using four colors in corners
+    \param pt1 starting point
+    \param pt2 ending point
+    \param xy top left color
+    \param wy top right color
+    \param xh bottom left color
+    \param wh bottom right color
+    */
+    void FillGradientRect(const Rect& rect, const Color& xy, const Color& wy, const Color& xh, const Color& wh);
+
+    /**
     \brief Draws grid in the given rect
     \param rect rect to fill grid with
     \param gridSize distance between grid lines
@@ -274,7 +285,8 @@ private:
     std::stack<Rect> clipStack;
     Rect currentClip;
 
-    float32 spriteTempVertices[8];
+    Array<float32, 8> spriteTempVertices;
+    Array<uint32, 4> spriteTempColors;
     Vector<Vector2> spriteClippedTexCoords;
     Vector<Vector2> spriteClippedVertices;
 

@@ -54,8 +54,8 @@ namespace DAVA
 
         [globalPool release];
         globalPool = 0;
-		return retVal;
-	}
+        return retVal;
+    }
 	
 	int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
 	{

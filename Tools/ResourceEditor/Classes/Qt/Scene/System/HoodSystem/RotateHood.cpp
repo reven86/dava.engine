@@ -258,7 +258,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 		if(0 != tmp[0])
 		{
 			DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);
-			textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
-		}
-	}
+            textDrawSystem->DrawText(topPos, tmp, DAVA::Color(1.0f, 1.0f, 0.0f, 1.0f));
+        }
+    }
 }

@@ -423,13 +423,13 @@ namespace DAVA
         HWND hWindow = static_cast<HWND>(GetNativeView());
         HINSTANCE hInst = GetModuleHandle(0);
         HICON smallIcon = static_cast<HICON>(LoadImage(hInst,
-			MAKEINTRESOURCE(iconId),
-			IMAGE_ICON,
-			0,
-			0,
-			LR_DEFAULTSIZE));
-		SendMessage(hWindow, WM_SETICON, ICON_SMALL, (LPARAM)smallIcon);
-		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
+                                                       MAKEINTRESOURCE(iconId),
+                                                       IMAGE_ICON,
+                                                       0,
+                                                       0,
+                                                       LR_DEFAULTSIZE));
+        SendMessage(hWindow, WM_SETICON, ICON_SMALL, (LPARAM)smallIcon);
+        SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
     UIEvent::Phase CoreWin32Platform::MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, UIEvent& outTouch)
