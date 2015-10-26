@@ -70,6 +70,7 @@ public:
     BackgroundController(UIControl* nestedControl);
     ~BackgroundController();
     UIControl* GetGridControl();
+    bool IsNestedControl(const UIControl* control) const;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* propert);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
@@ -114,6 +115,11 @@ BackgroundController::~BackgroundController()
 UIControl* BackgroundController::GetGridControl()
 {
     return gridControl.get();
+}
+
+bool BackgroundController::IsNestedControl(const DAVA::UIControl* control) const
+{
+    return control == nestedControl;
 }
 
 void BackgroundController::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
@@ -373,13 +379,34 @@ void CanvasSystem::LayoutCanvas()
     systemManager->CanvasSizeChanged.Emit();
 }
 
-void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
+void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
 {
-    gridControls.clear();
-    controlsCanvas->RemoveAllControls();
-    for (PackageBaseNode* rootControl : rootControls)
+    DAVA::Set<PackageBaseNode*> newNodes;
+    DAVA::Set<PackageBaseNode*> deletedNodes;
+    std::set_difference(rootControls.begin(), rootControls.end(), rootControls_.begin(), rootControls_.end(), std::inserter(deletedNodes, deletedNodes.end()));
+    std::set_difference(rootControls_.begin(), rootControls_.end(), rootControls.begin(), rootControls.end(), std::inserter(newNodes, newNodes.end()));
+    rootControls = rootControls_;
+    for (auto iter = deletedNodes.begin(); iter != deletedNodes.end(); ++iter)
     {
-        CreateAndInsertGrid(rootControl, controlsCanvas->GetChildren().size());
+        PackageBaseNode* node = *iter;
+        UIControl* control = node->GetControl();
+        auto findIt = std::find_if(gridControls.begin(), gridControls.end(), [control](auto& gridIter) {
+            return gridIter->IsNestedControl(control);
+        });
+        DVASSERT(findIt != gridControls.end());
+        controlsCanvas->RemoveControl(findIt->get()->GetGridControl());
+        gridControls.erase(findIt);
+    }
+    for (auto iter = newNodes.begin(); iter != newNodes.end(); ++iter)
+    {
+        PackageBaseNode* node = *iter;
+        UIControl* control = node->GetControl();
+        DVASSERT(std::find_if(gridControls.begin(), gridControls.end(), [control](auto& gridIter) {
+                     return gridIter->IsNestedControl(control);
+                 }) == gridControls.end());
+        auto findIt = rootControls.find(node);
+        DVASSERT(findIt != rootControls.end());
+        CreateAndInsertGrid(node, std::distance(rootControls.begin(), findIt));
     }
     LayoutCanvas();
 }
