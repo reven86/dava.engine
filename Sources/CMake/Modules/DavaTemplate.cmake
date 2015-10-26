@@ -280,16 +280,22 @@ if( ANDROID )
     add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${ADDED_SRC} ${REMAINING_LIST} )
 
 else()
-    if( NOT MAC_DISABLE_BUNDLE )
-        set( BUNDLE_FLAG  MACOSX_BUNDLE )
-    endif()
+    if (BUILD_AS_PLUGIN)
+        add_library( ${PROJECT_NAME} STATIC
+                             ${ADDED_SRC} ${PLATFORM_ADDED_SRC}
+                             ${PROJECT_SOURCE_FILES} ${RESOURCES_LIST})
+    else()
+        if( NOT MAC_DISABLE_BUNDLE )
+            set( BUNDLE_FLAG  MACOSX_BUNDLE )
+        endif()
 
-    add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
-        ${ADDED_SRC}
-        ${PLATFORM_ADDED_SRC}
-        ${PROJECT_SOURCE_FILES}
-        ${RESOURCES_LIST}
-    )
+        add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
+            ${ADDED_SRC}
+            ${PLATFORM_ADDED_SRC}
+            ${PROJECT_SOURCE_FILES}
+            ${RESOURCES_LIST}
+        )
+    endif()
 
 endif()
 
