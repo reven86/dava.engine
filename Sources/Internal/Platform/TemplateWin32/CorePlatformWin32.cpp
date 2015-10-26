@@ -319,7 +319,7 @@ namespace DAVA
     }
 
     Core::eScreenMode CoreWin32Platform::GetScreenMode()
-	{
+    {
         if (isFullscreen)
         {
             return Core::eScreenMode::FULLSCREEN;
@@ -423,12 +423,12 @@ namespace DAVA
         HWND hWindow = static_cast<HWND>(GetNativeView());
         HINSTANCE hInst = GetModuleHandle(0);
         HICON smallIcon = static_cast<HICON>(LoadImage(hInst,
-			MAKEINTRESOURCE(iconId),
-			IMAGE_ICON,
-			0,
-			0,
-			LR_DEFAULTSIZE));
-		SendMessage(hWindow, WM_SETICON, ICON_SMALL, (LPARAM)smallIcon);
+                                                       MAKEINTRESOURCE(iconId),
+                                                       IMAGE_ICON,
+                                                       0,
+                                                       0,
+                                                       LR_DEFAULTSIZE));
+        SendMessage(hWindow, WM_SETICON, ICON_SMALL, (LPARAM)smallIcon);
 		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
