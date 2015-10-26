@@ -73,6 +73,13 @@ if ( WINDOWS_UAP )
     #root deployment location for resources
     set ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION "DXFL-DX11" )
     add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}" )
+    
+    #check the newest version of Win10 SDK
+    if ( "${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION}" STRLESS "${CMAKE_VS_TARGET_PLATFORM_VERSION}" )
+        message ( WARNING "Newer version of Win10 SDK detected: ${CMAKE_VS_TARGET_PLATFORM_VERSION}. "
+                          "Using older version ${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION}. "
+                          "To use newer version set variable -DWINDOWS_UAP_TARGET_PLATFORM_VERSION=${CMAKE_VS_TARGET_PLATFORM_VERSION} ")
+    endif ()
 
     #set target platform version
     #by default CMake sets the last installed SDK's version
