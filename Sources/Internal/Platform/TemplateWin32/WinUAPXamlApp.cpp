@@ -428,6 +428,7 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
     core->RunOnMainThread([this, width, height, scaleX, scaleY]()
                           {
                               UpdateScreenSizeAndScale(width, height, scaleX, scaleY);
+                              DeviceInfo::InitializeScreenInfo();
                               ResetRender();
                               ReInitCoordinatesSystem();
                               UIScreenManager::Instance()->ScreenSizeChanged();
