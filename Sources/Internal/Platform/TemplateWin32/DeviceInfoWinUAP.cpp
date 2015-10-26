@@ -87,7 +87,6 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     platformString = RTStringToString(versionInfo->DeviceFamily);
 
     EasClientDeviceInformation deviceInfo;
-    version = RTStringToString(deviceInfo.SystemFirmwareVersion);
     manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
     modelName = RTStringToString(deviceInfo.SystemSku);
     deviceName = WideString(deviceInfo.FriendlyName->Data());
@@ -116,7 +115,7 @@ String DeviceInfoPrivate::GetPlatformString()
 String DeviceInfoPrivate::GetVersion()
 {
     return version;
- }
+}
 
 String DeviceInfoPrivate::GetManufacturer()
 {
