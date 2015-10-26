@@ -1032,22 +1032,20 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         { 0x8B52/*GL_FLOAT_VEC4*/, rhi::ShaderProp::TYPE_FLOAT4},
         { 0x8B5C/*GL_FLOAT_MAT4*/, rhi::ShaderProp::TYPE_FLOAT4X4}
     };
-           
+
     Array<FastName, 8> propertyFloat4toFloat3 =
-    {{
-        NMaterialParamName::PARAM_FOG_COLOR,
-        NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
-        NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN,
-        NMaterialParamName::PARAM_DECAL_TILE_COLOR,
-        Landscape::PARAM_TILE_COLOR0,
-        Landscape::PARAM_TILE_COLOR1,
-        Landscape::PARAM_TILE_COLOR2,
-        Landscape::PARAM_TILE_COLOR3,
-    }};
-    Array<FastName, 1> propertyFloat3toFloat4 =
-    {{
-        NMaterialParamName::PARAM_FLAT_COLOR,
-    }};
+    { {
+    NMaterialParamName::PARAM_FOG_COLOR,
+    NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
+    NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN,
+    Landscape::PARAM_TILE_COLOR0,
+    Landscape::PARAM_TILE_COLOR1,
+    Landscape::PARAM_TILE_COLOR2,
+    Landscape::PARAM_TILE_COLOR3,
+    } };
+    Array<FastName, 2> propertyFloat3toFloat4 =
+    { { NMaterialParamName::PARAM_FLAT_COLOR,
+        NMaterialParamName::PARAM_DECAL_TILE_COLOR } };
 
     if (archive->IsKeyExists("properties"))
     {
