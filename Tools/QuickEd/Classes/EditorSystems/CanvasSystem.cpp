@@ -390,7 +390,7 @@ void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackag
     {
         PackageBaseNode* node = *iter;
         UIControl* control = node->GetControl();
-        auto findIt = std::find_if(gridControls.begin(), gridControls.end(), [control](auto& gridIter) {
+        auto findIt = std::find_if(gridControls.begin(), gridControls.end(), [control](std::unique_ptr<BackgroundController>& gridIter) {
             return gridIter->IsNestedControl(control);
         });
         DVASSERT(findIt != gridControls.end());
@@ -401,7 +401,7 @@ void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackag
     {
         PackageBaseNode* node = *iter;
         UIControl* control = node->GetControl();
-        DVASSERT(std::find_if(gridControls.begin(), gridControls.end(), [control](auto& gridIter) {
+        DVASSERT(std::find_if(gridControls.begin(), gridControls.end(), [control](std::unique_ptr<BackgroundController>& gridIter) {
                      return gridIter->IsNestedControl(control);
                  }) == gridControls.end());
         auto findIt = rootControls.find(node);
