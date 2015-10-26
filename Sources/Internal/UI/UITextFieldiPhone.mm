@@ -79,10 +79,9 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
     [textFieldHolder setTextField:(DAVA::UITextField *)nil];
-    
-    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
 
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
     if (!isSingleLine)
     {
         textFieldHolder->textField.userInteractionEnabled = NO;
@@ -96,7 +95,6 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
     }
     
     [backgroundView ReleaseTextField:textFieldHolder];
-    
     objcClassPtr = 0;
 }
 
@@ -643,81 +641,80 @@ void TextFieldPlatformImpl::SetMultiline(bool multiline)
         //See http://stackoverflow.com/questions/746670/how-to-lose-margin-padding-in-uitextview
         textView.contentInset = UIEdgeInsetsMake(-10, -5, 0, 0);
 
-            HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-            BackgroundView* backgroundView = [[appDelegate renderViewController] backgroundView];
-            [backgroundView PrepareView: textFieldHolder->textCtrl];
-            
-            [textFieldHolder addSubview:textView];
-            
-            textFieldHolder->textCtrl = textView;
-            
-            textView.textColor = color;
-            textView.font = font;
-            // Workaround! in multiline mode use need ability to scroll
-            // text without open keyboard
-            textView.userInteractionEnabled = YES;
-            [textView setHidden:isHidden];
-            textView.delegate = textFieldHolder;
-           
-            isSingleLine = false;
-            
-            SetText(wstring);
-            SetCursorPos(cursorPos);
-            
-            [textFieldHolder setupTraits];
-            
-            [textView setBackgroundColor:[UIColor clearColor]];
-            
-            textView.scrollEnabled = YES;
-            
-            [textView release];
-            // Workaround! in multiline mode always listen for user
-            // touches
-            SetRenderToTexture(false);
-            
-        } else if (!isSingleLine && !multiline)
-        {
-            // revert back single line native control
-            // TODO in future completely remove UITextField native control
-            //
-            // store current properties, font, size, text etc.
-            DAVA::int32 cursorPos = GetCursorPos();
-            DAVA::WideString wstring;
-            GetText(wstring);
-            // font, textColor, frameRect
-            ::UITextView* textView = (::UITextView*)textFieldHolder->textCtrl;
-            UIFont* font = textView.font;
-            UIColor* color = textView.textColor;
-            BOOL isHidden = textView.isHidden;
-            
-            // now hide textField and store it for future restore
-            [textView removeFromSuperview];
-            [textView setHidden:YES];
-            
-            // replace textField with old textField and apply current properties
-            ::UITextField* textField = textFieldHolder->textField;
-            textFieldHolder->textField = nullptr;
-            [textFieldHolder addSubview:textField];
-            [textView setHidden:isHidden];
-            
-            textView = nullptr;
-            
-            textFieldHolder->textCtrl = textField;
-            
-            textField.textColor = color;
-            textField.font = font;
-            textField.userInteractionEnabled = YES;
-            [textField setHidden:isHidden];
-            
-            isSingleLine = true;
-            
-            SetText(wstring);
-            SetCursorPos(cursorPos);
-            
-            [textFieldHolder setupTraits];
-            
-            [textField setBackgroundColor:[UIColor clearColor]];
-        }
+        HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+        BackgroundView* backgroundView = [[appDelegate renderViewController] backgroundView];
+        [backgroundView PrepareView: textFieldHolder->textCtrl];
+        
+        [textFieldHolder addSubview:textView];
+        
+        textFieldHolder->textCtrl = textView;
+        
+        textView.textColor = color;
+        textView.font = font;
+        // Workaround! in multiline mode use need ability to scroll
+        // text without open keyboard
+        textView.userInteractionEnabled = YES;
+        [textView setHidden:isHidden];
+        textView.delegate = textFieldHolder;
+       
+        isSingleLine = false;
+        
+        SetText(wstring);
+        SetCursorPos(cursorPos);
+        
+        [textFieldHolder setupTraits];
+        
+        [textView setBackgroundColor:[UIColor clearColor]];
+        
+        textView.scrollEnabled = YES;
+        
+        [textView release];
+        // Workaround! in multiline mode always listen for user
+        // touches
+        SetRenderToTexture(false);
+        
+    } else if (!isSingleLine && !multiline)
+    {
+        // revert back single line native control
+        // TODO in future completely remove UITextField native control
+        //
+        // store current properties, font, size, text etc.
+        DAVA::int32 cursorPos = GetCursorPos();
+        DAVA::WideString wstring;
+        GetText(wstring);
+        // font, textColor, frameRect
+        ::UITextView* textView = (::UITextView*)textFieldHolder->textCtrl;
+        UIFont* font = textView.font;
+        UIColor* color = textView.textColor;
+        BOOL isHidden = textView.isHidden;
+        
+        // now hide textField and store it for future restore
+        [textView removeFromSuperview];
+        [textView setHidden:YES];
+        
+        // replace textField with old textField and apply current properties
+        ::UITextField* textField = textFieldHolder->textField;
+        textFieldHolder->textField = nullptr;
+        [textFieldHolder addSubview:textField];
+        [textView setHidden:isHidden];
+        
+        textView = nullptr;
+        
+        textFieldHolder->textCtrl = textField;
+        
+        textField.textColor = color;
+        textField.font = font;
+        textField.userInteractionEnabled = YES;
+        [textField setHidden:isHidden];
+        
+        isSingleLine = true;
+        
+        SetText(wstring);
+        SetCursorPos(cursorPos);
+        
+        [textFieldHolder setupTraits];
+        
+        [textField setBackgroundColor:[UIColor clearColor]];
     }
 }
 
@@ -766,6 +763,7 @@ void* TextFieldPlatformImpl::TruncateText(void* text, int maxLength)
 
     return text;
 }
+
 }
 
 #endif
