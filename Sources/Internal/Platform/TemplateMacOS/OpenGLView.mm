@@ -276,7 +276,6 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
         if (it->tid == button)
         {
             isFind = true;
-
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
 
             break;

@@ -53,14 +53,19 @@ extern void CloseKeyboard();
 #   include "UI/UITextFieldWinUAP.h"
 #else
 #include "UI/UIStaticText.h"
+#include "Platform/SystemTimer.h"
 namespace DAVA
 {
+// This implementation simulate iOS/Android native contols,
+// so no hierarchy for internal UIStaticText, and call UpdateRect
+// every frame, and render directly in SyctemDraw. This helps
+// to find similar bugs in all implementations
 class TextFieldPlatformImpl
 {
 public:
     friend class UITextField;
     TextFieldPlatformImpl(UITextField* control)
-        : staticText_(new UIStaticText(control->GetRect()))
+        : staticText_(new UIStaticText(Rect(Vector2(0, 0), control->GetSize())))
         , control_(control)
     {
         staticText_->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
@@ -73,6 +78,8 @@ public:
     void CopyDataFrom(TextFieldPlatformImpl* t)
     {
         staticText_->CopyDataFrom(t->staticText_);
+        cursorTime = t->cursorTime;
+        showCursor = t->showCursor;
     }
     void OpenKeyboard()
     {
@@ -85,6 +92,7 @@ public:
     }
     void SetIsPassword(bool)
     {
+        needRedraw = true;
     }
     void SetFontSize(float32)
     {
@@ -98,6 +106,47 @@ public:
         {
             control_->GetDelegate()->TextFieldOnTextChanged(control_, text_, prevText);
         }
+        needRedraw = true;
+    }
+    void UpdateRect(const Rect&)
+    {
+        // see comment for TextFieldPlatformImpl class above
+
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
+        {
+            float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
+            cursorTime += timeElapsed;
+
+            if (cursorTime >= 0.5f)
+            {
+                cursorTime = 0;
+                showCursor = !showCursor;
+                needRedraw = true;
+            }
+        }
+        else if (showCursor)
+        {
+            cursorTime = 0;
+            showCursor = false;
+            needRedraw = true;
+        }
+
+        if (!needRedraw)
+        {
+            return;
+        }
+
+        const WideString& txt = control_->GetVisibleText();
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
+        {
+            WideString txtWithCursor = txt + (showCursor ? L"_" : L" ");
+            SetText(txtWithCursor, NO_REQUIRED_SIZE);
+        }
+        else
+        {
+            SetText(txt, NO_REQUIRED_SIZE);
+        }
+        needRedraw = false;
     }
     void SetAutoCapitalizationType(int32)
     {
@@ -200,18 +249,22 @@ public:
     {
         return staticText_->GetTextAlign();
     }
-    void SetRect(Rect rect)
+    void SetRect(const Rect& rect)
     {
-        staticText_->SetRect(rect);
+        staticText_->SetSize(rect.GetSize());
     }
-    void SystemDraw(const UIGeometricData& data)
+    void SystemDraw(const UIGeometricData& d)
     {
-        staticText_->SystemDraw(data);
+        // see comment for TextFieldPlatformImpl class above
+        staticText_->SystemDraw(d);
     }
 
 private:
     UIStaticText* staticText_ = nullptr;
     UITextField* control_ = nullptr;
+    float32 cursorTime = 0.0f;
+    bool needRedraw = true;
+    bool showCursor = true;
 };
 } // end namespace DAVA
 #endif
@@ -274,45 +327,7 @@ void UITextField::CloseKeyboard()
 
 void UITextField::Update(float32 timeElapsed)
 {
-#ifdef DAVA_TEXTFIELD_USE_NATIVE
-    // Calling UpdateRect with allowNativeControlMove set to true
     textFieldImpl->UpdateRect(GetGeometricData().GetUnrotatedRect());
-#else
-    if(this == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        cursorTime += timeElapsed;
-
-        if (cursorTime >= 0.5f)
-        {
-            cursorTime = 0;
-            showCursor = !showCursor;
-            needRedraw = true;
-        }
-    }
-    else if (showCursor)
-    {
-        cursorTime = 0;
-        showCursor = false;
-        needRedraw = true;
-    }
-    
-    if (!needRedraw)
-    {
-        return;
-    }
-
-    if(this == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        WideString txt = GetVisibleText();
-        txt += showCursor ? L"_" : L" ";
-        textFieldImpl->SetText(txt, NO_REQUIRED_SIZE);
-    }
-    else
-    {
-        textFieldImpl->SetText(GetVisibleText(), NO_REQUIRED_SIZE);
-    }
-    needRedraw = false;
-#endif
 }
 
 void UITextField::WillAppear()
@@ -491,8 +506,6 @@ void UITextField::SetText(const WideString& text_)
 {
     textFieldImpl->SetText(text_);
     text = text_;
-
-    needRedraw = true;
 }
 
 const WideString & UITextField::GetText()
@@ -550,7 +563,7 @@ void UITextField::Input(UIEvent *currentInput)
         return;
     }
 
-    if(this != UIControlSystem::Instance()->GetFocusedControl())
+    if (this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
@@ -837,8 +850,6 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
     UIControl::CopyDataFrom(srcControl);
     UITextField* t = static_cast<UITextField*>(srcControl);
 
-    cursorTime = t->cursorTime;
-    showCursor = t->showCursor;
     isPassword = t->isPassword;
     SetText(t->text);
     SetRect(t->GetRect());
@@ -862,8 +873,6 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 void UITextField::SetIsPassword(bool isPassword_)
 {
     isPassword = isPassword_;
-    needRedraw = true;
-
     textFieldImpl->SetIsPassword(isPassword_);
 }
     
@@ -1043,8 +1052,11 @@ void UITextField::SetFontByPresetName(const String &presetName)
 
 void UITextField::SystemDraw(const UIGeometricData& geometricData)
 {
-    textFieldImpl->SystemDraw(geometricData);
     UIControl::SystemDraw(geometricData);
+
+    UIGeometricData localData = GetLocalGeometricData();
+    localData.AddGeometricData(geometricData);
+    textFieldImpl->SystemDraw(localData);
 }
 
 }   // namespace DAVA

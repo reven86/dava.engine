@@ -124,7 +124,7 @@ void GameCore::UnpackHelp()
         ResourceArchive* helpRA = new ResourceArchive();
         if (helpRA->Open("~res:/Help.docs"))
         {
-			FileSystem::Instance()->DeleteDirectory(docsPath);
+            FileSystem::Instance()->DeleteDirectory(docsPath);
 			FileSystem::Instance()->CreateDirectory(docsPath, true);
 		
 			helpRA->UnpackToFolder(docsPath);
