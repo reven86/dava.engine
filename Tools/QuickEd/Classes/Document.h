@@ -33,9 +33,7 @@
 #include <QUndoStack>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Functional/Signal.h"
 #include "EditorSystems/SelectionContainer.h"
-#include "Math/Rect.h"
 
 struct WidgetContext
 {

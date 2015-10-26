@@ -49,10 +49,11 @@ public:
     // Set the initial Ruler Settings.
     void SetRulerSettings(const RulerSettings& rulerSettings);
 
-    // Update the rulers by sending appropriate events.
-    void UpdateRulers();
+    void paintEvent(QPaintEvent* event) override;
 
-    virtual void paintEvent(QPaintEvent* event);
+    QSize minimumSizeHint() const override;
+
+    void resizeEvent(QResizeEvent* event) override;
 
 public slots:
     // Ruler Settings are changed.

@@ -28,16 +28,14 @@
 
 #include "RulerController.h"
 
-RulerController::RulerController()
-    : screenScale(0.0f)
+RulerController::RulerController(QObject* parent)
+    : QObject(parent)
+    , screenScale(0.0f)
 {
     SetupInitialRulerSettings(horisontalRulerSettings);
     SetupInitialRulerSettings(verticalRulerSettings);
 }
 
-RulerController::~RulerController()
-{
-}
 
 void RulerController::SetupInitialRulerSettings(RulerSettings& settings)
 {

@@ -76,7 +76,9 @@ public:
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
     void UpdateCounterpoise();
     void AdjustToNestedControl();
-    Signal<> ContentSizeChanged;
+
+    DAVA::Signal<> ContentSizeChanged;
+    DAVA::Signal<DAVA::Vector2> RootControlPosChanged;
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition);
@@ -205,6 +207,7 @@ void BackgroundController::AdjustToNestedControl()
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
     ContentSizeChanged.Emit();
+    RootControlPosChanged.Emit(pos);
 }
 
 void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)

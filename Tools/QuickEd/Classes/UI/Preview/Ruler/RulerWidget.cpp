@@ -39,18 +39,21 @@ using namespace DAVA;
 RulerWidget::RulerWidget(QWidget* parent)
     : QWidget(parent)
 {
+    UpdateDoubleBufferImage();
 }
 
 void RulerWidget::SetRulerOrientation(Qt::Orientation orientation_)
 {
     orientation = orientation_;
+    UpdateDoubleBufferImage();
+    update();
 }
 
 void RulerWidget::SetRulerSettings(const RulerSettings& rulerSettings)
 {
     settings = rulerSettings;
     UpdateDoubleBufferImage();
-    repaint();
+    update();
 }
 
 void RulerWidget::OnRulerSettingsChanged(const RulerSettings& rulerSettings)
@@ -61,7 +64,7 @@ void RulerWidget::OnRulerSettingsChanged(const RulerSettings& rulerSettings)
 void RulerWidget::OnMarkerPositionChanged(int32 position)
 {
     markerPosition = position;
-    repaint();
+    update();
 }
 
 void RulerWidget::paintEvent(QPaintEvent* /*event*/)
@@ -86,6 +89,23 @@ void RulerWidget::paintEvent(QPaintEvent* /*event*/)
     {
         painter.drawLine(0, markerPosition, rect().width(), markerPosition);
     }
+}
+
+QSize RulerWidget::minimumSizeHint() const
+{
+    static const int minimumSize = 16;
+    switch (orientation)
+    {
+    default:
+        return QSize(0, minimumSize);
+    case Qt::Vertical:
+        return QSize(minimumSize, 0);
+    }
+}
+
+void RulerWidget::resizeEvent(QResizeEvent*)
+{
+    UpdateDoubleBufferImage();
 }
 
 void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, int tickEndPos,
@@ -141,9 +161,9 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
 
                 int digitPos = curPos + fontSize - 1;
                 int32 digitsSize = digits.str().size();
-                for (int32 i = 0; i < digitsSize; i++)
+                for (int32 j = 0; j < digitsSize; j++)
                 {
-                    nextDigit[0] = digits.str().at(i); // next char is always 0x00
+                    nextDigit[0] = digits.str().at(j); // next char is always 0x00
                     painter.drawText(fontPos, digitPos, QString::fromLatin1(nextDigit));
                     digitPos += fontSize;
                 }
@@ -157,7 +177,7 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
 void RulerWidget::UpdateDoubleBufferImage()
 {
     doubleBuffer = QPixmap(size());
-    doubleBuffer.fill(this, 0, 0);
+    doubleBuffer.fill();
 
     static const QColor rulerBackgroundColor = QColor(0xFF, 0xFF, 0xFF);
     static const QColor rulerTicksColor = QColor(0x00, 0x00, 0x00);
