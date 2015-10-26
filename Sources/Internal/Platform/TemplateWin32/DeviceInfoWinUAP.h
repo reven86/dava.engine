@@ -90,7 +90,7 @@ private:
     };
 
     Windows::Devices::Enumeration::DeviceWatcher ^ CreateDeviceWatcher(NativeHIDType type);
-    void StartDeviceWatcher();
+    void CreateAndStartHIDWatcher();
     void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation ^ information);
     void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate ^ information);
     bool IsEnabled(NativeHIDType type);
