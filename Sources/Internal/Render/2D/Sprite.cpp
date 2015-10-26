@@ -151,7 +151,7 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 	return ret;
 }
 
-FilePath Sprite::GetScaledName(const FilePath &spriteName, DAVA::int32 resourceIndex)
+FilePath Sprite::GetScaledName(const FilePath &spriteName)
 {
     String pathname;
     if(FilePath::PATH_IN_RESOURCES == spriteName.GetType())
@@ -164,7 +164,7 @@ FilePath Sprite::GetScaledName(const FilePath &spriteName, DAVA::int32 resourceI
     String::size_type pos = pathname.find(baseGfxFolderName);
 	if(String::npos != pos)
 	{
-        const String &desirableGfxFolderName = virtualCoordsSystem->GetResourceFolder(resourceIndex == -1 ? virtualCoordsSystem->GetDesirableResourceIndex() : resourceIndex);
+        const String &desirableGfxFolderName = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetDesirableResourceIndex());
         pathname.replace(pos, baseGfxFolderName.length(), desirableGfxFolderName);
 		return pathname;
 	}
@@ -864,12 +864,6 @@ void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState &pa
 	frame = localState.frame;
 }
 
-void Sprite::SetResourceSizeIndex(DAVA::int32 newIndex)
-{
-    resourceSizeIndex = newIndex;
-    Reload();
-}
-
 void Sprite::ReloadSprites()
 {
 	for(SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
@@ -904,10 +898,10 @@ void Sprite::Reload()
 	}
 }
     
-File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceIndex)
+File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex)
 {
     FilePath pathName = FilePath::CreateWithNewExtension(spriteName, ".txt");
-    FilePath scaledPath = GetScaledName(pathName, resourceIndex);
+    FilePath scaledPath = GetScaledName(pathName);
 
     FilePath texturePath;
     File * fp = LoadLocalizedFile(scaledPath, texturePath);
@@ -919,13 +913,12 @@ File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceIndex)
             Logger::Instance()->Warning("Failed to open sprite file: %s", pathName.GetAbsolutePathname().c_str());
             return NULL;
         }
-        if (resourceIndex == -1)
-            resourceIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
+
+        resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
     }
     else
     {
-        if (resourceIndex == -1)
-            resourceIndex = VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex();
+        resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex();
     }
 
     return fp;
