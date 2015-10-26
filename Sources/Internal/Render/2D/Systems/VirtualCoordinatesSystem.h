@@ -97,7 +97,8 @@ public:
     
 	inline const String & GetResourceFolder(int32 resourceIndex) const;
 	inline int32 GetDesirableResourceIndex() const;
-	inline int32 GetBaseResourceIndex() const;
+    inline void SetDesirableResourceIndex(int32 resourceIndex);
+    inline int32 GetBaseResourceIndex() const;
     
 	inline bool WasScreenSizeChanged() const;
 	void ScreenSizeChanged();
@@ -302,6 +303,11 @@ inline const String & VirtualCoordinatesSystem::GetResourceFolder(int32 resource
 inline int32 VirtualCoordinatesSystem::GetDesirableResourceIndex() const
 {
     return desirableIndex;
+}
+
+void VirtualCoordinatesSystem::SetDesirableResourceIndex(int32 resourceIndex)
+{
+    desirableIndex = resourceIndex;
 }
     
 inline int32 VirtualCoordinatesSystem::GetBaseResourceIndex() const
