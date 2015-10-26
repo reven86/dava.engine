@@ -69,8 +69,6 @@ protected:
 	UIScreen * nextScreen;
     UIScreenshoter* shooter;
 
-private:
-    void OnPrevScreenScreenshotComplete(Texture* texture);
 };
 
 };
