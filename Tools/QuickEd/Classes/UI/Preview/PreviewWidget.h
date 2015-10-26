@@ -44,6 +44,7 @@ class DavaGLWidget;
 class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
+class RulerController;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -53,8 +54,8 @@ public:
     ~PreviewWidget() = default;
     DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
-
     void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
+
 signals:
     void ScaleChanged(float scale);
 
@@ -87,6 +88,7 @@ private:
     QList<int> percentages;
 
     SelectionContainer selectionContainer;
+    RulerController* rulerController = nullptr;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget()

@@ -44,6 +44,7 @@
 #include "EditorSystems/CanvasSystem.h"
 #include "EditorSystems/HUDSystem.h"
 #include "Ruler/RulerWidget.h"
+#include "Ruler/RulerController.h"
 
 using namespace DAVA;
 
@@ -58,10 +59,21 @@ QString ScaleFromInt(int scale)
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
     , scrollAreaController(new ScrollAreaController(this))
+    , rulerController(new RulerController(this))
 {
+    setupUi(this);
+
+    connect(this, &PreviewWidget::ScaleChanged, rulerController, &RulerController::SetScale);
+    connect(rulerController, &RulerController::HorisontalRulerSettingsChanged, horizontalRuler, &RulerWidget::OnRulerSettingsChanged);
+    connect(rulerController, &RulerController::VerticalRulerSettingsChanged, verticalRuler, &RulerWidget::OnRulerSettingsChanged);
+
+    connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
+    connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
+
     percentages << 10 << 25 << 50 << 75 << 100 << 125
                 << 150 << 175 << 200 << 250 << 400 << 800;
-    setupUi(this);
+
+    verticalRuler->SetRulerOrientation(Qt::Vertical);
     davaGLWidget = new DavaGLWidget();
     frame->layout()->addWidget(davaGLWidget);
 
