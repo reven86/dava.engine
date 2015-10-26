@@ -93,8 +93,6 @@ extern void FrameworkMain(int argc, char *argv[]);
 #endif
 
     activeCursor = 0;
-    
-    //RenderManager::Create(Core::RENDERER_OPENGL);
 	
     willQuit = false;
 
@@ -162,26 +160,19 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
 	[self setNeedsDisplay:YES];
 }
-
-//bool firstLaunch = true;
 	
 - (void)drawRect:(NSRect)theRect
 {
     if(willQuit)
         return;
-    
-//	Logger::FrameworkDebug("drawRect started");
 
     DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (void) resetCursorRects
 {
-//	NSLog(@"OpenGLView resetCursorRects");
-	//
 	if (activeCursor)
 	{
-		//activeCursor->MacOSX_Set();
 		NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
 		[self addCursorRect: [self bounds] cursor: cursor];
 	}else {
@@ -210,7 +201,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 static Vector<DAVA::UIEvent> activeTouches;
 
-void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, int32 phase)
+void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
     NSPoint p = [curEvent locationInWindow];
 
@@ -237,96 +228,95 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, int32 phase)
     event.phase = phase;
 }
 
-void MoveTouchsToVector(NSEvent* curEvent, int touchPhase, Vector<UIEvent>* outTouches)
+- (void)moveTouchsToVector:(UIEvent::Phase)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
 {
-	int button = 0;
-    if (curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
+    int button = 0;
+    if (curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged)
     {
-		button = 1;
-	}
-	else if(curEvent.type == NSRightMouseDown || curEvent.type == NSRightMouseUp || curEvent.type == NSRightMouseDragged)
-	{
-		button = 2;
-	}
-    else
+        button = 1;
+    }
+    else if (curEvent.type == NSRightMouseDown || curEvent.type == NSRightMouseUp || curEvent.type == NSRightMouseDragged)
     {
-		button = curEvent.buttonNumber + 1;
-	}
+        button = 2;
+    }
+    else if (curEvent.type != NSMouseMoved)
+    {
+        button = curEvent.buttonNumber + 1;
+    }
 
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     if(curEvent.type == NSLeftMouseDown || curEvent.type == NSRightMouseDown || curEvent.type == NSOtherMouseDown)
-	{
+    {
         phase = UIEvent::Phase::BEGAN;
     }
-	else if(curEvent.type == NSLeftMouseUp || curEvent.type == NSRightMouseUp || curEvent.type == NSOtherMouseUp)
-	{
+    else if (curEvent.type == NSLeftMouseUp || curEvent.type == NSRightMouseUp || curEvent.type == NSOtherMouseUp)
+    {
         phase = UIEvent::Phase::ENDED;
     }
-	else if(curEvent.type == NSLeftMouseDragged || curEvent.type == NSRightMouseDragged || curEvent.type == NSOtherMouseDragged)
-	{
+    else if (curEvent.type == NSLeftMouseDragged || curEvent.type == NSRightMouseDragged || curEvent.type == NSOtherMouseDragged)
+    {
         phase = UIEvent::Phase::DRAG;
     }
-	else if(curEvent.type == NSScrollWheel)
+    else if (curEvent.type == NSScrollWheel)
     {
         phase = UIEvent::Phase::WHEEL;
     }
 
-    if (phase == UIEvent::PHASE_DRAG)
+    if (phase == UIEvent::Phase::DRAG)
     {
-        for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
-		}
-	}
-    
-	bool isFind = false;
-    for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        }
+    }
+
+    bool isFind = false;
+    for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
-		if(it->tid == button)
-		{
-			isFind = true;
-			
+        if (it->tid == button)
+        {
+            isFind = true;
+
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
 
-			break;
-		}
-	}
-	
-	if(!isFind)
-	{
-		UIEvent newTouch;
-		newTouch.tid = button;
+            break;
+        }
+    }
+
+    if (!isFind)
+    {
+        UIEvent newTouch;
+        newTouch.tid = button;
         newTouch.device = UIEvent::Device::MOUSE;
 
         ConvertNSEventToUIEvent(curEvent, newTouch, phase);
 
-        activeTouches.push_back(newTouch);
+        allTouches.push_back(newTouch);
     }
 
-    for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
-		outTouches->push_back(*it);
-	}
+        outTouches->push_back(*it);
+    }
 
-    if (phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
+    if (phase == UIEvent::Phase::ENDED || phase == UIEvent::Phase::MOVE)
     {
-        for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-			if(it->tid == button)
-			{
-                activeTouches.erase(it);
+            if (it->tid == button)
+            {
+                allTouches.erase(it);
                 break;
-			}
-		}
-	}
-	
+            }
+        }
+    }
 }
 
 - (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
-	Vector<DAVA::UIEvent> touches;
+    Vector<DAVA::UIEvent> touches;
 
-    MoveTouchsToVector(touch, touchPhase, &touches);
+    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
 
     for (auto& t : touches)
     {
