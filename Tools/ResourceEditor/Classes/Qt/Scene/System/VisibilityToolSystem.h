@@ -104,8 +104,8 @@ private:
     CheckPoints checkPoints;
     VisibilityTests remainingVisibilityTests;
     State state = State::NotActive;
-    uint32 textureStepSizeX = 4;
-    uint32 textureStepSizeY = 4;
+    uint32 textureStepSizeX = 1;
+    uint32 textureStepSizeY = 1;
     uint32 textureSize = 0;
     uint32 pointsRowSize = 0;
     uint32 totalRowsInPoints = 0;

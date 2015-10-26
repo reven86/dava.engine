@@ -230,8 +230,8 @@ uint32 VisibilityToolSystem::StartAddingVisibilityPoint()
     SetState(State::AddingPoint);
     checkPoints.emplace_back();
 
-    Color newColor(0.9f + 0.1f * randf(), 0.9f + 0.1f * randf(), 0.9f + 0.1f * randf(), 1.0f);
-    newColor.color[checkPoints.size() % 3] *= 0.25f + 0.5f * randf();
+    Color newColor(0.125f + 0.125f * randf(), 0.125f + 0.125f * randf(), 0.125f + 0.125f * randf(), 1.0f);
+    newColor.color[checkPoints.size() % 3] += 0.25f + 0.25f * randf();
     checkPoints.back().color = newColor;
 
     return static_cast<uint32>(checkPoints.size() - 1);
@@ -419,9 +419,10 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints()
     }
 
     auto multiplyColor = [](Color& cIn, const Color& cOver) {
-        float alpha = cIn.a;
-        cIn *= cOver;
-        cIn.a = Max(alpha, cOver.a);
+        cIn.r = 1.0f - (1.0f - cIn.r) * (1.0f - cOver.r);
+        cIn.g = 1.0f - (1.0f - cIn.g) * (1.0f - cOver.g);
+        cIn.b = 1.0f - (1.0f - cIn.b) * (1.0f - cOver.b);
+        cIn.a = Max(cIn.a, cOver.a);
     };
 
     auto rs = RenderSystem2D::Instance();
@@ -437,10 +438,10 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints()
         uint32 r1 = Min(r0 + 1, totalRowsInPoints - 1);
         DVASSERT(c0 + r0 * pointsRowSize == i);
 
-        Color c00 = Color(1.0f, 1.0f, 1.0f, 0.0f);
-        Color c01 = Color(1.0f, 1.0f, 1.0f, 0.0f);
-        Color c10 = Color(1.0f, 1.0f, 1.0f, 0.0f);
-        Color c11 = Color(1.0f, 1.0f, 1.0f, 0.0f);
+        Color c00 = Color(0.0f, 0.0f, 0.0f, 0.0f);
+        Color c01 = Color(0.0f, 0.0f, 0.0f, 0.0f);
+        Color c10 = Color(0.0f, 0.0f, 0.0f, 0.0f);
+        Color c11 = Color(0.0f, 0.0f, 0.0f, 0.0f);
 
         int x = 0;
         int y = 0;
@@ -506,7 +507,7 @@ void VisibilityToolSystem::PerformVisibilityTest(const VisibilityTests::value_ty
     float32 baseZ = drawSystem->GetHeightAtTexturePoint(textureLevel, test.second) + 0.25f; // TODO: use Z from point
     Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, test.second), baseZ);
 
-    Color resultColor = Color::Transparent;
+    Color resultColor = Color(0.0f, 0.0f, 0.0f, 0.0f);
 
     Vector3 direction = target - sourcePoint.worldPosition;
     float32 angle = atan2(direction.z, direction.xy().Length());
