@@ -57,6 +57,10 @@ FilterAndSortBar::~FilterAndSortBar() = default;
 void FilterAndSortBar::Init(int32 flags)
 {
     QHBoxLayout* layout = new QHBoxLayout;
+    if (flags & FLAG_ENABLE_GROUPING)
+    {
+        layout->addWidget(CreateGroupCombo());
+    }
     if (flags & FLAG_ENABLE_SORTING)
     {
         layout->addWidget(CreateSortCombo());
@@ -82,6 +86,33 @@ void FilterAndSortBar::Init(int32 flags)
         layout->addWidget(CreateBlockOrderWidgets());
     }
     setLayout(layout);
+
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
+}
+
+QComboBox* FilterAndSortBar::CreateGroupCombo()
+{
+    std::pair<QString, int> items[] = {
+        { "Group by backtrace", GROUP_BY_BACKTRACE },
+        { "Group by size", GROUP_BY_SIZE }
+    };
+
+    int nrows = static_cast<int>(COUNT_OF(items));
+    groupComboModel.reset(new QStandardItemModel(nrows, 1));
+    for (int i = 0; i < nrows; ++i)
+    {
+        QStandardItem* item = new QStandardItem(QString(items[i].first));
+        item->setData(items[i].second, Qt::UserRole + 1);
+
+        groupComboModel->setItem(i, 0, item);
+    }
+
+    QComboBox* widget = new QComboBox;
+    connect(widget, SIGNAL(currentIndexChanged(int)), this, SLOT(GroupOrderCombo_CurrentIndexChanged(int)));
+
+    widget->setModel(groupComboModel.get());
+    widget->setCurrentIndex(0);
+    return widget;
 }
 
 QComboBox* FilterAndSortBar::CreateSortCombo()
@@ -93,7 +124,7 @@ QComboBox* FilterAndSortBar::CreateSortCombo()
         {"Sort by backtrace", SORT_BY_BACKTRACE}
     };
 
-    int nrows = static_cast<int>(sizeof(items) / sizeof(items[0]));
+    int nrows = static_cast<int>(COUNT_OF(items));
     sortComboModel.reset(new QStandardItemModel(nrows, 1));
     for (int i = 0;i < nrows;++i)
     {
@@ -189,6 +220,16 @@ QWidget* FilterAndSortBar::CreateBlockOrderWidgets()
     QWidget* widget = new QWidget;
     widget->setLayout(layout);
     return widget;
+}
+
+void FilterAndSortBar::GroupOrderCombo_CurrentIndexChanged(int index)
+{
+    QModelIndex modelIndex = groupComboModel->index(index, 0);
+    if (modelIndex.isValid())
+    {
+        int v = groupComboModel->data(modelIndex, Qt::UserRole + 1).toInt();
+        emit GroupOrderChanged(v);
+    }
 }
 
 void FilterAndSortBar::SortOrderCombo_CurrentIndexChanged(int index)

@@ -26,46 +26,39 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __MEMORYTOOL_BLOCKLINK_H__
-#define __MEMORYTOOL_BLOCKLINK_H__
+#ifndef __MEMORYTOOL_BLOCKGROUPMODEL_H__
+#define __MEMORYTOOL_BLOCKGROUPMODEL_H__
 
 #include "Base/BaseTypes.h"
 
-namespace DAVA
+#include "Qt/DeviceInfo/MemoryTool/BlockGroup.h"
+
+#include <QAbstractTableModel>
+
+class BlockGroupModel : public QAbstractTableModel
 {
-    struct MMBlock;
-}
+    Q_OBJECT
 
-class MemorySnapshot;
-
-struct BlockLink
-{
-    using Item = std::pair<const DAVA::MMBlock*, const DAVA::MMBlock*>;
-
-    static const DAVA::MMBlock* AnyBlock(const Item& item)
+public:
+    enum
     {
-        return item.first != nullptr ? item.first : item.second;
-    }
-    static const DAVA::MMBlock* Block(const Item& item, int index)
-    {
-        return 0 == index ? item.first : item.second;
-    }
+        ROLE_GROUP_POINTER = Qt::UserRole + 1
+    };
 
-    static BlockLink CreateBlockLink(const MemorySnapshot* snapshot);
-    static BlockLink CreateBlockLink(const MemorySnapshot* snapshot1, const MemorySnapshot* snapshot2);
-    static BlockLink CreateBlockLink(const DAVA::Vector<DAVA::MMBlock*>& blocks, const MemorySnapshot* snapshot);
-    static BlockLink CreateBlockLink(const DAVA::Vector<DAVA::MMBlock*>& blocks1, const MemorySnapshot* snapshot1,
-                                     const DAVA::Vector<DAVA::MMBlock*>& blocks2, const MemorySnapshot* snapshot2);
+public:
+    BlockGroupModel(QObject* parent = nullptr);
+    virtual ~BlockGroupModel();
 
-    BlockLink();
-    BlockLink(BlockLink&& other);
-    BlockLink& operator = (BlockLink&& other);
+    void SetBlockGroups(const DAVA::Vector<BlockGroup>* groups);
 
-    DAVA::Vector<Item> items;
-    DAVA::uint32 linkCount = 0;
-    DAVA::uint32 allocSize[2];
-    DAVA::uint32 blockCount[2];
-    const MemorySnapshot* sourceSnapshots[2];
+    // reimplemented QAbstractTableModel methods
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+private:
+    const DAVA::Vector<BlockGroup>* groups = nullptr;
 };
 
-#endif  // __MEMORYTOOL_BLOCKLINK_H__
+#endif // __MEMORYTOOL_BLOCKGROUPMODEL_H__

@@ -26,46 +26,42 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __MEMORYTOOL_BLOCKLINK_H__
-#define __MEMORYTOOL_BLOCKLINK_H__
+#ifndef __MEMORYTOOL_BLOCKGROUP_H__
+#define __MEMORYTOOL_BLOCKGROUP_H__
 
 #include "Base/BaseTypes.h"
 
-namespace DAVA
+#include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
+
+struct BlockGroup
 {
-    struct MMBlock;
-}
-
-class MemorySnapshot;
-
-struct BlockLink
-{
-    using Item = std::pair<const DAVA::MMBlock*, const DAVA::MMBlock*>;
-
-    static const DAVA::MMBlock* AnyBlock(const Item& item)
+    template <typename T>
+    BlockGroup(const DAVA::String& title_, DAVA::uint32 key_, T&& blockLink_)
+        : title(title_)
+        , key(key_)
+        , blockLink(std::move(blockLink_))
     {
-        return item.first != nullptr ? item.first : item.second;
     }
-    static const DAVA::MMBlock* Block(const Item& item, int index)
+    BlockGroup(BlockGroup&& other)
+        : title(std::move(other.title))
+        , key(std::move(other.key))
+        , blockLink(std::move(other.blockLink))
     {
-        return 0 == index ? item.first : item.second;
+    }
+    BlockGroup& operator=(BlockGroup&& other)
+    {
+        if (this != &other)
+        {
+            title = std::move(other.title);
+            key = std::move(other.key);
+            blockLink = std::move(other.blockLink);
+        }
+        return *this;
     }
 
-    static BlockLink CreateBlockLink(const MemorySnapshot* snapshot);
-    static BlockLink CreateBlockLink(const MemorySnapshot* snapshot1, const MemorySnapshot* snapshot2);
-    static BlockLink CreateBlockLink(const DAVA::Vector<DAVA::MMBlock*>& blocks, const MemorySnapshot* snapshot);
-    static BlockLink CreateBlockLink(const DAVA::Vector<DAVA::MMBlock*>& blocks1, const MemorySnapshot* snapshot1,
-                                     const DAVA::Vector<DAVA::MMBlock*>& blocks2, const MemorySnapshot* snapshot2);
-
-    BlockLink();
-    BlockLink(BlockLink&& other);
-    BlockLink& operator = (BlockLink&& other);
-
-    DAVA::Vector<Item> items;
-    DAVA::uint32 linkCount = 0;
-    DAVA::uint32 allocSize[2];
-    DAVA::uint32 blockCount[2];
-    const MemorySnapshot* sourceSnapshots[2];
+    DAVA::String title;
+    DAVA::uint32 key;
+    BlockLink blockLink;
 };
 
-#endif  // __MEMORYTOOL_BLOCKLINK_H__
+#endif // __MEMORYTOOL_BLOCKGROUP_H__

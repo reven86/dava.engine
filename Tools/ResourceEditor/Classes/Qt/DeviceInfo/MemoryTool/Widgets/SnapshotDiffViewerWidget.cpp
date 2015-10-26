@@ -79,7 +79,7 @@ void SnapshotDiffViewerWidget::InitBranchView()
     QItemSelectionModel* selModel = branchTree->selectionModel();
     connect(selModel, &QItemSelectionModel::currentChanged, this, &SnapshotDiffViewerWidget::BranchView_SelectionChanged);
 
-    branchBlocksWidget = new MemoryBlocksWidget(session, &branchBlockLinked, false);
+    branchBlocksWidget = new MemoryBlocksWidget(session, &branchBlockLinked, false, false);
     connect(branchBlocksWidget, &MemoryBlocksWidget::MemoryBlockDoubleClicked, this, &SnapshotDiffViewerWidget::MemoryBlockDoubleClicked);
 
     QSplitter* splitter = new QSplitter(Qt::Vertical);
@@ -91,7 +91,7 @@ void SnapshotDiffViewerWidget::InitBranchView()
 
 void SnapshotDiffViewerWidget::InitMemoryBlocksView()
 {
-    memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked);
+    memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked, true, false);
     tab->addTab(memoryBlocksWidget, "Memory blocks");
 }
 

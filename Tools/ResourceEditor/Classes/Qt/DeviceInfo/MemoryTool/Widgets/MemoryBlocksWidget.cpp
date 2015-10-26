@@ -32,6 +32,7 @@
 #include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/MemoryBlocksModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/BlockGroupModel.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/BacktraceListModel.h"
 
 #include "Qt/DeviceInfo/MemoryTool/Widgets/FilterAndSortBar.h"
@@ -47,13 +48,16 @@
 
 using namespace DAVA;
 
-MemoryBlocksWidget::MemoryBlocksWidget(const ProfilingSession* session_, const BlockLink* blockLink_, bool showBacktrace_, QWidget* parent)
+MemoryBlocksWidget::MemoryBlocksWidget(const ProfilingSession* session_, const BlockLink* blockLink_, bool showBacktrace_, bool enableGrouping_, QWidget* parent)
     : QWidget(parent)
     , session(session_)
     , blockLink(blockLink_)
     , showBacktrace(showBacktrace_)
+    , enableGrouping(enableGrouping_)
+    , groupOrder(FilterAndSortBar::GROUP_BY_BACKTRACE)
 {
     DVASSERT(session != nullptr && blockLink != nullptr);
+
     Init();
 }
 
@@ -64,6 +68,8 @@ void MemoryBlocksWidget::SetBlockLink(const BlockLink* blockLink_)
     DVASSERT(blockLink_ != nullptr);
     blockLink = blockLink_;
     memoryBlocksModel->SetBlockLink(blockLink);
+    if (enableGrouping)
+        blockGroupModel->SetBlockGroups(&groups);
 }
 
 void MemoryBlocksWidget::TableWidget_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -89,6 +95,29 @@ void MemoryBlocksWidget::TableWidget_DoubleClicked(const QModelIndex& index)
     {
         emit MemoryBlockDoubleClicked(*item);
     }
+}
+
+void MemoryBlocksWidget::GroupWidget_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
+{
+    QVariant v = groupsWidget->model()->data(current, BlockGroupModel::ROLE_GROUP_POINTER);
+    const BlockGroup* item = static_cast<const BlockGroup*>(v.value<void*>());
+    if (item != nullptr)
+    {
+        if (current.row() > 0)
+            memoryBlocksModel->SetBlockLink(&item->blockLink);
+        else
+            memoryBlocksModel->SetBlockLink(blockLink);
+
+        QItemSelectionModel* tableSelectionModel = tableWidget->selectionModel();
+        tableSelectionModel->setCurrentIndex(memoryBlocksFilterModel->index(0, 0), QItemSelectionModel::SelectCurrent);
+    }
+}
+
+void MemoryBlocksWidget::FilterBar_GroupOrderChanged(int order)
+{
+    groupOrder = order;
+    GroupBy();
+    blockGroupModel->SetBlockGroups(&groups);
 }
 
 void MemoryBlocksWidget::FilterBar_SortingOrderChanged(int order)
@@ -157,6 +186,15 @@ void MemoryBlocksWidget::FilterBar_FilterChanged(uint32 poolMask, uint32 tagMask
 {
     filterPoolMask = poolMask;
     filterTagMask = tagMask;
+
+    if (enableGrouping)
+    {
+        memoryBlocksModel->SetBlockLink(nullptr);
+
+        GroupBy();
+        blockGroupModel->SetBlockGroups(&groups);
+    }
+
     if (filterTagMask != 0 || filterPoolMask != 0)
     {
         memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) ->bool { return Filter(item); });
@@ -170,18 +208,39 @@ void MemoryBlocksWidget::FilterBar_FilterChanged(uint32 poolMask, uint32 tagMask
 void MemoryBlocksWidget::FilterBar_HideTheSameChanged(bool hide)
 {
     hideTheSame = hide;
+    if (enableGrouping)
+    {
+        memoryBlocksModel->SetBlockLink(nullptr);
+
+        GroupBy();
+        blockGroupModel->SetBlockGroups(&groups);
+    }
     memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) ->bool { return Filter(item); });
 }
 
 void MemoryBlocksWidget::FilterBar_HideDifferentChanged(bool hide)
 {
     hideDifferent = hide;
+    if (enableGrouping)
+    {
+        memoryBlocksModel->SetBlockLink(nullptr);
+
+        GroupBy();
+        blockGroupModel->SetBlockGroups(&groups);
+    }
     memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) -> bool { return Filter(item); });
 }
 
 void MemoryBlocksWidget::FilterBar_BlockOrderChanged(uint32 minBlockOrder)
 {
     this->minBlockOrder = minBlockOrder;
+    if (enableGrouping)
+    {
+        memoryBlocksModel->SetBlockLink(nullptr);
+
+        GroupBy();
+        blockGroupModel->SetBlockGroups(&groups);
+    }
     memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) -> bool { return Filter(item); });
 }
 
@@ -190,6 +249,14 @@ void MemoryBlocksWidget::Init()
     memoryBlocksModel.reset(new MemoryBlocksModel(session));
     memoryBlocksModel->SetBlockLink(blockLink);
     memoryBlocksFilterModel.reset(new MemoryBlocksFilterModel(memoryBlocksModel.get()));
+
+    if (enableGrouping)
+    {
+        blockGroupModel.reset(new BlockGroupModel());
+
+        GroupBy();
+        blockGroupModel->SetBlockGroups(&groups);
+    }
 
     backtraceListModel.reset(new BacktraceListModel(session->SymbolTable()));
 
@@ -204,8 +271,28 @@ void MemoryBlocksWidget::Init()
     tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableWidget->setModel(memoryBlocksFilterModel.get());
 
-    const int32 flags = 1 == blockLink->linkCount ? FilterAndSortBar::FLAG_ENABLE_ALL_FOR_SINGLE : FilterAndSortBar::FLAG_ENABLE_ALL_FOR_DIFF;
+    if (enableGrouping)
+    {
+        groupsWidget = new QTableView;
+        groupsWidget->setFont(QFont("Consolas", 10, 500));
+        fontHeight = QFontMetrics(groupsWidget->font()).height();
+        groupsWidget->verticalHeader()->setDefaultSectionSize(fontHeight + 6);
+        groupsWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        groupsWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+        groupsWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+        groupsWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+        groupsWidget->setModel(blockGroupModel.get());
+
+        QItemSelectionModel* groupSelectionModel = groupsWidget->selectionModel();
+        connect(groupSelectionModel, &QItemSelectionModel::currentChanged, this, &MemoryBlocksWidget::GroupWidget_SelectionChanged);
+    }
+
+    int32 flags = 1 == blockLink->linkCount ? FilterAndSortBar::FLAG_ENABLE_ALL_FOR_SINGLE : FilterAndSortBar::FLAG_ENABLE_ALL_FOR_DIFF;
+    if (!enableGrouping)
+        flags &= ~FilterAndSortBar::FLAG_ENABLE_GROUPING;
     FilterAndSortBar* filterBar = new FilterAndSortBar(session, flags);
+    connect(filterBar, &FilterAndSortBar::GroupOrderChanged, this, &MemoryBlocksWidget::FilterBar_GroupOrderChanged);
     connect(filterBar, &FilterAndSortBar::SortingOrderChanged, this, &MemoryBlocksWidget::FilterBar_SortingOrderChanged);
     connect(filterBar, &FilterAndSortBar::FilterChanged, this, &MemoryBlocksWidget::FilterBar_FilterChanged);
     connect(filterBar, &FilterAndSortBar::HideTheSameChanged, this, &MemoryBlocksWidget::FilterBar_HideTheSameChanged);
@@ -214,7 +301,17 @@ void MemoryBlocksWidget::Init()
 
     QVBoxLayout* layout1 = new QVBoxLayout;
     layout1->addWidget(filterBar);
-    layout1->addWidget(tableWidget);
+    if (enableGrouping)
+    {
+        QHBoxLayout* l = new QHBoxLayout;
+        l->addWidget(groupsWidget);
+        l->addWidget(tableWidget);
+        layout1->addLayout(l);
+    }
+    else
+    {
+        layout1->addWidget(tableWidget);
+    }
 
     if (showBacktrace)
     {
@@ -270,4 +367,84 @@ bool MemoryBlocksWidget::Filter(const BlockLink::Item& item)
         accept &= (block->tags & filterTagMask) != 0;
     }
     return accept;
+}
+
+void MemoryBlocksWidget::GroupBy()
+{
+    Function<bool(const BlockGroup&, const BlockGroup&)> sortFn;
+    Function<uint32(const MMBlock*)> keySelectFn;
+    Function<String(uint32)> titleFn;
+
+    switch (groupOrder)
+    {
+    case FilterAndSortBar::GROUP_BY_BACKTRACE:
+        keySelectFn = [](const MMBlock* block) -> uint32 { return block->bktraceHash; };
+        titleFn = [](uint32 key) -> String { return Format("backtrace=%u", key); };
+        sortFn = [](const BlockGroup& l, const BlockGroup& r) -> bool {
+            return std::max(l.blockLink.allocSize[0], l.blockLink.allocSize[1]) > std::max(r.blockLink.allocSize[0], r.blockLink.allocSize[1]);
+        };
+        break;
+    case FilterAndSortBar::GROUP_BY_SIZE:
+        keySelectFn = [](const MMBlock* block) -> uint32 { return block->allocByApp; };
+        titleFn = [](uint32 key) -> String { return Format("block size=%u", key); };
+        sortFn = [](const BlockGroup& l, const BlockGroup& r) -> bool {
+            return l.key > r.key;
+        };
+        break;
+    }
+
+    groups.clear();
+
+    Map<uint32, BlockLink> map;
+    for (const BlockLink::Item& item : blockLink->items)
+    {
+        if (Filter(item))
+        {
+            const MMBlock* block = BlockLink::AnyBlock(item);
+            uint32 key = keySelectFn(block);
+            auto itFind = map.find(key);
+            if (itFind == map.end())
+            {
+                itFind = map.emplace(key, BlockLink()).first;
+                itFind->second.linkCount = blockLink->linkCount;
+                itFind->second.sourceSnapshots[0] = blockLink->sourceSnapshots[0];
+                itFind->second.sourceSnapshots[1] = blockLink->sourceSnapshots[1];
+            }
+
+            BlockLink& link = itFind->second;
+            link.items.push_back(item);
+            if (item.first != nullptr)
+            {
+                link.blockCount[0] += 1;
+                link.allocSize[0] += item.first->allocByApp;
+            }
+            if (item.second != nullptr)
+            {
+                link.blockCount[1] += 1;
+                link.allocSize[1] += item.second->allocByApp;
+            }
+        }
+    }
+
+    uint32 totalSize[2] = { 0, 0 };
+    uint32 totalCount[2] = { 0, 0 };
+    groups.reserve(map.size() + 1);
+    groups.emplace_back("Total", 0, BlockLink());
+    for (auto& pair : map)
+    {
+        totalSize[0] += pair.second.allocSize[0];
+        totalCount[0] += pair.second.blockCount[0];
+        totalSize[1] += pair.second.allocSize[1];
+        totalCount[1] += pair.second.blockCount[1];
+
+        groups.emplace_back(titleFn(pair.first), pair.first, std::move(pair.second));
+    }
+
+    groups[0].blockLink.linkCount = blockLink->linkCount;
+    groups[0].blockLink.allocSize[0] = totalSize[0];
+    groups[0].blockLink.blockCount[0] = totalCount[0];
+    groups[0].blockLink.allocSize[1] = totalSize[1];
+    groups[0].blockLink.blockCount[1] = totalCount[1];
+
+    std::sort(groups.begin() + 1, groups.end(), sortFn);
 }
