@@ -95,6 +95,7 @@ namespace DAVA
 static ApplicationCore * core = nullptr;
 
 Core::Core()
+    : nativeView(nullptr)
 {
     globalFrameIndex = 1;
     isActive = false;
@@ -196,6 +197,7 @@ void Core::CreateRenderer()
     rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
     rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
     rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
+    rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -685,7 +687,17 @@ bool Core::IsConsoleMode()
 {
     return isConsoleMode;
 }
-    
+
+void* Core::GetNativeView() const
+{
+    return nativeView;
+}
+
+void Core::SetNativeView(void* newNativeView)
+{
+    nativeView = newNativeView;
+}
+
 void Core::EnableConsoleMode()
 {
     isConsoleMode = true;

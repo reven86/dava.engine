@@ -34,12 +34,12 @@
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Render/Highlevel/RenderPassNames.h"
 
-namespace DAVA {
-
+namespace DAVA
+{
 /* this camera is required just for preparing draw data*/
-Camera *UIParticles::defaultCamera = nullptr;
+Camera* UIParticles::defaultCamera = nullptr;
 
-UIParticles::UIParticles(const Rect &rect)
+UIParticles::UIParticles(const Rect& rect)
     : UIControl(rect)
     , isAutostart(false)
     , startDelay(0.0f)
@@ -61,7 +61,7 @@ UIParticles::UIParticles(const Rect &rect)
         defaultCamera->SetPosition(-Vector3::UnitZ);
         defaultCamera->SetUp(-Vector3::UnitY);
         defaultCamera->RebuildCameraFromValues();
-        defaultCamera->RebuildViewMatrix(); 
+        defaultCamera->RebuildViewMatrix();
     }
 }
 
@@ -97,7 +97,7 @@ void UIParticles::Start()
         delayedActionTime = 0.0f;
     }
 }
-    
+
 void UIParticles::DoStart()
 {
     if (!effect)
@@ -133,8 +133,8 @@ void UIParticles::Stop(bool isDeleteAllParticles)
 
     if (isDeleteAllParticles)
     {
-        effect->ClearCurrentGroups();		
-        effect->effectData.infoSources.resize(1);        
+        effect->ClearCurrentGroups();
+        effect->effectData.infoSources.resize(1);
         effect->isPaused = false;
         system->RemoveFromActive(effect);
     }
@@ -145,7 +145,7 @@ void UIParticles::Stop(bool isDeleteAllParticles)
 }
 
 void UIParticles::Pause(bool isPaused /*= true*/)
-{	
+{
     if (!effect)
     {
         return;
@@ -220,9 +220,9 @@ void UIParticles::Update(float32 timeElapsed)
     }
 }
 
-void UIParticles::Draw(const UIGeometricData & geometricData)
+void UIParticles::Draw(const UIGeometricData& geometricData)
 {
-    if ( !effect || effect->state == ParticleEffectComponent::STATE_STOPPED)
+    if (!effect || effect->state == ParticleEffectComponent::STATE_STOPPED)
         return;
 
     RenderSystem2D::Instance()->Flush();
@@ -232,16 +232,16 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
     effect->SetExtertnalValue("scale", geometricData.scale.x);
     system->Process(updateTime);
     updateTime = 0.0f;
-        
+
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &Vector3::Zero, (pointer_size)&Vector3::Zero);
     effect->effectRenderObject->PrepareToRender(defaultCamera);
     effect->effectRenderObject->BindDynamicParameters(defaultCamera);
-    
+
     rhi::Packet packet;
     for (int32 i = 0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i < sz; ++i)
     {
-        RenderBatch * batch = effect->effectRenderObject->GetActiveRenderBatch(i);
-        NMaterial *material = batch->GetMaterial();
+        RenderBatch* batch = effect->effectRenderObject->GetActiveRenderBatch(i);
+        NMaterial* material = batch->GetMaterial();
         material->PreBuildMaterial(PASS_FORWARD);
         material->BindParams(packet);
         packet.vertexStreamCount = 1;
@@ -256,8 +256,7 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
         DVASSERT(packet.primitiveCount);
         packet.debugMarker = "UIParticles";
         RenderSystem2D::Instance()->DrawPacket(packet);
-    }                
-
+    }
 }
 
 void UIParticles::SetExtertnalValue(const String& name, float32 value)
@@ -272,8 +271,8 @@ void UIParticles::LoadEffect(const FilePath& path)
     sceneFile->EnableDebugLog(false);
 
     ScopedPtr<SceneArchive> archive(sceneFile->LoadSceneArchive(path));
-    ParticleEffectComponent *newEffect = nullptr;
-    if ((SceneArchive *)archive != nullptr && !archive->children.empty())
+    ParticleEffectComponent* newEffect = nullptr;
+    if ((SceneArchive*)archive != nullptr && !archive->children.empty())
     {
         ScopedPtr<Entity> entity(new Entity());
         SerializationContext serializationContext;
@@ -283,7 +282,7 @@ void UIParticles::LoadEffect(const FilePath& path)
         serializationContext.SetScene(nullptr);
         serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
         entity->Load(archive->children[0]->archive, &serializationContext);
-        ParticleEffectComponent *effSrc = GetEffectComponent(entity);
+        ParticleEffectComponent* effSrc = GetEffectComponent(entity);
         if (effSrc)
         {
             newEffect = (ParticleEffectComponent*)effSrc->Clone(NULL);
@@ -321,12 +320,15 @@ void UIParticles::ReloadEffect()
     UnloadEffect();
     LoadEffect(effectPath);
 }
-    
+
 void UIParticles::SetEffectPath(const FilePath& path)
 {
     effectPath = path;
     UnloadEffect();
-    LoadEffect(effectPath);
+    if (!effectPath.IsEmpty())
+    {
+        LoadEffect(effectPath);
+    }
 }
 
 const FilePath& UIParticles::GetEffectPath() const
@@ -344,23 +346,23 @@ bool UIParticles::IsAutostart() const
 {
     return isAutostart;
 }
-   
-YamlNode * UIParticles::SaveToYamlNode(UIYamlLoader * loader)
+
+YamlNode* UIParticles::SaveToYamlNode(UIYamlLoader* loader)
 {
     ScopedPtr<UIParticles> baseControl(new UIParticles());
 
-    YamlNode *node = UIControl::SaveToYamlNode(loader);
-    
+    YamlNode* node = UIControl::SaveToYamlNode(loader);
+
     if (baseControl->GetEffectPath() != effectPath)
     {
         node->Set("effectPath", effectPath.GetFrameworkPath());
     }
-    
+
     if (baseControl->IsAutostart() != isAutostart)
     {
         node->Set("autoStart", isAutostart);
     }
-    
+
     if (baseControl->GetStartDelay() != startDelay)
     {
         node->Set("startDelay", startDelay);
@@ -371,28 +373,28 @@ YamlNode * UIParticles::SaveToYamlNode(UIYamlLoader * loader)
 
 UIParticles* UIParticles::Clone()
 {
-    UIParticles *particles = new UIParticles(GetRect());
+    UIParticles* particles = new UIParticles(GetRect());
     particles->CopyDataFrom(this);
     return particles;
 }
-    
-void UIParticles::CopyDataFrom(UIControl *srcControl)
+
+void UIParticles::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIParticles* src = (UIParticles*) srcControl;
+    UIParticles* src = (UIParticles*)srcControl;
 
     SetEffectPath(src->GetEffectPath());
     SetStartDelay(src->GetStartDelay());
     SetAutostart(src->IsAutostart());
 }
 
-void UIParticles::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
+void UIParticles::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
 {
-	UIControl::LoadFromYamlNode(node, loader);
+    UIControl::LoadFromYamlNode(node, loader);
 
-    const YamlNode * effectPathNode = node->Get("effectPath");
-	const YamlNode * autoStartNode = node->Get("autoStart");
-    const YamlNode * startDelayNode = node->Get("startDelay");
+    const YamlNode* effectPathNode = node->Get("effectPath");
+    const YamlNode* autoStartNode = node->Get("autoStart");
+    const YamlNode* startDelayNode = node->Get("startDelay");
 
     if (effectPathNode)
     {
@@ -403,7 +405,7 @@ void UIParticles::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     {
         SetStartDelay(startDelayNode->AsFloat());
     }
-    
+
     if (autoStartNode)
     {
         SetAutostart(autoStartNode->AsBool());
@@ -427,32 +429,32 @@ void UIParticles::SetStartDelay(float32 value)
 {
     startDelay = value;
 }
-    
+
 void UIParticles::HandleDelayedAction(float32 timeElapsed)
 {
-    if(IsOnScreen())
+    if (IsOnScreen())
     {
         delayedActionTime += timeElapsed;
         if (delayedActionTime >= startDelay)
         {
             switch (delayedActionType)
             {
-                case UIParticles::actionStart:
-                {
-                    DoStart();
-                    break;
-                }
+            case UIParticles::actionStart:
+            {
+                DoStart();
+                break;
+            }
 
-                case UIParticles::actionRestart:
-                {
-                    DoRestart();
-                    break;
-                }
+            case UIParticles::actionRestart:
+            {
+                DoRestart();
+                break;
+            }
 
-                default:
-                {
-                    break;
-                }
+            default:
+            {
+                break;
+            }
             }
 
             delayedActionType = UIParticles::actionNone;
@@ -460,5 +462,4 @@ void UIParticles::HandleDelayedAction(float32 timeElapsed)
         }
     }
 }
-
 };

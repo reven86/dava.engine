@@ -185,8 +185,7 @@ bool Process::Run(bool showWindow)
         {
             for (int i = 0; i < (int)runArgs.size(); ++i)
             {
-                runArgsFlat += " ";
-                runArgsFlat += runArgs[i];
+                runArgsFlat += " \"" + runArgs[i] + "\"";
             }
         }
 
@@ -400,7 +399,7 @@ void Process::Wait()
         {
             exitCode = -1; //to say external code about problems
         }
-        Logger::Error("[Process::Wait] The process %s exited abnormally! (%d)", executablePath.GetAbsolutePathname().c_str(), exitCode);
+        Logger::Error("[Process::Wait] The process %s exited abnormally! (exitcode=%d, errno=%d)", executablePath.GetAbsolutePathname().c_str(), exitCode, errno);
     }
 
     output = "";

@@ -191,18 +191,6 @@ void UISwitch::CopyDataFrom(UIControl *srcControl)
     InitControls();
 }
 
-List<UIControl* > UISwitch::GetSubcontrols()
-{
-	List<UIControl* > subControls;
-
-	// Lookup for the contols by their names.
-	AddControlToList(subControls, UISWITCH_BUTTON_LEFT_NAME);
-	AddControlToList(subControls, UISWITCH_BUTTON_TOGGLE_NAME);
-	AddControlToList(subControls, UISWITCH_BUTTON_RIGHT_NAME);
-
-	return subControls;
-}
-
 UISwitch* UISwitch::Clone()
 {
 	UISwitch *t = new UISwitch(GetRect());

@@ -334,18 +334,6 @@ YamlNode * UISpinner::SaveToYamlNode(UIYamlLoader * loader)
 	return node;
 }
 	
-List<UIControl* > UISpinner::GetSubcontrols()
-{
-	List<UIControl* > subControls;
-
-	// Lookup for the contols by their names.
-	AddControlToList(subControls, UISPINNER_BUTTON_PREVIOUS_NAME);
-	AddControlToList(subControls, UISPINNER_BUTTON_NEXT_NAME);
-	AddControlToList(subControls, UISPINNER_CONTENT_NAME);
-
-	return subControls;
-}
-
 void UISpinner::SetAdapter(SpinnerAdapter * anAdapter)
 {
     buttonNext->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnNextPressed));
