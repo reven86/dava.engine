@@ -89,6 +89,8 @@ NMaterial::NMaterial()
 
 NMaterial::~NMaterial()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     SetParent(nullptr);
     DVASSERT(children.size() == 0); //as children refernce parent in our material scheme, this should not be released while it has children
     for (auto& prop : localProperties)
@@ -110,6 +112,8 @@ NMaterial::~NMaterial()
 
 void NMaterial::BindParams(rhi::Packet& target)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     //Logger::Info( "bind-params" );
     DVASSERT(activeVariantInstance);       //trying to bind material that was not staged to render
     DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
@@ -273,6 +277,8 @@ void NMaterial::SetQualityGroup(const FastName& quality)
 
 void NMaterial::AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localProperties.at(propName) == nullptr);
     NMaterialProperty *prop = new NMaterialProperty();
     prop->name = propName;
@@ -341,6 +347,8 @@ const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
 
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localTextures.at(slotName) == nullptr);
     MaterialTextureInfo *texInfo = new MaterialTextureInfo();
     texInfo->texture = SafeRetain(texture);
@@ -389,6 +397,8 @@ Texture* NMaterial::GetLocalTexture(const FastName& slotName)
 
 void NMaterial::AddFlag(const FastName& flagName, int32 value)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localFlags.find(flagName) == localFlags.end());
     localFlags[flagName] = value;
     InvalidateRenderVariants();
@@ -441,6 +451,8 @@ bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
 
 void NMaterial::SetParent(NMaterial *_parent)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(_parent != this);
 
     if (parent == _parent)
@@ -758,7 +770,8 @@ void NMaterial::RebuildTextureBindings()
 
 bool NMaterial::PreBuildMaterial(const FastName& passName)
 {
-    
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     //shader rebuild first - as it sets needRebuildBindings and needRebuildTextures
     if (needRebuildVariants)
         RebuildRenderVariants();
@@ -790,6 +803,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
 
 NMaterial* NMaterial::Clone()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     NMaterial *clonedMaterial = new NMaterial();
     clonedMaterial->materialName = materialName;
     clonedMaterial->fxName = fxName;
@@ -820,6 +835,8 @@ NMaterial* NMaterial::Clone()
 
 void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DataNode::Save(archive, serializationContext);
 
     if (parent)
@@ -878,6 +895,8 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
 
 void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DataNode::Load(archive, serializationContext);
 
     if (serializationContext->GetVersion() < RHI_SCENE_VERSION)
@@ -961,7 +980,9 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 }
 
 void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext)
-{    
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     /*the following stuff is for importing old NMaterial stuff*/
 
     if (archive->IsKeyExists(NMaterialSerializationKey::MaterialName))

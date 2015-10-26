@@ -39,6 +39,8 @@
 #include "Render/Shader.h"
 #include "Scene3D/DataNode.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA
 {
 struct MaterialBufferBinding;
@@ -96,6 +98,8 @@ class NMaterial : public DataNode
     friend class NMaterialStateDynamicFlagsInsp;
     friend class NMaterialStateDynamicPropertiesInsp;
     friend class NMaterialStateDynamicTexturesInsp;
+
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_NMATERIAL)
 
 public:
     NMaterial();    

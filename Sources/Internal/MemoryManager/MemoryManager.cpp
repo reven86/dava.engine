@@ -151,6 +151,7 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_LANDSCAPE, "landscape");
     RegisterAllocPoolName(ALLOC_POOL_IMAGE, "image");
     RegisterAllocPoolName(ALLOC_POOL_TEXTURE, "texture");
+    RegisterAllocPoolName(ALLOC_POOL_NMATERIAL, "nmaterial");
 
     RegisterAllocPoolName(ALLOC_POOL_RHI_BUFFER, "rhi buffer");
     RegisterAllocPoolName(ALLOC_POOL_RHI_VERTEX_MAP, "rhi vertex map");
