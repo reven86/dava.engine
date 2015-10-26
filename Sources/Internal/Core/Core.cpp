@@ -103,7 +103,6 @@ Core::Core()
 
     isConsoleMode = false;
     options = new KeyedArchive();
-    screenScaleFactor = 1.f;
 }
 
 Core::~Core()
@@ -180,8 +179,6 @@ void Core::CreateSingletons()
     new AutotestingSystem();
 #endif
     
-    // Init default screen scale factor from screen info
-    screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -256,12 +253,6 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
     SafeRelease(options);
 
     options = SafeRetain(archiveOfOptions);
-    
-    screenScaleFactor = options->GetFloat("screenScaleFactor", screenScaleFactor);
-    if (screenScaleFactor <= 0.f)
-    {
-        screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
-    }
     
 #if defined(__DAVAENGINE_WIN_UAP__)
     screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
@@ -734,5 +725,13 @@ void Core::SetIcon(int32 /*iconId*/)
 {
 };
 
+float32 Core::GetScreenScaleFactor() const
+{
+    if (options)
+    {
+        return DeviceInfo::GetScreenInfo().scale * options->GetFloat("userScreenScaleFactor", 1.f);
+    }
+    return DeviceInfo::GetScreenInfo().scale;
+}
 };
 

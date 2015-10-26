@@ -95,7 +95,7 @@ uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
         DVASSERT(nullptr != pointerToData);
         Memcpy(&(data[currentPtr]), pointerToData, dataSize);
         currentPtr += dataSize;
-	}
+    }
 	
 	return dataSize;
 }
