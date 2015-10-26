@@ -39,16 +39,15 @@ class EntityGroup;
 class VisibilityToolSystem: public LandscapeEditorSystem
 {
 public:
-	enum eVisibilityToolState
-	{
-		VT_STATE_NORMAL = 0,
-		VT_STATE_SET_POINT,
-		VT_STATE_SET_AREA,
+    enum class State : uint32
+    {
+        NotActive,
+        SetPoint,
+        ComputingVisibility
+    };
 
-		VT_STATES_COUNT
-	};
-
-	VisibilityToolSystem(Scene* scene);
+public:
+    VisibilityToolSystem(Scene* scene);
 	virtual ~VisibilityToolSystem();
 
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
@@ -57,54 +56,55 @@ public:
 	virtual void Process(DAVA::float32 timeElapsed);
 	virtual void Input(DAVA::UIEvent *event);
 
-	void SetBrushSize(int32 brushSize);
-	void SetColor(int32 colorIndex);
-
 	void SetVisibilityPoint();
-	void SetVisibilityArea();
-	eVisibilityToolState GetState();
-	int32 GetBrushSize();
+    void ComputeVisibilityArea();
+    void CancelComputing();
 
-	void SaveTexture(const FilePath& filePath);
+    State GetState();
+    int32 GetProgress();
 
-protected:
-    static const float32 CROSS_TEXTURE_SIZE;
+    void SaveTexture(const FilePath& filePath);
 
-    Texture* crossTexture;
-	uint32 curToolSize;
+private:
+    struct CheckPoint
+    {
+        Vector2 relativePosition;
+        Vector3 worldPosition;
+        Color color = Color(1.0f, 0.5f, 0.25f, 1.0f);
+        float angleUp = PI_05;
+        float angleDown = PI_05;
+        float radius = 0.0f; // point for now
+        Vector<std::pair<Point2i, Color>> result;
+    };
+    using CheckPoints = Vector<CheckPoint>;
+    using VisibilityTests = Vector<std::pair<uint32, Vector2>>;
 
-	bool editingIsEnabled;
+    void SetState(State newState);
 
-	eVisibilityToolState state;
-
-	float32 pointsDensity;
-	float32 visibilityPointHeight;
-	Vector<float32> areaPointHeights;
-	Vector<Color> areaPointColors;
-
-	Vector2 visibilityPoint;
-
-	const FastName& textureLevel;
-
-	void PrepareConfig();
-	void SetState(eVisibilityToolState newState);
-
-	void SetVisibilityPointInternal();
+    void SetVisibilityPointInternal();
 	void SetVisibilityAreaInternal();
 
-    void PerformHeightTest(const Vector3& spectatorCoords,
-                           const Vector2& circleCenter,
-                           float32 circleRadius,
-                           float32 density,
-                           const Vector<float32>& heightValues,
-                           Vector<Vector3>& colorizedPoints);
-
-    void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points);
+    void DrawVisibilityAreaPoints(const CheckPoint& point, bool shouldClearTarget);
     void DrawVisibilityPoint();
-    void RenderVisibilityPoint(bool clearTarget);
+    void RenderVisibilityPoint(const CheckPoint& point, bool clearTarget);
 
     void ExcludeEntities(EntityGroup *entities) const;
-    
+
+    void PerformVisibilityTest(const VisibilityTests::value_type& test);
+    void ProcessNextVisibilityTests();
+
+private:
+    FastName textureLevel;
+    Texture* crossTexture = nullptr;
+    CheckPoints checkPoints;
+    VisibilityTests remainingVisibilityTests;
+    State state = State::NotActive;
+    uint32 textureStepSizeX = 4;
+    uint32 textureStepSizeY = 4;
+    uint32 textureSize = 0;
+    uint32 pointsRowSize = 0;
+    uint32 totalVisibilityTests = 0;
+    bool editingIsEnabled = false;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__) */

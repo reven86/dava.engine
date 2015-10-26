@@ -94,7 +94,7 @@ signals:
     void ParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
 
     void DropperHeightChanged(SceneEditor2* scene, double height);
-    void VisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state);
+    void VisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::State state);
     void CustomColorsTextureShouldBeSaved(SceneEditor2* scene);
     void RulerToolLengthChanged(SceneEditor2* scene, double length, double previewLength);
     void SnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
@@ -134,7 +134,7 @@ public:
     void EmitNotPassableTerrainToggled(SceneEditor2* scene) { emit NotPassableTerrainToggled(scene); }
 
     void EmitDropperHeightChanged(SceneEditor2* scene, DAVA::float32 height) { emit DropperHeightChanged(scene, (double)height); };
-    void EmitVisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state)
+    void EmitVisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::State state)
     {
         emit VisibilityToolStateChanged(scene, state);
     };

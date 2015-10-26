@@ -51,18 +51,12 @@ public:
 	~VisibilityToolPanel();
 
 private slots:
-	void SetVisibilityToolButtonsState(SceneEditor2* scene,
-									   VisibilityToolSystem::eVisibilityToolState state);
+    void SetVisibilityToolButtonsState(SceneEditor2* scene,
+                                       VisibilityToolSystem::State state);
 
-	void SaveTexture();
+    void SaveTexture();
 	void SetVisibilityPoint();
 	void SetVisibilityArea();
-	void SetVisibilityAreaSize(int areaSize);
-
-	void IncreaseBrushSize();
-	void DecreaseBrushSize();
-	void IncreaseBrushSizeLarge();
-	void DecreaseBrushSizeLarge();
 
 protected:
 	virtual bool GetEditorEnabled();
@@ -80,12 +74,11 @@ protected:
 	virtual void DisconnectFromShortcuts();
 
 private:
-	QPushButton* buttonSetVisibilityPoint;
-	QPushButton* buttonSetVisibilityArea;
-	QPushButton* buttonSaveTexture;
-	SliderWidget* sliderWidgetAreaSize;
+    QPushButton* buttonSetVisibilityPoint = nullptr;
+    QPushButton* buttonSetVisibilityArea = nullptr;
+    QPushButton* buttonSaveTexture = nullptr;
 
-	int32 AreaSizeUIToSystem(int32 uiValue);
+    int32 AreaSizeUIToSystem(int32 uiValue);
 	int32 AreaSizeSystemToUI(int32 systemValue);
 };
 

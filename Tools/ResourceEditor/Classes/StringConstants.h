@@ -108,17 +108,17 @@ namespace ResourceEditor
 	static const String CUSTOM_COLORS_ENABLE_ERROR			= "Error enabling Custom Colors editor. Make sure there is valid landscape at the scene.";
 	static const String CUSTOM_COLORS_DISABLE_ERROR			= "Error disabling Custom Colors editor.";
 
-	static const String VISIBILITY_TOOL_AREA_SIZE_CAPTION	= "Visibility Area Size:";
-	static const String VISIBILITY_TOOL_AREA_SIZE_MIN		= "visibility-tool.area-size.min";
-	static const String VISIBILITY_TOOL_AREA_SIZE_MAX		= "visibility-tool.area-size.max";
-	static const String VISIBILITY_TOOL_ENABLE_ERROR		= "Error enabling Visibility Check Tool. Make sure there is valid landscape at the scene.";
-	static const String VISIBILITY_TOOL_DISABLE_ERROR		= "Error disabling Visibility Check Tool";
-	static const String VISIBILITY_TOOL_SAVE_CAPTION		= "Save visibility tool texture";
-	static const String VISIBILITY_TOOL_SET_AREA_CAPTION	= "Set Visibility Area";
-	static const String VISIBILITY_TOOL_SET_POINT_CAPTION	= "Set Visibility Point";
-	static const String VISIBILITY_TOOL_SAVE_TEXTURE_CAPTION= "Save Texture";
+    static const String VISIBILITY_TOOL_AREA_SIZE_CAPTION = "Visibility Area Size:";
+    static const String VISIBILITY_TOOL_AREA_SIZE_MIN = "visibility-tool.area-size.min";
+    static const String VISIBILITY_TOOL_AREA_SIZE_MAX = "visibility-tool.area-size.max";
+    static const String VISIBILITY_TOOL_ENABLE_ERROR = "Error enabling Visibility Check Tool. Make sure there is valid landscape at the scene.";
+    static const String VISIBILITY_TOOL_DISABLE_ERROR = "Error disabling Visibility Check Tool";
+    static const String VISIBILITY_TOOL_SAVE_CAPTION = "Save visibility tool texture";
+    static const String VISIBILITY_TOOL_SET_POINT_CAPTION = "Set Visibility Point";
+    static const String VISIBILITY_TOOL_SAVE_TEXTURE_CAPTION = "Save Texture";
+    static const String VISIBILITY_TOOL_COMPUTE_VISIBILITY_CAPTION = "Compute Visibility";
 
-	static const String RULER_TOOL_LENGTH_CAPTION			= "Length:";
+    static const String RULER_TOOL_LENGTH_CAPTION			= "Length:";
 	static const String RULER_TOOL_PREVIEW_LENGTH_CAPTION	= "Preview length:";
 	static const String RULER_TOOL_ENABLE_ERROR				= "Error enabling Ruler Tool. Make sure there is valid landscape at the scene.";
 	static const String RULER_TOOL_DISABLE_ERROR			= "Error disabling Ruler Tool";

@@ -42,17 +42,12 @@
 
 #include "Render/Material/NMaterialNames.h"
 
-const float32 VisibilityToolSystem::CROSS_TEXTURE_SIZE = 64.0f;
+const Vector2 CROSS_TEXTURE_SIZE = Vector2(64.0f, 64.0f);
 
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
-:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	curToolSize(0)
-,	editingIsEnabled(false)
-,	state(VT_STATE_NORMAL)
-,	textureLevel(Landscape::TEXTURE_COLOR)
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    , textureLevel(Landscape::TEXTURE_COLOR)
 {
-    curToolSize = 120;
-
     crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
     crossTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
 }
@@ -81,21 +76,19 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 		return enableCustomDrawError;
 	}
 
-	SetState(VT_STATE_NORMAL);
-	
-	selectionSystem->SetLocked(true);
+    SetState(State::NotActive);
+
+    selectionSystem->SetLocked(true);
 	modifSystem->SetLocked(true);
 
 	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
 	drawSystem->GetLandscapeProxy()->SetToolTexture(visibilityToolTexture, false);
     landscapeSize = static_cast<float>(visibilityToolTexture->GetWidth());
+    textureSize = static_cast<uint32>(landscapeSize + 0.5f);
+    pointsRowSize = textureSize / textureStepSizeX;
 
     drawSystem->EnableCursor();
-    SetBrushSize(curToolSize);
-    
 	drawSystem->SetCursorSize(0);
-
-	PrepareConfig();
 
 	enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -108,9 +101,9 @@ bool VisibilityToolSystem::DisableLandscapeEdititing()
 		return true;
 	}
 
-	SetState(VT_STATE_NORMAL);
+    SetState(State::NotActive);
 
-	selectionSystem->SetLocked(false);
+    selectionSystem->SetLocked(false);
 	modifSystem->SetLocked(false);
 
 	drawSystem->DisableCursor();
@@ -125,12 +118,27 @@ bool VisibilityToolSystem::DisableLandscapeEdititing()
 void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (!IsLandscapeEditingEnabled())
-	{
 		return;
-	}
 
-	if (editingIsEnabled && isIntersectsLandscape)
-	{
+    if (state == State::ComputingVisibility)
+    {
+        if (remainingVisibilityTests.empty())
+        {
+            bool clearTarget = true;
+            for (const auto& point : checkPoints)
+            {
+                DrawVisibilityAreaPoints(point, clearTarget);
+                clearTarget = false;
+            }
+            SetState(State::NotActive);
+        }
+        else
+        {
+            ProcessNextVisibilityTests();
+        }
+    }
+    else if (editingIsEnabled && isIntersectsLandscape)
+    {
 		if (prevCursorPos != cursorPosition)
 		{
 			prevCursorPos = cursorPosition;
@@ -147,8 +155,8 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 
 	UpdateCursorPosition();
 
-	if (state != VT_STATE_SET_AREA && state != VT_STATE_SET_POINT)
-	{
+    if (state != State::SetPoint)
+    {
 		return;
 	}
 
@@ -156,215 +164,102 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 	{
 		if (event->tid == DVKEY_ESCAPE)
 		{
-			SetState(VT_STATE_NORMAL);
-		}
+            SetState(State::NotActive);
+        }
 	}
 	else if (event->tid == UIEvent::BUTTON_1)
 	{
 		switch(event->phase)
 		{
 			case UIEvent::PHASE_BEGAN:
-				if (isIntersectsLandscape)
+            {
+                if (isIntersectsLandscape)
 				{
 					editingIsEnabled = true;
 				}
 				break;
+            }
 
-			case UIEvent::PHASE_DRAG:
-				break;
-
-			case UIEvent::PHASE_ENDED:
-				if (editingIsEnabled)
+            case UIEvent::PHASE_ENDED:
+            {
+                if (editingIsEnabled)
 				{
-					if (state == VT_STATE_SET_POINT)
-					{
+                    if (state == State::SetPoint)
+                    {
 						SetVisibilityPointInternal();
-					}
-					else if (state == VT_STATE_SET_AREA)
-					{
-						SetVisibilityAreaInternal();
 					}
 					editingIsEnabled = false;
 				}
 				break;
-		}
+            }
+
+            default:
+                break;
+        }
 	}
 }
 
-void VisibilityToolSystem::SetBrushSize(int32 brushSize)
+void VisibilityToolSystem::SetState(State newState)
 {
-	if (brushSize > 0)
-	{
-        curToolSize = (uint32)brushSize;
-        cursorSize = curToolSize / landscapeSize;
+    if (state == newState)
+        state = State::NotActive;
+    else
+        state = newState;
 
-        if (state == VT_STATE_SET_AREA)
-		{
-			drawSystem->SetCursorSize(cursorSize);
-		}
-	}
-}
+    if (state == State::SetPoint)
+    {
+        drawSystem->SetCursorTexture(crossTexture);
+        drawSystem->SetCursorSize(Max(CROSS_TEXTURE_SIZE.x, CROSS_TEXTURE_SIZE.y) / landscapeSize);
+    }
+    else
+    {
+        drawSystem->SetCursorSize(0);
+    }
 
-void VisibilityToolSystem::PrepareConfig()
-{
-	EditorConfig* config = EditorConfig::Instance();
+    if (newState == State::ComputingVisibility)
+    {
+        SetVisibilityAreaInternal();
+    }
 
-	pointsDensity = 10.f;
-	VariantType* value = config->GetPropertyDefaultValue("LevelVisibilityDensity");
-	if(value && config->GetPropertyValueType("LevelVisibilityDensity") == VariantType::TYPE_FLOAT)
-		pointsDensity = value->AsFloat();
-
-	visibilityPointHeight = 2.f;
-	areaPointHeights.clear();
-	const Vector<String>& heights = config->GetComboPropertyValues("LevelVisibilityPointHeights");
-	if(heights.size() != 0)
-	{
-		if(heights.front() != "none")
-		{
-			std::sscanf(heights[0].c_str(), "%f", &visibilityPointHeight);
-
-            areaPointHeights.reserve(heights.size() - 1);
-			for(uint32 i = 1; i < heights.size(); ++i)
-			{
-				float32 val;
-				std::sscanf(heights[i].c_str(), "%f", &val);
-				areaPointHeights.push_back(val);
-			}
-		}
-	}
-
-	areaPointColors = config->GetColorPropertyValues("LevelVisibilityColors");
-}
-
-void VisibilityToolSystem::SetState(eVisibilityToolState newState)
-{
-	if(state == newState)
-		state = VT_STATE_NORMAL;
-	else
-		state = newState;
-
-	switch(state)
-	{
-		case VT_STATE_SET_POINT:
-			drawSystem->SetCursorTexture(crossTexture);
-            drawSystem->SetCursorSize(CROSS_TEXTURE_SIZE / landscapeSize);
-            break;
-
-        case VT_STATE_SET_AREA:
-            drawSystem->SetCursorTexture(cursorTexture);
-            drawSystem->SetCursorSize(cursorSize);
-			break;
-
-		default:
-			if (IsLandscapeEditingEnabled())
-			{
-				drawSystem->SetCursorSize(0);
-			}
-			break;
-	}
-	SceneSignals::Instance()->EmitVisibilityToolStateChanged(dynamic_cast<SceneEditor2*>(GetScene()), state);
+    SceneSignals::Instance()->EmitVisibilityToolStateChanged(dynamic_cast<SceneEditor2*>(GetScene()), state);
 }
 
 void VisibilityToolSystem::SetVisibilityPoint()
 {
-	SetState(VT_STATE_SET_POINT);
+    SetState(State::SetPoint);
 }
 
-void VisibilityToolSystem::SetVisibilityArea()
+void VisibilityToolSystem::ComputeVisibilityArea()
 {
-	SetState(VT_STATE_SET_AREA);
+    SetState(State::ComputingVisibility);
 }
 
 void VisibilityToolSystem::SetVisibilityPointInternal()
 {
     DrawVisibilityPoint();
-    
-	SetState(VT_STATE_NORMAL);
+    SetState(State::NotActive);
 }
 
 void VisibilityToolSystem::SetVisibilityAreaInternal()
 {
-	if (drawSystem->GetVisibilityToolProxy()->IsVisibilityPointSet())
-	{
-		Vector2 visibilityPoint = drawSystem->GetVisibilityToolProxy()->GetVisibilityPoint();
-		Vector3 point(visibilityPoint * landscapeSize);
-        point.z = drawSystem->GetHeightAtTexturePoint(textureLevel, point.xy()) + visibilityPointHeight;
-
-        Vector<Vector3> resP;
-        PerformHeightTest(point, Vector2(0.5f, 0.5f) * landscapeSize, 0.5f * landscapeSize, pointsDensity, areaPointHeights, resP);
-        DrawVisibilityAreaPoints(resP);
-
-        // render view point one more time
-        // to avoid sutuation when points overlaps mark
-        // and nobody remember where it was
-        RenderVisibilityPoint(false);
-    }
-	else
-	{
-		// show "could not check visibility without visibility point" error message
-	}
-}
-
-void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
-                                             const Vector2& circleCenter,
-                                             float32 circleRadius,
-                                             float32 density,
-                                             const Vector<float32>& heightValues,
-                                             Vector<Vector3>& colorizedPoints)
-{
-    if (heightValues.empty())
+    if (checkPoints.empty())
     {
-		return;
+        SetState(State::NotActive);
+        return;
 	}
 
-    const uint32 sideLength = static_cast<uint32>((2.0f * circleRadius) / density + 0.5f);
-    const Vector3 sourcePoint(drawSystem->TexturePointToLandscapePoint(textureLevel, spectatorCoords.xy()), spectatorCoords.z);
-
-    colorizedPoints.reserve(sideLength * sideLength);
-
-    for (uint32 y = 0; y < sideLength; ++y)
+    remainingVisibilityTests.reserve(checkPoints.size() * textureSize * textureSize);
+    for (uint32 i = 0, e = checkPoints.size(); i < e; ++i)
     {
-        for (uint32 x = 0; x < sideLength; ++x)
+        for (uint32 y = 0; y < textureSize; y += textureStepSizeY)
         {
-            float32 px = circleCenter.x - circleRadius + density * x;
-            float32 py = circleCenter.y - circleRadius + density * y;
-            if ((px < 0.0f) || (py < 0.0f) || (px >= landscapeSize) || (py >= landscapeSize))
+            for (uint32 x = 0; x < textureSize; x += textureStepSizeX)
             {
-                continue;
-            }
-
-            bool occluded = true;
-
-            Vector2 xy(px, py);
-            float32 baseZ = drawSystem->GetHeightAtTexturePoint(textureLevel, xy);
-            Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, xy));
-            for (uint32 layerIndex = 0; layerIndex < heightValues.size(); ++layerIndex)
-            {
-                target.z = baseZ + heightValues[layerIndex];
-
-                const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint, target);
-                EntityGroup entityGroup(*intersectedObjects);
-                ExcludeEntities(&entityGroup);
-
-                if (entityGroup.Size() == 0)
-                {
-					Vector3 p;
-                    bool occludedWithLandscape = collisionSystem->LandRayTest(sourcePoint, target, p);
-                    if (!occludedWithLandscape)
-                    {
-                        occluded = false;
-                        colorizedPoints.emplace_back(px, py, static_cast<float>(1 + layerIndex));
-                        break;
-                    }
-                }
-            }
-
-            if (occluded)
-            {
-                colorizedPoints.emplace_back(px, py, 0.0f);
+                remainingVisibilityTests.emplace_back(i, Vector2(float(x), float(y)));
             }
         }
     }
+    totalVisibilityTests = remainingVisibilityTests.size();
 }
 
 void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
@@ -446,43 +341,66 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
     }
 }
 
-void VisibilityToolSystem::RenderVisibilityPoint(bool clearTarget)
+void VisibilityToolSystem::RenderVisibilityPoint(const CheckPoint& point, bool clearTarget)
 {
+    Rect drawRect(point.relativePosition * landscapeSize - 0.5f * CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
+
     VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
-    Vector2 visibilityPoint = visibilityToolProxy->GetVisibilityPoint();
-
-    const Vector2 curSize(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
-
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), clearTarget);
-    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White,
-                                            Rect(visibilityPoint * landscapeSize - curSize / 2.f, curSize));
+    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, drawRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
 void VisibilityToolSystem::DrawVisibilityPoint()
 {
+    checkPoints.clear();
+
     VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
     visibilityToolProxy->UpdateVisibilityPointSet(true);
     visibilityToolProxy->SetVisibilityPoint(cursorPosition);
 
-    RenderVisibilityPoint(true);
+    Vector2 xy = drawSystem->TexturePointToLandscapePoint(textureLevel, landscapeSize * cursorPosition);
+    float z = drawSystem->GetHeightAtTexturePoint(textureLevel, landscapeSize * cursorPosition) + 0.5f;
+
+    CheckPoint point;
+    point.relativePosition = cursorPosition;
+    point.worldPosition = Vector3(xy, z);
+    checkPoints.push_back(point);
+
+    RenderVisibilityPoint(point, true);
 }
 
-void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points)
+void VisibilityToolSystem::DrawVisibilityAreaPoints(const CheckPoint& point, bool clear)
 {
-	VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
-	Texture * visibilityAreaTexture = visibilityToolProxy->GetTexture();
+    auto rs = RenderSystem2D::Instance();
+    auto vtp = drawSystem->GetVisibilityToolProxy();
 
-    static const float32 pointSize = 6.f;
-    
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityAreaTexture, false);
-	for(uint32 i = 0; i < points.size(); ++i)
-	{
-		uint32 colorIndex = (uint32)points[i].z;
-        Rect rect(points[i].x - pointSize / 2.f , points[i].y - pointSize / 2.f, pointSize, pointSize);
-        RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
-	}
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    rs->BeginRenderTargetPass(vtp->GetTexture(), clear);
+
+    float dx = static_cast<float>(textureStepSizeX);
+    float dy = static_cast<float>(textureStepSizeX);
+
+    uint32 totalRows = point.result.size() / pointsRowSize;
+    for (uint32 i = 0, e = point.result.size(); i < e; ++i)
+    {
+        uint32 c0 = i % pointsRowSize;
+        uint32 r0 = i / pointsRowSize;
+        uint32 c1 = Min(c0 + 1, pointsRowSize - 1);
+        uint32 r1 = Min(r0 + 1, totalRows - 1);
+        DVASSERT(c0 + r0 * pointsRowSize == i);
+        const auto& p00 = point.result[c0 + r0 * pointsRowSize];
+        const auto& p01 = point.result[c1 + r0 * pointsRowSize];
+        const auto& p10 = point.result[c0 + r1 * pointsRowSize];
+        const auto& p11 = point.result[c1 + r1 * pointsRowSize];
+        float fx = static_cast<float>(p00.first.x);
+        float fy = static_cast<float>(p00.first.y);
+        rs->FillGradientRect(Rect(fx, fy, dx, dy), p00.second, p01.second, p10.second, p11.second);
+    }
+
+    Rect pointRect(point.relativePosition * landscapeSize - 0.5f * CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
+    rs->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, pointRect);
+
+    rs->EndRenderTargetPass();
 }
 
 void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
@@ -499,12 +417,57 @@ void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
     SafeRelease(image);
 }
 
-VisibilityToolSystem::eVisibilityToolState VisibilityToolSystem::GetState()
+VisibilityToolSystem::State VisibilityToolSystem::GetState()
 {
 	return state;
 }
 
-int32 VisibilityToolSystem::GetBrushSize()
+int32 VisibilityToolSystem::GetProgress()
 {
-	return curToolSize;
+    if (totalVisibilityTests == 0)
+        return 0;
+
+    float aspect = 1.0f - float(remainingVisibilityTests.size()) / float(totalVisibilityTests);
+    return static_cast<int>(100.0f * aspect + 0.5f);
+}
+
+void VisibilityToolSystem::PerformVisibilityTest(const VisibilityTests::value_type& test)
+{
+    auto& sourcePoint = checkPoints.at(test.first);
+
+    float32 baseZ = drawSystem->GetHeightAtTexturePoint(textureLevel, test.second) + 0.5f; // TODO: use Z from point
+    Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, test.second), baseZ);
+
+    const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint.worldPosition, target);
+    EntityGroup entityGroup(*intersectedObjects);
+    ExcludeEntities(&entityGroup);
+
+    Color resultColor = Color::Transparent; // assume occluded by default
+
+    if (entityGroup.Size() == 0)
+    {
+        Vector3 p;
+        if (collisionSystem->LandRayTest(sourcePoint.worldPosition, target, p) == false)
+        {
+            resultColor = sourcePoint.color;
+        }
+    }
+
+    sourcePoint.result.emplace_back(Point2i(int(test.second.x), int(test.second.y)), resultColor);
+}
+
+void VisibilityToolSystem::ProcessNextVisibilityTests()
+{
+    uint32 testsToPerform = Min(4096u + rand() % 4096u, remainingVisibilityTests.size());
+    for (uint32_t i = 0; i < testsToPerform; ++i)
+    {
+        PerformVisibilityTest(remainingVisibilityTests.at(i));
+    }
+    remainingVisibilityTests.erase(remainingVisibilityTests.begin(), remainingVisibilityTests.begin() + testsToPerform);
+}
+
+void VisibilityToolSystem::CancelComputing()
+{
+    SetState(State::NotActive);
+    remainingVisibilityTests.clear();
 }

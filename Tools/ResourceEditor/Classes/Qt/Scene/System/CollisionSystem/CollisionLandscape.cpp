@@ -120,8 +120,8 @@ void CollisionLandscape::CollisionLandscapePrivate::buildCollisionObject(const R
     float invHmSize = 1.0f / static_cast<float>(heightmap->Size());
 
     Vector3 landSize = owner->boundingBox.max - owner->boundingBox.min;
-    float32 landScaleX = landSize.x * invHmSize;
-    float32 landScaleY = landSize.y * invHmSize;
+    float32 landScaleX = (landSize.x + 0.5f) * invHmSize;
+    float32 landScaleY = (landSize.y + 0.5f) * invHmSize;
     float32 landScaleZ = landSize.z / static_cast<float>(Heightmap::MAX_VALUE);
 
     uint16* heightData = heightmap->Data();
