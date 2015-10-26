@@ -540,6 +540,14 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 
     uint32 useColorRGBA = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
 
+    uint32 colorStride = batchDesc.colorStride;
+    const uint32* colorPtr = batchDesc.colorPointer;
+    if (colorPtr == nullptr)
+    {
+        colorPtr = &useColorRGBA;
+        colorStride = 0;
+    }
+
     // Begin fill vertex and index buffers
     uint32 vi = vertexIndex;
     uint32 ii = indexIndex;
@@ -553,7 +561,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
             v.uv.x = batchDesc.texCoordPointer[i * batchDesc.texCoordStride];
             v.uv.y = batchDesc.texCoordPointer[i * batchDesc.texCoordStride + 1];
-            v.color = (batchDesc.colorPointer == nullptr) ? useColorRGBA : batchDesc.colorPointer[i * batchDesc.colorStride];
+            v.color = colorPtr[i * batchDesc.colorStride];
         }
     }
     else
@@ -566,7 +574,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
             v.uv.x = 0.f;
             v.uv.y = 0.f;
-            v.color = (batchDesc.colorPointer == nullptr) ? useColorRGBA : batchDesc.colorPointer[i * batchDesc.colorStride];
+            v.color = colorPtr[i * batchDesc.colorStride];
         }
     }
     for (uint32 i = 0; i < batchDesc.indexCount; ++i)
