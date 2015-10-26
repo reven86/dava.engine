@@ -30,7 +30,6 @@
 #include "GameCore.h"
 
 #include "Grid/GridVisualizer.h"
-#include "Ruler/RulerController.h"
 
 //#include "ScreenManager.h"
 #include "EditorSettings.h"
@@ -41,13 +40,14 @@
 
 #include "UI/Layouts/UILayoutSystem.h"
 
+#include <QString>
+
 using namespace DAVA;
 
 GameCore::GameCore()
     : cursor(nullptr)
 {
     new GridVisualizer();
-    new RulerController();
     new AutotestingSystem();
 
 	// Unpack the help data, if needed.
@@ -60,7 +60,6 @@ GameCore::GameCore()
 
 GameCore::~GameCore()
 {
-    RulerController::Instance()->Release();
     GridVisualizer::Instance()->Release();
 
     EditorSettings::Instance()->Release();
@@ -101,11 +100,6 @@ void GameCore::BeginFrame()
 
 void GameCore::Update(float32 timeElapsed)
 {	
-//	if (!cursor)
-//	{
-//		cursor = Cursor::Create("~res:/Cursor/cursor1.png", Vector2(6, 0));
-//		RenderManager::Instance()->SetCursor(cursor);
-//	}
 	ApplicationCore::Update(timeElapsed);
 }
 

@@ -41,6 +41,10 @@
 
 #include "Document.h"
 
+#include "EditorSystems/CanvasSystem.h"
+#include "EditorSystems/HUDSystem.h"
+#include "Ruler/RulerWidget.h"
+
 using namespace DAVA;
 
 namespace
