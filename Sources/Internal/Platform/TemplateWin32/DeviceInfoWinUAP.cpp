@@ -223,6 +223,8 @@ void DeviceInfoPrivate::InitializeScreenInfo()
         }
     };
     core->RunOnUIThreadBlocked(func);
+    // start device watchers, after creation main thread dispatcher
+    StartDeviceWatcher();
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -367,6 +369,14 @@ DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
     watcher->Removed += removed;
     watcher->Start();
     return watcher;
+}
+
+void DeviceInfoPrivate::StartDeviceWatcher()
+{
+    for each (DeviceWatcher^ var in watchers)
+    {
+        var->Start();
+    }
 }
 
 void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)
