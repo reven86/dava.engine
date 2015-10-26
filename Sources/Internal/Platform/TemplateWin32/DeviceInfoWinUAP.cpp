@@ -367,7 +367,6 @@ DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 
     watcher->Added += added;
     watcher->Removed += removed;
-    watcher->Start();
     return watcher;
 }
 
