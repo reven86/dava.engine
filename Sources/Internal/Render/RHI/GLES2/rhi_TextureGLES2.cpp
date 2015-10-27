@@ -667,6 +667,10 @@ gles2_SamplerState_Delete(Handle hstate)
 
 namespace SamplerStateGLES2
 {
+void Init(uint32 maxCount)
+{
+    SamplerStateGLES2Pool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_SamplerState_Create = &gles2_SamplerState_Create;

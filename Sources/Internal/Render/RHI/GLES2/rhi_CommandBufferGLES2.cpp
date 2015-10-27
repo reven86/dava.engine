@@ -231,6 +231,10 @@ gles2_RenderPass_End(Handle pass)
 
 namespace RenderPassGLES2
 {
+void Init(uint32 maxCount)
+{
+    RenderPassPool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_Renderpass_Allocate = &gles2_RenderPass_Allocate;
@@ -1906,6 +1910,10 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
 
 namespace CommandBufferGLES2
 {
+void Init(uint32 maxCount)
+{
+    CommandBufferPool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_CommandBuffer_Begin = &gles2_CommandBuffer_Begin;
