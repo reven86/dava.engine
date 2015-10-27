@@ -70,6 +70,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
 
+    connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, rulerController, &RulerController::SetViewPos);
+
     percentages << 10 << 25 << 50 << 75 << 100 << 125
                 << 150 << 175 << 200 << 250 << 400 << 800;
 
@@ -106,6 +108,11 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
 {
     return scrollAreaController;
+}
+
+RulerController* PreviewWidget::GetRulerController()
+{
+    return rulerController;
 }
 
 void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point, ControlNode*& selectedNode)

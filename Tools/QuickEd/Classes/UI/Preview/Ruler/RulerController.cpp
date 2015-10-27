@@ -50,6 +50,7 @@ void RulerController::SetupInitialRulerSettings(RulerSettings& settings)
 
 void RulerController::SetViewPos(QPoint viewPos)
 {
+    viewPos *= -1;
     if (viewPos.x() != screenViewPos.x())
     {
         screenViewPos.setX(viewPos.x());
@@ -59,6 +60,7 @@ void RulerController::SetViewPos(QPoint viewPos)
 
     if (viewPos.y() != screenViewPos.y())
     {
+        screenViewPos.setY(viewPos.y());
         verticalRulerSettings.startPos = screenViewPos.y();
         emit VerticalRulerSettingsChanged(verticalRulerSettings);
     }

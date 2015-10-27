@@ -81,7 +81,7 @@ public:
     DAVA::Signal<DAVA::Vector2> RootControlPosChanged;
 
 private:
-    void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition);
+    void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition, Vector2& globalRootControlPosition);
     void FitGridIfParentIsNested(PackageBaseNode* node);
     RefPtr<UIControl> gridControl;
     RefPtr<UIControl> counterpoiseControl;
@@ -179,10 +179,12 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
     } //unnamed namespace
 
-void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition)
+void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition, Vector2& totalRootControlPosition)
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
+
+    totalRootControlPosition = gd.position;
     gd.position.SetZero();
     UIControl* scalableControl = gridControl->GetParent()->GetParent();
     DVASSERT_MSG(nullptr != scalableControl, "grid update without being attached to screen");
@@ -202,12 +204,13 @@ void BackgroundController::AdjustToNestedControl()
 {
     Rect rect;
     Vector2 pos;
-    CalculateTotalRect(rect, pos);
+    Vector2 globalPos;
+    CalculateTotalRect(rect, pos, globalPos);
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
     ContentSizeChanged.Emit();
-    RootControlPosChanged.Emit(pos);
+    RootControlPosChanged.Emit(globalPos);
 }
 
 void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -334,6 +337,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
+    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<DAVA::Vector2>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }

@@ -85,6 +85,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         active->Deactivate();
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
+        disconnect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::CanvasSizeChanged);
     }
     
     active = document;
@@ -97,6 +98,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
+        connect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::RootControlPositionChanged);
 
         undoGroup->setActiveStack(active->GetUndoStack());
     }

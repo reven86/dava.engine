@@ -88,7 +88,7 @@ void ScrollAreaController::UpdateCanvasContentSize()
     emit CanvasSizeChanged(canvasSize);
 }
 
-void ScrollAreaController::SetViewSize(const QSize& viewSize_)
+void ScrollAreaController::SetViewSize(QSize viewSize_)
 {
     if (viewSize_ != viewSize)
     {
@@ -100,7 +100,7 @@ void ScrollAreaController::SetViewSize(const QSize& viewSize_)
     }
 }
 
-void ScrollAreaController::SetPosition(const QPoint& position_)
+void ScrollAreaController::SetPosition(QPoint position_)
 {
     if (position_ != position)
     {
@@ -125,5 +125,6 @@ void ScrollAreaController::UpdatePosition()
             position.y += (viewSize.height() - canvasSize.height()) / 2.0f;
         }
         nestedControl->SetPosition(position);
+        NestedControlPositionChanged(QPoint(position.x, position.y));
     }
 }

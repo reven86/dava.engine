@@ -54,6 +54,7 @@ public:
     ~PreviewWidget() = default;
     DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
+    RulerController* GetRulerController();
     void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
 
 signals:

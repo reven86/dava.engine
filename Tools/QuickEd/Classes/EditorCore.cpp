@@ -30,6 +30,7 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "UI/mainwindow.h"
 #include "UI/Preview/ScrollAreaController.h"
+#include "UI/Preview/Ruler/RulerController.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
@@ -40,7 +41,6 @@
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
-
 
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -97,6 +97,9 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
+    connect(documentGroup, &DocumentGroup::RootControlPositionChanged, [previewWidget](DAVA::Vector2 pos) {
+        previewWidget->GetRulerController()->SetViewPos(QPoint(pos.x, pos.y));
+    });
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
