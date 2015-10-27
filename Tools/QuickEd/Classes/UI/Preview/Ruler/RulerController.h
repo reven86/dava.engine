@@ -45,7 +45,6 @@ public:
     ~RulerController() = default;
 
     // Set the screen view pos and scale.
-    void SetViewPos(QPoint startPos);
     void SetScale(float scale);
 
     // Update the rulers by sending "settings changed" signal to them.
@@ -54,6 +53,7 @@ public:
 public slots:
     // Update the ruler markers with the mouse position.
     void UpdateRulerMarkers(QPoint curMousePos);
+    void SetViewPos(QPoint startPos);
 
 signals:
     // Horizontal/Vertical ruler settings are changed.

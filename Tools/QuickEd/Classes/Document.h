@@ -83,6 +83,8 @@ public:
 signals:
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
+    void RootControlPositionChanged(DAVA::Vector2 position);
+
 public slots:
     void SetScale(float scale);
     void SetEmulationMode(bool emulationMode);

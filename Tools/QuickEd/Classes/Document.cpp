@@ -52,7 +52,7 @@ Document::Document(PackageNode* _package, QObject* parent)
 {
     systemManager.SelectionChanged.Connect(this, &Document::OnSelectedControlNodesChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
-
+    systemManager.RootControlPositionChanged.Connect(this, &Document::RootControlPositionChanged);
     systemManager.PropertiesChanged.Connect([this](const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties, size_t hash)
                                             {
         commandExecutor->ChangeProperty(properties, hash);

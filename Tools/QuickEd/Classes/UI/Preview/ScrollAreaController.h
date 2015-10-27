@@ -60,14 +60,15 @@ public:
     QPoint GetPosition() const;
 
 public slots:
-    void SetViewSize(const QSize& size);
-    void SetPosition(const QPoint& position);
+    void SetViewSize(QSize size);
+    void SetPosition(QPoint position);
     void UpdateCanvasContentSize();
 
 signals:
-    void CanvasSizeChanged(const QSize& canvasSize);
-    void ViewSizeChanged(const QSize& size);
-    void PositionChanged(const QPoint& position);
+    void CanvasSizeChanged(QSize canvasSize);
+    void ViewSizeChanged(QSize size);
+    void PositionChanged(QPoint position);
+    void NestedControlPositionChanged(QPoint position);
 
 private:
     void UpdatePosition();
