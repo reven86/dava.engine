@@ -108,13 +108,13 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
 
     if (NULL != curScene && materials.size() > 0)
     {
-        std::function<void(DAVA::NMaterial *)> fn = [&fn, &curScene](DAVA::NMaterial *material) {
-            DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
+        std::function<void(DAVA::NMaterial*)> fn = [&fn, &curScene](DAVA::NMaterial* material) {
+            DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
             if (nullptr != entity)
             {
                 curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
             }
-            const Vector<NMaterial *>& children = material->GetChildren();
+            const Vector<NMaterial*>& children = material->GetChildren();
             for (auto child : children)
             {
                 fn(child);

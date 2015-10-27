@@ -42,7 +42,6 @@
 
 namespace DAVA
 {
-
 class Entity;
 
 /**
@@ -53,40 +52,37 @@ class Entity;
 class VegetationGeometryData
 {
 public:
-    
     VegetationGeometryData(Vector<NMaterial*>& materialsData,
-                                              Vector<Vector<Vector<Vector3> > >& positionLods,
-                                              Vector<Vector<Vector<Vector2> > >& texCoordLods,
-                                              Vector<Vector<Vector<Vector3> > >& normalLods,
-                                              Vector<Vector<Vector<VegetationIndex> > >& indexLods);
+                           Vector<Vector<Vector<Vector3>>>& positionLods,
+                           Vector<Vector<Vector<Vector2>>>& texCoordLods,
+                           Vector<Vector<Vector<Vector3>>>& normalLods,
+                           Vector<Vector<Vector<VegetationIndex>>>& indexLods);
     VegetationGeometryData(VegetationGeometryData& src);
     ~VegetationGeometryData();
-    
+
     uint32 GetLayerCount() const;
     uint32 GetLodCount(uint32 layerIndex) const;
-    
+
     NMaterial* GetMaterial(uint32 layerIndex);
-    
+
     Vector<Vector3>& GetPositions(uint32 layerIndex, uint32 lodIndex);
     Vector<Vector2>& GetTextureCoords(uint32 layerIndex, uint32 lodIndex);
     Vector<Vector3>& GetNormals(uint32 layerIndex, uint32 lodIndex);
     Vector<VegetationIndex>& GetIndices(uint32 layerIndex, uint32 lodIndex);
-    
+
 private:
-    
     void Load(Vector<NMaterial*>& materialsData,
-              Vector<Vector<Vector<Vector3> > >& positionLods,
-              Vector<Vector<Vector<Vector2> > >& texCoordLods,
-              Vector<Vector<Vector<Vector3> > >& normalLods,
-              Vector<Vector<Vector<VegetationIndex> > >& indexLods);
-    
+              Vector<Vector<Vector<Vector3>>>& positionLods,
+              Vector<Vector<Vector<Vector2>>>& texCoordLods,
+              Vector<Vector<Vector<Vector3>>>& normalLods,
+              Vector<Vector<Vector<VegetationIndex>>>& indexLods);
+
 private:
-    
     Vector<NMaterial*> materials;
-    Vector<Vector<Vector<Vector3> > > positions;
-    Vector<Vector<Vector<Vector2> > > texCoords;
-    Vector<Vector<Vector<Vector3> > > normals;
-    Vector<Vector<Vector<VegetationIndex> > > indices;
+    Vector<Vector<Vector<Vector3>>> positions;
+    Vector<Vector<Vector<Vector2>>> texCoords;
+    Vector<Vector<Vector<Vector3>>> normals;
+    Vector<Vector<Vector<VegetationIndex>>> indices;
 };
 
 using VegetationGeometryDataPtr = std::unique_ptr<VegetationGeometryData>;
@@ -96,7 +92,6 @@ class VegetationGeometryDataReader
 public:
     static VegetationGeometryDataPtr ReadScene(const FilePath& scenePath);
 };
-
 };
 
 #endif /* defined(__CUSTOMGEOMETRYSERIALIZATIONDATA_H__) */

@@ -64,32 +64,32 @@ ScaleHood::~ScaleHood()
 
 }
 
-void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper * drawer, TextDrawSystem *textDrawSystem)
+void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem)
 {
 	// x
-	if(mouseOverAxis) 
+	if(mouseOverAxis)
         drawer->DrawLine(axisX->curFrom, axisX->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-	else 
+    else
         drawer->DrawLine(axisX->curFrom, axisX->curTo, colorX, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
-	// y
-	if(mouseOverAxis) 
+    // y
+	if(mouseOverAxis)
         drawer->DrawLine(axisY->curFrom, axisY->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-	else 
+    else
         drawer->DrawLine(axisY->curFrom, axisY->curTo, colorY, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
-	// z
-	if(mouseOverAxis) 
+    // z
+	if(mouseOverAxis)
         drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-	else 
+    else
         drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorZ, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
-	// xy xz yz axis
+    // xy xz yz axis
     drawer->DrawLine(axisXY->curFrom, axisXY->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
     drawer->DrawLine(axisXZ->curFrom, axisXZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
     drawer->DrawLine(axisYZ->curFrom, axisYZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
-	// xy xz yz plane
+    // xy xz yz plane
 	if(mouseOverAxis)
 	{
 		DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
@@ -99,7 +99,7 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHe
 		poly.AddPoint(axisXY->curTo);
 		poly.AddPoint(axisYZ->curTo);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
-	}
+    }
 
 	// draw axis spheres
 	DAVA::float32 boxSize = axisX->curScale * baseSize / 12;
@@ -110,7 +110,7 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHe
 
     drawer->DrawAABox(DAVA::AABBox3(axisZ->curTo, boxSize), colorZ, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
-	DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
+    DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
 	if(0 != modifScale)
 	{

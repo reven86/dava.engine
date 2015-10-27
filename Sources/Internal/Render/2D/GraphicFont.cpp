@@ -38,20 +38,20 @@
 
 #define NOT_DEF_CHAR 0xffff
 
-namespace DAVA {
-
+namespace DAVA
+{
 class GraphicInternalFont : public BaseObject
 {
 public:
-    static GraphicInternalFont * Create(const FilePath & descriptorPath);
+    static GraphicInternalFont* Create(const FilePath& descriptorPath);
 
 protected:
     static Mutex dataMapMutex;
 
     GraphicInternalFont();
     virtual ~GraphicInternalFont();
-    bool InitFromConfig(const FilePath & path);
-    
+    bool InitFromConfig(const FilePath& path);
+
     struct CharDescription
     {
         float32 height;
@@ -65,7 +65,7 @@ protected:
         float32 v;
         float32 v2;
     };
-    using CharsMap = Map < char16, CharDescription > ;
+    using CharsMap = Map<char16, CharDescription>;
 
     CharsMap chars;
     float32 baseSize;
@@ -83,7 +83,7 @@ protected:
     friend class GraphicFont;
 };
 
-using FontMap = Map < FilePath, GraphicInternalFont* >;
+using FontMap = Map<FilePath, GraphicInternalFont*>;
 FontMap dataMap;
 Mutex GraphicInternalFont::dataMapMutex;
 
@@ -92,18 +92,18 @@ GraphicInternalFont::GraphicInternalFont()
     baseSize = 0;
     paddingLeft = paddingRight = paddingTop = paddingBottom = 0;
     lineHeight = 0;
-	baselineHeight = 0;
+    baselineHeight = 0;
     spread = 1.f;
     isDistanceFieldFont = false;
 }
-    
+
 GraphicInternalFont::~GraphicInternalFont()
 {
     LockGuard<Mutex> guard(dataMapMutex);
     dataMap.erase(configPath);
 }
-    
-GraphicInternalFont * GraphicInternalFont::Create(const FilePath & descriptorPath)
+
+GraphicInternalFont* GraphicInternalFont::Create(const FilePath& descriptorPath)
 {
     {
         LockGuard<Mutex> guard(dataMapMutex);
@@ -113,31 +113,34 @@ GraphicInternalFont * GraphicInternalFont::Create(const FilePath & descriptorPat
             return SafeRetain(iter->second);
         }
     }
-    
-    GraphicInternalFont * fontData = new GraphicInternalFont();
+
+    GraphicInternalFont* fontData = new GraphicInternalFont();
     if (!fontData->InitFromConfig(descriptorPath))
     {
         fontData->Release(); // Used mutex lock
         return nullptr;
     }
-    
+
     {
         LockGuard<Mutex> guard(dataMapMutex);
         dataMap[descriptorPath] = fontData;
     }
     return fontData;
 }
-    
-bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
+
+bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath& path)
 {
     YamlParser* parser = YamlParser::Create(path.GetAbsolutePathname());
-    SCOPE_EXIT { SafeRelease(parser); };
+    SCOPE_EXIT
+    {
+        SafeRelease(parser);
+    };
 
     if (!parser)
         return false;
-    
+
     configPath = path;
-    
+
     YamlNode* rootNode = parser->GetRootNode();
     const YamlNode* configNode = rootNode->Get("font");
     if (!configNode)
@@ -149,7 +152,7 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
     {
         return false;
     }
-        
+
     baseSize = configNode->Get("size")->AsFloat();
     const YamlNode* paddingTop = configNode->Get("padding_top");
     if (paddingTop)
@@ -166,16 +169,16 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
     const YamlNode* lineHeight = configNode->Get("lineHeight");
     if (lineHeight)
         this->lineHeight = lineHeight->AsFloat();
-	const YamlNode* baselineHeight = configNode->Get("baselineHeight");
-	if (baselineHeight)
-		this->baselineHeight = baselineHeight->AsFloat();
+    const YamlNode* baselineHeight = configNode->Get("baselineHeight");
+    if (baselineHeight)
+        this->baselineHeight = baselineHeight->AsFloat();
     const YamlNode* spread = configNode->Get("spread");
     if (spread)
         this->spread = spread->AsFloat();
     const YamlNode* distanceFieldFont = configNode->Get("distanceFieldFont");
     if (distanceFieldFont)
         this->isDistanceFieldFont = distanceFieldFont->AsBool();
-        
+
     const MultiMap<String, YamlNode*> charsMap = charsNode->AsMap();
     MultiMap<String, YamlNode*>::const_iterator charsMapEnd = charsMap.end();
     for (MultiMap<String, YamlNode*>::const_iterator iter = charsMap.begin(); iter != charsMapEnd; ++iter)
@@ -191,10 +194,10 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
         charDescription.u2 = iter->second->Get("u2")->AsFloat();
         charDescription.v = iter->second->Get("v")->AsFloat();
         charDescription.v2 = iter->second->Get("v2")->AsFloat();
-        
+
         chars[charId] = charDescription;
     }
-        
+
     const YamlNode* kerningNode = configNode->Get("kerning");
     if (kerningNode)
     {
@@ -205,7 +208,7 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
             CharsMap::iterator charIter = chars.find(charId);
             if (charIter == chars.end())
                 continue;
-            
+
             const MultiMap<String, YamlNode*> charKerningMap = iter->second->AsMap();
             for (auto i = charKerningMap.begin(); i != charKerningMap.end(); ++i)
             {
@@ -215,7 +218,7 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
             }
         }
     }
-    
+
     return true;
 }
 
@@ -232,12 +235,12 @@ GraphicFont::~GraphicFont()
     SafeRelease(texture);
 }
 
-GraphicFont* GraphicFont::Create(const FilePath & descriptorPath, const FilePath& texturePath)
+GraphicFont* GraphicFont::Create(const FilePath& descriptorPath, const FilePath& texturePath)
 {
     GraphicFont* font = new GraphicFont();
-    
+
     font->fontInternal = GraphicInternalFont::Create(descriptorPath);
-    if(font->fontInternal == nullptr || !font->LoadTexture(texturePath))
+    if (font->fontInternal == nullptr || !font->LoadTexture(texturePath))
     {
         SafeRelease(font);
         return nullptr;
@@ -250,9 +253,9 @@ GraphicFont* GraphicFont::Create(const FilePath & descriptorPath, const FilePath
 
     return font;
 }
-    
-Font::StringMetrics GraphicFont::GetStringMetrics(const WideString & str, Vector<float32> *charSizes/* = 0*/) const
-{ 
+
+Font::StringMetrics GraphicFont::GetStringMetrics(const WideString& str, Vector<float32>* charSizes /* = 0*/) const
+{
     int32 charDrawed = 0;
     return DrawStringToBuffer(str, 0, 0, nullptr, charDrawed, charSizes);
 }
@@ -268,7 +271,7 @@ uint32 GraphicFont::GetFontHeight() const
     return (uint32)((fontInternal->lineHeight) * GetSizeScale());
 }
 
-Font * GraphicFont::Clone() const
+Font* GraphicFont::Clone() const
 {
     GraphicFont* graphicFont = new GraphicFont();
     graphicFont->fontInternal = SafeRetain(fontInternal);
@@ -277,48 +280,47 @@ Font * GraphicFont::Clone() const
     return graphicFont;
 }
 
-bool GraphicFont::IsEqual(const Font *font) const
+bool GraphicFont::IsEqual(const Font* font) const
 {
     if (!Font::IsEqual(font))
         return false;
-    
+
     const GraphicFont* graphicFont = static_cast<const GraphicFont*>(font);
     if (graphicFont->fontInternal->configPath != fontInternal->configPath)
         return false;
-    
+
     return true;
 }
 
-Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
-                                  int32 xOffset,
-                                  int32 yOffset,
-                                  GraphicFontVertex* vertexBuffer,
-                                  int32& charDrawed,
-                                  Vector<float32> *charSizes /*= NULL*/,
-                                  int32 justifyWidth,
-                                  int32 spaceAddon) const
+Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString& str,
+                                                    int32 xOffset,
+                                                    int32 yOffset,
+                                                    GraphicFontVertex* vertexBuffer,
+                                                    int32& charDrawed,
+                                                    Vector<float32>* charSizes /*= NULL*/,
+                                                    int32 justifyWidth,
+                                                    int32 spaceAddon) const
 {
     int32 countSpace = 0;
     uint32 strLength = static_cast<uint32>(str.length());
-	for(uint32 i = 0; i < strLength; ++i)
-	{
-		if( L' ' == str[i])
-		{
-			countSpace++;
-		}
+    for (uint32 i = 0; i < strLength; ++i)
+    {
+        if (L' ' == str[i])
+        {
+            countSpace++;
+        }
     }
     int32 justifyOffset = 0;
     int32 fixJustifyOffset = 0;
     if (countSpace > 0 && justifyWidth > 0 && spaceAddon > 0)
     {
-        int32 diff= justifyWidth - spaceAddon;
-        justifyOffset =  diff / countSpace;
-        fixJustifyOffset = diff - justifyOffset*countSpace;
-        
+        int32 diff = justifyWidth - spaceAddon;
+        justifyOffset = diff / countSpace;
+        fixJustifyOffset = diff - justifyOffset * countSpace;
     }
     uint32 vertexAdded = 0;
     charDrawed = 0;
-    
+
     float32 lastX = (float32)xOffset;
     float32 lastY = 0;
     float32 sizeScale = GetSizeScale();
@@ -326,10 +328,10 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
     GraphicInternalFont::CharsMap::const_iterator notDef = fontInternal->chars.find(NOT_DEF_CHAR);
     bool notDefExists = (notDef != fontInternal->chars.end());
 
-	Font::StringMetrics metrics;
-	metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, 0);
-    
-	float32 ascent = fontInternal->lineHeight * GetSizeScale();
+    Font::StringMetrics metrics;
+    metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, 0);
+
+    float32 ascent = fontInternal->lineHeight * GetSizeScale();
     uint32 fontHeight = GetFontHeight();
 
     for (uint32 charPos = 0; charPos < strLength; ++charPos)
@@ -348,8 +350,8 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
                 continue;
             }
         }
-        
-        if (charPos>0 && justifyOffset > 0 && charId == L' ')
+
+        if (charPos > 0 && justifyOffset > 0 && charId == L' ')
         {
             lastX += justifyOffset;
             if (fixJustifyOffset > 0)
@@ -358,7 +360,7 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
                 fixJustifyOffset--;
             }
         }
-        
+
         const GraphicInternalFont::CharDescription& charDescription = iter->second;
 
         float32 width = charDescription.width * sizeScale;
@@ -366,41 +368,40 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
 
         float32 startHeight = charDescription.yOffset * sizeScale;
         float32 fullHeight = (charDescription.height + charDescription.yOffset) * sizeScale;
-        
-		ascent = Min(startHeight, ascent);
+
+        ascent = Min(startHeight, ascent);
 
         startHeight += yOffset;
         fullHeight += yOffset;
 
-		metrics.drawRect.x = Min(metrics.drawRect.x, (int32)startX);
-		metrics.drawRect.y = Min(metrics.drawRect.y, (int32)startHeight);
-		metrics.drawRect.dx = Max(metrics.drawRect.dx, (int32)(startX + width));
-		metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight));
+        metrics.drawRect.x = Min(metrics.drawRect.x, (int32)startX);
+        metrics.drawRect.y = Min(metrics.drawRect.y, (int32)startHeight);
+        metrics.drawRect.dx = Max(metrics.drawRect.dx, (int32)(startX + width));
+        metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight));
 
-		
-		//const float32 borderAlign = (startHeight - yOffset)*2.0f;
-		//metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight + borderAlign));
+        //const float32 borderAlign = (startHeight - yOffset)*2.0f;
+        //metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight + borderAlign));
 
         if (vertexBuffer)
-        {	
+        {
             vertexBuffer[vertexAdded].position.x = startX;
             vertexBuffer[vertexAdded].position.y = startHeight;
             vertexBuffer[vertexAdded].position.z = 0;
             vertexBuffer[vertexAdded].texCoord.x = charDescription.u;
             vertexBuffer[vertexAdded].texCoord.y = charDescription.v;
-            
+
             vertexBuffer[vertexAdded + 1].position.x = startX + width;
             vertexBuffer[vertexAdded + 1].position.y = startHeight;
             vertexBuffer[vertexAdded + 1].position.z = 0;
             vertexBuffer[vertexAdded + 1].texCoord.x = charDescription.u2;
             vertexBuffer[vertexAdded + 1].texCoord.y = charDescription.v;
-            
+
             vertexBuffer[vertexAdded + 2].position.x = startX + width;
             vertexBuffer[vertexAdded + 2].position.y = fullHeight;
             vertexBuffer[vertexAdded + 2].position.z = 0;
             vertexBuffer[vertexAdded + 2].texCoord.x = charDescription.u2;
             vertexBuffer[vertexAdded + 2].texCoord.y = charDescription.v2;
-            
+
             vertexBuffer[vertexAdded + 3].position.x = startX;
             vertexBuffer[vertexAdded + 3].position.y = fullHeight;
             vertexBuffer[vertexAdded + 3].position.z = 0;
@@ -422,22 +423,22 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
         if (charSizes)
             charSizes->push_back(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(charWidth));
         lastX += charWidth;
-        
+
         charDrawed++;
     }
     lastY += yOffset + fontHeight;
 
-	metrics.drawRect.dy += (int32)(ascent);
+    metrics.drawRect.dy += (int32)(ascent);
 
-	//@note : "-1" fix magic fix from FTFont
-	// Transform right/bottom edges into width/height
-	metrics.drawRect.dx += -metrics.drawRect.x + 1;
-	metrics.drawRect.dy += -metrics.drawRect.y + 1;
+    //@note : "-1" fix magic fix from FTFont
+    // Transform right/bottom edges into width/height
+    metrics.drawRect.dx += -metrics.drawRect.x + 1;
+    metrics.drawRect.dy += -metrics.drawRect.y + 1;
 
-	metrics.height = (int32)ceilf(lastY);
-	metrics.width = (int32)ceilf(lastX);
-	metrics.baseline = yOffset + (int32)fontInternal->baselineHeight;
-	return metrics;
+    metrics.height = (int32)ceilf(lastY);
+    metrics.width = (int32)ceilf(lastX);
+    metrics.baseline = yOffset + (int32)fontInternal->baselineHeight;
+    return metrics;
 }
 
 float32 GraphicFont::GetSpread() const
@@ -449,8 +450,8 @@ float32 GraphicFont::GetSizeScale() const
 {
     return size / fontInternal->baseSize;
 }
-    
-bool GraphicFont::LoadTexture(const FilePath & path)
+
+bool GraphicFont::LoadTexture(const FilePath& path)
 {
     DVASSERT(texture == NULL);
 
@@ -463,19 +464,19 @@ bool GraphicFont::LoadTexture(const FilePath & path)
     return true;
 }
 
-YamlNode * GraphicFont::SaveToYamlNode() const
+YamlNode* GraphicFont::SaveToYamlNode() const
 {
-    YamlNode *node = Font::SaveToYamlNode();
+    YamlNode* node = Font::SaveToYamlNode();
     //Type
     node->Set("type", "GraphicFont");
-    
+
     String pathname = fontInternal->configPath.GetFrameworkPath();
     node->Set("name", pathname);
-    
+
     return node;
 }
 
-const FilePath & GraphicFont::GetFontPath() const
+const FilePath& GraphicFont::GetFontPath() const
 {
     return fontInternal->configPath;
 }
@@ -484,5 +485,4 @@ String GraphicFont::GetRawHashString()
 {
     return fontInternal->configPath.GetFrameworkPath() + "_" + Font::GetRawHashString();
 }
-
 }

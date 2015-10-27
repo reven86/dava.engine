@@ -61,7 +61,7 @@ public:
     void setTextureDescriptor(DAVA::TextureDescriptor* descriptor);
     void setTextureGPU(DAVA::eGPUFamily gpu);
 
-	const DAVA::TextureDescriptor* getTextureDescriptor();
+    const DAVA::TextureDescriptor* getTextureDescriptor();
 	void setOriginalImageSize(const QSize &size);
 
 signals:
@@ -108,7 +108,7 @@ protected:
     bool skipPropSizeChanged;
 
     QSize origImageSize;
-	int curSizeLevelObject;
+    int curSizeLevelObject;
 
 	EnumMap enumFormats;
 	EnumMap enumSizes;
@@ -117,7 +117,7 @@ protected:
 	EnumMap enumFiltersMag;
     EnumMap enumFiltersMip;
 
-	QMap<int, QSize> availableSizes;
+    QMap<int, QSize> availableSizes;
 
     LazyUpdater* updater = nullptr;
 };

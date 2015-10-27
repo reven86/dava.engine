@@ -43,17 +43,17 @@ class ParticleEffectSystem : public SceneSystem
 	friend class ParticleEffectComponent;
     friend class UIParticles;    
 public:
-    ParticleEffectSystem(Scene * scene, bool is2DMode = false);
+    ParticleEffectSystem(Scene* scene, bool is2DMode = false);
 
-	~ParticleEffectSystem();
-	void Process(float32 timeElapsed) override;		
+    ~ParticleEffectSystem();
+    void Process(float32 timeElapsed) override;
     void ImmediateEvent(Component * component, uint32 event) override;
-    
-    void AddEntity(Entity * entity) override;
-    void AddComponent(Entity * entity, Component * component) override;
 
-    void RemoveEntity(Entity * entity) override;
-    void RemoveComponent(Entity * entity, Component * component) override;
+    void AddEntity(Entity* entity) override;
+    void AddComponent(Entity* entity, Component* component) override;
+
+    void RemoveEntity(Entity* entity) override;
+    void RemoveComponent(Entity* entity, Component* component) override;
 
     void SetGlobalMaterial(NMaterial *material);
 	void SetGlobalExtertnalValue(const String& name, float32 value);
@@ -62,9 +62,9 @@ public:
 
     inline void SetAllowLodDegrade(bool allowDegrade);
     inline bool GetAllowLodDegrade() const;
-	
-    inline const Map<uint64, NMaterial *> & GetMaterialInstances() const;    
-    
+
+    inline const Map<uint64, NMaterial*>& GetMaterialInstances() const;
+
 protected:
 	void RunEffect(ParticleEffectComponent *effect);	
     void AddToActive(ParticleEffectComponent *effect);
@@ -87,17 +87,17 @@ private:
 
 
 private: //materials stuff
-	NMaterial *particleBaseMaterial;
-    Map<uint64, NMaterial *> materialMap;
-	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending);
-    void PrebuildMaterials(ParticleEffectComponent *component);
-    
+    NMaterial* particleBaseMaterial;
+    Map<uint64, NMaterial*> materialMap;
+    NMaterial* GetMaterial(Texture* texture, bool enableFog, bool enableFrameBlend, eBlending blending);
+    void PrebuildMaterials(ParticleEffectComponent* component);
+
     bool allowLodDegrade;
 
     bool is2DMode;
 };
 
-inline const Map<uint64, NMaterial *> & ParticleEffectSystem::GetMaterialInstances() const
+inline const Map<uint64, NMaterial*>& ParticleEffectSystem::GetMaterialInstances() const
 {
     return materialMap;
 }

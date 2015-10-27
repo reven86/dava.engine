@@ -321,9 +321,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     elementGeomData.scale = lastDrawStae.scale;
     elementGeomData.pivotPoint = lastDrawStae.pivotPoint;
 
-    if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS)
-        || Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS)
-        )
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS) || Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
 
         RecalculateDebugColoring();
@@ -618,7 +616,6 @@ void UIStaticText::PrepareSprite()
     }
 }
 
-
 Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) const
 {
     Rect resultRect (geometricData.position, geometricData.size);
@@ -760,10 +757,8 @@ void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData
             RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[MAGENTA]);
             RenderHelper::Instance()->DrawPolygon(textPolygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
 
-
             RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[RED]);
             RenderHelper::Instance()->FillPolygon(controllPolygon, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
-
         }
         if (textBlock->IsVisualTextCroped())
         {
@@ -774,8 +769,7 @@ void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData
 }
 void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) const
 {
-    if (warningColor != NONE
-        && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    if (warningColor != NONE && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
         RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[warningColor]);
         DAVA::Polygon2 polygon;
@@ -793,8 +787,7 @@ void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) 
         RenderHelper::Instance()->FillPolygon(polygon, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
         RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
-    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED 
-        && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
         RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[WHITE]);
         if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)

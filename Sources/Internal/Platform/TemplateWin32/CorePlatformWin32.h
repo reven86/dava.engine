@@ -43,9 +43,9 @@ class CoreWin32Platform : public CoreWin32PlatformBase
 public:
 	eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
-    void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
+    void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
 
-	DisplayMode GetCurrentDisplayMode() override;
+    DisplayMode GetCurrentDisplayMode() override;
 
 	bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
 	void Run();
@@ -59,7 +59,7 @@ public:
 	RECT		windowPositionBeforeFullscreen;
 
 private:
-	static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+    static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
     void OnMouseEvent(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);

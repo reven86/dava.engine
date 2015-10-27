@@ -81,38 +81,38 @@ public:
 	bool IsNotPassableTerrainEnabled();
 	eErrorType EnableNotPassableTerrain();
 	void DisableNotPassableTerrain();
-	
-	void EnableCursor();
-	void DisableCursor();
+
+    void EnableCursor();
+    void DisableCursor();
 	void SetCursorTexture(Texture* cursorTexture);
-	void SetCursorSize(float32 cursorSize);
-	void SetCursorPosition(const Vector2& cursorPos);
+    void SetCursorSize(float32 cursorSize);
+    void SetCursorPosition(const Vector2& cursorPos);
 	
 	virtual void Process(DAVA::float32 timeElapsed);
 
     void ProcessCommand(const Command2 *command, bool redo);
 
-	float32 GetTextureSize(const FastName& level);
-	Vector3 GetLandscapeSize();
+    float32 GetTextureSize(const FastName& level);
+    Vector3 GetLandscapeSize();
 	float32 GetLandscapeMaxHeight();
-	float32 GetHeightAtHeightmapPoint(const Vector2& point);
+    float32 GetHeightAtHeightmapPoint(const Vector2& point);
     float32 GetHeightAtTexturePoint(const FastName& level, const Vector2& point);
-	KeyedArchive* GetLandscapeCustomProperties();
+    KeyedArchive* GetLandscapeCustomProperties();
 
-	Vector2 HeightmapPointToTexturePoint(const FastName& level, const Vector2& point);
-	Vector2 TexturePointToHeightmapPoint(const FastName& level, const Vector2& point);
-	Vector2 TexturePointToLandscapePoint(const FastName& level, const Vector2& point);
-	Vector2 LandscapePointToTexturePoint(const FastName& level, const Vector2& point);
-	Vector2 TranslatePoint(const Vector2& point, const Rect& fromRect, const Rect& toRect);
+    Vector2 HeightmapPointToTexturePoint(const FastName& level, const Vector2& point);
+    Vector2 TexturePointToHeightmapPoint(const FastName& level, const Vector2& point);
+    Vector2 TexturePointToLandscapePoint(const FastName& level, const Vector2& point);
+    Vector2 LandscapePointToTexturePoint(const FastName& level, const Vector2& point);
+    Vector2 TranslatePoint(const Vector2& point, const Rect& fromRect, const Rect& toRect);
 
-	void ClampToTexture(const FastName& level, Rect& rect);
-	void ClampToHeightmap(Rect& rect);
+    void ClampToTexture(const FastName& level, Rect& rect);
+    void ClampToHeightmap(Rect& rect);
 
 	void AddEntity(DAVA::Entity * entity) override;
 	void RemoveEntity(DAVA::Entity * entity) override;
 
-	Rect GetTextureRect(const FastName& level);
-	Rect GetHeightmapRect();
+    Rect GetTextureRect(const FastName& level);
+    Rect GetHeightmapRect();
 	Rect GetLandscapeRect();
 
     bool SaveTileMaskTexture();
@@ -122,12 +122,11 @@ public:
 
     eErrorType VerifyLandscape() const;
 
-	Landscape * GetBaseLandscape() const;
+    Landscape * GetBaseLandscape() const;
 	
 	static String GetDescriptionByError(eErrorType error);
 
 protected:
-    
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
     
@@ -137,17 +136,17 @@ protected:
     eErrorType IsNotPassableTerrainCanBeEnabled();
     
     bool UpdateTilemaskPathname();
-    
-    Entity* landscapeNode = nullptr;
-	Landscape* baseLandscape = nullptr;
-	LandscapeProxy* landscapeProxy = nullptr;
-	HeightmapProxy* heightmapProxy = nullptr;
-	NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
-	CustomColorsProxy* customColorsProxy = nullptr;
-	VisibilityToolProxy* visibilityToolProxy = nullptr;
-	RulerToolProxy* rulerToolProxy = nullptr;
 
-	uint32 customDrawRequestCount;
+    Entity* landscapeNode = nullptr;
+    Landscape* baseLandscape = nullptr;
+    LandscapeProxy* landscapeProxy = nullptr;
+    HeightmapProxy* heightmapProxy = nullptr;
+    NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
+    CustomColorsProxy* customColorsProxy = nullptr;
+    VisibilityToolProxy* visibilityToolProxy = nullptr;
+    RulerToolProxy* rulerToolProxy = nullptr;
+
+    uint32 customDrawRequestCount;
 
     FilePath sourceTilemaskPath;
 };

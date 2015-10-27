@@ -77,29 +77,27 @@ struct StaticOcclusionFrameResult
 {
     uint32 blockIndex;
     rhi::HQueryBuffer queryBuffer;
-    Vector<RenderObject *> frameRequests;
+    Vector<RenderObject*> frameRequests;
 };
 
 class StaticOcclusion
 {
-public:    
-    
+public:
     StaticOcclusion();
     ~StaticOcclusion();
-                
-    void StartBuildOcclusion(StaticOcclusionData * currentData, RenderSystem * renderSystem, Landscape * landscape);                       
-    bool ProccessBlock();    //return true if finished building
-    
+
+    void StartBuildOcclusion(StaticOcclusionData* currentData, RenderSystem* renderSystem, Landscape* landscape);
+    bool ProccessBlock(); //return true if finished building
+
     uint32 GetCurrentStepsCount();
     uint32 GetTotalStepsCount();
-    
 
-private:    
-    AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);            
-    
+private:
+    AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
+
     void RenderCurrentBlock();
-    void ProcessRecorderQueries();    
-    
+    void ProcessRecorderQueries();
+
     AABBox3  occlusionAreaRect;
     float32 *cellHeightOffset;
     uint32 xBlockCount;
@@ -110,17 +108,15 @@ private:
     uint32 currentFrameY;
     uint32 currentFrameZ;
     Camera * cameras[6];
-    StaticOcclusionRenderPass * staticOcclusionRenderPass;            
+    StaticOcclusionRenderPass* staticOcclusionRenderPass;
 
     StaticOcclusionData * currentData;
-    
-    Vector<StaticOcclusionFrameResult> occlusionFrameResults;
-    
-    RenderSystem * renderSystem;    
-    Landscape * landscape;        
-    
-};
 
+    Vector<StaticOcclusionFrameResult> occlusionFrameResults;
+
+    RenderSystem* renderSystem;
+    Landscape* landscape;
+};
 };
 
 #endif //__DAVAENGINE_STATIC_OCCLUSION__

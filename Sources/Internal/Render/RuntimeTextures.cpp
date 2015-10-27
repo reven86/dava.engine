@@ -6,20 +6,19 @@ namespace DAVA
 {
 namespace
 {
-
 const FastName DYNAMIC_TEXTURE_NAMES[RuntimeTextures::DYNAMIC_TEXTURES_COUNT] =
 {
-    FastName("unknownTexture"),
-    FastName("dynamicReflection"),
-    FastName("dynamicRefraction")
+  FastName("unknownTexture"),
+  FastName("dynamicReflection"),
+  FastName("dynamicRefraction")
 };
-
 }
 
 RuntimeTextures::eDynamicTextureSemantic RuntimeTextures::GetDynamicTextureSemanticByName(const FastName& name)
 {
     for (int32 k = 0; k < DYNAMIC_TEXTURES_COUNT; ++k)
-        if (name == DYNAMIC_TEXTURE_NAMES[k])return (eDynamicTextureSemantic)k;
+        if (name == DYNAMIC_TEXTURE_NAMES[k])
+            return (eDynamicTextureSemantic)k;
     return TEXTURE_STATIC;
 }
 
@@ -72,7 +71,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
     rhi::Texture::Descriptor descriptor;
     int32 size;
     switch (semantic)
-    {    
+    {
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION:
         descriptor.width = REFLECTION_TEX_SIZE;
         descriptor.height = REFLECTION_TEX_SIZE;
@@ -80,7 +79,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         descriptor.isRenderTarget = true;
         descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;                
+        descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
         break;
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION:
@@ -98,13 +97,13 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         size = Max(REFLECTION_TEX_SIZE, REFRACTION_TEX_SIZE);
         descriptor.width = size;
         descriptor.height = size;
-        descriptor.autoGenMipmaps = false;        
+        descriptor.autoGenMipmaps = false;
         descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
         descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
         break;
-    
+
     default:
         DVASSERT_MSG(false, "Trying to init unknown texture as dynamic");
         break;
@@ -122,5 +121,4 @@ rhi::SamplerState::Descriptor::Sampler RuntimeTextures::GetDynamicTextureSampler
     sampler.mipFilter = rhi::TEXMIPFILTER_NONE;
     return sampler;
 }
-
 }

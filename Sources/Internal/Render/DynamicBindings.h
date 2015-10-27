@@ -35,17 +35,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/FastName.h"
 #include "Render/RHI/rhi_Public.h"
 
-
-
 namespace DAVA
-{    
+{
 class DynamicBindings
 {
 public:
-
     enum eUniformSemantic
     {
-        UNKNOWN_SEMANTIC = 0,        
+        UNKNOWN_SEMANTIC = 0,
 
         PARAM_WORLD,
         PARAM_INV_WORLD,
@@ -64,7 +61,7 @@ public:
 
         PARAM_WORLD_VIEW_PROJ,
         PARAM_INV_WORLD_VIEW_PROJ,
-        
+
         PARAM_GLOBAL_TIME,
         PARAM_WORLD_SCALE,
 
@@ -88,15 +85,15 @@ public:
 
         PARAM_JOINT_POSITIONS,
         PARAM_JOINT_QUATERNIONS,
-        PARAM_JOINTS_COUNT,     //it will not be bound into shader, but will be used to bind joints
+        PARAM_JOINTS_COUNT, //it will not be bound into shader, but will be used to bind joints
 
         PARAM_VIEWPORT_SIZE,
         PARAM_RCP_VIEWPORT_SIZE, // = 1/PARAM_VIEWPORT_SIZE
-        PARAM_VIEWPORT_OFFSET,        
+        PARAM_VIEWPORT_OFFSET,
 
         PARAM_SHADOW_COLOR,
 
-        AUTOBIND_UNIFORMS_END,        
+        AUTOBIND_UNIFORMS_END,
 
         DYNAMIC_PARAMETERS_COUNT = AUTOBIND_UNIFORMS_END,
     };
@@ -108,9 +105,9 @@ public:
 
 public:
     static DynamicBindings::eUniformSemantic GetUniformSemanticByName(const FastName& name);
-    
-    void SetDynamicParam(eUniformSemantic shaderSemantic, const void * value, pointer_size updateSemantic);
-    const void * GetDynamicParam(eUniformSemantic shaderSemantic);
+
+    void SetDynamicParam(eUniformSemantic shaderSemantic, const void* value, pointer_size updateSemantic);
+    const void* GetDynamicParam(eUniformSemantic shaderSemantic);
     pointer_size GetDynamicParamUpdateSemantic(eUniformSemantic shaderSemantic);
     int32 GetDynamicParamArraySize(eUniformSemantic shaderSemantic, int32 defaultValue);
     inline const Matrix4& GetDynamicParamMatrix(eUniformSemantic shaderSemantic);
@@ -118,11 +115,11 @@ public:
 private:
     struct AutobindVariableData
     {
-        pointer_size updateSemantic;    // Use lower 1 bit, for indication of update
-        const void * value;
+        pointer_size updateSemantic; // Use lower 1 bit, for indication of update
+        const void* value;
     };
     AutobindVariableData dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
-    uint32  dynamicParamersRequireUpdate;
+    uint32 dynamicParamersRequireUpdate;
 
     Matrix4 worldViewMatrix;
     Matrix4 viewProjMatrix;
@@ -135,7 +132,7 @@ private:
     Vector3 boundingBoxSize;
     Vector3 worldViewObjectCenter;
     float32 frameGlobalTime;
-    
+
     void ComputeWorldViewMatrixIfRequired();
     void ComputeWorldScaleIfRequired();
     void ComputeViewProjMatrixIfRequired();
@@ -154,7 +151,5 @@ inline const Matrix4& DynamicBindings::GetDynamicParamMatrix(DynamicBindings::eU
 {
     return *(Matrix4*)GetDynamicParam(shaderSemantic);
 }
-
 }
 #endif
-

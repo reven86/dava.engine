@@ -32,10 +32,9 @@
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
-    using DAVA::Logger;
+using DAVA::Logger;
 
     #include "_gl.h"
-
 
 namespace rhi
 {
@@ -45,23 +44,20 @@ class
 QueryBufferGLES2_t
 {
 public:
-                        QueryBufferGLES2_t();
-                        ~QueryBufferGLES2_t();
+    QueryBufferGLES2_t();
+    ~QueryBufferGLES2_t();
 
     std::vector<GLuint> query;
 };
 
-typedef ResourcePool<QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false>  QueryBufferGLES2Pool;
-RHI_IMPL_POOL(QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false);
-
+typedef ResourcePool<QueryBufferGLES2_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false> QueryBufferGLES2Pool;
+RHI_IMPL_POOL(QueryBufferGLES2_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false);
 
 //==============================================================================
-
 
 QueryBufferGLES2_t::QueryBufferGLES2_t()
 {
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -70,48 +66,48 @@ QueryBufferGLES2_t::~QueryBufferGLES2_t()
 }
 
 static Handle
-gles2_QueryBuffer_Create( uint32 maxObjectCount )
+gles2_QueryBuffer_Create(uint32 maxObjectCount)
 {
-    Handle              handle = QueryBufferGLES2Pool::Alloc();
-    QueryBufferGLES2_t* buf    = QueryBufferGLES2Pool::Get( handle );
+    Handle handle = QueryBufferGLES2Pool::Alloc();
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if( buf )
+    if (buf)
     {
-        buf->query.resize( maxObjectCount );
-        memset( &(buf->query[0]), 0, sizeof(buf->query[0])*buf->query.size() );
+        buf->query.resize(maxObjectCount);
+        memset(&(buf->query[0]), 0, sizeof(buf->query[0]) * buf->query.size());
     }
 
     return handle;
 }
 
 static void
-gles2_QueryBuffer_Reset( Handle handle )
+gles2_QueryBuffer_Reset(Handle handle)
 {
-    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get( handle );
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if( buf )
+    if (buf)
     {
     }
 }
 
 static void
-gles2_QueryBuffer_Delete( Handle handle )
+gles2_QueryBuffer_Delete(Handle handle)
 {
-    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get( handle );
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if( buf )
+    if (buf)
     {
-        for( std::vector<GLuint>::iterator q=buf->query.begin(),q_end=buf->query.end(); q!=q_end; ++q )
+        for (std::vector<GLuint>::iterator q = buf->query.begin(), q_end = buf->query.end(); q != q_end; ++q)
         {
-            GLuint  id = *q;
+            GLuint id = *q;
 
-            if( id )
+            if (id)
             {
                 #if defined(__DAVAENGINE_IPHONE__)
-                glDeleteQueriesEXT( 1, &id );
+                glDeleteQueriesEXT(1, &id);
 		#elif defined(__DAVAENGINE_ANDROID__)
                 #else
-                glDeleteQueries( 1, &id );
+                glDeleteQueries(1, &id);
                 #endif
             }
         }
@@ -119,26 +115,26 @@ gles2_QueryBuffer_Delete( Handle handle )
         buf->query.clear();
     }
 
-    QueryBufferGLES2Pool::Free( handle );
+    QueryBufferGLES2Pool::Free(handle);
 }
 
 static bool
-gles2_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
+gles2_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
 {
-    bool                ready = false;
-    QueryBufferGLES2_t* buf   = QueryBufferGLES2Pool::Get( handle );
+    bool ready = false;
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if( buf  &&  objectIndex < buf->query.size() )
+    if (buf && objectIndex < buf->query.size())
     {
-        GLuint  result = 0;
+        GLuint result = 0;
 
         #if defined(__DAVAENGINE_IPHONE__)
-        glGetQueryObjectuivEXT( buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE_EXT, &result );
+        glGetQueryObjectuivEXT(buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE_EXT, &result);
 	#elif defined(__DAVAENGINE_ANDROID__)
         #else
-        glGetQueryObjectuiv( buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE, &result );
+        glGetQueryObjectuiv(buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE, &result);
         #endif
-        
+
         ready = result == GL_TRUE;
     }
 
@@ -146,104 +142,95 @@ gles2_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
 }
 
 static int
-gles2_QueryBuffer_Value( Handle handle, uint32 objectIndex )
+gles2_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
-    int                 value = 0;
-    QueryBufferGLES2_t* buf   = QueryBufferGLES2Pool::Get( handle );
+    int value = 0;
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if( buf  &&  objectIndex < buf->query.size() )
+    if (buf && objectIndex < buf->query.size())
     {
-        GLuint  result = 0;
+        GLuint result = 0;
 
         #if defined(__DAVAENGINE_IPHONE__)
-        glGetQueryObjectuivEXT( buf->query[objectIndex], GL_QUERY_RESULT_EXT, &result );
+        glGetQueryObjectuivEXT(buf->query[objectIndex], GL_QUERY_RESULT_EXT, &result);
 		#elif defined(__DAVAENGINE_ANDROID__)
         #else
-        glGetQueryObjectuiv( buf->query[objectIndex], GL_QUERY_RESULT, &result );
+        glGetQueryObjectuiv(buf->query[objectIndex], GL_QUERY_RESULT, &result);
         #endif
-        
+
         value = result;
     }
 
     return value;
 }
 
-
 namespace QueryBufferGLES2
 {
-
-void
-SetupDispatch( Dispatch* dispatch )
+void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_QueryBuffer_Create   = &gles2_QueryBuffer_Create;
-    dispatch->impl_QueryBuffer_Reset    = &gles2_QueryBuffer_Reset;
-    dispatch->impl_QueryBuffer_Delete   = &gles2_QueryBuffer_Delete;
-    dispatch->impl_QueryBuffer_IsReady  = &gles2_QueryBuffer_IsReady;
-    dispatch->impl_QueryBuffer_Value    = &gles2_QueryBuffer_Value;
+    dispatch->impl_QueryBuffer_Create = &gles2_QueryBuffer_Create;
+    dispatch->impl_QueryBuffer_Reset = &gles2_QueryBuffer_Reset;
+    dispatch->impl_QueryBuffer_Delete = &gles2_QueryBuffer_Delete;
+    dispatch->impl_QueryBuffer_IsReady = &gles2_QueryBuffer_IsReady;
+    dispatch->impl_QueryBuffer_Value = &gles2_QueryBuffer_Value;
 }
 
-void
-BeginQuery( Handle handle, uint32 objectIndex )
+void BeginQuery(Handle handle, uint32 objectIndex)
 {
-    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get( handle );
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if( buf  &&  objectIndex < buf->query.size() )
+    if (buf && objectIndex < buf->query.size())
     {
         GLuint q = buf->query[objectIndex];
 
-        if( !q )
+        if (!q)
         {
             #if defined(__DAVAENGINE_IPHONE__)
-            glGenQueriesEXT( 1, &q );
+            glGenQueriesEXT(1, &q);
 	    #elif defined(__DAVAENGINE_ANDROID__)
             #else
-            glGenQueries( 1, &q );
+            glGenQueries(1, &q);
             #endif
-            
+
             buf->query[objectIndex] = q;
         }
-        
-        if( q )
+
+        if (q)
         {
             #if defined(__DAVAENGINE_IPHONE__)
-            glBeginQueryEXT( GL_ANY_SAMPLES_PASSED_EXT, q );
+            glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, q);
 	        #elif defined(__DAVAENGINE_ANDROID__)
             #elif defined(__DAVAENGINE_MACOS__)
-            glBeginQuery( GL_SAMPLES_PASSED, q );
+            glBeginQuery(GL_SAMPLES_PASSED, q);
             #else
-            glBeginQuery( GL_ANY_SAMPLES_PASSED, q );
+            glBeginQuery(GL_ANY_SAMPLES_PASSED, q);
             #endif
         }
     }
 }
 
-
-void
-EndQuery( Handle handle, uint32 objectIndex )
+void EndQuery(Handle handle, uint32 objectIndex)
 {
-    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get( handle );
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if( buf  &&  objectIndex < buf->query.size() )
+    if (buf && objectIndex < buf->query.size())
     {
         GLuint q = buf->query[objectIndex];
 
-        if( q )
+        if (q)
         {
             #if defined(__DAVAENGINE_IPHONE__)
-            glEndQueryEXT( GL_ANY_SAMPLES_PASSED_EXT );
+            glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
 			#elif defined(__DAVAENGINE_ANDROID__)
             #elif defined(__DAVAENGINE_MACOS__)
-            glEndQuery( GL_SAMPLES_PASSED );
+            glEndQuery(GL_SAMPLES_PASSED);
             #else
-            glEndQuery( GL_ANY_SAMPLES_PASSED );
+            glEndQuery(GL_ANY_SAMPLES_PASSED);
             #endif
         }
     }
 }
-
 }
-
 
 //==============================================================================
 } // namespace rhi
-

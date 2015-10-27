@@ -45,10 +45,10 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 {
 	DVASSERT(landscape != NULL);
 
-	tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = NULL;
-	tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = NULL;
-    
-	baseLandscape = SafeRetain(landscape);
+    tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = NULL;
+    tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = NULL;
+
+    baseLandscape = SafeRetain(landscape);
 
     sourceTilemaskPath = GetPathForSourceTexture();
 
@@ -59,7 +59,7 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_CURSOR, 0);
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_TOOL_MIX, 0);
     landscapeEditorMaterial->AddProperty(LANDSCAPE_PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
-    
+
     ScopedPtr<Texture> texture(Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex"));
     texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
@@ -70,30 +70,30 @@ LandscapeProxy::~LandscapeProxy()
 {
     SafeRelease(landscapeEditorMaterial);
 
-	SafeRelease(baseLandscape);
+    SafeRelease(baseLandscape);
 	SafeRelease(tilemaskImageCopy);
-	SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
-	SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
+    SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
+    SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
 
     SafeRelease(cursorTexture);
 }
 
 void LandscapeProxy::SetMode(LandscapeProxy::eLandscapeMode _mode)
 {
-    if(mode != _mode)
+    if (mode != _mode)
     {
         mode = _mode;
         if (mode == LandscapeProxy::MODE_CUSTOM_LANDSCAPE)
         {
             landscapeEditorMaterial->SetParent(baseLandscape->GetMaterial());
             baseLandscape->SetMaterial(landscapeEditorMaterial);
-			baseLandscape->SetForceFirstLod(true);
+            baseLandscape->SetForceFirstLod(true);
         }
         else
         {
             baseLandscape->SetMaterial(landscapeEditorMaterial->GetParent());
             landscapeEditorMaterial->SetParent(nullptr);
-			baseLandscape->SetForceFirstLod(false);
+            baseLandscape->SetForceFirstLod(false);
         }
     }
 }
@@ -105,13 +105,13 @@ const AABBox3 & LandscapeProxy::GetLandscapeBoundingBox()
 
 Texture* LandscapeProxy::GetLandscapeTexture(const FastName& level)
 {
-	return baseLandscape->GetMaterial()->GetEffectiveTexture(level);
+    return baseLandscape->GetMaterial()->GetEffectiveTexture(level);
 }
 
 Color LandscapeProxy::GetLandscapeTileColor(const FastName& level)
 {
-    const float32 * prop = baseLandscape->GetMaterial()->GetEffectivePropValue(level);
-    if(prop)
+    const float32* prop = baseLandscape->GetMaterial()->GetEffectivePropValue(level);
+    if (prop)
         return Color(prop[0], prop[1], prop[2], 1.f);
     else
         return Color::White;
@@ -119,28 +119,28 @@ Color LandscapeProxy::GetLandscapeTileColor(const FastName& level)
 
 void LandscapeProxy::SetLandscapeTileColor(const FastName& level, const Color& color)
 {
-    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
+    NMaterial* landscapeMaterial = baseLandscape->GetMaterial();
     while (landscapeMaterial)
     {
-        if(landscapeMaterial->HasLocalProperty(level))
+        if (landscapeMaterial->HasLocalProperty(level))
             break;
-        
+
         landscapeMaterial = landscapeMaterial->GetParent();
     }
-    
-    if(landscapeMaterial)
+
+    if (landscapeMaterial)
     {
         landscapeMaterial->SetPropertyValue(level, color.color);
     }
 }
 
-void LandscapeProxy::SetToolTexture(Texture * texture, bool mixColors)
+void LandscapeProxy::SetToolTexture(Texture* texture, bool mixColors)
 {
     if (texture)
     {
         landscapeEditorMaterial->AddTexture(LANDSCAPE_TEXTURE_TOOL, texture);
         landscapeEditorMaterial->SetFlag(LANSDCAPE_FLAG_TOOL, 1);
-        landscapeEditorMaterial->SetFlag(LANSDCAPE_FLAG_TOOL_MIX, (mixColors) ? 1: 0);
+        landscapeEditorMaterial->SetFlag(LANSDCAPE_FLAG_TOOL_MIX, (mixColors) ? 1 : 0);
     }
     else
     {
@@ -172,7 +172,7 @@ void LandscapeProxy::SetCursorTexture(Texture* texture)
         SafeRelease(cursorTexture);
         cursorTexture = SafeRetain(texture);
     }
-    
+
     landscapeEditorMaterial->SetTexture(LANDSCAPE_TEXTURE_CURSOR, texture);
 }
 
@@ -197,7 +197,7 @@ Vector3 LandscapeProxy::PlacePoint(const Vector3& point)
 	Vector3 landscapePoint;
     baseLandscape->PlacePoint(point, landscapePoint);
 
-	return landscapePoint;
+    return landscapePoint;
 }
 
 bool LandscapeProxy::IsTilemaskChanged()
@@ -223,10 +223,10 @@ void LandscapeProxy::DecreaseTilemaskChanges()
 void LandscapeProxy::InitTilemaskImageCopy()
 {
 	SafeRelease(tilemaskImageCopy);
-    
-    Vector<Image *> imgs;
+
+    Vector<Image*> imgs;
     ImageSystem::Instance()->Load(sourceTilemaskPath, imgs);
-    
+
     DVASSERT(imgs.size() == 1);
     tilemaskImageCopy = imgs[0];
 }
@@ -253,32 +253,32 @@ Image* LandscapeProxy::GetTilemaskImageCopy()
 
 void LandscapeProxy::InitTilemaskDrawTextures()
 {
-	if (tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] == NULL || tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] == NULL)
-	{
-		SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
-		SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
+    if (tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] == NULL || tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] == NULL)
+    {
+        SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
+        SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
 
         uint32 texSize = (uint32)GetLandscapeTexture(Landscape::TEXTURE_TILEMASK)->GetWidth();
-		tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
+        tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
         tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
-	}
+    }
 }
 
-Texture * LandscapeProxy::GetTilemaskDrawTexture(int32 number)
+Texture* LandscapeProxy::GetTilemaskDrawTexture(int32 number)
 {
-	if (number >= 0 && number < TILEMASK_TEXTURE_COUNT)
-	{
-		return tilemaskDrawTextures[number];
-	}
+    if (number >= 0 && number < TILEMASK_TEXTURE_COUNT)
+    {
+        return tilemaskDrawTextures[number];
+    }
 
 	return NULL;
 }
 
 void LandscapeProxy::SwapTilemaskDrawTextures()
 {
-	Texture* temp = tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE];
-	tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION];
-	tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = temp;
+    Texture* temp = tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE];
+    tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION];
+    tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = temp;
 }
 
 void LandscapeProxy::UpdateTileMaskPathname()

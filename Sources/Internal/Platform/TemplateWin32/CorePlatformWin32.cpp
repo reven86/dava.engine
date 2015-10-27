@@ -160,8 +160,8 @@ namespace DAVA
 
         rendererParams.window = hWindow;
 
-		ShowWindow(hWindow, SW_SHOW);
-		UpdateWindow(hWindow);
+        ShowWindow(hWindow, SW_SHOW);
+        UpdateWindow(hWindow);
 
 		// fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
@@ -200,7 +200,7 @@ namespace DAVA
         rendererParams.width = currentMode.width;
         rendererParams.height = currentMode.height;
 
-		clientSize.top = 0;
+        clientSize.top = 0;
 		clientSize.left = 0;
 		clientSize.right = currentMode.width;
 		clientSize.bottom = currentMode.height;
@@ -275,8 +275,8 @@ namespace DAVA
 					}
 				}
 			}
-            
-			Core::SystemProcessFrame();			
+
+            Core::SystemProcessFrame();
 
             uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
             int32 sleepMs = 1;
@@ -291,11 +291,11 @@ namespace DAVA
                 }
             }
 
-            TRACE_BEGIN_EVENT(11,"core","Sleep");
+            TRACE_BEGIN_EVENT(11, "core", "Sleep");
             Sleep(sleepMs);
-            TRACE_END_EVENT(11,"core","Sleep");
+            TRACE_END_EVENT(11, "core", "Sleep");
 
-			if (willQuit)
+            if (willQuit)
 			{	
 				break;
 			}
@@ -332,8 +332,8 @@ namespace DAVA
 
     bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
     {
-		if (GetScreenMode() != screenMode) // check if we try to switch mode
-		{
+        if (GetScreenMode() != screenMode) // check if we try to switch mode
+        {
             HWND hWindow = static_cast<HWND>(GetNativeView());
 
             switch (screenMode)
@@ -377,7 +377,7 @@ namespace DAVA
         return true;
     }
 
-	void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode> & availableDisplayModes)
+    void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode> & availableDisplayModes)
 	{
 		availableDisplayModes.clear();
 
@@ -429,7 +429,7 @@ namespace DAVA
                                                        0,
                                                        LR_DEFAULTSIZE));
         SendMessage(hWindow, WM_SETICON, ICON_SMALL, (LPARAM)smallIcon);
-		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
+        SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
     int32 CoreWin32Platform::MoveTouchsToVector(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches)

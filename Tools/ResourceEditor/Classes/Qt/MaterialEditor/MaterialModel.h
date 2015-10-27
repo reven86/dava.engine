@@ -72,7 +72,7 @@ public:
 
     DAVA::NMaterial* GetGlobalMaterial() const;
 
-	void Sync();
+    void Sync();
 
     // drag and drop support
 	QMimeData *	mimeData(const QModelIndexList & indexes) const;
@@ -91,8 +91,8 @@ protected:
 
 private:
     void ReloadLodSwColors();
-    bool SetItemSelection(MaterialItem *item, const EntityGroup *group );
-    void Sync(MaterialItem *item);
+    bool SetItemSelection(MaterialItem* item, const EntityGroup* group);
+    void Sync(MaterialItem* item);
 };
 
 

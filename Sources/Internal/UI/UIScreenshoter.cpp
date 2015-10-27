@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 11;
 static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 10;
 
@@ -82,7 +81,7 @@ Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat fo
     Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
 
     MakeScreenshotInternal(control, screenshot, nullptr);
-    
+
     return screenshot;
 }
 
@@ -154,7 +153,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     // End render
 }
 
-void UIScreenshoter::FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews)
+void UIScreenshoter::FindAll3dViews(UIControl* control, List<UIScreenshoter::Control3dInfo>& foundViews)
 {
     List<UIControl*> processControls;
     processControls.push_back(control);
@@ -178,5 +177,4 @@ void UIScreenshoter::FindAll3dViews(UIControl * control, List<UIScreenshoter::Co
         }
     }
 }
-
 };

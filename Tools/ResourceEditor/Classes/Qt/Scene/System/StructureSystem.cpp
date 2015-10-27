@@ -592,20 +592,19 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 
 void StructureSystem::CopyLightmapSettings(DAVA::NMaterial *fromState, DAVA::NMaterial *toState) const
 {
-
     if (fromState->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
-	{
+    {
         Texture* lightmap = fromState->GetLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
         if (toState->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
             toState->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
-        else            
-            toState->AddTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);		
-	}
-	
+        else
+            toState->AddTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
+    }
+
     if (fromState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))
     {
         const float* data = fromState->GetLocalPropValue(NMaterialParamName::PARAM_UV_SCALE);
-        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))       
+        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))
             toState->SetPropertyValue(NMaterialParamName::PARAM_UV_SCALE, data);
         else
             toState->AddProperty(NMaterialParamName::PARAM_UV_SCALE, data, rhi::ShaderProp::TYPE_FLOAT2);
@@ -614,11 +613,11 @@ void StructureSystem::CopyLightmapSettings(DAVA::NMaterial *fromState, DAVA::NMa
     if (fromState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))
     {
         const float* data = fromState->GetLocalPropValue(NMaterialParamName::PARAM_UV_OFFSET);
-        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))        
-            toState->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, data);        
+        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))
+            toState->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, data);
         else
             toState->AddProperty(NMaterialParamName::PARAM_UV_OFFSET, data, rhi::ShaderProp::TYPE_FLOAT2);
-    }		
+    }
 }
 
 struct BatchInfo

@@ -417,12 +417,11 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
             int32 count = static_cast<int32>(activeInputs.size());
             Replay::Instance()->RecordEventsCount(count);
 
-            std::for_each(begin(activeInputs), end(activeInputs), [](const UIEvent& e)
-                          {
-                              UIEvent ev = e;
-                              ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-                              Replay::Instance()->RecordEvent(&ev);
-                          });
+            std::for_each(begin(activeInputs), end(activeInputs), [](const UIEvent& e) {
+                UIEvent ev = e;
+                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
+                Replay::Instance()->RecordEvent(&ev);
+            });
 
             count = static_cast<int32>(allInputs.size());
             Replay::Instance()->RecordEventsCount(count);
@@ -851,4 +850,3 @@ void UIControlSystem::SetClearColor(const DAVA::Color& _clearColor)
     clearColor = _clearColor;
 }
 };
-

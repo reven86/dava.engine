@@ -35,8 +35,8 @@
 class InspDynamicModifyCommand : public Command2
 {
 public:
-    InspDynamicModifyCommand(DAVA::InspInfoDynamic *dynamicInfo, const DAVA::InspInfoDynamic::DynamicData &ddata, DAVA::FastName key, const DAVA::VariantType &value);
-	~InspDynamicModifyCommand();
+    InspDynamicModifyCommand(DAVA::InspInfoDynamic* dynamicInfo, const DAVA::InspInfoDynamic::DynamicData& ddata, DAVA::FastName key, const DAVA::VariantType& value);
+    ~InspDynamicModifyCommand();
 
 	virtual void Undo();
 	virtual void Redo();
@@ -44,10 +44,10 @@ public:
 
 	DAVA::InspInfoDynamic *dynamicInfo;
 	DAVA::FastName key;
-	
+
     DAVA::InspInfoDynamic::DynamicData ddata;
 
-	DAVA::VariantType oldValue;
+    DAVA::VariantType oldValue;
 	DAVA::VariantType newValue;
 };
 
