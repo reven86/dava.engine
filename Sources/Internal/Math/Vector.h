@@ -200,8 +200,8 @@ public:
     }
 
     //! On functions
-    inline float32 SquareLength()  const;
-	inline float32 Length() const;
+    inline float32 SquareLength() const;
+    inline float32 Length() const;
     inline float32 Normalize();
 	inline void Clamp(float32 min, float32 max);
 
@@ -265,10 +265,10 @@ public:
     };
     static const Vector4 Zero;
 
-    union{
-		struct
-		{
-			float32 x, y, z, w;
+    union {
+        struct
+        {
+            float32 x, y, z, w;
 		};
         float32 data[AXIS_COUNT];
 	};

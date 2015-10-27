@@ -217,7 +217,7 @@ protected:
 		\endcode
 	 */
     virtual void OnAppStarted() = 0;
-	/**
+    /**
 		\brief Called when user requested to quit from application. 
 		You should put all deinitialization in this function. Here you can release all objects. 
 		Framework can help you to find memory leaks but to use memory leak detection you should release all objects carefully. 
@@ -262,12 +262,12 @@ protected:
 		\param[in] timeElapsed time in seconds that passed from the previous frame
 	 */
     virtual void Update(float32 timeElapsed);
-	/**
+    /**
 		\brief Called when application is ready to draw the frame
 		In this function you can perform draw. Normally you should draw inside your particular screen but in some cases you can utilize this function when you need to draw something that will work on every screen.
 	 */
-	virtual void Draw();	
-	/**
+    virtual void Draw();
+    /**
 		\brief Called before draw to let you prepare to the rendering
 	 */
 	virtual void BeginFrame();

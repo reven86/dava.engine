@@ -71,10 +71,10 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 			// Yuri Coder, 2013/02/06. This method is specific for iOS-implementation only,
             // it blocks drawing to avoid deadlocks. See RenderView.mm file for details.
             UIScreenManager::Instance()->BlockDrawing();
-			
-			// Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.
-			UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
-            
+
+            // Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.
+            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
+
             long breakButtonIndex = [alert firstOtherButtonIndex];
             
             [alert performSelectorOnMainThread:@selector(showModal) withObject:nil waitUntilDone:YES];
