@@ -381,11 +381,19 @@ void CanvasSystem::LayoutCanvas()
 
 void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
 {
+    DAVA::Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
     DAVA::Set<PackageBaseNode*> newNodes;
     DAVA::Set<PackageBaseNode*> deletedNodes;
-    std::set_difference(rootControls.begin(), rootControls.end(), rootControls_.begin(), rootControls_.end(), std::inserter(deletedNodes, deletedNodes.end()));
-    std::set_difference(rootControls_.begin(), rootControls_.end(), rootControls.begin(), rootControls.end(), std::inserter(newNodes, newNodes.end()));
-    rootControls = rootControls_;
+    if (!rootControls.empty())
+    {
+        std::set_difference(rootControls.begin(), rootControls.end(), sortedRootControls.begin(), sortedRootControls.end(), std::inserter(deletedNodes, deletedNodes.end()));
+    }
+    if (!sortedRootControls.empty())
+    {
+        std::set_difference(sortedRootControls.begin(), sortedRootControls.end(), rootControls.begin(), rootControls.end(), std::inserter(newNodes, newNodes.end()));
+    }
+    rootControls = sortedRootControls;
+
     for (auto iter = deletedNodes.begin(); iter != deletedNodes.end(); ++iter)
     {
         PackageBaseNode* node = *iter;
@@ -397,16 +405,19 @@ void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackag
         controlsCanvas->RemoveControl(findIt->get()->GetGridControl());
         gridControls.erase(findIt);
     }
-    for (auto iter = newNodes.begin(); iter != newNodes.end(); ++iter)
+    DVASSERT(rootControls_.size() == rootControls.size());
+    for (auto iter = rootControls_.begin(); iter != rootControls_.end(); ++iter)
     {
         PackageBaseNode* node = *iter;
+        if (newNodes.find(node) == newNodes.end())
+        {
+            continue;
+        }
         UIControl* control = node->GetControl();
         DVASSERT(std::find_if(gridControls.begin(), gridControls.end(), [control](std::unique_ptr<BackgroundController>& gridIter) {
                      return gridIter->IsNestedControl(control);
                  }) == gridControls.end());
-        auto findIt = rootControls.find(node);
-        DVASSERT(findIt != rootControls.end());
-        CreateAndInsertGrid(node, std::distance(rootControls.begin(), findIt));
+        CreateAndInsertGrid(node, std::distance(rootControls_.begin(), iter));
     }
     LayoutCanvas();
 }
