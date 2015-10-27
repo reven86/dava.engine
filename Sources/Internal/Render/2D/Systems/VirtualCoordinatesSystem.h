@@ -305,8 +305,9 @@ inline int32 VirtualCoordinatesSystem::GetDesirableResourceIndex() const
     return desirableIndex;
 }
 
-void VirtualCoordinatesSystem::SetDesirableResourceIndex(int32 resourceIndex)
+inline void VirtualCoordinatesSystem::SetDesirableResourceIndex(int32 resourceIndex)
 {
+    DVASSERT(resourceIndex >= 0 && resourceIndex < (int32)allowedSizes.size());
     desirableIndex = resourceIndex;
 }
     
