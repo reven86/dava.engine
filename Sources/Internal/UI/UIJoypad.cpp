@@ -292,8 +292,8 @@ void UIJoypad::Input(UIEvent *currentInput)
 
         if (currentPos.x < deadAreaSize && currentPos.x > -deadAreaSize && currentPos.y < deadAreaSize && currentPos.y > -deadAreaSize)
         {
-			currentPos.x = 0;
-			currentPos.y = 0;
+            currentPos.x = 0;
+            currentPos.y = 0;
 		}
         currentPos.x = Max(currentPos.x, -size.x/2);
         currentPos.x = Min(currentPos.x, size.x/2);
