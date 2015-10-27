@@ -43,8 +43,6 @@
 #include "Tools/version.h"
 #include "Tools/QtTools/DavaGLWidget/davaglwidget.h"
 #include "Tools/QtTools/RunGuard/RunGuard.h"
-#include "Tools/QtTools/FrameworkBinding/DavaLoop.h"
-#include "Tools/QtTools/FrameworkBinding/FrameworkLoop.h"
 #include "Tools/CommandLine/CommandLineParser.h"
 #include "Tools/TeamcityOutput/TeamcityOutput.h"
 #include "Tools/TexturePacker/ResourcePacker2D.h"
@@ -208,36 +206,31 @@ private:
         QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
 
-        new DavaLoop();
-        new FrameworkLoop();
-
         QTimer::singleShot(0, [&] {
             // create and init UI
             QtMainWindow* mainWindow = new QtMainWindow();
 
             mainWindow->EnableGlobalTimeout(true);
             glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
-            FrameworkLoop::Instance()->SetOpenGLWindow(glWidget);
 
             ProjectManager::Instance()->ProjectOpenLast();
             QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
             QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
+            QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
             QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
 
             IQtFramework* qtFramework = Context::queryInterface<IQtFramework>();
             DVASSERT(qtFramework != nullptr);
 
             mainWindow_ = new QtWindow(*qtFramework, std::unique_ptr<QMainWindow>(mainWindow));
-            mainWindow_->show();
 
             IUIApplication* application = Context::queryInterface<IUIApplication>();
             DVASSERT(application != nullptr);
 
             application->addWindow(*mainWindow_);
+            mainWindow_->show();
 
             DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
-
-            DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
         });
     }
 
@@ -255,9 +248,7 @@ private:
 
         ControlsFactory::ReleaseFonts();
 
-        FrameworkLoop::Instance()->Release();
         QtLayer::Instance()->Release();
-        DavaLoop::Instance()->Release();
         delete glWidget;
     }
 
