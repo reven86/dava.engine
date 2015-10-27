@@ -98,7 +98,6 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
 
         // Allocate data buffers before fill them
         davaPolygon->AllocateData(vertexFormat, vertexCount, indexCount);
-        davaPolygon->triangleCount = colladaPolygon->GetTriangleCount();
         
         // Fill index array
         for(uint32 indexNo = 0; indexNo < indexCount; ++indexNo)
@@ -225,32 +224,38 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
     NMaterial * davaMaterialParent = materialParents[parentMaterialName];
     if (nullptr == davaMaterialParent)
     {
-        davaMaterialParent = NMaterial::CreateMaterial(parentMaterialName, parentMaterialTemplate, NMaterial::DEFAULT_QUALITY_NAME);
-        materialParents[parentMaterialName] = davaMaterialParent;
-    }
-    
-    FastName textureType;
-    FilePath texturePath;
-    bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
-    if (!isShadow && hasTexture)
-    {
-        FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texturePath);
+        davaMaterialParent = new NMaterial();
+        davaMaterialParent->SetMaterialName(parentMaterialName);
+        davaMaterialParent->SetFXName(parentMaterialTemplate);
         
-        TextureDescriptor * descr = TextureDescriptor::CreateFromFile(descriptorPathname);
-        if (nullptr != descr)
+        materialParents[parentMaterialName] = davaMaterialParent;
+        
+        FastName textureType;
+        FilePath texturePath;
+        bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
+        if (!isShadow && hasTexture)
         {
-            descr->Save();
-            texturePath = descr->pathname;
-            SafeDelete(descr);
-        }
-        davaMaterialParent->SetTexture(textureType, descriptorPathname);
-    
-        FilePath normalMap = GetNormalMapTexturePath(descriptorPathname);
-        if (FileSystem::Instance()->IsFile(normalMap))
-        {
-            davaMaterialParent->SetTexture(NMaterial::TEXTURE_NORMAL, normalMap);
+            FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texturePath);
+            
+            TextureDescriptor * descr = TextureDescriptor::CreateFromFile(descriptorPathname);
+            if (nullptr != descr)
+            {
+                descr->Save();
+                texturePath = descr->pathname;
+                SafeDelete(descr);
+            }
+            ScopedPtr<Texture> texture (Texture::CreateFromFile(descriptorPathname));
+            davaMaterialParent->AddTexture(textureType, texture);
+         
+            FilePath normalMap = GetNormalMapTexturePath(descriptorPathname);
+            if (FileSystem::Instance()->IsFile(normalMap))
+            {
+                ScopedPtr<Texture> nmTexture (Texture::CreateFromFile(normalMap));
+                davaMaterialParent->AddTexture(NMaterialTextureName::TEXTURE_NORMAL, nmTexture);
+            }
         }
     }
+    
     return davaMaterialParent;
 }
 
@@ -261,7 +266,10 @@ NMaterial* ImportLibrary::CreateMaterialInstance(ColladaPolygonGroupInstance* co
 
     NMaterial * davaMaterialParent = GetOrCreateMaterialParent(colladaMaterial, isShadow);
 
-    NMaterial* material = NMaterial::CreateMaterialInstance();
+    NMaterial* material = new NMaterial();
+    static uint32 materialInstanceNo = 0;
+    String name = Format("Instance-%d", materialInstanceNo++);
+    material->SetMaterialName(FastName(name));
     material->SetParent(davaMaterialParent);
 
     return material;
@@ -273,7 +281,7 @@ bool ImportLibrary::GetTextureTypeAndPathFromCollada(ColladaMaterial * material,
     bool useDiffuseTexture = nullptr != diffuse && material->hasDiffuseTexture;
     if (useDiffuseTexture)
     {
-        type = NMaterial::TEXTURE_ALBEDO;
+        type = NMaterialTextureName::TEXTURE_ALBEDO;
         path = diffuse->texturePathName.c_str();
         return true;
     }
