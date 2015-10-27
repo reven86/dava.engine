@@ -32,6 +32,7 @@
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -330,19 +331,24 @@ void RenderObject::Load(KeyedArchive * archive, SerializationContext *serializat
 void RenderObject::BindDynamicParameters(Camera * camera)
 {    
     DVASSERT(worldTransform != 0);
-    RenderManager::SetDynamicParam(PARAM_WORLD, worldTransform, (pointer_size)worldTransform);
-    if(camera)
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, worldTransform, (pointer_size)worldTransform);
+
+    if (camera && lights[0])
     {
-        if(lights[0])
-        {
-            const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)lights[0]);
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)lights[0]);
-        }        
-        //if(material->GetDynamicBindFlags() & NMaterial::DYNAMIC_BIND_OBJECT_CENTER)                
-        RenderManager::SetDynamicParam(PARAM_LOCAL_BOUNDING_BOX, &bbox, (pointer_size)&bbox);        
-    }    
+        const Vector4& lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)lights[0]);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)lights[0]);
+    }
+    else
+    {
+        //in case we don't have light we are to bind some default values to prevent fall or using previously bound light producing strange artifacts
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &Vector4::Zero, (pointer_size)&Vector4::Zero);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_COLOR, &Color::Black, (pointer_size)&Color::Black);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_AMBIENT_COLOR, &Color::Black, (pointer_size)&Color::Black);
+    }
+
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LOCAL_BOUNDING_BOX, &bbox, (pointer_size)&bbox);
 }
 
 void RenderObject::SetRenderSystem(RenderSystem * _renderSystem)
@@ -456,7 +462,8 @@ int32 RenderObject::GetMaxSwitchIndex() const
 
 void RenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
 {
-    //empty by default
+    for (IndexedRenderBatch& batch : renderBatchArray)
+        batch.renderBatch->GetDataNodes(dataNodes);
 }
 
 };

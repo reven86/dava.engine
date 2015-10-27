@@ -36,6 +36,7 @@
 
 #include "QtTools/SpyWidget/SpySearch/SpySearch.h"
 #include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
 
 #include <QInputDialog>
 
@@ -54,6 +55,9 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
     const float32 xshift = 10.0;
     const float32 yshift = 10.0;
     const float32 zshift = 0.0;
+
+    FastName inGlossinessName("inGlossiness");
+    FastName inSpecularityName("inSpecularity");
 
     if (currentScene->selectionSystem->GetSelectionCount() == 1)
     {
@@ -76,8 +80,16 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
                 NMaterial * material = renderObject->GetRenderBatch(0)->GetMaterial();
                 float32 inGlossiness = (float32)x / 9.0;
                 float32 inSpecularity = (float32)y / 9.0;
-                material->SetPropertyValue(FastName("inGlossiness"), Shader::UT_FLOAT, 1, &inGlossiness);
-                material->SetPropertyValue(FastName("inSpecularity"), Shader::UT_FLOAT, 1, &inSpecularity);
+
+                if (material->HasLocalProperty(inGlossinessName))
+                    material->SetPropertyValue(inGlossinessName, &inGlossiness);
+                else
+                    material->AddProperty(inGlossinessName, &inGlossiness, rhi::ShaderProp::TYPE_FLOAT1);
+
+                if (material->HasLocalProperty(inSpecularityName))
+                    material->SetPropertyValue(inSpecularityName, &inSpecularity);
+                else
+                    material->AddProperty(inSpecularityName, &inSpecularity, rhi::ShaderProp::TYPE_FLOAT1);
 
                 StaticOcclusionSystem *sosystem = currentScene->staticOcclusionSystem;
                 DVASSERT(sosystem);
@@ -144,14 +156,15 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
         polygonGroup->SetIndex(i*24+22, i*8+7); polygonGroup->SetIndex(i*24+23, i*8+4);
     }
 
-    polygonGroup->SetPrimitiveType(PRIMITIVETYPE_LINELIST);
-    ScopedPtr<NMaterial> parentMaterial(NMaterial::CreateMaterial(FastName("DebugSkeleton"),  NMaterialName::DECAL_OPAQUE, NMaterial::DEFAULT_QUALITY_NAME));
-    ScopedPtr<NMaterial> materialInstance(NMaterial::CreateMaterialInstance());    
-    parentMaterial->SetFlag(NMaterial::FLAG_SKINNING, NMaterial::FlagOn);
-    materialInstance->SetParent(parentMaterial);
-    
+    polygonGroup->SetPrimitiveType(rhi::PRIMITIVE_LINELIST);
+
+    ScopedPtr<NMaterial> material(new NMaterial());
+    material->SetMaterialName(FastName("DebugSkeleton"));
+    material->SetFXName(NMaterialName::DECAL_OPAQUE);
+    material->SetFlag(NMaterialFlagName::FLAG_SKINNING, 1);
+
     ScopedPtr<RenderBatch> renderBatch(new RenderBatch());
-    renderBatch->SetMaterial(materialInstance);
+    renderBatch->SetMaterial(material);
     renderBatch->SetPolygonGroup(polygonGroup);
 
     ScopedPtr<SkinnedMesh> skinnedMesh(new SkinnedMesh());
@@ -179,11 +192,10 @@ void DeveloperTools::OnSpyWidget()
 void DeveloperTools::OnReplaceTextureMipmap()
 {
     QStringList items = QStringList()
-        << QString(NMaterial::TEXTURE_ALBEDO.c_str())
-        << QString(NMaterial::TEXTURE_LIGHTMAP.c_str())
-        << QString(NMaterial::TEXTURE_DETAIL.c_str())
-        << QString(NMaterial::TEXTURE_NORMAL.c_str())
-        ;
+    << QString(NMaterialTextureName::TEXTURE_ALBEDO.c_str())
+    << QString(NMaterialTextureName::TEXTURE_LIGHTMAP.c_str())
+    << QString(NMaterialTextureName::TEXTURE_DETAIL.c_str())
+    << QString(NMaterialTextureName::TEXTURE_NORMAL.c_str());
 
     bool isOk;
     QString item = QInputDialog::getItem(QtMainWindow::Instance(), "Replace mipmaps", "Textures:", items, 0, true, &isOk);

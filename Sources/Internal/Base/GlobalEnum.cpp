@@ -43,6 +43,8 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "FileSystem/Logger.h"
+#include "UI/UIWebView.h"
+#include "Render/RHI/rhi_type.h"
 
 using namespace DAVA;
 
@@ -64,22 +66,6 @@ ENUM_DECLARE(Logger::eLogLevel)
     ENUM_ADD_DESCR(Logger::LEVEL_INFO, "Info");
     ENUM_ADD_DESCR(Logger::LEVEL_WARNING, "Warning");
     ENUM_ADD_DESCR(Logger::LEVEL_ERROR, "Error");
-}
-
-ENUM_DECLARE(Texture::TextureWrap)
-{
-	ENUM_ADD_DESCR(Texture::WRAP_CLAMP_TO_EDGE, "WRAP_CLAMP_TO_EDGE");
-	ENUM_ADD_DESCR(Texture::WRAP_REPEAT, "WRAP_REPEAT");
-}
-
-ENUM_DECLARE(Texture::TextureFilter)
-{
-	ENUM_ADD_DESCR(Texture::FILTER_LINEAR, "LINEAR");
-	ENUM_ADD_DESCR(Texture::FILTER_NEAREST, "NEAREST");
-	ENUM_ADD_DESCR(Texture::FILTER_NEAREST_MIPMAP_NEAREST, "NEAREST_MIPMAP_NEAREST");
-	ENUM_ADD_DESCR(Texture::FILTER_LINEAR_MIPMAP_NEAREST, "LINEAR_MIPMAP_NEAREST");
-	ENUM_ADD_DESCR(Texture::FILTER_NEAREST_MIPMAP_LINEAR, "NEAREST_MIPMAP_LINEAR");
-	ENUM_ADD_DESCR(Texture::FILTER_LINEAR_MIPMAP_LINEAR, "LINEAR_MIPMAP_LINEAR");
 }
 
 ENUM_DECLARE(PixelFormat)
@@ -352,6 +338,41 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
 {
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_LEFT_TO_RIGHT, "LeftToRight");
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
+};
+
+ENUM_DECLARE(rhi::TextureAddrMode)
+{
+    ENUM_ADD_DESCR(rhi::TEXADDR_WRAP, "Wrap");
+    ENUM_ADD_DESCR(rhi::TEXADDR_CLAMP, "Clamp");
+    ENUM_ADD_DESCR(rhi::TEXADDR_MIRROR, "Mirror");
+};
+
+ENUM_DECLARE(rhi::TextureFilter)
+{
+    ENUM_ADD_DESCR(rhi::TEXFILTER_NEAREST, "Nearest");
+    ENUM_ADD_DESCR(rhi::TEXFILTER_LINEAR, "Linear");
+};
+
+ENUM_DECLARE(rhi::TextureMipFilter)
+{
+    ENUM_ADD_DESCR(rhi::TEXMIPFILTER_NONE, "None");
+    ENUM_ADD_DESCR(rhi::TEXMIPFILTER_NEAREST, "Nearest");
+    ENUM_ADD_DESCR(rhi::TEXMIPFILTER_LINEAR, "Linear");
+};
+
+ENUM_DECLARE(rhi::PrimitiveType)
+{
+    ENUM_ADD(rhi::PRIMITIVE_TRIANGLELIST);
+    ENUM_ADD(rhi::PRIMITIVE_TRIANGLESTRIP);
+    ENUM_ADD(rhi::PRIMITIVE_LINELIST);
+};
+
+ENUM_DECLARE(UIWebView::eDataDetectorType)
+{
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_PHONE_NUMBERS, "PhoneNumbers");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_LINKS, "Links");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_ADDRESSES, "Addresses");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_CALENDAR_EVENTS, "CalendarEvents");
 };
 
 /*

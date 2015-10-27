@@ -1,0 +1,23 @@
+#include "common.cgh"
+
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION
+    VPROG_IN_TEXCOORD
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    
+    VPROG_OUT_POSITION
+    VPROG_OUT_TEXCOORD0(texCoord,2)
+
+VPROG_OUT_END
+
+VPROG_BEGIN
+
+    float3 in_pos      = VP_IN_POSITION;
+    float2 in_texcoord = VP_IN_TEXCOORD;
+    
+    VP_OUT_POSITION = float4(in_pos.x,in_pos.y,in_pos.z,1.0);
+    VP_OUT(texCoord) = in_texcoord;
+
+VPROG_END

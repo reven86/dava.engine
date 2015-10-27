@@ -47,9 +47,10 @@ public:
 	struct HashMapIterator;
     using iterator = HashMapIterator;
 
-	HashMap(size_t _hashSize = 128, V _defaultV = V());
-	HashMap(const HashMap<K, V> &hm);
-	~HashMap();
+    HashMap(size_t _hashSize = 128, V _defaultV = V());
+    HashMap(std::initializer_list<std::pair<K, V>> init_list, size_t _hashSize = 128, V _defaultV = V());
+    HashMap(const HashMap<K, V>& hm);
+    ~HashMap();
 
 	size_t size() const;
 	size_t count(const K &key) const;
@@ -65,18 +66,19 @@ public:
     
 	V & operator[](const K &key);
     const V & operator[] (const K & key) const;
-    
-	HashMap<K, V>& operator=(const HashMap<K, V> &hm);
 
-	void resize(size_t newSize);
+    HashMap<K, V>& operator=(const HashMap<K, V>& hm);
+    HashMap<K, V>& operator=(std::initializer_list<std::pair<K, V>> init_list);
 
-	inline iterator begin() const;
+    void resize(size_t newSize);
+
+    inline iterator begin() const;
 	inline iterator end() const;
 
-	inline iterator find(const K &key);
+    inline iterator find(const K& key) const;
 
-	V& valueByIndex(size_t index);
-	const V& valueByIndex(size_t index) const;
+    V& valueByIndex(size_t index);
+    const V& valueByIndex(size_t index) const;
 	
 	const K& keyByIndex(size_t index);
 	const K& keyByIndex(size_t index) const;
@@ -163,10 +165,17 @@ HashMap<K, V>::HashMap(size_t _hashSize, V _defaultV)
 }
 
 template <typename K, typename V>
-HashMap<K, V>::HashMap(const HashMap<K, V> &hm)
-	: sz(0)
-	, szTable(0)
-	, table(NULL)
+HashMap<K, V>::HashMap(std::initializer_list<std::pair<K, V>> init_list, size_t _hashSize, V _defaultV)
+    : HashMap(_hashSize, _defaultV)
+{
+    operator=(init_list);
+}
+
+template <typename K, typename V>
+HashMap<K, V>::HashMap(const HashMap<K, V>& hm)
+    : sz(0)
+    , szTable(0)
+    , table(NULL)
 {
 	operator=(hm);
 }
@@ -325,6 +334,22 @@ HashMap<K, V>& HashMap<K, V>::operator=(const HashMap<K, V> &hm)
 }
 
 template <typename K, typename V>
+HashMap<K, V>& HashMap<K, V>::operator=(std::initializer_list<std::pair<K, V>> init_list)
+{
+    for (size_t i = 0; i < szTable; ++i)
+    {
+        table[i] = NULL;
+    }
+
+    for (auto& element : init_list)
+    {
+        insert(element.first, element.second);
+    }
+
+    return *this;
+}
+
+template <typename K, typename V>
 void HashMap<K, V>::clear()
 {
 	const HashMapItem* item = NULL;
@@ -396,7 +421,7 @@ inline typename HashMap<K, V>::iterator HashMap<K, V>::end() const
 }
 
 template <typename K, typename V>
-inline typename HashMap<K, V>::iterator HashMap<K, V>::find(const K &key)
+inline typename HashMap<K, V>::iterator HashMap<K, V>::find(const K& key) const
 {
 	HashMap<K, V>::iterator i(this);
 	HashMapItem *item = GetItem(key);

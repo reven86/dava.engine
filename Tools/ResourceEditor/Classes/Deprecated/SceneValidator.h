@@ -135,8 +135,8 @@ protected:
     void ValidateParticleEffectComponent(Entity *ownerNode, Set<String> &errorsLog) const;
     void ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog, DAVA::Entity* owner) const;
 
-	void ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog);
-	void ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog);
+    void ValidateLandscapeTexture(Landscape* landscape, const FastName& texLevel, Set<String>& errorsLog);
+    void ValidateCustomColorsTexture(Entity* landscapeEntity, Set<String>& errorsLog);
 
     void FixIdentityTransform(Entity *ownerNode,
                               Set<String> &errorsLog,
@@ -157,8 +157,6 @@ protected:
 	bool IsTextureDescriptorPath(const FilePath &path);
 
     bool IsFBOTexture(Texture *texture);
-
-    void ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material);
 
     VariantType* GetCustomPropertyFromParentsTree(Entity *ownerNode, const String & key);
 

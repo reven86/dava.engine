@@ -336,10 +336,24 @@ ENDIF()
 
 endmacro ()
 
+macro(add_target_properties _target _name)
+  set(_properties)
+  foreach(_prop ${ARGN})
+    set(_properties "${_properties} ${_prop}")
+  endforeach(_prop)
+  get_target_property(_old_properties ${_target} ${_name})
+  if(NOT _old_properties)
+    # in case it's NOTFOUND
+    SET(_old_properties)
+  endif(NOT _old_properties)
+  set_target_properties(${_target} PROPERTIES ${_name} "${_old_properties} ${_properties}")
+
+endmacro()
+
 macro ( add_content_win_uap_single CONTENT_DIR )
 
-	#get all files from it and add to SRC
-	file ( GLOB_RECURSE CONTENT_LIST_TMP "${CONTENT_DIR}/*")
+    #get all files from it and add to SRC
+    file ( GLOB_RECURSE CONTENT_LIST_TMP "${CONTENT_DIR}/*")
     
     #check svn dir (it happens)
     FOREACH( ITEM ${CONTENT_LIST_TMP} )
@@ -351,45 +365,117 @@ macro ( add_content_win_uap_single CONTENT_DIR )
 
     ENDFOREACH()
     
-	list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
+    list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
     set ( GROUP_PREFIX "Content\\" )
-	get_filename_component ( CONTENT_DIR_ABS ${CONTENT_DIR} ABSOLUTE )
-	get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR_ABS} PATH )
+    get_filename_component ( CONTENT_DIR_ABS ${CONTENT_DIR} ABSOLUTE )
+    get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR_ABS} PATH )
 
-	#process all content files
-	FOREACH( ITEM ${CONTENT_LIST} )
-		get_filename_component ( ITEM ${ITEM} ABSOLUTE )
-	    #message("Item: ${ITEM}")
-
-		#add item to project source group "Content"
-		get_filename_component ( ITEM_PATH ${ITEM} PATH )
-		STRING( REGEX REPLACE "${CONTENT_DIR_PATH}" "" ITEM_GROUP ${ITEM_PATH} )
-
-		#remove the first '/' symbol
-		STRING ( SUBSTRING ${ITEM_GROUP} 0 1 FIRST_SYMBOL )
-		if (FIRST_SYMBOL STREQUAL "/")
-		    STRING ( SUBSTRING ${ITEM_GROUP} 1 -1 ITEM_GROUP )
-		endif ()
-
-		#reverse the slashes
-		STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
-		#message( "Item group: ${GROUP_PREFIX}${ITEM_GROUP}" )
-		source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )
-
-		#set deployment properties to item
-		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
-		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${ITEM_GROUP} )
-
-	ENDFOREACH()
+    #process all content files
+    FOREACH( ITEM ${CONTENT_LIST} )
+        get_filename_component ( ITEM ${ITEM} ABSOLUTE )
+        #message("Item: ${ITEM}")
+        
+        #add item to project source group "Content"
+        get_filename_component ( ITEM_PATH ${ITEM} PATH )
+        STRING( REGEX REPLACE "${CONTENT_DIR_PATH}" "" ITEM_GROUP ${ITEM_PATH} )
+        
+        #remove the first '/' symbol
+        STRING ( SUBSTRING ${ITEM_GROUP} 0 1 FIRST_SYMBOL )
+        if (FIRST_SYMBOL STREQUAL "/")
+            STRING ( SUBSTRING ${ITEM_GROUP} 1 -1 ITEM_GROUP )
+        endif ()
+        
+        #reverse the slashes
+        STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
+        #message( "Group prefix: ${GROUP_PREFIX}" )
+        #message( "Item group: ${ITEM_GROUP}" )
+        source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )
+        
+        #set deployment properties to item
+        set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
+        
+        #all resources deploys in specified location
+        set ( DEPLOYMENT_LOCATION "${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}\\${ITEM_GROUP}" )
+        set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${DEPLOYMENT_LOCATION} )
+        
+    ENDFOREACH()
 
 endmacro ()
 
 macro ( add_content_win_uap DEPLOYMENT_CONTENT_LIST )
 
-	#process all content files
-	FOREACH( ITEM ${DEPLOYMENT_CONTENT_LIST} )
-		add_content_win_uap_single ( ${ITEM} )
-	ENDFOREACH()
+    #process all content files
+    FOREACH( ITEM ${DEPLOYMENT_CONTENT_LIST} )
+        add_content_win_uap_single ( ${ITEM} )
+    ENDFOREACH()
+
+endmacro ()
+
+macro ( add_static_config_libs_win_uap CONFIG_TYPE LIBS_LOCATION OUTPUT_LIB_LIST )
+
+    #take one platform
+    list ( GET WINDOWS_UAP_PLATFORMS 0 REF_PLATFORM )
+    
+    #find all libs for specified platform
+    file ( GLOB REF_LIB_LIST "${LIBS_LOCATION}/${REF_PLATFORM}/${CONFIG_TYPE}/*.lib" )
+    
+    #find all libs for all platforms
+    FOREACH ( LIB_ARCH ${WINDOWS_UAP_PLATFORMS} )
+            file ( GLOB LIB_LIST "${LIBS_LOCATION}/${LIB_ARCH}/${CONFIG_TYPE}/*.lib" )
+            
+            #add to list only filenames
+            FOREACH ( LIB ${LIB_LIST} )
+                get_filename_component ( LIB_FILE ${LIB} NAME )
+                list( APPEND LIB_FILE_LIST ${LIB_FILE} )
+            ENDFOREACH ()
+    ENDFOREACH ()
+    
+    #unique all platforms' lib list
+    list ( REMOVE_DUPLICATES LIB_FILE_LIST )
+    
+    #compare lists size
+    list ( LENGTH REF_LIB_LIST REF_LIB_LIST_SIZE )
+    list ( LENGTH LIB_FILE_LIST LIB_FILE_LIST_SIZE )
+    unset ( LIB_FILE_LIST )
+
+    #lib sets for all platform must be equal
+    if ( NOT REF_LIB_LIST_SIZE STREQUAL LIB_FILE_LIST_SIZE )
+        message ( FATAL_ERROR "Equality checking of static lib sets failed. "
+                              "Make sure that lib sets are equal for all architectures in ${CONFIG_TYPE} configuration" )
+    endif ()
+    
+    #append every lib to output lib list
+    FOREACH ( LIB ${REF_LIB_LIST} )
+        #replace platform specified part of path on VS Platform variable
+        STRING( REGEX REPLACE "${REF_PLATFORM}" "$(Platform)" LIB ${LIB} )
+        list ( APPEND "${OUTPUT_LIB_LIST}_${CONFIG_TYPE}" ${LIB} )
+    ENDFOREACH ()
+
+endmacro ()
+
+#search static libs in specified location and add them in ${OUTPUT_LIB_LIST}_DEBUG and ${OUTPUT_LIB_LIST}_RELEASE
+#check equality of lib sets for all platforms
+macro ( add_static_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
+
+    add_static_config_libs_win_uap ( "DEBUG"   ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
+    add_static_config_libs_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
+
+endmacro ()
+
+macro ( add_dynamic_config_lib_win_uap CONFIG_TYPE LIBS_LOCATION OUTPUT_LIB_LIST )
+
+    #search dll's 
+    FOREACH ( LIB_ARCH ${WINDOWS_UAP_PLATFORMS} )
+        file ( GLOB LIB_LIST "${LIBS_LOCATION}/${LIB_ARCH}/${CONFIG_TYPE}/*.dll" )
+        list ( APPEND "${OUTPUT_LIB_LIST}_${CONFIG_TYPE}" ${LIB_LIST} )
+    ENDFOREACH ()
+
+endmacro ()
+
+macro ( add_dynamic_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
+
+    add_dynamic_config_lib_win_uap ( "DEBUG"   ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
+    add_dynamic_config_lib_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
 
 endmacro ()
 

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_SCENENODE_H__
 #define __DAVAENGINE_SCENENODE_H__
 
@@ -357,8 +358,8 @@ public:
     /**
         \brief Function to get data nodes of requested type to specific container you provide.
      */
-    template<template <typename, typename> class Container, class T, class A>
-	void GetDataNodes(Container<T, A> & container);
+    template <template <typename, typename> class Container, class T, class A>
+    void GetDataNodes(Container<T, A>& container);
     /**
 	 \brief Optimize scene before export.
      */
@@ -378,11 +379,11 @@ public:
         }
         \endcode
      */
-    template<template <typename, typename> class Container, class T, class A>
-	void GetChildNodes(Container<T, A> & container);
+    template <template <typename, typename> class Container, class T, class A>
+    void GetChildNodes(Container<T, A>& container);
 
-    template<template <typename, typename> class Container, class A>
-    void GetChildEntitiesWithComponent(Container<Entity*, A> & container, Component::eType type);
+    template <template <typename, typename> class Container, class A>
+    void GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type);
 
     uint32 CountChildEntitiesWithComponent(Component::eType type, bool recursive = false) const;
 
@@ -435,8 +436,7 @@ public:
                          MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-                         COLLECTION(components, "Components", I_VIEW));
+                         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT));
 };
 
 inline const bool Entity::GetVisible()
@@ -489,8 +489,8 @@ inline void Entity::SetTag(int32 _tag)
     tag = _tag;
 }
 
-template<template <typename, typename> class Container, class T, class A>
-void Entity::GetDataNodes(Container<T, A> & container)
+template <template <typename, typename> class Container, class T, class A>
+void Entity::GetDataNodes(Container<T, A>& container)
 {
     Set<DataNode*> objects;
     GetDataNodes(objects);
@@ -506,8 +506,8 @@ void Entity::GetDataNodes(Container<T, A> & container)
     }
 }
 
-template<template <typename, typename> class Container, class T, class A>
-void Entity::GetChildNodes(Container<T, A> & container)
+template <template <typename, typename> class Container, class T, class A>
+void Entity::GetChildNodes(Container<T, A>& container)
 {
     Vector<Entity*>::const_iterator end = children.end();
     for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
@@ -522,8 +522,8 @@ void Entity::GetChildNodes(Container<T, A> & container)
     }
 }
 
-template<template <typename, typename> class Container, class A>
-void Entity::GetChildEntitiesWithComponent(Container<Entity*, A> & container, Component::eType type)
+template <template <typename, typename> class Container, class A>
+void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type)
 {
     Vector<Entity*>::const_iterator end = children.end();
     for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)

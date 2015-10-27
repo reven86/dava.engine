@@ -30,7 +30,6 @@
 #include "Core/ApplicationCore.h"
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Sound/SoundSystem.h"
 #include "Debug/Stats.h"
@@ -77,7 +76,8 @@ void ApplicationCore::OnEnterFullscreen()
 { }
 
 void ApplicationCore::OnExitFullscreen()
-{ }
+{
+}
 
 void ApplicationCore::Draw()
 {
@@ -93,15 +93,15 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
-	RenderManager::Instance()->BeginFrame();
+    Renderer::BeginFrame();
     RenderSystem2D::Instance()->BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
     RenderSystem2D::Instance()->EndFrame();
-	RenderManager::Instance()->EndFrame();
-    RenderManager::Instance()->ProcessStats();
+    Renderer::EndFrame();
+    //RenderManager::Instance()->ProcessStats();
 }
 
 void ApplicationCore::OnSuspend()
@@ -175,13 +175,33 @@ bool ApplicationCore::OnQuit()
 	return false;
 }
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) 
-	
+void ApplicationCore::OnAppFinished()
+{
+    // Default implementation is empty.
+}
+
+void ApplicationCore::OnBackground()
+{
+    // Default implementation is empty.
+}
+
 void ApplicationCore::OnForeground()
 {
 	// Default implementation is empty.
 }
 
-#endif
+void ApplicationCore::OnDeviceLocked()
+{
+    // Default implementation is empty.
+}
 
+void ApplicationCore::OnFocusLost()
+{
+    // Default implementation is empty.
+}
+
+void ApplicationCore::OnFocusReceived()
+{
+    // Default implementation is empty.
+}
 };

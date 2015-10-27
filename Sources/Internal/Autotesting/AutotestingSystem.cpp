@@ -41,6 +41,7 @@
 #include "Autotesting/AutotestingSystemLua.h"
 #include "Autotesting/AutotestingDB.h"
 
+#include "Job/JobManager.h"
 
 namespace DAVA
 {
@@ -340,13 +341,13 @@ namespace DAVA
 			for (Map<int32, UIEvent>::iterator it = touches.begin(); it != touches.end(); ++it)
 			{
 				Vector2 point = it->second.point;
-				RenderHelper::Instance()->DrawCircle(point, 25.0f, RenderState::RENDERSTATE_2D_BLEND);
-			}
-		}
-		RenderHelper::Instance()->DrawCircle(GetMousePosition(), 15.0f, RenderState::RENDERSTATE_2D_BLEND);
-	}
+                RenderSystem2D::Instance()->DrawCircle(point, 25.0f, Color::White);
+            }
+        }
+        RenderSystem2D::Instance()->DrawCircle(GetMousePosition(), 15.0f, Color::White);
+    }
 
-	void AutotestingSystem::OnTestStarted()
+    void AutotestingSystem::OnTestStarted()
 	{
 		Logger::Info("AutotestingSystem::OnTestsStarted");
 		startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
@@ -383,10 +384,10 @@ namespace DAVA
 		String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
 		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
-		RenderManager::Instance()->RequestGLScreenShot(this);
-	}
+        Renderer::RequestGLScreenShot(this);
+    }
 
-	const String &AutotestingSystem::GetScreenShotName()
+    const String &AutotestingSystem::GetScreenShotName()
 	{
 		Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
 		return screenShotName;

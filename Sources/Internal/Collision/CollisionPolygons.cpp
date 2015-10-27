@@ -31,7 +31,6 @@
 #include "Base/BaseMath.h"
 #include "Collision/Collisions.h"
 #include "Render/RenderHelper.h"
-#include "Render/RenderManager.h"
 
 namespace DAVA
 {
@@ -107,8 +106,8 @@ bool Collisions::IsPolygonIntersectsPolygon(Polygon2 & poly1, Polygon2 & poly2)
 		AddSeparationAxis(normal);
 
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-		RenderManager::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
-		RenderHelper::DrawLine(points1[index1] + (line / 2), points1[index1] + (line / 2) + normal * 10);
+        RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+        RenderHelper::DrawLine(points1[index1] + (line / 2), points1[index1] + (line / 2) + normal * 10);
 #endif 
 	}		
 	
@@ -122,8 +121,8 @@ bool Collisions::IsPolygonIntersectsPolygon(Polygon2 & poly1, Polygon2 & poly2)
 		AddSeparationAxis(normal);
 		
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-		RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
-		RenderHelper::DrawLine(points2[index1] + (line / 3), points2[index1] + (line / 3) + normal * 10);
+        RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+        RenderHelper::DrawLine(points2[index1] + (line / 3), points2[index1] + (line / 3) + normal * 10);
 #endif 
 	}
 	
@@ -132,9 +131,9 @@ bool Collisions::IsPolygonIntersectsPolygon(Polygon2 & poly1, Polygon2 & poly2)
 	for (size_t index = 0; index < size; ++index)
 	{
 		Vector2 axis = separationAxes[index];
-		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-		RenderHelper::DrawLine(Vector2(50.0f, 50.0f), Vector2(50.0f, 50.0f) + axis * 1000);
-	}
+        RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        RenderHelper::DrawLine(Vector2(50.0f, 50.0f), Vector2(50.0f, 50.0f) + axis * 1000);
+    }
 #endif 
 
 	for (size_t index = 0; index < size; ++index)
@@ -149,12 +148,12 @@ bool Collisions::IsPolygonIntersectsPolygon(Polygon2 & poly1, Polygon2 & poly2)
 		ProjectPolygon(axis, poly2, p2Min, p2Max);
 
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-		RenderManager::Instance()->SetColor(0.0f, 1.0f, 1.0f, 1.0f);
-		Vector2 norm = Vector2(axis.y, -axis.x);
-		RenderHelper::DrawLine(Vector2(50.0f, 50.0f) + axis * p1Min + norm * 2.0f, Vector2(50.0f, 50.0f) + axis * p1Max + norm * 2.0f);
+        RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 1.0f, 1.0f);
+        Vector2 norm = Vector2(axis.y, -axis.x);
+        RenderHelper::DrawLine(Vector2(50.0f, 50.0f) + axis * p1Min + norm * 2.0f, Vector2(50.0f, 50.0f) + axis * p1Max + norm * 2.0f);
 
-		RenderManager::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.0f);
-		RenderHelper::DrawLine(Vector2(50.0f, 50.0f) + axis * p2Min - norm * 2.0f, Vector2(50.0f, 50.0f) + axis * p2Max - norm * 2.0f);
+        RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.0f);
+        RenderHelper::DrawLine(Vector2(50.0f, 50.0f) + axis * p2Min - norm * 2.0f, Vector2(50.0f, 50.0f) + axis * p2Max - norm * 2.0f);
 #endif
 		
 		

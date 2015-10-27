@@ -46,18 +46,12 @@ public:
     void InitArgs();
     void Quit() override;
 
-    HINSTANCE GetInstance() const;
-    HWND GetWindow() const;
-
     void SetCursorPositionCenter();
     void SetCursorPosition(Point2i position);
     Point2i GetCursorPosition();
 
 protected:
     static void SetCursorPosCenterInternal(HWND hWnd);
-
-    HINSTANCE hInstance;
-    HWND hWindow;
 };
 
 };

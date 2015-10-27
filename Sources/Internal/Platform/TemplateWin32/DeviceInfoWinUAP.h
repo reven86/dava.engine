@@ -79,16 +79,18 @@ private:
     using HIDConvPair = std::pair<NativeHIDType, DeviceInfo::eHIDType>;
     Vector<HIDConvPair> HidConvSet =
     {
-    {UNKNOWN, DeviceInfo::HID_UNKNOWN_TYPE},
-    {POINTER, DeviceInfo::HID_POINTER_TYPE},
-    {MOUSE, DeviceInfo::HID_MOUSE_TYPE},
-    {JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE},
-    {GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE},
-    {KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE},
-    {KEYPAD, DeviceInfo::HID_KEYPAD_TYPE},
-    {SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE}};
+      { UNKNOWN, DeviceInfo::HID_UNKNOWN_TYPE },
+      { POINTER, DeviceInfo::HID_POINTER_TYPE },
+      { MOUSE, DeviceInfo::HID_MOUSE_TYPE },
+      { JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE },
+      { GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE },
+      { KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE },
+      { KEYPAD, DeviceInfo::HID_KEYPAD_TYPE },
+      { SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE }
+    };
 
     Windows::Devices::Enumeration::DeviceWatcher ^ CreateDeviceWatcher(NativeHIDType type);
+    void CreateAndStartHIDWatcher();
     void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation ^ information);
     void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate ^ information);
     bool IsEnabled(NativeHIDType type);
@@ -97,7 +99,17 @@ private:
 
     bool isTouchPresent = false;
     bool isMobileMode = false;
-    Map<NativeHIDType, uint16> hids;
+    Map<NativeHIDType, uint16> hids =
+    {
+      { UNKNOWN, 0 },
+      { POINTER, 0 },
+      { MOUSE, 0 },
+      { JOYSTICK, 0 },
+      { GAMEPAD, 0 },
+      { KEYBOARD, 0 },
+      { KEYPAD, 0 },
+      { SYSTEM_CONTROL, 0 }
+    };
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 
     DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;

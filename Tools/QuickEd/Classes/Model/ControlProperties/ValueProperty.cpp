@@ -53,14 +53,14 @@ ValueProperty::~ValueProperty()
 
 }
 
-int ValueProperty::GetCount() const
+uint32 ValueProperty::GetCount() const
 {
-    return static_cast<int>(children.size());
+    return static_cast<int32>(children.size());
 }
 
-AbstractProperty *ValueProperty::GetProperty(int index) const
+AbstractProperty* ValueProperty::GetProperty(int32 index) const
 {
-    if (0 <= index && index < children.size())
+    if (0 <= index && index < static_cast<int32>(children.size()))
     {
         return children[index];
     }

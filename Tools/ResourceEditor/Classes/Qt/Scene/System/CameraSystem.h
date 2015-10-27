@@ -111,8 +111,7 @@ protected:
 
     DAVA::float32 distanceToCamera;
 
-    DAVA::UniqueHandle renderState;
-	DAVA::uint32 activeSpeedIndex;
+    DAVA::uint32 activeSpeedIndex;
 };
 
 #endif

@@ -237,8 +237,16 @@ ServerCacheEntry* CacheDB::Get(const CacheItemKey& key)
         {
             const FilePath path = CreateFolderPath(key);
 
-            entry->Fetch(path);
-            InsertInFastCache(key, entry);
+            if (true == entry->Fetch(path))
+            {
+                InsertInFastCache(key, entry);
+            }
+            else
+            {
+                Logger::Error("[CacheDB::%s] Fetch error. Entry '%s' will be removed from cache", __FUNCTION__, KeyToString(key).c_str());
+                Remove(key);
+                entry = nullptr;
+            }
         }
     }
 
