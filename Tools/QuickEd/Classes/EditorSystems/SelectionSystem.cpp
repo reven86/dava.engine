@@ -150,13 +150,13 @@ void SelectionSystem::FocusToChild(bool next)
     }
     PackageBaseNode* nextNode = nullptr;
     Vector<PackageBaseNode*> allNodes;
-    systemManager->CollectControlNodes(std::back_inserter(allNodes  ), [](const UIControl*) { return true; });
-    if(allNodes.empty())
+    systemManager->CollectControlNodes(std::back_inserter(allNodes), [](const UIControl*) { return true; });
+    if (allNodes.empty())
     {
         return;
     }
     auto findIt = std::find(allNodes.begin(), allNodes.end(), startNode);
-    if(next)
+    if (next)
     {
         nextNode = findIt == allNodes.end() || ++findIt == allNodes.end() ? *allNodes.begin() : *findIt;
     }
