@@ -84,6 +84,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("orientation"), VariantType(UIFlowLayoutComponent::ORIENTATION_LEFT_TO_RIGHT)),
                      UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hPadding"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hDynamicPadding"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hDynamicInLinePadding"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hSpacing"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hDynamicSpacing"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("vPadding"), VariantType(0.0f)),
