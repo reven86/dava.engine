@@ -51,19 +51,19 @@ class PackageWidget : public QDockWidget, public Ui::PackageWidget
 public:
     explicit PackageWidget(QWidget *parent = 0);
     ~PackageWidget() = default;
-    
+
     using ExpandedIndexes = QModelIndexList ;
 
 signals:
-    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
-    
+    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+
 public slots:
-    void OnDocumentChanged(Document *context);
-    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
-    
+    void OnDocumentChanged(Document* context);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+
 private slots:
-    void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
-    void filterTextChanged(const QString &);
+    void OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
+    void filterTextChanged(const QString&);
     void OnImport();
     void OnCopy();
     void OnPaste();
@@ -71,12 +71,12 @@ private slots:
     void OnDelete();
     void OnRename();
     void OnAddStyle();
-    
+
 private:
     void LoadContext();
     void SaveContext();
     void RefreshActions();
-    
+
     void OnControlSelectedInEditor(const QList<ControlNode *> &node);
 
     void RefreshAction(QAction *action, bool enabled, bool visible);
@@ -93,15 +93,15 @@ private:
 
 private:
     QAction *CreateSeparator();
-    Document *document = nullptr;
-    QAction *importPackageAction = nullptr;
-    QAction *copyAction = nullptr;
-    QAction *pasteAction = nullptr;
-    QAction *cutAction = nullptr;
-    QAction *delAction = nullptr;
-    QAction *renameAction = nullptr;
-    QAction *addStyleAction = nullptr;
-    
+    Document* document = nullptr;
+    QAction* importPackageAction = nullptr;
+    QAction* copyAction = nullptr;
+    QAction* pasteAction = nullptr;
+    QAction* cutAction = nullptr;
+    QAction* delAction = nullptr;
+    QAction* renameAction = nullptr;
+    QAction* addStyleAction = nullptr;
+
     FilteredPackageModel* filteredPackageModel = nullptr;
     PackageModel* packageModel = nullptr;
 

@@ -45,6 +45,7 @@ class UIControl;
 class UIGeometricData;
 struct TiledDrawData;
 struct StretchDrawData;
+class NMaterial;
 
     /**
      \ingroup controlsystem
@@ -297,9 +298,6 @@ public:
     // WTF? Probably we should move it to protected to avoid problems in future?
     Color color;//!<Control color. By default is Color(1,1,1,1).
 
-
-    void SetShader(Shader *shader);
-    
     /**
      \brief Sets the margins for drawing background. Positive values means inner
      offset, negative ones - outer.
@@ -311,8 +309,8 @@ public:
      */
     inline const UIMargins* GetMargins() const;
 
-    void SetRenderState(UniqueHandle renderState);
-    UniqueHandle GetRenderState() const;
+    void SetMaterial(NMaterial* material);
+    NMaterial* GetMaterial() const;
 
 protected:
 
@@ -344,9 +342,7 @@ protected:
     ~UIControlBackground();
     Color drawColor;
 
-    Shader *shader;
-    
-    UniqueHandle renderState;
+    NMaterial* material;
 #if defined(LOCALIZATION_DEBUG)
     Sprite::DrawState lastDrawState;
 #endif
@@ -389,16 +385,6 @@ inline void UIControlBackground::SetColor(const Color & _color)
 inline const Color &UIControlBackground::GetColor() const
 {
     return color;
-}
-    
-inline void UIControlBackground::SetRenderState(UniqueHandle _renderState)
-{
-    renderState = _renderState;
-}
-    
-inline UniqueHandle UIControlBackground::GetRenderState() const
-{
-    return renderState;
 }
 
 inline const UIControlBackground::UIMargins* UIControlBackground::GetMargins() const

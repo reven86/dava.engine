@@ -31,7 +31,6 @@
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
 
-
 extern void FrameworkMain(int argc, char *argv[]);
 
 @implementation OpenGLView
@@ -89,15 +88,17 @@ extern void FrameworkMain(int argc, char *argv[]);
 	GLint swapInt = 1;
     [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 	
-	DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
-	
-	activeCursor = 0;
+#if RHI_COMPLETE
+    DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
+#endif
+
+    activeCursor = 0;
     
     //RenderManager::Create(Core::RENDERER_OPENGL);
 	
     willQuit = false;
-    
-	return self;	
+
+    return self;
 }
 
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
@@ -147,8 +148,10 @@ extern void FrameworkMain(int argc, char *argv[]);
 - (void)reshape
 {
 	NSRect rect = self.frame;
-	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
-	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+#if RHI_COMPLETE
+    DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
+#endif
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
 	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
 	
 	sizeChanged = YES;
@@ -168,50 +171,8 @@ extern void FrameworkMain(int argc, char *argv[]);
         return;
     
 //	Logger::FrameworkDebug("drawRect started");
-	
-	if (activeCursor != RenderManager::Instance()->GetCursor())
-	{
-		activeCursor = RenderManager::Instance()->GetCursor();
-		[[self window] invalidateCursorRectsForView: self];
-	}
-	
-	
-	DAVA::RenderManager::Instance()->Lock();
-	
-	if (isFirstDraw)
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		isFirstDraw = false;
-	}	
-	
 
-	
-	DAVA::Core::Instance()->SystemProcessFrame();
-	
-/*	// This is an optimization.  If the view is being
-	// resized, don't do a buffer swap.  The GL content
-	// will be updated as part of the window flush anyway.
-	// This makes live resize look nicer as the GL view
-	// won't get flushed ahead of the window flush.  It also
-	// makes live resize faster since we're not flushing twice.
-	// Because I want the animtion to continue while resize
-	// is happening, I use my own flag rather than calling
-	// [self inLiveReize].  For most apps this wouldn't be
-	// necessary.
- 
-	if(!sizeChanged)
-	{
-		[[self openGLContext] flushBuffer];
-	}
-	else glFlush();
-	sizeChanged = NO; */
-    if(DAVA::Core::Instance()->IsActive())
-    {
-        [[self openGLContext] flushBuffer];
-    }
-	DAVA::RenderManager::Instance()->Unlock();
-//	Logger::FrameworkDebug("drawRect ended");
-
+    DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (void) resetCursorRects
@@ -247,6 +208,8 @@ extern void FrameworkMain(int argc, char *argv[]);
 	return YES;
 }
 
+static Vector<DAVA::UIEvent> activeTouches;
+
 void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
 {
     NSPoint p = [curEvent locationInWindow];
@@ -256,7 +219,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
         event.physPoint.x = [curEvent scrollingDeltaX];
         event.physPoint.y = [curEvent scrollingDeltaY];
     }
-    else if(InputSystem::Instance()->IsCursorPining())
+    else if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
@@ -274,19 +237,19 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
     event.phase = phase;
 }
 
-- (void)moveTouchsToVector:(int)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
+void MoveTouchsToVector(NSEvent* curEvent, int touchPhase, Vector<UIEvent>* outTouches)
 {
 	int button = 0;
-	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged)
-	{
+    if (curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
+    {
 		button = 1;
 	}
 	else if(curEvent.type == NSRightMouseDown || curEvent.type == NSRightMouseUp || curEvent.type == NSRightMouseDragged)
 	{
 		button = 2;
 	}
-	else if(curEvent.type != NSMouseMoved)
-	{
+    else
+    {
 		button = curEvent.buttonNumber + 1;
 	}
 	
@@ -310,15 +273,15 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
     
 	if(phase == UIEvent::PHASE_DRAG)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-		{
+        for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        {
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
 		}
 	}
     
 	bool isFind = false;
-	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-	{
+    for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    {
 		if(it->tid == button)
 		{
 			isFind = true;
@@ -335,23 +298,23 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
 		newTouch.tid = button;
         
         ConvertNSEventToUIEvent(curEvent, newTouch, phase);
-        
-		allTouches.push_back(newTouch);
-	}
 
-	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-	{
+        activeTouches.push_back(newTouch);
+    }
+
+    for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    {
 		outTouches->push_back(*it);
 	}
 
 	if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-		{
+        for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        {
 			if(it->tid == button)
 			{
-				allTouches.erase(it);
-				break;
+                activeTouches.erase(it);
+                break;
 			}
 		}
 	}
@@ -363,7 +326,8 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
 {
 	Vector<DAVA::UIEvent> touches;
 
-    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
+    MoveTouchsToVector(touch, touchPhase, &touches);
+
     UIControlSystem::Instance()->OnInput(touches, allTouches);
     touches.clear();
 }
@@ -395,6 +359,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
 - (void)mouseEntered:(NSEvent *)theEvent
 {
 	NSLog(@"mouse ENTERED");
+#if RHI_COMPLETE
     if(RenderManager::Instance()->GetCursor())
     {
         if(RenderManager::Instance()->GetCursor()->IsShow())
@@ -402,6 +367,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
         else
             [NSCursor hide];
     }
+#endif
 //	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)mouseExited:(NSEvent *)theEvent
@@ -502,6 +468,5 @@ static int32 oldModifersFlags = 0;
     
     oldModifersFlags = newModifers;
 }
-
 
 @end

@@ -35,6 +35,7 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include <QSettings>
 #include <QVariant>
@@ -74,7 +75,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
 
-    QCheckBox *emulationBox = mainWindow->GetCheckboxEmulation();
+    QCheckBox* emulationBox = mainWindow->GetCheckboxEmulation();
     connect(emulationBox, &QCheckBox::clicked, documentGroup, &DocumentGroup::SetEmulationMode);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
@@ -91,8 +92,11 @@ EditorCore::EditorCore(QObject *parent)
     auto previewWidget = mainWindow->previewWidget;
     auto scrollAreaController = previewWidget->GetScrollAreaController();
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, previewWidget, &PreviewWidget::SetSelectedNodes);
+
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
+    connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
@@ -100,13 +104,17 @@ EditorCore::EditorCore(QObject *parent)
 
 void EditorCore::Start()
 {
+    mainWindow->show();
+}
+
+void EditorCore::OnGLWidgedInitialized()
+{
     int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
     QStringList projectList;
     if (projectCount > 0)
     {
         OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
     }
-    mainWindow->show();
 }
 
 void EditorCore::OnCleanChanged(bool clean)
@@ -177,7 +185,7 @@ bool EditorCore::CloseOneDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
-    Document *document = documents.at(index);
+    Document* document = documents.at(index);
     QUndoStack *undoStack = document->GetUndoStack();
     if (!undoStack->isClean())
     {
@@ -398,7 +406,7 @@ bool EditorCore::eventFilter( QObject *obj, QEvent *event )
             {
             case Qt::ApplicationInactive:
             {
-                if ( QtLayer::Instance() )
+                if (QtLayer::Instance())
                 {
                     QtLayer::Instance()->OnSuspend();
                 }
@@ -406,7 +414,7 @@ bool EditorCore::eventFilter( QObject *obj, QEvent *event )
             }
             case Qt::ApplicationActive:
             {
-                if ( QtLayer::Instance() )
+                if (QtLayer::Instance())
                 {
                     QtLayer::Instance()->OnResume();
                 }

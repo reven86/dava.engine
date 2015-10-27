@@ -36,6 +36,7 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 #include "Platform/DeviceInfo.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -56,9 +57,12 @@ public:
     void Quit() override;
 
     eScreenMode GetScreenMode() override;
-    void SwitchScreenToMode(eScreenMode screenMode) override;
+    bool SetScreenMode(eScreenMode screenMode) override;
     DisplayMode GetCurrentDisplayMode() override;
-    void SetCursorPinning(bool isPinning);
+
+    bool GetCursorVisibility();
+    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
+    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
 
     // Win10 specific member functions
 
@@ -133,9 +137,6 @@ void CorePlatformWinUAP::RunOnMainThreadBlocked(F&& fn)
 {
     RunOnMainThread(std::function<void()>(std::forward<F>(fn)), true);
 }
-
-// temporary decision, need delete when signal will be enabled
-DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func);
 
 }   // namespace DAVA
 

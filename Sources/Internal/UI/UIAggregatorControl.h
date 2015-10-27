@@ -39,17 +39,16 @@ namespace DAVA
 	protected:
 		~UIAggregatorControl(){}
 	public:
-		UIAggregatorControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-		virtual UIControl *Clone();
+        UIAggregatorControl(const Rect& rect = Rect());
+        UIAggregatorControl* Clone() override;
 
-		virtual YamlNode* SaveToYamlNode(UIYamlLoader * loader);
-		virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-		virtual List<UIControl* >& GetRealChildren();
-	
-		void AddAggregatorChild(UIControl* uiControl);
-		
-		void SetAggregatorPath(const FilePath& path);
-		const FilePath & GetAggregatorPath() const;
+        virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
+        virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
+
+        void AddAggregatorChild(UIControl* uiControl);
+
+        void SetAggregatorPath(const FilePath& path);
+        const FilePath & GetAggregatorPath() const;
 			
 	private:
 		List<UIControl* > aggregatorControls;

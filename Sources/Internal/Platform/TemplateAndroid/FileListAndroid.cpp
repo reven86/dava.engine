@@ -65,7 +65,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
             jstring jName = (jstring) env->GetObjectField(item, jNameField);
 
             JniFileListEntry entry;
-            JNI::CreateStringFromJni(jName, entry.name);
+            entry.name = JNI::ToString(jName);
             entry.size = jSize;
             entry.isDirectory = jIsDir;
             fileList.push_back(entry);

@@ -58,11 +58,10 @@ namespace DAVA
 	void LinearRenderHierarchy::ObjectUpdated(RenderObject * renderObject)
 	{		
 	}
-    
-	void LinearRenderHierarchy::Clip(Camera * camera, VisibilityArray * _visibilityArray, uint32 visibilityCriteria)
-	{				
-		visibilityArray = _visibilityArray;
-		Frustum * frustum = camera->GetFrustum();
+
+    void LinearRenderHierarchy::Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint32 visibilityCriteria)
+    {
+        Frustum * frustum = camera->GetFrustum();
 		uint32 size = static_cast<uint32>(renderObjectArray.size());
 		for (uint32 pos = 0; pos < size; ++pos)
 		{
@@ -70,13 +69,12 @@ namespace DAVA
 			if ((node->GetFlags() & visibilityCriteria) != visibilityCriteria)
 				continue;					
 			//still need to add flags for particles to dicede if to use DefferedUpdate
-			if ((RenderObject::ALWAYS_CLIPPING_VISIBLE & node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))			
-				visibilityArray->Add(node);						
-		}
-		       
+			if ((RenderObject::ALWAYS_CLIPPING_VISIBLE & node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))
+                visibilityArray.push_back(node);
+        }
 	}
-    
-    void LinearRenderHierarchy::GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray)
+
+    void LinearRenderHierarchy::GetAllObjectsInBBox(const AABBox3& bbox, Vector<RenderObject*>& visibilityArray)
     {
         uint32 size = static_cast<uint32>(renderObjectArray.size());
 		for (uint32 pos = 0; pos < size; ++pos)
@@ -84,7 +82,7 @@ namespace DAVA
 			RenderObject * ro = renderObjectArray[pos];
             if (bbox.IntersectsWithBox(ro->GetWorldBoundingBox()))
             {
-                visibilityArray->Add(ro);
+                visibilityArray.push_back(ro);
             }
         }
     }

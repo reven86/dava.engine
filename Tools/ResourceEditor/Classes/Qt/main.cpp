@@ -39,7 +39,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Project/ProjectManager.h"
 #include "TeamcityOutput/TeamcityOutput.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TextureCompression/PVRConverter.h"
 #include "CommandLine/CommandLineManager.h"
@@ -62,9 +62,6 @@
 #else
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
-
-#include "QtTools/FrameworkBinding/DavaLoop.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
 #include <QDebug>
 
@@ -115,7 +112,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 {
 #ifdef Q_OS_MAC
@@ -129,27 +125,18 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 
     new SceneValidator();
 
-    new DavaLoop();
-    new FrameworkLoop();
-
     auto glWidget = new DavaGLWidget();
     glWidget->MakeInvisible();
-
-    FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
 
     DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
 
     // Delayed initialization throught event loop
     glWidget->show();
 #ifdef Q_OS_WIN
-    FrameworkLoop::Instance()->Context();   // Force context initialization
     QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
-    QTimer::singleShot( 0, glWidget, &DavaGLWidget::OnWindowExposed );
     a.exec();
 #endif
     glWidget->hide();
-
-    RenderManager::Instance()->Init( 0, 0 );
 
     cmdLine.InitalizeTool();
     if ( !cmdLine.IsToolInitialized() )
@@ -172,10 +159,6 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     SettingsManager::Instance()->Release();
     BeastProxy::Instance()->Release();
     Core::Instance()->Release();
-
-    FrameworkLoop::Instance()->Release();
-    QtLayer::Instance()->Release();
-    DavaLoop::Instance()->Release();
 
     delete glWidget;
 }
@@ -219,9 +202,6 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     QTimer::singleShot(0, []{ DAVA::QtLayer::RestoreMenuBar();       } );
 #endif
     
-    new DavaLoop();
-    new FrameworkLoop();
-    
     DavaGLWidget *glWidget = nullptr;
     QtMainWindow *mainWindow = nullptr;
 
@@ -232,18 +212,16 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
         
         mainWindow->EnableGlobalTimeout( true );
         glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
-        FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
         
         ProjectManager::Instance()->ProjectOpenLast();
-        QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites );
-        QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized );
-        QObject::connect( glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection );
-        
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
+
         mainWindow->show();
         
         DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
-        
-        DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
     } );
     
     
@@ -262,9 +240,6 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 
     ControlsFactory::ReleaseFonts();
 
-    FrameworkLoop::Instance()->Release();
-    QtLayer::Instance()->Release();
-    DavaLoop::Instance()->Release();
     delete glWidget;
 }
 

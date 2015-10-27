@@ -102,13 +102,13 @@ private:
 	Function<void (jint, jboolean)> setMultiline;
 };
 
-class UITextFieldAndroid
+class TextFieldPlatformImpl
 {
 public:
-	UITextFieldAndroid(UITextField* textField);
-	virtual ~UITextFieldAndroid();
+    TextFieldPlatformImpl(UITextField* textField);
+    virtual ~TextFieldPlatformImpl();
 
-	void OpenKeyboard();
+    void OpenKeyboard();
 	void CloseKeyboard();
 	void GetText(WideString & string) const;
 	void SetText(const WideString & string);
@@ -159,8 +159,10 @@ public:
 	static void TextFieldFocusChanged(uint32_t id, bool hasFocus);
 	static void TextFieldUpdateTexture(uint32_t id, int32* pixels, int width, int height);
 
+    void SystemDraw(const UIGeometricData& geometricData);
+
 private:
-	static UITextFieldAndroid* GetUITextFieldAndroid(uint32_t id);
+    static TextFieldPlatformImpl* GetUITextFieldAndroid(uint32_t id);
 
 protected:
     // Truncate the text to maxLength characters.
@@ -170,9 +172,9 @@ private:
     std::shared_ptr<JniTextField> jniTextField;
 	UITextField* textField = nullptr;
 	static uint32_t sId;
-	static Map<uint32_t, UITextFieldAndroid*> controls;
-	uint32_t id;
-	Rect rect;
+    static UnorderedMap<uint32_t, TextFieldPlatformImpl*> controls;
+    uint32_t id;
+    Rect rect;
 	WideString text;
 	int32_t align;
 	bool useRtlAlign;

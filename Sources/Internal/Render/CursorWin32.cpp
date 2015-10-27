@@ -33,126 +33,99 @@
 
 #include "Render/Cursor.h"
 #include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
+#include "FileSystem/FileSystem.h"
 
-void DAVA::Cursor::SetCursorPinning(bool pin)
+static DAVA::InputSystem::eMouseCaptureMode mouseMode = DAVA::InputSystem::eMouseCaptureMode::OFF;
+static bool lastSystemCursorShowState = true;
+
+DAVA::InputSystem::eMouseCaptureMode DAVA::Cursor::GetMouseCaptureMode()
+{
+    return mouseMode;
+}
+
+bool DAVA::Cursor::SetMouseCaptureMode(DAVA::InputSystem::eMouseCaptureMode mode)
 {
     static DAVA::Point2i lastCursorPosition;
 
-    ShowSystemCursor(!pin);
+    switch (mode)
+    {
+    case DAVA::InputSystem::eMouseCaptureMode::OFF:
+    case DAVA::InputSystem::eMouseCaptureMode::PINING:
+    {
+        SetSystemCursorVisibility(mode != DAVA::InputSystem::eMouseCaptureMode::PINING);
+        CoreWin32PlatformBase* winCore = static_cast<CoreWin32PlatformBase*>(Core::Instance());
+        if (mode == DAVA::InputSystem::eMouseCaptureMode::PINING)
+        {
+            lastCursorPosition = winCore->GetCursorPosition();
+            winCore->SetCursorPositionCenter();
+        }
+        else
+        {
+            winCore->SetCursorPosition(lastCursorPosition);
+        }
 
-    CoreWin32PlatformBase * winCore = static_cast<CoreWin32PlatformBase *>(Core::Instance());
-    if (pin)
-    {
-        lastCursorPosition = winCore->GetCursorPosition();
-        winCore->SetCursorPositionCenter();
+        mouseMode = mode;
+        return true;
     }
-    else
-    {
-        winCore->SetCursorPosition(lastCursorPosition);
+    case DAVA::InputSystem::eMouseCaptureMode::FRAME:
+        Logger::Error("Unsupported cursor capture mode");
+        return false;
+    default:
+        DVASSERT_MSG(false, "Incorrect cursor capture mode");
+        Logger::Error("Incorrect cursor capture mode");
+        return false;
     }
 }
 
-void DAVA::Cursor::ShowSystemCursor( bool show )
+bool DAVA::Cursor::GetSystemCursorVisibility()
 {
+    CURSORINFO ci = { sizeof(ci), 0 };
+    if (GetCursorInfo(&ci) != 0)
+    {
+        return (ci.flags & CURSOR_SHOWING) == CURSOR_SHOWING; // In Windows 8 will be added other flags;
+    }
+    return lastSystemCursorShowState;
+}
+
+bool DAVA::Cursor::SetSystemCursorVisibility(bool show)
+{
+    int32 showCount = 0;
     CURSORINFO ci = { sizeof( ci ), 0 };
     if ( GetCursorInfo( &ci ) != 0 )
     {
         const auto isVisible = ( ci.flags & CURSOR_SHOWING ) == CURSOR_SHOWING; // In Windows 8 will be added other flags
         if ( show != isVisible )
         {
-            ShowCursor( show );
+            showCount = ShowCursor(show);
+        }
+        else
+        {
+            // Nothing to change -> accept
+            return true;
         }
     }
     else
     {
-        ShowCursor( show ); // No cursor info available, just call
+        showCount = ShowCursor(show); // No cursor info available, just call
     }
+
+    if (show && showCount >= 0)
+    {
+        // If system cursor is visible then showCount should be >= 0
+        lastSystemCursorShowState = true;
+    }
+    else if (!show && showCount < 0)
+    {
+        // If system cursor is not visible then showCount should be -1
+        lastSystemCursorShowState = false;
+    }
+    else
+    {
+        // Setup failure
+        return false;
+    }
+
+    return true;
 }
-
-#endif
-
-#if defined(__DAVAENGINE_WINDOWS__) && defined (__DAVAENGINE_DIRECTX9__)
-
-#include "FileSystem/FileSystem.h"
-#include "Render/RenderManager.h"
-#include "Render/D3D9Helpers.h"
-
-namespace DAVA
-{
-
-Cursor * Cursor::Create(const String & cursorPathname, const Vector2 & hotSpot)
-{
-	//const String & realPath = FileSystem::Instance()->SystemPathForFrameworkPath(cursorPathname);
-	Texture * cursorTexture = Texture::CreateFromFile(cursorPathname);
-	if (!cursorTexture)return 0;
-
-	Cursor * cursor = new Cursor();
-	cursor->cursorTexture = cursorTexture;
-	cursor->hotSpot = hotSpot;
-
-	//Sprite * cursorSprite = Sprite::Create("~res:/Gfx/upgrade/list");//Sprite::CreateFromTexture(cursorTexture, 0, 0, cursorTexture->GetWidth(), cursorTexture->GetHeight());
-	Sprite * cursorSprite = Sprite::CreateFromTexture(cursorTexture, 0, 0, (float32)cursorTexture->GetWidth(), (float32)cursorTexture->GetHeight());
-	cursor->cursorSprite = cursorSprite;
-	cursorSprite->SetDefaultPivotPoint(hotSpot);
-	cursorSprite->Reset();
-	return cursor;
-}
-
-Cursor::Cursor()
-: show(true)
-{
-	cursorSprite = 0;
-	cursorTexture = 0;
-}
-	
-Cursor::~Cursor()
-{
-	SafeRelease(cursorSprite);
-	SafeRelease(cursorTexture);
-}
-
-void Cursor::SoftwareDraw(const Vector2 & pos)
-{
-	if(show)
-	{
-		cursorSprite->SetPosition(pos);
-		cursorSprite->Draw();
-	}
-}
-
-void Cursor::HardwareSet()
-{
-	/*
-		
-	*/
-	if (RenderManager::Instance()->GetCaps().isHardwareCursorSupported)
-	{
-		//SetCursor(0);
-		//ShowCursor(false);
-		cursorTexture->SetAsHardwareCursor(hotSpot);
-		LPDIRECT3DDEVICE9 device = RenderManager::Instance()->GetD3DDevice();
-		device->ShowCursor(true);
-	}
-}
-
-void Cursor::Show(bool _show)
-{
-	show = _show;
-	LPDIRECT3DDEVICE9 device = RenderManager::Instance()->GetD3DDevice();
-	device->ShowCursor(show);
-}
-
-DAVA::Vector2 Cursor::GetPosition()
-{
-	POINT ptCursor;
-	GetCursorPos( &ptCursor );
-	ScreenToClient(RenderManager::Instance()->hWnd, &ptCursor);
-
-	return Vector2((float32)ptCursor.x, (float32)ptCursor.y);
-}
-
-
-};
-#else 
 
 #endif

@@ -51,6 +51,7 @@ namespace DAVA
 class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
+class UIScreenshoter;
 
 class ScreenSwitchListener
 {
@@ -197,8 +198,8 @@ public:
 	 \brief Calls every frame by the system for draw.
 		Draws all controls hierarchy to the screen.
 	 */
-	void Draw();
-	
+    void Draw();
+
 //	void SetTransitionType(int newTransitionType);
 	
 			
@@ -293,14 +294,14 @@ public:
 	 \returns current screen switch lock counter
 	 */
 	int32 UnlockSwitch();
-
-    void UI3DViewAdded();
-    void UI3DViewRemoved();
     
     bool IsRtl() const;
     void SetRtl(bool rtl);
     UILayoutSystem *GetLayoutSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
+    UIScreenshoter* GetScreenshoter();
+
+    void SetClearColor(const Color& clearColor);
 
 private:
 	/**
@@ -321,8 +322,9 @@ private:
 
     UILayoutSystem *layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;
+    UIScreenshoter* screenshoter;
 
-	Vector<ScreenSwitchListener*> screenSwitchListeners;
+    Vector<ScreenSwitchListener*> screenSwitchListeners;
 
 	UIScreen * currentScreen;
 	UIScreen * nextScreen;
@@ -346,9 +348,9 @@ private:
 	
 	UIGeometricData baseGeometricData;
 
-    int32 ui3DViewCount;
+    Color clearColor;
 
-	friend class UIScreenTransition;
+    friend class UIScreenTransition;
 	friend class UIScreenManager;
 };
 };

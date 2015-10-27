@@ -89,13 +89,10 @@ public:
 	bool IsOptionEnabled(RenderOption option);
 	void SetOption(RenderOption option, bool value);
     FastName GetOptionName(RenderOption option);
+    RenderOptions();
 
 private:
-	RenderOptions();
-
-	bool options[OPTIONS_COUNT];
-
-	friend class RenderManager;
+    bool options[OPTIONS_COUNT];
 };
 
 };

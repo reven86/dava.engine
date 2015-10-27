@@ -141,14 +141,28 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
         SafeDeleteArray(outData);
     };
     uint32 outSize;
-    int stride = width * sizeof(*imageData);
+    int stride = width * sizeof(*imageData) * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     if (FORMAT_RGB888 == format)
     {
-        outSize = static_cast<uint32>(WebPEncodeRGB(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), quality, &outData));
+        if (quality == LOSSLESS_IMAGE_QUALITY)
+        {
+            outSize = static_cast<uint32>(WebPEncodeLosslessRGB(imageData, width, height, stride, &outData));
+        }
+        else
+        {
+            outSize = static_cast<uint32>(WebPEncodeRGB(imageData, width, height, stride, quality, &outData));
+        }
     }
     else
     {
-        outSize = static_cast<uint32>(WebPEncodeRGBA(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), quality, &outData));
+        if (quality == LOSSLESS_IMAGE_QUALITY)
+        {
+            outSize = static_cast<uint32>(WebPEncodeLosslessRGBA(imageData, width, height, stride, &outData));
+        }
+        else
+        {
+            outSize = static_cast<uint32>(WebPEncodeRGBA(imageData, width, height, stride, quality, &outData));
+        }
     }
 
     if (nullptr == outData)

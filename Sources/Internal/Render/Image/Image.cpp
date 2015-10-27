@@ -35,7 +35,6 @@
 
 namespace DAVA 
 {
-
 Image::Image()
     : dataSize(0)
     , width(0)
@@ -43,7 +42,7 @@ Image::Image()
     , data(0)
     , mipmapLevel(-1)
     , format(FORMAT_RGB565)
-    , cubeFaceID(Texture::CUBE_FACE_INVALID)
+    , cubeFaceID(Texture::INVALID_CUBEMAP_FACE)
 {
 }
 
@@ -178,7 +177,7 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
     uint32 imageWidth = width;
     uint32 imageHeight = height;
     uint32 curMipMapLevel = 0;
-    image0->mipmapLevel = curMipMapLevel;
+    image0->mipmapLevel = curMipMapLevel++;
 
     if(isNormalMap)
         image0->Normalize();
@@ -197,8 +196,6 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
             image0->data, imageWidth, imageHeight, imageWidth * formatSize,
             newData, newWidth, newHeight, newWidth * formatSize, isNormalMap);
 
-        curMipMapLevel++;
-
         Image * halfSizeImg = Image::CreateFromData(newWidth, newHeight, format, newData);
         halfSizeImg->cubeFaceID = image0->cubeFaceID;
         halfSizeImg->mipmapLevel = curMipMapLevel;
@@ -209,6 +206,7 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         SafeDeleteArray(newData);
 
         image0 = halfSizeImg;
+        curMipMapLevel++;
     }
 
     return imageSet;

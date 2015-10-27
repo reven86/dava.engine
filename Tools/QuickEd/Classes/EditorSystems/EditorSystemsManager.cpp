@@ -117,7 +117,14 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
     {
         leftParent = left->GetParent();
         rightParent = right->GetParent();
-        DVASSERT(nullptr != leftParent && nullptr != rightParent)
+        if (nullptr == leftParent)
+        {
+            return false;
+        }
+        if (nullptr == rightParent)
+        {
+            return true;
+        }
         if (leftParent == rightParent)
         {
             return leftParent->GetIndex(left) < leftParent->GetIndex(right);
@@ -130,7 +137,6 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
 EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     : rootControl(new RootControl(this))
     , scalableControl(new UIControl())
-    , keyboardProxy(new KeyboardProxy)
     , package(SafeRetain(_package))
     , editingRootControls(CompareByLCA)
 {
@@ -153,11 +159,6 @@ EditorSystemsManager::~EditorSystemsManager()
 {
     package->RemoveListener(this);
     SafeRelease(package);
-}
-
-const KeyboardProxy* EditorSystemsManager::GetKeyboardProxy() const
-{
-    return keyboardProxy.get();
 }
 
 PackageNode* EditorSystemsManager::GetPackage()
@@ -235,7 +236,7 @@ void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNo
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
     if (!selectedControlNodes.empty())
     {
         SetPreviewMode(false);
@@ -270,20 +271,19 @@ void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& contr
     }
 }
 
-void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
+void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
-        if (!previewMode)
+        if (!previewMode && editingRootControls.size() == 1)
         {
-            recentlyRemovedControls.insert(node);
-            if (editingRootControls.size() == 1)
-            {
-                SetPreviewMode(true);
-            }
+            SetPreviewMode(true);
         }
-        editingRootControls.erase(node);
-        EditingRootControlsChanged.Emit(std::move(editingRootControls));
+        else
+        {
+            editingRootControls.erase(node);
+            EditingRootControlsChanged.Emit(std::move(editingRootControls));
+        }
     }
 }
 
@@ -298,21 +298,6 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
             EditingRootControlsChanged.Emit(std::move(editingRootControls));
         }
     }
-    else
-    {
-        if (recentlyRemovedControls.find(node) != recentlyRemovedControls.end())
-        {
-            PackageBaseNode* parent = node;
-            while (parent->GetParent() != nullptr && parent->GetParent()->GetControl() != nullptr)
-            {
-                parent = parent->GetParent();
-            }
-            DVASSERT(nullptr != parent);
-            editingRootControls.insert(parent);
-            EditingRootControlsChanged.Emit(std::move(editingRootControls));
-        }
-    }
-    recentlyRemovedControls.erase(node);
 }
 
 void EditorSystemsManager::SetPreviewMode(bool mode)

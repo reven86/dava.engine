@@ -26,8 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Base/Platform.h"
 
 //#include "Core/Core.h"
 
@@ -40,10 +39,10 @@ extern void FrameworkWillTerminate();
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "FileSystem/FileSystem.h"
-#include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 
 namespace DAVA
 {
@@ -123,12 +122,11 @@ namespace DAVA
 		Logger::Debug("[CorePlatformAndroid::QuitAction] done");
 	}
 
-	void CorePlatformAndroid::RepaintView()
-	{
+    void CorePlatformAndroid::ProcessFrame()
+    {
 	    if(renderIsActive)
 	    {
 	        auto sysTimer = SystemTimer::Instance();
-	        auto sysRender = RenderManager::Instance();
 	        //  Control FPS
 	        {
 	            // we count full frame time once per cycle
@@ -136,8 +134,8 @@ namespace DAVA
 	            static uint64 startTime = sysTimer->AbsoluteMS();
 
 	            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
-	            int32 fpsLimit = sysRender->GetFPS();
-	            if (fpsLimit > 0)
+                int32 fpsLimit = Renderer::GetDesiredFPS();
+                if (fpsLimit > 0)
 	            {
 	                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fpsLimit);
 	                if(averageFrameTime > elapsedTime)
@@ -149,9 +147,7 @@ namespace DAVA
 	            startTime = sysTimer->AbsoluteMS();
 	        }
 
-	        sysRender->Lock();
 	        Core::SystemProcessFrame();
-	        sysRender->Unlock();
 	    }
 	}
 
@@ -169,11 +165,9 @@ namespace DAVA
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
 		VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
 		VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
+        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
-		RenderManager::Instance()->InitFBSize(width, height);
-        RenderManager::Instance()->Init(width, height);
-
-		Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", width, height);
+        Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", width, height);
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
 	}
 
@@ -190,85 +184,47 @@ namespace DAVA
 		Logger::SetTag(logTag);
 	}
 
-	void CorePlatformAndroid::RenderRecreated(int32 w, int32 h)
-	{
-		Logger::Debug("[CorePlatformAndroid::RenderRecreated] start");
+    void CorePlatformAndroid::RenderReset(int32 w, int32 h)
+    {
+        Logger::Debug("[CorePlatformAndroid::RenderReset] start");
 
-		renderIsActive = true;
-
-		Thread::InitGLThread();
+        renderIsActive = true;
 
 		if(wasCreated)
 		{
-			RenderManager::Instance()->Lost();
-			RenderResource::SaveAllResourcesToSystemMem();
-			RenderResource::LostAllResources();
-
 			ResizeView(w, h);
 
-			RenderManager::Instance()->Invalidate();
-			RenderResource::InvalidateAllResources();
-			SceneCache::Instance()->InvalidateSceneMaterials();
+            rhi::ResetParam params;
+            params.width = (uint32)width;
+            params.height = (uint32)height;
+            params.window = rendererParams.window;
+            Renderer::Reset(params);
         }
 		else
 		{
 			wasCreated = true;
 
-			Logger::Debug("[CorePlatformAndroid::] before create renderer");
-			const char* glVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
-			Logger::Debug("RENDERER glVersion %s", glVersion);
-			if (nullptr != glVersion)
-			{
-				String ver(glVersion);
-				auto found = ver.find_first_of(".");
-				if (found != String::npos && found > 0)
-				{
-					char cv = ver.at(found-1);
-					int major = cv - '0';
-					if(major >= 3)
-					{
-						RenderManager::Create(Core::RENDERER_OPENGL_ES_3_0);
-						Logger::Debug("RENDERER_OPENGL_ES_3_0 ");
-					} else
-					{
-						RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-						Logger::Debug("RENDERER_OPENGL_ES_2_0 ");
-					}
-				}else
-				{
-					RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-					Logger::Debug("RENDERER_OPENGL_ES_2_0 GLVersion invalid format");
-				}
-
-			} else
-			{
-				RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-				Logger::Debug("RENDERER_OPENGL_ES_2_0 NULL");
-			}
-
-			FileSystem::Instance()->Init();
-			RenderSystem2D::Instance()->Init();
-
-			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
-			Logger::Debug("[CorePlatformAndroid::] after create renderer");
-
 			ResizeView(w, h);
-			// Set proper width and height before call FrameworkDidlaunched
+            rendererParams.width = (uint32)width;
+            rendererParams.height = (uint32)height;
+
+            // Set proper width and height before call FrameworkDidlaunched
 			FrameworkDidLaunched();
 
-			RenderManager::Instance()->SetFPS(60);
+            FileSystem::Instance()->Init();
 
-			//////////////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////
 			Core::Instance()->SystemAppStarted();
 
 			StartForeground();
 		}
 
-		Logger::Debug("[CorePlatformAndroid::RenderRecreated] end");
-	}
+        Logger::Debug("[CorePlatformAndroid::RenderReset] end");
+    }
 
 	void CorePlatformAndroid::OnCreateActivity()
 	{
+        DAVA::Thread::InitMainThread();
 //		Logger::Debug("[CorePlatformAndroid::OnCreateActivity]");
 	}
 
@@ -306,12 +262,15 @@ namespace DAVA
 			}
 			DAVA::Core::Instance()->GoForeground();
 
-			foreground = true;
-		}
-		Logger::Debug("[CorePlatformAndroid::StartForeground] end");
-	}
+            if (!foreground)
+                rhi::ResumeRendering();
 
-	void CorePlatformAndroid::StopForeground(bool isLock)
+            foreground = true;
+        }
+        Logger::Debug("[CorePlatformAndroid::StartForeground] end");
+    }
+
+    void CorePlatformAndroid::StopForeground(bool isLock)
 	{
 		Logger::Debug("[CorePlatformAndroid::StopForeground]");
 
@@ -326,12 +285,15 @@ namespace DAVA
 		}
 		DAVA::Core::Instance()->GoBackground(isLock);
 
-		foreground = false;
-	}
+        if (foreground)
+            rhi::SuspendRendering();
 
-	void CorePlatformAndroid::KeyUp(int32 keyCode)
-	{
-		InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCode);
+        foreground = false;
+    }
+
+    void CorePlatformAndroid::KeyUp(int32 keyCode)
+    {
+        InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCode);
 	}
 
 	void CorePlatformAndroid::KeyDown(int32 keyCode)
@@ -411,5 +373,10 @@ namespace DAVA
 	{
 		return androidDelegate;
 	}
+
+    void CorePlatformAndroid::SetNativeWindow(void* nativeWindow)
+    {
+        rendererParams.window = nativeWindow;
+    }
 }
 #endif // #if defined(__DAVAENGINE_ANDROID__)

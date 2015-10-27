@@ -43,8 +43,8 @@ namespace
     const int MAX_MATERIAL_HEIGHT = 30;
 }
 
-MaterialItem::MaterialItem(DAVA::NMaterial * _material)
-    : QObject( NULL )
+MaterialItem::MaterialItem(DAVA::NMaterial* _material, bool dragEnabled, bool dropEnabled)
+    : QObject(NULL)
     , QStandardItem()
     , material(_material)
     , curFlag(0)
@@ -60,35 +60,9 @@ MaterialItem::MaterialItem(DAVA::NMaterial * _material)
 	
 	setEditable(false);
     setData(QVariant::fromValue<DAVA::NMaterial *>(material));
-    
-	switch(material->GetMaterialType())
-	{
-		case DAVA::NMaterial::MATERIALTYPE_MATERIAL:
-			setIcon(materialIcon);
-			setDragEnabled(true);
-			setDropEnabled(true);
-            setSizeHint(QSize(MAX_MATERIAL_HEIGHT, MAX_MATERIAL_HEIGHT));
-			break;
-
-		case DAVA::NMaterial::MATERIALTYPE_INSTANCE:
-			setIcon(instanceIcon);
-            setData(qApp->palette().midlight().color(), Qt::TextColorRole);
-			setDragEnabled(true);
-			setDropEnabled(false);
-			break;
-
-        case DAVA::NMaterial::MATERIALTYPE_GLOBAL:
-            setIcon(globalIcon);
-            setDragEnabled(false);
-            setDropEnabled(false);
-            setSizeHint(QSize(MAX_MATERIAL_HEIGHT, MAX_MATERIAL_HEIGHT));
-            break;
-
-		default:
-			setDragEnabled(false);
-			setDropEnabled(false);
-			break;
-	}
+    setDragEnabled(dragEnabled);
+    setDropEnabled(dropEnabled);
+    setSizeHint(QSize(MAX_MATERIAL_HEIGHT, MAX_MATERIAL_HEIGHT));
 
     setColumnCount(3);
 }
@@ -124,32 +98,27 @@ DAVA::NMaterial * MaterialItem::GetMaterial() const
 
 void MaterialItem::SetFlag(MaterialFlag flag, bool set)
 {
-	if((set && !(curFlag & flag)) || (!set && (curFlag & flag)))
-	{
+    if ((set && !(curFlag & flag)) || (!set && (curFlag & flag)))
+    {
         bool ok = true;
-
-		switch(flag)
-		{
-			case IS_MARK_FOR_DELETE:
-                if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_GLOBAL)
-                {
-                    ok = false;
-                }
-				break;
+        switch (flag)
+        {
+        case IS_MARK_FOR_DELETE:
+            break;
 
             case IS_PART_OF_SELECTION:
-                if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
+                if (material->GetChildren().size() > 0)
                 {
-					QFont curFont = font();
-					curFont.setBold(set);
-					setFont(curFont); 
+                    QFont curFont = font();
+                    curFont.setBold(set);
+                    setFont(curFont);
                 }
-				break;
+                break;
 
-			default:
-				ok = false;
-				break;
-		}
+            default:
+                ok = false;
+                break;
+            }
 
         if(ok)
         {
@@ -161,11 +130,9 @@ void MaterialItem::SetFlag(MaterialFlag flag, bool set)
             {
                 curFlag &= ~(int) flag;
             }
-
             emitDataChanged();
         }
-	}
-
+    }
 }
 
 bool MaterialItem::GetFlag(MaterialFlag flag) const
@@ -207,7 +174,7 @@ void MaterialItem::requestPreview()
     {
         isPreviewRequested = true;
 
-        DAVA::Texture *t = material->GetTexture(DAVA::NMaterial::TEXTURE_ALBEDO);
+        DAVA::Texture* t = material->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_ALBEDO);
         if(t)
         {
             DAVA::TextureDescriptor *descriptor = t->GetDescriptor();

@@ -29,24 +29,13 @@
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_H__
 
-#include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-#include "UI/UIStaticText.h"
-#include "UI/UIControlSystem.h"
 #include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
-
 class UITextField;
-#if defined(__DAVAENGINE_ANDROID__)
-    class UITextFieldAndroid;
-#elif defined(__DAVAENGINE_IPHONE__)
-    class UITextFieldiPhone;
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    class UITextFieldWinUAP;
-#endif
-
+class TextFieldPlatformImpl;
 /**
     \brief  The UITextFieldDelegate interface defines the messages sent to a text field delegate as part of the sequence of editing its text. 
             All the methods of the interface is optional.
@@ -164,12 +153,8 @@ public:
         RETURN_KEY_EMERGENCY_CALL
     };
 
-protected:
-    ~UITextField() override;
+    UITextField(const Rect& rect = Rect());
 
-public:
-    UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-    
     void WillAppear() override;
     void DidAppear() override;
     void WillDisappear() override;
@@ -201,12 +186,6 @@ public:
      \brief Sets contol input processing ability.
      */
     void SetInputEnabled(bool isEnabled, bool hierarchic = true) override;
-
-protected:
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
-
-public:
     /**
      \brief Returns the font of control
      \returns Font font of the control
@@ -216,7 +195,7 @@ public:
      \brief Returns the text color of control.
      \returns Color color of control's text
      */
-    const Color &GetTextColor() const;
+    Color GetTextColor() const;
     /**
      \brief Returns text shadow offset relative to base text.
      \returns Vector2 with shadow offset for X and Y axis
@@ -226,7 +205,7 @@ public:
      \brief Returns color of text shadow.
      \returns Color of text shadow.
      */
-    const Color &GetShadowColor() const;
+    Color GetShadowColor() const;
 
     int32 GetTextAlign() const;
 
@@ -337,13 +316,7 @@ public:
      */
     bool IsEnableReturnKeyAutomatically() const;
     void SetEnableReturnKeyAutomatically(bool value);
-    
-    /**
-     \brief Returns list of control children without internal controls.
-     \returns list of control children without internal controls.
-     */
-    List<UIControl* >& GetRealChildren() override;
-    
+
     UITextField *Clone() override;
     void CopyDataFrom(UIControl *srcControl) override;
 
@@ -362,7 +335,25 @@ public:
 
     void SetFontByPresetName(const String &presetName);
 
+    void SystemDraw(const UIGeometricData& geometricData) override;
+
+    WideString GetVisibleText() const;
+
 protected:
+    ~UITextField() override;
+    void WillBecomeVisible() override;
+    void WillBecomeInvisible() override;
+
+private:
+
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
+
+    /**
+    \brief Setups initial state to reset settings for cached native control.
+    */
+    void SetupDefaults();
+
     WideString text;
     UITextFieldDelegate* delegate = nullptr;
     float32 cursorBlinkingTime = 0.0f;
@@ -376,36 +367,11 @@ protected:
     eReturnKeyType returnKeyType;
 
     // All Boolean variables are grouped together because of DF-2149.
-    bool needRedraw;
     bool isPassword;
     bool enableReturnKeyAutomatically;
-    bool showCursor = true;
     bool isMultiline_ = false;
 
-    void RenderText();
-
-private:
-    WideString GetVisibleText() const;
-
-    void SetRenderToTexture(bool value);
-    bool IsRenderToTexture() const;
-
-    /**
-         \brief Setups initial state to reset settings for cached native control.
-     */
-    void SetupDefaults();
-
-#if defined(__DAVAENGINE_IPHONE__)
-    UITextFieldiPhone* textFieldiPhone;
-#elif defined(__DAVAENGINE_ANDROID__)
-    UITextFieldAndroid* textFieldAndroid;
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    UITextFieldWinUAP* textFieldWinUAP = nullptr;
-#else
-    UIStaticText* staticText = nullptr;
-    Font* textFont = nullptr;
-#endif
-    float32 cursorTime = 0.0f;
+    TextFieldPlatformImpl* textFieldImpl = nullptr;
     int32 maxLength = -1;
 
 public:
@@ -428,12 +394,6 @@ public:
                          PROPERTY("returnKeyType", InspDesc("Return key type", GlobalEnumMap<eReturnKeyType>::Instance()), GetReturnKeyType, SetReturnKeyType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("enableReturnKeyAutomatically", "Automatically enable return key", IsEnableReturnKeyAutomatically, SetEnableReturnKeyAutomatically, I_SAVE | I_VIEW | I_EDIT))
 };
-
-//////////////////////////////////////////////////////////////////////////
-inline void UITextField::SetFocused()
-{
-    UIControlSystem::Instance()->SetFocusedControl(this, true);
-}
 
 }   // namespace DAVA
 
