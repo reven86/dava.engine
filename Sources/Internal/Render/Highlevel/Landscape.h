@@ -48,7 +48,6 @@
 
 namespace DAVA
 {
-
 class Scene;
 class Image;
 class Texture;
@@ -56,8 +55,8 @@ class Shader;
 class SceneFileV2;
 class Heightmap;
 class NMaterial;
-    
-template<class T>
+
+template <class T>
 class LandQuadTreeNode
 {
 public:
@@ -72,29 +71,28 @@ public:
     {
         ReleaseChildren();
     }
-    
+
     void AllocChildren()
     {
         ReleaseChildren();
         children = new LandQuadTreeNode[4];
     }
-    
+
     void ReleaseChildren()
     {
         SafeDeleteArray(children);
     }
-    
-    LandQuadTreeNode * children;  // It's array of 4 child nodes
-    LandQuadTreeNode * parent;
-    LandQuadTreeNode * neighbours[4]; 
+
+    LandQuadTreeNode* children; // It's array of 4 child nodes
+    LandQuadTreeNode* parent;
+    LandQuadTreeNode* neighbours[4];
     T data;
 };
-    
+
 template <class T>
 class LinearQuadTree
 {
 public:
-    
 };
 
 /**    
@@ -102,7 +100,7 @@ public:
     This class is base of the landscape code on all platforms
     Landscape node is always axial aligned for simplicity of frustum culling calculations
     Keep in mind that landscape orientation cannot be changed using localTransform and worldTransform matrices. 
- */ 
+ */
 
 class FoliageSystem;
 class NMaterial;
@@ -111,15 +109,15 @@ class Landscape : public RenderObject
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_LANDSCAPE)
 
 public:
-    enum 
+    enum
     {
         LEFT = 0,
         RIGHT = 1,
         TOP = 2,
         BOTTOM = 3,
     };
-	Landscape();
-	virtual ~Landscape();
+    Landscape();
+    virtual ~Landscape();
 
     const static FastName PARAM_TEXTURE_TILING;
     const static FastName PARAM_TILE_COLOR0;
@@ -137,135 +135,134 @@ public:
         Default values: (60, 120, 240, 480)
         Every next value should be almost twice higher than previous to avoid gaps between levels
      */
-    void SetLods(const Vector4 & lods);
-    
+    void SetLods(const Vector4& lods);
+
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
         \param[in] landscapeBox axial-aligned bounding box of the landscape block
      */
-    virtual void BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathname, const AABBox3 & landscapeBox);
+    virtual void BuildLandscapeFromHeightmapImage(const FilePath& heightmapPathname, const AABBox3& landscapeBox);
 
-	//TODO: think about how to switch normal generation for landscape on/off
-	//ideally it should be runtime option and normal generaiton should happen when material that requires landscape has been set
-	class LandscapeVertex
-	{
-	public:
-		Vector3 position;
-		Vector2 texCoord;
+    //TODO: think about how to switch normal generation for landscape on/off
+    //ideally it should be runtime option and normal generaiton should happen when material that requires landscape has been set
+    class LandscapeVertex
+    {
+    public:
+        Vector3 position;
+        Vector2 texCoord;
 #ifdef LANDSCAPE_SPECULAR_LIT
-		Vector3 normal;
+        Vector3 normal;
         Vector3 tangent;
 #endif
-	};
+    };
 
     struct LanscapeBufferData
     {
         rhi::HVertexBuffer buffer;
-        LandscapeVertex *data;
+        LandscapeVertex* data;
         uint32 dataSize;
-
     };
 
-    void PrepareToRender(Camera * camera) override;
+    void PrepareToRender(Camera* camera) override;
 
-	/**
+    /**
         \brief Get landscape mesh geometry.
         Unoptimized lod0 mesh is returned.
         \param[out] vertices landscape vertices
         \param[out] indices landscape indices
 	 */
-    bool GetGeometry(Vector<LandscapeVertex> & vertices, Vector<int32> & indices) const;
-    
+    bool GetGeometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const;
+
     /**
         \brief Function to receive pathname of heightmap object
         \returns pathname of heightmap
      */
-    const FilePath & GetHeightmapPathname();
-	void SetHeightmapPathname(const FilePath & newPath);
-	
-	float32 GetLandscapeSize() const;
-	void SetLandscapeSize(float32 newSize);
+    const FilePath& GetHeightmapPathname();
+    void SetHeightmapPathname(const FilePath& newPath);
 
-	float32 GetLandscapeHeight() const;
-	void SetLandscapeHeight(float32 newHeight);
-    
-    void GetDataNodes(Set<DataNode*> & dataNodes) override;
+    float32 GetLandscapeSize() const;
+    void SetLandscapeSize(float32 newSize);
 
-    void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-    void Load(KeyedArchive * archive, SerializationContext * serializationContext);
-    
+    float32 GetLandscapeHeight() const;
+    void SetLandscapeHeight(float32 newHeight);
+
+    void GetDataNodes(Set<DataNode*>& dataNodes) override;
+
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext);
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+
     // TODO: Need comment here
-	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
-	Vector3 GetPoint(int16 x, int16 y, uint16 height) const;
+    bool PlacePoint(const Vector3& point, Vector3& result, Vector3* normal = 0) const;
+    Vector3 GetPoint(int16 x, int16 y, uint16 height) const;
 
-    Heightmap *GetHeightmap();
-    virtual void SetHeightmap(Heightmap *height);
-    
-    NMaterial * GetMaterial();
-    void SetMaterial(NMaterial * material);
+    Heightmap* GetHeightmap();
+    virtual void SetHeightmap(Heightmap* height);
 
-	virtual RenderObject * Clone(RenderObject *newObject);
+    NMaterial* GetMaterial();
+    void SetMaterial(NMaterial* material);
+
+    virtual RenderObject* Clone(RenderObject* newObject);
     virtual void RecalcBoundingBox();
 
-	int32 GetDrawIndices() const;
-	
+    int32 GetDrawIndices() const;
+
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
-	// RHI_COMPLETE need remove this
-    void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
-    
-	void SetForceFirstLod(bool force);
+    // RHI_COMPLETE need remove this
+    void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
+
+    void SetForceFirstLod(bool force);
 
 protected:
-	static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
-	static const int32 RENDER_QUAD_WIDTH = 129;
-	static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
+    static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
+    static const int32 RENDER_QUAD_WIDTH = 129;
+    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
     static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
 
     struct LandscapeQuad
     {
         AABBox3 bbox;
         int16 x = 0;
-		int16 y = 0;
+        int16 y = 0;
         int16 size = 0;
         int16 rdoQuad = -1;
         uint32 frame = 0;
-		uint8 startClipPlane = 0;
+        uint8 startClipPlane = 0;
         int8 lod = 0;
     };
-    
+
     //RHI_COMPLETE need remove this
-    void CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 nodeSize,
-                               Vector< LandQuadTreeNode<LandscapeQuad> * > & nodes);
+    void CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad>* currentNode, int16 nodeSize,
+                               Vector<LandQuadTreeNode<LandscapeQuad>*>& nodes);
 
-    void RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels);
-    LandQuadTreeNode<LandscapeQuad> * FindNodeWithXY(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 quadX, int16 quadY, int16 quadSize);
-    void FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode);
-    void MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 & depth);
+    void RecursiveBuild(LandQuadTreeNode<LandscapeQuad>* currentNode, int32 level, int32 maxLevels);
+    LandQuadTreeNode<LandscapeQuad>* FindNodeWithXY(LandQuadTreeNode<LandscapeQuad>* currentNode, int16 quadX, int16 quadY, int16 quadSize);
+    void FindNeighbours(LandQuadTreeNode<LandscapeQuad>* currentNode);
+    void MarkFrames(LandQuadTreeNode<LandscapeQuad>* currentNode, int32& depth);
 
-    void GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags, Camera * camera);
-    void GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
+    void GenLods(LandQuadTreeNode<LandscapeQuad>* currentNode, uint8 clippingFlags, Camera* camera);
+    void GenQuad(LandQuadTreeNode<LandscapeQuad>* currentNode, int8 lod);
     void GenFans();
-    
-    int16 AllocateQuadVertexBuffer(LandscapeQuad * quad);
+
+    int16 AllocateQuadVertexBuffer(LandscapeQuad* quad);
     void AllocateGeometryData();
     void ReleaseGeometryData();
 
     void RestoreGeometry();
-    
-    void SetLandscapeSize(const Vector3 & newSize);
+
+    void SetLandscapeSize(const Vector3& newSize);
 
     void FlushQueue();
     void ClearQueue();
     bool BuildHeightmap();
     void BuildLandscape();
 
-	void OnCreateLandscapeTextureCompleted(rhi::HSyncObject);
-	void UnregisterCreateTextureCallback();
+    void OnCreateLandscapeTextureCompleted(rhi::HSyncObject);
+    void UnregisterCreateTextureCallback();
 
-	void UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap);
+    void UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap);
 
-	void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
+    void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
 
 private:
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;
@@ -276,9 +273,9 @@ private:
     Vector<LanscapeBufferData> bufferRestoreData;
     FilePath heightmapPath;
 
-    Frustum *frustum = nullptr;
-    Heightmap *heightmap = nullptr;
-	NMaterial* landscapeMaterial = nullptr;
+    Frustum* frustum = nullptr;
+    Heightmap* heightmap = nullptr;
+    NMaterial* landscapeMaterial = nullptr;
     FoliageSystem* foliageSystem = nullptr;
 
     std::vector<uint16> indices;
@@ -289,19 +286,16 @@ private:
     int32 allocatedMemoryForQuads = 0;
     int32 queueIndexCount = 0;
     int32 flushQueueCounter = 0;
-	uint32 drawIndices = 0;
-    int16 queueRdoQuad = 0;	
-	bool forceFirstLod = false;
+    uint32 drawIndices = 0;
+    int16 queueRdoQuad = 0;
+    bool forceFirstLod = false;
 
 public:
-   
     INTROSPECTION_EXTEND(Landscape, RenderObject,
-        PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
-        PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
-        PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
-		);
+                         PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
+                         PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
+                         PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT));
 };
-
 };
 
 #endif // __DAVAENGINE_LANDSCAPE_NODE_H__

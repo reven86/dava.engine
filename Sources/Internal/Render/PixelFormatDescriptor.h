@@ -66,23 +66,22 @@ public:
     static const char * GetPixelFormatString(const PixelFormat format);
     static PixelFormat GetPixelFormatByName(const FastName &formatName);
 
-	static const PixelFormatDescriptor & GetPixelFormatDescriptor(const PixelFormat formatID);	
+    static const PixelFormatDescriptor& GetPixelFormatDescriptor(const PixelFormat formatID);
 
 protected:
-	static void SetPixelDescription(const PixelFormat formatID, const FastName & name, uint8 size, rhi::TextureFormat format);
+    static void SetPixelDescription(const PixelFormat formatID, const FastName& name, uint8 size, rhi::TextureFormat format);
 
 protected:
 	static PixelFormatDescriptor pixelDescriptors[FORMAT_COUNT];
 
 public:
+    rhi::TextureFormat format;
 
-	rhi::TextureFormat format;
-    
-	PixelFormat formatID;
+    PixelFormat formatID;
 	FastName name;
 	uint8 pixelSize;
 
-	bool isHardwareSupported;	
+    bool isHardwareSupported;
 };
 
 #endif //#if defined (__DAVAENGINE_OPENGL__)

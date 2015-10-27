@@ -89,16 +89,16 @@ extern void FrameworkMain(int argc, char *argv[]);
     [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 	
 #if RHI_COMPLETE
-	DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
+    DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
 #endif
-	
-	activeCursor = 0;
+
+    activeCursor = 0;
     
     //RenderManager::Create(Core::RENDERER_OPENGL);
 	
     willQuit = false;
 
-    return self;    
+    return self;
 }
 
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
@@ -149,9 +149,9 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
 	NSRect rect = self.frame;
 #if RHI_COMPLETE
-	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
+    DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 #endif
-	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
 	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
 	
 	sizeChanged = YES;
@@ -219,7 +219,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
         event.physPoint.x = [curEvent scrollingDeltaX];
         event.physPoint.y = [curEvent scrollingDeltaY];
     }
-    else if(InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    else if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
@@ -237,19 +237,19 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
     event.phase = phase;
 }
 
-void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outTouches)
+void MoveTouchsToVector(NSEvent* curEvent, int touchPhase, Vector<UIEvent>* outTouches)
 {
 	int button = 0;
-    if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
-	{
+    if (curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
+    {
 		button = 1;
 	}
 	else if(curEvent.type == NSRightMouseDown || curEvent.type == NSRightMouseUp || curEvent.type == NSRightMouseDragged)
 	{
 		button = 2;
 	}
-        else 
-	{
+    else
+    {
 		button = curEvent.buttonNumber + 1;
 	}
 	
@@ -273,15 +273,15 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
     
 	if(phase == UIEvent::PHASE_DRAG)
 	{
-            for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-		{
+        for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        {
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
 		}
 	}
     
 	bool isFind = false;
-    for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-	{
+    for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    {
 		if(it->tid == button)
 		{
 			isFind = true;
@@ -298,23 +298,23 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 		newTouch.tid = button;
         
         ConvertNSEventToUIEvent(curEvent, newTouch, phase);
-        
-        activeTouches.push_back(newTouch);
-	}
 
-    for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-	{
+        activeTouches.push_back(newTouch);
+    }
+
+    for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    {
 		outTouches->push_back(*it);
 	}
 
 	if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 	{
-        for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-		{
+        for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        {
 			if(it->tid == button)
 			{
                 activeTouches.erase(it);
-				break;
+                break;
 			}
 		}
 	}

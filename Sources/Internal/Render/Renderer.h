@@ -39,57 +39,56 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-
 struct ScreenShotCallbackDelegate;
 struct RenderStats;
 
 namespace Renderer
 {
-    //init
+//init
 void Initialize(rhi::Api api, rhi::InitParam& params);
-    void Uninitialize();
+void Uninitialize();
 
-    void Reset(const rhi::ResetParam & params);
+void Reset(const rhi::ResetParam& params);
 
-    rhi::Api GetAPI();
+rhi::Api GetAPI();
 
-    bool IsDeviceLost();
+bool IsDeviceLost();
 
-    void SetDesiredFPS(int32 fps);
-    int32 GetDesiredFPS();
+void SetDesiredFPS(int32 fps);
+int32 GetDesiredFPS();
 
-    //frame management
-    void BeginFrame();
-    void EndFrame();
+//frame management
+void BeginFrame();
+void EndFrame();
 
-    //misc
-    int32 GetFramebufferWidth();
-    int32 GetFramebufferHeight();
-    void RequestGLScreenShot(ScreenShotCallbackDelegate *screenShotCallback);
+//misc
+int32 GetFramebufferWidth();
+int32 GetFramebufferHeight();
+void RequestGLScreenShot(ScreenShotCallbackDelegate* screenShotCallback);
 
-    //options
-    RenderOptions *GetOptions();    
+//options
+RenderOptions* GetOptions();
 
-    //dynamic params
-    DynamicBindings& GetDynamicBindings();
+//dynamic params
+DynamicBindings& GetDynamicBindings();
 
-    //runtime textures
-    RuntimeTextures& GetRuntimeTextures();
+//runtime textures
+RuntimeTextures& GetRuntimeTextures();
 
-    //render stats
-    RenderStats& GetRenderStats();
+//render stats
+RenderStats& GetRenderStats();
 }
-
 
 class Image;
 struct ScreenShotCallbackDelegate
 {
-    void operator()(Image *image)
+    void operator()(Image* image)
     {
         return OnScreenShot(image);
     }
+
 protected:
-    virtual void OnScreenShot(Image *image) = 0;
+    virtual void OnScreenShot(Image* image) = 0;
 };
 
 struct RenderStats

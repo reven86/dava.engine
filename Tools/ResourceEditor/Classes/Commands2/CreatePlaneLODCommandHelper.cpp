@@ -39,63 +39,63 @@ using namespace DAVA;
 
 namespace CreatePlaneLODCommandHelper
 {
-	bool IsHorisontalMesh(const DAVA::AABBox3& bbox);
+bool IsHorisontalMesh(const DAVA::AABBox3& bbox);
 
-    void CreatePlaneImageForRequest(RequestPointer&);
-    void CreatePlaneBatchForRequest(RequestPointer&);
+void CreatePlaneImageForRequest(RequestPointer&);
+void CreatePlaneBatchForRequest(RequestPointer&);
 
-    void DrawToTextureForRequest(RequestPointer&, DAVA::Entity* entity, DAVA::Camera* camera,
-		DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget);
+void DrawToTextureForRequest(RequestPointer&, DAVA::Entity* entity, DAVA::Camera* camera,
+                             DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget);
 }
 
-CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::RequestRenderToTexture(DAVA::LodComponent* lodComponent, 
-	DAVA::int32 fromLodLayer, DAVA::uint32 textureSize, const DAVA::FilePath& texturePath)
+CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::RequestRenderToTexture(DAVA::LodComponent* lodComponent,
+                                                                                                DAVA::int32 fromLodLayer, DAVA::uint32 textureSize, const DAVA::FilePath& texturePath)
 {
-	CreatePlaneLODCommandHelper::RequestPointer result(new Request());
-	result->lodComponent = lodComponent;
-	result->fromLodLayer = fromLodLayer;
-	result->textureSize = textureSize;
-	result->texturePath = texturePath;
-	result->savedDistances = lodComponent->lodLayersArray;
+    CreatePlaneLODCommandHelper::RequestPointer result(new Request());
+    result->lodComponent = lodComponent;
+    result->fromLodLayer = fromLodLayer;
+    result->textureSize = textureSize;
+    result->texturePath = texturePath;
+    result->savedDistances = lodComponent->lodLayersArray;
 
     result->newLodIndex = GetLodLayersCount(lodComponent);
     DVASSERT(result->newLodIndex > 0);
-    
+
     if (fromLodLayer == -1)
         fromLodLayer = result->newLodIndex - 1;
-    
+
     CreatePlaneImageForRequest(result);
     CreatePlaneBatchForRequest(result);
 
-	return result;
+    return result;
 }
 
 void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& request)
 {
     DVASSERT(request->planeImage == nullptr);
-	DVASSERT(request->targetTexture == nullptr);
-    
+    DVASSERT(request->targetTexture == nullptr);
+
     DAVA::Entity* fromEntity = request->lodComponent->GetEntity();
-    
+
     AABBox3 bbox = GetRenderObject(fromEntity)->GetBoundingBox();
     bool isMeshHorizontal = IsHorisontalMesh(bbox);
-    
-    const Vector3 & min = bbox.min;
-    const Vector3 & max = bbox.max;
-    
-    ScopedPtr<Camera>camera(new Camera());
+
+    const Vector3& min = bbox.min;
+    const Vector3& max = bbox.max;
+
+    ScopedPtr<Camera> camera(new Camera());
     camera->SetTarget(Vector3(0, 0, 0));
     camera->SetUp(Vector3(0.f, 0.f, 1.f));
     camera->SetIsOrtho(true);
 
-	float32 textureSize = static_cast<float>(request->textureSize);
+    float32 textureSize = static_cast<float>(request->textureSize);
     float32 halfSizef = 0.5f * textureSize;
-   
+
     rhi::Viewport firstSideViewport;
-	rhi::Viewport secondSideViewport;
+    rhi::Viewport secondSideViewport;
     if (isMeshHorizontal)
     {
-		firstSideViewport = rhi::Viewport(0, 0, textureSize, halfSizef);
+        firstSideViewport = rhi::Viewport(0, 0, textureSize, halfSizef);
         secondSideViewport = rhi::Viewport(0, halfSizef, textureSize, halfSizef);
     }
     else
@@ -104,7 +104,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
         secondSideViewport = rhi::Viewport(halfSizef, 0, halfSizef, textureSize);
     }
 
-	rhi::Texture::Descriptor descriptor = { };
+    rhi::Texture::Descriptor descriptor = {};
     descriptor.width = textureSize;
     descriptor.height = textureSize;
     descriptor.autoGenMipmaps = false;
@@ -112,36 +112,36 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
 
     request->targetTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888);
-	request->depthTexture = rhi::CreateTexture(descriptor);
-	request->RegisterRenderCallback();
+    request->depthTexture = rhi::CreateTexture(descriptor);
+    request->RegisterRenderCallback();
 
     // draw 1st side
     float32 depth = max.y - min.y;
- 	camera->Setup(min.x, max.x, max.z, min.z, -depth, 2.0f * depth);
+    camera->Setup(min.x, max.x, max.z, min.z, -depth, 2.0f * depth);
     camera->SetPosition(Vector3(0.0f, min.y, 0.0f));
-    DrawToTextureForRequest(request, fromEntity, camera,request->fromLodLayer, firstSideViewport, true);
-    
+    DrawToTextureForRequest(request, fromEntity, camera, request->fromLodLayer, firstSideViewport, true);
+
     // draw 2nd side
     depth = max.x - min.x;
-	camera->Setup(min.y, max.y, max.z, min.z, -depth, 2.0f * depth);
+    camera->Setup(min.y, max.y, max.z, min.z, -depth, 2.0f * depth);
     camera->SetPosition(Vector3(max.x, 0.0f, 0.0f));
     DrawToTextureForRequest(request, fromEntity, camera, request->fromLodLayer, secondSideViewport, false);
 }
 
 void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& request)
 {
-    DAVA::Entity *fromEntity = request->lodComponent->GetEntity();
+    DAVA::Entity* fromEntity = request->lodComponent->GetEntity();
 
     AABBox3 bbox = GetRenderObject(fromEntity)->GetBoundingBox();
     bool isMeshHorizontal = IsHorisontalMesh(bbox);
-    
-    const Vector3 & min = bbox.min;
+
+    const Vector3& min = bbox.min;
     Vector3 size = bbox.GetSize();
 
     //
     // Textures:
     //  Vertical for tree:   Horizontal for bush:
-    //  +---------------+     +---------------+ 
+    //  +---------------+     +---------------+
     //  |       |       |     |      ***      |
     //  |   *   |   *   |     |     *****     |
     //  |  ***  |  ***  |     |---------------|
@@ -149,7 +149,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
     //  |   *   |   *   |     |     ******    |
     //  +---------------+     +---------------+
     //
-    // Mesh Grid: 
+    // Mesh Grid:
     //
     // z
     // ^
@@ -175,8 +175,8 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 
     int32 gridSizeX = 2, gridSizeY = 3;
 
-	// (sx+1) * (sy+1) for cell corner vertices; sx*sy for cell center vertices; for 2 planes
-    int32 vxCount = ((gridSizeX + 1)*(gridSizeY + 1) + gridSizeX*gridSizeY) * 2; 
+    // (sx+1) * (sy+1) for cell corner vertices; sx*sy for cell center vertices; for 2 planes
+    int32 vxCount = ((gridSizeX + 1) * (gridSizeY + 1) + gridSizeX * gridSizeY) * 2;
     int32 indCount = gridSizeX * gridSizeY * 4 * 2 * 3; //4 triangles per cell; for 2 planes
 
     Vector2 txCoordPlane2Offset;
@@ -200,18 +200,18 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
     planePG->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, vxCount, indCount);
 
     int32 currentIndex = 0;
-    for(int32 z = 0; z <= gridSizeY; ++z)
+    for (int32 z = 0; z <= gridSizeY; ++z)
     {
         float32 rowCoord = min.z + (size.z * z) / gridSizeY;
         float32 rowTxCoord = z / (float32)gridSizeY;
         int32 rowVxIndexOffset = (gridSizeX + 1) * z;
         int32 nextRowVxIndexOffset = rowVxIndexOffset + (gridSizeX + 1);
 
-        int32 cellCenterVxIndexOffset = (gridSizeX + 1)*(gridSizeY + 1) - z;
+        int32 cellCenterVxIndexOffset = (gridSizeX + 1) * (gridSizeY + 1) - z;
         float32 rowCenterZCoord = rowCoord + size.z / gridSizeY / 2.f;
 
-		// xy and z - it's grid 'coords'. Variable 'xy' - shared variable for two planes.
-        for (int32 xy = 0; xy <= gridSizeX; ++xy) 
+        // xy and z - it's grid 'coords'. Variable 'xy' - shared variable for two planes.
+        for (int32 xy = 0; xy <= gridSizeX; ++xy)
         {
             //cell corner vertices
             int32 vxIndex1 = xy + rowVxIndexOffset;
@@ -232,7 +232,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
             planePG->SetTexcoord(0, vxIndex2, txCoord2);
 
             // cell center vertices
-            if(z != gridSizeY && xy != gridSizeX)
+            if (z != gridSizeY && xy != gridSizeX)
             {
                 int32 centerVxIndex1 = vxIndex1 + cellCenterVxIndexOffset;
                 int32 centerVxIndex2 = centerVxIndex1 + plane2VxIndexOffset;
@@ -244,7 +244,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
                 planePG->SetTexcoord(0, centerVxIndex1, txCoord1 + cellCenterTxCoordOffset);
                 planePG->SetTexcoord(0, centerVxIndex2, txCoord2 + cellCenterTxCoordOffset);
 
-#				define BIND_TRIANGLE_INDECIES(vi1, vi2, vi3) \
+#define BIND_TRIANGLE_INDECIES(vi1, vi2, vi3) \
 				{\
 					/*triangle for first plane */ \
 					planePG->SetIndex(currentIndex, vi1); ++currentIndex;\
@@ -256,42 +256,42 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 					planePG->SetIndex(currentIndex, vi3 + plane2VxIndexOffset); ++currentIndex;\
 				}
 
-                BIND_TRIANGLE_INDECIES( xy +  rowVxIndexOffset,        xy + nextRowVxIndexOffset,     centerVxIndex1);
-                BIND_TRIANGLE_INDECIES( xy + nextRowVxIndexOffset,    (xy+1) + nextRowVxIndexOffset,  centerVxIndex1);
-                BIND_TRIANGLE_INDECIES((xy+1) + nextRowVxIndexOffset, (xy+1) + rowVxIndexOffset,      centerVxIndex1);
-                BIND_TRIANGLE_INDECIES((xy+1) + rowVxIndexOffset,      xy + rowVxIndexOffset,         centerVxIndex1);
+                BIND_TRIANGLE_INDECIES(xy + rowVxIndexOffset, xy + nextRowVxIndexOffset, centerVxIndex1);
+                BIND_TRIANGLE_INDECIES(xy + nextRowVxIndexOffset, (xy + 1) + nextRowVxIndexOffset, centerVxIndex1);
+                BIND_TRIANGLE_INDECIES((xy + 1) + nextRowVxIndexOffset, (xy + 1) + rowVxIndexOffset, centerVxIndex1);
+                BIND_TRIANGLE_INDECIES((xy + 1) + rowVxIndexOffset, xy + rowVxIndexOffset, centerVxIndex1);
 
-#				undef BIND_TRIANGLE_INDECIES
+#undef BIND_TRIANGLE_INDECIES
             }
         }
     }
-	planePG->BuildBuffers();
+    planePG->BuildBuffers();
 
-	Texture* fileTexture = Texture::CreateFromFile(TextureDescriptor::GetDescriptorPathname(request->texturePath));
+    Texture* fileTexture = Texture::CreateFromFile(TextureDescriptor::GetDescriptorPathname(request->texturePath));
 
-	ScopedPtr<NMaterial> material(new NMaterial());
-	material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
-	material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
-	material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
+    ScopedPtr<NMaterial> material(new NMaterial());
+    material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
+    material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
+    material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
 
     request->planeBatch->SetPolygonGroup(planePG);
     request->planeBatch->SetMaterial(material);
 }
 
 void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& request, DAVA::Entity* fromEntity, DAVA::Camera* camera,
-	DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget)
+                                                          DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget)
 {
     request->ReloadTexturesToGPU(GPU_ORIGIN);
 
     ScopedPtr<Scene> tempScene(new Scene());
 
-	rhi::RenderPassConfig& renderPassConfig = tempScene->GetMainPassConfig();
-	renderPassConfig.colorBuffer[0].texture = request->targetTexture->handle;
-	renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
-	renderPassConfig.priority = eDefaultPassPriority::PRIORITY_SERVICE_3D;
-	renderPassConfig.viewport = viewport;
-	renderPassConfig.depthStencilBuffer.texture = request->depthTexture;
-	memset(renderPassConfig.colorBuffer[0].clearColor, 0, sizeof(renderPassConfig.colorBuffer[0].clearColor));
+    rhi::RenderPassConfig& renderPassConfig = tempScene->GetMainPassConfig();
+    renderPassConfig.colorBuffer[0].texture = request->targetTexture->handle;
+    renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
+    renderPassConfig.priority = eDefaultPassPriority::PRIORITY_SERVICE_3D;
+    renderPassConfig.viewport = viewport;
+    renderPassConfig.depthStencilBuffer.texture = request->depthTexture;
+    memset(renderPassConfig.colorBuffer[0].clearColor, 0, sizeof(renderPassConfig.colorBuffer[0].clearColor));
 
     NMaterial* globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if (globalMaterial)
@@ -301,7 +301,7 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     }
 
     ScopedPtr<Entity> clonedEnity(SceneHelper::CloneEntityWithMaterials(fromEntity));
-	clonedEnity->SetLocalTransform(DAVA::Matrix4::IDENTITY);
+    clonedEnity->SetLocalTransform(DAVA::Matrix4::IDENTITY);
 
     SpeedTreeObject* treeObejct = GetSpeedTreeObject(clonedEnity);
     if (treeObejct)
@@ -314,19 +314,19 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     tempScene->AddNode(clonedEnity);
     tempScene->AddCamera(camera);
     tempScene->SetCurrentCamera(camera);
-	camera->SetupDynamicParameters(false);
+    camera->SetupDynamicParameters(false);
 
-	GetLodComponent(clonedEnity)->SetForceLodLayer(fromLodLayer);
-	clonedEnity->SetVisible(true);
+    GetLodComponent(clonedEnity)->SetForceLodLayer(fromLodLayer);
+    clonedEnity->SetVisible(true);
 
-	tempScene->Update(1.0f / 60.0f);
+    tempScene->Update(1.0f / 60.0f);
     tempScene->Draw();
 }
 
-bool CreatePlaneLODCommandHelper::IsHorisontalMesh(const AABBox3 & bbox)
+bool CreatePlaneLODCommandHelper::IsHorisontalMesh(const AABBox3& bbox)
 {
-    const Vector3 & min = bbox.min;
-    const Vector3 & max = bbox.max;
+    const Vector3& min = bbox.min;
+    const Vector3& max = bbox.max;
     return ((max.x - min.x) / (max.z - min.z) > 1.f || (max.y - min.y) / (max.z - min.z) > 1.f);
 }
 
@@ -343,16 +343,16 @@ CreatePlaneLODCommandHelper::Request::Request()
 
 CreatePlaneLODCommandHelper::Request::~Request()
 {
-	SafeRelease(planeBatch);
-	SafeRelease(planeImage);
-	SafeRelease(targetTexture);
-	rhi::DeleteTexture(depthTexture);
+    SafeRelease(planeBatch);
+    SafeRelease(planeImage);
+    SafeRelease(targetTexture);
+    rhi::DeleteTexture(depthTexture);
 }
 
 void CreatePlaneLODCommandHelper::Request::RegisterRenderCallback()
 {
-	RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(),
-		MakeFunction(this, &CreatePlaneLODCommandHelper::Request::OnRenderCallback));
+    RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(),
+                                          MakeFunction(this, &CreatePlaneLODCommandHelper::Request::OnRenderCallback));
 }
 
 void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily targetGPU)
@@ -377,15 +377,14 @@ void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily 
 
 void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject object)
 {
-	completed = true;
+    completed = true;
 
     planeImage = targetTexture->CreateImageFromMemory();
     SafeRelease(targetTexture);
 
-	auto sourceEntity = lodComponent->GetEntity();
+    auto sourceEntity = lodComponent->GetEntity();
 
     DAVA::eGPUFamily currentGPU = static_cast<DAVA::eGPUFamily>(
-        SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
+    SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
     ReloadTexturesToGPU(currentGPU);
 }
-

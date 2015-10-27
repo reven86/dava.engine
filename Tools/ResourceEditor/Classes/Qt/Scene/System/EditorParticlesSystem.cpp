@@ -45,7 +45,7 @@
 
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
-{	
+{
     selectedEffectEntity = NULL;
     selectedEmitter = NULL;
 }
@@ -64,10 +64,10 @@ EditorParticlesSystem::~EditorParticlesSystem()
 void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
 	SceneCollisionSystem *collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	
+
     if (collisionSystem)
     {
-		if(NULL != effectEntity)
+        if(NULL != effectEntity)
 		{
 			DAVA::AABBox3 wordBox;
 			DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
@@ -75,7 +75,7 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 			// Get sphere radius (size) of debug effect
 			DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
             GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(wordBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
-		}
+        }
 	}
 }
 
@@ -98,9 +98,9 @@ void EditorParticlesSystem::Draw()
         DAVA::Vector3 center =effect->GetSpawnPosition(effect->GetEmitterId(selectedEmitter));
         TransformPerserveLength(center, effectMatrix);
         center+=selectedEffectEntity->GetWorldTransform().GetTranslationVector();
-        
+
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, 0.1f, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
-		DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
+        DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
 
 		switch (selectedEmitter->emitterType)
 		{
@@ -124,7 +124,7 @@ void EditorParticlesSystem::Draw()
                 
         default: break;
 		}
-	}	
+    }
 }
 
 void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -178,7 +178,7 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity *effectEntity, DAVA::Partic
 	DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
 	wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
 
-    RenderHelper * drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
     drawer->DrawAABoxTransformed(AABBox3(center - emitterSize / 2, center + emitterSize / 2), wMat, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 

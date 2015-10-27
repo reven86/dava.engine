@@ -39,23 +39,22 @@
 class UTF8Utils
 {
 public:
-
-	/**
+    /**
 		\brief convert UTF8 string to WideString
 		\param[in] string string in UTF8 format
 		\param[in] size size of buffer allocated for this string
 		\param[out] resultString result unicode string
 	 */
-    static void EncodeToWideString(const DAVA::uint8 * string, size_t size, DAVA::WideString & resultString);
+    static void EncodeToWideString(const DAVA::uint8* string, size_t size, DAVA::WideString& resultString);
 
     /**
         \brief convert UTF8 string to WideString
         \param[in] utf8String string in UTF8 format
         \return string in unicode
      */
-    inline static DAVA::WideString EncodeToWideString(const DAVA::String & utf8String);
+    inline static DAVA::WideString EncodeToWideString(const DAVA::String& utf8String);
 
-	/**
+    /**
 	 \brief convert WideString string to UTF8
 	 \param[in] wstring string in WideString format
 	 \returns string in UTF8 format, contained in DAVA::String
@@ -65,10 +64,10 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 
-inline DAVA::WideString UTF8Utils::EncodeToWideString(const DAVA::String & utf8String)
+inline DAVA::WideString UTF8Utils::EncodeToWideString(const DAVA::String& utf8String)
 {
     DAVA::WideString str;
-    EncodeToWideString((const DAVA::uint8 *)utf8String.c_str(), utf8String.length(), str);
+    EncodeToWideString((const DAVA::uint8*)utf8String.c_str(), utf8String.length(), str);
     return str;
 }
 

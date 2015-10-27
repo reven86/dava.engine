@@ -222,7 +222,7 @@ void SceneSelectionSystem::Draw()
         DAVA::RenderHelper::eDrawType wireDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_WIRE_DEPTH : DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH;
         DAVA::RenderHelper::eDrawType solidDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_SOLID_DEPTH : DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH;
 
-		for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
+        for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
 		{
             DAVA::AABBox3 selectionBox = curSelections.GetBbox(i);
 
@@ -230,19 +230,19 @@ void SceneSelectionSystem::Draw()
 			if(drawMode & SS_DRAW_SHAPE)
 			{
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
-			}
+            }
 			// draw selection share
 			else if(drawMode & SS_DRAW_CORNERS)
 			{
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxCorners(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
-			}
+            }
 
 			// fill selection shape
 			if(drawMode & SS_DRAW_BOX)
 			{
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f), solidDrawType);
             }
-		}
+        }
 	}
 }
 
@@ -270,9 +270,9 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
 	{
 		Clear();
 
-		uint32 count = newSelection.Size();
-		for (uint32 i = 0; i < count; ++i)
-		{
+        uint32 count = newSelection.Size();
+        for (uint32 i = 0; i < count; ++i)
+        {
 			auto entity = newSelection.GetEntity(i);
 			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
 			{

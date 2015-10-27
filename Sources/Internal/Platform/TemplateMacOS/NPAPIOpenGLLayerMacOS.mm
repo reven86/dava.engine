@@ -55,20 +55,20 @@ static CGLPixelFormatObj inFramePixelFormat = NULL;
 {
     uint32_t attributes[] =
     {
-        kCGLPFADisplayMask, mask,
-        kCGLPFANoRecovery,
-        kCGLPFAColorSize, 24,
-        kCGLPFADepthSize, 16,
-        kCGLPFAStencilSize, 8,
-        kCGLPFADoubleBuffer,
-        kCGLPFAAccelerated,
-        0
+      kCGLPFADisplayMask, mask,
+      kCGLPFANoRecovery,
+      kCGLPFAColorSize, 24,
+      kCGLPFADepthSize, 16,
+      kCGLPFAStencilSize, 8,
+      kCGLPFADoubleBuffer,
+      kCGLPFAAccelerated,
+      0
     };
 
     CGLPixelFormatObj pixelFormatObj = NULL;
     GLint numPixelFormats = 0;
     CGLChoosePixelFormat((CGLPixelFormatAttribute*)attributes, &pixelFormatObj, &numPixelFormats);
-    if(pixelFormatObj == NULL)
+    if (pixelFormatObj == NULL)
     {
         NSLog(@"Error: Could not choose pixel format!");
     }
@@ -85,7 +85,7 @@ static CGLPixelFormatObj inFramePixelFormat = NULL;
 {
     CGLContextObj contextObj = NULL;
     CGLCreateContext(pixelFormat, NULL, &contextObj);
-    if(contextObj == NULL)
+    if (contextObj == NULL)
     {
         NSLog(@"Error: Could not create context!");
     }
@@ -108,7 +108,7 @@ static CGLPixelFormatObj inFramePixelFormat = NULL;
     if (isFirstDraw == YES && pluginInstance)
     {
         [pluginInstance doInitializationOnFirstDraw];
-//      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         isFirstDraw = NO;
 
         [super drawInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
@@ -125,7 +125,7 @@ static CGLPixelFormatObj inFramePixelFormat = NULL;
 #if RHI_COMPLETE
     DAVA::RenderManager::Instance()->Lock();
 #endif
-    
+
     inFrameOpenGLContext = ctx;
     inFramePixelFormat = pf;
 

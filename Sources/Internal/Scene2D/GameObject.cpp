@@ -74,8 +74,8 @@ GameObject::GameObject()
 	manager = 0;
 	color = Color(1.0f, 1.0f, 1.0f, 1.0f);
     blending = BLENDING_ALPHABLEND;
-    
-	collision = 0;
+
+    collision = 0;
 	groupId = 0;
 	priority = 0;
 	parent = 0;
@@ -308,22 +308,22 @@ void GameObject::Draw()
 
 	if (sprite)
 	{
-		RenderSystem2D::Instance()->Draw(sprite, &globalDrawState, color);
+        RenderSystem2D::Instance()->Draw(sprite, &globalDrawState, color);
 
-//		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x - 1, globalDrawState.position.y - 1, 3, 3));
-//		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	}else
+        //		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x - 1, globalDrawState.position.y - 1, 3, 3));
+        //		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }else
 	{
-//		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x, globalDrawState.position.y, 10, 10));
-//		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	}
+        //		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x, globalDrawState.position.y, 10, 10));
+        //		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
 	
 	if (isDebugDraw && collision)
 	{
-		collision->DebugDraw();
-	}
+        collision->DebugDraw();
+    }
 //	if (align == ALIGN_LEFTTOP)
 //	{
 //		//[sprite drawFrameF:frame atX:position.x atY:position.y];

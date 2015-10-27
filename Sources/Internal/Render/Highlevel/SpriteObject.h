@@ -87,16 +87,17 @@ public:
 	const Vector2& GetScale() const;
 	const Vector2& GetPivot() const;
 
-	RenderObject * Clone(RenderObject *newObject) override;
+    RenderObject* Clone(RenderObject* newObject) override;
 
-    void Save(KeyedArchive *archive, SerializationContext *serializationContext) override;
-    void Load(KeyedArchive *archive, SerializationContext *serializationContext) override;
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    void RecalcBoundingBox() override {}
-    void BindDynamicParameters(Camera * camera) override;
+    void RecalcBoundingBox() override
+    {
+    }
+    void BindDynamicParameters(Camera* camera) override;
 
 protected:
-
     void Restore();
     void UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffer iBuffer);
 
@@ -106,7 +107,7 @@ protected:
 
     Matrix4 worldMatrix;
 
-	Sprite *sprite;
+    Sprite *sprite;
 	Vector2 sprScale;
 	Vector2 sprPivot;
 	int32 frame;

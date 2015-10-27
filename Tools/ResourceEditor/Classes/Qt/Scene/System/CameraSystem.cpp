@@ -77,7 +77,7 @@ SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	, animateToNewPosTime(0)
 	, distanceToCamera(0.f)
 	, activeSpeedIndex(0)
-{	
+{
 }
 
 SceneCameraSystem::~SceneCameraSystem()
@@ -390,9 +390,9 @@ void SceneCameraSystem::Draw()
 
 					transform.Identity();
 					transform.SetTranslationVector(camera->GetPosition());
-					collBox.GetTransformedBox(transform, worldBox);	
+					collBox.GetTransformedBox(transform, worldBox);
                     sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
-				}
+                }
 			}
 		}
 	}

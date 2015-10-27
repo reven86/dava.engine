@@ -55,7 +55,7 @@ component(c)
 WindSystem::WindSystem(Scene * scene) : 
     SceneSystem(scene)
 {
-    RenderOptions * options = Renderer::GetOptions();
+    RenderOptions* options = Renderer::GetOptions();
     options->AddObserver(this);
     HandleEvent(options);
 

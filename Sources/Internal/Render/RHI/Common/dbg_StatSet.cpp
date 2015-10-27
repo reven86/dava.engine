@@ -34,38 +34,33 @@
 
     #include <vector>
 
-
 //==============================================================================
 
 namespace statset
 {
-
 struct
 Stat
 {
-    char        full_name[64];
-    char        short_name[32];
-    unsigned    parent_id;
-    unsigned    value;
-    unsigned    is_permanent:1;
+    char full_name[64];
+    char short_name[32];
+    unsigned parent_id;
+    unsigned value;
+    unsigned is_permanent : 1;
 };
 
 typedef std::vector<Stat> StatArray;
 
-static StatArray        _Stat;
-static DAVA::Spinlock   _StatSync;
-
+static StatArray _Stat;
+static DAVA::Spinlock _StatSync;
 
 //==============================================================================
 } // namespace statset
-
 
 //==============================================================================
 //
 //  publics:
 
-void     
-StatSet::ResetAll()
+void StatSet::ResetAll()
 {
     using namespace statset;
 
@@ -75,24 +70,23 @@ StatSet::ResetAll()
     DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
 #endif
 
-    for( StatArray::iterator s=_Stat.begin(),s_end=_Stat.end(); s!=s_end; ++s )
+    for (StatArray::iterator s = _Stat.begin(), s_end = _Stat.end(); s != s_end; ++s)
     {
-        if( !s->is_permanent )
+        if (!s->is_permanent)
             s->value = 0;
     }
 
 #endif
 }
 
-
 //------------------------------------------------------------------------------
 
-unsigned 
-StatSet::AddStat( const char* full_name, const char* short_name, unsigned parent_id )
+unsigned
+StatSet::AddStat(const char* full_name, const char* short_name, unsigned parent_id)
 {
     using namespace statset;
 
-    unsigned    id = InvalidIndex;
+    unsigned id = InvalidIndex;
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
 
@@ -100,15 +94,15 @@ StatSet::AddStat( const char* full_name, const char* short_name, unsigned parent
     DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
 #endif
 
-    _Stat.resize( _Stat.size()+1 );
+    _Stat.resize(_Stat.size() + 1);
 
-    Stat&   stat = _Stat.back();
+    Stat& stat = _Stat.back();
 
-    strncpy( stat.full_name, full_name, sizeof(stat.full_name) );
-    strncpy( stat.short_name, short_name, sizeof(stat.short_name) );
-    stat.parent_id     = parent_id;
-    stat.value         = 0;
-    stat.is_permanent  = false;
+    strncpy(stat.full_name, full_name, sizeof(stat.full_name));
+    strncpy(stat.short_name, short_name, sizeof(stat.short_name));
+    stat.parent_id = parent_id;
+    stat.value = 0;
+    stat.is_permanent = false;
 
     id = _Stat.size() - 1;
 
@@ -117,15 +111,14 @@ StatSet::AddStat( const char* full_name, const char* short_name, unsigned parent
     return id;
 }
 
-
 //------------------------------------------------------------------------------
 
-unsigned 
-StatSet::AddPermanentStat( const char* full_name, const char* short_name, unsigned parent_id )
+unsigned
+StatSet::AddPermanentStat(const char* full_name, const char* short_name, unsigned parent_id)
 {
     using namespace statset;
 
-    unsigned    id = InvalidIndex;
+    unsigned id = InvalidIndex;
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
 
@@ -133,28 +126,26 @@ StatSet::AddPermanentStat( const char* full_name, const char* short_name, unsign
     DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
 #endif
 
-    _Stat.resize( _Stat.size()+1 );
+    _Stat.resize(_Stat.size() + 1);
 
-    Stat&   stat = _Stat.back();
+    Stat& stat = _Stat.back();
 
-    strncpy( stat.full_name, full_name, sizeof(stat.full_name) );
-    strncpy( stat.short_name, short_name, sizeof(stat.short_name) );
-    stat.parent_id     = parent_id;
-    stat.value         = 0;
-    stat.is_permanent  = true;
+    strncpy(stat.full_name, full_name, sizeof(stat.full_name));
+    strncpy(stat.short_name, short_name, sizeof(stat.short_name));
+    stat.parent_id = parent_id;
+    stat.value = 0;
+    stat.is_permanent = true;
 
-    id = _Stat.size()-1;
+    id = _Stat.size() - 1;
 
 #endif
 
     return id;
 }
 
-
 //------------------------------------------------------------------------------
 
-void     
-StatSet::SetStat( unsigned id, unsigned value )
+void StatSet::SetStat(unsigned id, unsigned value)
 {
     using namespace statset;
 
@@ -164,17 +155,15 @@ StatSet::SetStat( unsigned id, unsigned value )
     DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
 #endif
 
-    if( id < _Stat.size() )
+    if (id < _Stat.size())
         _Stat[id].value = value;
 
 #endif
 }
 
-
 //------------------------------------------------------------------------------
 
-void     
-StatSet::IncStat( unsigned id, unsigned delta )
+void StatSet::IncStat(unsigned id, unsigned delta)
 {
     using namespace statset;
 
@@ -184,16 +173,14 @@ StatSet::IncStat( unsigned id, unsigned delta )
     DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
 #endif
 
-    if( id < _Stat.size() )
+    if (id < _Stat.size())
         _Stat[id].value += delta;
 #endif
 }
 
-
 //------------------------------------------------------------------------------
 
-void     
-StatSet::DecStat( unsigned id, unsigned delta )
+void StatSet::DecStat(unsigned id, unsigned delta)
 {
     using namespace statset;
 
@@ -203,19 +190,18 @@ StatSet::DecStat( unsigned id, unsigned delta )
     DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
 #endif
 
-    if( id < _Stat.size() )
+    if (id < _Stat.size())
     {
-        unsigned    val = _Stat[id].value;
-        _Stat[id].value = (delta >= val)  ? val-delta  : 0;
+        unsigned val = _Stat[id].value;
+        _Stat[id].value = (delta >= val) ? val - delta : 0;
     }
 #endif
 }
 
-
 //------------------------------------------------------------------------------
 
-unsigned 
-StatSet::StatValue( unsigned id )
+unsigned
+StatSet::StatValue(unsigned id)
 {
     using namespace statset;
 
@@ -233,11 +219,10 @@ StatSet::StatValue( unsigned id )
     return val;
 }
 
-
 //------------------------------------------------------------------------------
 
-unsigned 
-StatSet::StatID( const char* name )
+unsigned
+StatSet::StatID(const char* name)
 {
     using namespace statset;
 
@@ -249,9 +234,9 @@ StatSet::StatID( const char* name )
     DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
 #endif
 
-    for( StatArray::const_iterator s=_Stat.begin(),s_end=_Stat.end(); s!=s_end; ++s )
+    for (StatArray::const_iterator s = _Stat.begin(), s_end = _Stat.end(); s != s_end; ++s)
     {
-        if( strcmp( name, s->full_name ) == 0 )
+        if (strcmp(name, s->full_name) == 0)
         {
             id = s - _Stat.begin();
             break;
@@ -262,11 +247,10 @@ StatSet::StatID( const char* name )
     return id;
 }
 
-
 //------------------------------------------------------------------------------
 
 const char*
-StatSet::StatFullName( unsigned id )
+StatSet::StatFullName(unsigned id)
 {
     using namespace statset;
 
@@ -283,15 +267,13 @@ StatSet::StatFullName( unsigned id )
     return name;
 }
 
-
 //------------------------------------------------------------------------------
 
-void     
-StatSet::DumpStats()
+void StatSet::DumpStats()
 {
     using namespace statset;
 
-/*
+    /*
     unsigned max_len = 0;
 
     for( StatArray::Iterator s=_Stat.begin(),s_end=_Stat.end(); s!=s_end; ++s )
@@ -312,5 +294,3 @@ StatSet::DumpStats()
     }
 */
 }
-
-

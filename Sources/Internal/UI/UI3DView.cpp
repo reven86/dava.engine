@@ -97,16 +97,16 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
 
 	if (uiDrawQueryWasOpen)
-		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);	
-	
+        FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);        
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
     viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
     scene->SetMainPassViewport(viewportRc);
-    
-    scene->Draw();        
-		
-	if (uiDrawQueryWasOpen)
+
+    scene->Draw();
+
+    if (uiDrawQueryWasOpen)
 		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }
     

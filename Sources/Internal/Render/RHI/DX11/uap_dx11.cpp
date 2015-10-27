@@ -17,9 +17,9 @@ using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::Graphics::Display;
 using namespace Windows::UI::Core;
 
-static SwapChainPanel^ m_swapChainPanel = nullptr;
+static SwapChainPanel ^ m_swapChainPanel = nullptr;
 static ComPtr<ID3D11Device1> m_d3dDevice;
-static ComPtr<ID3D11DeviceContext1>	m_d3dContext;
+static ComPtr<ID3D11DeviceContext1> m_d3dContext;
 static ComPtr<ID3D11Debug> m_d3Debug;
 static ComPtr<ID3DUserDefinedAnnotation> m_d3UserAnnotation;
 static ComPtr<IDXGISwapChain1> m_swapChain;
@@ -34,18 +34,17 @@ static Windows::Foundation::Size m_d3dRenderTargetSize;
 static Windows::Foundation::Size m_outputSize;
 static Windows::Foundation::Size m_logicalSize;
 
-DirectX::XMFLOAT4X4	m_orientationTransform3D;
-DisplayOrientations	m_nativeOrientation;
-DisplayOrientations	m_currentOrientation;
+DirectX::XMFLOAT4X4 m_orientationTransform3D;
+DisplayOrientations m_nativeOrientation;
+DisplayOrientations m_currentOrientation;
 float m_dpi = 1.f;
 float m_compositionScaleX = 1.f;
 float m_compositionScaleY = 1.f;
 
-
 DXGI_MODE_ROTATION ComputeDisplayRotation();
 void CreateDeviceResources();
 void CreateWindowSizeDependentResources();
-void SetSwapChainPanel(SwapChainPanel^ panel);
+void SetSwapChainPanel(SwapChainPanel ^ panel);
 void SetLogicalSize(Windows::Foundation::Size logicalSize);
 void SetCurrentOrientation(DisplayOrientations currentOrientation);
 void SetCompositionScale(float compositionScaleX, float compositionScaleY);
@@ -54,41 +53,36 @@ void HandleDeviceLost();
 void Trim();
 void Present();
 
-
 // Constants used to calculate screen rotations.
 namespace ScreenRotation
 {
-    // 0-degree Z-rotation
-    static const DirectX::XMFLOAT4X4 Rotation0(
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
-        );
+// 0-degree Z-rotation
+static const DirectX::XMFLOAT4X4 Rotation0(
+1.0f, 0.0f, 0.0f, 0.0f,
+0.0f, 1.0f, 0.0f, 0.0f,
+0.0f, 0.0f, 1.0f, 0.0f,
+0.0f, 0.0f, 0.0f, 1.0f);
 
-    // 90-degree Z-rotation
-    static const DirectX::XMFLOAT4X4 Rotation90(
-        0.0f, 1.0f, 0.0f, 0.0f,
-        -1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
-        );
+// 90-degree Z-rotation
+static const DirectX::XMFLOAT4X4 Rotation90(
+0.0f, 1.0f, 0.0f, 0.0f,
+-1.0f, 0.0f, 0.0f, 0.0f,
+0.0f, 0.0f, 1.0f, 0.0f,
+0.0f, 0.0f, 0.0f, 1.0f);
 
-    // 180-degree Z-rotation
-    static const DirectX::XMFLOAT4X4 Rotation180(
-        -1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, -1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
-        );
+// 180-degree Z-rotation
+static const DirectX::XMFLOAT4X4 Rotation180(
+-1.0f, 0.0f, 0.0f, 0.0f,
+0.0f, -1.0f, 0.0f, 0.0f,
+0.0f, 0.0f, 1.0f, 0.0f,
+0.0f, 0.0f, 0.0f, 1.0f);
 
-    // 270-degree Z-rotation
-    static const DirectX::XMFLOAT4X4 Rotation270(
-        0.0f, -1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
-        );
+// 270-degree Z-rotation
+static const DirectX::XMFLOAT4X4 Rotation270(
+0.0f, -1.0f, 0.0f, 0.0f,
+1.0f, 0.0f, 0.0f, 0.0f,
+0.0f, 0.0f, 1.0f, 0.0f,
+0.0f, 0.0f, 0.0f, 1.0f);
 };
 
 inline void ThrowIfFailed(HRESULT hr)
@@ -105,17 +99,17 @@ inline void ThrowIfFailed(HRESULT hr)
 inline bool SdkLayersAvailable()
 {
     HRESULT hr = D3D11CreateDevice(
-        nullptr,
-        D3D_DRIVER_TYPE_NULL,       // There is no need to create a real hardware device.
-        0,
-        D3D11_CREATE_DEVICE_DEBUG,  // Check for the SDK layers.
-        nullptr,                    // Any feature level will do.
-        0,
-        D3D11_SDK_VERSION,          // Always set this to D3D11_SDK_VERSION for Windows Store apps.
-        nullptr,                    // No need to keep the D3D device reference.
-        nullptr,                    // No need to know the feature level.
-        nullptr                     // No need to keep the D3D device context reference.
-        );
+    nullptr,
+    D3D_DRIVER_TYPE_NULL, // There is no need to create a real hardware device.
+    0,
+    D3D11_CREATE_DEVICE_DEBUG, // Check for the SDK layers.
+    nullptr, // Any feature level will do.
+    0,
+    D3D11_SDK_VERSION, // Always set this to D3D11_SDK_VERSION for Windows Store apps.
+    nullptr, // No need to keep the D3D device reference.
+    nullptr, // No need to know the feature level.
+    nullptr // No need to keep the D3D device context reference.
+    );
 
     return SUCCEEDED(hr);
 }
@@ -210,17 +204,17 @@ void CreateDeviceResources()
     ComPtr<ID3D11DeviceContext> context;
 
     HRESULT hr = D3D11CreateDevice(
-        nullptr,					// Specify nullptr to use the default adapter.
-        D3D_DRIVER_TYPE_HARDWARE,	// Create a device using the hardware graphics driver.
-        0,							// Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
-        creationFlags,				// Set debug and Direct2D compatibility flags.
-        featureLevels,				// List of feature levels this app can support.
-        ARRAYSIZE(featureLevels),	// Size of the list above.
-        D3D11_SDK_VERSION,			// Always set this to D3D11_SDK_VERSION for Windows Store apps.
-        &device,					// Returns the Direct3D device created.
-        &m_d3dFeatureLevel,			// Returns feature level of device created.
-        &context					// Returns the device immediate context.
-        );
+    nullptr, // Specify nullptr to use the default adapter.
+    D3D_DRIVER_TYPE_HARDWARE, // Create a device using the hardware graphics driver.
+    0, // Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
+    creationFlags, // Set debug and Direct2D compatibility flags.
+    featureLevels, // List of feature levels this app can support.
+    ARRAYSIZE(featureLevels), // Size of the list above.
+    D3D11_SDK_VERSION, // Always set this to D3D11_SDK_VERSION for Windows Store apps.
+    &device, // Returns the Direct3D device created.
+    &m_d3dFeatureLevel, // Returns feature level of device created.
+    &context // Returns the device immediate context.
+    );
 
 #if 0
     if (FAILED(hr))
@@ -249,24 +243,19 @@ void CreateDeviceResources()
     if (SdkLayersAvailable())
     {
         ThrowIfFailed(
-            device.As(&m_d3Debug)
-            );
+        device.As(&m_d3Debug));
     }
 #endif
-    
+
     ThrowIfFailed(
-        context.As(&m_d3UserAnnotation)
-        );
-    
+    context.As(&m_d3UserAnnotation));
+
     // Store pointers to the Direct3D 11.1 API device and immediate context.
     ThrowIfFailed(
-        device.As(&m_d3dDevice)
-        );
+    device.As(&m_d3dDevice));
 
     ThrowIfFailed(
-        context.As(&m_d3dContext)
-        );
-
+    context.As(&m_d3dContext));
 }
 
 void CreateWindowSizeDependentResources()
@@ -303,19 +292,18 @@ void CreateWindowSizeDependentResources()
     {
         // If the swap chain already exists, resize it.
         HRESULT hr = m_swapChain->ResizeBuffers(
-            2, // Double-buffered swap chain.
-            lround(m_d3dRenderTargetSize.Width),
-            lround(m_d3dRenderTargetSize.Height),
-            DXGI_FORMAT_B8G8R8A8_UNORM, // Use old format
-            0
-            );
+        2, // Double-buffered swap chain.
+        lround(m_d3dRenderTargetSize.Width),
+        lround(m_d3dRenderTargetSize.Height),
+        DXGI_FORMAT_B8G8R8A8_UNORM, // Use old format
+        0);
 
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
         {
             // If the device was removed for any reason, a new device and swap chain will need to be created.
             HandleDeviceLost();
 
-            // Everything is set up now. Do not continue execution of this method. HandleDeviceLost will reenter this method 
+            // Everything is set up now. Do not continue execution of this method. HandleDeviceLost will reenter this method
             // and correctly set up the new device.
             return;
         }
@@ -344,56 +332,48 @@ void CreateWindowSizeDependentResources()
         // This sequence obtains the DXGI factory that was used to create the Direct3D device above.
         ComPtr<IDXGIDevice1> dxgiDevice;
         ThrowIfFailed(
-            m_d3dDevice.As(&dxgiDevice)
-            );
+        m_d3dDevice.As(&dxgiDevice));
 
         ComPtr<IDXGIAdapter> dxgiAdapter;
         ThrowIfFailed(
-            dxgiDevice->GetAdapter(&dxgiAdapter)
-            );
+        dxgiDevice->GetAdapter(&dxgiAdapter));
 
         ComPtr<IDXGIFactory2> dxgiFactory;
         ThrowIfFailed(
-            dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory))
-            );
+        dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory)));
 
         // When using XAML interop, the swap chain must be created for composition.
         ThrowIfFailed(
-            dxgiFactory->CreateSwapChainForComposition(
-                m_d3dDevice.Get(),
-                &swapChainDesc,
-                nullptr,
-                &m_swapChain
-                )
-            );
+        dxgiFactory->CreateSwapChainForComposition(
+        m_d3dDevice.Get(),
+        &swapChainDesc,
+        nullptr,
+        &m_swapChain));
 
         // Associate swap chain with SwapChainPanel
         // UI changes will need to be dispatched back to the UI thread
-        m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([=]()
-        {
-            // Get backing native interface for SwapChainPanel
-            ComPtr<ISwapChainPanelNative> panelNative;
-            ThrowIfFailed(
-                reinterpret_cast<IUnknown*>(m_swapChainPanel)->QueryInterface(IID_PPV_ARGS(&panelNative))
-                );
+        m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([=]() {
+                                                   // Get backing native interface for SwapChainPanel
+                                                   ComPtr<ISwapChainPanelNative> panelNative;
+                                                   ThrowIfFailed(
+                                                   reinterpret_cast<IUnknown*>(m_swapChainPanel)->QueryInterface(IID_PPV_ARGS(&panelNative)));
 
-            ThrowIfFailed(
-                panelNative->SetSwapChain(m_swapChain.Get())
-                );
-        }, Platform::CallbackContext::Any));
+                                                   ThrowIfFailed(
+                                                   panelNative->SetSwapChain(m_swapChain.Get()));
+                                               },
+                                                                                                       Platform::CallbackContext::Any));
 
         // Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
         // ensures that the application will only render after each VSync, minimizing power consumption.
         ThrowIfFailed(
-            dxgiDevice->SetMaximumFrameLatency(1)
-            );
+        dxgiDevice->SetMaximumFrameLatency(1));
     }
 
-    // Set the proper orientation for the swap chain, and generate 2D and
-    // 3D matrix transformations for rendering to the rotated swap chain.
-    // Note the rotation angle for the 2D and 3D transforms are different.
-    // This is due to the difference in coordinate spaces.  Additionally,
-    // the 3D matrix is specified explicitly to avoid rounding errors.
+// Set the proper orientation for the swap chain, and generate 2D and
+// 3D matrix transformations for rendering to the rotated swap chain.
+// Note the rotation angle for the 2D and 3D transforms are different.
+// This is due to the difference in coordinate spaces.  Additionally,
+// the 3D matrix is specified explicitly to avoid rounding errors.
 #if 0
     switch (displayRotation)
     {
@@ -422,68 +402,57 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
-    // Setup inverse scale on the swap chain
+// Setup inverse scale on the swap chain
 #if 1
     DXGI_MATRIX_3X2_F inverseScale = { 0 };
     inverseScale._11 = 1.0f / m_compositionScaleX;
     inverseScale._22 = 1.0f / m_compositionScaleY;
     ComPtr<IDXGISwapChain2> spSwapChain2;
     ThrowIfFailed(
-        m_swapChain.As<IDXGISwapChain2>(&spSwapChain2)
-        );
+    m_swapChain.As<IDXGISwapChain2>(&spSwapChain2));
 
     ThrowIfFailed(
-        spSwapChain2->SetMatrixTransform(&inverseScale)
-        );
+    spSwapChain2->SetMatrixTransform(&inverseScale));
 #endif
 
     // Create a render target view of the swap chain back buffer.
     ThrowIfFailed(
-        m_swapChain->GetBuffer(0, IID_PPV_ARGS(&m_swapChainBuffer))
-        );
+    m_swapChain->GetBuffer(0, IID_PPV_ARGS(&m_swapChainBuffer)));
 
     ThrowIfFailed(
-        m_d3dDevice->CreateRenderTargetView(
-            m_swapChainBuffer.Get(),
-            nullptr,
-            &m_d3dRenderTargetView
-            )
-        );
+    m_d3dDevice->CreateRenderTargetView(
+    m_swapChainBuffer.Get(),
+    nullptr,
+    &m_d3dRenderTargetView));
 
     // Create a depth stencil view for use with 3D rendering if needed.
     CD3D11_TEXTURE2D_DESC depthStencilDesc(
-        DXGI_FORMAT_D24_UNORM_S8_UINT,
-        lround(m_d3dRenderTargetSize.Width),
-        lround(m_d3dRenderTargetSize.Height),
-        1, // This depth stencil view has only one texture.
-        1, // Use a single mipmap level.
-        D3D11_BIND_DEPTH_STENCIL
-        );
+    DXGI_FORMAT_D24_UNORM_S8_UINT,
+    lround(m_d3dRenderTargetSize.Width),
+    lround(m_d3dRenderTargetSize.Height),
+    1, // This depth stencil view has only one texture.
+    1, // Use a single mipmap level.
+    D3D11_BIND_DEPTH_STENCIL);
 
     ThrowIfFailed(
-        m_d3dDevice->CreateTexture2D(
-            &depthStencilDesc,
-            nullptr,
-            &m_d3dDepthStencilBuffer
-            )
-        );
+    m_d3dDevice->CreateTexture2D(
+    &depthStencilDesc,
+    nullptr,
+    &m_d3dDepthStencilBuffer));
 
     CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
     ThrowIfFailed(
-        m_d3dDevice->CreateDepthStencilView(
-            m_d3dDepthStencilBuffer.Get(),
-            &depthStencilViewDesc,
-            &m_d3dDepthStencilView
-            )
-        );
+    m_d3dDevice->CreateDepthStencilView(
+    m_d3dDepthStencilBuffer.Get(),
+    &depthStencilViewDesc,
+    &m_d3dDepthStencilView));
 
     // Set the 3D rendering viewport to target the entire window.
     m_screenViewport = CD3D11_VIEWPORT(
-        0.0f,
-        0.0f,
-        m_d3dRenderTargetSize.Width,
-        m_d3dRenderTargetSize.Height
-        );
+    0.0f,
+    0.0f,
+    m_d3dRenderTargetSize.Width,
+    m_d3dRenderTargetSize.Height);
 
     m_d3dContext->RSSetViewports(1, &m_screenViewport);
 
@@ -492,7 +461,7 @@ void CreateWindowSizeDependentResources()
 }
 
 // This method is called when the XAML control is created (or re-created).
-void SetSwapChainPanel(SwapChainPanel^ panel)
+void SetSwapChainPanel(SwapChainPanel ^ panel)
 {
     //DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
 
@@ -594,21 +563,21 @@ void HandleDeviceLost()
 {
     m_swapChain = nullptr;
 
-//     if (m_deviceNotify != nullptr)
-//     {
-//         m_deviceNotify->OnDeviceLost();
-//     }
+    //     if (m_deviceNotify != nullptr)
+    //     {
+    //         m_deviceNotify->OnDeviceLost();
+    //     }
 
     CreateDeviceResources();
     CreateWindowSizeDependentResources();
 
-//     if (m_deviceNotify != nullptr)
-//     {
-//         m_deviceNotify->OnDeviceRestored();
-//     }
+    //     if (m_deviceNotify != nullptr)
+    //     {
+    //         m_deviceNotify->OnDeviceRestored();
+    //     }
 }
 
-// Call this method when the app suspends. It provides a hint to the driver that the app 
+// Call this method when the app suspends. It provides a hint to the driver that the app
 // is entering an idle state and that temporary buffers can be reclaimed for use by other apps.
 void Trim()
 {
@@ -650,9 +619,9 @@ void Present()
 #endif
 }
 
-void init_device_and_swapchain_uap( void* panel )
+void init_device_and_swapchain_uap(void* panel)
 {
-    SwapChainPanel^ swapChain = reinterpret_cast<SwapChainPanel^>(panel);
+    SwapChainPanel ^ swapChain = reinterpret_cast<SwapChainPanel ^>(panel);
 
     CreateDeviceResources();
     SetSwapChainPanel(swapChain);
@@ -665,7 +634,7 @@ void init_device_and_swapchain_uap( void* panel )
     _D3D11_FeatureLevel = m_d3dFeatureLevel;
     _D3D11_Debug = m_d3Debug.Get();
     _D3D11_UserAnnotation = m_d3UserAnnotation.Get();
-    
+
     _D3D11_SwapChain = m_swapChain.Get();
     _D3D11_SwapChainBuffer = m_swapChainBuffer.Get();
     _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();

@@ -78,7 +78,7 @@ void UIScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenRect)
 {
     fullScreenRect = newFullScreenRect;
     UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
-	SetSize(newFullScreenRect.GetSize());
+    SetSize(newFullScreenRect.GetSize());
 }
 
 	
@@ -110,7 +110,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
     static auto drawColor(Color::Black);
 
-	UIGeometricData drawData;
+    UIGeometricData drawData;
 	drawData.position = relativePosition;
 	drawData.size = size;
 	drawData.pivotPoint = GetPivotPoint();
@@ -124,18 +124,18 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
                                   (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
 	if (fullRect.x < 0)
 	{
-	    auto rect1 = Rect(fullRect.x, 0, -fullRect.x, virtualSize.y);
+        auto rect1 = Rect(fullRect.x, 0, -fullRect.x, virtualSize.y);
         RenderSystem2D::Instance()->FillRect(rect1, drawColor);
-	    auto rect2 = Rect(fullRect.dx - fullRect.x, 0, fullRect.x, virtualSize.y);
+        auto rect2 = Rect(fullRect.dx - fullRect.x, 0, fullRect.x, virtualSize.y);
         RenderSystem2D::Instance()->FillRect(rect2, drawColor);
-	}
+    }
 	else 
 	{
-	    auto rect1 = Rect(0, fullRect.y, virtualSize.x + 1,	-fullRect.y);
+        auto rect1 = Rect(0, fullRect.y, virtualSize.x + 1, -fullRect.y);
         RenderSystem2D::Instance()->FillRect(rect1, drawColor);
         auto rect2 = Rect(0, fullRect.dy, virtualSize.x + 1, -fullRect.y);
         RenderSystem2D::Instance()->FillRect(rect2, drawColor);
-	}
+    }
 }
 
 

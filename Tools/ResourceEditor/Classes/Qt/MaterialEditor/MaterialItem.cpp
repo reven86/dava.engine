@@ -43,8 +43,8 @@ namespace
     const int MAX_MATERIAL_HEIGHT = 30;
 }
 
-MaterialItem::MaterialItem(DAVA::NMaterial * _material, bool dragEnabled, bool dropEnabled)
-    : QObject( NULL )
+MaterialItem::MaterialItem(DAVA::NMaterial* _material, bool dragEnabled, bool dropEnabled)
+    : QObject(NULL)
     , QStandardItem()
     , material(_material)
     , curFlag(0)
@@ -98,27 +98,27 @@ DAVA::NMaterial * MaterialItem::GetMaterial() const
 
 void MaterialItem::SetFlag(MaterialFlag flag, bool set)
 {
-    if((set && !(curFlag & flag)) || (!set && (curFlag & flag)))
+    if ((set && !(curFlag & flag)) || (!set && (curFlag & flag)))
     {
         bool ok = true;
-        switch(flag)
+        switch (flag)
         {
-            case IS_MARK_FOR_DELETE:
-                break;
+        case IS_MARK_FOR_DELETE:
+            break;
 
             case IS_PART_OF_SELECTION:
-                if(material->GetChildren().size() > 0)
+                if (material->GetChildren().size() > 0)
                 {
                     QFont curFont = font();
                     curFont.setBold(set);
-                    setFont(curFont); 
+                    setFont(curFont);
                 }
                 break;
 
             default:
                 ok = false;
                 break;
-        }
+            }
 
         if(ok)
         {
@@ -174,7 +174,7 @@ void MaterialItem::requestPreview()
     {
         isPreviewRequested = true;
 
-        DAVA::Texture *t = material->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_ALBEDO);
+        DAVA::Texture* t = material->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_ALBEDO);
         if(t)
         {
             DAVA::TextureDescriptor *descriptor = t->GetDescriptor();

@@ -11,74 +11,73 @@ namespace
 {
 const FastName DYNAMIC_PARAM_NAMES[DynamicBindings::DYNAMIC_PARAMETERS_COUNT] =
 {
-    FastName("unknownSemantic"),
-    FastName("worldMatrix"),//PARAM_WORLD,
-    FastName("invWorldMatrix"), //PARAM_INV_WORLD,
-    FastName("worldInvTransposeMatrix"), //PARAM_WORLD_INV_TRANSPOSE,
+  FastName("unknownSemantic"),
+  FastName("worldMatrix"), //PARAM_WORLD,
+  FastName("invWorldMatrix"), //PARAM_INV_WORLD,
+  FastName("worldInvTransposeMatrix"), //PARAM_WORLD_INV_TRANSPOSE,
 
-    FastName("viewMatrix"), //PARAM_VIEW,
-    FastName("invViewMatrix"), //PARAM_INV_VIEW,
-    FastName("projMatrix"), //PARAM_PROJ,
-    FastName("invProjMatrix"), //PARAM_INV_PROJ,
+  FastName("viewMatrix"), //PARAM_VIEW,
+  FastName("invViewMatrix"), //PARAM_INV_VIEW,
+  FastName("projMatrix"), //PARAM_PROJ,
+  FastName("invProjMatrix"), //PARAM_INV_PROJ,
 
-    FastName("worldViewMatrix"), //PARAM_WORLD_VIEW,
-    FastName("invWorldViewMatrix"), //PARAM_INV_WORLD_VIEW,
-    FastName("worldViewInvTransposeMatrix"), //PARAM_NORMAL, // NORMAL MATRIX
+  FastName("worldViewMatrix"), //PARAM_WORLD_VIEW,
+  FastName("invWorldViewMatrix"), //PARAM_INV_WORLD_VIEW,
+  FastName("worldViewInvTransposeMatrix"), //PARAM_NORMAL, // NORMAL MATRIX
 
-    FastName("viewProjMatrix"), //PARAM_VIEW_PROJ,
-    FastName("invViewProjMatrix"), //PARAM_INV_VIEW_PROJ,
+  FastName("viewProjMatrix"), //PARAM_VIEW_PROJ,
+  FastName("invViewProjMatrix"), //PARAM_INV_VIEW_PROJ,
 
-    FastName("worldViewProjMatrix"), //PARAM_WORLD_VIEW_PROJ,
-    FastName("invWorldViewProjMatrix"), //PARAM_INV_WORLD_VIEW_PROJ,
-    
-    FastName("globalTime"),
-    FastName("worldScale"),
+  FastName("worldViewProjMatrix"), //PARAM_WORLD_VIEW_PROJ,
+  FastName("invWorldViewProjMatrix"), //PARAM_INV_WORLD_VIEW_PROJ,
 
-    FastName("cameraPosition"), // PARAM_CAMERA_POS,
-    FastName("cameraDirection"), // PARAM_CAMERA_DIR,
-    FastName("cameraUp"), // PARAM_CAMERA_UP,
+  FastName("globalTime"),
+  FastName("worldScale"),
 
-    FastName("lightPosition0"),
-    FastName("lightColor0"),
-    FastName("lightAmbientColor0"),
+  FastName("cameraPosition"), // PARAM_CAMERA_POS,
+  FastName("cameraDirection"), // PARAM_CAMERA_DIR,
+  FastName("cameraUp"), // PARAM_CAMERA_UP,
 
-    FastName("localBoundingBox"),
-    FastName("worldViewObjectCenter"),
-    FastName("boundingBoxSize"),
+  FastName("lightPosition0"),
+  FastName("lightColor0"),
+  FastName("lightAmbientColor0"),
 
-    FastName("trunkOscillationParams"),
-    FastName("leafOscillationParams"),
-    FastName("speedTreeLightSmoothing"),
+  FastName("localBoundingBox"),
+  FastName("worldViewObjectCenter"),
+  FastName("boundingBoxSize"),
 
-    FastName("sphericalHarmonics"),
+  FastName("trunkOscillationParams"),
+  FastName("leafOscillationParams"),
+  FastName("speedTreeLightSmoothing"),
 
-    FastName("jointPositions"),
-    FastName("jointQuaternions"),
-    FastName("jointsCount"),
+  FastName("sphericalHarmonics"),
 
-    FastName("viewportSize"),
-    FastName("rcpViewportSize"),
-    FastName("viewportOffset"),
+  FastName("jointPositions"),
+  FastName("jointQuaternions"),
+  FastName("jointsCount"),
 
-    FastName("shadowColor")
+  FastName("viewportSize"),
+  FastName("rcpViewportSize"),
+  FastName("viewportOffset"),
+
+  FastName("shadowColor")
 };
-
 }
 
 DynamicBindings::eUniformSemantic DynamicBindings::GetUniformSemanticByName(const FastName& name)
 {
     for (int32 k = 0; k < DYNAMIC_PARAMETERS_COUNT; ++k)
-        if (name == DYNAMIC_PARAM_NAMES[k])return (eUniformSemantic)k;
+        if (name == DYNAMIC_PARAM_NAMES[k])
+            return (eUniformSemantic)k;
     return UNKNOWN_SEMANTIC;
 }
 
-void DynamicBindings::SetDynamicParam(DynamicBindings::eUniformSemantic shaderSemantic, const void * value, pointer_size _updateSemantic)
+void DynamicBindings::SetDynamicParam(DynamicBindings::eUniformSemantic shaderSemantic, const void* value, pointer_size _updateSemantic)
 {
     //AutobindVariableData * var = &dynamicParameters[shaderSemantic];
     //if (var->updateSemantic
     if (_updateSemantic == UPDATE_SEMANTIC_ALWAYS || dynamicParameters[shaderSemantic].updateSemantic != _updateSemantic)
     {
-
         if (_updateSemantic == UPDATE_SEMANTIC_ALWAYS)
             dynamicParameters[shaderSemantic].updateSemantic++;
         else
@@ -86,34 +85,24 @@ void DynamicBindings::SetDynamicParam(DynamicBindings::eUniformSemantic shaderSe
 
         dynamicParameters[shaderSemantic].value = value;
         dynamicParamersRequireUpdate &= ~(1 << shaderSemantic);
-       
+
         switch (shaderSemantic)
         {
         case PARAM_WORLD:
-            dynamicParamersRequireUpdate |= ((1 << PARAM_INV_WORLD) | (1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW) | (1 << PARAM_WORLD_VIEW_OBJECT_CENTER)
-                | (1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ) | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) | (1 << PARAM_WORLD_INV_TRANSPOSE) | (1 << PARAM_WORLD_SCALE));
+            dynamicParamersRequireUpdate |= ((1 << PARAM_INV_WORLD) | (1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW) | (1 << PARAM_WORLD_VIEW_OBJECT_CENTER) | (1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ) | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) | (1 << PARAM_WORLD_INV_TRANSPOSE) | (1 << PARAM_WORLD_SCALE));
             break;
         case PARAM_VIEW:
-            dynamicParamersRequireUpdate |= ((1 << PARAM_INV_VIEW)
-                | (1 << PARAM_WORLD_VIEW)
-                | (1 << PARAM_INV_WORLD_VIEW)
-                | (1 << PARAM_WORLD_VIEW_PROJ)
-                | (1 << PARAM_INV_WORLD_VIEW_PROJ)
-                | (1 << PARAM_VIEW_PROJ)
-                | (1 << PARAM_INV_VIEW_PROJ)
-                | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE)
-                | (1 << PARAM_WORLD_VIEW_OBJECT_CENTER));
+            dynamicParamersRequireUpdate |= ((1 << PARAM_INV_VIEW) | (1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW) | (1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ) | (1 << PARAM_VIEW_PROJ) | (1 << PARAM_INV_VIEW_PROJ) | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) | (1 << PARAM_WORLD_VIEW_OBJECT_CENTER));
             break;
         case PARAM_PROJ:
             dynamicParamersRequireUpdate |= ((1 << PARAM_INV_PROJ) | (1 << PARAM_VIEW_PROJ) | (1 << PARAM_INV_VIEW_PROJ) |
-                (1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ));
+                                             (1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ));
             break;
         case PARAM_LOCAL_BOUNDING_BOX:
             dynamicParamersRequireUpdate |= (1 << PARAM_BOUNDING_BOX_SIZE) | (1 << PARAM_WORLD_VIEW_OBJECT_CENTER);
         default:
             break;
         }
-
     }
 }
 
@@ -131,8 +120,8 @@ void DynamicBindings::ComputeWorldViewObjectCenterIfRequired()
     ComputeWorldViewMatrixIfRequired();
     if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW_OBJECT_CENTER))
     {
-        AABBox3 * objectBox = (AABBox3*)GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
-        Matrix4 * worldView = (Matrix4 *)GetDynamicParam(PARAM_WORLD_VIEW);
+        AABBox3* objectBox = (AABBox3*)GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
+        Matrix4* worldView = (Matrix4*)GetDynamicParam(PARAM_WORLD_VIEW);
         worldViewObjectCenter = objectBox->GetCenter() * (*worldView);
         SetDynamicParam(PARAM_WORLD_VIEW_OBJECT_CENTER, &worldViewObjectCenter, UPDATE_SEMANTIC_ALWAYS);
     }
@@ -162,7 +151,7 @@ inline void DynamicBindings::ComputeLocalBoundingBoxSizeIfRequired()
 {
     if (dynamicParamersRequireUpdate & (1 << PARAM_BOUNDING_BOX_SIZE))
     {
-        AABBox3 * objectBox = (AABBox3*)DynamicBindings::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
+        AABBox3* objectBox = (AABBox3*)DynamicBindings::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
         boundingBoxSize = objectBox->GetSize();
 
         SetDynamicParam(PARAM_BOUNDING_BOX_SIZE, &boundingBoxSize, UPDATE_SEMANTIC_ALWAYS);
@@ -209,12 +198,11 @@ inline void DynamicBindings::ComputeWorldViewInvTransposeMatrixIfRequired()
     }
 }
 
-
 inline void DynamicBindings::ComputeInvWorldMatrixIfRequired()
 {
     if (dynamicParamersRequireUpdate & (1 << PARAM_INV_WORLD))
     {
-        const Matrix4 & worldMatrix = GetDynamicParamMatrix(PARAM_WORLD);
+        const Matrix4& worldMatrix = GetDynamicParamMatrix(PARAM_WORLD);
         worldMatrix.GetInverse(invWorldMatrix);
         SetDynamicParam(PARAM_INV_WORLD, &invWorldMatrix, UPDATE_SEMANTIC_ALWAYS);
     }
@@ -231,7 +219,6 @@ inline void DynamicBindings::ComputeWorldInvTransposeMatrixIfRequired()
     }
 }
 
-
 int32 DynamicBindings::GetDynamicParamArraySize(DynamicBindings::eUniformSemantic shaderSemantic, int32 defaultValue)
 {
     if ((shaderSemantic == PARAM_JOINT_POSITIONS) || (shaderSemantic == PARAM_JOINT_QUATERNIONS))
@@ -239,7 +226,7 @@ int32 DynamicBindings::GetDynamicParamArraySize(DynamicBindings::eUniformSemanti
     else
         return defaultValue;
 }
-const void * DynamicBindings::GetDynamicParam(eUniformSemantic shaderSemantic)
+const void* DynamicBindings::GetDynamicParam(eUniformSemantic shaderSemantic)
 {
     switch (shaderSemantic)
     {
@@ -281,5 +268,4 @@ pointer_size DynamicBindings::GetDynamicParamUpdateSemantic(eUniformSemantic sha
 {
     return dynamicParameters[shaderSemantic].updateSemantic;
 }
-
 }

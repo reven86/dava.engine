@@ -43,7 +43,7 @@ TextBlockRender::~TextBlockRender()
 {
 	SafeRelease(sprite);
 }
-	
+
 void TextBlockRender::Prepare()
 {
 	SafeRelease(sprite);

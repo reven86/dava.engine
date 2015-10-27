@@ -43,7 +43,11 @@ using UniquePropertyLayout = UniqueHandle;
 
 struct ConstBufferDescriptor
 {
-    enum class Type{ Vertex, Fragment };    
+    enum class Type
+    {
+        Vertex,
+        Fragment
+    };
 
     Type type;
     rhi::ShaderProp::Storage updateType;
@@ -51,8 +55,6 @@ struct ConstBufferDescriptor
 
     UniquePropertyLayout propertyLayoutId;
 };
-
-
 
 struct DynamicPropertyBinding
 {
@@ -67,16 +69,17 @@ struct DynamicPropertyBinding
 
 //forward declarations for friending
 class ShaderDescriptor;
-namespace ShaderDescriptorCache {
+namespace ShaderDescriptorCache
+{
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 void RelaoadShaders();
 }
 
 class ShaderDescriptor
-{    
-public://utility    
+{
+public: //utility
     static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
-    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers
+    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize); //return in registers
     static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float
 
 public:
@@ -87,13 +90,28 @@ public:
     uint32 GetFragmentConstBuffersCount();
 
     rhi::HConstBuffer GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index);
-    inline rhi::HPipelineState GetPiplineState(){ return piplineState; }
+    inline rhi::HPipelineState GetPiplineState()
+    {
+        return piplineState;
+    }
 
-    uint32 GetRequiredVertexFormat(){ return requiredVertexFormat; }
+    uint32 GetRequiredVertexFormat()
+    {
+        return requiredVertexFormat;
+    }
 
-    const Vector<ConstBufferDescriptor>& GetConstBufferDescriptors() const { return constBuffers; }
-    const rhi::ShaderSamplerList& GetFragmentSamplerList() const { return fragmentSamplerList; }
-    const rhi::ShaderSamplerList& GetVertexSamplerList() const { return vertexSamplerList; }
+    const Vector<ConstBufferDescriptor>& GetConstBufferDescriptors() const
+    {
+        return constBuffers;
+    }
+    const rhi::ShaderSamplerList& GetFragmentSamplerList() const
+    {
+        return fragmentSamplerList;
+    }
+    const rhi::ShaderSamplerList& GetVertexSamplerList() const
+    {
+        return vertexSamplerList;
+    }
 
     bool IsValid();
 
@@ -105,10 +123,8 @@ private:
 
     Vector<ConstBufferDescriptor> constBuffers;
 
-
     uint32 vertexConstBuffersCount, fragmentConstBuffersCount;
     Vector<DynamicPropertyBinding> dynamicPropertyBindings;
-
 
     Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::HConstBuffer> dynamicBuffers;
 
@@ -122,7 +138,7 @@ private:
 
     bool valid;
 
-//for storing and further debug simplification    
+    //for storing and further debug simplification
     FastName sourceName;
     HashMap<FastName, int32> defines;
 

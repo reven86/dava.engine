@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 static const FastName VEGETATION_ENTITY_VARIATION_0("variation_0");
 
 static const FastName VEGETATION_ENTITY_LAYER_0("layer_0");
@@ -45,14 +44,14 @@ static const FastName VEGETATION_ENTITY_LAYER_3("layer_3");
 
 static Vector<FastName> VEGETATION_ENTITY_LAYER_NAMES =
 {
-    VEGETATION_ENTITY_LAYER_0,
-    VEGETATION_ENTITY_LAYER_1,
-    VEGETATION_ENTITY_LAYER_2,
-    VEGETATION_ENTITY_LAYER_3
+  VEGETATION_ENTITY_LAYER_0,
+  VEGETATION_ENTITY_LAYER_1,
+  VEGETATION_ENTITY_LAYER_2,
+  VEGETATION_ENTITY_LAYER_3
 };
 
-VegetationGeometryData::VegetationGeometryData(Vector<NMaterial*>& materialsData, Vector<Vector<Vector<Vector3> > >& positionLods, Vector<Vector<Vector<Vector2> > >& texCoordLods,
-                                                                                  Vector<Vector<Vector<Vector3> > >& normalLods, Vector<Vector<Vector<VegetationIndex> > >& indexLods)
+VegetationGeometryData::VegetationGeometryData(Vector<NMaterial*>& materialsData, Vector<Vector<Vector<Vector3>>>& positionLods, Vector<Vector<Vector<Vector2>>>& texCoordLods,
+                                               Vector<Vector<Vector<Vector3>>>& normalLods, Vector<Vector<Vector<VegetationIndex>>>& indexLods)
 {
     Load(materialsData, positionLods, texCoordLods, normalLods, indexLods);
 }
@@ -65,83 +64,82 @@ VegetationGeometryData::VegetationGeometryData(VegetationGeometryData& src)
 VegetationGeometryData::~VegetationGeometryData()
 {
     size_t materialCount = materials.size();
-    for(size_t materialIndex = 0; materialIndex < materialCount; ++materialIndex)
+    for (size_t materialIndex = 0; materialIndex < materialCount; ++materialIndex)
     {
         SafeRelease(materials[materialIndex]);
     }
 }
 
-void VegetationGeometryData::Load(Vector<NMaterial*>& materialsData, Vector<Vector<Vector<Vector3> > >& positionLods, Vector<Vector<Vector<Vector2> > >& texCoordLods,
-                                                                     Vector<Vector<Vector<Vector3> > >& normalLods, Vector<Vector<Vector<VegetationIndex> > >& indexLods)
+void VegetationGeometryData::Load(Vector<NMaterial*>& materialsData, Vector<Vector<Vector<Vector3>>>& positionLods, Vector<Vector<Vector<Vector2>>>& texCoordLods,
+                                  Vector<Vector<Vector<Vector3>>>& normalLods, Vector<Vector<Vector<VegetationIndex>>>& indexLods)
 {
     size_t materialCount = materialsData.size();
-    for(size_t layerIndex = 0; layerIndex < materialCount; ++layerIndex)
+    for (size_t layerIndex = 0; layerIndex < materialCount; ++layerIndex)
     {
         NMaterial* curMaterial = SafeRetain(materialsData[layerIndex]);
         materials.push_back(curMaterial);
-        
-        Vector<Vector<Vector3> >& srcPositionLodData = positionLods[layerIndex];
-        Vector<Vector<Vector2> >& srcTexCoordLodData = texCoordLods[layerIndex];
-        Vector<Vector<Vector3> >& srcNormalLodData = normalLods[layerIndex];
-        Vector<Vector<VegetationIndex> >& srcIndexLodData = indexLods[layerIndex];
-        
+
+        Vector<Vector<Vector3>>& srcPositionLodData = positionLods[layerIndex];
+        Vector<Vector<Vector2>>& srcTexCoordLodData = texCoordLods[layerIndex];
+        Vector<Vector<Vector3>>& srcNormalLodData = normalLods[layerIndex];
+        Vector<Vector<VegetationIndex>>& srcIndexLodData = indexLods[layerIndex];
+
         size_t maxLodCount = Max(
-                                 Max(srcPositionLodData.size(), srcTexCoordLodData.size()),
-                                 Max(srcNormalLodData.size(), srcIndexLodData.size())
-                                 );
-        
+        Max(srcPositionLodData.size(), srcTexCoordLodData.size()),
+        Max(srcNormalLodData.size(), srcIndexLodData.size()));
+
         DVASSERT(srcPositionLodData.size() == maxLodCount);
         DVASSERT(srcTexCoordLodData.size() == maxLodCount);
         DVASSERT(srcNormalLodData.size() == maxLodCount);
         DVASSERT(srcIndexLodData.size() == maxLodCount);
-        
-        positions.push_back(Vector<Vector<Vector3> >());
-        texCoords.push_back(Vector<Vector<Vector2> >());
-        normals.push_back(Vector<Vector<Vector3> >());
-        indices.push_back(Vector<Vector<VegetationIndex> >());
-        
-        Vector<Vector<Vector3> >& dstPositionLodData = positions[positions.size() - 1];
-        Vector<Vector<Vector2> >& dstTexCoordLodData = texCoords[texCoords.size() - 1];
-        Vector<Vector<Vector3> >& dstNormalLodData = normals[normals.size() - 1];
-        Vector<Vector<VegetationIndex> >& dstIndexLodData = indices[indices.size() - 1];
-        
-        for(size_t lodIndex = 0; lodIndex < maxLodCount; ++lodIndex)
+
+        positions.push_back(Vector<Vector<Vector3>>());
+        texCoords.push_back(Vector<Vector<Vector2>>());
+        normals.push_back(Vector<Vector<Vector3>>());
+        indices.push_back(Vector<Vector<VegetationIndex>>());
+
+        Vector<Vector<Vector3>>& dstPositionLodData = positions[positions.size() - 1];
+        Vector<Vector<Vector2>>& dstTexCoordLodData = texCoords[texCoords.size() - 1];
+        Vector<Vector<Vector3>>& dstNormalLodData = normals[normals.size() - 1];
+        Vector<Vector<VegetationIndex>>& dstIndexLodData = indices[indices.size() - 1];
+
+        for (size_t lodIndex = 0; lodIndex < maxLodCount; ++lodIndex)
         {
             Vector<Vector3>& srcPositions = srcPositionLodData[lodIndex];
             Vector<Vector2>& srcTexCoords = srcTexCoordLodData[lodIndex];
             Vector<Vector3>& srcNormals = srcNormalLodData[lodIndex];
             Vector<VegetationIndex>& srcIndices = srcIndexLodData[lodIndex];
-            
+
             dstPositionLodData.push_back(Vector<Vector3>());
             dstTexCoordLodData.push_back(Vector<Vector2>());
             dstNormalLodData.push_back(Vector<Vector3>());
             dstIndexLodData.push_back(Vector<VegetationIndex>());
-            
+
             Vector<Vector3>& dstPositions = dstPositionLodData[dstPositionLodData.size() - 1];
             Vector<Vector2>& dstTexCoords = dstTexCoordLodData[dstTexCoordLodData.size() - 1];
             Vector<Vector3>& dstNormals = dstNormalLodData[dstNormalLodData.size() - 1];
             Vector<VegetationIndex>& dstIndices = dstIndexLodData[dstIndexLodData.size() - 1];
-            
+
             size_t positionCount = srcPositions.size();
-            for(size_t positionIndex = 0; positionIndex < positionCount; ++positionIndex)
+            for (size_t positionIndex = 0; positionIndex < positionCount; ++positionIndex)
             {
                 dstPositions.push_back(srcPositions[positionIndex]);
             }
-            
+
             size_t texCoordCount = srcTexCoords.size();
-            for(size_t texCoordIndex = 0; texCoordIndex < texCoordCount; ++texCoordIndex)
+            for (size_t texCoordIndex = 0; texCoordIndex < texCoordCount; ++texCoordIndex)
             {
                 dstTexCoords.push_back(srcTexCoords[texCoordIndex]);
             }
-            
+
             size_t normalCount = srcNormals.size();
-            for(size_t normalIndex = 0; normalIndex < normalCount; ++normalIndex)
+            for (size_t normalIndex = 0; normalIndex < normalCount; ++normalIndex)
             {
                 dstNormals.push_back(srcNormals[normalIndex]);
             }
-            
+
             size_t indexCount = srcIndices.size();
-            for(size_t indexIndex = 0; indexIndex < indexCount; ++indexIndex)
+            for (size_t indexIndex = 0; indexIndex < indexCount; ++indexIndex)
             {
                 dstIndices.push_back(srcIndices[indexIndex]);
             }
@@ -189,19 +187,19 @@ VegetationGeometryDataPtr VegetationGeometryDataReader::ReadScene(const FilePath
     VegetationGeometryDataPtr result;
 
     ScopedPtr<Scene> scene(new Scene);
-    
-    if(SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePath))
+
+    if (SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePath))
     {
         Logger::Error("Cannot load custom geometry scene specified");
         return result;
     }
-    
+
     Vector<NMaterial*> materialsData;
-    Vector<Vector<Vector<Vector3> > > positionLods;
-    Vector<Vector<Vector<Vector2> > > texCoordLods;
-    Vector<Vector<Vector<Vector3> > > normalLods;
-    Vector<Vector<Vector<VegetationIndex> > > indexLods;
-    
+    Vector<Vector<Vector<Vector3>>> positionLods;
+    Vector<Vector<Vector<Vector2>>> texCoordLods;
+    Vector<Vector<Vector<Vector3>>> normalLods;
+    Vector<Vector<Vector<VegetationIndex>>> indexLods;
+
     //VI: wait for all scene objects to initialize
     //VI: in order to avoid crashes when scene released
     JobManager::Instance()->WaitMainJobs();
@@ -223,15 +221,15 @@ VegetationGeometryDataPtr VegetationGeometryDataReader::ReadScene(const FilePath
             return result;
         }
 
-        positionLods.push_back(Vector<Vector<Vector3> >());
-        texCoordLods.push_back(Vector<Vector<Vector2> >());
-        normalLods.push_back(Vector<Vector<Vector3> >());
-        indexLods.push_back(Vector<Vector<VegetationIndex> >());
+        positionLods.push_back(Vector<Vector<Vector3>>());
+        texCoordLods.push_back(Vector<Vector<Vector2>>());
+        normalLods.push_back(Vector<Vector<Vector3>>());
+        indexLods.push_back(Vector<Vector<VegetationIndex>>());
 
-        Vector<Vector<Vector3> >& layerPositions = positionLods[positionLods.size() - 1];
-        Vector<Vector<Vector2> >& layerTexCoords = texCoordLods[texCoordLods.size() - 1];
-        Vector<Vector<Vector3> >& layerNormals = normalLods[normalLods.size() - 1];
-        Vector<Vector<VegetationIndex> >& layerIndices = indexLods[indexLods.size() - 1];
+        Vector<Vector<Vector3>>& layerPositions = positionLods[positionLods.size() - 1];
+        Vector<Vector<Vector2>>& layerTexCoords = texCoordLods[texCoordLods.size() - 1];
+        Vector<Vector<Vector3>>& layerNormals = normalLods[normalLods.size() - 1];
+        Vector<Vector<VegetationIndex>>& layerIndices = indexLods[indexLods.size() - 1];
 
         RenderObject* ro = GetRenderObject(layerEntity);
         if (!ro)
@@ -306,10 +304,9 @@ VegetationGeometryDataPtr VegetationGeometryDataReader::ReadScene(const FilePath
             }
         }
     }
-    
-    result.reset(new VegetationGeometryData( materialsData, positionLods, texCoordLods, normalLods, indexLods));
-    
+
+    result.reset(new VegetationGeometryData(materialsData, positionLods, texCoordLods, normalLods, indexLods));
+
     return result;
 }
-
 }

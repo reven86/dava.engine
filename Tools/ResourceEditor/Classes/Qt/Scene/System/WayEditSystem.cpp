@@ -47,8 +47,7 @@ WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selecti
     , selectionSystem(_selectionSystem)
     , collisionSystem(_collisionSystem)
     , underCursorPathEntity(nullptr)
-{    
-
+{
     sceneEditor = static_cast<SceneEditor2 *>(GetScene());
 }
 
@@ -510,7 +509,7 @@ void WayEditSystem::Draw()
         {
             greenValue = 1.0f;
         }
-        
+
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
     }

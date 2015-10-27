@@ -33,14 +33,13 @@
 #include "Core/Core.h"
 #include "Utils/Utils.h"
 
-namespace DAVA 
-{    
-    
+namespace DAVA
+{
 TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock) :
 	TextBlockRender(textBlock)
 {
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
-	buf = NULL;
+    buf = NULL;
 	ftFont = (FTFont*)textBlock->font;
 #if defined(LOCALIZATION_DEBUG)
     textOffsetTL.x = std::numeric_limits<float32>::max();
@@ -55,9 +54,7 @@ TextBlockSoftwareRender::~TextBlockSoftwareRender()
 }
 void TextBlockSoftwareRender::Prepare()
 {
-    
     TextBlockRender::Prepare();
-    
 
     int32 width = Max(textBlock->cacheDx, 1);
     int32 height = Max(textBlock->cacheDy, 1);
@@ -90,13 +87,12 @@ void TextBlockSoftwareRender::Prepare()
 			addInfo = "empty";
 		}
 	}
-	
-    
-    Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, width, height, false, addInfo.c_str());    
+
+    Texture* tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, width, height, false, addInfo.c_str());
     sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
     SafeRelease(tex);
-        
-	SafeDeleteArray(buf);
+
+    SafeDeleteArray(buf);
 }
 
 void TextBlockSoftwareRender::Restore()
@@ -122,7 +118,6 @@ void TextBlockSoftwareRender::Restore()
     SafeDeleteArray(buf);
 }
 
-	
 Font::StringMetrics TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
 	 Font::StringMetrics metrics= ftFont->DrawStringToBuffer(buf, x, y, 

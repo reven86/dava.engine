@@ -175,12 +175,12 @@ void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
 
 DAVA_DEPRECATED(void RenderObjectsFlusher::Flush())
 {
-	static const rhi::HTexture nullTexture;
-	static const rhi::Viewport nullViewport(0, 0, 1, 1);
+    static const rhi::HTexture nullTexture;
+    static const rhi::Viewport nullViewport(0, 0, 1, 1);
 
-	auto currentFrame = rhi::GetCurrentFrameSyncObject();
-	while (!rhi::SyncObjectSignaled(currentFrame))
-	{
+    auto currentFrame = rhi::GetCurrentFrameSyncObject();
+    while (!rhi::SyncObjectSignaled(currentFrame))
+    {
         Renderer::BeginFrame();
         RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
         Renderer::EndFrame();

@@ -59,8 +59,8 @@ void OwnersSignatureSystem::ProcessCommand(const Command2 *command, bool redo)
 
 bool OwnersSignatureSystem::IsCommandIdValid(int _id)
 {
-	for (size_t i = 0; i < COUNT_OF(validIDs); ++i)
-	{
+    for (size_t i = 0; i < COUNT_OF(validIDs); ++i)
+    {
 		if(validIDs[i] == _id)
 		{
 			return true;

@@ -80,9 +80,9 @@ DeferredScreenMetricEvents::DeferredScreenMetricEvents(int32 interval, UpdateMet
     TimeSpan span;
     span.Duration = interval * 10000; // convert to 100ns ticks
     timer->Interval = span;
-    auto tick = ref new EventHandler<Platform::Object ^>([this](Object ^ sender, Object ^ e)
-                                                         { DeferredTick();
-                                                         });
+    auto tick = ref new EventHandler<Platform::Object ^>([this](Object ^ sender, Object ^ e) {
+        DeferredTick();
+    });
     timer->Tick += tick;
 }
 

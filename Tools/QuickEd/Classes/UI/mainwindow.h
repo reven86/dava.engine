@@ -72,7 +72,7 @@ public:
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
 
-    DialogReloadSprites *GetDialogReloadSprites() const;
+    DialogReloadSprites* GetDialogReloadSprites() const;
     QCheckBox* GetCheckboxEmulation();
 
 protected:

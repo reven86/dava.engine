@@ -175,9 +175,9 @@ template <class T, std::size_t size>
 class CircularArray
 {
 public:
-    T & Next()
+    T& Next()
     {
-        T & ret = elements[currentIndex];
+        T& ret = elements[currentIndex];
 
         if ((++currentIndex) == elements.size())
             currentIndex = 0;
@@ -185,7 +185,7 @@ public:
         return ret;
     }
 
-    std::array < T, size > elements;
+    std::array<T, size> elements;
 
 protected:
     std::size_t currentIndex = 0;

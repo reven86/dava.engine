@@ -45,7 +45,7 @@ public:
 
 	virtual void PrintUsage() const = 0;
 
-	virtual void Process() = 0;
+    virtual void Process() = 0;
 
     virtual DAVA::FilePath GetQualityConfigPath() const {return DAVA::FilePath(); };
     
