@@ -41,17 +41,21 @@ using namespace DAVA;
 
 namespace
 {
-PackageBaseNode* FindFirstChildWithControl(PackageBaseNode* node)
+PackageBaseNode* FindFirstChildWithControl(PackageBaseNode* node, bool forward)
 {
     DVASSERT(node != nullptr);
     if (node->GetControl() != nullptr)
     {
         return node;
     }
-    int count = node->GetCount();
-    for (int i = 0; i < count; ++i)
+    const uint32 count = node->GetCount();
+    const uint32 begin = 0;
+    const uint32 end = count;
+    const int sign = forward ? 1 : -1;
+    const uint32 beginPos = forward ? begin : (end - 1);
+    for (int i = begin; i < end; ++i)
     {
-        PackageBaseNode* child = FindFirstChildWithControl(node->Get(i));
+        PackageBaseNode* child = FindFirstChildWithControl(node->Get(beginPos + sign * i), forward);
         if (nullptr != child)
         {
             return child;
@@ -60,36 +64,37 @@ PackageBaseNode* FindFirstChildWithControl(PackageBaseNode* node)
     return nullptr;
 }
 
-PackageBaseNode* FindNeighbour(PackageBaseNode* node)
+PackageBaseNode* FindNeighbour(PackageBaseNode* node, bool forward)
 {
     PackageBaseNode* parent = node->GetParent();
     if (parent != nullptr)
     {
-        int count = parent->GetCount();
-        for (int i = 0; i < count; ++i)
+        const uint32 count = parent->GetCount();
+        const uint32 begin = 0;
+        const uint32 end = count;
+        const int sign = forward ? 1 : -1;
+        const uint32 beginPos = forward ? begin : (end - 1);
+        for (int i = 0; i < count - 1; ++i)
         {
-            if (node == parent->Get(i))
+            if (node == parent->Get(beginPos + sign * i))
             {
-                if (i != count - 1)
-                {
-                    return parent->Get(i + 1);
-                }
+                return parent->Get(i + sign);
             }
         }
         if (parent->GetControl() != nullptr)
         {
-            return FindNeighbour(parent);
+            return FindNeighbour(parent, forward);
         }
     }
     return nullptr;
 }
 
-PackageBaseNode* GetNextControl(PackageBaseNode* node)
+PackageBaseNode* GetNextControl(PackageBaseNode* node, bool forward)
 {
     DVASSERT(node != nullptr);
     if (node->GetCount() > 0)
     {
-        PackageBaseNode* child = FindFirstChildWithControl(node->Get(0));
+        PackageBaseNode* child = FindFirstChildWithControl(node->Get(0), forward);
         if (nullptr != child)
         {
             return child;
@@ -97,14 +102,14 @@ PackageBaseNode* GetNextControl(PackageBaseNode* node)
     }
 
     //no child with controls
-    PackageBaseNode* neighbour = FindNeighbour(node);
+    PackageBaseNode* neighbour = FindNeighbour(node, forward);
     if (nullptr != neighbour)
     {
         if (neighbour->GetControl() != nullptr)
         {
             return neighbour;
         }
-        PackageBaseNode* child = FindFirstChildWithControl(neighbour);
+        PackageBaseNode* child = FindFirstChildWithControl(neighbour, forward);
         if (nullptr != child)
         {
             return child;
@@ -167,16 +172,18 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
         if (currentInput->tid == DVKEY_TAB)
         {
-            PackageBaseNode* nextNode;
+            PackageBaseNode* startNode = nullptr;
             if (selectionContainer.selectedNodes.empty())
             {
                 PackageControlsNode* controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
-                nextNode = GetNextControl(dynamic_cast<PackageBaseNode*>(controlsNode));
+                DVASSERT(dynamic_cast<PackageBaseNode*>(controlsNode) != nullptr);
+                startNode = static_cast<PackageBaseNode*>(controlsNode);
             }
             else
             {
-                nextNode = GetNextControl(*selectionContainer.selectedNodes.rbegin());
+                startNode = *selectionContainer.selectedNodes.rbegin();
             }
+            PackageBaseNode* nextNode = GetNextControl(startNode, true);
             SelectedNodes newSelectedNodes;
             newSelectedNodes.insert(nextNode);
             SetSelection(newSelectedNodes, selectionContainer.selectedNodes);

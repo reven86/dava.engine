@@ -56,6 +56,9 @@ signals:
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
 
+    void FocusNextChild();
+    void FocusPreviousChild();
+
 public slots:
     void SetActiveDocument(Document* document);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);

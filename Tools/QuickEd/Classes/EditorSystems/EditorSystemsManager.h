@@ -128,6 +128,9 @@ public:
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
 
+    DAVA::Signal<> FocusNextChild();
+    DAVA::Signal<> FocusPreviousChild();
+
 private:
     class RootControl;
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
