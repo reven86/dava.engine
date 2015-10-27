@@ -92,6 +92,8 @@ EditorCore::EditorCore(QObject *parent)
     auto previewWidget = mainWindow->previewWidget;
     auto scrollAreaController = previewWidget->GetScrollAreaController();
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, previewWidget, &PreviewWidget::SetSelectedNodes);
+
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);

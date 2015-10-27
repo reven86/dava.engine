@@ -145,7 +145,7 @@ bool Collisions::IsPolygonIntersectsPolygon(Polygon2 & poly1, Polygon2 & poly2)
 		ProjectPolygon(axis, poly2, p2Min, p2Max);
 
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-		Vector2 norm = Vector2(axis.y, -axis.x);
+        Vector2 norm = Vector2(axis.y, -axis.x);
         RenderSystem2D::Instance()->DrawLine(Vector2(50.0f, 50.0f) + axis * p1Min + norm * 2.0f, Vector2(50.0f, 50.0f) + axis * p1Max + norm * 2.0f, Color(0.0f, 1.0f, 1.0f, 1.0f));
         RenderSystem2D::Instance()->DrawLine(Vector2(50.0f, 50.0f) + axis * p2Min - norm * 2.0f, Vector2(50.0f, 50.0f) + axis * p2Max - norm * 2.0f, Color(1.0f, 1.0f, 0.0f, 1.0f));
 #endif

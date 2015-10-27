@@ -79,8 +79,8 @@ public:
     virtual void SetRect(const Rect& rect);
     virtual void SetSize(const Vector2& newSize);
 
-    void SetPadding(const Vector2 & padding);
-	const Vector2 GetPadding() const;
+    void SetPadding(const Vector2& padding);
+    const Vector2 GetPadding() const;
 	
 	const Vector2 GetContentSize() const;
 	
