@@ -104,6 +104,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         active->SetScale(scale);
         active->SetEmulationMode(emulationMode);
         active->SetDPR(dpr);
+        active->SetPixelization(hasPixalization);
     }
     emit ActiveDocumentChanged(document);
     if (nullptr != active)
@@ -130,6 +131,15 @@ void DocumentGroup::SetEmulationMode(bool arg)
     }
 }
 
+void DocumentGroup::SetPixelization(bool arg)
+{
+    hasPixalization = arg;
+    if (nullptr != active)
+    {
+        active->SetPixelization(arg);
+    }
+}
+
 void DocumentGroup::SetScale(float arg)
 {
     scale = arg;
@@ -153,6 +163,14 @@ void DocumentGroup::OnSelectAllRequested()
     if (active != nullptr)
     {
         active->GetSystemManager()->SelectAllControls.Emit();
+    }
+}
+
+void DocumentGroup::FocusNextChild()
+{
+    if (active != nullptr)
+    {
+        active->GetSystemManager()->
     }
 }
 

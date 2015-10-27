@@ -128,6 +128,8 @@ public:
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
     DAVA::Signal<> SelectAllControls;
+    DAVA::Signal<> FocusNextChild;
+    DAVA::Signal<> FocusPreviousChild;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 

@@ -44,6 +44,7 @@ public:
     void SetDPR(DAVA::float32 arg);
 
 protected:
+    ~ControlContainer() = default;
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
     DAVA::float32 dpr = 1.0f;
 };
@@ -59,6 +60,7 @@ public:
     void SetValid(bool arg);
 
 private:
+    ~HUDContainer() = default;
     DAVA::UIControl* control = nullptr;
     DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
     bool valid = false;
@@ -86,6 +88,7 @@ public:
 
 protected:
     explicit FrameControl();
+    ~FrameControl() = default;
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     DAVA::Rect CreateFrameBorderRect(DAVA::uint32 border, const DAVA::Rect& frameRect) const;
 };
@@ -96,6 +99,7 @@ public:
     explicit FrameRectControl(const HUDAreaInfo::eArea area_);
 
 private:
+    ~FrameRectControl() = default;
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     DAVA::Vector2 GetPos(const DAVA::UIGeometricData& geometricData) const;
 };
@@ -106,6 +110,7 @@ public:
     explicit PivotPointControl();
 
 private:
+    ~PivotPointControl() = default;
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
 };
 
@@ -115,6 +120,7 @@ public:
     explicit RotateControl();
 
 private:
+    ~RotateControl() = default;
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
 };
 
@@ -123,6 +129,7 @@ class SelectionRect : public FrameControl
     template <typename T>
     friend T* CreateContainerWithBorders();
     SelectionRect();
+    ~SelectionRect() = default;
     void Draw(const DAVA::UIGeometricData& geometricData) override;
 };
 
@@ -130,6 +137,9 @@ class MagnetLine : public DAVA::UIControl
 {
 public:
     MagnetLine();
+
+private:
+    ~MagnetLine() = default;
 };
 
 template <typename T>

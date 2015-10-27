@@ -89,6 +89,7 @@ signals:
 public slots:
     void SetScale(float scale);
     void SetEmulationMode(bool emulationMode);
+    void SetPixelization(bool hasPixelization);
     void SetDPR(double dpr);
     void RefreshAllControlProperties();
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);

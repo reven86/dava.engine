@@ -34,9 +34,9 @@
 using namespace DAVA;
 
 DAVA_TESTCLASS(RectTest){
-//this test from Qt: void tst_QRect::containsRectF_data()
-DAVA_TEST(RectContainsTest){
-TEST_VERIFY(Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(2.0f, 2.0f, 6.0f, 6.0f)));
+    //this test from Qt: void tst_QRect::containsRectF_data()
+    DAVA_TEST(RectContainsTest){
+    TEST_VERIFY(Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(2.0f, 2.0f, 6.0f, 6.0f)));
 TEST_VERIFY(Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(0.0f, 0.0f, 10.0f, 10.0f)));
 TEST_VERIFY(!Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(2.0f, 2.0f, 10.0f, 10.0f)));
 TEST_VERIFY(!Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(20.0f, 20.0f, 10.0f, 10.0f)));

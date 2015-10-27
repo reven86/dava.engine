@@ -26,10 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Render/Renderer.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
-#include "Render/RenderManager.h"
 #include "FileSystem/Logger.h"
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
@@ -419,10 +418,10 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     
 	int32 layoutWidth = 0; // width in FT points
 
-	bool drawNondefGlyph = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
-		
-	for(uint32 i = 0; i < strLen; ++i)
-	{
+    bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
+
+    for (uint32 i = 0; i < strLen; ++i)
+    {
 		Glyph		& glyph = glyphs[i];
 		FT_Glyph	image = nullptr;;
 		FT_BBox		bbox;

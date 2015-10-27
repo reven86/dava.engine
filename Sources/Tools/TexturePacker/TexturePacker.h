@@ -64,13 +64,15 @@ public:
 	{
 		int8 minFilter;
 		int8 magFilter;
-		
-		FilterItem(int8 minF, int8 magF)
-		{
-			minFilter = minF;
+        int8 mipFilter;
+
+        FilterItem(int8 minF, int8 magF, int8 mipF)
+        {
+            minFilter = minF;
 			magFilter = magF;
-		}
-	};
+            mipFilter = mipF;
+        }
+    };
 
 public:
 	TexturePacker();
@@ -119,9 +121,9 @@ private:
     ImageExportKeys GetExportKeys(eGPUFamily forGPU);
     void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
 
-    Texture::TextureWrap GetDescriptorWrapMode();
+    rhi::TextureAddrMode GetDescriptorWrapMode();
     FilterItem GetDescriptorFilter(bool generateMipMaps = false);
-    
+
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
 	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
@@ -130,7 +132,7 @@ private:
     Vector<SizeSortItem> sortVector;
     uint32 maxTextureSize;
 
-	bool onlySquareTextures;
+    bool onlySquareTextures;
     bool NeedSquareTextureForCompression(ImageExportKeys keys);
 	
     TextureConverter::eConvertQuality quality;

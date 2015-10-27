@@ -28,23 +28,21 @@
 
 
 #include "SceneValidator.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/TextureDescriptor.h"
-
-#include "Qt/Main/QtUtils.h"
-#include "StringConstants.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Main/QtUtils.h"
+#include "Project/ProjectManager.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneHelper.h"
+#include "Settings/SettingsManager.h"
+#include "StringConstants.h"
+
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
-#include "Scene/SceneEditor2.h"
-
-#include "Scene3D/Systems/MaterialSystem.h"
-
-#include "Render/Material/NMaterialNames.h"
 
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 
@@ -293,19 +291,17 @@ void SceneValidator::ValidateParticleEmitter(ParticleEmitter *emitter, Set<Strin
 void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog)
 {
     ownerNode->RemoveFlag(Entity::NODE_INVALID);
-    
-    NMaterial *material = renderBatch->GetMaterial();
-    if(material != nullptr)
-    {
-        ConvertIlluminationParamsFromProperty(ownerNode, material);
-    }
 }
 
 void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLog)
 {
-	DAVA::MaterialSystem *matSystem = scene->GetMaterialSystem();
 	Set<DAVA::NMaterial *> materials;
-	matSystem->BuildMaterialList(scene, materials);
+    SceneHelper::BuildMaterialList(scene, materials, false);
+    auto globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        materials.erase(globalMaterial);
+    }
 
     const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
     if (ProjectManager::Instance() != nullptr)
@@ -313,75 +309,74 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
         materialTemplates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
     }
 
-	DAVA::Map<DAVA::Texture *, DAVA::String> texturesMap;
-	auto endItMaterials = materials.end();
+    FastName textureNames[] = {
+        NMaterialTextureName::TEXTURE_ALBEDO,
+        NMaterialTextureName::TEXTURE_NORMAL,
+        NMaterialTextureName::TEXTURE_DETAIL,
+        NMaterialTextureName::TEXTURE_LIGHTMAP,
+        NMaterialTextureName::TEXTURE_DECAL,
+        NMaterialTextureName::TEXTURE_CUBEMAP,
+        NMaterialTextureName::TEXTURE_DECALMASK,
+        NMaterialTextureName::TEXTURE_DECALTEXTURE,
+    };
+
+    DAVA::Map<DAVA::Texture*, DAVA::String> texturesMap;
+    auto endItMaterials = materials.end();
 	for (auto it = materials.begin(); it != endItMaterials; ++it)
 	{
-        if (!(*it)->IsRuntime()) //VI: don't validate runtime materials
+        for (const FastName& textureName : textureNames)
         {
-            DAVA::uint32 count = (*it)->GetTextureCount();
-            for (DAVA::uint32 t = 0; t < count; ++t)
+            if ((*it)->HasLocalTexture(textureName))
             {
-                Texture *tex = (*it)->GetTexture(t);
-                if (tex && (!NMaterial::IsRuntimeTexture((*it)->GetTextureName(t))))
+                Texture* tex = (*it)->GetLocalTexture(textureName);
+                if ((*it)->GetParent())
                 {
-                    if (((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_INSTANCE) && (*it)->GetParent())
-                    {
-                        texturesMap[tex] = Format("Material: %s (%s). Texture %s.", (*it)->GetMaterialName().c_str(),
-							(*it)->GetParent()->GetMaterialName().c_str(), (*it)->GetTextureName(t).c_str());
-                    }
-                    else
-                    {
-                        texturesMap[tex] = Format("Material: %s. Texture %s.", 
-							(*it)->GetMaterialName().c_str(), (*it)->GetTextureName(t).c_str());
-                    }
+                    texturesMap[tex] = Format("Material: %s (parent - %s). Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetParent()->GetMaterialName().c_str(), textureName.c_str());
+                }
+                else
+                {
+                    texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetMaterialName().c_str(), textureName.c_str());
+                }
+            }
+        }
+
+        bool qualityGroupIsOk = false;
+        DAVA::FastName materialGroup = (*it)->GetQualityGroup();
+
+        // if some group is set in material we should check it exists in quality system
+        if (materialGroup.IsValid())
+        {
+            size_t qcount = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount();
+            for (size_t q = 0; q < qcount; ++q)
+            {
+                if (materialGroup == DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(q))
+                {
+                    qualityGroupIsOk = true;
+                    break;
                 }
             }
 
-            if ((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
+            if (!qualityGroupIsOk)
             {
-                bool qualityGroupIsOk = false;
-                DAVA::FastName materialGroup = (*it)->GetMaterialGroup();
+                errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
+            }
+        }
 
-                // if some group is set in material we should check it exists in quality system
-                if (materialGroup.IsValid())
-                {
-                    size_t qcount = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount();
-                    for (size_t q = 0; q < qcount; ++q)
-                    {
-                        if (materialGroup == DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(q))
-                        {
-                            qualityGroupIsOk = true;
-                            break;
-                        }
-                    }
-
-                    if (!qualityGroupIsOk)
-                    {
-						PushLogMessage(errorsLog, nullptr, "Material \"%s\" has unknown quality group \"%s\"",
-							(*it)->GetMaterialName().c_str(), materialGroup.c_str());
-                    }
-                }
-
-				
-                if (materialTemplates && (*it)->GetMaterialTemplateName() != NMaterialName::SHADOW_VOLUME) 
-                {	
-					// ShadowVolume material is non-assignable and it's okey
+        if ((*it)->GetEffectiveFXName().IsValid() && materialTemplates && (*it)->GetEffectiveFXName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
+        {
+            // ShadowVolume material is non-assignable and it's okey
                     bool templateFound = false;
                     for (int i = 0; i < materialTemplates->size(); ++i)
                     {
-                        if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetMaterialTemplateName().c_str()))
+                        if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetEffectiveFXName().c_str()))
                         {
                             templateFound = true;
                             break;
-                        }
-                    }
-                    if (!templateFound)
-                    {
-						PushLogMessage(errorsLog, nullptr, "Material \"%s\" has non-assignable template",
-							(*it)->GetMaterialName().c_str());
-                    }
                 }
+            }
+            if (!templateFound)
+            {
+                errorsLog.insert(Format("Material \"%s\" has non-assignable template", (*it)->GetMaterialName().c_str()));
             }
         }
 	}
@@ -396,23 +391,11 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errorsLog)
 {
     if (nullptr == landscape) return;
-    
-    for (int32 i = 0; i < Landscape::TEXTURE_COUNT; ++i)
-    {
-        Landscape::eTextureLevel texLevel = (Landscape::eTextureLevel)i;
-        if (texLevel == Landscape::TEXTURE_COLOR || texLevel == Landscape::TEXTURE_TILE_MASK || texLevel == Landscape::TEXTURE_TILE0)
-        {
-            ValidateLandscapeTexture(landscape, texLevel, errorsLog);
-        }
-        
-        Color color = landscape->GetTileColor(texLevel);
-        if (!ValidateColor(color))
-        {
-            landscape->SetTileColor(texLevel, color);
-        }
-    }
+    ValidateLandscapeTexture(landscape, Landscape::TEXTURE_COLOR, errorsLog);
+    ValidateLandscapeTexture(landscape, Landscape::TEXTURE_TILE, errorsLog);
+    ValidateLandscapeTexture(landscape, Landscape::TEXTURE_TILEMASK, errorsLog);
 
-	//validate heightmap
+    //validate heightmap
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), String("Landscape. Heightmap."));
     if (!pathIsCorrect)
     {
@@ -421,46 +404,18 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
     }
 }
 
-void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog)
+void SceneValidator::ValidateLandscapeTexture(Landscape* landscape, const FastName& texLevel, Set<String>& errorsLog)
 {
-	DAVA::FilePath landTexName = landscape->GetTextureName(texLevel);
-	if (!IsTextureDescriptorPath(landTexName) &&
-	    landTexName.GetAbsolutePathname().size() > 0)
-	{
-		landscape->SetTextureName(texLevel, TextureDescriptor::GetDescriptorPathname(landTexName));
-	}
-
-	ValidateTexture(landscape->GetTexture(texLevel), Format("Landscape. TextureLevel %d", texLevel), errorsLog);
-}
-
-
-void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material)
-{
-    IlluminationParams *params = material->GetIlluminationParams();
-
-    VariantType * variant = nullptr;
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.used");
-    if (variant != nullptr)
+    Texture* texture = landscape->GetMaterial()->GetEffectiveTexture(texLevel);
+    if (texture)
     {
-        params->isUsed = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.castshadows");
-    
-    if (variant != nullptr)
-    {
-        params->castShadow = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.receiveshadows");
-    
-    if (variant != nullptr)
-    {
-        params->receiveShadow = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "lightmap.size");
-    
-    if (variant != nullptr)
-    {
-        params->lightmapSize = variant->AsInt32();
+        DAVA::FilePath landTexName = landscape->GetMaterial()->GetEffectiveTexture(texLevel)->GetPathname();
+        if (!IsTextureDescriptorPath(landTexName) && landTexName.GetAbsolutePathname().size() > 0)
+        {
+            texture->SetPathname(TextureDescriptor::GetDescriptorPathname(landTexName));
+        }
+
+        ValidateTexture(texture, Format("Landscape. %s", texLevel.c_str()), errorsLog);
     }
 }
 

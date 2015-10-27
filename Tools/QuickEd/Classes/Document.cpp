@@ -139,6 +139,11 @@ void Document::SetEmulationMode(bool arg)
     systemManager.SetEmulationMode(arg);
 }
 
+void Document::SetPixelization(bool hasPixelization)
+{
+    Texture::SetPixelization(hasPixelization);
+}
+
 void Document::SetDPR(double arg)
 {
     systemManager.DPRChanged.Emit(std::move(arg));

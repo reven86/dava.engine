@@ -44,7 +44,6 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
-#include "Render/Highlevel/SkyboxRenderObject.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/Components/TransformComponent.h"
@@ -107,17 +106,6 @@ SpeedTreeObject * GetSpeedTreeObject(const Entity *fromEntity)
         return (static_cast<SpeedTreeObject *>(ro));
     }
 
-    return nullptr;
-}
-
-SkyboxRenderObject * GetSkybox(const Entity *fromEntity)
-{
-    RenderObject *ro = GetRenderObject(fromEntity);
-    if(ro && ro->GetType() == RenderObject::TYPE_SKYBOX)
-    {
-        return (static_cast<SkyboxRenderObject *>(ro));
-    }
-    
     return nullptr;
 }
 

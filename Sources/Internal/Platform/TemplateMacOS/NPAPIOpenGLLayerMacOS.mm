@@ -30,7 +30,8 @@
 #import "NPAPIOpenGLLayerMacOS.h"
 #import "NPAPIPluginMacOS.h"
 
-#include "Render/RenderManager.h"
+//#include "Render/RenderManager.h"
+#include "Core/Core.h"
 
 @implementation NPAPIOpenGLLayerMacOS
 
@@ -40,11 +41,11 @@ static CGLPixelFormatObj inFramePixelFormat = NULL;
 - (id) initWithPluginInstance:(NPAPIPluginMacOS*) instance
 {
     if ([super init])
-	{
-		pluginInstance = instance;
-		isFirstDraw = YES;
+    {
+        pluginInstance = instance;
+        isFirstDraw = YES;
 
-		inFrameOpenGLContext = NULL;
+        inFrameOpenGLContext = NULL;
     }
 
     return self;
@@ -52,98 +53,102 @@ static CGLPixelFormatObj inFramePixelFormat = NULL;
 
 - (CGLPixelFormatObj)copyCGLPixelFormatForDisplayMask:(uint32_t)mask
 {
-	uint32_t attributes[] =
-	{
-		kCGLPFADisplayMask, mask,
-		kCGLPFANoRecovery,
-		kCGLPFAColorSize, 24,
-		kCGLPFADepthSize, 16,
-		kCGLPFAStencilSize, 8,
-		kCGLPFADoubleBuffer,
-		kCGLPFAAccelerated,
-		0
-	};
+    uint32_t attributes[] =
+    {
+      kCGLPFADisplayMask, mask,
+      kCGLPFANoRecovery,
+      kCGLPFAColorSize, 24,
+      kCGLPFADepthSize, 16,
+      kCGLPFAStencilSize, 8,
+      kCGLPFADoubleBuffer,
+      kCGLPFAAccelerated,
+      0
+    };
 
-	CGLPixelFormatObj pixelFormatObj = NULL;
-	GLint numPixelFormats = 0;
-	CGLChoosePixelFormat((CGLPixelFormatAttribute*)attributes, &pixelFormatObj, &numPixelFormats);
-	if(pixelFormatObj == NULL)
-	{
-		NSLog(@"Error: Could not choose pixel format!");
-	}
+    CGLPixelFormatObj pixelFormatObj = NULL;
+    GLint numPixelFormats = 0;
+    CGLChoosePixelFormat((CGLPixelFormatAttribute*)attributes, &pixelFormatObj, &numPixelFormats);
+    if (pixelFormatObj == NULL)
+    {
+        NSLog(@"Error: Could not choose pixel format!");
+    }
 
-	return pixelFormatObj;
+    return pixelFormatObj;
 }
 
 - (void)releaseCGLPixelFormat:(CGLPixelFormatObj)pixelFormat
 {
-	CGLDestroyPixelFormat(pixelFormat);
+    CGLDestroyPixelFormat(pixelFormat);
 }
 
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat
 {
-	CGLContextObj contextObj = NULL;
-	CGLCreateContext(pixelFormat, NULL, &contextObj);
-	if(contextObj == NULL)
-	{
-		NSLog(@"Error: Could not create context!");
-	}
+    CGLContextObj contextObj = NULL;
+    CGLCreateContext(pixelFormat, NULL, &contextObj);
+    if (contextObj == NULL)
+    {
+        NSLog(@"Error: Could not create context!");
+    }
 
-	// enable vsync
-	GLint swapInt = 1;
-	CGLSetParameter(contextObj, kCGLCPSwapInterval, &swapInt);
-	CGLSetCurrentContext(contextObj);
+    // enable vsync
+    GLint swapInt = 1;
+    CGLSetParameter(contextObj, kCGLCPSwapInterval, &swapInt);
+    CGLSetCurrentContext(contextObj);
 
-	return contextObj;
+    return contextObj;
 }
 
 - (void)releaseCGLContext:(CGLContextObj)glContext
 {
-	CGLDestroyContext(glContext);
+    CGLDestroyContext(glContext);
 }
 
 - (void)drawInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts
 {
-	if (isFirstDraw == YES && pluginInstance)
-	{
-		[pluginInstance doInitializationOnFirstDraw];
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		isFirstDraw = NO;
+    if (isFirstDraw == YES && pluginInstance)
+    {
+        [pluginInstance doInitializationOnFirstDraw];
+        //      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        isFirstDraw = NO;
 
-		[super drawInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
-		return;
-	}
+        [super drawInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
+        return;
+    }
 /*
-	if (activeCursor != RenderManager::Instance()->GetCursor())
-	{
-		activeCursor = RenderManager::Instance()->GetCursor();
-		[[self window] invalidateCursorRectsForView: self];
-	}
+    if (activeCursor != RenderManager::Instance()->GetCursor())
+    {
+        activeCursor = RenderManager::Instance()->GetCursor();
+        [[self window] invalidateCursorRectsForView: self];
+    }
 */
 
-	DAVA::RenderManager::Instance()->Lock();
-	
-	inFrameOpenGLContext = ctx;
-	inFramePixelFormat = pf;
+#if RHI_COMPLETE
+    DAVA::RenderManager::Instance()->Lock();
+#endif
 
-	DAVA::Core::Instance()->SystemProcessFrame();
+    inFrameOpenGLContext = ctx;
+    inFramePixelFormat = pf;
 
-	// These parameters are valid inside SystemProcessFrame() only.
-	inFrameOpenGLContext = NULL;
-	inFramePixelFormat = NULL;
+    DAVA::Core::Instance()->SystemProcessFrame();
 
-	[super drawInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
-	DAVA::RenderManager::Instance()->Unlock();
+    // These parameters are valid inside SystemProcessFrame() only.
+    inFrameOpenGLContext = NULL;
+    inFramePixelFormat = NULL;
+
+    [super drawInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
+#if RHI_COMPLETE
+    DAVA::RenderManager::Instance()->Unlock();
+#endif
 }
 
 + (void) getThreadChildContext:(CGLContextObj*) childContext
 {
-	// This method should be called only from inside SystemProcessFrame.
-	DVASSERT(inFrameOpenGLContext);
-	DVASSERT(inFramePixelFormat);
+    // This method should be called only from inside SystemProcessFrame.
+    DVASSERT(inFrameOpenGLContext);
+    DVASSERT(inFramePixelFormat);
 
-	CGLError err = CGLCreateContext(inFramePixelFormat, inFrameOpenGLContext, childContext);
-	NSLog(@"getThreadChildContext::CGLCreateContext executed with err code %i", err);
+    CGLError err = CGLCreateContext(inFramePixelFormat, inFrameOpenGLContext, childContext);
+    NSLog(@"getThreadChildContext::CGLCreateContext executed with err code %i", err);
 }
 
 @end

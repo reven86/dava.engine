@@ -51,7 +51,7 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
-    DavaGLWidget *GetDavaGLWidget();
+    DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
     float GetScale() const;
     qreal GetDPR() const;
@@ -62,6 +62,8 @@ signals:
     void DPRChanged(qreal dpr);
     void DeleteRequested();
     void SelectAllRequested();
+    void FocusNextChild();
+    void FocusPreviousChild();
 
 public slots:
     void OnDocumentChanged(Document* document);
@@ -98,5 +100,10 @@ private:
 
     SelectionContainer selectionContainer;
 };
+
+inline DavaGLWidget* PreviewWidget::GetGLWidget()
+{
+    return davaGLWidget;
+}
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

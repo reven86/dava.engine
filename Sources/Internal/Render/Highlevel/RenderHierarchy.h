@@ -36,14 +36,11 @@
 #include "Render/UniqueStateSet.h"
 //#include "Render/Highlevel/LayerSetUniqueHandler.h"
 #include "Base/BaseMath.h"
-#include "Render/Highlevel/VisibilityArray.h"
 
 namespace DAVA
 {
-class RenderPassBatchArray;
 class RenderObject;
 class Camera;
-	
 class RenderHierarchy
 {
 public:    
@@ -52,17 +49,13 @@ public:
     virtual void AddRenderObject(RenderObject * renderObject) = 0;
     virtual void RemoveRenderObject(RenderObject * renderObject) = 0;
 	virtual void ObjectUpdated(RenderObject * renderObject) = 0;
-    virtual void Clip(Camera * camera, VisibilityArray * visibilityArray, uint32 visibilityCriteria) = 0;
-    
-    virtual void GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray) = 0;
-	
-	virtual void Initialize(){};
-	virtual void Update(){};
-	virtual void DebugDraw(const Matrix4 & cameraMatrix){};
+    virtual void Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint32 visibilityCriteria) = 0;
 
-protected:
-	VisibilityArray * visibilityArray;
+    virtual void GetAllObjectsInBBox(const AABBox3& bbox, Vector<RenderObject*>& visibilityArray) = 0;
 
+    virtual void Initialize(){};
+    virtual void Update(){};
+    virtual void DebugDraw(const Matrix4& cameraMatrix){};
 };
 
 class LinearRenderHierarchy : public RenderHierarchy
@@ -70,11 +63,11 @@ class LinearRenderHierarchy : public RenderHierarchy
 	virtual void AddRenderObject(RenderObject * renderObject);
 	virtual void RemoveRenderObject(RenderObject * renderObject);
 	virtual void ObjectUpdated(RenderObject * renderObject);
-	virtual void Clip(Camera * camera, VisibilityArray * visibilityArray, uint32 visibilityCriteria);
-    virtual void GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray);
+    virtual void Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint32 visibilityCriteria);
+    virtual void GetAllObjectsInBBox(const AABBox3& bbox, Vector<RenderObject*>& visibilityArray);
 
 private:
-    Vector<RenderObject*> renderObjectArray;    
+    Vector<RenderObject*> renderObjectArray;
 };
     
 } // ns

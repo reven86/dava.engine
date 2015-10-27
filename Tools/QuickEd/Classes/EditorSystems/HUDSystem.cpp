@@ -68,7 +68,7 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
         return CreateContainerWithBorders<FrameControl>();
 
     default:
-        DVASSERT("!unacceptable value of area");
+        DVASSERT(!"unacceptable value of area");
         return nullptr;
     }
 }

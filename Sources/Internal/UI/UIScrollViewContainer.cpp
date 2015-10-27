@@ -37,19 +37,18 @@ namespace DAVA
 	
 const int32 DEFAULT_TOUCH_TRESHOLD = 15;  // Default value for finger touch tresshold
 
-
-UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-: UIControl(rect, rectInAbsoluteCoordinates)
-, state(STATE_NONE)
-, touchTreshold(DEFAULT_TOUCH_TRESHOLD)
-, mainTouch(-1)
-, oldPos(0.f, 0.f)
-, newPos(0.f, 0.f)
-, currentScroll(NULL)
-, lockTouch(false)
-, scrollStartMovement(false)
-, enableHorizontalScroll(true)
-, enableVerticalScroll(true)
+UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
+    : UIControl(rect)
+    , state(STATE_NONE)
+    , touchTreshold(DEFAULT_TOUCH_TRESHOLD)
+    , mainTouch(-1)
+    , oldPos(0.f, 0.f)
+    , newPos(0.f, 0.f)
+    , currentScroll(NULL)
+    , lockTouch(false)
+    , scrollStartMovement(false)
+    , enableHorizontalScroll(true)
+    , enableVerticalScroll(true)
 {
 	this->SetInputEnabled(true);
 	this->SetMultiInput(true);
@@ -60,7 +59,7 @@ UIScrollViewContainer::~UIScrollViewContainer()
 {
 }
 
-UIControl* UIScrollViewContainer::Clone()
+UIScrollViewContainer* UIScrollViewContainer::Clone()
 {
 	UIScrollViewContainer *t = new UIScrollViewContainer(GetRect());
 	t->CopyDataFrom(this);
@@ -76,9 +75,9 @@ void UIScrollViewContainer::SetSize(const Vector2& size)
 {
     UIControl::SetSize(size);
 
-    UIControl *parent = GetParent();
-	if (parent)
-	{
+    UIControl* parent = GetParent();
+    if (parent)
+    {
         const Vector2& parentSize = parent->GetSize();
         // We should not allow scrolling when content rect is less than or is equal ScrollView "window"
         enableHorizontalScroll = size.dx > parentSize.dx;
@@ -288,9 +287,9 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
         }
 
         // Change state when scrolling is not active
-		if (state != STATE_NONE && !lockTouch && (scrollView->GetHorizontalScroll()->GetCurrentSpeed() == 0) && (scrollView->GetVerticalScroll()->GetCurrentSpeed() == 0))
-		{
-			state = STATE_NONE;
+        if (state != STATE_NONE && !lockTouch && (scrollView->GetHorizontalScroll()->GetCurrentSpeed() == 0) && (scrollView->GetVerticalScroll()->GetCurrentSpeed() == 0))
+        {
+            state = STATE_NONE;
 		}
 	}
 }

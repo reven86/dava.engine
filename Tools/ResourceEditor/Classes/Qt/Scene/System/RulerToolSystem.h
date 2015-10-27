@@ -49,33 +49,28 @@ public:
 	virtual void Process(DAVA::float32 timeElapsed);
 	virtual void Input(DAVA::UIEvent *event);
 
-	void SetLineWidth(int32 width);
-	int32 GetLineWidth();
-
 	float32 GetLength();
 	float32 GetPreviewLength();
 
 protected:
-    
-    Vector3 MirrorPoint(const Vector3 & point) const;
+    Vector2 MirrorPoint(const Vector2& point) const;
 
-	uint32 curToolSize;
-	Texture* toolImageTexture;
+    uint32 curToolSize;
+    Texture* toolImageTexture;
 
-	int32 lineWidth;
-	List<Vector3> linePoints;
-	List<float32> lengths;
-	Vector3 previewPoint;
-	float32 previewLength;
-	bool previewEnabled;
+    List<Vector2> linePoints;
+    List<float32> lengths;
+    Vector2 previewPoint;
+    float32 previewLength;
+    bool previewEnabled;
 
-	void SetStartPoint(const Vector3 &point);
-	void AddPoint(const Vector3 &point);
-	void RemoveLastPoint();
-	void CalcPreviewPoint(const Vector3& point, bool force = false);
-	float32 GetLength(const Vector3 &startPoint, const Vector3 &endPoint);
-	void DrawPoints();
-	void DisablePreview();
+    void SetStartPoint(const Vector2& point);
+    void AddPoint(const Vector2& point);
+    void RemoveLastPoint();
+    void CalcPreviewPoint(const Vector2& point, bool force = false);
+    float32 GetLength(const Vector2& startPoint, const Vector2& endPoint);
+    void DrawPoints();
+    void DisablePreview();
 	void SendUpdatedLength();
 
 	void Clear();

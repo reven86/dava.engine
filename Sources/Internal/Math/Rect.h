@@ -58,9 +58,9 @@ struct Rect
     inline bool RectContains(const Rect& rect) const;
     inline void ClampToRect(Vector2& point) const;
     inline void ClampToRect(Rect& rect) const;
-	inline Rect Combine(const Rect& rect) const;
+    inline Rect Combine(const Rect& rect) const;
 
-	inline Vector2 GetCenter() const;
+    inline Vector2 GetCenter() const;
 	inline Vector2 GetPosition() const;
 	inline Vector2 GetSize() const;
 	

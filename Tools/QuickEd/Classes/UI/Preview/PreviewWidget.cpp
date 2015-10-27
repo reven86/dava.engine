@@ -89,7 +89,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
-    connect(davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
+    connect(davaGLWidget, &DavaGLWidget::ScreenChanged, this, &PreviewWidget::OnMonitorChanged);
 
     scaleCombo->setCurrentIndex(percentages.indexOf(100)); //100%
     scaleCombo->lineEdit()->setMaxLength(6); //3 digits + whitespace + % ?
@@ -107,11 +107,18 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     selectAllAction->setShortcutContext(Qt::WindowShortcut);
     connect(selectAllAction, &QAction::triggered, this, &PreviewWidget::SelectAllRequested);
     davaGLWidget->addAction(selectAllAction);
-}
 
-DavaGLWidget *PreviewWidget::GetDavaGLWidget()
-{
-    return davaGLWidget;
+    QAction* focusNextChildAction = new QAction(tr("Focus next child"), this);
+    focusNextChildAction->setShortcut(QKeySequence::NextChild);
+    focusNextChildAction->setShortcutContext(Qt::WindowShortcut);
+    connect(focusNextChildAction, &QAction::triggered, this, &PreviewWidget::FocusNextChild);
+    davaGLWidget->addAction(focusNextChildAction);
+
+    QAction* focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
+    focusPreviousChildAction->setShortcut(QKeySequence::PreviousChild);
+    focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
+    connect(focusPreviousChildAction, &QAction::triggered, this, &PreviewWidget::FocusPreviousChild);
+    davaGLWidget->addAction(focusPreviousChildAction);
 }
 
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
@@ -141,7 +148,7 @@ float PreviewWidget::GetScale() const
 
 qreal PreviewWidget::GetDPR() const
 {
-    return davaGLWidget->GetGLWindow()->devicePixelRatio();
+    return davaGLWidget->devicePixelRatio();
 }
 
 ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
@@ -219,7 +226,7 @@ void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
 
 void PreviewWidget::OnMonitorChanged()
 {
-    SetDPR(davaGLWidget->GetGLWindow()->devicePixelRatio());
+    SetDPR(davaGLWidget->devicePixelRatio());
 }
 
 void PreviewWidget::UpdateScrollArea()

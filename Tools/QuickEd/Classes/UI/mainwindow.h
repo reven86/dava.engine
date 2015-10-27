@@ -43,7 +43,6 @@ class PropertiesWidget;
 class LibraryWidget;
 class PreviewWidget;
 
-class DavaGLWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
 class Document;
@@ -53,25 +52,20 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
     Q_OBJECT
     
 public:
-    struct TabState{
-        TabState(QString arg = QString()) 
-            : tabText(arg)
-            , isModified(false)
-        {
-        }
-        QString tabText;
-        bool isModified;
-    };
+    struct TabState;
     explicit MainWindow(QWidget *parent = 0);
 
     ~MainWindow();
+
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
+
     bool IsInEmulationMode() const;
+    bool isPixelized() const;
     DavaGLWidget* GetGLWidget();
     DialogReloadSprites* GetDialogReloadSprites();
 
@@ -93,6 +87,7 @@ signals:
     void GlobalStyleClassesChanged(const QString &classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
     void EmulationModeChanbed(bool emulationMode);
+    void PixelizationChanged(bool pixelization);
 
 public slots:
     void OnProjectIsOpenChanged(bool arg);
@@ -139,7 +134,5 @@ private:
     DialogReloadSprites* dialogReloadSprites = nullptr;
     QCheckBox* emulationBox = nullptr;
 };
-
-Q_DECLARE_METATYPE(MainWindow::TabState*);
 
 #endif // MAINWINDOW_H

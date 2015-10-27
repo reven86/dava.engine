@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/Singleton.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -96,10 +97,11 @@ public:
     
 	inline const String & GetResourceFolder(int32 resourceIndex) const;
 	inline int32 GetDesirableResourceIndex() const;
-	inline int32 GetBaseResourceIndex() const;
-    
-	inline bool WasScreenSizeChanged() const;
-	void ScreenSizeChanged();
+    inline void SetDesirableResourceIndex(int32 resourceIndex);
+    inline int32 GetBaseResourceIndex() const;
+
+    inline bool WasScreenSizeChanged() const;
+    void ScreenSizeChanged();
     void EnableReloadResourceOnResize(bool enable);
     
     void SetProportionsIsFixed(bool needFixed);
@@ -107,7 +109,11 @@ public:
 	void UnregisterAllAvailableResourceSizes();
     
 	inline const Vector2 & GetPhysicalDrawOffset() const;
-    
+
+    Signal<const Size2i&> physicalSizeChanged;
+    Signal<const Size2i&> virtualSizeChanged;
+    Signal<const Size2i&> inputAreaSizeChanged;
+
 private:
     inline Rect ConvertRect(const Rect & rect, float32 factor) const;
     
@@ -298,7 +304,13 @@ inline int32 VirtualCoordinatesSystem::GetDesirableResourceIndex() const
 {
     return desirableIndex;
 }
-    
+
+inline void VirtualCoordinatesSystem::SetDesirableResourceIndex(int32 resourceIndex)
+{
+    DVASSERT(resourceIndex >= 0 && resourceIndex < (int32)allowedSizes.size());
+    desirableIndex = resourceIndex;
+}
+
 inline int32 VirtualCoordinatesSystem::GetBaseResourceIndex() const
 {
     return 0;

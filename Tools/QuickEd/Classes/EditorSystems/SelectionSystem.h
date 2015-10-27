@@ -57,6 +57,8 @@ private:
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
     void SelectAllControls();
+    void FocusNextChild();
+    void FocusPreviousChild();
     void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);
     bool ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::eButtonID buttonID);
 

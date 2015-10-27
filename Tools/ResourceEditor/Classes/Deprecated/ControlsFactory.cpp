@@ -313,13 +313,6 @@ void ControlsFactory::CustomizeListCellAlternative(UIListCell *c, const WideStri
     c->GetStateBackground(UIControl::STATE_SELECTED)->color = Color(1.0f, 0.8f, 0.8f, 1.0f);
 }
 
-
-void ControlsFactory::CustomizeSceneGraphCell(UIHierarchyCell *c)
-{
-    c->SetStateDrawType(UIControl::STATE_SELECTED, UIControlBackground::DRAW_FILL);
-    c->GetStateBackground(UIControl::STATE_SELECTED)->color = Color(1.0f, 0.8f, 0.8f, 1.0f);
-}
-
 void ControlsFactory::CustomizeMenuPopupCell(UIListCell *c, const WideString &text)
 {
     Font *font = GetFont12();
@@ -454,35 +447,6 @@ void ControlsFactory::RemoveScrollbar(UIList *l)
     {
         scrollBar->GetParent()->RemoveControl(scrollBar);
     }
-}
-
-
-void ControlsFactory::SetScrollbar(DAVA::UIHierarchy *h)
-{
-    //Temporary fix for loading of UI Interface to avoid reloading of texrures to different formates.
-    // 1. Reset default format before loading of UI
-    // 2. Restore default format after loading of UI from stored settings.
-    Texture::SetDefaultGPU(GPU_ORIGIN);
-    
-    Rect fr = h->GetRect();
-    
-    Sprite *scrollSpr = Sprite::Create("~res:/Gfx/UI/scroll");
-    
-    UIScrollBar *scrollBar = new UIScrollBar(Rect(fr.dx - scrollSpr->GetWidth(), 0, scrollSpr->GetWidth(), fr.dy), 
-                                             UIScrollBar::ORIENTATION_VERTICAL);
-    
-    scrollBar->GetSlider()->SetSprite(scrollSpr, 0);
-    scrollBar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_VERTICAL);
-    scrollBar->GetSlider()->GetBackground()->SetTopBottomStretchCap(10);
-    
-    scrollBar->SetDelegate(h);
-    scrollBar->SetInputEnabled(false);
-    h->AddControl(scrollBar);
-    
-    SafeRelease(scrollSpr);
-    SafeRelease(scrollBar);
-
-    Texture::SetDefaultGPU(static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
 void ControlsFactory::AddBorder(DAVA::UIControl *c)

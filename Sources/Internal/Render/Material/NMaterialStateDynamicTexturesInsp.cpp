@@ -1,229 +1,238 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
+ Copyright (c) 2008, binaryzebra
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ * Neither the name of the binaryzebra nor the
+ names of its contributors may be used to endorse or promote products
+ derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ =====================================================================================*/
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/NMaterialStateDynamicTexturesInsp.h"
+#include "Render/Material/FXCache.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
 ///////////////////////////////////////////////////////////////////////////
 ///// NMaterialStateDynamicTexturesInsp implementation
 
-const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* NMaterialStateDynamicTexturesInsp::FindMaterialTextures(NMaterial *state, bool global) const
+NMaterialStateDynamicTexturesInsp::NMaterialStateDynamicTexturesInsp()
 {
-    static FastNameMap<PropData> staticData;
-    staticData.clear();
+    defaultTexture = Texture::CreatePink();
+}
 
-    // don't enumerate textures for global material
-    // this is temporary solution and is done because there is no 
-    // code in framework that can load textures, that are be set into global material
-    //
-    // TODO: before removing this check we should implement some kind of code to load global material textures
-    //
-    if(state->materialType != NMaterial::MATERIALTYPE_GLOBAL)
+NMaterialStateDynamicTexturesInsp::~NMaterialStateDynamicTexturesInsp()
+{
+    SafeRelease(defaultTexture);
+}
+
+void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial* material, Set<FastName>& ret) const
+{
+    auto fxName = material->GetEffectiveFXName();
+    if (fxName.IsValid())
     {
-        NMaterial *parent = state;
-        int source = PropData::SOURCE_SELF;
-    
-        // properties chain data
-        while(NULL != parent)
-        {
-            HashMap<FastName, NMaterial::TextureBucket*>::iterator it = parent->textures.begin();
-            HashMap<FastName, NMaterial::TextureBucket*>::iterator end = parent->textures.end();
-        
-            for(; it != end; ++it)
-            {
-                if(0 == staticData.count(it->first))
-                {
-                    PropData data;
-                    NMaterial::TextureBucket *bucket = it->second;
-                
-                    data.source |= source;
-                    data.path = bucket->GetPath();
-                
-                    staticData.Insert(it->first, data);
-                }
-            }
-        
-            parent = parent->GetParent();
-            source = PropData::SOURCE_PARENT;
-        
-            if(!global && NULL != parent)
-            {
-                if(parent->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
-                {
-                    // don't extract properties from globalMaterial
-                    parent = NULL;
-                }
-            }
-        }
-    
-    
+        HashMap<FastName, int32> flags;
+        material->CollectMaterialFlags(flags);
+
         // shader data
-        source = PropData::SOURCE_SHADER;
-        if(state->instancePasses.size() > 0)
+        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(fxName, flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(material->qualityGroup));
+        for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
-            HashMap<FastName, NMaterial::RenderPassInstance*>::iterator it = state->instancePasses.begin();
-            HashMap<FastName, NMaterial::RenderPassInstance*>::iterator end = state->instancePasses.end();
-        
-            for(; it != end; ++it)
+            if (!descriptor.shader->IsValid())
+                continue;
+
+            const rhi::ShaderSamplerList& fragmentSamplers = descriptor.shader->GetFragmentSamplerList();
+            for (const auto& samp : fragmentSamplers)
             {
-                Shader *shader = it->second->GetShader();
-                if(NULL != shader)
-                {
-                    int32 uniformCount = shader->GetUniformCount();
-                    for(int32 i = 0; i < uniformCount; ++i)
-                    {
-                        Shader::Uniform *uniform = shader->GetUniform(i);
-                        if( uniform->type == Shader::UT_SAMPLER_2D ||
-                           uniform->type == Shader::UT_SAMPLER_CUBE) // is texture
-                        {
-                            FastName propName = uniform->name;
-                        
-                            if(!staticData.count(propName))
-                            {
-                                PropData data;
-                            
-                                data.path = FilePath();
-                                data.source |= source;
-                            
-                                staticData.Insert(propName, data);
-                            }
-                            else
-                            {
-                                staticData[propName].source |= source;
-                            }
-                        }
-                    }
-                }
+                ret.insert(samp.uid);
+            }
+
+            const rhi::ShaderSamplerList& vertexSamplers = descriptor.shader->GetVertexSamplerList();
+            for (const auto& samp : vertexSamplers)
+            {
+                ret.insert(samp.uid);
             }
         }
     }
+    else
+    {
+        // if fxName is not valid (e.g global material)
+        // we just add all local textures
+        for (const auto& t : material->localTextures)
+            ret.insert(t.first);
+    }
 
-    return &staticData;
+    if (nullptr != material->GetParent())
+        FindMaterialTexturesRecursive(material->GetParent(), ret);
 }
 
-Vector<FastName> NMaterialStateDynamicTexturesInsp::MembersList(void *object) const
+InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void* object, int filter) const
+{
+    NMaterial* material = (NMaterial*)object;
+    DVASSERT(material);
+
+    Set<FastName>* data = new Set<FastName>();
+    FindMaterialTexturesRecursive(material, *data);
+
+    if (filter > 0)
+    {
+        auto checkAndAdd = [&data](const FastName& name) {
+            if (0 == data->count(name))
+            {
+                data->insert(name);
+            }
+        };
+
+        checkAndAdd(NMaterialTextureName::TEXTURE_ALBEDO);
+        checkAndAdd(NMaterialTextureName::TEXTURE_NORMAL);
+        checkAndAdd(NMaterialTextureName::TEXTURE_DETAIL);
+        checkAndAdd(NMaterialTextureName::TEXTURE_LIGHTMAP);
+        checkAndAdd(NMaterialTextureName::TEXTURE_DECAL);
+        checkAndAdd(NMaterialTextureName::TEXTURE_CUBEMAP);
+        checkAndAdd(NMaterialTextureName::TEXTURE_HEIGHTMAP);
+        checkAndAdd(NMaterialTextureName::TEXTURE_DECALMASK);
+        checkAndAdd(NMaterialTextureName::TEXTURE_DECALTEXTURE);
+    }
+
+    DynamicData ddata;
+    ddata.object = object;
+    ddata.data = std::shared_ptr<void>(data);
+    return ddata;
+}
+
+Vector<FastName> NMaterialStateDynamicTexturesInsp::MembersList(const DynamicData& ddata) const
 {
     Vector<FastName> ret;
-    
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(state, false);
-    
-    FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>::iterator it = textures->begin();
-    FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>::iterator end = textures->end();
-    
+
+    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
+    DVASSERT(textures);
+
+    auto it = textures->begin();
+    auto end = textures->end();
+
     ret.reserve(textures->size());
-    while(it != end)
+    while (it != end)
     {
-        ret.push_back(it->first);
+        ret.push_back(*it);
         ++it;
     }
-    
+
     return ret;
 }
 
-InspDesc NMaterialStateDynamicTexturesInsp::MemberDesc(void *object, const FastName &texture) const
+InspDesc NMaterialStateDynamicTexturesInsp::MemberDesc(const DynamicData& ddata, const FastName& textureName) const
 {
-    return InspDesc(texture.c_str());
+    return InspDesc(textureName.c_str());
 }
 
-VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(void *object, const FastName &texture) const
+VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(const DynamicData& ddata, const FastName& textureName) const
 {
     VariantType ret;
-    
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(state, true);
-    if(textures->count(texture))
-    {
-        ret.SetFilePath(textures->at(texture).path);
-    }
-    
-    return ret;
-}
 
-void NMaterialStateDynamicTexturesInsp::MemberValueSet(void *object, const FastName &texture, const VariantType &value)
-{
-    VariantType ret;
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(state, true);
-    if(textures->count(texture))
+    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
+    ;
+    DVASSERT(textures);
+
+    NMaterial* material = (NMaterial*)ddata.object;
+    DVASSERT(material);
+
+    if (textures->count(textureName))
     {
-        if(value.type == VariantType::TYPE_NONE && state->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
+        Texture* tex = material->GetEffectiveTexture(textureName);
+        if (nullptr != tex)
         {
-            if(state->textures.count(texture) > 0)
+            ret.SetFilePath(tex->GetPathname());
+        }
+        else
+        {
+            ret.SetFilePath(FilePath());
+        }
+    }
+
+    return ret;
+}
+
+void NMaterialStateDynamicTexturesInsp::MemberValueSet(const DynamicData& ddata, const FastName& textureName, const VariantType& value)
+{
+    VariantType ret;
+
+    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
+    ;
+    DVASSERT(textures);
+
+    NMaterial* material = (NMaterial*)ddata.object;
+    DVASSERT(material);
+
+    if (textures->count(textureName))
+    {
+        if (value.type == VariantType::TYPE_NONE)
+        {
+            if (material->HasLocalTexture(textureName))
             {
-                state->RemoveTexture(texture);
+                material->RemoveTexture(textureName);
             }
         }
         else
         {
-            state->SetTexture(texture, value.AsFilePath());
+            FilePath texPath = value.AsFilePath();
+            Texture* texture = nullptr;
+
+            if (texPath == FilePath())
+            {
+                texture = SafeRetain(defaultTexture);
+            }
+            else
+            {
+                texture = Texture::CreateFromFile(texPath);
+            }
+
+            if (material->HasLocalTexture(textureName))
+            {
+                material->SetTexture(textureName, texture);
+            }
+            else
+            {
+                material->AddTexture(textureName, texture);
+            }
+
+            SafeRelease(texture);
         }
     }
 }
 
-int NMaterialStateDynamicTexturesInsp::MemberFlags(void *object, const FastName &texture) const
+int NMaterialStateDynamicTexturesInsp::MemberFlags(const DynamicData& ddata, const FastName& textureName) const
 {
     int flags = 0;
-    
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(state, true);
-    if(textures->count(texture))
+
+    NMaterial* material = (NMaterial*)ddata.object;
+    DVASSERT(material);
+
+    flags |= I_VIEW;
+
+    if (material->HasLocalTexture(textureName))
     {
-        const PropData &propData = textures->at(texture);
-        
-        if(propData.source & PropData::SOURCE_SELF)
-        {
-            flags |= I_EDIT;
-        }
-        
-        if(propData.source & PropData::SOURCE_PARENT)
-        {
-            flags |= I_VIEW;
-        }
-        
-        if(propData.source & PropData::SOURCE_SHADER)
-        {
-            flags |= I_SAVE;
-        }
+        flags |= I_EDIT;
     }
-    
+
     return flags;
 }
-
 };

@@ -46,9 +46,6 @@ public:
 	virtual ~AndroidSystemDelegate() = default;
 
 	virtual bool DownloadHttpFile(const String & url, const String & documentsPathname) = 0;
-    
-    virtual GLint RenderBuffer() = 0;
-	virtual GLint FrameBuffer() = 0;
 
 	JNIEnv* GetEnvironment() const {return environment;};
 	JavaVM* GetVM() const {return vm;};
@@ -70,11 +67,11 @@ public:
 
 	void Quit() override;
 
-	void RenderRecreated(int32 w, int32 h);
-	void RepaintView();
+    void RenderReset(int32 w, int32 h);
+    void ProcessFrame();
 
-	// called from Activity and manage a visible lifetime
-	void StartVisible();
+    // called from Activity and manage a visible lifetime
+    void StartVisible();
 	void StopVisible();
 
 	void StartForeground();
@@ -106,6 +103,8 @@ public:
 
     int32 GetViewWidth() const { return width; };
     int32 GetViewHeight() const { return height; };
+
+    void SetNativeWindow(void* nativeWindow);
 
 private:
 

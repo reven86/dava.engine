@@ -28,7 +28,6 @@
 
 
 #include "ShadowVolumeNode.h"
-#include "Render/RenderManager.h"
 #include "Render/3D/StaticMesh.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
@@ -44,19 +43,15 @@ namespace DAVA
 ShadowVolumeNode::ShadowVolumeNode()
 : shadowPolygonGroup(0)
 {
-	shader = 0; //ShaderCache::Instance->Get("~res:/Shaders/ShadowVolume/shadowvolume.shader");
-    uniformLightPosition0 = -1; //shader->FindUniformIndexByName(FastName("lightPosition0"));
 }
 
 DAVA::ShadowVolumeNode::~ShadowVolumeNode()
 {
-	SafeRelease(shader);
-	SafeRelease(shadowPolygonGroup);
 }
 
 void DAVA::ShadowVolumeNode::Draw()
 {
-	scene->AddDrawTimeShadowVolume(this);
+    //scene->AddDrawTimeShadowVolume(this);
 }
 
 void DAVA::ShadowVolumeNode::DrawShadow()

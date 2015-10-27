@@ -62,12 +62,16 @@ public slots:
     void SetActiveDocument(Document* document);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
     void SetEmulationMode(bool emulationMode);
+    void SetPixelization(bool hasPixelization);
     void SetScale(float scale);
     void SetDPR(qreal dpr);
     void OnSelectAllRequested();
+    void FocusNextChild();
+    void FocusPreviousChild();
 
 protected:
     bool emulationMode = false;
+    bool hasPixalization = false;
     float scale = 100.0f;
     qreal dpr = 1.0f;
 

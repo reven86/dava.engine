@@ -133,7 +133,7 @@ public class JNITextField {
 
         @Override
         public void run() {
-            if(!JNIGLSurfaceView.isPaused())
+            if(!JNISurfaceView.isPaused())
             {
                 TextFieldUpdateTexture(id, pixels, width, height);
 
@@ -202,10 +202,10 @@ public class JNITextField {
             // clear static texture
             JNIActivity activity = JNIActivity.GetActivity();
             UpdateTexture task = new UpdateTexture(id, null, 0, 0);
-            if (activity.getGLThreadId() == Thread.currentThread().getId()){
+            if (activity.GetMainLoopThreadID() == Thread.currentThread().getId()){
                 task.run();
             } else {
-                activity.PostEventToGL(task);
+                activity.RunOnMainLoopThread(task);
             }
         }
         
@@ -227,7 +227,7 @@ public class JNITextField {
                 MotionEvent newEvent = MotionEvent.obtain(event);
                 newEvent.setLocation(getLeft() + event.getX(),
                         getTop() + event.getY());
-                JNIActivity.GetActivity().glView.dispatchTouchEvent(newEvent);
+                JNIActivity.GetActivity().GetSurfaceView().dispatchTouchEvent(newEvent);
             }
             return super.onTouchEvent(event);
         }
@@ -319,11 +319,12 @@ public class JNITextField {
                     }
                 }, 1); // 1 - milliseconds tested on different values
                 // stay with 1
-            } else
+            } 
+            else
             {
                 JNIActivity activity = JNIActivity.GetActivity();
                 UpdateTexture task = new UpdateTexture(id, pixels, width, height);
-                activity.PostEventToGL(task);
+                activity.RunOnMainLoopThread(task);
             }
         }
         
@@ -374,7 +375,7 @@ public class JNITextField {
                             }
                         };
                         
-                        if (activity.getGLThreadId() == Thread.currentThread().getId()) {
+                        if (activity.GetMainLoopThreadID() == Thread.currentThread().getId()) {
                             activity.runOnUiThread(action);
                         } else {
                             action.run();
@@ -485,14 +486,12 @@ public class JNITextField {
                         @Override
                         public void onSoftKeyboardOpened(final Rect keyboardRect) {
                             // Send open event to native
-                            JNIActivity.GetActivity().PostEventToGL(
-                                    new Runnable() {
+                            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                                         final int localId = activeTextField;
 
                                         @Override
                                         public void run() {
-                                            KeyboardOpened(localId,
-                                                    keyboardRect);
+                                            KeyboardOpened(localId, keyboardRect);
                                         }
                                     });
                         }
@@ -515,8 +514,7 @@ public class JNITextField {
                                 }
                             }
                             // Send close event to native
-                            JNIActivity.GetActivity().PostEventToGL(
-                                    new Runnable() {
+                            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                                         final int localId = lastClosedTextField;
 
                                         @Override
@@ -555,7 +553,7 @@ public class JNITextField {
         // automatically closed.
         if (activeTextField != NO_ACTIVE_TEXTFIELD) {
             // Send event about keyboard closing
-            JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                 final int localId = activeTextField;
 
                 @Override
@@ -574,7 +572,7 @@ public class JNITextField {
         // activity
         // lost focus too before keyboard was hidden (animation not finished)
         else if (lastClosedTextField != NO_ACTIVE_TEXTFIELD) {
-            JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                 final int localId = lastClosedTextField;
 
                 @Override
@@ -740,7 +738,7 @@ public class JNITextField {
 
                         try {
                             TextField.isFilteringOnText = true;
-                            JNIActivity.GetActivity().PostEventToGL(t);
+                            JNIActivity.GetActivity().RunOnMainLoopThread(t);
                             String s = t.get();
                             TextField.isFilteringOnText = false;
                             if (s.equals(origSource))
@@ -767,7 +765,7 @@ public class JNITextField {
                             KeyEvent event) {
                         // action link to button with SetReturnKeyType
                         if (text.isSingleLine) {
-                            JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+                            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     JNITextField.TextFieldShouldReturn(id);
@@ -793,7 +791,7 @@ public class JNITextField {
                         
                         // Select UITextField when native filed selected (like
                         // iOS)
-                        JNIActivity.GetActivity().PostEventToGL(new SafeRunnable() {
+                        JNIActivity.GetActivity().RunOnMainLoopThread(new SafeRunnable() {
                             @Override
                             public void safeRun() {
                                 JNITextField
@@ -813,7 +811,7 @@ public class JNITextField {
                                 if (keyboardHelper != null
                                         && keyboardHelper
                                         .isSoftKeyboardOpened()) {
-                                    JNIActivity.GetActivity().PostEventToGL(
+                                    JNIActivity.GetActivity().RunOnMainLoopThread(
                                             new Runnable() {
                                                 final int localActiveId = activeTextField;
                                                 final int localLastCloseId = lastClosedTextField;
@@ -912,7 +910,7 @@ public class JNITextField {
                                 }
                             }
                         };
-                        JNIActivity.GetActivity().PostEventToGL(action);
+                        JNIActivity.GetActivity().RunOnMainLoopThread(action);
                     }
                 };
 

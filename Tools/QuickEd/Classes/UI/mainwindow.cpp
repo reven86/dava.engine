@@ -53,6 +53,19 @@ namespace
 
 using namespace DAVA;
 
+struct MainWindow::TabState
+{
+    TabState(QString arg = QString())
+        : tabText(arg)
+        , isModified(false)
+    {
+    }
+    QString tabText;
+    bool isModified;
+};
+
+Q_DECLARE_METATYPE(MainWindow::TabState*);
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
@@ -179,11 +192,6 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DavaGLWidget* MainWindow::GetGLWidget()
-{
-    return previewWidget->GetDavaGLWidget();
-}
-
 DialogReloadSprites* MainWindow::GetDialogReloadSprites()
 {
     return dialogReloadSprites;
@@ -222,6 +230,11 @@ void MainWindow::OnCleanChanged(int index, bool val)
 bool MainWindow::IsInEmulationMode() const
 {
     return emulationBox->isChecked();
+}
+
+bool MainWindow::isPixelized() const
+{
+    return actionPixelized->isChecked();
 }
 
 void MainWindow::OnOpenFontManager()
@@ -518,7 +531,7 @@ void MainWindow::OnPixelizationStateChanged()
     bool isPixelized = actionPixelized->isChecked();
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
-    Texture::SetPixelization(isPixelized);
+    emit PixelizationChanged(isPixelized);
 }
 
 void MainWindow::OnRtlChanged(int arg)

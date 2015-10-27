@@ -62,9 +62,9 @@ public:
 	void SetPolygon(Polygon2 * p);
 		
 	void Update(const Sprite::DrawState & state);
-	void DebugDraw(UniqueHandle renderState);
-	
-	bool IsCollideWith(CollisionObject2 * collObject);
+    void DebugDraw();
+
+    bool IsCollideWith(CollisionObject2 * collObject);
 	ContactManifold2 * GetContactManifold();
 	
 

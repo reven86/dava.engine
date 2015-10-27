@@ -35,7 +35,6 @@
 
 #include "Render/Image/LibPngHelper.h"
 
-#include "Render/RenderManager.h"
 #include "Render/2D/Sprite.h"
 #include "Render/Texture.h"
 #include "FileSystem/FileSystem.h"

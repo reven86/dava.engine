@@ -33,7 +33,6 @@
 #include "Qt/Main/QtUtils.h"
 #include "ui_CubeMapTextureBrowser.h"
 #include "../../StringConstants.h"
-#include "Scene3D/Systems/SkyboxSystem.h"
 #include "Project/ProjectManager.h"
 #include "ImageTools/ImageTools.h"
 
@@ -200,11 +199,6 @@ void CubeMapTextureBrowser::OnChooseDirectoryClicked()
 void CubeMapTextureBrowser::OnReloadClicked()
 {
 	QString path = ui->textRootPath->text();
-	
-	if(scene)
-	{
-		scene->skyboxSystem->Reload();
-	}
 	
 	ReloadTexturesFromUI(path);
 }
