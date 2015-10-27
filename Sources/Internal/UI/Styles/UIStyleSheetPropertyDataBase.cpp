@@ -54,7 +54,6 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , anchorGroup("anchor", ePropertyOwner::COMPONENT, UIComponent::ANCHOR_COMPONENT, UIAnchorComponent::TypeInfo())
 
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, FastName("angle"), VariantType(0.0f)),
-                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("size"), VariantType(Vector2(0.0f, 0.0f))),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("scale"), VariantType(Vector2(1.0f, 1.0f))),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("visible"), VariantType(true)),
 
@@ -117,45 +116,6 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("topAnchor"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("hCenterAnchorEnabled"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("hCenterAnchor"), VariantType(0.0f)),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchorEnabled"), VariantType(false)),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchor"), VariantType(0.0f)) } })
-{
-    , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, FastName("angle"), VariantType(0.0f)),
-                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("size"), VariantType(Vector2(0.0f, 0.0f))),
-                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("scale"), VariantType(Vector2(1.0f, 1.0f))),
-                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("visible"), VariantType(true)),
-
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("drawType"), VariantType(UIControlBackground::DRAW_ALIGNED)),
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("sprite"), VariantType(FilePath())),
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("frame"), VariantType(0)),
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("color"), VariantType(Color::White)),
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("colorInherit"), VariantType(UIControlBackground::COLOR_IGNORE_PARENT)),
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("align"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER)),
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("leftRightStretchCap"), VariantType(0.0f)),
-                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("topBottomStretchCap"), VariantType(0.0f)),
-
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("font"), VariantType(String(""))),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("textColor"), VariantType(Color::White)),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("textcolorInheritType"), VariantType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT)),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("shadowoffset"), VariantType(Vector2(0.0f, 0.0f))),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("shadowcolor"), VariantType(Color::White)),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("textalign"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER)),
-
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("leftAnchorEnabled"), VariantType(false)),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("leftAnchor"), VariantType(0.0f)),
-
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("rightAnchorEnabled"), VariantType(false)),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("rightAnchor"), VariantType(0.0f)),
-
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("bottomAnchorEnabled"), VariantType(false)),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("bottomAnchor"), VariantType(0.0f)),
-
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("topAnchorEnabled"), VariantType(false)),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("topAnchor"), VariantType(0.0f)),
-
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("hCenterAnchorEnabled"), VariantType(false)),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("hCenterAnchor"), VariantType(0.0f)),
-
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchorEnabled"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchor"), VariantType(0.0f)) } })
 {
@@ -234,11 +194,11 @@ const UIStyleSheetPropertyDescriptor& UIStyleSheetPropertyDataBase::GetStyleShee
     return properties[index];
 }
 
-int32 UIStyleSheetPropertyDataBase::FindStyleSheetPropertyByMember(const InspMember* memberInfo)
+int32 UIStyleSheetPropertyDataBase::FindStyleSheetPropertyByMember(const InspMember* memberInfo) const
 {
     for (size_t index = 0; index < properties.size(); index++)
     {
-        UIStyleSheetPropertyDescriptor& descr = properties[index];
+        const UIStyleSheetPropertyDescriptor& descr = properties[index];
         if (descr.memberInfo == memberInfo)
         {
             return static_cast<int32>(index);

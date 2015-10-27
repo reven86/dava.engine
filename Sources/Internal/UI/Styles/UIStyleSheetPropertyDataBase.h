@@ -51,7 +51,7 @@ public:
     uint32 GetStyleSheetPropertyIndex(const FastName& name) const;
     bool IsValidStyleSheetProperty(const FastName& name) const;
     const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index) const;
-    int32 FindStyleSheetPropertyByMember(const InspMember* memberInfo);
+    int32 FindStyleSheetPropertyByMember(const InspMember* memberInfo) const;
 
 private:
     UIStyleSheetPropertyGroup controlGroup;
