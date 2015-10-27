@@ -97,11 +97,11 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&ignoreLayoutGroup, FastName("enabled"), VariantType(true)),
 
                      UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalPolicy"), VariantType(UISizePolicyComponent::IGNORE_SIZE)),
-                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalValue"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalValue"), VariantType(100.0f)),
                      UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalMin"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalMax"), VariantType(99999.0f)),
                      UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalPolicy"), VariantType(UISizePolicyComponent::IGNORE_SIZE)),
-                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalValue"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalValue"), VariantType(100.0f)),
                      UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalMin"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalMax"), VariantType(99999.0f)),
 
