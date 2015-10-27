@@ -159,9 +159,9 @@ void TextureListModel::setScene(DAVA::Scene *scene)
     activeScene = scene;
     
 	DAVA::TexturesMap texturesInNode;
-	SceneHelper::EnumerateSceneTextures(scene, texturesInNode, SceneHelper::EXCLUDE_NULL);
+    SceneHelper::EnumerateSceneTextures(scene, texturesInNode, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 
-	for(DAVA::TexturesMap::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
+    for(DAVA::TexturesMap::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
 	{
 		DAVA::TextureDescriptor * descriptor = t->second->texDescriptor;
 		if(NULL != descriptor && descriptor->pathname.Exists())
@@ -182,22 +182,25 @@ void TextureListModel::setHighlight(const EntityGroup *nodes)
 
 	textureDescriptorsHighlight.clear();
 
-	if(NULL != nodes)
-	{
-        DAVA::TexturesMap texturesInGroup;
-		for(int i = 0; i < (int)nodes->Size(); ++i)
-		{
-			SceneHelper::EnumerateEntityTextures(activeScene, nodes->GetEntity(i), texturesInGroup, SceneHelper::EXCLUDE_NULL);
-		}
-        
-        for(DAVA::TexturesMap::iterator t = texturesInGroup.begin(); t != texturesInGroup.end(); ++t)
+    if (nullptr != nodes)
+    {
+        DAVA::TexturesMap nodeTextures;
+
+        const DAVA::uint32 nodesCount = static_cast<const DAVA::uint32>(nodes->Size());
+        for (DAVA::uint32 n = 0; n < nodesCount; ++n)
         {
-            const DAVA::FilePath descPath = t->first;
-            for(int i = 0; i < textureDescriptorsAll.size(); ++i)
+            SceneHelper::EnumerateEntityTextures(activeScene, nodes->GetEntity(n), nodeTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+        }
+
+        const DAVA::uint32 descriptorsCount = static_cast<const DAVA::uint32>(textureDescriptorsAll.size());
+        for (const auto& nTex : nodeTextures)
+        {
+            const DAVA::FilePath& path = nTex.first;
+            for (DAVA::uint32 d = 0; d < descriptorsCount; ++d)
             {
-                if(textureDescriptorsAll[i]->pathname == descPath)
+                if (textureDescriptorsAll[d]->pathname == path)
                 {
-                    textureDescriptorsHighlight.push_back(textureDescriptorsAll[i]);
+                    textureDescriptorsHighlight.push_back(textureDescriptorsAll[d]);
                 }
             }
         }

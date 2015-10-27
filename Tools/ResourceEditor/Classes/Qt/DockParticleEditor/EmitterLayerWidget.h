@@ -43,6 +43,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QTimer>
 
 using namespace DAVA;
 
@@ -74,13 +75,13 @@ signals:
 	
 protected slots:
 	void OnLodsChanged();
-	void OnValueChanged();
-	void OnPresetChanged();
-	void OnSpriteBtn();
+    void OnValueChanged();
+    void OnSpriteBtn();
 	void OnSpritePathChanged(const QString& text);
 	
 	void OnPivotPointReset();
-	
+    void OnSpriteUpdateTimerExpired();
+
 private:
 	void InitWidget(QWidget* );
 	void UpdateTooltip();
@@ -88,119 +89,107 @@ private:
 	void FillLayerTypes();
 	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
 
-	void FillBlendCombos();
-
 private:
-	ParticleLayer* layer;
-	QVBoxLayout* mainBox;
-	
-	QLineEdit* layerNameLineEdit;
-	QCheckBox* enableCheckBox;	
-	
-	QCheckBox* isLongCheckBox;
-	EventFilterDoubleSpinBox *scaleVelocityBaseSpinBox;
-	EventFilterDoubleSpinBox *scaleVelocityFactorSpinBox;
-	QLabel *scaleVelocityBaseLabel, *scaleVelocityFactorLabel;
-
-	QCheckBox* isLoopedCheckBox;
-	QCheckBox* inheritPostionCheckBox;
-
-
-	QCheckBox* layerLodsCheckBox[LodComponent::MAX_LOD_LAYERS];
-    QComboBox* degradeStrategyComboBox;
-
-	QLabel* layerTypeLabel;
-	QComboBox* layerTypeComboBox;
-
-	Sprite* sprite;
-	QLabel* spriteLabel;
-	QPushButton* spriteBtn;
-	QLineEdit* spritePathLabel;
-	
-	QLabel* innerEmitterLabel;
-	QLineEdit* innerEmitterPathLabel;
-
-	QVBoxLayout* pivotPointLayout;
-	QLabel* pivotPointLabel;
-	EventFilterDoubleSpinBox* pivotPointXSpinBox;
-	QLabel* pivotPointXSpinBoxLabel;
-	EventFilterDoubleSpinBox* pivotPointYSpinBox;
-	QLabel* pivotPointYSpinBoxLabel;
-	QPushButton* pivotPointResetButton;
-
-	QCheckBox *frameBlendingCheckBox;
-
-	QLabel *particleOrientationLabel;
-	QCheckBox *cameraFacingCheckBox;
-	QCheckBox *xFacingCheckBox;
-	QCheckBox *yFacingCheckBox;
-	QCheckBox *zFacingCheckBox;
-	QCheckBox *worldAlignCheckBox;
-
-	QLabel *blendOptionsLabel;
-	QLabel *presetLabel;
-	QComboBox *presetComboBox;
-	QLabel *srcFactorLabel;
-	QComboBox *srcFactorComboBox;
-	QLabel *dstFactorLabel;
-	QComboBox *dstFactorComboBox;
-	QCheckBox *fogCheckBox;	
-
-	TimeLineWidget* lifeTimeLine;
-	TimeLineWidget* numberTimeLine;
-	TimeLineWidget* sizeTimeLine;
-	TimeLineWidget* sizeVariationTimeLine;
-	TimeLineWidget* sizeOverLifeTimeLine;
-	TimeLineWidget* velocityTimeLine;
-	TimeLineWidget* velocityOverLifeTimeLine;
-	TimeLineWidget* spinTimeLine;
-	TimeLineWidget* spinOverLifeTimeLine;
-	
-
-	TimeLineWidget* alphaOverLifeTimeLine;
-	QCheckBox* frameOverlifeCheckBox;
-	QSpinBox* frameOverlifeFPSSpin;
-	QLabel* frameOverlifeFPSLabel;
-	QCheckBox* randomFrameOnStartCheckBox;
-	QCheckBox* loopSpriteAnimationCheckBox;
-	TimeLineWidget* animSpeedOverLifeTimeLine;
-
-	QCheckBox* randomSpinDirectionCheckBox;
-
-	TimeLineWidget* angleTimeLine;
-	GradientPickerWidget* colorRandomGradient;
-	GradientPickerWidget* colorOverLifeGradient;
-
-	EventFilterDoubleSpinBox* startTimeSpin;
-	EventFilterDoubleSpinBox* endTimeSpin;
-	EventFilterDoubleSpinBox* deltaSpin;
-	EventFilterDoubleSpinBox* loopEndSpin;
-	EventFilterDoubleSpinBox* deltaVariationSpin;
-	EventFilterDoubleSpinBox* loopVariationSpin;
-	
-	QLabel* deltaSpinLabel;
-	QLabel* deltaVariationSpinLabel;
-	QLabel* loopEndSpinLabel;
-	QLabel* loopVariationSpinLabel;
-	
-	bool blockSignals;
-
 	struct LayerTypeMap
 	{
 		ParticleLayer::eType layerType;
 		QString layerName;
 	};
 
-	static const LayerTypeMap layerTypeMap[];
-
 	struct BlendPreset
 	{
-		eBlendMode srcFactor;
-		eBlendMode dstFactor;
-		QString presetName;
+        eBlending blending;
+        QString presetName;
 	};
 
-	static const BlendPreset blendPresetsMap[];
+private:
+    static const LayerTypeMap layerTypeMap[];
+    static const BlendPreset blendPresetsMap[];
+
+    ParticleLayer* layer = nullptr;
+
+    Sprite* sprite = nullptr;
+    QTimer* spriteUpdateTimer = nullptr;
+    DAVA::Stack<std::pair<rhi::HSyncObject, Texture*>> spriteUpdateTexturesStack;
+
+    QVBoxLayout* mainBox = nullptr;
+    QVBoxLayout* pivotPointLayout = nullptr;
+
+    QLabel* scaleVelocityBaseLabel = nullptr;
+    QLabel* scaleVelocityFactorLabel = nullptr;
+    QLabel* layerTypeLabel = nullptr;
+    QLabel* spriteLabel = nullptr;
+    QLabel* innerEmitterLabel = nullptr;
+    QLabel* pivotPointLabel = nullptr;
+    QLabel* pivotPointXSpinBoxLabel = nullptr;
+    QLabel* pivotPointYSpinBoxLabel = nullptr;
+    QLabel* particleOrientationLabel = nullptr;
+    QLabel* blendOptionsLabel = nullptr;
+    QLabel* presetLabel = nullptr;
+    QLabel* frameOverlifeFPSLabel = nullptr;
+    QLabel* deltaSpinLabel = nullptr;
+    QLabel* deltaVariationSpinLabel = nullptr;
+    QLabel* loopEndSpinLabel = nullptr;
+    QLabel* loopVariationSpinLabel = nullptr;
+
+    QCheckBox* enableCheckBox = nullptr;
+    QCheckBox* isLongCheckBox = nullptr;
+    QCheckBox* isLoopedCheckBox = nullptr;
+    QCheckBox* inheritPostionCheckBox = nullptr;
+    QCheckBox* layerLodsCheckBox[LodComponent::MAX_LOD_LAYERS];
+    QCheckBox* frameBlendingCheckBox = nullptr;
+    QCheckBox* cameraFacingCheckBox = nullptr;
+    QCheckBox* xFacingCheckBox = nullptr;
+    QCheckBox* yFacingCheckBox = nullptr;
+    QCheckBox* zFacingCheckBox = nullptr;
+    QCheckBox* worldAlignCheckBox = nullptr;
+    QCheckBox* fogCheckBox = nullptr;
+    QCheckBox* frameOverlifeCheckBox = nullptr;
+    QCheckBox* randomSpinDirectionCheckBox = nullptr;
+    QCheckBox* randomFrameOnStartCheckBox = nullptr;
+    QCheckBox* loopSpriteAnimationCheckBox = nullptr;
+
+    QComboBox* degradeStrategyComboBox = nullptr;
+    QComboBox* layerTypeComboBox = nullptr;
+    QComboBox* presetComboBox = nullptr;
+
+    QLineEdit* layerNameLineEdit = nullptr;
+    QLineEdit* spritePathLabel = nullptr;
+    QLineEdit* innerEmitterPathLabel = nullptr;
+
+    QPushButton* spriteBtn = nullptr;
+    QPushButton* pivotPointResetButton = nullptr;
+
+    TimeLineWidget* lifeTimeLine = nullptr;
+    TimeLineWidget* numberTimeLine = nullptr;
+    TimeLineWidget* sizeTimeLine = nullptr;
+    TimeLineWidget* sizeVariationTimeLine = nullptr;
+    TimeLineWidget* sizeOverLifeTimeLine = nullptr;
+    TimeLineWidget* velocityTimeLine = nullptr;
+    TimeLineWidget* velocityOverLifeTimeLine = nullptr;
+    TimeLineWidget* spinTimeLine = nullptr;
+    TimeLineWidget* spinOverLifeTimeLine = nullptr;
+    TimeLineWidget* alphaOverLifeTimeLine = nullptr;
+    TimeLineWidget* animSpeedOverLifeTimeLine = nullptr;
+    TimeLineWidget* angleTimeLine = nullptr;
+
+    EventFilterDoubleSpinBox* scaleVelocityBaseSpinBox;
+    EventFilterDoubleSpinBox* scaleVelocityFactorSpinBox;
+    EventFilterDoubleSpinBox* pivotPointXSpinBox = nullptr;
+    EventFilterDoubleSpinBox* pivotPointYSpinBox = nullptr;
+    EventFilterDoubleSpinBox* startTimeSpin = nullptr;
+    EventFilterDoubleSpinBox* endTimeSpin = nullptr;
+    EventFilterDoubleSpinBox* deltaSpin = nullptr;
+    EventFilterDoubleSpinBox* loopEndSpin = nullptr;
+    EventFilterDoubleSpinBox* deltaVariationSpin = nullptr;
+    EventFilterDoubleSpinBox* loopVariationSpin = nullptr;
+
+    QSpinBox* frameOverlifeFPSSpin = nullptr;
+
+    GradientPickerWidget* colorRandomGradient = nullptr;
+    GradientPickerWidget* colorOverLifeGradient = nullptr;
+
+    bool blockSignals = false;
 };
 
 #endif /* defined(__ResourceEditorQt__EmitterLayerWidget__) */

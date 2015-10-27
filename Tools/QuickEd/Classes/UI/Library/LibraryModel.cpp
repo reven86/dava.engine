@@ -60,20 +60,24 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
     root->AddListener(this);
     Vector<std::pair<String, bool>> controlDescrs =
     {
-        {"UIControl", false},
-        {"UIButton", false},
-        {"UIStaticText", false},
-        {"UITextField", false},
-        {"UISlider", true},
-        {"UIList", false},
-        {"UIListCell", false},
-        {"UIScrollBar", true},
-        {"UIScrollView", true},
-        {"UISpinner", true},
-        {"UISwitch", true},
-        {"UIParticles", false}
+      { "UIControl", false },
+      { "UIButton", false },
+      { "UIStaticText", false },
+      { "UITextField", false },
+      { "UISlider", true },
+      { "UIList", false },
+      { "UIListCell", false },
+      { "UIScrollBar", true },
+      { "UIScrollView", true },
+      { "UISpinner", true },
+      { "UISwitch", true },
+      { "UIParticles", false },
+      { "UIWebView", false },
+      { "UIMovieView", false },
+      { "UI3DView", false },
+      { "UIJoypad", true }
     };
-    
+
     for (std::pair<String, bool> &descr : controlDescrs)
     {
         ScopedPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(descr.first));

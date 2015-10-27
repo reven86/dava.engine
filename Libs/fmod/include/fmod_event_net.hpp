@@ -15,12 +15,12 @@
 
 namespace FMOD
 {
-    class EventSystem;
+class EventSystem;
 
-    FMOD_RESULT F_API NetEventSystem_Init       (EventSystem *eventsystem, unsigned short port = FMOD_EVENT_NET_PORT);
-    FMOD_RESULT F_API NetEventSystem_Update     ();
-    FMOD_RESULT F_API NetEventSystem_Shutdown   ();
-    FMOD_RESULT F_API NetEventSystem_GetVersion (unsigned int *version);
+FMOD_RESULT F_API NetEventSystem_Init(EventSystem* eventsystem, unsigned short port = FMOD_EVENT_NET_PORT);
+FMOD_RESULT F_API NetEventSystem_Update();
+FMOD_RESULT F_API NetEventSystem_Shutdown();
+FMOD_RESULT F_API NetEventSystem_GetVersion(unsigned int* version);
 }
 
 #endif

@@ -30,15 +30,24 @@
 #include "CustomColorsProxy.h"
 #include "Deprecated/EditorConfig.h"
 
-CustomColorsProxy::CustomColorsProxy(int32 size)
+#include "Render/Texture.h"
+#include "Render/Material/NMaterial.h"
+
+using namespace DAVA;
+
+CustomColorsProxy::CustomColorsProxy(int32 _size)
     : changedRect(Rect())
     , spriteChanged(false)
     , textureLoaded(false)
-    , size(size)
+    , size(_size)
     , changes(0)
+    , brushMaterial(new NMaterial())
 {
-	customColorsRenderTarget = Texture::CreateFBO((float32)size, (float32)size, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-	UpdateSpriteFromConfig();
+    customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888 /*, Texture::DEPTH_NONE*/);
+
+    brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
+    brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));
+    brushMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
 void CustomColorsProxy::ResetLoadedState( bool isLoaded )
@@ -116,14 +125,24 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
 	{
 		return;
 	}
-	
-    RenderManager::Instance()->SetRenderTarget(customColorsRenderTarget);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)customColorsRenderTarget->GetWidth(), customColorsRenderTarget->GetHeight()));
-	Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
-	if (customColors.size())
-	{
-		Color color = customColors.front();
-		RenderManager::Instance()->ClearWithColor(color.r, color.g, color.b, color.a);
-	}
-    RenderManager::Instance()->SetRenderTarget(0);
+
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0;
+    viewport.width = viewport.height = size;
+
+    Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
+    if (!customColors.empty())
+    {
+        Color color = customColors.front();
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, color, viewport);
+    }
+    else
+    {
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, Color::Clear, viewport);
+    }
+}
+
+NMaterial* CustomColorsProxy::GetBrushMaterial() const
+{
+    return brushMaterial.get();
 }

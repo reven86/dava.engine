@@ -171,6 +171,26 @@ void Swap(T & v1, T & v2)
     v2 = temp;
 }
 
+template <class T, std::size_t size>
+class CircularArray
+{
+public:
+    T& Next()
+    {
+        T& ret = elements[currentIndex];
+
+        if ((++currentIndex) == elements.size())
+            currentIndex = 0;
+
+        return ret;
+    }
+
+    std::array<T, size> elements;
+
+protected:
+    std::size_t currentIndex = 0;
+};
+
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	
 uint64 EglGetCurrentContext();

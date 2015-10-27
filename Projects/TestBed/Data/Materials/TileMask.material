@@ -3,6 +3,7 @@ RenderTechnique:
     RenderPass:
         Name: "ForwardPass"
         Shader: "~res:/Materials/Shaders/Landscape/tilemask"
+        UniqueDefines: ["TILEMASK"]
         RenderState:
             alphaFunc: "CMP_ALWAYS"
             alphaFuncCmpValue: 0.0000

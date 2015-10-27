@@ -158,4 +158,4 @@ DeviceInfo::HIDConnectionSignal& DeviceInfo::GetHIDConnectionSignal(DeviceInfo::
     return GetPrivateImpl()->GetHIDConnectionSignal(type);
 }
 
-}  // namespace DAVA
+} // namespace DAVA

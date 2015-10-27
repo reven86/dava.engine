@@ -30,16 +30,17 @@
 #include "VisibilityToolProxy.h"
 
 VisibilityToolProxy::VisibilityToolProxy(int32 size)
-:	changedRect(Rect())
-,	spriteChanged(false)
-,	size(size)
-,	visibilityPoint(Vector2(-1.f, -1.f))
-,	isVisibilityPointSet(false)
+    : size(size)
+    , visibilityPoint(Vector2(-1.f, -1.f))
+    , isVisibilityPointSet(false)
 {
-    visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-    RenderHelper::Instance()->Set2DRenderTarget(visibilityToolTexture);
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-    RenderManager::Instance()->SetRenderTarget(0);
+    visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
+
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = (uint32)size;
+    viewport.height = (uint32)size;
+    RenderHelper::CreateClearPass(visibilityToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
 }
 
 VisibilityToolProxy::~VisibilityToolProxy()
@@ -55,35 +56,6 @@ int32 VisibilityToolProxy::GetSize()
 Texture* VisibilityToolProxy::GetTexture()
 {
 	return visibilityToolTexture;
-}
-
-void VisibilityToolProxy::ResetTextureChanged()
-{
-	spriteChanged = false;
-}
-
-bool VisibilityToolProxy::IsTextureChanged()
-{
-	return spriteChanged;
-}
-
-Rect VisibilityToolProxy::GetChangedRect()
-{
-	if (IsTextureChanged())
-	{
-		return changedRect;
-	}
-
-	return Rect();
-}
-
-void VisibilityToolProxy::UpdateRect(const DAVA::Rect &rect)
-{
-	Rect bounds(0.f, 0.f, (float32)(size - 1), (float32)(size - 1));
-	changedRect = rect;
-	bounds.ClampToRect(changedRect);
-
-	spriteChanged = true;
 }
 
 void VisibilityToolProxy::SetVisibilityPoint(const Vector2& visibilityPoint)

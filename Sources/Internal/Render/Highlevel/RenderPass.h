@@ -33,64 +33,80 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderLayer.h"
-#include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 namespace DAVA
 {
-class RenderPassBatchArray;
 class Camera;
-
 class RenderPass
 {
-public:    
-    RenderPass(const FastName & name, RenderPassID id);
+public:
+    RenderPass(const FastName& name);
     virtual ~RenderPass();
     
-    void InitDefaultLayers();
-    
-    inline RenderPassID GetRenderPassID() const;
     inline const FastName & GetName() const;
-    
-	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
-	void RemoveRenderLayer(RenderLayer * layer);
 
-    virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
-    
+    void AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID afterLayer = RenderLayer::RENDER_LAYER_INVALID_ID);
+    void RemoveRenderLayer(RenderLayer * layer);
+
+    virtual void Draw(RenderSystem* renderSystem);
+
     inline uint32 GetRenderLayerCount() const;
     inline RenderLayer * GetRenderLayer(uint32 index) const;
-    
-    
+
+    inline rhi::RenderPassConfig& GetPassConfig();
+    inline void SetViewport(const Rect& viewPort);
+
 protected:
-    // TODO: add StaticVector container
-    Vector<RenderLayer*> renderLayers;    
-    FastName name;
-    RenderPassID id;
+    FastName passName;
+    rhi::RenderPassConfig passConfig;
+    Rect viewport;
+
+    Vector2 viewportSize, rcpViewportSize, viewportOffset; //storage fro dynamic bindings
 
     /*convinience*/
     void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);
+    void PrepareLayersArrays(const Vector<RenderObject*> objectsArray, Camera* camera);
+    void ClearLayersArrays();
+
+    void SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4* externalClipPlane = NULL);
     void DrawLayers(Camera *camera);
-    void ClearBuffers(uint32 clearBuffers);
+    void DrawDebug(Camera* camera, RenderSystem* renderSystem);
 
-	RenderPassBatchArray * renderPassBatchArray;
-	VisibilityArray visibilityArray;
+    void BeginRenderPass();
+    void EndRenderPass();
+
+    Vector<RenderLayer*> renderLayers;
+    std::array<RenderBatchArray, RenderLayer::RENDER_LAYER_ID_COUNT> layersBatchArrays;
+    Vector<RenderObject*> visibilityArray;
+
+    rhi::HPacketList packetList;
+    rhi::HRenderPass renderPass;
+
 public:
-    
     INTROSPECTION(RenderPass,
-        COLLECTION(renderLayers, "Render Layers", I_VIEW | I_EDIT)
-        MEMBER(name, "Name", I_VIEW)
-    );
+                  COLLECTION(renderLayers, "Render Layers", I_VIEW | I_EDIT)
+                  MEMBER(passName, "Name", I_VIEW));
 
-	friend class RenderSystem;
+    friend class RenderSystem;
 };
 
-inline RenderPassID RenderPass::GetRenderPassID() const
+inline rhi::RenderPassConfig& RenderPass::GetPassConfig()
 {
-    return id;
+    return passConfig;
+}
+inline void RenderPass::SetViewport(const Rect& _viewport)
+{
+    viewport = _viewport;
+    passConfig.viewport.x = (int32)viewport.x;
+    passConfig.viewport.y = (int32)viewport.y;
+    passConfig.viewport.width = (int32)viewport.dx;
+    passConfig.viewport.height = (int32)viewport.dy;
 }
 
 inline const FastName & RenderPass::GetName() const
 {
-    return name;
+    return passName;
 }
 
 inline uint32 RenderPass::GetRenderLayerCount() const
@@ -107,7 +123,7 @@ class WaterPrePass : public RenderPass
 {    
 public:
     inline void SetWaterLevel(float32 level){waterLevel = level;}
-    WaterPrePass(const FastName & name, RenderPassID id);
+    WaterPrePass(const FastName& name);
     ~WaterPrePass();
 protected:
     Camera *passMainCamera, *passDrawCamera;
@@ -115,9 +131,10 @@ protected:
 };
 class WaterReflectionRenderPass  : public WaterPrePass
 {        
-public:    
-    WaterReflectionRenderPass(const FastName & name, RenderPassID id);
-	virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);	
+public:
+    WaterReflectionRenderPass(const FastName& name);
+    virtual void Draw(RenderSystem* renderSystem);
+
 private:
     void UpdateCamera(Camera *camera);
 };
@@ -125,27 +142,25 @@ private:
 class WaterRefractionRenderPass  : public WaterPrePass
 {       
 public:
-    WaterRefractionRenderPass(const FastName & name, RenderPassID id);
-    virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
-
+    WaterRefractionRenderPass(const FastName& name);
+    virtual void Draw(RenderSystem* renderSystem);
 };
 
 class MainForwardRenderPass : public RenderPass
 {	
 
 public:
-    MainForwardRenderPass(const FastName & name, RenderPassID id);
-	~MainForwardRenderPass();
-	virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
+    MainForwardRenderPass(const FastName& name);
+    ~MainForwardRenderPass();
+    virtual void Draw(RenderSystem* renderSystem);
 
 private:
 	WaterReflectionRenderPass *reflectionPass;
-    WaterRefractionRenderPass *refractionPass;
-    Texture *reflectionTexture, *refractionTexture;    
-    
-    bool needWaterPrepass;
+    WaterRefractionRenderPass* refractionPass;
+
     AABBox3 waterBox;
 
+    void InitReflectionRefraction();
     void PrepareReflectionRefractionTextures(RenderSystem * renderSystem);
 };
 

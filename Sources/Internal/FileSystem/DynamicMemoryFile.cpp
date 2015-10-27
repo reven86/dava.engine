@@ -81,8 +81,6 @@ const uint8* DynamicMemoryFile::GetData() const
 
 uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 {
-    DVASSERT(NULL != pointerToData);
-
 	if (!(fileAttributes & File::WRITE) && !(fileAttributes & File::APPEND))
 	{
 		return 0;
@@ -94,9 +92,10 @@ uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 	}
 	if(dataSize)
 	{
-		Memcpy(&(data[currentPtr]), pointerToData, dataSize);
-		currentPtr += dataSize;
-	}
+        DVASSERT(nullptr != pointerToData);
+        Memcpy(&(data[currentPtr]), pointerToData, dataSize);
+        currentPtr += dataSize;
+    }
 	
 	return dataSize;
 }

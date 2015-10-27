@@ -34,8 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
-#include "Render/RenderState.h"
-#include "Render/RenderManager.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -49,7 +47,7 @@ namespace
 const Vector2 PIVOT_CONTROL_SIZE(20.0f, 20.0f);
 const Vector2 FRAME_RECT_SIZE(15.0f, 15.0f);
 const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
-const Array<HUDAreaInfo::eArea, 2> AreasToHide = {{HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA}};
+const Array<HUDAreaInfo::eArea, 2> AreasToHide = { { HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA } };
 }
 
 class SelectionRect : public UIControl

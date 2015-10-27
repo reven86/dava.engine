@@ -32,32 +32,48 @@
 
 #include "TextureProperties.h"
 #include "Tools/QtPropertyEditor/QtPropertyItem.h"
+#include "Tools/LazyUpdater/LazyUpdater.h"
 
-TextureProperties::TextureProperties( QWidget *parent /*= 0*/ )
-	: QtPropertyEditor(parent)
-	, curTextureDescriptor(NULL)
-	, curGPU(DAVA::GPU_ORIGIN)
-	, skipPropSizeChanged(false)
+namespace PropertyItemName
+{
+const DAVA::FastName GenerateMipMaps("generateMipMaps");
+const DAVA::FastName IsNormalMap("isNormalMap");
+const DAVA::FastName WrapModeS("wrapModeS");
+const DAVA::FastName WrapModeT("wrapModeT");
+const DAVA::FastName MinFilter("minFilter");
+const DAVA::FastName MagFilter("magFilter");
+const DAVA::FastName MipFilter("mipFilter");
+const DAVA::FastName Format("format");
+}
+
+TextureProperties::TextureProperties(QWidget* parent /*= 0*/)
+    : QtPropertyEditor(parent)
+    , curTextureDescriptor(nullptr)
+    , curGPU(DAVA::GPU_ORIGIN)
+    , skipPropSizeChanged(false)
 {
 	SetEditTracking(true);
+
+    DAVA::Function<void()> fn(this, &TextureProperties::ReloadProperties);
+    updater = new LazyUpdater(fn, this);
+
+    connect(this, &TextureProperties::PropertyChanged, this, &TextureProperties::OnPropertyChanged);
 }
 
 TextureProperties::~TextureProperties()
 {
-	curTextureDescriptor = NULL;
+    curTextureDescriptor = nullptr;
 }
 
 void TextureProperties::setTextureDescriptor(DAVA::TextureDescriptor *descriptor)
 {
-//	DAVA::SafeRelease(curTextureDescriptor);
-
 	curTextureDescriptor = descriptor;
 	origImageSize = QSize(0, 0);
 
-	if(NULL != curTextureDescriptor)
-	{
-		// enable this widget
-		setEnabled(true);
+    if (nullptr != curTextureDescriptor)
+    {
+        // enable this widget
+        setEnabled(true);
 
 		// reset mipmap sizes
 		// we don't know avaliable mipmap sizes for newly set texture until setOriginalSize() method will be called by user
@@ -98,10 +114,10 @@ const DAVA::TextureDescriptor* TextureProperties::getTextureDescriptor()
 
 void TextureProperties::Save()
 {
-	if(NULL != curTextureDescriptor)
-	{
-		curTextureDescriptor->Save();
-	}
+    if (nullptr != curTextureDescriptor)
+    {
+        curTextureDescriptor->Save();
+    }
 }
 
 void TextureProperties::MipMapSizesInit(int baseWidth, int baseHeight)
@@ -161,11 +177,11 @@ void TextureProperties::ReloadProperties()
 
 		// add common texture drawSettings
 		headerIndex = AppendHeader("Texture drawSettings");
-		propMipMap = AddPropertyItem(DAVA::FastName("generateMipMaps"), textureDataSettings, headerIndex);
-		propMipMap->SetCheckable(true);
-		propMipMap->SetEditable(false);
-		
-		propNormalMap = AddPropertyItem(DAVA::FastName("isNormalMap"), textureDataSettings, headerIndex);
+        propMipMap = AddPropertyItem(PropertyItemName::GenerateMipMaps, textureDataSettings, headerIndex);
+        propMipMap->SetCheckable(true);
+        propMipMap->SetEditable(false);
+
+        propNormalMap = AddPropertyItem(PropertyItemName::IsNormalMap, textureDataSettings, headerIndex);
         propNormalMap->SetCheckable(true);
         propNormalMap->SetEditable(false);
 
@@ -179,20 +195,21 @@ void TextureProperties::ReloadProperties()
         propNormalMap->SetValue(savedValue);
         //END of TODO
 
-		propWrapModeS = AddPropertyItem(DAVA::FastName("wrapModeS"), textureDrawSettings, headerIndex);
-		propWrapModeT = AddPropertyItem(DAVA::FastName("wrapModeT"), textureDrawSettings, headerIndex);
-		propMinFilter = AddPropertyItem(DAVA::FastName("minFilter"), textureDrawSettings, headerIndex);
-		propMagFilter = AddPropertyItem(DAVA::FastName("magFilter"), textureDrawSettings, headerIndex);
+        propWrapModeS = AddPropertyItem(PropertyItemName::WrapModeS, textureDrawSettings, headerIndex);
+        propWrapModeT = AddPropertyItem(PropertyItemName::WrapModeT, textureDrawSettings, headerIndex);
+        propMinFilter = AddPropertyItem(PropertyItemName::MinFilter, textureDrawSettings, headerIndex);
+        propMagFilter = AddPropertyItem(PropertyItemName::MagFilter, textureDrawSettings, headerIndex);
+        propMipFilter = AddPropertyItem(PropertyItemName::MipFilter, textureDrawSettings, headerIndex);
 
-		DAVA::InspBase *compressionSettings = &curTextureDescriptor->compression[curGPU];
+        DAVA::InspBase* compressionSettings = &curTextureDescriptor->compression[curGPU];
 
-		// add per-gpu drawSettings
-		headerIndex = AppendHeader(GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(curGPU));
-		propFormat = AddPropertyItem(DAVA::FastName("format"), compressionSettings, headerIndex);
+        // add per-gpu drawSettings
+        headerIndex = AppendHeader(GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(curGPU));
+        propFormat = AddPropertyItem(PropertyItemName::Format, compressionSettings, headerIndex);
 
-		propSizes = new QtPropertyDataMetaObject(&curSizeLevelObject, DAVA::MetaInfo::Instance<int>());
-		AppendProperty("Size", propSizes, headerIndex);
-		LoadCurSizeToProp();
+        propSizes = new QtPropertyDataMetaObject(&curSizeLevelObject, DAVA::MetaInfo::Instance<int>());
+        AppendProperty("Size", propSizes, headerIndex);
+        LoadCurSizeToProp();
 
 		ReloadEnumFormats();
 		ReloadEnumWrap();
@@ -201,8 +218,9 @@ void TextureProperties::ReloadProperties()
 		SetPropertyItemValidValues(propWrapModeS, &enumWpar);
 		SetPropertyItemValidValues(propWrapModeT, &enumWpar);
 		SetPropertyItemValidValues(propMinFilter, &enumFiltersMin);
-		SetPropertyItemValidValues(propMagFilter, &enumFiltersMag);
-		SetPropertyItemValidValues(propFormat, &enumFormats);
+        SetPropertyItemValidValues(propMagFilter, &enumFiltersMag);
+        SetPropertyItemValidValues(propMipFilter, &enumFiltersMip);
+        SetPropertyItemValidValues(propFormat, &enumFormats);
 		SetPropertyItemValidValues(propSizes, &enumSizes);
 
 		if(0 == enumSizes.GetCount())
@@ -229,64 +247,61 @@ void TextureProperties::ReloadEnumFormats()
 
 void TextureProperties::ReloadEnumFilters()
 {
-	const EnumMap *globalFormats = GlobalEnumMap<DAVA::Texture::TextureFilter>::Instance();
+    const EnumMap* filterFormats = GlobalEnumMap<rhi::TextureFilter>::Instance();
+    const EnumMap* mipFormats = GlobalEnumMap<rhi::TextureMipFilter>::Instance();
 
-	enumFiltersMag.UnregistelAll();
+    enumFiltersMag.UnregistelAll();
 	enumFiltersMin.UnregistelAll();
+    enumFiltersMip.UnregistelAll();
 
-	// Mag
-	enumFiltersMag.Register(DAVA::Texture::FILTER_NEAREST, globalFormats->ToString(DAVA::Texture::FILTER_NEAREST));
-	enumFiltersMag.Register(DAVA::Texture::FILTER_LINEAR, globalFormats->ToString(DAVA::Texture::FILTER_LINEAR));
+    // Mag
+    enumFiltersMag.Register(rhi::TEXFILTER_NEAREST, filterFormats->ToString(rhi::TEXFILTER_NEAREST));
+    enumFiltersMag.Register(rhi::TEXFILTER_LINEAR, filterFormats->ToString(rhi::TEXFILTER_LINEAR));
 
-	// Min
-	enumFiltersMin.Register(DAVA::Texture::FILTER_NEAREST, globalFormats->ToString(DAVA::Texture::FILTER_NEAREST));
-	enumFiltersMin.Register(DAVA::Texture::FILTER_LINEAR, globalFormats->ToString(DAVA::Texture::FILTER_LINEAR));
+    // Min
+    enumFiltersMin.Register(rhi::TEXFILTER_NEAREST, filterFormats->ToString(rhi::TEXFILTER_NEAREST));
+    enumFiltersMin.Register(rhi::TEXFILTER_LINEAR, filterFormats->ToString(rhi::TEXFILTER_LINEAR));
 
-	if(NULL != propMipMap)
-	{
-		if(propMipMap->GetValue().toBool())
-		{
-			enumFiltersMin.Register(DAVA::Texture::FILTER_NEAREST_MIPMAP_NEAREST, globalFormats->ToString(DAVA::Texture::FILTER_NEAREST_MIPMAP_NEAREST));
-			enumFiltersMin.Register(DAVA::Texture::FILTER_LINEAR_MIPMAP_NEAREST, globalFormats->ToString(DAVA::Texture::FILTER_LINEAR_MIPMAP_NEAREST));
-			enumFiltersMin.Register(DAVA::Texture::FILTER_NEAREST_MIPMAP_LINEAR, globalFormats->ToString(DAVA::Texture::FILTER_NEAREST_MIPMAP_LINEAR));
-			enumFiltersMin.Register(DAVA::Texture::FILTER_LINEAR_MIPMAP_LINEAR, globalFormats->ToString(DAVA::Texture::FILTER_LINEAR_MIPMAP_LINEAR));
-		}
-		else
-		{
-			// if mipmap is disabled, min filter can only be nearest or linear
-			// if it isn't - change it do default nearest
-			int curVal = propMinFilter->GetValue().toInt();
-			if (curVal != DAVA::Texture::FILTER_NEAREST &&
-				curVal != DAVA::Texture::FILTER_LINEAR)
-			{
-				propMinFilter->SetValue(QVariant(DAVA::Texture::FILTER_NEAREST));
-			}
-		}
-	}
+    //Mip
+    if (nullptr != propMipMap)
+    {
+        if (propMipMap->GetValue().toBool())
+        {
+            enumFiltersMip.Register(rhi::TEXMIPFILTER_NONE, mipFormats->ToString(rhi::TEXMIPFILTER_NONE));
+            enumFiltersMip.Register(rhi::TEXMIPFILTER_NEAREST, mipFormats->ToString(rhi::TEXMIPFILTER_NEAREST));
+            enumFiltersMip.Register(rhi::TEXMIPFILTER_LINEAR, mipFormats->ToString(rhi::TEXMIPFILTER_LINEAR));
+        }
+        else if (nullptr != propMipFilter)
+        {
+            enumFiltersMip.Register(rhi::TEXMIPFILTER_NONE, mipFormats->ToString(rhi::TEXMIPFILTER_NONE));
+
+            propMipFilter->SetValue(QVariant(rhi::TEXMIPFILTER_NONE));
+        }
+    }
 }
 
 void TextureProperties::ReloadEnumWrap()
 {
-	const EnumMap *globalFormats = GlobalEnumMap<DAVA::Texture::TextureWrap>::Instance();
+    const EnumMap* globalFormats = GlobalEnumMap<rhi::TextureAddrMode>::Instance();
 
-	enumWpar.UnregistelAll();
+    enumWpar.UnregistelAll();
 
-	enumWpar.Register(DAVA::Texture::WRAP_REPEAT, globalFormats->ToString(DAVA::Texture::WRAP_REPEAT));
-	enumWpar.Register(DAVA::Texture::WRAP_CLAMP_TO_EDGE, globalFormats->ToString(DAVA::Texture::WRAP_CLAMP_TO_EDGE));
+    enumWpar.Register(rhi::TEXADDR_WRAP, globalFormats->ToString(rhi::TEXADDR_WRAP));
+    enumWpar.Register(rhi::TEXADDR_CLAMP, globalFormats->ToString(rhi::TEXADDR_CLAMP));
 }
 
 QtPropertyDataInspMember* TextureProperties::AddPropertyItem(const DAVA::FastName& name, DAVA::InspBase *object, const QModelIndex &parent)
 {
-	QtPropertyDataInspMember* ret = NULL;
-	const DAVA::InspInfo* info = object->GetTypeInfo();
+    QtPropertyDataInspMember* ret = nullptr;
+    const DAVA::InspInfo* info = object->GetTypeInfo();
 
-	if(NULL != info)
-	{
-		const DAVA::InspMember *member = info->Member(name);
-		if(NULL != member)
-		{
-			ret = new QtPropertyDataInspMember(object, member);
-			AppendProperty(member->Name().c_str(), ret, parent);
+    if (nullptr != info)
+    {
+        const DAVA::InspMember* member = info->Member(name);
+        if (nullptr != member)
+        {
+            ret = new QtPropertyDataInspMember(object, member);
+            AppendProperty(member->Name().c_str(), ret, parent);
 		}
 	}
 
@@ -295,8 +310,8 @@ QtPropertyDataInspMember* TextureProperties::AddPropertyItem(const DAVA::FastNam
 
 void TextureProperties::SetPropertyItemValidValues(QtPropertyDataInspMember* item, EnumMap *validValues)
 {
-	if(NULL != item && NULL != validValues)
-	{
+    if (nullptr != item && nullptr != validValues)
+    {
         item->ClearAllowedValues();
         
 		for(size_t i = 0; i < validValues->GetCount(); ++i)
@@ -313,8 +328,8 @@ void TextureProperties::SetPropertyItemValidValues(QtPropertyDataInspMember* ite
 
 void TextureProperties::SetPropertyItemValidValues( QtPropertyDataMetaObject* item, EnumMap *validValues )
 {
-	if(NULL != item && NULL != validValues)
-	{
+    if (nullptr != item && nullptr != validValues)
+    {
         item->ClearAllowedValues();
 		for(size_t i = 0; i < validValues->GetCount(); ++i)
 		{
@@ -335,9 +350,6 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
 	QtPropertyData *data = GetProperty(index);
 	if(data == propMipMap)
 	{
-		ReloadEnumFilters();
-		SetPropertyItemValidValues(propMinFilter, &enumFiltersMin);
-
 		emit PropertyChanged(PROP_MIPMAP);
 	}
     else if(data == propNormalMap)
@@ -348,10 +360,10 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
 	{
 		emit PropertyChanged(PROP_FORMAT);
 	}
-	else if(data == propMinFilter || data == propMagFilter)
-	{
-		emit PropertyChanged(PROP_FILTER);
-	}
+    else if (data == propMinFilter || data == propMagFilter || data == propMipFilter)
+    {
+        emit PropertyChanged(PROP_FILTER);
+    }
 	else if(data == propWrapModeS || data == propWrapModeT)
 	{
 		emit PropertyChanged(PROP_WRAP);
@@ -365,16 +377,25 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
 			emit PropertyChanged(PROP_SIZE);
 		}
 	}
+
     Save();
+}
+
+void TextureProperties::OnPropertyChanged(int type)
+{
+    if (PROP_MIPMAP == type)
+    {
+        updater->Update();
+    }
 }
 
 void TextureProperties::LoadCurSizeToProp()
 {
-	if( NULL != curTextureDescriptor && NULL != propSizes && 
-		curGPU >= 0 && curGPU < DAVA::GPU_DEVICE_COUNT)
-	{
-		QSize curSize(curTextureDescriptor->compression[curGPU].compressToWidth, curTextureDescriptor->compression[curGPU].compressToHeight);
-		int level = availableSizes.key(curSize, -1); 
+    if (nullptr != curTextureDescriptor && nullptr != propSizes &&
+        curGPU >= 0 && curGPU < DAVA::GPU_DEVICE_COUNT)
+    {
+        QSize curSize(curTextureDescriptor->compression[curGPU].compressToWidth, curTextureDescriptor->compression[curGPU].compressToHeight);
+        int level = availableSizes.key(curSize, -1); 
 
 		if(-1 != level)
 		{
@@ -388,12 +409,12 @@ void TextureProperties::LoadCurSizeToProp()
 
 void TextureProperties::SaveCurSizeFromProp()
 {
-	if( NULL != curTextureDescriptor && NULL != propSizes && 
-		curGPU >= 0 && curGPU < DAVA::GPU_DEVICE_COUNT)
-	{
-		int level = propSizes->GetValue().toInt();
+    if (nullptr != curTextureDescriptor && nullptr != propSizes &&
+        curGPU >= 0 && curGPU < DAVA::GPU_DEVICE_COUNT)
+    {
+        int level = propSizes->GetValue().toInt();
 
-		if(availableSizes.contains(level))
+        if(availableSizes.contains(level))
 		{
 			DVASSERT(curTextureDescriptor->compression);
 			curTextureDescriptor->compression[curGPU].compressToWidth = availableSizes[level].width();

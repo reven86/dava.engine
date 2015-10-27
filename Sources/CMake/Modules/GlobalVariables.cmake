@@ -67,19 +67,34 @@ if ( WINDOWS_UAP )
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
 
-    #libs paths	
-    set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
-    if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
-        set ( LIBS_ARCH_SELECTOR "arm" )
-    elseif ( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64" )
-        set ( LIBS_ARCH_SELECTOR "x64" )
-    else ()
-        set ( LIBS_ARCH_SELECTOR "x86" )
+    #libs paths
+    set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" )
+    
+    #root deployment location for resources
+    set ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION "DXFL-DX11" )
+    add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}" )
+    
+    #check the newest version of Win10 SDK
+    if ( "${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION}" STRLESS "${CMAKE_VS_TARGET_PLATFORM_VERSION}" )
+        message ( WARNING "Newer version of Win10 SDK detected: ${CMAKE_VS_TARGET_PLATFORM_VERSION}. "
+                          "Using older version ${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION}. "
+                          "To use newer version set variable -DWINDOWS_UAP_TARGET_PLATFORM_VERSION=${CMAKE_VS_TARGET_PLATFORM_VERSION} ")
     endif ()
 
-    set ( DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG   "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}/${LIBS_ARCH_SELECTOR}/Debug" )
-    set ( DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}/${LIBS_ARCH_SELECTOR}/Release" )
-    
+    #set target platform version
+    #by default CMake sets the last installed SDK's version
+    #but we use predefined platform version and allow to override it
+    if ( WINDOWS_UAP_TARGET_PLATFORM_VERSION )
+        set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
+    else ()
+        set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION} )
+        set ( WINDOWS_UAP_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION} )
+    endif ()
+
+    #set extensions version
+    set ( WINDOWS_UAP_MOBILE_EXT_SDK_VERSION ${CMAKE_VS_TARGET_PLATFORM_VERSION} )
+    set ( WINDOWS_UAP_IOT_EXT_SDK_VERSION    ${CMAKE_VS_TARGET_PLATFORM_VERSION} )
+
 else ()
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/includes" )

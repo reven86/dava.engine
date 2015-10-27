@@ -30,9 +30,9 @@
 #include "UI/UIHoleTransition.h"
 #include "UI/UIControlSystem.h"
 #include "Platform/SystemTimer.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/Renderer.h"
 
 namespace DAVA 
 {
@@ -96,27 +96,23 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	 */
 	
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-    
-	RenderManager::Instance()->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
-	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f,
-                                            (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                                            (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy),
-                                       drawState.GetRenderState());
-    
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	
+    drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
+
+    auto rect = Rect(0.0f, 0.0f, (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+
+    RenderSystem2D::Instance()->FillRect(rect, Color::Black);
+
     drawState.SetPosition(geometricData.position);
     
     if (normalizedTime < 0.5f)
     {
         renderTargetPrevScreen->SetClipPolygon(&realPoly);
-        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
     }
     else
     {
         renderTargetNextScreen->SetClipPolygon(&realPoly);
-        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
     }
     
 	/*Texture * tx = renderTargetPrevScreen->GetTexture();
@@ -152,7 +148,6 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	
 	renderTargetNextScreen->SetPosition(xNextPosition, yNextPosition);
 	renderTargetNextScreen->Draw(); */
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 };

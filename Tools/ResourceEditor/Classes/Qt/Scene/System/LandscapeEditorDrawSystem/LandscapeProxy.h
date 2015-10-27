@@ -31,74 +31,59 @@
 #define __RESOURCEEDITORQT__LANDSCAPEPROXY__
 
 #include "DAVAEngine.h"
-#include "Deprecated/LandscapeRenderer.h"
 
 #include "Render/UniqueStateSet.h"
 
 using namespace DAVA;
 
-class CustomLandscape;
-
 class LandscapeProxy: public BaseObject
 {
 public:
-	enum eTilemaskSprites
-	{
-		TILEMASK_SPRITE_SOURCE = 0,
-		TILEMASK_SPRITE_DESTINATION,
-		
-		TILEMASK_SPRITES_COUNT
-	};
+    enum eTilemaskTextures
+    {
+        TILEMASK_TEXTURE_SOURCE = 0,
+        TILEMASK_TEXTURE_DESTINATION,
 
-	enum eLandscapeMode
+        TILEMASK_TEXTURE_COUNT
+    };
+
+    enum eLandscapeMode
 	{
 		MODE_CUSTOM_LANDSCAPE = 0,
 		MODE_ORIGINAL_LANDSCAPE,
 
 		MODES_COUNT
 	};
+
+    static const FastName LANDSCAPE_TEXTURE_TOOL;
+    static const FastName LANDSCAPE_TEXTURE_CURSOR; //should use clamp wrap mode
+    static const FastName LANSDCAPE_FLAG_CURSOR;
+    static const FastName LANSDCAPE_FLAG_TOOL;
+    static const FastName LANSDCAPE_FLAG_TOOL_MIX;
+    static const FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
+
 protected:
 	virtual ~LandscapeProxy();
 public:
 	LandscapeProxy(Landscape* landscape, Entity* node);
 
 	void SetMode(LandscapeProxy::eLandscapeMode mode);
-	
-	void SetRenderer(LandscapeRenderer* renderer);
-	LandscapeRenderer* GetRenderer();
 
 	const AABBox3 & GetLandscapeBoundingBox();
-	Texture* GetLandscapeTexture(Landscape::eTextureLevel level);
-	Color GetLandscapeTileColor(Landscape::eTextureLevel level);
-	void SetLandscapeTileColor(Landscape::eTextureLevel level, const Color& color);
+    Texture* GetLandscapeTexture(const FastName& level);
+    Color GetLandscapeTileColor(const FastName& level);
+    void SetLandscapeTileColor(const FastName& level, const Color& color);
 
-	void SetTilemaskTexture(Texture* texture);
-	void SetTilemaskTextureEnabled(bool enabled);
+    void SetToolTexture(Texture* texture, bool mixColors);
 
-	void SetNotPassableTexture(Texture* texture);
-	void SetNotPassableTextureEnabled(bool enabled);
-	
-	void SetCustomColorsTexture(Texture* texture);
-	void SetCustomColorsTextureEnabled(bool enabled);
-	
-	void SetVisibilityCheckToolTexture(Texture* texture);
-	void SetVisibilityCheckToolTextureEnabled(bool enabled);
-
-	void SetRulerToolTexture(Texture* texture);
-	void SetRulerToolTextureEnabled(bool enabled);
-
-	RenderObject* GetRenderObject();
+    RenderObject* GetRenderObject();
 	void SetHeightmap(Heightmap* heightmap);
 
 	void CursorEnable();
 	void CursorDisable();
 	void SetCursorTexture(Texture* texture);
-	void SetBigTextureSize(float32 size);
-	void SetCursorScale(float32 scale);
-	void SetCursorPosition(const Vector2& position);
-
-	void ApplyTilemask();
-	void UpdateFullTiledTexture(bool force = false);
+    void SetCursorSize(float32 size);
+    void SetCursorPosition(const Vector2& position);
 
 	Vector3 PlacePoint(const Vector3& point);
 
@@ -110,41 +95,42 @@ public:
 	void InitTilemaskImageCopy();
 	Image* GetTilemaskImageCopy();
 
-	void InitTilemaskSprites();
-	Texture * GetTilemaskTexture(int32 number);
-	void SwapTilemaskSprites();
+    void InitTilemaskDrawTextures();
+    Texture* GetTilemaskDrawTexture(int32 number);
+    void SwapTilemaskDrawTextures();
+
+    void UpdateTileMaskPathname();
 
 protected:
-	enum eTextureType
-	{
-		TEXTURE_TYPE_NOT_PASSABLE = 0,
-		TEXTURE_TYPE_CUSTOM_COLORS,
-		TEXTURE_TYPE_VISIBILITY_CHECK_TOOL,
-		TEXTURE_TYPE_RULER_TOOL,
+    FilePath GetPathForSourceTexture() const;
 
-		TEXTURE_TYPES_COUNT
-	};
-	
-	Texture* texturesToBlend[TEXTURE_TYPES_COUNT];
-	bool texturesEnabled[TEXTURE_TYPES_COUNT];
+protected:
+    enum eToolTextureType
+    {
+        TEXTURE_TYPE_NOT_PASSABLE = 0,
+        TEXTURE_TYPE_CUSTOM_COLORS,
+        TEXTURE_TYPE_VISIBILITY_CHECK_TOOL,
+        TEXTURE_TYPE_RULER_TOOL,
 
-	Image* tilemaskImageCopy;
-	Texture* tilemaskTextures[TILEMASK_SPRITES_COUNT];
+        TEXTURE_TYPES_COUNT
+    };
 
-	int32 tilemaskWasChanged;
+    Image* tilemaskImageCopy = nullptr;
+    Array<Texture*, TILEMASK_TEXTURE_COUNT> tilemaskDrawTextures;
 
-	Texture* fullTiledTexture;
-	Texture* displayingTexture;
-	Landscape* baseLandscape;
-	CustomLandscape* customLandscape;
-	Entity* landscapeNode;
+    int32 tilemaskWasChanged = 0;
 
-	eLandscapeMode mode;
-	
-	void UpdateDisplayedTexture();
-	
-	UniqueHandle noBlendDrawState;
-	Texture* cursorTexture;
+    FilePath sourceTilemaskPath;
+
+    Landscape* baseLandscape = nullptr;
+    NMaterial* landscapeEditorMaterial = nullptr;
+    Vector4 cursorCoordSize;
+
+    eLandscapeMode mode = MODE_ORIGINAL_LANDSCAPE;
+
+    void UpdateDisplayedTexture();
+
+    Texture* cursorTexture = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEPROXY__) */

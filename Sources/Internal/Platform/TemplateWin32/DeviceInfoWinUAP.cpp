@@ -59,6 +59,7 @@ using namespace ::Windows::Devices::HumanInterfaceDevice;
 using namespace ::Windows::Security::ExchangeActiveSyncProvisioning;
 using namespace ::Windows::Networking::Connectivity;
 using namespace ::Windows::System::UserProfile;
+using namespace ::Windows::UI::Xaml;
 
 namespace DAVA
 {
@@ -79,14 +80,6 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     productName = WideString(deviceInfo.SystemProductName->Data());
     gpu = GPUFamily();
     uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
-
-    watchers.emplace_back(CreateDeviceWatcher(POINTER));
-    watchers.emplace_back(CreateDeviceWatcher(MOUSE));
-    watchers.emplace_back(CreateDeviceWatcher(JOYSTICK));
-    watchers.emplace_back(CreateDeviceWatcher(GAMEPAD));
-    watchers.emplace_back(CreateDeviceWatcher(KEYBOARD));
-    watchers.emplace_back(CreateDeviceWatcher(KEYPAD));
-    watchers.emplace_back(CreateDeviceWatcher(SYSTEM_CONTROL));
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -204,17 +197,17 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
-    auto func = [this]()
-    {
-        CoreWindow^ window = CoreWindow::GetForCurrentThread();
-        DVASSERT(window != nullptr);
+    auto func = [this]() {
+        // should be started on UI thread
+        CoreWindow ^ coreWindow = Window::Current->CoreWindow;
+        DVASSERT(coreWindow != nullptr);
 
-        using Windows::Graphics::Display::DisplayInformation;
+        screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
+        screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
+
         DisplayInformation^ displayInfo = DisplayInformation::GetForCurrentView();
+        DVASSERT(displayInfo != nullptr);
         screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
-
-        screenInfo.width = static_cast<int32>(window->Bounds.Width);
-        screenInfo.height = static_cast<int32>(window->Bounds.Height);
         DisplayOrientations curOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
         if (DisplayOrientations::Portrait == curOrientation || DisplayOrientations::PortraitFlipped == curOrientation)
         {
@@ -222,6 +215,8 @@ void DeviceInfoPrivate::InitializeScreenInfo()
         }
     };
     core->RunOnUIThreadBlocked(func);
+    // start device watchers, after creation main thread dispatcher
+    CreateAndStartHIDWatcher();
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -263,8 +258,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     storage.removable = true;
 
     auto removableStorages = WaitAsync(KnownFolders::RemovableDevices->GetFoldersAsync());
-    size_t size = removableStorages->Size;
-    for (size_t i = 0; i < size; ++i)
+    for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
         Platform::String^ path = removableStorages->GetAt(i)->Path;
         storage.path = WStringToString(path->Data());
@@ -367,6 +361,17 @@ DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
     watcher->Removed += removed;
     watcher->Start();
     return watcher;
+}
+
+void DeviceInfoPrivate::CreateAndStartHIDWatcher()
+{
+    watchers.emplace_back(CreateDeviceWatcher(POINTER));
+    watchers.emplace_back(CreateDeviceWatcher(MOUSE));
+    watchers.emplace_back(CreateDeviceWatcher(JOYSTICK));
+    watchers.emplace_back(CreateDeviceWatcher(GAMEPAD));
+    watchers.emplace_back(CreateDeviceWatcher(KEYBOARD));
+    watchers.emplace_back(CreateDeviceWatcher(KEYPAD));
+    watchers.emplace_back(CreateDeviceWatcher(SYSTEM_CONTROL));
 }
 
 void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)

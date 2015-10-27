@@ -94,8 +94,8 @@ void TextLayout::PrepareCharSizes()
     DVASSERT(characterSizes.size() == preparedText.length());
     if (useBiDi)
     {
-        uint32 size = characterSizes.size();
-        for (uint32 i = 0; i < size; ++i)
+        size_t size = characterSizes.size();
+        for (size_t i = 0; i < size; ++i)
         {
             if (bidiHelper.IsBiDiSpecialCharacter(preparedText[i]))
             {

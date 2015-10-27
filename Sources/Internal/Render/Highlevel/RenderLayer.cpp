@@ -37,10 +37,42 @@
 
 namespace DAVA
 {
-RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags, RenderLayerID _id)
-    :	name(_name)
-    ,   flags(sortingFlags)
-    ,   id(_id)
+const FastName LAYER_NAME_OPAQUE("OpaqueRenderLayer");
+const FastName LAYER_NAME_AFTER_OPAQUE("AfterOpaqueRenderLayer");
+const FastName LAYER_NAME_ALPHA_TEST_LAYER("AlphaTestLayer");
+const FastName LAYER_NAME_WATER("WaterLayer");
+const FastName LAYER_NAME_TRANSLUCENT("TransclucentRenderLayer");
+const FastName LAYER_NAME_AFTER_TRANSLUCENT("AfterTransclucentRenderLayer");
+const FastName LAYER_NAME_SHADOW_VOLUME("ShadowVolumeRenderLayer");
+const FastName LAYER_NAME_VEGETATION("VegetationRenderLayer");
+const FastName LAYER_NAME_DEBUG_DRAW("DebugRenderLayer");
+
+const FastName LAYER_NAMES[RenderLayer::RENDER_LAYER_ID_COUNT] =
+{
+  LAYER_NAME_OPAQUE,
+  LAYER_NAME_AFTER_OPAQUE,
+  LAYER_NAME_ALPHA_TEST_LAYER,
+  LAYER_NAME_WATER,
+  LAYER_NAME_TRANSLUCENT,
+  LAYER_NAME_AFTER_TRANSLUCENT,
+  LAYER_NAME_SHADOW_VOLUME,
+  LAYER_NAME_VEGETATION,
+  LAYER_NAME_DEBUG_DRAW
+};
+
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_OPAQUE = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_MATERIAL;
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_AFTER_OPAQUE = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_MATERIAL;
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_ALPHA_TEST_LAYER = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_MATERIAL;
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_WATER = 0;
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_TRANSLUCENT = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_AFTER_TRANSLUCENT = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_MATERIAL;
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_SHADOW_VOLUME = 0;
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_VEGETATION = 0;
+const uint32 RenderLayer::LAYER_SORTING_FLAGS_DEBUG_DRAW = 0;
+
+RenderLayer::RenderLayer(eRenderLayerID _id, uint32 sortingFlags)
+    : layerID(_id)
+    , sortFlags(sortingFlags)
 {
     
 }
@@ -49,59 +81,50 @@ RenderLayer::~RenderLayer()
 {
 }
 
-void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
+const FastName& RenderLayer::GetLayerNameByID(eRenderLayerID layer)
 {
-    TIME_PROFILE("RenderLayer::Draw");
-    
-    renderLayerBatchArray->Sort(camera);
-    
-#if CAN_INSTANCE_CHECK
-    RenderBatch * prevBatch = 0;
-    uint32 canBeInstanced = 0;
-    
-    Vector<int32> chain;
-#endif
-    uint32 size = (uint32)renderLayerBatchArray->GetRenderBatchCount();
-
-    FrameOcclusionQueryManager::Instance()->BeginQuery(name);
-    
-    for (uint32 k = 0; k < size; ++k)
-    {
-        RenderBatch * batch = renderLayerBatchArray->Get(k);
-
-#if CAN_INSTANCE_CHECK
-        if (prevBatch && batch->GetPolygonGroup() == prevBatch->GetPolygonGroup() && batch->GetMaterial()->GetParent() == prevBatch->GetMaterial()->GetParent())
-        {
-            canBeInstanced++;
-        }else
-        {
-            if (canBeInstanced > 0)
-                chain.push_back(canBeInstanced + 1);
-            canBeInstanced = 0;
-        }
-#endif
-        batch->Draw(ownerRenderPass, camera);
-#if CAN_INSTANCE_CHECK
-        prevBatch = batch;
-#endif
-    }
-    
-    FrameOcclusionQueryManager::Instance()->EndQuery(name);
-    
-#if CAN_INSTANCE_CHECK
-    int32 realDrawEconomy = 0;
-    for (uint32 k = 0; k < chain.size(); ++k)
-    {
-        realDrawEconomy += (chain[k] - 1);
-    }
-    
-    Logger::Debug("Pass: %s Layer: %s Size: %d Can be instanced: %d Econ: %d", ownerRenderPass.c_str(), name.c_str(), size, chain.size(), realDrawEconomy);
-    for (uint32 k = 0; k < chain.size(); ++k)
-    {
-        Logger::Debug("%d - %d", k, chain[k]);
-    }
-#endif
+    DVASSERT(layer >= 0 && layer < RENDER_LAYER_ID_COUNT);
+    return LAYER_NAMES[layer];
 }
 
+RenderLayer::eRenderLayerID RenderLayer::GetLayerIDByName(const FastName& name)
+{
+    for (int32 id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
+    {
+        if (LAYER_NAMES[id] == name)
+        {
+            return (eRenderLayerID)id;
+        }
+    }
+    return RENDER_LAYER_INVALID_ID;
+}
+
+void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList)
+{
+    TIME_PROFILE("RenderLayer::Draw");
+
+    uint32 size = (uint32)batchArray.GetRenderBatchCount();
+
+    FrameOcclusionQueryManager::Instance()->BeginQuery(GetLayerNameByID(layerID));
+    rhi::Packet packet;
+
+    for (uint32 k = 0; k < size; ++k)
+    {
+        RenderBatch* batch = batchArray.Get(k);
+        RenderObject* renderObject = batch->GetRenderObject();
+        renderObject->BindDynamicParameters(camera);
+        NMaterial* mat = batch->GetMaterial();
+        if (mat)
+        {
+            batch->BindGeometryData(packet);
+            DVASSERT(packet.primitiveCount);
+            mat->BindParams(packet);
+            packet.debugMarker = mat->GetEffectiveFXName().c_str();
+            rhi::AddPacket(packetList, packet);
+        }
+    }
+
+    FrameOcclusionQueryManager::Instance()->EndQuery(GetLayerNameByID(layerID));
+}
 
 };
