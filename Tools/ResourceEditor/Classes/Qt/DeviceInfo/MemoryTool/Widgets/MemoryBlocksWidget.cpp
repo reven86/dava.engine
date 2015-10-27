@@ -303,10 +303,11 @@ void MemoryBlocksWidget::Init()
     layout1->addWidget(filterBar);
     if (enableGrouping)
     {
-        QHBoxLayout* l = new QHBoxLayout;
-        l->addWidget(groupsWidget);
-        l->addWidget(tableWidget);
-        layout1->addLayout(l);
+        QSplitter* splitter = new QSplitter(Qt::Horizontal);
+        splitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        splitter->addWidget(groupsWidget);
+        splitter->addWidget(tableWidget);
+        layout1->addWidget(splitter);
     }
     else
     {

@@ -91,7 +91,7 @@ void SnapshotDiffViewerWidget::InitBranchView()
 
 void SnapshotDiffViewerWidget::InitMemoryBlocksView()
 {
-    memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked, true, false);
+    memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked, true, true);
     tab->addTab(memoryBlocksWidget, "Memory blocks");
 }
 
