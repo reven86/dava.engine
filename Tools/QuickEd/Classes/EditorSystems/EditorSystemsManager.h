@@ -123,11 +123,12 @@ public:
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
     DAVA::Signal<> CanvasSizeChanged;
-    DAVA::Signal<> rootControlPositionChanged;
+    DAVA::Signal<DAVA::Vector2> rootControlPositionChanged;
     DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
+    DAVA::Signal<DAVA::Vector2 /*new position*/> RootControlPositionChanged;
 
 private:
     class RootControl;

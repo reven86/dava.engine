@@ -80,7 +80,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 
     connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
-
+    connect(davaGLWidget, &DavaGLWidget::mouseMoved, rulerController, &RulerController::UpdateRulerMarkers);
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {

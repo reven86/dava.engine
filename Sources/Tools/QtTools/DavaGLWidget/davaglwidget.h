@@ -55,6 +55,7 @@ public:
 signals:
     void mouseScrolled(int ofs);
     void OnDrop( const QMimeData *mimeData );
+    void mouseMoved(QPoint pos);
 
 protected:
     bool event(QEvent *event) override;
@@ -86,12 +87,14 @@ public:
     void MakeInvisible();
     qreal GetDevicePixelRatio() const;
     QQuickWindow* GetGLView();
+
 signals:
     void ScreenChanged();
     void mouseScrolled(int ofs);
     void Resized(int width, int height, int dpr);
     void Initialized();
     void OnDrop(const QMimeData* mimeData);
+    void mouseMoved(QPoint pos);
 
 public slots:
     void OnSync();

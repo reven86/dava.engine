@@ -51,6 +51,7 @@ public:
     // Update the rulers by sending "settings changed" signal to them.
     void UpdateRulers();
 
+public slots:
     // Update the ruler markers with the mouse position.
     void UpdateRulerMarkers(QPoint curMousePos);
 
