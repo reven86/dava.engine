@@ -66,7 +66,7 @@ void RulerController::SetViewPos(QPoint viewPos)
 
 void RulerController::SetScale(float scale)
 {
-    screenScale = scale;
+    screenScale = scale / 100.f;
     horisontalRulerSettings.zoomLevel = screenScale;
     verticalRulerSettings.zoomLevel = screenScale;
 
