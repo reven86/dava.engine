@@ -57,7 +57,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         DVASSERT(isSingleLine);
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
-        
+
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
         DVASSERT(textFieldHolder->textCtrl != nullptr);
         

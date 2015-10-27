@@ -31,16 +31,14 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/RenderBase.h"
 
-
 namespace DAVA
 {
-
 struct BufferPropertyLayout
 {
     rhi::ShaderPropList props;
 };
 
-bool operator == (const BufferPropertyLayout& lhs, const BufferPropertyLayout& rhs)
+bool operator==(const BufferPropertyLayout& lhs, const BufferPropertyLayout& rhs)
 {
     if (lhs.props.size() != rhs.props.size())
         return false;
@@ -49,7 +47,7 @@ bool operator == (const BufferPropertyLayout& lhs, const BufferPropertyLayout& r
         if ((lhs.props[i].uid != rhs.props[i].uid) ||
             (lhs.props[i].type != rhs.props[i].type) ||
             (lhs.props[i].bufferReg != rhs.props[i].bufferReg) ||
-            (lhs.props[i].defaultValue != rhs.props[i].defaultValue) ||   //should we really compare defaultValue HERE!?!?!?!?!?
+            (lhs.props[i].defaultValue != rhs.props[i].defaultValue) || //should we really compare defaultValue HERE!?!?!?!?!?
             (lhs.props[i].bufferRegCount != rhs.props[i].bufferRegCount))
         {
             return false;
@@ -61,7 +59,7 @@ bool operator == (const BufferPropertyLayout& lhs, const BufferPropertyLayout& r
 
 namespace
 {
-    UniqueStateSet<BufferPropertyLayout> propertyLayoutSet;
+UniqueStateSet<BufferPropertyLayout> propertyLayoutSet;
 }
 
 uint32 ShaderDescriptor::CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize)
@@ -71,7 +69,7 @@ uint32 ShaderDescriptor::CalculateRegsCount(rhi::ShaderProp::Type type, uint32 a
     case rhi::ShaderProp::TYPE_FLOAT1:
     case rhi::ShaderProp::TYPE_FLOAT2:
     case rhi::ShaderProp::TYPE_FLOAT3:
-        DVASSERT(arraySize==1); //arrays of non register aligned types are not supported
+        DVASSERT(arraySize == 1); //arrays of non register aligned types are not supported
         return 1;
     case rhi::ShaderProp::TYPE_FLOAT4:
         return arraySize; //1 float4 register per array element
@@ -95,14 +93,14 @@ uint32 ShaderDescriptor::CalculateDataSize(rhi::ShaderProp::Type type, uint32 ar
         return 2;
     case rhi::ShaderProp::TYPE_FLOAT3:
         DVASSERT(arraySize == 1); //arrays of non register aligned types are not supported
-        return 3;        
+        return 3;
     case rhi::ShaderProp::TYPE_FLOAT4:
-        return arraySize * 4; //1 float4 register per array element        
+        return arraySize * 4; //1 float4 register per array element
     case rhi::ShaderProp::TYPE_FLOAT4X4:
-        return arraySize * 16; //4 float4 register per array element        
+        return arraySize * 16; //4 float4 register per array element
     default:
         DVASSERT(false); //how did we get here? unknown property type
-        return 0;        
+        return 0;
     }
 }
 
@@ -111,21 +109,19 @@ const rhi::ShaderPropList& ShaderDescriptor::GetProps(UniquePropertyLayout layou
     return propertyLayoutSet.GetUnique(layout).props;
 }
 
-	
-	
 void ShaderDescriptor::UpdateDynamicParams()
 {
     //Logger::Info( " upd-dyn-params" );
     for (auto& dynamicBinding : dynamicPropertyBindings)
     {
-        float32 *data = (float32*)(Renderer::GetDynamicBindings().GetDynamicParam(dynamicBinding.dynamicPropertySemantic));
+        float32* data = (float32*)(Renderer::GetDynamicBindings().GetDynamicParam(dynamicBinding.dynamicPropertySemantic));
         pointer_size updateSemantic = Renderer::GetDynamicBindings().GetDynamicParamUpdateSemantic(dynamicBinding.dynamicPropertySemantic);
         if (dynamicBinding.updateSemantic != updateSemantic)
-        {            
+        {
             if (dynamicBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
             {
                 DVASSERT(Renderer::GetDynamicBindings().GetDynamicParamArraySize(dynamicBinding.dynamicPropertySemantic, 1) == 1);
-                rhi::UpdateConstBuffer1fv(dynamicBinding.buffer, dynamicBinding.reg, dynamicBinding.regCount, data, CalculateDataSize(dynamicBinding.type, 1));            
+                rhi::UpdateConstBuffer1fv(dynamicBinding.buffer, dynamicBinding.reg, dynamicBinding.regCount, data, CalculateDataSize(dynamicBinding.type, 1));
             }
             else
             {
@@ -133,7 +129,7 @@ void ShaderDescriptor::UpdateDynamicParams()
                 DVASSERT(arraySize <= dynamicBinding.regCount);
                 rhi::UpdateConstBuffer4fv(dynamicBinding.buffer, dynamicBinding.reg, data, CalculateRegsCount(dynamicBinding.type, arraySize));
             }
-            
+
             dynamicBinding.updateSemantic = updateSemantic;
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
@@ -189,11 +185,11 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
 
     constBuffers.resize(vertexConstBuffersCount + fragmentConstBuffersCount);
 
-    for (auto &prop : vSource->Properties())
+    for (auto& prop : vSource->Properties())
     {
         bufferPropertyLayouts[prop.bufferindex].props.push_back(prop);
     }
-    for (auto &prop : fSource->Properties())
+    for (auto& prop : fSource->Properties())
     {
         bufferPropertyLayouts[prop.bufferindex + vertexConstBuffersCount].props.push_back(prop);
     }
@@ -215,7 +211,6 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
         constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);
     }
 
-
     for (size_t i = 0, sz = constBuffers.size(); i < sz; ++i)
     {
         if (constBuffers[i].updateType == rhi::ShaderProp::STORAGE_DYNAMIC)
@@ -227,7 +222,7 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
                 dynamicBufferHandle = rhi::CreateFragmentConstBuffer(piplineState, constBuffers[i].targetSlot);
 
             dynamicBuffers[std::make_pair(constBuffers[i].type, constBuffers[i].targetSlot)] = dynamicBufferHandle;
-            for (auto &prop : bufferPropertyLayouts[i].props)
+            for (auto& prop : bufferPropertyLayouts[i].props)
             {
                 /*for some reason c++11 cant initialize inherited data*/
                 DynamicPropertyBinding binding;

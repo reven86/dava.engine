@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_BUILD_SYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_STATIC_OCCLUSION_BUILD_SYSTEM_H__
+#define __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_BUILD_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
@@ -53,16 +53,17 @@ class StaticOcclusionBuildSystem : public SceneSystem
         RENEW_OCCLUSION_INDICES,
         LEAVE_OLD_INDICES,
     };
+
 public:
-    StaticOcclusionBuildSystem(Scene * scene);
+    StaticOcclusionBuildSystem(Scene* scene);
     virtual ~StaticOcclusionBuildSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
     virtual void Process(float32 timeElapsed);
-    void ImmediateEvent(Component * component, uint32 event) override;
-    
-    inline void SetCamera(Camera * camera);
+    void ImmediateEvent(Component* component, uint32 event) override;
+
+    inline void SetCamera(Camera* camera);
 
     void Build();
     void RebuildCurrentCell();
@@ -71,38 +72,35 @@ public:
     bool IsInBuild() const;
     uint32 GetBuildStatus() const;
 
-private:            
-    void StartBuildOcclusion();    
+private:
+    void StartBuildOcclusion();
     void FinishBuildOcclusion();
 
     void StartOcclusionComponent();
     void FinishOcclusionComponent();
 
-    
     void SceneForceLod(int32 layerIndex);
-    void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity);
-    void UpdateMaterialsForOcclusionRecursively(Entity *entity);
+    void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity* entity);
+    void UpdateMaterialsForOcclusionRecursively(Entity* entity);
     void RestoreOcclusionMaterials();
-    
-    Camera * camera;
+
+    Camera* camera;
     Vector<Entity*> entities;
-    StaticOcclusion * staticOcclusion;
-    StaticOcclusionDataComponent * componentInProgress;
-    uint32 activeIndex;    
+    StaticOcclusion* staticOcclusion;
+    StaticOcclusionDataComponent* componentInProgress;
+    uint32 activeIndex;
     eIndexRenew renewIndex;
     
 #if RHI_COMPLETE
-    Map<NMaterial* , RenderStateData> originalRenderStateData;
+    Map<NMaterial*, RenderStateData> originalRenderStateData;
 #endif // RHI_COMPLETE
 };
-   
-    
-inline void StaticOcclusionBuildSystem::SetCamera(Camera * _camera)
+
+inline void StaticOcclusionBuildSystem::SetCamera(Camera* _camera)
 {
     camera = _camera;
 }
 
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__ */

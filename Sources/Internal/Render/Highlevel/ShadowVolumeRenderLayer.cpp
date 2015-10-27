@@ -36,8 +36,8 @@
 
 namespace DAVA
 {
-
-ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags) : RenderLayer(id, sortingFlags)
+ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags)
+    : RenderLayer(id, sortingFlags)
 {
     PrepareRenderData();
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ShadowVolumeRenderLayer::Restore));
@@ -81,15 +81,14 @@ void ShadowVolumeRenderLayer::PrepareRenderData()
     shadowRectPacket.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     shadowRectPacket.primitiveCount = 2;
 
-
     shadowRectMaterial = new NMaterial();
     shadowRectMaterial->SetFXName(NMaterialName::SHADOWRECT);
     shadowRectMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
-void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray & renderBatchArray, rhi::HPacketList packetList)
-{	
-    if(!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
+void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList)
+{
+    if (!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
     {
         return;
     }
@@ -100,7 +99,6 @@ void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray & rend
 
         shadowRectMaterial->BindParams(shadowRectPacket);
         rhi::AddPacket(packetList, shadowRectPacket);
-	}
+    }
 }
-    
 };

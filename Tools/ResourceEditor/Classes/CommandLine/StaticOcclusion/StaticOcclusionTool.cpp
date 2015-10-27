@@ -96,8 +96,8 @@ void StaticOcclusionTool::Process()
             scene->Save();
         }
         SafeRelease(scene);
-    	RenderObjectsFlusher::Flush();
-	}
+        RenderObjectsFlusher::Flush();
+    }
 }
 
 DAVA::FilePath StaticOcclusionTool::GetQualityConfigPath() const

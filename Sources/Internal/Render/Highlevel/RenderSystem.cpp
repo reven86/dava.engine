@@ -46,12 +46,11 @@
 
 namespace DAVA
 {
-
 RenderSystem::RenderSystem()
-    :   forceUpdateLights(false)
-    ,   mainCamera(0)
-    ,   drawCamera(0)
-    ,   globalMaterial(NULL)
+    : forceUpdateLights(false)
+    , mainCamera(0)
+    , drawCamera(0)
+    , globalMaterial(NULL)
 {
     mainRenderPass = new MainForwardRenderPass(PASS_FORWARD);
 
@@ -158,8 +157,8 @@ void RenderSystem::UnregisterBatch(RenderBatch * batch)
 }
     
 void RenderSystem::RegisterMaterial(NMaterial * material)
-{     
-    NMaterial * topParent = nullptr;
+{
+    NMaterial* topParent = nullptr;
 
     while (nullptr != material)
     {
@@ -190,8 +189,8 @@ void RenderSystem::UnregisterMaterial(NMaterial * material)
     }
     */
 }
-    
-void RenderSystem::SetGlobalMaterial(NMaterial * newGlobalMaterial)
+
+void RenderSystem::SetGlobalMaterial(NMaterial* newGlobalMaterial)
 {
     Set<DataNode*> dataNodes;
     for (RenderObject* obj : renderObjectArray)

@@ -52,51 +52,51 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
 //- (id) initWithCoder: (NSCoder *)aDecoder
 - (id)initWithFrame:(CGRect)aRect
-{    
+{
     if ((self = [super initWithFrame:aRect]))
     {
         float scf = DAVA::Core::Instance()->GetScreenScaleFactor();
-        [self setContentScaleFactor: scf];
+        [self setContentScaleFactor:scf];
 
-		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
+        // Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidFrameChanged:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
         self.layer.opaque = TRUE;
-            
-        DAVA::KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
 
-        switch ((DAVA::Core::eScreenOrientation)options->GetInt32("orientation", DAVA::Core::SCREEN_ORIENTATION_PORTRAIT)) 
+        DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
+
+        switch ((DAVA::Core::eScreenOrientation)options->GetInt32("orientation", DAVA::Core::SCREEN_ORIENTATION_PORTRAIT))
         {
-            case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
-            {
-                [[UIApplication sharedApplication] setStatusBarOrientation: UIInterfaceOrientationPortrait animated: false];
-            }
-                break;
-            case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-            {
-                [[UIApplication sharedApplication] setStatusBarOrientation: UIInterfaceOrientationLandscapeLeft animated: false];
-            }
-                break;
-            case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
-            {
-                [[UIApplication sharedApplication] setStatusBarOrientation: UIInterfaceOrientationPortraitUpsideDown animated: false];
-            }
-                break;
-            case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-            {
-                [[UIApplication sharedApplication] setStatusBarOrientation: UIInterfaceOrientationLandscapeRight animated: false];
-            }
-                break;
-                
-            default:
-                break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+        {
+            [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait animated:false];
+        }
+        break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+        {
+            [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeLeft animated:false];
+        }
+        break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+        {
+            [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortraitUpsideDown animated:false];
+        }
+        break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+        {
+            [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight animated:false];
+        }
+        break;
+
+        default:
+            break;
         }
 
-//        DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
+        //        DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
         DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
-//        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
-//        DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
-//        DAVA::RenderSystem2D::Instance()->Init();
+        //        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
+        //        DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
+        //        DAVA::RenderSystem2D::Instance()->Init();
 
         self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
         animating = FALSE;
@@ -110,27 +110,27 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 
         // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
         // class is used as fallback when it isn't available.
-        NSString *reqSysVer = @"3.1";
-        NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
+        NSString* reqSysVer = @"3.1";
+        NSString* currSysVer = [[UIDevice currentDevice] systemVersion];
         if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending)
             displayLinkSupported = TRUE;
-        
+
         DAVA::Logger::Debug("RenderView Created successfully. displayLink: %d", (int)displayLinkSupported);
     }
 
     return self;
 }
 
-- (void) drawView:(id)sender
+- (void)drawView:(id)sender
 {
     if (blockDrawView)
     {
         // Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
         return;
     }
-    
+
     DAVA::Core::Instance()->SystemProcessFrame();
-    
+
     DAVA::int32 targetFPS = 0;
     if (limitKeyboardFps)
     {
@@ -140,25 +140,25 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
     {
         targetFPS = DAVA::Renderer::GetDesiredFPS();
     }
-    
-	if(currFPS != targetFPS)
-	{
-		currFPS = targetFPS;
-		float interval = 60.0f / currFPS;
-		if(interval < 1.0f)
-		{
-			interval = 1.0f;
-		}
-		[self setAnimationFrameInterval:(int)interval];
-	}
+
+    if (currFPS != targetFPS)
+    {
+        currFPS = targetFPS;
+        float interval = 60.0f / currFPS;
+        if (interval < 1.0f)
+        {
+            interval = 1.0f;
+        }
+        [self setAnimationFrameInterval:(int)interval];
+    }
 }
 
-- (NSInteger) animationFrameInterval
+- (NSInteger)animationFrameInterval
 {
     return animationFrameInterval;
 }
 
-- (void) setAnimationFrameInterval:(NSInteger)frameInterval
+- (void)setAnimationFrameInterval:(NSInteger)frameInterval
 {
     // Frame interval defines how many display frames must pass between each time the
     // display link fires. The display link will only fire 30 times a second when the
@@ -169,7 +169,7 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
     if (frameInterval >= 1)
     {
         animationFrameInterval = frameInterval;
-        
+
         if (animating)
         {
             [self stopAnimation];
@@ -178,7 +178,7 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
     }
 }
 
-- (void) startAnimation
+- (void)startAnimation
 {
     if (!animating)
     {
@@ -194,7 +194,7 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
         }
         else
             animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval) target:self selector:@selector(drawView:) userInfo:nil repeats:TRUE];
-        
+
         animating = TRUE;
     }
 }
@@ -213,65 +213,64 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
             [animationTimer invalidate];
             animationTimer = nil;
         }
-        
+
         animating = FALSE;
     }
 }
 
-void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches)
+void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches)
 {
-    NSArray *ar = (NSArray *)inTouches;
-    for(UITouch *curTouch in ar)
+    NSArray* ar = (NSArray*)inTouches;
+    for (UITouch* curTouch in ar)
     {
         DAVA::UIEvent newTouch;
         newTouch.tid = (DAVA::int32)(DAVA::pointer_size)curTouch;
 
-        CGPoint p = [curTouch locationInView: curTouch.view ];
+        CGPoint p = [curTouch locationInView:curTouch.view];
         newTouch.physPoint.x = p.x;
         newTouch.physPoint.y = p.y;
-//      if(DAVA::RenderManager::Instance()->GetScreenOrientation() == DAVA::RenderManager::Instance()->ORIENTATION_LANDSCAPE_LEFT)
-//      {
-//          newTouch.point.x = (480 - p.y);
-//          newTouch.point.y = (p.x);
-//      }
-//      else if(DAVA::RenderManager::Instance()->GetScreenOrientation() == DAVA::RenderManager::Instance()->ORIENTATION_LANDSCAPE_RIGHT)
-//      {
-//          newTouch.point.x = (p.y);
-//          newTouch.point.y = (320 - p.x);
-//      }
-//      else
-//      {
-//          newTouch.point.x = p.x;
-//          newTouch.point.y = p.y;
-//      }
+        //      if(DAVA::RenderManager::Instance()->GetScreenOrientation() == DAVA::RenderManager::Instance()->ORIENTATION_LANDSCAPE_LEFT)
+        //      {
+        //          newTouch.point.x = (480 - p.y);
+        //          newTouch.point.y = (p.x);
+        //      }
+        //      else if(DAVA::RenderManager::Instance()->GetScreenOrientation() == DAVA::RenderManager::Instance()->ORIENTATION_LANDSCAPE_RIGHT)
+        //      {
+        //          newTouch.point.x = (p.y);
+        //          newTouch.point.y = (320 - p.x);
+        //      }
+        //      else
+        //      {
+        //          newTouch.point.x = p.x;
+        //          newTouch.point.y = p.y;
+        //      }
         newTouch.timestamp = curTouch.timestamp;
         newTouch.tapCount = static_cast<DAVA::int32>(curTouch.tapCount);
-        
-        switch(curTouch.phase)
+
+        switch (curTouch.phase)
         {
-            case UITouchPhaseBegan:
-                newTouch.phase = DAVA::UIEvent::PHASE_BEGAN;
-                break;
-            case UITouchPhaseEnded:
-                newTouch.phase = DAVA::UIEvent::PHASE_ENDED;
-                break;
-            case UITouchPhaseMoved:
-            case UITouchPhaseStationary:
-                newTouch.phase = DAVA::UIEvent::PHASE_DRAG;
-                break;
-            case UITouchPhaseCancelled:
-                newTouch.phase = DAVA::UIEvent::PHASE_CANCELLED;
-                break;
-                
+        case UITouchPhaseBegan:
+            newTouch.phase = DAVA::UIEvent::PHASE_BEGAN;
+            break;
+        case UITouchPhaseEnded:
+            newTouch.phase = DAVA::UIEvent::PHASE_ENDED;
+            break;
+        case UITouchPhaseMoved:
+        case UITouchPhaseStationary:
+            newTouch.phase = DAVA::UIEvent::PHASE_DRAG;
+            break;
+        case UITouchPhaseCancelled:
+            newTouch.phase = DAVA::UIEvent::PHASE_CANCELLED;
+            break;
         }
         outTouches->push_back(newTouch);
     }
 }
 
--(void)process:(int) touchType touch:(NSArray*)active withEvent: (NSArray*)total
+- (void)process:(int)touchType touch:(NSArray*)active withEvent:(NSArray*)total
 {
     MoveTouchsToVector(active, &activeTouches);
-    if(DAVA::InputSystem::Instance()->GetMultitouchEnabled())
+    if (DAVA::InputSystem::Instance()->GetMultitouchEnabled())
     {
         MoveTouchsToVector(total, &totalTouches);
         DAVA::UIControlSystem::Instance()->OnInput(activeTouches, totalTouches);
@@ -284,37 +283,37 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     totalTouches.clear();
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event
 {
     [self process:DAVA::UIEvent::PHASE_BEGAN touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event
 {
     [self process:DAVA::UIEvent::PHASE_DRAG touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event
 {
     [self process:DAVA::UIEvent::PHASE_ENDED touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event
 {
     [self process:DAVA::UIEvent::PHASE_CANCELLED touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
-- (void) blockDrawing
+- (void)blockDrawing
 {
     blockDrawView = true;
 }
 
-- (void) unblockDrawing
+- (void)unblockDrawing
 {
     blockDrawView = false;
 }
 
-- (void)keyboardDidFrameChanged:(NSNotification *)notification
+- (void)keyboardDidFrameChanged:(NSNotification*)notification
 {
     CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGRect screenRect = [[UIScreen mainScreen] bounds];

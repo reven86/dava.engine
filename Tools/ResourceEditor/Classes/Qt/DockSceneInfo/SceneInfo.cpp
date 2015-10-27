@@ -403,7 +403,7 @@ void SceneInfo::CollectLODDataInFrame()
     uint32 size = (uint32)visibilityArray.size();
     for (uint32 ro = 0; ro < size; ++ro)
     {
-        RenderObject * renderObject = visibilityArray[ro];
+        RenderObject* renderObject = visibilityArray[ro];
         uint32 batchCount = renderObject->GetActiveRenderBatchCount();
         int32 indexCount = 0;
         for(uint32 i = 0; i < batchCount; ++i)

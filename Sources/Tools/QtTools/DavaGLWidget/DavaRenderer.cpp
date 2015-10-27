@@ -33,11 +33,9 @@
 
 DavaRenderer::DavaRenderer()
 {
-    DAVA::Core::Instance()->rendererParams.acquireContextFunc = []()
-    {
+    DAVA::Core::Instance()->rendererParams.acquireContextFunc = []() {
     };
-    DAVA::Core::Instance()->rendererParams.releaseContextFunc = []()
-    {
+    DAVA::Core::Instance()->rendererParams.releaseContextFunc = []() {
     };
     DAVA::QtLayer::Instance()->AppStarted();
     DAVA::QtLayer::Instance()->OnResume();

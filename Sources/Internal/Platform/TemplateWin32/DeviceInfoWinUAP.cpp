@@ -80,14 +80,6 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     productName = WideString(deviceInfo.SystemProductName->Data());
     gpu = GPUFamily();
     uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
-
-    watchers.emplace_back(CreateDeviceWatcher(POINTER));
-    watchers.emplace_back(CreateDeviceWatcher(MOUSE));
-    watchers.emplace_back(CreateDeviceWatcher(JOYSTICK));
-    watchers.emplace_back(CreateDeviceWatcher(GAMEPAD));
-    watchers.emplace_back(CreateDeviceWatcher(KEYBOARD));
-    watchers.emplace_back(CreateDeviceWatcher(KEYPAD));
-    watchers.emplace_back(CreateDeviceWatcher(SYSTEM_CONTROL));
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -205,12 +197,11 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
-    auto func = [this]()
-    {
+    auto func = [this]() {
         // should be started on UI thread
-        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        CoreWindow ^ coreWindow = Window::Current->CoreWindow;
         DVASSERT(coreWindow != nullptr);
-        
+
         screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
         screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
 
@@ -224,6 +215,8 @@ void DeviceInfoPrivate::InitializeScreenInfo()
         }
     };
     core->RunOnUIThreadBlocked(func);
+    // start device watchers, after creation main thread dispatcher
+    CreateAndStartHIDWatcher();
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -368,6 +361,17 @@ DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
     watcher->Removed += removed;
     watcher->Start();
     return watcher;
+}
+
+void DeviceInfoPrivate::CreateAndStartHIDWatcher()
+{
+    watchers.emplace_back(CreateDeviceWatcher(POINTER));
+    watchers.emplace_back(CreateDeviceWatcher(MOUSE));
+    watchers.emplace_back(CreateDeviceWatcher(JOYSTICK));
+    watchers.emplace_back(CreateDeviceWatcher(GAMEPAD));
+    watchers.emplace_back(CreateDeviceWatcher(KEYBOARD));
+    watchers.emplace_back(CreateDeviceWatcher(KEYPAD));
+    watchers.emplace_back(CreateDeviceWatcher(SYSTEM_CONTROL));
 }
 
 void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)

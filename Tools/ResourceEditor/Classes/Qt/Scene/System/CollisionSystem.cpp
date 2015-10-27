@@ -72,7 +72,7 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	objectsCollDisp = new btCollisionDispatcher(objectsCollConf);
 	objectsBroadphase = new btAxisSweep3(worldMin,worldMax);
     objectsDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
-	objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+    objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
 	objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
 
@@ -80,9 +80,9 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	landCollDisp = new btCollisionDispatcher(landCollConf);
 	landBroadphase = new btAxisSweep3(worldMin,worldMax);
     landDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
-	landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+    landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
-	landCollWorld->setDebugDrawer(landDebugDrawer);	      
+    landCollWorld->setDebugDrawer(landDebugDrawer);
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
@@ -334,9 +334,9 @@ void SceneCollisionSystem::Input(DAVA::UIEvent *event)
 
 void SceneCollisionSystem::Draw()
 {
-    RenderHelper * drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
 
-	if(drawMode & CS_DRAW_LAND)
+    if(drawMode & CS_DRAW_LAND)
 	{
 		landCollWorld->debugDrawWorld();
 	}
@@ -344,12 +344,12 @@ void SceneCollisionSystem::Draw()
 	if(drawMode & CS_DRAW_LAND_RAYTEST)
 	{
         drawer->DrawLine(lastLandRayFrom, lastLandRayTo, DAVA::Color(0, 1.0f, 0, 1.0f));
-	}
+    }
 
 	if(drawMode & CS_DRAW_LAND_COLLISION)
 	{
         drawer->DrawIcosahedron(lastLandCollision, 0.5f, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
-	}
+    }
 
 	if(drawMode & CS_DRAW_OBJECTS)
 	{
@@ -359,7 +359,7 @@ void SceneCollisionSystem::Draw()
 	if(drawMode & CS_DRAW_OBJECTS_RAYTEST)
 	{
         drawer->DrawLine(lastRayFrom, lastRayTo, DAVA::Color(1.0f, 0, 0, 1.0f));
-	}
+    }
 
 	if(drawMode & CS_DRAW_OBJECTS_SELECTED)
 	{
@@ -595,13 +595,14 @@ void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)
 // debug draw
 // -----------------------------------------------------------------------------------------------
 
-SceneCollisionDebugDrawer::SceneCollisionDebugDrawer(RenderHelper * _drawer)
-    : dbgMode(0), drawer(_drawer)
-{    
+SceneCollisionDebugDrawer::SceneCollisionDebugDrawer(RenderHelper* _drawer)
+    : dbgMode(0)
+    , drawer(_drawer)
+{
 }
 
 SceneCollisionDebugDrawer::~SceneCollisionDebugDrawer()
-{ 
+{
 }
 
 void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)

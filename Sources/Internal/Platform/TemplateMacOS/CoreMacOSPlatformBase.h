@@ -38,7 +38,7 @@ namespace DAVA
 class CoreMacOSPlatformBase : public Core
 {
 public:
-    void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
+    void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
     DisplayMode GetCurrentDisplayMode() override;
 };
 

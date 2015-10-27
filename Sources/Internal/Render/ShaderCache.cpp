@@ -39,18 +39,18 @@ namespace ShaderDescriptorCache
 struct ShaderSourceCode
 {
     char8* vertexProgText;
-    char8* fragmentProgText;    
+    char8* fragmentProgText;
 
     FilePath vertexProgSourcePath;
     FilePath fragmentProgSourcePath;
 };
-    
+
 namespace
 {
-    Map<Vector<int32>, ShaderDescriptor *> shaderDescriptors;
-    Map<FastName, ShaderSourceCode> shaderSourceCodes;
-    Mutex shaderCacheMutex;
-    bool initialized = false;
+Map<Vector<int32>, ShaderDescriptor*> shaderDescriptors;
+Map<FastName, ShaderSourceCode> shaderSourceCodes;
+Mutex shaderCacheMutex;
+bool initialized = false;
 }
 
 void Initialize()
@@ -73,13 +73,12 @@ void Clear()
 
     LockGuard<Mutex> guard(shaderCacheMutex);
 
-    for (auto &it : shaderSourceCodes)
-    {        
+    for (auto& it : shaderSourceCodes)
+    {
         SafeDelete(it.second.vertexProgText);
         SafeDelete(it.second.fragmentProgText);
     }
     shaderSourceCodes.clear();
-
 }
 
 void ClearDynamicBindigs()
@@ -88,18 +87,18 @@ void ClearDynamicBindigs()
 
     LockGuard<Mutex> guard(shaderCacheMutex);
 
-    for (auto &it : shaderDescriptors)
-    {        
+    for (auto& it : shaderDescriptors)
+    {
         it.second->ClearDynamicBindings();
     }
 }
 
-void BuildFlagsKey(const FastName& name,const HashMap<FastName, int32>& defines, Vector<int32>& key)
-{    
+void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key)
+{
     key.clear();
     key.reserve(defines.size() * 2 + 1);
     for (auto& define : defines)
-    {       
+    {
         key.push_back(define.first.Index());
         key.push_back(define.second);
     }
@@ -111,11 +110,11 @@ ShaderSourceCode LoadFromSource(const String& source)
     ShaderSourceCode sourceCode;
     sourceCode.vertexProgSourcePath = FilePath(source + "-vp.cg");
     sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.cg");
-    
+
     //later move it into FileSystem
 
     //vertex
-    File * fp = File::Create(sourceCode.vertexProgSourcePath, File::OPEN | File::READ);
+    File* fp = File::Create(sourceCode.vertexProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
         uint32 fileSize = fp->GetSize();
@@ -171,14 +170,14 @@ ShaderSourceCode GetSourceCode(const FastName& name)
 }
 
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
-{    
+{
     DVASSERT(initialized);
 
     LockGuard<Mutex> guard(shaderCacheMutex);
 
     /*key*/
     Vector<int32> key;
-    BuildFlagsKey(name, defines, key);    
+    BuildFlagsKey(name, defines, key);
 
     auto descriptorIt = shaderDescriptors.find(key);
     if (descriptorIt != shaderDescriptors.end())
@@ -192,7 +191,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     for (auto& it : defines)
     {
         progDefines.push_back(String(it.first.c_str()));
-        progDefines.push_back(DAVA::Format("%d", it.second));                
+        progDefines.push_back(DAVA::Format("%d", it.second));
         resName += Format("%s = %d, ", it.first.c_str(), it.second);
     }
 
@@ -201,11 +200,11 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
     rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
     vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
-    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);    
+    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
     //vSource.Dump();
-    //fSource.Dump();    
-    
-    FastName vProgUid, fProgUid;    
+    //fSource.Dump();
+
+    FastName vProgUid, fProgUid;
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
 
@@ -213,7 +212,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource.SourceCode());
 
     //ShaderDescr
-    rhi::PipelineState::Descriptor  psDesc;
+    rhi::PipelineState::Descriptor psDesc;
     psDesc.vprogUid = vProgUid;
     psDesc.fprogUid = fProgUid;
     psDesc.vertexLayout = vSource.ShaderVertexLayout();
@@ -289,7 +288,5 @@ void RelaoadShaders()
         }
     }
 }
-
 }
 };
-

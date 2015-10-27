@@ -32,41 +32,35 @@
 
 namespace rhi
 {
-
 //------------------------------------------------------------------------------
 
-void
-RingBufferMetal::Initialize( unsigned sz )
+void RingBufferMetal::Initialize(unsigned sz)
 {
     uid = [_Metal_Device newBufferWithLength:sz options:MTLResourceOptionCPUCacheModeDefault];
-//    uid = [_Metal_Device newBufferWithLength:sz options:MTLCPUCacheModeWriteCombined];
+    //    uid = [_Metal_Device newBufferWithLength:sz options:MTLCPUCacheModeWriteCombined];
 
-    buf.Initialize( uid.contents, uid.length );
+    buf.Initialize(uid.contents, uid.length);
 }
-
 
 //------------------------------------------------------------------------------
 
-void
-RingBufferMetal::Uninitialize()
+void RingBufferMetal::Uninitialize()
 {
 }
-
 
 //------------------------------------------------------------------------------
 
 float*
-RingBufferMetal::Alloc( unsigned cnt, unsigned* offset )
+RingBufferMetal::Alloc(unsigned cnt, unsigned* offset)
 {
-    float*      ptr = buf.Alloc( cnt, 256 ); // since MTL-buf offset must be aligned to 256
-    unsigned    off = (uint8*)ptr - (uint8*)(uid.contents);
+    float* ptr = buf.Alloc(cnt, 256); // since MTL-buf offset must be aligned to 256
+    unsigned off = (uint8*)ptr - (uint8*)(uid.contents);
 
-    if( offset )
+    if (offset)
         *offset = off;
 
     return ptr;
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -76,16 +70,12 @@ RingBufferMetal::BufferUID() const
     return uid;
 }
 
-
 //------------------------------------------------------------------------------
 
 unsigned
-RingBufferMetal::Offset( void* ptr ) const
+RingBufferMetal::Offset(void* ptr) const
 {
     return (uint8*)ptr - (uint8*)(uid.contents);
 }
 
-
-
-
-} // namespace rhi 
+} // namespace rhi

@@ -126,7 +126,7 @@ void FoliageSystem::Process(float32 timeElapsed)
         const Vector4& layerAnimationDrag = vegetationRO->GetLayerAnimationDragCoefficient();
         
         Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator endIt = updatableCells.end();
-        for(Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator it = updatableCells.begin(); it != endIt; ++it)
+        for (Set<AbstractQuadTreeNode<VegetationSpatialData>*>::iterator it = updatableCells.begin(); it != endIt; ++it)
         {
             AbstractQuadTreeNode<VegetationSpatialData>* cell = *it;
             
@@ -175,9 +175,9 @@ void FoliageSystem::Process(float32 timeElapsed)
     
 void FoliageSystem::SyncFoliageWithLandscape()
 {
-// CRAP: until issue with DX11 11.0 & 4444-textures resolved
-if( rhi::HostApi() == rhi::RHI_DX11 )
-    return;
+    // CRAP: until issue with DX11 11.0 & 4444-textures resolved
+    if (rhi::HostApi() == rhi::RHI_DX11)
+        return;
 
     if(landscapeEntity && foliageEntity)
     {

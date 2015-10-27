@@ -65,10 +65,10 @@ protected:
 class ModifyCustomColorsCommand: public Command2
 {
 public:
-	ModifyCustomColorsCommand(Image* originalImage, Image * currentImage,
-							  CustomColorsProxy* customColorsProxy,
-							  const Rect& updatedRect);
-	~ModifyCustomColorsCommand();
+    ModifyCustomColorsCommand(Image* originalImage, Image* currentImage,
+                              CustomColorsProxy* customColorsProxy,
+                              const Rect& updatedRect);
+    ~ModifyCustomColorsCommand();
 
 	virtual void Undo();
 	virtual void Redo();
@@ -80,9 +80,9 @@ protected:
 	Image* redoImage;
 	Rect updatedRect;
 
-    Texture * texture;
-    
-	void ApplyImage(Image* image);
+    Texture* texture;
+
+    void ApplyImage(Image* image);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__) */

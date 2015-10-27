@@ -229,7 +229,7 @@ private:
 	//int32 staticMeshIndexOffset;
 	int32 animatedMeshIndexOffset;
 	int32 cameraIndexOffset;
-  
+
     Vector<NMaterial*> materials;
     Vector<StaticMesh*> staticMeshes;
     Vector<AnimatedMesh*> animatedMeshes;

@@ -144,7 +144,6 @@ private:
 	DAVA::Entity *lastSelection;
 
 	ST_PivotPoint curPivotPoint;
-		
 };
 
 

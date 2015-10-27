@@ -367,8 +367,8 @@ bool Frustum::IsInside(const Vector3 & point, const float32 radius) const
 	return true;    
 }
 
-// 
-void Frustum::DebugDraw(RenderHelper * drawer)
+//
+void Frustum::DebugDraw(RenderHelper* drawer)
 {
 	Vector3 p[50];
 
@@ -415,7 +415,7 @@ void Frustum::DebugDraw(RenderHelper * drawer)
     drawer->DrawLine(p[1], p[2], Color::White);
     drawer->DrawLine(p[2], p[3], Color::White);
     drawer->DrawLine(p[3], p[0], Color::White);
-	
+
     drawer->DrawLine(p[4], p[5], Color::White);
     drawer->DrawLine(p[5], p[6], Color::White);
     drawer->DrawLine(p[6], p[7], Color::White);

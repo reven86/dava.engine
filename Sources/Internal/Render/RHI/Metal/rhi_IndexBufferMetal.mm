@@ -32,10 +32,9 @@
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
-    using DAVA::Logger;
+using DAVA::Logger;
 
     #include "_metal.h"
-
 
 namespace rhi
 {
@@ -45,142 +44,129 @@ struct
 IndexBufferMetal_t
 {
 public:
-                    IndexBufferMetal_t()
-                      : size(0),
-                        data(0),
-                        uid(nil)
-                    {}
+    IndexBufferMetal_t()
+        : size(0)
+        , data(0)
+        , uid(nil)
+    {
+    }
 
-
-    unsigned        size;
-    void*           data;
-    id<MTLBuffer>   uid;
-    MTLIndexType    type;
+    unsigned size;
+    void* data;
+    id<MTLBuffer> uid;
+    MTLIndexType type;
 };
 
-typedef ResourcePool<IndexBufferMetal_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,false>    IndexBufferMetalPool;
-RHI_IMPL_POOL(IndexBufferMetal_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,false);
-
+typedef ResourcePool<IndexBufferMetal_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, false> IndexBufferMetalPool;
+RHI_IMPL_POOL(IndexBufferMetal_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, false);
 
 //==============================================================================
 
 static Handle
-metal_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
+metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 {
-    Handle          handle  = InvalidHandle;
-    id<MTLBuffer>   uid     = (desc.initialData)
-                              ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault]
-                              : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
+    Handle handle = InvalidHandle;
+    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
 
-    if( uid )
+    if (uid)
     {
         handle = IndexBufferMetalPool::Alloc();
-        IndexBufferMetal_t*    ib = IndexBufferMetalPool::Get( handle );
+        IndexBufferMetal_t* ib = IndexBufferMetalPool::Get(handle);
 
         ib->data = [uid contents];
         ib->size = desc.size;
-        ib->uid  = uid;
-        ib->type = (desc.indexSize == INDEX_SIZE_32BIT)  ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
+        ib->uid = uid;
+        ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
     }
 
     return handle;
 }
 
-
 //------------------------------------------------------------------------------
 
 static void
-metal_IndexBuffer_Delete( Handle ib )
+metal_IndexBuffer_Delete(Handle ib)
 {
-    IndexBufferMetal_t*    self = IndexBufferMetalPool::Get( ib );
+    IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
 
-    if( self )
+    if (self)
     {
-        IndexBufferMetalPool::Free( ib );
+        IndexBufferMetalPool::Free(ib);
     }
 }
 
-
 //------------------------------------------------------------------------------
-    
-static bool
-metal_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned size )
-{
-    bool                success = false;
-    IndexBufferMetal_t* self    = IndexBufferMetalPool::Get( ib );
 
-    if( offset+size <= self->size )
+static bool
+metal_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned size)
+{
+    bool success = false;
+    IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
+
+    if (offset + size <= self->size)
     {
-        memcpy( ((uint8*)self->data)+offset, data, size );
+        memcpy(((uint8*)self->data) + offset, data, size);
         success = true;
     }
 
     return success;
 }
 
-
 //------------------------------------------------------------------------------
 
 static void*
-metal_IndexBuffer_Map( Handle ib, unsigned offset, unsigned size )
+metal_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 {
-    IndexBufferMetal_t* self = IndexBufferMetalPool::Get( ib );
+    IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
 
     DVASSERT(self->data);
-    
-    return (offset+size <= self->size)  ? ((uint8*)self->data)+offset  : 0;
-}
 
+    return (offset + size <= self->size) ? ((uint8*)self->data) + offset : 0;
+}
 
 //------------------------------------------------------------------------------
 
 static void
-metal_IndexBuffer_Unmap( Handle ib )
+metal_IndexBuffer_Unmap(Handle ib)
 {
     // do nothing
 }
-
 
 //------------------------------------------------------------------------------
 
 namespace IndexBufferMetal
 {
-
-void
-Init( uint32 maxCount )
+void Init(uint32 maxCount)
 {
-    IndexBufferMetalPool::Reserve( maxCount );
+    IndexBufferMetalPool::Reserve(maxCount);
 }
 
-void
-SetupDispatch( Dispatch* dispatch )
+void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_IndexBuffer_Create  = &metal_IndexBuffer_Create;
-    dispatch->impl_IndexBuffer_Delete  = &metal_IndexBuffer_Delete;
-    dispatch->impl_IndexBuffer_Update  = &metal_IndexBuffer_Update;
-    dispatch->impl_IndexBuffer_Map     = &metal_IndexBuffer_Map;
-    dispatch->impl_IndexBuffer_Unmap   = &metal_IndexBuffer_Unmap;
+    dispatch->impl_IndexBuffer_Create = &metal_IndexBuffer_Create;
+    dispatch->impl_IndexBuffer_Delete = &metal_IndexBuffer_Delete;
+    dispatch->impl_IndexBuffer_Update = &metal_IndexBuffer_Update;
+    dispatch->impl_IndexBuffer_Map = &metal_IndexBuffer_Map;
+    dispatch->impl_IndexBuffer_Unmap = &metal_IndexBuffer_Unmap;
 }
-    
-id<MTLBuffer> 
-GetBuffer( Handle ib )
-{
-    IndexBufferMetal_t* self = IndexBufferMetalPool::Get( ib );
 
-    return (self)  ? self->uid  : nil;
+id<MTLBuffer>
+GetBuffer(Handle ib)
+{
+    IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
+
+    return (self) ? self->uid : nil;
 }
 
 MTLIndexType
-GetType( Handle ib )
+GetType(Handle ib)
 {
-    IndexBufferMetal_t* self = IndexBufferMetalPool::Get( ib );
-    
+    IndexBufferMetal_t* self = IndexBufferMetalPool::Get(ib);
+
     return self->type;
 }
-
 
 } // namespace IndexBufferGLES
 
 //==============================================================================
 } // namespace rhi
-

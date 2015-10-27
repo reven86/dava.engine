@@ -35,36 +35,30 @@
     #endif    
     #include <windows.h>
 
-    #pragma warning( disable: 7 9 193 271 304 791 )
+    #pragma warning(disable : 7 9 193 271 304 791)
     #include <d3d9.h>
 
-
-
-const char* D3D9ErrorText( HRESULT hr );
+const char* D3D9ErrorText(HRESULT hr);
 
 namespace rhi
 {
 struct InitParam;
 
+D3DFORMAT DX9_TextureFormat(TextureFormat format);
 
-D3DFORMAT           DX9_TextureFormat( TextureFormat format );
+void InitializeRenderThreadDX9(uint32 frameCount);
+void UninitializeRenderThreadDX9();
 
-void                InitializeRenderThreadDX9( uint32 frameCount );
-void                UninitializeRenderThreadDX9();
+void AcquireDevice();
+void ReleaseDevice();
 
+extern IDirect3D9* _D3D9;
+extern IDirect3DDevice9* _D3D9_Device;
+extern unsigned _D3D9_Adapter;
+extern IDirect3DSurface9* _D3D9_BackBuf;
+extern IDirect3DSurface9* _D3D9_DepthBuf;
 
-void                AcquireDevice();
-void                ReleaseDevice();
-
-
-extern IDirect3D9*              _D3D9;
-extern IDirect3DDevice9*        _D3D9_Device;
-extern unsigned                 _D3D9_Adapter;
-extern IDirect3DSurface9*       _D3D9_BackBuf;
-extern IDirect3DSurface9*       _D3D9_DepthBuf;
-
-extern InitParam                _DX9_InitParam;
-extern D3DPRESENT_PARAMETERS    _DX9_PresentParam;
+extern InitParam _DX9_InitParam;
+extern D3DPRESENT_PARAMETERS _DX9_PresentParam;
 
 } // namespace rhi
-
