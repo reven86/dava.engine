@@ -30,9 +30,6 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#include <GLES2/gl2.h>
-
 #include <Iphlpapi.h>
 #include <winsock2.h>
 
@@ -312,53 +309,7 @@ void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 
 eGPUFamily DeviceInfoPrivate::GPUFamily()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-        eGPUFamily gpuFamily(GPU_INVALID);
-    const GLubyte* rendererTemp = glGetString(GL_RENDERER);
-    if (nullptr == rendererTemp)
-    {
-        DVASSERT(false && "GL not initialized");
-        return gpuFamily;
-    }
-    String renderer((const char8 *)rendererTemp);
-    std::transform(renderer.begin(), renderer.end(), renderer.begin(), ::tolower);
-    if (renderer.find("tegra") != String::npos)
-    {
-        gpuFamily = GPU_TEGRA;
-    }
-    else if (renderer.find("powervr") != String::npos)
-    {
-        gpuFamily = GPU_POWERVR_ANDROID;
-    }
-    else if (renderer.find("adreno") != String::npos)
-    {
-        gpuFamily = GPU_ADRENO;
-    }
-    else if (renderer.find("mali") != String::npos)
-    {
-        gpuFamily = GPU_MALI;
-    }
-
-    if (gpuFamily == GPU_INVALID)
-    {
-        const GLubyte* extensionsTemp = glGetString(GL_EXTENSIONS);
-        if (nullptr == extensionsTemp)
-        {
-            DVASSERT(false && "GL not initialized");
-            return gpuFamily;
-        }
-        String extensions((const char8 *)extensionsTemp);
-
-        if (extensions.find("GL_IMG_texture_compression_pvrtc") != String::npos)
-            gpuFamily = GPU_POWERVR_ANDROID;
-        else if (extensions.find("GL_NV_draw_texture") >= 0)
-            gpuFamily = GPU_TEGRA;
-        else if (extensions.find("GL_AMD_compressed_ATC_texture") != String::npos)
-            gpuFamily = GPU_ADRENO;
-        else if (extensions.find("GL_OES_compressed_ETC1_RGB8_texture") != String::npos)
-            gpuFamily = GPU_MALI;
-    }
-    return gpuFamily;
+    return GPU_DX11;
 }
 
 DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
