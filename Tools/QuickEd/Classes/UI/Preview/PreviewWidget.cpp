@@ -109,13 +109,17 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     davaGLWidget->addAction(selectAllAction);
 
     QAction* focusNextChildAction = new QAction(tr("Focus next child"), this);
-    focusNextChildAction->setShortcut(QKeySequence::NextChild);
+    focusNextChildAction->setShortcut(Qt::Key_Tab);
     focusNextChildAction->setShortcutContext(Qt::WindowShortcut);
     connect(focusNextChildAction, &QAction::triggered, this, &PreviewWidget::FocusNextChild);
     davaGLWidget->addAction(focusNextChildAction);
 
     QAction* focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
-    focusPreviousChildAction->setShortcut(QKeySequence::PreviousChild);
+#if defined Q_OS_WIN
+    focusPreviousChildAction->setShortcut(Qt::Key_Backtab);
+#elif defined Q_OS_MAC
+    focusPreviousChildAction->setShortcut(Qt::ShiftModifier + Qt::Key_Tab);
+#endif //Q_OS_WIN Q_OS_MAC
     focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
     connect(focusPreviousChildAction, &QAction::triggered, this, &PreviewWidget::FocusPreviousChild);
     davaGLWidget->addAction(focusPreviousChildAction);

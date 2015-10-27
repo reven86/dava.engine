@@ -36,6 +36,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
 
 using namespace DAVA;
 
@@ -45,6 +46,8 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     systemManager->GetPackage()->AddListener(this);
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
     systemManager->SelectAllControls.Connect(this, &SelectionSystem::SelectAllControls);
+    systemManager->FocusNextChild.Connect(this, &SelectionSystem::FocusNextChild);
+    systemManager->FocusPreviousChild.Connect(this, &SelectionSystem::FocusPreviousChild);
 }
 
 SelectionSystem::~SelectionSystem()
@@ -84,15 +87,6 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
         mousePressed = false;
         return false;
 
-    case UIEvent::PHASE_KEYCHAR:
-    {
-        if (currentInput->tid == DVKEY_TAB)
-        {
-            SetSelection(SelectedNodes(), selectionContainer.selectedNodes);
-            //TODO: select next control
-            return true;
-        }
-    }
     default:
         return false;
     }
@@ -135,6 +129,45 @@ void SelectionSystem::SelectAllControls()
     SelectedNodes selected;
     systemManager->CollectControlNodes(std::inserter(selected, selected.end()), [](const UIControl*) { return true; });
     SetSelection(selected, SelectedNodes());
+}
+
+void SelectionSystem::FocusNextChild()
+{
+    FocusToChild(true);
+}
+
+void SelectionSystem::FocusPreviousChild()
+{
+    FocusToChild(false);
+}
+
+void SelectionSystem::FocusToChild(bool next)
+{
+    PackageBaseNode* startNode = nullptr;
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        startNode = *selectionContainer.selectedNodes.rbegin();
+    }
+    PackageBaseNode* nextNode = nullptr;
+    Vector<PackageBaseNode*> allNodes;
+    systemManager->CollectControlNodes(std::back_inserter(allNodes  ), [](const UIControl*) { return true; });
+    if(allNodes.empty())
+    {
+        return;
+    }
+    auto findIt = std::find(allNodes.begin(), allNodes.end(), startNode);
+    if(next)
+    {
+        nextNode = findIt == allNodes.end() || ++findIt == allNodes.end() ? *allNodes.begin() : *findIt;
+    }
+    else
+    {
+        nextNode = findIt == allNodes.end() || findIt == allNodes.begin() ? *(allNodes.end() - 1) : *(--findIt);
+    }
+
+    SelectedNodes newSelectedNodes;
+    newSelectedNodes.insert(nextNode);
+    SetSelection(newSelectedNodes, selectionContainer.selectedNodes);
 }
 
 bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eButtonID buttonID)

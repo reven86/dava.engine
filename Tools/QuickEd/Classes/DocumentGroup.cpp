@@ -170,7 +170,15 @@ void DocumentGroup::FocusNextChild()
 {
     if (active != nullptr)
     {
-        active->GetSystemManager()->
+        active->GetSystemManager()->FocusNextChild.Emit();
+    }
+}
+
+void DocumentGroup::FocusPreviousChild()
+{
+    if(active != nullptr)
+    {
+        active->GetSystemManager()->FocusPreviousChild.Emit();
     }
 }
 
