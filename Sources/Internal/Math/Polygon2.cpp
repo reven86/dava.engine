@@ -30,7 +30,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Collision/Collisions.h"
-#include "Render/RenderHelper.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -51,9 +51,9 @@ bool Polygon2::IsPointInside(const Vector2 & pt) const
 	If you'll call it inside update or mouse or keyboard input functions you can not get any output.
 */	
 //#define DEBUG_DRAW_INTERSECTIONS
+
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-    RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
-    RenderHelper::DrawLine(ray0, ray1);
+    RenderSystem2D::Instance()->DrawLine(ray0, ray1, Color(0.0f, 1.0f, 0.0f, 1.0f));
 #endif 
 	
 	for (int i = 0; i < pointCount; ++i)
@@ -67,14 +67,12 @@ bool Polygon2::IsPointInside(const Vector2 & pt) const
 		{
 			
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-            RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-            RenderHelper::DrawPoint(result, 5.0f);
+            RenderSystem2D::Instance()->DrawCircle(result, 5.0f, Color(1.0f, 1.0f, 1.0f, 1.0f));
 #endif 
 
 			intersectionsCount++;
 		}
 	}
-	
 	
 #undef DEBUG_DRAW_INTERSECTIONS
 	
