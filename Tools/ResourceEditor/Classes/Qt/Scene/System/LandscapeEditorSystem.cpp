@@ -37,15 +37,11 @@ using namespace DAVA;
 
 LandscapeEditorSystem::LandscapeEditorSystem(Scene* scene, const DAVA::FilePath & cursorPathname)
     : SceneSystem(scene)
-    , enabled(false)
-    , cursorSize(0)
     , cursorPosition(-100.f, -100.f)
     , prevCursorPos(-1.f, -1.f)
-    , isIntersectsLandscape(false)
-    , landscapeSize(0)
 {
     cursorTexture = Texture::CreateFromFile( cursorPathname );
-    cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    cursorTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
 
     collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
 	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
@@ -83,13 +79,13 @@ void LandscapeEditorSystem::UpdateCursorPosition()
 		landPos.y = (float32)((int32)landPos.y);
 		
 		const AABBox3 & box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-		
-		cursorPosition.x = (landPos.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (landPos.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = landscapeSize - 1 - (int32)cursorPosition.y;
-        
-		drawSystem->SetCursorPosition(cursorPosition);
+
+        cursorPosition.x = (landPos.x - box.min.x) / (box.max.x - box.min.x);
+        cursorPosition.y = (landPos.y - box.min.y) / (box.max.y - box.min.y);
+        cursorPosition.x = cursorPosition.x;
+        cursorPosition.y = 1.f - cursorPosition.y;
+
+        drawSystem->SetCursorPosition(cursorPosition);
 	}
 	else
 	{

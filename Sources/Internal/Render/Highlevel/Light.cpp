@@ -28,7 +28,6 @@
 
 
 #include "Render/Highlevel/Light.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/RenderSystem.h"

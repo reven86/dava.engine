@@ -30,7 +30,6 @@
 #include "Scene/System/HoodSystem/HoodObject.h"
 #include "Scene/System/TextDrawSystem.h"
 
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 HoodObject::HoodObject(DAVA::float32 bs)
@@ -116,30 +115,27 @@ DAVA::Rect HoodObject::DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObje
 
 	// x
 	pos2d = textDrawSystem->ToPos2d(GetAxisTextPos(x));
-	textDrawSystem->DrawText(pos2d, "X", colorX, TextDrawSystem::Center);
-	//DAVA::RenderHelper::Instance()->DrawPoint(GetAxisTextPos(x), 2.0f);
+    textDrawSystem->DrawText(pos2d, "X", colorX, TextDrawSystem::Align::Center);
 
-	if(pos2d.x > maxX) maxX = pos2d.x;
+    if(pos2d.x > maxX) maxX = pos2d.x;
 	if(pos2d.x < minX) minX = pos2d.x;
 	if(pos2d.y > maxY) maxY = pos2d.y;
 	if(pos2d.y < minY) minY = pos2d.y;
 
 	// y
 	pos2d = textDrawSystem->ToPos2d(GetAxisTextPos(y));
-	textDrawSystem->DrawText(pos2d, "Y", colorY, TextDrawSystem::Center);
-	//DAVA::RenderHelper::Instance()->DrawPoint(GetAxisTextPos(y), 2.0f);
+    textDrawSystem->DrawText(pos2d, "Y", colorY, TextDrawSystem::Align::Center);
 
-	if(pos2d.x > maxX) maxX = pos2d.x;
+    if(pos2d.x > maxX) maxX = pos2d.x;
 	if(pos2d.x < minX) minX = pos2d.x;
 	if(pos2d.y > maxY) maxY = pos2d.y;
 	if(pos2d.y < minY) minY = pos2d.y;
 
 	// z
 	pos2d = textDrawSystem->ToPos2d(GetAxisTextPos(z));
-	textDrawSystem->DrawText(pos2d, "Z", colorZ, TextDrawSystem::Center);
-	//DAVA::RenderHelper::Instance()->DrawPoint(GetAxisTextPos(z), 2.0f);
+    textDrawSystem->DrawText(pos2d, "Z", colorZ, TextDrawSystem::Align::Center);
 
-	if(pos2d.x > maxX) maxX = pos2d.x;
+    if(pos2d.x > maxX) maxX = pos2d.x;
 	if(pos2d.x < minX) minX = pos2d.x;
 	if(pos2d.y > maxY) maxY = pos2d.y;
 	if(pos2d.y < minY) minY = pos2d.y;

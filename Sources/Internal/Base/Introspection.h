@@ -218,15 +218,22 @@ namespace DAVA
 		friend class InspMemberDynamic;
 
 	public:
-		InspInfoDynamic() : memberDynamic(nullptr) {};
+        struct DynamicData
+        {
+            void* object = nullptr;
+            std::shared_ptr<void> data;
+        };
+
+		InspInfoDynamic() : memberDynamic(NULL) {};
 		virtual ~InspInfoDynamic() {};
 
-		virtual Vector<FastName> MembersList(void *object) const = 0;
-		virtual InspDesc MemberDesc(void *object, const FastName &member) const = 0;
-		virtual int MemberFlags(void *object, const FastName &member) const = 0;
-		virtual VariantType MemberAliasGet(void *object, const FastName &member) const { return VariantType(); };
-		virtual VariantType MemberValueGet(void *object, const FastName &member) const = 0;
-		virtual void MemberValueSet(void *object, const FastName &member, const VariantType &value) = 0;
+        virtual DynamicData Prepare(void *object, int filter = 0) const = 0;
+        virtual Vector<FastName> MembersList(const DynamicData& ddata) const = 0;
+        virtual InspDesc MemberDesc(const DynamicData& ddata, const FastName &member) const = 0;
+        virtual int MemberFlags(const DynamicData& ddata, const FastName &member) const = 0;
+        virtual VariantType MemberAliasGet(const DynamicData& ddata, const FastName &member) const { return VariantType(); };
+        virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName &member) const = 0;
+        virtual void MemberValueSet(const DynamicData& ddata, const FastName &member, const VariantType &value) = 0;
 
 		const InspMemberDynamic* GetMember() const { return memberDynamic; };
 

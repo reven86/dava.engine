@@ -62,7 +62,7 @@ public:
 
     const CachedItemValue& GetValue() const;
 
-    void Fetch(const FilePath& folder);
+    bool Fetch(const FilePath& folder);
     void Free();
 
 private:

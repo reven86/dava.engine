@@ -342,7 +342,8 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             // connA2 wont be automatically tracked 
             // we should add it manually
             testSignal.Track(connA2, objA);
-            testSignal.Emit(20);
+            int emitValue_1 = 20;
+            testSignal.Emit(emitValue_1);
             TEST_VERIFY(objA->v1 == 20);
             TEST_VERIFY(objA->v2 == 20);
 
@@ -350,7 +351,8 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             // if that object is derived by TrackedObject it will be
             // automatically disconnected
             delete objA;
-            testSignal.Emit(10); // <-- this shouldn't crash
+            const int emitValue_2 = 10;
+            testSignal.Emit(emitValue_2); // <-- this shouldn't crash
         }
 
         {

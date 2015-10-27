@@ -33,7 +33,10 @@
 #pragma warning(disable:4702)
 #endif // _WIN32
 
+#if !defined(NOMINMAX)
 #define NOMINMAX /**< Rid us of the default versions of MINMAX. */
+#endif
+
 #ifdef max
 #undef max
 #endif // max

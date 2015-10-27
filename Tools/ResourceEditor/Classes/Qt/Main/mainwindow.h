@@ -148,7 +148,6 @@ public slots:
     void OnImageSplitter();
 	
 	void OnAddLandscape();
-    void OnAddSkybox();
     void OnAddVegetation();
 	void OnLightDialog();
 	void OnCameraDialog();
@@ -166,14 +165,11 @@ public slots:
 	void OnShowSettings();
 	void OnOpenHelp();
 
-	void OnShadowBlendModeWillShow();
-	void OnShadowBlendModeAlpha();
-	void OnShadowBlendModeMultiply();
-
 	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
+    void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
 
-	void OnConvertModifiedTextures();
+    void OnConvertModifiedTextures();
     
 	void OnCloseTabRequest(int tabIndex, Request *closeRequest);
 
@@ -190,7 +186,6 @@ public slots:
 	void OnTilemaskEditor();
 	void OnVisibilityTool();
 	void OnNotPassableTerrain();
-    void OnGrasEditor();
     void OnWayEditor();
 	
 	void OnObjectsTypeChanged(QAction *action);
@@ -211,7 +206,9 @@ public slots:
     void OnBatchProcessScene();
     
     void OnSnapCameraToLandscape(bool);
-    
+
+    void SetupTitle();
+
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);
@@ -221,7 +218,6 @@ protected:
 	void SetupStatusBar();
 	void SetupDocks();
 	void SetupActions();
-	void SetupTitle();
 	void SetupShortCuts();
 
     void StartGlobalInvalidateTimer();
@@ -287,7 +283,6 @@ private:
 	void LoadUndoRedoState(SceneEditor2 *scene);
 	void LoadModificationState(SceneEditor2 *scene);
 	void LoadEditorLightState(SceneEditor2 *scene);
-	void LoadShadowBlendModeState(SceneEditor2* scene);
 	void LoadGPUFormat();
 	void LoadLandscapeEditorState(SceneEditor2* scene);
 	void LoadObjectTypes(SceneEditor2 *scene);

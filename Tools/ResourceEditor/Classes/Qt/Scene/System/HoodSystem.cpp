@@ -53,8 +53,8 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	collConfiguration = new btDefaultCollisionConfiguration();
 	collDispatcher = new btCollisionDispatcher(collConfiguration);
 	collBroadphase = new btAxisSweep3(worldMin,worldMax);
-	collDebugDraw = new SceneCollisionDebugDrawer();
-	collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+    collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
+    collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	collWorld = new btCollisionWorld(collDispatcher, collBroadphase, collConfiguration);
 	collWorld->setDebugDrawer(collDebugDraw);
 
@@ -340,7 +340,7 @@ void HoodSystem::Input(DAVA::UIEvent *event)
 
 void HoodSystem::Draw()
 {
-	if(NULL != curHood && IsVisible())
+    if(NULL != curHood && IsVisible())
 	{
 		TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
 
@@ -357,20 +357,18 @@ void HoodSystem::Draw()
 				}
 			}
 
-			curHood->Draw(showAsSelected, moseOverAxis, textDrawSys);
+            curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
 
-			// zero pos point
-            RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size) &Matrix4::IDENTITY);
-			DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-			DAVA::RenderHelper::Instance()->DrawPoint(GetPosition(), 2.0f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
-			
-			// debug draw axis collision word
+            // zero pos point
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
+
+            // debug draw axis collision word
 			//collWorld->debugDrawWorld();
 		}
 		else
 		{
-			normalHood.Draw(curAxis, ST_AXIS_NONE, textDrawSys);
-		}
+            normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
+        }
 	}
 }
 

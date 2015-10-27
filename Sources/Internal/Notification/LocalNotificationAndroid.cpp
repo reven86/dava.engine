@@ -118,7 +118,7 @@ void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, 
 
     notifyDelayed(jstrNotificationUid, jStrTitle, jStrText, delaySeconds, useSound);
 
-	env->DeleteLocalRef(jstrNotificationUid);
+    env->DeleteLocalRef(jstrNotificationUid);
 	env->DeleteLocalRef(jStrTitle);
 	env->DeleteLocalRef(jStrText);
 }
