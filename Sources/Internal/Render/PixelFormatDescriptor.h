@@ -47,12 +47,9 @@ namespace DAVA
 class PixelFormatDescriptor
 {
 public:
-	
-	PixelFormatDescriptor();
+    static void SetHardwareSupportedFormats();
 
-	static void InitializePixelFormatDescriptors();
-
-	/**
+    /**
         \brief Return size of pixel format in bits 
         \returns size in bits, for example for FORMAT_RGBA8888 function will return 32.
      */
@@ -68,19 +65,16 @@ public:
 
     static const PixelFormatDescriptor& GetPixelFormatDescriptor(const PixelFormat formatID);
 
-protected:
-    static void SetPixelDescription(const PixelFormat formatID, const FastName& name, uint8 size, rhi::TextureFormat format);
-
-protected:
-	static PixelFormatDescriptor pixelDescriptors[FORMAT_COUNT];
+private:
+    static UnorderedMap<PixelFormat, PixelFormatDescriptor> pixelDescriptors;
 
 public:
-    rhi::TextureFormat format;
+    static rhi::TextureFormat TEXTURE_FORMAT_INVALID;
 
     PixelFormat formatID;
 	FastName name;
 	uint8 pixelSize;
-
+    rhi::TextureFormat format;
     bool isHardwareSupported;
 };
 
