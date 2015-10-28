@@ -52,8 +52,5 @@ DavaRenderer::~DavaRenderer()
 
 void DavaRenderer::paint()
 {
-    if (!DAVA::DVAssertMessage::IsMessageDisplayed())
-    {
-        DAVA::QtLayer::Instance()->ProcessFrame();
-    }
+    DAVA::QtLayer::Instance()->ProcessFrame();
 }
