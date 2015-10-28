@@ -157,7 +157,7 @@ public:
 		\brief Get list of available display modes supported by hardware
 		\param[out] availableModes list of available modes that is supported by hw
 	*/
-	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
+    virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
 	
 	/**
 		\brief Find mode that matches best to the mode you've requested
@@ -186,7 +186,7 @@ public:
     virtual float32 GetScreenScaleFactor() const;
 
     virtual Core::eScreenOrientation GetScreenOrientation();
-	
+
     virtual uint32 GetScreenDPI();
 	
 	/*

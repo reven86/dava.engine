@@ -101,15 +101,15 @@ private:
     bool isTouchPresent = false;
     bool isMobileMode = false;
     Map<NativeHIDType, uint16> hids =
-    { 
-        { UNKNOWN, 0 },
-        { POINTER, 0 },
-        { MOUSE, 0 },
-        { JOYSTICK, 0 },
-        { GAMEPAD, 0 },
-        { KEYBOARD, 0 },
-        { KEYPAD, 0 },
-        { SYSTEM_CONTROL, 0 }
+    {
+      { UNKNOWN, 0 },
+      { POINTER, 0 },
+      { MOUSE, 0 },
+      { JOYSTICK, 0 },
+      { GAMEPAD, 0 },
+      { KEYBOARD, 0 },
+      { KEYPAD, 0 },
+      { SYSTEM_CONTROL, 0 }
     };
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 

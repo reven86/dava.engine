@@ -68,13 +68,13 @@ void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, 
     data[11] = 0.0f;
 
     //RHI_COMPLETE - update it to zero based clip range
-    
+
     data[12] = tx;
     data[13] = ty;
     data[14] = tz;
     data[15] = 1.0f;
 }
-    
+
 void Matrix4::glFrustum(float32 l, float32 r, float32 b, float32 t, float32 n, float32 f, bool zeroBaseClipRange)
 {
     float32 r_l = r - l;
@@ -95,15 +95,15 @@ void Matrix4::glFrustum(float32 l, float32 r, float32 b, float32 t, float32 n, f
     data[6] = 0.0f;
     if (zeroBaseClipRange)
     {
-        data[10] = -f / f_n;     
-        data[14] = -f * n / f_n; 
+        data[10] = -f / f_n;
+        data[14] = -f * n / f_n;
     }
     else
     {
         data[10] = -(f + n) / f_n;
         data[14] = -2 * f * n / f_n;
     }
-    
+
     data[3] = 0;
     data[7] = 0;
     data[11] = -1;

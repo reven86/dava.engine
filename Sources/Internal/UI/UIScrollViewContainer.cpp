@@ -77,7 +77,7 @@ void UIScrollViewContainer::SetSize(const Vector2& size)
 
     UIControl* parent = GetParent();
     if (parent)
-	{
+    {
         const Vector2& parentSize = parent->GetSize();
         // We should not allow scrolling when content rect is less than or is equal ScrollView "window"
         enableHorizontalScroll = size.dx > parentSize.dx;
@@ -288,7 +288,7 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
 
         // Change state when scrolling is not active
         if (state != STATE_NONE && !lockTouch && (scrollView->GetHorizontalScroll()->GetCurrentSpeed() == 0) && (scrollView->GetVerticalScroll()->GetCurrentSpeed() == 0))
-		{
+        {
 			state = STATE_NONE;
 		}
 	}

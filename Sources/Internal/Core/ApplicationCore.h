@@ -34,7 +34,6 @@
 
 namespace DAVA 
 {
-
 /**
 	\ingroup core
 	\brief Class that defines high-level application logic. 
@@ -191,7 +190,7 @@ public:
 	virtual bool OnQuit();
 
 protected:
-	/**
+    /**
 		\brief Called immediately after application initialized and all singletons are created. 
 		This function is second initialization function of your application. First initialization function is FrameworkDidLaunched and it actually allow you to set 
 		some important things like your application resolution, set available graphics resources folders and do preliminary initialization.
@@ -217,7 +216,7 @@ protected:
 			}
 		\endcode
 	 */
-	virtual void OnAppStarted() = 0;
+    virtual void OnAppStarted() = 0;
 	/**
 		\brief Called when user requested to quit from application. 
 		You should put all deinitialization in this function. Here you can release all objects. 
@@ -236,7 +235,7 @@ protected:
     /**
 	 \brief Called when application returns to foreground on mobile platforms
 	 */
-	virtual void OnForeground();
+    virtual void OnForeground();
 
     /**
      \brief Called when application goes to background due to device lock on iOS platforms
@@ -262,7 +261,7 @@ protected:
 	 
 		\param[in] timeElapsed time in seconds that passed from the previous frame
 	 */
-	virtual void Update(float32 timeElapsed);
+    virtual void Update(float32 timeElapsed);
 	/**
 		\brief Called when application is ready to draw the frame
 		In this function you can perform draw. Normally you should draw inside your particular screen but in some cases you can utilize this function when you need to draw something that will work on every screen.

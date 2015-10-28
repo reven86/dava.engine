@@ -82,10 +82,10 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
     propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate("*.txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["sprite"] = new ResourceFilePropertyDelegate("*.txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate("*.txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate("*.sc2", "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
-    propertyNameTypeItemDelegates["font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()

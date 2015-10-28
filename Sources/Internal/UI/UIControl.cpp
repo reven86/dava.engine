@@ -2698,53 +2698,49 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     void UIControl::AddClass(const FastName& clazz)
     {
-        if (std::find(classes.begin(), classes.end(), clazz) == classes.end())
+        if (classes.AddClass(clazz))
         {
-            classes.push_back(clazz);
-
             SetStyleSheetDirty();
         }
     }
 
     void UIControl::RemoveClass(const FastName& clazz)
     {
-        auto iter = find(classes.begin(), classes.end(), clazz);
-
-        if (iter != classes.end())
+        if (classes.RemoveClass(clazz))
         {
-            *iter = classes.back();
-            classes.pop_back();
-
             SetStyleSheetDirty();
         }
     }
 
-    bool UIControl::HasClass(const FastName& clazz)
+    bool UIControl::HasClass(const FastName& clazz) const
     {
-        return find(classes.begin(), classes.end(), clazz) != classes.end();
+        return classes.HasClass(clazz);
     }
 
-    String UIControl::GetClassesAsString()
+    void UIControl::SetTaggedClass(const FastName& tag, const FastName& clazz)
     {
-        String result;
-        for (size_t i = 0; i < classes.size(); i++)
+        if (classes.SetTaggedClass(tag, clazz))
         {
-            if (i != 0)
-                result += " ";
-            result += classes[i].c_str();
+            SetStyleSheetDirty();
         }
-        return result;
+    }
+
+    void UIControl::ResetTaggedClass(const FastName& tag)
+    {
+        if (classes.ResetTaggedClass(tag))
+        {
+            SetStyleSheetDirty();
+        }
+    }
+
+    String UIControl::GetClassesAsString() const
+    {
+        return classes.GetClassesAsString();
     }
 
     void UIControl::SetClassesFromString(const String &classesStr)
     {
-        Vector<String> tokens;
-        Split(classesStr, " ", tokens);
-
-        classes.clear();
-        for (String &token : tokens)
-            classes.push_back(FastName(token));
-
+        classes.SetClassesFromString(classesStr);
         SetStyleSheetDirty();
     }
 
