@@ -71,7 +71,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 // not used
 #elif defined(__DAVAENGINE_ANDROID__)
-#   include "Input/AccelerometerAndroid.h"
+#include "Input/AccelerometerAndroid.h"
 #endif //PLATFORMS
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
@@ -84,11 +84,10 @@
 
 
 #include "Debug/Profiler.h"
-#define PROF__FRAME             0
-#define PROF__FRAME_UPDATE      1
-#define PROF__FRAME_DRAW        2
-#define PROF__FRAME_ENDFRAME    3
-
+#define PROF__FRAME 0
+#define PROF__FRAME_UPDATE 1
+#define PROF__FRAME_DRAW 2
+#define PROF__FRAME_ENDFRAME 3
 
 namespace DAVA 
 {
@@ -120,10 +119,10 @@ void Core::CreateSingletons()
     new JobManager();
     new FileSystem();
     FilePath::InitializeBundleName();
-    
+
     FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
-    
+
     new SoundSystem();
 
     if (isConsoleMode)
@@ -133,7 +132,7 @@ void Core::CreateSingletons()
          */
         Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
     }
-    
+
     new LocalizationSystem();
 
     new SystemTimer();
@@ -146,7 +145,7 @@ void Core::CreateSingletons()
     new VersionInfo();
     new ImageSystem();
     new FrameOcclusionQueryManager();
-    
+
     new VirtualCoordinatesSystem();
     new RenderSystem2D();
 
@@ -155,11 +154,11 @@ void Core::CreateSingletons()
 #endif
     
 #if defined __DAVAENGINE_IPHONE__
-    // not used
+// not used
 #elif defined(__DAVAENGINE_ANDROID__)
     new AccelerometerAndroidImpl();
 #endif //#if defined __DAVAENGINE_IPHONE__
-    
+
     new UIScreenManager();
 
     Thread::InitMainThread();
@@ -184,12 +183,12 @@ void Core::CreateSingletons()
 // We do not create RenderManager until we know which version of render manager we want to create
 void Core::CreateRenderer()
 {
-    DVASSERT(options->IsKeyExists("renderer"));    
+    DVASSERT(options->IsKeyExists("renderer"));
     rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
 
-    if( options->IsKeyExists("rhi_threaded_frame_count") )
+    if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
-        rendererParams.threadedRenderEnabled    = true;
+        rendererParams.threadedRenderEnabled = true;
         rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
     }
 
@@ -222,10 +221,10 @@ void Core::ReleaseSingletons()
     AnimationManager::Instance()->Release();
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     Accelerometer::Instance()->Release();
-    //SoundSystem::Instance()->Release();
+//SoundSystem::Instance()->Release();
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     LocalizationSystem::Instance()->Release();
-//  Logger::FrameworkDebug("[Core::Release] successfull");
+    //  Logger::FrameworkDebug("[Core::Release] successfull");
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
@@ -271,7 +270,7 @@ Core::eScreenOrientation Core::GetScreenOrientation()
 {
     return (Core::eScreenOrientation)screenOrientation;
 }
-    
+
 Core::eScreenMode Core::GetScreenMode()
 {
     return eScreenMode::FULLSCREEN;
@@ -283,8 +282,7 @@ bool Core::SetScreenMode(eScreenMode screenMode)
 }
 
 void Core::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
-{   
-
+{
 }
 
 DisplayMode Core::FindBestMode(const DisplayMode & requestedMode)
@@ -297,7 +295,7 @@ DisplayMode Core::FindBestMode(const DisplayMode & requestedMode)
     bestMatchMode.refreshRate = -1;
     for (List<DisplayMode>::iterator it = availableDisplayModes.begin(); it != availableDisplayModes.end(); ++it)
     {
-        DisplayMode & availableMode = *it;
+        DisplayMode& availableMode = *it;
         if ((availableMode.width == requestedMode.width) && (availableMode.height == requestedMode.height))
         {
             // if first mode found replace
@@ -315,20 +313,20 @@ DisplayMode Core::FindBestMode(const DisplayMode & requestedMode)
     {
         int32 minDiffWidth = 0;
         int32 minDiffHeight = 0;
-        float32 requestedAspect = (requestedMode.height>0?(float32)requestedMode.width/(float32)requestedMode.height:1.0f);
+        float32 requestedAspect = (requestedMode.height > 0 ? (float32)requestedMode.width / (float32)requestedMode.height : 1.0f);
         float32 minDiffAspect = 0;
 
         for (List<DisplayMode>::iterator it = availableDisplayModes.begin(); it != availableDisplayModes.end(); ++it)
         {
-            DisplayMode & availableMode = *it;
+            DisplayMode& availableMode = *it;
 
             int32 diffWidth = abs(availableMode.width - requestedMode.width);
             int32 diffHeight = abs(availableMode.height - requestedMode.height);
 
-            float32 availableAspect = (availableMode.height>0?(float32)availableMode.width/(float32)availableMode.height:1.0f);
+            float32 availableAspect = (availableMode.height > 0 ? (float32)availableMode.width / (float32)availableMode.height : 1.0f);
             float32 diffAspect = fabsf(availableAspect - requestedAspect);
 
-//          if (diffWidth >= 0 && diffHeight >= 0)
+            //          if (diffWidth >= 0 && diffHeight >= 0)
             {
                 // if first mode found replace
                 if (bestMatchMode.refreshRate == -1)
@@ -338,9 +336,9 @@ DisplayMode Core::FindBestMode(const DisplayMode & requestedMode)
                     minDiffAspect = diffAspect;
                 }
 
-                if(diffAspect<=(minDiffAspect+0.01f))
+                if (diffAspect <= (minDiffAspect + 0.01f))
                 {
-                    if((diffAspect+0.01f)<minDiffAspect)
+                    if ((diffAspect + 0.01f) < minDiffAspect)
                     {
                         // aspect changed, clear min diff
                         minDiffWidth = diffWidth;
@@ -373,7 +371,7 @@ DisplayMode Core::FindBestMode(const DisplayMode & requestedMode)
         int maxRes = 0;
         for (List<DisplayMode>::iterator it = availableDisplayModes.begin(); it != availableDisplayModes.end(); ++it)
         {
-            DisplayMode & availableMode = *it;
+            DisplayMode& availableMode = *it;
 
             //int32 diffWidth = availableMode.width ;
             //int32 diffHeight = availableMode.height - requestedMode.height;
@@ -397,7 +395,7 @@ void Core::Quit()
     exit(0);
     Logger::FrameworkDebug("[Core::Quit] do not supported by platform implementation of core");
 }
-    
+
 void Core::SetApplicationCore(ApplicationCore * _core)
 {
     core = _core;
@@ -407,16 +405,16 @@ ApplicationCore * Core::GetApplicationCore()
 {
     return core;
 }
-    
+
 void Core::SystemAppStarted()
 {
-Logger::Info("Core::SystemAppStarted");
+    Logger::Info("Core::SystemAppStarted");
     #if PROFILER_ENABLED
     profiler::EnsureInited();
-    NAME_COUNTER(PROF__FRAME,"frame");
-    NAME_COUNTER(PROF__FRAME_UPDATE,"frame-update");
-    NAME_COUNTER(PROF__FRAME_DRAW,"frame-draw");
-    NAME_COUNTER(PROF__FRAME_ENDFRAME,"frame-endframe");
+    NAME_COUNTER(PROF__FRAME, "frame");
+    NAME_COUNTER(PROF__FRAME_UPDATE, "frame-update");
+    NAME_COUNTER(PROF__FRAME_DRAW, "frame-draw");
+    NAME_COUNTER(PROF__FRAME_ENDFRAME, "frame-endframe");
     #endif
 
     if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
@@ -427,23 +425,22 @@ Logger::Info("Core::SystemAppStarted");
          */
     }
 
-
     if (core != nullptr)
     {
-//rhi::ShaderSourceCache::Load( "~doc:/ShaderSource.bin" );
+        //rhi::ShaderSourceCache::Load( "~doc:/ShaderSource.bin" );
         Core::Instance()->CreateRenderer();
         RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
     }
 }
-    
+
 void Core::SystemAppFinished()
 {
     if (core != nullptr)
     {
 //rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
         #if TRACER_ENABLED
-//        profiler::DumpEvents();
+        //        profiler::DumpEvents();
         profiler::SaveEvents("trace.json");
         #endif
         core->OnAppFinished();
@@ -459,7 +456,7 @@ void Core::SystemProcessFrame()
     START_TIMING(PROF__FRAME);
     #endif
 
-    TRACE_BEGIN_EVENT(11,"core","SystemProcessFrame")
+    TRACE_BEGIN_EVENT(11, "core", "SystemProcessFrame")
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;
@@ -468,8 +465,8 @@ void Core::SystemProcessFrame()
     static PFNEGLGETSYSTEMTIMEFREQUENCYNVPROC eglGetSystemTimeFrequencyNV;
     if (!isInit)
     {
-        eglGetSystemTimeNV = (PFNEGLGETSYSTEMTIMENVPROC) eglGetProcAddress("eglGetSystemTimeNV");
-        eglGetSystemTimeFrequencyNV = (PFNEGLGETSYSTEMTIMEFREQUENCYNVPROC) eglGetProcAddress("eglGetSystemTimeFrequencyNV");
+        eglGetSystemTimeNV = (PFNEGLGETSYSTEMTIMENVPROC)eglGetProcAddress("eglGetSystemTimeNV");
+        eglGetSystemTimeFrequencyNV = (PFNEGLGETSYSTEMTIMEFREQUENCYNVPROC)eglGetProcAddress("eglGetSystemTimeFrequencyNV");
         if (!eglGetSystemTimeNV || !eglGetSystemTimeFrequencyNV)
         {
             DVASSERT(!"Error export eglGetSystemTimeNV, eglGetSystemTimeFrequencyNV");
@@ -491,7 +488,7 @@ void Core::SystemProcessFrame()
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #endif
 
-    if( !core )
+    if (!core)
     {
         #if PROFILER_ENABLED
         profiler::Stop();
@@ -499,7 +496,7 @@ void Core::SystemProcessFrame()
         return;
     }
 
-    if( !isActive )
+    if (!isActive)
     {
         LCP;
         #if PROFILER_ENABLED
@@ -507,13 +504,13 @@ void Core::SystemProcessFrame()
         #endif
         return;
     }
-    
+
     SystemTimer::Instance()->Start();
 
     /**
         Check if device not in lost state first / after that be
     */
-//  if (!Renderer::IsDeviceLost())
+    //  if (!Renderer::IsDeviceLost())
     {
 // #ifdef __DAVAENGINE_DIRECTX9__
 //      if(firstRun)
@@ -537,23 +534,22 @@ void Core::SystemProcessFrame()
         float32 frameDelta = SystemTimer::Instance()->FrameDelta();
         SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
 
-        if(Replay::IsRecord())
+        if (Replay::IsRecord())
         {
             Replay::Instance()->RecordFrame(frameDelta);
         }
-        if(Replay::IsPlayback())
+        if (Replay::IsPlayback())
         {
             UIControlSystem::Instance()->ReplayEvents();
             frameDelta = Replay::Instance()->PlayFrameTime();
-            if(Replay::IsPlayback()) //can be unset in previous string
+            if (Replay::IsPlayback()) //can be unset in previous string
             {
                 SystemTimer::Instance()->SetFrameDelta(frameDelta);
             }
         }
 
-        
         START_TIMING(PROF__FRAME_UPDATE);
-        
+
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
         JobManager::Instance()->Update();
@@ -561,17 +557,17 @@ void Core::SystemProcessFrame()
         core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
         STOP_TIMING(PROF__FRAME_UPDATE);
-        
+
         START_TIMING(PROF__FRAME_DRAW);
-        TRACE_BEGIN_EVENT(11,"core","Draw")
+        TRACE_BEGIN_EVENT(11, "core", "Draw")
         core->Draw();
-        TRACE_END_EVENT(11,"core","Draw")
+        TRACE_END_EVENT(11, "core", "Draw")
         STOP_TIMING(PROF__FRAME_DRAW);
 
         START_TIMING(PROF__FRAME_ENDFRAME);
-        TRACE_BEGIN_EVENT(11,"core","EndFrame")
+        TRACE_BEGIN_EVENT(11, "core", "EndFrame")
         core->EndFrame();
-        TRACE_END_EVENT(11,"core","EndFrame")
+        TRACE_END_EVENT(11, "core", "EndFrame")
         STOP_TIMING(PROF__FRAME_ENDFRAME);
     }
     Stats::Instance()->EndFrame();
@@ -582,17 +578,16 @@ void Core::SystemProcessFrame()
     EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 
-    TRACE_END_EVENT(11,"core","SystemProcessFrame")
+    TRACE_END_EVENT(11, "core", "SystemProcessFrame")
 
     #if PROFILER_ENABLED
-        STOP_TIMING(PROF__FRAME);
-        profiler::Stop();
-        //profiler::Dump();
-        profiler::DumpAverage();
+    STOP_TIMING(PROF__FRAME);
+    profiler::Stop();
+    //profiler::Dump();
+    profiler::DumpAverage();
     #endif
 }
 
-    
 void Core::GoBackground(bool isLock)
 {
     if (core)
@@ -637,7 +632,7 @@ uint32 Core::GetGlobalFrameIndex()
 {
     return globalFrameIndex;
 }
-    
+
 void Core::SetCommandLine(int argc, char *argv[])
 {
     commandLine.assign(argv, argv + argc);
@@ -682,7 +677,7 @@ const Vector<String> & Core::GetCommandLine()
 {
     return commandLine;
 }
-    
+
 bool Core::IsConsoleMode()
 {
     return isConsoleMode;
@@ -706,7 +701,7 @@ void Core::EnableConsoleMode()
 void Core::SetIsActive(bool _isActive)
 {
     isActive = _isActive;
-Logger::Info( "Core::SetIsActive %s", (_isActive)?"TRUE":"FALSE" );
+    Logger::Info("Core::SetIsActive %s", (_isActive) ? "TRUE" : "FALSE");
 }
 
 #if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)    

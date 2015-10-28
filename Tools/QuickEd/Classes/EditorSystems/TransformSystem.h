@@ -34,44 +34,66 @@
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 #include "UI/UIControl.h"
+#include <array>
 
+namespace DAVA
+{
+class UIGeometricData;
+class UIControl;
+}
 class TransformSystem final : public BaseEditorSystem
 {
 public:
+
     explicit TransformSystem(EditorSystemsManager* parent);
-    ~TransformSystem() = default;
+    ~TransformSystem();
 
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
-    using PropertyDelta = std::pair<AbstractProperty* /*property*/, DAVA::VariantType /*delta*/>;
+    enum eDirections
+    {
+        NEGATIVE_DIRECTION = -1,
+        NO_DIRECTION = 0,
+        POSITIVE_DIRECTION = 1
+    };
+    using Directions = DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>;
+    using CornersDirections = DAVA::Array<Directions, HUDAreaInfo::CORNERS_COUNT>;
+    static const CornersDirections cornersDirections;
+
+    struct MoveInfo;
 
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
     bool ProcessKey(const DAVA::int32 key);
-
     bool ProcessDrag(DAVA::Vector2 point);
-    void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
-    void AdjustResize(int directionX, int directionY, DAVA::Vector2& delta);
-    void MovePivot(DAVA::Vector2 delta);
-    void Rotate(DAVA::Vector2 pos);
-    void MoveControl(DAVA::Vector2 delta);
-    void MoveAllSelectedControls(DAVA::Vector2 delta);
 
-    void AdjustProperty(ControlNode* node, const DAVA::Vector<PropertyDelta>& propertiesDelta);
+    void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
+    DAVA::Vector2 AdjustResizeToMinimumSize(DAVA::Vector2 delta);
+    DAVA::Vector2 AdjustResizeToBorderAndToMinimum(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions);
+    DAVA::Vector2 AdjustResizeToBorder(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions, DAVA::Vector<MagnetLineInfo>& magnets);
+
+    void MovePivot(DAVA::Vector2 delta);
+    DAVA::Vector2 AdjustPivotToNearestArea(DAVA::Vector2& delta);
+
+    bool Rotate(DAVA::Vector2 pos);
+    DAVA::float32 AdjustRotateToFixedAngle(DAVA::float32 deltaAngle, DAVA::float32 originalAngle);
+
+    void MoveAllSelectedControls(DAVA::Vector2 delta, bool canAdjust);
+    DAVA::Vector2 AdjustMoveToNearestBorder(DAVA::Vector2 delta, DAVA::Vector<MagnetLineInfo>& magnetLines, const DAVA::UIGeometricData* parentGD, const DAVA::UIControl* control);
 
     void CorrectNodesToMove();
+    void UpdateNeighboursToMove();
 
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 prevPos;
     DAVA::Vector2 extraDelta;
     SelectedControls selectedControlNodes;
-    DAVA::List<std::pair<ControlNode* /*node*/, AbstractProperty* /*positionProperty*/>> nodesToMove;
-    const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
+    DAVA::List<std::unique_ptr<MoveInfo>> nodesToMove;
+    DAVA::Vector<DAVA::UIControl*> neighbours;
     size_t currentHash = 0;
-    DAVA::float32 accumulatedAngle = 0.0f;
 
     DAVA::UIGeometricData parentGeometricData;
     DAVA::UIGeometricData controlGeometricData;

@@ -430,7 +430,7 @@ namespace DAVA
                                                        LR_DEFAULTSIZE));
         SendMessage(hWindow, WM_SETICON, ICON_SMALL, (LPARAM)smallIcon);
         SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
-	}
+    }
 
     int32 CoreWin32Platform::MoveTouchsToVector(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches)
     {

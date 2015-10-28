@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "EditorSystems/EditorSystemsManager.h"
+#include "EditorSystems/KeyboardProxy.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -39,11 +40,11 @@
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/TransformSystem.h"
 
+#include "UI/UIControl.h"
+
 using namespace DAVA;
 
-namespace
-{
-class RootControl : public UIControl
+class EditorSystemsManager::RootControl : public UIControl
 {
 public:
     RootControl(EditorSystemsManager* arg)
@@ -68,7 +69,6 @@ public:
 private:
     EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
-};
 };
 
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
@@ -117,7 +117,14 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
     {
         leftParent = left->GetParent();
         rightParent = right->GetParent();
-        DVASSERT(nullptr != leftParent && nullptr != rightParent)
+        if (nullptr == leftParent)
+        {
+            return false;
+        }
+        if (nullptr == rightParent)
+        {
+            return true;
+        }
         if (leftParent == rightParent)
         {
             return leftParent->GetIndex(left) < leftParent->GetIndex(right);
@@ -134,8 +141,10 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     , editingRootControls(CompareByLCA)
 {
     rootControl->SetName("rootControl");
-    rootControl->AddControl(scalableControl);
+    rootControl->AddControl(scalableControl.Get());
     scalableControl->SetName("scalableContent");
+
+    SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
     systems.emplace_back(new CanvasSystem(this));
     systems.emplace_back(new SelectionSystem(this));
@@ -143,16 +152,12 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::TransformSystem(this));
 
-    SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
-
     package->AddListener(this);
 }
 
 EditorSystemsManager::~EditorSystemsManager()
 {
     package->RemoveListener(this);
-    SafeRelease(scalableControl);
-    SafeRelease(rootControl);
     SafeRelease(package);
 }
 
@@ -163,12 +168,12 @@ PackageNode* EditorSystemsManager::GetPackage()
 
 UIControl* EditorSystemsManager::GetRootControl()
 {
-    return rootControl;
+    return rootControl.Get();
 }
 
 UIControl* EditorSystemsManager::GetScalableControl()
 {
-    return scalableControl;
+    return scalableControl.Get();
 }
 
 void EditorSystemsManager::Deactivate()
@@ -205,8 +210,7 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
-    auto root = static_cast<RootControl*>(rootControl);
-    root->SetEmulationMode(emulationMode);
+    rootControl->SetEmulationMode(emulationMode);
     EmulationModeChangedSignal.Emit(std::move(emulationMode));
 }
 
@@ -232,7 +236,7 @@ void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNo
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
     if (!selectedControlNodes.empty())
     {
         SetPreviewMode(false);
@@ -243,7 +247,7 @@ void EditorSystemsManager::CollectControlNodesByPosImpl(DAVA::Vector<ControlNode
 {
     int count = node->GetCount();
     auto control = node->GetControl();
-    if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
+    if (control->IsPointInside(pos) && control->GetSystemVisible())
     {
         controlNodes.push_back(node);
     }
@@ -267,20 +271,19 @@ void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& contr
     }
 }
 
-void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
+void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
-        if (!previewMode)
+        if (!previewMode && editingRootControls.size() == 1)
         {
-            recentlyRemovedControls.insert(node);
-            if (editingRootControls.size() == 1)
-            {
-                SetPreviewMode(true);
-            }
+            SetPreviewMode(true);
         }
-        editingRootControls.erase(node);
-        EditingRootControlsChanged.Emit(std::move(editingRootControls));
+        else
+        {
+            editingRootControls.erase(node);
+            EditingRootControlsChanged.Emit(std::move(editingRootControls));
+        }
     }
 }
 
@@ -295,21 +298,6 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
             EditingRootControlsChanged.Emit(std::move(editingRootControls));
         }
     }
-    else
-    {
-        if (recentlyRemovedControls.find(node) != recentlyRemovedControls.end())
-        {
-            PackageBaseNode* parent = node;
-            while (parent->GetParent() != nullptr && parent->GetParent()->GetControl() != nullptr)
-            {
-                parent = parent->GetParent();
-            }
-            DVASSERT(nullptr != parent);
-            editingRootControls.insert(parent);
-            EditingRootControlsChanged.Emit(std::move(editingRootControls));
-        }
-    }
-    recentlyRemovedControls.erase(node);
 }
 
 void EditorSystemsManager::SetPreviewMode(bool mode)

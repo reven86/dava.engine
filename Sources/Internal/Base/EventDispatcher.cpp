@@ -60,9 +60,9 @@ bool EventDispatcher::RemoveEvent(int32 eventType, const Message &msg)
 			it->needDelete = true;
             --eventsCount;
             DVASSERT(eventsCount >= 0);
-            if( !eraseLocked )
-				events.erase(it);
-			return true;
+            if (!eraseLocked)
+                events.erase(it);
+            return true;
 		}
 	}
 	return false;

@@ -47,7 +47,7 @@ public:
     };
     
 #if defined(LOCALIZATION_DEBUG)
-    static const Color  HIGHLITE_COLORS[];
+    static const Color HIGHLIGHT_COLORS[];
     enum DebugHighliteColor
     {
         RED = 0,

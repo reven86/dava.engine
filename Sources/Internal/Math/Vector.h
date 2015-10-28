@@ -91,9 +91,12 @@ public:
     inline bool IsZero() const { return x == 0.f && y == 0.f; }
     inline void SetZero() { x = y = 0.f; } // = 0
 
-	//! On operations
-	inline const Vector2 & operator += (const Vector2 & _v);
-	inline const Vector2 & operator -= (const Vector2 & _v);
+    //! Get operators
+    float32& operator[](eAxis axis);
+    float32 operator[](eAxis axis) const;
+    //! On operations
+    inline const Vector2& operator+=(const Vector2& _v);
+    inline const Vector2 & operator -= (const Vector2 & _v);
 	inline const Vector2 & operator *= (const Vector2 & _v);
 	inline const Vector2 & operator /= (const Vector2 & _v);
 	inline const Vector2 & operator *= (float32 f);
@@ -167,13 +170,17 @@ public:
 	inline Vector3(float32 _x, float32 _y, float32 _z);
 	inline Vector3(const float32 *_data);
     inline Vector3(const Vector2& v, float _z);
-    explicit inline Vector3(const Vector2 & v);
+    explicit inline Vector3(const Vector2& v);
     explicit inline Vector3(const Vector4 & v);
 	inline Vector3 & operator =(const Vector3 & _v);
 	inline Vector3 & operator =(const Vector2 & _v);
-	
-	//! Set functions
-	inline void	Set(float32 _x, float32 _y, float32 _z);
+
+    //! Get operators
+    float32& operator[](eAxis axis);
+    float32 operator[](eAxis axis) const;
+
+    //! Set functions
+    inline void	Set(float32 _x, float32 _y, float32 _z);
 	
 	//! Additional functions
 	inline Vector3	CrossProduct(const Vector3 & _v) const;
@@ -193,8 +200,8 @@ public:
     }
 
     //! On functions
-	inline float32 SquareLength()  const;
-	inline float32 Length() const;
+    inline float32 SquareLength() const;
+    inline float32 Length() const;
     inline float32 Normalize();
 	inline void Clamp(float32 min, float32 max);
 
@@ -258,8 +265,8 @@ public:
     };
     static const Vector4 Zero;
 
-	union{
-		struct
+    union {
+        struct
 		{
 			float32 x, y, z, w;
 		};
@@ -273,8 +280,12 @@ public:
 	inline Vector4 & operator =(const Vector4 & _v);
 	inline Vector4 & operator =(const Vector3 & _v);
 
-	//! Set functions
-	inline void	Set(float32 _x, float32 _y, float32 _z, float32 _w);
+    //! Get operators
+    float32& operator[](eAxis axis);
+    float32 operator[](eAxis axis) const;
+
+    //! Set functions
+    inline void	Set(float32 _x, float32 _y, float32 _z, float32 _w);
 	
 	//! Additional functions
 	inline Vector4	CrossProduct(const Vector4 & _v) const;
@@ -364,7 +375,18 @@ inline void Vector2::Lerp(const Vector2 & _v1, const Vector2 & _v2, float32 t)
 	x = _v1.x * (1.0f - t) + _v2.x * t;
 	y = _v1.y * (1.0f - t) + _v2.y * t;
 }
-	
+
+// Get operators
+inline float32& Vector2::operator[](eAxis axis)
+{
+    return data[axis];
+}
+
+inline float32 Vector2::operator[](eAxis axis) const
+{
+    return data[axis];
+}
+
 // On operators
 
 inline const Vector2 & Vector2::operator +=(const Vector2 & _v)
@@ -605,7 +627,18 @@ inline Vector3 & Vector3::operator =(const Vector2 & _v)
 	z = 0.0f;
 	return (*this);
 }
-	
+
+// Get operators
+inline float32& Vector3::operator[](eAxis axis)
+{
+    return data[axis];
+}
+
+inline float32 Vector3::operator[](eAxis axis) const
+{
+    return data[axis];
+}
+
 //! set functions	
 inline void	Vector3::Set(float32 _x, float32 _y, float32 _z)
 {
@@ -889,7 +922,18 @@ inline Vector4 & Vector4::operator=(const Vector3 & _v)
 	w = 1.0f;
 	return (*this);
 }
-	
+
+// Get operators
+inline float32& Vector4::operator[](eAxis axis)
+{
+    return data[axis];
+}
+
+inline float32 Vector4::operator[](eAxis axis) const
+{
+    return data[axis];
+}
+
 //! set functions	
 inline void	Vector4::Set(float32 _x, float32 _y, float32 _z, float32 _w)
 {
