@@ -86,7 +86,7 @@ void SceneSaver::SaveFile(const String &fileName, Set<String> &errorLog)
 	}
 
     SafeRelease(scene);
-	RenderObjectsFlusher::Flush();
+    RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
@@ -99,15 +99,15 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
     Scene *scene = new Scene();
     if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(sc2Filename))
     {
-		scene->SaveScene(sc2Filename, false);
-	}
-	else
+        scene->SaveScene(sc2Filename, false);
+    }
+    else
 	{
 		errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
 	}
 
 	SafeRelease(scene);
-	RenderObjectsFlusher::Flush();
+    RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog)

@@ -114,7 +114,7 @@ void RotationControllerSystem::Input(UIEvent *event)
             {
                 if(GetCamera(entities[i]) == camera)
                 {
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
                     RotateDirection(camera);
 #else
                     if(event->tid == DAVA::UIEvent::BUTTON_2)

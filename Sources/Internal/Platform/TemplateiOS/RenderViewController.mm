@@ -49,7 +49,7 @@
     return self;
 }
 */
-- (id) init
+- (id)init
 {
     if (self = [super init])
     {
@@ -59,41 +59,40 @@
     return self;
 }
 
-- (GLRenderView *) createGLView
+- (GLRenderView*)createGLView
 {
     if (!renderView)
     {
-       renderView = [[GLRenderView alloc] initWithFrame:[[::UIScreen mainScreen] bounds]];
+        renderView = [[GLRenderView alloc] initWithFrame:[[ ::UIScreen mainScreen] bounds]];
     }
     else
     {
         NSLog(@"*** FAILED to create GLRenderView, cause RenderView already created!");
     }
-    return (GLRenderView *)renderView;
+    return (GLRenderView*)renderView;
 }
 
-- (MetalRenderView *) createMetalView
+- (MetalRenderView*)createMetalView
 {
     if (!renderView)
     {
-        renderView = [[MetalRenderView alloc] initWithFrame:[[::UIScreen mainScreen] bounds]];
+        renderView = [[MetalRenderView alloc] initWithFrame:[[ ::UIScreen mainScreen] bounds]];
     }
     else
     {
         NSLog(@"*** FAILED to create GLRenderView, cause RenderView already created!");
     }
-    return (MetalRenderView *)renderView;
+    return (MetalRenderView*)renderView;
 }
 
 // Implement loadView to create a view hierarchy programmatically, without using a nib.
-- (void)loadView 
+- (void)loadView
 {
     // Add the background view needed to place native iOS components on it.
     backgroundView = [[BackgroundView alloc] initWithFrame:[renderView frame]];
     [backgroundView setBackgroundColor:[UIColor clearColor]];
     [backgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-    
-    
+
     BOOL isMultipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
     [backgroundView setMultipleTouchEnabled:isMultipleTouchEnabled]; // to pass touches to framework
 
@@ -111,103 +110,102 @@
 */
 
 // Override to allow orientations other than the default portrait orientation.
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     DAVA::Core::eScreenOrientation orientation = DAVA::Core::Instance()->GetScreenOrientation();
-    switch (orientation) {
-        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-            return interfaceOrientation == UIInterfaceOrientationLandscapeLeft;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-            return interfaceOrientation == UIInterfaceOrientationLandscapeRight;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
-            return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft)||(interfaceOrientation == UIInterfaceOrientationLandscapeRight);
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
-            return interfaceOrientation == UIInterfaceOrientationPortrait;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
-            return interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
-            return (interfaceOrientation == UIInterfaceOrientationPortrait)||(interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown);
-            break;
-        default:
-            return FALSE;
-            break;
+    switch (orientation)
+    {
+    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+        return interfaceOrientation == UIInterfaceOrientationLandscapeLeft;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+        return interfaceOrientation == UIInterfaceOrientationLandscapeRight;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
+        return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft) || (interfaceOrientation == UIInterfaceOrientationLandscapeRight);
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+        return interfaceOrientation == UIInterfaceOrientationPortrait;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+        return interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
+        return (interfaceOrientation == UIInterfaceOrientationPortrait) || (interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown);
+        break;
+    default:
+        return FALSE;
+        break;
     }
-    
 }
 
--(BOOL)shouldAutorotate
+- (BOOL)shouldAutorotate
 {
     /*return (DAVA::Core::Instance()->GetScreenOrientation()==DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE)||(DAVA::Core::Instance()->GetScreenOrientation()==DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE);*/
     return TRUE;
 }
--(NSUInteger)supportedInterfaceOrientations
+- (NSUInteger)supportedInterfaceOrientations
 {
     DAVA::Core::eScreenOrientation orientation = DAVA::Core::Instance()->GetScreenOrientation();
-    switch (orientation) {
-        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-            return UIInterfaceOrientationMaskLandscapeLeft;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-            return UIInterfaceOrientationMaskLandscapeRight;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
-            return UIInterfaceOrientationMaskLandscape;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
-            return UIInterfaceOrientationMaskPortrait;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
-            return UIInterfaceOrientationMaskPortraitUpsideDown;
-            break;
-        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
-            return UIInterfaceOrientationMaskPortrait;
-            break;
-        default:
-            return UIInterfaceOrientationMaskPortrait;
-            break;
+    switch (orientation)
+    {
+    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+        return UIInterfaceOrientationMaskLandscapeLeft;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+        return UIInterfaceOrientationMaskLandscapeRight;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
+        return UIInterfaceOrientationMaskLandscape;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+        return UIInterfaceOrientationMaskPortrait;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+        return UIInterfaceOrientationMaskPortraitUpsideDown;
+        break;
+    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
+        return UIInterfaceOrientationMaskPortrait;
+        break;
+    default:
+        return UIInterfaceOrientationMaskPortrait;
+        break;
     }
-
 }
 
-- (void)didReceiveMemoryWarning 
+- (void)didReceiveMemoryWarning
 {
-	// Releases the view if it doesn't have a superview.
+    // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
-	
-	// Release any cached data, images, etc that aren't in use.
+
+    // Release any cached data, images, etc that aren't in use.
 }
 
-- (void)viewDidUnload 
+- (void)viewDidUnload
 {
-	// Release any retained subviews of the main view.
-	// e.g. self.myOutlet = nil;
+    // Release any retained subviews of the main view.
+    // e.g. self.myOutlet = nil;
 }
 
-- (void)dealloc 
+- (void)dealloc
 {
     [renderView release];
     renderView = nil;
     [super dealloc];
 }
 
-- (void) viewWillAppear: (BOOL)animating
+- (void)viewWillAppear:(BOOL)animating
 {
-	NSLog(@"RenderViewController viewWillAppear (startAnimation)");
-//	[renderView setCurrentContext];
-	[renderView startAnimation];
+    NSLog(@"RenderViewController viewWillAppear (startAnimation)");
+    //	[renderView setCurrentContext];
+    [renderView startAnimation];
 }
 
-- (void) viewDidDisappear: (BOOL)animating
+- (void)viewDidDisappear:(BOOL)animating
 {
-	NSLog(@"RenderViewController viewDidDisappear (stopAnimation)");
-	[renderView stopAnimation];
+    NSLog(@"RenderViewController viewDidDisappear (stopAnimation)");
+    [renderView stopAnimation];
 }
-
 
 @end
-#endif // 
+#endif //

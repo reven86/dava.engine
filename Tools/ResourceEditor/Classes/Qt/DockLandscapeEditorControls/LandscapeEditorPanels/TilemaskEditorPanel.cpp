@@ -277,9 +277,9 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 {
     DVASSERT(image->GetPixelFormat() == FORMAT_RGBA8888);
 
-	const int32 CHANNELS_COUNT = 4;
+    const int32 CHANNELS_COUNT = 4;
 
-	uint32 width = image->GetWidth();
+    uint32 width = image->GetWidth();
 	uint32 height = image->GetHeight();
 	int32 size = width * height;
 
@@ -334,16 +334,16 @@ void TilemaskEditorPanel::UpdateTileTextures()
 	Image** images = new Image*[count];
 
     FilePath tileTexturePath = sceneEditor->tilemaskEditorSystem->GetTileTexture()->GetDescriptor()->GetSourceTexturePathname();
-    
-    Vector<Image *> imgs;
+
+    Vector<Image*> imgs;
     ImageSystem::Instance()->Load(tileTexturePath, imgs);
     DVASSERT(imgs.size() == 1);
-    
+
     imgs[0]->ResizeCanvas(iconSize.width(), iconSize.height());
-    
+
     SplitImageToChannels(imgs[0], images[0], images[1], images[2], images[3]);
     SafeRelease(imgs[0]);
-    
+
     tileTexturePreviewWidget->SetMode(TileTexturePreviewWidget::MODE_WITH_COLORS);
     
 	for (int32 i = 0; i < count; ++i)

@@ -98,7 +98,7 @@ public:
     
     void Update(float32 timeElapsed);
     void Render();
-    
+
     void MarkForUpdate(RenderObject * renderObject);
     void MarkForUpdate(Light * lightNode);
     //void MarkForMaterialSort(Material * material);
@@ -123,8 +123,11 @@ public:
     inline bool IsRenderHierarchyInitialized() const {return hierarchyInitialized;}
     
     inline RenderPass* GetMainRenderPass() const;
-    
-    inline RenderHelper * GetDebugDrawer() const { return debugDrawer; }
+
+    inline RenderHelper* GetDebugDrawer() const
+    {
+        return debugDrawer;
+    }
 
 private:
 	void CreateSpatialTree();
@@ -153,7 +156,7 @@ private:
 
     NMaterial *globalMaterial;
 
-    RenderHelper * debugDrawer;
+    RenderHelper* debugDrawer;
 
     friend class RenderPass;
 };

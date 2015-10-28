@@ -46,106 +46,103 @@ class GameCore : public ApplicationCore
 {
 protected:
     virtual ~GameCore();
-public: 
+
+public:
     GameCore();
 
-    static GameCore * Instance() 
-    { 
-        return (GameCore*) DAVA::Core::GetApplicationCore();
+    static GameCore* Instance()
+    {
+        return (GameCore*)DAVA::Core::GetApplicationCore();
     };
-    
+
     virtual void OnAppStarted();
     virtual void OnAppFinished();
-    
+
     virtual void OnSuspend();
     virtual void OnResume();
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     virtual void OnBackground();
     virtual void OnForeground();
     virtual void OnDeviceLocked();
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
-	virtual void Update( float32 timeElapsed );
+    virtual void Update(float32 timeElapsed);
 
     virtual void BeginFrame();
     virtual void Draw();
     virtual void EndFrame();
-    
-    
+
 protected:
+    void SetupTriangle();
+    void SetupCube();
+    void SetupRT();
 
-    void    SetupTriangle();
-    void    SetupCube();
-    void    SetupRT();
+    void SetupTank();
+    void DrawTank();
 
-    void    SetupTank();
-    void    DrawTank();
+    void manticoreDraw();
+    void rhiDraw();
+    void rtDraw();
+    void visibilityTestDraw();
 
-    void    manticoreDraw();
-    void    rhiDraw();
-    void    rtDraw();
-    void    visibilityTestDraw();
-
-    bool    inited;
+    bool inited;
 
     struct
     VertexP
     {
-        float   x,y,z;
+        float x, y, z;
     };
 
     struct
     VertexPNT
     {
-        float   x,y,z;
-        float   nx,ny,nz;
-        float   u,v;
+        float x, y, z;
+        float nx, ny, nz;
+        float u, v;
     };
 
     struct
     VertexPNT_ex
     {
-        float   x,y,z;
-        uint32  pad;
-        float   u,v;
-        float   nx,ny,nz;
+        float x, y, z;
+        uint32 pad;
+        float u, v;
+        float nx, ny, nz;
     };
 
     struct
     VertexPT
     {
-        float   x,y,z;
-        float   u,v;
+        float x, y, z;
+        float u, v;
     };
 
     struct
     Object
     {
-        rhi::HVertexBuffer  vb;
-        uint32              vb_layout;
-        uint32              v_cnt;
-        rhi::HIndexBuffer   ib;
+        rhi::HVertexBuffer vb;
+        uint32 vb_layout;
+        uint32 v_cnt;
+        rhi::HIndexBuffer ib;
         rhi::HPipelineState ps;
-        rhi::HConstBuffer   vp_const[2];
-        rhi::HConstBuffer   fp_const;
-        rhi::HTexture       tex;
-        rhi::HTextureSet    texSet;
-        rhi::HSamplerState  samplerState;
+        rhi::HConstBuffer vp_const[2];
+        rhi::HConstBuffer fp_const;
+        rhi::HTexture tex;
+        rhi::HTextureSet texSet;
+        rhi::HSamplerState samplerState;
     };
 
-    Object      triangle;
-    
-    Object      cube;
-    uint64      cube_t0;
-    float       cube_angle;
+    Object triangle;
 
-    
-    Object         rtQuad;
-    rhi::Packet    rtQuadBatch;
-    rhi::Handle    rtColor;
-    rhi::Handle    rtDepthStencil;
+    Object cube;
+    uint64 cube_t0;
+    float cube_angle;
 
+    Object rtQuad;
+    rhi::Packet rtQuadBatch;
+    rhi::Handle rtColor;
+    rhi::Handle rtDepthStencil;
 
     struct Tank
     {
@@ -159,8 +156,8 @@ protected:
     };
 
     Tank tank;
-    
-//    std::unique_ptr<SceneRenderTestV3> sceneRenderTest;
+
+    //    std::unique_ptr<SceneRenderTestV3> sceneRenderTest;
 };
 
 

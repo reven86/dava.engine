@@ -272,8 +272,7 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddat
         }
         else
         {
-            auto setValue = [&material, &key, &prop](const float32* value)
-            {
+            auto setValue = [&material, &key, &prop](const float32* value) {
                 if (material->HasLocalProperty(key))
                 {
                     material->SetPropertyValue(key, value);
@@ -349,24 +348,23 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddat
 
 void NMaterialStateDynamicPropertiesInsp::FillGlobalMaterialMemebers(NMaterial* state, PropDataMap& data) const
 {
-    auto checkAndAdd = [&data](const FastName& name, rhi::ShaderProp::Type type, uint32 size, const float32* defaultValue)
-    {
-		if (0 == data.count(name))
-		{
-			PropData prop;
-			prop.type = type;
-			prop.defaultValue = defaultValue;
-			prop.size = size;
+    auto checkAndAdd = [&data](const FastName& name, rhi::ShaderProp::Type type, uint32 size, const float32* defaultValue) {
+        if (0 == data.count(name))
+        {
+            PropData prop;
+            prop.type = type;
+            prop.defaultValue = defaultValue;
+            prop.size = size;
 
-			data.insert(name, prop);
-		}
-		else
-		{
-			if (nullptr == data.at(name).defaultValue)
-			{
-				data.at(name).defaultValue = defaultValue;
-			}
-		}
+            data.insert(name, prop);
+        }
+        else
+        {
+            if (nullptr == data.at(name).defaultValue)
+            {
+                data.at(name).defaultValue = defaultValue;
+            }
+        }
     };
 
     checkAndAdd(NMaterialParamName::PARAM_LIGHT_POSITION0, rhi::ShaderProp::TYPE_FLOAT3, 1, DefaultValues::defaultVec3.data);

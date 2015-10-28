@@ -63,25 +63,25 @@ protected:
     bool CouldApplyImage(Image* image, const String& imageName) const;
 
     int32 curToolSize;
-	Texture* toolImageTexture = nullptr;
+    Texture* toolImageTexture = nullptr;
 
-    Texture * loadedTexture = nullptr;
-    
-	Color drawColor;
-	int32 colorIndex = 0;
+    Texture* loadedTexture = nullptr;
 
-	Rect updatedRectAccumulator;
-	
-	bool editingIsEnabled = false;
-	
-	Image* originalImage = nullptr;
-	
-	void UpdateToolImage(bool force = false);
-	void UpdateBrushTool();
-	void CreateToolImage(const FilePath& filePath);
-	
-	void AddRectToAccumulator(const Rect& rect);
-	void ResetAccumulatorRect();
+    Color drawColor;
+    int32 colorIndex = 0;
+
+    Rect updatedRectAccumulator;
+
+    bool editingIsEnabled = false;
+
+    Image* originalImage = nullptr;
+
+    void UpdateToolImage(bool force = false);
+    void UpdateBrushTool();
+    void CreateToolImage(const FilePath& filePath);
+
+    void AddRectToAccumulator(const Rect& rect);
+    void ResetAccumulatorRect();
 	Rect GetUpdatedRect();
 	
 	void StoreOriginalState();

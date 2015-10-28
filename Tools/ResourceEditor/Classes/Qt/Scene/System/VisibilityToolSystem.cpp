@@ -45,11 +45,11 @@
 const float32 VisibilityToolSystem::CROSS_TEXTURE_SIZE = 64.0f;
 
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
-:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	curToolSize(0)
-,	editingIsEnabled(false)
-,	state(VT_STATE_NORMAL)
-,	textureLevel(Landscape::TEXTURE_COLOR)
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    , curToolSize(0)
+    , editingIsEnabled(false)
+    , state(VT_STATE_NORMAL)
+    , textureLevel(Landscape::TEXTURE_COLOR)
 {
     curToolSize = 120;
 
@@ -87,15 +87,15 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 	modifSystem->SetLocked(true);
 
 	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetToolTexture(visibilityToolTexture, false);
+    drawSystem->GetLandscapeProxy()->SetToolTexture(visibilityToolTexture, false);
     landscapeSize = static_cast<float>(visibilityToolTexture->GetWidth());
 
     drawSystem->EnableCursor();
     SetBrushSize(curToolSize);
-    
-	drawSystem->SetCursorSize(0);
 
-	PrepareConfig();
+    drawSystem->SetCursorSize(0);
+
+    PrepareConfig();
 
 	enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -116,10 +116,10 @@ bool VisibilityToolSystem::DisableLandscapeEdititing()
 	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
 
-	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, false);
+    drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, false);
 
-	enabled = false;
-	return !enabled;
+    enabled = false;
+    return !enabled;
 }
 
 void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
@@ -199,8 +199,8 @@ void VisibilityToolSystem::SetBrushSize(int32 brushSize)
         cursorSize = curToolSize / landscapeSize;
 
         if (state == VT_STATE_SET_AREA)
-		{
-			drawSystem->SetCursorSize(cursorSize);
+        {
+            drawSystem->SetCursorSize(cursorSize);
 		}
 	}
 }
@@ -253,9 +253,9 @@ void VisibilityToolSystem::SetState(eVisibilityToolState newState)
         case VT_STATE_SET_AREA:
             drawSystem->SetCursorTexture(cursorTexture);
             drawSystem->SetCursorSize(cursorSize);
-			break;
+            break;
 
-		default:
+        default:
 			if (IsLandscapeEditingEnabled())
 			{
 				drawSystem->SetCursorSize(0);
@@ -278,8 +278,8 @@ void VisibilityToolSystem::SetVisibilityArea()
 void VisibilityToolSystem::SetVisibilityPointInternal()
 {
     DrawVisibilityPoint();
-    
-	SetState(VT_STATE_NORMAL);
+
+    SetState(VT_STATE_NORMAL);
 }
 
 void VisibilityToolSystem::SetVisibilityAreaInternal()
@@ -287,7 +287,7 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
 	if (drawSystem->GetVisibilityToolProxy()->IsVisibilityPointSet())
 	{
 		Vector2 visibilityPoint = drawSystem->GetVisibilityToolProxy()->GetVisibilityPoint();
-		Vector3 point(visibilityPoint * landscapeSize);
+        Vector3 point(visibilityPoint * landscapeSize);
         point.z = drawSystem->GetHeightAtTexturePoint(textureLevel, point.xy()) + visibilityPointHeight;
 
         Vector<Vector3> resP;
@@ -300,8 +300,8 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
         // and nobody remember where it was
         RenderVisibilityPoint(false);
     }
-	else
-	{
+    else
+    {
 		// show "could not check visibility without visibility point" error message
 	}
 }
@@ -315,8 +315,8 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
 {
     if (heightValues.empty())
     {
-		return;
-	}
+        return;
+    }
 
     const float circleRadiusSquared = circleRadius * circleRadius;
     const uint32 sideLength = static_cast<uint32>((2.0f * circleRadius) / density + 0.5f);
@@ -355,7 +355,7 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
 
                 if (entityGroup.Size() == 0)
                 {
-					Vector3 p;
+                    Vector3 p;
                     bool occludedWithLandscape = collisionSystem->LandRayTest(sourcePoint, target, p);
                     if (!occludedWithLandscape)
                     {
@@ -429,7 +429,7 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
             const uint32 matCount = materials.size();
             for(uint32 m = 0; m < matCount; ++m)
             {
-                NMaterial * material = materials[m];
+                NMaterial* material = materials[m];
                 while (material && !material->GetEffectiveFXName().IsValid())
                     material = material->GetParent();
 
@@ -481,14 +481,14 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 	Texture * visibilityAreaTexture = visibilityToolProxy->GetTexture();
 
     static const float32 pointSize = 6.f;
-    
+
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityAreaTexture, false);
-	for(uint32 i = 0; i < points.size(); ++i)
-	{
+    for (uint32 i = 0; i < points.size(); ++i)
+    {
 		uint32 colorIndex = (uint32)points[i].z;
-        Rect rect(points[i].x - pointSize / 2.f , points[i].y - pointSize / 2.f, pointSize, pointSize);
+        Rect rect(points[i].x - pointSize / 2.f, points[i].y - pointSize / 2.f, pointSize, pointSize);
         RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
-	}
+    }
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
@@ -498,10 +498,10 @@ void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
 	{
 		return;
 	}
-    
+
     Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
 
-	Image* image = visibilityToolTexture->CreateImageFromMemory();
+    Image* image = visibilityToolTexture->CreateImageFromMemory();
     ImageSystem::Instance()->Save(filePath, image);
     SafeRelease(image);
 }
@@ -513,5 +513,5 @@ VisibilityToolSystem::eVisibilityToolState VisibilityToolSystem::GetState()
 
 int32 VisibilityToolSystem::GetBrushSize()
 {
-	return curToolSize;
+    return curToolSize;
 }

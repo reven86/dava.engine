@@ -35,7 +35,6 @@
 
 namespace DAVA
 {
-
 class UIControl;
 class UI3DView;
 class Texture;
@@ -105,18 +104,17 @@ private:
 
     struct ScreenshotWaiter
     {
-        Texture * texture = nullptr;
+        Texture* texture = nullptr;
         rhi::HSyncObject syncObj;
         Function<void(Texture*)> callback;
     };
 
     void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback);
-    void FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews);
+    void FindAll3dViews(UIControl* control, List<UIScreenshoter::Control3dInfo>& foundViews);
     void RenderToTexture(const ScreenshotWaiter& waiter);
-    
+
     List<ScreenshotWaiter> waiters;
 };
-
 };
 
 #endif //__DAVEAENGINE_UI_SCREENSHOTER__

@@ -32,8 +32,8 @@
 
 namespace DAVA
 {
-VegetationRenderData::VegetationRenderData() :
-    material(NULL)
+VegetationRenderData::VegetationRenderData()
+    : material(NULL)
 {
 }
     

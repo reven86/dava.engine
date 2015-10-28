@@ -110,8 +110,6 @@ SpeedTreeObject * GetSpeedTreeObject(const Entity *fromEntity)
     return nullptr;
 }
 
-
-
 ParticleEffectComponent * GetEffectComponent(const Entity *fromEntity)
 {
 	if(fromEntity)

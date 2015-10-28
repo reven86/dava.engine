@@ -47,10 +47,10 @@ enum
 
 @interface HelperAppDelegate : NSObject <UIApplicationDelegate>
 {
-	RenderViewController * renderViewController;
+    RenderViewController* renderViewController;
 }
 
-@property (nonatomic, retain) RenderViewController * renderViewController;
+@property(nonatomic, retain) RenderViewController* renderViewController;
 
 @end
 

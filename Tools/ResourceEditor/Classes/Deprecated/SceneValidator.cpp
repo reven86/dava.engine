@@ -303,7 +303,6 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
         materials.erase(globalMaterial);
     }
 
-
     const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
     if (ProjectManager::Instance() != nullptr)
     {
@@ -321,26 +320,25 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
         NMaterialTextureName::TEXTURE_DECALTEXTURE,
     };
 
-	DAVA::Map<DAVA::Texture *, DAVA::String> texturesMap;
-	auto endItMaterials = materials.end();
+    DAVA::Map<DAVA::Texture*, DAVA::String> texturesMap;
+    auto endItMaterials = materials.end();
 	for (auto it = materials.begin(); it != endItMaterials; ++it)
 	{
-        for (const FastName & textureName : textureNames)
+        for (const FastName& textureName : textureNames)
         {
             if ((*it)->HasLocalTexture(textureName))
             {
-                Texture *tex = (*it)->GetLocalTexture(textureName);
+                Texture* tex = (*it)->GetLocalTexture(textureName);
                 if ((*it)->GetParent())
                 {
-                    texturesMap[tex] = Format("Material: %s (parent - %s). Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetParent()->GetMaterialName().c_str(), textureName.c_str());							
+                    texturesMap[tex] = Format("Material: %s (parent - %s). Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetParent()->GetMaterialName().c_str(), textureName.c_str());
                 }
                 else
                 {
-                    texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetMaterialName().c_str(), textureName.c_str());							
+                    texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetMaterialName().c_str(), textureName.c_str());
                 }
             }
         }
-
 
         bool qualityGroupIsOk = false;
         DAVA::FastName materialGroup = (*it)->GetQualityGroup();
@@ -360,14 +358,13 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 
             if (!qualityGroupIsOk)
             {
-                errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));							
+                errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
             }
         }
 
-
         if ((*it)->GetEffectiveFXName().IsValid() && materialTemplates && (*it)->GetEffectiveFXName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
         {
-					// ShadowVolume material is non-assignable and it's okey
+            // ShadowVolume material is non-assignable and it's okey
             bool templateFound = false;
             for (int i = 0; i < materialTemplates->size(); ++i)
             {
@@ -398,7 +395,7 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
     ValidateLandscapeTexture(landscape, Landscape::TEXTURE_TILE, errorsLog);
     ValidateLandscapeTexture(landscape, Landscape::TEXTURE_TILEMASK, errorsLog);
 
-	//validate heightmap
+    //validate heightmap
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), String("Landscape. Heightmap."));
     if (!pathIsCorrect)
     {
@@ -407,9 +404,9 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
     }
 }
 
-void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, const FastName& texLevel, Set<String> &errorsLog)
+void SceneValidator::ValidateLandscapeTexture(Landscape* landscape, const FastName& texLevel, Set<String>& errorsLog)
 {
-    Texture * texture = landscape->GetMaterial()->GetEffectiveTexture(texLevel);
+    Texture* texture = landscape->GetMaterial()->GetEffectiveTexture(texLevel);
     if (texture)
     {
         DAVA::FilePath landTexName = landscape->GetMaterial()->GetEffectiveTexture(texLevel)->GetPathname();

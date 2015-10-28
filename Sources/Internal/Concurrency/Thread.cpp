@@ -160,5 +160,4 @@ void Thread::Sleep(uint32 timeMS)
     std::chrono::milliseconds ms(timeMS);
     std::this_thread::sleep_for(ms);
 }
-    
 };

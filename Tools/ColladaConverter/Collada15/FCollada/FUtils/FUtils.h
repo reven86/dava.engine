@@ -34,7 +34,7 @@
 #endif // _WIN32
 
 #if !defined(NOMINMAX)
-#	define NOMINMAX /**< Rid us of the default versions of MINMAX. */
+#define NOMINMAX /**< Rid us of the default versions of MINMAX. */
 #endif
 
 #ifdef max

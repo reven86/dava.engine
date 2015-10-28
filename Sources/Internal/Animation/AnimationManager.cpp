@@ -201,10 +201,10 @@ void AnimationManager::Update(float32 timeElapsed)
 
     DVASSERT(Thread::IsMainThread());
 
-	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATIONS))
-		return;
-	
-	// update animations first
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATIONS))
+        return;
+
+    // update animations first
     uint32 size = (uint32)animations.size();
 	for (uint32 k = 0; k < size; ++k)
 	{

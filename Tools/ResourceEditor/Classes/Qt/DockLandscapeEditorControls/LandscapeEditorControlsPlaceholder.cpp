@@ -59,7 +59,7 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 void LandscapeEditorControlsPlaceholder::OnOpenGLInitialized()
 {
     DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel);
-    
+
     customColorsPanel = new CustomColorsPanel();
     rulerToolPanel = new RulerToolPanel();
     visibilityToolPanel = new VisibilityToolPanel();

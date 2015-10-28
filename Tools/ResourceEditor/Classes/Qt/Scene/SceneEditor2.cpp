@@ -159,7 +159,7 @@ SceneEditor2::SceneEditor2()
     editorLODSystem = new EditorLODSystem(this);
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
-    float32 * clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
+    float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
     clearColor[3] = 1.f;
 
@@ -201,16 +201,16 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 
     ScopedPtr<Texture> tilemaskTexture(nullptr);
     bool needToRestoreTilemask = false;
-    if(landscapeEditorDrawSystem)
+    if (landscapeEditorDrawSystem)
     { //dirty magic to work with new saving of materials and FBO landsacpe texture
         tilemaskTexture = SafeRetain(landscapeEditorDrawSystem->GetTileMaskTexture());
 
         needToRestoreTilemask = landscapeEditorDrawSystem->SaveTileMaskTexture();
         landscapeEditorDrawSystem->ResetTileMaskTexture();
     }
-    
-	DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
-	if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
+
+    DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
+    if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
 	{
 		curScenePath = path;
 		isLoaded = true;
@@ -227,9 +227,9 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 
     InjectEditorEntities();
 
-	SceneSignals::Instance()->EmitSaved(this);
+    SceneSignals::Instance()->EmitSaved(this);
 
-	return err;
+    return err;
 }
 
 void SceneEditor2::ExtractEditorEntities()
@@ -408,8 +408,8 @@ void SceneEditor2::Draw()
         gridSystem->Draw();
         cameraSystem->Draw();
 
-		if(collisionSystem)
-			collisionSystem->Draw();
+        if (collisionSystem)
+            collisionSystem->Draw();
 
 		modifSystem->Draw();
 

@@ -57,14 +57,14 @@ void FrameworkDidLaunched()
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
     
-#elif defined (__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_MACOS__)
     screenWidth = WIDTH;
     screenHeight = HEIGHT;
 
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     appOptions->SetInt32("fullscreen", 1);
     appOptions->SetInt32("bpp", 32);
-    
+
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
     
 #elif defined (__DAVAENGINE_WIN_UAP__)
@@ -74,7 +74,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("renderer", rhi::RHI_DX11);
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
-    
+
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
 #else
     screenWidth = WIDTH;

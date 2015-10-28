@@ -93,7 +93,6 @@ private:
 
 	bool hangingObjectsModeEnabled;
     bool switchesWithDifferentLodsEnabled;
-		
 };
 
 inline void DebugDrawSystem::EnableHangingObjectsMode( bool enabled )

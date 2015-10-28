@@ -52,7 +52,7 @@ class DeferredScreenMetricEvents;
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
  On startup application creates minimal neccesary infrastructure to allow coexistance of
- XAML native controls and DirectX and OpenGL (through ANGLE).
+ XAML native controls and DirectX.
  Application makes explicit use of two threads:
     - UI thread, created by system, where all interaction with UI and XAML controls must be done
     - main thread, created by WinUAPXamlApp instance, where framework lives
@@ -111,7 +111,7 @@ private:    // Event handlers
     // Windows state change handlers
     void OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args);
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
-    
+
     // Swap chain panel state change handlers
     void MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY);
 
@@ -152,7 +152,7 @@ private:
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
     void HideAsyncTaskBar();
-    
+
 private:
     CorePlatformWinUAP* core = nullptr;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;

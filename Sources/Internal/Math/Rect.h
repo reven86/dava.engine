@@ -60,8 +60,8 @@ struct Rect
     inline void ClampToRect(Rect& rect) const;
     inline Rect Combine(const Rect& rect) const;
 
-	inline Vector2 GetCenter() const;
-	inline Vector2 GetPosition() const;
+    inline Vector2 GetCenter() const;
+    inline Vector2 GetPosition() const;
 	inline Vector2 GetSize() const;
 	
 	inline void SetCenter(const Vector2 & center);
