@@ -177,10 +177,9 @@ dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 static void
 dx9_IndexBuffer_Delete(Handle ib)
 {
-    IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
-
-    if (self)
+    if (ib != InvalidHandle)
     {
+        IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
         self->MarkRestored();
         self->Destroy();
         IndexBufferDX9Pool::Free(ib);

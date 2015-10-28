@@ -249,8 +249,8 @@ public:
      Archive is copying into the variable.
 	 \param[in] archive	archive to set (Archive is retains inside variable type)
 	 */
-    void SetKeyedArchive(KeyedArchive *archive);
-    
+    void SetKeyedArchive(KeyedArchive* archive);
+
     /**
      \brief Function to set int64 value to variant type variable
      \param[in] value	value to set

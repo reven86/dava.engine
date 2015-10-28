@@ -30,11 +30,20 @@
 #define __QUICKED_SYSTEMS_MANAGER_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 #include "Functional/Signal.h"
 #include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
 #include "Math/Vector.h"
 #include "Model/PackageHierarchy/PackageListener.h"
+
+namespace DAVA
+{
+class UIControl;
+class UIEvent;
+class VariantType;
+class UIGeometricData;
+}
 
 struct HUDAreaInfo
 {
@@ -53,7 +62,8 @@ struct HUDAreaInfo
         PIVOT_POINT_AREA,
         FRAME_AREA,
         NO_AREA,
-        CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
+        CORNERS_BEGIN = TOP_LEFT_AREA,
+        CORNERS_COUNT = PIVOT_POINT_AREA - TOP_LEFT_AREA + CORNERS_BEGIN,
         AREAS_COUNT = NO_AREA - AREAS_BEGIN
     };
     HUDAreaInfo(ControlNode* owner_ = nullptr, eArea area_ = NO_AREA)
@@ -66,12 +76,18 @@ struct HUDAreaInfo
     eArea area = NO_AREA;
 };
 
-namespace DAVA
+struct MagnetLineInfo
 {
-class UIControl;
-class UIEvent;
-class VariantType;
-}
+    MagnetLineInfo(const DAVA::Rect& rect_, const DAVA::UIGeometricData* gd_, DAVA::Vector2::eAxis axis_)
+        : absoluteRect(rect_)
+        , gd(gd_)
+        , axis(axis_)
+    {
+    }
+    DAVA::Rect absoluteRect;
+    const DAVA::UIGeometricData* gd;
+    const DAVA::Vector2::eAxis axis;
+};
 
 class BaseEditorSystem;
 class AbstractProperty;
@@ -79,12 +95,13 @@ class PackageNode;
 
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
 
-class EditorSystemsManager : private PackageListener
+class EditorSystemsManager : PackageListener
 {
 public:
+    using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
+
     explicit EditorSystemsManager(PackageNode* package);
     ~EditorSystemsManager();
-    using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
 
     PackageNode* GetPackage();
 
@@ -109,24 +126,25 @@ public:
     DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
+    DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
 
 private:
+    class RootControl;
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const;
     void CollectControlNodesByRectImpl(SelectedControls& controlNodes, const DAVA::Rect& rect, ControlNode* node) const;
 
-    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
     void SetPreviewMode(bool mode);
-    DAVA::UIControl* rootControl = nullptr;
-    DAVA::UIControl* scalableControl = nullptr;
+    DAVA::RefPtr<RootControl> rootControl;
+    DAVA::RefPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
     PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
-    DAVA::Set<ControlNode*> recentlyRemovedControls;
     bool previewMode = true;
 };
 

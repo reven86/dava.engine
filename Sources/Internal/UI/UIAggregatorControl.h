@@ -48,10 +48,10 @@ namespace DAVA
         void AddAggregatorChild(UIControl* uiControl);
 
         void SetAggregatorPath(const FilePath& path);
-		const FilePath & GetAggregatorPath() const;
-			
-	private:
-		List<UIControl* > aggregatorControls;
+        const FilePath& GetAggregatorPath() const;
+
+    private:
+        List<UIControl* > aggregatorControls;
 		FilePath aggregatorPath;
 	};
 };

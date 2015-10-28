@@ -179,10 +179,9 @@ dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 static void
 dx9_VertexBuffer_Delete(Handle vb)
 {
-    VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
-
-    if (self)
+    if (vb != InvalidHandle)
     {
+        VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
         self->MarkRestored();
         self->Destroy();
         VertexBufferDX9Pool::Free(vb);

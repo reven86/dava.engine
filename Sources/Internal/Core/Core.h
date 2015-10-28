@@ -157,14 +157,14 @@ public:
 		\brief Get list of available display modes supported by hardware
 		\param[out] availableModes list of available modes that is supported by hw
 	*/
-    virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
-	
-	/**
+    virtual void GetAvailableDisplayModes(List<DisplayMode>& availableModes);
+
+    /**
 		\brief Find mode that matches best to the mode you've requested
 		\param[in] requestedMode mode you want to get
 		\returns best mode found in current HW
 	*/
-	virtual DisplayMode FindBestMode(const DisplayMode & requestedMode);
+    virtual DisplayMode FindBestMode(const DisplayMode & requestedMode);
 
 	/**
 		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor
