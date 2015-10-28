@@ -81,8 +81,8 @@ public:
 
     void SetPadding(const Vector2& padding);
     const Vector2 GetPadding() const;
-	
-	const Vector2 GetContentSize() const;
+
+    const Vector2 GetContentSize() const;
 	
 	void RecalculateContentSize();
 	

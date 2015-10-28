@@ -120,7 +120,7 @@ ParticleLayer::ParticleLayer()
 
     blending = BLENDING_ALPHABLEND;
     enableFog = true;
-	enableFrameBlend = false;
+    enableFrameBlend = false;
 	inheritPosition = false;
 	type = TYPE_PARTICLES;
 
@@ -242,8 +242,8 @@ ParticleLayer * ParticleLayer::Clone()
 	dstLayer->layerName = layerName;
 
     dstLayer->blending = blending;
-    dstLayer->enableFog=enableFog;
-	dstLayer->enableFrameBlend = enableFrameBlend;
+    dstLayer->enableFog = enableFog;
+    dstLayer->enableFrameBlend = enableFrameBlend;
 	dstLayer->inheritPosition = inheritPosition;
 	dstLayer->startTime = startTime;
 	dstLayer->endTime = endTime;
@@ -598,25 +598,25 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	if (randomSpinDirectionNode)
 	{
 		randomSpinDirection = randomSpinDirectionNode->AsBool();
-	}
+    }
 
     blending = BLENDING_ALPHABLEND; //default
 
     //read blend node for backward compatibility with old effect files
-    const YamlNode * blend = node->Get("blend");
-	if (blend)
+    const YamlNode* blend = node->Get("blend");
+    if (blend)
 	{
 		if (blend->AsString() == "alpha")
 		{
             blending = BLENDING_ALPHABLEND;
         }
-		if (blend->AsString() == "add")
+        if (blend->AsString() == "add")
 		{
             blending = BLENDING_ALPHA_ADDITIVE;
         }
     }
-	
-	const YamlNode * blendSrcNode = node->Get("srcBlendFactor");
+
+    const YamlNode * blendSrcNode = node->Get("srcBlendFactor");
 	const YamlNode * blendDestNode = node->Get("dstBlendFactor");
 
     if (blendSrcNode && blendDestNode)
@@ -641,8 +641,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     const YamlNode* blendingNode = node->Get("blending");
     if (blendingNode)
         blending = (eBlending)blendingNode->AsInt();
-    const YamlNode * fogNode = node->Get("enableFog");
-	if (fogNode)
+    const YamlNode* fogNode = node->Get("enableFog");
+    if (fogNode)
 	{
 		enableFog = fogNode->AsBool();
 	}
@@ -651,9 +651,9 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	if (frameBlendNode)
 	{
         enableFrameBlend = frameBlendNode->AsBool();
-    }		
+    }
 
-	startTime = 0.0f;
+    startTime = 0.0f;
 	endTime = 100000000.0f;
 	const YamlNode * startTimeNode = node->Get("startTime");
 	if (startTimeNode)
@@ -779,8 +779,8 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 
     layerNode->Add("blending", blending);
 
-    layerNode->Add("enableFog", enableFog);	
-	layerNode->Add("enableFrameBlend", enableFrameBlend);	
+    layerNode->Add("enableFog", enableFog);
+    layerNode->Add("enableFrameBlend", enableFrameBlend);	
 
 	layerNode->Add("scaleVelocityBase", scaleVelocityBase);
 	layerNode->Add("scaleVelocityFactor", scaleVelocityFactor);

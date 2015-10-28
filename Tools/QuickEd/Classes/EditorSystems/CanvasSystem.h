@@ -50,7 +50,7 @@ public:
     void LayoutCanvas();
 
 private:
-    void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
+    void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -59,6 +59,8 @@ private:
 
     DAVA::RefPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
     DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
+
+    DAVA::Set<PackageBaseNode*> rootControls;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__

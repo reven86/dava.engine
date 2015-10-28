@@ -2738,7 +2738,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         return classes.GetClassesAsString();
     }
 
-    void UIControl::SetClassesFromString(const String &classesStr)
+    void UIControl::SetClassesFromString(const String& classesStr)
     {
         classes.SetClassesFromString(classesStr);
         SetStyleSheetDirty();

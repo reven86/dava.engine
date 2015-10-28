@@ -226,7 +226,7 @@ namespace DAVA
 
         InspInfoDynamic()
             : memberDynamic(NULL){};
-        virtual ~InspInfoDynamic() {};
+        virtual ~InspInfoDynamic(){};
 
         virtual DynamicData Prepare(void* object, int filter = 0) const = 0;
         virtual Vector<FastName> MembersList(const DynamicData& ddata) const = 0;
@@ -239,9 +239,12 @@ namespace DAVA
         virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName& member) const = 0;
         virtual void MemberValueSet(const DynamicData& ddata, const FastName& member, const VariantType& value) = 0;
 
-        const InspMemberDynamic* GetMember() const { return memberDynamic; };
+        const InspMemberDynamic* GetMember() const
+        {
+            return memberDynamic;
+        };
 
-	protected:
+    protected:
 		const InspMemberDynamic* memberDynamic;
 	};
 };

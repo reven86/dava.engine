@@ -289,7 +289,7 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
         // Change state when scrolling is not active
         if (state != STATE_NONE && !lockTouch && (scrollView->GetHorizontalScroll()->GetCurrentSpeed() == 0) && (scrollView->GetVerticalScroll()->GetCurrentSpeed() == 0))
         {
-			state = STATE_NONE;
+            state = STATE_NONE;
 		}
 	}
 }

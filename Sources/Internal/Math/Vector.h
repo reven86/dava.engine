@@ -95,8 +95,8 @@ public:
     float32& operator[](eAxis axis);
     float32 operator[](eAxis axis) const;
     //! On operations
-    inline const Vector2 & operator += (const Vector2 & _v);
-	inline const Vector2 & operator -= (const Vector2 & _v);
+    inline const Vector2& operator+=(const Vector2& _v);
+    inline const Vector2 & operator -= (const Vector2 & _v);
 	inline const Vector2 & operator *= (const Vector2 & _v);
 	inline const Vector2 & operator /= (const Vector2 & _v);
 	inline const Vector2 & operator *= (float32 f);
@@ -180,7 +180,7 @@ public:
     float32 operator[](eAxis axis) const;
 
     //! Set functions
-	inline void	Set(float32 _x, float32 _y, float32 _z);
+    inline void	Set(float32 _x, float32 _y, float32 _z);
 	
 	//! Additional functions
 	inline Vector3	CrossProduct(const Vector3 & _v) const;
@@ -200,8 +200,8 @@ public:
     }
 
     //! On functions
-    inline float32 SquareLength()  const;
-	inline float32 Length() const;
+    inline float32 SquareLength() const;
+    inline float32 Length() const;
     inline float32 Normalize();
 	inline void Clamp(float32 min, float32 max);
 
@@ -265,8 +265,8 @@ public:
     };
     static const Vector4 Zero;
 
-    union{
-		struct
+    union {
+        struct
 		{
 			float32 x, y, z, w;
 		};
@@ -285,7 +285,7 @@ public:
     float32 operator[](eAxis axis) const;
 
     //! Set functions
-	inline void	Set(float32 _x, float32 _y, float32 _z, float32 _w);
+    inline void	Set(float32 _x, float32 _y, float32 _z, float32 _w);
 	
 	//! Additional functions
 	inline Vector4	CrossProduct(const Vector4 & _v) const;
