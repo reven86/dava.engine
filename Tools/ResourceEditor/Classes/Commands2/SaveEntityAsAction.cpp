@@ -97,8 +97,25 @@ void SaveEntityAsAction::Redo()
 		}
 		DVASSERT(nullptr != container);
 
-		scene->AddNode(container);								//1. Added new items in zero position with identity matrix
-		scene->staticOcclusionSystem->InvalidateOcclusion();	//2. invalidate static occlusion indeces
+        //Remove global material from cloned object
+        Scene* sourceScene = entities->GetEntity(0)->GetScene();
+        NMaterial* sourceGlobalMaterial = (sourceScene != nullptr) ? sourceScene->GetGlobalMaterial() : nullptr;
+        if (sourceGlobalMaterial)
+        {
+            List<NMaterial*> newMaterials;
+            container->GetDataNodes(newMaterials);
+
+            for (auto& mat : newMaterials)
+            {
+                if (mat->GetParent() == sourceGlobalMaterial)
+                {
+                    mat->SetParent(nullptr);
+                }
+            }
+        }
+
+        scene->AddNode(container); //1. Added new items in zero position with identity matrix
+        scene->staticOcclusionSystem->InvalidateOcclusion();	//2. invalidate static occlusion indeces
 		RemoveLightmapsRecursive(container);					//3. Reset lightmaps
 				
 		scene->SaveScene(sc2Path);
@@ -116,15 +133,11 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 		const uint32 batchCount = renderObject->GetRenderBatchCount();
 		for (uint32 b = 0; b < batchCount; ++b)
 		{
-			NMaterial *material = renderObject->GetRenderBatch(b)->GetMaterial();
-			if (nullptr != material)
-			{
-				auto lightmapPath = material->GetTexturePath(NMaterial::TEXTURE_LIGHTMAP);
-				if (!lightmapPath.IsEmpty())
-				{
-					material->SetTexturePath(NMaterial::TEXTURE_LIGHTMAP, FilePath());
-				}
-			}
+            NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
+            if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
+            {
+                material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
+            }
 		}
 	}
 

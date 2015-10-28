@@ -103,14 +103,39 @@ DAVA::Vector2 Cursor::GetPosition()
 {
     return static_cast<CoreMacOSPlatform *>(CoreMacOSPlatform::Instance())->GetMousePosition();
 }
-    
-void Cursor::SetCursorPinning(bool pin)
+
+static InputSystem::eMouseCaptureMode systemCursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
+
+bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
-    ShowSystemCursor(!pin);
-    CGAssociateMouseAndMouseCursorPosition(!pin);
+    switch (mode)
+    {
+    case InputSystem::eMouseCaptureMode::OFF:
+        SetSystemCursorVisibility(true);
+        CGAssociateMouseAndMouseCursorPosition(true);
+        systemCursorCaptureMode = mode;
+        return true;
+    case InputSystem::eMouseCaptureMode::PINING:
+        SetSystemCursorVisibility(false);
+        CGAssociateMouseAndMouseCursorPosition(false);
+        systemCursorCaptureMode = mode;
+        return true;
+    case InputSystem::eMouseCaptureMode::FRAME:
+    // Unsupported yet
+    default:
+        DVASSERT_MSG(false, "Unsupported cursor capture mode");
+        return false;
+    }
 }
-    
-void Cursor::ShowSystemCursor(bool show)
+
+InputSystem::eMouseCaptureMode Cursor::GetMouseCaptureMode()
+{
+    return systemCursorCaptureMode;
+}
+
+static bool systemCursorVisibility = false;
+
+bool Cursor::SetSystemCursorVisibility(bool show)
 {
 #ifdef __DAVAENGINE_NPAPI__
 	CGDirectDisplayID displayID = 0; //this parameter is ignored on MacOS.
@@ -128,13 +153,19 @@ void Cursor::ShowSystemCursor(bool show)
     else
         [NSCursor hide];
 #endif
+    systemCursorVisibility = show;
+    return true;
+}
+
+bool Cursor::GetSystemCursorVisibility()
+{
+    return systemCursorVisibility;
 }
     
 void Cursor::Show(bool _show)
 {
     show = _show;
-    
-    ShowSystemCursor(show);
+    SetSystemCursorVisibility(show);
 }
     
 bool Cursor::IsShow()

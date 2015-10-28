@@ -30,6 +30,8 @@
 #ifndef __SCENE_LOD_SYSTEM_H__
 #define __SCENE_LOD_SYSTEM_H__
 
+#include "Commands2/CreatePlaneLODCommandHelper.h"
+
 class Command2;
 class SceneEditor2;
 class EntityGroup;
@@ -110,24 +112,31 @@ protected:
     void ResetForceState(DAVA::Entity *entity);
     void ResetForceState(DAVA::LodComponent *lodComponent);
 
+    void Process(DAVA::float32 elapsedTime) override;
+
+    inline const DAVA::List<DAVA::LodComponent*> GetCurrentLODs() const;
+
     DAVA::int32 CalculateForceLayer() const;
     DAVA::float32 CalculateForceDistance() const;
 
-    DAVA::int32 currentLodsLayersCount;
-    bool forceDistanceEnabled;
-    DAVA::float32 forceDistance;
-    DAVA::int32 forceLayer;
-    bool allSceneModeEnabled;
+private:
+    DAVA::int32 currentLodsLayersCount = 0;
+
+    DAVA::int32 forceLayer = DAVA::LodComponent::INVALID_LOD_LAYER;
+    DAVA::int32 allSceneForceLayer = DAVA::LodComponent::MAX_LOD_LAYERS;
+    DAVA::float32 forceDistance = DAVA::LodComponent::MIN_LOD_DISTANCE;
+    DAVA::float32 allSceneForceDistance = DAVA::LodComponent::INVALID_DISTANCE;
 
     std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> lodTrianglesCount;
-    std::array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS > lodDistances;
+    std::array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS> lodDistances;
 
-    DAVA::UnorderedMap<DAVA::LodComponent *, ForceData> sceneLODs;
-    DAVA::List<DAVA::LodComponent *> selectedLODs;
-    inline const DAVA::List<DAVA::LodComponent *> GetCurrentLODs() const;
+    DAVA::UnorderedMap<DAVA::LodComponent*, ForceData> sceneLODs;
+    DAVA::List<DAVA::LodComponent*> selectedLODs;
 
-    DAVA::int32 allSceneForceLayer;
-    DAVA::float32 allSceneForceDistance;
+    std::vector<CreatePlaneLODCommandHelper::RequestPointer> planeLODRequests;
+
+    bool forceDistanceEnabled = false;
+    bool allSceneModeEnabled = false;
 };
 
 inline DAVA::uint32 EditorLODSystem::GetLayerTriangles(DAVA::uint32 layerNum) const

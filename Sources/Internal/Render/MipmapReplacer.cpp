@@ -31,7 +31,6 @@
 #include "Render/Texture.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
-#include "Render/RenderManager.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderBatch.h"
@@ -84,7 +83,7 @@ void MipMapReplacer::EnumerateTexturesRecursive(Entity * entity, Set<Texture *> 
 {
     if(!entity)
         return;
-
+#if RHI_COMPLETE
     int32 childrenCount = entity->GetChildrenCount();
     for(int32 i = 0; i < childrenCount; i++)
         EnumerateTexturesRecursive(entity->GetChild(i), textures, textureName);
@@ -110,10 +109,12 @@ void MipMapReplacer::EnumerateTexturesRecursive(Entity * entity, Set<Texture *> 
             }
         }
     }
+#endif
 }
 
 void MipMapReplacer::ReplaceMipMaps(Texture * texture)
 {
+#if RHI_COMPLETE
     if(!texture)
         return;
 
@@ -180,6 +181,7 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
     {
         RenderManager::Instance()->HWglBindTexture(saveId, texture->textureType);
     }
+#endif //RHI_COMPLETE
 }
 
 };

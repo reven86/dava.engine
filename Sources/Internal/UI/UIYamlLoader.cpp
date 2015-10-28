@@ -36,12 +36,11 @@
 #include "FileSystem/YamlEmitter.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/FileSystem.h"
-#include "Render/2D/GraphicsFont.h"
-#include "Render/2D/DFFont.h"
+#include "Render/2D/GraphicFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
-#include "Utils/Utils.h"
 #include "Render/2D/FTFont.h"
+#include "Utils/Utils.h"
 #include "UI/UIPackage.h"
 #include "UI/DefaultUIPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
@@ -553,37 +552,21 @@ Font* UIYamlLoader::CreateFontFromYamlNode(const YamlNode* node)
             return nullptr;
         }
     }
-    else if (type == "GraphicsFont")
+    else if (type == "GraphicFont")
     {
-        const YamlNode * fontNameNode = node->Get("sprite");
+        const YamlNode* fontNameNode = node->Get("name");
         if (!fontNameNode)
-            return nullptr;
-
-        const YamlNode * definitionNode = node->Get("definition");
-        if (!definitionNode)
-            return nullptr;
-
-        GraphicsFont* graphicsFont = GraphicsFont::Create(definitionNode->AsString(), fontNameNode->AsString());
-        font = graphicsFont;
-
-        if (!font)
         {
             return nullptr;
         }
 
-        const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
-        if (fontHorizontalSpacingNode)
-        {
-            graphicsFont->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt32());
-        }
-    }
-    else if (type == "DFFont")
-    {
-        const YamlNode * fontNameNode = node->Get("name");
+        const YamlNode* texNameNode = node->Get("texture");
         if (!fontNameNode)
+        {
             return nullptr;
+        }
 
-        font = DFFont::Create(fontNameNode->AsString());
+        font = GraphicFont::Create(fontNameNode->AsString(), texNameNode->AsString());
         if (!font)
         {
             return nullptr;
@@ -708,7 +691,7 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentN
 
 void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode)
 {
-    const List<UIControl*>& children = parentControl->GetRealChildren();
+    const List<UIControl*>& children = parentControl->GetChildren();
     if (children.empty())
         return;
 

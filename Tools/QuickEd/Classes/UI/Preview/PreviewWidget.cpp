@@ -40,8 +40,6 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Document.h"
-#include "EditorSystems/CanvasSystem.h"
-#include "EditorSystems/HUDSystem.h"
 
 using namespace DAVA;
 
@@ -81,17 +79,12 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
-    connect(davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
+    connect(davaGLWidget, &DavaGLWidget::ScreenChanged, this, &PreviewWidget::OnMonitorChanged);
 
     scaleCombo->setCurrentIndex(percentages.indexOf(100)); //100%
     scaleCombo->lineEdit()->setMaxLength(6); //3 digits + whitespace + % ?
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
-}
-
-DavaGLWidget *PreviewWidget::GetDavaGLWidget()
-{
-    return davaGLWidget;
 }
 
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
@@ -109,9 +102,14 @@ void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnder
         ControlNode* controlNode = *it;
         QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
         QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), &menu);
+        action->setCheckable(true);
         menu.addAction(action);
         void* ptr = static_cast<void*>(controlNode);
         action->setData(QVariant::fromValue(ptr));
+        if (selectionContainer.IsSelected(controlNode))
+        {
+            action->setChecked(true);
+        }
     }
     QAction* selectedAction = menu.exec(globalPos);
     if (nullptr != selectedAction)
@@ -139,6 +137,11 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     {
         scrollAreaController->SetNestedControl(nullptr);
     }
+}
+
+void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    selectionContainer.MergeSelection(selected, deselected);
 }
 
 void PreviewWidget::OnMonitorChanged()

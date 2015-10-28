@@ -98,9 +98,9 @@ void FoliageSystem::Process(float32 timeElapsed)
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(vegetationRO && vegetationRO->ReadyToRender())
     {
-        WindSystem * windSystem = GetScene()->windSystem;
-        
-        Camera * camera = GetScene()->GetRenderSystem()->GetMainCamera();
+        WindSystem* windSystem = GetScene()->windSystem;
+
+        Camera* camera = GetScene()->GetRenderSystem()->GetMainCamera();
         Vector<AbstractQuadTreeNode<VegetationSpatialData>*> & visibleCells = vegetationRO->BuildVisibleCellList(camera);
         uint32 cellsCount = static_cast<uint32>(visibleCells.size());
         
@@ -126,9 +126,7 @@ void FoliageSystem::Process(float32 timeElapsed)
         const Vector4& layerAnimationDrag = vegetationRO->GetLayerAnimationDragCoefficient();
         
         Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator endIt = updatableCells.end();
-        for(Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator it = updatableCells.begin();
-            it != endIt;
-            ++it)
+        for (Set<AbstractQuadTreeNode<VegetationSpatialData>*>::iterator it = updatableCells.begin(); it != endIt; ++it)
         {
             AbstractQuadTreeNode<VegetationSpatialData>* cell = *it;
             
@@ -177,6 +175,10 @@ void FoliageSystem::Process(float32 timeElapsed)
     
 void FoliageSystem::SyncFoliageWithLandscape()
 {
+    // CRAP: until issue with DX11 11.0 & 4444-textures resolved
+    if (rhi::HostApi() == rhi::RHI_DX11)
+        return;
+
     if(landscapeEntity && foliageEntity)
     {
         Landscape* landscapeRO = GetLandscape(landscapeEntity);
@@ -184,15 +186,11 @@ void FoliageSystem::SyncFoliageWithLandscape()
         
         vegetationRO->SetHeightmap(landscapeRO->GetHeightmap());
         vegetationRO->SetHeightmapPath(landscapeRO->GetHeightmapPathname());
-        vegetationRO->SetWorldSize(Vector3(landscapeRO->GetLandscapeSize(),
-                                           landscapeRO->GetLandscapeSize(),
-                                           landscapeRO->GetLandscapeHeight()));
+        vegetationRO->SetWorldSize(Vector3(landscapeRO->GetLandscapeSize(), landscapeRO->GetLandscapeSize(), landscapeRO->GetLandscapeHeight()));
     }
 }
 
-void FoliageSystem::SetPerturbation(const Vector3& point,
-                                    const Vector3& force,
-                                    float32 distance)
+void FoliageSystem::SetPerturbation(const Vector3& point, const Vector3& force, float32 distance)
 {
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(vegetationRO != NULL)
@@ -222,7 +220,7 @@ void FoliageSystem::DebugDrawVegetation()
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(NULL != vegetationRO)
     {
-        vegetationRO->DebugDrawVisibleNodes();
+        vegetationRO->DebugDrawVisibleNodes(GetScene()->GetRenderSystem()->GetDebugDrawer());
     }
 }
 

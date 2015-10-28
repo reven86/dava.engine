@@ -834,6 +834,7 @@ void TexturePacker::ExportImage(PngImageExt& image, const ImageExportKeys& keys,
     TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->GetGenerateMipMaps());
     descriptor->drawSettings.minFilter = ftItem.minFilter;
     descriptor->drawSettings.magFilter = ftItem.magFilter;
+    descriptor->drawSettings.mipFilter = ftItem.mipFilter;
 
     if (keys.toComressForGPU)
     {
@@ -865,60 +866,66 @@ void TexturePacker::ExportImage(PngImageExt& image, const ImageExportKeys& keys,
     }
 }
 
-Texture::TextureWrap TexturePacker::GetDescriptorWrapMode()
+rhi::TextureAddrMode TexturePacker::GetDescriptorWrapMode()
 {
 	if (CommandLineParser::Instance()->IsFlagSet("--wrapClampToEdge"))
 	{
-		return Texture::WRAP_CLAMP_TO_EDGE;
-	}
+        return rhi::TEXADDR_CLAMP;
+    }
 	else if (CommandLineParser::Instance()->IsFlagSet("--wrapRepeat"))
 	{
-		return Texture::WRAP_REPEAT;
-	}
-	
-	// Default Wrap mode
-	return Texture::WRAP_CLAMP_TO_EDGE;
+        return rhi::TEXADDR_WRAP;
+    }
+    else if (CommandLineParser::Instance()->IsFlagSet("--wrapMirror"))
+    {
+        return rhi::TEXADDR_MIRROR;
+    }
+
+    // Default Wrap mode
+    return rhi::TEXADDR_CLAMP;
 }
 
 TexturePacker::FilterItem TexturePacker::GetDescriptorFilter(bool generateMipMaps)
 {
 	// Default filter
-	TexturePacker::FilterItem filterItem(generateMipMaps ? Texture::FILTER_LINEAR_MIPMAP_LINEAR :
-															Texture::FILTER_LINEAR,
-															Texture::FILTER_LINEAR);
-	
-	if (CommandLineParser::Instance()->IsFlagSet("--magFilterNearest"))
+    TexturePacker::FilterItem filterItem(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, generateMipMaps ? rhi::TEXMIPFILTER_LINEAR : rhi::TEXMIPFILTER_NONE);
+
+    if (CommandLineParser::Instance()->IsFlagSet("--magFilterNearest"))
 	{
-		filterItem.magFilter = Texture::FILTER_NEAREST;
-	}
+        filterItem.magFilter = rhi::TEXFILTER_NEAREST;
+    }
 	if (CommandLineParser::Instance()->IsFlagSet("--magFilterLinear"))
 	{
-		filterItem.magFilter = Texture::FILTER_LINEAR;
-	}
+        filterItem.magFilter = rhi::TEXFILTER_LINEAR;
+    }
 	if (CommandLineParser::Instance()->IsFlagSet("--minFilterNearest"))
 	{
-		filterItem.minFilter = Texture::FILTER_NEAREST;
-	}
+        filterItem.minFilter = rhi::TEXFILTER_NEAREST;
+    }
 	else if (CommandLineParser::Instance()->IsFlagSet("--minFilterLinear"))
 	{
-		filterItem.minFilter = Texture::FILTER_LINEAR;
-	}
+        filterItem.minFilter = rhi::TEXFILTER_LINEAR;
+    }
 	else if (CommandLineParser::Instance()->IsFlagSet("--minFilterNearestMipmapNearest"))
 	{
-		filterItem.minFilter = Texture::FILTER_NEAREST_MIPMAP_NEAREST;
-	}
+        filterItem.minFilter = rhi::TEXFILTER_NEAREST;
+        filterItem.mipFilter = rhi::TEXMIPFILTER_NEAREST;
+    }
 	else if (CommandLineParser::Instance()->IsFlagSet("--minFilterLinearMipmapNearest"))
 	{
-		filterItem.minFilter = Texture::FILTER_LINEAR_MIPMAP_NEAREST;
-	}
+        filterItem.minFilter = rhi::TEXFILTER_LINEAR;
+        filterItem.mipFilter = rhi::TEXMIPFILTER_NEAREST;
+    }
 	else if (CommandLineParser::Instance()->IsFlagSet("--minFilterNearestMipmapLinear"))
 	{
-		filterItem.minFilter = Texture::FILTER_NEAREST_MIPMAP_LINEAR;
-	}
+        filterItem.minFilter = rhi::TEXFILTER_NEAREST;
+        filterItem.mipFilter = rhi::TEXMIPFILTER_LINEAR;
+    }
 	else if (CommandLineParser::Instance()->IsFlagSet("--minFilterLinearMipmapLinear"))
 	{
-		filterItem.minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
-	}
+        filterItem.minFilter = rhi::TEXFILTER_LINEAR;
+        filterItem.mipFilter = rhi::TEXMIPFILTER_LINEAR;
+    }
 
 	return filterItem;
 }

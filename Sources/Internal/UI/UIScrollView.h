@@ -43,7 +43,7 @@ class ScrollHelper;
 class UIScrollView : public UIControl, public UIScrollBarDelegate
 {
 public:
-	UIScrollView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    UIScrollView(const Rect& rect = Rect());
 
 protected:
     virtual ~UIScrollView();
@@ -51,7 +51,6 @@ protected:
 public:
 	virtual void AddControl(UIControl *control);
     virtual void RemoveControl(UIControl *control);
-    virtual List<UIControl* > GetSubcontrols();
     
 	// Add the control directly to the Scroll View Container.
 	void AddControlToContainer(UIControl* control);
@@ -74,14 +73,14 @@ public:
     void ScrollToVerticalPosition(float32 vertPos, float32 timeSec = 0.3f);
     void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
 
-	virtual UIControl *Clone();
-	virtual void CopyDataFrom(UIControl *srcControl);
-	
-	virtual void SetRect(const Rect &rect);
-	virtual void SetSize(const Vector2 &newSize);
-	
-	void SetPadding(const Vector2 & padding);
-	const Vector2 GetPadding() const;
+    UIScrollView* Clone() override;
+    virtual void CopyDataFrom(UIControl* srcControl);
+
+    virtual void SetRect(const Rect& rect);
+    virtual void SetSize(const Vector2& newSize);
+
+    void SetPadding(const Vector2& padding);
+    const Vector2 GetPadding() const;
 	
 	const Vector2 GetContentSize() const;
 	
@@ -100,10 +99,10 @@ public:
     void OnScrollViewContainerSizeChanged();
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
-    
+
     bool IsAutoUpdate() const;
     void SetAutoUpdate(bool auto_);
-    
+
     bool IsCenterContent() const;
     void SetCenterContent(bool center_);
 
@@ -122,7 +121,7 @@ protected:
 	UIScrollViewContainer *scrollContainer;
 	ScrollHelper *scrollHorizontal;
 	ScrollHelper *scrollVertical;
-    
+
     bool autoUpdate;
     bool centerContent;
 
@@ -132,9 +131,7 @@ private:
 public:
     INTROSPECTION_EXTEND(UIScrollView, UIControl,
                          PROPERTY("autoUpdate", "Auto Update", IsAutoUpdate, SetAutoUpdate, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("centerContent", "Center Content", IsCenterContent, SetCenterContent, I_SAVE | I_VIEW | I_EDIT)
-                         );
-
+                         PROPERTY("centerContent", "Center Content", IsCenterContent, SetCenterContent, I_SAVE | I_VIEW | I_EDIT));
 };
 };
 

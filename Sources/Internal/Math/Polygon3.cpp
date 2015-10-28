@@ -30,8 +30,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Collision/Collisions.h"
-
-
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -94,15 +93,15 @@ bool Polygon3::IsPointInside(const Vector3 & pt)
 	int intersectionsCount = 0;
 	Vector2 ray0(pt.x, pt.y);
 	Vector2 ray1(((points[0].x + points[1].x) / 2.0f) + 1000000.0f, ((points[0].y + points[1].y) / 2.0f) + 100000.0f);
-	
-	/*
-	 If you enabling debug intersections do not forget to call this function inside Draw of your application.
-	 If you'll call it inside update or mouse or keyboard input functions you can not get any output.
-	 */	
+
+/*
+	If you enabling debug intersections do not forget to call this function inside Draw of your application.
+	If you'll call it inside update or mouse or keyboard input functions you can not get any output.
+*/
 //#define DEBUG_DRAW_INTERSECTIONS
+
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-	RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
-	RenderHelper::DrawLine(ray0, ray1);
+    RenderSystem2D::Instance()->DrawLine(ray0, ray1, Color(0.0f, 1.0f, 0.0f, 1.0f));
 #endif 
 	
 	for (int i = 0; i < pointCount; ++i)
@@ -116,14 +115,16 @@ bool Polygon3::IsPointInside(const Vector3 & pt)
 		{
 			
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-			RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-			RenderHelper::DrawPoint(result, 5.0f);
+            RenderSystem2D::Instance()->DrawCircle(result, 5.0f, Color(1.0f, 1.0f, 1.0f, 1.0f));
 #endif 
 			
 			intersectionsCount++;
 		}
 	}
-	return intersectionsCount & 1;
+
+#undef DEBUG_DRAW_INTERSECTIONS
+
+    return intersectionsCount & 1;
 }
 
 //! Remove segment with index

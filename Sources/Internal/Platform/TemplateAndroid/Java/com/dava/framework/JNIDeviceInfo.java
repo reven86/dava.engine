@@ -30,7 +30,7 @@ import android.util.Log;
 
 public class JNIDeviceInfo {
 	final static String TAG = "JNIDeviceInfo";
-	static int gpuFamily = -1;
+	static int gpuFamily = 4; //RHI_COMPLETE: workaround, need detect gpu using RenderCaps in native code
 
 	public static String GetVersion()
 	{
