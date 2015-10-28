@@ -133,7 +133,7 @@ private:
     bool PerformRender(const RenderPassCameraConfig&);
 
 private:
-    Camera* cameras[6];
+    std::array<Camera*, 6> cameras;
     StaticOcclusionRenderPass* staticOcclusionRenderPass = nullptr;
     StaticOcclusionData* currentData = nullptr;
     RenderSystem* renderSystem = nullptr;

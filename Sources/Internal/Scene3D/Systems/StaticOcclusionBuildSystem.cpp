@@ -185,7 +185,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
 
     GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
 
-    uint16_t index = 0;
+    uint16 index = 0;
     for (auto& ro : renderObjectsArray)
     {
         // if we are going to renew indices they should be cleared prior to it

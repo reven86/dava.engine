@@ -386,8 +386,10 @@ bool StaticOcclusion::ProcessRecorderQueries()
 }
 
 // helper function, see implementation below
-
+namespace helper
+{
 String FormatTime(double fSeconds);
+}
 
 void StaticOcclusion::UpdateInfoString()
 {
@@ -395,20 +397,20 @@ void StaticOcclusion::UpdateInfoString()
     auto blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
     if (blockIndex >= totalBlocks)
     {
-        lastInfoMessage = Format("Completed. Total time spent: %s", FormatTime(stats.buildDuration).c_str());
+        lastInfoMessage = Format("Completed. Total time spent: %s", helper::FormatTime(stats.buildDuration).c_str());
     }
     else
     {
-        float fTotalRenders = static_cast<float>(stats.totalRenderPasses);
-        float fRemainingRenders = static_cast<float>(renderPassConfigs.size());
-        float rendersCompleted = (stats.totalRenderPasses == 0) ? 1.0f : (1.0f - fRemainingRenders / fTotalRenders);
+        float32 fTotalRenders = static_cast<float32>(stats.totalRenderPasses);
+        float32 fRemainingRenders = static_cast<float32>(renderPassConfigs.size());
+        float32 rendersCompleted = (stats.totalRenderPasses == 0) ? 1.0f : (1.0f - fRemainingRenders / fTotalRenders);
 
         auto averageTime = (blockIndex == 0) ? 0.0 : (stats.buildDuration / static_cast<double>(blockIndex));
         auto remainingBlocks = totalBlocks - blockIndex;
         auto remainingTime = static_cast<double>(remainingBlocks) * averageTime;
         lastInfoMessage = Format("Processing block: %u from %u (%d%% completed) \n\nTotal time spent: %s\nEstimated remaining time: %s",
                                  blockIndex + 1, totalBlocks, static_cast<int>(100.0f * rendersCompleted),
-                                 FormatTime(stats.buildDuration).c_str(), FormatTime(remainingTime).c_str());
+                                 helper::FormatTime(stats.buildDuration).c_str(), helper::FormatTime(remainingTime).c_str());
     }
 }
 
@@ -515,6 +517,8 @@ void StaticOcclusionData::SetData(const uint32* _data, uint32 dataSize)
     std::copy(_data, _data + elements, dataHolder.begin());
 }
 
+namespace helper
+{
 String FormatTime(double fSeconds)
 {
     uint64 seconds = static_cast<uint64>(fSeconds);
@@ -525,5 +529,6 @@ String FormatTime(double fSeconds)
     char buffer[1024] = {};
     sprintf(buffer, "%02llu:%02llu:%02llu", hours, minutes, seconds);
     return String(buffer);
+}
 }
 };

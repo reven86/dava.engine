@@ -55,7 +55,7 @@ public:
     void DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
                             StaticOcclusionFrameResult& target, const StaticOcclusionData&, uint32 blockIndex);
 
-public:
+private:
     rhi::HTexture colorBuffer;
     rhi::HTexture depthBuffer;
 };

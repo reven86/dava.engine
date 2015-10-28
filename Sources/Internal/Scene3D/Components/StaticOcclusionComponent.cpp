@@ -125,7 +125,7 @@ void StaticOcclusionDataComponent::Serialize(KeyedArchive *archive, Serializatio
         archive->SetUInt32("sodc.subX", data.sizeX);
         archive->SetUInt32("sodc.subY", data.sizeY);
         archive->SetUInt32("sodc.subZ", data.sizeZ);
-        archive->SetByteArray("sodc.data", (uint8*)data.GetData(), data.blockCount * data.objectCount / 32 * 4);
+        archive->SetByteArray("sodc.data", (uint8*)data.GetData(), data.blockCount * data.objectCount / 32 * sizeof(uint32));
         if (data.cellHeightOffset)
             archive->SetByteArray("sodc.cellHeightOffset", (uint8*)data.cellHeightOffset, data.sizeX*data.sizeY*sizeof(float32));
     }
