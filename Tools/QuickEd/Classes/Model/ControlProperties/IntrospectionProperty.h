@@ -75,7 +75,7 @@ public:
     void DisableResetFeature();
 
 protected:
-    virtual void ApplyValue(const DAVA::VariantType &value);
+    void ApplyValue(const DAVA::VariantType& value) override;
 
 protected:
     DAVA::BaseObject *object;
