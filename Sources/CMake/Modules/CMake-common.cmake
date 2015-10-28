@@ -394,7 +394,8 @@ macro ( add_content_win_uap_single CONTENT_DIR )
         set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
         
         #all resources deploys in specified location
-        set ( DEPLOYMENT_LOCATION "${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}\\${ITEM_GROUP}" )
+        #set ( DEPLOYMENT_LOCATION "${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}\\${ITEM_GROUP}" )
+        set ( DEPLOYMENT_LOCATION "${ITEM_GROUP}" )
         set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${DEPLOYMENT_LOCATION} )
         
     ENDFOREACH()

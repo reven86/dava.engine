@@ -52,7 +52,7 @@ class DeferredScreenMetricEvents;
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
  On startup application creates minimal neccesary infrastructure to allow coexistance of
- XAML native controls and DirectX and OpenGL (through ANGLE).
+ XAML native controls and DirectX.
  Application makes explicit use of two threads:
     - UI thread, created by system, where all interaction with UI and XAML controls must be done
     - main thread, created by WinUAPXamlApp instance, where framework lives

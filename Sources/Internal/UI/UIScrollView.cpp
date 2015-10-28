@@ -288,8 +288,8 @@ void UIScrollView::RecalculateContentSize()
 
     Rect contentRect = scrollContainer->GetRect();
     Rect parentRect = GetRect();
-	
-	// Move all scrollContainer content with negative positions iside its rect
+
+    // Move all scrollContainer content with negative positions iside its rect
 	PushContentToBounds(scrollContainer);
 	// Get max size of content - all childrens
 	Vector2 maxSize = GetMaxSize(scrollContainer,

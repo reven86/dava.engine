@@ -61,9 +61,8 @@ set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor
 
 #additional variables for Windows UAP
 if ( WINDOWS_UAP )
-    #turning on ANGLE and openssl_WinRT lib on Windows Store
+    #turning on openssl_WinRT lib on Windows Store
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
 
