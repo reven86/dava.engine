@@ -297,12 +297,28 @@ void TextFieldPlatformImpl::ShowField()
     DVASSERT([textFieldHolder superview] != nil);
     [textFieldHolder setHidden:NO];
     [textFieldHolder->textCtrl setHidden:NO];
+    
+    // Attach to "keyboard shown/keyboard hidden" notifications.
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:textFieldHolder selector:@selector(keyboardDidShow:)
+                   name:UIKeyboardDidShowNotification object:nil];
+    [center addObserver:textFieldHolder selector:@selector(keyboardWillHide:)
+                   name:UIKeyboardWillHideNotification object:nil];
+    [center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
+                   name:UIKeyboardDidChangeFrameNotification object:nil];
+
 }
 
 void TextFieldPlatformImpl::HideField()
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
     [textFieldHolder setHidden:YES];
+    
+    // Attach to "keyboard shown/keyboard hidden" notifications.
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
+    [center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
+    [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
 }
 
 void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffset)
