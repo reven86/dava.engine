@@ -536,7 +536,7 @@ void gles2_Initialize(const InitParam& param)
     if (param.maxRenderPassCount)
         RenderPassGLES2::Init(param.maxRenderPassCount);
     if (param.maxCommandBuffer)
-        ConstBufferGLES2::Init(param.maxCommandBuffer);
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
     if (param.maxPacketListCount)
         InitPacketListPool(param.maxPacketListCount);
 
@@ -628,7 +628,7 @@ void gles2_Initialize(const InitParam& param)
     if (param.maxRenderPassCount)
         RenderPassGLES2::Init(param.maxRenderPassCount);
     if (param.maxCommandBuffer)
-        ConstBufferGLES2::Init(param.maxCommandBuffer);
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
     if (param.maxPacketListCount)
         InitPacketListPool(param.maxPacketListCount);
 
@@ -723,7 +723,7 @@ void gles2_Initialize(const InitParam& param)
     if (param.maxRenderPassCount)
         RenderPassGLES2::Init(param.maxRenderPassCount);
     if (param.maxCommandBuffer)
-        ConstBufferGLES2::Init(param.maxCommandBuffer);
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
     if (param.maxPacketListCount)
         InitPacketListPool(param.maxPacketListCount);
 
