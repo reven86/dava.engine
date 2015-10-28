@@ -274,8 +274,8 @@ void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
 {
     Vector<String> tokens;
     Split(classesStr.toStdString(), " ", tokens);
-    
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalFlags();
+
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
     for (String &token : tokens)
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
 

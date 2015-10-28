@@ -62,6 +62,7 @@ public:
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
+    bool IsTouchPresented();
 
 private:
     DeviceInfo::ScreenInfo screenInfo;

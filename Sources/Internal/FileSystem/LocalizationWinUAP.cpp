@@ -26,46 +26,31 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
 
-#ifndef __DAVAENGINE_UI_STYLESHEET_SYSTEM_H__
-#define __DAVAENGINE_UI_STYLESHEET_SYSTEM_H__
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Base/BaseTypes.h"
-#include "Base/FastName.h"
-#include "UIStyleSheetStructs.h"
+#include "FileSystem/LocalizationWinUAP.h"
+#include "FileSystem/LocalizationSystem.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
-
-class UIControl;
-class UIStyleSheet;
-struct UIStyleSheetSelector;
-class VariantType;
-
-class UIStyleSheetSystem
+void LocalizationWinUAP::SelectPreferedLocalization()
 {
-public:
-    UIStyleSheetSystem();
-    ~UIStyleSheetSystem();
+    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
+}
 
-    void ProcessControl(UIControl* control);
-    void AddGlobalClass(const FastName &clazz);
-    void RemoveGlobalClass(const FastName &clazz);
-    bool HasGlobalClass(const FastName &clazz) const;
-    void SetGlobalTaggedClass(const FastName& tag, const FastName& clazz);
-    void ResetGlobalTaggedClass(const FastName& tag);
-    void ClearGlobalClasses();
-
-private:
-    bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
-    bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
-
-    template <typename CallbackType>
-    void DoForAllPropertyInstances(UIControl* control, uint32 propertyIndex, const CallbackType& action);
-
-    UIStyleSheetClassSet globalClasses;
+String LocalizationWinUAP::GetDeviceLang(void)
+{
+    String locale = DeviceInfo::GetLocale();
+    String::size_type posEnd = locale.find('-', 2);
+    if (String::npos != posEnd)
+    {
+        locale = locale.substr(0, posEnd);
+    }
+    return locale;
+}
 };
 
-};
-
-#endif
+#endif // __DAVAENGINE_WIN_UAP__
