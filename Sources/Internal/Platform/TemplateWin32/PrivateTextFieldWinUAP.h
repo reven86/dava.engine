@@ -214,14 +214,14 @@ private:
     Windows::UI::Xaml::Controls::TextBox^ nativeText = nullptr;
     Windows::UI::Xaml::Controls::PasswordBox^ nativePassword = nullptr;
     Windows::UI::Xaml::Controls::Control^ nativeControl = nullptr;      // Points either to nativeText or nativePassword
-    Windows::UI::Xaml::Controls::Border^ nativeControlHolder = nullptr;
+    Windows::UI::Xaml::Controls::Border ^ nativeControlHolder = nullptr;
 
     // Tokens to unsubscribe from touch keyboard event handlers
     Windows::Foundation::EventRegistrationToken tokenKeyboardShowing;
     Windows::Foundation::EventRegistrationToken tokenKeyboardHiding;
 
     bool ignoreTextChange = false;
-    bool waitRenderToTextureComplete = false;   // If flag is set do not move native control offscreen to get rid of some flickering
+    bool waitRenderToTextureComplete = false; // If flag is set do not move native control offscreen to get rid of some flickering
 
     int32 caretPosition = 0;                // Current caret position
     int32 savedCaretPosition = 0;           // Saved caret position to restore it when delegate declines text changing

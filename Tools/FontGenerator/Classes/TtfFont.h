@@ -53,9 +53,10 @@ public:
     DAVA::int32 GetCharMap() const;
 
     DAVA::float32 GetLineHeight();
-	DAVA::float32 GetBaseline() const;
+    DAVA::float32 GetBaseline() const;
 
     FT_Face& GetFace();
+
 protected:
     DAVA::int32 size;
     FT_Face face;

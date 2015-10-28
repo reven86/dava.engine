@@ -73,7 +73,7 @@ public slots:
 protected slots:
 	void OnTemplateChanged(int index);
     void OnTemplateButton();
-	void OnPropertyEdited(const QModelIndex &);
+    void OnPropertyEdited(const QModelIndex &);
     void OnAddRemoveButton();
 
     void OnMaterialAddGlobal(bool checked);
@@ -125,27 +125,27 @@ private:
     };
 
     QString GetTemplatePath(DAVA::int32 index) const;
-    DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString &inputFile);
+    DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString& inputFile);
 
     void initActions();
     void initTemplates();
     void setTemplatePlaceholder( const QString& text );
 
-	void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset, 
-		DAVA::SerializationContext* context) const;
-	void StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-		DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context) const;
-	void StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::InspMember* materialMember, 
-		DAVA::KeyedArchive* flagsArchive) const;
-	void StoreMaterialProperties(DAVA::NMaterial* material, const DAVA::InspMember* materialMember, 
-		DAVA::KeyedArchive* propertiesArchive) const;
+    void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
+                               DAVA::SerializationContext* context) const;
+    void StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
+                               DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context) const;
+    void StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
+                            DAVA::KeyedArchive* flagsArchive) const;
+    void StoreMaterialProperties(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
+                                 DAVA::KeyedArchive* propertiesArchive) const;
 
-	void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
-		DAVA::SerializationContext* context, uint32 options);
-	void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
-	void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
-	void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive, 
-		const DAVA::FilePath& scenePath);
+    void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
+                                             DAVA::SerializationContext* context, uint32 options);
+    void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
+    void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
+    void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive,
+                                          const DAVA::FilePath& scenePath);
 
     QtPropertyData* AddSection(const QString& sectionName);
 
@@ -153,18 +153,18 @@ private:
     bool HasMaterialProperty(NMaterial* material, const FastName& paramName);
 
 private:
-	QtPosSaver posSaver;
-	QList<DAVA::NMaterial*> curMaterials;
-    QtPropertyData *baseRoot = nullptr;
-    QtPropertyData *flagsRoot = nullptr;
+    QtPosSaver posSaver;
+    QList<DAVA::NMaterial*> curMaterials;
+    QtPropertyData* baseRoot = nullptr;
+    QtPropertyData* flagsRoot = nullptr;
     QtPropertyData* illuminationRoot = nullptr;
-    QtPropertyData *propertiesRoot = nullptr;
-    QtPropertyData *texturesRoot = nullptr;
+    QtPropertyData* propertiesRoot = nullptr;
+    QtPropertyData* texturesRoot = nullptr;
     QPointer<MaterialTemplateModel> templatesFilterModel;
 
     ExpandMap expandMap;
-	PropertyEditorStateHelper *treeStateHelper = nullptr;
-	Ui::MaterialEditor *ui = nullptr;
+    PropertyEditorStateHelper* treeStateHelper = nullptr;
+    Ui::MaterialEditor* ui = nullptr;
 
     DAVA::FilePath lastSavePath;
     DAVA::uint32 lastCheckState = 0;

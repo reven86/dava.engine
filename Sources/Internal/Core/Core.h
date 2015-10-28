@@ -157,7 +157,7 @@ public:
 		\brief Get list of available display modes supported by hardware
 		\param[out] availableModes list of available modes that is supported by hw
 	*/
-	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
+    virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
 	
 	/**
 		\brief Find mode that matches best to the mode you've requested
@@ -182,11 +182,11 @@ public:
 		param[in] iconId resource id for icon from resource.h file. For example, 101 for #define IDI_ICON1 101
 	 */
 	virtual void SetIcon(int32 iconId);
-	
-    inline float32 GetScreenScaleFactor() const;
-    
-	virtual Core::eScreenOrientation GetScreenOrientation();
-	
+
+    virtual float32 GetScreenScaleFactor() const;
+
+    virtual Core::eScreenOrientation GetScreenOrientation();
+
     virtual uint32 GetScreenDPI();
 	
 	/*
@@ -278,8 +278,6 @@ private:
 	
 	Vector<String> commandLine;
 	bool isConsoleMode;
-
-    float32 screenScaleFactor;
     void* nativeView;
 };
     
@@ -288,11 +286,6 @@ inline bool Core::IsActive()
     return isActive;
 }
     
-inline float32 Core::GetScreenScaleFactor() const
-{
-    return screenScaleFactor;
-}
-
 };
 
 #endif // __DAVAENGINE_CORE_H__

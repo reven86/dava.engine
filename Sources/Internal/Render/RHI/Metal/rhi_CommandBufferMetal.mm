@@ -245,9 +245,9 @@ metal_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     if (syncObject != InvalidHandle)
     {
         [cb->buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb) {
-            SyncObjectMetal_t*  sync = SyncObjectPool::Get( syncObject );
-            
-            sync->is_signaled = true;
+          SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+
+          sync->is_signaled = true;
         }];
     }
 }
@@ -346,23 +346,21 @@ metal_CommandBuffer_SetViewport(Handle cmdBuf, Viewport viewport)
     [encoder setViewport:vp];
 }
 
-
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_SetFillMode( Handle cmdBuf, FillMode mode )
+metal_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
     id<MTLRenderCommandEncoder> encoder = cb->encoder;
-    
-    [encoder setTriangleFillMode:(mode==FILLMODE_WIREFRAME) ? MTLTriangleFillModeLines : MTLTriangleFillModeFill];
-}
 
+    [encoder setTriangleFillMode:(mode == FILLMODE_WIREFRAME) ? MTLTriangleFillModeLines : MTLTriangleFillModeFill];
+}
 
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex)
+metal_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
@@ -370,7 +368,6 @@ metal_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex)
 
     StatSet::IncStat(stat_SET_VB, 1);
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -642,7 +639,7 @@ metal_Present(Handle syncObject)
         RenderPassMetal_t* rp = RenderPassPool::Get(_CmdQueue[i]);
         bool do_add = true;
 
-        for (std::vector<RenderPassMetal_t*>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+        for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
         {
             if (rp->priority > (*p)->priority)
             {
@@ -662,13 +659,13 @@ metal_Present(Handle syncObject)
         CommandBufferMetal_t* last_cb = CommandBufferPool::Get(last_cb_h);
 
         [last_cb->buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb) {
-             SyncObjectMetal_t*  sync = SyncObjectPool::Get( syncObject );
-             
-             sync->is_signaled = true;
+          SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+
+          sync->is_signaled = true;
         }];
     }
 
-    for (std::vector<RenderPassMetal_t*>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+    for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
         RenderPassMetal_t* pass = *p;
 

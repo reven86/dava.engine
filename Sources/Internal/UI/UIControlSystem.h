@@ -301,8 +301,8 @@ public:
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
-    void SetClearColor(const Color & clearColor);
-    
+    void SetClearColor(const Color& clearColor);
+
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -324,7 +324,7 @@ private:
     UIStyleSheetSystem* styleSheetSystem;
     UIScreenshoter* screenshoter;
 
-	Vector<ScreenSwitchListener*> screenSwitchListeners;
+    Vector<ScreenSwitchListener*> screenSwitchListeners;
 
 	UIScreen * currentScreen;
 	UIScreen * nextScreen;
@@ -350,10 +350,9 @@ private:
 
     Color clearColor;
 
-	friend class UIScreenTransition;
+    friend class UIScreenTransition;
 	friend class UIScreenManager;
 };
-
 };
 
 #endif

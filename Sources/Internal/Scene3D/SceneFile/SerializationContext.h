@@ -50,7 +50,7 @@ namespace DAVA
 	{
     public:
         struct PolygonGroupLoadInfo
-        {            
+        {
             uint32 filePos = 0;
             int32 requestedFormat = 0;
             bool onScene = false;
@@ -126,12 +126,12 @@ namespace DAVA
 		inline void AddBinding(uint64 parentKey, NMaterial* material)
 		{
 			MaterialBinding binding;
-			binding.childMaterial = material;
-			binding.parentKey = parentKey;
+            binding.childMaterial = material;
+            binding.parentKey = parentKey;
 			
 			materialBindings.push_back(binding);
 		}
-		
+
         inline void SetGlobalMaterialKey(uint64 materialKey)
         {
             globalMaterialKey = materialKey;
@@ -142,7 +142,7 @@ namespace DAVA
             return globalMaterialKey;
         }
 
-		inline void SetLastError(uint32 error)
+        inline void SetLastError(uint32 error)
 		{
 			lastError = error;
 		}
@@ -168,28 +168,28 @@ namespace DAVA
         void AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format);
         void LoadPolygonGroupData(File *file);
 
-	private:
-		struct MaterialBinding
-		{
-			uint64 parentKey = 0;
-			NMaterial* childMaterial = nullptr;
-		};
+    private:
+        struct MaterialBinding
+        {
+            uint64 parentKey = 0;
+            NMaterial* childMaterial = nullptr;
+        };
 
-		Map<uint64, DataNode*> dataBlocks;
-		Map<uint64, NMaterial*> importedMaterials;
-		Vector<MaterialBinding> materialBindings;
+        Map<uint64, DataNode*> dataBlocks;
+        Map<uint64, NMaterial*> importedMaterials;
+        Vector<MaterialBinding> materialBindings;
         Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
 
-		Scene* scene = nullptr;
-		FilePath rootNodePathName;
-		FilePath scenePath;
-		FastName defaultMaterialQuality;
+        Scene* scene = nullptr;
+        FilePath rootNodePathName;
+        FilePath scenePath;
+        FastName defaultMaterialQuality;
         uint64 globalMaterialKey = 0;
-		uint32 lastError = 0;
-		uint32 version = 0;
+        uint32 lastError = 0;
+        uint32 version = 0;
 
-		bool debugLogEnabled = false;
-	};
+        bool debugLogEnabled = false;
+    };
 };
 
 #endif

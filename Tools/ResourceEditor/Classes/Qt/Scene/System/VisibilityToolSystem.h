@@ -71,7 +71,7 @@ protected:
     static const float32 CROSS_TEXTURE_SIZE;
 
     Texture* crossTexture;
-	uint32 curToolSize;
+    uint32 curToolSize;
 
 	bool editingIsEnabled;
 
@@ -84,9 +84,9 @@ protected:
 
 	Vector2 visibilityPoint;
 
-	const FastName& textureLevel;
+    const FastName& textureLevel;
 
-	void PrepareConfig();
+    void PrepareConfig();
 	void SetState(eVisibilityToolState newState);
 
 	void SetVisibilityPointInternal();
@@ -99,7 +99,7 @@ protected:
                            const Vector<float32>& heightValues,
                            Vector<Vector3>& colorizedPoints);
 
-    void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points);
+    void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3>& points);
     void DrawVisibilityPoint();
     void RenderVisibilityPoint(bool clearTarget);
 

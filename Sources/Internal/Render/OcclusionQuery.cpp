@@ -29,7 +29,6 @@
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
 
-
 namespace DAVA
 {
 #if defined(__DAVAENGINE_OPENGL__)
@@ -122,7 +121,7 @@ bool OcclusionQuery::IsResultAvailable()
     return (available != 0);
 #endif
 #endif // RHI_COMPLETE
-	return true;
+    return true;
 }
     
 void OcclusionQuery::GetQuery(uint32 * resultValue)
@@ -226,7 +225,7 @@ FrameOcclusionQueryManager::FrameQuery * FrameOcclusionQueryManager::GetQuery(co
 
 void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
 {
-    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     frameBegan = true;
@@ -239,7 +238,7 @@ void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
 
 void FrameOcclusionQueryManager::ProccesRenderedFrame() //OnEndFrame
 {
-    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     frameBegan = false;
@@ -291,7 +290,7 @@ void FrameOcclusionQueryManager::ProccesRenderedFrame() //OnEndFrame
 
 void FrameOcclusionQueryManager::BeginQuery(const FastName & queryName)
 {
-    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     FrameQuery * frameQuery = GetQuery(queryName);
@@ -311,7 +310,7 @@ void FrameOcclusionQueryManager::BeginQuery(const FastName & queryName)
 
 void FrameOcclusionQueryManager::EndQuery(const FastName & queryName)
 {
-    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     FrameOcclusionQueryManager::FrameQuery * frameQuery = GetQuery(queryName);
@@ -334,7 +333,7 @@ bool FrameOcclusionQueryManager::IsQueryOpen(const FastName & queryName)
 
 uint32 FrameOcclusionQueryManager::GetFrameStats(const FastName & queryName) const
 {
-    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return 0;
 
     DVASSERT(!frameBegan); //should be called on after EndFrame() and before BeginFrame()
@@ -359,4 +358,3 @@ void FrameOcclusionQueryManager::GetQueriesNames(Vector<FastName> & names) const
 #endif
 
 };
-

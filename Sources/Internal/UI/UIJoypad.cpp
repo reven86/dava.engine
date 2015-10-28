@@ -237,7 +237,6 @@ int32 UIJoypad::GetStickSpriteFrame() const
     return 0;
 }
 
-    
 void UIJoypad::SetStickSprite(Sprite *stickSprite, int32 frame)
 {
     DVASSERT(stick.Valid());
@@ -291,10 +290,10 @@ void UIJoypad::Input(UIEvent *currentInput)
 
         currentPos -= Vector2(r.dx * 0.5f, r.dy * 0.5f);
 
-        if(currentPos.x < deadAreaSize &&  currentPos.x > -deadAreaSize && currentPos.y < deadAreaSize &&  currentPos.y > -deadAreaSize)
-		{
-			currentPos.x = 0;
-			currentPos.y = 0;
+        if (currentPos.x < deadAreaSize && currentPos.x > -deadAreaSize && currentPos.y < deadAreaSize && currentPos.y > -deadAreaSize)
+        {
+            currentPos.x = 0;
+            currentPos.y = 0;
 		}
         currentPos.x = Max(currentPos.x, -size.x/2);
         currentPos.x = Min(currentPos.x, size.x/2);
@@ -309,7 +308,7 @@ void UIJoypad::Input(UIEvent *currentInput)
 
     needRecalcAnalog = true;
     needRecalcDigital = true;
-	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
+    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
 void UIJoypad::InputCancelled(UIEvent *currentInput)
@@ -328,7 +327,7 @@ void UIJoypad::InputCancelled(UIEvent *currentInput)
 
         needRecalcAnalog = true;
         needRecalcDigital = true;
-	}
+    }
 }
 
 void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader *loader)

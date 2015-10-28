@@ -37,20 +37,18 @@
 
 namespace DAVA
 {
-
 namespace ShaderDescriptorCache
-{        
-    void Initialize();
-    void Uninitialize();
-    void Clear();
-    void ClearDynamicBindigs();
+{
+void Initialize();
+void Uninitialize();
+void Clear();
+void ClearDynamicBindigs();
 
-    void RelaoadShaders();
+void RelaoadShaders();
 
-    ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 
-
-    void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key);
+void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key);
 };
 
 };

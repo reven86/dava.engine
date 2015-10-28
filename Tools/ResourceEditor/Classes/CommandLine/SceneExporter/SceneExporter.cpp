@@ -42,7 +42,7 @@
 
 using namespace DAVA;
 
-SceneExporter::SceneExporter() 
+SceneExporter::SceneExporter()
 {
     exportForGPU = GPU_ORIGIN;
 	quality = TextureConverter::ECQ_DEFAULT;
@@ -126,7 +126,7 @@ void SceneExporter::ExportSceneFile(const String &fileName, Set<String> &errorLo
     }
 
     SafeRelease(scene);
-	RenderObjectsFlusher::Flush();
+    RenderObjectsFlusher::Flush();
 }
 
 void SceneExporter::ExportTextureFolder(const String &folderName, Set<String> &errorLog)
@@ -204,7 +204,7 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     sceneWasExportedCorrectly &= ExportLandscape(scene, errorLog);
     uint64 landscapeTime = SystemTimer::Instance()->AbsoluteMS() - landscapeStart;
 
-	// save scene to new place
+    // save scene to new place
     uint64 saveStart = SystemTimer::Instance()->AbsoluteMS();
     FilePath tempSceneName = FilePath::CreateWithNewExtension(sceneUtils.dataSourceFolder + relativeFilename, ".exported.sc2");
     scene->SaveScene(tempSceneName, optimizeOnExport);
@@ -229,9 +229,8 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     
     uint64 exportTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
     Logger::Info("Export Status\n\tScene: %s\n\tExport time: %ldms\n\tRemove editor nodes time: %ldms\n\tRemove custom properties: %ldms\n\tExport descriptors: %ldms\n\tValidation time: %ldms\n\tLandscape time: %ldms\n\tVegetation time: %ldms\n\tSave time: %ldms\n\tMove time: %ldms\n\tErrors occured: %d",
-                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, saveTime, moveTime, !sceneWasExportedCorrectly
-                 );
-    
+                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, saveTime, moveTime, !sceneWasExportedCorrectly);
+
     return;
 }
 
@@ -314,20 +313,20 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
 bool SceneExporter::ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog)
 {
     bool allDescriptorsWereExported = true;
-    
+
     DAVA::TexturesMap sceneTextures;
     SceneHelper::EnumerateSceneTextures(scene, sceneTextures, SceneHelper::TexturesEnumerateMode::INCLUDE_NULL);
 
-    for(const auto & scTex: sceneTextures)
+    for (const auto& scTex : sceneTextures)
     {
-        const DAVA::FilePath & path = scTex.first;
-        if(path.GetType() == DAVA::FilePath::PATH_IN_MEMORY)
+        const DAVA::FilePath& path = scTex.first;
+        if (path.GetType() == DAVA::FilePath::PATH_IN_MEMORY)
         {
             continue;
         }
-        
+
         DVASSERT(path.IsEmpty() == false);
-        
+
         allDescriptorsWereExported &= ExportTextureDescriptor(path, errorLog);
     }
     

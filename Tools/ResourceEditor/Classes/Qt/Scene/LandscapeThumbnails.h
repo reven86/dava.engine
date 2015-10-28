@@ -34,14 +34,14 @@
 
 namespace DAVA
 {
-	class Landscape;
-	class Texture;
+class Landscape;
+class Texture;
 }
 
 namespace LandscapeThumbnails
 {
-	using Callback = DAVA::Function<void(DAVA::Landscape*, DAVA::Texture*)>;
-    void Create(DAVA::Landscape*, Callback callback);
+using Callback = DAVA::Function<void(DAVA::Landscape*, DAVA::Texture*)>;
+void Create(DAVA::Landscape*, Callback callback);
 };
 
 #endif // __LANDSCAPE_THUMBNAIL_CREATOR__

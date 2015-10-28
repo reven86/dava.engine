@@ -75,7 +75,7 @@ public:
     UIScrollBar* Clone() override;
     virtual void CopyDataFrom(UIControl* srcControl);
 
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
+    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
     virtual void LoadFromYamlNodeCompleted();
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 	

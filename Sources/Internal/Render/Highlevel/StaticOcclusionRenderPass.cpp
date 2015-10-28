@@ -33,10 +33,10 @@
 
 namespace DAVA
 {
+static const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024; // / 4;
 
-static const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;// / 4;
-
-StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
+StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName& name)
+    : RenderPass(name)
 {
     uint32 sortingFlags = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
@@ -47,14 +47,14 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 
     rhi::Texture::Descriptor descriptor;
-    
+
     descriptor.width = OCCLUSION_RENDER_TARGET_SIZE;
     descriptor.height = OCCLUSION_RENDER_TARGET_SIZE;
     descriptor.autoGenMipmaps = false;
     descriptor.type = rhi::TEXTURE_TYPE_2D;
     descriptor.format = rhi::TEXTURE_FORMAT_R8G8B8A8;
     colorBuffer = rhi::CreateTexture(descriptor);
-        
+
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
     depthBuffer = rhi::CreateTexture(descriptor);
 
@@ -78,33 +78,33 @@ StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
 bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const RenderBatch *  b)
 {
     return a->layerSortingKey < b->layerSortingKey;
-}    
-    
-void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, Camera *occlusionCamera, StaticOcclusionFrameResult& target)
+}
+
+void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera, StaticOcclusionFrameResult& target)
 {
     Camera *mainCamera = occlusionCamera;
     Camera *drawCamera = occlusionCamera;
 
     SetupCameraParams(mainCamera, drawCamera);
 
-    PrepareVisibilityArrays(mainCamera, renderSystem);    
-	
+    PrepareVisibilityArrays(mainCamera, renderSystem);
+
     Vector<RenderBatch*> terrainBatches;
     Vector<RenderBatch*> batches;
     
     terrainBatches.clear();
-    batches.clear();    
-    
+    batches.clear();
+
     uint32 size = (uint32)renderLayers.size();
     for (uint32 k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
-        const RenderBatchArray & renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
-    
+        const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+
         uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch * batch = renderBatchArray.Get(batchIndex);
+            RenderBatch* batch = renderBatchArray.Get(batchIndex);
             if (batch->GetRenderObject()->GetType() == RenderObject::TYPE_LANDSCAPE)
             {
                 terrainBatches.push_back(batch);
@@ -115,7 +115,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
             }
         }
     }
-        
+
     // Sort
     Vector3 cameraPosition = mainCamera->GetPosition();
     
@@ -132,51 +132,50 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
         batch->layerSortingKey = distanceBits;
     }
     std::sort(batches.begin(), batches.end(), CompareFunction);
-    
+
     rhi::HQueryBuffer queryBuffer = rhi::CreateQueryBuffer(batches.size());
-    
+
     target.queryBuffer = queryBuffer;
-    
+
     passConfig.queryBuffer = queryBuffer;
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
     rhi::BeginRenderPass(renderPass);
     rhi::BeginPacketList(packetList);
-    
 
     rhi::Packet packet;
     size = (uint32)terrainBatches.size();
     for (uint32 k = 0; k < size; ++k)
-    {                
+    {
         RenderBatch * batch = terrainBatches[k];
-        
+
         RenderObject* renderObject = batch->GetRenderObject();
         renderObject->BindDynamicParameters(mainCamera);
-        NMaterial *mat = batch->GetMaterial();
+        NMaterial* mat = batch->GetMaterial();
         DVASSERT(mat); //bad idea to have landscape not staged for occlusion render pass
         batch->BindGeometryData(packet);
         DVASSERT(packet.primitiveCount);
         mat->BindParams(packet);
-        rhi::AddPacket(packetList, packet);                                
+        rhi::AddPacket(packetList, packet);
     }
-    
-    size = (uint32)batches.size();    
+
+    size = (uint32)batches.size();
     target.frameRequests.resize(size, nullptr);
     for (uint32 k = 0; k < size; ++k)
-    {                
+    {
         RenderBatch * batch = batches[k];
         RenderObject* renderObject = batch->GetRenderObject();
         renderObject->BindDynamicParameters(mainCamera);
-        NMaterial *mat = batch->GetMaterial();
+        NMaterial* mat = batch->GetMaterial();
         if (mat)
         {
             batch->BindGeometryData(packet);
             DVASSERT(packet.primitiveCount);
-            mat->BindParams(packet);         
+            mat->BindParams(packet);
             packet.queryIndex = k;
             target.frameRequests[k] = renderObject;
             rhi::AddPacket(packetList, packet);
-        }      
-    }    
+        }
+    }
     rhi::EndPacketList(packetList);
     rhi::EndRenderPass(renderPass);
 }

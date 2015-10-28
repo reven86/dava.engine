@@ -50,9 +50,9 @@ bool KeyboardDevice::IsKeyPressed(int32 keyCode) const
 	if (DVKEY_ALT == keyCode)
 	{
 		auto current_frame =  Windows::UI::Core::CoreWindow::GetForCurrentThread();
-		if( current_frame )
+        if (current_frame)
         {
-			// dragon: or else it crashes on win10-device
+            // dragon: or else it crashes on win10-device
             auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
             return Windows::UI::Core::CoreVirtualKeyStates::Down == isAlt;
         }

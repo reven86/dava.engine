@@ -68,7 +68,7 @@ public:
     };
 
     friend void Core::CreateSingletons();
-	
+
 protected:
 	~InputSystem();
 	/**

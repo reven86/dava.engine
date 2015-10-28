@@ -47,7 +47,6 @@
 
 namespace DAVA
 {
-
 /**
  \brief This geometry generator allows to use geometry of any complexity.
     Geometry for each layer is loaded from an external .sc2 file but all geometry layers are
@@ -67,23 +66,22 @@ protected:
     };
 
 public:
-
     VegetationGeometry(const Vector<VegetationLayerParams>& _maxClusters,
-                             uint32 _maxDensityLevels,
-                             const Vector2& _unitSize,
-                             const FilePath& _dataPath,
-                             const uint32* _resolutionCellSquare,
-                             uint32 _resolutionCellSquareCount,
-                             const float32* _resolutionScale,
-                             uint32 _resolutionScaleCount,
-                             const uint32* _resolutionTilesPerRow,
-                             uint32 _resolutionTilesPerRowCount,
-                             const uint32* _resolutionClusterStride,
-                             uint32 _resolutionClusterStrideCount,
-                             const Vector3& _worldSize,
-                             const VegetationGeometryDataPtr & geometryData);
+                       uint32 _maxDensityLevels,
+                       const Vector2& _unitSize,
+                       const FilePath& _dataPath,
+                       const uint32* _resolutionCellSquare,
+                       uint32 _resolutionCellSquareCount,
+                       const float32* _resolutionScale,
+                       uint32 _resolutionScaleCount,
+                       const uint32* _resolutionTilesPerRow,
+                       uint32 _resolutionTilesPerRowCount,
+                       const uint32* _resolutionClusterStride,
+                       uint32 _resolutionClusterStrideCount,
+                       const Vector3& _worldSize,
+                       const VegetationGeometryDataPtr& geometryData);
     virtual ~VegetationGeometry();
-    
+
     void Build(VegetationRenderData* renderData);
     void OnVegetationPropertiesChanged(NMaterial* material, KeyedArchive* props);
 
@@ -98,7 +96,7 @@ private:
         uint32 layerId;
         float32 scale;
     };
-    
+
     struct ClusterResolutionData
     {
         ClusterPositionData position;
@@ -107,46 +105,46 @@ private:
         uint32 effectiveResolutionId;
         uint32 cellIndex;
     };
-    
+
     struct CustomGeometryLayerData
     {
         Vector<Vector3> sourcePositions;
         Vector<Vector2> sourceTextureCoords;
         Vector<Vector3> sourceNormals;
         Vector<VegetationIndex> sourceIndices;
-        
+
         AABBox3 bbox;
         Vector3 pivot;
-        
+
         void BuildBBox();
     };
-    
+
     struct CustomGeometryEntityData
     {
         Vector<CustomGeometryLayerData> lods;
         NMaterial* material;
-        
+
         CustomGeometryEntityData();
         CustomGeometryEntityData(const CustomGeometryEntityData& src);
         ~CustomGeometryEntityData();
-        
+
         void SetMaterial(NMaterial* mat);
     };
-    
+
     struct SortBufferData
     {
         uint32 indexOffset;
         uint32 size;
         Vector3 sortDirection;
     };
-    
+
     struct VertexRangeData
     {
         uint32 index;
         uint32 size;
         uint32 rowSize;
     };
-    
+
     struct BufferCellData
     {
         uint32 vertexStartIndex;
@@ -154,36 +152,34 @@ private:
         uint32 clusterStartIndex;
         uint32 clusterCount;
     };
-    
+
 private:
-    
     void GenerateClusterPositionData(const Vector<VegetationLayerParams>& layerClusterCount, Vector<ClusterPositionData>& clusters, Vector<VertexRangeData>& layerRanges);
-    
+
     void GenerateClusterResolutionData(uint32 resolutionId, const Vector<VegetationLayerParams>& layerClusterCount, const Vector<ClusterPositionData>& clusterPosition,
                                        const Vector<VertexRangeData>& layerRanges, Vector<ClusterResolutionData>& clusterResolution);
-    
+
     void GenerateVertexData(const Vector<CustomGeometryEntityData>& sourceGeomData, const Vector<ClusterResolutionData>& clusterResolution,
                             Vector<VegetationVertex>& vertexData, Vector<BufferCellData>& cellOffsets);
-    
+
     void GenerateIndexData(const Vector<CustomGeometryEntityData>& sourceGeomData, const Vector<ClusterResolutionData>& clusterResolution, const BufferCellData& rangeData,
                            Vector<VegetationVertex>& vertexData, Vector<VegetationIndex>& indexData, Vector<SortBufferData>& directionOffsets);
-    
+
     void GenerateSortedClusterIndexData(Vector3& cameraPosition, Vector<PolygonSortData>& sourceIndices, Vector<VegetationVertex>& vertexData);
-    
-    static bool PolygonByDistanceCompareFunction(const PolygonSortData& a, const PolygonSortData&  b);
-    static bool ClusterByMatrixCompareFunction(const ClusterResolutionData& a, const ClusterResolutionData&  b);
+
+    static bool PolygonByDistanceCompareFunction(const PolygonSortData& a, const PolygonSortData& b);
+    static bool ClusterByMatrixCompareFunction(const ClusterResolutionData& a, const ClusterResolutionData& b);
     static int32 RandomShuffleFunc(int32 limit);
-    
+
     void Rotate(float32 angle, const Vector<Vector3>& sourcePositions, const Vector<Vector3>& sourceNormals, Vector<Vector3>& rotatedPositions, Vector<Vector3>& rotatedNormals);
     void Scale(const Vector3& clusterPivot, float32 scale, const Vector<Vector3>& sourcePositions, const Vector<Vector3>& sourceNormals, Vector<Vector3>& scaledPositions, Vector<Vector3>& scaledNormals);
-    
+
     uint32 PrepareResolutionId(uint32 currentResolutionId, uint32 cellX, uint32 cellY) const;
-    void InitCustomGeometry(const VegetationGeometryDataPtr & geometryData);
-    
+    void InitCustomGeometry(const VegetationGeometryDataPtr& geometryData);
+
     void PrepareBoundingBoxes();
-    
+
 private:
-    
     Vector<VegetationLayerParams> maxClusters;
     uint32 maxDensityLevels;
     Vector2 unitSize;
@@ -194,7 +190,7 @@ private:
     Vector<uint32> resolutionClusterStride;
     Vector3 worldSize;
     uint32 resolutionCount;
-    
+
     Vector<CustomGeometryEntityData> customGeometryData;
 };
 

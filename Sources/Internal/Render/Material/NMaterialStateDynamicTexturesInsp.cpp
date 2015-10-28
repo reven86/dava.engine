@@ -45,9 +45,9 @@ NMaterialStateDynamicTexturesInsp::~NMaterialStateDynamicTexturesInsp()
     SafeRelease(defaultTexture);
 }
 
-void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial *material, Set<FastName>& ret) const
+void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial* material, Set<FastName>& ret) const
 {
-	auto fxName = material->GetEffectiveFXName();
+    auto fxName = material->GetEffectiveFXName();
     if (fxName.IsValid())
     {
         HashMap<FastName, int32> flags;
@@ -82,21 +82,20 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial 
     }
 
     if (nullptr != material->GetParent())
-		FindMaterialTexturesRecursive(material->GetParent(), ret);
+        FindMaterialTexturesRecursive(material->GetParent(), ret);
 }
 
-InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void *object, int filter) const
+InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void* object, int filter) const
 {
-    NMaterial *material = (NMaterial*)object;
+    NMaterial* material = (NMaterial*)object;
     DVASSERT(material);
 
-	Set<FastName>* data = new Set<FastName>();
+    Set<FastName>* data = new Set<FastName>();
     FindMaterialTexturesRecursive(material, *data);
 
     if (filter > 0)
     {
-        auto checkAndAdd = [&data](const FastName &name) 
-		{
+        auto checkAndAdd = [&data](const FastName& name) {
             if (0 == data->count(name))
             {
                 data->insert(name);
@@ -123,41 +122,42 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void *ob
 Vector<FastName> NMaterialStateDynamicTexturesInsp::MembersList(const DynamicData& ddata) const
 {
     Vector<FastName> ret;
-    
-    Set<FastName>* textures = (Set<FastName>*) ddata.data.get();
+
+    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
     DVASSERT(textures);
 
     auto it = textures->begin();
     auto end = textures->end();
-    
+
     ret.reserve(textures->size());
-    while(it != end)
+    while (it != end)
     {
         ret.push_back(*it);
         ++it;
     }
-    
+
     return ret;
 }
 
-InspDesc NMaterialStateDynamicTexturesInsp::MemberDesc(const DynamicData& ddata, const FastName &textureName) const
+InspDesc NMaterialStateDynamicTexturesInsp::MemberDesc(const DynamicData& ddata, const FastName& textureName) const
 {
     return InspDesc(textureName.c_str());
 }
 
-VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(const DynamicData& ddata, const FastName &textureName) const
+VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(const DynamicData& ddata, const FastName& textureName) const
 {
     VariantType ret;
-    
-    Set<FastName>* textures = (Set<FastName>*) ddata.data.get();;
+
+    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
+    ;
     DVASSERT(textures);
 
-    NMaterial *material = (NMaterial*) ddata.object;
+    NMaterial* material = (NMaterial*)ddata.object;
     DVASSERT(material);
 
     if (textures->count(textureName))
     {
-        Texture *tex = material->GetEffectiveTexture(textureName);
+        Texture* tex = material->GetEffectiveTexture(textureName);
         if (nullptr != tex)
         {
             ret.SetFilePath(tex->GetPathname());
@@ -167,23 +167,24 @@ VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(const DynamicData&
             ret.SetFilePath(FilePath());
         }
     }
-    
+
     return ret;
 }
 
-void NMaterialStateDynamicTexturesInsp::MemberValueSet(const DynamicData& ddata, const FastName &textureName, const VariantType &value)
+void NMaterialStateDynamicTexturesInsp::MemberValueSet(const DynamicData& ddata, const FastName& textureName, const VariantType& value)
 {
     VariantType ret;
 
-    Set<FastName>* textures = (Set<FastName>*) ddata.data.get();;
+    Set<FastName>* textures = (Set<FastName>*)ddata.data.get();
+    ;
     DVASSERT(textures);
 
-    NMaterial *material = (NMaterial*)ddata.object;
+    NMaterial* material = (NMaterial*)ddata.object;
     DVASSERT(material);
 
     if (textures->count(textureName))
     {
-        if(value.type == VariantType::TYPE_NONE)
+        if (value.type == VariantType::TYPE_NONE)
         {
             if (material->HasLocalTexture(textureName))
             {
@@ -193,8 +194,8 @@ void NMaterialStateDynamicTexturesInsp::MemberValueSet(const DynamicData& ddata,
         else
         {
             FilePath texPath = value.AsFilePath();
-            Texture *texture = nullptr;
-            
+            Texture* texture = nullptr;
+
             if (texPath == FilePath())
             {
                 texture = SafeRetain(defaultTexture);
@@ -218,11 +219,11 @@ void NMaterialStateDynamicTexturesInsp::MemberValueSet(const DynamicData& ddata,
     }
 }
 
-int NMaterialStateDynamicTexturesInsp::MemberFlags(const DynamicData& ddata, const FastName &textureName) const
+int NMaterialStateDynamicTexturesInsp::MemberFlags(const DynamicData& ddata, const FastName& textureName) const
 {
     int flags = 0;
-    
-    NMaterial *material = (NMaterial*)ddata.object;
+
+    NMaterial* material = (NMaterial*)ddata.object;
     DVASSERT(material);
 
     flags |= I_VIEW;
@@ -231,8 +232,7 @@ int NMaterialStateDynamicTexturesInsp::MemberFlags(const DynamicData& ddata, con
     {
         flags |= I_EDIT;
     }
-    
+
     return flags;
 }
-
 };

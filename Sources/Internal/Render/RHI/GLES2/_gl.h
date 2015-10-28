@@ -54,7 +54,7 @@
     #include <OpenGLES/ES2/gl.h>
     #include <OpenGLES/ES2/glext.h>
     
-    #define GetGLErrorString(code)  "<unknown>"
+    #define GetGLErrorString(code) "<unknown>"
 
     #include "ios_gl.h"
 
@@ -63,7 +63,7 @@
 	#include <GLES2/gl2.h>
 	#include <GLES2/gl2ext.h>
 
-    #define GetGLErrorString(code)  "<unknown>"
+    #define GetGLErrorString(code) "<unknown>"
 
 	#include "android_gl.h"
 
@@ -73,7 +73,7 @@
 
 #endif
 
-#if defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
 #endif //GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
@@ -83,86 +83,86 @@
 #endif //defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
 
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
-#define  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG    0
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG 0
 #endif
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG)
-#define  GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG    0
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-#define  GL_COMPRESSED_RGB_S3TC_DXT1_EXT    0
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
-#define  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT    0
+#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
-#define  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT    0
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-#define  GL_COMPRESSED_RGB_S3TC_DXT1_EXT    0
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
-#define  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT    0
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0
 #endif
 
 #if !defined(GL_ETC1_RGB8_OES)
-#define  GL_ETC1_RGB8_OES    0
+#define GL_ETC1_RGB8_OES 0
 #endif
 
 #if !defined(GL_ATC_RGB_AMD)
-#define  GL_ATC_RGB_AMD    0
+#define GL_ATC_RGB_AMD 0
 #endif
 
 #if !defined(GL_ATC_RGBA_EXPLICIT_ALPHA_AMD)
-#define  GL_ATC_RGBA_EXPLICIT_ALPHA_AMD    0
+#define GL_ATC_RGBA_EXPLICIT_ALPHA_AMD 0
 #endif
 
 #if !defined(GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD)
-#define  GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD    0
+#define GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD 0
 #endif
 
 #if !defined(GL_COMPRESSED_R11_EAC)
-#define  GL_COMPRESSED_R11_EAC    0
+#define GL_COMPRESSED_R11_EAC 0
 #endif
 
 #if !defined(GL_COMPRESSED_SIGNED_R11_EAC)
-#define  GL_COMPRESSED_SIGNED_R11_EAC    0
+#define GL_COMPRESSED_SIGNED_R11_EAC 0
 #endif
 
 #if !defined(GL_COMPRESSED_RG11_EAC)
-#define  GL_COMPRESSED_RG11_EAC    0
+#define GL_COMPRESSED_RG11_EAC 0
 #endif
 
 #if !defined(GL_COMPRESSED_SIGNED_RG11_EAC)
-#define  GL_COMPRESSED_SIGNED_RG11_EAC    0
+#define GL_COMPRESSED_SIGNED_RG11_EAC 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGB8_ETC2)
-#define  GL_COMPRESSED_RGB8_ETC2    0
+#define GL_COMPRESSED_RGB8_ETC2 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA8_ETC2_EAC)
-#define  GL_COMPRESSED_RGBA8_ETC2_EAC    0
+#define GL_COMPRESSED_RGBA8_ETC2_EAC 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2)
-#define  GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2    0
+#define GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG)
-#define  GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG    0
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG 0
 #endif
 
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG)
-#define  GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG    0
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG 0
 #endif
 
 #if !defined(GL_HALF_FLOAT_OES)
-#define  GL_HALF_FLOAT_OES    0
+#define GL_HALF_FLOAT_OES 0
 #endif
 
 #if !defined(GL_HALF_FLOAT)
@@ -184,10 +184,10 @@
 #if 0
 #define GL_CALL(expr) \
 { \
-    expr ; \
+    expr; \
     int err = glGetError(); \
-    if( err != GL_NO_ERROR ) \
-        Log::Error( "gl", "FAILED  %s (%i) : %s\n", #expr, err, gluErrorString(err) ); \
+    if (err != GL_NO_ERROR) \
+        Log::Error("gl", "FAILED  %s (%i) : %s\n", #expr, err, gluErrorString(err)); \
 }
 #else
 #define GL_CALL(expr) expr
@@ -200,24 +200,24 @@ profiler::ScopedTiming( PROF_STRING_ID("gl-call"), "gl-call" ); \
 */
 #endif
 
-extern GLuint   _GLES2_Binded_FrameBuffer;
-extern GLuint   _GLES2_Default_FrameBuffer;
-extern void*    _GLES2_Native_Window;
-extern void*    _GLES2_Context;
-extern void     (*_GLES2_AcquireContext)();
-extern void     (*_GLES2_ReleaseContext)();
+extern GLuint _GLES2_Binded_FrameBuffer;
+extern GLuint _GLES2_Default_FrameBuffer;
+extern void* _GLES2_Native_Window;
+extern void* _GLES2_Context;
+extern void (*_GLES2_AcquireContext)();
+extern void (*_GLES2_ReleaseContext)();
 
-extern int      _GLES2_DefaultFrameBuffer_Width;
-extern int      _GLES2_DefaultFrameBuffer_Height;
+extern int _GLES2_DefaultFrameBuffer_Width;
+extern int _GLES2_DefaultFrameBuffer_Height;
 
-extern GLuint   _GLES2_LastSetIB;
-extern GLuint   _GLES2_LastSetVB;
-extern GLuint   _GLES2_LastSetTex0;
-extern GLenum   _GLES2_LastSetTex0Target;
+extern GLuint _GLES2_LastSetIB;
+extern GLuint _GLES2_LastSetVB;
+extern GLuint _GLES2_LastSetTex0;
+extern GLenum _GLES2_LastSetTex0Target;
 extern int _GLES2_LastActiveTexture;
 
 #if defined(__DAVAENGINE_WIN32__)
 extern HDC _GLES2_WindowDC;
 #endif
 
-bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed );
+bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);

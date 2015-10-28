@@ -47,7 +47,7 @@ PolygonGroupWithMaterial::~PolygonGroupWithMaterial()
     SafeRelease(mesh);
 }
 
-void PolygonGroupWithMaterial::Setup(StaticMesh * _mesh, int32 _polygroupIndex, NMaterial * _material, TransformComponent * _transform)
+void PolygonGroupWithMaterial::Setup(StaticMesh* _mesh, int32 _polygroupIndex, NMaterial* _material, TransformComponent* _transform)
 {
     SetMaterial(_material);
     mesh = SafeRetain(_mesh);
@@ -91,7 +91,7 @@ MeshInstanceNode::~MeshInstanceNode()
     polygroups.clear();
 }
 
-void MeshInstanceNode::AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupIndex, NMaterial* material)
+void MeshInstanceNode::AddPolygonGroup(StaticMesh* mesh, int32 polygonGroupIndex, NMaterial* material)
 {
     PolygonGroupWithMaterial * polygroup = new PolygonGroupWithMaterial();
     polygroup->Setup(mesh, polygonGroupIndex, material, (TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT));
@@ -443,7 +443,7 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
         for(int idx = 0; idx < polygroupCount; ++idx)
         {
             uint64 matPtr = archive->GetByteArrayAsType(Format("pg%d_matptr", idx), (uint64)0);
-            NMaterial * material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matPtr));
+            NMaterial* material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matPtr));
             uint64 meshPtr = archive->GetByteArrayAsType(Format("pg%d_meshptr", idx), (uint64)0);
             StaticMesh * mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
             const int32 pgIndex = archive->GetInt32(Format("pg%d_pg", idx), errorIdx);
@@ -472,7 +472,7 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
                 if(serializationContext->GetVersion() == 2)
                 {
                     uint64 matPtr = archive->GetByteArrayAsType(Format("l%d_%d_matptr", lodIdx, idx), (uint64)0);
-                    NMaterial * material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matPtr));
+                    NMaterial* material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matPtr));
                     uint64 meshPtr = archive->GetByteArrayAsType(Format("l%d_%d_meshptr", lodIdx, idx), (uint64)0);
                     StaticMesh * mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
                     const int32 pgIndex = archive->GetInt32(Format("l%d_%d_pg", lodIdx, idx), errorIdx);
