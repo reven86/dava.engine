@@ -224,35 +224,6 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
-/*
-void EditorSystemsManager::CollectControlNodesByPosImpl(Vector<ControlNode*>& controlNodes, const Vector2& pos, ControlNode* node) const
-{
-    int count = node->GetCount();
-    auto control = node->GetControl();
-    if (control->IsPointInside(pos) && control->GetSystemVisible())
-    {
-        controlNodes.push_back(node);
-    }
-    for (int i = 0; i < count; ++i)
-    {
-        CollectControlNodesByPosImpl(controlNodes, pos, node->Get(i));
-    }
-}
-
-void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
-{
-    int count = node->GetCount();
-    auto control = node->GetControl();
-    if (control->GetVisible() && control->GetVisibleForUIEditor() && rect.RectContains(control->GetGeometricData().GetAABBox()))
-    {
-        controlNodes.insert(node);
-    }
-    for (int i = 0; i < count; ++i)
-    {
-        CollectControlNodesByRectImpl(controlNodes, rect, node->Get(i));
-    }
-}*/
-
 void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
