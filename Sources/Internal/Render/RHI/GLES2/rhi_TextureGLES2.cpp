@@ -214,7 +214,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                             if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
                                 _FlipRGBA4_ABGR4(desc.initialData[m], data_sz);
                             else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                                _ABGR1555toRGBA5551(desc.initialData[m], data_sz);
+                                _RGBA5551toABGR1555(desc.initialData[m], data_sz);
 
                             ++cmd2_cnt;
                         }
