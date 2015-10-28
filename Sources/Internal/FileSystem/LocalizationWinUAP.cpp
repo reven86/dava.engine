@@ -26,26 +26,31 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
 
-#ifndef __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
-#define __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
+#if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "FileSystem/LocalizationWinUAP.h"
+#include "FileSystem/LocalizationSystem.h"
 #include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
-//Common implementation of device info
-class DeviceInfoPrivateBase
+void LocalizationWinUAP::SelectPreferedLocalization()
 {
-public:
-    int32 GetCpuCount();
-    DeviceInfo::HIDConnectionSignal& GetHIDConnectionSignal(DeviceInfo::eHIDType type);
-    // default implementation, could be changed in inheritors
+    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
+}
 
-private:
-    Map<DeviceInfo::eHIDType, DeviceInfo::HIDConnectionSignal> hidConnectionSignals;
+String LocalizationWinUAP::GetDeviceLang(void)
+{
+    String locale = DeviceInfo::GetLocale();
+    String::size_type posEnd = locale.find('-', 2);
+    if (String::npos != posEnd)
+    {
+        locale = locale.substr(0, posEnd);
+    }
+    return locale;
+}
 };
 
-} // namespace DAVA
-
-#endif // __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
+#endif // __DAVAENGINE_WIN_UAP__
