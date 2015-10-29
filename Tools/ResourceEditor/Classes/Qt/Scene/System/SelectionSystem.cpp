@@ -130,9 +130,9 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 		return;
 	}
 
-	if(DAVA::UIEvent::PHASE_BEGAN == event->phase)
-	{
-		// we can select only if mouse isn't over hood axis
+    if (DAVA::UIEvent::Phase::BEGAN == event->phase)
+    {
+        // we can select only if mouse isn't over hood axis
 		// or if hood is invisible now
 		// or if current mode is NORMAL (no modification)
 		if(!hoodSystem->IsVisible() ||
@@ -195,9 +195,9 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 			}
 		}
 	}
-	else if(DAVA::UIEvent::PHASE_ENDED == event->phase)
-	{
-		if(event->tid == DAVA::UIEvent::BUTTON_1)
+    else if (DAVA::UIEvent::Phase::ENDED == event->phase)
+    {
+        if(event->tid == DAVA::UIEvent::BUTTON_1)
 		{
 			if(applyOnPhaseEnd)
 			{

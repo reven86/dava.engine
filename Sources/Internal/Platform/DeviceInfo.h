@@ -171,6 +171,7 @@ public:
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
     static void InitializeScreenInfo();
+    static bool IsTouchPresented();
 
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
