@@ -441,7 +441,7 @@ namespace DAVA
 		int32 id = input.tid;
 		switch (input.phase)
 		{
-        case UIEvent::PHASE_BEGAN:
+        case UIEvent::Phase::BEGAN:
         {
             mouseMove = input;
 			if (!IsTouchDown(id))
@@ -455,7 +455,7 @@ namespace DAVA
         }
 		break;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-        case UIEvent::PHASE_MOVE:
+        case UIEvent::Phase::MOVE:
         {
             mouseMove = input;
 			if (IsTouchDown(id))
@@ -465,7 +465,7 @@ namespace DAVA
         }
 		break;
 #endif
-        case UIEvent::PHASE_DRAG:
+        case UIEvent::Phase::DRAG:
         {
             mouseMove = input;
 			Map<int32, UIEvent>::iterator findIt = touches.find(id);
@@ -479,7 +479,7 @@ namespace DAVA
             }
         }
 		break;
-        case UIEvent::PHASE_ENDED:
+        case UIEvent::Phase::ENDED:
         {
             mouseMove = input;
 			Map<int32, UIEvent>::iterator findIt = touches.find(id);
