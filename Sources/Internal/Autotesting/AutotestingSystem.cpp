@@ -343,11 +343,11 @@ namespace DAVA
 				Vector2 point = it->second.point;
                 RenderSystem2D::Instance()->DrawCircle(point, 25.0f, Color::White);
             }
-		}
+        }
         RenderSystem2D::Instance()->DrawCircle(GetMousePosition(), 15.0f, Color::White);
     }
 
-	void AutotestingSystem::OnTestStarted()
+    void AutotestingSystem::OnTestStarted()
 	{
 		Logger::Info("AutotestingSystem::OnTestsStarted");
 		startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
@@ -387,7 +387,7 @@ namespace DAVA
         Renderer::RequestGLScreenShot(this);
     }
 
-	const String &AutotestingSystem::GetScreenShotName()
+    const String &AutotestingSystem::GetScreenShotName()
 	{
 		Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
 		return screenShotName;

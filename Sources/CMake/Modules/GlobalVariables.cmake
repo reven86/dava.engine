@@ -74,10 +74,12 @@ if ( WINDOWS_UAP )
     add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}" )
     
     #check the newest version of Win10 SDK
-    if ( "${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION}" STRLESS "${CMAKE_VS_TARGET_PLATFORM_VERSION}" )
+    if ( WINDOWS_UAP_TARGET_PLATFORM_VERSION AND 
+        ( "${WINDOWS_UAP_TARGET_PLATFORM_VERSION}" STRLESS "${CMAKE_VS_TARGET_PLATFORM_VERSION}" ) )
         message ( WARNING "Newer version of Win10 SDK detected: ${CMAKE_VS_TARGET_PLATFORM_VERSION}. "
-                          "Using older version ${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION}. "
-                          "To use newer version set variable -DWINDOWS_UAP_TARGET_PLATFORM_VERSION=${CMAKE_VS_TARGET_PLATFORM_VERSION} ")
+                          "Using older version ${WINDOWS_UAP_TARGET_PLATFORM_VERSION}. "
+                          "To use newer version set variable WINDOWS_UAP_TARGET_PLATFORM_VERSION=${CMAKE_VS_TARGET_PLATFORM_VERSION} in DavaConfig.in. "
+                          "Or pass -DWINDOWS_UAP_TARGET_PLATFORM_VERSION=${CMAKE_VS_TARGET_PLATFORM_VERSION} through command line." )
     endif ()
 
     #set target platform version
