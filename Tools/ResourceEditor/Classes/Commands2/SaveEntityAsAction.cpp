@@ -115,9 +115,9 @@ void SaveEntityAsAction::Redo()
             }
         }
 
-        scene->AddNode(container);								//1. Added new items in zero position with identity matrix
-		scene->staticOcclusionSystem->InvalidateOcclusion();	//2. invalidate static occlusion indeces
-		RemoveLightmapsRecursive(container);					//3. Reset lightmaps
+        scene->AddNode(container); //1. Added new items in zero position with identity matrix
+        scene->staticOcclusionSystem->InvalidateOcclusion(); //2. invalidate static occlusion indeces
+        RemoveLightmapsRecursive(container);					//3. Reset lightmaps
 				
 		scene->SaveScene(sc2Path);
 
@@ -137,12 +137,12 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 		const uint32 batchCount = renderObject->GetRenderBatchCount();
 		for (uint32 b = 0; b < batchCount; ++b)
 		{
-			NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
-			if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
-			{
-				material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
-			}
-		}
+            NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
+            if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
+            {
+                material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
+            }
+        }
 	}
 
 	const int32 count = entity->GetChildrenCount();

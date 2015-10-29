@@ -41,18 +41,18 @@
 
 #define SYSTEM_H
 
-#if     HAVE_CONFIG_H
-#include    "configed.H"
+#if HAVE_CONFIG_H
+#include "configed.H"
 #else
-#include    "noconfig.H"
+#include "noconfig.H"
 #endif
 
 /* Some system has a wrong definition of UCHAR_MAX.  See cpp-test.html#5.1.3 */
-#if     UCHARMAX < -255
+#if UCHARMAX < -255
 /* The definition of UCHARMAX (possibly UCHAR_MAX too) is wrong.    */
 /* Define it as a signed int value, not as an unsigned value.       */
-#undef  UCHARMAX
-#define UCHARMAX    ((1 << CHAR_BIT) - 1)
+#undef UCHARMAX
+#define UCHARMAX ((1 << CHAR_BIT) - 1)
 #endif
 
 /*
@@ -163,10 +163,10 @@
  */
 
 /* The values of 'mcpp_mode'.   */
-#define OLD_PREP            1           /* "Reiser" cpp mode    */
-#define KR                  2           /* K&R 1st mode         */
-#define STD                 3           /* Standard moce        */
-#define POST_STD            9           /* Special mode of MCPP */
+#define OLD_PREP 1 /* "Reiser" cpp mode    */
+#define KR 2 /* K&R 1st mode         */
+#define STD 3 /* Standard moce        */
+#define POST_STD 9 /* Special mode of MCPP */
 
 /*
  * TRIGRAPHS_INIT   Initial value for the -3 option.  If TRUE -3
@@ -183,47 +183,47 @@
  *              long long (unsigned long long) or longer.
  * EXPR_MAX should be defined to the maximum value of uexpr_t.
  */
-#define TRIGRAPHS_INIT      FALSE
-#define DIGRAPHS_INIT       FALSE
+#define TRIGRAPHS_INIT FALSE
+#define DIGRAPHS_INIT FALSE
 #ifndef EXPAND_PRAGMA
-#define EXPAND_PRAGMA       FALSE
+#define EXPAND_PRAGMA FALSE
 #endif
-#define OK_UCN              TRUE
-#define OK_MBIDENT          FALSE
+#define OK_UCN TRUE
+#define OK_MBIDENT FALSE
 
-#if     HAVE_INTMAX_T
-#if     HAVE_STDINT_H
-#include    "stdint.h"
-#elif   HAVE_INTTYPES_H
-#include    "inttypes.h"
+#if HAVE_INTMAX_T
+#if HAVE_STDINT_H
+#include "stdint.h"
+#elif HAVE_INTTYPES_H
+#include "inttypes.h"
 #endif
-typedef intmax_t    expr_t;
-typedef uintmax_t   uexpr_t;
+typedef intmax_t expr_t;
+typedef uintmax_t uexpr_t;
 #else
-#if     HAVE_LONG_LONG
-#if     (HOST_COMPILER == MSC && _MSC_VER < 1500) || HOST_COMPILER == BORLANDC
-typedef __int64             expr_t;
-typedef unsigned __int64    uexpr_t;
+#if HAVE_LONG_LONG
+#if (HOST_COMPILER == MSC && _MSC_VER < 1500) || HOST_COMPILER == BORLANDC
+typedef __int64 expr_t;
+typedef unsigned __int64 uexpr_t;
 #else
-typedef long long           expr_t;
-typedef unsigned long long  uexpr_t;
+typedef long long expr_t;
+typedef unsigned long long uexpr_t;
 #endif
-#else   /* !HAVE_LONG_LONG  */
-typedef unsigned long   uexpr_t;
-typedef long            expr_t;
-#endif  /* HAVE_LONG_LONG   */
-#endif  /* HAVE_INTMAX_T    */
+#else /* !HAVE_LONG_LONG  */
+typedef unsigned long uexpr_t;
+typedef long expr_t;
+#endif /* HAVE_LONG_LONG   */
+#endif /* HAVE_INTMAX_T    */
 
-#if     HAVE_INTMAX_T
-#define EXPR_MAX            UINTMAX_MAX
-#elif   HAVE_LONG_LONG
-#if     (HOST_COMPILER == MSC && _MSC_VER < 1400) || HOST_COMPILER == BORLANDC
-#define EXPR_MAX            0xFFFFFFFFFFFFFFFFui64
+#if HAVE_INTMAX_T
+#define EXPR_MAX UINTMAX_MAX
+#elif HAVE_LONG_LONG
+#if (HOST_COMPILER == MSC && _MSC_VER < 1400) || HOST_COMPILER == BORLANDC
+#define EXPR_MAX 0xFFFFFFFFFFFFFFFFui64
 #else
-#define EXPR_MAX            0xFFFFFFFFFFFFFFFFULL
+#define EXPR_MAX 0xFFFFFFFFFFFFFFFFULL
 #endif
 #else
-#define EXPR_MAX            4294967295UL
+#define EXPR_MAX 4294967295UL
 #endif
 
 /*
@@ -263,56 +263,56 @@ typedef long            expr_t;
  */
 
 #ifndef IDMAX
-#define IDMAX               0x400
+#define IDMAX 0x400
 #endif
 #ifndef NMACPARS
-#define NMACPARS            0xFF
+#define NMACPARS 0xFF
 #endif
 #ifndef NEXP
-#define NEXP                0x100
+#define NEXP 0x100
 #endif
 #ifndef BLK_NEST
-#define BLK_NEST            0x100
+#define BLK_NEST 0x100
 #endif
 #ifndef INCLUDE_NEST
-#define INCLUDE_NEST        0x100
+#define INCLUDE_NEST 0x100
 #endif
 #ifndef RESCAN_LIMIT
-#define RESCAN_LIMIT        0x40
+#define RESCAN_LIMIT 0x40
 #endif
 #ifndef PRESTD_RESCAN_LIMIT
 #define PRESTD_RESCAN_LIMIT 0x100
 #endif
 #ifndef NBUFF
-#define NBUFF               0x10000     /* Must be NWORK <= NBUFF   */
+#define NBUFF 0x10000 /* Must be NWORK <= NBUFF   */
 #endif
 #ifndef NWORK
-#define NWORK               NBUFF       /* 0x1000, 0x4000, 0x10000, ..  */
+#define NWORK NBUFF /* 0x1000, 0x4000, 0x10000, ..  */
 #endif
 #ifndef NMACWORK
-#define NMACWORK            (NWORK * 4) /* Must be NWORK * 2 <= NMACWORK    */
+#define NMACWORK (NWORK * 4) /* Must be NWORK * 2 <= NMACWORK    */
 #endif
 #ifndef SBSIZE
-#define SBSIZE              0x400
+#define SBSIZE 0x400
 #endif
 #ifndef MKDEP_INIT
-#define MKDEP_INIT          0x100
+#define MKDEP_INIT 0x100
 #endif
 
-#if     UCHARMAX < NMACPARS
-    #error  "NMACPARS should not be greater than UCHARMAX"
+#if UCHARMAX < NMACPARS
+    #error "NMACPARS should not be greater than UCHARMAX"
 #endif
 
-#if     NBUFF < NWORK
-    #error   "NBUFF must be same or greater than NWORK"
+#if NBUFF < NWORK
+    #error "NBUFF must be same or greater than NWORK"
 #endif
-#if     NMACWORK < NWORK * 2
-    #error   "NMACWORK must be same or greater than NWORK * 2"
+#if NMACWORK < NWORK * 2
+    #error "NMACWORK must be same or greater than NWORK * 2"
 #endif
 
-#define SBMASK  (SBSIZE - 1)
-#if     (SBSIZE ^ SBMASK) != ((SBSIZE * 2) - 1)
-    #error  "SBSIZE must be a power of 2 !"
+#define SBMASK (SBSIZE - 1)
+#if (SBSIZE ^ SBMASK) != ((SBSIZE * 2) - 1)
+    #error "SBSIZE must be a power of 2 !"
 #endif
 
 /*
@@ -336,55 +336,54 @@ typedef long            expr_t;
  * NMACRO*MIN   Macro identifiers simultaneously defined in one translation
  *              unit.
  */
-#define SLEN90MIN           0x1FD
-#define IDLEN90MIN          0x1F
-#define NMACPARS90MIN       0x1F
-#define EXP_NEST90MIN       0x20
-#define BLK_NEST90MIN       8
-#define INCLUDE_NEST90MIN   8
-#define NMACRO90MIN         0x400
+#define SLEN90MIN 0x1FD
+#define IDLEN90MIN 0x1F
+#define NMACPARS90MIN 0x1F
+#define EXP_NEST90MIN 0x20
+#define BLK_NEST90MIN 8
+#define INCLUDE_NEST90MIN 8
+#define NMACRO90MIN 0x400
 
-#define SLEN99MIN           0xFFF
-#define IDLEN99MIN          0x3F
-#define NMACPARS99MIN       0x7F
-#define EXP_NEST99MIN       0x3F
-#define BLK_NEST99MIN       0x3F
-#define INCLUDE_NEST99MIN   0xF
-#define NMACRO99MIN         0xFFF
+#define SLEN99MIN 0xFFF
+#define IDLEN99MIN 0x3F
+#define NMACPARS99MIN 0x7F
+#define EXP_NEST99MIN 0x3F
+#define BLK_NEST99MIN 0x3F
+#define INCLUDE_NEST99MIN 0xF
+#define NMACRO99MIN 0xFFF
 
-#define SLEN_CPLUS_MIN      0x10000
-#define IDLEN_CPLUS_MIN     0x400
-#define NMACPARS_CPLUS_MIN  0x100
-#define EXP_NEST_CPLUS_MIN  0x100
-#define BLK_NEST_CPLUS_MIN  0x100
-#define INCLUDE_NEST_CPLUS_MIN  0x100
-#define NMACRO_CPLUS_MIN    0x10000
+#define SLEN_CPLUS_MIN 0x10000
+#define IDLEN_CPLUS_MIN 0x400
+#define NMACPARS_CPLUS_MIN 0x100
+#define EXP_NEST_CPLUS_MIN 0x100
+#define BLK_NEST_CPLUS_MIN 0x100
+#define INCLUDE_NEST_CPLUS_MIN 0x100
+#define NMACRO_CPLUS_MIN 0x10000
 
 /* LINE99LIMIT  means the line number limit of C99  */
-#define LINE99LIMIT         0x7FFFFFFF
+#define LINE99LIMIT 0x7FFFFFFF
 
 /*
  * STDC     This macro is used for the predefined __STDC__.
  * STDC_VERSION     is used for the value of __STDC_VERSION__.
  * STDC_HOSTED      is used for the value of __STDC_HOSTED__.
  */
-#if     IDMAX < IDLEN90MIN || NBUFF < SLEN90MIN + 3
-            || NWORK < SLEN90MIN + 2 || NMACPARS < NMACPARS90MIN
-            || NEXP < EXP_NEST90MIN || BLK_NEST < BLK_NEST90MIN
-#define STDC                0
+#if IDMAX < IDLEN90MIN || NBUFF < SLEN90MIN + 3
+|| NWORK < SLEN90MIN + 2 || NMACPARS < NMACPARS90MIN || NEXP < EXP_NEST90MIN || BLK_NEST < BLK_NEST90MIN
+#define STDC 0
 #endif
 #ifndef STDC
-#define STDC                1       /* 1 : for ISO 9899:1990 or later   */
+#define STDC 1 /* 1 : for ISO 9899:1990 or later   */
 #endif
 
 #ifndef STDC_VERSION
-#define STDC_VERSION        0L      /* 199409L  : For conforming
-            implementation to ISO 9899:1990 / Amendment 1:1995
-            199901L : For C99   */
+#define STDC_VERSION 0L /* 199409L  : For conforming    \
+implementation to ISO 9899:1990 / Amendment 1:1995      \
+199901L : For C99   */
 #endif
 #ifndef STDC_HOSTED
-#define STDC_HOSTED         1       /* 1 : for hosted implementation,
-            0 : for free-standing implementation (C99 specification)    */
+#define STDC_HOSTED 1 /* 1 : for hosted implementation, \
+0 : for free-standing implementation (C99 specification)    */
 #endif
 
 /*
@@ -392,5 +391,4 @@ typedef long            expr_t;
  * for C++ processing.
  * The value can be changed by -V<n> option.
  */
-#define CPLUS               1       /* 199711L for C++ Standard     */
-
+#define CPLUS 1 /* 199711L for C++ Standard     */

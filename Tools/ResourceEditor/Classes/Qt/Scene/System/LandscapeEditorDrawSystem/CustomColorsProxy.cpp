@@ -43,7 +43,7 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
     , changes(0)
     , brushMaterial(new NMaterial())
 {
-	customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
+    customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888 /*, Texture::DEPTH_NONE*/);
 
     brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
     brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));
@@ -125,11 +125,11 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
 	{
 		return;
 	}
-    
+
     rhi::Viewport viewport;
     viewport.x = viewport.y = 0;
     viewport.width = viewport.height = size;
-    
+
     Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
     if (!customColors.empty())
     {

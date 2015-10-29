@@ -40,104 +40,94 @@
 
     #include <string>
 
-
 //==============================================================================
 //
 //  publics:
 
-class 
+class
 RegExp
 {
 public:
+    RegExp();
+    ~RegExp();
 
-                    RegExp();
-                   ~RegExp();
+    bool compile(const char* pattern, const char* attributes = "");
+    bool test(const char* string, int startindex = 0);
 
-    bool            compile( const char* pattern, const char* attributes="" );
-    bool            test( const char* string, int startindex=0 );
-
-    const char*     source_text() const;
-    
+    const char* source_text() const;
 
     // matched patterns ////////////////////////////////////////////////////////
 
-    struct 
+    struct
     Match
     {
-        int     begin;  // index of start of match
-        int     end;    // index past end of match
+        int begin; // index of start of match
+        int end; // index past end of match
     };
 
-    unsigned        pattern_count() const;
-    const Match*    pattern( unsigned n ) const;
-    bool            get_pattern( unsigned n, unsigned buf_size, char* buf ) const;
-    bool            get_pattern( unsigned n, std::string* str ) const;
-
-                   
-private:
-                    RegExp( const RegExp& );        // force no copy
-    RegExp&         operator=( const RegExp& );     // force no assignment
-
+    unsigned pattern_count() const;
+    const Match* pattern(unsigned n) const;
+    bool get_pattern(unsigned n, unsigned buf_size, char* buf) const;
+    bool get_pattern(unsigned n, std::string* str) const;
 
 private:
+    RegExp(const RegExp&); // force no copy
+    RegExp& operator=(const RegExp&); // force no assignment
 
-    unsigned        re_nsub;    // number of parenthesized subexpression matches
-    Match*          pmatch;     // array [re_nsub + 1]
+private:
+    unsigned re_nsub; // number of parenthesized subexpression matches
+    Match* pmatch; // array [re_nsub + 1]
 
-    const char*    _input;     // the string to search
+    const char* _input; // the string to search
 
     // per instance:
 
-    int             _is_ref;    // !=0 means don't make our own copy of pattern
-    char*           _pattern;   // source text of the regular expression
+    int _is_ref; // !=0 means don't make our own copy of pattern
+    char* _pattern; // source text of the regular expression
 
-    char  flags[3 + 1];         // source text of the attributes parameter
-                                // (3 TCHARs max plus terminating 0)
-    int             _error_count;
+    char flags[3 + 1]; // source text of the attributes parameter
+    // (3 TCHARs max plus terminating 0)
+    int _error_count;
 
-    unsigned        _attributes;
+    unsigned _attributes;
 
     enum
     {
-        attrGlobal       = 1,   // has the g attribute
-        attrIgnoreCase   = 2,   // has the i attribute
-        attrMultiline    = 4,   // if treat as multiple lines separated by newlines, or as a single line
-        attrDotMatchLF   = 8    // if . matches \n
+        attrGlobal = 1, // has the g attribute
+        attrIgnoreCase = 2, // has the i attribute
+        attrMultiline = 4, // if treat as multiple lines separated by newlines, or as a single line
+        attrDotMatchLF = 8 // if . matches \n
     };
 
-    char*           replace( char* format);
-//    TCHAR *replace2(TCHAR *format);
-    static char*    replace3( char* format, char* input, unsigned re_nsub, Match* pmatch );
-    static char*    replace4( char* input, Match* match, char* replacement );
-
+    char* replace(char* format);
+    //    TCHAR *replace2(TCHAR *format);
+    static char* replace3(char* format, char* input, unsigned re_nsub, Match* pmatch);
+    static char* replace4(char* input, Match* match, char* replacement);
 
 private:
-
     struct Range;
     struct RegBuffer;
 
+    const char* _src; // current source pointer
+    const char* _src_start; // starting position for match
+    char* _parser_pos; // position of parser in _pattern
+    Match _match; // match for the entire regular expression
+    // (serves as storage for pmatch[0])
 
-    const char*     _src;           // current source pointer
-    const char*     _src_start;     // starting position for match
-    char*           _parser_pos;    // position of parser in _pattern
-    Match           _match;         // match for the entire regular expression
-                                    // (serves as storage for pmatch[0])
+    char* _program;
+    RegBuffer* _buf;
 
-    char*           _program;
-    RegBuffer*      _buf;
-
-    void            _print_program( char* prog );
-    int             _try_match( char* prog, char* progend );
-    int             _parse_regexp();
-    int             _parse_piece();
-    int             _parse_atom();
-    int             _parse_range();
-    int             _escape();
-    void            _error( const char* msg );
-    void            _optimize();
-    int             _start_chars( Range* r, char* prog, char* progend );
+    void _print_program(char* prog);
+    int _try_match(char* prog, char* progend);
+    int _parse_regexp();
+    int _parse_piece();
+    int _parse_atom();
+    int _parse_range();
+    int _escape();
+    void _error(const char* msg);
+    void _optimize();
+    int _start_chars(Range* r, char* prog, char* progend);
 };
-
 
 //------------------------------------------------------------------------------
 
@@ -147,17 +137,15 @@ RegExp::pattern_count() const
     return re_nsub + 1;
 }
 
-
 //------------------------------------------------------------------------------
 
 inline const RegExp::Match*
-RegExp::pattern( unsigned n ) const
+RegExp::pattern(unsigned n) const
 {
-//    DVASSERT(n <= re_nsub);
+    //    DVASSERT(n <= re_nsub);
 
-    return (n <= re_nsub)  ? pmatch+n  : 0;
+    return (n <= re_nsub) ? pmatch + n : 0;
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -166,7 +154,6 @@ RegExp::source_text() const
 {
     return _pattern;
 }
-
 
 //  Escape sequences:
 //
@@ -192,7 +179,5 @@ RegExp::source_text() const
 //  [a-b], where a is greater than b, will produce
 //  an error.
 
-
 //==============================================================================
 #endif // __REGEXP_HPP__
-

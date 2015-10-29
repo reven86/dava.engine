@@ -419,6 +419,11 @@ elseif( MACOS )
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 
+    if (QT5_FOUND AND NOT DEPLOY AND NOT TEAMCITY_DEPLOY)
+        set(LD_RUNPATHES "${LD_RUNPATHES} ${QT5_LIB_PATH}")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
+    endif()
+
 elseif ( WIN32 )
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )

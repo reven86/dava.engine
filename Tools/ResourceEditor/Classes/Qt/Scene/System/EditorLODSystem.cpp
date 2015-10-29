@@ -44,8 +44,8 @@ EditorLODSystem::ForceData::ForceData(DAVA::int32 newForceLayer /* = -1 */, DAVA
 {
 }
 
-EditorLODSystem::EditorLODSystem(DAVA::Scene *scene) 
-	: DAVA::SceneSystem(scene)
+EditorLODSystem::EditorLODSystem(DAVA::Scene* scene)
+    : DAVA::SceneSystem(scene)
 {
 }
 
@@ -335,41 +335,41 @@ bool EditorLODSystem::CanCreatePlaneLOD() const
 bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath)
 {
     if (GetCurrentLODs().empty())
-	{
+    {
         return false;
-	}
+    }
 
     SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
 
     auto lods = GetCurrentLODs();
     for (auto& lod : lods)
-	{
-		auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath);
-		planeLODRequests.push_back(request);
-	}
+    {
+        auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath);
+        planeLODRequests.push_back(request);
+    }
 
     return true;
 }
 
 void EditorLODSystem::Process(DAVA::float32 elapsedTime)
 {
-	bool allRequestsProcessed = !planeLODRequests.empty();
+    bool allRequestsProcessed = !planeLODRequests.empty();
 
-	for (const auto& req : planeLODRequests)
-		allRequestsProcessed = allRequestsProcessed && req->completed;
+    for (const auto& req : planeLODRequests)
+        allRequestsProcessed = allRequestsProcessed && req->completed;
 
-	if (allRequestsProcessed)
-	{
-		SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
-		sceneEditor2->BeginBatch("LOD Added");
-		for (const auto& req : planeLODRequests)
-		{
-			sceneEditor2->Exec(new CreatePlaneLODCommand(req));
-		}
-		sceneEditor2->EndBatch();
+    if (allRequestsProcessed)
+    {
+        SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
+        sceneEditor2->BeginBatch("LOD Added");
+        for (const auto& req : planeLODRequests)
+        {
+            sceneEditor2->Exec(new CreatePlaneLODCommand(req));
+        }
+        sceneEditor2->EndBatch();
 
-		planeLODRequests.clear();
-	}
+        planeLODRequests.clear();
+    }
 }
 
 bool EditorLODSystem::CopyLastLodToLod0()

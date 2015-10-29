@@ -67,7 +67,7 @@ public:
 
 namespace RenderObjectsFlusher
 {
-	DAVA_DEPRECATED(void Flush());
+DAVA_DEPRECATED(void Flush());
 }
 
 #endif // __SCENE_UTILS_H__

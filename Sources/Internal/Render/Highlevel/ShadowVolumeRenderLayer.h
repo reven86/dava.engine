@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__
-#define	__DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__
+#define __DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
@@ -43,20 +43,19 @@ class ShadowVolumeRenderLayer : public RenderLayer
 public:
     ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags);
     virtual ~ShadowVolumeRenderLayer() override;
-    
-    virtual void Draw(Camera* camera, const RenderBatchArray & renderBatchArray, rhi::HPacketList packetList) override;
-    
+
+    virtual void Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList) override;
+
 private:
     void PrepareRenderData();
     void UpdtateBufferData();
     void Restore();
 
-    NMaterial * shadowRectMaterial;
+    NMaterial* shadowRectMaterial;
     rhi::Packet shadowRectPacket;
     rhi::HVertexBuffer quadBuffer;
 };
-    
+
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__ */

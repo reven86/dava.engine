@@ -278,9 +278,9 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
 				// Get sprite file relative path
 				QString fontSprite = ResourcesManageHelper::GetResourceRelativePath(fontSpritePath);
 				// Create Graphics font to validate it - but first truncate "*.txt" extension of sprite
-				returnFont = GraphicFont::Create(fontDefinition.toStdString(), fontSprite.toStdString());
-			}
-			else
+                returnFont = GraphicFont::Create(fontDefinition.toStdString(), fontSprite.toStdString());
+            }
+            else
 			{
 				ResourcesManageHelper::ShowErrorMessage(fontName);
 				return returnFont;
@@ -294,10 +294,10 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
         QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontName);
         //Try to create font to validate it
         returnFont = FTFont::Create(fontPath.toStdString());
-	}	
-	
-	if (!returnFont)
-	{
+    }
+
+    if (!returnFont)
+    {
     	//If font was not created - show error message
         //No dialog result will be set in this case
          QString message;

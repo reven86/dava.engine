@@ -41,22 +41,21 @@ namespace DAVA
 {
 namespace Renderer
 {
-
 namespace //for private variables
 {
-    bool ininialized = false;
-    rhi::Api api;
-    int32 desiredFPS = 60;
-    
-    RenderOptions renderOptions;
-    DynamicBindings dynamicBindings;
-    RuntimeTextures runtimeTextures;
-    RenderStats stats;
+bool ininialized = false;
+rhi::Api api;
+int32 desiredFPS = 60;
 
-    int32 framebufferWidth;
-    int32 framebufferHeight;
+RenderOptions renderOptions;
+DynamicBindings dynamicBindings;
+RuntimeTextures runtimeTextures;
+RenderStats stats;
 
-    ScreenShotCallbackDelegate * screenshotCallback = nullptr;
+int32 framebufferWidth;
+int32 framebufferHeight;
+
+ScreenShotCallbackDelegate* screenshotCallback = nullptr;
 }
 
 static Mutex renderCmdExecSync;
@@ -88,7 +87,7 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
 void Uninitialize()
 {
     DVASSERT(ininialized);
-            
+
     FXCache::Uninitialize();
     ShaderDescriptorCache::Uninitialize();
     rhi::ShaderCache::Unitialize();
@@ -96,7 +95,7 @@ void Uninitialize()
     ininialized = false;
 }
 
-void Reset(const rhi::ResetParam & params)
+void Reset(const rhi::ResetParam& params)
 {
     framebufferWidth = static_cast<int32>(params.width * params.scaleX);
     framebufferHeight = static_cast<int32>(params.height * params.scaleY);
@@ -126,7 +125,7 @@ void SetDesiredFPS(int32 fps)
     desiredFPS = fps;
 }
 
-RenderOptions *GetOptions()
+RenderOptions* GetOptions()
 {
     DVASSERT(ininialized);
     return &renderOptions;
@@ -157,7 +156,7 @@ int32 GetFramebufferHeight()
     return framebufferHeight;
 }
 
-void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
+void RequestGLScreenShot(ScreenShotCallbackDelegate* _screenShotCallback)
 {
     screenshotCallback = _screenShotCallback;
     //RHI_COMPLETE
@@ -168,11 +167,11 @@ void BeginFrame()
     StatSet::ResetAll();
 
     RenderCallbacks::ProcessFrame();
-    DynamicBufferAllocator::BeginFrame();        
+    DynamicBufferAllocator::BeginFrame();
 }
 
 void EndFrame()
-{        
+{
     DynamicBufferAllocator::EndFrame();
     rhi::Present();
 

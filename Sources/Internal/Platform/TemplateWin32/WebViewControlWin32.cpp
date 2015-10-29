@@ -1020,7 +1020,7 @@ void WebViewControl::Initialize(const Rect& rect)
     SetRect(rect);
 
     // Initialize the browser itself.
-	InititalizeBrowserContainer();
+    InititalizeBrowserContainer();
 }
 
 bool WebViewControl::InititalizeBrowserContainer()

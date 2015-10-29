@@ -33,145 +33,127 @@
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
-    using DAVA::Logger;
+using DAVA::Logger;
 
     #include "_metal.h"
 
-
 namespace rhi
 {
-
 struct
 VertexBufferMetal_t
 {
-                    VertexBufferMetal_t()
-                      : size(0),
-                        data(0),
-                        uid(nil)
-                    {}
-                    ~VertexBufferMetal_t()
-                    {}
+    VertexBufferMetal_t()
+        : size(0)
+        , data(0)
+        , uid(nil)
+    {
+    }
+    ~VertexBufferMetal_t()
+    {
+    }
 
-
-    uint32          size;
-    void*           data;
-    id<MTLBuffer>   uid;
+    uint32 size;
+    void* data;
+    id<MTLBuffer> uid;
 };
 
-typedef ResourcePool<VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,false> VertexBufferMetalPool;
-RHI_IMPL_POOL(VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,false);
-
+typedef ResourcePool<VertexBufferMetal_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, false> VertexBufferMetalPool;
+RHI_IMPL_POOL(VertexBufferMetal_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, false);
 
 //==============================================================================
 
-
 static Handle
-metal_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
+metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 {
-    Handle          handle  = InvalidHandle;
-    id<MTLBuffer>   uid     = (desc.initialData)
-                              ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault]
-                              : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
+    Handle handle = InvalidHandle;
+    id<MTLBuffer> uid = (desc.initialData) ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault] : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
 
-    if( uid )
+    if (uid)
     {
         handle = VertexBufferMetalPool::Alloc();
-        VertexBufferMetal_t*    vb = VertexBufferMetalPool::Get( handle );
+        VertexBufferMetal_t* vb = VertexBufferMetalPool::Get(handle);
 
-        vb->data   = [uid contents];
-        vb->size   = desc.size;
-        vb->uid    = uid;
+        vb->data = [uid contents];
+        vb->size = desc.size;
+        vb->uid = uid;
     }
 
     return handle;
 }
 
-
 //------------------------------------------------------------------------------
 
 static void
-metal_VertexBuffer_Delete( Handle vb )
+metal_VertexBuffer_Delete(Handle vb)
 {
-    VertexBufferMetal_t*    self = VertexBufferMetalPool::Get( vb );
+    VertexBufferMetal_t* self = VertexBufferMetalPool::Get(vb);
 
-    if( self )
+    if (self)
     {
-        VertexBufferMetalPool::Free( vb );
+        VertexBufferMetalPool::Free(vb);
     }
 }
 
-
 //------------------------------------------------------------------------------
-    
-static bool
-metal_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 size )
-{
-    bool                    success = false;
-    VertexBufferMetal_t*    self    = VertexBufferMetalPool::Get( vb );
 
-    if( offset+size <= self->size )
+static bool
+metal_VertexBuffer_Update(Handle vb, const void* data, uint32 offset, uint32 size)
+{
+    bool success = false;
+    VertexBufferMetal_t* self = VertexBufferMetalPool::Get(vb);
+
+    if (offset + size <= self->size)
     {
-        memcpy( ((uint8*)self->data)+offset, data, size );
+        memcpy(((uint8*)self->data) + offset, data, size);
         success = true;
     }
 
     return success;
 }
 
-
 //------------------------------------------------------------------------------
 
 static void*
-metal_VertexBuffer_Map( Handle vb, uint32 offset, uint32 size )
+metal_VertexBuffer_Map(Handle vb, uint32 offset, uint32 size)
 {
-    VertexBufferMetal_t*    self = VertexBufferMetalPool::Get( vb );
+    VertexBufferMetal_t* self = VertexBufferMetalPool::Get(vb);
 
     DVASSERT(self->data);
-    
-    return (offset+size <= self->size)  ? ((uint8*)self->data)+offset  : 0;
-}
 
+    return (offset + size <= self->size) ? ((uint8*)self->data) + offset : 0;
+}
 
 //------------------------------------------------------------------------------
 
 static void
-metal_VertexBuffer_Unmap( Handle vb )
+metal_VertexBuffer_Unmap(Handle vb)
 {
     // do nothing
 }
 
-
-
-
-
 namespace VertexBufferMetal
 {
-
-void
-Init( uint32 maxCount )
+void Init(uint32 maxCount)
 {
-    VertexBufferMetalPool::Reserve( maxCount );
+    VertexBufferMetalPool::Reserve(maxCount);
 }
 
-void
-SetupDispatch( Dispatch* dispatch )
+void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_VertexBuffer_Create  = &metal_VertexBuffer_Create;
-    dispatch->impl_VertexBuffer_Delete  = &metal_VertexBuffer_Delete;
-    dispatch->impl_VertexBuffer_Update  = &metal_VertexBuffer_Update;
-    dispatch->impl_VertexBuffer_Map     = &metal_VertexBuffer_Map;
-    dispatch->impl_VertexBuffer_Unmap   = &metal_VertexBuffer_Unmap;
+    dispatch->impl_VertexBuffer_Create = &metal_VertexBuffer_Create;
+    dispatch->impl_VertexBuffer_Delete = &metal_VertexBuffer_Delete;
+    dispatch->impl_VertexBuffer_Update = &metal_VertexBuffer_Update;
+    dispatch->impl_VertexBuffer_Map = &metal_VertexBuffer_Map;
+    dispatch->impl_VertexBuffer_Unmap = &metal_VertexBuffer_Unmap;
 }
 
-id<MTLBuffer> 
-GetBuffer( Handle vb )
+id<MTLBuffer>
+GetBuffer(Handle vb)
 {
-    VertexBufferMetal_t* self = VertexBufferMetalPool::Get( vb );
+    VertexBufferMetal_t* self = VertexBufferMetalPool::Get(vb);
 
-    return (self)  ? self->uid  : nil;
+    return (self) ? self->uid : nil;
 }
-
 }
-
 
 } // namespace rhi

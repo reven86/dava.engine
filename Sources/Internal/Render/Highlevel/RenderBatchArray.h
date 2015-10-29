@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-
 class RenderBatchArray
 {
 public:
@@ -53,23 +52,22 @@ public:
     static const uint32 SORT_THIS_FRAME = SORT_ENABLED | SORT_REQUIRED;
 
     RenderBatchArray();
-    
+
     inline void Clear();
     inline void AddRenderBatch(RenderBatch * batch);
     inline uint32 GetRenderBatchCount() const;
-    inline RenderBatch * Get(uint32 index) const;
+    inline RenderBatch* Get(uint32 index) const;
 
     void Sort(Camera * camera);
     inline void SetSortingFlags(uint32 flags);
-    
+
 private:
     Vector<RenderBatch*> renderBatchArray;
     uint32 sortFlags;
     static bool MaterialCompareFunction(const RenderBatch * a, const RenderBatch * b);
 public:
     INTROSPECTION(RenderBatchArray,
-        COLLECTION(renderBatchArray, "Render Batch Array", I_EDIT)
-    );
+                  COLLECTION(renderBatchArray, "Render Batch Array", I_EDIT));
 };
 
 inline void RenderBatchArray::Clear()
@@ -77,9 +75,9 @@ inline void RenderBatchArray::Clear()
     renderBatchArray.clear();
 }
 
-inline void RenderBatchArray::AddRenderBatch(RenderBatch * batch)
+inline void RenderBatchArray::AddRenderBatch(RenderBatch* batch)
 {
-	renderBatchArray.push_back(batch);
+    renderBatchArray.push_back(batch);
 }
 
 inline void RenderBatchArray::SetSortingFlags(uint32 _flags)
@@ -92,7 +90,7 @@ inline uint32 RenderBatchArray::GetRenderBatchCount() const
     return (uint32)renderBatchArray.size();
 }
 
-inline RenderBatch * RenderBatchArray::Get(uint32 index) const
+inline RenderBatch* RenderBatchArray::Get(uint32 index) const
 {
     return renderBatchArray[index];
 }

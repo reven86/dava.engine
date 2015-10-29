@@ -250,6 +250,11 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
     return false;
 }
 
+bool DeviceInfoPrivate::IsTouchPresented()
+{
+    //TODO: remove this empty realization and implement detection touch
+    return false;
+}
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)

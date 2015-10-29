@@ -40,10 +40,10 @@ class CoreMacOSPlatform : public CoreMacOSPlatformBase
 {
 public:
     eScreenMode GetScreenMode() override;
-	bool SetScreenMode(eScreenMode screenMode) override;
-	void Quit() override;
-	
-	virtual Vector2 GetMousePosition();
+    bool SetScreenMode(eScreenMode screenMode) override;
+    void Quit() override;
+
+    virtual Vector2 GetMousePosition();
 };	
 
 };

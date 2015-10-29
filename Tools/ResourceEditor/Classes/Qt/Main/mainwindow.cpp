@@ -411,9 +411,9 @@ DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 {
-	// before reloading textures we should save tile-mask texture for all opened scenes
-	if(SaveTilemask())
-	{
+    // before reloading textures we should save tile-mask texture for all opened scenes
+    if (SaveTilemask())
+    {
         SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
         DAVA::Texture::SetDefaultGPU(gpu);
 
@@ -421,7 +421,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         DAVA::Vector<DAVA::NMaterial*> allSceneMaterials;
         for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
         {
-            SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
+            SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
             SceneHelper::EnumerateMaterialInstances(scene, allSceneMaterials);
         }
@@ -874,12 +874,12 @@ void QtMainWindow::SetupActions()
     connect(ui->actionImageSplitterForNormals, &QAction::triggered, developerTools, &DeveloperTools::OnImageSplitterNormals);
     connect(ui->actionReplaceTextureMipmap, &QAction::triggered, developerTools, &DeveloperTools::OnReplaceTextureMipmap);
 
-    connect(ui->actionDumpTextures, &QAction::triggered, []
-            { Texture::DumpTextures();
-            });
-    connect(ui->actionDumpSprites, &QAction::triggered, []
-            { Sprite::DumpSprites();
-            });
+    connect(ui->actionDumpTextures, &QAction::triggered, [] {
+        Texture::DumpTextures();
+    });
+    connect(ui->actionDumpSprites, &QAction::triggered, [] {
+        Sprite::DumpSprites();
+    });
 
     connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
@@ -1904,7 +1904,7 @@ void QtMainWindow::LoadViewState(SceneEditor2 *scene)
      
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
         ui->actionLightmapCanvas->setChecked(viewLMCanvas);
-        
+
         auto options = Renderer::GetOptions();
         ui->actionEnableDisableShadows->setChecked(options->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW));
 	}
@@ -2049,9 +2049,9 @@ void QtMainWindow::OnSaveHeightmapToImage()
 void QtMainWindow::OnSaveTiledTexture()
 {
     SceneEditor2* scene = GetCurrentScene();
-	if (!IsSavingAllowed() || (nullptr == scene))
-	{
-		return;
+    if (!IsSavingAllowed() || (nullptr == scene))
+    {
+        return;
 	}
 
 	LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
@@ -2063,33 +2063,33 @@ void QtMainWindow::OnSaveTiledTexture()
 
     Landscape* landscape = FindLandscape(scene);
     if (nullptr != landscape)
-	{
-		LandscapeThumbnails::Create(landscape, MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
-	}
+    {
+        LandscapeThumbnails::Create(landscape, MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
+    }
 }
 
 void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
 {
     FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
-	if (pathToSave.IsEmpty())
-	{
-		QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
-			ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(), 
-			PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
+    if (pathToSave.IsEmpty())
+    {
+        QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
+                                                           ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(),
+                                                           PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
-		if (selectedPath.isEmpty())
-		{
-			return;
-		}
+        if (selectedPath.isEmpty())
+        {
+            return;
+        }
 
-		pathToSave = FilePath(selectedPath.toStdString());
-	}
-	else
-	{
-		pathToSave.ReplaceExtension(".thumbnail.png");
-	}
+        pathToSave = FilePath(selectedPath.toStdString());
+    }
+    else
+    {
+        pathToSave.ReplaceExtension(".thumbnail.png");
+    }
 
-	SaveTextureToFile(landscapeTexture, pathToSave);
+    SaveTextureToFile(landscapeTexture, pathToSave);
 }
 
 void QtMainWindow::OnConvertModifiedTextures()
@@ -2142,8 +2142,8 @@ void QtMainWindow::OnConvertModifiedTextures()
 			WaitSetValue(++convretedNumber);
 		}
 	}
-    
-	WaitStop();
+
+    WaitStop();
 }
 
 void QtMainWindow::OnGlobalInvalidateTimeout()
