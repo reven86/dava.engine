@@ -27,54 +27,29 @@
 =====================================================================================*/
 
 
-#include "CleanFolderTool.h"
+#ifndef __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__
+#define __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__
 
-#include "CommandLine/CommandLineParser.h"
+#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
-using namespace DAVA;
+#if defined(__DAVAENGINE_WIN32__)
 
-void CleanFolderTool::PrintUsage() const
+namespace WinConsoleIO
 {
-    printf("\n");
-    printf("-cleanfolder [-folder [directory]]\n");
-    printf("\twill delete folder with files \n");
-    printf("\t-folder - path for /Users/User/Project/Data/3d/ folder \n");
+struct IOHandle;
+} //END of WinConsoleIO
 
-    printf("\n");
-    printf("Sample:\n");
-    printf("-cleanfolder -folder /Users/User/Project/Data/3d\n");
-}
-
-DAVA::String CleanFolderTool::GetCommandLineKey() const
+class WinConsoleIOLocker final
 {
-    return "-cleanfolder";
-}
+public:
+    WinConsoleIOLocker();
+    ~WinConsoleIOLocker();
 
-bool CleanFolderTool::InitializeFromCommandLine()
-{
-    foldername = CommandLineParser::GetCommandParam(String("-folder"));
-    if(foldername.IsEmpty())
-    {
-        errors.insert(String("Incorrect params for cleaning folder"));
-        return false;
-    }
+private:
+    std::unique_ptr<WinConsoleIO::IOHandle> ioHandle;
+};
 
-    foldername.MakeDirectoryPathname();
-    
-    return true;
-}
+#endif //#if defined(__DAVAENGINE_WIN32__)
 
-void CleanFolderTool::Process() 
-{
-    bool ret = FileSystem::Instance()->DeleteDirectory(foldername);
-    if(!ret)
-    {
-        bool folderExists = FileSystem::Instance()->IsDirectory(foldername);
-        if(folderExists)
-        {
-            errors.insert(String(Format("[CleanFolder] ret = %d, folder = %s", ret, foldername.GetAbsolutePathname().c_str())));
-        }
-    }
-}
-
-
+#endif // __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__

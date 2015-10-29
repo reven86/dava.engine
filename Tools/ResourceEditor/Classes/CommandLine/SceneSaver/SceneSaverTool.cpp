@@ -26,101 +26,93 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "SceneSaverTool.h"
-#include "SceneSaver.h"
-
-#include "CommandLine/CommandLineParser.h"
+#include "CommandLine/SceneSaver/SceneSaverTool.h"
+#include "CommandLine/SceneSaver/SceneSaver.h"
 
 using namespace DAVA;
 
-void SceneSaverTool::PrintUsage() const
+namespace OptionName
 {
-    printf("\n");
-    printf("-scenesaver -save [-indir [directory]] [-outdir [directory]] [-processfile [directory]] [-copyconverted]\n");
-    printf("-scenesaver -resave [-indir [directory]] [-processfile [directory]] [-copyconverted]\n");
-    printf("-scenesaver -resave -yaml [-indir [directory]]\n");
-    printf("\twill save scene file from DataSource/3d to any Data or DataSource folder\n");
-    printf("\t-save - will save level to selected Data/3d/\n");
-    printf("\t-resave - will open and save level\n");
-    printf("\t-yaml - will open and save yaml file\n");
-    printf("\t-indir - path for Poject/DataSource/3d/ folder \n");
-    printf("\t-outdir - path for Poject/Data/3d/ folder\n");
-    printf("\t-processfile - filename from DataSource/3d/ for saving\n");
-    printf("\t-copyconverted - copy *.pvr and *.dds files too\n");
-
-    printf("\n");
-    printf("Samples:\n");
-    printf("-scenesaver -save -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2 -copyconverted\n");
-    printf("-scenesaver -resave -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2\n");
-    printf("-scenesaver -resave -yaml -indir /Users/User/Project/Data/Configs/Particles/\n");
+static const String Save = "-save";
+static const String Resave = "-resave";
+static const String Yaml = "-yaml";
+static const String InDir = "-indir";
+static const String OutDir = "-outdir";
+static const String ProcessFile = "-processfile";
+static const String CopyConverted = "-copyconverted";
 }
 
-DAVA::String SceneSaverTool::GetCommandLineKey() const
+SceneSaverTool::SceneSaverTool()
+    : CommandLineTool("-scenesaver")
 {
-    return "-scenesaver";
+    options.AddOption(OptionName::Save, VariantType(false), "Saving scene from indir to outdir");
+    options.AddOption(OptionName::Resave, VariantType(false), "Resave file into indir");
+    options.AddOption(OptionName::Yaml, VariantType(false), "Target is *.yaml file");
+    options.AddOption(OptionName::InDir, VariantType(String("")), "Path for Project/DataSource/3d/ folder");
+    options.AddOption(OptionName::OutDir, VariantType(String("")), "Path for Project/Data/3d/ folder");
+    options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Filename from DataSource/3d/ for exporting");
+    options.AddOption(OptionName::CopyConverted, VariantType(false), "Enables copying of converted image files");
 }
 
-bool SceneSaverTool::InitializeFromCommandLine()
+void SceneSaverTool::ConvertOptionsToParamsInternal()
 {
-    commandAction = eAction::ACTION_NONE;
-    
-    inFolder = CommandLineParser::GetCommandParam(String("-indir"));
+    inFolder = options.GetOption(OptionName::InDir).AsString();
+    outFolder = options.GetOption(OptionName::OutDir).AsString();
+    filename = options.GetOption(OptionName::ProcessFile).AsString();
+
+    if (options.GetOption(OptionName::Save).AsBool())
+    {
+        commandAction = ACTION_SAVE;
+    }
+    else if (options.GetOption(OptionName::Resave).AsBool())
+    {
+        if (options.GetOption(OptionName::Yaml).AsBool())
+        {
+            commandAction = ACTION_RESAVE_YAML;
+        }
+        else
+        {
+            commandAction = ACTION_RESAVE_SCENE;
+        }
+    }
+
+    copyConverted = options.GetOption(OptionName::CopyConverted).AsBool();
+}
+
+bool SceneSaverTool::InitializeInternal()
+{
     if (inFolder.IsEmpty())
     {
-        errors.emplace("[SceneSaverTool] Incorrect indir parameter");
+        AddError("Input folder was not selected");
         return false;
     }
     inFolder.MakeDirectoryPathname();
 
-    if (CommandLineParser::CommandIsFound(String("-save")))
+    if (commandAction == ACTION_SAVE)
     {
-        commandAction = eAction::ACTION_SAVE;
-        outFolder = CommandLineParser::GetCommandParam(String("-outdir"));
         if (outFolder.IsEmpty())
         {
-            errors.emplace("[SceneSaverTool] Incorrect outdir parameter");
+            AddError("Output folder was not selected");
             return false;
         }
         outFolder.MakeDirectoryPathname();
-
-        copyConverted = CommandLineParser::CommandIsFound(String("-copyconverted"));
     }
-    else if (CommandLineParser::CommandIsFound(String("-resave")))
+    else if (commandAction == ACTION_NONE)
     {
-        if (CommandLineParser::CommandIsFound("-yaml"))
-        {
-            commandAction = eAction::ACTION_RESAVE_YAML;
-        }
-        else
-        {
-            commandAction = eAction::ACTION_RESAVE_SCENE;
-        }
-    }
-    else
-    {
-        errors.emplace("[SceneSaverTool] Incorrect action");
+        AddError("Wrong action was selected");
         return false;
     }
 
-    
-    filename = CommandLineParser::GetCommandParam(String("-processfile"));
     if (filename.empty() && (commandAction != eAction::ACTION_RESAVE_YAML))
     {
-        errors.emplace("[SceneSaverTool] Filename is not set");
+        AddError("Filename was not selected");
         return false;
     }
     
     return true;
 }
 
-void SceneSaverTool::DumpParams() const
-{
-    Logger::Info("SceneSaver started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tFilename: %s\n\tCopy converted: %d",
-                 inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), filename.c_str(), copyConverted);
-}
-
-void SceneSaverTool::Process()
+void SceneSaverTool::ProcessInternal()
 {
     switch (commandAction)
     {

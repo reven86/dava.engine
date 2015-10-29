@@ -39,7 +39,6 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Project/ProjectManager.h"
 #include "TeamcityOutput/TeamcityOutput.h"
-#include "CommandLine/CommandLineParser.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TextureCompression/PVRConverter.h"
 #include "CommandLine/CommandLineManager.h"
@@ -98,9 +97,8 @@ int main(int argc, char *argv[])
     ParticleEmitter::FORCE_DEEP_CLONE = true;
     QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
-	CommandLineManager cmdLine;
-
-	if(cmdLine.IsEnabled())
+    CommandLineManager cmdLine(argc, argv);
+    if(cmdLine.IsEnabled())
 	{
         RunConsole( argc, argv, cmdLine );
 	}
@@ -112,13 +110,16 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
+void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 {
-#ifdef Q_OS_MAC
+#if defined(__DAVAENGINE_MACOS__)
     DAVA::QtLayer::MakeAppForeground(false);
-#endif
-    
+#elif defined(__DAVAENGINE_WIN32__)
+    WinConsoleIOLocker locker;
+#endif //platforms
+
     Core::Instance()->EnableConsoleMode();
+    DAVA::Logger::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel( DAVA::Logger::LEVEL_WARNING );
 
     QApplication a( argc, argv );
@@ -138,21 +139,11 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 #endif
     glWidget->hide();
 
-    cmdLine.InitalizeTool();
-    if ( !cmdLine.IsToolInitialized() )
-    {
-		cmdLine.PrintResults();
-        cmdLine.PrintUsageForActiveTool();
-    }
-    else
-    {
         //Trick for correct loading of sprites.
         VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
         VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize( 1, 1, "Gfx" );
 
-        cmdLine.Process();
-        cmdLine.PrintResults();
-    }
+        cmdLineManager.Process();
 
     SceneValidator::Instance()->Release();
     EditorConfig::Instance()->Release();

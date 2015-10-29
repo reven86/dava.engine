@@ -26,77 +26,62 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "CommandLine/Beast/BeastCommandLineTool.h"
 
-#include "BeastCommandLineTool.h"
-#include "CommandLine/SceneUtils/SceneUtils.h"
-#include "CommandLine/CommandLineParser.h"
 #include "Scene/SceneEditor2.h"
-#include "Scene/SceneHelper.h"
 #include "Commands2/BeastAction.h"
-#include "Qt/Settings/SettingsManager.h"
 
 using namespace DAVA;
 
 #if defined (__DAVAENGINE_BEAST__)
 
+namespace OptionName
+{
+static const String File = "-file";
+static const String Output = "-output";
+}
+
 BeastCommandLineTool::BeastCommandLineTool()
-	:	CommandLineTool()
+    : CommandLineTool("-beast")
 {
+    options.AddOption(OptionName::File, VariantType(String("")), "Full pathname of scene for beasting");
+    options.AddOption(OptionName::Output, VariantType(String("")), "Full path for output folder for beasting");
 }
 
-void BeastCommandLineTool::PrintUsage() const
+void BeastCommandLineTool::ConvertOptionsToParamsInternal()
 {
-    printf("\n");
-    printf("-beast -file <file> -output <output_path>\n");
-    printf("\twill beast scene file and place output to output_path\n");
-    printf("\t-file - full pathname of scene for beasting\n");
-    printf("\t-output - full path for output of beasting\n");
-    printf("\n");
-    printf("Samples:\n");
-    printf("-beast -file /Projects/WOT/wot.blitz/DataSource/3d/Maps/karelia/karelia.sc2 -output /Projects/WOT/wot.blitz/DataSource/3d/Maps/karelia/lightmap\n");
-
+    scenePathname = options.GetOption(OptionName::File).AsString();
+    outputPath = options.GetOption(OptionName::Output).AsString();
 }
 
-DAVA::String BeastCommandLineTool::GetCommandLineKey() const
+bool BeastCommandLineTool::InitializeInternal()
 {
-    return "-beast";
-}
-
-bool BeastCommandLineTool::InitializeFromCommandLine()
-{
-    scenePathname = CommandLineParser::GetCommandParam(String("-file"));
-    outputPath = CommandLineParser::GetCommandParam( String( "-output" ) );
-    if (scenePathname.IsEmpty() || outputPath.IsEmpty())
+    if (scenePathname.IsEmpty() || !scenePathname.IsEqualToExtension(".sc2"))
     {
-        errors.insert(String("Incorrect params for beasting of the scene"));
+        AddError("Scene was not selected");
         return false;
     }
 
-    if(!scenePathname.IsEqualToExtension(".sc2"))
+    if (outputPath.IsEmpty())
     {
-        errors.insert(String("Wrong pathname. Need path ot *.sc2"));
+        AddError("Out folder was not selected");
         return false;
     }
-    
+    outputPath.MakeDirectoryPathname();
+
     return true;
 }
 
-void BeastCommandLineTool::Process() 
+void BeastCommandLineTool::ProcessInternal()
 {
-	SceneEditor2 *scene = new SceneEditor2();
-	if(scene->Load(scenePathname))
-	{
+    ScopedPtr<SceneEditor2> scene(new SceneEditor2());
+    if (scene->Load(scenePathname))
+    {
         scene->Update(0.1f);
-        scene->Exec(new BeastAction( scene, outputPath, BeastProxy::MODE_LIGHTMAPS, NULL ));
-		scene->Save();
-	}
-	SafeRelease(scene);
+        scene->Exec(new BeastAction(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr));
+        scene->Save();
+    }
     RenderObjectsFlusher::Flush();
-}
-
-const DAVA::FilePath & BeastCommandLineTool::GetScenePathname() const
-{
-    return scenePathname;
 }
 
 DAVA::FilePath BeastCommandLineTool::GetQualityConfigPath() const

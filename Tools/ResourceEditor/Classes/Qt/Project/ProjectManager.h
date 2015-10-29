@@ -66,6 +66,8 @@ public:
     const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
     const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;
 
+    static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
+
 public slots:
     DAVA::FilePath ProjectOpenDialog();
 	void ProjectOpen(const QString &path);

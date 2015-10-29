@@ -29,81 +29,74 @@
 
 #include "CommandLine/Dump/DumpTool.h"
 #include "CommandLine/Dump/SceneDumper.h"
-#include "CommandLine/CommandLineParser.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 
 using namespace DAVA;
 
-void DumpTool::PrintUsage() const
+namespace OptionName
 {
-    printf("\n");
-    printf("-dump -links [-indir] [-processfile] [-outfile] [-qualitycfgpath]\n");
-    printf("\twill save all pathnames from scene file to out file\n");
-    printf("\t-links - will dump pathnames\n");
-    printf("\t-indir - path for Poject/DataSource/3d/ folder \n");
-    printf("\t-processfile - filename from DataSource/3d/ for saving\n");
-    printf("\t-outfile - path to file for dumping of pathnames\n");
-	printf("\t-qualitycfgpath - path for quality.yaml file\n");
-
-    printf("\n");
-    printf("Samples:\n");
-    printf("-dump -links -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2 -outfile /Users/User/links.txt \n");
-	printf("-dump -links -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2 -outfile /Users/User/links.txt -qualitycfgpath /Users/User/quality.yaml\n");
+static const String Links = "-links";
+static const String InDir = "-indir";
+static const String ProcessFile = "-processfile";
+static const String QualityConfig = "-qualitycfgpath";
+static const String OutFile = "-outfile";
 }
 
-DAVA::String DumpTool::GetCommandLineKey() const
+DumpTool::DumpTool()
+    : CommandLineTool("-dump")
 {
-    return "-dump";
+    options.AddOption(OptionName::Links, VariantType(false), "Target for dumping is links");
+    options.AddOption(OptionName::InDir, VariantType(String("")), "Path for Project/DataSource/3d/ folder");
+    options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Filename from DataSource/3d/ for dumping");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
+    options.AddOption(OptionName::OutFile, VariantType(String("")), "Full path to file to write result of dumping");
 }
 
-bool DumpTool::InitializeFromCommandLine()
+void DumpTool::ConvertOptionsToParamsInternal()
 {
-    commandAction = ACTION_NONE;
-    
-    inFolder = CommandLineParser::GetCommandParam(String("-indir"));
+    inFolder = options.GetOption(OptionName::InDir).AsString();
+    filename = options.GetOption(OptionName::ProcessFile).AsString();
+    qualityPathname = options.GetOption(OptionName::QualityConfig).AsString();
+    outFile = options.GetOption(OptionName::OutFile).AsString();
+
+    if (options.GetOption(OptionName::Links).AsBool())
+    {
+        commandAction = ACTION_DUMP_LINKS;
+    }
+}
+
+bool DumpTool::InitializeInternal()
+{
     if(inFolder.IsEmpty())
     {
-        errors.insert("[DumpTool] Incorrect indir parameter");
+        AddError("Input folder was not selected");
         return false;
     }
     inFolder.MakeDirectoryPathname();
     
-    filename = CommandLineParser::GetCommandParam(String("-processfile"));
     if(filename.empty())
     {
-        errors.insert("[DumpTool] Filename is not set");
+        AddError("Filename was not selected");
         return false;
     }
-    
-	qualityPathname = CommandLineParser::GetCommandParam(String("-qualitycfgpath"));
 
-    if(CommandLineParser::CommandIsFound(String("-links")))
+    if (outFile.IsEmpty())
     {
-        commandAction = ACTION_DUMP_LINKS;
-		outFile = CommandLineParser::GetCommandParam(String("-outfile"));
-		if (outFile.IsEmpty())
-        {
-            errors.insert("[DumpTool] Incorrect outFile parameter");
-            return false;
-        }
-    }
-    else
-    {
-        errors.insert("[SceneSaverTool] Incorrect action");
+        AddError("Out file was not selected");
         return false;
     }
-    
+
+    if (commandAction == ACTION_NONE)
+    {
+        AddError("Target for dumping was not selected");
+        return false;
+    }
+
     return true;
 }
 
-void DumpTool::DumpParams() const
-{
-	Logger::Info("DumpTool started with params:\n\tIn folder: %s\n\tFilename: %s\n\tOut file: %s\n\tQuality file: %s\n",
-		inFolder.GetStringValue().c_str(), filename.c_str(), outFile.GetStringValue().c_str(), qualityPathname.GetStringValue().c_str());
-}
-
-void DumpTool::Process() 
+void DumpTool::ProcessInternal()
 {
     if(commandAction == ACTION_DUMP_LINKS)
     {
