@@ -44,6 +44,7 @@
 #include "Tests/WebViewTest.h"
 #include "Tests/FunctionSignalTest.h"
 #include "Tests/FullscreenTest.h"
+#include "Tests/ClipTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -69,6 +70,7 @@ void GameCore::RegisterTests()
     new WebViewTest();
 	new FunctionSignalTest();
     new FullscreenTest();
+    new ClipTest();
 //$UNITTEST_CTOR
 }
 
