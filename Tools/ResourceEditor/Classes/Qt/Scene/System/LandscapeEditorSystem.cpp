@@ -86,7 +86,7 @@ void LandscapeEditorSystem::UpdateCursorPosition()
         cursorPosition.y = 1.f - cursorPosition.y;
 
         drawSystem->SetCursorPosition(cursorPosition);
-	}
+    }
 	else
 	{
 		// hide cursor

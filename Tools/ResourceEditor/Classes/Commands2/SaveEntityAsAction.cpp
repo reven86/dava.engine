@@ -53,10 +53,8 @@ SaveEntityAsAction::~SaveEntityAsAction()
 void SaveEntityAsAction::Redo()
 {
 	uint32 count = static_cast<uint32>(entities->Size());
-	if (	!sc2Path.IsEmpty()
-		&&	sc2Path.IsEqualToExtension(".sc2") 
-		&&	nullptr != entities && count > 0)
-	{
+    if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != entities) && (count > 0))
+    {
 		const auto RemoveReferenceToOwner = [](Entity *entity) 
 		{
 			KeyedArchive *props = GetCustomPropertiesArchieve(entity);
@@ -66,20 +64,20 @@ void SaveEntityAsAction::Redo()
 			}
 		};
 
-		Scene *scene = new Scene();
-		Entity *container = nullptr;
+        ScopedPtr<Scene> scene(new Scene());
+        ScopedPtr<Entity> container(nullptr);
 
-		if (count == 1)	// saving of single object
+        if (count == 1)	// saving of single object
 		{
-			container = entities->GetEntity(0)->Clone();
-			RemoveReferenceToOwner(container);
+            container.reset(entities->GetEntity(0)->Clone());
+            RemoveReferenceToOwner(container);
 			container->SetLocalTransform(Matrix4::IDENTITY);
 		}
 		else // saving of group of objects
 		{
-			container = new Entity();
-			
-			const Vector3 oldZero = entities->GetCommonZeroPos();
+            container.reset(new Entity());
+
+            const Vector3 oldZero = entities->GetCommonZeroPos();
 			for (uint32 i = 0; i < count; ++i)
 			{
 				ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
@@ -95,10 +93,11 @@ void SaveEntityAsAction::Redo()
 
 			container->SetName(sc2Path.GetFilename().c_str());
 		}
-		DVASSERT(nullptr != container);
+        DVASSERT(container);
 
-        //Remove global material from cloned object
+        //Remove global material from parent materials
         Scene* sourceScene = entities->GetEntity(0)->GetScene();
+        Set<NMaterial*> parentsMaterials;
         NMaterial* sourceGlobalMaterial = (sourceScene != nullptr) ? sourceScene->GetGlobalMaterial() : nullptr;
         if (sourceGlobalMaterial)
         {
@@ -109,20 +108,25 @@ void SaveEntityAsAction::Redo()
             {
                 if (mat->GetParent() == sourceGlobalMaterial)
                 {
+                    //reset global material inheritance
                     mat->SetParent(nullptr);
+                    parentsMaterials.insert(mat);
                 }
             }
         }
 
         scene->AddNode(container); //1. Added new items in zero position with identity matrix
-        scene->staticOcclusionSystem->InvalidateOcclusion();	//2. invalidate static occlusion indeces
-		RemoveLightmapsRecursive(container);					//3. Reset lightmaps
+        scene->staticOcclusionSystem->InvalidateOcclusion(); //2. invalidate static occlusion indeces
+        RemoveLightmapsRecursive(container);					//3. Reset lightmaps
 				
 		scene->SaveScene(sc2Path);
 
-		container->Release();
-		scene->Release();
-	}
+        //restore global material inheritance
+        for (auto& mat : parentsMaterials)
+        {
+            mat->SetParent(sourceGlobalMaterial);
+        }
+    }
 }
 
 void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
@@ -138,7 +142,7 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
             {
                 material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
             }
-		}
+        }
 	}
 
 	const int32 count = entity->GetChildrenCount();

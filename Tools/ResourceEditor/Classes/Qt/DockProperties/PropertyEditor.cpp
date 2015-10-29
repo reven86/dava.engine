@@ -687,7 +687,7 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
         return CreateInspMember(memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
     }
 
-	QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
+    QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
 	if(NULL != metaData)
 	{
 		return new QtPropertyDataMetaObject(metaData->object, metaData->meta);

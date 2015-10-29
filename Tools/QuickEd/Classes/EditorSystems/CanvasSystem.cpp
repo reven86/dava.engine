@@ -70,6 +70,7 @@ public:
     BackgroundController(UIControl* nestedControl);
     ~BackgroundController() = default;
     UIControl* GetGridControl();
+    bool IsNestedControl(const UIControl* control) const;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* propert);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
@@ -109,6 +110,11 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
 UIControl* BackgroundController::GetGridControl()
 {
     return gridControl.Get();
+}
+
+bool BackgroundController::IsNestedControl(const DAVA::UIControl* control) const
+{
+    return control == nestedControl;
 }
 
 void BackgroundController::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
@@ -377,18 +383,46 @@ void CanvasSystem::LayoutCanvas()
     systemManager->CanvasSizeChanged.Emit();
 }
 
-void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
+void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
 {
-    for (auto& iter : gridControls)
+    DAVA::Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
+    DAVA::Set<PackageBaseNode*> newNodes;
+    DAVA::Set<PackageBaseNode*> deletedNodes;
+    if (!rootControls.empty())
     {
-        controlsCanvas->RemoveControl(iter->GetGridControl());
+        std::set_difference(rootControls.begin(), rootControls.end(), sortedRootControls.begin(), sortedRootControls.end(), std::inserter(deletedNodes, deletedNodes.end()));
     }
-    gridControls.clear();
-    controlsCanvas->RemoveAllControls();
-    for (PackageBaseNode* rootControl : rootControls)
+    if (!sortedRootControls.empty())
     {
-        BackgroundController* backgroundController = CreateControlBackground(rootControl);
-        AddBackgroundControllerToCanvas(backgroundController, controlsCanvas->GetChildren().size());
+        std::set_difference(sortedRootControls.begin(), sortedRootControls.end(), rootControls.begin(), rootControls.end(), std::inserter(newNodes, newNodes.end()));
+    }
+    rootControls = sortedRootControls;
+
+    for (auto iter = deletedNodes.begin(); iter != deletedNodes.end(); ++iter)
+    {
+        PackageBaseNode* node = *iter;
+        UIControl* control = node->GetControl();
+        auto findIt = std::find_if(gridControls.begin(), gridControls.end(), [control](std::unique_ptr<BackgroundController>& gridIter) {
+            return gridIter->IsNestedControl(control);
+        });
+        DVASSERT(findIt != gridControls.end());
+        controlsCanvas->RemoveControl(findIt->get()->GetGridControl());
+        gridControls.erase(findIt);
+    }
+    DVASSERT(rootControls_.size() == rootControls.size());
+    for (auto iter = rootControls_.begin(); iter != rootControls_.end(); ++iter)
+    {
+        PackageBaseNode* node = *iter;
+        if (newNodes.find(node) == newNodes.end())
+        {
+            continue;
+        }
+        UIControl* control = node->GetControl();
+        DVASSERT(std::find_if(gridControls.begin(), gridControls.end(), [control](std::unique_ptr<BackgroundController>& gridIter) {
+                     return gridIter->IsNestedControl(control);
+                 }) == gridControls.end());
+        BackgroundController* backgroundController = CreateControlBackground(node);
+        AddBackgroundControllerToCanvas(backgroundController, std::distance(rootControls_.begin(), iter));
     }
     LayoutCanvas();
 }

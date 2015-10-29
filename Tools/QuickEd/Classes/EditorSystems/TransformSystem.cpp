@@ -43,16 +43,16 @@ using namespace DAVA;
 using namespace std::chrono;
 
 const TransformSystem::CornersDirections TransformSystem::cornersDirections =
-{{
-{{NEGATIVE_DIRECTION, NEGATIVE_DIRECTION}}, // TOP_LEFT_AREA
-{{NO_DIRECTION, NEGATIVE_DIRECTION}}, // TOP_CENTER_AREA
-{{POSITIVE_DIRECTION, NEGATIVE_DIRECTION}}, //TOP_RIGHT_AREA
-{{NEGATIVE_DIRECTION, NO_DIRECTION}}, //CENTER_LEFT_AREA
-{{POSITIVE_DIRECTION, NO_DIRECTION}}, //CENTER_RIGHT_AREA
-{{NEGATIVE_DIRECTION, POSITIVE_DIRECTION}}, //BOTTOM_LEFT_AREA
-{{NO_DIRECTION, POSITIVE_DIRECTION}}, //BOTTOM_CENTER_AREA
-{{POSITIVE_DIRECTION, POSITIVE_DIRECTION}} //BOTTOM_RIGHT_AREA
-}};
+{ {
+{ { NEGATIVE_DIRECTION, NEGATIVE_DIRECTION } }, // TOP_LEFT_AREA
+{ { NO_DIRECTION, NEGATIVE_DIRECTION } }, // TOP_CENTER_AREA
+{ { POSITIVE_DIRECTION, NEGATIVE_DIRECTION } }, //TOP_RIGHT_AREA
+{ { NEGATIVE_DIRECTION, NO_DIRECTION } }, //CENTER_LEFT_AREA
+{ { POSITIVE_DIRECTION, NO_DIRECTION } }, //CENTER_RIGHT_AREA
+{ { NEGATIVE_DIRECTION, POSITIVE_DIRECTION } }, //BOTTOM_LEFT_AREA
+{ { NO_DIRECTION, POSITIVE_DIRECTION } }, //BOTTOM_CENTER_AREA
+{ { POSITIVE_DIRECTION, POSITIVE_DIRECTION } } //BOTTOM_RIGHT_AREA
+} };
 
 struct TransformSystem::MoveInfo
 {
@@ -161,10 +161,10 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 {
     switch (currentInput->phase)
     {
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
         return ProcessKey(currentInput->tid);
 
-    case UIEvent::PHASE_BEGAN:
+    case UIEvent::Phase::BEGAN:
     {
         extraDelta.SetZero();
         prevPos = currentInput->point;
@@ -172,7 +172,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         currentHash = static_cast<size_t>(us.count());
         return activeArea != HUDAreaInfo::NO_AREA;
     }
-    case UIEvent::PHASE_DRAG:
+    case UIEvent::Phase::DRAG:
     {
         if (currentInput->point != prevPos)
         {
@@ -183,7 +183,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         }
         return false;
     }
-    case UIEvent::PHASE_ENDED:
+    case UIEvent::Phase::ENDED:
         systemManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
         return false;
     default:
@@ -416,8 +416,7 @@ Vector2 TransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<MagnetL
         List<MagnetLine> magnetLines = CreateMagnetPairs(box, parentGD, neighbours, axis);
 
         //get nearest magnet line
-        std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [](const MagnetLine& left, const MagnetLine& right) -> bool
-        {
+        std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [](const MagnetLine& left, const MagnetLine& right) -> bool {
             return fabs(left.interval) < fabs(right.interval);
         };
         MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
@@ -623,8 +622,7 @@ DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
         {
             List<MagnetLine> magnetLines = CreateMagnetPairs(box, &parentGeometricData, neighbours, axis);
 
-            std::function<bool(const MagnetLine&)> removePredicate = [directions, transformPosition](const MagnetLine& line) -> bool
-            {
+            std::function<bool(const MagnetLine&)> removePredicate = [directions, transformPosition](const MagnetLine& line) -> bool {
                 bool needRemove = true;
                 if (directions[line.axis] == POSITIVE_DIRECTION)
                 {
@@ -798,7 +796,7 @@ bool TransformSystem::Rotate(Vector2 pos)
     //after modification deltaAngle is less than mouse delta positions
 
     deltaAngle += extraDelta.dx;
-    extraDelta.SetZero();    
+    extraDelta.SetZero();
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
@@ -833,11 +831,10 @@ float32 TransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 or
 
 void TransformSystem::CorrectNodesToMove()
 {
-    nodesToMove.remove_if([](std::unique_ptr<MoveInfo>& item)
-                          {
+    nodesToMove.remove_if([](std::unique_ptr<MoveInfo>& item) {
         const PackageBaseNode* parent = item->node->GetParent();
         return nullptr == parent || nullptr == parent->GetControl();
-                          });
+    });
 
     auto iter = nodesToMove.begin();
     while (iter != nodesToMove.end())

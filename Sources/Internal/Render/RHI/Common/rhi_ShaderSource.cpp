@@ -119,7 +119,8 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     PreProcessText(srcText, argv, argc, &src);
 
     // parse properties/samplers
-    DynamicMemoryFile* in = DynamicMemoryFile::Create((const uint8*)src.c_str(), (uint32)(src.length() + 1), DAVA::File::READ);
+
+    DAVA::ScopedPtr<DynamicMemoryFile> in(DynamicMemoryFile::Create((const uint8*)src.c_str(), (uint32)(src.length() + 1), DAVA::File::READ));
 
     if (in)
     {

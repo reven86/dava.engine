@@ -207,7 +207,7 @@ void CollisionObject2::DebugDraw()
     RenderSystem2D::Instance()->DrawCircle(circle.center, circle.radius, red);
 
     if (type == TYPE_POLYGON)
-	{
+    {
         RenderSystem2D::Instance()->DrawPolygon(polygon, true, red);
     }
 

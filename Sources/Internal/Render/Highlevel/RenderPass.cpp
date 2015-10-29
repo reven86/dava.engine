@@ -73,7 +73,7 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
 {
     if (RenderLayer::RENDER_LAYER_INVALID_ID != afterLayer)
     {
-		uint32 size = static_cast<uint32>(renderLayers.size());
+        uint32 size = static_cast<uint32>(renderLayers.size());
 		for(uint32 i = 0; i < size; ++i)
 		{
             RenderLayer::eRenderLayerID layerID = renderLayers[i]->GetRenderLayerID();
@@ -82,7 +82,7 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
                 renderLayers.insert(renderLayers.begin() + i + 1, layer);
                 layersBatchArrays[layerID].SetSortingFlags(layer->GetSortingFlags());
                 return;
-			}
+            }
 		}
 		DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
 	}
@@ -293,8 +293,8 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
 void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 {
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();
+    Camera *mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
 
     /*    drawCamera->SetPosition(Vector3(5, 5, 5));
     drawCamera->SetTarget(Vector3(0, 0, 0));
@@ -318,7 +318,7 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 MainForwardRenderPass::~MainForwardRenderPass()
 {
     SafeDelete(reflectionPass);
-	SafeDelete(refractionPass);
+    SafeDelete(refractionPass);
 }
 
 WaterPrePass::WaterPrePass(const FastName& name)

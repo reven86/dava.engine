@@ -160,7 +160,7 @@ void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedN
     selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
     selectionContainer.GetNotExistedItems(selected, reallySelected);
     selectionContainer.MergeSelection(selected, deselected);
-    if(!reallySelected.empty() || !reallyDeselected.empty())
+    if (!reallySelected.empty() || !reallyDeselected.empty())
     {
         systemManager.SelectionChanged.Emit(selected, deselected);
     }

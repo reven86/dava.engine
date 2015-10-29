@@ -143,7 +143,7 @@ public:
     /**     
         \brief Restore camera transform to original camera transform that was set using 
      */
-	void RestoreOriginalSceneTransform();
+    void RestoreOriginalSceneTransform();
 	
     
     /**
@@ -283,7 +283,7 @@ public:
         This matrix is right matrix that should be used in all 3D computations, that depends from camera, but final multiplication should be done to model view matrix.
         \returns current camera matrix
      */
-    const Matrix4 & GetMatrix() const;
+    const Matrix4& GetMatrix() const;
 
     const Matrix4& GetProjectionMatrix() const;
 
