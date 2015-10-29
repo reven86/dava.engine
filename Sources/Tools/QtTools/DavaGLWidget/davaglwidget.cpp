@@ -30,9 +30,10 @@
 
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Davaglwidget.h"
-#include "ControlMapper.h"
 #include "DavaRenderer.h"
+#include "Davaglwidget.h"
+
+#include "ControlMapper.h"
 
 #include <QKeyEvent>
 #include <QScreen>

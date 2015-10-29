@@ -27,7 +27,8 @@
 =====================================================================================*/
 
 
-#include "SettingsManager.h"
+#include "Settings/SettingsManager.h"
+
 #include "Scene/System/EditorMaterialSystem.h"
 #include "TextureCompression/TextureConverter.h"
 
@@ -80,6 +81,7 @@ void SettingsManager::Init()
     CreateValue(Settings::General_AssetCache_Ip, DAVA::VariantType(DAVA::String("")));
     CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(DAVA::Format("%d", DAVA::AssetCache::ASSET_SERVER_PORT)));
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
+    CreateValue(Settings::General_AutoConvertation, DAVA::VariantType(true));
 
     CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
     CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));

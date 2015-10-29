@@ -277,7 +277,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
     DAVA::FilePath saveAsPath = scene->GetScenePath();
     if (!saveAsPath.Exists())
     {
-        DAVA::FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+        DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
         saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
     }
 
@@ -317,7 +317,7 @@ QString GetSaveFolderForEmitters()
     QString particlesPath;
     if (defaultPath.IsEmpty())
     {
-        particlesPath = QString::fromStdString(ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname());
+        particlesPath = QString::fromStdString(ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname());
     }
     else
     {
@@ -532,8 +532,8 @@ void QtMainWindow::SetupTitle()
 	if(ProjectManager::Instance()->IsOpened())
 	{
 		title += " | Project - ";
-		title += ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
-	}
+        title += ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+    }
 
 	this->setWindowTitle(title);
 }
@@ -936,9 +936,9 @@ void QtMainWindow::SetupShortCuts()
 
 void QtMainWindow::ProjectOpened(const QString &path)
 {
-	EditorConfig::Instance()->ParseConfig(ProjectManager::Instance()->CurProjectPath() + "EditorConfig.yaml");
+    EditorConfig::Instance()->ParseConfig(ProjectManager::Instance()->GetProjectPath() + "EditorConfig.yaml");
 
-	EnableProjectActions(true);
+    EnableProjectActions(true);
 	SetupTitle();
 }
 
@@ -1148,11 +1148,11 @@ void QtMainWindow::OnProjectOpen()
 
 void QtMainWindow::OpenProject(const DAVA::FilePath & projectPath)
 {
-    if(!projectPath.IsEmpty() &&
-       ProjectManager::Instance()->CurProjectPath() != projectPath &&
-       ui->sceneTabWidget->CloseAllTabs())
+    if (!projectPath.IsEmpty() &&
+        ProjectManager::Instance()->GetProjectPath() != projectPath &&
+        ui->sceneTabWidget->CloseAllTabs())
     {
-        ProjectManager::Instance()->ProjectOpen(projectPath);
+        ProjectManager::Instance()->OpenProject(projectPath);
         recentProjects.Add(projectPath.GetAbsolutePathname());
     }
 }
@@ -1162,7 +1162,7 @@ void QtMainWindow::OnProjectClose()
 {
     if(ui->sceneTabWidget->CloseAllTabs())
     {
-        ProjectManager::Instance()->ProjectClose();
+        ProjectManager::Instance()->CloseProject();
     }
 }
 
@@ -1176,8 +1176,8 @@ void QtMainWindow::OnSceneNew()
 
 void QtMainWindow::OnSceneOpen()
 {
-	QString path = FileDialog::getOpenFileName(this, "Open scene file", ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
-	OpenScene(path);
+    QString path = FileDialog::getOpenFileName(this, "Open scene file", ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
+    OpenScene(path);
 }
 
 void QtMainWindow::OnSceneSave()
@@ -1842,7 +1842,7 @@ void QtMainWindow::On2DCameraDialog()
 }
 void QtMainWindow::On2DSpriteDialog()
 {
-    FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
+    FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
     projectPath += "Data/Gfx/";
 
     QString filePath = FileDialog::getOpenFileName(nullptr, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
@@ -2074,7 +2074,7 @@ void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Tex
     if (pathToSave.IsEmpty())
     {
         QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
-                                                           ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(),
+                                                           ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str(),
                                                            PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
         if (selectedPath.isEmpty())
@@ -2368,9 +2368,9 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	{
 		return false;
 	}
-	
-	String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname());
-	customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,pathToSave);
+
+    String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname());
+    customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,pathToSave);
 	
     return true;
 }
@@ -2666,8 +2666,8 @@ bool QtMainWindow::OpenScene( const QString & path )
 
 	if(!path.isEmpty())
 	{
-		FilePath projectPath(ProjectManager::Instance()->CurProjectPath());
-		FilePath argumentPath(path.toStdString());
+        FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
+        FilePath argumentPath(path.toStdString());
 
 		if(!FilePath::ContainPath(argumentPath, projectPath))
 		{

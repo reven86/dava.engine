@@ -27,21 +27,22 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_PLATFORM_WIN32_QT_H__
-#define __DAVAENGINE_CORE_PLATFORM_WIN32_QT_H__
+#ifndef __PRESET_MANAGER_H__
+#define __PRESET_MANAGER_H__
 
-#include "Base/Platform.h"
-#if defined(__DAVAENGINE_WIN32__)
-
-#include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
-
-namespace DAVA {
-
-class CoreWin32PlatformQt : public CoreWin32PlatformBase
+namespace DAVA
 {
+class TextureDescriptor;
+class NMaterial;
+}
+
+namespace Preset
+{
+bool SavePresetForTexture(const DAVA::TextureDescriptor* descriptor);
+bool LoadPresetForTexture(DAVA::TextureDescriptor* descriptor);
+
+bool SavePresetForMaterial(DAVA::NMaterial* material);
+bool LoadPresetForMaterial(DAVA::NMaterial* material);
 };
 
-};
-
-#endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_PLATFORM_WIN32_QT_H__
+#endif // __PRESET_MANAGER_H__
