@@ -43,6 +43,9 @@ static const uint32 OCCLUSION_RENDER_TARGET_SIZE_Y = 1024;
 
 StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
 {
+    meshBatchesWithDepthWriteOption.reserve(1024);
+    terrainBatches.reserve(256);
+
     uint32 sortingFlags = RenderBatchArray::SORT_THIS_FRAME | RenderBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK;
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
@@ -73,6 +76,17 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     passConfig.viewport.width = OCCLUSION_RENDER_TARGET_SIZE_X;
     passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE_Y;
     passConfig.priority = PRIORITY_SERVICE_3D;
+
+    /*
+	 * Create depth states
+	 */
+    rhi::DepthStencilState::Descriptor ds;
+
+    ds.depthWriteEnabled = 0;
+    depthWriteStateState[0] = rhi::AcquireDepthStencilState(ds);
+
+    ds.depthWriteEnabled = 1;
+    depthWriteStateState[1] = rhi::AcquireDepthStencilState(ds);
 }
 
 StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
@@ -103,16 +117,38 @@ void OnOcclusionRenderPassCompleted(rhi::HSyncObject syncObj)
 }
 #endif
 
+bool StaticOcclusionRenderPass::ShouldEnableDepthWriteForRenderObject(RenderObject* ro)
+{
+    auto count = ro->GetRenderBatchCount();
+    for (uint32 i = 0; i < count; ++i)
+    {
+        int32 switchIndex = -1;
+        int32 lodIndex = -1;
+        ro->GetRenderBatch(i, lodIndex, switchIndex);
+        if (switchIndex > 0)
+        {
+            switchRenderObjects.insert({ ro, false });
+            return false;
+        }
+    }
+
+    switchRenderObjects.insert({ ro, true });
+    return true;
+}
+
 void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
                                                    StaticOcclusionFrameResult& target, const StaticOcclusionData& data,
                                                    uint32 blockIndex)
 {
+    meshBatchesWithDepthWriteOption.clear();
+    terrainBatches.clear();
+
     ShaderDescriptorCache::ClearDynamicBindigs();
     SetupCameraParams(occlusionCamera, occlusionCamera);
     PrepareVisibilityArrays(occlusionCamera, renderSystem);
 
-    Vector<RenderBatch*> terrainBatches;
-    Vector<RenderBatch*> meshBatches;
+    std::unordered_set<uint32> invisibleObjects;
+    Vector3 cameraPosition = occlusionCamera->GetPosition();
 
     for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
     {
@@ -123,50 +159,53 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
             RenderBatch * batch = renderBatchArray.Get(batchIndex);
-            auto objectType = batch->GetRenderObject()->GetType();
+            auto renderObject = batch->GetRenderObject();
+            auto objectType = renderObject->GetType();
+
             if (objectType == RenderObject::TYPE_LANDSCAPE)
             {
                 terrainBatches.push_back(batch);
             }
             else if (objectType != RenderObject::TYPE_PARTICLE_EMTITTER)
             {
-                meshBatches.push_back(batch);
+                bool shouldEnableDepthWrite = true;
+
+                auto switchRO = switchRenderObjects.find(renderObject);
+                if (switchRO == switchRenderObjects.end())
+                {
+                    shouldEnableDepthWrite = ShouldEnableDepthWriteForRenderObject(renderObject);
+                }
+                else
+                {
+                    shouldEnableDepthWrite = switchRO->second;
+                }
+
+                meshBatchesWithDepthWriteOption.emplace_back(batch, shouldEnableDepthWrite);
+
+                Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
+                batch->layerSortingKey = ((uint32)((position - cameraPosition).SquareLength() * 100.0f));
+
+                auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
+                bool occlusionIndexIsInvalid = occlusionId == INVALID_STATIC_OCCLUSION_INDEX;
+                bool isAlreadyVisible = occlusionIndexIsInvalid || data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
+                if (!isAlreadyVisible)
+                {
+                    invisibleObjects.insert(occlusionId);
+                }
             }
         }
     }
         
-    // Sort
-    std::unordered_set<uint32> invisibleObjects;
-    Vector3 cameraPosition = occlusionCamera->GetPosition();
-
-    for (auto batch : meshBatches)
-    {
-        RenderObject * renderObject = batch->GetRenderObject();
-        Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
-        float32 realDistance = (position - cameraPosition).Length();
-        uint32 distance = ((uint32)(realDistance * 100.0f));
-        uint32 distanceBits = distance;
-        batch->layerSortingKey = distanceBits;
-
-        auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
-        bool occlusionIndexIsInvalid = occlusionId == INVALID_STATIC_OCCLUSION_INDEX;
-        bool isAlreadyVisible = occlusionIndexIsInvalid || data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
-        if (!isAlreadyVisible)
-        {
-            invisibleObjects.insert(occlusionId);
-        }
-    }
-
     if (invisibleObjects.empty())
         return;
 
-    std::sort(meshBatches.begin(), meshBatches.end(), [](const RenderBatch* a, const RenderBatch* b) {
-        return a->layerSortingKey < b->layerSortingKey;
-    });
+    using meshBatchesObj = std::pair<RenderBatch*, bool>;
+    std::sort(meshBatchesWithDepthWriteOption.begin(), meshBatchesWithDepthWriteOption.end(),
+              [](const meshBatchesObj& a, const meshBatchesObj& b) { return a.first->layerSortingKey < b.first->layerSortingKey; });
 
     target.blockIndex = blockIndex;
-    target.queryBuffer = rhi::CreateQueryBuffer(meshBatches.size());
-    target.frameRequests.resize(meshBatches.size(), nullptr);
+    target.queryBuffer = rhi::CreateQueryBuffer(meshBatchesWithDepthWriteOption.size());
+    target.frameRequests.resize(meshBatchesWithDepthWriteOption.size(), nullptr);
 
     passConfig.queryBuffer = target.queryBuffer;
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
@@ -183,23 +222,29 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
         batch->BindGeometryData(packet);
         DVASSERT(packet.primitiveCount);
         mat->BindParams(packet);
+        packet.cullMode = rhi::CULL_NONE;
         rhi::AddPacket(packetList, packet);
     }
 
     uint16 k = 0;
-    for (auto batch : meshBatches)
+    for (const auto& batch : meshBatchesWithDepthWriteOption)
     {
-        RenderObject* renderObject = batch->GetRenderObject();
+        RenderObject* renderObject = batch.first->GetRenderObject();
         renderObject->BindDynamicParameters(occlusionCamera);
+
+        DVASSERT(switchRenderObjects.count(renderObject) > 0);
+
         rhi::Packet packet;
-        batch->BindGeometryData(packet);
+        batch.first->BindGeometryData(packet);
         DVASSERT(packet.primitiveCount);
-        batch->GetMaterial()->BindParams(packet);
+        batch.first->GetMaterial()->BindParams(packet);
         if (invisibleObjects.count(renderObject->GetStaticOcclusionIndex()) > 0)
         {
             packet.queryIndex = k;
             target.frameRequests[packet.queryIndex] = renderObject;
         }
+        packet.cullMode = rhi::CULL_NONE;
+        packet.depthStencilState = depthWriteStateState[batch.second];
         rhi::AddPacket(packetList, packet);
         ++k;
     }

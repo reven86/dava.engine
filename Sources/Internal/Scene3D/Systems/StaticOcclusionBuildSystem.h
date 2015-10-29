@@ -76,8 +76,6 @@ private:
     
     void SceneForceLod(int32 layerIndex);
     void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity);
-    void UpdateMaterialsForOcclusionRecursively(Entity *entity);
-    void RestoreOcclusionMaterials();
     
     Camera * camera;
     Vector<Entity*> occlusionEntities;

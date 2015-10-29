@@ -56,8 +56,15 @@ public:
                             StaticOcclusionFrameResult& target, const StaticOcclusionData&, uint32 blockIndex);
 
 private:
+    bool ShouldEnableDepthWriteForRenderObject(RenderObject*);
+
+private:
     rhi::HTexture colorBuffer;
     rhi::HTexture depthBuffer;
+    rhi::HDepthStencilState depthWriteStateState[2];
+    Vector<RenderBatch*> terrainBatches;
+    UnorderedMap<RenderObject*, bool> switchRenderObjects;
+    Vector<std::pair<RenderBatch*, bool>> meshBatchesWithDepthWriteOption;
 };
 
 };
