@@ -145,15 +145,13 @@ public:
     bool ResetTaggedClass(const FastName& tag);
 
     bool RemoveAllClasses();
-    
+
     String GetClassesAsString() const;
-    void SetClassesFromString(const String &classes);
+    void SetClassesFromString(const String& classes);
 
 private:
     Vector<UIStyleSheetClass> classes;
-
 };
-
 };
 
 #endif

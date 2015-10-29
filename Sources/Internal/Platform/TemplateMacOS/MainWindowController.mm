@@ -57,10 +57,10 @@ namespace DAVA
         return retVal;
     }
 
-    int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
-	{
-		NSAutoreleasePool * globalPool = 0;
-		globalPool = [[NSAutoreleasePool alloc] init];
+    int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
+    {
+        NSAutoreleasePool* globalPool = 0;
+        globalPool = [[NSAutoreleasePool alloc] init];
 		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
 		core->SetCommandLine(argc, argv);
 		core->EnableConsoleMode();

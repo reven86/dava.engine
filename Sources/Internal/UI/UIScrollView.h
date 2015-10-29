@@ -81,12 +81,12 @@ public:
 
     void SetPadding(const Vector2& padding);
     const Vector2 GetPadding() const;
-	
-	const Vector2 GetContentSize() const;
-	
-	void RecalculateContentSize();
-	
-	//Sets how fast scroll container will return to its bounds
+
+    const Vector2 GetContentSize() const;
+
+    void RecalculateContentSize();
+
+    //Sets how fast scroll container will return to its bounds
 	void SetReturnSpeed(float32 speedInSeconds);
 	//Sets how fast scroll speed will be reduced
 	void SetScrollSpeed(float32 speedInSeconds);

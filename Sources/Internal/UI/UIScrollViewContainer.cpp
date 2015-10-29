@@ -123,37 +123,39 @@ int32 UIScrollViewContainer::GetTouchTreshold()
 
 void UIScrollViewContainer::Input(UIEvent *currentTouch)
 {
-	if(currentTouch->tid == mainTouch)
-	{
-		newPos = currentTouch->point;
-		
-		switch(currentTouch->phase)
-		{
-			case UIEvent::PHASE_BEGAN:
-			{
-				scrollStartInitialPosition = currentTouch->point;
-				scrollStartMovement = false;
-				state = STATE_SCROLL;
-				lockTouch = true;
-				oldPos = newPos;
-			}
-			break;
-			case UIEvent::PHASE_DRAG:
-			{
-				if(state == STATE_SCROLL)
-				{
-					scrollStartMovement = true;
-				}
-			}
-			break;
-			case UIEvent::PHASE_ENDED:
-			{
-				lockTouch = false;
-				state = STATE_DECCELERATION;
-			}
-			break;
-		}
-	}
+    if (currentTouch->tid == mainTouch)
+    {
+        newPos = currentTouch->point;
+
+        switch (currentTouch->phase)
+        {
+        case UIEvent::Phase::BEGAN:
+        {
+            scrollStartInitialPosition = currentTouch->point;
+            scrollStartMovement = false;
+            state = STATE_SCROLL;
+            lockTouch = true;
+            oldPos = newPos;
+        }
+        break;
+        case UIEvent::Phase::DRAG:
+        {
+            if (state == STATE_SCROLL)
+            {
+                scrollStartMovement = true;
+            }
+        }
+        break;
+        case UIEvent::Phase::ENDED:
+        {
+            lockTouch = false;
+            state = STATE_DECCELERATION;
+        }
+        break;
+        default:
+            break;
+        }
+    }
 }
 
 bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
@@ -177,9 +179,9 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 		return systemInput;
 	}
 
-	if(currentTouch->phase == UIEvent::PHASE_BEGAN && mainTouch == -1)
-	{
-		if(IsPointInside(currentTouch->point))
+    if (currentTouch->phase == UIEvent::Phase::BEGAN && mainTouch == -1)
+    {
+        if(IsPointInside(currentTouch->point))
 		{
             currentScroll = NULL;
 			mainTouch = currentTouch->tid;
@@ -187,9 +189,9 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 			Input(currentTouch);
 		}
 	}
-	else if(currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::PHASE_DRAG)
-	{
-		// Don't scroll if touchTreshold is not exceeded
+    else if (currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::Phase::DRAG)
+    {
+        // Don't scroll if touchTreshold is not exceeded
 		if ((Abs(currentTouch->point.x - scrollStartInitialPosition.x) > touchTreshold) ||
 			(Abs(currentTouch->point.y - scrollStartInitialPosition.y) > touchTreshold))
 		{
@@ -214,9 +216,9 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 			Input(currentTouch);
 		}
 	}
-	else if(currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::PHASE_ENDED)
-	{
-		Input(currentTouch);
+    else if (currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::Phase::ENDED)
+    {
+        Input(currentTouch);
 		mainTouch = -1;
 	}
 
@@ -289,9 +291,9 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
         // Change state when scrolling is not active
         if (state != STATE_NONE && !lockTouch && (scrollView->GetHorizontalScroll()->GetCurrentSpeed() == 0) && (scrollView->GetVerticalScroll()->GetCurrentSpeed() == 0))
         {
-			state = STATE_NONE;
-		}
-	}
+            state = STATE_NONE;
+        }
+    }
 }
 
 void UIScrollViewContainer::InputCancelled( UIEvent *currentInput )

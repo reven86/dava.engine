@@ -241,8 +241,8 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 
 		switch(event->phase)
 		{
-			case UIEvent::PHASE_BEGAN:
-				if (isIntersectsLandscape && !needCreateUndo)
+        case UIEvent::Phase::BEGAN:
+                if (isIntersectsLandscape && !needCreateUndo)
 				{
 					if (drawingType == TILEMASK_DRAW_COPY_PASTE)
 					{
@@ -268,12 +268,12 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 					activeDrawingType = drawingType;
 				}
 				break;
-				
-            case UIEvent::PHASE_DRAG:
-				break;
-				
-			case UIEvent::PHASE_ENDED:
-				FinishEditing();
+
+        case UIEvent::Phase::DRAG:
+                break;
+
+        case UIEvent::Phase::ENDED:
+                FinishEditing();
 				break;
 		}
 	}

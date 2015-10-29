@@ -32,13 +32,12 @@
 
 namespace DAVA
 {
-
 bool UIStyleSheetClassSet::AddClass(const FastName& clazz)
 {
     auto it = std::find_if(classes.begin(), classes.end(), [&clazz](const UIStyleSheetClass& cl) {
         return cl.clazz == clazz && !cl.tag.IsValid();
     });
-    
+
     if (it == classes.end())
     {
         classes.push_back(UIStyleSheetClass(FastName(), clazz));
@@ -52,7 +51,7 @@ bool UIStyleSheetClassSet::RemoveClass(const FastName& clazz)
     auto it = std::find_if(classes.begin(), classes.end(), [&clazz](const UIStyleSheetClass& cl) {
         return cl.clazz == clazz && !cl.tag.IsValid();
     });
-    
+
     if (it != classes.end())
     {
         *it = classes.back();
@@ -67,7 +66,7 @@ bool UIStyleSheetClassSet::HasClass(const FastName& clazz) const
     auto it = std::find_if(classes.begin(), classes.end(), [&clazz](const UIStyleSheetClass& cl) {
         return cl.clazz == clazz;
     });
-    
+
     return it != classes.end();
 }
 
@@ -76,7 +75,7 @@ bool UIStyleSheetClassSet::SetTaggedClass(const FastName& tag, const FastName& c
     auto it = std::find_if(classes.begin(), classes.end(), [&tag](const UIStyleSheetClass& cl) {
         return cl.tag == tag;
     });
-    
+
     if (it != classes.end())
     {
         if (it->clazz == clazz)
@@ -101,7 +100,7 @@ bool UIStyleSheetClassSet::ResetTaggedClass(const FastName& tag)
     auto it = std::find_if(classes.begin(), classes.end(), [&tag](const UIStyleSheetClass& cl) {
         return cl.tag == tag;
     });
-    
+
     if (it != classes.end())
     {
         *it = classes.back();
@@ -135,19 +134,19 @@ String UIStyleSheetClassSet::GetClassesAsString() const
             result += classes[i].tag.c_str();
             result += "=";
         }
-        
+
         result += classes[i].clazz.c_str();
     }
     return result;
 }
 
-void UIStyleSheetClassSet::SetClassesFromString(const String &classesStr)
+void UIStyleSheetClassSet::SetClassesFromString(const String& classesStr)
 {
     Vector<String> tokens;
     Split(classesStr, " ", tokens);
-    
+
     classes.clear();
-    for (String &token : tokens)
+    for (String& token : tokens)
     {
         Vector<String> pair;
         Split(token, "=", pair);
@@ -160,6 +159,5 @@ void UIStyleSheetClassSet::SetClassesFromString(const String &classesStr)
             classes.push_back(UIStyleSheetClass(FastName(), FastName(pair[0])));
         }
     }
-    
 }
 }

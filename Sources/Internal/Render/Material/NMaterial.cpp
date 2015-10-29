@@ -210,7 +210,7 @@ Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
     if (localInfo)
     {
         if (localInfo->texture == nullptr)
-            localInfo->texture = Texture::CreateFromFile(localInfo->path);
+            localInfo->texture = Texture::CreateFromFile(localInfo->path, slotName);
         return localInfo->texture;
     }
 
