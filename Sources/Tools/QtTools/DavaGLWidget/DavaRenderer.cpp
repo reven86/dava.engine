@@ -31,8 +31,6 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "DavaRenderer.h"
 
-#include "Debug/DVAssertMessage.h"
-
 DavaRenderer::DavaRenderer()
 {
     DAVA::Core::Instance()->rendererParams.acquireContextFunc = []()
