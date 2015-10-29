@@ -35,7 +35,7 @@ namespace DAVA
 {
 rhi::TextureFormat PixelFormatDescriptor::TEXTURE_FORMAT_INVALID = rhi::TextureFormat(-1);
 
-UnorderedMap<PixelFormat, PixelFormatDescriptor> PixelFormatDescriptor::pixelDescriptors = {
+UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDescriptor::pixelDescriptors = {
 
     { FORMAT_RGBA8888, { FORMAT_RGBA8888, FastName("RGBA8888"), 32, rhi::TEXTURE_FORMAT_R8G8B8A8, false } },
     { FORMAT_RGBA5551, { FORMAT_RGBA5551, FastName("RGBA5551"), 16, rhi::TEXTURE_FORMAT_R5G5B5A1, false } },
@@ -91,7 +91,7 @@ const PixelFormatDescriptor& PixelFormatDescriptor::GetPixelFormatDescriptor(con
 
 void PixelFormatDescriptor::SetHardwareSupportedFormats()
 {
-    for (auto& it : pixelDescriptors)
+    for (auto it : pixelDescriptors)
     {
         PixelFormatDescriptor& descr = it.second;
         if (descr.format != TEXTURE_FORMAT_INVALID)
@@ -117,16 +117,16 @@ int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat formatI
     return  bits / 8;
 }
 
-const char * PixelFormatDescriptor::GetPixelFormatString(const PixelFormat formatID)
+const char* PixelFormatDescriptor::GetPixelFormatString(const PixelFormat formatID)
 {
     return GetPixelFormatDescriptor(formatID).name.c_str();
 }
 
 PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName &formatName)
 {
-    for (auto& it : pixelDescriptors)
+    for (const auto& it : pixelDescriptors)
     {
-        PixelFormatDescriptor& descr = it.second;
+        const PixelFormatDescriptor& descr = it.second;
         if (formatName == descr.name)
         {
             return descr.formatID;
