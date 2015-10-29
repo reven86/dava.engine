@@ -91,9 +91,9 @@ const PixelFormatDescriptor& PixelFormatDescriptor::GetPixelFormatDescriptor(con
 
 void PixelFormatDescriptor::SetHardwareSupportedFormats()
 {
-    for (auto it : pixelDescriptors)
+    for (auto& entry : pixelDescriptors)
     {
-        PixelFormatDescriptor& descr = it.second;
+        PixelFormatDescriptor& descr = entry.second;
         if (descr.format != TEXTURE_FORMAT_INVALID)
         {
             descr.isHardwareSupported = rhi::TextureFormatSupported(descr.format);
@@ -124,9 +124,9 @@ const char* PixelFormatDescriptor::GetPixelFormatString(const PixelFormat format
 
 PixelFormat PixelFormatDescriptor::GetPixelFormatByName(const FastName &formatName)
 {
-    for (const auto& it : pixelDescriptors)
+    for (const auto& entry : pixelDescriptors)
     {
-        const PixelFormatDescriptor& descr = it.second;
+        const PixelFormatDescriptor& descr = entry.second;
         if (formatName == descr.name)
         {
             return descr.formatID;
