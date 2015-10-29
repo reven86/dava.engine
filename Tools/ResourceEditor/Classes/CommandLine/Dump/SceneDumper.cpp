@@ -28,6 +28,7 @@
 
 
 #include "CommandLine/Dump/SceneDumper.h"
+#include "CommandLine/SceneUtils/SceneUtils.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/2D/Sprite.h"
 #include "Render/Highlevel/RenderObject.h"

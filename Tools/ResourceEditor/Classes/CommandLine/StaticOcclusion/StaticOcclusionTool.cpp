@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "CommandLine/StaticOcclusion/StaticOcclusionTool.h"
+#include "CommandLine/SceneUtils/SceneUtils.h"
 #include "Scene/SceneEditor2.h"
 
 using namespace DAVA;
