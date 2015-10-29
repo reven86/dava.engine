@@ -151,6 +151,20 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         RegExp colormask_re;
         RegExp comment_re;
 
+#if defined(ORIGINAL_RHI_REGEX)
+        prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+        proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+        fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        vsampler2d_re.compile(".*DECL_VP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        samplercube_re.compile(".*DECL_FP_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
+        ftexture2d_re.compile(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        vtexture2d_re.compile(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        texturecube_re.compile(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        blend_re.compile(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
+        blending2_re.compile(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
+        colormask_re.compile(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
+        comment_re.compile("^\\s*//.*");
+#else
         prop_re.compile("property\\s*(\\w+)\\s*(\\w+)\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w\\s=,\\.]*);");
         proparr_re.compile("property\\s*(float4|float4x4)\\s*(\\w+)\\s*\\[\\s*([\\d]+)\\s*\\]\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w,]*)");
         fsampler2d_re.compile("DECL_FP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
@@ -163,6 +177,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         blending2_re.compile("blending\\s*\\:\\s*src=(\\w+)\\s+dst=(\\w+)");
         colormask_re.compile("color_mask\\s*\\:\\s*(\\w+)");
         comment_re.compile("^\\s*//.*");
+#endif
         #endif
 
         _Reset();
@@ -686,7 +701,11 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::regex texcoord_re(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
                 #else
                 RegExp texcoord_re;
+#if defined(ORIGINAL_RHI_REGEX)
+                texcoord_re.compile(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
+#else
                 texcoord_re.compile("VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(\\s*([0-7])\\s*\\)");
+#endif
                 #endif
 
                 if ( 
@@ -730,7 +749,11 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::regex index_re(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
                 #else
                 RegExp index_re;
+#if defined(ORIGINAL_RHI_REGEX)
+                index_re.compile(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
+#else
                 index_re.compile("VPROG_IN_BLENDINDEX\\s*\\(\\s*([0-7])\\s*\\)");
+#endif
                 #endif
 
                 if ( 
