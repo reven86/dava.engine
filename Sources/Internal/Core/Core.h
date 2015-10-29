@@ -164,7 +164,7 @@ public:
 		\param[in] requestedMode mode you want to get
 		\returns best mode found in current HW
 	*/
-	virtual DisplayMode FindBestMode(const DisplayMode & requestedMode);
+    virtual DisplayMode FindBestMode(const DisplayMode & requestedMode);
 
 	/**
 		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor

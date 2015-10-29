@@ -51,7 +51,7 @@ namespace DAVA
         const FilePath& GetAggregatorPath() const;
 
     private:
-		List<UIControl* > aggregatorControls;
+        List<UIControl* > aggregatorControls;
 		FilePath aggregatorPath;
 	};
 };

@@ -102,7 +102,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
     Vector3 currCamDirection = camera->GetDirection();
 
     /*prepare effect basises*/
-	const Matrix4 &mv = camera->GetMatrix();
+    const Matrix4 &mv = camera->GetMatrix();
 	basisVectors[0] = Vector3(mv._00, mv._10, mv._20);
 	basisVectors[1] = Vector3(mv._01, mv._11, mv._21);
 	basisVectors[0].Normalize();

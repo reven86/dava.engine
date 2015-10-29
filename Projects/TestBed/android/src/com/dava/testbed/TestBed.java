@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.view.Menu;
 
 import com.dava.framework.JNIActivity;
-import com.dava.framework.JNIGLSurfaceView;
+import com.dava.framework.JNISurfaceView;
 
 public class TestBed extends JNIActivity {
 
@@ -20,9 +20,9 @@ public class TestBed extends JNIActivity {
 		return true;
 	}
 
-	public JNIGLSurfaceView GetSurfaceView() {
+	public JNISurfaceView FindSurfaceView() {
 		setContentView(R.layout.activity_main);
-		JNIGLSurfaceView view = (JNIGLSurfaceView) findViewById(R.id.view1);
+		JNISurfaceView view = (JNISurfaceView) findViewById(R.id.view1);
 		return view;
 	}
 

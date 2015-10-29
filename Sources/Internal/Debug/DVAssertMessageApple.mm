@@ -73,7 +73,7 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
             UIScreenManager::Instance()->BlockDrawing();
 
             // Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.
-			UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
+            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
             
             long breakButtonIndex = [alert firstOtherButtonIndex];
             

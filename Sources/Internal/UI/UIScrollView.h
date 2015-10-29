@@ -83,8 +83,8 @@ public:
     const Vector2 GetPadding() const;
 
     const Vector2 GetContentSize() const;
-	
-	void RecalculateContentSize();
+
+    void RecalculateContentSize();
 	
 	//Sets how fast scroll container will return to its bounds
 	void SetReturnSpeed(float32 speedInSeconds);

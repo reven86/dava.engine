@@ -50,8 +50,8 @@ void FrameworkDidLaunched()
 
     appOptions->SetInt32("shader_const_buffer_size", 100 * 1024 * 1024);
 
-    GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
+    GameCore* core = new GameCore();
+    DAVA::Core::SetApplicationCore(core);
 	DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 

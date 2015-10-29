@@ -193,8 +193,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 			{
 				SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2 *) GetScene(), &selectedEntities);
 
-				if(DAVA::UIEvent::PHASE_BEGAN == event->phase)
-				{
+                if (DAVA::UIEvent::Phase::BEGAN == event->phase)
+                {
 					if(event->tid == DAVA::UIEvent::BUTTON_1)
 					{
 						// go to modification state
@@ -231,8 +231,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 		else
 		{
 			// phase still continue
-			if(event->phase == DAVA::UIEvent::PHASE_DRAG)
-			{
+            if (event->phase == DAVA::UIEvent::Phase::DRAG)
+            {
 				DAVA::Vector3 moveOffset;
 				DAVA::float32 rotateAngle;
 				DAVA::float32 scaleForce;
@@ -281,8 +281,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 				}
 			}
 			// phase ended
-			else if(event->phase == DAVA::UIEvent::PHASE_ENDED)
-			{
+            else if (event->phase == DAVA::UIEvent::Phase::ENDED)
+            {
 				if(event->tid == DAVA::UIEvent::BUTTON_1)
 				{
 					if(modified)

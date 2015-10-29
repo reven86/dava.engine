@@ -245,7 +245,7 @@ namespace DAVA
         };
 
     protected:
-		const InspMemberDynamic* memberDynamic;
+        const InspMemberDynamic* memberDynamic;
 	};
 };
 
