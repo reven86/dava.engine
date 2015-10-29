@@ -170,8 +170,8 @@ public slots:
     void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
 
     void OnConvertModifiedTextures();
-    
-	void OnCloseTabRequest(int tabIndex, Request *closeRequest);
+
+    void OnCloseTabRequest(int tabIndex, Request *closeRequest);
 
 	void OnBeastAndSave();
     

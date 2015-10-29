@@ -44,7 +44,7 @@ public:
         SafeRelease(staticText);
     }
 
-    void TextFieldOnTextChanged(UITextField * textField, const WideString& newText, const WideString& oldText) override
+    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText) override
     {
         DVASSERT(staticText);
         staticText->SetText(newText);
@@ -52,7 +52,6 @@ public:
 
 private:
     UIStaticText* staticText;
-
 };
 
 enum Tags
@@ -61,7 +60,7 @@ enum Tags
     DECREASE_SIZE_TAG
 };
 
-FontTest::FontTest ()
+FontTest::FontTest()
     : BaseScreen("FontTest")
 {
 }
@@ -127,7 +126,7 @@ void FontTest::LoadResources()
     button->SetStateText(0xFF, L"Distance");
     button->SetDebugDraw(true);
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSelectClick));
-    button->SetTag(Font::TYPE_DISTANCE); 
+    button->SetTag(Font::TYPE_DISTANCE);
     AddControl(button);
 
     button = new UIButton(Rect(640, 40, 100, 20));
@@ -160,7 +159,6 @@ void FontTest::LoadResources()
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSizeClick));
     button->SetTag(DECREASE_SIZE_TAG);
     AddControl(button);
-
 }
 
 void FontTest::UnloadResources()
@@ -176,7 +174,7 @@ void FontTest::UnloadResources()
 
 void FontTest::OnFontSelectClick(BaseObject* sender, void* data, void* callerData)
 {
-    UIButton * btn = DynamicTypeCheck<UIButton*>(sender);
+    UIButton* btn = DynamicTypeCheck<UIButton*>(sender);
     switch (btn->GetTag())
     {
     case Font::TYPE_FT:
@@ -196,8 +194,8 @@ void FontTest::OnFontSelectClick(BaseObject* sender, void* data, void* callerDat
 
 void FontTest::OnFontSizeClick(BaseObject* sender, void* data, void* callerData)
 {
-    UIButton * btn = DynamicTypeCheck<UIButton*>(sender);
-    Font * font = previewText->GetFont();
+    UIButton* btn = DynamicTypeCheck<UIButton*>(sender);
+    Font* font = previewText->GetFont();
     switch (btn->GetTag())
     {
     case INCREASE_SIZE_TAG:
@@ -208,4 +206,3 @@ void FontTest::OnFontSizeClick(BaseObject* sender, void* data, void* callerData)
         break;
     }
 }
-

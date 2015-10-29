@@ -172,31 +172,32 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
     
 void UIStyleSheetSystem::AddGlobalClass(const FastName &clazz)
 {
-    if (find(globalClasses.begin(), globalClasses.end(), clazz) == globalClasses.end())
-    {
-        globalClasses.push_back(clazz);
-    }
+    globalClasses.AddClass(clazz);
 }
 
 void UIStyleSheetSystem::RemoveGlobalClass(const FastName &clazz)
 {
-    auto iter = find(globalClasses.begin(), globalClasses.end(), clazz);
-    
-    if (iter != globalClasses.end())
-    {
-        *iter = globalClasses.back();
-        globalClasses.pop_back();
-    }
+    globalClasses.RemoveClass(clazz);
 }
     
 bool UIStyleSheetSystem::HasGlobalClass(const FastName &clazz) const
 {
-    return find(globalClasses.begin(), globalClasses.end(), clazz) != globalClasses.end();
+    return globalClasses.HasClass(clazz);
 }
 
-void UIStyleSheetSystem::ClearGlobalFlags()
+void UIStyleSheetSystem::SetGlobalTaggedClass(const FastName& tag, const FastName& clazz)
 {
-    globalClasses.clear();
+    globalClasses.SetTaggedClass(tag, clazz);
+}
+
+void UIStyleSheetSystem::ResetGlobalTaggedClass(const FastName& tag)
+{
+    globalClasses.ResetTaggedClass(tag);
+}
+
+void UIStyleSheetSystem::ClearGlobalClasses()
+{
+    globalClasses.RemoveAllClasses();
 }
     
 bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
@@ -239,37 +240,34 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
 
     const UIStyleSheetPropertyDescriptor& descr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
 
-    for (const UIStyleSheetPropertyTargetMember& targetMember : descr.targetMembers)
+    switch (descr.group->propertyOwner)
     {
-        switch (targetMember.propertyOwner)
+    case ePropertyOwner::CONTROL:
+    {
+        const InspInfo* typeInfo = control->GetTypeInfo();
+        do
         {
-        case ePropertyOwner::CONTROL:
-        {
-            const InspInfo* typeInfo = control->GetTypeInfo();
-            do
+            if (typeInfo == descr.group->typeInfo)
             {
-                if (typeInfo == targetMember.typeInfo)
-                {
-                    action(control, control, targetMember.memberInfo);
-                    break;
-                }
-                typeInfo = typeInfo->BaseInfo();
-            } while (typeInfo);
+                action(control, control, descr.memberInfo);
+                break;
+            }
+            typeInfo = typeInfo->BaseInfo();
+        } while (typeInfo);
 
-            break;
-        }
-        case ePropertyOwner::BACKGROUND:
-            if (control->GetBackgroundComponentsCount() > 0)
-                action(control, control->GetBackgroundComponent(0), targetMember.memberInfo);
-            break;
-        case ePropertyOwner::COMPONENT:
-            if (UIComponent* component = control->GetComponent(targetMember.componentType))
-                action(control, component, targetMember.memberInfo);
-            break;
-        default:
-            DVASSERT(false);
-            break;
-        }
+        break;
+    }
+    case ePropertyOwner::BACKGROUND:
+        if (control->GetBackgroundComponentsCount() > 0)
+            action(control, control->GetBackgroundComponent(0), descr.memberInfo);
+        break;
+    case ePropertyOwner::COMPONENT:
+        if (UIComponent* component = control->GetComponent(descr.group->componentType))
+            action(control, component, descr.memberInfo);
+        break;
+    default:
+        DVASSERT(false);
+        break;
     }
 }
 

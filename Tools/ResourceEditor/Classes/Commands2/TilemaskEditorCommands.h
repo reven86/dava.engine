@@ -94,14 +94,14 @@ public:
                         const Color& color);
     ~SetTileColorCommand();
 
-	virtual void Undo();
+    virtual void Undo();
 	virtual void Redo();
 	virtual Entity* GetEntity() const;
 
 protected:
     const FastName& level;
     Color redoColor;
-	Color undoColor;
+    Color undoColor;
 	LandscapeProxy* landscapeProxy;
 };
 

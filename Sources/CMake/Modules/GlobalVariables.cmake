@@ -1,3 +1,8 @@
+# Only interpret ``if()`` arguments as variables or keywords when unquoted.
+if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+    cmake_policy(SET CMP0054 NEW)
+endif()
+
 #
 function ( load_config CONFIG_FILE )
 
@@ -61,9 +66,8 @@ set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor
 
 #additional variables for Windows UAP
 if ( WINDOWS_UAP )
-    #turning on ANGLE and openssl_WinRT lib on Windows Store
+    #turning on openssl_WinRT lib on Windows Store
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
 
@@ -75,10 +79,12 @@ if ( WINDOWS_UAP )
     add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}" )
     
     #check the newest version of Win10 SDK
-    if ( "${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION}" STRLESS "${CMAKE_VS_TARGET_PLATFORM_VERSION}" )
+    if ( WINDOWS_UAP_TARGET_PLATFORM_VERSION AND 
+        ( "${WINDOWS_UAP_TARGET_PLATFORM_VERSION}" STRLESS "${CMAKE_VS_TARGET_PLATFORM_VERSION}" ) )
         message ( WARNING "Newer version of Win10 SDK detected: ${CMAKE_VS_TARGET_PLATFORM_VERSION}. "
-                          "Using older version ${WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION}. "
-                          "To use newer version set variable -DWINDOWS_UAP_TARGET_PLATFORM_VERSION=${CMAKE_VS_TARGET_PLATFORM_VERSION} ")
+                          "Using older version ${WINDOWS_UAP_TARGET_PLATFORM_VERSION}. "
+                          "To use newer version set variable WINDOWS_UAP_TARGET_PLATFORM_VERSION=${CMAKE_VS_TARGET_PLATFORM_VERSION} in DavaConfig.in. "
+                          "Or pass -DWINDOWS_UAP_TARGET_PLATFORM_VERSION=${CMAKE_VS_TARGET_PLATFORM_VERSION} through command line." )
     endif ()
 
     #set target platform version

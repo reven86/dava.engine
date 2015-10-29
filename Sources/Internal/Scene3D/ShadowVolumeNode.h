@@ -63,7 +63,7 @@ public:
 
 private:
     //shadow mesh generation
-	PolygonGroup * shadowPolygonGroup;
+    PolygonGroup * shadowPolygonGroup;
 	//int32 newIndexCount;
 	//int32 newVertexCount;
 

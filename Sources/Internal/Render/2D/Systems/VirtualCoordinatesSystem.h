@@ -99,9 +99,9 @@ public:
 	inline int32 GetDesirableResourceIndex() const;
     inline void SetDesirableResourceIndex(int32 resourceIndex);
     inline int32 GetBaseResourceIndex() const;
-    
-	inline bool WasScreenSizeChanged() const;
-	void ScreenSizeChanged();
+
+    inline bool WasScreenSizeChanged() const;
+    void ScreenSizeChanged();
     void EnableReloadResourceOnResize(bool enable);
     
     void SetProportionsIsFixed(bool needFixed);
@@ -310,7 +310,7 @@ inline void VirtualCoordinatesSystem::SetDesirableResourceIndex(int32 resourceIn
     DVASSERT(resourceIndex >= 0 && resourceIndex < (int32)allowedSizes.size());
     desirableIndex = resourceIndex;
 }
-    
+
 inline int32 VirtualCoordinatesSystem::GetBaseResourceIndex() const
 {
     return 0;

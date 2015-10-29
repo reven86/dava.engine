@@ -151,7 +151,7 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
         RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
 
         AABBox3 worldBox = selSystem->GetSelectionAABox(entity);
-		DAVA::float32 delta = worldBox.GetSize().Length() / 4;
+        DAVA::float32 delta = worldBox.GetSize().Length() / 4;
 
         drawer->DrawAABoxTransformed(worldBox, entity->GetWorldTransform(), DAVA::Color(0.5f, 0.5f, 1.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
         drawer->DrawAABoxTransformed(worldBox, entity->GetWorldTransform(), DAVA::Color(0.2f, 0.2f, 0.8f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
@@ -189,17 +189,17 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 
             drawer->DrawArrow(center + direction, center, direction.Length() / 2, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
-		else if(light->GetType() == Light::TYPE_POINT)
+        else if(light->GetType() == Light::TYPE_POINT)
 		{
             drawer->DrawIcosahedron(worldBox.GetCenter(), worldBox.GetSize().x / 2, DAVA::Color(1.0f, 1.0f, 0, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
             drawer->DrawIcosahedron(worldBox.GetCenter(), worldBox.GetSize().x / 2, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
-		else
+        else
 		{
             drawer->DrawAABox(worldBox, DAVA::Color(1.0f, 1.0f, 0, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
             drawer->DrawAABox(worldBox, DAVA::Color(1.0f, 1.0f, 0, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         }
-	}
+    }
 }
 
 void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)

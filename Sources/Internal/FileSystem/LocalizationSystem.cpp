@@ -41,6 +41,8 @@
 #include "FileSystem/LocalizationIPhone.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/LocalizationAndroid.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "FileSystem/LocalizationWinUAP.h"
 #else
 #include "Core/Core.h"
 #endif
@@ -93,6 +95,8 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 	LocalizationIPhone::SelectPreferedLocalizationForPath(directoryPath);
 #elif defined(__DAVAENGINE_ANDROID__)
     LocalizationAndroid::SelectPreferedLocalization();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    LocalizationWinUAP::SelectPreferedLocalization();
 #else
     String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
     SetCurrentLocale(loc);
@@ -110,6 +114,8 @@ String LocalizationSystem::GetDeviceLocale() const
 	return String(LocalizationIPhone::GetDeviceLang());
 #elif defined(__DAVAENGINE_ANDROID__)
     return LocalizationAndroid::GetDeviceLang();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    return LocalizationWinUAP::GetDeviceLang();
 #else
     return DEFAULT_LOCALE;
 #endif

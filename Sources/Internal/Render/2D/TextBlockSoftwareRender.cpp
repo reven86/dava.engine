@@ -40,7 +40,7 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock) :
 {
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
     buf = NULL;
-	ftFont = (FTFont*)textBlock->font;
+    ftFont = (FTFont*)textBlock->font;
 #if defined(LOCALIZATION_DEBUG)
     textOffsetTL.x = std::numeric_limits<float32>::max();
     textOffsetTL.y = std::numeric_limits<float32>::max();
