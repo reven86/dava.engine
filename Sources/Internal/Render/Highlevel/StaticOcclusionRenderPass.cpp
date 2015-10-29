@@ -38,8 +38,7 @@
 
 namespace DAVA
 {
-static const uint32 OCCLUSION_RENDER_TARGET_SIZE_X = 1024;
-static const uint32 OCCLUSION_RENDER_TARGET_SIZE_Y = 1024;
+const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;
 
 StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
 {
@@ -54,8 +53,8 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     rhi::Texture::Descriptor descriptor;
 
     descriptor.isRenderTarget = 1;
-    descriptor.width = OCCLUSION_RENDER_TARGET_SIZE_X;
-    descriptor.height = OCCLUSION_RENDER_TARGET_SIZE_Y;
+    descriptor.width = OCCLUSION_RENDER_TARGET_SIZE;
+    descriptor.height = OCCLUSION_RENDER_TARGET_SIZE;
     descriptor.autoGenMipmaps = false;
     descriptor.type = rhi::TEXTURE_TYPE_2D;
     descriptor.format = rhi::TEXTURE_FORMAT_R8G8B8A8;
@@ -73,8 +72,8 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 
-    passConfig.viewport.width = OCCLUSION_RENDER_TARGET_SIZE_X;
-    passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE_Y;
+    passConfig.viewport.width = OCCLUSION_RENDER_TARGET_SIZE;
+    passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE;
     passConfig.priority = PRIORITY_SERVICE_3D;
 
     /*
@@ -121,6 +120,12 @@ void OnOcclusionRenderPassCompleted(rhi::HSyncObject syncObj)
 
 bool StaticOcclusionRenderPass::ShouldEnableDepthWriteForRenderObject(RenderObject* ro)
 {
+    auto it = switchRenderObjects.find(ro);
+    if (it != switchRenderObjects.end())
+    {
+        return it->second;
+    }
+
     auto count = ro->GetRenderBatchCount();
     for (uint32 i = 0; i < count; ++i)
     {
@@ -170,19 +175,9 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
             }
             else if (objectType != RenderObject::TYPE_PARTICLE_EMTITTER)
             {
-                bool shouldEnableDepthWrite = true;
-
-                auto switchRO = switchRenderObjects.find(renderObject);
-                if (switchRO == switchRenderObjects.end())
-                {
-                    shouldEnableDepthWrite = ShouldEnableDepthWriteForRenderObject(renderObject);
-                }
-                else
-                {
-                    shouldEnableDepthWrite = switchRO->second;
-                }
-
-                meshBatchesWithDepthWriteOption.emplace_back(batch, shouldEnableDepthWrite);
+                bool shouldEnableDepthWrite = ShouldEnableDepthWriteForRenderObject(renderObject);
+                auto option = shouldEnableDepthWrite ? Option_DepthWriteEnabled : Option_DepthWriteDisabled;
+                meshBatchesWithDepthWriteOption.emplace_back(batch, option);
 
                 Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
                 batch->layerSortingKey = ((uint32)((position - cameraPosition).SquareLength() * 100.0f));
@@ -201,9 +196,8 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     if (invisibleObjects.empty())
         return;
 
-    using meshBatchesObj = std::pair<RenderBatch*, bool>;
     std::sort(meshBatchesWithDepthWriteOption.begin(), meshBatchesWithDepthWriteOption.end(),
-              [](const meshBatchesObj& a, const meshBatchesObj& b) { return a.first->layerSortingKey < b.first->layerSortingKey; });
+              [](const RenderBatchWithDepthOption& a, const RenderBatchWithDepthOption& b) { return a.first->layerSortingKey < b.first->layerSortingKey; });
 
     target.blockIndex = blockIndex;
     target.queryBuffer = rhi::CreateQueryBuffer(meshBatchesWithDepthWriteOption.size());
@@ -233,8 +227,6 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     {
         RenderObject* renderObject = batch.first->GetRenderObject();
         renderObject->BindDynamicParameters(occlusionCamera);
-
-        DVASSERT(switchRenderObjects.count(renderObject) > 0);
 
         rhi::Packet packet;
         batch.first->BindGeometryData(packet);

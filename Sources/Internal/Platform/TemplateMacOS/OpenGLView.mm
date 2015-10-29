@@ -93,7 +93,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 #endif
 
     activeCursor = 0;
-	
+
     willQuit = false;
 
     return self;
@@ -153,7 +153,7 @@ extern void FrameworkMain(int argc, char *argv[]);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
 
     sizeChanged = YES;
-	[super reshape];
+    [super reshape];
 }
 
 - (void)userFireTimer: (id)timer

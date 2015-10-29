@@ -1029,16 +1029,20 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
     NMaterialParamName::PARAM_FOG_COLOR,
     NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
     NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN,
-    NMaterialParamName::PARAM_DECAL_TILE_COLOR,
     Landscape::PARAM_TILE_COLOR0,
     Landscape::PARAM_TILE_COLOR1,
     Landscape::PARAM_TILE_COLOR2,
     Landscape::PARAM_TILE_COLOR3,
     } };
-    Array<FastName, 1> propertyFloat3toFloat4 =
-    { {
-    NMaterialParamName::PARAM_FLAT_COLOR,
-    } };
+
+    Array<FastName, 2> propertyFloat3toFloat4 =
+    { { NMaterialParamName::PARAM_FLAT_COLOR,
+        NMaterialParamName::PARAM_DECAL_TILE_COLOR } };
+
+    Array<FastName, 1> propertyFloat1toFloat2 =
+    {
+      { NMaterialParamName::PARAM_DECAL_TILE_SCALE }
+    };
 
     if (archive->IsKeyExists("properties"))
     {
@@ -1078,6 +1082,15 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
                             data[3] = 1.f;
 
                             AddProperty(propName, data, rhi::ShaderProp::TYPE_FLOAT4, 1);
+                            continue;
+                        }
+                    }
+                    else if (propertyTypeRemapping[i].newType == rhi::ShaderProp::TYPE_FLOAT1)
+                    {
+                        if (std::find(propertyFloat1toFloat2.begin(), propertyFloat1toFloat2.end(), propName) != propertyFloat1toFloat2.end())
+                        {
+                            Vector2 v2(*data, *data);
+                            AddProperty(propName, v2.data, rhi::ShaderProp::TYPE_FLOAT2, 1);
                             continue;
                         }
                     }
