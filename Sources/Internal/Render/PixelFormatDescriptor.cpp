@@ -84,7 +84,7 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor> PixelFormatDescriptor::pixelDes
 
 const PixelFormatDescriptor& PixelFormatDescriptor::GetPixelFormatDescriptor(const PixelFormat formatID)
 {
-    auto& descrFound = pixelDescriptors.find(formatID);
+    auto descrFound = pixelDescriptors.find(formatID);
     DVASSERT(descrFound != pixelDescriptors.end());
     return descrFound->second;
 }
