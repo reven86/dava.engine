@@ -93,6 +93,8 @@ StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
 {
     rhi::DeleteTexture(colorBuffer);
     rhi::DeleteTexture(depthBuffer);
+    rhi::ReleaseDepthStencilState(depthWriteStateState[0]);
+    rhi::ReleaseDepthStencilState(depthWriteStateState[1]);
 }
 
 #if (SAVE_OCCLUSION_IMAGES)
