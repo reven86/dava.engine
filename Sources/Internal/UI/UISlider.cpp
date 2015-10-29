@@ -217,9 +217,9 @@ void UISlider::RemoveControl(UIControl *control)
 
 void UISlider::Input(UIEvent *currentInput)
 {
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)                                        
-	if (currentInput->phase == UIEvent::PHASE_MOVE || currentInput->phase == UIEvent::PHASE_KEYCHAR)
-		return;
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+    if (currentInput->phase == UIEvent::Phase::MOVE || currentInput->phase == UIEvent::Phase::CHAR)
+        return;
 #endif
 	
 	const Rect & absRect = GetGeometricData().GetUnrotatedRect();
@@ -247,9 +247,10 @@ void UISlider::Input(UIEvent *currentInput)
 		{
 			PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 		}
-	}else if (currentInput->phase == UIEvent::PHASE_ENDED) 
-	{
-		/* if not continuos always perform event because last move position almost always the same as end pos */
+    }
+    else if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        /* if not continuos always perform event because last move position almost always the same as end pos */
 		PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 	}
 

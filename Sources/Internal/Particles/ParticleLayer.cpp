@@ -121,8 +121,8 @@ ParticleLayer::ParticleLayer()
     blending = BLENDING_ALPHABLEND;
     enableFog = true;
     enableFrameBlend = false;
-	inheritPosition = false;
-	type = TYPE_PARTICLES;
+    inheritPosition = false;
+    type = TYPE_PARTICLES;
 
     degradeStrategy = DEGRADE_KEEP;
     
@@ -244,8 +244,8 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->blending = blending;
     dstLayer->enableFog = enableFog;
     dstLayer->enableFrameBlend = enableFrameBlend;
-	dstLayer->inheritPosition = inheritPosition;
-	dstLayer->startTime = startTime;
+    dstLayer->inheritPosition = inheritPosition;
+    dstLayer->startTime = startTime;
 	dstLayer->endTime = endTime;
 	
 	
@@ -605,19 +605,19 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     //read blend node for backward compatibility with old effect files
     const YamlNode* blend = node->Get("blend");
     if (blend)
-	{
-		if (blend->AsString() == "alpha")
+    {
+        if (blend->AsString() == "alpha")
 		{
             blending = BLENDING_ALPHABLEND;
         }
         if (blend->AsString() == "add")
-		{
+        {
             blending = BLENDING_ALPHA_ADDITIVE;
         }
     }
 
-    const YamlNode * blendSrcNode = node->Get("srcBlendFactor");
-	const YamlNode * blendDestNode = node->Get("dstBlendFactor");
+    const YamlNode* blendSrcNode = node->Get("srcBlendFactor");
+    const YamlNode* blendDestNode = node->Get("dstBlendFactor");
 
     if (blendSrcNode && blendDestNode)
     {
@@ -643,8 +643,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         blending = (eBlending)blendingNode->AsInt();
     const YamlNode* fogNode = node->Get("enableFog");
     if (fogNode)
-	{
-		enableFog = fogNode->AsBool();
+    {
+        enableFog = fogNode->AsBool();
 	}
 
 	const YamlNode * frameBlendNode = node->Get("enableFrameBlend");	
@@ -654,8 +654,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     }
 
     startTime = 0.0f;
-	endTime = 100000000.0f;
-	const YamlNode * startTimeNode = node->Get("startTime");
+    endTime = 100000000.0f;
+    const YamlNode * startTimeNode = node->Get("startTime");
 	if (startTimeNode)
 		startTime = startTimeNode->AsFloat();
 
@@ -780,10 +780,10 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
     layerNode->Add("blending", blending);
 
     layerNode->Add("enableFog", enableFog);
-    layerNode->Add("enableFrameBlend", enableFrameBlend);	
+    layerNode->Add("enableFrameBlend", enableFrameBlend);
 
-	layerNode->Add("scaleVelocityBase", scaleVelocityBase);
-	layerNode->Add("scaleVelocityFactor", scaleVelocityFactor);
+    layerNode->Add("scaleVelocityBase", scaleVelocityBase);
+    layerNode->Add("scaleVelocityFactor", scaleVelocityFactor);
 
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(layerNode, "life", this->life);
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(layerNode, "lifeVariation", this->lifeVariation);

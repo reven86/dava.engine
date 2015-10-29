@@ -59,8 +59,8 @@ namespace DAVA
 
     int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
     {
-		NSAutoreleasePool * globalPool = 0;
-		globalPool = [[NSAutoreleasePool alloc] init];
+        NSAutoreleasePool* globalPool = 0;
+        globalPool = [[NSAutoreleasePool alloc] init];
 		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
 		core->SetCommandLine(argc, argv);
 		core->EnableConsoleMode();
@@ -189,7 +189,7 @@ namespace DAVA
 
     // make window main
     [mainWindow makeKeyAndOrderFront:nil];
-	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
+    [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
 	[mainWindow setAcceptsMouseMovedEvents:YES];
 }
 
@@ -366,7 +366,7 @@ namespace DAVA
 #if RHI_COMPLETE
     if (currFPS != RenderManager::Instance()->GetFPS())
     {
-		currFPS = RenderManager::Instance()->GetFPS();
+        currFPS = RenderManager::Instance()->GetFPS();
 		[self stopAnimationTimer];
 		[self startAnimationTimer];
 	}

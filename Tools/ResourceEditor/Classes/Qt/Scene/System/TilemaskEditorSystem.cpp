@@ -241,9 +241,9 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 
 		switch(event->phase)
 		{
-			case UIEvent::PHASE_BEGAN:
-				if (isIntersectsLandscape && !needCreateUndo)
-				{
+        case UIEvent::Phase::BEGAN:
+            if (isIntersectsLandscape && !needCreateUndo)
+                {
 					if (drawingType == TILEMASK_DRAW_COPY_PASTE)
 					{
 						int32 curKeyModifiers = QApplication::keyboardModifiers();
@@ -268,13 +268,13 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 					activeDrawingType = drawingType;
 				}
 				break;
-				
-            case UIEvent::PHASE_DRAG:
-				break;
-				
-			case UIEvent::PHASE_ENDED:
-				FinishEditing();
-				break;
+
+        case UIEvent::Phase::DRAG:
+            break;
+
+        case UIEvent::Phase::ENDED:
+            FinishEditing();
+                break;
 		}
 	}
 }

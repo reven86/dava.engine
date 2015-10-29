@@ -50,9 +50,9 @@ void FrameworkDidLaunched()
 
     appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
 
-    GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
+    GameCore* core = new GameCore();
+    DAVA::Core::SetApplicationCore(core);
+    DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
 //    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");

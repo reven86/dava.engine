@@ -135,6 +135,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   undef GetCommandLine
 #   undef GetClassName
 #   undef Yield
+#undef ERROR
 
 //Detection of windows platform type
 #   if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)

@@ -89,9 +89,9 @@
 #define PROF__FRAME_DRAW 2
 #define PROF__FRAME_ENDFRAME 3
 
-namespace DAVA 
+namespace DAVA
 {
-static ApplicationCore * core = nullptr;
+static ApplicationCore* core = nullptr;
 
 Core::Core()
     : nativeView(nullptr)
@@ -109,7 +109,6 @@ Core::~Core()
     SafeRelease(options);
     SafeRelease(core);
 }
-
 
 void Core::CreateSingletons()
 {
@@ -165,11 +164,11 @@ void Core::CreateSingletons()
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
-    
+
     new LocalNotificationController();
 
     DeviceInfo::InitializeScreenInfo();
-    
+
     RegisterDAVAClasses();
 
     new Net::NetCore();
@@ -177,7 +176,6 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
-    
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -200,7 +198,7 @@ void Core::CreateRenderer()
 
     Renderer::Initialize(renderer, rendererParams);
 }
-        
+
 void Core::ReleaseSingletons()
 {
     // Finish network infrastructure
@@ -247,7 +245,7 @@ void Core::ReleaseSingletons()
     SystemTimer::Instance()->Release();
 }
 
-void Core::SetOptions(KeyedArchive * archiveOfOptions)
+void Core::SetOptions(KeyedArchive* archiveOfOptions)
 {
     SafeRelease(options);
 
@@ -256,12 +254,12 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
 #if defined(__DAVAENGINE_WIN_UAP__)
     screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
-    //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
-	screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
+    //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view
+    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
 #endif
 }
-    
-KeyedArchive * Core::GetOptions()
+
+KeyedArchive* Core::GetOptions()
 {
     return options;
 }
@@ -281,11 +279,11 @@ bool Core::SetScreenMode(eScreenMode screenMode)
     return screenMode == eScreenMode::FULLSCREEN;
 }
 
-void Core::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
+void Core::GetAvailableDisplayModes(List<DisplayMode>& availableModes)
 {
 }
 
-DisplayMode Core::FindBestMode(const DisplayMode & requestedMode)
+DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
 {
     List<DisplayMode> availableDisplayModes;
     GetAvailableDisplayModes(availableDisplayModes);
@@ -396,12 +394,12 @@ void Core::Quit()
     Logger::FrameworkDebug("[Core::Quit] do not supported by platform implementation of core");
 }
 
-void Core::SetApplicationCore(ApplicationCore * _core)
+void Core::SetApplicationCore(ApplicationCore* _core)
 {
     core = _core;
 }
 
-ApplicationCore * Core::GetApplicationCore()
+ApplicationCore* Core::GetApplicationCore()
 {
     return core;
 }
@@ -446,7 +444,6 @@ void Core::SystemAppFinished()
         core->OnAppFinished();
     }
 }
-
 
 void Core::SystemProcessFrame()
 {
@@ -512,16 +509,16 @@ void Core::SystemProcessFrame()
     */
     //  if (!Renderer::IsDeviceLost())
     {
-// #ifdef __DAVAENGINE_DIRECTX9__
-//      if(firstRun)
-//      {
-//          core->BeginFrame();
-//          firstRun = false;
-//      }
-// #else
+        // #ifdef __DAVAENGINE_DIRECTX9__
+        //      if(firstRun)
+        //      {
+        //          core->BeginFrame();
+        //          firstRun = false;
+        //      }
+        // #else
         InputSystem::Instance()->OnBeforeUpdate();
         core->BeginFrame();
-//#endif
+        //#endif
 
         // recalc frame inside begin / end frame
         if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
@@ -592,7 +589,7 @@ void Core::GoBackground(bool isLock)
 {
     if (core)
     {
-        if(isLock)
+        if (isLock)
         {
             core->OnDeviceLocked();
         }
@@ -633,7 +630,7 @@ uint32 Core::GetGlobalFrameIndex()
     return globalFrameIndex;
 }
 
-void Core::SetCommandLine(int argc, char *argv[])
+void Core::SetCommandLine(int argc, char* argv[])
 {
     commandLine.assign(argv, argv + argc);
 }
@@ -673,7 +670,7 @@ void Core::SetCommandLine(const DAVA::String& cmdLine)
     }
 }
 
-const Vector<String> & Core::GetCommandLine()
+const Vector<String>& Core::GetCommandLine()
 {
     return commandLine;
 }
@@ -704,21 +701,19 @@ void Core::SetIsActive(bool _isActive)
     Logger::Info("Core::SetIsActive %s", (_isActive) ? "TRUE" : "FALSE");
 }
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)    
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 Core::eDeviceFamily Core::GetDeviceFamily()
 {
     return DEVICE_DESKTOP;
 }
 #endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
-    
+
 uint32 Core::GetScreenDPI()
 {
     return DPIHelper::GetScreenDPI();
 }
 
-void Core::SetIcon(int32 /*iconId*/)
-{
-};
+void Core::SetIcon(int32 /*iconId*/){};
 
 float32 Core::GetScreenScaleFactor() const
 {
@@ -729,4 +724,3 @@ float32 Core::GetScreenScaleFactor() const
     return DeviceInfo::GetScreenInfo().scale;
 }
 };
-
