@@ -234,12 +234,14 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         }
         return true;
     case UIEvent::Phase::ENDED:
+    {
         ProcessCursor(currentInput->point, searchOrder);
         selectionRectControl->SetSize(Vector2());
         bool retVal = dragRequested;
         SetCanDrawRect(false);
         dragRequested = false;
         return retVal;
+    }
     default:
         return false;
     }
