@@ -33,9 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DAVAEngine.h"
 #include "Infrastructure/BaseScreen.h"
 
-#define IOS_WIDTH (1024) // 960 2048 
-#define IOS_HEIGHT (768) // 640 1536
-
 using namespace DAVA;
 
 class ClipTest : public BaseScreen
@@ -47,10 +44,26 @@ protected:
     void LoadResources() override;
     void UnloadResources() override;
 private:
-    void PreSet();
+    void MoveDown(BaseObject *obj, void *data, void *callerData);
+    void MoveUp(BaseObject *obj, void *data, void *callerData);
+    void MoveRight(BaseObject *obj, void *data, void *callerData);
+    void MoveLeft(BaseObject *obj, void *data, void *callerData);
+    void StartPos(BaseObject *obj, void *data, void *callerData);
+    void DebugDrawPressed(BaseObject *obj, void *data, void *callerData);
+    void ClipPressed(BaseObject *obj, void *data, void *callerData);
+
+    bool enableClip = true;
+    bool enableDebugDraw = true;
+    DAVA::Rect defaultRect;
 
     UIControl* parent;
-    UIControl* child;
+    UIButton* clip;
+    UIButton* debugDraw;
+    UIButton* startPos;
+    UIButton* moveLeft;
+    UIButton* moveRight;
+    UIButton* moveUp;
+    UIButton* moveDown;
 };
 
 #endif //__CLIPTEST_TEST_H__
