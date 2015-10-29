@@ -116,7 +116,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 
     keyTranslator[VK_LEFT] = DVKEY_LEFT;
-	keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
+    keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
 	keyTranslator[VK_UP] = DVKEY_UP;
 	keyTranslator[VK_DOWN] = DVKEY_DOWN;
 	keyTranslator[VK_ESCAPE] = DVKEY_ESCAPE;

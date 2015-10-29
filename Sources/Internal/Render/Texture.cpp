@@ -216,7 +216,7 @@ Texture * Texture::Get(const FilePath & pathName)
 
     Texture* texture = nullptr;
     TexturesMap::iterator it = textureMap.find(FILEPATH_MAP_KEY(pathName));
-	if (it != textureMap.end())
+    if (it != textureMap.end())
 	{
 		texture = it->second;
 		texture->Retain();
@@ -323,7 +323,7 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
     if (nullptr == image)
         return nullptr;
 
-    Texture * texture = new Texture();
+    Texture* texture = new Texture();
     texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, generateMipMaps);
 
     Vector<Image *> *images = new Vector<Image *>();
@@ -393,7 +393,7 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
 	bool loaded = texture->LoadImages(gpu, images);
     if (!loaded)
     {
-		Logger::Error("[Texture::CreateFromImage] Cannot load texture from image. Descriptor: %s, GPU: %s",
+        Logger::Error("[Texture::CreateFromImage] Cannot load texture from image. Descriptor: %s, GPU: %s",
             descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
 
         SafeDelete(images);
@@ -401,7 +401,7 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
         return nullptr;
     }
 
-	texture->SetParamsFromImages(images);
+    texture->SetParamsFromImages(images);
 	texture->FlushDataToRenderer(images);
 
 	return texture;
@@ -683,7 +683,7 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 	texture = CreateFromImage(descriptor, gpuForLoading);
     if (texture)
     {
-		texture->loadedAsFile = gpuForLoading;
+        texture->loadedAsFile = gpuForLoading;
 		AddToMap(texture);
 	}
 
@@ -737,7 +737,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
 
     if (loaded)
     {
-		loadedAsFile = gpuForLoading;
+        loadedAsFile = gpuForLoading;
 
 		SetParamsFromImages(images);
 		FlushDataToRenderer(images);
@@ -849,7 +849,7 @@ void Texture::DumpTextures()
         Logger::FrameworkDebug("%s with id %d (%dx%d) retainCount: %d debug: %s format: %s", t->texDescriptor->pathname.GetAbsolutePathname().c_str(), (uint32)(t->handle), t->width, t->height,
                                t->GetRetainCount(), t->debugInfo.c_str(), PixelFormatDescriptor::GetPixelFormatString(t->texDescriptor->format));
         cnt++;
-        
+
         DVASSERT((0 <= t->texDescriptor->format) && (t->texDescriptor->format < FORMAT_COUNT));
         if (FORMAT_INVALID != t->texDescriptor->format)
         {
@@ -951,13 +951,13 @@ Texture* Texture::CreatePink(rhi::TextureType requestedType, bool checkers)
     {
         tex->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, true);
         tex->texDescriptor->dataSettings.cubefaceFlags = 0x000000FF;
-	}
+    }
 	else
 	{
         tex->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, false);
     }
 
-	tex->MakePink(checkers);
+    tex->MakePink(checkers);
 
 	return tex;
 }
@@ -969,7 +969,7 @@ void Texture::MakePink(bool checkers)
     Vector<Image *> *images = new Vector<Image *> ();
     if (texDescriptor->IsCubeMap())
     {
-		for(uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
+        for(uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
 		{
             Image *img = Image::CreatePinkPlaceholder(checkers);
 			img->cubeFaceID = i;

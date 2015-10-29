@@ -907,7 +907,7 @@ void TextBlock::PreDraw()
     if (needPrepareInternal)
     {
         PrepareInternal();
-	}
+    }
     
 	if (textBlockRender)
 	{

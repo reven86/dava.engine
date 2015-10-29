@@ -1492,8 +1492,8 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         case UIEvent::Phase::BEGAN:
         {
             if (!currentInput->touchLocker && IsPointInside(currentInput->point))
-        {
-            if (multiInput || !currentInputID)
+            {
+                if (multiInput || !currentInputID)
             {
                 controlState |= STATE_PRESSED_INSIDE;
                 controlState &= ~STATE_NORMAL;
@@ -1525,7 +1525,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 currentInput->touchLocker = this;
                 return true;
             }
-        }
+            }
         }
         break;
         case UIEvent::Phase::DRAG:
@@ -1578,13 +1578,13 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             if (currentInput->touchLocker == this)
             {
                 if (multiInput || currentInputID == currentInput->tid)
-            {
-                Input(currentInput);
-                if (currentInput->tid == currentInputID)
                 {
-                    currentInputID = 0;
-                }
-                if (totalTouches > 0)
+                    Input(currentInput);
+                    if (currentInput->tid == currentInputID)
+                    {
+                        currentInputID = 0;
+                    }
+                    if (totalTouches > 0)
                 {
                     --totalTouches;
                     if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
@@ -1640,7 +1640,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
             currentInput->touchLocker = NULL;
             return true;
-        }
+            }
         }
         break;
         case UIEvent::Phase::JOYSTICK:

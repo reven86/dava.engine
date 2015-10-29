@@ -43,6 +43,7 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)
 
     newBatch = new DAVA::RenderBatch();
     DAVA::PolygonGroup * shadowPg = DAVA::MeshUtils::CreateShadowPolygonGroup(oldBatch->GetPolygonGroup());
+    shadowPg->BuildBuffers();
     newBatch->SetPolygonGroup(shadowPg);
     shadowPg->Release();
 

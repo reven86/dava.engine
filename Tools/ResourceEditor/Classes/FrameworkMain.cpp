@@ -52,7 +52,7 @@ void FrameworkDidLaunched()
 
     GameCore* core = new GameCore();
     DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
+    DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
 //    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");

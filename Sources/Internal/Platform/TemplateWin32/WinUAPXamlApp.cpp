@@ -581,16 +581,15 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     int32 wheelDelta = pointerPoint->Properties->MouseWheelDelta;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
 
-    core->RunOnMainThread([this, wheelDelta, type]()
-                          {
-                              UIEvent ev;
+    core->RunOnMainThread([this, wheelDelta, type]() {
+        UIEvent ev;
 
-                              ev.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
-                              ev.phase = UIEvent::Phase::WHEEL;
-                              ev.device = ToDavaDeviceId(type);
+        ev.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
+        ev.phase = UIEvent::Phase::WHEEL;
+        ev.device = ToDavaDeviceId(type);
 
-                              UIControlSystem::Instance()->OnInput(&ev);
-                          });
+        UIControlSystem::Instance()->OnInput(&ev);
+    });
 }
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, BackPressedEventArgs ^ args)
@@ -636,8 +635,7 @@ void WinUAPXamlApp::OnKeyDown(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
     int32 key = static_cast<int32>(args->VirtualKey);
     bool isRepeat = args->KeyStatus.WasKeyDown;
 
-    core->RunOnMainThread([this, key, isRepeat]()
-                          {
+    core->RunOnMainThread([this, key, isRepeat]() {
         auto& keyboard = InputSystem::Instance()->GetKeyboard();
 
         UIEvent ev;
@@ -654,46 +652,44 @@ void WinUAPXamlApp::OnKeyDown(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
 
         UIControlSystem::Instance()->OnInput(&ev);
         keyboard.OnSystemKeyPressed(static_cast<int32>(key));
-                          });
+    });
 }
 
 void WinUAPXamlApp::OnKeyUp(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
 {
     int32 key = static_cast<int32>(args->VirtualKey);
-    core->RunOnMainThread([this, key]()
-                          {
-                              auto& keyboard = InputSystem::Instance()->GetKeyboard();
+    core->RunOnMainThread([this, key]() {
+        auto& keyboard = InputSystem::Instance()->GetKeyboard();
 
-                              UIEvent ev;
-                              ev.device = UIEvent::Device::KEYBOARD;
-                              ev.phase = UIEvent::Phase::KEY_UP;
-                              ev.tid = keyboard.GetDavaKeyForSystemKey((key));
+        UIEvent ev;
+        ev.device = UIEvent::Device::KEYBOARD;
+        ev.phase = UIEvent::Phase::KEY_UP;
+        ev.tid = keyboard.GetDavaKeyForSystemKey((key));
 
-                              UIControlSystem::Instance()->OnInput(&ev);
-                              keyboard.OnSystemKeyUnpressed(static_cast<int32>(key));
-                          });
+        UIControlSystem::Instance()->OnInput(&ev);
+        keyboard.OnSystemKeyUnpressed(static_cast<int32>(key));
+    });
 }
 
 void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
 {
     uint32 unicodeChar = args->KeyCode;
     bool isRepeat = args->KeyStatus.WasKeyDown;
-    core->RunOnMainThread([this, unicodeChar, isRepeat]()
-                          {
-                              UIEvent ev;
-                              DVASSERT(unicodeChar < 0xFFFF); // wchar_t is 16 bit, so keyChar dosnt fit
-                              ev.keyChar = unicodeChar;
-                              ev.device = UIEvent::Device::KEYBOARD;
-                              if (isRepeat)
-                              {
-                                  ev.phase = UIEvent::Phase::CHAR_REPEAT;
-                              }
-                              else
-                              {
-                                  ev.phase = UIEvent::Phase::CHAR;
-                              }
-                              UIControlSystem::Instance()->OnInput(&ev);
-                          });
+    core->RunOnMainThread([this, unicodeChar, isRepeat]() {
+        UIEvent ev;
+        DVASSERT(unicodeChar < 0xFFFF); // wchar_t is 16 bit, so keyChar dosnt fit
+        ev.keyChar = unicodeChar;
+        ev.device = UIEvent::Device::KEYBOARD;
+        if (isRepeat)
+        {
+            ev.phase = UIEvent::Phase::CHAR_REPEAT;
+        }
+        else
+        {
+            ev.phase = UIEvent::Phase::CHAR;
+        }
+        UIControlSystem::Instance()->OnInput(&ev);
+    });
 }
 
 void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
@@ -762,7 +758,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);
 
     coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WinUAPXamlApp::OnChar);
-    MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice^, MouseEventArgs^>(this, &WinUAPXamlApp::OnMouseMoved);
+    MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
 
     if (isPhoneApiDetected)
     {

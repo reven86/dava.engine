@@ -246,7 +246,7 @@ namespace DAVA
 
     protected:
         const InspMemberDynamic* memberDynamic;
-	};
+    };
 };
 
 // Определение интоспекции внутри класса. См. пример в описании класса IntrospectionInfo

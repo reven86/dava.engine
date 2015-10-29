@@ -164,7 +164,7 @@ namespace DAVA
         UpdateWindow(hWindow);
 
         // fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
-		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
+        MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
@@ -201,7 +201,7 @@ namespace DAVA
         rendererParams.height = currentMode.height;
 
         clientSize.top = 0;
-		clientSize.left = 0;
+        clientSize.left = 0;
 		clientSize.right = currentMode.width;
 		clientSize.bottom = currentMode.height;
 
@@ -296,7 +296,7 @@ namespace DAVA
             TRACE_END_EVENT(11, "core", "Sleep");
 
             if (willQuit)
-			{	
+            {	
 				break;
 			}
 		}
@@ -377,8 +377,8 @@ namespace DAVA
         return true;
     }
 
-    void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode> & availableDisplayModes)
-	{
+    void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDisplayModes)
+    {
 		availableDisplayModes.clear();
 
 		DWORD iModeNum = 0;
@@ -508,7 +508,7 @@ namespace DAVA
     }
 
     static bool mouseCursorShown = true;
-	static USHORT mouseButtonsDownMask = 0;
+    static USHORT mouseButtonsDownMask = 0;
 
 	void HandleMouseButtonsPressed(USHORT buttsFlags)
 	{
@@ -813,7 +813,7 @@ namespace DAVA
             }
             break;
         case WM_DESTROY:
-			PostQuitMessage(0);
+            PostQuitMessage(0);
 			return 0;
 
 		case WM_ACTIVATE:

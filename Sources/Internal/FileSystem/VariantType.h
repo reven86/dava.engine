@@ -101,8 +101,8 @@ public:
     explicit VariantType(const int64& value);
     explicit VariantType(const uint64& value);
     explicit VariantType(const Vector2& value);
-    explicit VariantType(const Vector3 & value);
-	explicit VariantType(const Vector4 & value);
+    explicit VariantType(const Vector3& value);
+    explicit VariantType(const Vector4 & value);
 	explicit VariantType(const Matrix2 & value);
 	explicit VariantType(const Matrix3 & value);
 	explicit VariantType(const Matrix4 & value);

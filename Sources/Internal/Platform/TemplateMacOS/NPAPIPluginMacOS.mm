@@ -178,15 +178,15 @@ extern void FrameworkWillTerminate();
             [self processEvent:DAVA::UIEvent::Phase::BEGAN touch:event];
             break;
 
-		case NPCocoaEventMouseUp:
+        case NPCocoaEventMouseUp:
             [self processEvent:DAVA::UIEvent::Phase::ENDED touch:event];
             break;
 
-		case NPCocoaEventMouseMoved:
+        case NPCocoaEventMouseMoved:
             [self processEvent:DAVA::UIEvent::Phase::MOVE touch:event];
             break;
 
-		case NPCocoaEventMouseEntered:
+        case NPCocoaEventMouseEntered:
 			break;
 
 		case NPCocoaEventMouseExited:
@@ -196,7 +196,7 @@ extern void FrameworkWillTerminate();
             [self processEvent:DAVA::UIEvent::Phase::DRAG touch:event];
             break;
 
-		case NPCocoaEventKeyDown:
+        case NPCocoaEventKeyDown:
 			[self keyDown:event];
 			break;
 
@@ -227,7 +227,7 @@ extern void FrameworkWillTerminate();
 
     if (touchPhase == DAVA::UIEvent::Phase::DRAG)
     {
-		for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+        for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			NSPoint p;
 			p.x = curEvent->data.mouse.pluginX;
@@ -238,7 +238,7 @@ extern void FrameworkWillTerminate();
 
             if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
             {
-				it->physPoint.x = curEvent->data.mouse.deltaX;
+                it->physPoint.x = curEvent->data.mouse.deltaX;
 				it->physPoint.y = curEvent->data.mouse.deltaY;
 			}
 
@@ -264,7 +264,7 @@ extern void FrameworkWillTerminate();
 
             if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
             {
-				it->physPoint.x = curEvent->data.mouse.deltaX;
+                it->physPoint.x = curEvent->data.mouse.deltaX;
 				it->physPoint.y = curEvent->data.mouse.deltaY;
 			}
 
@@ -289,7 +289,7 @@ extern void FrameworkWillTerminate();
 
         if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
         {
-			newTouch.physPoint.x = curEvent->data.mouse.deltaX;
+            newTouch.physPoint.x = curEvent->data.mouse.deltaX;
 			newTouch.physPoint.y = curEvent->data.mouse.deltaY;
 		}
 
@@ -306,7 +306,7 @@ extern void FrameworkWillTerminate();
 
     if (touchPhase == DAVA::UIEvent::Phase::ENDED || touchPhase == DAVA::UIEvent::Phase::MOVE)
     {
-		for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+        for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
 			{
@@ -404,14 +404,15 @@ extern void FrameworkWillTerminate();
 		NSCommandKeyMask};
 
     static DAVA::int32 keyCodes[] = {
-    DAVA::DVKEY_CAPSLOCK,
-    DAVA::DVKEY_SHIFT,
-    DAVA::DVKEY_CTRL,
-    DAVA::DVKEY_ALT,
-    DAVA::DVKEY_LWIN};
+        DAVA::DVKEY_CAPSLOCK,
+        DAVA::DVKEY_SHIFT,
+        DAVA::DVKEY_CTRL,
+        DAVA::DVKEY_ALT,
+        DAVA::DVKEY_LWIN
+    };
 
     for (int i = 0; i < 5; i++)
-	{
+    {
 		if ((oldModifiersFlags & masks[i]) != (newModifiers & masks[i]))
 		{
 			if (newModifiers & masks[i])
@@ -521,10 +522,10 @@ extern void FrameworkWillTerminate();
     NSRect rect = NSRectFromCGRect([openGLLayer frame]);
 #if RHI_COMPLETE
     DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
-	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
+    DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 #endif
     DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
 	
 	NSLog(@"[NPAPICoreMacOSPlatform] SystemAppStarted");

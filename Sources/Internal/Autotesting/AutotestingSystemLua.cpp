@@ -529,7 +529,7 @@ namespace DAVA
 		keyPress.tid = keyChar;
         keyPress.phase = UIEvent::Phase::CHAR;
         keyPress.tapCount = 1;
-		keyPress.keyChar = keyChar;
+        keyPress.keyChar = keyChar;
 
 		Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
 			keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
@@ -711,7 +711,7 @@ namespace DAVA
 		UIEvent touchDown;
         touchDown.phase = UIEvent::Phase::BEGAN;
         touchDown.tid = touchId;
-		touchDown.tapCount = tapCount;
+        touchDown.tapCount = tapCount;
 		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
 		touchDown.point = point;
 		ProcessInput(touchDown);
@@ -729,7 +729,7 @@ namespace DAVA
 		{
             touchMove.phase = UIEvent::Phase::DRAG;
             ProcessInput(touchMove);
-		}
+        }
 		else
 		{
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -751,7 +751,7 @@ namespace DAVA
         touchUp.phase = UIEvent::Phase::ENDED;
         touchUp.tid = touchId;
 
-		ProcessInput(touchUp);
+        ProcessInput(touchUp);
 	}
 
 	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
@@ -768,7 +768,7 @@ namespace DAVA
     }
 
     bool AutotestingSystemLua::LoadWrappedLuaObjects()
-	{
+    {
 		if (!luaState)
 		{
 			return false; //TODO: report error?

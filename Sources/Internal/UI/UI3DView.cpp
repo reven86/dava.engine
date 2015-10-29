@@ -107,7 +107,7 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     scene->Draw();
 
     if (uiDrawQueryWasOpen)
-		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
+        FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }
     
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)

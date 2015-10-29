@@ -53,7 +53,7 @@ public:
     ~HashMap();
 
     size_t size() const;
-	size_t count(const K &key) const;
+    size_t count(const K &key) const;
 
 	bool empty() const;
 
@@ -81,7 +81,7 @@ public:
     const V& valueByIndex(size_t index) const;
 
     const K& keyByIndex(size_t index);
-	const K& keyByIndex(size_t index) const;
+    const K& keyByIndex(size_t index) const;
     
 public:
 	struct HashMapItem

@@ -128,8 +128,8 @@ namespace DAVA
 			MaterialBinding binding;
             binding.childMaterial = material;
             binding.parentKey = parentKey;
-			
-			materialBindings.push_back(binding);
+
+            materialBindings.push_back(binding);
 		}
 
         inline void SetGlobalMaterialKey(uint64 materialKey)
@@ -143,7 +143,7 @@ namespace DAVA
         }
 
         inline void SetLastError(uint32 error)
-		{
+        {
 			lastError = error;
 		}
 		

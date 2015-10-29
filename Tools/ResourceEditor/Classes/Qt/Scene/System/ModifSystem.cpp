@@ -195,7 +195,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 
                 if (DAVA::UIEvent::Phase::BEGAN == event->phase)
                 {
-					if(event->tid == DAVA::UIEvent::BUTTON_1)
+                    if(event->tid == DAVA::UIEvent::BUTTON_1)
 					{
 						// go to modification state
 						inModifState = true;
@@ -233,7 +233,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 			// phase still continue
             if (event->phase == DAVA::UIEvent::Phase::DRAG)
             {
-				DAVA::Vector3 moveOffset;
+                DAVA::Vector3 moveOffset;
 				DAVA::float32 rotateAngle;
 				DAVA::float32 scaleForce;
 
@@ -283,7 +283,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 			// phase ended
             else if (event->phase == DAVA::UIEvent::Phase::ENDED)
             {
-				if(event->tid == DAVA::UIEvent::BUTTON_1)
+                if(event->tid == DAVA::UIEvent::BUTTON_1)
 				{
 					if(modified)
 					{

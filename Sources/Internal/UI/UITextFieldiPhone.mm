@@ -228,7 +228,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     {
         UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         return textFieldHolder->useRtlAlign == YES;
-	}
+    }
 
     void TextFieldPlatformImpl::OpenKeyboard()
     {
@@ -388,7 +388,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     {
         UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         [textFieldHolder setTextInputAllowed:value];
-	}
+    }
 
     void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
     {

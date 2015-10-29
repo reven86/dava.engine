@@ -43,7 +43,7 @@ using namespace DAVA;
 
 namespace
 {
-const Array<HUDAreaInfo::eArea, 2> AreasToHide = {{HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA}};
+const Array<HUDAreaInfo::eArea, 2> AreasToHide = { { HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA } };
 }
 
 ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)

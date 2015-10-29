@@ -93,7 +93,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 #endif
 
     activeCursor = 0;
-	
+
     willQuit = false;
 
     return self;
@@ -150,7 +150,7 @@ extern void FrameworkMain(int argc, char *argv[]);
     DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 #endif
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
 	
 	sizeChanged = YES;
 	[super reshape];
@@ -245,7 +245,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     }
 
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
-    if(curEvent.type == NSLeftMouseDown || curEvent.type == NSRightMouseDown || curEvent.type == NSOtherMouseDown)
+    if (curEvent.type == NSLeftMouseDown || curEvent.type == NSRightMouseDown || curEvent.type == NSOtherMouseDown)
     {
         phase = UIEvent::Phase::BEGAN;
     }
@@ -468,7 +468,7 @@ static int32 oldModifersFlags = 0;
 {
     int32 newModifers = [event modifierFlags];
     static int32 masks[] = {NSAlphaShiftKeyMask, NSShiftKeyMask, NSControlKeyMask, NSAlternateKeyMask, NSCommandKeyMask};
-    static int32 keyCodes[] = {DVKEY_CAPSLOCK, DVKEY_SHIFT, DVKEY_CTRL, DVKEY_ALT, DVKEY_LWIN};
+    static int32 keyCodes[] = { DVKEY_CAPSLOCK, DVKEY_SHIFT, DVKEY_CTRL, DVKEY_ALT, DVKEY_LWIN };
 
     for (int i = 0; i < 5; i++) 
     {

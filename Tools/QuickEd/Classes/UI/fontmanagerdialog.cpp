@@ -280,7 +280,7 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
 				// Create Graphics font to validate it - but first truncate "*.txt" extension of sprite
                 returnFont = GraphicFont::Create(fontDefinition.toStdString(), fontSprite.toStdString());
             }
-			else
+            else
 			{
 				ResourcesManageHelper::ShowErrorMessage(fontName);
 				return returnFont;
@@ -297,7 +297,7 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
     }
 
     if (!returnFont)
-	{
+    {
     	//If font was not created - show error message
         //No dialog result will be set in this case
          QString message;

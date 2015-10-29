@@ -47,7 +47,7 @@ public:
     inline const FastName & GetName() const;
 
     void AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID afterLayer = RenderLayer::RENDER_LAYER_INVALID_ID);
-    void RemoveRenderLayer(RenderLayer * layer);
+    void RemoveRenderLayer(RenderLayer* layer);
 
     virtual void Draw(RenderSystem* renderSystem);
 
@@ -130,7 +130,7 @@ protected:
     float32 waterLevel;
 };
 class WaterReflectionRenderPass  : public WaterPrePass
-{        
+{
 public:
     WaterReflectionRenderPass(const FastName& name);
     virtual void Draw(RenderSystem* renderSystem);

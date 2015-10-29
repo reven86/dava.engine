@@ -64,7 +64,7 @@ bool EventDispatcher::RemoveEvent(int32 eventType, const Message &msg)
                 events.erase(it);
             return true;
         }
-	}
+    }
 	return false;
 }
 	

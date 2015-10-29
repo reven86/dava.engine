@@ -72,8 +72,8 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeFinishing(JNIEnv* env, jobject classthis);
     JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv* env, jobject classthis);
     JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv* env, jobject classthis, jfloat x, jfloat y, jfloat z);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable);
     JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv * env, jobject classthis);
 
     //JNISurfaceView
@@ -170,7 +170,7 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
         }
         else
         {
-			LOGE("[InitApplication] Can't allocate space for CoreAndroidPlatform");
+            LOGE("[InitApplication] Can't allocate space for CoreAndroidPlatform");
 		}
 	}
 	else
@@ -219,7 +219,7 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNISurfaceView$InputRunnable$InputEvent");
 
     gArrayListGetMethod = gArrayListClass->GetMethod<jobject, jint>("get");
-	gArrayListSizeMethod = gArrayListClass->GetMethod<jint>("size");
+    gArrayListSizeMethod = gArrayListClass->GetMethod<jint>("size");
 
 	gInputEventTidField = env->GetFieldID(*gInputEventClass, "tid", DAVA::JNI::TypeMetrics<jint>());
 	gInputEventXField = env->GetFieldID(*gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
@@ -326,38 +326,38 @@ bool Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv* env, 
 namespace
 {
 DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
-    {
-        DAVA::UIEvent::Phase phase = DAVA::UIEvent::Phase::DRAG;
-        switch(action)
-		{
+{
+    DAVA::UIEvent::Phase phase = DAVA::UIEvent::Phase::DRAG;
+    switch (action)
+        {
 			case 5: //ACTION_POINTER_DOWN
 			case 0://ACTION_DOWN
                 phase = DAVA::UIEvent::Phase::BEGAN;
-            break;
+                break;
 
-			case 6://ACTION_POINTER_UP
+            case 6://ACTION_POINTER_UP
 			case 1://ACTION_UP
                 phase = DAVA::UIEvent::Phase::ENDED;
-            break;
+                break;
 
-			case 2://ACTION_MOVE
+            case 2://ACTION_MOVE
 			{
 				if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
 				{
                     phase = DAVA::UIEvent::Phase::JOYSTICK;
                 }
-				else //Touches
+                else //Touches
                 {
                     phase = DAVA::UIEvent::Phase::DRAG;
                 }
             }
-			break;
+            break;
 
 			case 3://ACTION_CANCEL
                 phase = DAVA::UIEvent::Phase::CANCELLED;
-            break;
+                break;
 
-			case 4://ACTION_OUTSIDE
+            case 4://ACTION_OUTSIDE
 			break;
 		}
 
@@ -388,7 +388,7 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
         }
 
         return event;
-	}
+    }
 }
 
 // CALLED FROM JNIGLSurfaceView
