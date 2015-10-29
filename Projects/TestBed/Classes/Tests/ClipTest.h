@@ -56,7 +56,13 @@ private:
     bool enableDebugDraw = true;
     DAVA::Rect defaultRect;
 
-    UIControl* parent;
+    UIControl* fullSizeWgt;
+    UIControl* parent1;
+    UIControl* child1;
+
+    UIControl* parent2;
+    UIControl* child2;
+
     UIButton* clip;
     UIButton* debugDraw;
     UIButton* startPos;
