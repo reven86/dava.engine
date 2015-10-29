@@ -245,7 +245,7 @@ void ViewSceneScreen::DidAppear()
 
 void ViewSceneScreen::Input(UIEvent* currentInput)
 {
-    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    if (currentInput->phase == UIEvent::Phase::CHAR)
     {
         if (currentInput->keyChar == '+')
             cursorSize *= 1.25f;

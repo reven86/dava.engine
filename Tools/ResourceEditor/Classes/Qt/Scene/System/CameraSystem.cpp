@@ -296,12 +296,9 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
 {
     switch ( event->phase )
     {
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
         OnKeyboardInput( event );
         break;
-    case UIEvent::PHASE_WHEEL:
-        break;
-
     default:
         break;
     }

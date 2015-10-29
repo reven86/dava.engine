@@ -186,10 +186,10 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     eSearchOrder searchOrder = IsKeyPressed(KeyboardProxy::KEY_ALT) ? SEARCH_BACKWARD : SEARCH_FORWARD;
     switch (currentInput->phase)
     {
-    case UIEvent::PHASE_MOVE:
+    case UIEvent::Phase::MOVE:
         ProcessCursor(currentInput->point, searchOrder);
         return false;
-    case UIEvent::PHASE_BEGAN:
+    case UIEvent::Phase::BEGAN:
     {
         ProcessCursor(currentInput->point, searchOrder);
         if (activeAreaInfo.area != HUDAreaInfo::NO_AREA)
@@ -211,7 +211,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         pressedPoint = currentInput->point;
         return canDrawRect;
     }
-    case UIEvent::PHASE_DRAG:
+    case UIEvent::Phase::DRAG:
         dragRequested = true;
 
         if (canDrawRect)
@@ -233,13 +233,15 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
-    case UIEvent::PHASE_ENDED:
+    case UIEvent::Phase::ENDED:
         ProcessCursor(currentInput->point, searchOrder);
         selectionRectControl->SetSize(Vector2());
         bool retVal = dragRequested;
         SetCanDrawRect(false);
         dragRequested = false;
         return retVal;
+    default:
+        return false;
     }
     return false;
 }

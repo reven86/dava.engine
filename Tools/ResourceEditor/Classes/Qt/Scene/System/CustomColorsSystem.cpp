@@ -175,20 +175,20 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
 		
 		switch(event->phase)
 		{
-			case UIEvent::PHASE_BEGAN:
-				if (isIntersectsLandscape)
+        case UIEvent::Phase::BEGAN:
+                if (isIntersectsLandscape)
 				{
 					UpdateToolImage();
 					StoreOriginalState();
 					editingIsEnabled = true;
 				}
 				break;
-				
-			case UIEvent::PHASE_DRAG:
-				break;
-				
-			case UIEvent::PHASE_ENDED:
-				FinishEditing();
+
+        case UIEvent::Phase::DRAG:
+                break;
+
+        case UIEvent::Phase::ENDED:
+                FinishEditing();
 				break;
 		}
 	}

@@ -161,10 +161,10 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 {
     switch (currentInput->phase)
     {
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
         return ProcessKey(currentInput->tid);
 
-    case UIEvent::PHASE_BEGAN:
+    case UIEvent::Phase::BEGAN:
     {
         microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
         currentHash = static_cast<size_t>(us.count());
@@ -172,7 +172,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         prevPos = currentInput->point;
         return false;
     }
-    case UIEvent::PHASE_DRAG:
+    case UIEvent::Phase::DRAG:
     {
         if (currentInput->point != prevPos)
         {
@@ -183,11 +183,11 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         }
         return false;
     }
-    case UIEvent::PHASE_ENDED:
+    case UIEvent::Phase::ENDED:
         if (activeArea == HUDAreaInfo::ROTATE_AREA)
         {
             ClampAngle();
-        }
+        }        
         systemManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
         return false;
     default:

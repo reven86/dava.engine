@@ -27,39 +27,22 @@
 =====================================================================================*/
 
 
-#include "DAVAEngine.h"
-#include "GameCore.h"
-#include "Version.h"
+#ifndef __DAVAENGINE_LOCALIZATION_WINUAP_H__
+#define __DAVAENGINE_LOCALIZATION_WINUAP_H__
 
-void FrameworkDidLaunched()
+#include "Base/BaseTypes.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+namespace DAVA
 {
-	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
+class LocalizationWinUAP
+{
+public:
+    static void SelectPreferedLocalization();
+    static String GetDeviceLang(void);
+};
+};
 
-    appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
+#endif //__DAVAENGINE_WIN_UAP__
 
-    appOptions->SetInt32("fullscreen", 0);
-    appOptions->SetInt32("bpp", 32);
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
-
-    appOptions->SetInt32("max_index_buffer_count", 8192);
-    appOptions->SetInt32("max_vertex_buffer_count", 8192);
-    appOptions->SetInt32("max_const_buffer_count", 32767);
-    appOptions->SetInt32("max_texture_count", 2048);
-
-    appOptions->SetInt32("shader_const_buffer_size", 100 * 1024 * 1024);
-
-    GameCore* core = new GameCore();
-    DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
-    DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
-
-//    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");
-    
-	SafeRelease(appOptions);
-}
-
-
-void FrameworkWillTerminate()
-{ }
+#endif //__DAVAENGINE_LOCALIZATION_WINUAP_H__

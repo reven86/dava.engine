@@ -319,11 +319,13 @@ void WebViewControl::SetRect(const Rect& rect)
     imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:webViewRect];
     if (nullptr == imageRep)
     {
+        webImageCachePtr = nullptr;
         DVASSERT(rect.dx == 0 && rect.dy == 0);
         return;
     }
     
     webImageCachePtr = imageRep;
+
     [imageRep retain];
 
     DVASSERT(FLOAT_EQUAL((float)[imageRep size].width, ceilf(webViewRect.size.width)) &&

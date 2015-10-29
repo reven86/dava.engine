@@ -267,19 +267,19 @@ void UIJoypad::SetStickSpriteFrame(int32 frame)
 
 void UIJoypad::Input(UIEvent *currentInput)
 {
-	if((TOUCH_INVALID_ID == mainTouch) && currentInput->phase == UIEvent::PHASE_BEGAN)
-	{
-		mainTouch = currentInput->tid;
+    if ((TOUCH_INVALID_ID == mainTouch) && currentInput->phase == UIEvent::Phase::BEGAN)
+    {
+        mainTouch = currentInput->tid;
 	}
 	
 	if(mainTouch != currentInput->tid)
 	{
 		return;
 	}
-	
-	if(currentInput->phase == UIEvent::PHASE_ENDED)
-	{
-		currentPos.x = 0;
+
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        currentPos.x = 0;
 		currentPos.y = 0;
         mainTouch = TOUCH_INVALID_ID;
 	}
