@@ -133,7 +133,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     }
     std::sort(batches.begin(), batches.end(), CompareFunction);
 
-    rhi::HQueryBuffer queryBuffer = rhi::CreateQueryBuffer(batches.size());
+    rhi::HQueryBuffer queryBuffer = rhi::CreateQueryBuffer(static_cast<uint32>(batches.size()));
 
     target.queryBuffer = queryBuffer;
 

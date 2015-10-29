@@ -2367,7 +2367,7 @@ int* pragma_op /* Flag of _Pragma (not used in prestd)     */
         case NUM: /* Number token         */
         case OPE: /* Operator or punct.   */
         case NAM: /* Identifier           */
-            len = strlen(mp);
+            len = static_cast<int>(strlen(mp));
             mp += len;
             break;
         case SEP: /* Special character    */
