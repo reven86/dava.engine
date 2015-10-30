@@ -40,8 +40,8 @@ namespace DAVA
 
 static const String UISCROLL_VIEW_CONTAINER_NAME = "scrollContainerControl";
 
-UIScrollView::UIScrollView(const Rect& rect, bool rectInAbsoluteCoordinates /* = false*/)
-    : UIControl(rect, rectInAbsoluteCoordinates)
+UIScrollView::UIScrollView(const Rect& rect)
+    : UIControl(rect)
     , scrollContainer(new UIScrollViewContainer())
     , scrollHorizontal(new ScrollHelper())
     , scrollVertical(new ScrollHelper())
@@ -105,9 +105,9 @@ void UIScrollView::RemoveControl( UIControl *control )
 void UIScrollView::PushContentToBounds(UIControl *parentControl)
 {
 	// We have to shift each child of ScrollContent to fit its bounds
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
-	{
+    const List<UIControl*>& childslist = parentControl->GetChildren();
+    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    {
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
             continue;
@@ -138,9 +138,9 @@ Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 current
 {
 	Vector2 currentOffset = currentContentOffset;
 	// Get control's farest position inside scrollContainer
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
-	{	
+    const List<UIControl*>& childslist = parentControl->GetChildren();
+    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    {
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
             continue;
@@ -161,10 +161,10 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 {
 	// Initial content max size is actual control sizes
 	Vector2 maxSize = currentMaxSize;
-	
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
-	{
+
+    const List<UIControl*>& childslist = parentControl->GetChildren();
+    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    {
         UIControl *childControl = (*it);
         if ( !(childControl && childControl->GetVisible()) )
             continue;
@@ -195,16 +195,7 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 	return maxSize;
 }
 
-List<UIControl* > UIScrollView::GetSubcontrols()
-{
-	List<UIControl* > subControls;
-	
-	AddControlToList(subControls, UISCROLL_VIEW_CONTAINER_NAME);
-	
-	return subControls;
-}
-
-UIControl* UIScrollView::Clone()
+UIScrollView* UIScrollView::Clone()
 {
 	UIScrollView *t = new UIScrollView(GetRect());
 	t->CopyDataFrom(this);
@@ -296,19 +287,19 @@ void UIScrollView::RecalculateContentSize()
     }
 
     Rect contentRect = scrollContainer->GetRect();
-	Rect parentRect = GetRect();
-	
-	// Move all scrollContainer content with negative positions iside its rect
-	PushContentToBounds(scrollContainer);
-	// Get max size of content - all childrens
-	Vector2 maxSize = GetMaxSize(scrollContainer,
-									Vector2(parentRect.dx + Abs(contentRect.x), parentRect.dy + Abs(contentRect.y)),
-									Vector2(0, 0));
-									
-	// Update scroll view content size
+    Rect parentRect = GetRect();
+
+    // Move all scrollContainer content with negative positions iside its rect
+    PushContentToBounds(scrollContainer);
+    // Get max size of content - all childrens
+    Vector2 maxSize = GetMaxSize(scrollContainer,
+                                 Vector2(parentRect.dx + Abs(contentRect.x), parentRect.dy + Abs(contentRect.y)),
+                                 Vector2(0, 0));
+
+    // Update scroll view content size
     scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
     scrollHorizontal->SetElementSize(maxSize.x);
-	scrollVertical->SetElementSize(maxSize.y);
+    scrollVertical->SetElementSize(maxSize.y);
 }
 
 void UIScrollView::SetReturnSpeed(float32 speedInSeconds)

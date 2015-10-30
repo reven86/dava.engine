@@ -452,7 +452,7 @@ void QuadTree::ObjectUpdated(RenderObject * renderObject)
 	} while (sizeUpdeted&&(currIndex!=INVALID_TREE_NODE_INDEX));	
 }
 
-void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
+void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<RenderObject*>& visibilityArray)
 {		
 	QuadTreeNode& currNode = nodes[nodeId];	
 	int32 objectsSize = static_cast<int32>(currNode.objects.size());
@@ -476,14 +476,9 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
             uint32 flags = obj->GetFlags();
 			if ((flags & currVisibilityCriteria) == currVisibilityCriteria)
             {
-				visibilityArray->Add(obj);
-                RENDERER_UPDATE_STATS(visibleRenderObjectCount++);
-
-            }else
-            {
-#if defined(__DAVAENGINE_DEBUG__)
-                if (!(flags & RenderObject::VISIBLE_STATIC_OCCLUSION))
-                    RENDERER_UPDATE_STATS(occludedRenderObjectCount++);
+                visibilityArray.push_back(obj);
+#if defined(__DAVAENGINE_RENDERSTATS__)
+                ++Renderer::GetRenderStats().visibleRenderObjects;
 #endif
             }
 		}
@@ -499,63 +494,48 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
 				if (    (flags & RenderObject::ALWAYS_CLIPPING_VISIBLE)
                     ||   currFrustum->IsInside(obj->GetWorldBoundingBox(), clippingFlags, obj->startClippingPlane))
                 {
-					visibilityArray->Add(obj);
-                    RENDERER_UPDATE_STATS(visibleRenderObjectCount++);
-                }
-			}else
-            {
-#if defined(__DAVAENGINE_DEBUG__)
-                if (!(flags & RenderObject::VISIBLE_STATIC_OCCLUSION))
-                    RENDERER_UPDATE_STATS(occludedRenderObjectCount++);
+                    visibilityArray.push_back(obj);
+#if defined(__DAVAENGINE_RENDERSTATS__)
+                    ++Renderer::GetRenderStats().visibleRenderObjects;
 #endif
+                }
             }
-		}
-	}
-	
-	//process children	
-	for (int32 i=0; i<QuadTreeNode::NODE_NONE; ++i)
+        }
+    }
+
+    //process children
+    for (int32 i=0; i<QuadTreeNode::NODE_NONE; ++i)
 	{
 		uint16 childNodeId = currNode.children[i];
 		if (childNodeId!=INVALID_TREE_NODE_INDEX)
 		{
-			ProcessNodeClipping(childNodeId, clippingFlags);
-		}
-	}		
+            ProcessNodeClipping(childNodeId, clippingFlags, visibilityArray);
+        }
+    }
 }
 
-void QuadTree::Clip(Camera * camera, VisibilityArray * _visibilityArray, uint32 visibilityCriteria)
+void QuadTree::Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint32 visibilityCriteria)
 {
 	DVASSERT(worldInitialized);
 	currCamera = camera;
 	currVisibilityCriteria = visibilityCriteria;
-	currFrustum = camera->GetFrustum();	
-	visibilityArray = _visibilityArray;
-	ProcessNodeClipping(0, 0x3f); 
-
-	
+    currFrustum = camera->GetFrustum();
+    ProcessNodeClipping(0, 0x3f, visibilityArray);
 }
-    
-void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, VisibilityArray * visibilityArray)
+
+void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3& bbox, Vector<RenderObject*>& visibilityArray)
 {
     QuadTreeNode& currNode = nodes[nodeId];
     int32 objectsSize = static_cast<int32>(currNode.objects.size());
 
-    
-//    if (!clippingFlags) //node is fully inside frustum - no need to clip anymore
-//	{
     for (int32 i = 0; i < objectsSize; ++i)
     {
         RenderObject * renderObject = currNode.objects[i];
         if (bbox.IntersectsWithBox(renderObject->GetWorldBoundingBox()))
         {
-            visibilityArray->Add(renderObject);
+            visibilityArray.push_back(renderObject);
         }
     }
-//	}else
-//    {
-//        
-//    }
-    
     
     //process children
 	for (int32 i = 0; i < QuadTreeNode::NODE_NONE; ++i)
@@ -568,14 +548,10 @@ void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bb
 	}
 }
 
-    
-void QuadTree::GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray)
+void QuadTree::GetAllObjectsInBBox(const AABBox3& bbox, Vector<RenderObject*>& visibilityArray)
 {
     
 }
-
-    
-    
     
 void QuadTree::Update()
 {		
@@ -623,7 +599,7 @@ void QuadTree::Update()
 
 void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 {
-	if (!worldInitialized) return;
+    /*	if (!worldInitialized) return;
 	if (debugDrawStateHandle == InvalidUniqueHandle) //create debug draw state
 	{
 		RenderStateData debugStateData;
@@ -636,20 +612,20 @@ void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 		debugDrawStateHandle = RenderManager::Instance()->CreateRenderState(debugStateData);
 	}
     
-	RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-	RenderManager::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
+	Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+	RenderSystem2D::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
 	DebugDrawNode(0);
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);*/
 }
 
 void QuadTree::DebugDrawNode(uint16 nodeId)
-{	
-	RenderManager::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
+{
+    /*	RenderSystem2D::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
 	for (int32 i = 0, size = static_cast<int32>(nodes[nodeId].objects.size()); i<size; ++i)
 	{
 		RenderHelper::Instance()->DrawBox(nodes[nodeId].objects[i]->GetWorldBoundingBox(), 1.0f, debugDrawStateHandle);
 	}
-	RenderManager::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
+	RenderSystem2D::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
 	RenderHelper::Instance()->DrawBox(nodes[nodeId].bbox, 1.0f, debugDrawStateHandle);
 	for (int32 i=0; i<QuadTreeNode::NODE_NONE; ++i)
 	{
@@ -658,7 +634,7 @@ void QuadTree::DebugDrawNode(uint16 nodeId)
 			DebugDrawNode(nodes[nodeId].children[i]);
 		}
 	}	
-	
+	*/
 }
 
 //traverse without recursive calls ... later - it works but might require some rethink
@@ -690,12 +666,12 @@ void QuadTree::DebugDrawNode(uint16 nodeId)
 			currDepth++;
 			dirStack[currDepth] = 0;			
 			//visit
-			RenderManager::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
+			RenderSystem2D::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
 			for (int32 i = 0, size = nodes[currNodeIndex].objects.size(); i<size; ++i)
 			{
 				RenderHelper::Instance()->DrawBox(nodes[currNodeIndex].objects[i]->GetWorldBoundingBox());
 			}
-			RenderManager::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
+			RenderSystem2D::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
 			RenderHelper::Instance()->DrawBox(currBox);
 			//end visit
 		}

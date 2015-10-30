@@ -249,9 +249,9 @@ void HeightmapEditorPanel::RestoreState()
 	int32 brushSize = BrushSizeSystemToUI(sceneEditor->heightmapEditorSystem->GetBrushSize());
 	int32 strength = StrengthSystemToUI(sceneEditor->heightmapEditorSystem->GetStrength());
 	int32 averageStrength = AverageStrengthSystemToUI(sceneEditor->heightmapEditorSystem->GetAverageStrength());
-	int32 toolImage = sceneEditor->heightmapEditorSystem->GetToolImage();
-	HeightmapEditorSystem::eHeightmapDrawType drawingType = sceneEditor->heightmapEditorSystem->GetDrawingType();
-	float32 height = sceneEditor->heightmapEditorSystem->GetDropperHeight();
+    int32 toolImage = sceneEditor->heightmapEditorSystem->GetToolImageIndex();
+    HeightmapEditorSystem::eHeightmapDrawType drawingType = sceneEditor->heightmapEditorSystem->GetDrawingType();
+    float32 height = sceneEditor->heightmapEditorSystem->GetDropperHeight();
 
 	int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
 	int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
@@ -374,9 +374,9 @@ float32 HeightmapEditorPanel::GetBrushScaleCoef()
 	}
 
 	float32 heightmapSize = heightmapProxy->Size();
-	float32 textureSize = sceneEditor->landscapeEditorDrawSystem->GetTextureSize(Landscape::TEXTURE_TILE_FULL);
+    float32 textureSize = sceneEditor->landscapeEditorDrawSystem->GetTextureSize(Landscape::TEXTURE_COLOR);
 
-	return textureSize / heightmapSize;
+    return textureSize / heightmapSize;
 }
 
 void HeightmapEditorPanel::UpdateRadioState(HeightmapEditorSystem::eHeightmapDrawType type)

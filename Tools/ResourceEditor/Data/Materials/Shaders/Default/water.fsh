@@ -89,8 +89,8 @@ uniform mat4 worldViewProjMatrix;
 #else
 varying mediump vec3 eyeDist;
 
-uniform mediump vec2 rcpScreenSize;
-uniform mediump vec2 screenOffset;
+uniform mediump vec2 rcpViewpoviewportOffset;
+uniform mediump vec2 viewportOffset;
 
 uniform float reflectionDistortion;
 uniform float refractionDistortion;
@@ -174,17 +174,17 @@ void main()
     #if defined(TANGENT_SPACE_WATER_REFLECTIONS)        
         //reflected vector is mixed with camera vector 
         //we need to swap z as reflected texture is already in reflected camera space
-        mediump vec3 reflectionVectorInTangentSpace = mix(-cameraToPointInTangentSpace, reflect(cameraToPointInTangentSpaceNorm, normal)*vec3(1.0,1.0,-1.0), aproxReflectionScale); 		
-        mediump vec4 reflectionVectorInNDCSpace = (worldViewProjMatrix * vec4((tbnToWorldMatrix * reflectionVectorInTangentSpace), 0.0));	
+        mediump vec3 reflectionVectorInTangentSpace = mix(-cameraToPointInTangentSpace, reflect(cameraToPointInTangentSpaceNorm, normal)*vec3(1.0,1.0,-1.0), aproxReflectionScale); 
+        mediump vec4 reflectionVectorInNDCSpace = (worldViewProjMatrix * vec4((tbnToWorldMatrix * reflectionVectorInTangentSpace), 0.0));
         lowp vec3 reflectionColor = texture2D(dynamicReflection, reflectionVectorInNDCSpace.xy/reflectionVectorInNDCSpace.w*0.5 + vec2(0.5, 0.5)).rgb;
 		
         mediump vec3 refractionVectorInTangentSpace = refract(cameraToPointInTangentSpaceNorm, normal, eta)*aproxDepth-cameraToPointInTangentSpace;
-        mediump vec4 refractionVectorInNDCSpace = (worldViewProjMatrix * vec4((tbnToWorldMatrix * refractionVectorInTangentSpace), 0.0));	
+        mediump vec4 refractionVectorInNDCSpace = (worldViewProjMatrix * vec4((tbnToWorldMatrix * refractionVectorInTangentSpace), 0.0));
         lowp vec3 refractionColor = texture2D(dynamicRefraction, refractionVectorInNDCSpace.xy/refractionVectorInNDCSpace.w*vec2(0.5, -0.5)+vec2(0.5, 0.5)).rgb;
     #else	
 		//mediump vec2 waveOffset = normal.xy/max(10.0, length(eyeDist));
 		mediump vec2 waveOffset = normal.xy*max(0.1, 1.0-dot(eyeDist, eyeDist)*distortionFallSquareDist);
-        mediump vec2 screenPos = (gl_FragCoord.xy-screenOffset)*rcpScreenSize;
+        mediump vec2 screenPos = (gl_FragCoord.xy-viewportOffset)*rcpViewpoviewportOffset;
         lowp vec3 reflectionColor = texture2D(dynamicReflection, screenPos+waveOffset*reflectionDistortion).rgb;
         screenPos.y=1.0-screenPos.y;
         lowp vec3 refractionColor = texture2D(dynamicRefraction, screenPos+waveOffset*refractionDistortion).rgb;        

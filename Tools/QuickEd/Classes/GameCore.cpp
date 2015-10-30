@@ -46,10 +46,6 @@ using namespace DAVA;
 GameCore::GameCore()
     : cursor(nullptr)
 {
-    // Editor Settings might be used by any singleton below during initialization, so
-    // initialize it before any other one.
-    new EditorSettings();
-
     new GridVisualizer();
     new RulerController();
     new AutotestingSystem();
@@ -75,7 +71,7 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     cursor = nullptr;
-	RenderManager::Instance()->SetFPS(60);
+    Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
@@ -101,7 +97,6 @@ void GameCore::OnBackground()
 void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
-    RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
 }
 
 void GameCore::Update(float32 timeElapsed)
@@ -129,8 +124,8 @@ void GameCore::UnpackHelp()
         ResourceArchive* helpRA = new ResourceArchive();
         if (helpRA->Open("~res:/Help.docs"))
         {
-			FileSystem::Instance()->DeleteDirectory(docsPath);
-			FileSystem::Instance()->CreateDirectory(docsPath, true);
+            FileSystem::Instance()->DeleteDirectory(docsPath);
+            FileSystem::Instance()->CreateDirectory(docsPath, true);
 		
 			helpRA->UnpackToFolder(docsPath);
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);

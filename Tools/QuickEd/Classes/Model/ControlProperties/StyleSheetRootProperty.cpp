@@ -77,7 +77,7 @@ StyleSheetRootProperty::~StyleSheetRootProperty()
     SafeRelease(propertyTable);
 }
 
-int StyleSheetRootProperty::GetCount() const
+uint32 StyleSheetRootProperty::GetCount() const
 {
     return SECTION_COUNT;
 }
@@ -160,7 +160,7 @@ void StyleSheetRootProperty::AddProperty(StyleSheetProperty *property)
         for (PropertyListener *listener : listeners)
             listener->StylePropertyWillBeAdded(propertiesSection, property, property->GetPropertyIndex());
 
-        int32 index = 0;
+        uint32 index = 0;
         while (index < propertiesSection->GetCount())
         {
             StyleSheetProperty *p = propertiesSection->GetProperty(index);
@@ -253,7 +253,7 @@ StyleSheetPropertiesSection *StyleSheetRootProperty::GetPropertiesSection() cons
 
 StyleSheetProperty *StyleSheetRootProperty::FindPropertyByPropertyIndex(DAVA::uint32 propertyIndex) const
 {
-    for (int32 i = 0; i < propertiesSection->GetCount(); i++)
+    for (uint32 i = 0; i < propertiesSection->GetCount(); i++)
     {
         StyleSheetProperty *p = static_cast<StyleSheetProperty*>(propertiesSection->GetProperty(i));
         if (p->GetPropertyIndex() == propertyIndex)
@@ -264,7 +264,7 @@ StyleSheetProperty *StyleSheetRootProperty::FindPropertyByPropertyIndex(DAVA::ui
 
 StyleSheetSelectorProperty *StyleSheetRootProperty::GetSelectorAtIndex(DAVA::int32 index) const
 {
-    if (0 <= index && index < selectors->GetCount())
+    if (0 <= index && index < (int32)selectors->GetCount())
     {
         return static_cast<StyleSheetSelectorProperty*>(selectors->GetProperty(index));
     }
@@ -278,7 +278,7 @@ StyleSheetSelectorProperty *StyleSheetRootProperty::GetSelectorAtIndex(DAVA::int
 String StyleSheetRootProperty::GetSelectorsAsString() const
 {
     StringStream stream;
-    for (int32 i = 0; i < selectors->GetCount(); i++)
+    for (uint32 i = 0; i < selectors->GetCount(); i++)
     {
         if (i > 0)
             stream << ", ";
@@ -290,7 +290,7 @@ String StyleSheetRootProperty::GetSelectorsAsString() const
 Vector<UIStyleSheet*> StyleSheetRootProperty::CollectStyleSheets()
 {
     Vector<UIStyleSheet*> result;
-    for (int32 i = 0; i < selectors->GetCount(); i++)
+    for (uint32 i = 0; i < selectors->GetCount(); i++)
     {
         result.push_back(selectors->GetProperty(i)->GetStyleSheet());
     }
@@ -300,7 +300,7 @@ Vector<UIStyleSheet*> StyleSheetRootProperty::CollectStyleSheets()
 DAVA::Vector<DAVA::UIStyleSheetSelectorChain> StyleSheetRootProperty::CollectStyleSheetSelectors() const
 {
     Vector<UIStyleSheetSelectorChain> result;
-    for (int32 i = 0; i < selectors->GetCount(); i++)
+    for (uint32 i = 0; i < selectors->GetCount(); i++)
     {
         result.push_back(selectors->GetProperty(i)->GetSelectorChain());
     }
@@ -310,7 +310,7 @@ DAVA::Vector<DAVA::UIStyleSheetSelectorChain> StyleSheetRootProperty::CollectSty
 DAVA::Vector<DAVA::UIStyleSheetProperty> StyleSheetRootProperty::CollectStyleSheetProperties() const
 {
     Vector<UIStyleSheetProperty> properties;
-    for (int32 i = 0; i < propertiesSection->GetCount(); i++)
+    for (uint32 i = 0; i < propertiesSection->GetCount(); i++)
     {
         properties.push_back(propertiesSection->GetProperty(i)->GetProperty());
     }

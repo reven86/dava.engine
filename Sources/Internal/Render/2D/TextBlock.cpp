@@ -30,7 +30,6 @@
 #include "Render/2D/Sprite.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
-#include "Render/RenderManager.h"
 #include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
@@ -38,9 +37,8 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
-#include "Render/2D/TextBlockGraphicsRender.h"
-#include "Render/2D/TextBlockDistanceRender.h"
-
+#include "Render/2D/TextBlockGraphicRender.h"
+#include "Concurrency/Thread.h"
 #include "Utils/StringUtils.h"
 #include "Concurrency/LockGuard.h"
 #include "fribidi/fribidi-bidi-types.h"
@@ -103,7 +101,6 @@ TextBlock::TextBlock()
     , cacheW(0)
     , cacheOx(0)
     , cacheOy(0)
-    , textureForInvalidation(NULL)
     , angle(0.f)
     , needCalculateCacheParams(false)
 {
@@ -122,7 +119,6 @@ TextBlock::TextBlock()
     
 	textBlockRender = NULL;
 	needPrepareInternal = false;
-    textureInvalidater = NULL;
 #if defined(LOCALIZATION_DEBUG)
     fittingTypeUsed = FITTING_DISABLED;
     visualTextCroped = false;
@@ -131,9 +127,7 @@ TextBlock::TextBlock()
 
 TextBlock::TextBlock(const TextBlock& src)
     : font(nullptr)
-    , textureForInvalidation(nullptr)
     , textBlockRender(nullptr)
-    , textureInvalidater(nullptr)
     //Basic params
     , scale(src.scale)
     , rectSize(src.rectSize)
@@ -182,9 +176,7 @@ TextBlock::TextBlock(const TextBlock& src)
 
 TextBlock::~TextBlock()
 {
-	SafeRelease(textureForInvalidation);
     SafeRelease(textBlockRender);
-    SafeDelete(textureInvalidater);
     SafeRelease(font);
     UnregisterTextBlock(this);
 }
@@ -200,18 +192,14 @@ void TextBlock::SetFontInternal(Font* _font)
     renderSize = originalFontSize;
 
     SafeRelease(textBlockRender);
-    SafeDelete(textureInvalidater);
     switch (font->GetFontType())
     {
     case Font::TYPE_FT:
         textBlockRender = new TextBlockSoftwareRender(this);
-        textureInvalidater = new TextBlockSoftwareTexInvalidater(this);
         break;
-    case Font::TYPE_GRAPHICAL:
-        textBlockRender = new TextBlockGraphicsRender(this);
-        break;
+    case Font::TYPE_GRAPHIC:
     case Font::TYPE_DISTANCE:
-        textBlockRender = new TextBlockDistanceRender(this);
+        textBlockRender = new TextBlockGraphicRender(this);
         break;
 
     default:
@@ -412,34 +400,21 @@ Sprite * TextBlock::GetSprite()
     return nullptr;
 }
 
-void TextBlock::ForcePrepare(Texture* texture)
-{
-    NeedPrepare(texture);
-}
 
 void TextBlock::NeedPrepare(Texture* texture /*=NULL*/)
 {
-    if (texture != textureForInvalidation)
-    {
-        SafeRelease(textureForInvalidation);
-        textureForInvalidation = SafeRetain(texture);
-    }
     needCalculateCacheParams = true;
     needPrepareInternal = true;
 }
 	
 void TextBlock::PrepareInternal()
 {
-	DVASSERT(Thread::IsMainThread());
-
     needPrepareInternal = false;
     if (textBlockRender)
     {
         font->SetSize(renderSize);
-        textBlockRender->Prepare(textureForInvalidation);
+        textBlockRender->Prepare();
         font->SetSize(originalFontSize);
-
-        SafeRelease(textureForInvalidation);
     }
 }
 
@@ -519,7 +494,7 @@ void TextBlock::CalculateCacheParams()
         WideString pointsStr;
         if ((fittingType & FITTING_POINTS) && (drawSize.x < textMetrics.width))
         {
-            uint32 length = charSizes.size();
+            uint32 length = static_cast<uint32>(charSizes.size());
             Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
             float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width);
             for (uint32 i = length - 1; i > 0U; --i)
@@ -539,7 +514,7 @@ void TextBlock::CalculateCacheParams()
         }
         else if (!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textMetrics.width) && (requestedSize.x >= 0))
         {
-            uint32 length = charSizes.size();
+            uint32 length = static_cast<uint32>(charSizes.size());
             float32 fullWidth = static_cast<float32>(textMetrics.width);
             if(ALIGN_RIGHT & align)
             {
@@ -932,9 +907,9 @@ void TextBlock::PreDraw()
     if (needPrepareInternal)
     {
         PrepareInternal();
-	}
-    
-	if (textBlockRender)
+    }
+
+    if (textBlockRender)
 	{
         font->SetSize(renderSize);
         textBlockRender->PreDraw();
@@ -954,7 +929,22 @@ void TextBlock::Draw(const Color& textColor, const Vector2* offset/* = NULL*/)
 
 TextBlock * TextBlock::Clone()
 {
-    return new TextBlock(*this);
+    TextBlock* block = new TextBlock();
+
+    block->SetScale(scale);
+    block->SetRectSize(rectSize);
+    block->SetMultiline(GetMultiline(), GetMultilineBySymbol());
+    block->SetAlign(align);
+    block->SetFittingOption(fittingType);
+    block->SetUseRtlAlign(useRtlAlign);
+
+    if (GetFont())
+    {
+        block->SetFont(GetFont());
+    }
+    block->SetText(GetText(), requestedSize);
+
+    return block;
 }
 
 };

@@ -81,7 +81,7 @@ set ( CMAKE_INCLUDE_CURRENT_DIR ON )
 # Instruct CMake to run moc automatically when needed.
 set ( CMAKE_AUTOMOC ON )
 
-list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent)
+list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent Qml Quick Network)
 list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 
 resolve_qt_pathes()

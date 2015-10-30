@@ -1530,7 +1530,7 @@ typedef struct FMOD_CREATESOUNDEXINFO
 ]
 */
 typedef struct FMOD_REVERB_PROPERTIES
-{/*       MIN    MAX     DEFAULT DESCRIPTION */
+{ /*       MIN    MAX     DEFAULT DESCRIPTION */
     int Instance; /* [w]   0      3       0       Environment Instance.                                                 (SUPPORTED:SFX(4 instances) and Wii (3 instances)) */
     int Environment; /* [r/w] -1     25      -1      Sets all listener properties.  -1 = OFF.                              (SUPPORTED:SFX(-1 only)/PSP) */
     float EnvDiffusion; /* [r/w] 0.0    1.0     1.0     Environment diffusion                                                 (SUPPORTED:WII) */
@@ -1676,7 +1676,7 @@ typedef struct FMOD_REVERB_PROPERTIES
 ]
 */
 typedef struct FMOD_REVERB_CHANNELPROPERTIES
-{/*       MIN    MAX  DEFAULT  DESCRIPTION */
+{ /*       MIN    MAX  DEFAULT  DESCRIPTION */
     int Direct; /* [r/w] -10000 1000 0        Direct path level                                        (SUPPORTED:SFX) */
     int Room; /* [r/w] -10000 1000 0        Room effect level                                        (SUPPORTED:SFX) */
     unsigned int Flags; /* [r/w] FMOD_REVERB_CHANNELFLAGS - modifies the behavior of properties                (SUPPORTED:SFX) */

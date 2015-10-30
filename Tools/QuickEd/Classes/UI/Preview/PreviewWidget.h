@@ -51,14 +51,16 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
-    DavaGLWidget *GetDavaGLWidget();
+    DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
 
     void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
 signals:
     void ScaleChanged(float scale);
+
 public slots:
     void OnDocumentChanged(Document* document);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private slots:
     // Zoom.
@@ -83,6 +85,13 @@ private:
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
     QList<int> percentages;
+
+    SelectionContainer selectionContainer;
 };
+
+inline DavaGLWidget* PreviewWidget::GetGLWidget()
+{
+    return davaGLWidget;
+}
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

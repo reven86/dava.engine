@@ -101,9 +101,9 @@ public:
     explicit VariantType(const int64& value);
     explicit VariantType(const uint64& value);
     explicit VariantType(const Vector2& value);
-    explicit VariantType(const Vector3 & value);
-	explicit VariantType(const Vector4 & value);
-	explicit VariantType(const Matrix2 & value);
+    explicit VariantType(const Vector3& value);
+    explicit VariantType(const Vector4& value);
+    explicit VariantType(const Matrix2 & value);
 	explicit VariantType(const Matrix3 & value);
 	explicit VariantType(const Matrix4 & value);
 	explicit VariantType(const Color & value);
@@ -145,8 +145,8 @@ public:
     union {
         bool boolValue;
         int32 int32Value;
-        uint32  uint32Value;
-		float32 floatValue;
+        uint32 uint32Value;
+        float32 floatValue;
         float64 float64Value;
 
         int64 int64Value;
@@ -248,8 +248,8 @@ public:
      Archive is copying into the variable.
 	 \param[in] archive	archive to set (Archive is retains inside variable type)
 	 */
-    void SetKeyedArchive(KeyedArchive *archive);
-    
+    void SetKeyedArchive(KeyedArchive* archive);
+
     /**
      \brief Function to set int64 value to variant type variable
      \param[in] value	value to set

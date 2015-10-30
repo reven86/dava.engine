@@ -37,13 +37,14 @@ namespace AssetCache
 const uint16 PACKET_HEADER = 0xACCA;
 const uint8 PACKET_VERSION = 1;
 
-List<ScopedPtr<DynamicMemoryFile>> CachePacket::sendingPackets;
+Map<const uint8*, ScopedPtr<DynamicMemoryFile>> CachePacket::sendingPackets;
 
 bool CachePacket::SendTo(Net::IChannel* channel)
 {
     DVASSERT(channel);
 
-    sendingPackets.push_back(serializationBuffer);
+    auto insertRes = sendingPackets.insert(std::make_pair(serializationBuffer->GetData(), serializationBuffer));
+    DVASSERT(true == insertRes.second && "packet is already inserted");
 
     uint32 packetId = 0;
     channel->Send(serializationBuffer->GetData(), serializationBuffer->GetSize(), 0, &packetId);
@@ -54,13 +55,10 @@ void CachePacket::PacketSent(const uint8* buffer, size_t length)
 {
     DVASSERT(sendingPackets.empty() == false);
 
-    if (sendingPackets.empty() == false)
-    {
-        ScopedPtr<DynamicMemoryFile> packet = sendingPackets.front();
-        DVASSERT((packet->GetData() == buffer) && (packet->GetSize() == length));
-
-        sendingPackets.pop_front();
-    }
+    auto found = sendingPackets.find(buffer);
+    DVASSERT(found != sendingPackets.end() && "packet is not found in sending list");
+    DVASSERT(found->second->GetSize() == length);
+    sendingPackets.erase(found);
 }
 
 std::unique_ptr<CachePacket> CachePacket::Create(const uint8* rawdata, uint32 length)
@@ -139,13 +137,14 @@ AddRequestPacket::AddRequestPacket(const CacheItemKey& _key, const CachedItemVal
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), _key.size());
+    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
     _value.Serialize(serializationBuffer);
 }
 
 bool AddRequestPacket::Load(File* file)
 {
-    return ((file->Read(key.data(), key.size()) == key.size()) && value.Deserialize(file));
+    const uint32 keySize = static_cast<uint32>(key.size());
+    return ((file->Read(key.data(), keySize) == keySize) && value.Deserialize(file));
 }
 
 AddResponsePacket::AddResponsePacket(const CacheItemKey& _key, bool _added)
@@ -153,13 +152,14 @@ AddResponsePacket::AddResponsePacket(const CacheItemKey& _key, bool _added)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), _key.size());
+    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
     serializationBuffer->Write(&_added, sizeof(_added));
 }
 
 bool AddResponsePacket::Load(File* file)
 {
-    return ((file->Read(key.data(), key.size()) == key.size()) && (file->Read(&added) == sizeof(added)));
+    const uint32 keySize = static_cast<uint32>(key.size());
+    return ((file->Read(key.data(), keySize) == keySize) && (file->Read(&added) == sizeof(added)));
 }
 
 GetRequestPacket::GetRequestPacket(const CacheItemKey& _key)
@@ -167,12 +167,13 @@ GetRequestPacket::GetRequestPacket(const CacheItemKey& _key)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), _key.size());
+    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
 }
 
 bool GetRequestPacket::Load(File* file)
 {
-    return (file->Read(key.data(), key.size()) == key.size());
+    const uint32 keySize = static_cast<uint32>(key.size());
+    return (file->Read(key.data(), keySize) == keySize);
 }
 
 GetResponsePacket::GetResponsePacket(const CacheItemKey& _key, const CachedItemValue& _value)
@@ -180,13 +181,14 @@ GetResponsePacket::GetResponsePacket(const CacheItemKey& _key, const CachedItemV
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), _key.size());
+    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
     _value.Serialize(serializationBuffer);
 }
 
 bool GetResponsePacket::Load(File* file)
 {
-    return ((file->Read(key.data(), key.size()) == key.size()) && value.Deserialize(file));
+    const uint32 keySize = static_cast<uint32>(key.size());
+    return ((file->Read(key.data(), keySize) == keySize) && value.Deserialize(file));
 }
 
 WarmupRequestPacket::WarmupRequestPacket(const CacheItemKey& _key)
@@ -194,12 +196,13 @@ WarmupRequestPacket::WarmupRequestPacket(const CacheItemKey& _key)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), _key.size());
+    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
 }
 
 bool WarmupRequestPacket::Load(File* file)
 {
-    return (file->Read(key.data(), key.size()) == key.size());
+    const uint32 keySize = static_cast<uint32>(key.size());
+    return (file->Read(key.data(), keySize) == keySize);
 }
 
 } //AssetCache

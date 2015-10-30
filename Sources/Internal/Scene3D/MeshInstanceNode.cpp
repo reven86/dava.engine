@@ -31,92 +31,28 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Render/3D/StaticMesh.h"
-#include "Render/Material.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Debug/Stats.h"
 #include "Render/Material/NMaterial.h"
-#include "Render/Material/MaterialCompiler.h"
-#include "Render/Material/MaterialGraph.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 
 namespace DAVA 
 {
     
-    
-    
-    
-    
-PolygonGroupWithMaterial::PolygonGroupWithMaterial()
-{
-    mesh = 0;
-    polygroupIndex = 0;
-    material = 0;
-
-    nMaterialInstance = 0;
-    nMaterial = 0;
-//
-//    MaterialCompiler * compiler = new MaterialCompiler();
-//    MaterialGraph * graph = new MaterialGraph();
-//    graph->LoadFromFile("~res:/Materials/default.material");
-//    
-//    if (MaterialCompiler::COMPILATION_SUCCESS == compiler->Compile(graph, 1, &nMaterial))
-//    {
-//        //NMaterialDescriptor * descriptor = nMaterial->GetDescriptor();
-//        
-//        
-//        nMaterialInstance = new NMaterialInstance();
-//        nMaterialInstance->GetRenderState()->SetTexture(material->GetTexture(Material::TEXTURE_DIFFUSE), 0);
-////        nMaterialInstance->GetRenderState()->SetTexture(material->GetTexture(Material::TEXTURE_DIFFUSE), 1);
-//        Texture * texture = Texture::CreateFromFile("/Users/binaryzebra/Sources/dava.framework/Tools/ResourceEditor/DataSource/3D/materials_new/images/normal.png");
-//        texture->SetWrapMode(Texture::WRAP_REPEAT, Texture::WRAP_REPEAT);
-//        DVASSERT(texture);
-//        nMaterialInstance->GetRenderState()->SetTexture(texture, 1);
-//    }
-//    
-//    SafeRelease(graph);
-//    SafeRelease(compiler);
-}
-    
 PolygonGroupWithMaterial::~PolygonGroupWithMaterial()
 {
     SafeRelease(mesh);
-    SafeRelease(material);
 }
 
-void PolygonGroupWithMaterial::Setup(StaticMesh * _mesh, int32 _polygroupIndex, Material * _material, TransformComponent * _transform)
+void PolygonGroupWithMaterial::Setup(StaticMesh* _mesh, int32 _polygroupIndex, NMaterial* _material, TransformComponent* _transform)
 {
+    SetMaterial(_material);
     mesh = SafeRetain(_mesh);
     polygroupIndex = _polygroupIndex;
-    material = SafeRetain(_material);
     transform = _transform;
-    
-    nMaterialInstance = 0;
-    nMaterial = 0;
-        
-    //    MaterialCompiler * compiler = new MaterialCompiler();
-    //    MaterialGraph * graph = new MaterialGraph();
-    //    graph->LoadFromFile("~res:/Materials/single_texture_no_lit.material");
-    //
-    //    if (MaterialCompiler::COMPILATION_SUCCESS == compiler->Compile(graph, _mesh->GetPolygonGroup(_polygroupIndex), 1, &nMaterial))
-    //    {
-    //        //NMaterialDescriptor * descriptor = nMaterial->GetDescriptor();
-    //
-    //
-    //        nMaterialInstance = new NMaterialInstance();
-    //        nMaterialInstance->GetRenderState()->SetTexture(material->GetTexture(Material::TEXTURE_DIFFUSE), 0);
-    ////        nMaterialInstance->GetRenderState()->SetTexture(material->GetTexture(Material::TEXTURE_DIFFUSE), 1);
-    //        Texture * texture = Texture::CreateFromFile("/Users/binaryzebra/Sources/dava.framework/Tools/ResourceEditor/DataSource/3D/materials_new/images/normal.png");
-    //        texture->SetWrapMode(Texture::WRAP_REPEAT, Texture::WRAP_REPEAT);
-    //        DVASSERT(texture);
-    //        nMaterialInstance->GetRenderState()->SetTexture(texture, 1);
-    //    }
-    //    
-    //    SafeRelease(graph);
-    //    SafeRelease(compiler);
 }
 
 StaticMesh * PolygonGroupWithMaterial::GetMesh()
@@ -134,56 +70,14 @@ PolygonGroup * PolygonGroupWithMaterial::GetPolygonGroup()
     return mesh->GetPolygonGroup(polygroupIndex);
 }
 
-Material * PolygonGroupWithMaterial::GetMaterial()
-{
-    return material;
-}
-    
-NMaterial * PolygonGroupWithMaterial::GetNMaterial()
-{
-    return nMaterial;
-}
-    
-NMaterialInstance * PolygonGroupWithMaterial::GetNMaterialInstance()
-{
-    return nMaterialInstance;
-}
-    
-//Entity* PolygonGroupWithMaterial::Clone(Entity *dstNode)
-//{
-//    if (!dstNode)
-//    {
-//        DVASSERT_MSG(IsPointerToExactClass<PolygonGroupWithMaterial>(this), "Can clone only MeshInstanceNode");
-//        dstNode = new PolygonGroupWithMaterial();
-//    }
-//    
-//    Entity::Clone(dstNode);
-//    PolygonGroupWithMaterial *nd = (PolygonGroupWithMaterial *)dstNode;
-//    
-//    nd->nMaterial = SafeRetain(nMaterial);
-//    nd->material = SafeRetain(material);
-//    
-//    return dstNode;
-//}
-    
 uint64 PolygonGroupWithMaterial::GetSortID()
 {
     return 0;
 }
-    
 
 MeshInstanceNode::MeshInstanceNode()
 :	Entity()
 {
-    //Logger::FrameworkDebug("MeshInstance: %p", this);
-	materialState = new InstanceMaterialState();
-    
-    //RenderComponent * renderComponent = new RenderComponent();
-    //renderComponent->SetRenderObject(this);
-    //this->AddComponent(renderComponent);
-
-//    Stats::Instance()->RegisterEvent("Scene.Update.MeshInstanceNode.Update", "Update time of MeshInstanceNode");
-//    Stats::Instance()->RegisterEvent("Scene.Draw.MeshInstanceNode.Draw", "Draw time of MeshInstanceNode");
 }
 	
 MeshInstanceNode::~MeshInstanceNode()
@@ -195,13 +89,9 @@ MeshInstanceNode::~MeshInstanceNode()
         SafeRelease(polygroups[idx]);
     }
     polygroups.clear();
-    
-    SafeRelease(materialState);
-
-    //Logger::FrameworkDebug("~MeshInstance: %p", this);
 }
 
-void MeshInstanceNode::AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupIndex, Material* material)
+void MeshInstanceNode::AddPolygonGroup(StaticMesh* mesh, int32 polygonGroupIndex, NMaterial* material)
 {
     PolygonGroupWithMaterial * polygroup = new PolygonGroupWithMaterial();
     polygroup->Setup(mesh, polygonGroupIndex, material, (TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT));
@@ -209,14 +99,6 @@ void MeshInstanceNode::AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupInde
 	
 	PolygonGroup * group = polygroup->GetPolygonGroup();
 	bbox.AddAABBox(group->GetBoundingBox());
-    
-    
-//    scene->ImmediateUpdate(this, renderComponent);
-//    Entity * node = new Entity();
-//    RenderComponent * renderComponent = new RenderComponent();
-//    renderComponent->SetRenderObject(polygroup);
-//    node->AddComponent(renderComponent);
-//    AddNode(node);
 }
     
 uint32 MeshInstanceNode::GetRenderBatchCount()
@@ -272,9 +154,9 @@ void MeshInstanceNode::Draw()
 
 //    if (GetFullName() == String("MaxScene->node-Cylinder01->VisualSceneNode14->instance_0"))
 //    {
-//        RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//        RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //        RenderHelper::Instance()->DrawBox(transformedBox);
-//        RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//        RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 //    }    
 
 	//now clipping in entity system
@@ -356,19 +238,19 @@ void MeshInstanceNode::Draw()
 		
 		if (debugFlags & DEBUG_DRAW_LOCAL_AXIS)
 		{
-			RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f); 
+			RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f); 
 			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(50.0f, 0.0f, 0.0f));
 			
-			RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+			RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 50.0f, 0.0f));
 			
-			RenderManager::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+			RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
 			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 50.0f));
 		}
 
 //		if (debugFlags & DEBUG_DRAW_AABOX_CORNERS)
 //		{
-//			RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//			RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 //			RenderHelper::Instance()->DrawCornerBox(bbox);
 //      }
         
@@ -411,17 +293,17 @@ void MeshInstanceNode::Draw()
                     Vector3 vertex2;
                      vertex2 = vertex + normal * DEBUG_VECTOR_LENGTH;
                     Color color(normal.x * 0.5f + 0.5f, normal.y * 0.5f + 0.5f, normal.z * 0.5f + 0.5f, 1.0f);
-                    RenderManager::Instance()->SetColor(color);
+                    RenderSystem2D::Instance()->SetColor(color);
                     RenderHelper::Instance()->DrawLine(vertex, vertex2);
                     
                     vertex2 = vertex + tangent * DEBUG_VECTOR_LENGTH;
                     Color tcolor(0.0f, 1.0f, 0.0f, 1.0f);
-                    RenderManager::Instance()->SetColor(tcolor);
+                    RenderSystem2D::Instance()->SetColor(tcolor);
                     RenderHelper::Instance()->DrawLine(vertex, vertex2);
                     
                     vertex2 = vertex + binormal * DEBUG_VECTOR_LENGTH;
                     Color bcolor(0.0f, 0.0f, 1.0f, 1.0f);
-                    RenderManager::Instance()->SetColor(bcolor);
+                    RenderSystem2D::Instance()->SetColor(bcolor);
                     RenderHelper::Instance()->DrawLine(vertex, vertex2);
                     
                     
@@ -434,7 +316,7 @@ void MeshInstanceNode::Draw()
 //      RenderManager::Instance()->EnableDepthTest(true);
 //		RenderManager::Instance()->EnableTexturing(true);
         RenderManager::Instance()->SetState(oldState);
-        RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 #endif
 	//glPopMatrix();
@@ -488,6 +370,7 @@ AABBox3 MeshInstanceNode::GetWTMaximumBoundingBoxSlow()
     
 void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+#if 0
     Entity::Save(archive, serializationContext);
 //    archive->SetInt32("lodCount", (int32)lodLayers.size());
 //    
@@ -544,6 +427,7 @@ void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * seria
 		archive->SetFloat(Format("lightmap%duvsY", lightmapIndex), data.uvScale.y);
 		lightmapIndex++;
 	}
+#endif
 }
 
 void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
@@ -559,7 +443,7 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
         for(int idx = 0; idx < polygroupCount; ++idx)
         {
             uint64 matPtr = archive->GetByteArrayAsType(Format("pg%d_matptr", idx), (uint64)0);
-            Material * material = static_cast<Material*>(serializationContext->GetDataBlock(matPtr));
+            NMaterial* material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matPtr));
             uint64 meshPtr = archive->GetByteArrayAsType(Format("pg%d_meshptr", idx), (uint64)0);
             StaticMesh * mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
             const int32 pgIndex = archive->GetInt32(Format("pg%d_pg", idx), errorIdx);
@@ -588,7 +472,7 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
                 if(serializationContext->GetVersion() == 2)
                 {
                     uint64 matPtr = archive->GetByteArrayAsType(Format("l%d_%d_matptr", lodIdx, idx), (uint64)0);
-                    Material * material = static_cast<Material*>(serializationContext->GetDataBlock(matPtr));
+                    NMaterial* material = static_cast<NMaterial*>(serializationContext->GetDataBlock(matPtr));
                     uint64 meshPtr = archive->GetByteArrayAsType(Format("l%d_%d_meshptr", lodIdx, idx), (uint64)0);
                     StaticMesh * mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
                     const int32 pgIndex = archive->GetInt32(Format("l%d_%d_pg", lodIdx, idx), errorIdx);
@@ -683,12 +567,6 @@ void MeshInstanceNode::ClearLightmaps()
 	}
 
 	lightmaps.clear();
-}
-    
-void MeshInstanceNode::ReplaceMaterial(DAVA::Material *material, int32 index)
-{
-    SafeRelease(polygroups[index]->material);
-    polygroups[index]->material = SafeRetain(material);
 }
 
 MeshInstanceNode::LightmapData * MeshInstanceNode::GetLightmapDataForIndex(int32 index)
@@ -806,7 +684,6 @@ void MeshInstanceNode::UpdateLights()
 
 void MeshInstanceNode::RegisterNearestLight(Light * node)
 {
-    materialState->SetLight(0, node);
 }
 
 bool MeshInstanceNode::HasLightmaps()

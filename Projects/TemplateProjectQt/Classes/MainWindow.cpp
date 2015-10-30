@@ -32,9 +32,11 @@
 
 #include "DAVAEngine.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
-const quint8 MainWindow::NUMBER_OF_SCREEN(0);
+namespace
+{
+const quint8 NUMBER_OF_SCREEN(0);
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -57,23 +59,15 @@ void MainWindow::CreateGlWidget()
     using namespace DAVA;
 
     DavaGLWidget *glWidget = new DavaGLWidget(this);
-    connect(glWidget, &DavaGLWidget::Initialized, this, &MainWindow::OnGlInitialized, Qt::QueuedConnection);
+    ScopedPtr<UIScreen> davaUIScreen(new DAVA::UIScreen());
+    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    davaUIScreen->GetBackground()->SetColor(DAVA::Color(1.f, 0.f, 0.f, 1.f));
+    UIScreenManager::Instance()->RegisterScreen(NUMBER_OF_SCREEN, davaUIScreen);
+    UIScreenManager::Instance()->SetFirst(NUMBER_OF_SCREEN);
+
     connect(glWidget, &DavaGLWidget::Resized, this, &MainWindow::OnGlWidgedResized);
-    FrameworkLoop::Instance()->SetOpenGLWindow(glWidget);
 
     ui->verticalLayout->addWidget(glWidget);
-}
-
-void MainWindow::OnGlInitialized()
-{
-    using namespace DAVA;
-
-    UIScreen *screen = new UIScreen();
-    screen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    screen->GetBackground()->SetColor(DAVA::Color(1.f, 0.f, 0.f, 1.f));
-    screen->GetBackground()->SetDrawColor(DAVA::Color(1.f, 0.f, 0.f, 1.f));
-    UIScreenManager::Instance()->RegisterScreen(NUMBER_OF_SCREEN, screen);
-    UIScreenManager::Instance()->SetFirst(NUMBER_OF_SCREEN);
 }
 
 void MainWindow::OnGlWidgedResized(int width, int height, int dpr)

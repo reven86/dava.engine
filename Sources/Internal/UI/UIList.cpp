@@ -485,23 +485,25 @@ void UIList::Input(UIEvent *currentInput)
 
     switch (currentInput->phase)
     {
-        case UIEvent::PHASE_BEGAN:
-        {
-            lockTouch = true;
-            oldPos = newPos;
-            mainTouch = currentInput->tid;
-        }
-            break;
-        case UIEvent::PHASE_DRAG:
-        {
-        }
-            break;
-        case UIEvent::PHASE_ENDED:
-        {
-            lockTouch = false;
-            mainTouch = -1;
-        }
-            break;
+    case UIEvent::Phase::BEGAN:
+    {
+        lockTouch = true;
+        oldPos = newPos;
+        mainTouch = currentInput->tid;
+    }
+    break;
+    case UIEvent::Phase::DRAG:
+    {
+    }
+    break;
+    case UIEvent::Phase::ENDED:
+    {
+        lockTouch = false;
+        mainTouch = -1;
+    }
+    break;
+    default:
+        break;
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
@@ -516,7 +518,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
 
     if(currentInput->touchLocker != this)
     {
-        if(currentInput->phase == UIEvent::PHASE_BEGAN)
+        if (currentInput->phase == UIEvent::Phase::BEGAN)
         {
             if(IsPointInside(currentInput->point))
             {
@@ -524,7 +526,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
                 Input(currentInput);
             }
         }
-        else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_DRAG)
+        else if (currentInput->tid == mainTouch && currentInput->phase == UIEvent::Phase::DRAG)
         {
             if(orientation == ORIENTATION_HORIZONTAL)
             {
@@ -545,7 +547,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
                 }
             }
         }
-        else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_ENDED)
+        else if (currentInput->tid == mainTouch && currentInput->phase == UIEvent::Phase::ENDED)
         {
             mainTouch = -1;
             lockTouch = false;
@@ -700,7 +702,7 @@ void UIList::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     InitAfterYaml();
 }
 
-UIControl *UIList::Clone()
+UIList* UIList::Clone()
 {
     UIList *c = new UIList(GetRect(), this->orientation);
     c->CopyDataFrom(this);
@@ -781,13 +783,6 @@ float32 UIList::ViewPosition(UIScrollBar *forScrollBar)
 void UIList::OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition)
 {
     scroll->SetPosition(-newPosition);
-}
-
-List<UIControl* >& UIList::GetRealChildren()
-{
-    List<UIControl* >& realChildren = UIControl::GetRealChildren();
-    realChildren.remove(scrollContainer);
-    return realChildren;
 }
 
 void UIList::ScrollToPosition( float32 position, float32 timeSec /*= 0.3f*/ )
