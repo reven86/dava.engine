@@ -124,7 +124,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     [application.keyWindow setRootViewController:renderViewController];
 
     DAVA::Core::Instance()->SystemAppStarted();
-    
+
     return YES;
 }
 

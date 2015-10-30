@@ -283,19 +283,13 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
 			action = event.getActionMasked();
 			source = event.getSource();
+			groupSize = 1;
 
 			final int historySize = event.getHistorySize();
 			final int pointerCount = event.getPointerCount();
 
 			for (int historyStep = 0; historyStep < historySize; historyStep++) {
 				for (int i = 0; i < pointerCount; i++) {
-					if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
-						int pointerId = event.getPointerId(i);
-						if(isMultitouchEnabled || pointerId == 0) {
-							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
-							allEvents.add(ev);
-						}
-					}
 					if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
 						for (int a = 0; a < gamepadAxises.length; ++a) {
 							InputEvent ev = new InputEvent(gamepadAxises[a], event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0, tapCount, event.getHistoricalEventTime(historyStep));
@@ -306,46 +300,43 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 				}
 			}
 
-			for (int i = 0; i < pointerCount; i++) {
-				if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
-					int pointerId = event.getPointerId(i);
-					if(isMultitouchEnabled || pointerId == 0) {
-						InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i), tapCount, event.getEventTime());
-						allEvents.add(ev);
-					}
-				}
-				if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
-					for (int a = 0; a < gamepadAxises.length; ++a) {
-						InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0, tapCount, event.getEventTime());
-						allEvents.add(ev);
-					}
-				}
-			}
+			int actionIndex = event.getActionIndex();
+			int pointerId = event.getPointerId(actionIndex);
+            if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0
+                && 
+                (android.view.MotionEvent.ACTION_MOVE == action
+                || android.view.MotionEvent.ACTION_CANCEL == action)) {
 
-			if(isMultitouchEnabled) {
-				groupSize = event.getPointerCount();
-			}
-			else {
-				groupSize = 1;
-			}
-			
-			if (action == MotionEvent.ACTION_MOVE) {
-				activeEvents = allEvents;
-			} else {
-				activeEvents = new ArrayList<InputEvent>();
-
-				int actionIdx = event.getActionIndex();
-				assert(actionIdx <= event.getPointerCount());
-				
-				final int pointerId = event.getPointerId(actionIdx);
-
-				if(isMultitouchEnabled || pointerId == 0) {
-					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
-					allEvents.add(ev);
-					activeEvents.add(ev);
-					groupSize += 1; // only ACTION_MOVE events can have history, so in this case there will be only one group
-				}
-			}
+                groupSize = pointerCount;
+                
+                for (int i = 0; i < pointerCount; i++) {
+                    pointerId = event.getPointerId(i);
+                    if (isMultitouchEnabled) {
+                        InputEvent ev = new InputEvent(
+                                touchIdForPointerId(pointerId), event.getX(i),
+                                event.getY(i), tapCount, event.getEventTime());
+                        allEvents.add(ev);
+                    }
+                }
+            } else
+            {
+                InputEvent ev = new InputEvent(
+                        touchIdForPointerId(pointerId),
+                        event.getX(actionIndex), event.getY(actionIndex), tapCount,
+                        event.getEventTime());
+                allEvents.add(ev);
+            }
+            
+            for (int i = 0; i < pointerCount; i++) {
+                if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
+                    for (int a = 0; a < gamepadAxises.length; ++a) {
+                        InputEvent ev = new InputEvent(gamepadAxises[a],
+                                event.getAxisValue(gamepadAxises[a], i), 0,
+                                tapCount, event.getEventTime());
+                        allEvents.add(ev);
+                    }
+                }
+            }
     	}
     	public InputRunnable(final com.bda.controller.MotionEvent event)
     	{
@@ -384,9 +375,9 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 					}
 				}
 			}
-			else if(activeEvents.size() != 0) 
+			else if(allEvents.size() != 0) 
 			{
-				nativeOnInput(action, source, groupSize, activeEvents, allEvents);
+				nativeOnInput(action, source, groupSize, allEvents, allEvents);
 			}
 		}
     }

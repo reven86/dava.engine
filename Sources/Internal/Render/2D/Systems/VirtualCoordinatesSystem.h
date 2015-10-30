@@ -101,7 +101,7 @@ public:
     inline int32 GetBaseResourceIndex() const;
 
     inline bool WasScreenSizeChanged() const;
-	void ScreenSizeChanged();
+    void ScreenSizeChanged();
     void EnableReloadResourceOnResize(bool enable);
     
     void SetProportionsIsFixed(bool needFixed);

@@ -369,7 +369,7 @@ Scene::~Scene()
     Renderer::GetOptions()->RemoveObserver(this);
 
     for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
-	{
+    {
 		AnimatedMesh * obj = *t;
 		obj->Release();
 	}
@@ -709,7 +709,7 @@ void Scene::Update(float timeElapsed)
 // 		SceneNodeAnimationList * anim = animations[animationIndex];
 // 		anim->Update(timeElapsed);
 // 	}
-//
+    //
     // 	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATED_MESHES))
     // 	{
     // 		size = (int32)animatedMeshes.size();
@@ -1037,7 +1037,7 @@ void Scene::ImportShadowColor(Entity * rootNode)
                 Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
                 sceneGlobalMaterial->AddProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
                 props->DeleteKey("ShadowColor");
-			}
+            }
 		}
     }
 }
