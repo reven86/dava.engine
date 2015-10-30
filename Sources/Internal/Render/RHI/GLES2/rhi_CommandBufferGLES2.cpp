@@ -1379,8 +1379,14 @@ gles2_Present(Handle sync)
         {
             _FrameSync.Lock();
             frame_cnt = _Frame.size();
-            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _FrameSync.Unlock();
+
+            if (frame_cnt >= _GLES2_RenderThreadFrameCount)
+            {
+                DAVA::Thread::Yield();
+            }
+            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
+
         } while (frame_cnt >= _GLES2_RenderThreadFrameCount);
     }
     else
