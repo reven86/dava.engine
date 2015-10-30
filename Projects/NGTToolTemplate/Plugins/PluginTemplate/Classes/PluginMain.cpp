@@ -27,12 +27,13 @@
 =====================================================================================*/
 
 #include "DAVAEngine.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 #include "SceneViewer.h"
 #include "Library.h"
 #include "SceneTree.h"
 #include "PropertyPanel.h"
 #include "SceneSignals.h"
+
+#include "Platform/Qt5/QtLayer.h"
 
 #include "core_dependency_system/di_ref.hpp"
 #include "core_generic_plugin/generic_plugin.hpp"
@@ -114,8 +115,6 @@ public:
         DAVA::Core::Run(0, nullptr);
 
         new DAVA::QtLayer();
-        new DavaLoop();
-        new FrameworkLoop();
 
         propertyPanel.reset(new PropertyPanel());
         propertyPanel->Initialize(*uiFramework, *uiApplication);
@@ -172,8 +171,6 @@ public:
         uiApplication->addAction(*redoAction);
         uiApplication->addAction(*beginBatch);
         uiApplication->addAction(*endBatch);
-
-        DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
     }
 
     bool Finalise(IComponentContext & context) override
@@ -184,9 +181,7 @@ public:
         library->Finilize();
         assetBrowser.reset();
 
-        FrameworkLoop::Instance()->Release();
         DAVA::QtLayer::Instance()->Release();
-        DavaLoop::Instance()->Release();
 
         propertyPanel.reset();
         sceneTree.reset();

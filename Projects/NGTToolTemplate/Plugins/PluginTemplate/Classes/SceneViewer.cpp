@@ -41,7 +41,6 @@
 #include "UI/UIScreen.h"
 #include "UI/UIScreenManager.h"
 
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 #include "GLWidget.h"
 
 namespace
@@ -57,9 +56,9 @@ class PluginScene : public DAVA::Scene
 public:
     void Draw() override
     {
-        Scene::Draw();
-
-        findSystem<SceneSelectionSystem>(this)->Draw();
+        //        Scene::Draw();
+        //
+        //        findSystem<SceneSelectionSystem>(this)->Draw();
     }
 };
 
@@ -69,8 +68,6 @@ SceneViewer::SceneViewer()
     DavaGLWidget * davaGl = glWidget.get();
     DVVERIFY(QObject::connect(davaGl, &DavaGLWidget::Initialized, this, &SceneViewer::OnGlInitialized, Qt::QueuedConnection));
     DVVERIFY(QObject::connect(davaGl, &DavaGLWidget::Resized, this, &SceneViewer::OnGlResized));
-    
-    FrameworkLoop::Instance()->SetOpenGLWindow(glWidget.get());
 }
 
 SceneViewer::~SceneViewer()
@@ -152,7 +149,7 @@ void SceneViewer::OnGlInitialized()
     
     ScopedPtr<UIScreen> screen(new UIScreen());
     DVASSERT(nullptr == uiView);
-    uiView = new DAVA::UI3DView(screen->GetRect(), true);
+    uiView = new DAVA::UI3DView(screen->GetRect());
     uiView->SetInputEnabled(true, true);
     
     screen->AddControl(uiView);

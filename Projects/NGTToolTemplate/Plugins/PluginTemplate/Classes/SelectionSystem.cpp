@@ -27,15 +27,14 @@
 =====================================================================================*/
 
 
-#include "SceneSignals.h"
 #include "SelectionSystem.h"
 #include "CameraSystem.h"
 #include "CollisionSystem.h"
-#include "Scene3D/Scene.h"
-#include "Scene3D/Systems/EventSystem.h"
-#include "Render/RenderBase.h"
+#include "SceneSignals.h"
 
 #include <QApplication>
+
+using namespace DAVA;
 
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
@@ -55,48 +54,32 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, selectionHasChanges(false)
 	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
 {
-    DAVA::RenderStateData selectionStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, selectionStateData);
-	
-	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-								DAVA::RenderStateData::STATE_COLORMASK_ALL;
-	selectionStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	selectionStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	
-	selectionNormalDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
-
-	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-								DAVA::RenderStateData::STATE_COLORMASK_ALL |
-								DAVA::RenderStateData::STATE_DEPTH_TEST;
-	
-	selectionDepthDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
-
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
+    //    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
 {
-	if(GetScene())
-	{
-		GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
-	}
+    //	if(GetScene())
+    //	{
+    //		GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    //	}
 }
 
 void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
 {
-    if(DAVA::EventSystem::SWITCH_CHANGED == event)
-    {
-        for(DAVA::uint32 i = 0; i < curSelections.Size(); i++)
-        {
-            DAVA::Entity *selectedEntity = curSelections.GetEntity(i);
-
-            // if switched entity selected - update it bounding box
-            if(selectedEntity == entity)
-            {
-                invalidSelectionBoxes = true;
-            }
-        }
-    }
+    //    if(EventSystem::SWITCH_CHANGED == event)
+    //    {
+    //        for(DAVA::uint32 i = 0; i < curSelections.Size(); i++)
+    //        {
+    //            DAVA::Entity *selectedEntity = curSelections.GetEntity(i);
+    //
+    //            // if switched entity selected - update it bounding box
+    //            if(selectedEntity == entity)
+    //            {
+    //                invalidSelectionBoxes = true;
+    //            }
+    //        }
+    //    }
 }
 
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
@@ -120,6 +103,8 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 
         invalidSelectionBoxes = false;
     }
+
+    UpdateHoodPos();
 }
 
 void SceneSelectionSystem::ForceEmitSignals()
@@ -127,11 +112,11 @@ void SceneSelectionSystem::ForceEmitSignals()
 	if (selectionHasChanges)
 	{
 		// emit signals
-		::SceneSignals::Instance()->EmitSelectionChanged(GetScene(), &curSelections, &curDeselections);
+        SceneSignals::Instance()->EmitSelectionChanged(GetScene(), &curSelections, &curDeselections);
 
-		selectionHasChanges = false;
-		curDeselections.Clear();
-	}
+        selectionHasChanges = false;
+        curDeselections.Clear();
+    }
 }
 
 void SceneSelectionSystem::Input(DAVA::UIEvent *event)
@@ -143,48 +128,19 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 
     if (DAVA::UIEvent::PHASE_BEGAN == event->phase)
     {
+        // we can select only if mouse isn't over hood axis
+        // or if hood is invisible now
+        // or if current mode is NORMAL (no modification)
+    }
+    else if (DAVA::UIEvent::PHASE_ENDED == event->phase)
+    {
         if (event->tid == DAVA::UIEvent::BUTTON_1)
         {
-            const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
-            EntityGroup selectableItems = GetSelecetableFromCollision(collisionEntities);
-
-            DAVA::Entity *firstEntity = selectableItems.GetEntity(0);
-            DAVA::Entity *nextEntity = selectableItems.GetEntity(0);
-
-            int curKeyModifiers = QApplication::keyboardModifiers();
-            if (curKeyModifiers & Qt::ControlModifier)
+            if (applyOnPhaseEnd)
             {
-                AddSelection(firstEntity);
+                applyOnPhaseEnd = false;
+                SetSelection(lastSelection);
             }
-            else if (curKeyModifiers & Qt::AltModifier)
-            {
-                RemSelection(firstEntity);
-            }
-            else
-            {
-                // if new selection is NULL or is one of already selected items
-                // we should change current selection only on phase end
-                if (nextEntity == NULL || NULL != curSelections.IntersectedEntity(&selectableItems))
-                {
-                    applyOnPhaseEnd = true;
-                    lastSelection = nextEntity;
-                }
-                else
-                {
-                    SetSelection(nextEntity);
-                }
-            }
-        }
-    }
-    else if(DAVA::UIEvent::PHASE_ENDED == event->phase)
-	{
-		if(event->tid == DAVA::UIEvent::BUTTON_1)
-		{
-			if(applyOnPhaseEnd)
-			{
-				applyOnPhaseEnd = false;
-				SetSelection(lastSelection);
-			}
 		}
 	}
 }
@@ -197,36 +153,34 @@ void SceneSelectionSystem::Draw()
 	}
 
 	if(curSelections.Size() > 0)
-	{
-        DAVA::int32 drawMode = SS_DRAW_SHAPE;
-        DAVA::RenderManager::SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size) &DAVA::Matrix4::IDENTITY);
-        DAVA::UniqueHandle renderState = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? selectionDepthDrawState : selectionNormalDrawState;
+    {
+        DAVA::int32 drawMode = SS_DRAW_BOX; //SettingsManager::GetValue(Settings::Scene_SelectionDrawMode).AsInt32();
 
-		for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
-		{
+        DAVA::RenderHelper::eDrawType wireDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_WIRE_DEPTH : DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH;
+        DAVA::RenderHelper::eDrawType solidDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_SOLID_DEPTH : DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH;
+
+        for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
+        {
             DAVA::AABBox3 selectionBox = curSelections.GetBbox(i);
 
 			// draw selection share
 			if(drawMode & SS_DRAW_SHAPE)
 			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawBox(selectionBox, 1.0f, renderState);
-			}
-			// draw selection share
-			else if(drawMode & SS_DRAW_CORNERS)
-			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawCornerBox(selectionBox, 1.0f, renderState);
-			}
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
+            }
+            // draw selection share
+            else if (drawMode & SS_DRAW_CORNERS)
+            {
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxCorners(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
+            }
 
-			// fill selection shape
-			if(drawMode & SS_DRAW_BOX)
-			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f));
-				DAVA::RenderHelper::Instance()->FillBox(selectionBox, renderState);
-			}
-		}
-	}
+            // fill selection shape
+            if (drawMode & SS_DRAW_BOX)
+            {
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f), solidDrawType);
+            }
+        }
+    }
 }
 
 void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
@@ -235,22 +189,23 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
 	{
 		Clear();
 
-		auto count = newSelection.Size();
-		for (decltype(count) i = 0; i < count; ++i)
-		{
-			auto entity = newSelection.GetEntity(i);
-			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
-			{
-				curSelections.Add(entity, GetSelectionAABox(entity));
-				selectionHasChanges = true;
-			}
-		}
+        DAVA::uint32 count = newSelection.Size();
+        for (DAVA::uint32 i = 0; i < count; ++i)
+        {
+            auto entity = newSelection.GetEntity(i);
+            if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+            {
+                curSelections.Add(entity, GetSelectionAABox(entity));
+                selectionHasChanges = true;
+            }
+        }
 
-		if (selectionHasChanges)
-		{
+        if (selectionHasChanges)
+        {
 			invalidSelectionBoxes = true;
-		}
-	}
+            UpdateHoodPos();
+        }
+    }
 }
 
 
@@ -265,7 +220,9 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 		{
 			AddSelection(entity);
 		}
-	}
+
+        UpdateHoodPos();
+    }
 }
 
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
@@ -281,7 +238,8 @@ void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
             curSelections.Add(selectableItem);
             
             selectionHasChanges = true;
-            
+            UpdateHoodPos();
+
             invalidSelectionBoxes = true;
         }
     }
@@ -305,6 +263,7 @@ void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
                 invalidSelectionBoxes = true;
             }
         }
+        UpdateHoodPos();
     }
 }
 
@@ -329,7 +288,9 @@ void SceneSelectionSystem::RemSelection(DAVA::Entity *entity)
 
 			selectionHasChanges = true;
 		}
-	}
+
+        UpdateHoodPos();
+    }
 }
 
 void SceneSelectionSystem::RemSelection(const EntityGroup& entities)
@@ -347,6 +308,7 @@ void SceneSelectionSystem::RemSelection(const EntityGroup& entities)
                 selectionHasChanges = true;
             }
         }
+        UpdateHoodPos();
     }
 }
 
@@ -363,7 +325,9 @@ void SceneSelectionSystem::Clear()
 
 			selectionHasChanges = true;
 		}
-	}
+
+        UpdateHoodPos();
+    }
 }
 
 EntityGroup SceneSelectionSystem::GetSelection() const
@@ -381,12 +345,12 @@ DAVA::Entity* SceneSelectionSystem::GetSelectionEntity(int index) const
 	return curSelections.GetEntity(index);
 }
 
-bool SceneSelectionSystem::IsEntitySelected(DAVA::Entity *entity)
+bool SceneSelectionSystem::IsEntitySelected(Entity* entity)
 {
     return curSelections.ContainsEntity(entity);
 }
 
-bool SceneSelectionSystem::IsEntitySelectedHierarchically(DAVA::Entity *entity)
+bool SceneSelectionSystem::IsEntitySelectedHierarchically(Entity* entity)
 {
     while (entity)
     {
@@ -418,6 +382,41 @@ ST_PivotPoint SceneSelectionSystem::GetPivotPoint() const
 void SceneSelectionSystem::SetLocked(bool lock)
 {
 	SceneSystem::SetLocked(lock);
+
+    if (!lock)
+    {
+        UpdateHoodPos();
+    }
+}
+
+void SceneSelectionSystem::UpdateHoodPos() const
+{
+    if (curSelections.Size() > 0)
+    {
+        DAVA::Vector3 p;
+        bool lockHoodModif = false;
+
+        switch (curPivotPoint)
+        {
+        case ST_PIVOT_ENTITY_CENTER:
+            p = curSelections.GetZeroPos(0);
+            break;
+        default:
+            p = curSelections.GetCommonZeroPos();
+            break;
+        }
+
+        // check if we have locked entities in selection group
+        // if so - lock modification hood
+        for (size_t i = 0; i < curSelections.Size(); ++i)
+        {
+            if (curSelections.GetEntity(i)->GetLocked())
+            {
+                lockHoodModif = true;
+                break;
+            }
+        }
+    }
 }
 
 EntityGroup SceneSelectionSystem::GetSelecetableFromCollision(const EntityGroup *collisionEntities)
