@@ -63,6 +63,8 @@ class PathComponent;
 class WaypointComponent;
 class EdgeComponent;
 class SnapToLandscapeControllerComponent;
+class StaticOcclusionComponent;
+class StaticOcclusionDebugDrawComponent;
 
 ParticleEffectComponent * GetEffectComponent(const Entity *fromEntity);
 AnimationComponent * GetAnimationComponent(const Entity *fromEntity);
@@ -73,6 +75,8 @@ RenderObject * GetRenderObject(const Entity *fromEntity);
 VegetationRenderObject * GetVegetation(const Entity *fromEntity);
 SpeedTreeObject * GetSpeedTreeObject(const Entity *fromEntity);
 SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity *fromEntity);
+StaticOcclusionComponent* GetStaticOcclusionComponent(const Entity* fromEntity);
+StaticOcclusionDebugDrawComponent* GetStaticOcclusionDebugDrawComponent(const Entity* fromEntity);
 
 Light *GetLight(const Entity *fromEntity);
 LightComponent *GetLightComponent(const Entity *fromEntity);

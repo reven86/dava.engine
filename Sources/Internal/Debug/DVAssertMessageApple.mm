@@ -75,7 +75,7 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 
             // Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.
             UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
-            
+
             long breakButtonIndex = [alert firstOtherButtonIndex];
             
             [alert performSelectorOnMainThread:@selector(showModal) withObject:nil waitUntilDone:YES];
@@ -96,7 +96,7 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
             if (nil == messageBoxPtr)
             {
                 // Create the new alert message and show it.
-				UIDismissionHandlerAlertView* alert =
+                UIDismissionHandlerAlertView* alert =
 					[[[UIDismissionHandlerAlertView alloc] initWithTitle:@"Assert" message:contents
 												   cancelButtonTitle:@"OK" otherButtonTitles: nil] autorelease];
 				messageBoxPtr = alert;
@@ -105,7 +105,7 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
                 }];
             }
         }
-	}
+    }
     
 #endif
     return breakExecution;

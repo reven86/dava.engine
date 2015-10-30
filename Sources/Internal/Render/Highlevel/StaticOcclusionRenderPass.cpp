@@ -25,6 +25,11 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+#include "FileSystem/FileSystem.h"
+#include "Render/Image/Image.h"
+#include "Render/RenderCallbacks.h"
+#include "Render/ShaderCache.h"
 #include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/StaticOcclusionRenderPass.h"
 #include "Render/Highlevel/RenderBatchArray.h"
@@ -33,21 +38,21 @@
 
 namespace DAVA
 {
-static const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024; // / 4;
+const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;
 
-StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName& name)
-    : RenderPass(name)
+StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
 {
-    uint32 sortingFlags = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
+    meshBatchesWithDepthWriteOption.reserve(1024);
+    terrainBatches.reserve(256);
+
+    uint32 sortingFlags = RenderBatchArray::SORT_THIS_FRAME | RenderBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK;
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 
     rhi::Texture::Descriptor descriptor;
 
+    descriptor.isRenderTarget = 1;
     descriptor.width = OCCLUSION_RENDER_TARGET_SIZE;
     descriptor.height = OCCLUSION_RENDER_TARGET_SIZE;
     descriptor.autoGenMipmaps = false;
@@ -55,129 +60,209 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName& name)
     descriptor.format = rhi::TEXTURE_FORMAT_R8G8B8A8;
     colorBuffer = rhi::CreateTexture(descriptor);
 
+    descriptor.isRenderTarget = 0;
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
     depthBuffer = rhi::CreateTexture(descriptor);
 
     passConfig.colorBuffer[0].texture = colorBuffer;
-    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+
     passConfig.depthStencilBuffer.texture = depthBuffer;
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 
     passConfig.viewport.width = OCCLUSION_RENDER_TARGET_SIZE;
     passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE;
+    passConfig.priority = PRIORITY_SERVICE_3D;
+
+    /*
+	 * Create depth states
+	 */
+    rhi::DepthStencilState::Descriptor ds;
+
+    ds.depthWriteEnabled = 0;
+    depthWriteStateState[0] = rhi::AcquireDepthStencilState(ds);
+
+    ds.depthWriteEnabled = 1;
+    depthWriteStateState[1] = rhi::AcquireDepthStencilState(ds);
 }
 
 StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
 {
     rhi::DeleteTexture(colorBuffer);
     rhi::DeleteTexture(depthBuffer);
+    rhi::ReleaseDepthStencilState(depthWriteStateState[0]);
+    rhi::ReleaseDepthStencilState(depthWriteStateState[1]);
 }
 
-bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const RenderBatch *  b)
+#if (SAVE_OCCLUSION_IMAGES)
+
+rhi::HTexture sharedColorBuffer = rhi::HTexture(rhi::InvalidHandle);
+Map<rhi::HSyncObject, String> renderPassFileNames;
+
+void OnOcclusionRenderPassCompleted(rhi::HSyncObject syncObj)
 {
-    return a->layerSortingKey < b->layerSortingKey;
+    DVASSERT(renderPassFileNames.count(syncObj) > 0);
+    DVASSERT(sharedColorBuffer != rhi::HTexture(rhi::InvalidHandle));
+
+    void* data = rhi::MapTexture(sharedColorBuffer, 0);
+
+    Image* img = Image::CreateFromData(OCCLUSION_RENDER_TARGET_SIZE_X, OCCLUSION_RENDER_TARGET_SIZE_Y,
+                                       PixelFormat::FORMAT_RGBA8888, reinterpret_cast<uint8*>(data));
+    img->Save(renderPassFileNames.at(syncObj));
+    SafeRelease(img);
+
+    rhi::UnmapTexture(sharedColorBuffer);
+    rhi::DeleteSyncObject(syncObj);
 }
+#endif
 
-void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera, StaticOcclusionFrameResult& target)
+bool StaticOcclusionRenderPass::ShouldEnableDepthWriteForRenderObject(RenderObject* ro)
 {
-    Camera *mainCamera = occlusionCamera;
-    Camera *drawCamera = occlusionCamera;
-
-    SetupCameraParams(mainCamera, drawCamera);
-
-    PrepareVisibilityArrays(mainCamera, renderSystem);
-
-    Vector<RenderBatch*> terrainBatches;
-    Vector<RenderBatch*> batches;
-    
-    terrainBatches.clear();
-    batches.clear();
-
-    uint32 size = (uint32)renderLayers.size();
-    for (uint32 k = 0; k < size; ++k)
+    auto it = switchRenderObjects.find(ro);
+    if (it != switchRenderObjects.end())
     {
-        RenderLayer * layer = renderLayers[k];
-        const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+        return it->second;
+    }
 
-        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
-        for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
+    auto count = ro->GetRenderBatchCount();
+    for (uint32 i = 0; i < count; ++i)
+    {
+        int32 switchIndex = -1;
+        int32 lodIndex = -1;
+        ro->GetRenderBatch(i, lodIndex, switchIndex);
+        if (switchIndex > 0)
         {
-            RenderBatch* batch = renderBatchArray.Get(batchIndex);
-            if (batch->GetRenderObject()->GetType() == RenderObject::TYPE_LANDSCAPE)
-            {
-                terrainBatches.push_back(batch);
-            }
-            else
-            {
-                batches.push_back(batch);
-            }
+            switchRenderObjects.insert({ ro, false });
+            return false;
         }
     }
 
-    // Sort
-    Vector3 cameraPosition = mainCamera->GetPosition();
-    
-    size = (uint32)batches.size();
-    for (uint32 k = 0; k < size; ++k)
+    switchRenderObjects.insert({ ro, true });
+    return true;
+}
+
+void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
+                                                   StaticOcclusionFrameResult& target, const StaticOcclusionData& data,
+                                                   uint32 blockIndex)
+{
+    meshBatchesWithDepthWriteOption.clear();
+    terrainBatches.clear();
+
+    ShaderDescriptorCache::ClearDynamicBindigs();
+    SetupCameraParams(occlusionCamera, occlusionCamera);
+    PrepareVisibilityArrays(occlusionCamera, renderSystem);
+
+    std::unordered_set<uint32> invisibleObjects;
+    Vector3 cameraPosition = occlusionCamera->GetPosition();
+
+    for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
     {
-        RenderBatch * batch = batches[k];
-        RenderObject * renderObject = batch->GetRenderObject();
-        Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
-        float realDistance = (position - cameraPosition).Length();
-        uint32 distance = ((uint32)(realDistance * 100.0f));
-        uint32 distanceBits = distance;
-        
-        batch->layerSortingKey = distanceBits;
+        RenderLayer * layer = renderLayers[k];
+        const RenderBatchArray & renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+    
+        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
+        for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
+        {
+            RenderBatch * batch = renderBatchArray.Get(batchIndex);
+            auto renderObject = batch->GetRenderObject();
+            auto objectType = renderObject->GetType();
+
+            if (objectType == RenderObject::TYPE_LANDSCAPE)
+            {
+                terrainBatches.push_back(batch);
+            }
+            else if (objectType != RenderObject::TYPE_PARTICLE_EMTITTER)
+            {
+                bool shouldEnableDepthWrite = ShouldEnableDepthWriteForRenderObject(renderObject);
+                auto option = shouldEnableDepthWrite ? Option_DepthWriteEnabled : Option_DepthWriteDisabled;
+                meshBatchesWithDepthWriteOption.emplace_back(batch, option);
+
+                Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
+                batch->layerSortingKey = ((uint32)((position - cameraPosition).SquareLength() * 100.0f));
+
+                auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
+                bool occlusionIndexIsInvalid = occlusionId == INVALID_STATIC_OCCLUSION_INDEX;
+                bool isAlreadyVisible = occlusionIndexIsInvalid || data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
+                if (!isAlreadyVisible)
+                {
+                    invisibleObjects.insert(occlusionId);
+                }
+            }
+        }
     }
-    std::sort(batches.begin(), batches.end(), CompareFunction);
+        
+    if (invisibleObjects.empty())
+        return;
 
-    rhi::HQueryBuffer queryBuffer = rhi::CreateQueryBuffer(static_cast<uint32>(batches.size()));
+    std::sort(meshBatchesWithDepthWriteOption.begin(), meshBatchesWithDepthWriteOption.end(),
+              [](const RenderBatchWithDepthOption& a, const RenderBatchWithDepthOption& b) { return a.first->layerSortingKey < b.first->layerSortingKey; });
 
-    target.queryBuffer = queryBuffer;
+    target.blockIndex = blockIndex;
+    target.queryBuffer = rhi::CreateQueryBuffer(static_cast<uint32>(meshBatchesWithDepthWriteOption.size()));
+    target.frameRequests.resize(meshBatchesWithDepthWriteOption.size(), nullptr);
 
-    passConfig.queryBuffer = queryBuffer;
+    passConfig.queryBuffer = target.queryBuffer;
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
     rhi::BeginRenderPass(renderPass);
     rhi::BeginPacketList(packetList);
 
-    rhi::Packet packet;
-    size = (uint32)terrainBatches.size();
-    for (uint32 k = 0; k < size; ++k)
+    for (auto batch : terrainBatches)
     {
-        RenderBatch * batch = terrainBatches[k];
-
+        rhi::Packet packet;
         RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(mainCamera);
+        renderObject->BindDynamicParameters(occlusionCamera);
         NMaterial* mat = batch->GetMaterial();
-        DVASSERT(mat); //bad idea to have landscape not staged for occlusion render pass
+        DVASSERT(mat);
         batch->BindGeometryData(packet);
         DVASSERT(packet.primitiveCount);
         mat->BindParams(packet);
+        packet.cullMode = rhi::CULL_NONE;
         rhi::AddPacket(packetList, packet);
     }
 
-    size = (uint32)batches.size();
-    target.frameRequests.resize(size, nullptr);
-    for (uint32 k = 0; k < size; ++k)
+    uint16 k = 0;
+    for (const auto& batch : meshBatchesWithDepthWriteOption)
     {
-        RenderBatch * batch = batches[k];
-        RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(mainCamera);
-        NMaterial* mat = batch->GetMaterial();
-        if (mat)
+        RenderObject* renderObject = batch.first->GetRenderObject();
+        renderObject->BindDynamicParameters(occlusionCamera);
+
+        rhi::Packet packet;
+        batch.first->BindGeometryData(packet);
+        DVASSERT(packet.primitiveCount);
+        batch.first->GetMaterial()->BindParams(packet);
+        if (invisibleObjects.count(renderObject->GetStaticOcclusionIndex()) > 0)
         {
-            batch->BindGeometryData(packet);
-            DVASSERT(packet.primitiveCount);
-            mat->BindParams(packet);
             packet.queryIndex = k;
-            target.frameRequests[k] = renderObject;
-            rhi::AddPacket(packetList, packet);
+            target.frameRequests[packet.queryIndex] = renderObject;
         }
+        packet.cullMode = rhi::CULL_NONE;
+        packet.depthStencilState = depthWriteStateState[batch.second];
+        rhi::AddPacket(packetList, packet);
+        ++k;
     }
+
+#if (SAVE_OCCLUSION_IMAGES)
+    auto syncObj = rhi::CreateSyncObject();
+
+    auto pos = occlusionCamera->GetPosition();
+    auto dir = occlusionCamera->GetDirection();
+    auto folder = DAVA::Format("~doc:/occlusion/block-%03d", blockIndex);
+    FileSystem::Instance()->CreateDirectoryW(FilePath(folder), true);
+    auto fileName = DAVA::Format("/[%d,%d,%d] from (%d,%d,%d).png",
+                                 int32(dir.x), int32(dir.y), int32(dir.z), int32(pos.x), int32(pos.y), int32(pos.z));
+    renderPassFileNames.insert({ syncObj, folder + fileName });
+    sharedColorBuffer = colorBuffer;
+
+    RenderCallbacks::RegisterSyncCallback(syncObj, &OnOcclusionRenderPassCompleted);
+    rhi::EndPacketList(packetList, syncObj);
+    rhi::EndRenderPass(renderPass);
+#else
+
     rhi::EndPacketList(packetList);
     rhi::EndRenderPass(renderPass);
-}
 
+#endif
+}
 };

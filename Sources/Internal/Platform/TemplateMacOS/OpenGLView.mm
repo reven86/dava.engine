@@ -151,9 +151,9 @@ extern void FrameworkMain(int argc, char *argv[]);
 #endif
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
-	
-	sizeChanged = YES;
-	[super reshape];
+
+    sizeChanged = YES;
+    [super reshape];
 }
 
 - (void)userFireTimer: (id)timer
