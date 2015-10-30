@@ -32,7 +32,7 @@
 
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 
 #include "UWPRunner.h"
@@ -81,7 +81,7 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
     PackageOptions out;
 
     CommandLineParser parser;
-    parser.SetArguments(arguments);
+    parser.SetFlags(arguments);
 
     //parse parameters 'arch', 'package', 'profile' and 'dependencies'
     if (parser.IsFlagSet("--arch"))

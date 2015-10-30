@@ -53,10 +53,9 @@ bool SimpleTcpClient::Connect()
 
     const sockaddr* addr = reinterpret_cast<const sockaddr*>(socketEndPoint.CastToSockaddrIn());
 
-    int connectRes = ::connect(socketId, addr, socketEndPoint.Size());
+    int connectRes = ::connect(socketId, addr, static_cast<int>(socketEndPoint.Size()));
     if (!CheckSocketResult(connectRes))
     {
-        LogNetworkError("Failed to connect socket");
         Close();
     }
 

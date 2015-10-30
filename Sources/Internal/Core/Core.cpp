@@ -82,6 +82,10 @@
 #include "Autotesting/AutotestingSystem.h"
 #endif
 
+#ifdef __DAVAENGINE_WIN_UAP__
+#include "Network/Services/NetLogger.h"
+#include "Network/SimpleNetworking/SimpleNetCore.h"
+#endif
 
 #include "Debug/Profiler.h"
 #define PROF__FRAME 0
@@ -199,6 +203,7 @@ void Core::CreateSingletons()
         std::move(netLoggerService), role, endPoint, "RawNetLogger", true);
 
     DVASSERT_MSG(service != nullptr, "Failed to create a NetLogger service");
+    DVASSERT_MSG(false, "");
     
 #endif  // __DAVAENGINE_WIN_UAP__
 

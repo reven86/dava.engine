@@ -75,7 +75,7 @@ size_t SimpleTcpSocket::Send(const char* buf, size_t bufSize)
     if (!IsConnectionEstablished())
         return 0;
 
-    int size = ::send(socketId, buf, bufSize, 0);
+    int size = ::send(socketId, buf, static_cast<int>(bufSize), 0);
     
     if (!CheckSocketResult(size))
     {
@@ -93,7 +93,7 @@ size_t SimpleTcpSocket::Recv(char* buf, size_t bufSize, bool recvAll)
         return 0;
 
     int flags = recvAll ? MSG_WAITALL : 0;
-    int size = ::recv(socketId, buf, bufSize, flags);
+    int size = ::recv(socketId, buf, static_cast<int>(bufSize), flags);
     
     if (!CheckSocketResult(size))
     {

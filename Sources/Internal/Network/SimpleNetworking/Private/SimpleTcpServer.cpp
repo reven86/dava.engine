@@ -86,7 +86,7 @@ bool SimpleTcpServer::Bind()
 {
     const sockaddr* addr = reinterpret_cast<const sockaddr*>(socketEndPoint.CastToSockaddrIn());
 
-    int bindRes = ::bind(socketId, addr, socketEndPoint.Size());
+    int bindRes = ::bind(socketId, addr, static_cast<int>(socketEndPoint.Size()));
     if (!CheckSocketResult(bindRes))
     {
         Close();
