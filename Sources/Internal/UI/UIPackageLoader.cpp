@@ -216,45 +216,54 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractU
             
             for (const auto& propertyIter : propertiesSectionIter->second->AsMap())
             {
-                uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
-                const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
-                if (!propertyDescr.targetMembers.empty())
+                FastName propertyName(propertyIter.first);
+                if (propertyDB->IsValidStyleSheetProperty(propertyName))
                 {
-                    const YamlNode *propertyNode = propertyIter.second;
-                    const YamlNode *valueNode = propertyNode;
-                    if (propertyNode->GetType() == YamlNode::TYPE_MAP)
-                        valueNode = propertyNode->Get("value");
-                    
-                    if (valueNode)
+                    uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
+                    const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
+                    if (propertyDescr.memberInfo != nullptr)
                     {
-                        VariantType value(valueNode->AsVariantType(propertyDescr.targetMembers[0].memberInfo));
-                        
-                        UIStyleSheetProperty property{ index, value };
-                        
+                        const YamlNode* propertyNode = propertyIter.second;
+                        const YamlNode* valueNode = propertyNode;
                         if (propertyNode->GetType() == YamlNode::TYPE_MAP)
-                        {
-                            const YamlNode *transitionTime = propertyNode->Get("transitionTime");
-                            if (transitionTime)
-                            {
-                                property.transition = true;
-                                property.transitionTime = transitionTime->AsFloat();
+                            valueNode = propertyNode->Get("value");
 
-                                const YamlNode *transitionFunction = propertyNode->Get("transitionFunction");
-                                if (transitionFunction)
+                        if (valueNode)
+                        {
+                            VariantType value(valueNode->AsVariantType(propertyDescr.memberInfo));
+
+                            UIStyleSheetProperty property{ index, value };
+
+                            if (propertyNode->GetType() == YamlNode::TYPE_MAP)
+                            {
+                                const YamlNode* transitionTime = propertyNode->Get("transitionTime");
+                                if (transitionTime)
                                 {
-                                    int32 transitionFunctionType = Interpolation::LINEAR;
-                                    GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionFunction->AsString().c_str(), transitionFunctionType);
-                                    property.transitionFunction = (Interpolation::FuncType)transitionFunctionType;
+                                    property.transition = true;
+                                    property.transitionTime = transitionTime->AsFloat();
+
+                                    const YamlNode* transitionFunction = propertyNode->Get("transitionFunction");
+                                    if (transitionFunction)
+                                    {
+                                        int32 transitionFunctionType = Interpolation::LINEAR;
+                                        GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionFunction->AsString().c_str(), transitionFunctionType);
+                                        property.transitionFunction = (Interpolation::FuncType)transitionFunctionType;
+                                    }
                                 }
                             }
+
+                            propertiesToSet.push_back(property);
                         }
-                        
-                        propertiesToSet.push_back(property);
+                        else
+                        {
+                            DVASSERT(valueNode);
+                        }
                     }
-                    else
-                    {
-                        DVASSERT(valueNode);
-                    }
+                }
+                else
+                {
+                    Logger::Error("Unknown property name: %s", propertyName.c_str());
+                    DVASSERT(false);
                 }
             }
             

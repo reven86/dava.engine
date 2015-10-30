@@ -266,11 +266,11 @@ protected:
 		\brief Called when application is ready to draw the frame
 		In this function you can perform draw. Normally you should draw inside your particular screen but in some cases you can utilize this function when you need to draw something that will work on every screen.
 	 */
-	virtual void Draw();	
-	/**
+    virtual void Draw();
+    /**
 		\brief Called before draw to let you prepare to the rendering
 	 */
-	virtual void BeginFrame();
+    virtual void BeginFrame();
 	/**
 		\brief Called after draw is finished.
 	 */

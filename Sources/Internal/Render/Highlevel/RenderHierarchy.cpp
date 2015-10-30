@@ -64,7 +64,7 @@ namespace DAVA
         Frustum* frustum = camera->GetFrustum();
         uint32 size = static_cast<uint32>(renderObjectArray.size());
         for (uint32 pos = 0; pos < size; ++pos)
-		{
+        {
 			RenderObject * node = renderObjectArray[pos];						
 			if ((node->GetFlags() & visibilityCriteria) != visibilityCriteria)
 				continue;					

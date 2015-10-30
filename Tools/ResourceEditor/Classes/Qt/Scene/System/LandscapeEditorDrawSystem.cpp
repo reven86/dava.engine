@@ -441,7 +441,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
         rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
 
-	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(Entity* landscapeEntity, Landscape* landscape)

@@ -111,10 +111,10 @@ protected:
     int curSizeLevelObject;
 
     EnumMap enumFormats;
-    EnumMap enumSizes;
-    EnumMap enumWpar;
-    EnumMap enumFiltersMin;
-    EnumMap enumFiltersMag;
+	EnumMap enumSizes;
+	EnumMap enumWpar;
+	EnumMap enumFiltersMin;
+	EnumMap enumFiltersMag;
     EnumMap enumFiltersMip;
 
     QMap<int, QSize> availableSizes;

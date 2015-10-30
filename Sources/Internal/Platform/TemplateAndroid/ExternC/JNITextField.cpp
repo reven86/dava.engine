@@ -42,8 +42,8 @@ extern "C"
     }
 
     jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
-	{
-		DAVA::WideString string;
+    {
+        DAVA::WideString string;
 
 		jbyte* bufferPtr = env->GetByteArrayElements(replacementString, NULL);
 		jsize lengthOfArray = env->GetArrayLength(replacementString);
@@ -56,8 +56,8 @@ extern "C"
         DAVA::String returnStr = res ? DAVA::UTF8Utils::EncodeToUTF8(string) : "";
 
         jbyteArray r = env->NewByteArray(returnStr.length());
-		if (r == NULL)
-			return NULL;
+        if (r == NULL)
+            return NULL;
 		env->SetByteArrayRegion(r, 0, returnStr.length(), (const jbyte*)returnStr.c_str());
 		return r;
 	}
@@ -80,8 +80,8 @@ extern "C"
     }
 
     void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
-	{
-	    // Recalculate to virtual coordinates.
+    {
+        // Recalculate to virtual coordinates.
 	    DAVA::Vector2 keyboardOrigin(x, y);
 	    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 
@@ -92,7 +92,7 @@ extern "C"
     }
 
     void Java_com_dava_framework_JNITextField_TextFieldKeyboardHidden(JNIEnv* env, jobject classthis, uint32_t id)
-	{
+    {
         DAVA::TextFieldPlatformImpl::TextFieldKeyboardHidden(id);
     }
 

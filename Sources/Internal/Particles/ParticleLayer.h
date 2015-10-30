@@ -117,12 +117,11 @@ struct ParticleLayer : public BaseObject
     eBlending blending;
     bool enableFog;
     bool enableFrameBlend;
-	bool inheritPosition;  //for super emitter - if true the whole emitter would be moved, otherwise just emission point	
-	
-	bool isDisabled;	
+    bool inheritPosition; //for super emitter - if true the whole emitter would be moved, otherwise just emission point
 
-	
-	Vector<bool> activeLODS;		
+    bool isDisabled;
+
+    Vector<bool> activeLODS;		
 
 	String			layerName;
 
@@ -198,7 +197,7 @@ private:
     static const LayerTypeNamesInfo layerTypeNamesInfoMap[];
 
     void FillSizeOverlifeXY(RefPtr<PropertyLine<float32>> sizeOverLife);
-    void UpdateSizeLine(PropertyLine<Vector2> *line, bool rescaleSize, bool swapXY); //conversion from old format
+    void UpdateSizeLine(PropertyLine<Vector2>* line, bool rescaleSize, bool swapXY); //conversion from old format
 };
 }
 

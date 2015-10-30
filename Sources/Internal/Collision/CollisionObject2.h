@@ -65,13 +65,12 @@ public:
     void DebugDraw();
 
     bool IsCollideWith(CollisionObject2* collObject);
-    ContactManifold2 * GetContactManifold();
-	
+    ContactManifold2* GetContactManifold();
 
-	eType type;
-	
-	Vector2 position;		//	Position of the collision object pivot
-	Vector2 pivot;			//	Shift of the object inside the sprite
+    eType type;
+
+    Vector2 position; //	Position of the collision object pivot
+    Vector2 pivot;			//	Shift of the object inside the sprite
 	Vector2 scale;			//  Current scale
 	float32 angle;			//  Current angle
 
