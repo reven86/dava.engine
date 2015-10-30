@@ -57,8 +57,8 @@ public:
 protected:
     UI3DView* FindFirst3dView(UIControl* control);
 
-    static Sprite * renderTargetPrevScreen;
-	static Sprite * renderTargetNextScreen;
+    static Sprite* renderTargetPrevScreen;
+    static Sprite * renderTargetNextScreen;
 	
 	Interpolation::Func interpolationFunc;
 	float32 currentTime;

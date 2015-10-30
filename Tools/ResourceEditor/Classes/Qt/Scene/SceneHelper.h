@@ -47,9 +47,9 @@ public:
     static void EnumerateSceneTextures(DAVA::Scene* forScene, DAVA::TexturesMap& textures, TexturesEnumerateMode mode);
     static void EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection, TexturesEnumerateMode mode);
 
-    static void EnumerateMaterialInstances(DAVA::Entity *forNode, DAVA::Vector<DAVA::NMaterial *> &materials);
+    static void EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Vector<DAVA::NMaterial*>& materials);
 
-    static DAVA::int32 EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures);
+    static DAVA::int32 EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>>& textures);
 
     static DAVA::Entity * CloneEntityWithMaterials(DAVA::Entity *fromNode);
 

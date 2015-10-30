@@ -96,8 +96,8 @@ uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
         Memcpy(&(data[currentPtr]), pointerToData, dataSize);
         currentPtr += dataSize;
     }
-	
-	return dataSize;
+
+    return dataSize;
 }
 
 uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)

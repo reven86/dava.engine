@@ -73,7 +73,7 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	objectsBroadphase = new btAxisSweep3(worldMin,worldMax);
     objectsDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-	objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
+    objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
 	objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
 
 	landCollConf = new btDefaultCollisionConfiguration();
@@ -81,7 +81,7 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	landBroadphase = new btAxisSweep3(worldMin,worldMax);
     landDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-	landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
+    landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
     landCollWorld->setDebugDrawer(landDebugDrawer);
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
@@ -326,9 +326,9 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 void SceneCollisionSystem::Input(DAVA::UIEvent *event)
 {
 	// don't have to update last mouse pos when event is not from the mouse
-	if (event->phase != UIEvent::PHASE_KEYCHAR && event->phase != UIEvent::PHASE_JOYSTICK)
-	{
-		lastMousePos = event->point;
+    if (UIEvent::Device::MOUSE == event->device)
+    {
+        lastMousePos = event->point;
 	}
 }
 
@@ -336,8 +336,8 @@ void SceneCollisionSystem::Draw()
 {
     RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
 
-    if(drawMode & CS_DRAW_LAND)
-	{
+    if (drawMode & CS_DRAW_LAND)
+    {
 		landCollWorld->debugDrawWorld();
 	}
 
@@ -346,12 +346,12 @@ void SceneCollisionSystem::Draw()
         drawer->DrawLine(lastLandRayFrom, lastLandRayTo, DAVA::Color(0, 1.0f, 0, 1.0f));
     }
 
-	if(drawMode & CS_DRAW_LAND_COLLISION)
+    if(drawMode & CS_DRAW_LAND_COLLISION)
 	{
         drawer->DrawIcosahedron(lastLandCollision, 0.5f, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
     }
 
-	if(drawMode & CS_DRAW_OBJECTS)
+    if(drawMode & CS_DRAW_OBJECTS)
 	{
 		objectsCollWorld->debugDrawWorld();
 	}
@@ -361,7 +361,7 @@ void SceneCollisionSystem::Draw()
         drawer->DrawLine(lastRayFrom, lastRayTo, DAVA::Color(1.0f, 0, 0, 1.0f));
     }
 
-	if(drawMode & CS_DRAW_OBJECTS_SELECTED)
+    if(drawMode & CS_DRAW_OBJECTS_SELECTED)
 	{
 		// current selected entities
 		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;

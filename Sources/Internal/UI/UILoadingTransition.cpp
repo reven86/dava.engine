@@ -120,7 +120,7 @@ void UILoadingTransition::DidAppear()
 {
     if (!thread)
     {
-		thread = Thread::Create(Message(this, &UILoadingTransition::ThreadMessage));
+        thread = Thread::Create(Message(this, &UILoadingTransition::ThreadMessage));
         thread->SetStackSize(LOADING_THREAD_STACK_SIZE);
         thread->Start();
         //        thread->SetPriority(DAVA::Thread::PRIORITY_HIGH);

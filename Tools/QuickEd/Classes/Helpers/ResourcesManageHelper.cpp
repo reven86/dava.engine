@@ -149,7 +149,7 @@ QString ResourcesManageHelper::GetGraphicsFontPath(Font* font)
 			// Save graphics font sprite path
             return QString::fromStdString(fontTexture->GetPathname().GetAbsolutePathname());
         }
-	}
+    }
 
 	return QString();
 }
