@@ -43,7 +43,6 @@ class Camera;
 class StaticOcclusionRenderPass;
 class RenderObject;
 class RenderHierarchy;
-class OcclusionQueryPool;
 class RenderBatch;
 class RenderSystem;
 class Scene;

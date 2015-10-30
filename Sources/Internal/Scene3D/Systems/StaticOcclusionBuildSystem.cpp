@@ -114,7 +114,43 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 e
     }    
 
 }
-    
+
+void StaticOcclusionBuildSystem::PrepareRenderObjects()
+{
+    landscape = nullptr;
+
+    // Prepare render objects
+    Vector<Entity*> sceneEntities;
+    CollectEntitiesForOcclusionRecursively(sceneEntities, GetScene());
+    objectsCount = static_cast<uint32>(sceneEntities.size());
+
+    Vector<RenderObject*> renderObjectsArray;
+    renderObjectsArray.reserve(objectsCount);
+    DVASSERT(renderObjectsArray.size() == 0);
+    for (uint32 k = 0; k < objectsCount; ++k)
+    {
+        RenderObject* renderObject = GetRenderObject(sceneEntities[k]);
+        auto renderObjectType = renderObject->GetType();
+        if ((RenderObject::TYPE_MESH == renderObjectType) || (RenderObject::TYPE_SPEED_TREE == renderObjectType))
+        {
+            renderObjectsArray.push_back(renderObject);
+            renderObject->AddFlag(RenderObject::VISIBLE_STATIC_OCCLUSION);
+        }
+        if (RenderObject::TYPE_LANDSCAPE == renderObjectType)
+        {
+            landscape = static_cast<Landscape*>(renderObject);
+        }
+    }
+
+    GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
+
+    uint16 index = 0;
+    for (auto& ro : renderObjectsArray)
+    {
+        ro->SetStaticOcclusionIndex(index++);
+    }
+}
+
 void StaticOcclusionBuildSystem::Build()
 {
     if (occlusionEntities.empty())
@@ -125,6 +161,7 @@ void StaticOcclusionBuildSystem::Build()
     if (nullptr == staticOcclusion)
         staticOcclusion = new StaticOcclusion();
 
+    PrepareRenderObjects();
     StartBuildOcclusion();
 }
     
@@ -157,40 +194,6 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     //global preparations
     SetCamera(GetScene()->GetCurrentCamera());
 
-    // Prepare render objects
-    Vector<Entity*> sceneEntities;
-    Vector<RenderObject*> renderObjectsArray;
-    Landscape* landscape = nullptr;
-    CollectEntitiesForOcclusionRecursively(sceneEntities, GetScene());
-
-    uint32 size = (uint32)sceneEntities.size();
-    renderObjectsArray.reserve(size);
-    DVASSERT(renderObjectsArray.size() == 0);
-    for (uint32 k = 0; k < size; ++k)
-    {
-        RenderObject* renderObject = GetRenderObject(sceneEntities[k]);
-        auto renderObjectType = renderObject->GetType();
-        if ((RenderObject::TYPE_MESH == renderObjectType) || (RenderObject::TYPE_SPEED_TREE == renderObjectType))
-        {
-            renderObjectsArray.push_back(renderObject);
-            renderObject->AddFlag(RenderObject::VISIBLE_STATIC_OCCLUSION);
-        }
-        if (RenderObject::TYPE_LANDSCAPE == renderObjectType)
-        {
-            landscape = static_cast<Landscape*>(renderObject);
-        }
-    }
-
-    GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
-
-    uint16 index = 0;
-    for (auto& ro : renderObjectsArray)
-    {
-        // if we are going to renew indices they should be cleared prior to it
-        DVASSERT(ro->GetStaticOcclusionIndex() == INVALID_STATIC_OCCLUSION_INDEX);
-        ro->SetStaticOcclusionIndex(index++);
-    }
-
     SceneForceLod(0);
 
     // Prepare occlusion per component
@@ -198,10 +201,12 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
 
     componentInProgress = (StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
     if (componentInProgress)
-    {        
-        // We detach component from system, to let system know that this data is not valid right now. Entity will be removed from system that apply occlusion information.         
+    {
+        // We detach component from system, to let system know that this data is not valid right now.
+        // Entity will be removed from system that apply occlusion information.
         entity->DetachComponent(componentInProgress);
-    }else
+    }
+    else
     {
         componentInProgress = new StaticOcclusionDataComponent();
     }
@@ -214,7 +219,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     localBox.GetTransformedBox(transformComponent->GetWorldTransform(), worldBox);
 
     data.Init(occlusionComponent->GetSubdivisionsX(), occlusionComponent->GetSubdivisionsY(),
-              occlusionComponent->GetSubdivisionsZ(), size, worldBox, occlusionComponent->GetCellHeightOffsets());
+              occlusionComponent->GetSubdivisionsZ(), objectsCount, worldBox, occlusionComponent->GetCellHeightOffsets());
 
     if (nullptr == staticOcclusion)
         staticOcclusion = new StaticOcclusion();

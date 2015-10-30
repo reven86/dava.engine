@@ -37,6 +37,7 @@
 namespace DAVA
 {
 class Camera;
+class Landscape;
 class RenderObject;
 class StaticOcclusion;
 class StaticOcclusionComponent;
@@ -66,7 +67,8 @@ public:
     uint32 GetBuildStatus() const;
     const String& GetBuildStatusInfo() const;
 
-private:            
+private:
+    void PrepareRenderObjects();
     void StartBuildOcclusion();    
     void FinishBuildOcclusion();
 
@@ -76,16 +78,14 @@ private:
     
     void SceneForceLod(int32 layerIndex);
     void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity);
-    
-    Camera * camera;
+
+    Camera* camera = nullptr;
+    Landscape* landscape = nullptr;
     Vector<Entity*> occlusionEntities;
-    StaticOcclusion * staticOcclusion;
-    StaticOcclusionDataComponent * componentInProgress;
-    uint32 activeIndex;    
-    
-#if RHI_COMPLETE
-    Map<NMaterial* , RenderStateData> originalRenderStateData;
-#endif // RHI_COMPLETE
+    StaticOcclusion* staticOcclusion = nullptr;
+    StaticOcclusionDataComponent* componentInProgress = nullptr;
+    uint32 activeIndex = -1;
+    uint32 objectsCount = 0;
 };
    
     
