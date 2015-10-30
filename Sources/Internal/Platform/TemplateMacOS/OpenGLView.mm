@@ -113,8 +113,11 @@ extern void FrameworkMain(int argc, char *argv[]);
 		depth = 16;
 	else if(CFStringCompare(pixEnc, CFSTR(IO8BitIndexedPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
 		depth = 8;
-    
-	return depth;
+
+    CGDisplayModeRelease(mode);
+    CFRelease(pixEnc);
+
+    return depth;
 }
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 

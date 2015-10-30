@@ -896,6 +896,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
         *internalFormat = GL_COMPRESSED_R11_EAC;
@@ -903,6 +904,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11_SIGNED:
         *internalFormat = GL_COMPRESSED_SIGNED_R11_EAC;
@@ -910,6 +912,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED:
         *internalFormat = GL_COMPRESSED_RG11_EAC;
@@ -917,6 +920,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11G11_SIGNED:
         *internalFormat = GL_COMPRESSED_SIGNED_RG11_EAC;
