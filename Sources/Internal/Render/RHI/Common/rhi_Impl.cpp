@@ -74,25 +74,25 @@ void Initialize(Api api, const InitParam& param)
 {
     switch (api)
     {
-#if defined(__DAVAENGINE_WIN32__)
+#if !defined(DAVA_NO_RHI_DX9)
     case RHI_DX9:
         dx9_Initialize(param);
         break;
 #endif
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(DAVA_NO_RHI_DX11)
     case RHI_DX11:
         dx11_Initialize(param);
         break;
 #endif
             
-#if !defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(DAVA_NO_RHI_GLES2)
     case RHI_GLES2:
         gles2_Initialize(param);
         break;
 #endif
 
-#if defined(__DAVAENGINE_IPHONE__)
+#if !defined(DAVA_NO_RHI_METAL)
     case RHI_METAL:
         metal_Initialize(param);
         break;
