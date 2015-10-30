@@ -34,6 +34,8 @@
 
     #include "_metal.h"
 
+#if !defined(TARGET_IPHONE_SIMULATOR)
+
 id<MTLDevice> _Metal_Device = nil;
 id<MTLCommandQueue> _Metal_DefCmdQueue = nil;
 MTLRenderPassDescriptor* _Metal_DefRenderPassDescriptor = nil;
@@ -247,3 +249,5 @@ void metal_Initialize(const InitParam& param)
 }
 
 } // namespace rhi
+
+#endif //#if !defined(TARGET_IPHONE_SIMULATOR)

@@ -37,6 +37,8 @@ using DAVA::Logger;
 
     #include "_metal.h"
 
+#if !defined(TARGET_IPHONE_SIMULATOR)
+
 namespace rhi
 {
 struct
@@ -157,3 +159,5 @@ GetBuffer(Handle vb)
 }
 
 } // namespace rhi
+
+#endif //#if !defined(TARGET_IPHONE_SIMULATOR)

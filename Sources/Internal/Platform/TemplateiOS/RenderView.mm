@@ -35,7 +35,9 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
+#if !defined(TARGET_IPHONE_SIMULATOR)
 #include <QuartzCore/CAMetalLayer.h>
+#endif
 
 #import "Platform/TemplateiOS/RenderView.h"
 
@@ -317,7 +319,11 @@ void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches
 @implementation MetalRenderView
 + (Class)layerClass
 {
+#if !defined(TARGET_IPHONE_SIMULATOR)
     return [CAMetalLayer class];
+#else
+    return [CALayer class];
+#endif
 }
 @end
 
