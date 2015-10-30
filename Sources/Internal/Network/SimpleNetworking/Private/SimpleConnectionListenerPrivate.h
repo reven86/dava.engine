@@ -51,9 +51,10 @@ class ConnectionListenerPrivate
 {
 public:
     ConnectionListenerPrivate(const ConnectionWaitFunction& connWaiter,
-                              const Endpoint& endPoint);
+                              const Endpoint& endPoint,
+                              bool dontReceive);
 
-    ConnectionListenerPrivate(IConnectionPtr& conn);
+    ConnectionListenerPrivate(IConnectionPtr& conn, bool dontReceive);
     ~ConnectionListenerPrivate();
 
     IConnectionPtr GetConnection() const;
@@ -62,10 +63,6 @@ public:
     void AddConnectionCloseCallback(const ConnectionCloseCallback& cb);
 
     void Start();
-
-    void WaitSuccessfulConnection(bool wait) { waitSuccessfulConnection = wait; }
-    bool IsWaitingForSuccessfulConnection() const { return waitSuccessfulConnection.Get(); }
-
 private:
     void Start(const ConnectionWaitFunction& connectionWaiter, const Endpoint& endPoint);
     void Start(IConnectionPtr& conn);
@@ -75,7 +72,7 @@ private:
     ConcurrentList<ConnectionCallback> onConnectCallbacks;
     ConcurrentList<DataReceiveCallback> onDataReceiveCallbacks;
     ConcurrentList<ConnectionCloseCallback> onConnectionCloseCallbacks;
-    Atomic<bool> waitSuccessfulConnection { false };
+    bool dontReceiveData;
 };
 
 }  // namespace Net

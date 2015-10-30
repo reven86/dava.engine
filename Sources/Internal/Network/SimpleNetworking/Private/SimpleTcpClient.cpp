@@ -27,6 +27,10 @@
 =====================================================================================*/
 
 
+#include <WinSock2.h>
+#include <MSWSock.h>
+#include <WS2tcpip.h>
+
 #include "Network/SimpleNetworking/Private/SimpleTcpClient.h"
 #include "Network/SimpleNetworking/Private/LogNetworkError.h"
 
@@ -35,25 +39,29 @@ namespace DAVA
 namespace Net
 {
 
-SimpleTcpClient::SimpleTcpClient(IOPool* ioPoolPtr, const Endpoint& endPoint)
-    : SimpleTcpSocket(ioPoolPtr, endPoint)
+SimpleTcpClient::SimpleTcpClient(const Endpoint& endPoint)
+    : SimpleTcpSocket(endPoint)
 {
 }
 
-bool SimpleTcpClient::Connect(const Function<void(bool)>& cb)
+bool SimpleTcpClient::Connect()
 {
     if (socketId == DV_INVALID_SOCKET)
     {
         return false;
     }
 
-    Function<void(bool)> listenCallback(cb);
-    ioPool->AddConnectOperation(socketId, socketEndPoint, [this, listenCallback]
+    const sockaddr* addr = reinterpret_cast<const sockaddr*>(socketEndPoint.CastToSockaddrIn());
+
+    int connectRes = ::connect(socketId, addr, socketEndPoint.Size());
+    if (!CheckSocketResult(connectRes))
     {
-        connectionEstablished = true;
-        listenCallback(true);
-    });
-    return true;
+        LogNetworkError("Failed to connect socket");
+        Close();
+    }
+
+    connectionEstablished = CheckSocketResult(connectRes);
+    return connectionEstablished;
 }
     
 }  // namespace Net

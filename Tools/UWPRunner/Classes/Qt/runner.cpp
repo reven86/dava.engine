@@ -49,6 +49,8 @@
 #include <QtCore/QStandardPaths>
 #include <QtCore/QLoggingCategory>
 
+#include "ArchiveExtraction.h"
+
 QT_USE_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcWinRtRunner, "qt.winrtrunner")
@@ -60,6 +62,7 @@ public:
     bool isValid;
     QString app;
     QString manifest;
+    QStringList resources;
     QString dependenciesDir;
     QStringList arguments;
     int deviceIndex;
@@ -68,6 +71,11 @@ public:
 
     QString profile;
     QScopedPointer<RunnerEngine> engine;
+
+    ~RunnerPrivate()
+    {
+        ::remove(manifest.toStdString().c_str());
+    }
 };
 
 QMap<QString, QStringList> Runner::deviceNames()
@@ -83,7 +91,7 @@ QMap<QString, QStringList> Runner::deviceNames()
 }
 
 Runner::Runner(const QString &app,
-               const QString &manifest,
+               const QStringList &resources,
                const QString &dependenciesDir,
                const QStringList &arguments,
                const QString &profile,
@@ -93,10 +101,15 @@ Runner::Runner(const QString &app,
     Q_D(Runner);
     d->isValid = false;
     d->app = app;
+    d->resources = resources;
     d->arguments = arguments;
     d->profile = profile;
-    d->manifest = manifest;
     d->dependenciesDir = dependenciesDir;
+
+    DAVA::String manifestFileName = DAVA::GetTempFileName();
+    bool result = DAVA::ExtractFileFromArchive(app.toStdString(), 
+                                               "AppxManifest.xml", manifestFileName);
+    d->manifest = QString::fromStdString(manifestFileName);
 
     bool deviceIndexKnown;
     d->deviceIndex = deviceName.toInt(&deviceIndexKnown);
@@ -146,6 +159,12 @@ bool Runner::isValid() const
 {
     Q_D(const Runner);
     return d->isValid;
+}
+
+QStringList Runner::resources() const
+{
+    Q_D(const Runner);
+    return d->resources;
 }
 
 QString Runner::app() const

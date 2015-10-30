@@ -40,20 +40,25 @@
 using namespace DAVA;
 
 AppxBundleHelper::AppxBundleHelper(const FilePath &fileName)
-    : bundlePackage(fileName)
 {
-    ParseBundleManifest();
+    String dirName = fileName.GetBasename() + "_files/";
+    bundlePackageDir = fileName.GetDirectory() + dirName;
+
+    Logger::Info("Extracting bundle...");
+    bool result = ExtractAllFromArchive(fileName.GetAbsolutePathname(), 
+                                        bundlePackageDir.GetAbsolutePathname());
+
+    DVASSERT_MSG(result, "Failed to extract files from bundle");
+
+    if (result)
+    {
+        ParseBundleManifest();
+    }
 }
 
 AppxBundleHelper::~AppxBundleHelper()
 {
-    FileSystem* fs = FileSystem::Instance();
-
-    for (const auto& package : extractedPackages)
-    {
-        fs->DeleteFileA(package);
-    }
-    extractedPackages.clear();
+    FileSystem::Instance()->DeleteDirectory(bundlePackageDir);
 }
 
 bool AppxBundleHelper::IsBundle(const FilePath &fileName)
@@ -61,70 +66,71 @@ bool AppxBundleHelper::IsBundle(const FilePath &fileName)
     return fileName.GetExtension() == ".appxbundle";
 }
 
-FilePath AppxBundleHelper::ExtractApplication(const String& name)
+FilePath AppxBundleHelper::GetApplication(const String& name)
 {
-    bool packageExist = false;
     for (const auto& packageInfo : storedPackages)
     {
-        if (packageInfo.name == name)
+        if (packageInfo.isApplication && packageInfo.name == name)
         {
-            packageExist = true;
-            break;
+            return packageInfo.path;
         }
     }
-
-    if (!packageExist)
-    {
-        return FilePath();
-    }
-
-    FilePath outPackage = bundlePackage.GetDirectory() + ("extracted_" + name);
-    if (!ExtractFileFromArchive(bundlePackage.GetAbsolutePathname(), 
-                                name, 
-                                outPackage.GetAbsolutePathname()))
-    {
-        DVASSERT_MSG(false, ("Can't extract package " + name).c_str());
-        return FilePath();
-    }
-
-    extractedPackages.insert(outPackage);
-    return outPackage;
+    return FilePath();
 }
 
-FilePath AppxBundleHelper::ExtractApplicationForArchitecture(const String& name)
+FilePath AppxBundleHelper::GetApplicationForArchitecture(const String& name)
 {
     String architecture = name;
     std::transform(architecture.begin(), architecture.end(), architecture.begin(), ::tolower);
 
     for (const auto& packageInfo : storedPackages)
     {
-        if (packageInfo.architecture == architecture)
+        if (packageInfo.isApplication && packageInfo.architecture == architecture)
         {
-            return ExtractApplication(packageInfo.name);
+            return packageInfo.path;
         }
     }
     return FilePath();
 }
 
-const Vector<AppxBundleHelper::PackageInfo>& AppxBundleHelper::GetApplications() const
+const Vector<AppxBundleHelper::PackageInfo>& AppxBundleHelper::GetPackages() const
 {
     return storedPackages;
 }
 
+Vector<AppxBundleHelper::PackageInfo> AppxBundleHelper::GetApplications() const
+{
+    Vector<PackageInfo> applications;
+
+    for (const auto& packageInfo : storedPackages)
+    {
+        if (packageInfo.isApplication)
+        {
+            applications.push_back(packageInfo);
+        }
+    }
+
+    return applications;
+}
+
+Vector<AppxBundleHelper::PackageInfo> AppxBundleHelper::GetResources() const
+{
+    Vector<PackageInfo> resources;
+
+    for (const auto& packageInfo : storedPackages)
+    {
+        if (!packageInfo.isApplication)
+        {
+            resources.push_back(packageInfo);
+        }
+    }
+
+    return resources;
+}
+
 void AppxBundleHelper::ParseBundleManifest()
 {
-    FilePath manifest = GetTempFileName();
-    if (!ExtractFileFromArchive(bundlePackage.GetAbsolutePathname(), 
-                                "AppxMetadata/AppxBundleManifest.xml", 
-                                manifest.GetAbsolutePathname()))
-    {
-        DVASSERT_MSG(false, "Can't extract bundle manifest");
-        return;
-    }
-    SCOPE_EXIT
-    {
-        FileSystem::Instance()->DeleteFileA(manifest);
-    };
+    FilePath manifest = bundlePackageDir + "AppxMetadata/AppxBundleManifest.xml";
 
     QFile file(QString::fromStdString(manifest.GetAbsolutePathname()));
     file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -141,14 +147,15 @@ void AppxBundleHelper::ParseBundleManifest()
 
         QXmlStreamAttributes attributes = xml.attributes();
         PackageInfo packageInfo;
-        bool isApplication = false;
+        packageInfo.architecture = "any";
+        packageInfo.isApplication = false;
             
         for (const auto& attribute : attributes)
         {
             if (attribute.name() == QStringLiteral("Type"))
             {
                 QString value = attribute.value().toString().toLower();
-                isApplication = value == QStringLiteral("application");
+                packageInfo.isApplication = value == QStringLiteral("application");
             }
             else if (attribute.name() == QStringLiteral("Architecture"))
             {
@@ -156,13 +163,11 @@ void AppxBundleHelper::ParseBundleManifest()
             }
             else if (attribute.name() == QStringLiteral("FileName"))
             {
-                packageInfo.name = attribute.value().toString().toStdString();
+                String fileName = attribute.value().toString().toStdString();
+                packageInfo.name = fileName;
+                packageInfo.path = bundlePackageDir + fileName;
             }
         }
-
-        if (isApplication)
-        {
-            storedPackages.emplace_back(std::move(packageInfo));
-        }
+        storedPackages.emplace_back(std::move(packageInfo));
     }
 }

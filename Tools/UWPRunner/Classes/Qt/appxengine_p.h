@@ -72,6 +72,7 @@ public:
 
     QString app;
     QString manifest;
+    QStringList resources;
     QString packageFullName;
     QString packageFamilyName;
     ABI::Windows::System::ProcessorArchitecture packageArchitecture;

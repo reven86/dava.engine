@@ -79,5 +79,15 @@ Endpoint SimpleNetService::GetServiceEndpoint() const
     return pimpl->GetServiceEndpoint();
 }
 
+void SimpleNetService::SetShutdownHandler(const Function<void(NetService*)>& handler) const
+{
+    pimpl->SetShutdownHandler(handler);
+}
+
+void SimpleNetService::Shutdown()
+{
+    pimpl->Shutdown();
+}
+
 }  // namespace Net
 }  // namespace DAVA

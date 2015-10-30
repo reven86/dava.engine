@@ -104,6 +104,7 @@ AppxEngine::AppxEngine(Runner *runner, AppxEnginePrivate *dd)
     d->exitCode = UINT_MAX;
     d->app = runner->app();
     d->manifest = runner->manifest();
+    d->resources = runner->resources();
 
     if (d->manifest.isEmpty()) {
         qCWarning(lcWinRtRunner) << "Unable to determine manifest file from" << runner->app();
@@ -305,6 +306,21 @@ bool AppxEngine::installDependencies()
             << "installing dependency " << name << " from " << dit.filePath();
         if (!installPackage(manifestReader.Get(), dit.filePath())) {
             qCWarning(lcWinRtRunner) << "Failed to install package:" << name;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool AppxEngine::installResources()
+{
+    Q_D(AppxEngine);
+
+    for (const auto& resource : d->resources)
+    {
+        if (!installPackage(nullptr, resource)) {
+            qCWarning(lcWinRtRunner) << "Failed to install resource package:" << resource;
             return false;
         }
     }

@@ -36,23 +36,11 @@ namespace DAVA
 namespace Net
 {
 
-SimpleNetCorePrivate::SimpleNetCorePrivate() 
-    : connectionManager(&ioPool)
-{
-}
-
 SimpleNetCorePrivate::~SimpleNetCorePrivate()
 {
-    ioPool.Execute(IOPool::SendOperation, true);
-    ioPool.CancelAll();
-
+    ShutdownAllServices();
     connectionManager.Shutdown();
     UnregisterAllServices();
-}
-
-void SimpleNetCorePrivate::Run()
-{
-    ioPool.Execute();
 }
 
 const SimpleNetService* SimpleNetCorePrivate::RegisterService(
@@ -60,7 +48,7 @@ const SimpleNetService* SimpleNetCorePrivate::RegisterService(
     IConnectionManager::ConnectionRole role,
     const Endpoint& endPoint,
     const String& serviceName,
-    bool waitSuccessfulConnection)
+    bool sendOnly)
 {
     if (serviceName.empty())
         return nullptr;
@@ -79,8 +67,7 @@ const SimpleNetService* SimpleNetCorePrivate::RegisterService(
     };
 
     //create net service
-    ConnectionListener connListener(connWaiter, endPoint);
-    connListener.WaitSuccessfulConnection(waitSuccessfulConnection);
+    ConnectionListener connListener(connWaiter, endPoint, sendOnly);
     SimpleNetService netService(serviceId, std::forward<std::unique_ptr<NetService>>(service), 
         endPoint, serviceName, std::move(connListener));
 
@@ -105,7 +92,21 @@ bool SimpleNetCorePrivate::IsServiceRegistered(const String& serviceName) const
 
 void SimpleNetCorePrivate::UnregisterAllServices()
 {
+    ShutdownAllServices();
     services.clear();
+}
+
+void SimpleNetCorePrivate::ShutdownAllServices()
+{
+    if (!servicesShutdowned)
+    {
+        for (auto& service : services)
+        {
+            service.second.Shutdown();
+        }
+
+        servicesShutdowned = true;
+    }
 }
 
 const SimpleNetService* SimpleNetCorePrivate::GetService(size_t serviceId) const

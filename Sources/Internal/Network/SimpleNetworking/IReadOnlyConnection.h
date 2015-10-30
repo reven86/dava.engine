@@ -27,10 +27,17 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ICONNECTION_H__
-#define __DAVAENGINE_ICONNECTION_H__
+#ifndef __DAVAENGINE_IREADONLY_CONNECTION_H__
+#define __DAVAENGINE_IREADONLY_CONNECTION_H__
 
-#include "Network/SimpleNetworking/IReadOnlyConnection.h"
+#include <exception>
+#include <memory>
+#include <type_traits>
+
+#include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
+#include "Base/TypeHolders.h"
+#include "Network/Base/Endpoint.h"
 
 namespace DAVA
 {
@@ -40,58 +47,61 @@ namespace Net
 //--------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------
-struct IConnection : public IReadOnlyConnection
+struct IReadOnlyConnection : public RefCounter
 {
-    virtual size_t Write(const char* buffer, size_t bufSize) = 0;
-    virtual size_t WrittenBytesCount() = 0;
+    virtual ~IReadOnlyConnection() {}
+    
+    enum class ChannelState
+    {
+        Disconnected,
+        Connected
+    };
+    virtual ChannelState GetChannelState() = 0;
+    virtual const Endpoint& GetEndpoint() = 0;
+
+    virtual size_t ReadSome(char* buffer, size_t bufSize) = 0;
+    virtual bool ReadAll(char* buffer, size_t bufSize) = 0;
+
+    virtual size_t ReadBytesCount() = 0;
     
     template <typename T>
-    bool Write(const T& value);
-    
-    template <typename CharT>
-    bool Write(const BasicString<CharT>& string);
-    
-    template <typename T>
-    bool Write(const Vector<T>& vect);
+    bool Read(T& value);
+
+    template <typename Container>
+    void Read(Container& container, size_t count);
 };
-using IConnectionPtr = RefPtr<IConnection>;
+using IReadOnlyConnectionPtr = RefPtr<IReadOnlyConnection>;
 
 //--------------------------------------------------------------------------------------------------
-//
+//Implementation of template methods
 //--------------------------------------------------------------------------------------------------
 template <typename T>
-inline bool WriteArrayInConnection(IConnection* connection, const T* array, size_t elements)
+bool IReadOnlyConnection::Read(T& value)
 {
-    const char* data = reinterpret_cast<const char*>(array);
-    size_t len = elements * sizeof(T);
-    size_t wrote = connection->Write(data, len);
-    
-    return wrote == len;
+    return ReadAll(reinterpret_cast<char*>(&value), sizeof(T));
 }
 
-template <typename T>
-bool IConnection::Write(const T& value)
+template <typename Container>
+void IReadOnlyConnection::Read(Container& container, size_t count)
 {
-    return WriteArrayInConnection(this, &value, 1);
-}
+    using value_type = typename Container::value_type;
+    static_assert(std::is_pod<value_type>::value, 
+                  "Container::value_type must be POD-type");
 
-template <typename CharT>
-bool IConnection::Write(const BasicString<CharT>& string)
-{
-    //write string with null symbol
-    return WriteArrayInConnection(this, string.c_str(), string.size() + 1);
+    value_type val;
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        if (!Read(val))
+        {
+            throw std::logic_error("IReadOnlyChannel::read: unable to read data");
+        }
+        container.emplace_back(std::move(val));
+    }
 }
-    
-template <typename T>
-bool IConnection::Write(const Vector<T>& vect)
-{
-    static_assert(std::is_pod<T>::value, 
-                  "Vector::value_type must be POD-type");
-                  
-    return WriteArrayInConnection(this, vect.data(), vect.size());
-}
+//--------------------------------------------------------------------------------------------------
 
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_ICONNECTION_H__
+#endif  // __DAVAENGINE_IREADONLY_CONNECTION_H__

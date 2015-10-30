@@ -30,6 +30,7 @@
 #ifndef __DAVAENGINE_SIMPLE_NET_SERVICE_H__
 #define __DAVAENGINE_SIMPLE_NET_SERVICE_H__
 
+#include "Functional/Function.h"
 #include "Network/NetService.h"
 #include "Network/SimpleNetworking/SimpleConnectionListener.h"
 
@@ -58,6 +59,9 @@ public:
     String GetServiceName() const;
     size_t GetServiceId() const;
     Endpoint GetServiceEndpoint() const;
+
+    void SetShutdownHandler(const Function<void(NetService*)>& handler) const;
+    void Shutdown();
 
 private:
     std::unique_ptr<class SimpleNetServicePrivate> pimpl;

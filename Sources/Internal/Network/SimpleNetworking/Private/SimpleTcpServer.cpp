@@ -36,12 +36,12 @@ namespace DAVA
 namespace Net
 {
 
-SimpleTcpServer::SimpleTcpServer(IOPool* ioPoolPtr, const Endpoint& endPoint)
-    : SimpleTcpSocket(ioPoolPtr, endPoint)
+SimpleTcpServer::SimpleTcpServer(const Endpoint& endPoint)
+    : SimpleTcpSocket(endPoint)
 {
 }
 
-bool SimpleTcpServer::Listen(const Function<void(bool)>& cb)
+bool SimpleTcpServer::Listen()
 {
     if (socketId == DV_INVALID_SOCKET)
     {
@@ -52,23 +52,33 @@ bool SimpleTcpServer::Listen(const Function<void(bool)>& cb)
     {
         return false;
     }
-
-    Function<void(bool)> listenCallback(cb);
-    auto listener = [this, listenCallback] (socket_t socket)
-    {
-        if (socket == DV_INVALID_SOCKET)
-        {
-            listenCallback(false);
-            return;
-        }
-
-        CloseSocket(socketId);
-        socketId = socket;
-        connectionEstablished = true;
-        listenCallback(true);
-    };
     
-    ioPool->AddListenOperation(socketId, listener);
+    int listenRes = ::listen(socketId, 1);
+    if (!CheckSocketResult(listenRes))
+    {   
+        Close();
+    }
+    
+    return CheckSocketResult(listenRes);
+}
+
+bool SimpleTcpServer::Accept()
+{
+    if (socketId == DV_INVALID_SOCKET)
+    {
+        return false;
+    }
+    
+    socket_t acceptSocket = ::accept(socketId, nullptr, nullptr);
+    if (acceptSocket == DV_INVALID_SOCKET)
+    {
+        return false;
+    }
+    
+    CloseSocket(socketId);
+    socketId = acceptSocket;
+    connectionEstablished = true;
+
     return true;
 }
 

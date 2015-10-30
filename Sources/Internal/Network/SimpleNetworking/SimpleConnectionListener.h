@@ -54,8 +54,10 @@ public:
         ConnectionListening
     };
 
-    ConnectionListener(const ConnectionWaitFunction& connWaiter, const Endpoint& endPoint);
-    ConnectionListener(IConnectionPtr& conn);
+    ConnectionListener(const ConnectionWaitFunction& connWaiter, 
+                       const Endpoint& endPoint, 
+                       bool dontReceive);
+    ConnectionListener(IConnectionPtr& conn, bool dontReceive);
 
     ConnectionListener(const ConnectionListener&) = delete;
     ConnectionListener(ConnectionListener&& other);
@@ -68,9 +70,6 @@ public:
 
     void Start();
     
-    void WaitSuccessfulConnection(bool wait);
-    bool IsWaitingForSuccessfulConnection() const;
-
 private:
     std::unique_ptr<class ConnectionListenerPrivate> pimpl;
 };

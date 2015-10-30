@@ -65,7 +65,7 @@ bool ConfigureIpOverUsb();
 void WaitApp();
 
 void LaunchPackage(const PackageOptions& opt);
-void LaunchPackage(const FilePath& package, const PackageOptions& opt);
+void LaunchAppPackage(const PackageOptions& opt);
 
 String GetCurrentArchitecture();
 QString GetQtWinRTRunnerProfile(const String& profile, const FilePath& manifest);
@@ -85,65 +85,63 @@ void FrameworkDidLaunched()
 
 void LaunchPackage(const PackageOptions& opt)
 {
-    FilePath package = opt.package;
-
     //if package is bundle, extract concrete package from it
-    if (AppxBundleHelper::IsBundle(package))
+    if (!AppxBundleHelper::IsBundle(opt.package))
     {
-        Logger::Instance()->Info("Extracting package from bundle...");
-        AppxBundleHelper bundle(package);
-
-        //try to extract package for specified architecture
-        if (!opt.architecture.empty())
-        {
-            package = bundle.ExtractApplicationForArchitecture(opt.architecture);
-            if (package.IsEmpty())
-            {
-                DVASSERT_MSG(false, "Can't extract package for specified architecture from bundle");
-            }
-        }
-        //try to extract package for current architecture
-        else
-        {
-            package = bundle.ExtractApplicationForArchitecture(GetCurrentArchitecture());
-
-            //try to extract package for any architecture
-            if (package.IsEmpty())
-            {
-                Vector<AppxBundleHelper::PackageInfo> applications = bundle.GetApplications();
-                package = bundle.ExtractApplication(applications.at(0).name);
-            }
-        }
-
-        if (!package.IsEmpty())
-        {
-            LaunchPackage(package, opt);
-        }
+        LaunchAppPackage(opt);
+        return;
     }
+
+    PackageOptions options = opt;
+    FilePath package = opt.package;
+    AppxBundleHelper bundle(package);
+
+    //try to extract package for specified architecture
+    if (!opt.architecture.empty())
+    {
+        package = bundle.GetApplicationForArchitecture(opt.architecture);
+    }
+    //try to extract package for current architecture
     else
     {
-        LaunchPackage(package, opt);
+        package = bundle.GetApplicationForArchitecture(GetCurrentArchitecture());
+
+        //try to extract package for any architecture
+        if (package.IsEmpty())
+        {
+            Vector<AppxBundleHelper::PackageInfo> applications = bundle.GetApplications();
+            package = bundle.GetApplication(applications.at(0).name);
+        }
+    }
+
+    DVASSERT_MSG(!package.IsEmpty(), "Can't extract app package from bundle");
+    if (!package.IsEmpty())
+    {
+        Vector<AppxBundleHelper::PackageInfo> resources = bundle.GetResources();
+        for (const auto& x : resources)
+        {
+            options.resources.push_back(x.path.GetAbsolutePathname());
+        }
+
+        options.package = package.GetAbsolutePathname();
+        LaunchAppPackage(options);
     }
 }
 
-void LaunchPackage(const FilePath& package, const PackageOptions& opt)
+void LaunchAppPackage(const PackageOptions& opt)
 {
     //Extract manifest from package
     Logger::Instance()->Info("Extracting manifest...");
-    FilePath manifest = ExtractManifest(package);
+    FilePath manifest = ExtractManifest(opt.package);
     if (manifest.IsEmpty())
     {
         DVASSERT_MSG(false, "Can't extract manifest file from package");
         return;
     }
 
-    SCOPE_EXIT
-    {
-        FileSystem::Instance()->DeleteFile(manifest);
-    };
-
     //figure out if app should be started on mobile device
     QString profile = GetQtWinRTRunnerProfile(opt.profile, manifest);
+    FileSystem::Instance()->DeleteFile(manifest);
     bool isMobileDevice = profile == QStringLiteral("appxphone");
 
     //Init network
@@ -162,8 +160,15 @@ void LaunchPackage(const FilePath& package, const PackageOptions& opt)
 
     //Create Qt runner
     Logger::Instance()->Info("Preparing to launch...");
-    Runner runner(QString::fromStdString(package.GetAbsolutePathname()),
-                  QString::fromStdString(manifest.GetAbsolutePathname()),
+
+    QStringList resources;
+    for (const auto& x : opt.resources)
+    {
+        resources.push_back(QString::fromStdString(x));
+    }
+
+    Runner runner(QString::fromStdString(opt.package),
+                  resources,
                   QString::fromStdString(opt.dependencies),
                   QStringList(),
                   profile);
@@ -238,7 +243,7 @@ bool InitializeNetwork(bool isMobileDevice, const StringRecv& logReceiver)
 
     Net::SimpleNetCore* netcore = new Net::SimpleNetCore;
     gNetLogger = netcore->RegisterService(
-        std::move(logConsumer), role, endPoint, "RawLogConsumer", isMobileDevice);
+        std::move(logConsumer), role, endPoint, "RawLogConsumer", false);
 
     return gNetLogger != nullptr;
 }

@@ -32,9 +32,9 @@
 
 #include <memory.h>
 
+#include "Concurrency/Atomic.h"
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Functional/Function.h"
 #include "Network/NetService.h"
 #include "Network/Base/Endpoint.h"
 #include "Network/SimpleNetworking/IConnection.h"
@@ -46,18 +46,15 @@ namespace Net
 
 struct IConnectionManager
 {
-    using ConnectionCallback = Function<void(IConnectionPtr)>;
     enum ConnectionRole
     {
         ServerRole = 0x1,
         ClientRole = 0x2
     };
+    virtual IConnectionPtr CreateConnection(ConnectionRole role,
+                                            const Endpoint& endPoint) = 0;
 
-    virtual void CreateConnection(ConnectionRole role, 
-                                  const Endpoint& endPoint,
-                                  const ConnectionCallback& cb) = 0;
-
-    virtual ~IConnectionManager() = default;
+    virtual ~IConnectionManager() {}
 };
 
 class SimpleNetService;
@@ -83,12 +80,12 @@ public:
         IConnectionManager::ConnectionRole role,
         const Endpoint& endPoint,
         const String& serviceName,
-        bool waitSuccessfulConnection = false);
-
-    void UnregisterAllServices();
+        bool sendOnly = false);
 
     const SimpleNetService* GetService(size_t serviceId) const;
     const SimpleNetService* GetService(const String& serviceName) const;
+	
+	Atomic<bool> interruptionFlag;
         
 private:
     std::unique_ptr<class SimpleNetCorePrivate> pimpl;

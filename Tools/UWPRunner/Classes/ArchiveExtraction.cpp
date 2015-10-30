@@ -46,34 +46,50 @@ String GetTempFileName()
     return tempFilePath.data();
 }
 
-//We don't have any API for working with ZIP, so we use Python for extracting manifest
+//We don't have any API for working with ZIP, so we use Python
 //https://upload.wikimedia.org/wikipedia/ru/7/78/Trollface.svg
-bool ExtractFileFromArchive(const String& zipFile, const String& file, const String& outFile)
+bool RunPythonScript(const String& script)
 {
     FileSystem* fs = FileSystem::Instance();
-    FilePath scriptFilePath(fs->GetCurrentExecutableDirectory(), "extraction.py");
-
-    String script = "import zipfile                         \n"
-                    "zf = zipfile.ZipFile('" +
-    zipFile + "')\n"
-              "data = zf.read('" +
-    file + "')         \n"
-           "file = open('" +
-    outFile + "', 'wb')   \n"
-              "file.write(data)                       \n";
+    FilePath scriptFilePath(fs->GetCurrentExecutableDirectory(), "script.py");
 
     RefPtr<File> scriptFile(File::PureCreate(scriptFilePath, File::CREATE | File::WRITE));
     if (!scriptFile)
         return false;
 
     scriptFile->WriteString(script);
-    //TODO: repcale on Reset
+    //TODO: replace on Reset
     scriptFile = RefPtr<File>();
 
     int res = ::system(("python.exe " + scriptFilePath.GetAbsolutePathname()).c_str());
     fs->DeleteFile(scriptFilePath);
 
     return res == 0;
+}
+
+bool ExtractFileFromArchive(const String& zipFile, const String& file, const String& outFile)
+{
+    FileSystem::Instance()->DeleteFileA(outFile);
+    String outPath = FilePath(outFile).GetDirectory().GetAbsolutePathname();
+    String unzippedFile = (FilePath(outPath) + file).GetAbsolutePathname();
+
+    String script = "import zipfile                                        \n"
+                    "import shutil                                         \n"
+                    "zf = zipfile.ZipFile('" + zipFile + "')               \n"
+                    "zf.extract('" + file + "', '" + outPath + "')         \n"
+                    "shutil.move('" + unzippedFile + "', '" + outFile + "')\n";
+
+    return RunPythonScript(script);
+}
+
+bool ExtractAllFromArchive(const String& zipFile, const String& outPath)
+{
+    FileSystem::Instance()->DeleteDirectory(outPath);
+    String script = "import zipfile                         \n"
+                    "zf = zipfile.ZipFile('" + zipFile + "')\n"
+                    "zf.extractall('" + outPath + "')       \n";
+    
+    return RunPythonScript(script);
 }
 
 }  // namespace DAVA

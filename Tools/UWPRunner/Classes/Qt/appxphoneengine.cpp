@@ -350,7 +350,7 @@ bool AppxPhoneEngine::install(bool removeFirst)
             return false;
     }
 
-    if (!installDependencies())
+    if (!installDependencies() || !installResources())
         return false;
 
     ComPtr<IStream> manifestStream;

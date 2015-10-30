@@ -33,7 +33,6 @@
 #include "Network/SimpleNetworking/SimpleNetCore.h"
 #include "Network/SimpleNetworking/SimpleNetService.h"
 #include "Network/SimpleNetworking/Private/ConnectionManager.h"
-#include "Network/SimpleNetworking/Private/IOPool.h"
 
 namespace DAVA
 {
@@ -43,10 +42,7 @@ namespace Net
 class SimpleNetCorePrivate
 {
 public:
-    SimpleNetCorePrivate();
     ~SimpleNetCorePrivate();
-
-    void Run();
 
     IConnectionManager* GetConnectionManager();
 
@@ -58,18 +54,20 @@ public:
         IConnectionManager::ConnectionRole role,
         const Endpoint& endPoint,
         const String& serviceName,
-        bool waitSuccessfulConnection);
+        bool sendOnly);
 
-    void UnregisterAllServices();
+    void ShutdownAllServices();
 
     const SimpleNetService* GetService(size_t serviceId) const;
     const SimpleNetService* GetService(const String& serviceName) const;
 
 private:
-    IOPool ioPool;
+    void UnregisterAllServices();
+
     ConnectionManager connectionManager;
     Map<size_t, SimpleNetService> services;
     size_t serviceIdGenerator = 1;
+    bool servicesShutdowned = false;
 };
 
 }  // namespace Net

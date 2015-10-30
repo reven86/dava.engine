@@ -36,9 +36,8 @@ namespace DAVA
 namespace Net
 {
 
-SimpleTcpSocket::SimpleTcpSocket(IOPool* ioPoolPtr, const Endpoint& endPoint)
-    : ioPool(ioPoolPtr)
-    , socketEndPoint(endPoint)
+SimpleTcpSocket::SimpleTcpSocket(const Endpoint& endPoint)
+    : socketEndPoint(endPoint)
 {
     socketId = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 }
@@ -71,48 +70,39 @@ bool SimpleTcpSocket::Shutdown()
     return true;
 }
 
-bool SimpleTcpSocket::Send(IOPool::BufferPtr&& buf, size_t bufSize, const IOPool::SendCallback& cb)
+size_t SimpleTcpSocket::Send(const char* buf, size_t bufSize)
 {
     if (!IsConnectionEstablished())
-        return false;
+        return 0;
 
-    IOPool::SendCallback callback(cb);
-    auto sendCallback = [this, callback] (size_t size)
+    int size = ::send(socketId, buf, bufSize, 0);
+    
+    if (!CheckSocketResult(size))
     {
-        if (!CheckSocketResult(static_cast<int>(size)))
-        {
-            Close();
-            callback(0);
-            return;
-        }
+        Close();
 
-        callback(size);
-    };
-
-    ioPool->AddSendOperation(socketId, std::move(buf), bufSize, sendCallback);
-    return true;
+        return 0;
+    }
+    
+    return static_cast<size_t>(size);
 }
 
-bool SimpleTcpSocket::Recv(const IOPool::RecvCallback& cb, size_t* recvBytesCount)
+size_t SimpleTcpSocket::Recv(char* buf, size_t bufSize, bool recvAll)
 {
     if (!IsConnectionEstablished())
-        return false;
+        return 0;
 
-    IOPool::RecvCallback callback(cb);
-    auto sendCallback = [this, callback](const char* buf, size_t size)
+    int flags = recvAll ? MSG_WAITALL : 0;
+    int size = ::recv(socketId, buf, bufSize, flags);
+    
+    if (!CheckSocketResult(size))
     {
-        if (!CheckSocketResult(static_cast<int>(size)))
-        {
-            Close();
-            callback(nullptr, 0);
-            return;
-        }
+        Close();
 
-        callback(buf, size);
-    };
-
-    ioPool->AddReceiveOperation(socketId, cb, recvBytesCount);
-    return true;
+        return 0;
+    }
+    
+    return static_cast<size_t>(size);
 }
 
 void SimpleTcpSocket::Close()

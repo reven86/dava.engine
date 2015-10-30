@@ -316,6 +316,7 @@ bool AppxLocalEngine::installPackage(IAppxManifestReader *reader, const QString 
 {
     Q_D(const AppxLocalEngine);
     qCDebug(lcWinRtRunner) << __FUNCTION__ << filePath;
+    qCWarning(lcWinRtRunner) << "Installing package:" << filePath;
 
     HRESULT hr;
     if (reader) {
@@ -356,7 +357,9 @@ bool AppxLocalEngine::installPackage(IAppxManifestReader *reader, const QString 
 
     ComPtr<IDeploymentResult> results;
     while ((hr = deploymentOperation->GetResults(&results)) == E_ILLEGAL_METHOD_CALL)
+    {
         Sleep(1);
+    }
 
     HRESULT errorCode;
     hr = results->get_ExtendedErrorCode(&errorCode);
@@ -397,7 +400,9 @@ bool AppxLocalEngine::install(bool removeFirst)
             return true;
     }
 
-    return installDependencies() && installPackage(Q_NULLPTR, d->app);
+    return installDependencies() && 
+           installPackage(Q_NULLPTR, d->app) &&
+           installResources(); //resources must be installed after main package
 }
 
 bool AppxLocalEngine::remove()

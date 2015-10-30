@@ -52,7 +52,7 @@ public:
     static QMap<QString, QStringList> deviceNames();
 
     Runner(const QString &app,
-           const QString &manifest,
+           const QStringList &resources,
            const QString &dependenciesDir,
            const QStringList &arguments,
            const QString &profile = QString(),
@@ -61,6 +61,7 @@ public:
 
     bool isValid() const;
     QString app() const;
+    QStringList resources() const;
     QString profile() const;
     QString manifest() const;
     QString dependenciesDir() const;

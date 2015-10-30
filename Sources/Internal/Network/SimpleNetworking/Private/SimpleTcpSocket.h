@@ -32,7 +32,6 @@
 
 #include "Network/Base/Endpoint.h"
 #include "Network/SimpleNetworking/Private/Common.h"
-#include "Network/SimpleNetworking/Private/IOPool.h"
 #include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
 namespace DAVA
@@ -43,16 +42,14 @@ namespace Net
 class SimpleTcpSocket : public ISimpleAbstractSocket
 {
 public:
-    SimpleTcpSocket(IOPool* ioPoolPtr, const Endpoint& endPoint);
+    SimpleTcpSocket(const Endpoint& endPoint);
     ~SimpleTcpSocket();
     
     const Endpoint& GetEndpoint() override { return socketEndPoint; }
     bool Shutdown() override;
     
-    bool Send(IOPool::BufferPtr&& buf, size_t bufSize, 
-              const IOPool::SendCallback& cb = nullptr) override;
-    bool Recv(const IOPool::RecvCallback& cb, size_t* recvBytesCount = nullptr) override;
-
+    size_t Send(const char* buf, size_t bufSize) override;
+    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
     bool IsConnectionEstablished() override { return connectionEstablished; }
 
     bool IsValid() override { return socketId != DV_INVALID_SOCKET; }
@@ -60,7 +57,6 @@ public:
 protected:
     void Close();
     
-    IOPool* ioPool;
     bool connectionEstablished = false;
     Endpoint socketEndPoint;
     socket_t socketId;

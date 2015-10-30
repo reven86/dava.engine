@@ -654,7 +654,7 @@ void Core::InitializeNetwork()
 
     Net::SimpleNetCore* simpleNetCore = new Net::SimpleNetCore();
     const Net::SimpleNetService* service = simpleNetCore->RegisterService(
-        std::move(netLoggerService), role, endPoint, "RawNetLogger");
+        std::move(netLoggerService), role, endPoint, "RawNetLogger", true);
 
     DVASSERT_MSG(service != nullptr, "Failed to create a NetLogger service");
     

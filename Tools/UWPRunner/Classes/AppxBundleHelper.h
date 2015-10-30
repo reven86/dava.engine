@@ -43,22 +43,26 @@ public:
     {
         String name;
         String architecture;
+        bool isApplication;
+        FilePath path;
     };
 
     AppxBundleHelper(const FilePath &fileName);
     ~AppxBundleHelper();
 
     static bool IsBundle(const FilePath &fileName);
-    const Vector<PackageInfo>& GetApplications() const;
+    const Vector<PackageInfo>& GetPackages() const;
+    Vector<PackageInfo> GetApplications() const;
+    Vector<PackageInfo> GetResources() const;
     
-    FilePath ExtractApplication(const String& name);
-    FilePath ExtractApplicationForArchitecture(const String& name);
+    FilePath GetApplication(const String& name);
+    FilePath GetApplicationForArchitecture(const String& name);
+    FilePath GetResource(const String& name);
 
 private:
     void ParseBundleManifest();
 
-    FilePath bundlePackage;
-    Set<FilePath> extractedPackages;
+    FilePath bundlePackageDir;
     Vector<PackageInfo> storedPackages;
 };
 

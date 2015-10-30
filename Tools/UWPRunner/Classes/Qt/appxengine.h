@@ -62,6 +62,7 @@ protected:
     virtual bool installPackage(IAppxManifestReader *reader, const QString &filePath) = 0;
 
     bool installDependencies();
+    bool installResources();
 
     QScopedPointer<AppxEnginePrivate> d_ptr;
     Q_DECLARE_PRIVATE(AppxEngine)

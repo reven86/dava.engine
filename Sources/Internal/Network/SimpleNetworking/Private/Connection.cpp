@@ -46,7 +46,7 @@ Connection::Connection(const ISimpleAbstractSocketPtr& abstractSocket)
     DVASSERT_MSG(socket, "Socket cannot be empty");
 }
     
-IConnection::ChannelState Connection::GetChannelState()
+IReadOnlyConnection::ChannelState Connection::GetChannelState()
 {
     bool connectionEstablished = socket->IsConnectionEstablished();
     return connectionEstablished ? ChannelState::Connected : ChannelState::Disconnected;
@@ -57,21 +57,44 @@ const Endpoint& Connection::GetEndpoint()
     return socket->GetEndpoint();
 }
 
-bool Connection::Write(const char* buffer, size_t bufSize, const WriteCallback& cb)
+size_t Connection::ReadSome(char* buffer, size_t bufSize)
 {
-    IOPool::BufferPtr buff(buffer);
-    return socket->Send(std::move(buff), bufSize, cb);
+    LockGuard<Mutex> lock(recvMutex);
+
+    size_t read = socket->Recv(buffer, bufSize, false);
+    readBytesCount += read;
+    return read;
 }
 
-bool Connection::ReadSome(const ReadCallback& cb)
+bool Connection::ReadAll(char* buffer, size_t bufSize)
 {
-    return socket->Recv(cb);
+    LockGuard<Mutex> lock(recvMutex);
+
+    size_t read = socket->Recv(buffer, bufSize, true);
+    readBytesCount += read;
+    return read > 0;
 }
 
-bool Connection::ReadAll(size_t bufSize, const ReadCallback& cb)
+size_t Connection::Write(const char* buffer, size_t bufSize)
 {
-    return socket->Recv(cb, &bufSize);
+    LockGuard<Mutex> lock(sendMutex);
+
+    size_t written = socket->Send(buffer, bufSize);
+    writtenBytesCount += written;
+    return written;
 }
 
+size_t Connection::ReadBytesCount()
+{
+    LockGuard<Mutex> lock(recvMutex);
+    return readBytesCount;
+}
+
+size_t Connection::WrittenBytesCount()
+{
+    LockGuard<Mutex> lock(sendMutex);
+    return writtenBytesCount;
+}
+    
 }  // namespace Net
 }  // namespace DAVA

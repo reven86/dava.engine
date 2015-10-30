@@ -44,7 +44,9 @@ void Notify(const Container& container, const Arg&... args)
 }
 
 ConnectionListenerPrivate::ConnectionListenerPrivate(const ConnectionWaitFunction& connWaiter,
-                                                     const Endpoint& endPoint)
+                                                     const Endpoint& endPoint,
+                                                     bool dontReceive)
+    : dontReceiveData(dontReceive)
 {
     ConnectionWaitFunction connWaiterLocal = connWaiter;
     Endpoint endPointLocal = endPoint;
@@ -62,7 +64,8 @@ ConnectionListenerPrivate::~ConnectionListenerPrivate()
     thread->Join();
 }
 
-ConnectionListenerPrivate::ConnectionListenerPrivate(IConnectionPtr& conn)
+ConnectionListenerPrivate::ConnectionListenerPrivate(IConnectionPtr& conn, bool dontReceive)
+    : dontReceiveData(dontReceive)
 {
     auto threadFunc = [this](IConnectionPtr& connection) { Start(connection); };
     thread = RefPtr<Thread>(Thread::Create(std::bind(threadFunc, IConnectionPtr(conn))));
@@ -112,7 +115,7 @@ void ConnectionListenerPrivate::Start(const ConnectionWaitFunction& connectionWa
 
         Thread::Sleep(500);
     }
-    while (waitSuccessfulConnection && !thread->IsCancelling());
+    while (!thread->IsCancelling());
 }
 
 void ConnectionListenerPrivate::Start(IConnectionPtr& conn) 
@@ -120,7 +123,7 @@ void ConnectionListenerPrivate::Start(IConnectionPtr& conn)
     Array<char, 4096> buffer;
 
     while (conn && 
-           conn->GetChannelState() == IConnection::ChannelState::Connected &&
+           conn->GetChannelState() == IReadOnlyConnection::ChannelState::Connected &&
            !thread->IsCancelling())
     {
         size_t read = conn->ReadSome(buffer.data(), buffer.size());
@@ -131,10 +134,6 @@ void ConnectionListenerPrivate::Start(IConnectionPtr& conn)
         Notify(*onDataReceiveCallbacks.GetAccessor(), buf);
     }
 
-    if (conn && (conn->ReadBytesCount() != 0 || conn->WrittenBytesCount() != 0))
-    {
-        waitSuccessfulConnection = false;
-    }
     Notify(*onConnectionCloseCallbacks.GetAccessor());
 }
 

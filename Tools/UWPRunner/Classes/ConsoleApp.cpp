@@ -28,6 +28,7 @@
 
 
 #include <iostream>
+#include <QFileInfo>
 
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
@@ -135,14 +136,14 @@ void ShowUsage()
 
 bool CheckPackageOption(const String& package)
 {
-    FileSystem* fs = FileSystem::Instance();
+    QFileInfo file(QString::fromStdString(package));
 
     if (package.empty())
     {
         std::cout << "Package file is not set";
         return false;
     }
-    else if (!fs->IsFile(package))
+    else if (!file.exists() || !file.isFile())
     {
         std::cout << "Cannot find the specified file: " << package;
         return false;

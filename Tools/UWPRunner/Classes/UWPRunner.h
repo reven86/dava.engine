@@ -35,6 +35,7 @@
 
 using DAVA::String;
 using DAVA::FilePath;
+using DAVA::Vector;
 
 struct PackageOptions
 {
@@ -43,6 +44,7 @@ struct PackageOptions
     String architecture;
     String profile;
     String dependencies;
+    Vector<String> resources;
     bool useTeamCityTestOutput = false;
 };
 
