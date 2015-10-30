@@ -158,9 +158,9 @@ void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffs
     int32 srcPos = 0;
     int32 destPos = sx + sy * GetWidth();
     int32 destPosInc = GetWidth() - img.dx;
-    for (int32 y = 0; y < img.dy; ++y, destPos += destPosInc)
+    for (int32 y = 0; y < image->GetHeight(); ++y, destPos += destPosInc)
     {
-        for (int32 x = 0; x < img.dx; ++x, ++srcPos, ++destPos)
+        for (int32 x = 0; x < image->GetWidth(); ++x, ++srcPos, ++destPos)
         {
             if ((sx + x) < 0)
                 continue;
