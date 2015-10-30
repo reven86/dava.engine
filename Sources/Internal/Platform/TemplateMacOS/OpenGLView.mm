@@ -93,7 +93,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 #endif
 
     activeCursor = 0;
-	
+
     willQuit = false;
 
     return self;
@@ -150,7 +150,7 @@ extern void FrameworkMain(int argc, char *argv[]);
     DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 #endif
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
 	
 	sizeChanged = YES;
 	[super reshape];

@@ -677,7 +677,7 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
 {
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
-		return;
+        return;
 	}
 
     static uint16 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };

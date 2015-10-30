@@ -201,7 +201,7 @@ namespace DAVA
         rendererParams.height = currentMode.height;
 
         clientSize.top = 0;
-		clientSize.left = 0;
+        clientSize.left = 0;
 		clientSize.right = currentMode.width;
 		clientSize.bottom = currentMode.height;
 
@@ -296,7 +296,7 @@ namespace DAVA
             TRACE_END_EVENT(11, "core", "Sleep");
 
             if (willQuit)
-			{	
+            {	
 				break;
 			}
 		}
@@ -377,8 +377,8 @@ namespace DAVA
         return true;
     }
 
-    void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode> & availableDisplayModes)
-	{
+    void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDisplayModes)
+    {
 		availableDisplayModes.clear();
 
 		DWORD iModeNum = 0;

@@ -320,7 +320,7 @@ private:
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
 
-	UIScreen * currentScreen;
+    UIScreen * currentScreen;
 	UIScreen * nextScreen;
 	UIScreen * prevScreen;
 
@@ -345,7 +345,7 @@ private:
     Color clearColor;
 
     friend class UIScreenTransition;
-	friend class UIScreenManager;
+    friend class UIScreenManager;
 };
 };
 

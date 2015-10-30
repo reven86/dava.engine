@@ -77,7 +77,7 @@ protected slots:
 	void OnLodsChanged();
     void OnValueChanged();
     void OnSpriteBtn();
-	void OnSpritePathChanged(const QString& text);
+    void OnSpritePathChanged(const QString& text);
 	
 	void OnPivotPointReset();
     void OnSpriteUpdateTimerExpired();
@@ -100,7 +100,7 @@ private:
 	{
         eBlending blending;
         QString presetName;
-	};
+    };
 
 private:
     static const LayerTypeMap layerTypeMap[];

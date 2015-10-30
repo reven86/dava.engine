@@ -36,8 +36,9 @@
 #include "UI/UIScreenManager.h"
 #import "UIAlertView_Modal.h"
 #import "UIDismissionHandlerAlertView.h"
-#endif
 
+UIDismissionHandlerAlertView* messageBoxPtr = nil;
+#endif
 
 bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
@@ -92,22 +93,20 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 		{
             // if we already open one Alert messagebox skip all new
             // while waiting user click Ok
-			if (NULL == messageBoxPtr)
-			{
-				// Create the new alert message and show it.
+            if (nil == messageBoxPtr)
+            {
+                // Create the new alert message and show it.
 				UIDismissionHandlerAlertView* alert =
 					[[[UIDismissionHandlerAlertView alloc] initWithTitle:@"Assert" message:contents
 												   cancelButtonTitle:@"OK" otherButtonTitles: nil] autorelease];
 				messageBoxPtr = alert;
-				[alert showWithDismissHandler:^(NSInteger selectedIndex, BOOL didCancel)
-				 {
-					 messageBoxPtr = NULL;
-				 }];
-			}
-		}
+                [alert showWithDismissHandler:^(NSInteger selectedIndex, BOOL didCancel) {
+                  messageBoxPtr = nil;
+                }];
+            }
+        }
 	}
     
 #endif
     return breakExecution;
 }
-

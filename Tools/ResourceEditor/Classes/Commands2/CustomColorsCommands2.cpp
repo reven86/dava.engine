@@ -49,7 +49,7 @@ void ActionEnableCustomColors::Redo()
     }
 
     bool enabled = sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
-	if (enabled)
+    if (enabled)
 	{
 		return;
 	}
@@ -100,7 +100,7 @@ void ActionDisableCustomColors::Redo()
     }
 
     bool disabled = !sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
-	if (disabled)
+    if (disabled)
 	{
 		return;
 	}

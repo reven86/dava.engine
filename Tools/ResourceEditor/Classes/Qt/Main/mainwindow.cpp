@@ -412,8 +412,8 @@ DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 {
     // before reloading textures we should save tile-mask texture for all opened scenes
-    if(SaveTilemask())
-	{
+    if (SaveTilemask())
+    {
         SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
         DAVA::Texture::SetDefaultGPU(gpu);
 
@@ -2051,7 +2051,7 @@ void QtMainWindow::OnSaveTiledTexture()
     SceneEditor2* scene = GetCurrentScene();
     if (!IsSavingAllowed() || (nullptr == scene))
     {
-		return;
+        return;
 	}
 
 	LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();

@@ -990,12 +990,12 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
 		uint32 allowed_comp_count = 0;
         if (nullptr != currentNode->GetComponent(Component::TRANSFORM_COMPONENT))
         {
-			allowed_comp_count++;
+            allowed_comp_count++;
 		}
 
         if (nullptr != currentNode->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
         {
-			allowed_comp_count++;
+            allowed_comp_count++;
 		}
 
 		if (currentNode->GetComponentCount() > allowed_comp_count)

@@ -112,6 +112,7 @@ class Scene : public Entity, Observer
 {
 protected:
 	virtual ~Scene();
+
 public:
     enum
     {
@@ -185,7 +186,7 @@ public:
 	RenderSystem * renderSystem;
 	SoundUpdateSystem * soundSystem;
     ActionUpdateSystem* actionSystem;
-    StaticOcclusionSystem * staticOcclusionSystem;
+    StaticOcclusionSystem* staticOcclusionSystem;
     SpeedTreeUpdateSystem* speedTreeUpdateSystem;
     FoliageSystem* foliageSystem;
     VersionInfo::SceneVersion version;
@@ -234,7 +235,7 @@ public:
     Light* GetNearestDynamicLight(Light::eType type, Vector3 position);
 
     void CreateComponents();
-	void CreateSystems();
+    void CreateSystems();
 
 	EventSystem * GetEventSystem() const;
 	RenderSystem * GetRenderSystem() const;
