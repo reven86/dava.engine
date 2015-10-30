@@ -120,7 +120,7 @@ void ClipTest::LoadResources()
     float32 startX = 0.f, startY = 0.f, w = 0.f, h = 0.f;
     w = screenSize.dx * 0.25f;
     h = screenSize.dy * 0.05f;
-    startX = screenSize.dx / 2 - w / 2;
+    startX = screenSize.dx * 0.5f - w * 0.5f;
     startY = h;
     //full-size widget
     defaultRect = DAVA::Rect(0.f, 0.f, static_cast<DAVA::float32>(screenSize.dx), static_cast<DAVA::float32>(screenSize.dy));
@@ -131,7 +131,7 @@ void ClipTest::LoadResources()
     fullSizeWgt->SetClipContents(enableClip);
     fullSizeWgt->SetName("fullSizeWgt");
     AddControl(fullSizeWgt);
-    //
+
     float32 parentX(0.05f * startX), parentY(parentX), parentW(0.6f * startX), parentH(parentW);
     parent1 = new UIControl(DAVA::Rect(parentX, parentY, parentW, parentH));
     parent1->SetDebugDraw(enableDebugDraw);
@@ -139,7 +139,6 @@ void ClipTest::LoadResources()
     parent1->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     parent1->SetClipContents(enableClip);
     parent1->SetName("parent1");
-
     child1 = new UIControl(DAVA::Rect(parentW * 0.5f, parentH * 0.5f, parentW, parentH));
     child1->SetDebugDraw(enableDebugDraw);
     child1->GetBackground()->SetColor(Color(0.1f, 0.f, 0.5f, 1.f));
@@ -148,8 +147,7 @@ void ClipTest::LoadResources()
     child1->SetName("child1");
     parent1->AddControl(child1);
     AddControl(parent1);
-    //
-    //
+
     parentX = screenSize.dx - parentX - parentW;
     parentY += parentH * 0.5f;
     parent2 = new UIControl(DAVA::Rect(parentX, parentY, parentW, parentH));
@@ -158,8 +156,7 @@ void ClipTest::LoadResources()
     parent2->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     parent2->SetClipContents(enableClip);
     parent2->SetName("parent2");
-
-    child2 = new UIControl(DAVA::Rect(-1.f * parentW / 2, -1.f * parentH / 2, parentW, parentH));
+    child2 = new UIControl(DAVA::Rect(-1.f * parentW * 0.5f, -1.f * parentH * 0.5f, parentW, parentH));
     child2->SetDebugDraw(enableDebugDraw);
     child2->GetBackground()->SetColor(Color(0.5f, 0.f, 0.1f, 1.f));
     child2->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
@@ -167,9 +164,6 @@ void ClipTest::LoadResources()
     child2->SetName("child2");
     parent2->AddControl(child2);
     AddControl(parent2);
-    //
-
-
     // button Clip
     clip = new UIButton(DAVA::Rect(startX, startY, w, h));
     clip->SetStateFont(0xFF, font);
@@ -178,7 +172,7 @@ void ClipTest::LoadResources()
     clip->SetStateText(0xFF, L"clip");
     clip->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ClipTest::ClipPressed));
     AddControl(clip);
-    startY += h + h / 2;
+    startY += h + h * 0.5f;
     // button DebugDraw
     debugDraw = new UIButton(DAVA::Rect(startX, startY, w, h));
     debugDraw->SetStateFont(0xFF, font);
@@ -187,7 +181,7 @@ void ClipTest::LoadResources()
     debugDraw->SetStateText(0xFF, L"debugDraw");
     debugDraw->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ClipTest::DebugDrawPressed));
     AddControl(debugDraw);
-    startY += h + h / 2;
+    startY += h + h * 0.5f;
     // button startPos
     startPos = new UIButton(DAVA::Rect(startX, startY, w, h));
     startPos->SetStateFont(0xFF, font);
@@ -196,7 +190,7 @@ void ClipTest::LoadResources()
     startPos->SetStateText(0xFF, L"startPos");
     startPos->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ClipTest::StartPos));
     AddControl(startPos);
-    startY += h + h / 2;
+    startY += h + h * 0.5f;
     // button moveLeft
     moveLeft = new UIButton(DAVA::Rect(startX, startY, w, h));
     moveLeft->SetStateFont(0xFF, font);
@@ -205,7 +199,7 @@ void ClipTest::LoadResources()
     moveLeft->SetStateText(0xFF, L"moveLeft");
     moveLeft->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ClipTest::MoveLeft));
     AddControl(moveLeft);
-    startY += h + h / 2;
+    startY += h + h * 0.5f;
     // button moveRight
     moveRight = new UIButton(DAVA::Rect(startX, startY, w, h));
     moveRight->SetStateFont(0xFF, font);
@@ -214,7 +208,7 @@ void ClipTest::LoadResources()
     moveRight->SetStateText(0xFF, L"moveRight");
     moveRight->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ClipTest::MoveRight));
     AddControl(moveRight);
-    startY += h + h / 2;
+    startY += h + h * 0.5f;
     // button moveUp
     moveUp = new UIButton(DAVA::Rect(startX, startY, w, h));
     moveUp->SetStateFont(0xFF, font);
@@ -223,7 +217,7 @@ void ClipTest::LoadResources()
     moveUp->SetStateText(0xFF, L"moveUp");
     moveUp->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ClipTest::MoveUp));
     AddControl(moveUp);
-    startY += h + h / 2;
+    startY += h + h * 0.5f;
     // button moveDown
     moveDown = new UIButton(DAVA::Rect(startX, startY, w, h));
     moveDown->SetStateFont(0xFF, font);
@@ -233,7 +227,7 @@ void ClipTest::LoadResources()
     moveDown->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &ClipTest::MoveDown));
     AddControl(moveDown);
 
-    fullSizeWgt->Update(0);
+    SafeRelease(font);
     BaseScreen::LoadResources();
 }
 
@@ -242,6 +236,11 @@ void ClipTest::UnloadResources()
     BaseScreen::UnloadResources();
     RemoveAllControls();
     DAVA::SafeRelease(fullSizeWgt);
+    DAVA::SafeRelease(parent1);
+    DAVA::SafeRelease(child1);
+    DAVA::SafeRelease(parent2);
+    DAVA::SafeRelease(child2);
+
     DAVA::SafeRelease(clip);
     DAVA::SafeRelease(debugDraw);
     DAVA::SafeRelease(startPos);
