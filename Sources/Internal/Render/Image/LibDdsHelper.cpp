@@ -56,13 +56,83 @@
     #include <libatc/TextureConverter.h>
 #endif
 
-#define DDS_HEADER_CRC_OFFSET 60 //offset  to 9th element of dwReserved1 array(dds header)
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32)((uint8)(ch0)) | ((uint32)((uint8)(ch1)) << 8) | ((uint32)((uint8)(ch2)) << 16) | ((uint32)((uint8)(ch3)) << 24))
+#define DDS_MAGIC_NUMBER 0x20534444 // equivalent of 'D''D''S'' '
 #define METADATA_CRC_TAG 0x5f435243 // equivalent of 'C''R''C''_'
 
 using namespace nvtt;
 
 namespace DAVA
 {
+namespace DDSFile
+{
+struct DDSPixelFormat
+{
+    uint32 size = 0;
+    uint32 flags = 0;
+    uint32 fourCC = 0;
+    uint32 RGBBitCount = 0;
+    uint32 RBitMask = 0;
+    uint32 GBitMask = 0;
+    uint32 BBitMask = 0;
+    uint32 ABitMask = 0;
+};
+
+struct MetaData //uint32 reserved1[11]
+{
+    uint32 reserved0 = 0;
+    uint32 reserved1 = 0;
+    uint32 reserved2 = 0;
+    uint32 reserved3 = 0;
+    uint32 reserved4 = 0;
+    uint32 reserved5 = 0;
+    uint32 davaPixelFormat = 0;
+    uint32 crcTag = 0;
+    uint32 crcValue = 0;
+    uint32 reserved9 = 0;
+    uint32 reserved10 = 0;
+};
+
+struct Header
+{
+    uint32 size = 0;
+    uint32 flags = 0;
+    uint32 height = 0;
+    uint32 width = 0;
+    uint32 pitchOrLinearSize = 0;
+    uint32 depth = 0;
+    uint32 mipMapCount = 0;
+    MetaData metadata; //uint32 reserved1[11]
+    DDSPixelFormat format;
+    uint32 caps = 0;
+    uint32 caps2 = 0;
+    uint32 caps3 = 0;
+    uint32 caps4 = 0;
+    uint32 reserved2 = 0;
+};
+
+struct FileHeader
+{
+    uint32 magicNumber;
+    Header formatHeader;
+};
+
+FileHeader ReadHeader(File* inFile)
+{
+    FileHeader header;
+    inFile->Seek(0, File::SEEK_FROM_START);
+    uint32 read = inFile->Read(&header);
+    DVVERIFY(read == sizeof(header));
+
+    return header;
+}
+
+bool ISDDSHeader(const FileHeader& header)
+{
+    return header.magicNumber == DDS_MAGIC_NUMBER;
+}
+}
+
 class QualcommHelper
 {
 public:
@@ -492,15 +562,6 @@ uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 
     if (faceIndex >= 0 && faceIndex < 6)
     {
-        /*uint32 preparedMask = nvttFaceDesc >> faceIndex;
-         for(int i = 0; i < 6; ++i)
-         {
-         if(0 == (preparedMask & 1))
-         {
-         faceIndex++;
-         preparedMask = preparedMask >> 1;
-         }
-         }*/
         int bitIndex = 0;
         int faceIdIndex = 0;
         for (int i = 0; i < 6; ++i)
@@ -713,11 +774,8 @@ LibDdsHelper::LibDdsHelper()
 
 bool LibDdsHelper::IsMyImage(File* infile) const
 {
-    nvtt::Decompressor dec;
-
-    bool retValue = NvttHelper::InitDecompressor(dec, infile);
-    infile->Seek(0, File::SEEK_FROM_START);
-    return retValue;
+    DDSFile::FileHeader header = DDSFile::ReadHeader(infile);
+    return DDSFile::ISDDSHeader(header);
 }
 
 eErrorCode LibDdsHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
@@ -777,105 +835,108 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
 
 ImageInfo LibDdsHelper::GetImageInfo(File* infile) const
 {
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, infile))
-    {
-        return ImageInfo();
-    }
+    DDSFile::FileHeader fileHeader = DDSFile::ReadHeader(infile);
 
     ImageInfo info;
-
-    Size2i size = NvttHelper::GetImageSize(dec);
-    info.width = size.dx;
-    info.height = size.dy;
-    info.format = NvttHelper::GetPixelFormat(dec);
-    info.dataSize = NvttHelper::GetDataSize(dec);
-    info.mipmapsCount = NvttHelper::GetMipMapLevelsCount(dec);
+    info.width = fileHeader.formatHeader.width;
+    info.height = fileHeader.formatHeader.height;
+    info.dataSize = 0;
+    info.format = static_cast<PixelFormat>(fileHeader.formatHeader.metadata.davaPixelFormat);
+    if (info.format == FORMAT_INVALID)
+    {
+        nvtt::Decompressor dec;
+        if (!NvttHelper::InitDecompressor(dec, infile))
+        {
+            return ImageInfo();
+        }
+        info.format = NvttHelper::GetPixelFormat(dec);
+    }
+    info.mipmapsCount = fileHeader.formatHeader.mipMapCount;
 
     return info;
 }
 
 bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
 {
-    String fileNameStr = filePathname.GetAbsolutePathname();
-
-    uint32 tag = 0, crc = 0;
-    bool haveCRCTag = GetCRCFromDDSHeader(filePathname, &tag, &crc);
-    if (haveCRCTag)
+    ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
+    if (!ddsFile)
     {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] CRC is already added into %s", fileNameStr.c_str());
-        return false;
-    }
-    else if (crc != 0 || tag != 0)
-    {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] reserved for CRC place is used in %s", fileNameStr.c_str());
+        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] cannot open file %s", filePathname.GetStringValue().c_str());
         return false;
     }
 
-    File* fileRead = File::Create(filePathname, File::READ | File::OPEN);
-    if (!fileRead)
+    DDSFile::FileHeader header = DDSFile::ReadHeader(ddsFile);
+    if (!DDSFile::ISDDSHeader(header))
     {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] cannot open file %s", fileNameStr.c_str());
+        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] is not DDS file %s", filePathname.GetStringValue().c_str());
         return false;
     }
-    uint32 fileSize = fileRead->GetSize();
-    char* fileBuffer = new char[fileSize];
-    if (!fileBuffer)
+
+    if (header.formatHeader.metadata.crcTag == METADATA_CRC_TAG)
     {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot allocate buffer for file data");
-        SafeRelease(fileRead);
+        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] CRC is already added into %s", filePathname.GetStringValue().c_str());
         return false;
     }
-    if (fileRead->Read(fileBuffer, fileSize) != fileSize)
+
+    if (header.formatHeader.metadata.crcTag != 0 || header.formatHeader.metadata.crcValue != 0)
     {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot read from file %s", fileNameStr.c_str());
+        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] reserved for CRC place is used in %s", filePathname.GetStringValue().c_str());
+        return false;
+    }
+
+    const uint32 fileSize = ddsFile->GetSize();
+    char8* fileBuffer = new char8[fileSize];
+    SCOPE_EXIT
+    {
         SafeDeleteArray(fileBuffer);
-        SafeRelease(fileRead);
+    };
+
+    ddsFile->Seek(0, File::SEEK_FROM_START);
+    if (ddsFile->Read(fileBuffer, fileSize) != fileSize)
+    {
+        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot read from file %s", filePathname.GetStringValue().c_str());
         return false;
     }
 
-    SafeRelease(fileRead);
+    ddsFile.reset(); //to close file for reading
 
-    crc = CRC32::ForBuffer(fileBuffer, fileSize);
-    uint32* modificationMetaDataPointer = (uint32*)(fileBuffer + DDS_HEADER_CRC_OFFSET);
-    *modificationMetaDataPointer = METADATA_CRC_TAG;
-    modificationMetaDataPointer++;
-    *modificationMetaDataPointer = crc;
+    DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(fileBuffer);
+    outHeader->formatHeader.metadata.crcTag = METADATA_CRC_TAG;
+    outHeader->formatHeader.metadata.crcValue = CRC32::ForBuffer(fileBuffer, fileSize);
 
-    FilePath tempFile(filePathname.GetAbsolutePathname() + "_");
-
-    File* fileWrite = File::Create(tempFile, File::WRITE | File::CREATE);
-    if (!fileWrite)
+    ddsFile.reset(File::Create(filePathname, File::WRITE | File::CREATE));
+    if (fileSize != ddsFile->Write(fileBuffer, fileSize))
     {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot create file %s",
-                      tempFile.GetAbsolutePathname().c_str());
+        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot write to file %s", filePathname.GetAbsolutePathname().c_str());
         return false;
     }
 
-    bool writeSucces = fileWrite->Write(fileBuffer, fileSize) == fileSize;
-    SafeDeleteArray(fileBuffer);
-    SafeRelease(fileWrite);
-    if (writeSucces)
-    {
-        FileSystem::Instance()->DeleteFile(filePathname);
-        FileSystem::Instance()->MoveFile(tempFile, filePathname, true);
-        return true;
-    }
-    else
-    {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot write to file %s",
-                      tempFile.GetAbsolutePathname().c_str());
-        FileSystem::Instance()->DeleteFile(tempFile);
-        return false;
-    }
+    return true;
 }
 
 uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
 {
-    uint32 tag = 0, crc = 0;
-    bool success = GetCRCFromDDSHeader(filePathname, &tag, &crc);
-    return success ? crc : CRC32::ForFile(filePathname);
+    ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
+    if (!ddsFile)
+    {
+        Logger::Error("[LibDdsHelper::GetCRCFromFile] cannot open file %s", filePathname.GetStringValue().c_str());
+        return false;
+    }
+
+    DDSFile::FileHeader header = DDSFile::ReadHeader(ddsFile);
+    if (!DDSFile::ISDDSHeader(header))
+    {
+        Logger::Error("[LibDdsHelper::GetCRCFromFile] is not DDS file %s", filePathname.GetStringValue().c_str());
+        return false;
+    }
+
+    if (header.formatHeader.metadata.crcTag == METADATA_CRC_TAG)
+    {
+        return header.formatHeader.metadata.crcValue;
+    }
+
+    ddsFile.reset(); //to close file before crc calculation
+    return CRC32::ForFile(filePathname);
 }
 
 eErrorCode LibDdsHelper::ReadFile(File* file, Vector<Image*>& imageSet, int32 baseMipMap, bool forceSoftwareConvertation)
@@ -941,118 +1002,6 @@ bool LibDdsHelper::DecompressImageToRGBA(const Image& image, Vector<Image*>& ima
     return retValue;
 }
 
-uint32 LibDdsHelper::GetMipMapLevelsCount(const FilePath& fileName)
-{
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, fileName))
-    {
-        return 0;
-    }
-
-    return NvttHelper::GetMipMapLevelsCount(dec);
-}
-
-uint32 LibDdsHelper::GetMipMapLevelsCount(File* file)
-{
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, file))
-    {
-        return 0;
-    }
-
-    return NvttHelper::GetMipMapLevelsCount(dec);
-}
-
-PixelFormat LibDdsHelper::GetPixelFormat(const FilePath& fileName)
-{
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, fileName))
-    {
-        return FORMAT_INVALID;
-    }
-
-    return NvttHelper::GetPixelFormat(dec);
-}
-
-PixelFormat LibDdsHelper::GetPixelFormat(File* file)
-{
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, file))
-    {
-        return FORMAT_INVALID;
-    }
-
-    return NvttHelper::GetPixelFormat(dec);
-}
-
-bool LibDdsHelper::GetTextureSize(const FilePath& fileName, uint32& width, uint32& height)
-{
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, fileName))
-    {
-        return false;
-    }
-
-    return NvttHelper::GetTextureSize(dec, width, height);
-}
-
-bool LibDdsHelper::GetTextureSize(File* file, uint32& width, uint32& height)
-{
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, file))
-    {
-        return false;
-    }
-
-    return NvttHelper::GetTextureSize(dec, width, height);
-}
-
-bool LibDdsHelper::GetCRCFromDDSHeader(const FilePath& filePathname, uint32* outputTag, uint32* outputCRC)
-{
-    String fileNameStr = filePathname.GetAbsolutePathname();
-
-    File* fileRead = File::Create(filePathname, File::READ | File::OPEN);
-    if (!fileRead)
-    {
-        return false;
-    }
-
-    if (!ImageSystem::Instance()->GetImageFormatInterface(IMAGE_FORMAT_DDS)->IsMyImage(fileRead))
-    {
-        Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader] file %s isn't a dds one", fileNameStr.c_str());
-        SafeRelease(fileRead);
-        return false;
-    }
-
-    fileRead->Seek(DDS_HEADER_CRC_OFFSET, File::SEEK_FROM_START);
-    uint32 tag = 0;
-    if (fileRead->Read(&tag, sizeof(tag)) != sizeof(tag))
-    {
-        Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader]  cannot read file %s", fileNameStr.c_str());
-        SafeRelease(fileRead);
-        return false;
-    }
-
-    uint32 crc = 0;
-    if (fileRead->Read(&crc, sizeof(crc)) != sizeof(crc))
-    {
-        Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader]  cannot read file %s", fileNameStr.c_str());
-        SafeRelease(fileRead);
-        return false;
-    }
-
-    *outputCRC = crc;
-    *outputTag = tag;
-
-    SafeRelease(fileRead);
-    return tag == METADATA_CRC_TAG;
-}
 
 bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat)
 {
@@ -1164,6 +1113,8 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     File* file = File::Create(fileName, File::CREATE | File::WRITE);
     if (file)
     {
+        DVASSERT(false);
+
         file->Write(header, headerSize);
         file->Write(buffer, bufSize);
         SafeRelease(file);
@@ -1296,6 +1247,7 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
     bool ret = compressor.process(inputOptions, compressionOptions, outputOptions);
     if (ret)
     {
+        DVASSERT(false);
         FileSystem::Instance()->DeleteFile(fileNameOriginal);
         if (!FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true))
         {
@@ -1440,6 +1392,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     File* file = File::Create(fileName, File::CREATE | File::WRITE);
     if (file)
     {
+        DVASSERT(false);
         file->Write(header, headerSize);
         file->Write(buffer, bufSize);
         SafeRelease(file);
