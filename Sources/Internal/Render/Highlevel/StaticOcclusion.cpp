@@ -265,11 +265,11 @@ void StaticOcclusion::ProcessRecorderQueries()
             if (frameResult.frameRequests[i] == nullptr)
                 continue;
 
-            while (!rhi::QueryIsReady(frameResult.queryBuffer, i)) //wait query
+            while (!rhi::QueryIsReady(frameResult.queryBuffer, static_cast<uint32>(i))) //wait query
             {
             }
 
-            if (rhi::QueryValue(frameResult.queryBuffer, i) != 0)
+            if (rhi::QueryValue(frameResult.queryBuffer, static_cast<uint32>(i)) != 0)
                 currentData->EnableVisibilityForObject(frameResult.blockIndex, frameResult.frameRequests[i]->GetStaticOcclusionIndex());
         }
         rhi::DeleteQueryBuffer(frameResult.queryBuffer);

@@ -147,8 +147,8 @@ void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSy
 
 void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, Camera* camera)
 {
-    uint32 size = objectsArray.size();
-    for (uint32 ro = 0; ro < size; ++ro)
+    size_t size = objectsArray.size();
+    for (size_t ro = 0; ro < size; ++ro)
     {
         RenderObject* renderObject = objectsArray[ro];
         if (renderObject->GetFlags() & RenderObject::CUSTOM_PREPARE_TO_RENDER)
@@ -183,8 +183,8 @@ void RenderPass::DrawLayers(Camera *camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, (pointer_size)&rcpViewportSize);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, (pointer_size)&viewportOffset);
 
-    uint32 size = (uint32)renderLayers.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = renderLayers.size();
+    for (size_t k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
