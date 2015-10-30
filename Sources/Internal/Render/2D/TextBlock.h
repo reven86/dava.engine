@@ -43,9 +43,8 @@ namespace DAVA
 
 class TextBlockRender;
 class TextBlockSoftwareRender;
-class TextBlockGraphicsRender;
-class TextBlockDistanceRender;
-    
+class TextBlockGraphicRender;
+
 /**
     \ingroup render_2d
     \brief Class to render text on the screen. 
@@ -126,9 +125,9 @@ public:
 
     TextBlock * Clone();
 
-    const Vector<int32> & GetStringSizes() const;
-    
-    void ForcePrepare(Texture *texture);
+    const Vector<int32>& GetStringSizes();
+        
+
 #if defined(LOCALIZATION_DEBUG)
     int32 GetFittingOptionUsed();
 	bool IsVisualTextCroped();
@@ -147,18 +146,22 @@ public:
     static bool IsBiDiSupportEnabled();
     TextBlockRender* GetRenderer(){ return textBlockRender; }
 
-	void SetAngle(const float _angle);
-	void SetPivot(const Vector2 & _pivot);
+    void SetAngle(const float32 _angle);
+    void SetPivot(const Vector2& _pivot);
+
 protected:
 
 	TextBlock();
-	virtual ~TextBlock();
-	
- 	void Prepare(Texture *texture = NULL);
-	void PrepareInternal();
-	void CalculateCacheParams();
+    TextBlock(const TextBlock& src);
+    virtual ~TextBlock();
 
-	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)
+    void NeedPrepare(Texture* texture = NULL);
+    void PrepareInternal();
+
+    void CalculateCacheParams();
+    void CalculateCacheParamsIfNeed();
+
+    void SetFontInternal(Font* _font);
 
     Vector2 scale;
     Vector2 rectSize;
@@ -185,7 +188,6 @@ protected:
 #endif //LOCALIZATION_DEBUG
     int32 align;
     eUseRtlAlign useRtlAlign;
-    bool isRtl;
 
     Font * font;
     WideString logicalText;
@@ -193,29 +195,99 @@ protected:
     Vector<WideString> multilineStrings;
     Vector<int32> stringSizes;
     
-    Mutex mutex;
-
     bool isMultilineEnabled:1;
     bool isMultilineBySymbolEnabled:1;
     bool isPredrawed:1;
     bool cacheUseJustify:1;
     bool treatMultilineAsSingleLine:1;
 	bool needPrepareInternal:1;
+    bool isRtl : 1;
+    bool needCalculateCacheParams : 1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;
-    friend class TextBlockGraphicsRender;
-    friend class TextBlockDistanceRender;
-    
-    TextBlockRender* textBlockRender;
-    TextureInvalidater *textureInvalidater;
-	Texture *textureForInvalidation;
+    friend class TextBlockGraphicRender;
 
-	float angle;
-	Vector2 pivot;
+    TextBlockRender* textBlockRender;
+
+    float angle;
+    Vector2 pivot;
 };
+
+inline void TextBlock::CalculateCacheParamsIfNeed()
+{
+    if (needCalculateCacheParams)
+    {
+        CalculateCacheParams();
+    }
+}
+
+inline void TextBlock::SetPosition(const Vector2& _position)
+{
+    position = _position;
+}
+
+inline void TextBlock::SetAngle(const float32 _angle)
+{
+    angle = _angle;
+}
+
+inline void TextBlock::SetPivot(const Vector2& _pivot)
+{
+    pivot = _pivot;
+}
+
+inline Font* TextBlock::GetFont()
+{
+    return font;
+}
+
+inline const WideString& TextBlock::GetText()
+{
+    return logicalText;
+}
+
+inline bool TextBlock::GetMultiline()
+{
+    return isMultilineEnabled;
+}
+
+inline bool TextBlock::GetMultilineBySymbol()
+{
+    return isMultilineBySymbolEnabled;
+}
+
+inline int32 TextBlock::GetFittingOption()
+{
+    return fittingType;
+}
+
+inline TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
+{
+    return useRtlAlign;
+}
+
+inline int32 TextBlock::GetAlign()
+{
+    return align;
+}
+
+inline bool TextBlock::IsSpriteReady()
+{
+    return (GetSprite() != nullptr);
+}
+
+inline void TextBlock::SetBiDiSupportEnabled(bool value)
+{
+    isBiDiSupportEnabled = value;
+}
+
+inline bool TextBlock::IsBiDiSupportEnabled()
+{
+    return isBiDiSupportEnabled;
+}
 
 }; //end of namespace
 

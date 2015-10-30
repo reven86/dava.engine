@@ -273,4 +273,6 @@ inline size_t BufferHash(const DAVA::uint8* buffer, DAVA::uint32 bufferLength) D
 }
 };
 
+#define DV_HASH(str) DAVA::StringHash(str)
+
 #endif // __DAVAENGINE_HASH__

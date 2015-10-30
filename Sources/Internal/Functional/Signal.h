@@ -201,7 +201,7 @@ public:
         return ret;
     }
 
-    virtual void Emit(Args&&...) const = 0;
+    virtual void Emit(Args...) = 0;
 
 protected:
     struct ConnData
@@ -247,7 +247,7 @@ public:
     Signal(const Signal &) = delete;
     Signal& operator=(const Signal &) = delete;
 
-    void Emit(Args&&... args) const override
+    void Emit(Args... args) override
     {
         for (auto&& con : Base::connections)
         {
@@ -270,7 +270,7 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
     SignalMt(const SignalMt&) = delete;
     SignalMt& operator=(const SignalMt&) = delete;
 
-    void Emit(Args&&... args) const override
+    void Emit(Args... args) override
     {
         Thread::Id thisTid = Thread::GetCurrentId();
 
@@ -281,7 +281,7 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
             {
                 if (con.second.tid == thisTid)
                 {
-                    con.second.fn(std::forward<Args>(args)...);
+                    con.second.fn(std::move(args)...);
                 }
                 else
                 {

@@ -1,11 +1,12 @@
 <CONFIG>
 uniform sampler2D albedo = 0;
 uniform sampler2D decal = 1;
-uniform sampler2D detail = 1;
 uniform sampler2D lightmap = 1;
 uniform sampler2D decalmask = 1;
+uniform sampler2D alphamask = 1;
 uniform sampler2D vegetationmap = 2
 uniform sampler2D normalmap = 2;
+uniform sampler2D detail = 3;
 uniform sampler2D cubemap = 3;
 uniform sampler2D heightmap = 4;
 uniform sampler2D densitymap = 5;
@@ -53,7 +54,11 @@ const float _PI = 3.141592654;
 // DECLARATIONS
 #if defined(MATERIAL_TEXTURE)
 uniform sampler2D albedo;
+#if defined(TEXTURE0_ANIMATION_SHIFT)
+varying highp vec2 varTexCoord0;
+#else
 varying mediump vec2 varTexCoord0;
+#endif
 #elif defined(MATERIAL_SKYBOX)
 uniform samplerCube cubemap;
 varying mediump vec3 varTexCoord0;
@@ -74,18 +79,28 @@ varying mediump mat3 tbnToWorldMatrix;
 uniform sampler2D decal;
 #endif
 
+#if defined(ALPHA_MASK)
+uniform sampler2D alphamask;
+#endif
+
 #if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS_BLEND)
 uniform sampler2D detail;
 #endif
 
-//#if defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
 #if defined(MATERIAL_LIGHTMAP)
 uniform sampler2D lightmap;
 #endif
 
-//#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY) || defined(FRAME_BLEND)
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(ALPHATESTVALUE)
+uniform lowp float alphatestThreshold;
+#endif
+
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 varying highp vec2 varTexCoord1;
+#endif
+
+#if defined(MATERIAL_DETAIL)
+varying mediump vec2 varDetailTexCoord;
 #endif
 
 #if defined(PIXEL_LIT)
@@ -98,7 +113,7 @@ uniform vec3 metalFresnelReflectance;
 uniform float normalScale;
 #endif
 
-#if defined(TILED_DECAL)
+#if defined(TILED_DECAL_MASK)
 uniform sampler2D decalmask;
 uniform sampler2D decaltexture;
 uniform lowp vec4 decalTileColor;
@@ -191,6 +206,9 @@ void main()
     
 #if defined(PIXEL_LIT) || defined(ALPHATEST) || defined(ALPHABLEND) || defined(VERTEX_LIT)
     lowp vec4 textureColor0 = texture2D(albedo, varTexCoord0);
+    #if defined (ALPHA_MASK)        
+        textureColor0.a *= texture2D(alphamask, varTexCoord1).a;
+    #endif
 #else
     lowp vec3 textureColor0 = texture2D(albedo, varTexCoord0).rgb;
 #endif
@@ -210,32 +228,27 @@ void main()
         #if defined(VERTEX_COLOR)
             alpha *= varVertexColor.a;
         #endif
-        if (alpha < 0.5)discard;
-    #endif
-    #if defined(ALPHATESTVALUE)
-        float alpha = textureColor0.a;
-        #if defined(VERTEX_COLOR)
-            alpha *= varVertexColor.a;
+        #if defined(ALPHATESTVALUE)
+            if (alpha < alphatestThreshold) discard;
+        #else
+            if (alpha < 0.5) discard;
         #endif
-        if (alpha < ALPHATESTVALUE)discard;
     #endif
 #endif
     
 #if defined(MATERIAL_DECAL)
     lowp vec3 textureColor1 = texture2D(decal, varTexCoord1).rgb;
 #endif
-    
-#if defined(MATERIAL_DETAIL)
-    lowp vec3 textureColor1 = texture2D(detail, varTexCoord1).rgb;
-#endif
-    
-    //#if defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
+
 #if defined(MATERIAL_LIGHTMAP)
     lowp vec3 textureColor1 = texture2D(lightmap, varTexCoord1).rgb;
 #endif
     
-    //#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
+#if defined(MATERIAL_DETAIL)
+    lowp vec3 detailTextureColor = texture2D(detail, varDetailTexCoord).rgb;
+#endif
+
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP)
 #if defined(SETUP_LIGHTMAP)
     vec3 lightGray = vec3(0.75, 0.75, 0.75);
     vec3 darkGray = vec3(0.25, 0.25, 0.25);
@@ -284,7 +297,7 @@ void main()
     #endif
 
     #if defined(VIEW_ALBEDO)
-        #if defined(TILED_DECAL)
+        #if defined(TILED_DECAL_MASK)
             lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
             lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
             color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
@@ -313,7 +326,7 @@ void main()
     #endif
         
     #if defined(VIEW_ALBEDO)
-        #if defined(TILED_DECAL)
+        #if defined(TILED_DECAL_MASK)
             lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
             lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
             color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
@@ -440,7 +453,7 @@ void main()
     #endif
     
     #if defined(VIEW_ALBEDO)
-        #if defined(TILED_DECAL)
+        #if defined(TILED_DECAL_MASK)
             lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
             lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
             color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
@@ -456,7 +469,7 @@ void main()
             color += specular * lightColor0;
         #endif
     #endif
-#elif defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_DETAIL)
+#elif defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP)
     vec3 color = vec3(0.0);
     #if defined(VIEW_ALBEDO)
         color = textureColor0.rgb;
@@ -474,6 +487,10 @@ void main()
     vec3 color = vec3(1.0);
 #endif
     
+#if defined(MATERIAL_DETAIL)
+	color *= detailTextureColor.rgb * 2.0;
+#endif
+	
 #if defined(ALPHABLEND) && defined(MATERIAL_TEXTURE)
     gl_FragColor = vec4(color, textureColor0.a);
 #elif defined(MATERIAL_SKYBOX)

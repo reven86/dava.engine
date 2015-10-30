@@ -23,13 +23,13 @@ public class JNIWorkarounds {
                     final JNIActivity activity = JNIActivity.GetActivity();
                     if(activity == null)
                         return;
-                    final JNIGLSurfaceView glView = activity.GetGLView();
-                    if(glView == null)
+                    final JNISurfaceView surfaceView = activity.GetSurfaceView();
+                    if(surfaceView == null)
                         return;
                     
                     Log.d(JNIConst.LOG_TAG, "Reshow GLView");
-                    glView.setVisibility(View.GONE);
-                    glView.setVisibility(View.VISIBLE);
+                    surfaceView.setVisibility(View.GONE);
+                    surfaceView.setVisibility(View.VISIBLE);
                 }
             });
         }

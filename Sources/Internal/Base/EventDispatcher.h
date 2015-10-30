@@ -123,7 +123,8 @@ protected:
 	};
 	
 	List<Event> events;
-    bool eraseLocked;
+    bool eraseLocked = false;
+    int32 eventsCount = 0; // actual events count
 };
 	
 /**

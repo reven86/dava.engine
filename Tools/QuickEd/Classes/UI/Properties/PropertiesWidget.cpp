@@ -75,12 +75,12 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     treeView->addAction(removeAction);
 }
 
-void PropertiesWidget::OnDocumentChanged(Document *arg)
+void PropertiesWidget::OnDocumentChanged(Document* arg)
 {
     document = arg;
 }
 
-void PropertiesWidget::SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected)
+void PropertiesWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     selectionContainer.MergeSelection(selected, deselected);
     UpdateSelection();
@@ -207,13 +207,29 @@ QAction *PropertiesWidget::CreateAddStyleSelectorAction()
 QAction *PropertiesWidget::CreateAddStylePropertyAction()
 {
     QMenu *propertiesMenu = new QMenu(this);
+    QMenu* groupMenu = nullptr;
+    UIStyleSheetPropertyGroup* prevGroup = nullptr;
     UIStyleSheetPropertyDataBase *db = UIStyleSheetPropertyDataBase::Instance();
     for (int32 i = 0; i < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; i++)
     {
         const UIStyleSheetPropertyDescriptor &descr = db->GetStyleSheetPropertyByIndex(i);
+        if (descr.group != prevGroup)
+        {
+            prevGroup = descr.group;
+            if (descr.group->prefix.empty())
+            {
+                groupMenu = propertiesMenu;
+            }
+            else
+            {
+                groupMenu = new QMenu(QString::fromStdString(descr.group->prefix), this);
+                propertiesMenu->addMenu(groupMenu);
+            }
+        }
         QAction *componentAction = new QAction(descr.name.c_str(), this);
         componentAction->setData(i);
-        propertiesMenu->addAction(componentAction);
+
+        groupMenu->addAction(componentAction);
     }
     connect(propertiesMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddStyleProperty);
 

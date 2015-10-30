@@ -151,7 +151,7 @@ void UISpinner::Input(UIEvent *currentInput)
     }
     
     Vector2 touchPos = currentInput->point;
-    if (currentInput->phase == UIEvent::PHASE_BEGAN)
+    if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
         if (content->IsPointInside(touchPos))
         {
@@ -169,7 +169,7 @@ void UISpinner::Input(UIEvent *currentInput)
             dragAnchorX = X_UNDEFINED;
         }    
     }
-    else if (currentInput->phase == UIEvent::PHASE_DRAG)
+    else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
         if (dragAnchorX < X_UNDEFINED)
         {
@@ -200,7 +200,7 @@ void UISpinner::Input(UIEvent *currentInput)
             }
         }
     }
-    else if (currentInput->phase == UIEvent::PHASE_ENDED || currentInput->phase == UIEvent::PHASE_CANCELLED)
+    else if (currentInput->phase == UIEvent::Phase::ENDED || currentInput->phase == UIEvent::Phase::CANCELLED)
     {
         if (dragAnchorX < X_UNDEFINED)
         {
@@ -334,18 +334,6 @@ YamlNode * UISpinner::SaveToYamlNode(UIYamlLoader * loader)
 	return node;
 }
 	
-List<UIControl* > UISpinner::GetSubcontrols()
-{
-	List<UIControl* > subControls;
-
-	// Lookup for the contols by their names.
-	AddControlToList(subControls, UISPINNER_BUTTON_PREVIOUS_NAME);
-	AddControlToList(subControls, UISPINNER_BUTTON_NEXT_NAME);
-	AddControlToList(subControls, UISPINNER_CONTENT_NAME);
-
-	return subControls;
-}
-
 void UISpinner::SetAdapter(SpinnerAdapter * anAdapter)
 {
     buttonNext->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnNextPressed));

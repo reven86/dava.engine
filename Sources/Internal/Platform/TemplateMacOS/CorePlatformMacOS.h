@@ -39,14 +39,11 @@ namespace DAVA
 class CoreMacOSPlatform : public CoreMacOSPlatformBase
 {
 public:
-	virtual eScreenMode GetScreenMode();
-	virtual void SwitchScreenToMode(eScreenMode screenMode); 
-	virtual void ToggleFullscreen();
-	virtual void Quit();
-	
-	virtual Vector2 GetMousePosition();
-	
-	virtual void* GetOpenGLView();
+    eScreenMode GetScreenMode() override;
+    bool SetScreenMode(eScreenMode screenMode) override;
+    void Quit() override;
+
+    virtual Vector2 GetMousePosition();
 };	
 
 };

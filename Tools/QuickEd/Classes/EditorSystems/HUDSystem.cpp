@@ -31,315 +31,116 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
 #include "Base/BaseTypes.h"
-#include "Input/InputSystem.h"
-#include "Input/KeyboardDevice.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
-#include "Render/RenderState.h"
-#include "Render/RenderManager.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
+
+#include "EditorSystems/HUDControls.h"
+#include "EditorSystems/KeyboardProxy.h"
 
 using namespace DAVA;
 
 namespace
 {
-const Vector2 PIVOT_CONTROL_SIZE(20.0f, 20.0f);
-const Vector2 FRAME_RECT_SIZE(15.0f, 15.0f);
-const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
-const Array<HUDAreaInfo::eArea, 2> AreasToHide = {{HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA}};
+const Array<HUDAreaInfo::eArea, 2> AreasToHide = { { HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA } };
 }
 
-class SelectionRect : public UIControl
+ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
 {
-public:
-    enum
+    switch (area)
     {
-        BORDER_TOP,
-        BORDER_BOTTOM,
-        BORDER_LEFT,
-        BORDER_RIGHT,
-        BORDERS_COUNT
-    };
-    explicit SelectionRect()
-        : UIControl()
-    {
-        SetName("Selection Rect");
-        for (uint32 i = 0; i < BORDERS_COUNT; ++i)
-        {
-            UIControl* control = new UIControl();
-            control->SetName("border of selection rect");
-            UIControlBackground* background = control->GetBackground();
-            background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
-            background->SetDrawType(UIControlBackground::DRAW_TILED);
+    case HUDAreaInfo::PIVOT_POINT_AREA:
+        return new PivotPointControl();
+    case HUDAreaInfo::ROTATE_AREA:
+        return new RotateControl();
+    case HUDAreaInfo::TOP_LEFT_AREA:
+    case HUDAreaInfo::TOP_CENTER_AREA:
+    case HUDAreaInfo::TOP_RIGHT_AREA:
+    case HUDAreaInfo::CENTER_LEFT_AREA:
+    case HUDAreaInfo::CENTER_RIGHT_AREA:
+    case HUDAreaInfo::BOTTOM_LEFT_AREA:
+    case HUDAreaInfo::BOTTOM_CENTER_AREA:
+    case HUDAreaInfo::BOTTOM_RIGHT_AREA:
+        return new FrameRectControl(area);
+    case HUDAreaInfo::FRAME_AREA:
 
-            borders.emplace_back(control);
-        }
+        return CreateContainerWithBorders<FrameControl>();
+
+    default:
+        DVASSERT(!"unacceptable value of area");
+        return nullptr;
     }
-
-private:
-    void Draw(const UIGeometricData& geometricData) override
-    {
-        const Rect& rect = geometricData.GetUnrotatedRect();
-        SetAbsoluteRect(rect);
-        for (uint32 i = 0; i < BORDERS_COUNT; ++i)
-        {
-            if (firstInit)
-            {
-                AddControl(borders[i]);
-            }
-            Rect borderRect = CreateFrameBorderRect(i, rect);
-            borders[i]->SetAbsoluteRect(borderRect);
-        }
-        firstInit = false;
-        UIControl::Draw(geometricData);
-    }
-
-    Rect CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
-    {
-        if (frameRect.GetSize().IsZero())
-        {
-            return Rect();
-        }
-        switch (border)
-        {
-        case BORDER_TOP:
-            return Rect(frameRect.x, frameRect.y, frameRect.dx, 1.0f);
-        case BORDER_BOTTOM:
-            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, 1.0f);
-        case BORDER_LEFT:
-            return Rect(frameRect.x, frameRect.y, 1.0f, frameRect.dy);
-        case BORDER_RIGHT:
-            return Rect(frameRect.x + frameRect.dx, frameRect.y, 1.0f, frameRect.dy);
-        default:
-            DVASSERT("!impossible value for frame control position");
-            return Rect();
-        }
-    }
-    bool firstInit = true;
-    Vector<ScopedPtr<UIControl>> borders;
-};
-
-ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
-    : UIControl()
-    , area(area_)
-{
 }
 
-HUDAreaInfo::eArea ControlContainer::GetArea() const
+struct HUDSystem::HUD
 {
-    return area;
-}
-
-class HUDContainer : public ControlContainer
-{
-public:
-    explicit HUDContainer(UIControl* container)
-        : ControlContainer(HUDAreaInfo::NO_AREA)
-        , control(container)
-    {
-        SetName("HudContainer of " + container->GetName());
-    }
-    void AddChild(ControlContainer* container)
-    {
-        AddControl(container);
-        childs.push_back(container);
-    }
-    void InitFromGD(const UIGeometricData& geometricData) override
-    {
-        const Rect& ur = geometricData.GetUnrotatedRect();
-        SetSize(ur.GetSize());
-        SetPivot(control->GetPivot());
-        SetAbsoluteRect(ur);
-        SetAngle(geometricData.angle);
-        for (auto child : childs)
-        {
-            child->InitFromGD(geometricData);
-        }
-    }
-
-    void SystemDraw(const UIGeometricData& geometricData) override
-    {
-        InitFromGD(control->GetGeometricData());
-        UIControl::SystemDraw(geometricData);
-    }
-
-private:
+    HUD(ControlNode* node, UIControl* hudControl);
+    ~HUD();
+    ControlNode* node = nullptr;
     UIControl* control = nullptr;
-    Vector<ControlContainer*> childs;
+    UIControl* hudControl = nullptr;
+    RefPtr<HUDContainer> container;
+    Map<HUDAreaInfo::eArea, RefPtr<UIControl>> hudControls;
 };
 
-class FrameControl : public ControlContainer
+HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
+    : node(node_)
+    , control(node_->GetControl())
+    , hudControl(hudControl_)
+    , container(new HUDContainer(control))
 {
-public:
-    enum
+    container->SetName("Container for HUD controls of node " + node_->GetName());
+    uint32 begin = HUDAreaInfo::AREAS_BEGIN;
+    uint32 end = HUDAreaInfo::AREAS_COUNT;
+    if (node->GetParent() == nullptr || node->GetParent()->GetControl() == nullptr)
     {
-        BORDER_TOP,
-        BORDER_BOTTOM,
-        BORDER_LEFT,
-        BORDER_RIGHT,
-        BORDERS_COUNT
-    };
-    explicit FrameControl()
-        : ControlContainer(HUDAreaInfo::FRAME_AREA)
-    {
-        SetName("Frame Control");
-        for (uint32 i = 0; i < BORDERS_COUNT; ++i)
-        {
-            UIControl* control = new UIControl();
-            control->SetName("border of frame");
-            UIControlBackground* background = control->GetBackground();
-            background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
-            background->SetDrawType(UIControlBackground::DRAW_TILED);
-            borders.emplace_back(control);
-        }
+        begin = HUDAreaInfo::CORNERS_BEGIN;
+        end = HUDAreaInfo::CORNERS_COUNT;
     }
+    for (uint32 i = begin; i < end; ++i)
+    {
+        HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
+        ControlContainer* controlContainer = CreateControlContainer(area);
+        container->AddChild(controlContainer);
+        hudControls[area] = controlContainer;
+    }
+    hudControl->AddControl(container.Get());
+    container->InitFromGD(control->GetGeometricData());
+}
 
-private:
-    void InitFromGD(const UIGeometricData& geometricData) override
-    {
-        const Rect& rect = geometricData.GetUnrotatedRect();
-        SetAbsoluteRect(rect);
-        for (uint32 i = 0; i < BORDERS_COUNT; ++i)
-        {
-            if (firstInit)
-            {
-                GetParent()->AddControl(borders[i]);
-            }
-            Rect borderRect = CreateFrameBorderRect(i, rect);
-            borders[i]->SetAbsoluteRect(borderRect);
-        }
-        firstInit = false;
-    }
-    Rect CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
-    {
-        switch (border)
-        {
-        case BORDER_TOP:
-            return Rect(frameRect.x, frameRect.y, frameRect.dx, 1.0f);
-        case BORDER_BOTTOM:
-            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, 1.0f);
-        case BORDER_LEFT:
-            return Rect(frameRect.x, frameRect.y, 1.0f, frameRect.dy);
-        case BORDER_RIGHT:
-            return Rect(frameRect.x + frameRect.dx, frameRect.y, 1.0f, frameRect.dy);
-        default:
-            DVASSERT("!impossible value for frame control position");
-            return Rect();
-        }
-    }
-    bool firstInit = true;
-    Vector<ScopedPtr<UIControl>> borders;
-};
-
-class FrameRectControl : public ControlContainer
+HUDSystem::HUD::~HUD()
 {
-public:
-    explicit FrameRectControl(const HUDAreaInfo::eArea area_)
-        : ControlContainer(area_)
-    {
-        SetName("Frame Rect Control");
-        background->SetSprite("~res:/Gfx/HUDControls/Rect", 0);
-        background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-    }
-
-private:
-    void InitFromGD(const UIGeometricData& geometricData) override
-    {
-        Rect rect(Vector2(), FRAME_RECT_SIZE);
-        rect.SetCenter(GetPos(geometricData));
-        SetAbsoluteRect(rect);
-    }
-
-    Vector2 GetPos(const UIGeometricData& geometricData) const
-    {
-        Rect rect = geometricData.GetUnrotatedRect();
-        Vector2 retVal = rect.GetPosition();
-        switch (area)
-        {
-        case HUDAreaInfo::TOP_LEFT_AREA:
-            return retVal;
-        case HUDAreaInfo::TOP_CENTER_AREA:
-            return retVal + Vector2(rect.dx / 2.0f, 0.0f);
-        case HUDAreaInfo::TOP_RIGHT_AREA:
-            return retVal + Vector2(rect.dx, 0.0f);
-        case HUDAreaInfo::CENTER_LEFT_AREA:
-            return retVal + Vector2(0, rect.dy / 2.0f);
-        case HUDAreaInfo::CENTER_RIGHT_AREA:
-            return retVal + Vector2(rect.dx, rect.dy / 2.0f);
-        case HUDAreaInfo::BOTTOM_LEFT_AREA:
-            return retVal + Vector2(0, rect.dy);
-        case HUDAreaInfo::BOTTOM_CENTER_AREA:
-            return retVal + Vector2(rect.dx / 2.0f, rect.dy);
-        case HUDAreaInfo::BOTTOM_RIGHT_AREA:
-            return retVal + Vector2(rect.dx, rect.dy);
-        default:
-            DVASSERT(!"wrong area passed to hud control");
-            return Vector2(0.0f, 0.0f);
-        }
-    }
-};
-
-class PivotPointControl : public ControlContainer
-{
-public:
-    explicit PivotPointControl()
-        : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
-    {
-        SetName("pivot point control");
-        background->SetSprite("~res:/Gfx/HUDControls/Pivot", 0);
-        background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
-    }
-
-private:
-    void InitFromGD(const UIGeometricData& geometricData) override
-    {
-        Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
-        const Rect& controlRect = geometricData.GetUnrotatedRect();
-        rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
-        SetAbsoluteRect(rect);
-    }
-};
-
-class RotateControl : public ControlContainer
-{
-public:
-    explicit RotateControl()
-        : ControlContainer(HUDAreaInfo::ROTATE_AREA)
-    {
-        SetName("rotate control");
-        background->SetSprite("~res:/Gfx/HUDControls/Rotate", 2);
-        background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
-    }
-
-private:
-    void InitFromGD(const UIGeometricData& geometricData) override
-    {
-        Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
-        Rect controlRect = geometricData.GetUnrotatedRect();
-        rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
-        SetAbsoluteRect(rect);
-    }
-};
+    hudControl->RemoveControl(container.Get());
+}
 
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , hudControl(new UIControl())
-    , selectionRectControl(new SelectionRect())
+    , selectionRectControl(CreateContainerWithBorders<SelectionRect>())
     , sortedControlList(CompareByLCA)
 {
-    hudControl->AddControl(selectionRectControl);
+    hudControl->AddControl(selectionRectControl.Get());
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
+    systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
+}
+
+HUDSystem::~HUDSystem()
+{
+    systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+}
+
+void HUDSystem::OnActivated()
+{
+    systemManager->GetRootControl()->AddControl(hudControl.Get());
 }
 
 void HUDSystem::OnDeactivated()
 {
-    hudControl->RemoveFromParent();
+    systemManager->GetRootControl()->RemoveControl(hudControl.Get());
     canDrawRect = false;
     selectionRectControl->SetSize(Vector2());
 }
@@ -347,10 +148,6 @@ void HUDSystem::OnDeactivated()
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     selectionContainer.MergeSelection(selected, deselected);
-    if (!editingEnabled)
-    {
-        return;
-    }
     for (auto node : deselected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
@@ -366,13 +163,9 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)
         {
-            PackageBaseNode* parent = controlNode->GetParent();
-
-            if (nullptr != controlNode && nullptr != controlNode->GetControl() && nullptr != parent && nullptr != parent->GetControl())
+            if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                hudMap.emplace(std::piecewise_construct,
-                               std::forward_as_tuple(controlNode),
-                               std::forward_as_tuple(controlNode, hudControl));
+                hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
                 sortedControlList.insert(controlNode);
             }
         }
@@ -385,28 +178,24 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
-    if (!editingEnabled)
-    {
-        return false;
-    }
     switch (currentInput->phase)
     {
-    case UIEvent::PHASE_MOVE:
+    case UIEvent::Phase::MOVE:
         ProcessCursor(currentInput->point);
         return false;
-    case UIEvent::PHASE_BEGAN:
+    case UIEvent::Phase::BEGAN:
     {
         //check that we can draw rect
         Vector<ControlNode*> nodes;
         systemManager->CollectControlNodesByPos(nodes, currentInput->point);
         const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
         bool noHudableControls = nodes.empty() || (nodes.size() == 1 && nodes.front()->GetParent() == packageNode);
-        bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
+        bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         SetCanDrawRect(hotKeyDetected || noHudableControls);
         pressedPoint = currentInput->point;
         return canDrawRect;
     }
-    case UIEvent::PHASE_DRAG:
+    case UIEvent::Phase::DRAG:
         dragRequested = true;
 
         if (canDrawRect)
@@ -423,16 +212,13 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
                 point.y += size.y;
                 size.y *= -1;
             }
-            selectionRectControl->SetAbsoluteRect(Rect(point, size));
+            selectionRectControl->SetRect(Rect(point, size));
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
-    case UIEvent::PHASE_ENDED:
+    case UIEvent::Phase::ENDED:
         ProcessCursor(currentInput->point);
-        if (canDrawRect)
-        {
-            selectionRectControl->SetSize(Vector2());
-        }
+        selectionRectControl->SetSize(Vector2());
         bool retVal = dragRequested;
         SetCanDrawRect(false);
         dragRequested = false;
@@ -443,18 +229,46 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
 
 void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
 {
-    SetEditingEnabled(rootControls.size() == 1);
+    hudVisible = rootControls.size() == 1;
+    UpdateAreasVisibility();
 }
 
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
     if (emulationMode)
     {
-        systemManager->GetRootControl()->RemoveControl(hudControl);
+        systemManager->GetRootControl()->RemoveControl(hudControl.Get());
     }
     else
     {
-        systemManager->GetRootControl()->AddControl(hudControl);
+        systemManager->GetRootControl()->AddControl(hudControl.Get());
+    }
+}
+
+void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
+{
+    static const float32 axtraSizeValue = 50.0f;
+    for (auto& magnetControl : magnetControls)
+    {
+        hudControl->RemoveControl(magnetControl.Get());
+    }
+    magnetControls.clear();
+
+    for (const MagnetLineInfo& line : magnetLines)
+    {
+        MagnetLine* control = new MagnetLine();
+
+        Rect lineRect = line.absoluteRect;
+
+        control->SetRect(lineRect);
+        Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
+        control->SetSize(control->GetSize() + extraSize);
+        control->SetPivotPoint(extraSize / 2.0f);
+        control->SetAngle(line.gd->angle);
+        hudControl->AddControl(control);
+        magnetControls.emplace_back(control);
+
+        FixPositionForScroll(control);
     }
 }
 
@@ -483,12 +297,19 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             DVASSERT(nullptr != node);
             auto findIter = hudMap.find(node);
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
-            const HUD& hud = findIter->second;
-            HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
-            ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
-            if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
+            const auto& hud = findIter->second;
+            if (hud->container->GetSystemVisible())
             {
-                return HUDAreaInfo(hud.node, area);
+                HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
+                auto hudControlsIter = hud->hudControls.find(area);
+                if (hudControlsIter != hud->hudControls.end())
+                {
+                    const auto& controlContainer = hudControlsIter->second;
+                    if (controlContainer->GetSystemVisible() && controlContainer->IsPointInside(pos))
+                    {
+                        return HUDAreaInfo(hud->node, area);
+                    }
+                }
             }
         }
     }
@@ -516,104 +337,31 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
     }
 }
 
-void HUDSystem::SetEditingEnabled(bool arg)
-{
-    if (editingEnabled != arg)
-    {
-        editingEnabled = arg;
-        if (!editingEnabled)
-        {
-            hudMap.clear();
-            sortedControlList.clear();
-            selectionRectControl->SetSize(Vector2());
-        }
-        else
-        {
-            OnSelectionChanged(selectionContainer.selectedNodes, SelectedNodes());
-        }
-    }
-}
-
 void HUDSystem::UpdateAreasVisibility()
 {
+    for (auto& pair : hudMap)
+    {
+        pair.second->container->SetVisibleInSystems(hudVisible);
+    }
+
     bool showAreas = sortedControlList.size() == 1;
+
     for (const auto& iter : sortedControlList)
     {
         ControlNode* node = dynamic_cast<ControlNode*>(iter);
         DVASSERT(nullptr != node);
         auto findIter = hudMap.find(node);
         DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
-        const HUD& hud = findIter->second;
+        const auto& hud = findIter->second;
         for (HUDAreaInfo::eArea area : AreasToHide)
         {
-            ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
-            controlContainer->SetVisible(showAreas);
+            auto hudControlsIter = hud->hudControls.find(area);
+            if (hudControlsIter != hud->hudControls.end())
+            {
+                const auto& controlContainer = hudControlsIter->second;
+                controlContainer->SetVisible(showAreas);
+            }
         }
     }
 }
 
-ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
-{
-    switch (area)
-    {
-    case HUDAreaInfo::PIVOT_POINT_AREA:
-        return new PivotPointControl();
-    case HUDAreaInfo::ROTATE_AREA:
-        return new RotateControl();
-    case HUDAreaInfo::TOP_LEFT_AREA:
-    case HUDAreaInfo::TOP_CENTER_AREA:
-    case HUDAreaInfo::TOP_RIGHT_AREA:
-    case HUDAreaInfo::CENTER_LEFT_AREA:
-    case HUDAreaInfo::CENTER_RIGHT_AREA:
-    case HUDAreaInfo::BOTTOM_LEFT_AREA:
-    case HUDAreaInfo::BOTTOM_CENTER_AREA:
-    case HUDAreaInfo::BOTTOM_RIGHT_AREA:
-        return new FrameRectControl(area);
-    case HUDAreaInfo::FRAME_AREA:
-        return new FrameControl();
-    default:
-        DVASSERT("!unacceptable value of area");
-        return nullptr;
-    }
-}
-
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
-    : node(node_)
-    , control(node_->GetControl())
-    , container(new HUDContainer(control))
-{
-    node->GetRootProperty()->AddListener(this);
-    HUDContainer* hudContainer = static_cast<HUDContainer*>(container.get());
-    for (uint32 i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
-    {
-        HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
-        ControlContainer* controlContainer = CreateControlContainer(area);
-        hudContainer->AddChild(controlContainer);
-        hudControls.emplace(std::piecewise_construct,
-                            std::forward_as_tuple(area),
-                            std::forward_as_tuple(controlContainer));
-    }
-
-    hudControl->AddControl(container);
-
-    container->InitFromGD(control->GetGeometricData());
-    container->SetVisible(control->GetVisible() && control->GetVisibleForUIEditor());
-}
-
-HUDSystem::HUD::~HUD()
-{
-    node->GetRootProperty()->RemoveListener(this);
-    for (auto control : hudControls)
-    {
-        container->RemoveControl(control.second);
-    }
-    container->RemoveFromParent();
-}
-
-void HUDSystem::HUD::PropertyChanged(AbstractProperty* property)
-{
-    if (property->GetName() == "Visible")
-    {
-        container->SetVisible(property->GetValue().AsBool());
-    }
-}

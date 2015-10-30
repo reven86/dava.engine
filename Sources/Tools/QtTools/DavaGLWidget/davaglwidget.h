@@ -31,46 +31,34 @@
 #define DAVAGLWIDGET_H
 
 #include <QOpenGLWidget>
-#include <QTimer>
 #include <QMimeData>
-#include <QWindow>
-#include <QPointer>
+#include <QWidget>
 #include <QScopedPointer>
+#include <QQuickWindow>
 
-
-class QOpenGLContext;
-class QOpenGLPaintDevice;
-class QExposeEvent;
+class QDragMoveEvent;
 class DavaGLWidget;
-class FocusTracker;
 class ControlMapper;
+class QResizeEvent;
+class DavaRenderer;
 
-
-class OpenGLWindow
-    : public QWindow
+class DavaGLView
+: public QQuickWindow
 {
     friend class DavaGLWidget;
 
     Q_OBJECT
-    
-signals:
-    void mousePressed();
-    void mouseScrolled( int ofs );
-    
+
 public:
-    OpenGLWindow();
-    ~OpenGLWindow();
-    
-    void renderNow();
+    DavaGLView();
 
 signals:
-    void Exposed();
+    void mouseScrolled(int ofs);
     void OnDrop( const QMimeData *mimeData );
-    
+
 protected:
     bool event(QEvent *event) override;
-    void exposeEvent(QExposeEvent *event) override;
-    
+
     void keyPressEvent(QKeyEvent *) override;
     void keyReleaseEvent(QKeyEvent *) override;
     
@@ -83,7 +71,7 @@ protected:
     void handleDragMoveEvent(QDragMoveEvent * event);
     
 private:
-    QScopedPointer< ControlMapper > controlMapper;
+    ControlMapper* controlMapper = nullptr;
 };
 
 
@@ -91,39 +79,34 @@ class DavaGLWidget
     : public QWidget
 {
     Q_OBJECT
-
-signals :
-    void Initialized();
-    void Resized( int width, int height, int dpr );
-    void OnDrop( const QMimeData *mimeData );
+    friend class FocusTracker;
 
 public:
     explicit DavaGLWidget(QWidget *parent = nullptr);
-    ~DavaGLWidget();
-
-    OpenGLWindow *GetGLWindow() const;
-    bool IsInitialized() const;
-
     void MakeInvisible();
+    qreal GetDevicePixelRatio() const;
+    QQuickWindow* GetGLView();
+signals:
+    void ScreenChanged();
+    void mouseScrolled(int ofs);
+    void Resized(int width, int height, int dpr);
+    void Initialized();
+    void OnDrop(const QMimeData* mimeData);
 
 public slots:
-    void OnWindowExposed();
-    
+    void OnSync();
+
+private slots:
+    void OnResize();
+    void OnCleanup();
+    void UpdateView();
+
+protected:
+    void resizeEvent(QResizeEvent*) override;
+
 private:
-    void resizeEvent(QResizeEvent *) override;
-
-    void PerformSizeChange();
-    
-    bool isInitialized;
-    int currentDPR;
-    int currentWidth;
-    int currentHeight;
-
-    QPointer< OpenGLWindow > openGlWindow;
-    QPointer< QWidget > container;
-    QPointer< FocusTracker > focusTracker;
+    DavaGLView* davaGLView = nullptr;
+    DavaRenderer* renderer = nullptr;
 };
-
-
 
 #endif // DAVAGLWIDGET_H

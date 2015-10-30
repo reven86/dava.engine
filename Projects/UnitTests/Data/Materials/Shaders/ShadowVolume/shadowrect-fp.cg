@@ -1,0 +1,16 @@
+blending : src=dst_color dst=zero
+
+FPROG_IN_BEGIN
+FPROG_IN_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+property float4 shadowColor : dynamic,instance : def_value=1,0,0,1;
+
+FPROG_BEGIN
+
+    FP_OUT_COLOR = float4(shadowColor.rgb, 1.0);
+    
+FPROG_END

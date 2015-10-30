@@ -29,8 +29,9 @@
 
 #include "Animation/AnimationManager.h"
 #include "FileSystem/Logger.h"
-#include "Render/RenderManager.h"
 #include "Debug/Stats.h"
+#include "Job/JobManager.h"
+#include "Render/Renderer.h"
 
 #include <typeinfo>
 
@@ -200,10 +201,10 @@ void AnimationManager::Update(float32 timeElapsed)
 
     DVASSERT(Thread::IsMainThread());
 
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATIONS))
-		return;
-	
-	// update animations first
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATIONS))
+        return;
+
+    // update animations first
     uint32 size = (uint32)animations.size();
 	for (uint32 k = 0; k < size; ++k)
 	{

@@ -89,7 +89,7 @@ void CachedItemValue::Serialize(KeyedArchive* archieve, bool serializeData) cons
 
     archieve->SetUInt64("size", size);
 
-    auto count = dataContainer.size();
+    uint32 count = static_cast<uint32>(dataContainer.size());
     archieve->SetUInt32("data_count", count);
 
     int32 index = 0;
@@ -100,7 +100,8 @@ void CachedItemValue::Serialize(KeyedArchive* archieve, bool serializeData) cons
         if (IsDataLoaded(dc.second) && serializeData)
         {
             auto& data = dc.second;
-            archieve->SetByteArray(Format("data_%d", index), data.get()->data(), data.get()->size());
+            uint32 dataSize = static_cast<uint32>(data.get()->size());
+            archieve->SetByteArray(Format("data_%d", index), data.get()->data(), dataSize);
         }
 
         ++index;
@@ -157,7 +158,7 @@ bool CachedItemValue::Serialize(File* buffer) const
         if (IsDataLoaded(entry.second))
         {
             data = entry.second->data();
-            dataSize = entry.second->size();
+            dataSize = static_cast<uint32>(entry.second->size());
         }
 
         if (buffer->Write(&dataSize) != sizeof(dataSize))
@@ -255,7 +256,7 @@ CachedItemValue& CachedItemValue::operator=(CachedItemValue&& right)
     return (*this);
 }
 
-void CachedItemValue::Fetch(const FilePath& folder)
+bool CachedItemValue::Fetch(const FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
     DVASSERT(isFetched == false);
@@ -265,7 +266,13 @@ void CachedItemValue::Fetch(const FilePath& folder)
     {
         DVASSERT(IsDataLoaded(dc.second) == false);
         dc.second = LoadFile(folder + dc.first);
+        if (false == IsDataLoaded(dc.second))
+        {
+            Free();
+            return false;
+        }
     }
+    return true;
 }
 
 void CachedItemValue::Free()
@@ -275,7 +282,6 @@ void CachedItemValue::Free()
     isFetched = false;
     for (auto& dc : dataContainer)
     {
-        DVASSERT(IsDataLoaded(dc.second) == true);
         dc.second.reset();
     }
 }
@@ -301,7 +307,7 @@ void CachedItemValue::Export(const FilePath& folder) const
         {
             const ValueData& data = dc.second;
 
-            auto written = file->Write(data.get()->data(), data.get()->size());
+            auto written = file->Write(data.get()->data(), static_cast<uint32>(data.get()->size()));
             DVVERIFY(written == data.get()->size());
         }
         else

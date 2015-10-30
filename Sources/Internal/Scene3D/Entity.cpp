@@ -389,12 +389,12 @@ void Entity::BakeTransforms()
     if (size == 1 && (0 == GetComponent(Component::RENDER_COMPONENT) && 0 == GetComponent(Component::PARTICLE_EFFECT_COMPONENT) && 0 == GetComponent(Component::ANIMATION_COMPONENT))) // propagate matrices
     {
         children[0]->SetLocalTransform(children[0]->GetLocalTransform() * GetLocalTransform());
-		SetLocalTransform(Matrix4::IDENTITY);
-		AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
-	}
-		
-	for(uint32 c = 0; c < size; ++c)
-	{
+        SetLocalTransform(Matrix4::IDENTITY);
+        AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
+    }
+
+    for (uint32 c = 0; c < size; ++c)
+    {
 		children[c]->BakeTransforms();
 	}
 }
@@ -532,10 +532,10 @@ void Entity::Draw()
 			
 		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
 		RenderManager::Instance()->SetState(RenderStateBlock::STATE_COLORMASK_ALL | RenderStateBlock::STATE_DEPTH_WRITE | RenderStateBlock::STATE_DEPTH_TEST);
-		RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 		RenderHelper::Instance()->DrawCornerBox(box);
 		RenderManager::Instance()->SetState(RenderStateBlock::DEFAULT_3D_STATE);
-		RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 		//		RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
 	}
 		
@@ -544,10 +544,10 @@ void Entity::Draw()
 		AABBox3 box = GetWTMaximumBoundingBoxSlow();
 		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
 		RenderManager::Instance()->SetState(RenderStateBlock::STATE_COLORMASK_ALL | RenderStateBlock::STATE_DEPTH_WRITE | RenderStateBlock::STATE_DEPTH_TEST);
-		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 		RenderHelper::Instance()->DrawBox(box);
 		RenderManager::Instance()->SetState(RenderStateBlock::DEFAULT_3D_STATE);
-		RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 #endif
 		

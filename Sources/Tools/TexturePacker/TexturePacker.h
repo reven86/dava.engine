@@ -35,16 +35,14 @@
 #include "Render/Texture.h"
 #include "Math/Math2D.h"
 #include "TextureCompression/TextureConverter.h"
-#include "TexturePacker/ImagePacker.h"
+#include "TexturePacker/TextureAtlas.h"
 
 namespace DAVA
 {
 
 class DefinitionFile;
-class TextureDescriptor;
 class PngImageExt;
 class FilePath;
-class ImagePacker;
 
 struct SizeSortItem
 {
@@ -66,30 +64,31 @@ public:
 	{
 		int8 minFilter;
 		int8 magFilter;
-		
-		FilterItem(int8 minF, int8 magF)
-		{
-			minFilter = minF;
+        int8 mipFilter;
+
+        FilterItem(int8 minF, int8 magF, int8 mipF)
+        {
+            minFilter = minF;
 			magFilter = magF;
-		}
-	};
+            mipFilter = mipF;
+        }
+    };
 
 public:
 	TexturePacker();
-    ~TexturePacker();
-	// pack textures to single texture
-	void PackToTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU);
-	// page each PSD file to separate texture
-	void PackToTexturesSeparate(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU);
-	// pack one sprite and use several textures if more than one needed
-	void PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, const char* basename, List<DefinitionFile*> & remainingList, eGPUFamily forGPU);
 
-	bool TryToPack(const Rect2i & textureRect, List<DefinitionFile*> & defsList);
-	bool WriteDefinition(const FilePath & excludeFolder, const FilePath & outputPath, const String & textureName, DefinitionFile * defFile);
-	bool WriteMultipleDefinition(const FilePath & excludeFolder, const FilePath & outputPath, const String & _textureName, DefinitionFile * defFile);
+    // pack textures to single texture
+    void PackToTextures(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU);
+    // page each PSD file to separate texture
+    void PackToTexturesSeparate(const FilePath& outputPath, const List<DefinitionFile*>& defsList, eGPUFamily forGPU);
+    // pack one sprite and use several textures if more than one needed
+    void PackToMultipleTextures(const FilePath& outputPath, const char* basename, const List<DefinitionFile*>& remainingList, eGPUFamily forGPU);
 
-	int TryToPackFromSortVector(ImagePacker * packer, Vector<SizeSortItem> & tempSortVector);
-	float TryToPackFromSortVectorWeight(ImagePacker * packer, Vector<SizeSortItem> & tempSortVector);
+    TextureAtlasPtr TryToPack(const Rect2i& textureRect);
+    bool WriteDefinition(const TextureAtlasPtr& atlas, const FilePath& outputPath, const String& textureName, DefinitionFile* defFile);
+    bool WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedAtlases, const FilePath& outputPath, const String& _textureName, DefinitionFile* defFile);
+
+    float TryToPackFromSortVectorWeight(const TextureAtlasPtr& atlas, Vector<SizeSortItem>& tempSortVector);
 
     Rect2i GetOriginalSizeRect(const PackedInfo& _input);
 
@@ -120,24 +119,20 @@ private:
     };
     
     ImageExportKeys GetExportKeys(eGPUFamily forGPU);
-    void ExportImage(PngImageExt *image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
+    void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
 
-	Texture::TextureWrap GetDescriptorWrapMode();
-	FilterItem GetDescriptorFilter(bool generateMipMaps = false);
-    
+    rhi::TextureAddrMode GetDescriptorWrapMode();
+    FilterItem GetDescriptorFilter(bool generateMipMaps = false);
+
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
 	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
-	void DrawToFinalImage(PngImageExt & finalImage, PngImageExt & drawedImage, const PackedInfo & drawRect, const Rect2i &frameRect);
+    void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const PackedInfo& drawRect, const Rect2i& frameRect);
 
-    
-	ImagePacker *			lastPackedPacker;
-	Vector<ImagePacker*> usedPackers;
+    Vector<SizeSortItem> sortVector;
+    uint32 maxTextureSize;
 
-	Vector<SizeSortItem> sortVector;
-	uint32 maxTextureSize;
-
-	bool onlySquareTextures;
+    bool onlySquareTextures;
     bool NeedSquareTextureForCompression(ImageExportKeys keys);
 	
     TextureConverter::eConvertQuality quality;

@@ -417,14 +417,14 @@ void VariantType::SetVariant(const VariantType& var)
         {
             SetString(var.AsString());
         }
-        break;	
-	case TYPE_WIDE_STRING:
-		{ 
-			SetWideString(var.AsWideString());
-		}
-		break;
-	case TYPE_BYTE_ARRAY:
-		{
+        break;
+        case TYPE_WIDE_STRING:
+        {
+            SetWideString(var.AsWideString());
+        }
+        break;
+        case TYPE_BYTE_ARRAY:
+        {
 			Vector<uint8> *ar = (Vector<uint8>*) var.pointerValue;
 			SetByteArray(ar->data(), static_cast<int32>(ar->size()));
 		}
@@ -1474,13 +1474,13 @@ void* VariantType::MetaObject()
         break;
     case TYPE_WIDE_STRING:
         ret = wideStringValue;
-		break;
-	case TYPE_VECTOR2:
-	case TYPE_BYTE_ARRAY:
-	case TYPE_VECTOR3:
-	case TYPE_VECTOR4:
-	case TYPE_MATRIX2:
-	case TYPE_MATRIX3:
+        break;
+    case TYPE_VECTOR2:
+    case TYPE_BYTE_ARRAY:
+    case TYPE_VECTOR3:
+    case TYPE_VECTOR4:
+    case TYPE_MATRIX2:
+    case TYPE_MATRIX3:
 	case TYPE_MATRIX4:
 	case TYPE_COLOR:
 	case TYPE_FASTNAME:
@@ -1536,15 +1536,15 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetString(*((DAVA::String*)src));
         break;
     case TYPE_WIDE_STRING:
-        v.SetWideString(*((DAVA::WideString *) src));
-		break;
-	case TYPE_UINT32:
-		v.SetUInt32(*((uint32 *) src));
-		break;
-	//case TYPE_BYTE_ARRAY:
-	//	break;
-	case TYPE_KEYED_ARCHIVE:
-		v.SetKeyedArchive(*((DAVA::KeyedArchive **) src));
+        v.SetWideString(*((DAVA::WideString*)src));
+        break;
+    case TYPE_UINT32:
+        v.SetUInt32(*((uint32*)src));
+        break;
+    //case TYPE_BYTE_ARRAY:
+    //	break;
+    case TYPE_KEYED_ARCHIVE:
+        v.SetKeyedArchive(*((DAVA::KeyedArchive **) src));
 		break;
 	case TYPE_INT64:
 		v.SetInt64(*((DAVA::int64 *) src));
@@ -1659,15 +1659,15 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
             *((DAVA::String*)dst) = val.AsString();
             break;
         case TYPE_WIDE_STRING:
-            *((DAVA::WideString *) dst) = val.AsWideString();
-			break;
-		case TYPE_UINT32:
-			*((uint32 *) dst) = val.AsUInt32();
-			break;
-			//case TYPE_BYTE_ARRAY:
-			//	break;
-		case TYPE_KEYED_ARCHIVE:
-			{
+            *((DAVA::WideString*)dst) = val.AsWideString();
+            break;
+        case TYPE_UINT32:
+            *((uint32*)dst) = val.AsUInt32();
+            break;
+        //case TYPE_BYTE_ARRAY:
+        //	break;
+        case TYPE_KEYED_ARCHIVE:
+            {
 				DAVA::KeyedArchive *dstArchive = *((DAVA::KeyedArchive **) dst);
 				if(nullptr != dstArchive)
 				{
@@ -1757,13 +1757,13 @@ VariantType VariantType::FromType(int type)
         break;
     case TYPE_WIDE_STRING:
         v.SetWideString(WideString());
-		break;
-	case TYPE_UINT32:
-		v.SetUInt32(0);
-		break;
-	case TYPE_BYTE_ARRAY:
-		v.SetByteArray(nullptr, 0);
-		break;
+        break;
+    case TYPE_UINT32:
+        v.SetUInt32(0);
+        break;
+    case TYPE_BYTE_ARRAY:
+        v.SetByteArray(nullptr, 0);
+        break;
 	case TYPE_KEYED_ARCHIVE:
 		{
 			KeyedArchive *ka = new KeyedArchive();

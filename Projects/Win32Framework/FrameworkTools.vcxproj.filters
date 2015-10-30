@@ -39,9 +39,6 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.h">
-      <Filter>Header Files\TexturePacker</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Tools\TexturePacker\DefinitionFile.h">
       <Filter>Header Files\TexturePacker</Filter>
     </ClInclude>
@@ -84,18 +81,15 @@
     <ClInclude Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.h">
       <Filter>Source Files\AssetCache</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\CommandLine\CommandLineParser.h">
+      <Filter>Source Files\CommandLine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.cpp">
-      <Filter>Source Files\TexturePacker</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TexturePacker\DefinitionFile.cpp">
       <Filter>Source Files\TexturePacker</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TexturePacker\FramePathHelper.cpp">
-      <Filter>Source Files\TexturePacker</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\ImagePacker.cpp">
       <Filter>Source Files\TexturePacker</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TexturePacker\PngImage.cpp">
@@ -124,6 +118,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.cpp">
       <Filter>Source Files\AssetCache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\TexturePacker\TextureAtlas.cpp">
+      <Filter>Source Files\TexturePacker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\CommandLine\CommandLineParser.cpp">
+      <Filter>Source Files\CommandLine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

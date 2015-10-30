@@ -35,26 +35,14 @@
 
 namespace DAVA
 {
-
-class TextBlockSoftwareTexInvalidater: public TextureInvalidater
-{
-public:
-    TextBlockSoftwareTexInvalidater(TextBlock *textBlock);
-    ~TextBlockSoftwareTexInvalidater();
-    virtual void InvalidateTexture(Texture * texture);
-    virtual void AddTexture(Texture *tex);
-    virtual void RemoveTexture(Texture *tex);
-
-private:
-    TextBlock *textBlock;
-    Set<Texture*> textureSet;
-};
     
 class TextBlockSoftwareRender: public TextBlockRender
 {
 public:
 	TextBlockSoftwareRender(TextBlock*);
-	virtual void Prepare(Texture *texture = NULL);
+    ~TextBlockSoftwareRender();
+    void Prepare() override;
+    
 
 #if defined(LOCALIZATION_DEBUG)
     //in physical coordinates
@@ -74,6 +62,8 @@ protected:
 #endif
 
 private:
+    void Restore();
+
 #if defined(LOCALIZATION_DEBUG)
     Vector2 textOffsetTL;
     Vector2 textOffsetBR;

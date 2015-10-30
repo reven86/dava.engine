@@ -345,13 +345,13 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
         // format lines
         for (int i = (DAVA::GPU_DEVICE_COUNT - 1); i >= 0; --i)
         {
-			r.moveLeft(r.x() - FORMAT_INFO_WIDTH);
+            r.moveLeft(r.x() - FORMAT_INFO_WIDTH);
 
-			if(descriptor->compression[i].format != DAVA::FORMAT_INVALID)
-			{
-				QColor c = gpuInfoColors[i];
+            if (descriptor->compression[i].format != DAVA::FORMAT_INVALID)
+            {
+                QColor c = gpuInfoColors[i];
 
-				painter->setPen(Qt::NoPen);
+                painter->setPen(Qt::NoPen);
 				painter->setBrush(c);
 				painter->drawRect(r);
 			}

@@ -30,148 +30,33 @@
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Debug/Stats.h"
 #include "Render/Highlevel/RenderSystem.h"
-#include "Render/Highlevel/RenderLayerManager.h"
 #include "Render/Highlevel/RenderPass.h"
 
 namespace DAVA
 {
-    
-RenderPassBatchArray::RenderPassBatchArray()
+RenderBatchArray::RenderBatchArray()
+    : sortFlags(0)
 {
-    const RenderLayerManager * manager = RenderLayerManager::Instance();
-    for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
-    {
-        RenderLayerBatchArray* batchArray = new RenderLayerBatchArray( manager->GetRenderLayer(id)->GetFlags() );
-        layerBatchArrays[id] = batchArray;
-    }
-}
-    
-void RenderPassBatchArray::InitPassLayers(RenderPass * renderPass)
-{
-    // const RenderLayerManager * manager = RenderLayerManager::Instance();
-    for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
-    {
-        RenderLayer * layer = 0;
-        for (uint32 k = 0; k < renderPass->GetRenderLayerCount(); ++k)
-        {
-            if (renderPass->GetRenderLayer(k)->GetRenderLayerID() == id)
-            {
-                layer = renderPass->GetRenderLayer(k);
-                break;
-            }
-        }
-        if (layer)
-        {
-            layerBatchArrays[id]->SetFlags(layer->GetFlags());
-        }
-    }
-}
-    
-void RenderPassBatchArray::InitPassLayersWithSingleLayer(RenderPass * renderPass, RenderLayerBatchArray * singleLayer)
-{
-    // const RenderLayerManager * manager = RenderLayerManager::Instance();
-    for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
-    {
-        SafeDelete(layerBatchArrays[id]);
-        layerBatchArrays[id] = singleLayer;
-        //->SetFlags(layer->GetFlags());
-    }
-}
-    
-RenderPassBatchArray::~RenderPassBatchArray()
-{
-    for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
-    {
-        SafeDelete(layerBatchArrays[id]);
-    }
-}
-    
-void RenderPassBatchArray::Clear()
-{
-    for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
-    {
-        layerBatchArrays[id]->Clear();
-    }
+    //sortFlags = SORT_ENABLED | SORT_BY_MATERIAL | SORT_BY_DISTANCE;
+    //renderBatchArray.reserve(4096);
 }
 
-void RenderPassBatchArray::PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera)
-{
-    cameraWorldMatrices.clear();
-    uint32 size = visibilityArray->GetCount();
-    for (uint32 ro = 0; ro < size; ++ro)
-    {
-        RenderObject * renderObject = visibilityArray->Get(ro);
-        if (renderObject->GetFlags() & RenderObject::CUSTOM_PREPARE_TO_RENDER)
-
-		    renderObject->PrepareToRender(camera);
-        //cameraWorldMatrices[ro] = camera->GetTransform() * (*renderObject->GetWorldTransformPtr());
-        
-        uint32 batchCount = renderObject->GetActiveRenderBatchCount();
-		for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
-		{
-			RenderBatch * batch = renderObject->GetActiveRenderBatch(batchIndex);
-            //batch->SetCameraWorldTransformPtr(&cameraWorldMatrices[ro]);
-
-			NMaterial * material = batch->GetMaterial();
-			if (material)
-			{
-//                const Vector<RenderLayerID> & layers = material->GetRenderLayerIDs();
-//                uint32 size = (uint32)layers.size();
-//                for (uint32 k = 0; k < size; ++k)
-//                {
-//                    AddRenderBatch(layers[k], batch);
-
-//                uint32 checkCount = 0;
-                uint32 renderLayerBitmask = material->GetRenderLayerIDsBitmask();
-                for (uint32 layer = (renderLayerBitmask >> RENDER_LAYER_ID_BITMASK_MIN_POS) & RENDER_LAYER_ID_BITMASK_MIN_MASK,
-                     max = (renderLayerBitmask >> RENDER_LAYER_ID_BITMASK_MAX_POS) & RENDER_LAYER_ID_BITMASK_MAX_MASK; layer <= max; ++layer)
-                {
-                    if (renderLayerBitmask & (1 << layer))
-                    {
-                        AddRenderBatch(layer, batch);
-//                        checkCount++;
-                    }
-                }
-//                DVASSERT(checkCount == size);
-			}
-		}
-    }
-}
-    
-    
-RenderLayerBatchArray::RenderLayerBatchArray(uint32 sortingFlags)
-    : flags(sortingFlags)
-{
-    //flags = SORT_ENABLED | SORT_BY_MATERIAL | SORT_BY_DISTANCE;
-	//renderBatchArray.reserve(4096);
-}
-    
-RenderLayerBatchArray::~RenderLayerBatchArray()
-{
-    
-}
-
-void RenderLayerBatchArray::Clear()
-{
-    renderBatchArray.clear();
-}
-    
-bool RenderLayerBatchArray::MaterialCompareFunction(const RenderBatch * a, const RenderBatch *  b)
+bool RenderBatchArray::MaterialCompareFunction(const RenderBatch* a, const RenderBatch* b)
 {
     return a->layerSortingKey > b->layerSortingKey;
 }
-	
-void RenderLayerBatchArray::Sort(Camera * camera)
+
+void RenderBatchArray::Sort(Camera* camera)
 {
-    TIME_PROFILE("RenderLayerBatchArray::Sort");
-    
+    TIME_PROFILE("RenderBatchArray::Sort");
+
     // Need sort
-	flags |= SORT_REQUIRED;
-	
-    if ((flags & SORT_THIS_FRAME) == SORT_THIS_FRAME)
+    sortFlags |= SORT_REQUIRED;
+
+    if ((sortFlags & SORT_THIS_FRAME) == SORT_THIS_FRAME)
     {
         uint32 renderBatchCount = (uint32)renderBatchArray.size();
-        if (flags & SORT_BY_MATERIAL)
+        if (sortFlags & SORT_BY_MATERIAL)
         {
             //Vector3 cameraPosition = camera->GetPosition();
 
@@ -191,10 +76,10 @@ void RenderLayerBatchArray::Sort(Camera * camera)
             }
             
 			std::sort(renderBatchArray.begin(), renderBatchArray.end(), MaterialCompareFunction);
-            
-            flags &= ~SORT_REQUIRED;
+
+            sortFlags &= ~SORT_REQUIRED;
         }
-        else if (flags & SORT_BY_DISTANCE_BACK_TO_FRONT)
+        else if (sortFlags & SORT_BY_DISTANCE_BACK_TO_FRONT)
         {
             Vector3 cameraPosition = camera->GetPosition();
             Vector3 cameraDirection = camera->GetDirection();
@@ -209,9 +94,10 @@ void RenderLayerBatchArray::Sort(Camera * camera)
             }
             
             std::stable_sort(renderBatchArray.begin(), renderBatchArray.end(), MaterialCompareFunction);
-            
-            flags |= SORT_REQUIRED;
-        }else if (flags & SORT_BY_DISTANCE_FRONT_TO_BACK)
+
+            sortFlags |= SORT_REQUIRED;
+        }
+        else if (sortFlags & SORT_BY_DISTANCE_FRONT_TO_BACK)
         {
             Vector3 cameraPosition = camera->GetPosition();
             
@@ -227,20 +113,10 @@ void RenderLayerBatchArray::Sort(Camera * camera)
             }
             
             std::sort(renderBatchArray.begin(), renderBatchArray.end(), MaterialCompareFunction);
-            
-            flags |= SORT_REQUIRED;
+
+            sortFlags |= SORT_REQUIRED;
         }
     }
-}
-    
-uint32 RenderLayerBatchArray::GetRenderBatchCount()
-{
-    return (uint32)renderBatchArray.size();
-}
-
-RenderBatch * RenderLayerBatchArray::Get(uint32 index)
-{
-    return renderBatchArray[index];
 }
 
 };

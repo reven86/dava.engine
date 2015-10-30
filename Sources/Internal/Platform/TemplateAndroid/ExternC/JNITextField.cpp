@@ -32,16 +32,17 @@
 #include "Base/BaseTypes.h"
 #include "Utils/UTF8Utils.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 extern "C"
 {
 	void Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis, uint32_t id)
 	{
-		DAVA::UITextFieldAndroid::TextFieldShouldReturn(id);
-	}
+        DAVA::TextFieldPlatformImpl::TextFieldShouldReturn(id);
+    }
 
-	jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
-	{
+    jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
+    {
 		DAVA::WideString string;
 
 		jbyte* bufferPtr = env->GetByteArrayElements(replacementString, NULL);
@@ -51,11 +52,11 @@ extern "C"
 
 		env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
 
-		bool res = DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
-		DAVA::String returnStr = res ? DAVA::UTF8Utils::EncodeToUTF8(string) : "";
+        bool res = DAVA::TextFieldPlatformImpl::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
+        DAVA::String returnStr = res ? DAVA::UTF8Utils::EncodeToUTF8(string) : "";
 
-		jbyteArray r = env->NewByteArray(returnStr.length());
-		if (r == NULL)
+        jbyteArray r = env->NewByteArray(returnStr.length());
+        if (r == NULL)
 			return NULL;
 		env->SetByteArrayRegion(r, 0, returnStr.length(), (const jbyte*)returnStr.c_str());
 		return r;
@@ -75,11 +76,11 @@ extern "C"
 		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
 		env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
 
-		DAVA::UITextFieldAndroid::TextFieldOnTextChanged(id, newString, oldString);
-	}
+        DAVA::TextFieldPlatformImpl::TextFieldOnTextChanged(id, newString, oldString);
+    }
 
-	void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
-	{
+    void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
+    {
 	    // Recalculate to virtual coordinates.
 	    DAVA::Vector2 keyboardOrigin(x, y);
 	    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
@@ -87,17 +88,17 @@ extern "C"
 	    DAVA::Vector2 keyboardSize(dx, dy);
 	    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
-	    DAVA::UITextFieldAndroid::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
-	}
+        DAVA::TextFieldPlatformImpl::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
+    }
 
-	void Java_com_dava_framework_JNITextField_TextFieldKeyboardHidden(JNIEnv* env, jobject classthis, uint32_t id)
-	{
-	    DAVA::UITextFieldAndroid::TextFieldKeyboardHidden(id);
-	}
+    void Java_com_dava_framework_JNITextField_TextFieldKeyboardHidden(JNIEnv* env, jobject classthis, uint32_t id)
+    {
+        DAVA::TextFieldPlatformImpl::TextFieldKeyboardHidden(id);
+    }
 
     void Java_com_dava_framework_JNITextField_TextFieldFocusChanged(JNIEnv* env, jobject classthis, uint32_t id, bool hasFocus)
     {
-        DAVA::UITextFieldAndroid::TextFieldFocusChanged(id, hasFocus);
+        DAVA::TextFieldPlatformImpl::TextFieldFocusChanged(id, hasFocus);
     }
 
     void Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
@@ -121,7 +122,7 @@ extern "C"
             if(JNI_TRUE == isCopy)
             {
                 pixelsCopy = reinterpret_cast<DAVA::int32*>(rawData);
-                DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, pixelsCopy, width, height);
+                DAVA::TextFieldPlatformImpl::TextFieldUpdateTexture(id, pixelsCopy, width, height);
             } else
             {
                 // we have to copy pixels from Java because different threads (Java, OpenGL)
@@ -131,14 +132,14 @@ extern "C"
                 SCOPE_EXIT{SafeRelease(image);};
 
                 pixelsCopy = reinterpret_cast<DAVA::int32*>(image->GetData());
-                DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, pixelsCopy, width, height);
+                DAVA::TextFieldPlatformImpl::TextFieldUpdateTexture(id, pixelsCopy, width, height);
             }
             // JNI_ABORT free the buffer without copying back the possible changes
             env->ReleaseIntArrayElements(pixels, rawData, JNI_ABORT);
         }
         else
         {
-            DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, nullptr, width, height);
+            DAVA::TextFieldPlatformImpl::TextFieldUpdateTexture(id, nullptr, width, height);
         }
     }
 
