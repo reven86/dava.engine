@@ -101,7 +101,7 @@ void ViewSceneScreen::LoadResources()
     VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
     float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
     camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
-	camera->SetLeft(Vector3(1, 0, 0));
+    camera->SetLeft(Vector3(1, 0, 0));
 	camera->SetUp(Vector3(0, 0, 1.f));
     camera->SetTarget(Vector3(0, 0, 0));
     camera->SetPosition(Vector3(0, -45, 10));
@@ -245,7 +245,7 @@ void ViewSceneScreen::DidAppear()
 
 void ViewSceneScreen::Input(UIEvent* currentInput)
 {
-    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    if (currentInput->phase == UIEvent::Phase::CHAR)
     {
         if (currentInput->keyChar == '+')
             cursorSize *= 1.25f;

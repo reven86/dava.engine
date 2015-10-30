@@ -71,7 +71,7 @@ LandscapeProxy::~LandscapeProxy()
     SafeRelease(landscapeEditorMaterial);
 
     SafeRelease(baseLandscape);
-	SafeRelease(tilemaskImageCopy);
+    SafeRelease(tilemaskImageCopy);
     SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
     SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
 
@@ -271,7 +271,7 @@ Texture* LandscapeProxy::GetTilemaskDrawTexture(int32 number)
         return tilemaskDrawTextures[number];
     }
 
-	return NULL;
+    return NULL;
 }
 
 void LandscapeProxy::SwapTilemaskDrawTextures()

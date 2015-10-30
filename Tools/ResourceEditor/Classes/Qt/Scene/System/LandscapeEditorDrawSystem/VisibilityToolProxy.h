@@ -55,7 +55,7 @@ protected:
 	Texture* visibilityToolTexture;
 
     int32 size;
-	Vector2 visibilityPoint;
+    Vector2 visibilityPoint;
 	bool isVisibilityPointSet;
 };
 

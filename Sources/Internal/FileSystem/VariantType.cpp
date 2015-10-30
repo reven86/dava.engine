@@ -423,8 +423,8 @@ void VariantType::SetVariant(const VariantType& var)
             SetWideString(var.AsWideString());
         }
         break;
-	case TYPE_BYTE_ARRAY:
-		{
+        case TYPE_BYTE_ARRAY:
+        {
 			Vector<uint8> *ar = (Vector<uint8>*) var.pointerValue;
 			SetByteArray(ar->data(), static_cast<int32>(ar->size()));
 		}
@@ -1479,8 +1479,8 @@ void* VariantType::MetaObject()
     case TYPE_BYTE_ARRAY:
     case TYPE_VECTOR3:
     case TYPE_VECTOR4:
-	case TYPE_MATRIX2:
-	case TYPE_MATRIX3:
+    case TYPE_MATRIX2:
+    case TYPE_MATRIX3:
 	case TYPE_MATRIX4:
 	case TYPE_COLOR:
 	case TYPE_FASTNAME:
@@ -1542,9 +1542,9 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetUInt32(*((uint32*)src));
         break;
     //case TYPE_BYTE_ARRAY:
-	//	break;
-	case TYPE_KEYED_ARCHIVE:
-		v.SetKeyedArchive(*((DAVA::KeyedArchive **) src));
+    //	break;
+    case TYPE_KEYED_ARCHIVE:
+        v.SetKeyedArchive(*((DAVA::KeyedArchive **) src));
 		break;
 	case TYPE_INT64:
 		v.SetInt64(*((DAVA::int64 *) src));
@@ -1664,10 +1664,10 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
         case TYPE_UINT32:
             *((uint32*)dst) = val.AsUInt32();
             break;
-            //case TYPE_BYTE_ARRAY:
-			//	break;
-		case TYPE_KEYED_ARCHIVE:
-			{
+        //case TYPE_BYTE_ARRAY:
+        //	break;
+        case TYPE_KEYED_ARCHIVE:
+            {
 				DAVA::KeyedArchive *dstArchive = *((DAVA::KeyedArchive **) dst);
 				if(nullptr != dstArchive)
 				{
@@ -1762,8 +1762,8 @@ VariantType VariantType::FromType(int type)
         v.SetUInt32(0);
         break;
     case TYPE_BYTE_ARRAY:
-		v.SetByteArray(nullptr, 0);
-		break;
+        v.SetByteArray(nullptr, 0);
+        break;
 	case TYPE_KEYED_ARCHIVE:
 		{
 			KeyedArchive *ka = new KeyedArchive();

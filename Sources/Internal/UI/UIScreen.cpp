@@ -111,7 +111,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
     static auto drawColor(Color::Black);
 
     UIGeometricData drawData;
-	drawData.position = relativePosition;
+    drawData.position = relativePosition;
 	drawData.size = size;
 	drawData.pivotPoint = GetPivotPoint();
 	drawData.scale = scale;
@@ -129,7 +129,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
         auto rect2 = Rect(fullRect.dx - fullRect.x, 0, fullRect.x, virtualSize.y);
         RenderSystem2D::Instance()->FillRect(rect2, drawColor);
     }
-	else 
+    else 
 	{
         auto rect1 = Rect(0, fullRect.y, virtualSize.x + 1, -fullRect.y);
         RenderSystem2D::Instance()->FillRect(rect1, drawColor);

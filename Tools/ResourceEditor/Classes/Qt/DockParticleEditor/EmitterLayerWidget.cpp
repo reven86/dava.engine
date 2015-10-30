@@ -263,19 +263,19 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
         presetComboBox->addItem(blendPresetsMap[i].presetName);
     }
 
-    QHBoxLayout *blendLayout = new QHBoxLayout();
-	QVBoxLayout *presetLayout = new QVBoxLayout();
+    QHBoxLayout* blendLayout = new QHBoxLayout();
+    QVBoxLayout *presetLayout = new QVBoxLayout();
 
     presetLayout->addWidget(presetLabel);
-	presetLayout->addWidget(presetComboBox);
+    presetLayout->addWidget(presetComboBox);
 
     blendLayout->addLayout(presetLayout);
     mainBox->addLayout(blendLayout);
 
     connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
 
-    fogCheckBox = new QCheckBox("Enable fog");	
-	connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    fogCheckBox = new QCheckBox("Enable fog");
+    connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 	mainBox->addWidget(fogCheckBox);
 
 
@@ -540,15 +540,15 @@ EmitterLayerWidget::~EmitterLayerWidget()
 	disconnect(zFacingCheckBox,
 		SIGNAL(stateChanged(int)),
 		this,
-		SLOT(OnLodsChanged()));		
-	disconnect(worldAlignCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
 		SLOT(OnLodsChanged()));
+    disconnect(worldAlignCheckBox,
+               SIGNAL(stateChanged(int)),
+               this,
+               SLOT(OnLodsChanged()));
 
     disconnect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
     disconnect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	disconnect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    disconnect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
 	disconnect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 	disconnect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
@@ -573,7 +573,7 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effe
 	this->layer = layer;
 
     SetActiveScene(scene);
-	Update(updateMinimized);
+    Update(updateMinimized);
 }
 
 void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
@@ -750,7 +750,7 @@ void EmitterLayerWidget::OnValueChanged()
     eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
 
     int32 particleOrientation = 0;
-	if (cameraFacingCheckBox->isChecked())
+    if (cameraFacingCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
 	if (xFacingCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
@@ -815,7 +815,7 @@ void EmitterLayerWidget::OnValueChanged()
                          (float32)pivotPointYSpinBox->value());
 
     DVASSERT(activeScene);
-	activeScene->Exec(updateLayerCmd);
+    activeScene->Exec(updateLayerCmd);
 	activeScene->MarkAsChanged();
 
     Update(false);
@@ -1170,7 +1170,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 	presetLabel->setVisible(!isSuperemitter);
     presetComboBox->setVisible(!isSuperemitter);
     fogCheckBox->setVisible(!isSuperemitter);
-	frameBlendingCheckBox->setVisible(!isSuperemitter);
+    frameBlendingCheckBox->setVisible(!isSuperemitter);
 
 	// Some controls are however specific for this mode only - display and update them.
 	innerEmitterLabel->setVisible(isSuperemitter);

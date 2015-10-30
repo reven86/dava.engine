@@ -68,11 +68,11 @@ public:
 
         FilterItem(int8 minF, int8 magF, int8 mipF)
         {
-			minFilter = minF;
+            minFilter = minF;
 			magFilter = magF;
             mipFilter = mipF;
         }
-	};
+    };
 
 public:
 	TexturePacker();

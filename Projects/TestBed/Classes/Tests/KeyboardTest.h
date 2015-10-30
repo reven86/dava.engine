@@ -26,21 +26,26 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __$UNITTEST_GUARD_IFDEF$_TEST_H__
-#define __$UNITTEST_GUARD_IFDEF$_TEST_H__
+#ifndef __KEYBOARDTEST_TEST_H__
+#define __KEYBOARDTEST_TEST_H__
 
 #include <DAVAEngine.h>
 #include "Infrastructure/BaseScreen.h"
 
-class $UNITTEST_CLASSNAME$ : public BaseScreen
+class KeyboardTest : public BaseScreen
 {
 public:
-    $UNITTEST_CLASSNAME$();
+    KeyboardTest();
 
 protected:
     void LoadResources() override;
     void UnloadResources() override;
+
+private:
+    void OnResetClick(DAVA::BaseObject* sender, void* data, void* callerData);
+
+    DAVA::UIStaticText* previewText = nullptr;
+    DAVA::UIButton* resetButton = nullptr;
 };
 
-#endif //__$UNITTEST_GUARD_IFDEF$_TEST_H__
+#endif //__KEYBOARDTEST_TEST_H__

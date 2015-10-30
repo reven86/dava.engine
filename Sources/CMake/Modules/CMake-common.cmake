@@ -1,3 +1,8 @@
+# Only interpret ``if()`` arguments as variables or keywords when unquoted.
+if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+    cmake_policy(SET CMP0054 NEW)
+endif()
+
 include ( GlobalVariables      )
 
 if ( DAVA_MEMORY_PROFILER )

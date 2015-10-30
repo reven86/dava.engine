@@ -566,21 +566,16 @@ void UITextField::Input(UIEvent *currentInput)
     if (this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
-    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
+        currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-// on win32 we have split WM_CHAR and WM_KEYDOWN
-// on macos we have OnKeyUp and OnKeyDown
-#ifdef __DAVAENGINE_WINDOWS__
-        bool user_push_backspace = (currentInput->tid == 0 && currentInput->keyChar == '\b');
-#else
-        bool user_push_backspace = (currentInput->tid == DVKEY_BACKSPACE);
-#endif
-        if (user_push_backspace)
+        if (currentInput->tid == DVKEY_BACKSPACE)
         {
-            WideString str = L"";
-            if (delegate->TextFieldKeyPressed(this, (int32)GetText().length() - 1, 1, str))
+            WideString str;
+            int32 length = static_cast<int32>(GetText().length() - 1);
+            if (delegate->TextFieldKeyPressed(this, length, 1, str))
             {
-                SetText(GetAppliedChanges((int32)GetText().length() - 1, 1, str));
+                SetText(GetAppliedChanges(length, 1, str));
             }
         }
         else if (currentInput->tid == DVKEY_ENTER)
@@ -591,13 +586,18 @@ void UITextField::Input(UIEvent *currentInput)
         {
             delegate->TextFieldShouldCancel(this);
         }
-        else if (currentInput->keyChar != 0)
+    }
+    else if (currentInput->phase == UIEvent::Phase::CHAR ||
+             currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
+    {
+        if (currentInput->keyChar != 0 && currentInput->keyChar != '\b')
         {
             WideString str;
             str += currentInput->keyChar;
-            if (delegate->TextFieldKeyPressed(this, (int32)GetText().length(), 0, str))
+            int32 length = static_cast<int32>(GetText().length());
+            if (delegate->TextFieldKeyPressed(this, length, 0, str))
             {
-                SetText(GetAppliedChanges((int32)GetText().length(), 0, str));
+                SetText(GetAppliedChanges(length, 0, str));
             }
         }
     }

@@ -107,8 +107,8 @@ protected:
 
     Matrix4 worldMatrix;
 
-    Sprite *sprite;
-	Vector2 sprScale;
+    Sprite* sprite;
+    Vector2 sprScale;
 	Vector2 sprPivot;
 	int32 frame;
 

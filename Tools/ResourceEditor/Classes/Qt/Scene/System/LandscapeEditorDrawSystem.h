@@ -84,17 +84,17 @@ public:
 
     void EnableCursor();
     void DisableCursor();
-	void SetCursorTexture(Texture* cursorTexture);
+    void SetCursorTexture(Texture* cursorTexture);
     void SetCursorSize(float32 cursorSize);
     void SetCursorPosition(const Vector2& cursorPos);
-	
-	virtual void Process(DAVA::float32 timeElapsed);
+
+    virtual void Process(DAVA::float32 timeElapsed);
 
     void ProcessCommand(const Command2 *command, bool redo);
 
     float32 GetTextureSize(const FastName& level);
     Vector3 GetLandscapeSize();
-	float32 GetLandscapeMaxHeight();
+    float32 GetLandscapeMaxHeight();
     float32 GetHeightAtHeightmapPoint(const Vector2& point);
     float32 GetHeightAtTexturePoint(const FastName& level, const Vector2& point);
     KeyedArchive* GetLandscapeCustomProperties();
@@ -108,12 +108,12 @@ public:
     void ClampToTexture(const FastName& level, Rect& rect);
     void ClampToHeightmap(Rect& rect);
 
-	void AddEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity * entity) override;
 	void RemoveEntity(DAVA::Entity * entity) override;
 
     Rect GetTextureRect(const FastName& level);
     Rect GetHeightmapRect();
-	Rect GetLandscapeRect();
+    Rect GetLandscapeRect();
 
     bool SaveTileMaskTexture();
     void ResetTileMaskTexture();
@@ -122,9 +122,9 @@ public:
 
     eErrorType VerifyLandscape() const;
 
-    Landscape * GetBaseLandscape() const;
-	
-	static String GetDescriptionByError(eErrorType error);
+    Landscape* GetBaseLandscape() const;
+
+    static String GetDescriptionByError(eErrorType error);
 
 protected:
     void UpdateBaseLandscapeHeightmap();

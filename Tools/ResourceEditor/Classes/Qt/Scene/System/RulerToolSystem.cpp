@@ -76,7 +76,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
     drawSystem->GetLandscapeProxy()->SetToolTexture(rulerToolTexture, false);
     landscapeSize = drawSystem->GetHeightmapProxy()->Size();
 
-	previewLength = -1.f;
+    previewLength = -1.f;
 	previewEnabled = true;
 
 	Clear();
@@ -103,7 +103,7 @@ bool RulerToolSystem::DisableLandscapeEdititing()
     drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, false);
 
     Clear();
-	previewLength = -1.f;
+    previewLength = -1.f;
 	SendUpdatedLength();
 
 	enabled = false;
@@ -134,7 +134,7 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
 
     switch ( event->phase )
     {
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
         if ( DVKEY_BACKSPACE == event->tid )
         {
             RemoveLastPoint();
@@ -148,7 +148,7 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
         DrawPoints();
         break;
 
-    case UIEvent::PHASE_MOVE:
+    case UIEvent::Phase::MOVE:
         if ( previewEnabled )
         {
             CalcPreviewPoint( point );
@@ -156,7 +156,7 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
         }
         break;
 
-    case UIEvent::PHASE_ENDED:
+    case UIEvent::Phase::ENDED:
         if ( event->tid == UIEvent::BUTTON_1 && isIntersectsLandscape )
         {
             if ( IsKeyModificatorPressed( DVKEY_SHIFT ) )
@@ -198,7 +198,7 @@ void RulerToolSystem::AddPoint(const DAVA::Vector2& point)
 	{
         Vector2 prevPoint = *(linePoints.rbegin());
         float32 l = lengths.back();
-		l += GetLength(prevPoint, point);
+        l += GetLength(prevPoint, point);
 
 		linePoints.push_back(point);
 		lengths.push_back(l);
@@ -214,7 +214,7 @@ void RulerToolSystem::RemoveLastPoint()
 	{
         List<Vector2>::iterator pointsIter = linePoints.end();
         --pointsIter;
-		linePoints.erase(pointsIter);
+        linePoints.erase(pointsIter);
 
 		List<float32>::iterator lengthsIter = lengths.end();
 		--lengthsIter;
@@ -236,7 +236,7 @@ void RulerToolSystem::CalcPreviewPoint(const Vector2& point, bool force)
         Vector2 lastPoint = linePoints.back();
         float32 previewLen = GetLength(lastPoint, point);
 
-		previewPoint = point;
+        previewPoint = point;
 		previewLength = lengths.back() + previewLen;
 	}
 	else if (!isIntersectsLandscape)
@@ -253,12 +253,12 @@ DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector2& startPoint, const 
     Vector3 prevPoint = Vector3(startPoint);
     Vector3 prevLandscapePoint = drawSystem->GetLandscapeProxy()->PlacePoint(prevPoint); //
 
-	for(int32 i = 1; i <= APPROXIMATION_COUNT; ++i)
+    for(int32 i = 1; i <= APPROXIMATION_COUNT; ++i)
 	{
         Vector3 point = Vector3(startPoint + (endPoint - startPoint) * i / (float32)APPROXIMATION_COUNT);
         Vector3 landscapePoint = drawSystem->GetLandscapeProxy()->PlacePoint(point); //
 
-		lineSize += (landscapePoint - prevLandscapePoint).Length();
+        lineSize += (landscapePoint - prevLandscapePoint).Length();
 
 		prevPoint = point;
 		prevLandscapePoint = landscapePoint;
@@ -280,7 +280,7 @@ void RulerToolSystem::DrawPoints()
 
     Vector<Vector2> points;
     points.reserve(linePoints.size() + 1);
-	std::copy(linePoints.begin(), linePoints.end(), std::back_inserter(points));
+    std::copy(linePoints.begin(), linePoints.end(), std::back_inserter(points));
 
 	if (previewEnabled && isIntersectsLandscape)
 	{
@@ -306,7 +306,7 @@ void RulerToolSystem::DrawPoints()
 
         Vector2 startPoint = points[0];
         for (uint32 i = 1; i < pointsCount; ++i)
-		{
+        {
             Vector2 endPoint = points[i];
 
             Vector2 startPosition = (startPoint - offsetPoint) * koef;
@@ -322,7 +322,7 @@ void RulerToolSystem::DrawPoints()
             }
 
             startPoint = endPoint;
-		}
+        }
 	}
 
     RenderSystem2D::Instance()->EndRenderTargetPass();
