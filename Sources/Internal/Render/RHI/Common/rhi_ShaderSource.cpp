@@ -39,6 +39,7 @@ using DAVA::DynamicMemoryFile;
     #include "PreProcess.h"
 
     #define RHI__USE_STD_REGEX 0
+    #define RHI__OPTIMIZED_REGEX 1
 
     #if RHI__USE_STD_REGEX
         #include <regex>
@@ -151,7 +152,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         RegExp colormask_re;
         RegExp comment_re;
 
-#if defined(ORIGINAL_RHI_REGEX)
+#if !(RHI__OPTIMIZED_REGEX)
         prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
@@ -701,7 +702,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::regex texcoord_re(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
                 #else
                 RegExp texcoord_re;
-#if defined(ORIGINAL_RHI_REGEX)
+#if !(RHI__OPTIMIZED_REGEX)
                 texcoord_re.compile(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
 #else
                 texcoord_re.compile("VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(\\s*([0-7])\\s*\\)");
@@ -749,7 +750,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::regex index_re(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
                 #else
                 RegExp index_re;
-#if defined(ORIGINAL_RHI_REGEX)
+#if !(RHI__OPTIMIZED_REGEX)
                 index_re.compile(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
 #else
                 index_re.compile("VPROG_IN_BLENDINDEX\\s*\\(\\s*([0-7])\\s*\\)");
