@@ -363,7 +363,7 @@ public:
     /**
 	 \brief Optimize scene before export.
      */
-	void OptimizeBeforeExport();
+    void OptimizeBeforeExport();
 
     /**
         \brief Function to get child nodes of requested type and move them to specific container you provide.

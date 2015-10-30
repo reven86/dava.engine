@@ -63,8 +63,7 @@ public:
 
     virtual void BeginFrame();
     virtual void EndFrame();
-    
-    
+
     void SetScenePath(const FilePath & path) { scenePath = path; };
     const FilePath & GetScenePath() const { return scenePath; };
 

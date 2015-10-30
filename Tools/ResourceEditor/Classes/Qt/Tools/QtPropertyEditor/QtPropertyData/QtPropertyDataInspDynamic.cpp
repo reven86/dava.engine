@@ -75,7 +75,7 @@ QVariant QtPropertyDataInspDynamic::GetValueAlias() const
         ret = FromDavaVariant(dynamicInfo->MemberAliasGet(ddata, name));
     }
 
-	return ret;
+    return ret;
 }
 
 void QtPropertyDataInspDynamic::SetValueInternal(const QVariant &value)
@@ -127,8 +127,8 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
         DAVA::VariantType v = dynamicInfo->MemberValueGet(ddata, name);
 
         // if current variant value not equal to the real member value
-		// we should update current variant value
-		if(v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
+        // we should update current variant value
+        if(v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
 		{
 			QtPropertyDataDavaVariant::SetVariantValue(v);
 			ret = true;
@@ -149,7 +149,7 @@ bool QtPropertyDataInspDynamic::EditorDoneInternal(QWidget *editor)
         dynamicInfo->MemberValueSet(ddata, name, QtPropertyDataDavaVariant::GetVariantValue());
     }
 
-	return ret;
+    return ret;
 }
 
 void* QtPropertyDataInspDynamic::CreateLastCommand() const

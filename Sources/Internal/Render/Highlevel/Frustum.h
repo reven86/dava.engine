@@ -143,8 +143,7 @@ public:
         return planeArray[i];
     }
 
-
-	//
+    //
     void DebugDraw(RenderHelper* drawer);
 
 private:

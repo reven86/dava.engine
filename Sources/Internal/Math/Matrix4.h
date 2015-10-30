@@ -89,14 +89,14 @@ struct Matrix4
 
 	inline void	BuildProjectionFovLH(float32 _fovY, float32 _aspect, float32 _zn, float32 _zf);
 	inline void	BuildOrthoLH(float32 _l, float32 _r, float32 _t, float32 _b, float32 _zn, float32 _zf);
-	
+
     /*
         Convenience functions to simplify movement to own matrices. 
         Temporary solution. 
      */
     void glOrtho(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far, bool zeroBaseClipRange);
     void glFrustum(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far, bool zeroBaseClipRange);
-    
+
     void glRotate(float32 angle, float32 x, float32 y, float32 z);
     void glTranslate(float32 x, float32 y, float32 z);
     void glScale(float32 x, float32 y, float32 z);

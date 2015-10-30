@@ -33,13 +33,13 @@
 #include "Math/Quaternion.h"
 #include "FileSystem/Logger.h"
 
-namespace DAVA 
+namespace DAVA
 {
-Matrix4 Matrix4::IDENTITY(1.0f, 0.0f, 0.0f, 0.0f, 
+Matrix4 Matrix4::IDENTITY(1.0f, 0.0f, 0.0f, 0.0f,
                           0.0f, 1.0f, 0.0f, 0.0f,
                           0.0f, 0.0f, 1.0f, 0.0f,
                           0.0f, 0.0f, 0.0f, 1.0f);
-	
+
 //uint32 Matrix4::matrixMultiplicationCounter = 0;
 
 //inline void Matrix4::glOrthof
@@ -48,144 +48,157 @@ void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, 
     float32 r_l = right - left;
     float32 t_b = top - bottom;
     float32 f_n = f - n;
-    float32 tx = - (right + left) / (right - left);
-    float32 ty = - (top + bottom) / (top - bottom);
-    float32 tz = - (f + n) / (f - n);
-    
+    float32 tx = -(right + left) / (right - left);
+    float32 ty = -(top + bottom) / (top - bottom);
+    float32 tz = -(f + n) / (f - n);
+
     data[0] = 2.0f / r_l;
     data[1] = 0.0f;
     data[2] = 0.0f;
     data[3] = 0.0f;
-    
+
     data[4] = 0.0f;
     data[5] = 2.0f / t_b;
     data[6] = 0.0f;
     data[7] = 0.0f;
-    
+
     data[8] = 0.0f;
     data[9] = 0.0f;
     data[10] = -2.0f / f_n;
     data[11] = 0.0f;
 
     //RHI_COMPLETE - update it to zero based clip range
-    
+
     data[12] = tx;
     data[13] = ty;
     data[14] = tz;
     data[15] = 1.0f;
 }
-    
+
 void Matrix4::glFrustum(float32 l, float32 r, float32 b, float32 t, float32 n, float32 f, bool zeroBaseClipRange)
 {
     float32 r_l = r - l;
     float32 t_b = t - b;
     float32 f_n = f - n;
-    
+
     data[0] = 2.0f * n / r_l;
     data[4] = 0.0f;
     data[8] = (r + l) / (r - l);
     data[12] = 0.0f;
-    
+
     data[1] = 0.0f;
     data[5] = 2.0f * n / t_b;
     data[9] = (t + b) / (t - b);
     data[13] = 0.0f;
-    
+
     data[2] = 0.0f;
     data[6] = 0.0f;
     if (zeroBaseClipRange)
     {
-        data[10] = -f / f_n;     
-        data[14] = -f * n / f_n; 
+        data[10] = -f / f_n;
+        data[14] = -f * n / f_n;
     }
     else
     {
         data[10] = -(f + n) / f_n;
         data[14] = -2 * f * n / f_n;
     }
-    
+
     data[3] = 0;
     data[7] = 0;
     data[11] = -1;
     data[15] = 0;
 }
-    
+
 void Matrix4::glRotate(float32 angle, float32 x, float32 y, float32 z)
 {
     float32 xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c;
     //float32 m[16];
     bool optimized;
-    
-    s = (float32) sinf( DegToRad(angle) );
-    c = (float32) cosf( DegToRad(angle) );
-    
-    memcpy(this->data, IDENTITY.data, sizeof(float32)*16);
+
+    s = (float32)sinf(DegToRad(angle));
+    c = (float32)cosf(DegToRad(angle));
+
+    memcpy(this->data, IDENTITY.data, sizeof(float32) * 16);
     optimized = false;
     
-#define M(row,col)  this->data[col*4+row]
-    
-    if (x == 0.0F) {
-        if (y == 0.0F) {
-            if (z != 0.0F) {
+#define M(row, col) this->data[col * 4 + row]
+
+    if (x == 0.0F)
+    {
+        if (y == 0.0F)
+        {
+            if (z != 0.0F)
+            {
                 optimized = true;
                 /* rotate only around z-axis */
-                M(0,0) = c;
-                M(1,1) = c;
-                if (z < 0.0F) {
-                    M(0,1) = s;
-                    M(1,0) = -s;
+                M(0, 0) = c;
+                M(1, 1) = c;
+                if (z < 0.0F)
+                {
+                    M(0, 1) = s;
+                    M(1, 0) = -s;
                 }
-                else {
-                    M(0,1) = -s;
-                    M(1,0) = s;
+                else
+                {
+                    M(0, 1) = -s;
+                    M(1, 0) = s;
                 }
             }
         }
-        else if (z == 0.0F) {
+        else if (z == 0.0F)
+        {
             optimized = true;
             /* rotate only around y-axis */
-            M(0,0) = c;
-            M(2,2) = c;
-            if (y < 0.0F) {
-                M(0,2) = -s;
-                M(2,0) = s;
+            M(0, 0) = c;
+            M(2, 2) = c;
+            if (y < 0.0F)
+            {
+                M(0, 2) = -s;
+                M(2, 0) = s;
             }
-            else {
-                M(0,2) = s;
-                M(2,0) = -s;
+            else
+            {
+                M(0, 2) = s;
+                M(2, 0) = -s;
             }
         }
     }
-    else if (y == 0.0F) {
-        if (z == 0.0F) {
+    else if (y == 0.0F)
+    {
+        if (z == 0.0F)
+        {
             optimized = true;
             /* rotate only around x-axis */
-            M(1,1) = c;
-            M(2,2) = c;
-            if (x < 0.0F) {
-                M(1,2) = s;
-                M(2,1) = -s;
+            M(1, 1) = c;
+            M(2, 2) = c;
+            if (x < 0.0F)
+            {
+                M(1, 2) = s;
+                M(2, 1) = -s;
             }
-            else {
-                M(1,2) = -s;
-                M(2,1) = s;
+            else
+            {
+                M(1, 2) = -s;
+                M(2, 1) = s;
             }
         }
     }
-    
-    if (!optimized) {
+
+    if (!optimized)
+    {
         const float32 mag = sqrtf(x * x + y * y + z * z);
-        
-        if (mag <= 1.0e-4) {
+
+        if (mag <= 1.0e-4)
+        {
             /* no rotation, leave mat as-is */
             return;
         }
-        
+
         x /= mag;
         y /= mag;
         z /= mag;
-        
-        
+
         /*
          *     Arbitrary axis rotation matrix.
          *
@@ -238,7 +251,7 @@ void Matrix4::glRotate(float32 angle, float32 x, float32 y, float32 z)
          *  been zero, the numerator would have been zero as well, giving
          *  the expected result.
          */
-        
+
         xx = x * x;
         yy = y * y;
         zz = z * z;
@@ -249,23 +262,23 @@ void Matrix4::glRotate(float32 angle, float32 x, float32 y, float32 z)
         ys = y * s;
         zs = z * s;
         one_c = 1.0F - c;
-        
+
         /* We already hold the identity-matrix so we can skip some statements */
-        M(0,0) = (one_c * xx) + c;
-        M(0,1) = (one_c * xy) - zs;
-        M(0,2) = (one_c * zx) + ys;
+        M(0, 0) = (one_c * xx) + c;
+        M(0, 1) = (one_c * xy) - zs;
+        M(0, 2) = (one_c * zx) + ys;
         /*    M(0,3) = 0.0F; */
-        
-        M(1,0) = (one_c * xy) + zs;
-        M(1,1) = (one_c * yy) + c;
-        M(1,2) = (one_c * yz) - xs;
+
+        M(1, 0) = (one_c * xy) + zs;
+        M(1, 1) = (one_c * yy) + c;
+        M(1, 2) = (one_c * yz) - xs;
         /*    M(1,3) = 0.0F; */
-        
-        M(2,0) = (one_c * zx) - ys;
-        M(2,1) = (one_c * yz) + xs;
-        M(2,2) = (one_c * zz) + c;
+
+        M(2, 0) = (one_c * zx) - ys;
+        M(2, 1) = (one_c * yz) + xs;
+        M(2, 2) = (one_c * zz) + c;
         /*    M(2,3) = 0.0F; */
-        
+
         /*
          M(3,0) = 0.0F;
          M(3,1) = 0.0F;
@@ -274,16 +287,16 @@ void Matrix4::glRotate(float32 angle, float32 x, float32 y, float32 z)
          */
     }
 #undef M
-    
+
     //matrix_multf( mat, m, MAT_FLAG_ROTATION );
 }
-    
+
 void Matrix4::glTranslate(float32 x, float32 y, float32 z)
 {
     CreateTranslation(Vector3(x, y, z));
 }
-    
-void  Matrix4::glScale(float32 x, float32 y, float32 z)
+
+void Matrix4::glScale(float32 x, float32 y, float32 z)
 {
     CreateScale(Vector3(x, y, z));
 }
@@ -298,17 +311,16 @@ void Matrix4::Dump()
 
 void Matrix4::Decomposition(Vector3& position, Vector3& scale, Quaternion& rot) const
 {
-	scale = GetScaleVector();
-	position = GetTranslationVector();
-	
-	Matrix4 unscaled(*this);
-	for (int32 i = 0; i < 3; ++i)
-	{
-		unscaled._data[0][i] /= scale.x;
-		unscaled._data[1][i] /= scale.y;
-		unscaled._data[2][i] /= scale.z;
-	}
-	rot.Construct(unscaled);
-}
+    scale = GetScaleVector();
+    position = GetTranslationVector();
 
+    Matrix4 unscaled(*this);
+    for (int32 i = 0; i < 3; ++i)
+    {
+        unscaled._data[0][i] /= scale.x;
+        unscaled._data[1][i] /= scale.y;
+        unscaled._data[2][i] /= scale.z;
+    }
+    rot.Construct(unscaled);
+}
 };

@@ -501,7 +501,7 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
                 }
             }
         }
-	}
+    }
 	
 	//process children	
 	for (int32 i=0; i<QuadTreeNode::NODE_NONE; ++i)
@@ -511,7 +511,7 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
 		{
             ProcessNodeClipping(childNodeId, clippingFlags, visibilityArray);
         }
-	}		
+    }		
 }
 
 void QuadTree::Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint32 visibilityCriteria)
@@ -519,7 +519,7 @@ void QuadTree::Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint
 	DVASSERT(worldInitialized);
 	currCamera = camera;
 	currVisibilityCriteria = visibilityCriteria;
-	currFrustum = camera->GetFrustum();
+    currFrustum = camera->GetFrustum();
     ProcessNodeClipping(0, 0x3f, visibilityArray);
 }
 
