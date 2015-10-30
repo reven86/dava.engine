@@ -32,12 +32,12 @@
 
 using namespace DAVA;
 
-#if defined (ENABLE_ASSERT_MESSAGE)
-
 namespace
 {
 DAVA::Atomic<bool> messageDisplayed(false);
 }
+
+#if defined(ENABLE_ASSERT_MESSAGE)
 
 bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
 {
@@ -56,7 +56,7 @@ bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
     userClickBreak = InnerShow(modalType, tmp);
     messageDisplayed = false;
     va_end(vl);
-    
+
     return userClickBreak;
 }
 

@@ -202,9 +202,9 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb)
     , isVisible(true)
     , uiWebView(uiWeb)
 {
-    HelperAppDelegate * appDelegate = [[UIApplication sharedApplication] delegate];
-    BackgroundView * backgroundView = [appDelegate renderViewController].backgroundView;
-    
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
+
     ::UIWebView* localWebView = [backgroundView CreateWebView];
     webViewPtr = localWebView;
     
@@ -604,7 +604,7 @@ void WebViewControl::SetBounces(bool value)
 void WebViewControl::SetGestures(bool value)
 {
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    UIView * backView = appDelegate.renderViewController.backgroundView;
+    UIView* backView = appDelegate.renderViewController.backgroundView;
 
     if (value && !gesturesEnabled)
     {

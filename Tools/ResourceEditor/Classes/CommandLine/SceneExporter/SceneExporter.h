@@ -74,8 +74,8 @@ protected:
 protected:
     SceneUtils sceneUtils;
     eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
-	TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
-	bool optimizeOnExport = false;
+    TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
+    bool optimizeOnExport = false;
 };
 
 

@@ -44,7 +44,7 @@ namespace DAVA
 class TextBlockRender;
 class TextBlockSoftwareRender;
 class TextBlockGraphicRender;
-    
+
 /**
     \ingroup render_2d
     \brief Class to render text on the screen. 
@@ -209,11 +209,11 @@ protected:
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicRender;
-    
-    TextBlockRender* textBlockRender;    	
 
-	float angle;
-	Vector2 pivot;
+    TextBlockRender* textBlockRender;
+
+    float angle;
+    Vector2 pivot;
 };
 
 inline void TextBlock::CalculateCacheParamsIfNeed()

@@ -136,7 +136,7 @@ void ProcessFrame()
 
 void RegisterSyncCallback(rhi::HSyncObject syncObject, Function<void(rhi::HSyncObject)> callback)
 {
-    syncCallbacks.push_back({syncObject, callback});
+    syncCallbacks.push_back({ syncObject, callback });
 }
 
 void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback)

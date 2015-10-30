@@ -752,8 +752,8 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
         }
 
         DAVA::Texture* texture = textureListModel->getTexture(descriptor);
-        if(NULL != texture)
-		{
+        if (NULL != texture)
+        {
             // reload this texture into scene
             reloadTextureToScene(texture, descriptor, gpu);
         }
@@ -819,9 +819,9 @@ void TextureBrowser::textureZoomFit(bool checked)
 		}
 		else
 		{
-			if(rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
-			{
-				QSize size = ui->textureAreaOriginal->getContentSize();
+            if (rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
+            {
+                QSize size = ui->textureAreaOriginal->getContentSize();
 				w = size.width();
 				h = size.height();
 			}

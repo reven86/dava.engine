@@ -52,7 +52,6 @@ enum eSpriteModification
 	ESM_VFLIP = 1<<1
 };
 
-
 class Texture;
 class RenderSystem2D;
 
@@ -97,18 +96,15 @@ public:
 		inline void SetFlags(uint32 flags);
 		inline void SetPerPixelAccuracyUsage(bool needToUse);
 		void BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState);
-        
-        
-        inline void SetMaterial(NMaterial* material);        
-        inline NMaterial* GetMaterial() const;        
-        
+
+        inline void SetMaterial(NMaterial* material);
+        inline NMaterial* GetMaterial() const;
+
     private:
-    
-        NMaterial *material;
+        NMaterial* material;
+    };
 
-	};
-
-	enum eSpriteType
+    enum eSpriteType
 	{
 			SPRITE_FROM_FILE = 0
 		,	SPRITE_FROM_TEXTURE
@@ -400,7 +396,6 @@ inline NMaterial* Sprite::DrawState::GetMaterial() const
 {
     return material;
 }
-
 
 void Sprite::DrawState::SetMaterial(NMaterial* _material)
 {

@@ -379,19 +379,19 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
 	if(NULL != curScene)
 	{
         QList<QUrl> urls = data->urls();
-        for(int i = 0; i < urls.size(); ++i)
+        for (int i = 0; i < urls.size(); ++i)
         {
-			QString path = urls[i].toLocalFile();
-			if(QFileInfo(path).suffix() == "sc2")
+            QString path = urls[i].toLocalFile();
+            if (QFileInfo(path).suffix() == "sc2")
             {
                 DAVA::Vector3 pos;
-                    
+
                 // check if there is intersection with landscape. ray from camera to mouse pointer
                 // if there is - we should move opening scene to that point
-                if(!curScene->collisionSystem->LandRayTestFromCamera(pos))
+                if (!curScene->collisionSystem->LandRayTestFromCamera(pos))
                 {
-                    DAVA::Landscape *landscape = curScene->collisionSystem->GetLandscape();
-                    if( NULL != landscape && NULL != landscape->GetHeightmap() && landscape->GetHeightmap()->Size() > 0)
+                    DAVA::Landscape* landscape = curScene->collisionSystem->GetLandscape();
+                    if (NULL != landscape && NULL != landscape->GetHeightmap() && landscape->GetHeightmap()->Size() > 0)
                     {
                         curScene->collisionSystem->GetLandscape()->PlacePoint(DAVA::Vector3(), pos);
                     }
@@ -405,8 +405,8 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
                 QtMainWindow::Instance()->WaitStop();
             }
         }
-	}
-	else
+    }
+    else
 	{
 		TabBarDataDropped(data);
 	}
@@ -420,25 +420,25 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
 
     auto view = davaWidget->GetGLView();
 
-    if(GetCurrentScene() == scene && nullptr != entities)
-	{
-		switch(scene->modifSystem->GetModifMode())
+    if (GetCurrentScene() == scene && nullptr != entities)
+    {
+        switch(scene->modifSystem->GetModifMode())
 		{
 		case ST_MODIF_MOVE:
             view->setCursor(cursorMove);
             break;
-		case ST_MODIF_ROTATE:
+        case ST_MODIF_ROTATE:
             view->setCursor(cursorRotate);
             break;
-		case ST_MODIF_SCALE:
+        case ST_MODIF_SCALE:
             view->setCursor(cursorScale);
             break;
-		case ST_MODIF_OFF:
-		default:
+        case ST_MODIF_OFF:
+        default:
             view->unsetCursor();
             break;
-		}
-	}
+        }
+    }
 	else
 	{
         view->unsetCursor();

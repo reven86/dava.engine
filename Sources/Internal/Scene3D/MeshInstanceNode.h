@@ -53,7 +53,7 @@ protected:
     virtual ~PolygonGroupWithMaterial();
 
 public:
-    void Setup(StaticMesh * mesh, int32 polygroupIndex, NMaterial * material, TransformComponent * transform);
+    void Setup(StaticMesh* mesh, int32 polygroupIndex, NMaterial* material, TransformComponent* transform);
 
     virtual uint64 GetSortID();
 
@@ -85,8 +85,7 @@ protected:
 public:
 	MeshInstanceNode();
 
-	
-	void AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupIndex, NMaterial* material);
+    void AddPolygonGroup(StaticMesh* mesh, int32 polygonGroupIndex, NMaterial* material);
 
     virtual void Update(float32 timeElapsed);
     virtual void Draw();

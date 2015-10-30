@@ -53,28 +53,27 @@ public:
 
     virtual void DidAppear();
 
-    virtual void Input(UIEvent *currentInput);
+    virtual void Input(UIEvent* currentInput);
 
 protected:
     void OnBack(BaseObject *caller, void *param, void *callerData);
     void UpdateInfo(float32 timeElapsed);
-    
-    DAVA::UIStaticText *info;
-    DAVA::UIJoypad * moveJoyPAD;
-    
+
+    DAVA::UIStaticText* info;
+    DAVA::UIJoypad* moveJoyPAD;
+
     DAVA::float32 framesTime;
     DAVA::uint32 frameCounter;
-    
+
     DAVA::uint64 drawTime;
     DAVA::uint64 updateTime;
 
-    DAVA::Scene * scene = nullptr;
-    DAVA::RotationControllerSystem * rotationControllerSystem = nullptr;
-    DAVA::WASDControllerSystem * wasdSystem = nullptr;
+    DAVA::Scene* scene = nullptr;
+    DAVA::RotationControllerSystem* rotationControllerSystem = nullptr;
+    DAVA::WASDControllerSystem* wasdSystem = nullptr;
 
     Vector2 cursorPosition;
     float32 cursorSize;
-
 };
 
 #endif //__VIEW_SCENE_SCREEN_H__

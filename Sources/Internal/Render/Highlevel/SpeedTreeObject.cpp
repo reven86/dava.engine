@@ -164,12 +164,12 @@ void SpeedTreeObject::Load(KeyedArchive *archive, SerializationContext *serializ
         sphericalHarmonics.assign(sphericalArray, sphericalArray + shCount);
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
-    
+
     //RHI_COMPLETE TODO: Remove setting WIND_ANIMATION flag. We need to add/set flag manualy (and save it) to reduce material prebuild count
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        NMaterial *material = renderBatchArray[k].renderBatch->GetMaterial();
+        NMaterial* material = renderBatchArray[k].renderBatch->GetMaterial();
         if (!material->HasLocalFlag(FLAG_WIND_ANIMATION))
             material->AddFlag(FLAG_WIND_ANIMATION, 1);
         else
@@ -220,7 +220,6 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
 
 bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch * batch)
 {
-
     if(batch && batch->GetMaterial())
     {
         const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();

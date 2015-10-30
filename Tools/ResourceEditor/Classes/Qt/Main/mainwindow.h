@@ -167,16 +167,15 @@ public slots:
 
 	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
-	void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
+    void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
 
-	void OnConvertModifiedTextures();
-    
-	void OnCloseTabRequest(int tabIndex, Request *closeRequest);
+    void OnConvertModifiedTextures();
+
+    void OnCloseTabRequest(int tabIndex, Request *closeRequest);
 
 	void OnBeastAndSave();
     
     void OnBuildStaticOcclusion();
-    void OnRebuildCurrentOcclusionCell();
     void OnInavalidateStaticOcclusion();
 
 	void OnLandscapeEditorToggled(SceneEditor2* scene);
@@ -206,7 +205,7 @@ public slots:
     void OnBatchProcessScene();
     
     void OnSnapCameraToLandscape(bool);
-    
+
     void SetupTitle();
 
 protected:

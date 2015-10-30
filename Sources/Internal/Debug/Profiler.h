@@ -35,9 +35,8 @@
     using DAVA::uint64;
     #include <Base/Hash.h>
 
-    #define PROFILER_ENABLED        0
-    #define TRACER_ENABLED          0
-
+    #define PROFILER_ENABLED 0
+    #define TRACER_ENABLED 0
 
 namespace profiler
 {
@@ -156,30 +155,27 @@ ScopedTiming
 
 #endif // PROFILER_ENABLED
 
-
 namespace profiler
 {
+void BeginEvent(unsigned tid, const char* category, const char* name);
+void EndEvent(unsigned tid, const char* category, const char* name);
+void InstantEvent(unsigned tid, const char* category, const char* name);
 
-void    BeginEvent( unsigned tid, const char* category, const char* name );
-void    EndEvent( unsigned tid, const char* category, const char* name );
-void    InstantEvent( unsigned tid, const char* category, const char* name );
-
-void    DumpEvents();
-void    SaveEvents( const char* fileName );
-
+void DumpEvents();
+void SaveEvents(const char* fileName);
 }
 
 #if TRACER_ENABLED
 
-#define TRACE_BEGIN_EVENT(tid,cat,name)     profiler::BeginEvent( tid, cat, name );
-#define TRACE_END_EVENT(tid,cat,name)       profiler::EndEvent( tid, cat, name );
-#define TRACE_INSTANT_EVENT(tid,cat,name)   profiler::InstantEvent( tid, cat, name );
+#define TRACE_BEGIN_EVENT(tid, cat, name) profiler::BeginEvent(tid, cat, name);
+#define TRACE_END_EVENT(tid, cat, name) profiler::EndEvent(tid, cat, name);
+#define TRACE_INSTANT_EVENT(tid, cat, name) profiler::InstantEvent(tid, cat, name);
 
 #else
 
-#define TRACE_BEGIN_EVENT(tid,cat,name) 
-#define TRACE_END_EVENT(tid,cat,name)   
-#define TRACE_INSTANT_EVENT(tid,cat,name)
+#define TRACE_BEGIN_EVENT(tid, cat, name) 
+#define TRACE_END_EVENT(tid, cat, name)   
+#define TRACE_INSTANT_EVENT(tid, cat, name)
 
 #endif
 

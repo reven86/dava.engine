@@ -206,7 +206,7 @@ void CommandLineManager::Process()
             QualitySettingsSystem::Instance()->Load(activeTool->GetQualityConfigPath());
         }
 
-		activeTool->Process();
+        activeTool->Process();
     }
 }
 

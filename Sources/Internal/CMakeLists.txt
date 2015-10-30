@@ -134,6 +134,10 @@ elseif( IOS )
 
 elseif ( WINDOWS_UAP )
     add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
+
+    list ( APPEND LIST_SHARED_LIBRARIES "d2d1.lib" "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "dxguid.lib" "dwrite.lib" )
+    set ( IGNORED_RHI_FOLDER "DX9" "GLES2" "Metal" )
+
 elseif( WIN32 ) 
     include( FindWindowsSDK )
     include_directories   ( ${WINDOWSSDK_LATEST_DIR}/include/shared ) 
@@ -200,5 +204,4 @@ install_libraries( ${PROJECT_NAME} )
 
 if ( WINDOWS_UAP )
     set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
-    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_IOT_EXTENSIONS_VERSION ${WINDOWS_UAP_IOT_EXT_SDK_VERSION} )
 endif()

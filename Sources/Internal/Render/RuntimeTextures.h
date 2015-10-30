@@ -36,13 +36,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RHI/rhi_Public.h"
 #include "Render/Texture.h"
 
-
 namespace DAVA
-{    
+{
 class RuntimeTextures
 {
 public:
-
     const static int32 REFLECTION_TEX_SIZE = 512;
     const static int32 REFRACTION_TEX_SIZE = 512;
 
@@ -51,14 +49,17 @@ public:
         TEXTURE_STATIC = 0,
         TEXTURE_DYNAMIC_REFLECTION,
         TEXTURE_DYNAMIC_REFRACTION,
-        TEXTURE_DYNAMIC_RR_DEPTHBUFFER,           //depth buffer for reflection and refraction
+        TEXTURE_DYNAMIC_RR_DEPTHBUFFER, //depth buffer for reflection and refraction
         //later add here shadow maps, environment probes etc.
 
         DYNAMIC_TEXTURES_END,
         DYNAMIC_TEXTURES_COUNT = DYNAMIC_TEXTURES_END,
     };
 
-    RuntimeTextures() { pinkTexture[0] = pinkTexture[1] = nullptr; }
+    RuntimeTextures()
+    {
+        pinkTexture[0] = pinkTexture[1] = nullptr;
+    }
 
 public:
     static RuntimeTextures::eDynamicTextureSemantic GetDynamicTextureSemanticByName(const FastName& name);
@@ -75,9 +76,7 @@ private:
     void InitDynamicTexture(eDynamicTextureSemantic semantic);
 
     rhi::HTexture dynamicTextures[DYNAMIC_TEXTURES_COUNT];
-    Texture * pinkTexture[2]; //TEXTURE_2D & TEXTURE_CUBE    
+    Texture* pinkTexture[2]; //TEXTURE_2D & TEXTURE_CUBE
 };
-
 }
 #endif // __DAVAENGINE_RUNTIME_TEXTURES_H__
-

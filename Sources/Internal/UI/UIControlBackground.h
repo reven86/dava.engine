@@ -297,8 +297,7 @@ public:
 
     // WTF? Probably we should move it to protected to avoid problems in future?
     Color color;//!<Control color. By default is Color(1,1,1,1).
-    
-    
+
     /**
      \brief Sets the margins for drawing background. Positive values means inner
      offset, negative ones - outer.
@@ -341,8 +340,8 @@ public:
 #endif
 protected:
     ~UIControlBackground();
-    Color drawColor;    
-    
+    Color drawColor;
+
     NMaterial* material;
 #if defined(LOCALIZATION_DEBUG)
     Sprite::DrawState lastDrawState;

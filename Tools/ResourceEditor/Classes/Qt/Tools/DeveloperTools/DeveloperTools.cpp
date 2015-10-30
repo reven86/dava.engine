@@ -104,7 +104,6 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
 
 void DeveloperTools::OnDebugCreateTestSkinnedObject()
 {
-
     SceneEditor2 * currentScene = QtMainWindow::Instance()->GetCurrentScene();
     if(!currentScene) return;
     ScopedPtr<Entity> entity(new Entity());
@@ -158,13 +157,12 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     }
 
     polygonGroup->SetPrimitiveType(rhi::PRIMITIVE_LINELIST);
-    
-    ScopedPtr<NMaterial> material(new NMaterial()); 
+
+    ScopedPtr<NMaterial> material(new NMaterial());
     material->SetMaterialName(FastName("DebugSkeleton"));
     material->SetFXName(NMaterialName::DECAL_OPAQUE);
     material->SetFlag(NMaterialFlagName::FLAG_SKINNING, 1);
-    
-    
+
     ScopedPtr<RenderBatch> renderBatch(new RenderBatch());
     renderBatch->SetMaterial(material);
     renderBatch->SetPolygonGroup(polygonGroup);
@@ -177,7 +175,6 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     entity->AddComponent(renderComponent);
 
     currentScene->Exec(new EntityAddCommand(entity, currentScene));
-
 }
 
 void DeveloperTools::OnImageSplitterNormals()
@@ -195,11 +192,10 @@ void DeveloperTools::OnSpyWidget()
 void DeveloperTools::OnReplaceTextureMipmap()
 {
     QStringList items = QStringList()
-        << QString(NMaterialTextureName::TEXTURE_ALBEDO.c_str())
-        << QString(NMaterialTextureName::TEXTURE_LIGHTMAP.c_str())
-        << QString(NMaterialTextureName::TEXTURE_DETAIL.c_str())
-        << QString(NMaterialTextureName::TEXTURE_NORMAL.c_str())
-        ;
+    << QString(NMaterialTextureName::TEXTURE_ALBEDO.c_str())
+    << QString(NMaterialTextureName::TEXTURE_LIGHTMAP.c_str())
+    << QString(NMaterialTextureName::TEXTURE_DETAIL.c_str())
+    << QString(NMaterialTextureName::TEXTURE_NORMAL.c_str());
 
     bool isOk;
     QString item = QInputDialog::getItem(QtMainWindow::Instance(), "Replace mipmaps", "Textures:", items, 0, true, &isOk);

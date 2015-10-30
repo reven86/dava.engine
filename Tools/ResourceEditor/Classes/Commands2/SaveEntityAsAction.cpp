@@ -55,7 +55,7 @@ void SaveEntityAsAction::Redo()
 	uint32 count = static_cast<uint32>(entities->Size());
     if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != entities) && (count > 0))
     {
-		const auto RemoveReferenceToOwner = [](Entity *entity) 
+        const auto RemoveReferenceToOwner = [](Entity *entity) 
 		{
 			KeyedArchive *props = GetCustomPropertiesArchieve(entity);
 			if(nullptr != props)
@@ -67,18 +67,18 @@ void SaveEntityAsAction::Redo()
         ScopedPtr<Scene> scene(new Scene());
         ScopedPtr<Entity> container(nullptr);
 
-        if (count == 1)	// saving of single object
-		{
+        if (count == 1) // saving of single object
+        {
             container.reset(entities->GetEntity(0)->Clone());
             RemoveReferenceToOwner(container);
-			container->SetLocalTransform(Matrix4::IDENTITY);
+            container->SetLocalTransform(Matrix4::IDENTITY);
 		}
 		else // saving of group of objects
 		{
             container.reset(new Entity());
 
             const Vector3 oldZero = entities->GetCommonZeroPos();
-			for (uint32 i = 0; i < count; ++i)
+            for (uint32 i = 0; i < count; ++i)
 			{
 				ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
 
@@ -115,9 +115,9 @@ void SaveEntityAsAction::Redo()
             }
         }
 
-        scene->AddNode(container);								//1. Added new items in zero position with identity matrix
-		scene->staticOcclusionSystem->InvalidateOcclusion();	//2. invalidate static occlusion indeces
-		RemoveLightmapsRecursive(container);					//3. Reset lightmaps
+        scene->AddNode(container); //1. Added new items in zero position with identity matrix
+        scene->staticOcclusionSystem->InvalidateOcclusion(); //2. invalidate static occlusion indeces
+        RemoveLightmapsRecursive(container);					//3. Reset lightmaps
 				
 		scene->SaveScene(sc2Path);
 
@@ -137,12 +137,12 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 		const uint32 batchCount = renderObject->GetRenderBatchCount();
 		for (uint32 b = 0; b < batchCount; ++b)
 		{
-			NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
-			if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
-			{
-				material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
-			}
-		}
+            NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
+            if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
+            {
+                material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
+            }
+        }
 	}
 
 	const int32 count = entity->GetChildrenCount();

@@ -207,7 +207,7 @@ SceneEditor2* MaterialModel::GetScene()
 
 DAVA::NMaterial* MaterialModel::GetGlobalMaterial() const
 {
-    DAVA::NMaterial *ret = nullptr;
+    DAVA::NMaterial* ret = nullptr;
     if (nullptr != curScene)
     {
         ret = curScene->GetGlobalMaterial();
@@ -256,10 +256,10 @@ void MaterialModel::Sync()
 {
 	if(NULL != curScene)
 	{
-        DAVA::NMaterial *globalMaterial = GetGlobalMaterial();
-        const DAVA::Set<DAVA::NMaterial*> &sceneMaterials = curScene->materialSystem->GetTopParents();
-        Map<NMaterial *, bool> processedList;
-        
+        DAVA::NMaterial* globalMaterial = GetGlobalMaterial();
+        const DAVA::Set<DAVA::NMaterial*>& sceneMaterials = curScene->materialSystem->GetTopParents();
+        Map<NMaterial*, bool> processedList;
+
         // init processed list
         for (auto it : sceneMaterials)
         {
@@ -273,11 +273,11 @@ void MaterialModel::Sync()
         }
 
         // remove items, that are not in set
-        QStandardItem *root = invisibleRootItem();
-        for(int i = 0; i < root->rowCount(); ++i)
+        QStandardItem* root = invisibleRootItem();
+        for (int i = 0; i < root->rowCount(); ++i)
         {
-            MaterialItem *item = (MaterialItem *) root->child(i);
-            DAVA::NMaterial *material = item->GetMaterial();
+            MaterialItem* item = (MaterialItem*)root->child(i);
+            DAVA::NMaterial* material = item->GetMaterial();
 
             // no such material in scene - remove it from tree
             if (0 == processedList.count(material))
@@ -290,7 +290,7 @@ void MaterialModel::Sync()
                 if (material != globalMaterial)
                     Sync(item);
 
-                // mark processed material 
+                // mark processed material
                 processedList[material] = true;
             }
         }
@@ -310,7 +310,7 @@ void MaterialModel::Sync()
                     dropEnabled = false;
                 }
 
-                MaterialItem *newItem = new MaterialItem(it.first, dragEnabled, dropEnabled);
+                MaterialItem* newItem = new MaterialItem(it.first, dragEnabled, dropEnabled);
                 root->appendRow(newItem);
 
                 if (it.first != globalMaterial)
@@ -319,16 +319,16 @@ void MaterialModel::Sync()
         }
 
         const EntityGroup& selection = curScene->selectionSystem->GetSelection();
-        SetSelection( &selection );
+        SetSelection(&selection);
     }
 }
 
-void MaterialModel::Sync(MaterialItem *item)
+void MaterialModel::Sync(MaterialItem* item)
 {
     DAVA::NMaterial* material = item->GetMaterial();
-    const Vector<NMaterial *>& materialChildren = material->GetChildren();
+    const Vector<NMaterial*>& materialChildren = material->GetChildren();
 
-    Map<NMaterial *, bool> processedList;
+    Map<NMaterial*, bool> processedList;
 
     // init processed list
     for (auto it : materialChildren)
@@ -339,7 +339,7 @@ void MaterialModel::Sync(MaterialItem *item)
     // remove all items that are not in hierarchy
     for (int i = 0; i < item->rowCount(); ++i)
     {
-        MaterialItem *childItem = (MaterialItem *)item->child(i);
+        MaterialItem* childItem = (MaterialItem*)item->child(i);
         DAVA::NMaterial* childMaterial = childItem->GetMaterial();
 
         bool shouldSyncMaterial = (processedList.count(childMaterial) > 0) &&
@@ -362,7 +362,7 @@ void MaterialModel::Sync(MaterialItem *item)
         bool shouldAddMaterial = !it.second && curScene->materialSystem->HasMaterial(it.first);
         if (shouldAddMaterial)
         {
-            MaterialItem *newItem = new MaterialItem(it.first, true, true);
+            MaterialItem* newItem = new MaterialItem(it.first, true, true);
             item->appendRow(newItem);
             Sync(newItem);
         }
@@ -371,14 +371,14 @@ void MaterialModel::Sync(MaterialItem *item)
     bool can_be_deleted = (0 == item->rowCount());
 
     // set item lod/switch flags
-    const DAVA::RenderBatch *rb = curScene->materialSystem->GetRenderBatch(material);
+    const DAVA::RenderBatch* rb = curScene->materialSystem->GetRenderBatch(material);
     if (nullptr != rb)
     {
-        const DAVA::RenderObject *ro = rb->GetRenderObject();
+        const DAVA::RenderObject* ro = rb->GetRenderObject();
         for (DAVA::uint32 k = 0; k < ro->GetRenderBatchCount(); ++k)
         {
             int lodIndex, swIndex;
-            DAVA::RenderBatch *batch = ro->GetRenderBatch(k, lodIndex, swIndex);
+            DAVA::RenderBatch* batch = ro->GetRenderBatch(k, lodIndex, swIndex);
             if (rb == batch)
             {
                 item->SetLodIndex(lodIndex);
@@ -390,7 +390,7 @@ void MaterialModel::Sync(MaterialItem *item)
         can_be_deleted = false;
     }
 
-    // set 'unused' material mark 
+    // set 'unused' material mark
     item->SetFlag(MaterialItem::IS_MARK_FOR_DELETE, can_be_deleted);
 }
 
@@ -516,7 +516,7 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData *data, Qt::DropAction acti
     if ( targetMaterial == NULL )
         return false;
 
-    if( targetMaterial == curScene->GetGlobalMaterial())
+    if (targetMaterial == curScene->GetGlobalMaterial())
         return false;
 
     return true;

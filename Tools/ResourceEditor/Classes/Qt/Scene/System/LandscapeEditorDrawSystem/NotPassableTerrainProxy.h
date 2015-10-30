@@ -37,18 +37,18 @@ using namespace DAVA;
 class NotPassableTerrainProxy
 {
 public:
-	NotPassableTerrainProxy(int32 heightmapSize);
-	virtual ~NotPassableTerrainProxy();
-	
-	bool Enable();
+    NotPassableTerrainProxy(int32 heightmapSize);
+    virtual ~NotPassableTerrainProxy();
+
+    bool Enable();
 	bool Disable();
 	bool IsEnabled() const;
 	
 	Texture* GetTexture();
-	void UpdateTexture(DAVA::Heightmap *heightmap,
-					   const AABBox3& landscapeBoundingBox,
-					   const DAVA::Rect2i &forRect);
-	
+    void UpdateTexture(DAVA::Heightmap* heightmap,
+                       const AABBox3& landscapeBoundingBox,
+                       const DAVA::Rect2i& forRect);
+
 private:
 	static const DAVA::int32 NOT_PASSABLE_ANGLE = 23;
 	
@@ -68,11 +68,11 @@ private:
 	Texture * notPassableTexture;
 	DAVA::float32 notPassableAngleTan;
 	DAVA::Vector<TerrainColor> angleColor;
-    
+
     Vector<rhi::HVertexBuffer> gridBuffers;
-    
-	void LoadColorsArray();
-	bool PickColor(DAVA::float32 tan, DAVA::Color& color) const;
+
+    void LoadColorsArray();
+    bool PickColor(DAVA::float32 tan, DAVA::Color& color) const;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__NOTPASSABLETERRAINPROXY__) */

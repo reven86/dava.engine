@@ -41,7 +41,6 @@
 
 namespace DAVA
 {
-
 static const int32 SCENE_FILE_CURRENT_VERSION = 18;
 static const int32 SCENE_FILE_MINIMAL_SUPPORTED_VERSION = 9;
 

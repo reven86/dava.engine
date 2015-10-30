@@ -236,10 +236,10 @@ void PathSystem::DrawInViewOnlyMode()
             Vector3 startPosition = waypoint->position;
             const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
             bool isStarting = waypoint->IsStarting();
-            
+
             GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
             GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
-        
+
             //draw edges
             if (!waypoint->edges.empty())
             {
@@ -255,7 +255,7 @@ void PathSystem::DrawInViewOnlyMode()
     }
 }
 
-void PathSystem::DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish, const Color & color)
+void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const Color& color)
 {
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(start, finish, Min((finish - start).Length() / 4.f, 4.f), color, RenderHelper::DRAW_SOLID_DEPTH);
 }

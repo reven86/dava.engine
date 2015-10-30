@@ -43,17 +43,15 @@ namespace DAVA
 ShadowVolumeNode::ShadowVolumeNode()
 : shadowPolygonGroup(0)
 {
-	
 }
 
 DAVA::ShadowVolumeNode::~ShadowVolumeNode()
 {
-	
 }
 
 void DAVA::ShadowVolumeNode::Draw()
 {
-	//scene->AddDrawTimeShadowVolume(this);
+    //scene->AddDrawTimeShadowVolume(this);
 }
 
 void DAVA::ShadowVolumeNode::DrawShadow()

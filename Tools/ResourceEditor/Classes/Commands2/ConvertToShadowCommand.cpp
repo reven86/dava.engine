@@ -47,7 +47,7 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)
     newBatch->SetPolygonGroup(shadowPg);
     shadowPg->Release();
 
-    DAVA::NMaterial * shadowMaterial = new DAVA::NMaterial();
+    DAVA::NMaterial* shadowMaterial = new DAVA::NMaterial();
     shadowMaterial->SetMaterialName(DAVA::FastName("Shadow_Material"));
     shadowMaterial->SetFXName(DAVA::NMaterialName::SHADOW_VOLUME);
 

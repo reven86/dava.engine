@@ -53,8 +53,8 @@ public:
 
     struct Params
     {
-        eModes mode; 
-        eOutputType output; 
+        eModes mode;
+        eOutputType output;
         DAVA::String filename;
         DAVA::String charListFile;
         DAVA::int32 maxChar;
@@ -84,7 +84,7 @@ public:
 private:
     struct CharDescription
     {
-	    DAVA::int32 id;
+        DAVA::int32 id;
         DAVA::int32 x;
         DAVA::int32 y;
         DAVA::int32 width;
@@ -97,9 +97,9 @@ private:
 
 private:
     Params params;
-    TtfFont *font;
+    TtfFont* font;
     DAVA::Map<DAVA::int32, CharDescription> chars;
-    DAVA::Vector<std::pair<DAVA::int32, DAVA::int32> > charGlyphPairs;
+    DAVA::Vector<std::pair<DAVA::int32, DAVA::int32>> charGlyphPairs;
     DAVA::int32 kerningCount;
 
     void SetDefaultParams();
@@ -110,7 +110,7 @@ private:
     bool GeneratePackedList(DAVA::int32 fontSize, DAVA::int32 textureSize);
     void GenerateOutputImage();
     void GenerateFontDescription();
-    
+
     DAVA::uint8* BuildDistanceField(const DAVA::uint8* inputBuf, DAVA::int32 inWidth, DAVA::int32 inHeight);
     DAVA::float32 FindSignedDistance(DAVA::int32 centerX, DAVA::int32 centerY, const DAVA::uint8* inputBuf, DAVA::int32 width, DAVA::int32 height);
     DAVA::uint8 DistanceToAlpha(DAVA::float32 distance);

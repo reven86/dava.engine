@@ -38,117 +38,111 @@
 
 namespace rhi
 {
-
 struct InitParam;
 
-void        metal_Initialize( const InitParam& param );
+void metal_Initialize(const InitParam& param);
 
 
 #if defined __OBJC__
 
 namespace VertexBufferMetal
 {
-id<MTLBuffer>   GetBuffer( Handle ib );
+id<MTLBuffer> GetBuffer(Handle ib);
 }
 
 namespace IndexBufferMetal
 {
-id<MTLBuffer>   GetBuffer( Handle ib );
-MTLIndexType    GetType( Handle ib );
+id<MTLBuffer> GetBuffer(Handle ib);
+MTLIndexType GetType(Handle ib);
 }
 
 namespace QueryBufferMetal
 {
-id<MTLBuffer> GetBuffer( Handle qb );
+id<MTLBuffer> GetBuffer(Handle qb);
 }
-
 
 namespace TextureMetal
 {
-void    SetToRHIFragment( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );
-void    SetToRHIVertex( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );
-void    SetAsRenderTarget( Handle tex, MTLRenderPassDescriptor* desc );
-void    SetAsDepthStencil( Handle tex, MTLRenderPassDescriptor* desc );
+void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce);
+void SetToRHIVertex(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce);
+void SetAsRenderTarget(Handle tex, MTLRenderPassDescriptor* desc);
+void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc);
 }
-
 
 namespace PipelineStateMetal
 {
-uint32    SetToRHI( Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce );
+uint32 SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce);
 }
 
 namespace DepthStencilStateMetal
 {
-void    SetToRHI( Handle ds, id<MTLRenderCommandEncoder> ce );
+void SetToRHI(Handle ds, id<MTLRenderCommandEncoder> ce);
 }
 
 namespace SamplerStateMetal
 {
-    void    SetToRHI( Handle ss, id<MTLRenderCommandEncoder> ce );
+void SetToRHI(Handle ss, id<MTLRenderCommandEncoder> ce);
 }
 
 namespace ConstBufferMetal
 {
-void    InitializeRingBuffer( uint32 size );
-void    InvalidateAllInstances();
+void InitializeRingBuffer(uint32 size);
+void InvalidateAllInstances();
 
-void    SetToRHI( Handle buf, unsigned bufIndex, id<MTLRenderCommandEncoder> ce );
+void SetToRHI(Handle buf, unsigned bufIndex, id<MTLRenderCommandEncoder> ce);
 }
 
 
 #endif
 
-    
 namespace VertexBufferMetal
 {
-    void        Init( uint32 maxCount );
-    void        SetupDispatch( Dispatch* dispatch );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
 }
 namespace IndexBufferMetal
 {
-    void        Init( uint32 maxCount );
-    void        SetupDispatch( Dispatch* dispatch );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
 }
 namespace QueryBufferMetal
 {
-    void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 namespace TextureMetal
 {
-    void        Init( uint32 maxCount );
-    void        SetupDispatch( Dispatch* dispatch );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
 }
 namespace SamplerStateMetal
 {
-    void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 namespace PipelineStateMetal
 {
-    void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 namespace DepthStencilStateMetal
 {
-    void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 namespace ConstBufferMetal
 {
-    void        Init( uint32 maxCount );
-    void        SetupDispatch( Dispatch* dispatch );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
 }
 namespace RenderPassMetal
 {
-    void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 
 namespace CommandBufferMetal
 {
-    void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 
-const unsigned  QueryBUfferElemeentAlign = 8;
-    
+const unsigned QueryBUfferElemeentAlign = 8;
 
 //==============================================================================
 }
 #endif // __RHI_METAL_H__
-

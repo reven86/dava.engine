@@ -49,17 +49,17 @@ struct FXDescriptor
 {
     Vector<RenderPassDescriptor> renderPassDescriptors;
 
-//for storing and further debug simplification    
+    //for storing and further debug simplification
     FastName fxName;
     HashMap<FastName, int32> defines;
 };
 
 namespace FXCache
 {
-    void Initialize();
-    void Uninitialize();
-    void Clear();
-    const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, int32>& defines, const FastName& quality = NMaterialQualityName::DEFAULT_QUALITY_NAME);
+void Initialize();
+void Uninitialize();
+void Clear();
+const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, int32>& defines, const FastName& quality = NMaterialQualityName::DEFAULT_QUALITY_NAME);
 }
 }
 

@@ -276,7 +276,7 @@ void GameObjectManager::Draw()
     worldMx.glTranslate(cameraPosition.x, cameraPosition.y, 0.f);
     worldMx = worldMx * Matrix4::MakeScale(Vector3(cameraScale.x, cameraScale.y, 1.f));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMx, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-    
+
     const List<GameObject*>::iterator currentObjEnd = objects.end();
 	for(List<GameObject*>::iterator currentObj = objects.begin(); currentObj != currentObjEnd; ++currentObj)
 	{
