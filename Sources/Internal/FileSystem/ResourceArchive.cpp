@@ -407,6 +407,10 @@ void    ResourceArchive::UnpackToFolder(const FilePath & dirPath)
                     file->Write(fileData, fileSize);
                 SafeRelease(file);
             }
+            else
+            {
+                DVASSERT_MSG(false, Format("Failed to load resource at index %d", i).c_str());
+            }
             SafeDeleteArray(fileData);
         }
     }
