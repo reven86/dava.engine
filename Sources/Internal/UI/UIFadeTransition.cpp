@@ -71,7 +71,7 @@ void UIFadeTransition::Draw(const UIGeometricData &geometricData)
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
     if (type == FADE_MIX)
-	{
+    {
 		renderTargetPrevScreen->Reset();
         drawState.SetPosition(geometricData.position);
         RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
@@ -92,7 +92,7 @@ void UIFadeTransition::Draw(const UIGeometricData &geometricData)
 			drawState.SetPosition(0, 0);
             RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color((normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, 1.0f));
         }
-	}
+    }
 }
 	
 };

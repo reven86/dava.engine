@@ -62,7 +62,7 @@ public:
     void setTextureGPU(DAVA::eGPUFamily gpu);
 
     const DAVA::TextureDescriptor* getTextureDescriptor();
-	void setOriginalImageSize(const QSize &size);
+    void setOriginalImageSize(const QSize &size);
 
 signals:
 	void PropertyChanged(int type);
@@ -110,7 +110,7 @@ protected:
     QSize origImageSize;
     int curSizeLevelObject;
 
-	EnumMap enumFormats;
+    EnumMap enumFormats;
 	EnumMap enumSizes;
 	EnumMap enumWpar;
 	EnumMap enumFiltersMin;

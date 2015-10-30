@@ -56,7 +56,7 @@ public:
     TextDrawSystem(DAVA::Scene* scene, SceneCameraSystem* cameraSystem);
     ~TextDrawSystem();
 
-    DAVA::Vector2 ToPos2d(const DAVA::Vector3 &pos3d) const;
+    DAVA::Vector2 ToPos2d(const DAVA::Vector3& pos3d) const;
 
     void DrawText(DAVA::int32 x, DAVA::int32 y, const DAVA::String& text, const DAVA::Color& color, Align align = Align::TopLeft);
     void DrawText(const DAVA::Vector2& pos2d, const DAVA::String& text, const DAVA::Color& color, Align align = Align::TopLeft);
@@ -75,7 +75,7 @@ protected:
         }
 
         DAVA::Vector2 pos;
-		DAVA::String text;
+        DAVA::String text;
 		DAVA::Color color;
 		Align align;
 	};

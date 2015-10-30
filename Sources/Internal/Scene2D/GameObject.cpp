@@ -76,7 +76,7 @@ GameObject::GameObject()
     blending = BLENDING_ALPHABLEND;
 
     collision = 0;
-	groupId = 0;
+    groupId = 0;
 	priority = 0;
 	parent = 0;
 	userData = 0;
@@ -313,14 +313,15 @@ void GameObject::Draw()
         //		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x - 1, globalDrawState.position.y - 1, 3, 3));
         //		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-    }else
-	{
+    }
+    else
+    {
         //		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x, globalDrawState.position.y, 10, 10));
         //		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
-	
-	if (isDebugDraw && collision)
+
+    if (isDebugDraw && collision)
 	{
         collision->DebugDraw();
     }

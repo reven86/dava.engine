@@ -119,7 +119,8 @@ void ControlMapper::mouseMoveEvent(QMouseEvent * event)
     auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
     const auto dragWasApplied = event->buttons() != Qt::NoButton;
 
-    davaEvent.phase = dragWasApplied ? DAVA::UIEvent::PHASE_DRAG : DAVA::UIEvent::PHASE_MOVE;
+    davaEvent.phase = dragWasApplied ? DAVA::UIEvent::Phase::DRAG : DAVA::UIEvent::Phase::MOVE;
+    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
     DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
@@ -127,43 +128,35 @@ void ControlMapper::mouseMoveEvent(QMouseEvent * event)
 void ControlMapper::mousePressEvent(QMouseEvent * event)
 {
     auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
-    davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
-    
+    davaEvent.phase = DAVA::UIEvent::Phase::BEGAN;
+    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
+
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
 void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
 {
     auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
-    davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
-    
+    davaEvent.phase = DAVA::UIEvent::Phase::ENDED;
+    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
+
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
 void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
-    // Doubleclick handling disabled by request of QA
-    
-    //DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
-    //davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
-    //davaEvent.tapCount = 2;
-    //
-    //DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
 void ControlMapper::wheelEvent(QWheelEvent *event)
 {
-    // In future, OS X may support extended scroll event handling
-    //if ( event->phase() != QScrollEvent::ScrollUpdated )
-    //    return;
-
     const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
 
     DAVA::UIEvent davaEvent;
     davaEvent.point = DAVA::Vector2( event->pixelDelta().x(), event->pixelDelta().y() );
     davaEvent.timestamp = 0;
-    davaEvent.phase = DAVA::UIEvent::PHASE_WHEEL;
+    davaEvent.phase = DAVA::UIEvent::Phase::WHEEL;
+    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
     DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
@@ -178,7 +171,8 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
     davaEvent.timestamp = 0;
     davaEvent.tapCount = 1;
-    davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
+    davaEvent.phase = DAVA::UIEvent::Phase::MOVE;
+    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
     DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }

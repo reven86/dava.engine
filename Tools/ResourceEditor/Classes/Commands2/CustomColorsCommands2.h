@@ -70,7 +70,7 @@ public:
                               const Rect& updatedRect);
     ~ModifyCustomColorsCommand();
 
-	virtual void Undo();
+    virtual void Undo();
 	virtual void Redo();
 	virtual Entity* GetEntity() const;
 

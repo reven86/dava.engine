@@ -54,7 +54,7 @@ public:
     virtual void GetAllObjectsInBBox(const AABBox3& bbox, Vector<RenderObject*>& visibilityArray) = 0;
 
     virtual void Initialize(){};
-	virtual void Update(){};
+    virtual void Update(){};
 	virtual void DebugDraw(const Matrix4 & cameraMatrix){};
 };
 

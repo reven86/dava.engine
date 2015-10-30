@@ -78,7 +78,7 @@ public:
     rhi::TextureFormat format;
 
     PixelFormat formatID;
-	FastName name;
+    FastName name;
 	uint8 pixelSize;
 
     bool isHardwareSupported;

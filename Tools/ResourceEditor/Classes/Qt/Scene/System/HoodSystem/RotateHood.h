@@ -44,7 +44,7 @@ struct RotateHood : public HoodObject
     virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem);
 
     HoodCollObject* axisX;
-	HoodCollObject* axisY;
+    HoodCollObject* axisY;
 	HoodCollObject* axisZ;
 
 	HoodCollObject* axisXc[ROTATE_HOOD_CIRCLE_PARTS_COUNT];

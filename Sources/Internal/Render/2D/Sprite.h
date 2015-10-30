@@ -104,7 +104,7 @@ public:
         NMaterial* material;
     };
 
-	enum eSpriteType
+    enum eSpriteType
 	{
 			SPRITE_FROM_FILE = 0
 		,	SPRITE_FROM_TEXTURE

@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-FullscreenTest::FullscreenTest ()
+FullscreenTest::FullscreenTest()
     : BaseScreen("FullscreenTest")
 {
 }
@@ -41,11 +41,11 @@ void FullscreenTest::LoadResources()
     BaseScreen::LoadResources();
 
     ScopedPtr<Font> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
-    
+
     currentModeText = new UIStaticText(Rect(310, 10, 300, 20));
     currentModeText->SetFont(font);
     AddControl(currentModeText);
-    
+
     ScopedPtr<UIButton> btn(new UIButton(Rect(10, 40, 300, 20)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Windowed");
@@ -53,7 +53,7 @@ void FullscreenTest::LoadResources()
     btn->SetTag(0);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
-    
+
     btn.reset(new UIButton(Rect(10, 70, 300, 20)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Fullsreen");
@@ -61,7 +61,7 @@ void FullscreenTest::LoadResources()
     btn->SetTag(1);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
-    
+
     btn.reset(new UIButton(Rect(10, 100, 300, 20)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Windowed fullscreen (borderless)");
@@ -69,7 +69,7 @@ void FullscreenTest::LoadResources()
     btn->SetTag(2);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
-    
+
     btn.reset(new UIButton(Rect(10, 10, 300, 20)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Refresh status");
@@ -77,52 +77,54 @@ void FullscreenTest::LoadResources()
     btn->SetTag(99);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
-    
+
     GetBackground()->SetColor(Color::White);
-    
+
     UpdateMode();
 }
 
 void FullscreenTest::UnloadResources()
 {
     SafeRelease(currentModeText);
-    
+
     BaseScreen::UnloadResources();
 }
 
-void FullscreenTest::OnSelectModeClick(BaseObject* sender, void * data, void * callerData)
+void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* callerData)
 {
-    UIButton * btn = static_cast<UIButton*>(sender);
-    switch (btn->GetTag()) {
-        case 0:
-            Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED);
-            break;
-        case 1:
-            Core::Instance()->SetScreenMode(Core::eScreenMode::FULLSCREEN);
-            break;
-        case 2:
-            Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED_FULLSCREEN);
-            break;
-        case 99:
-            UpdateMode();
-            break;
+    UIButton* btn = static_cast<UIButton*>(sender);
+    switch (btn->GetTag())
+    {
+    case 0:
+        Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED);
+        break;
+    case 1:
+        Core::Instance()->SetScreenMode(Core::eScreenMode::FULLSCREEN);
+        break;
+    case 2:
+        Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED_FULLSCREEN);
+        break;
+    case 99:
+        UpdateMode();
+        break;
     }
 }
 
 void FullscreenTest::UpdateMode()
 {
-    switch (Core::Instance()->GetScreenMode()) {
-        case Core::eScreenMode::WINDOWED:
-            currentModeText->SetText(L"Windowed");
-            break;
-        case Core::eScreenMode::WINDOWED_FULLSCREEN:
-            currentModeText->SetText(L"Windowed fullscreen");
-            break;
-        case Core::eScreenMode::FULLSCREEN:
-            currentModeText->SetText(L"Fullscreen");
-            break;
-        default:
-            currentModeText->SetText(L"Unknown");
-            break;
+    switch (Core::Instance()->GetScreenMode())
+    {
+    case Core::eScreenMode::WINDOWED:
+        currentModeText->SetText(L"Windowed");
+        break;
+    case Core::eScreenMode::WINDOWED_FULLSCREEN:
+        currentModeText->SetText(L"Windowed fullscreen");
+        break;
+    case Core::eScreenMode::FULLSCREEN:
+        currentModeText->SetText(L"Fullscreen");
+        break;
+    default:
+        currentModeText->SetText(L"Unknown");
+        break;
     }
 }

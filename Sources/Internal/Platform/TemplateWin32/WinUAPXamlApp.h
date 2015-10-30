@@ -103,7 +103,6 @@ protected:
 private:
     void Run();
 
-private:    // Event handlers
     // App state handlers
     void OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
     void OnResuming(::Platform::Object^ sender, ::Platform::Object^ args);
@@ -130,11 +129,20 @@ private:    // Event handlers
     // Keyboard handlers
     void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+    void OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
-    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceIndex);
+    void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
+
+    struct MouseButtonState
+    {
+        UIEvent::eButtonID button = UIEvent::BUTTON_NONE;
+        bool isPressed = false;
+    };
+
+    MouseButtonState UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties);
+
     void PreStartAppSettings();
 
-private:
     void SetupEventHandlers();
     void CreateBaseXamlUI();
 
@@ -204,7 +212,7 @@ private:
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
-    static const wchar_t xamlTextBoxStyles[];
+    static const wchar_t* xamlTextBoxStyles;
 };
 
 //////////////////////////////////////////////////////////////////////////

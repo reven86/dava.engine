@@ -109,14 +109,14 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
         DAVA::Texture* texture = it.second;
         if (nullptr == texture)
         {
-			continue;
+            continue;
 		}
 		
 		DAVA::TextureDescriptor *descriptor = texture->GetDescriptor();
         DVASSERT(descriptor);
         DVASSERT(descriptor->compression);
 
-		DAVA::Vector< DAVA::eGPUFamily> markedGPUs;
+        DAVA::Vector< DAVA::eGPUFamily> markedGPUs;
 		for(int i = 0; i < DAVA::GPU_DEVICE_COUNT; ++i)
 		{
 			eGPUFamily gpu = (eGPUFamily)i;
