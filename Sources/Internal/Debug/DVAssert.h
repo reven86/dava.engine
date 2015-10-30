@@ -156,10 +156,11 @@ inline void DavaDebugBreak()
     {\
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
         if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
-                #expr, msg, __FILE__, __LINE__))\
+                            #expr, msg, __FILE__, __LINE__))\
         { \
             DavaDebugBreak();\
         } \
+		DV_EXIT_ON_ASSERT \
     }\
 
 #define DVWARNING(expr, msg)\
