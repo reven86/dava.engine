@@ -618,8 +618,20 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture *texture, const DAVA::Te
 		if(!GPUFamilyDescriptor::IsGPUForDevice(gpu) || gpu == curEditorImageGPUForTextures)
 		{
 			texture->ReloadAs(curEditorImageGPUForTextures);
-		}
+            UpdateSceneMaterialsWithTexture(texture);
+        }
 	}
+}
+
+void TextureBrowser::UpdateSceneMaterialsWithTexture(DAVA::Texture* texture)
+{
+    Vector<NMaterial*> materials;
+    SceneHelper::EnumerateMaterialInstances(curScene, materials);
+    for (auto mat : materials)
+    {
+        if (mat->ContainsTexture(texture))
+            mat->InvalidateTextureBindings();
+    }
 }
 
 void TextureBrowser::texturePressed(const QModelIndex & index)

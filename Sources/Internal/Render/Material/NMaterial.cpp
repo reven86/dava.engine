@@ -233,6 +233,17 @@ void NMaterial::CollectLocalTextures(Set<MaterialTextureInfo*>& collection) cons
     }
 }
 
+bool NMaterial::ContainsTexture(Texture* texture) const
+{
+    for (const auto& lc : localTextures)
+    {
+        if (lc.second->texture == texture)
+            return true;
+    }
+
+    return false;
+}
+
 void NMaterial::SetFXName(const FastName& fx)
 {
     fxName = fx;

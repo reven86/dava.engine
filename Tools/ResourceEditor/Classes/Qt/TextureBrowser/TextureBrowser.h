@@ -131,6 +131,8 @@ private:
 
     void ConvertMultipleTextures(eTextureConvertMode convertMode);
 
+    void UpdateSceneMaterialsWithTexture(DAVA::Texture* texture);
+
 private slots:
 	void textureListViewImages(bool checked);
 	void textureListViewText(bool checked);
