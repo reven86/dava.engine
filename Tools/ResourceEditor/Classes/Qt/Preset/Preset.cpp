@@ -185,8 +185,8 @@ bool LoadPresetForTexture(DAVA::TextureDescriptor* descriptor)
         if (compressionArchieve != nullptr)
         {
             const DAVA::int32 format = compressionArchieve->GetInt32("format", DAVA::FORMAT_INVALID);
-            DAVA::int32 compressToWidth = compressionArchieve->GetInt32("width");
-            DAVA::int32 compressToHeight = compressionArchieve->GetInt32("height");
+            DAVA::uint32 compressToWidth = static_cast<DAVA::uint32>(compressionArchieve->GetInt32("width"));
+            DAVA::uint32 compressToHeight = static_cast<DAVA::uint32>(compressionArchieve->GetInt32("height"));
 
             bool needResetCRC = false;
             if ((format != DAVA::FORMAT_INVALID) && (compression.format != format))

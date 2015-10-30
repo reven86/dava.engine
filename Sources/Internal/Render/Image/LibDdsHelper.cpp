@@ -250,10 +250,7 @@ public:
     static nvtt::Format GetNVTTFormatByPixelFormat(PixelFormat pixelFormat);
     static bool IsAtcFormat(nvtt::Format format);
     static bool GetInfo(nvtt::Decompressor& dec, DDSInfo& info);
-    static bool GetTextureSize(nvtt::Decompressor& dec, uint32& width, uint32& height);
-    static uint32 GetMipMapLevelsCount(nvtt::Decompressor& dec);
     static uint32 GetDataSize(nvtt::Decompressor& dec);
-    static Size2i GetImageSize(nvtt::Decompressor& dec);
     static uint32 GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex);
     static void SwapBRChannels(uint8* data, uint32 size);
 
@@ -264,7 +261,7 @@ private:
 
 const NvttHelper::PairNvttPixelGLFormat NvttHelper::formatNamesMap[] =
 {
-//FORMAT_NAMES_MAP_COUNT should be inceased in case of addition to set
+//FORMAT_NAMES_MAP_COUNT should be increased in case of addition to set
 #if defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
   NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT1, FORMAT_DXT1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT),
 #else
@@ -525,22 +522,7 @@ bool NvttHelper::GetInfo(nvtt::Decompressor& dec, DDSInfo& info)
     return retVal;
 }
 
-bool NvttHelper::GetTextureSize(nvtt::Decompressor& dec, uint32& width, uint32& height)
-{
-    DDSInfo info;
 
-    bool ret = GetInfo(dec, info);
-    width = info.width;
-    height = info.height;
-    return ret;
-}
-
-uint32 NvttHelper::GetMipMapLevelsCount(nvtt::Decompressor& dec)
-{
-    DDSInfo info;
-    GetInfo(dec, info);
-    return info.mipmapsCount;
-}
 
 uint32 NvttHelper::GetDataSize(nvtt::Decompressor& dec)
 {
@@ -549,12 +531,6 @@ uint32 NvttHelper::GetDataSize(nvtt::Decompressor& dec)
     return info.dataSize;
 }
 
-Size2i NvttHelper::GetImageSize(nvtt::Decompressor& dec)
-{
-    DDSInfo info;
-    GetInfo(dec, info);
-    return Size2i(info.width, info.height);
-}
 
 uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 {
@@ -835,21 +811,20 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
 
 ImageInfo LibDdsHelper::GetImageInfo(File* infile) const
 {
-    DDSFile::FileHeader fileHeader = DDSFile::ReadHeader(infile);
+    const DDSFile::FileHeader fileHeader = DDSFile::ReadHeader(infile);
 
     ImageInfo info;
     info.width = fileHeader.formatHeader.width;
     info.height = fileHeader.formatHeader.height;
-    info.dataSize = 0;
+    info.dataSize = infile->GetSize() - sizeof(DDSFile::FileHeader);
     info.format = static_cast<PixelFormat>(fileHeader.formatHeader.metadata.davaPixelFormat);
     if (info.format == FORMAT_INVALID)
     {
         nvtt::Decompressor dec;
-        if (!NvttHelper::InitDecompressor(dec, infile))
+        if (NvttHelper::InitDecompressor(dec, infile))
         {
-            return ImageInfo();
+            info.format = NvttHelper::GetPixelFormat(dec);
         }
-        info.format = NvttHelper::GetPixelFormat(dec);
     }
     info.mipmapsCount = fileHeader.formatHeader.mipMapCount;
 
@@ -1064,9 +1039,15 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     }
 
     //VI: convert faces
-    unsigned char* buffer = new unsigned char[bufSize];
-    unsigned char* tmpBuffer = buffer;
+    unsigned int headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
+    unsigned char* outFileBuffer = new unsigned char[headerSize + bufSize];
+    SCOPE_EXIT
+    {
+        SafeDeleteArray(outFileBuffer);
+    };
 
+    unsigned char* header = outFileBuffer;
+    unsigned char* buffer = outFileBuffer + headerSize;
     for (uint32 i = 0; i < dataCount; ++i)
     {
         TQonvertImage srcImg = { 0 };
@@ -1082,13 +1063,12 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
         dstImg.nHeight = imageSet[i]->height;
         dstImg.nFormat = QualcommHelper::GetQualcommFormat(compressionFormat);
         dstImg.nDataSize = mipSize[i];
-        dstImg.pData = tmpBuffer;
-        tmpBuffer += dstImg.nDataSize;
+        dstImg.pData = buffer;
+        buffer += dstImg.nDataSize;
 
         if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
         {
             Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-            SafeDeleteArray(buffer);
             return false;
         }
     }
@@ -1104,8 +1084,6 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     compressionOptions.setFormat(innerComprFormat);
 
     nvtt::Decompressor decompress;
-    unsigned int headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    unsigned char header[DECOMPRESSOR_MIN_HEADER_SIZE];
     headerSize = decompress.getHeader(header, headerSize, inputOptions, compressionOptions);
 
     FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
@@ -1113,10 +1091,13 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     File* file = File::Create(fileName, File::CREATE | File::WRITE);
     if (file)
     {
-        DVASSERT(false);
+        { //Store PixelFormat format in metadata
+            DVASSERT(DECOMPRESSOR_MIN_HEADER_SIZE >= sizeof(DDSFile::FileHeader));
+            DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(outFileBuffer);
+            outHeader->formatHeader.metadata.davaPixelFormat = compressionFormat;
+        }
 
-        file->Write(header, headerSize);
-        file->Write(buffer, bufSize);
+        file->Write(outFileBuffer, headerSize + bufSize);
         SafeRelease(file);
         FileSystem::Instance()->DeleteFile(fileNameOriginal);
         res = FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true);
@@ -1247,12 +1228,26 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
     bool ret = compressor.process(inputOptions, compressionOptions, outputOptions);
     if (ret)
     {
-        DVASSERT(false);
         FileSystem::Instance()->DeleteFile(fileNameOriginal);
         if (!FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true))
         {
             Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
             ret = false;
+        }
+        else
+        {
+            //I hope we Will remove this code after refactoring of DAVA::Image class
+            ScopedPtr<File> ddsFile(File::Create(fileNameOriginal, File::OPEN | File::READ));
+            const uint32 fileSize = ddsFile->GetSize();
+            uint8* fileData = new uint8[fileSize];
+            ddsFile->Read(fileData, fileSize);
+            ddsFile.reset();
+
+            DDSFile::FileHeader* ddsHeader = reinterpret_cast<DDSFile::FileHeader*>(fileData);
+            ddsHeader->formatHeader.metadata.davaPixelFormat = compressionFormat;
+            ddsFile.reset(File::Create(fileNameOriginal, File::WRITE | File::CREATE));
+            ddsFile->Write(fileData, fileSize);
+            SafeDeleteArray(fileData);
         }
     }
     else
@@ -1336,12 +1331,17 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     }
 
     //VI: convert faces
-    unsigned char* buffer = new unsigned char[bufSize];
-    unsigned char* tmpBuffer = buffer;
+    unsigned int headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
+    unsigned char* outFileBuffer = new unsigned char[headerSize + bufSize];
+    SCOPE_EXIT
+    {
+        SafeDeleteArray(outFileBuffer);
+    };
+
+    unsigned char* header = outFileBuffer;
+    unsigned char* buffer = outFileBuffer + headerSize;
     for (int32 f = 0; f < facesCount; ++f)
     {
-        mipSize[f].resize(mipmapsCount);
-
         for (int32 m = 0; m < mipmapsCount; ++m)
         {
             Image* image = imageSet[f][m];
@@ -1359,13 +1359,12 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
             dstImg.nHeight = image->height;
             dstImg.nFormat = qualcommFormat;
             dstImg.nDataSize = mipSize[f][m];
-            dstImg.pData = tmpBuffer;
-            tmpBuffer += dstImg.nDataSize;
+            dstImg.pData = buffer;
+            buffer += dstImg.nDataSize;
 
             if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
             {
                 Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-                SafeDeleteArray(buffer);
                 return false;
             }
         }
@@ -1383,8 +1382,6 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     compressionOptions.setFormat(innerComprFormat);
 
     nvtt::Decompressor decompress;
-    unsigned int headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    unsigned char header[DECOMPRESSOR_MIN_HEADER_SIZE];
     headerSize = decompress.getHeader(header, headerSize, inputOptions, compressionOptions);
 
     FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
@@ -1392,9 +1389,13 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     File* file = File::Create(fileName, File::CREATE | File::WRITE);
     if (file)
     {
-        DVASSERT(false);
-        file->Write(header, headerSize);
-        file->Write(buffer, bufSize);
+        { //Store PixelFormat format in metadata
+            DVASSERT(DECOMPRESSOR_MIN_HEADER_SIZE >= sizeof(DDSFile::FileHeader));
+            DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(outFileBuffer);
+            outHeader->formatHeader.metadata.davaPixelFormat = compressionFormat;
+        }
+
+        file->Write(outFileBuffer, headerSize + bufSize);
         SafeRelease(file);
         FileSystem::Instance()->DeleteFile(fileNameOriginal);
         res = FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true);
@@ -1405,8 +1406,6 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     {
         Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
     }
-
-    SafeDeleteArray(buffer);
 
     return res;
 #endif
