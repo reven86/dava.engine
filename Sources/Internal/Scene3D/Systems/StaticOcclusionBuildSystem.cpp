@@ -117,6 +117,7 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 e
 
 void StaticOcclusionBuildSystem::PrepareRenderObjects()
 {
+    GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
     landscape = nullptr;
 
     // Prepare render objects
@@ -124,30 +125,20 @@ void StaticOcclusionBuildSystem::PrepareRenderObjects()
     CollectEntitiesForOcclusionRecursively(sceneEntities, GetScene());
     objectsCount = static_cast<uint32>(sceneEntities.size());
 
-    Vector<RenderObject*> renderObjectsArray;
-    renderObjectsArray.reserve(objectsCount);
-    DVASSERT(renderObjectsArray.size() == 0);
+    uint16 index = 0;
     for (uint32 k = 0; k < objectsCount; ++k)
     {
         RenderObject* renderObject = GetRenderObject(sceneEntities[k]);
         auto renderObjectType = renderObject->GetType();
         if ((RenderObject::TYPE_MESH == renderObjectType) || (RenderObject::TYPE_SPEED_TREE == renderObjectType))
         {
-            renderObjectsArray.push_back(renderObject);
             renderObject->AddFlag(RenderObject::VISIBLE_STATIC_OCCLUSION);
+            renderObject->SetStaticOcclusionIndex(index++);
         }
-        if (RenderObject::TYPE_LANDSCAPE == renderObjectType)
+        else if (RenderObject::TYPE_LANDSCAPE == renderObjectType)
         {
             landscape = static_cast<Landscape*>(renderObject);
         }
-    }
-
-    GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
-
-    uint16 index = 0;
-    for (auto& ro : renderObjectsArray)
-    {
-        ro->SetStaticOcclusionIndex(index++);
     }
 }
 
