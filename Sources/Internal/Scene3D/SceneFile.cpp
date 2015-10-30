@@ -308,7 +308,7 @@ bool SceneFile::ReadMaterial()
     materialDef.hasOpacity = false;
     sceneFP->Read(&materialDef.hasOpacity, sizeof(materialDef.hasOpacity));
 
-	NMaterial * mat = new NMaterial();
+    NMaterial* mat = new NMaterial();
     mat->SetMaterialName(FastName(materialDef.name));
     mat->SetFXName(NMaterialName::TEXTURED_OPAQUE);
 
@@ -607,10 +607,11 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
             DVASSERT(materialIndex < (int)materials.size());
             DVASSERT(0 <= materialIndex);
 
-            NMaterial * material = (0 <= materialIndex) ? materials[materialIndex] : NULL;
-			if (debugLogEnabled)Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
-		
-			if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
+            NMaterial* material = (0 <= materialIndex) ? materials[materialIndex] : NULL;
+            if (debugLogEnabled)
+                Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
+
+            if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
 			{
 				StaticMesh * staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
 				meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
@@ -627,7 +628,7 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
         }
 	}
 	if (debugLogEnabled)Logger::FrameworkDebug("%s node: %s typeId: %d childCount: %d type: %s\n", GetIndentString('-', level).c_str(), name, def.nodeType, def.childCount, nodeType);
-	
+
     if (parentNode == scene)
     {
         scene->AddNode(node);

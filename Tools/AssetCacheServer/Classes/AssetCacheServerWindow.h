@@ -68,7 +68,7 @@ private slots:
     void OnStartAction();
     void OnStopAction();
 
-    void OnFolderSelected();
+    void OnFolderSelection();
     void OnFolderTextChanged();
     void OnCacheSizeChanged(double);
     void OnNumberOfFilesChanged(int);

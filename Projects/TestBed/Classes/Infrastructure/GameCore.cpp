@@ -43,6 +43,7 @@
 #include "Tests/FontTest.h"
 #include "Tests/WebViewTest.h"
 #include "Tests/FunctionSignalTest.h"
+#include "Tests/KeyboardTest.h"
 #include "Tests/FullscreenTest.h"
 //$UNITTEST_INCLUDE
 
@@ -69,7 +70,8 @@ void GameCore::RegisterTests()
     new UIMovieTest();
     new FontTest();
     new WebViewTest();
-	new FunctionSignalTest();
+    new FunctionSignalTest();
+    new KeyboardTest();
     new FullscreenTest();
 //$UNITTEST_CTOR
 }

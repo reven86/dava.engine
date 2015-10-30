@@ -1839,18 +1839,6 @@
 		02E7CE601BD624A7002F026D /* UIFileSystemDialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5A21BD624A6002F026D /* UIFileSystemDialog.cpp */; };
 		02E7CE611BD624A7002F026D /* UIFileSystemDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5A31BD624A6002F026D /* UIFileSystemDialog.h */; };
 		02E7CE621BD624A7002F026D /* UIFileSystemDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5A31BD624A6002F026D /* UIFileSystemDialog.h */; };
-		02E7CE631BD624A7002F026D /* UIHierarchy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5A41BD624A6002F026D /* UIHierarchy.cpp */; };
-		02E7CE641BD624A7002F026D /* UIHierarchy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5A41BD624A6002F026D /* UIHierarchy.cpp */; };
-		02E7CE651BD624A7002F026D /* UIHierarchy.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5A51BD624A6002F026D /* UIHierarchy.h */; };
-		02E7CE661BD624A7002F026D /* UIHierarchy.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5A51BD624A6002F026D /* UIHierarchy.h */; };
-		02E7CE671BD624A7002F026D /* UIHierarchyCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5A61BD624A6002F026D /* UIHierarchyCell.cpp */; };
-		02E7CE681BD624A7002F026D /* UIHierarchyCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5A61BD624A6002F026D /* UIHierarchyCell.cpp */; };
-		02E7CE691BD624A7002F026D /* UIHierarchyCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5A71BD624A6002F026D /* UIHierarchyCell.h */; };
-		02E7CE6A1BD624A7002F026D /* UIHierarchyCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5A71BD624A6002F026D /* UIHierarchyCell.h */; };
-		02E7CE6B1BD624A7002F026D /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5A81BD624A6002F026D /* UIHierarchyNode.cpp */; };
-		02E7CE6C1BD624A7002F026D /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5A81BD624A6002F026D /* UIHierarchyNode.cpp */; };
-		02E7CE6D1BD624A7002F026D /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5A91BD624A6002F026D /* UIHierarchyNode.h */; };
-		02E7CE6E1BD624A7002F026D /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5A91BD624A6002F026D /* UIHierarchyNode.h */; };
 		02E7CE6F1BD624A7002F026D /* UIHoleTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5AA1BD624A6002F026D /* UIHoleTransition.cpp */; };
 		02E7CE701BD624A7002F026D /* UIHoleTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5AA1BD624A6002F026D /* UIHoleTransition.cpp */; };
 		02E7CE711BD624A7002F026D /* UIHoleTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5AB1BD624A6002F026D /* UIHoleTransition.h */; };
@@ -3060,12 +3048,6 @@
 		02E7C5A11BD624A6002F026D /* UIFadeTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFadeTransition.h; sourceTree = "<group>"; };
 		02E7C5A21BD624A6002F026D /* UIFileSystemDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFileSystemDialog.cpp; sourceTree = "<group>"; };
 		02E7C5A31BD624A6002F026D /* UIFileSystemDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFileSystemDialog.h; sourceTree = "<group>"; };
-		02E7C5A41BD624A6002F026D /* UIHierarchy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchy.cpp; sourceTree = "<group>"; };
-		02E7C5A51BD624A6002F026D /* UIHierarchy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchy.h; sourceTree = "<group>"; };
-		02E7C5A61BD624A6002F026D /* UIHierarchyCell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchyCell.cpp; sourceTree = "<group>"; };
-		02E7C5A71BD624A6002F026D /* UIHierarchyCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchyCell.h; sourceTree = "<group>"; };
-		02E7C5A81BD624A6002F026D /* UIHierarchyNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchyNode.cpp; sourceTree = "<group>"; };
-		02E7C5A91BD624A6002F026D /* UIHierarchyNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchyNode.h; sourceTree = "<group>"; };
 		02E7C5AA1BD624A6002F026D /* UIHoleTransition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHoleTransition.cpp; sourceTree = "<group>"; };
 		02E7C5AB1BD624A6002F026D /* UIHoleTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHoleTransition.h; sourceTree = "<group>"; };
 		02E7C5AC1BD624A6002F026D /* UIJoypad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIJoypad.cpp; sourceTree = "<group>"; };
@@ -4583,12 +4565,6 @@
 				02E7C5A11BD624A6002F026D /* UIFadeTransition.h */,
 				02E7C5A21BD624A6002F026D /* UIFileSystemDialog.cpp */,
 				02E7C5A31BD624A6002F026D /* UIFileSystemDialog.h */,
-				02E7C5A41BD624A6002F026D /* UIHierarchy.cpp */,
-				02E7C5A51BD624A6002F026D /* UIHierarchy.h */,
-				02E7C5A61BD624A6002F026D /* UIHierarchyCell.cpp */,
-				02E7C5A71BD624A6002F026D /* UIHierarchyCell.h */,
-				02E7C5A81BD624A6002F026D /* UIHierarchyNode.cpp */,
-				02E7C5A91BD624A6002F026D /* UIHierarchyNode.h */,
 				02E7C5AA1BD624A6002F026D /* UIHoleTransition.cpp */,
 				02E7C5AB1BD624A6002F026D /* UIHoleTransition.h */,
 				02E7C5AC1BD624A6002F026D /* UIJoypad.cpp */,
@@ -5036,7 +5012,6 @@
 				02E7CB5A1BD624A7002F026D /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				02E7C8321BD624A7002F026D /* MemoryManagerTypes.h in Headers */,
 				02E7CD241BD624A7002F026D /* VersionInfo.h in Headers */,
-				02E7CE661BD624A7002F026D /* UIHierarchy.h in Headers */,
 				02E7CB621BD624A7002F026D /* MipmapReplacer.h in Headers */,
 				02E7C9D61BD624A7002F026D /* RenderViewController.h in Headers */,
 				02E7CC821BD624A7002F026D /* BulletComponent.h in Headers */,
@@ -5234,7 +5209,6 @@
 				02E7C8501BD624A7002F026D /* IOLoop.h in Headers */,
 				02E7C7E21BD624A7002F026D /* BezierSpline.h in Headers */,
 				02E7CB6C1BD624A7002F026D /* PVRDefines.h in Headers */,
-				02E7CE6A1BD624A7002F026D /* UIHierarchyCell.h in Headers */,
 				02E7CBBA1BD624A7002F026D /* rhi_Impl.h in Headers */,
 				02E7C6DE1BD624A6002F026D /* AtomicGNU.h in Headers */,
 				02E7C6CC1BD624A6002F026D /* TypeHolders.h in Headers */,
@@ -5332,7 +5306,6 @@
 				02E7CD741BD624A7002F026D /* LodSystem.h in Headers */,
 				02E7CB3A1BD624A7002F026D /* LibPngHelper.h in Headers */,
 				02E7CC9A1BD624A7002F026D /* CustomPropertiesComponent.h in Headers */,
-				02E7CE6E1BD624A7002F026D /* UIHierarchyNode.h in Headers */,
 				02E7CCC21BD624A7002F026D /* StaticOcclusionComponent.h in Headers */,
 				02E7CBC21BD624A7002F026D /* rhi_RingBuffer.h in Headers */,
 				02E7CBAC1BD624A7002F026D /* system.h in Headers */,
@@ -5591,7 +5564,6 @@
 				02E7CB591BD624A7002F026D /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				02E7C8311BD624A7002F026D /* MemoryManagerTypes.h in Headers */,
 				02E7CD231BD624A7002F026D /* VersionInfo.h in Headers */,
-				02E7CE651BD624A7002F026D /* UIHierarchy.h in Headers */,
 				02E7CB611BD624A7002F026D /* MipmapReplacer.h in Headers */,
 				02E7C9D51BD624A7002F026D /* RenderViewController.h in Headers */,
 				02E7CC811BD624A7002F026D /* BulletComponent.h in Headers */,
@@ -5789,7 +5761,6 @@
 				02E7C84F1BD624A7002F026D /* IOLoop.h in Headers */,
 				02E7C7E11BD624A7002F026D /* BezierSpline.h in Headers */,
 				02E7CB6B1BD624A7002F026D /* PVRDefines.h in Headers */,
-				02E7CE691BD624A7002F026D /* UIHierarchyCell.h in Headers */,
 				02E7CBB91BD624A7002F026D /* rhi_Impl.h in Headers */,
 				02E7C6DD1BD624A6002F026D /* AtomicGNU.h in Headers */,
 				02E7C6CB1BD624A6002F026D /* TypeHolders.h in Headers */,
@@ -5887,7 +5858,6 @@
 				02E7CD731BD624A7002F026D /* LodSystem.h in Headers */,
 				02E7CB391BD624A7002F026D /* LibPngHelper.h in Headers */,
 				02E7CC991BD624A7002F026D /* CustomPropertiesComponent.h in Headers */,
-				02E7CE6D1BD624A7002F026D /* UIHierarchyNode.h in Headers */,
 				02E7CCC11BD624A7002F026D /* StaticOcclusionComponent.h in Headers */,
 				02E7CBC11BD624A7002F026D /* rhi_RingBuffer.h in Headers */,
 				02E7CBAB1BD624A7002F026D /* system.h in Headers */,
@@ -6260,7 +6230,6 @@
 				02E7C6EC1BD624A7002F026D /* Mutex.cpp in Sources */,
 				02E7CC521BD624A7002F026D /* Texture.cpp in Sources */,
 				02E7C6101BD624A6002F026D /* LinearPropertyAnimation.cpp in Sources */,
-				02E7CE6C1BD624A7002F026D /* UIHierarchyNode.cpp in Sources */,
 				02E7C6281BD624A6002F026D /* AutotestingSystemSwig.cpp in Sources */,
 				02E7CF981BD63A54002F026D /* GamepadDevice.cpp in Sources */,
 				02E7C8961BD624A7002F026D /* ProtoDriver.cpp in Sources */,
@@ -6466,7 +6435,6 @@
 				02E7CE941BD624A7002F026D /* UIPackagesCache.cpp in Sources */,
 				02E7C88E1BD624A7002F026D /* NetController.cpp in Sources */,
 				02E7C9DC1BD624A7002F026D /* UITextFieldHolder.mm in Sources */,
-				02E7CE641BD624A7002F026D /* UIHierarchy.cpp in Sources */,
 				02E7C6621BD624A6002F026D /* BaseObjectChecker.cpp in Sources */,
 				02E7C8A01BD624A7002F026D /* TCPServerTransport.cpp in Sources */,
 				02E7C61A1BD624A6002F026D /* AutotestingSystem.cpp in Sources */,
@@ -6537,7 +6505,6 @@
 				02E7CF861BD639E1002F026D /* README.md in Sources */,
 				02E7CD221BD624A7002F026D /* VersionInfo.cpp in Sources */,
 				02E7CF951BD63A20002F026D /* DynamicMemoryFile.cpp in Sources */,
-				02E7CE681BD624A7002F026D /* UIHierarchyCell.cpp in Sources */,
 				02E7CA9E1BD624A7002F026D /* CursorWin32.cpp in Sources */,
 				02E7C8401BD624A7002F026D /* DeadlineTimer.cpp in Sources */,
 				02E7CAC41BD624A7002F026D /* Light.cpp in Sources */,
@@ -6760,7 +6727,6 @@
 				02E7C6EB1BD624A7002F026D /* Mutex.cpp in Sources */,
 				02E7CC511BD624A7002F026D /* Texture.cpp in Sources */,
 				02E7C60F1BD624A6002F026D /* LinearPropertyAnimation.cpp in Sources */,
-				02E7CE6B1BD624A7002F026D /* UIHierarchyNode.cpp in Sources */,
 				02E7C6271BD624A6002F026D /* AutotestingSystemSwig.cpp in Sources */,
 				02E7CF971BD63A54002F026D /* GamepadDevice.cpp in Sources */,
 				02E7C8951BD624A7002F026D /* ProtoDriver.cpp in Sources */,
@@ -6966,7 +6932,6 @@
 				02E7CE931BD624A7002F026D /* UIPackagesCache.cpp in Sources */,
 				02E7C88D1BD624A7002F026D /* NetController.cpp in Sources */,
 				02E7C9DB1BD624A7002F026D /* UITextFieldHolder.mm in Sources */,
-				02E7CE631BD624A7002F026D /* UIHierarchy.cpp in Sources */,
 				02E7C6611BD624A6002F026D /* BaseObjectChecker.cpp in Sources */,
 				02E7C89F1BD624A7002F026D /* TCPServerTransport.cpp in Sources */,
 				02E7C6191BD624A6002F026D /* AutotestingSystem.cpp in Sources */,
@@ -7037,7 +7002,6 @@
 				02E7CF851BD639E1002F026D /* README.md in Sources */,
 				02E7CD211BD624A7002F026D /* VersionInfo.cpp in Sources */,
 				02E7CF941BD63A20002F026D /* DynamicMemoryFile.cpp in Sources */,
-				02E7CE671BD624A7002F026D /* UIHierarchyCell.cpp in Sources */,
 				02E7CA9D1BD624A7002F026D /* CursorWin32.cpp in Sources */,
 				02E7C83F1BD624A7002F026D /* DeadlineTimer.cpp in Sources */,
 				02E7CAC31BD624A7002F026D /* Light.cpp in Sources */,

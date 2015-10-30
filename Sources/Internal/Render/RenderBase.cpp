@@ -47,16 +47,16 @@ const String CMP_FUNC_NAMES[CMP_TEST_MODE_COUNT] =
 
 const String STENCIL_OP_NAMES[STENCILOP_COUNT] =
 {
-	"STENCILOP_KEEP",
-	"STENCILOP_ZERO",
-	"STENCILOP_REPLACE",
-    "STENCILOP_INVERT",
-	"STENCILOP_INCR",
-    "STENCILOP_DECR",
-	"STENCILOP_INCR_WRAP",	
-	"STENCILOP_DECR_WRAP"
-	
-};   
+  "STENCILOP_KEEP",
+  "STENCILOP_ZERO",
+  "STENCILOP_REPLACE",
+  "STENCILOP_INVERT",
+  "STENCILOP_INCR",
+  "STENCILOP_DECR",
+  "STENCILOP_INCR_WRAP",
+  "STENCILOP_DECR_WRAP"
+
+};
 
 const String FILL_MODE_NAMES[FILLMODE_COUNT] =
 {
@@ -65,24 +65,23 @@ const String FILL_MODE_NAMES[FILLMODE_COUNT] =
 	"FILLMODE_SOLID"
 };
 
-rhi::CmpFunc GetCmpFuncByName(const String & cmpFuncStr)
+rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr)
 {
-    for(uint32 i = 0; i < CMP_TEST_MODE_COUNT; i++)
-        if(cmpFuncStr == CMP_FUNC_NAMES[i])
+    for (uint32 i = 0; i < CMP_TEST_MODE_COUNT; i++)
+        if (cmpFuncStr == CMP_FUNC_NAMES[i])
             return (rhi::CmpFunc)i;
 
     return (rhi::CmpFunc)CMP_TEST_MODE_COUNT;
 }
 
-rhi::StencilOperation GetStencilOpByName(const String & stencilOpStr)
+rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr)
 {
-    for(uint32 i = 0; i < STENCILOP_COUNT; i++)
-        if(stencilOpStr == STENCIL_OP_NAMES[i])
+    for (uint32 i = 0; i < STENCILOP_COUNT; i++)
+        if (stencilOpStr == STENCIL_OP_NAMES[i])
             return (rhi::StencilOperation)i;
 
     return (rhi::StencilOperation)STENCILOP_COUNT;
 }
-
 
 /*RHI_COMPLETE - make this stuff correspond with PolygonGroup::UpdateDataPointersAndStreams*/
 inline uint32 GetPossibleTexcoordSemantic(uint32 index)
@@ -90,11 +89,11 @@ inline uint32 GetPossibleTexcoordSemantic(uint32 index)
     switch (index)
     {
     case 0:
-        return EVF_TEXCOORD0;// | EVF_CUBETEXCOORD0;
+        return EVF_TEXCOORD0; // | EVF_CUBETEXCOORD0;
     case 1:
-        return EVF_TEXCOORD1;// | EVF_CUBETEXCOORD1;
+        return EVF_TEXCOORD1; // | EVF_CUBETEXCOORD1;
     case 2:
-        return EVF_TEXCOORD2;// | EVF_CUBETEXCOORD2;
+        return EVF_TEXCOORD2; // | EVF_CUBETEXCOORD2;
     case 3:
         return EVF_PIVOT; //    | EVF_TEXCOORD3 | EVF_CUBETEXCOORD3;
     case 4:
@@ -102,10 +101,9 @@ inline uint32 GetPossibleTexcoordSemantic(uint32 index)
     case 5:
         return EVF_FLEXIBILITY;
     }
-    
+
     return 0;
 }
-
 
 uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout)
 {
@@ -139,11 +137,10 @@ uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout)
         case rhi::VS_BLENDINDEX:
             res |= EVF_JOINTINDEX;
             break;
-        default: break;
+        default:
+            break;
         }
-
-    }    
+    }
     return res;
 }
-
 };

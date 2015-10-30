@@ -71,7 +71,7 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     cursor = nullptr;
-	Renderer::SetDesiredFPS(60);
+    Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
@@ -125,7 +125,7 @@ void GameCore::UnpackHelp()
         if (helpRA->Open("~res:/Help.docs"))
         {
             FileSystem::Instance()->DeleteDirectory(docsPath);
-			FileSystem::Instance()->CreateDirectory(docsPath, true);
+            FileSystem::Instance()->CreateDirectory(docsPath, true);
 		
 			helpRA->UnpackToFolder(docsPath);
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);

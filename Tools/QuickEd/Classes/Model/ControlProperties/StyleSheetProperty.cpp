@@ -42,7 +42,7 @@ StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty &aProper
     , property(aProperty)
 {
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
-    SetName(String(descr.name.c_str()));
+    SetName(String(descr.GetFullName().c_str()));
     SetOverridden(true);
 
 
@@ -69,9 +69,9 @@ StyleSheetProperty::~StyleSheetProperty()
     properties.clear();
 }
 
-int StyleSheetProperty::GetCount() const
+uint32 StyleSheetProperty::GetCount() const
 {
-    return static_cast<int>(properties.size());
+    return properties.size();
 }
 
 AbstractProperty *StyleSheetProperty::GetProperty(int index) const
@@ -87,7 +87,7 @@ void StyleSheetProperty::Accept(PropertyVisitor *visitor)
 AbstractProperty::ePropertyType StyleSheetProperty::GetType() const
 {
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
-    const InspMember* member = descr.targetMembers[0].memberInfo; // we assert all members to have the same type
+    const InspMember* member = descr.memberInfo;
 
     auto type = member->Desc().type;
     if (type == InspDesc::T_ENUM)
@@ -111,7 +111,7 @@ VariantType StyleSheetProperty::GetValue() const
 const EnumMap *StyleSheetProperty::GetEnumMap() const
 {
    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
-   const InspMember* member = descr.targetMembers[0].memberInfo; // we assert all members to have the same type
+   const InspMember* member = descr.memberInfo;
    auto type = member->Desc().type;
    
    if (type == InspDesc::T_ENUM ||

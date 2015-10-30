@@ -175,8 +175,8 @@ TextBlock::TextBlock(const TextBlock& src)
 }
 
 TextBlock::~TextBlock()
-{	
-    SafeRelease(textBlockRender);  
+{
+    SafeRelease(textBlockRender);
     SafeRelease(font);
     UnregisterTextBlock(this);
 }
@@ -191,7 +191,7 @@ void TextBlock::SetFontInternal(Font* _font)
     originalFontSize = font->GetSize();
     renderSize = originalFontSize;
 
-    SafeRelease(textBlockRender);    
+    SafeRelease(textBlockRender);
     switch (font->GetFontType())
     {
     case Font::TYPE_FT:
@@ -259,7 +259,7 @@ void TextBlock::SetFittingOption(int32 _fittingType)
 {
     if (fittingType != _fittingType)
     {
-		fittingType = _fittingType;
+        fittingType = _fittingType;
         NeedPrepare();
     }
 }
@@ -408,13 +408,13 @@ void TextBlock::NeedPrepare(Texture* texture /*=NULL*/)
 }
 	
 void TextBlock::PrepareInternal()
-{	
+{
     needPrepareInternal = false;
     if (textBlockRender)
     {
         font->SetSize(renderSize);
         textBlockRender->Prepare();
-        font->SetSize(originalFontSize);     
+        font->SetSize(originalFontSize);
     }
 }
 
@@ -906,8 +906,8 @@ void TextBlock::PreDraw()
 
     if (needPrepareInternal)
     {
-		PrepareInternal();
-	}
+        PrepareInternal();
+    }
     
 	if (textBlockRender)
 	{
@@ -929,7 +929,7 @@ void TextBlock::Draw(const Color& textColor, const Vector2* offset/* = NULL*/)
 
 TextBlock * TextBlock::Clone()
 {
-    TextBlock *block = new TextBlock();
+    TextBlock* block = new TextBlock();
 
     block->SetScale(scale);
     block->SetRectSize(rectSize);

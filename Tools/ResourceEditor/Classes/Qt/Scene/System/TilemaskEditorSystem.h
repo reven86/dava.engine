@@ -71,52 +71,52 @@ public:
 	uint32 GetTileTextureIndex();
 
 	uint32 GetTileTextureCount() const;
-	Texture* GetTileTexture();
-	Color GetTileColor(int32 index);
-	void SetTileColor(int32 index, const Color& color);
+    Texture* GetTileTexture();
+    Color GetTileColor(int32 index);
+    void SetTileColor(int32 index, const Color& color);
 
 	void SetDrawingType(eTilemaskDrawType type);
 	eTilemaskDrawType GetDrawingType();
 
 protected:
 	uint32 curToolSize;
-    
-	Texture * toolImageTexture;
-    Texture * landscapeTilemaskTexture;
-    
-	uint32 tileTextureNum;
 
-    NMaterial * editorMaterial;
-    
-	eTilemaskDrawType drawingType;
-	eTilemaskDrawType activeDrawingType;
+    Texture* toolImageTexture;
+    Texture* landscapeTilemaskTexture;
+
+    uint32 tileTextureNum;
+
+    NMaterial* editorMaterial;
+
+    eTilemaskDrawType drawingType;
+    eTilemaskDrawType activeDrawingType;
 	float32 strength;
 	FilePath toolImagePath;
 	int32 toolImageIndex;
-	
+
     rhi::HVertexBuffer quadBuffer;
     rhi::Packet quadPacket;
     uint32 quadVertexLayoutID;
-    
-	Vector2 copyPasteFrom;
-	Vector2 copyPasteOffset;
-	
-	Rect updatedRectAccumulator;
-	
-	bool editingIsEnabled;
+
+    Vector2 copyPasteFrom;
+    Vector2 copyPasteOffset;
+
+    Rect updatedRectAccumulator;
+
+    bool editingIsEnabled;
 	
 	Texture * toolTexture;
 	bool toolSpriteUpdated;
     
 	bool needCreateUndo;
 
-	const FastName& textureLevel;
+    const FastName& textureLevel;
 
-	void UpdateBrushTool();
-	void UpdateToolImage();
-	
-	void AddRectToAccumulator(const Rect& rect);
-	void ResetAccumulatorRect();
+    void UpdateBrushTool();
+    void UpdateToolImage();
+
+    void AddRectToAccumulator(const Rect& rect);
+    void ResetAccumulatorRect();
 	Rect GetUpdatedRect();
 	
 	void CreateMaskTexture();

@@ -232,57 +232,57 @@ class CommandUpdateParticleLayer: public CommandUpdateParticleLayerBase
 {
 public:
 	CommandUpdateParticleLayer(ParticleEmitter* emitter, ParticleLayer* layer);
-	void Init(const String& layerName,
-			  ParticleLayer::eType layerType,
+    void Init(const String& layerName,
+              ParticleLayer::eType layerType,
               ParticleLayer::eDegradeStrategy degradeStrategy,
-			  bool isDisabled,			  
-			  bool inheritPosition,
-  			  bool isLong,
-			  float32 scaleVelocityBase,
-			  float32 scaleVelocityFactor,
-			  bool isLooped,
-			  Sprite* sprite,
-			  eBlending blending,
-			  bool enableFog,
-			  bool enableFrameBlending,
-			  int32 particleOrientation,
-			  RefPtr< PropertyLine<float32> > life,
-			  RefPtr< PropertyLine<float32> > lifeVariation,
-			  RefPtr< PropertyLine<float32> > number,
-			  RefPtr< PropertyLine<float32> > numberVariation,
-			  RefPtr< PropertyLine<Vector2> > size,
-			  RefPtr< PropertyLine<Vector2> > sizeVariation,
-			  RefPtr< PropertyLine<Vector2> > sizeOverLife,
-			  RefPtr< PropertyLine<float32> > velocity,
-			  RefPtr< PropertyLine<float32> > velocityVariation,
-			  RefPtr< PropertyLine<float32> > velocityOverLife,
-			  RefPtr< PropertyLine<float32> > spin,
-			  RefPtr< PropertyLine<float32> > spinVariation,
-			  RefPtr< PropertyLine<float32> > spinOverLife,
-			  bool randomSpinDirection,
+              bool isDisabled,
+              bool inheritPosition,
+              bool isLong,
+              float32 scaleVelocityBase,
+              float32 scaleVelocityFactor,
+              bool isLooped,
+              Sprite* sprite,
+              eBlending blending,
+              bool enableFog,
+              bool enableFrameBlending,
+              int32 particleOrientation,
+              RefPtr<PropertyLine<float32>> life,
+              RefPtr<PropertyLine<float32>> lifeVariation,
+              RefPtr<PropertyLine<float32>> number,
+              RefPtr<PropertyLine<float32>> numberVariation,
+              RefPtr<PropertyLine<Vector2>> size,
+              RefPtr<PropertyLine<Vector2>> sizeVariation,
+              RefPtr<PropertyLine<Vector2>> sizeOverLife,
+              RefPtr<PropertyLine<float32>> velocity,
+              RefPtr<PropertyLine<float32>> velocityVariation,
+              RefPtr<PropertyLine<float32>> velocityOverLife,
+              RefPtr<PropertyLine<float32>> spin,
+              RefPtr<PropertyLine<float32>> spinVariation,
+              RefPtr<PropertyLine<float32>> spinOverLife,
+              bool randomSpinDirection,
 
-			  RefPtr< PropertyLine<Color> > colorRandom,
-			  RefPtr< PropertyLine<float32> > alphaOverLife,
-			  RefPtr< PropertyLine<Color> > colorOverLife,
-			  RefPtr< PropertyLine<float32> > angle,
-			  RefPtr< PropertyLine<float32> > angleVariation,
+              RefPtr<PropertyLine<Color>> colorRandom,
+              RefPtr<PropertyLine<float32>> alphaOverLife,
+              RefPtr<PropertyLine<Color>> colorOverLife,
+              RefPtr<PropertyLine<float32>> angle,
+              RefPtr<PropertyLine<float32>> angleVariation,
 
-			  float32 startTime,
-			  float32 endTime,
-			  float32 deltaTime,
-			  float32 deltaVariation,
-			  float32 loopEndTime,
-			  float32 loopVariation,
-			  bool frameOverLifeEnabled,
-			  float32 frameOverLifeFPS,
-			  bool randomFrameOnStart,
-			  bool loopSpriteAnimation,
-			  RefPtr< PropertyLine<float32> > animSpeedOverLife,
+              float32 startTime,
+              float32 endTime,
+              float32 deltaTime,
+              float32 deltaVariation,
+              float32 loopEndTime,
+              float32 loopVariation,
+              bool frameOverLifeEnabled,
+              float32 frameOverLifeFPS,
+              bool randomFrameOnStart,
+              bool loopSpriteAnimation,
+              RefPtr<PropertyLine<float32>> animSpeedOverLife,
 
-			  float32 pivotPointX,
-			  float32 pivotPointY);
+              float32 pivotPointX,
+              float32 pivotPointY);
 
-	virtual void Redo();
+    virtual void Redo();
 
 protected:
 	ParticleEmitter* emitter;
@@ -297,9 +297,9 @@ protected:
 	bool inheritPosition;
 	bool isLooped;
 	Sprite* sprite;
-	eBlending blending;
-	bool enableFog;
-	bool enableFrameBlending;
+    eBlending blending;
+    bool enableFog;
+    bool enableFrameBlending;
 	int32 particleOrientation;
 	RefPtr< PropertyLine<float32> > life;
 	RefPtr< PropertyLine<float32> > lifeVariation;

@@ -62,8 +62,8 @@ public:
     void ResetChanges();
     void IncrementChanges();
     void DecrementChanges();
-	
-	void UpdateSpriteFromConfig();
+
+    void UpdateSpriteFromConfig();
 
     DAVA::NMaterial* GetBrushMaterial() const;
 

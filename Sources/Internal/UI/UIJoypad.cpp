@@ -35,31 +35,74 @@
 
 namespace DAVA 
 {
-    
-UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
-:	UIControl(rect, rectInAbsoluteCoordinates)
-,	stick(NULL)
-,	mainTouch(TOUCH_INVALID_ID)
-,	deadAreaSize(10.0f)
-,	digitalSense(0.5f)
-,	needRecalcDigital(true)
-,	needRecalcAnalog(true)
-,	currentPos(Vector2(0,0))
+static const String UIJOYPAD_STICK_NAME = "stick";
+
+UIJoypad::UIJoypad(const Rect& rect)
+    : UIControl(rect)
+    , stick(nullptr)
+    , mainTouch(TOUCH_INVALID_ID)
+    , deadAreaSize(10.0f)
+    , digitalSense(0.5f)
+    , needRecalcDigital(true)
+    , needRecalcAnalog(true)
+    , currentPos(Vector2(0, 0))
 {
-    SetInputEnabled(true, false);
+    SetInputEnabled(true);
+
+    RefPtr<UIControl> stickCtrl(new UIControl(Rect(0.0f, 0.0f, 10.0f, 10.0f)));
+    stickCtrl->SetName(UIJOYPAD_STICK_NAME);
+    stickCtrl->GetBackground()->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    stickCtrl->SetInputEnabled(false);
+    stickCtrl->SetPivot(Vector2(0.5f, 0.5f));
+    stickCtrl->SetPosition(GetSize() / 2.0f);
+    AddControl(stickCtrl.Get());
 }
     
 UIJoypad::~UIJoypad()
 {
-    SafeRelease(stick);
+}
+
+UIJoypad* UIJoypad::Clone()
+{
+    UIJoypad* control = new UIJoypad();
+    control->CopyDataFrom(this);
+    return control;
+}
+
+void UIJoypad::CopyDataFrom(UIControl* srcControl)
+{
+    UIControl::CopyDataFrom(srcControl);
+    UIJoypad* src = DynamicTypeCheck<UIJoypad*>(srcControl);
+
+    mainTouch = TOUCH_INVALID_ID;
+    deadAreaSize = src->deadAreaSize;
+    digitalSense = src->digitalSense;
+    needRecalcDigital = true;
+    needRecalcAnalog = true;
+    currentPos = Vector2();
+}
+
+void UIJoypad::AddControl(UIControl* control)
+{
+    UIControl::AddControl(control);
+    if (control->GetName() == UIJOYPAD_STICK_NAME && stick.Get() != control)
+    {
+        stick = control;
+    }
+}
+
+void UIJoypad::RemoveControl(UIControl* control)
+{
+    if (control == stick.Get())
+    {
+        stick = nullptr;
+    }
+
+    UIControl::RemoveControl(control);
 }
 
 const Vector2 &UIJoypad::GetDigitalPosition()
 {
-//	if(needRecalcDigital)
-//	{
-//		RecalcDigitalPosition();
-//	}
 	if (currentPos.x == 0.f && currentPos.y == 0.f)
 	{
 		digitalVector.x = 0.0f;
@@ -105,20 +148,7 @@ const Vector2 &UIJoypad::GetAnalogPosition()
 	}
 	return analogVector;
 }
-    
-void UIJoypad::CreateStickControl()
-{
-    if (!stick) 
-    {
-        stick = new UIControl(Rect(0, 0, 10, 10));
-        stick->GetBackground()->SetAlign(ALIGN_HCENTER|ALIGN_VCENTER);
-        stick->SetInputEnabled(false);
-        stick->SetPivotPoint(Vector2(5, 5));
-        stick->relativePosition = Vector2(size.x/2, size.y/2);
-        AddControl(stick);
-    }
-}
-    
+
 float32 UIJoypad::GetStickAngle() const
 {
     const Vector2 &v = currentPos;
@@ -207,27 +237,29 @@ int32 UIJoypad::GetStickSpriteFrame() const
     return 0;
 }
 
-void UIJoypad::SetStickDebugDraw(bool debugDraw)
-{
-    CreateStickControl();
-    stick->SetDebugDraw(debugDraw);
-}
-    
 void UIJoypad::SetStickSprite(Sprite *stickSprite, int32 frame)
 {
-    CreateStickControl();
+    DVASSERT(stick.Valid());
+    if (!stick.Valid())
+        return;
+
     stick->SetSprite(stickSprite, frame);
 }
     
 void UIJoypad::SetStickSprite(const FilePath &stickSpriteName, int32 frame)
 {
-    CreateStickControl();
+    DVASSERT(stick.Valid());
+    if (!stick.Valid())
+        return;
+
     stick->SetSprite(stickSpriteName, frame);
 }
 
 void UIJoypad::SetStickSpriteFrame(int32 frame)
 {
-    if (stick && stick->GetSprite())
+    DVASSERT(stick.Valid());
+
+    if (stick.Valid() && stick->GetSprite())
     {
         stick->SetSpriteFrame(frame);
     }
@@ -235,49 +267,50 @@ void UIJoypad::SetStickSpriteFrame(int32 frame)
 
 void UIJoypad::Input(UIEvent *currentInput)
 {
-	if((TOUCH_INVALID_ID == mainTouch) && currentInput->phase == UIEvent::PHASE_BEGAN)
-	{
-		mainTouch = currentInput->tid;
+    if ((TOUCH_INVALID_ID == mainTouch) && currentInput->phase == UIEvent::Phase::BEGAN)
+    {
+        mainTouch = currentInput->tid;
 	}
 	
 	if(mainTouch != currentInput->tid)
 	{
 		return;
 	}
-	
-	if(currentInput->phase == UIEvent::PHASE_ENDED)
-	{
-		currentPos.x = 0;
+
+    if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        currentPos.x = 0;
 		currentPos.y = 0;
         mainTouch = TOUCH_INVALID_ID;
 	}
 	else 
 	{
-		Rect r = GetGeometricData().GetUnrotatedRect();//GetRect(true);
-		currentPos = currentInput->point - r.GetPosition();
-		
-		currentPos -= Vector2(r.dx * 0.5f, r.dy * 0.5f);
+        Rect r = GetGeometricData().GetUnrotatedRect();
+        currentPos = currentInput->point - r.GetPosition();
 
-		if(currentPos.x < deadAreaSize &&  currentPos.x > -deadAreaSize && currentPos.y < deadAreaSize &&  currentPos.y > -deadAreaSize)
-		{
-			currentPos.x = 0;
-			currentPos.y = 0;
-		}
+        currentPos -= Vector2(r.dx * 0.5f, r.dy * 0.5f);
+
+        if (currentPos.x < deadAreaSize && currentPos.x > -deadAreaSize && currentPos.y < deadAreaSize && currentPos.y > -deadAreaSize)
+        {
+            currentPos.x = 0;
+            currentPos.y = 0;
+        }
         currentPos.x = Max(currentPos.x, -size.x/2);
         currentPos.x = Min(currentPos.x, size.x/2);
         currentPos.y = Max(currentPos.y, -size.y/2);
         currentPos.y = Min(currentPos.y, size.y/2);
 	}
-	if (stick)
-	{
-		stick->relativePosition.x = size.x/2 + currentPos.x;
-		stick->relativePosition.y = size.y/2 + currentPos.y;
-	}
 
-	needRecalcAnalog = true;
-	needRecalcDigital = true;
-	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
+    if (stick.Valid())
+    {
+        stick->SetPosition(GetSize() / 2.0f + currentPos);
+    }
+
+    needRecalcAnalog = true;
+    needRecalcDigital = true;
+    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
+
 void UIJoypad::InputCancelled(UIEvent *currentInput)
 {
 	if(currentInput->tid == mainTouch)
@@ -287,15 +320,14 @@ void UIJoypad::InputCancelled(UIEvent *currentInput)
 		currentPos.x = 0;
 		currentPos.y = 0;
 
-		if (stick)
-		{
-			stick->relativePosition.x = size.x/2 + currentPos.x;
-			stick->relativePosition.y = size.y/2 + currentPos.y;
-		}
+        if (stick.Valid())
+        {
+            stick->SetPosition(GetSize() / 2.0f + currentPos);
+        }
 
-		needRecalcAnalog = true;
-		needRecalcDigital = true;
-	}
+        needRecalcAnalog = true;
+        needRecalcDigital = true;
+    }
 }
 
 void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader *loader)
@@ -354,32 +386,24 @@ YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
 
     return node;
 }
-    
-List<UIControl* >& UIJoypad::GetRealChildren()
+
+float32 UIJoypad::GetDeadAreaSize() const
 {
-    realChilds = UIControl::GetRealChildren();
-    realChilds.remove(stick);
-    
-    return realChilds;
+    return deadAreaSize;
 }
 
-DAVA::FilePath UIJoypad::GetStickSpritePath() const
+void UIJoypad::SetDeadAreaSize(float32 newDeadAreaSize)
 {
-    Sprite *sprite = GetStickSprite();
-    if (sprite == nullptr)
-        return "";
-    else if (sprite->GetRelativePathname().GetType() == FilePath::PATH_IN_MEMORY)
-        return "";
-
-    return Sprite::GetPathString(sprite);
+    deadAreaSize = newDeadAreaSize;
 }
 
-void UIJoypad::SetStickSpritePath(const FilePath &path)
+float32 UIJoypad::GetDigitalSense() const
 {
-    SetStickSprite(path, GetStickSpriteFrame());
+    return digitalSense;
 }
 
+void UIJoypad::SetDigitalSense(float32 newDigitalSense)
+{
+    digitalSense = newDigitalSense;
+}
 };
-
-
-

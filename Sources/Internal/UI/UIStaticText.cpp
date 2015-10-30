@@ -47,16 +47,16 @@ namespace DAVA
 {
 #if defined(LOCALIZATION_DEBUG)
     const float32 UIStaticText::LOCALIZATION_RESERVED_PORTION = 0.6f;
-    const Color UIStaticText::HIGHLITE_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0.4f), 
-                                                    DAVA::Color(0.0f, 0.0f, 1.0f, 0.4f), 
-                                                    DAVA::Color(1.0f, 1.0f, 0.0f, 0.4f),
-                                                    DAVA::Color(1.0f, 1.0f, 1.0f, 0.4f),
-                                                    DAVA::Color(1.0f, 0.0f, 1.0f, 0.4f),
-                                                    DAVA::Color(0.0f,1.0f,0.0f,0.4f)};
+    const Color UIStaticText::HIGHLIGHT_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0.4f),
+                                                     DAVA::Color(0.0f, 0.0f, 1.0f, 0.4f),
+                                                     DAVA::Color(1.0f, 1.0f, 0.0f, 0.4f),
+                                                     DAVA::Color(1.0f, 1.0f, 1.0f, 0.4f),
+                                                     DAVA::Color(1.0f, 0.0f, 1.0f, 0.4f),
+                                                     DAVA::Color(0.0f, 1.0f, 0.0f, 0.4f) };
 #endif
-UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
-    : UIControl(rect, rectInAbsoluteCoordinates)
-    , shadowOffset(0, 0)
+    UIStaticText::UIStaticText(const Rect& rect)
+        : UIControl(rect)
+        , shadowOffset(0, 0)
 {
     SetInputEnabled(false, false);
     textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
@@ -321,9 +321,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     elementGeomData.scale = lastDrawStae.scale;
     elementGeomData.pivotPoint = lastDrawStae.pivotPoint;
 
-    if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS)
-        || Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS)
-        )
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS) || Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
 
         RecalculateDebugColoring();
@@ -618,7 +616,6 @@ void UIStaticText::PrepareSprite()
     }
 }
 
-
 Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) const
 {
     Rect resultRect (geometricData.position, geometricData.size);
@@ -757,60 +754,45 @@ void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData
             !controllPolygon.IsPointInside(textPolygon.GetPoints()[2]) ||
             !controllPolygon.IsPointInside(textPolygon.GetPoints()[3]))
         {
-            RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[MAGENTA]);
-            RenderHelper::Instance()->DrawPolygon(textPolygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
-
-
-            RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[RED]);
-            RenderHelper::Instance()->FillPolygon(controllPolygon, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
-
+            RenderSystem2D::Instance()->DrawPolygon(textPolygon, true, HIGHLIGHT_COLORS[MAGENTA]);
+            RenderSystem2D::Instance()->FillPolygon(controllPolygon, HIGHLIGHT_COLORS[RED]);
         }
         if (textBlock->IsVisualTextCroped())
         {
-            RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[YELLOW]);
-            RenderHelper::Instance()->FillPolygon(textPolygon, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
+            RenderSystem2D::Instance()->FillPolygon(textPolygon, HIGHLIGHT_COLORS[YELLOW]);
         }
     }
 }
 void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) const
 {
-    if (warningColor != NONE
-        && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    if (warningColor != NONE && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
-        RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[warningColor]);
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
-
-        RenderHelper::Instance()->DrawPolygon(polygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
-        RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem2D::Instance()->DrawPolygon(polygon, true, HIGHLIGHT_COLORS[warningColor]);
     }
     if (lineBreakError != NONE && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS))
     {
-        RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[lineBreakError]);
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
-
-        RenderHelper::Instance()->FillPolygon(polygon, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
-        RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem2D::Instance()->FillPolygon(polygon, HIGHLIGHT_COLORS[lineBreakError]);
     }
-    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED 
-        && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
-        RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[WHITE]);
+        Color color = HIGHLIGHT_COLORS[WHITE];
         if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)
         {
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_REDUCE)
-                RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[RED]);
+                color = HIGHLIGHT_COLORS[RED];
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_ENLARGE)
-                RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[YELLOW]);
+                color = HIGHLIGHT_COLORS[YELLOW];
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_POINTS)
-                RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[BLUE]);
+                color = HIGHLIGHT_COLORS[BLUE];
         }
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
         DVASSERT(polygon.GetPointCount() == 4);
-        RenderHelper::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
-        RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem2D::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], color);
     }
 
 }

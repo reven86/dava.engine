@@ -33,81 +33,77 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Impl.h"
 
-
 namespace rhi
 {
-
 struct InitParam;
 struct GLCommand;
 
-void        gles2_Initialize( const InitParam& param );
-
+void gles2_Initialize(const InitParam& param);
 
 namespace VertexBufferGLES2
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb );
-void        ReCreateAll();
-unsigned    NeedRestoreCount();
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle vb);
+void ReCreateAll();
+unsigned NeedRestoreCount();
 }
 
 namespace IndexBufferGLES2
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-IndexSize   SetToRHI( Handle ib );
-void        ReCreateAll();
-unsigned    NeedRestoreCount();
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+IndexSize SetToRHI(Handle ib);
+void ReCreateAll();
+unsigned NeedRestoreCount();
 }
 
 namespace QueryBufferGLES2
 {
-void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 
-void        BeginQuery( Handle buf, uint32 objectIndex );
-void        EndQuery( Handle buf, uint32 objectIndex );
+void BeginQuery(Handle buf, uint32 objectIndex);
+void EndQuery(Handle buf, uint32 objectIndex);
 }
 
 namespace TextureGLES2
-{ 
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle tex, unsigned unit_i, uint32 base_i=InvalidIndex  );
-void        SetAsRenderTarget( Handle tex, Handle depth );
-Size2i      Size( Handle tex );
-void        ReCreateAll();
-unsigned    NeedRestoreCount();
+{
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i = InvalidIndex);
+void SetAsRenderTarget(Handle tex, Handle depth);
+Size2i Size(Handle tex);
+void ReCreateAll();
+unsigned NeedRestoreCount();
 }
 
 namespace SamplerStateGLES2
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle hstate );
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle hstate);
 }
-
 
 namespace PipelineStateGLES2
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle ps, uint32 vdeclUID );
-void        SetVertexDeclToRHI( Handle ps, uint32 vdeclUID, uint32 firstVertex=0 );
-uint32      VertexSamplerCount( Handle ps );
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle ps, uint32 vdeclUID);
+void SetVertexDeclToRHI(Handle ps, uint32 vdeclUID, uint32 firstVertex = 0);
+uint32 VertexSamplerCount(Handle ps);
 uint32 ProgramUid(Handle ps);
-void        InvalidateCache();
+void InvalidateCache();
 void InvalidateVattrCache();
 }
 
 namespace DepthStencilStateGLES2
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle hstate );
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle hstate);
 }
 namespace ConstBufferGLES2
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        InitializeRingBuffer( uint32 size );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void InitializeRingBuffer(uint32 size);
 
 void SetToRHI(Handle cb, uint32 progUid, const void* instData);
 const void* Instance(Handle cb);
@@ -115,34 +111,32 @@ const void* Instance(Handle cb);
 
 namespace RenderPassGLES2
 {
-void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 
 namespace CommandBufferGLES2
 {
-void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 
+void InitializeRenderThreadGLES2(uint32 frameCount);
+void UninitializeRenderThreadGLES2();
 
-void        InitializeRenderThreadGLES2( uint32 frameCount );
-void        UninitializeRenderThreadGLES2();
-    
-void        SuspendGLES2();
-void        ResumeGLES2();
+void SuspendGLES2();
+void ResumeGLES2();
 
 struct
 GLCommand
 {
-    enum 
-    Func
+    enum Func
     {
         NOP,
-        
-        GEN_BUFFERS, 
-        BIND_BUFFER, 
-        RESTORE_VERTEX_BUFFER, 
+
+        GEN_BUFFERS,
+        BIND_BUFFER,
+        RESTORE_VERTEX_BUFFER,
         RESTORE_INDEX_BUFFER,
-        DELETE_BUFFERS, 
+        DELETE_BUFFERS,
         BUFFER_DATA,
         BUFFER_SUBDATA,
 
@@ -167,7 +161,7 @@ GLCommand
         TEX_IMAGE2D,
         GENERATE_MIPMAP,
         READ_PIXELS,
-        
+
         CREATE_PROGRAM,
         CREATE_SHADER,
         SHADER_SOURCE,
@@ -184,15 +178,14 @@ GLCommand
         SET_UNIFORM_1I
     };
 
-    Func    func;
-    uint64  arg[12];
-    int     retval;
-    int     status;
+    Func func;
+    uint64 arg[12];
+    int retval;
+    int status;
 };
 
-void     ExecGL( GLCommand* cmd, uint32 cmdCount, bool force_immediate=false );
+void ExecGL(GLCommand* cmd, uint32 cmdCount, bool force_immediate = false);
 
 //==============================================================================
 }
 #endif // __RHI_GLES2_H__
-

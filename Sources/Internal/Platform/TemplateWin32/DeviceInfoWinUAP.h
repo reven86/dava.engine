@@ -62,6 +62,7 @@ public:
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
+    bool IsTouchPresented();
 
 private:
     enum NativeHIDType
@@ -90,6 +91,7 @@ private:
     };
 
     Windows::Devices::Enumeration::DeviceWatcher ^ CreateDeviceWatcher(NativeHIDType type);
+    void CreateAndStartHIDWatcher();
     void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation ^ information);
     void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate ^ information);
     bool IsEnabled(NativeHIDType type);
@@ -98,7 +100,17 @@ private:
 
     bool isTouchPresent = false;
     bool isMobileMode = false;
-    Map<NativeHIDType, uint16> hids;
+    Map<NativeHIDType, uint16> hids =
+    {
+      { UNKNOWN, 0 },
+      { POINTER, 0 },
+      { MOUSE, 0 },
+      { JOYSTICK, 0 },
+      { GAMEPAD, 0 },
+      { KEYBOARD, 0 },
+      { KEYPAD, 0 },
+      { SYSTEM_CONTROL, 0 }
+    };
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 
     DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
@@ -109,7 +121,7 @@ private:
     String manufacturer;
     String modelName;
     String uDID;
-    WideString productName;
+    WideString deviceName;
     int32 zBufferSize = 24;
 };
 };

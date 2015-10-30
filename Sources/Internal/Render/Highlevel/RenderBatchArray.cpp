@@ -34,26 +34,25 @@
 
 namespace DAVA
 {
-
 RenderBatchArray::RenderBatchArray()
     : sortFlags(0)
 {
     //sortFlags = SORT_ENABLED | SORT_BY_MATERIAL | SORT_BY_DISTANCE;
-	//renderBatchArray.reserve(4096);
+    //renderBatchArray.reserve(4096);
 }
-    
-bool RenderBatchArray::MaterialCompareFunction(const RenderBatch * a, const RenderBatch *  b)
+
+bool RenderBatchArray::MaterialCompareFunction(const RenderBatch* a, const RenderBatch* b)
 {
     return a->layerSortingKey > b->layerSortingKey;
 }
-	
-void RenderBatchArray::Sort(Camera * camera)
+
+void RenderBatchArray::Sort(Camera* camera)
 {
     TIME_PROFILE("RenderBatchArray::Sort");
-    
+
     // Need sort
-	sortFlags |= SORT_REQUIRED;
-	
+    sortFlags |= SORT_REQUIRED;
+
     if ((sortFlags & SORT_THIS_FRAME) == SORT_THIS_FRAME)
     {
         uint32 renderBatchCount = (uint32)renderBatchArray.size();
@@ -77,7 +76,7 @@ void RenderBatchArray::Sort(Camera * camera)
             }
             
 			std::sort(renderBatchArray.begin(), renderBatchArray.end(), MaterialCompareFunction);
-            
+
             sortFlags &= ~SORT_REQUIRED;
         }
         else if (sortFlags & SORT_BY_DISTANCE_BACK_TO_FRONT)
@@ -95,7 +94,7 @@ void RenderBatchArray::Sort(Camera * camera)
             }
             
             std::stable_sort(renderBatchArray.begin(), renderBatchArray.end(), MaterialCompareFunction);
-            
+
             sortFlags |= SORT_REQUIRED;
         }
         else if (sortFlags & SORT_BY_DISTANCE_FRONT_TO_BACK)
@@ -114,7 +113,7 @@ void RenderBatchArray::Sort(Camera * camera)
             }
             
             std::sort(renderBatchArray.begin(), renderBatchArray.end(), MaterialCompareFunction);
-            
+
             sortFlags |= SORT_REQUIRED;
         }
     }

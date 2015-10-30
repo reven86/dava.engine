@@ -41,9 +41,8 @@
 
 namespace DAVA
 {
-
-Sprite * UIScreenTransition::renderTargetPrevScreen = 0;
-Sprite * UIScreenTransition::renderTargetNextScreen = 0;
+Sprite* UIScreenTransition::renderTargetPrevScreen = 0;
+Sprite* UIScreenTransition::renderTargetNextScreen = 0;
 
 UIScreenTransition::UIScreenTransition()
 {
@@ -63,7 +62,7 @@ void UIScreenTransition::CreateRenderTargets()
         Logger::FrameworkDebug("Render targets already created");
         return;
     }
-    
+
     uint32 width = (uint32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
     uint32 height = (uint32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 
@@ -83,7 +82,7 @@ void UIScreenTransition::ReleaseRenderTargets()
     SafeRelease(renderTargetNextScreen);
 }
 
-void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen)
+void UIScreenTransition::StartTransition(UIScreen* _prevScreen, UIScreen* _nextScreen)
 {
     CreateRenderTargets();
     nextScreen = _nextScreen;
@@ -96,7 +95,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen->SystemUpdate(SystemTimer::FrameDelta());
 
     UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(nextScreen, renderTargetNextScreen->GetTexture());
-    
+
     currentTime = 0;
 }
 
@@ -107,7 +106,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
     if (currentTime >= duration)
     {
         currentTime = duration;
-        
+
         UIControlSystem::Instance()->ReplaceScreen(nextScreen);
 
         nextScreen->SystemDidAppear();
@@ -125,11 +124,11 @@ void UIScreenTransition::Update(float32 timeElapsed)
             Here we call update control to make calls to update / draw sequential and avoid problem with missing Update
             We pass current timeElapsed because we miss current frame time
             */
-        nextScreen->SystemUpdate(timeElapsed); // 
+        nextScreen->SystemUpdate(timeElapsed); //
     }
 }
 
-void UIScreenTransition::Draw(const UIGeometricData &geometricData)
+void UIScreenTransition::Draw(const UIGeometricData& geometricData)
 {
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
@@ -163,7 +162,7 @@ UI3DView* UIScreenTransition::FindFirst3dView(UIControl* control)
     {
         auto currentCtrl = processControls.front();
         processControls.pop_front();
-        
+
         UI3DView* current3dView = dynamic_cast<UI3DView*>(currentCtrl);
         if (nullptr != current3dView)
         {
@@ -193,4 +192,3 @@ void UIScreenTransition::OnPrevScreenScreenshotComplete(Texture* texture)
     }
 }
 };
-

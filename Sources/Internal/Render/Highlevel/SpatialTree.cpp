@@ -452,7 +452,7 @@ void QuadTree::ObjectUpdated(RenderObject * renderObject)
 	} while (sizeUpdeted&&(currIndex!=INVALID_TREE_NODE_INDEX));	
 }
 
-void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<RenderObject *> & visibilityArray)
+void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<RenderObject*>& visibilityArray)
 {		
 	QuadTreeNode& currNode = nodes[nodeId];	
 	int32 objectsSize = static_cast<int32>(currNode.objects.size());
@@ -499,9 +499,9 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
                     ++Renderer::GetRenderStats().visibleRenderObjects;
 #endif
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 	
 	//process children	
 	for (int32 i=0; i<QuadTreeNode::NODE_NONE; ++i)
@@ -509,21 +509,21 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
 		uint16 childNodeId = currNode.children[i];
 		if (childNodeId!=INVALID_TREE_NODE_INDEX)
 		{
-			ProcessNodeClipping(childNodeId, clippingFlags, visibilityArray);
-		}
-	}		
+            ProcessNodeClipping(childNodeId, clippingFlags, visibilityArray);
+        }
+    }		
 }
 
-void QuadTree::Clip(Camera * camera, Vector<RenderObject *> & visibilityArray, uint32 visibilityCriteria)
+void QuadTree::Clip(Camera* camera, Vector<RenderObject*>& visibilityArray, uint32 visibilityCriteria)
 {
 	DVASSERT(worldInitialized);
 	currCamera = camera;
 	currVisibilityCriteria = visibilityCriteria;
-	currFrustum = camera->GetFrustum();	
-	ProcessNodeClipping(0, 0x3f, visibilityArray); 
+    currFrustum = camera->GetFrustum();
+    ProcessNodeClipping(0, 0x3f, visibilityArray);
 }
-    
-void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, Vector<RenderObject *> & visibilityArray)
+
+void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3& bbox, Vector<RenderObject*>& visibilityArray)
 {
     QuadTreeNode& currNode = nodes[nodeId];
     int32 objectsSize = static_cast<int32>(currNode.objects.size());
@@ -548,8 +548,7 @@ void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bb
 	}
 }
 
-    
-void QuadTree::GetAllObjectsInBBox(const AABBox3 & bbox, Vector<RenderObject *> & visibilityArray)
+void QuadTree::GetAllObjectsInBBox(const AABBox3& bbox, Vector<RenderObject*>& visibilityArray)
 {
     
 }
@@ -600,7 +599,7 @@ void QuadTree::Update()
 
 void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 {
-/*	if (!worldInitialized) return;
+    /*	if (!worldInitialized) return;
 	if (debugDrawStateHandle == InvalidUniqueHandle) //create debug draw state
 	{
 		RenderStateData debugStateData;
@@ -620,8 +619,8 @@ void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 }
 
 void QuadTree::DebugDrawNode(uint16 nodeId)
-{	
-/*	RenderSystem2D::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
+{
+    /*	RenderSystem2D::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
 	for (int32 i = 0, size = static_cast<int32>(nodes[nodeId].objects.size()); i<size; ++i)
 	{
 		RenderHelper::Instance()->DrawBox(nodes[nodeId].objects[i]->GetWorldBoundingBox(), 1.0f, debugDrawStateHandle);

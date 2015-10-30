@@ -37,7 +37,6 @@
 
 namespace DAVA
 {
-
 enum eBlending
 {
     BLENDING_NONE = 0,
@@ -138,31 +137,28 @@ enum eIndexFormat
 	EIF_16 = 0x0,
 	EIF_32 = 0x1,
 };
-    
-static const int32 INDEX_FORMAT_SIZE[2] = {2, 4};   
+
+static const int32 INDEX_FORMAT_SIZE[2] = { 2, 4 };
 
 const int32 STENCILOP_COUNT = 8; //rhi::StencilOperation
 const int32 CMP_TEST_MODE_COUNT = 8; //rhi::CmpFunc
 const int32 FILLMODE_COUNT = 3;
 extern const String CMP_FUNC_NAMES[CMP_TEST_MODE_COUNT];
-extern const String STENCIL_OP_NAMES[STENCILOP_COUNT];     
+extern const String STENCIL_OP_NAMES[STENCILOP_COUNT];
 
 extern const String FILL_MODE_NAMES[FILLMODE_COUNT];
 
-    
-
-
 enum eDefaultPassPriority
 {
-    PRIORITY_MAIN_2D    = 10,
-    PRIORITY_MAIN_3D    = 20,
+    PRIORITY_MAIN_2D = 10,
+    PRIORITY_MAIN_3D = 20,
 
-    PRIORITY_CLEAR      = 25,
+    PRIORITY_CLEAR = 25,
 
-    PRIORITY_SERVICE_3D = 30,    
-    PRIORITY_SERVICE_2D = 40,        
+    PRIORITY_SERVICE_3D = 30,
+    PRIORITY_SERVICE_2D = 40,
 };
-    
+
 // TODO: we have same structs & functions in PolygonGroup -- we should find a right place for them
 enum eVertexFormat
 {
@@ -252,10 +248,12 @@ inline int32 GetVertexSize(int32 flags)
     if (flags & EVF_FLEXIBILITY) size += sizeof(float32);
     if (flags & EVF_ANGLE_SIN_COS) size += 2 * sizeof(float32);
 
-//    if (flags & EVF_JOINTINDEX) size += 4;
-//    if (flags & EVF_JOINTWEIGHT) size += 4;
-    if (flags & EVF_JOINTINDEX) size += 1*sizeof(float32);
-    if (flags & EVF_JOINTWEIGHT) size += 1*sizeof(float32);
+    //    if (flags & EVF_JOINTINDEX) size += 4;
+    //    if (flags & EVF_JOINTWEIGHT) size += 4;
+    if (flags & EVF_JOINTINDEX)
+        size += 1 * sizeof(float32);
+    if (flags & EVF_JOINTWEIGHT)
+        size += 1 * sizeof(float32);
 
     return size;
 }
@@ -268,8 +266,8 @@ inline uint32 GetPrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveT
         return indexCount / 3;
     case rhi::PRIMITIVE_LINELIST:
         return indexCount / 2;
-	case rhi::PRIMITIVE_TRIANGLESTRIP:
-		return indexCount - 2;
+    case rhi::PRIMITIVE_TRIANGLESTRIP:
+        return indexCount - 2;
     default:
         DVASSERT_MSG(false, "Unknown primitive type");
     }
@@ -278,10 +276,8 @@ inline uint32 GetPrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveT
 
 uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
 
-
-rhi::CmpFunc GetCmpFuncByName(const String & cmpFuncStr);
-rhi::StencilOperation GetStencilOpByName(const String & stencilOpStr);          
-    
+rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr);
+rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr);
 };
 
 #endif // __DAVAENGINE_RENDER_BASE_H__

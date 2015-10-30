@@ -41,12 +41,10 @@
 
 namespace DAVA 
 {
-
-
-UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
-    :   UIControl(rect, rectInAbsoluteCoordinates)
-    ,   scene(0)
-    ,   registeredInUIControlSystem(false)
+UI3DView::UI3DView(const Rect& rect)
+    : UIControl(rect)
+    , scene(nullptr)
+    , registeredInUIControlSystem(false)
 {
 
 }
@@ -99,17 +97,17 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
 
 	if (uiDrawQueryWasOpen)
-		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);	
-	
+        FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);        
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
     viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
     scene->SetMainPassViewport(viewportRc);
-    
-    scene->Draw();        
-		
-	if (uiDrawQueryWasOpen)
-		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
+
+    scene->Draw();
+
+    if (uiDrawQueryWasOpen)
+        FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }
     
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)
@@ -126,7 +124,7 @@ void UI3DView::SetSize(const DAVA::Vector2 &newSize)
     }
 }
 
-UIControl* UI3DView::Clone()
+UI3DView* UI3DView::Clone()
 {
     UI3DView* ui3DView = new UI3DView(GetRect());
     ui3DView->CopyDataFrom(this);

@@ -74,7 +74,7 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
 DAVA::String SizeInBytesToString(DAVA::float32 size)
 {
     DAVA::String retString = "";
-    
+
     if (1000000 < size)
     {
         retString = Format("%0.2f MB", size / (1024 * 1024) );
@@ -143,8 +143,8 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 
 void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title)
 {
-    bool forceClose = CommandLineParser::CommandIsFound(String("-force")) || 
-		CommandLineParser::CommandIsFound(String("-forceclose"));
+    bool forceClose = CommandLineParser::CommandIsFound(String("-force")) ||
+    CommandLineParser::CommandIsFound(String("-forceclose"));
 
     if (!forceClose && !Core::Instance()->IsConsoleMode())
     {
@@ -181,29 +181,29 @@ DAVA::Color QColorToColor(const QColor &qcolor)
 int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int buttons, int defaultButton)
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),
-		(QMessageBox::StandardButton)buttons, (QMessageBox::StandardButton)defaultButton);
+                                       (QMessageBox::StandardButton)buttons, (QMessageBox::StandardButton)defaultButton);
 
     return answer;
 }
 
 void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 {
-	if (NULL != toolbar && NULL != action)
-	{
-		QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
-		if (NULL != toolBnt)
-		{
-			toolBnt->setToolButtonStyle(showText ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
-		}
-	}
+    if (NULL != toolbar && NULL != action)
+    {
+        QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
+        if (NULL != toolBnt)
+        {
+            toolBnt->setToolButtonStyle(showText ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
+        }
+    }
 }
 
 DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::String & what, const DAVA::String & on)
 {
 	String::size_type pos = sourceString.find(what);
-	if (pos != String::npos)
-	{
-		String newString = sourceString;
+    if (pos != String::npos)
+    {
+        String newString = sourceString;
 		newString = newString.replace(pos, what.length(), on);
 		return newString;
 	}
@@ -246,7 +246,7 @@ void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
 {
     if (texture)
     {
-        DAVA::Image * img = texture->CreateImageFromMemory();
+        DAVA::Image* img = texture->CreateImageFromMemory();
         SaveImageToFile(img, path);
         img->Release();
     }

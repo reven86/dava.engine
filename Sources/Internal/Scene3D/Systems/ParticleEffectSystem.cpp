@@ -43,57 +43,54 @@
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
 
-
 namespace DAVA
 {
-
-
-NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending)
+NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, bool enableFrameBlend, eBlending blending)
 {
+    if (!texture) //for superemitter particles eg
+        return NULL;
 
-	if (!texture) //for superemitter particles eg
-		return NULL;
+    uint64 materialKey = blending;
+    if (enableFog)
+        materialKey += 1 << 4;
+    if (enableFrameBlend)
+        materialKey += 1 << 5;
+    materialKey += (uint32)texture->handle << 6;
 
-	uint64 materialKey = blending;
-	if (enableFog)
-		materialKey+=1<<4;
-	if (enableFrameBlend)
-		materialKey+=1<<5;
-	materialKey+=(uint32)texture->handle<<6;
-
-    Map<uint64, NMaterial *>::iterator it = materialMap.find(materialKey);
-	if (it!=materialMap.end()) //return existing
-	{
+    Map<uint64, NMaterial*>::iterator it = materialMap.find(materialKey);
+    if (it != materialMap.end()) //return existing
+    {
 		return (*it).second;  
 	}
 	else //create new
-	{    
-		NMaterial *material = new NMaterial();
-        material->SetParent(particleBaseMaterial);        
-		
-        if (enableFrameBlend)
-			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		
+    {
+        NMaterial* material = new NMaterial();
+        material->SetParent(particleBaseMaterial);
 
-        if ((!enableFog) || (is2DMode))  //inverse logic to suspend vertex fog inherited from global material
-            material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);        
+        if (enableFrameBlend)
+            material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);
+
+        if ((!enableFog) || (is2DMode)) //inverse logic to suspend vertex fog inherited from global material
+            material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);
 
         if (is2DMode)
             material->AddFlag(NMaterialFlagName::FLAG_FORCE_2D_MODE, 1);
 
-		material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, texture);
+        material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, texture);
         material->AddFlag(NMaterialFlagName::FLAG_BLENDING, blending);
-		
-		materialMap[materialKey] = material;
+
+        materialMap[materialKey] = material;
 
         material->PreBuildMaterial(PASS_FORWARD);
-        
 
-		return material;
-	}
+        return material;
+    }
 }
 
-
-ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _is2DMode) : SceneSystem(scene), allowLodDegrade(false), is2DMode(_is2DMode)
+ParticleEffectSystem::ParticleEffectSystem(Scene* scene, bool _is2DMode)
+    : SceneSystem(scene)
+    , allowLodDegrade(false)
+    , is2DMode(_is2DMode)
 {	
     if (scene) //for 2d particles there would be no scene
     {
@@ -106,21 +103,19 @@ ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _is2DMode) : Scen
 }
 ParticleEffectSystem::~ParticleEffectSystem()
 {
-	for (Map<uint64, NMaterial *>::iterator it = materialMap.begin(), e = materialMap.end(); it!=e; ++it)
-	{
-		SafeRelease(it->second);
+    for (Map<uint64, NMaterial *>::iterator it = materialMap.begin(), e = materialMap.end(); it != e; ++it)
+    {
+        SafeRelease(it->second);
 	}
-    SafeRelease(particleBaseMaterial);	
+    SafeRelease(particleBaseMaterial);
 }
-
 
 void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 {
-    particleBaseMaterial->SetParent(material);    
+    particleBaseMaterial->SetParent(material);
 }
 
-
-void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent *component)
+void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 {
     for (auto emitter : component->emitters)
     {
@@ -152,9 +147,9 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 		group.loopDuration = group.layer->endTime;		
 
 		if (layer->sprite&&(layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
-			group.material = GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
-		else
-			group.material = NULL;
+            group.material = GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
+        else
+            group.material = NULL;
 
 		effect->effectData.groups.push_back(group);			
 	}
@@ -213,14 +208,14 @@ void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
         scene->GetRenderSystem()->RemoveFromRender(effect->effectRenderObject);
 }
 
-void ParticleEffectSystem::AddEntity(Entity * entity)
+void ParticleEffectSystem::AddEntity(Entity* entity)
 {
-    ParticleEffectComponent * effect = static_cast<ParticleEffectComponent *>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+    ParticleEffectComponent* effect = static_cast<ParticleEffectComponent*>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
     PrebuildMaterials(effect);
 }
-void ParticleEffectSystem::AddComponent(Entity * entity, Component * component)
+void ParticleEffectSystem::AddComponent(Entity* entity, Component* component)
 {
-    ParticleEffectComponent * effect = static_cast<ParticleEffectComponent *>(component);
+    ParticleEffectComponent* effect = static_cast<ParticleEffectComponent*>(component);
     PrebuildMaterials(effect);
 }
 
@@ -257,10 +252,10 @@ void ParticleEffectSystem::ImmediateEvent(Component * component, uint32 event)
 void ParticleEffectSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("ParticleEffectSystem::Process");
-    
-	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
-		return;		
-	/*shortEffectTime*/
+
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS))
+        return;
+    /*shortEffectTime*/
 	float32 currFps = 1.0f/timeElapsed;
 	float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS())/(PerformanceSettings::Instance()->GetPsPerformanceMaxFPS()-PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
 	currPSValue = Clamp(currPSValue, 0.0f, 1.0f);

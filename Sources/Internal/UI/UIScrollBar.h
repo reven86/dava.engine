@@ -63,8 +63,7 @@ public:
 protected:
     virtual ~UIScrollBar();
 public:
-    UIScrollBar(const Rect &rect = Rect(), eScrollOrientation requiredOrientation = ORIENTATION_VERTICAL,
-				bool rectInAbsoluteCoordinates = false);
+    UIScrollBar(const Rect& rect = Rect(), eScrollOrientation requiredOrientation = ORIENTATION_VERTICAL);
 
     void SetDelegate(UIScrollBarDelegate *newDelegate);
     const String GetDelegatePath(const UIControl *rootControl) const;
@@ -73,12 +72,10 @@ public:
     virtual void Draw(const UIGeometricData &geometricData);
 	virtual void AddControl(UIControl *control);
     virtual void RemoveControl(UIControl *control);
-	virtual UIControl *Clone();
-	virtual void CopyDataFrom(UIControl *srcControl);
-	
-	virtual List<UIControl* > GetSubcontrols();
-	
-	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
+    UIScrollBar* Clone() override;
+    virtual void CopyDataFrom(UIControl* srcControl);
+
+    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
     virtual void LoadFromYamlNodeCompleted();
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 	

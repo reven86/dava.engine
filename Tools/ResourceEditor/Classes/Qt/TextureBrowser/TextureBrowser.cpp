@@ -819,9 +819,9 @@ void TextureBrowser::textureZoomFit(bool checked)
 		}
 		else
 		{
-			if(rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
-			{
-				QSize size = ui->textureAreaOriginal->getContentSize();
+            if (rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
+            {
+                QSize size = ui->textureAreaOriginal->getContentSize();
 				w = size.width();
 				h = size.height();
 			}

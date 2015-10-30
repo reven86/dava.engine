@@ -72,7 +72,7 @@ static void StopControlTracking(const UIControl* control)
 #endif
 }
 
-UIControl::UIControl(const Rect& rect, bool rectInAbsoluteCoordinates /* = false*/)
+UIControl::UIControl(const Rect& rect)
     : styleSheetDirty(true)
     , styleSheetInitialized(false)
     , layoutDirty(true)
@@ -116,7 +116,7 @@ UIControl::UIControl(const Rect& rect, bool rectInAbsoluteCoordinates /* = false
     touchesInside = 0;
     totalTouches = 0;
 
-    SetRect(rect, rectInAbsoluteCoordinates);
+    SetRect(rect);
 }
 
 UIControl::~UIControl()
@@ -226,38 +226,6 @@ void UIControl::PerformEventWithData(int32 eventType, void* callerData)
 const List<UIControl*>& UIControl::GetChildren() const
 {
     return childs;
-}
-
-List<UIControl*>& UIControl::GetRealChildren()
-{
-    realChilds.clear();
-    realChilds = childs;
-
-    return realChilds;
-}
-
-List<UIControl*> UIControl::GetSubcontrols()
-{
-    // Default list of Subcontrols is empty. To be overriden in the derived
-    // controls.
-    return List<UIControl*>();
-}
-
-bool UIControl::IsSubcontrol()
-{
-    if (!this->GetParent())
-    {
-        return false;
-    }
-
-    const List<UIControl*>& parentSubcontrols = parent->GetSubcontrols();
-    if (parentSubcontrols.empty())
-    {
-        return false;
-    }
-
-    bool isSubcontrol = (std::find(parentSubcontrols.begin(), parentSubcontrols.end(), this) != parentSubcontrols.end());
-    return isSubcontrol;
 }
 
 bool UIControl::AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive)
@@ -542,16 +510,6 @@ UIGeometricData UIControl::GetLocalGeometricData() const
     return drawData;
 }
 
-Vector2 UIControl::GetPosition(bool absoluteCoordinates)
-{
-    if (!absoluteCoordinates || !parent)
-    {
-        return GetPosition();
-    }
-
-    return GetAbsolutePosition();
-}
-
 Vector2 UIControl::GetAbsolutePosition()
 {
     return GetGeometricData().position;
@@ -561,18 +519,6 @@ void UIControl::SetPosition(const Vector2& position)
 {
     relativePosition = position;
     SetLayoutDirty();
-}
-
-void UIControl::SetPosition(const Vector2& position, bool positionInAbsoluteCoordinates)
-{
-    if (!positionInAbsoluteCoordinates)
-    {
-        SetPosition(position);
-    }
-    else
-    {
-        SetAbsolutePosition(position);
-    }
 }
 
 void UIControl::SetAbsolutePosition(const Vector2& position)
@@ -625,14 +571,6 @@ void UIControl::SetAngleInDegrees(float32 angleInDeg)
     SetAngle(DegToRad(angleInDeg));
 }
 
-Rect UIControl::GetRect(bool absoluteCoordinates)
-{
-    if (!absoluteCoordinates)
-        return GetRect();
-
-    return GetAbsoluteRect();
-}
-
 Rect UIControl::GetAbsoluteRect()
 {
     return Rect(GetAbsolutePosition() - GetPivotPoint(), size);
@@ -658,32 +596,20 @@ void UIControl::SetAbsoluteRect(const Rect& rect)
     SetRect(localRect);
 }
 
-void UIControl::SetRect(const Rect& rect, bool rectInAbsoluteCoordinates /* = false*/)
-{
-    if (!rectInAbsoluteCoordinates)
-    {
-        SetRect(rect);
-    }
-    else
-    {
-        SetAbsoluteRect(rect);
-    }
-}
-
 void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /* = false*/)
 {
     if (!rectInAbsoluteCoordinates || !parent)
     {
         scale.x = rect.dx / size.x;
         scale.y = rect.dy / size.y;
-        SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y), rectInAbsoluteCoordinates);
+        SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y));
     }
     else
     {
         const UIGeometricData& gd = parent->GetGeometricData();
         scale.x = rect.dx / (size.x * gd.scale.x);
         scale.y = rect.dy / (size.y * gd.scale.y);
-        SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y), rectInAbsoluteCoordinates);
+        SetAbsolutePosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y));
     }
 }
 
@@ -1163,7 +1089,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
         // unnecessary children we have on the for example UIButton.
-        const List<UIControl*>& realChildren = srcControl->GetRealChildren();
+        const List<UIControl*>& realChildren = srcControl->GetChildren();
         List<UIControl*>::const_iterator it = realChildren.begin();
         for (; it != realChildren.end(); ++it)
         {
@@ -1539,181 +1465,190 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         switch (currentInput->phase)
         {
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-            case UIEvent::PHASE_KEYCHAR:
+        case UIEvent::Phase::CHAR:
+        case UIEvent::Phase::CHAR_REPEAT:
+        case UIEvent::Phase::KEY_DOWN:
+        case UIEvent::Phase::KEY_DOWN_REPEAT:
+        {
+            Input(currentInput);
+        }
+        break;
+
+        case UIEvent::Phase::MOVE:
+        {
+            if (!currentInput->touchLocker && IsPointInside(currentInput->point))
             {
-                    Input(currentInput);
+                UIControlSystem::Instance()->SetHoveredControl(this);
+                Input(currentInput);
+                return true;
             }
-            break;
-            case UIEvent::PHASE_MOVE:
+        }
+        break;
+        case UIEvent::Phase::WHEEL:
+        {
+            Input(currentInput);
+        }
+        break;
+        case UIEvent::Phase::BEGAN:
+        {
+            if (!currentInput->touchLocker && IsPointInside(currentInput->point))
             {
-                if (!currentInput->touchLocker && IsPointInside(currentInput->point))
+                if (multiInput || !currentInputID)
+            {
+                controlState |= STATE_PRESSED_INSIDE;
+                controlState &= ~STATE_NORMAL;
+                ++touchesInside;
+                ++totalTouches;
+                currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
+
+                // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
+                // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
+                currentInput->touchLocker = this;
+                if (exclusiveInput)
                 {
-                    UIControlSystem::Instance()->SetHoveredControl(this);
-                    Input(currentInput);
-                    return true;
+                    UIControlSystem::Instance()->SetExclusiveInputLocker(this,
+                                                                         currentInput->tid);
                 }
-            }
-            break;
-            case UIEvent::PHASE_WHEEL:
-            {
-                 Input(currentInput);
-            }
-            break;
-#endif
-            case UIEvent::PHASE_BEGAN:
-            {
-                if (!currentInput->touchLocker && IsPointInside(currentInput->point))
+
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
+
+                if (!multiInput)
                 {
-                    if(multiInput || !currentInputID)
+                    currentInputID = currentInput->tid;
+                }
+
+                Input(currentInput);
+                return true;
+            }
+            else
+            {
+                currentInput->touchLocker = this;
+                return true;
+            }
+            }
+        }
+        break;
+        case UIEvent::Phase::DRAG:
+        {
+            if (currentInput->touchLocker == this)
+            {
+                if (multiInput || currentInputID == currentInput->tid)
+            {
+                if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
+                {
+                    if (IsPointInside(currentInput->point, true))
                     {
-
-                        controlState |= STATE_PRESSED_INSIDE;
-                        controlState &= ~STATE_NORMAL;
-                        ++touchesInside;
-                        ++totalTouches;
-                        currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
-
-                        // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
-                        // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
-                        currentInput->touchLocker = this;
-                        if(exclusiveInput)
+                        if (currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
                         {
-                            UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->tid);
+                            currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
+                            ++touchesInside;
+                            if (touchesInside > 0)
+                            {
+                                controlState |= STATE_PRESSED_INSIDE;
+                                controlState &= ~STATE_PRESSED_OUTSIDE;
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                                controlState |= STATE_HOVER;
+#endif
+                            }
                         }
-
-                        PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
-                        if(!multiInput)
-                        {
-                            currentInputID = currentInput->tid;
-                        }
-
-                        Input(currentInput);
-                        return true;
                     }
                     else
                     {
-                        currentInput->touchLocker = this;
-                        return true;
-                    }
-
-                }
-            }
-                break;
-            case UIEvent::PHASE_DRAG:
-            {
-                if(currentInput->touchLocker == this)
-                {
-                    if(multiInput || currentInputID == currentInput->tid)
-                    {
-                        if(controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
+                        if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
                         {
-                            if (IsPointInside(currentInput->point, true))
-                            {
-                                if(currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
-                                {
-                                    currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
-                                    ++touchesInside;
-                                    if(touchesInside > 0)
-                                    {
-                                        controlState |= STATE_PRESSED_INSIDE;
-                                        controlState &= ~STATE_PRESSED_OUTSIDE;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                        controlState |= STATE_HOVER;
-#endif
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if(currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
-                                {
-                                    currentInput->controlState = UIEvent::CONTROL_STATE_OUTSIDE;
-                                    --touchesInside;
-                                    if(touchesInside == 0)
-                                    {
-                                        controlState |= STATE_PRESSED_OUTSIDE;
-                                        controlState &= ~STATE_PRESSED_INSIDE;
-                                    }
-                                }
-                            }
-                        }
-                        Input(currentInput);
-                    }
-                    return true;
-                }
-            }
-                break;
-            case UIEvent::PHASE_ENDED:
-            {
-                if(currentInput->touchLocker == this)
-                {
-                    if(multiInput || currentInputID == currentInput->tid)
-                    {
-                        Input(currentInput);
-                        if(currentInput->tid == currentInputID)
-                        {
-                            currentInputID = 0;
-                        }
-                        if(totalTouches > 0)
-                        {
-                            --totalTouches;
-                            if(currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
-                            {
-                                --touchesInside;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                if(totalTouches == 0)
-                                {
-                                    controlState |= STATE_HOVER;
-                                }
-#endif
-                            }
-
-                            currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
-
-                            if(totalTouches == 0)
-                            {
-                                if (IsPointInside(currentInput->point, true))
-                                {
-                                    if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
-                                    {
-                                        UIControlSystem::Instance()->SetFocusedControl(this, false);
-                                    }
-                                    PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
-                                }
-                                else
-                                {
-                                    PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
-                                }
-                                controlState &= ~STATE_PRESSED_INSIDE;
-                                controlState &= ~STATE_PRESSED_OUTSIDE;
-                                controlState |= STATE_NORMAL;
-                                if(UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
-                                {
-                                    UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
-                                }
-                            }
-                            else if(touchesInside <= 0)
+                            currentInput->controlState =
+                            UIEvent::CONTROL_STATE_OUTSIDE;
+                            --touchesInside;
+                            if (touchesInside == 0)
                             {
                                 controlState |= STATE_PRESSED_OUTSIDE;
                                 controlState &= ~STATE_PRESSED_INSIDE;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                controlState &= ~STATE_HOVER;
-#endif
                             }
                         }
                     }
-
-                    currentInput->touchLocker = NULL;
-                    return true;
                 }
-            }
-                break;
-            case UIEvent::PHASE_JOYSTICK:
-            {
                 Input(currentInput);
             }
+            return true;
+            }
+        }
+        break;
+        case UIEvent::Phase::ENDED:
+        {
+            if (currentInput->touchLocker == this)
+            {
+                if (multiInput || currentInputID == currentInput->tid)
+                {
+                    Input(currentInput);
+                    if (currentInput->tid == currentInputID)
+                    {
+                        currentInputID = 0;
+                    }
+                    if (totalTouches > 0)
+                {
+                    --totalTouches;
+                    if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
+                    {
+                        --touchesInside;
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                        if (totalTouches == 0)
+                        {
+                            controlState |= STATE_HOVER;
+                        }
+#endif
+                    }
+
+                    currentInput->controlState =
+                    UIEvent::CONTROL_STATE_RELEASED;
+
+                    if (totalTouches == 0)
+                    {
+                        if (IsPointInside(currentInput->point, true))
+                        {
+                            if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
+                            {
+                                UIControlSystem::Instance()->SetFocusedControl(
+                                this, false);
+                            }
+                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE,
+                                                 currentInput);
+                        }
+                        else
+                        {
+                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE,
+                                                 currentInput);
+                        }
+                        controlState &= ~STATE_PRESSED_INSIDE;
+                        controlState &= ~STATE_PRESSED_OUTSIDE;
+                        controlState |= STATE_NORMAL;
+                        if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
+                        {
+                            UIControlSystem::Instance()->SetExclusiveInputLocker(
+                            NULL, -1);
+                        }
+                    }
+                    else if (touchesInside <= 0)
+                    {
+                        controlState |= STATE_PRESSED_OUTSIDE;
+                        controlState &= ~STATE_PRESSED_INSIDE;
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                        controlState &= ~STATE_HOVER;
+#endif
+                    }
+                }
+            }
+
+            currentInput->touchLocker = NULL;
+            return true;
+            }
+        }
+        break;
+        case UIEvent::Phase::JOYSTICK:
+        {
+            Input(currentInput);
+        }
+        default:
+            break;
         }
 
         return false;
@@ -1729,11 +1664,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         //if(currentInput->touchLocker != this)
         {
-            if(clipContents
-               && (currentInput->phase != UIEvent::PHASE_DRAG
-                   && currentInput->phase != UIEvent::PHASE_ENDED
-                   && currentInput->phase != UIEvent::PHASE_KEYCHAR
-                   && currentInput->phase != UIEvent::PHASE_JOYSTICK))
+            if (clipContents && (currentInput->phase != UIEvent::Phase::DRAG && currentInput->phase != UIEvent::Phase::ENDED && currentInput->phase != UIEvent::Phase::CHAR && currentInput->phase != UIEvent::Phase::JOYSTICK))
             {
                 if(!IsPointInside(currentInput->point))
                 {
@@ -2772,53 +2703,49 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     void UIControl::AddClass(const FastName& clazz)
     {
-        if (std::find(classes.begin(), classes.end(), clazz) == classes.end())
+        if (classes.AddClass(clazz))
         {
-            classes.push_back(clazz);
-
             SetStyleSheetDirty();
         }
     }
 
     void UIControl::RemoveClass(const FastName& clazz)
     {
-        auto iter = find(classes.begin(), classes.end(), clazz);
-
-        if (iter != classes.end())
+        if (classes.RemoveClass(clazz))
         {
-            *iter = classes.back();
-            classes.pop_back();
-
             SetStyleSheetDirty();
         }
     }
 
-    bool UIControl::HasClass(const FastName& clazz)
+    bool UIControl::HasClass(const FastName& clazz) const
     {
-        return find(classes.begin(), classes.end(), clazz) != classes.end();
+        return classes.HasClass(clazz);
     }
 
-    String UIControl::GetClassesAsString()
+    void UIControl::SetTaggedClass(const FastName& tag, const FastName& clazz)
     {
-        String result;
-        for (size_t i = 0; i < classes.size(); i++)
+        if (classes.SetTaggedClass(tag, clazz))
         {
-            if (i != 0)
-                result += " ";
-            result += classes[i].c_str();
+            SetStyleSheetDirty();
         }
-        return result;
     }
 
-    void UIControl::SetClassesFromString(const String &classesStr)
+    void UIControl::ResetTaggedClass(const FastName& tag)
     {
-        Vector<String> tokens;
-        Split(classesStr, " ", tokens);
+        if (classes.ResetTaggedClass(tag))
+        {
+            SetStyleSheetDirty();
+        }
+    }
 
-        classes.clear();
-        for (String &token : tokens)
-            classes.push_back(FastName(token));
+    String UIControl::GetClassesAsString() const
+    {
+        return classes.GetClassesAsString();
+    }
 
+    void UIControl::SetClassesFromString(const String& classesStr)
+    {
+        classes.SetClassesFromString(classesStr);
         SetStyleSheetDirty();
     }
 

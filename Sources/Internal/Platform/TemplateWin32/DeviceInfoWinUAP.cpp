@@ -30,9 +30,6 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#include <GLES2/gl2.h>
-
 #include <Iphlpapi.h>
 #include <winsock2.h>
 
@@ -60,6 +57,8 @@ using namespace ::Windows::Security::ExchangeActiveSyncProvisioning;
 using namespace ::Windows::Networking::Connectivity;
 using namespace ::Windows::System::UserProfile;
 using namespace ::Windows::UI::Xaml;
+using namespace ::Windows::System::Profile;
+using namespace ::Windows::Globalization;
 
 namespace DAVA
 {
@@ -69,25 +68,27 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
-
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
-    platformString = GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
+
+    AnalyticsVersionInfo ^ versionInfo = AnalyticsInfo::VersionInfo;
+    Platform::String ^ deviceVersion = versionInfo->DeviceFamilyVersion;
+    Platform::String ^ deviceFamily = versionInfo->DeviceFamily;
+    String vertionString = RTStringToString(deviceVersion);
+    int64 versionInt = _atoi64(vertionString.c_str());
+    std::stringstream versionStream;
+    versionStream << ((versionInt & 0xFFFF000000000000L) >> 48) << ".";
+    versionStream << ((versionInt & 0x0000FFFF00000000L) >> 32) << ".";
+    versionStream << ((versionInt & 0x00000000FFFF0000L) >> 16) << ".";
+    versionStream << (versionInt & 0x000000000000FFFFL);
+    version = versionStream.str();
+    platformString = RTStringToString(versionInfo->DeviceFamily);
 
     EasClientDeviceInformation deviceInfo;
-    version = RTStringToString(deviceInfo.SystemFirmwareVersion);
     manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
-    modelName = RTStringToString(deviceInfo.FriendlyName);
-    productName = WideString(deviceInfo.SystemProductName->Data());
+    modelName = RTStringToString(deviceInfo.SystemSku);
+    deviceName = WideString(deviceInfo.FriendlyName->Data());
     gpu = GPUFamily();
     uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
-
-    watchers.emplace_back(CreateDeviceWatcher(POINTER));
-    watchers.emplace_back(CreateDeviceWatcher(MOUSE));
-    watchers.emplace_back(CreateDeviceWatcher(JOYSTICK));
-    watchers.emplace_back(CreateDeviceWatcher(GAMEPAD));
-    watchers.emplace_back(CreateDeviceWatcher(KEYBOARD));
-    watchers.emplace_back(CreateDeviceWatcher(KEYPAD));
-    watchers.emplace_back(CreateDeviceWatcher(SYSTEM_CONTROL));
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -103,7 +104,7 @@ String DeviceInfoPrivate::GetPlatformString()
 String DeviceInfoPrivate::GetVersion()
 {
     return version;
- }
+}
 
 String DeviceInfoPrivate::GetManufacturer()
 {
@@ -127,11 +128,8 @@ String DeviceInfoPrivate::GetRegion()
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-// https://msdn.microsoft.com/en-us/library/dy1c794f.aspx?f=255&MSPPError=-2147217396
-#pragma warning(push)
-#pragma warning(disable : 4691) // some assembly reference warning
-    return RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
-#pragma warning(pop)
+    Calendar calendar;
+    return RTStringToString(calendar.GetTimeZone());
 }
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
@@ -166,7 +164,7 @@ String DeviceInfoPrivate::GetUDID()
 
 WideString DeviceInfoPrivate::GetName()
 {
-    return productName;
+    return deviceName;
 }
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
@@ -205,12 +203,11 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
-    auto func = [this]()
-    {
+    auto func = [this]() {
         // should be started on UI thread
-        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        CoreWindow ^ coreWindow = Window::Current->CoreWindow;
         DVASSERT(coreWindow != nullptr);
-        
+
         screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
         screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
 
@@ -224,6 +221,8 @@ void DeviceInfoPrivate::InitializeScreenInfo()
         }
     };
     core->RunOnUIThreadBlocked(func);
+    // start device watchers, after creation main thread dispatcher
+    CreateAndStartHIDWatcher();
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -289,6 +288,11 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
     return IsEnabled(it->first);
 }
 
+bool DeviceInfoPrivate::IsTouchPresented()
+{
+    return isTouchPresent; //  Touch is always present in MSVS simulator
+}
+
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 {
     auto func = [type](HIDConvPair pair)->bool {
@@ -305,53 +309,7 @@ void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 
 eGPUFamily DeviceInfoPrivate::GPUFamily()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-        eGPUFamily gpuFamily(GPU_INVALID);
-    const GLubyte* rendererTemp = glGetString(GL_RENDERER);
-    if (nullptr == rendererTemp)
-    {
-        DVASSERT(false && "GL not initialized");
-        return gpuFamily;
-    }
-    String renderer((const char8 *)rendererTemp);
-    std::transform(renderer.begin(), renderer.end(), renderer.begin(), ::tolower);
-    if (renderer.find("tegra") != String::npos)
-    {
-        gpuFamily = GPU_TEGRA;
-    }
-    else if (renderer.find("powervr") != String::npos)
-    {
-        gpuFamily = GPU_POWERVR_ANDROID;
-    }
-    else if (renderer.find("adreno") != String::npos)
-    {
-        gpuFamily = GPU_ADRENO;
-    }
-    else if (renderer.find("mali") != String::npos)
-    {
-        gpuFamily = GPU_MALI;
-    }
-
-    if (gpuFamily == GPU_INVALID)
-    {
-        const GLubyte* extensionsTemp = glGetString(GL_EXTENSIONS);
-        if (nullptr == extensionsTemp)
-        {
-            DVASSERT(false && "GL not initialized");
-            return gpuFamily;
-        }
-        String extensions((const char8 *)extensionsTemp);
-
-        if (extensions.find("GL_IMG_texture_compression_pvrtc") != String::npos)
-            gpuFamily = GPU_POWERVR_ANDROID;
-        else if (extensions.find("GL_NV_draw_texture") >= 0)
-            gpuFamily = GPU_TEGRA;
-        else if (extensions.find("GL_AMD_compressed_ATC_texture") != String::npos)
-            gpuFamily = GPU_ADRENO;
-        else if (extensions.find("GL_OES_compressed_ETC1_RGB8_texture") != String::npos)
-            gpuFamily = GPU_MALI;
-    }
-    return gpuFamily;
+    return GPU_DX11;
 }
 
 DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
@@ -368,6 +326,17 @@ DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
     watcher->Removed += removed;
     watcher->Start();
     return watcher;
+}
+
+void DeviceInfoPrivate::CreateAndStartHIDWatcher()
+{
+    watchers.emplace_back(CreateDeviceWatcher(POINTER));
+    watchers.emplace_back(CreateDeviceWatcher(MOUSE));
+    watchers.emplace_back(CreateDeviceWatcher(JOYSTICK));
+    watchers.emplace_back(CreateDeviceWatcher(GAMEPAD));
+    watchers.emplace_back(CreateDeviceWatcher(KEYBOARD));
+    watchers.emplace_back(CreateDeviceWatcher(KEYPAD));
+    watchers.emplace_back(CreateDeviceWatcher(SYSTEM_CONTROL));
 }
 
 void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)

@@ -52,7 +52,7 @@ class DeferredScreenMetricEvents;
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
  On startup application creates minimal neccesary infrastructure to allow coexistance of
- XAML native controls and DirectX and OpenGL (through ANGLE).
+ XAML native controls and DirectX.
  Application makes explicit use of two threads:
     - UI thread, created by system, where all interaction with UI and XAML controls must be done
     - main thread, created by WinUAPXamlApp instance, where framework lives
@@ -103,7 +103,6 @@ protected:
 private:
     void Run();
 
-private:    // Event handlers
     // App state handlers
     void OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
     void OnResuming(::Platform::Object^ sender, ::Platform::Object^ args);
@@ -111,7 +110,7 @@ private:    // Event handlers
     // Windows state change handlers
     void OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args);
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
-    
+
     // Swap chain panel state change handlers
     void MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY);
 
@@ -130,11 +129,20 @@ private:    // Event handlers
     // Keyboard handlers
     void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+    void OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
-    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceIndex);
+    void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
+
+    struct MouseButtonState
+    {
+        UIEvent::eButtonID button = UIEvent::BUTTON_NONE;
+        bool isPressed = false;
+    };
+
+    MouseButtonState UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties);
+
     void PreStartAppSettings();
 
-private:
     void SetupEventHandlers();
     void CreateBaseXamlUI();
 
@@ -152,7 +160,7 @@ private:
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
     void HideAsyncTaskBar();
-    
+
 private:
     CorePlatformWinUAP* core = nullptr;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
@@ -204,7 +212,7 @@ private:
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
-    static const wchar_t xamlTextBoxStyles[];
+    static const wchar_t* xamlTextBoxStyles;
 };
 
 //////////////////////////////////////////////////////////////////////////

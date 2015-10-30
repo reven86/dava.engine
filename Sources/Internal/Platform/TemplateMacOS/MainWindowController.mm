@@ -35,7 +35,6 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-
 namespace DAVA 
 {
 	int Core::Run(int argc, char *argv[], AppHandle handle)
@@ -47,21 +46,21 @@ namespace DAVA
 		core->CreateSingletons();
 
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
-		
-		int retVal = NSApplicationMain(argc,  (const char **) argv);
+
+        int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
         // core->ReleaseSingletons() is called from there
-        
-		[globalPool release];
-		globalPool = 0;
-		return retVal;
-	}
-	
-	int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
-	{
-		NSAutoreleasePool * globalPool = 0;
-		globalPool = [[NSAutoreleasePool alloc] init];
+
+        [globalPool release];
+        globalPool = 0;
+        return retVal;
+    }
+
+    int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
+    {
+        NSAutoreleasePool* globalPool = 0;
+        globalPool = [[NSAutoreleasePool alloc] init];
 		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
 		core->SetCommandLine(argc, argv);
 		core->EnableConsoleMode();
@@ -109,11 +108,6 @@ namespace DAVA
 		// mouseLocation.y = 
 		return mouseLocation;
 	}
-	
-	void* CoreMacOSPlatform::GetOpenGLView()
-	{
-		return mainWindowController->openGLView;
-	}
 }
 
 - (id)init
@@ -145,7 +139,6 @@ namespace DAVA
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
 #endif
 
-    
     String title;
     int32 width = 800;
     int32 height = 600;
@@ -178,14 +171,15 @@ namespace DAVA
     
     [mainWindow setContentSize:rect.size];
     [openGLView setFrame: rect];
-    
 
-	core = Core::GetApplicationCore();
+    core = Core::GetApplicationCore();
+    Core::Instance()->SetNativeView(openGLView);
+
 #if RHI_COMPLETE
     RenderManager::Instance()->DetectRenderingCapabilities();
 #endif
 
-	// start animation
+// start animation
 #if RHI_COMPLETE
     currFPS = RenderManager::Instance()->GetFPS();
 #else
@@ -193,9 +187,8 @@ namespace DAVA
 #endif
     [self startAnimationTimer];
 
-
-	// make window main
-	[mainWindow makeKeyAndOrderFront:nil];
+    // make window main
+    [mainWindow makeKeyAndOrderFront:nil];
 	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
 	[mainWindow setAcceptsMouseMovedEvents:YES];
 }
@@ -371,8 +364,8 @@ namespace DAVA
 //	NSLog(@"anim timer fired: %@", openGLView);
     [openGLView setNeedsDisplay:YES];
 #if RHI_COMPLETE
-	if (currFPS != RenderManager::Instance()->GetFPS())
-	{
+    if (currFPS != RenderManager::Instance()->GetFPS())
+    {
 		currFPS = RenderManager::Instance()->GetFPS();
 		[self stopAnimationTimer];
 		[self startAnimationTimer];
@@ -402,13 +395,13 @@ namespace DAVA
 //	[NSMenu setMenuBarVisible: YES];
 	[self createWindows];
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
-    
-    DAVA::CoreMacOSPlatform * macCore = (DAVA::CoreMacOSPlatform *)Core::Instance();
+
+    DAVA::CoreMacOSPlatform* macCore = (DAVA::CoreMacOSPlatform*)Core::Instance();
     macCore->rendererParams.window = mainWindowController->openGLView;
     macCore->rendererParams.width = [mainWindowController->openGLView frame].size.width;
     macCore->rendererParams.height = [mainWindowController->openGLView frame].size.height;
-    
-	Core::Instance()->SystemAppStarted();
+
+    Core::Instance()->SystemAppStarted();
 }
 
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification

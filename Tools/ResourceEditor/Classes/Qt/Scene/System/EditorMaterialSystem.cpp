@@ -88,7 +88,7 @@ const DAVA::RenderBatch* EditorMaterialSystem::GetRenderBatch(DAVA::NMaterial* m
     return nullptr;
 }
 
-const DAVA::Set<DAVA::NMaterial *>& EditorMaterialSystem::GetTopParents() const
+const DAVA::Set<DAVA::NMaterial*>& EditorMaterialSystem::GetTopParents() const
 {
     return ownedParents;
 }
@@ -100,12 +100,12 @@ int EditorMaterialSystem::GetLightViewMode()
 
 bool EditorMaterialSystem::GetLightViewMode(EditorMaterialSystem::MaterialLightViewMode viewMode) const
 {
-    return (bool) (curViewMode & viewMode);
+    return (bool)(curViewMode & viewMode);
 }
 
 void EditorMaterialSystem::SetLightViewMode(int fullViewMode)
 {
-    if(curViewMode != fullViewMode)
+    if (curViewMode != fullViewMode)
     {
         curViewMode = fullViewMode;
         ApplyViewMode();
@@ -116,7 +116,7 @@ void EditorMaterialSystem::SetLightViewMode(EditorMaterialSystem::MaterialLightV
 {
     int newMode = curViewMode;
 
-    if(set)
+    if (set)
     {
         newMode |= viewMode;
     }
@@ -130,7 +130,7 @@ void EditorMaterialSystem::SetLightViewMode(EditorMaterialSystem::MaterialLightV
 
 void EditorMaterialSystem::SetLightmapCanvasVisible(bool enable)
 {
-    if(enable != showLightmapCanvas)
+    if (enable != showLightmapCanvas)
     {
         showLightmapCanvas = enable;
         ApplyViewMode();
@@ -142,9 +142,9 @@ bool EditorMaterialSystem::IsLightmapCanvasVisible() const
     return showLightmapCanvas;
 }
 
-void EditorMaterialSystem::AddEntity(DAVA::Entity * entity)
+void EditorMaterialSystem::AddEntity(DAVA::Entity* entity)
 {
-	DAVA::RenderObject *ro = GetRenderObject(entity);
+    DAVA::RenderObject* ro = GetRenderObject(entity);
     if (nullptr != ro)
     {
         AddMaterialsFromEntity(entity);
@@ -176,45 +176,44 @@ void EditorMaterialSystem::AddMaterialFromRenderBatchWithEntity(DAVA::RenderBatc
     DAVA::SafeRetain(renderBatch);
 }
 
-void EditorMaterialSystem::RemoveEntity(DAVA::Entity * entity)
+void EditorMaterialSystem::RemoveEntity(DAVA::Entity* entity)
 {
-	DAVA::RenderObject *ro = GetRenderObject(entity);
+    DAVA::RenderObject* ro = GetRenderObject(entity);
     if (nullptr != ro)
     {
         for (DAVA::uint32 i = 0; i < ro->GetRenderBatchCount(); ++i)
         {
-            DAVA::RenderBatch *rb = ro->GetRenderBatch(i);
-			DAVA::NMaterial *material = rb->GetMaterial();
+            DAVA::RenderBatch* rb = ro->GetRenderBatch(i);
+            DAVA::NMaterial* material = rb->GetMaterial();
             RemoveMaterial(material);
-		}
-	}
+        }
+    }
 }
 
 void EditorMaterialSystem::ApplyViewMode()
 {
-    DAVA::Set<DAVA::NMaterial *>::const_iterator i = ownedParents.begin();
-    DAVA::Set<DAVA::NMaterial *>::const_iterator end = ownedParents.end();
+    DAVA::Set<DAVA::NMaterial*>::const_iterator i = ownedParents.begin();
+    DAVA::Set<DAVA::NMaterial*>::const_iterator end = ownedParents.end();
 
-    for(; i != end; ++i)
+    for (; i != end; ++i)
     {
         ApplyViewMode(*i);
     }
 }
 
-void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial *material)
+void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial* material)
 {
-    auto SetMaterialFlag = [](DAVA::NMaterial *material, const DAVA::FastName &flagName, DAVA::int32 value)
-    {
-        if(value == 0)
+    auto SetMaterialFlag = [](DAVA::NMaterial* material, const DAVA::FastName& flagName, DAVA::int32 value) {
+        if (value == 0)
         {
-            if(material->HasLocalFlag(flagName))
+            if (material->HasLocalFlag(flagName))
             {
                 material->RemoveFlag(flagName);
             }
         }
         else
         {
-            if(material->HasLocalFlag(flagName))
+            if (material->HasLocalFlag(flagName))
             {
                 material->SetFlag(flagName, value);
             }
@@ -244,8 +243,7 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial *material)
     }
 
     //materials
-    auto UpdateFlags = [this, SetMaterialFlag](DAVA::NMaterial *material, DAVA::int32 mode, const DAVA::FastName &flagName)
-    {
+    auto UpdateFlags = [this, SetMaterialFlag](DAVA::NMaterial* material, DAVA::int32 mode, const DAVA::FastName& flagName) {
         if (curViewMode & mode)
         {
             SetMaterialFlag(material, flagName, 1);
@@ -255,27 +253,26 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial *material)
             SetMaterialFlag(material, flagName, 0);
         }
     };
-    
+
     UpdateFlags(material, LIGHTVIEW_ALBEDO, DAVA::NMaterialFlagName::FLAG_VIEWALBEDO);
     UpdateFlags(material, LIGHTVIEW_DIFFUSE, DAVA::NMaterialFlagName::FLAG_VIEWDIFFUSE);
     UpdateFlags(material, LIGHTVIEW_SPECULAR, DAVA::NMaterialFlagName::FLAG_VIEWSPECULAR);
     UpdateFlags(material, LIGHTVIEW_AMBIENT, DAVA::NMaterialFlagName::FLAG_VIEWAMBIENT);
 }
 
-
-void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
+void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
 {
     // TODO: VK: need to be redesigned after command notification will be changed
     auto commandID = command->GetId();
     if (commandID == CMDID_LOD_DELETE)
     {
-        DeleteLODCommand *lodCommand = (DeleteLODCommand *)command;
-        const DAVA::Vector<DeleteRenderBatchCommand *> batchCommands = lodCommand->GetRenderBatchCommands();
-        
+        DeleteLODCommand* lodCommand = (DeleteLODCommand*)command;
+        const DAVA::Vector<DeleteRenderBatchCommand*> batchCommands = lodCommand->GetRenderBatchCommands();
+
         const DAVA::uint32 count = (const DAVA::uint32)batchCommands.size();
         for (DAVA::uint32 i = 0; i < count; ++i)
         {
-            DAVA::RenderBatch *batch = batchCommands[i]->GetRenderBatch();
+            DAVA::RenderBatch* batch = batchCommands[i]->GetRenderBatch();
             if (redo)
             {
                 RemoveMaterial(batch->GetMaterial());
@@ -288,8 +285,8 @@ void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
     }
     else if (commandID == CMDID_LOD_CREATE_PLANE)
     {
-        CreatePlaneLODCommand *lodCommand = (CreatePlaneLODCommand *)command;
-        DAVA::RenderBatch *batch = lodCommand->GetRenderBatch();
+        CreatePlaneLODCommand* lodCommand = (CreatePlaneLODCommand*)command;
+        DAVA::RenderBatch* batch = lodCommand->GetRenderBatch();
         if (redo)
         {
             AddMaterialFromRenderBatchWithEntity(batch, lodCommand->GetEntity());
@@ -301,7 +298,7 @@ void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
     }
     else if (commandID == CMDID_DELETE_RENDER_BATCH)
     {
-        DeleteRenderBatchCommand *rbCommand = (DeleteRenderBatchCommand *) command;
+        DeleteRenderBatchCommand* rbCommand = (DeleteRenderBatchCommand*)command;
         if (redo)
         {
             RemoveMaterial(rbCommand->GetRenderBatch()->GetMaterial());
@@ -313,8 +310,8 @@ void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
     }
     else if (commandID == CMDID_CONVERT_TO_SHADOW)
     {
-        ConvertToShadowCommand *swCommand = (ConvertToShadowCommand *) command;
-        if(redo)
+        ConvertToShadowCommand* swCommand = (ConvertToShadowCommand*)command;
+        if (redo)
         {
             RemoveMaterial(swCommand->oldBatch->GetMaterial());
         }
@@ -325,7 +322,7 @@ void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
     }
     else if (commandID == CMDID_LOD_COPY_LAST_LOD)
     {
-        CopyLastLODToLod0Command *copyCommand = (CopyLastLODToLod0Command *) command;
+        CopyLastLODToLod0Command* copyCommand = (CopyLastLODToLod0Command*)command;
         DAVA::uint32 batchCount = copyCommand->newBatches.size();
         for (DAVA::uint32 i = 0; i < batchCount; ++i)
         {
@@ -350,8 +347,8 @@ void EditorMaterialSystem::AddMaterial(DAVA::NMaterial* material, const Material
 {
     if (nullptr != material)
     {
-        DAVA::NMaterial *curGlobalMaterial = nullptr;
-        if (nullptr != mapping.entity->GetScene())
+        DAVA::NMaterial* curGlobalMaterial = nullptr;
+        if ((nullptr != mapping.entity) && (nullptr != mapping.entity->GetScene()))
         {
             curGlobalMaterial = mapping.entity->GetScene()->GetGlobalMaterial();
         }
@@ -359,10 +356,10 @@ void EditorMaterialSystem::AddMaterial(DAVA::NMaterial* material, const Material
         materialToObjectsMap[material] = mapping;
 
         // remember parent material, if still isn't
-        DAVA::NMaterial *parent = material;
+        DAVA::NMaterial* parent = material;
         for (;;)
         {
-            DAVA::NMaterial *nextParent = parent->GetParent();
+            DAVA::NMaterial* nextParent = parent->GetParent();
             if (nullptr == nextParent || curGlobalMaterial == nextParent)
             {
                 break;
@@ -385,7 +382,7 @@ void EditorMaterialSystem::AddMaterial(DAVA::NMaterial* material, const Material
     }
 }
 
-void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial *material)
+void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial* material)
 {
     auto it = materialToObjectsMap.find(material);
     if (it == materialToObjectsMap.end())
@@ -398,7 +395,7 @@ void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial *material)
     materialToObjectsMap.erase(it);
 }
 
-bool EditorMaterialSystem::IsEditable(DAVA::NMaterial *material) const
-{    
+bool EditorMaterialSystem::IsEditable(DAVA::NMaterial* material) const
+{
     return (!material->IsRuntime());
 }

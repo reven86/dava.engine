@@ -36,153 +36,146 @@
 
 namespace rhi
 {
-
-void        dx9_Initialize( const InitParam& param );
+void dx9_Initialize(const InitParam& param);
 
 struct DX9Command;
 
 namespace VertexBufferDX9
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        Init( uint32 maxCount );
-void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride );
-void        ReleaseAll();
-void        ReCreateAll();
-unsigned    NeedRestoreCount();
+void SetupDispatch(Dispatch* dispatch);
+void Init(uint32 maxCount);
+void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride);
+void ReleaseAll();
+void ReCreateAll();
+unsigned NeedRestoreCount();
 }
 
 namespace IndexBufferDX9
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb );
-void        ReleaseAll();
-void        ReCreateAll();
-unsigned    NeedRestoreCount();
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle vb);
+void ReleaseAll();
+void ReCreateAll();
+unsigned NeedRestoreCount();
 }
 
 namespace QueryBufferDX9
 {
-void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 
-void        BeginQuery( Handle buf, uint32 objectIndex );
-void        EndQuery( Handle buf, uint32 objectIndex );
+void BeginQuery(Handle buf, uint32 objectIndex);
+void EndQuery(Handle buf, uint32 objectIndex);
 }
-
 
 namespace PipelineStateDX9
 {
-void        SetupDispatch( Dispatch* dispatch );
-unsigned    VertexLayoutStride( Handle ps );
-void        SetToRHI( Handle ps, uint32 layoutUID );
+void SetupDispatch(Dispatch* dispatch);
+unsigned VertexLayoutStride(Handle ps);
+void SetToRHI(Handle ps, uint32 layoutUID);
 }
 
 namespace ConstBufferDX9
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        InitializeRingBuffer( uint32 size );
-const void* InstData( Handle cb );
-void        SetToRHI( Handle cb, const void* instData );
-void        InvalidateAllConstBufferInstances();
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void InitializeRingBuffer(uint32 size);
+const void* InstData(Handle cb);
+void SetToRHI(Handle cb, const void* instData);
+void InvalidateAllConstBufferInstances();
 }
 
 namespace TextureDX9
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle tex, unsigned unitIndex );
-void        SetAsRenderTarget( Handle tex );
-void        SetAsDepthStencil( Handle tex );
-void        ReleaseAll();
-void        ReCreateAll();
-unsigned    NeedRestoreCount();
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle tex, unsigned unitIndex);
+void SetAsRenderTarget(Handle tex);
+void SetAsDepthStencil(Handle tex);
+void ReleaseAll();
+void ReCreateAll();
+unsigned NeedRestoreCount();
 }
-
 
 namespace DepthStencilStateDX9
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle state );
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle state);
 }
 
 namespace SamplerStateDX9
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle state );
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle state);
 }
-
 
 namespace RenderPassDX9
 {
-void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 
 namespace CommandBufferDX9
 {
-void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 
 
-#define DX9_CALL(code,name) \
+#define DX9_CALL(code, name) \
 { \
     HRESULT hr = code; \
 \
-    if( FAILED(hr) ) \
+    if (FAILED(hr)) \
     { \
         Logger::Error("%s failed (%08X):\n%s\n", name, hr, D3D9ErrorText(hr)); \
     } \
-} \
+}
 
 struct
 DX9Command
 {
-    enum 
-    Func
+    enum Func
     {
-        NOP                             = 0,
-        
-        CREATE_VERTEX_BUFFER            = 11,
-        LOCK_VERTEX_BUFFER              = 12,
-        UNLOCK_VERTEX_BUFFER            = 13,
-        UPDATE_VERTEX_BUFFER            = 14,
+        NOP = 0,
 
-        CREATE_INDEX_BUFFER             = 21,
-        LOCK_INDEX_BUFFER               = 22,
-        UNLOCK_INDEX_BUFFER             = 23,
-        UPDATE_INDEX_BUFFER             = 24,
+        CREATE_VERTEX_BUFFER = 11,
+        LOCK_VERTEX_BUFFER = 12,
+        UNLOCK_VERTEX_BUFFER = 13,
+        UPDATE_VERTEX_BUFFER = 14,
 
-        CREATE_TEXTURE                  = 41,
-        CREATE_CUBE_TEXTURE             = 42,
-        GET_TEXTURE_SURFACE_LEVEl       = 43,
+        CREATE_INDEX_BUFFER = 21,
+        LOCK_INDEX_BUFFER = 22,
+        UNLOCK_INDEX_BUFFER = 23,
+        UPDATE_INDEX_BUFFER = 24,
+
+        CREATE_TEXTURE = 41,
+        CREATE_CUBE_TEXTURE = 42,
+        GET_TEXTURE_SURFACE_LEVEl = 43,
         SET_TEXTURE_AUTOGEN_FILTER_TYPE = 44,
-        LOCK_TEXTURE_RECT               = 45,
-        UNLOCK_TEXTURE_RECT             = 46,
-        LOCK_CUBETEXTURE_RECT           = 47,
-        UNLOCK_CUBETEXTURE_RECT         = 48,
-        GET_RENDERTARGET_DATA           = 49,
-        UPDATE_TEXTURE_LEVEL            = 50,
-        UPDATE_CUBETEXTURE_LEVEL        = 40,
+        LOCK_TEXTURE_RECT = 45,
+        UNLOCK_TEXTURE_RECT = 46,
+        LOCK_CUBETEXTURE_RECT = 47,
+        UNLOCK_CUBETEXTURE_RECT = 48,
+        GET_RENDERTARGET_DATA = 49,
+        UPDATE_TEXTURE_LEVEL = 50,
+        UPDATE_CUBETEXTURE_LEVEL = 40,
 
-        CREATE_VERTEX_SHADER            = 51,
-        CREATE_PIXEL_SHADER             = 52,
-        CREATE_VERTEX_DECLARATION       = 53,
+        CREATE_VERTEX_SHADER = 51,
+        CREATE_PIXEL_SHADER = 52,
+        CREATE_VERTEX_DECLARATION = 53,
 
-        GET_QUERY_DATA                  = 61,
-        
-        QUERY_INTERFACE                 = 101,
-        RELEASE                         = 102
+        GET_QUERY_DATA = 61,
+
+        QUERY_INTERFACE = 101,
+        RELEASE = 102
     };
 
-    Func    func;
-    uint64  arg[12];
-    long    retval;
+    Func func;
+    uint64 arg[12];
+    long retval;
 };
 
-void     ExecDX9( DX9Command* cmd, uint32 cmdCount, bool force_immediate=false );
-
+void ExecDX9(DX9Command* cmd, uint32 cmdCount, bool force_immediate = false);
 
 //==============================================================================
 }
 #endif // __RHI_DX9_H__
-

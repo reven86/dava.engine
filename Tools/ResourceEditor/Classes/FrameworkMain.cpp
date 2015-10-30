@@ -48,9 +48,11 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("max_const_buffer_count", 32767);
     appOptions->SetInt32("max_texture_count", 2048);
 
-    GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
+    appOptions->SetInt32("shader_const_buffer_size", 100 * 1024 * 1024);
+
+    GameCore* core = new GameCore();
+    DAVA::Core::SetApplicationCore(core);
+    DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
 //    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");

@@ -157,16 +157,16 @@ public:
 		\brief Get list of available display modes supported by hardware
 		\param[out] availableModes list of available modes that is supported by hw
 	*/
-    virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
-	
-	/**
+    virtual void GetAvailableDisplayModes(List<DisplayMode>& availableModes);
+
+    /**
 		\brief Find mode that matches best to the mode you've requested
 		\param[in] requestedMode mode you want to get
 		\returns best mode found in current HW
 	*/
-	virtual DisplayMode FindBestMode(const DisplayMode & requestedMode);
+    virtual DisplayMode FindBestMode(const DisplayMode& requestedMode);
 
-	/**
+    /**
 		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor
 	*/
 	virtual DisplayMode GetCurrentDisplayMode();
@@ -182,11 +182,11 @@ public:
 		param[in] iconId resource id for icon from resource.h file. For example, 101 for #define IDI_ICON1 101
 	 */
 	virtual void SetIcon(int32 iconId);
-	
-    inline float32 GetScreenScaleFactor() const;
-    
-	virtual Core::eScreenOrientation GetScreenOrientation();
-	
+
+    virtual float32 GetScreenScaleFactor() const;
+
+    virtual Core::eScreenOrientation GetScreenOrientation();
+
     virtual uint32 GetScreenDPI();
 	
 	/*
@@ -253,9 +253,10 @@ public:
     eDeviceFamily GetDeviceFamily();
 	
 	// Needs to be overriden for the platforms where it has sence (MacOS only for now).
-	virtual void* GetOpenGLView() { return NULL; };
-	
-	void EnableConsoleMode();
+    void* GetNativeView() const;
+    void SetNativeView(void* nativeView);
+
+    void EnableConsoleMode();
 
     rhi::InitParam rendererParams;
 
@@ -277,8 +278,7 @@ private:
 	
 	Vector<String> commandLine;
 	bool isConsoleMode;
-
-    float32 screenScaleFactor;
+    void* nativeView;
 };
     
 inline bool Core::IsActive()
@@ -286,11 +286,6 @@ inline bool Core::IsActive()
     return isActive;
 }
     
-inline float32 Core::GetScreenScaleFactor() const
-{
-    return screenScaleFactor;
-}
-
 };
 
 #endif // __DAVAENGINE_CORE_H__

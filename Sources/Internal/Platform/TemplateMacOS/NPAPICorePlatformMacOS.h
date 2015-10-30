@@ -40,15 +40,12 @@ class NPAPICoreMacOSPlatform : public CoreMacOSPlatformBase
 {
 public:
 	NPAPICoreMacOSPlatform();
-	virtual ~NPAPICoreMacOSPlatform();
+    ~NPAPICoreMacOSPlatform() override;
 
-	virtual eScreenMode GetScreenMode();
-	virtual void SwitchScreenToMode(eScreenMode screenMode);
-	virtual void ToggleFullscreen();
+    eScreenMode GetScreenMode() override;
+    bool SetScreenMode(eScreenMode screenMode) override;
 
-	virtual DisplayMode GetCurrentDisplayMode();
-
-	virtual void* GetOpenGLView();
+    DisplayMode GetCurrentDisplayMode() override;
 };
 
 };

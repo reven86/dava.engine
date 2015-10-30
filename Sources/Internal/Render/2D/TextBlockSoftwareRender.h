@@ -41,7 +41,7 @@ class TextBlockSoftwareRender: public TextBlockRender
 public:
 	TextBlockSoftwareRender(TextBlock*);
     ~TextBlockSoftwareRender();
-	void Prepare() override;
+    void Prepare() override;
     
 
 #if defined(LOCALIZATION_DEBUG)

@@ -554,13 +554,13 @@ Font* UIYamlLoader::CreateFontFromYamlNode(const YamlNode* node)
     }
     else if (type == "GraphicFont")
     {
-        const YamlNode * fontNameNode = node->Get("name");
+        const YamlNode* fontNameNode = node->Get("name");
         if (!fontNameNode)
         {
             return nullptr;
         }
 
-        const YamlNode * texNameNode = node->Get("texture");
+        const YamlNode* texNameNode = node->Get("texture");
         if (!fontNameNode)
         {
             return nullptr;
@@ -691,7 +691,7 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentN
 
 void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode)
 {
-    const List<UIControl*>& children = parentControl->GetRealChildren();
+    const List<UIControl*>& children = parentControl->GetChildren();
     if (children.empty())
         return;
 

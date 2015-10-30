@@ -41,13 +41,18 @@ namespace
 {
 struct ThumbnailRequest
 {
-	rhi::HSyncObject syncObject;
-	Landscape* landscape = nullptr;
-	Texture* texture = nullptr;
-	LandscapeThumbnails::Callback callback;
+    rhi::HSyncObject syncObject;
+    Landscape* landscape = nullptr;
+    Texture* texture = nullptr;
+    LandscapeThumbnails::Callback callback;
 
-	ThumbnailRequest(rhi::HSyncObject so, Landscape* l, Texture* tex, LandscapeThumbnails::Callback cb) :
-		syncObject(so), landscape(l), texture(tex), callback(cb) { }
+    ThumbnailRequest(rhi::HSyncObject so, Landscape* l, Texture* tex, LandscapeThumbnails::Callback cb)
+        : syncObject(so)
+        , landscape(l)
+        , texture(tex)
+        , callback(cb)
+    {
+    }
 };
 
 struct Requests
@@ -84,37 +89,36 @@ void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
         req.callback(req.landscape, req.texture);
     }
 }
-
 }
 
 void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails::Callback handler)
 {
-	const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
+    const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	ScopedPtr<PolygonGroup> renderData(new PolygonGroup());
-	renderData->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, 4, 6);
-	renderData->SetPrimitiveType(rhi::PrimitiveType::PRIMITIVE_TRIANGLELIST);
-	renderData->SetCoord(0, Vector3(-1.0f, -1.0f, 0.0f));
-    renderData->SetCoord(1, Vector3( 1.0f, -1.0f, 0.0f));
-    renderData->SetCoord(2, Vector3(-1.0f,  1.0f, 0.0f));
-    renderData->SetCoord(3, Vector3( 1.0f,  1.0f, 0.0f));
+    ScopedPtr<PolygonGroup> renderData(new PolygonGroup());
+    renderData->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, 4, 6);
+    renderData->SetPrimitiveType(rhi::PrimitiveType::PRIMITIVE_TRIANGLELIST);
+    renderData->SetCoord(0, Vector3(-1.0f, -1.0f, 0.0f));
+    renderData->SetCoord(1, Vector3(1.0f, -1.0f, 0.0f));
+    renderData->SetCoord(2, Vector3(-1.0f, 1.0f, 0.0f));
+    renderData->SetCoord(3, Vector3(1.0f, 1.0f, 0.0f));
     renderData->SetTexcoord(0, 0, Vector2(0.0f, 0.0f));
     renderData->SetTexcoord(0, 1, Vector2(1.0f, 0.0f));
     renderData->SetTexcoord(0, 2, Vector2(0.0f, 1.0f));
     renderData->SetTexcoord(0, 3, Vector2(1.0f, 1.0f));
-	renderData->SetIndex(0, 0);
-	renderData->SetIndex(1, 1);
-	renderData->SetIndex(2, 2);
-	renderData->SetIndex(3, 2);
-	renderData->SetIndex(4, 1);
-	renderData->SetIndex(5, 3);
-	renderData->BuildBuffers();
+    renderData->SetIndex(0, 0);
+    renderData->SetIndex(1, 1);
+    renderData->SetIndex(2, 2);
+    renderData->SetIndex(3, 2);
+    renderData->SetIndex(4, 1);
+    renderData->SetIndex(5, 3);
+    renderData->BuildBuffers();
 
-	rhi::HSyncObject syncObject = rhi::CreateSyncObject();
-	Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
-	{
+    rhi::HSyncObject syncObject = rhi::CreateSyncObject();
+    Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
+    {
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
         requests.list.emplace_back(syncObject, landscape, texture, handler);
     }
@@ -123,12 +127,12 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     const auto identityMatrix = &Matrix4::IDENTITY;
     Vector3 nullVector(0.0f, 0.0f, 0.0f);
     DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
-	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, identityMatrix, (pointer_size)(identityMatrix));
-	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, identityMatrix, (pointer_size)(identityMatrix));
-	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, identityMatrix, (pointer_size)(identityMatrix));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, identityMatrix, (pointer_size)(identityMatrix));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, identityMatrix, (pointer_size)(identityMatrix));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, identityMatrix, (pointer_size)(identityMatrix));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &nullVector, (pointer_size)(&nullVector));
 
-    rhi::Packet packet = { };
+    rhi::Packet packet = {};
     packet.vertexStreamCount = 1;
     packet.vertexStream[0] = renderData->vertexBuffer;
     packet.vertexCount = renderData->vertexCount;
@@ -137,19 +141,19 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     packet.primitiveCount = GetPrimitiveCount(renderData->indexCount, renderData->primitiveType);
     packet.vertexLayoutUID = renderData->vertexLayoutId;
 
-	landscape->GetMaterial()->BindParams(packet);
+    landscape->GetMaterial()->BindParams(packet);
 
-	rhi::RenderPassConfig passDesc = { };
-	passDesc.colorBuffer[0].texture = texture->handle;
-	passDesc.priority = PRIORITY_SERVICE_3D;
-	passDesc.viewport.width = TEXTURE_TILE_FULL_SIZE;
-	passDesc.viewport.height = TEXTURE_TILE_FULL_SIZE;
+    rhi::RenderPassConfig passDesc = {};
+    passDesc.colorBuffer[0].texture = texture->handle;
+    passDesc.priority = PRIORITY_SERVICE_3D;
+    passDesc.viewport.width = TEXTURE_TILE_FULL_SIZE;
+    passDesc.viewport.height = TEXTURE_TILE_FULL_SIZE;
 
-	rhi::HPacketList packetList = { };
-	rhi::HRenderPass renderPass = rhi::AllocateRenderPass(passDesc, 1, &packetList);
-	rhi::BeginRenderPass(renderPass);
-	rhi::BeginPacketList(packetList);
-	rhi::AddPacket(packetList, packet);
-	rhi::EndPacketList(packetList, syncObject);
-	rhi::EndRenderPass(renderPass);
+    rhi::HPacketList packetList = {};
+    rhi::HRenderPass renderPass = rhi::AllocateRenderPass(passDesc, 1, &packetList);
+    rhi::BeginRenderPass(renderPass);
+    rhi::BeginPacketList(packetList);
+    rhi::AddPacket(packetList, packet);
+    rhi::EndPacketList(packetList, syncObject);
+    rhi::EndRenderPass(renderPass);
 }

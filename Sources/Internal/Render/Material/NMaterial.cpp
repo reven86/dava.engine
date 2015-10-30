@@ -44,38 +44,42 @@
 
 namespace DAVA
 {
-
 struct MaterialPropertyBinding
 {
-	rhi::ShaderProp::Type type;
-	uint32 reg;
-	uint32 regCount;
-	uint32 updateSemantic;
-	NMaterialProperty* source;
-	MaterialPropertyBinding(rhi::ShaderProp::Type type_, uint32 reg_, uint32 regCount_, uint32 updateSemantic_, NMaterialProperty* source_) : 
-			type(type_), reg(reg_), regCount(regCount_), updateSemantic(updateSemantic_), source(source_) 
-	{
-	}
+    rhi::ShaderProp::Type type;
+    uint32 reg;
+    uint32 regCount;
+    uint32 updateSemantic;
+    NMaterialProperty* source;
+    MaterialPropertyBinding(rhi::ShaderProp::Type type_, uint32 reg_, uint32 regCount_, uint32 updateSemantic_, NMaterialProperty* source_)
+        : type(type_)
+        , reg(reg_)
+        , regCount(regCount_)
+        , updateSemantic(updateSemantic_)
+        , source(source_)
+    {
+    }
 };
 
 struct MaterialBufferBinding
 {
-	rhi::HConstBuffer constBuffer;
-	Vector<MaterialPropertyBinding> propBindings;
-	uint32 lastValidPropertySemantic = 0;
+    rhi::HConstBuffer constBuffer;
+    Vector<MaterialPropertyBinding> propBindings;
+    uint32 lastValidPropertySemantic = 0;
 };
 
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
-RenderVariantInstance::RenderVariantInstance() :shader(nullptr)
+RenderVariantInstance::RenderVariantInstance()
+    : shader(nullptr)
 {
 }
 
 RenderVariantInstance::~RenderVariantInstance()
-{    
+{
     rhi::ReleaseDepthStencilState(depthState);
     rhi::ReleaseTextureSet(textureSet);
-    rhi::ReleaseSamplerState(samplerState);    
+    rhi::ReleaseSamplerState(samplerState);
 }
 
 NMaterial::NMaterial()
@@ -100,7 +104,7 @@ NMaterial::~NMaterial()
         SafeRelease(texInfo.second->texture);
         SafeDelete(texInfo.second);
     }
-       
+
     for (auto& buffer : localConstBuffers)
     {
         rhi::DeleteConstBuffer(buffer.second->constBuffer);
@@ -115,7 +119,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     //Logger::Info( "bind-params" );
-    DVASSERT(activeVariantInstance);       //trying to bind material that was not staged to render
+    DVASSERT(activeVariantInstance); //trying to bind material that was not staged to render
     DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
     DVASSERT(activeVariantInstance->shader->IsValid()); //should have returned false on PreBuild!
     /*set pipeline state*/
@@ -169,7 +173,6 @@ void NMaterial::BindParams(rhi::Packet& target)
         target.fragmentConst[i] = activeVariantInstance->fragmentConstBuffers[i];
 }
 
-
 uint32 NMaterial::GetRequiredVertexFormat()
 {
     uint32 res = 0;
@@ -178,10 +181,10 @@ uint32 NMaterial::GetRequiredVertexFormat()
         bool shaderValid = (nullptr != variant.second) && (variant.second->shader->IsValid());
         DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
 
-		if (shaderValid)
-		{
-			res |= variant.second->shader->GetRequiredVertexFormat();
-		}
+        if (shaderValid)
+        {
+            res |= variant.second->shader->GetRequiredVertexFormat();
+        }
     }
     return res;
 }
@@ -197,7 +200,7 @@ MaterialBufferBinding* NMaterial::GetConstBufferBinding(UniquePropertyLayout pro
 
 NMaterialProperty* NMaterial::GetMaterialProperty(const FastName& propName)
 {
-    NMaterialProperty *res = localProperties.at(propName);
+    NMaterialProperty* res = localProperties.at(propName);
     if ((res == nullptr) && (parent != nullptr))
     {
         res = parent->GetMaterialProperty(propName);
@@ -207,43 +210,41 @@ NMaterialProperty* NMaterial::GetMaterialProperty(const FastName& propName)
 
 Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
 {
-    MaterialTextureInfo * localInfo = localTextures.at(slotName);
+    MaterialTextureInfo* localInfo = localTextures.at(slotName);
     if (localInfo)
     {
         if (localInfo->texture == nullptr)
-            localInfo->texture = Texture::CreateFromFile(localInfo->path);
+            localInfo->texture = Texture::CreateFromFile(localInfo->path, slotName);
         return localInfo->texture;
     }
-    
+
     if (parent != nullptr)
     {
         return parent->GetEffectiveTexture(slotName);
     }
     return nullptr;
 }
-    
-void NMaterial::CollectLocalTextures(Set<MaterialTextureInfo *> &collection) const
+
+void NMaterial::CollectLocalTextures(Set<MaterialTextureInfo*>& collection) const
 {
-    for(const auto &lc: localTextures)
+    for (const auto& lc : localTextures)
     {
-        const auto & path = lc.second->path;
-        if(!path.IsEmpty())
+        const auto& path = lc.second->path;
+        if (!path.IsEmpty())
         {
             collection.emplace(lc.second);
         }
     }
 }
 
-    
-
-void NMaterial::SetFXName(const FastName & fx)
+void NMaterial::SetFXName(const FastName& fx)
 {
     fxName = fx;
     InvalidateRenderVariants();
 }
 
 const FastName& NMaterial::GetEffectiveFXName() const
-{   
+{
     if ((!fxName.IsValid()) && (parent != nullptr))
     {
         return parent->GetEffectiveFXName();
@@ -262,7 +263,7 @@ bool NMaterial::HasLocalFXName() const
 }
 
 const FastName& NMaterial::GetQualityGroup()
-{    
+{
     if ((!qualityGroup.IsValid()) && (parent != nullptr))
     {
         return parent->GetQualityGroup();
@@ -275,12 +276,12 @@ void NMaterial::SetQualityGroup(const FastName& quality)
     qualityGroup = quality;
 }
 
-void NMaterial::AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
+void NMaterial::AddProperty(const FastName& propName, const float32* propData, rhi::ShaderProp::Type type, uint32 arraySize)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(localProperties.at(propName) == nullptr);
-    NMaterialProperty *prop = new NMaterialProperty();
+    NMaterialProperty* prop = new NMaterialProperty();
     prop->name = propName;
     prop->type = type;
     prop->arraySize = arraySize;
@@ -293,8 +294,7 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
 
 void NMaterial::RemoveProperty(const FastName& propName)
 {
-
-    NMaterialProperty *prop = localProperties.at(propName);
+    NMaterialProperty* prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);
     localProperties.erase(propName);
     SafeDelete(prop);
@@ -302,42 +302,42 @@ void NMaterial::RemoveProperty(const FastName& propName)
     InvalidateBufferBindings();
 }
 
-void NMaterial::SetPropertyValue(const FastName& propName, const float32 *propData)
+void NMaterial::SetPropertyValue(const FastName& propName, const float32* propData)
 {
-    NMaterialProperty *prop = localProperties.at(propName);
+    NMaterialProperty* prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);
     prop->SetPropertyValue(propData);
 }
 
 bool NMaterial::HasLocalProperty(const FastName& propName)
 {
-    return localProperties.at(propName)!=nullptr;
+    return localProperties.at(propName) != nullptr;
 }
 
 rhi::ShaderProp::Type NMaterial::GetLocalPropType(const FastName& propName)
 {
-    NMaterialProperty *prop = localProperties.at(propName);
+    NMaterialProperty* prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);
     return prop->type;
 }
 
 const float32* NMaterial::GetLocalPropValue(const FastName& propName)
 {
-    NMaterialProperty *prop = localProperties.at(propName);
+    NMaterialProperty* prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);
     return prop->data.get();
 }
 
 uint32 NMaterial::GetLocalPropArraySize(const FastName& propName)
 {
-    NMaterialProperty *prop = localProperties.at(propName);
+    NMaterialProperty* prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);
     return prop->arraySize;
 }
 
 const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
 {
-    NMaterialProperty *prop = localProperties.at(propName);
+    NMaterialProperty* prop = localProperties.at(propName);
     if (prop)
         return prop->data.get();
     if (parent)
@@ -350,16 +350,15 @@ void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(localTextures.at(slotName) == nullptr);
-    MaterialTextureInfo *texInfo = new MaterialTextureInfo();
+    MaterialTextureInfo* texInfo = new MaterialTextureInfo();
     texInfo->texture = SafeRetain(texture);
     texInfo->path = texture->GetPathname();
-    localTextures[slotName] = texInfo;        
+    localTextures[slotName] = texInfo;
     InvalidateTextureBindings();
-
 }
 void NMaterial::RemoveTexture(const FastName& slotName)
 {
-    MaterialTextureInfo * texInfo = localTextures.at(slotName);
+    MaterialTextureInfo* texInfo = localTextures.at(slotName);
     DVASSERT(texInfo != nullptr);
     localTextures.erase(slotName);
     SafeRelease(texInfo->texture);
@@ -367,10 +366,10 @@ void NMaterial::RemoveTexture(const FastName& slotName)
     InvalidateTextureBindings();
 }
 void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
-{    
-    MaterialTextureInfo * texInfo = localTextures.at(slotName);
-    DVASSERT(texture != nullptr);    //use RemoveTexture to remove texture!
-    DVASSERT(texInfo != nullptr);   //use AddTexture to add texture!
+{
+    MaterialTextureInfo* texInfo = localTextures.at(slotName);
+    DVASSERT(texture != nullptr); //use RemoveTexture to remove texture!
+    DVASSERT(texInfo != nullptr); //use AddTexture to add texture!
 
     if (texInfo->texture != texture)
     {
@@ -389,7 +388,7 @@ bool NMaterial::HasLocalTexture(const FastName& slotName)
 Texture* NMaterial::GetLocalTexture(const FastName& slotName)
 {
     DVASSERT(HasLocalTexture(slotName));
-    MaterialTextureInfo * texInfo = localTextures.at(slotName);    
+    MaterialTextureInfo* texInfo = localTextures.at(slotName);
     if (texInfo->texture == nullptr)
         texInfo->texture = Texture::CreateFromFile(texInfo->path);
     return texInfo->texture;
@@ -437,7 +436,6 @@ bool NMaterial::HasLocalFlag(const FastName& flagName)
     return localFlags.find(flagName) != localFlags.end();
 }
 
-
 bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
 {
     for (auto& descr : ShaderDescriptor::GetProps(propertyLayout))
@@ -448,8 +446,7 @@ bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
     return false;
 }
 
-
-void NMaterial::SetParent(NMaterial *_parent)
+void NMaterial::SetParent(NMaterial* _parent)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -463,7 +460,6 @@ void NMaterial::SetParent(NMaterial *_parent)
         parent->RemoveChildMaterial(this);
         SafeRelease(parent);
     }
-        
 
     parent = _parent;
     sortingKey = (uint32)((uint64)parent);
@@ -482,26 +478,26 @@ NMaterial* NMaterial::GetParent()
     return parent;
 }
 
-const Vector<NMaterial *>&  NMaterial::GetChildren() const
+const Vector<NMaterial*>& NMaterial::GetChildren() const
 {
     return children;
 }
 
-void NMaterial::AddChildMaterial(NMaterial *material)
-{    
+void NMaterial::AddChildMaterial(NMaterial* material)
+{
     DVASSERT(material);
     children.push_back(material);
 }
 
-void NMaterial::RemoveChildMaterial(NMaterial *material)
+void NMaterial::RemoveChildMaterial(NMaterial* material)
 {
     bool res = FindAndRemoveExchangingWithLast(children, material);
-    DVASSERT(res);    
+    DVASSERT(res);
 }
 
 void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer)
 {
-    if (parent&&!NeedLocalOverride(propLayoutId))
+    if (parent && !NeedLocalOverride(propLayoutId))
         parent->InjectChildBuffer(propLayoutId, buffer);
     else
     {
@@ -512,10 +508,9 @@ void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBuf
 
 void NMaterial::ClearLocalBuffers()
 {
-
     for (auto& buffer : localConstBuffers)
     {
-        rhi::DeleteConstBuffer(buffer.second->constBuffer);        
+        rhi::DeleteConstBuffer(buffer.second->constBuffer);
         SafeDelete(buffer.second);
     }
     for (auto& variant : renderVariants)
@@ -553,12 +548,12 @@ void NMaterial::RebuildRenderVariants()
     CollectMaterialFlags(flags);
 
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
-    
-    if( fxDescr.renderPassDescriptors.size() == 0)
+
+    if (fxDescr.renderPassDescriptors.size() == 0)
     {
         // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
         return;
-    }    
+    }
 
     /*at least in theory flag changes can lead to changes in number of render passes*/
     activeVariantInstance = nullptr;
@@ -571,7 +566,7 @@ void NMaterial::RebuildRenderVariants()
 
     for (auto& variantDescr : fxDescr.renderPassDescriptors)
     {
-        RenderVariantInstance *variant = new RenderVariantInstance();                
+        RenderVariantInstance* variant = new RenderVariantInstance();
         variant->renderLayer = variantDescr.renderLayer;
         variant->depthState = rhi::AcquireDepthStencilState(variantDescr.depthStateDescriptor);
         variant->shader = variantDescr.shader;
@@ -581,7 +576,7 @@ void NMaterial::RebuildRenderVariants()
     }
 
     ClearLocalBuffers();
-    activeVariantName = FastName();    
+    activeVariantName = FastName();
     activeVariantInstance = nullptr;
     needRebuildVariants = false;
     needRebuildBindings = true;
@@ -592,7 +587,7 @@ void NMaterial::CollectMaterialFlags(HashMap<FastName, int32>& target)
 {
     if (parent)
         parent->CollectMaterialFlags(target);
-    for (auto &it : localFlags)
+    for (auto& it : localFlags)
         target[it.first] = it.second;
 }
 
@@ -602,7 +597,7 @@ void NMaterial::RebuildBindings()
     for (auto& variant : renderVariants)
     {
         RenderVariantInstance* currRenderVariant = variant.second;
-        ShaderDescriptor *currShader = currRenderVariant->shader;
+        ShaderDescriptor* currShader = currRenderVariant->shader;
         if (!currShader->IsValid()) //cant build for empty shader
             continue;
         currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount());
@@ -615,7 +610,6 @@ void NMaterial::RebuildBindings()
             //for static buffers resolve sharing and bindings
             if (bufferDescr.updateType == rhi::ShaderProp::STORAGE_STATIC)
             {
-
                 bufferBinding = GetConstBufferBinding(bufferDescr.propertyLayoutId);
                 bool needLocalOverride = NeedLocalOverride(bufferDescr.propertyLayoutId);
                 //Create local buffer and build it's bindings if required;
@@ -633,21 +627,21 @@ void NMaterial::RebuildBindings()
                     //create bindings for this buffer
                     for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
                     {
-                        NMaterialProperty *prop = GetMaterialProperty(propDescr.uid);
+                        NMaterialProperty* prop = GetMaterialProperty(propDescr.uid);
                         if ((prop != nullptr)) //has property of the same type
                         {
                             DVASSERT(prop->type == propDescr.type);
 
                             // create property binding
 
-                            bufferBinding->propBindings.emplace_back(propDescr.type, 
-								propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
+                            bufferBinding->propBindings.emplace_back(propDescr.type,
+                                                                     propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
                         }
                         else
                         {
                             //just set default property to const buffer
                             if (propDescr.type < rhi::ShaderProp::TYPE_FLOAT4)
-                            {                                
+                            {
                                 rhi::UpdateConstBuffer1fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.bufferRegCount, propDescr.defaultValue, ShaderDescriptor::CalculateDataSize(propDescr.type, 1));
                             }
                             else
@@ -685,12 +679,10 @@ void NMaterial::RebuildBindings()
                 currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
             else
                 currRenderVariant->fragmentConstBuffers[bufferDescr.targetSlot] = bufferHandle;
-
         }
     }
 
     needRebuildBindings = false;
-
 }
 
 void NMaterial::RebuildTextureBindings()
@@ -698,32 +690,31 @@ void NMaterial::RebuildTextureBindings()
     for (auto& variant : renderVariants)
     {
         RenderVariantInstance* currRenderVariant = variant.second;
-        
-        //release existing        
-        rhi::ReleaseTextureSet(currRenderVariant->textureSet);        
-        rhi::ReleaseSamplerState(currRenderVariant->samplerState);
-        
 
-        ShaderDescriptor *currShader = currRenderVariant->shader;
+        //release existing
+        rhi::ReleaseTextureSet(currRenderVariant->textureSet);
+        rhi::ReleaseSamplerState(currRenderVariant->samplerState);
+
+        ShaderDescriptor* currShader = currRenderVariant->shader;
         if (!currShader->IsValid()) //cant build for empty shader
             continue;
-        rhi::TextureSetDescriptor textureDescr;        
+        rhi::TextureSetDescriptor textureDescr;
         rhi::SamplerState::Descriptor samplerDescr;
         const rhi::ShaderSamplerList& fragmentSamplerList = currShader->GetFragmentSamplerList();
         const rhi::ShaderSamplerList& vertexSamplerList = currShader->GetVertexSamplerList();
 
-        textureDescr.fragmentTextureCount = fragmentSamplerList.size();       
+        textureDescr.fragmentTextureCount = fragmentSamplerList.size();
         samplerDescr.fragmentSamplerCount = fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
-        {       
+        {
             RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->GetFragmentSamplerList()[i].uid);
             if (textureSemantic == RuntimeTextures::TEXTURE_STATIC)
             {
-                Texture *tex = GetEffectiveTexture(fragmentSamplerList[i].uid);
+                Texture* tex = GetEffectiveTexture(fragmentSamplerList[i].uid);
                 if (tex)
                 {
                     textureDescr.fragmentTexture[i] = tex->handle;
-                    samplerDescr.fragmentSampler[i] = tex->samplerState;                  
+                    samplerDescr.fragmentSampler[i] = tex->samplerState;
                 }
                 else
                 {
@@ -738,15 +729,14 @@ void NMaterial::RebuildTextureBindings()
                 textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetDynamicTexture(textureSemantic);
                 samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetDynamicTextureSamplerState(textureSemantic);
             }
-            DVASSERT(textureDescr.fragmentTexture[i].IsValid());                        
+            DVASSERT(textureDescr.fragmentTexture[i].IsValid());
         }
-
 
         textureDescr.vertexTextureCount = vertexSamplerList.size();
         samplerDescr.vertexSamplerCount = vertexSamplerList.size();
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
-            Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);
+            Texture* tex = GetEffectiveTexture(vertexSamplerList[i].uid);
             if (tex)
             {
                 textureDescr.vertexTexture[i] = tex->handle;
@@ -758,8 +748,7 @@ void NMaterial::RebuildTextureBindings()
                 samplerDescr.vertexSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(vertexSamplerList[i].type);
             }
             samplerDescr.vertexSampler[i].mipFilter = rhi::TEXMIPFILTER_NONE;
-        }                            
-
+        }
 
         currRenderVariant->textureSet = rhi::AcquireTextureSet(textureDescr);
         currRenderVariant->samplerState = rhi::AcquireSamplerState(samplerDescr);
@@ -771,7 +760,6 @@ void NMaterial::RebuildTextureBindings()
 bool NMaterial::PreBuildMaterial(const FastName& passName)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
     //shader rebuild first - as it sets needRebuildBindings and needRebuildTextures
     if (needRebuildVariants)
         RebuildRenderVariants();
@@ -783,9 +771,9 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
     bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader->IsValid());
     if (activeVariantName != passName)
     {
-        RenderVariantInstance *targetVariant = renderVariants[passName];
-        
-        if (targetVariant!=nullptr)
+        RenderVariantInstance* targetVariant = renderVariants[passName];
+
+        if (targetVariant != nullptr)
         {
             activeVariantName = passName;
             activeVariantInstance = targetVariant;
@@ -796,7 +784,6 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
         {
             res = false;
         }
-        
     }
     return res;
 }
@@ -805,7 +792,7 @@ NMaterial* NMaterial::Clone()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    NMaterial *clonedMaterial = new NMaterial();
+    NMaterial* clonedMaterial = new NMaterial();
     clonedMaterial->materialName = materialName;
     clonedMaterial->fxName = fxName;
 
@@ -814,12 +801,12 @@ NMaterial* NMaterial::Clone()
 
     for (auto tex : localTextures)
     {
-        MaterialTextureInfo *res = new MaterialTextureInfo();
+        MaterialTextureInfo* res = new MaterialTextureInfo();
         res->path = tex.second->path;
         res->texture = SafeRetain(tex.second->texture);
-        clonedMaterial->localTextures[tex.first] = res;        
+        clonedMaterial->localTextures[tex.first] = res;
     }
-        
+
     for (auto flag : localFlags)
         clonedMaterial->AddFlag(flag.first, flag.second);
 
@@ -833,7 +820,7 @@ NMaterial* NMaterial::Clone()
     return clonedMaterial;
 }
 
-void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -852,7 +839,7 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
         archive->SetString(NMaterialSerializationKey::QualityGroup, qualityGroup.c_str());
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
-    for (HashMap<FastName, NMaterialProperty*>::iterator it = localProperties.begin(), itEnd = localProperties.end(); it != itEnd; ++it)
+    for (HashMap<FastName, NMaterialProperty *>::iterator it = localProperties.begin(), itEnd = localProperties.end(); it != itEnd; ++it)
     {
         NMaterialProperty* property = it->second;
 
@@ -872,7 +859,7 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
 
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
     for (auto it = localTextures.begin(), itEnd = localTextures.end(); it != itEnd; ++it)
-    {        
+    {
         if (!it->second->path.IsEmpty())
         {
             String textureRelativePath = it->second->path.GetRelativePathname(serializationContext->GetScenePath());
@@ -893,7 +880,7 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     archive->SetArchive("flags", flagsArchive);
 }
 
-void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -946,13 +933,13 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
             FastName propName = FastName(it->first);
 
-            uint8 propType = *ptr; 
-			ptr += sizeof(uint8);
+            uint8 propType = *ptr;
+            ptr += sizeof(uint8);
 
             uint32 propSize = *(uint32*)ptr;
-			ptr += sizeof(uint32);
+            ptr += sizeof(uint32);
 
-            float32 *data = (float32*)ptr;
+            float32* data = (float32*)ptr;
             AddProperty(propName, data, (rhi::ShaderProp::Type)propType, propSize);
         }
     }
@@ -963,9 +950,9 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         for (Map<String, VariantType*>::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
         {
             String relativePathname = it->second->AsString();
-            MaterialTextureInfo *texInfo = new MaterialTextureInfo();            
+            MaterialTextureInfo* texInfo = new MaterialTextureInfo();
             texInfo->path = serializationContext->GetScenePath() + relativePathname;
-            localTextures[FastName(it->first)] = texInfo;            
+            localTextures[FastName(it->first)] = texInfo;
         }
     }
 
@@ -974,12 +961,12 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         const Map<String, VariantType*>& flagsMap = archive->GetArchive("flags")->GetArchieveData();
         for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
-			AddFlag(FastName(it->first), it->second->AsInt32());
+            AddFlag(FastName(it->first), it->second->AsInt32());
         }
     }
 }
 
-void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext)
+void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1019,17 +1006,17 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     {
         auto materialTemplate = archive->GetString("materialTemplate");
         fxName = materialTemplate.empty() ? FastName() : FastName(materialTemplate);
-    }    
+    }
 
     if (archive->IsKeyExists("textures"))
     {
         const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
         for (Map<String, VariantType*>::const_iterator it = texturesMap.begin();
-            it != texturesMap.end();
-            ++it)
+             it != texturesMap.end();
+             ++it)
         {
             String relativePathname = it->second->AsString();
-            MaterialTextureInfo *texInfo = new MaterialTextureInfo();
+            MaterialTextureInfo* texInfo = new MaterialTextureInfo();
             texInfo->path = serializationContext->GetScenePath() + relativePathname;
             localTextures[FastName(it->first)] = texInfo;
         }
@@ -1045,46 +1032,56 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     }
     //NMaterial hell - for some reason property types were saved as GL_XXX defines O_o
     const uint32 originalTypesCount = 5;
-    struct { uint32 originalType; rhi::ShaderProp::Type newType;} propertyTypeRemapping[originalTypesCount] =
+    struct
     {
-        { 0x1406/*GL_FLOAT*/, rhi::ShaderProp::TYPE_FLOAT1},
-        { 0x8B50/*GL_FLOAT_VEC2*/, rhi::ShaderProp::TYPE_FLOAT2},
-        { 0x8B51/*GL_FLOAT_VEC3*/, rhi::ShaderProp::TYPE_FLOAT3},
-        { 0x8B52/*GL_FLOAT_VEC4*/, rhi::ShaderProp::TYPE_FLOAT4},
-        { 0x8B5C/*GL_FLOAT_MAT4*/, rhi::ShaderProp::TYPE_FLOAT4X4}
+        uint32 originalType;
+        rhi::ShaderProp::Type newType;
+    } propertyTypeRemapping[originalTypesCount] =
+    {
+      { 0x1406 /*GL_FLOAT*/, rhi::ShaderProp::TYPE_FLOAT1 },
+      { 0x8B50 /*GL_FLOAT_VEC2*/, rhi::ShaderProp::TYPE_FLOAT2 },
+      { 0x8B51 /*GL_FLOAT_VEC3*/, rhi::ShaderProp::TYPE_FLOAT3 },
+      { 0x8B52 /*GL_FLOAT_VEC4*/, rhi::ShaderProp::TYPE_FLOAT4 },
+      { 0x8B5C /*GL_FLOAT_MAT4*/, rhi::ShaderProp::TYPE_FLOAT4X4 }
     };
-           
+
     Array<FastName, 8> propertyFloat4toFloat3 =
-    {{
-        NMaterialParamName::PARAM_FOG_COLOR,
-        NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
-        NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN,
-        NMaterialParamName::PARAM_DECAL_TILE_COLOR,
-        Landscape::PARAM_TILE_COLOR0,
-        Landscape::PARAM_TILE_COLOR1,
-        Landscape::PARAM_TILE_COLOR2,
-        Landscape::PARAM_TILE_COLOR3,
-    }};
-    Array<FastName, 1> propertyFloat3toFloat4 =
-    {{
-        NMaterialParamName::PARAM_FLAT_COLOR,
-    }};
+    { {
+    NMaterialParamName::PARAM_FOG_COLOR,
+    NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
+    NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN,
+    Landscape::PARAM_TILE_COLOR0,
+    Landscape::PARAM_TILE_COLOR1,
+    Landscape::PARAM_TILE_COLOR2,
+    Landscape::PARAM_TILE_COLOR3,
+    } };
+
+    Array<FastName, 2> propertyFloat3toFloat4 =
+    { { NMaterialParamName::PARAM_FLAT_COLOR,
+        NMaterialParamName::PARAM_DECAL_TILE_COLOR } };
+
+    Array<FastName, 1> propertyFloat1toFloat2 =
+    {
+      { NMaterialParamName::PARAM_DECAL_TILE_SCALE }
+    };
 
     if (archive->IsKeyExists("properties"))
     {
         const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
         for (Map<String, VariantType*>::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
-        {            
+        {
             const VariantType* propVariant = it->second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
             DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) + sizeof(uint32)));
 
             const uint8* ptr = propVariant->AsByteArray();
-            
+
             FastName propName = FastName(it->first);
-            uint32 propType = *(uint32*)ptr; ptr += sizeof(uint32);
-            uint8 propSize = *(uint8*)ptr; ptr += sizeof(uint8);
-            float32 *data = (float32*)ptr;            
+            uint32 propType = *(uint32*)ptr;
+            ptr += sizeof(uint32);
+            uint8 propSize = *(uint8*)ptr;
+            ptr += sizeof(uint8);
+            float32* data = (float32*)ptr;
             for (uint32 i = 0; i < originalTypesCount; i++)
             {
                 if (propType == propertyTypeRemapping[i].originalType)
@@ -1109,11 +1106,19 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
                             continue;
                         }
                     }
+                    else if (propertyTypeRemapping[i].newType == rhi::ShaderProp::TYPE_FLOAT1)
+                    {
+                        if (std::find(propertyFloat1toFloat2.begin(), propertyFloat1toFloat2.end(), propName) != propertyFloat1toFloat2.end())
+                        {
+                            Vector2 v2(*data, *data);
+                            AddProperty(propName, v2.data, rhi::ShaderProp::TYPE_FLOAT2, 1);
+                            continue;
+                        }
+                    }
 
                     AddProperty(propName, data, propertyTypeRemapping[i].newType, 1);
                 }
             }
-
         }
     }
 
