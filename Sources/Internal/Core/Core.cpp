@@ -84,6 +84,7 @@
 
 
 #include "Debug/Profiler.h"
+#include "Core.h"
 #define PROF__FRAME 0
 #define PROF__FRAME_UPDATE 1
 #define PROF__FRAME_DRAW 2
@@ -392,6 +393,10 @@ void Core::Quit()
 {
     exit(0);
     Logger::FrameworkDebug("[Core::Quit] do not supported by platform implementation of core");
+}
+
+void Core::ResetScreen()
+{
 }
 
 void Core::SetApplicationCore(ApplicationCore* _core)
@@ -715,12 +720,25 @@ uint32 Core::GetScreenDPI()
 
 void Core::SetIcon(int32 /*iconId*/){};
 
-float32 Core::GetScreenScaleFactor() const
+float32 Core::GetScreenScaleMultiplier() const
 {
+    float32 ret = 1.0;
+
     if (options)
     {
-        return DeviceInfo::GetScreenInfo().scale * options->GetFloat("userScreenScaleFactor", 1.f);
+        ret = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
-    return DeviceInfo::GetScreenInfo().scale;
+
+    return ret;
+}
+
+void Core::SetScreenScaleMultiplier(float32 multiplier)
+{
+    options->SetFloat("userScreenScaleFactor", multiplier);
+}
+
+float32 Core::GetScreenScaleFactor() const
+{
+    return (DeviceInfo::GetScreenInfo().scale * GetScreenScaleMultiplier());
 }
 };

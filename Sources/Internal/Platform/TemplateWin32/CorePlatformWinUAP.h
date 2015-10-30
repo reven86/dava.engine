@@ -55,6 +55,7 @@ public:
     void InitArgs();
     void Run();
     void Quit() override;
+    void ResetScreen() override;
 
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;

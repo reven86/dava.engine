@@ -840,6 +840,21 @@ void WinUAPXamlApp::SetDisplayOrientations()
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
 }
 
+void WinUAPXamlApp::ResetScreen()
+{
+    core->RunOnUIThreadBlocked([this]() {
+        float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
+        float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
+        float32 scaleX = swapChainPanel->CompositionScaleX;
+        float32 scaleY = swapChainPanel->CompositionScaleY;
+        UpdateScreenSizeAndScale(width, height, scaleX, scaleY);
+    });
+
+    ResetRender();
+    ReInitCoordinatesSystem();
+    UIScreenManager::Instance()->ScreenSizeChanged();
+}
+
 void WinUAPXamlApp::ResetRender()
 {
     rhi::ResetParam params;
@@ -888,12 +903,13 @@ void WinUAPXamlApp::PrepareScreenSize()
 
 void WinUAPXamlApp::UpdateScreenSizeAndScale(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    viewScaleX = scaleX;
-    viewScaleY = scaleY;
+    float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
+    viewScaleX = scaleX * userScale;
+    viewScaleY = scaleY * userScale;
     viewWidth = static_cast<int32>(width);
     viewHeight = static_cast<int32>(height);
-    physicalWidth = static_cast<int32>(width * scaleX);
-    physicalHeight = static_cast<int32>(height * scaleY);
+    physicalWidth = static_cast<int32>(width * viewScaleX);
+    physicalHeight = static_cast<int32>(height * viewScaleY);
 }
 
 void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)

@@ -70,6 +70,11 @@ void CorePlatformWinUAP::Quit()
     xamlApp->SetQuitFlag();
 }
 
+void CorePlatformWinUAP::ResetScreen()
+{
+    xamlApp->ResetScreen();
+}
+
 Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
 {
     // will be called from UI thread
