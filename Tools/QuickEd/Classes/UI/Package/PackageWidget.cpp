@@ -38,6 +38,7 @@
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageIterator.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
@@ -67,6 +68,14 @@ namespace
         PackageWidget::ExpandedIndexes expandedIndexes;
         QString filterString;
     };
+    
+    void AddSeparatorAction(QWidget *widget)
+    {
+        QAction *separator = new QAction(widget);
+        separator->setSeparator(true);
+        widget->addAction(separator);
+    }
+
 }
 
 PackageWidget::PackageWidget(QWidget *parent)
@@ -80,47 +89,8 @@ PackageWidget::PackageWidget(QWidget *parent)
     addStyleAction = new QAction(tr("Add Style"), this);
     connect(addStyleAction, &QAction::triggered, this, &PackageWidget::OnAddStyle);
     
-    importPackageAction = new QAction(tr("Import package"), this);
-    importPackageAction->setShortcut(QKeySequence::New);
-    importPackageAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(importPackageAction, &QAction::triggered, this, &PackageWidget::OnImport);
-
-    cutAction = new QAction(tr("Cut"), this);
-    cutAction->setShortcut(QKeySequence::Cut);
-    cutAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(cutAction, &QAction::triggered, this, &PackageWidget::OnCut);
-
-    copyAction = new QAction(tr("Copy"), this);
-    copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(copyAction, &QAction::triggered, this, &PackageWidget::OnCopy);
-
-    pasteAction = new QAction(tr("Paste"), this);
-    pasteAction->setShortcut(QKeySequence::Paste);
-    pasteAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(pasteAction, &QAction::triggered, this, &PackageWidget::OnPaste);
-
-    renameAction = new QAction(tr("Rename"), this);
-    connect(renameAction, &QAction::triggered, this, &PackageWidget::OnRename);
-    
-    delAction = new QAction(tr("Delete"), this);
-    delAction->setShortcut(QKeySequence::Delete);
-    delAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(delAction, &QAction::triggered, this, &PackageWidget::OnDelete);
-    
-    treeView->addAction(importPackageAction);
-    treeView->addAction(addStyleAction);
-    treeView->addAction(CreateSeparator());
-
-    treeView->addAction(cutAction);
-    treeView->addAction(copyAction);
-    treeView->addAction(pasteAction);
-    treeView->addAction(CreateSeparator());
-    
-    treeView->addAction(renameAction);
-    treeView->addAction(CreateSeparator());
-    
-    treeView->addAction(delAction);
+    CreateActions();
+    PlaceActions();
 }
 
 void PackageWidget::OnDocumentChanged(Document* arg)
@@ -134,6 +104,72 @@ void PackageWidget::OnDocumentChanged(Document* arg)
 
     treeView->setColumnWidth(0, treeView->size().width()); // TODO Check this
     treeView->setUpdatesEnabled(true);
+}
+
+void PackageWidget::CreateActions()
+{
+    addStyleAction = new QAction(tr("Add Style"), this);
+    connect(addStyleAction, &QAction::triggered, this, &PackageWidget::OnAddStyle);
+    
+    importPackageAction = new QAction(tr("Import package"), this);
+    importPackageAction->setShortcut(QKeySequence::New);
+    importPackageAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(importPackageAction, &QAction::triggered, this, &PackageWidget::OnImport);
+    
+    cutAction = new QAction(tr("Cut"), this);
+    cutAction->setShortcut(QKeySequence::Cut);
+    cutAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(cutAction, &QAction::triggered, this, &PackageWidget::OnCut);
+    
+    copyAction = new QAction(tr("Copy"), this);
+    copyAction->setShortcut(QKeySequence::Copy);
+    copyAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(copyAction, &QAction::triggered, this, &PackageWidget::OnCopy);
+    
+    pasteAction = new QAction(tr("Paste"), this);
+    pasteAction->setShortcut(QKeySequence::Paste);
+    pasteAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(pasteAction, &QAction::triggered, this, &PackageWidget::OnPaste);
+    
+    renameAction = new QAction(tr("Rename"), this);
+    connect(renameAction, &QAction::triggered, this, &PackageWidget::OnRename);
+    
+    delAction = new QAction(tr("Delete"), this);
+    delAction->setShortcut(QKeySequence::Delete);
+    delAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(delAction, &QAction::triggered, this, &PackageWidget::OnDelete);
+    
+    moveUpAction = new QAction(tr("Move up"), this);
+    moveUpAction->setShortcut(Qt::ControlModifier + Qt::Key_Up);
+    moveUpAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(moveUpAction, &QAction::triggered, this, &PackageWidget::OnMoveUp);
+    
+    moveDownAction = new QAction(tr("Move down"), this);
+    moveDownAction->setShortcut(Qt::ControlModifier + Qt::Key_Down);
+    moveDownAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(moveDownAction, &QAction::triggered, this, &PackageWidget::OnMoveDown);
+}
+
+void PackageWidget::PlaceActions()
+{
+    treeView->addAction(importPackageAction);
+    treeView->addAction(addStyleAction);
+    AddSeparatorAction(treeView);
+    
+    treeView->addAction(cutAction);
+    treeView->addAction(copyAction);
+    treeView->addAction(pasteAction);
+    AddSeparatorAction(treeView);
+    
+    treeView->addAction(renameAction);
+    AddSeparatorAction(treeView);
+    
+    treeView->addAction(delAction);
+    
+    AddSeparatorAction(treeView);
+    treeView->addAction(moveUpAction);
+    treeView->addAction(moveDownAction);
+
 }
 
 void PackageWidget::LoadContext()
@@ -189,13 +225,25 @@ void PackageWidget::RefreshActions()
     bool canRemove = !nodes.empty();
     bool canCopy = false;
     bool canEdit = false;
+    bool canMoveUp = false;
+    bool canMoveDown = false;
+
     if (nodes.size() == 1)
     {
         PackageBaseNode* node = *nodes.begin();
+        DVASSERT(node != nullptr);
         canInsertControls = node->IsInsertingControlsSupported();
         canInsertPackages = node->IsInsertingPackagesSupported();
         canInsertStyles = node->IsInsertingStylesSupported();
         canEdit = node->IsEditingSupported();
+        
+        PackageIterator iter(node, [](const PackageBaseNode* dest)->bool {
+            const PackageBaseNode *parent = dest->GetParent();
+            return parent->IsInsertingControlsSupported()
+                    || parent->IsInsertingStylesSupported();
+        });
+        canMoveUp = *iter == node && (iter - 1).IsValid();
+        canMoveDown = *iter == node && (iter + 1).IsValid();
     }
     for (auto iter = nodes.cbegin(); iter != nodes.cend() && (!canCopy || !canRemove); ++iter)
     {
@@ -203,20 +251,17 @@ void PackageWidget::RefreshActions()
         canRemove |= (*iter)->CanRemove();
     }
     
-    RefreshAction(copyAction, canCopy, true);
-    RefreshAction(pasteAction, canInsertControls || canInsertStyles, true);
-    RefreshAction(cutAction, canCopy && canRemove, true);
-    RefreshAction(delAction, canRemove, true);
+    copyAction->setEnabled(canCopy);
+    pasteAction->setEnabled(canInsertControls || canInsertStyles);
+    cutAction->setEnabled(canCopy && canRemove);
+    delAction->setEnabled(canRemove);
 
-    RefreshAction(importPackageAction, canInsertPackages, true);
-    RefreshAction(addStyleAction, canInsertStyles, true);
-    RefreshAction(renameAction, canEdit, true);
-}
-
-void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
-{
-    action->setDisabled(!enabled);
-    action->setVisible(visible);
+    importPackageAction->setEnabled(canInsertPackages);
+    addStyleAction->setEnabled(canInsertStyles);
+    renameAction->setEnabled(canEdit);
+    
+    moveUpAction->setEnabled(canMoveUp);
+    moveDownAction->setEnabled(canMoveDown);
 }
 
 void PackageWidget::CollectSelectedControls(Vector<ControlNode*> &nodes, bool forCopy, bool forRemove)
@@ -408,6 +453,85 @@ void PackageWidget::OnAddStyle()
     document->GetCommandExecutor()->InsertStyle(style, styleSheets, styleSheets->GetCount());
 }
 
+void PackageWidget::OnMoveUp()
+{
+    const SelectedNodes& nodes = selectionContainer.selectedNodes;
+    DVASSERT(nodes.size() == 1);
+    PackageBaseNode *currentNode = *nodes.begin();
+    PackageIterator iter(currentNode, [](const PackageBaseNode* dest)->bool {
+        const PackageBaseNode *parent = dest->GetParent();
+        return parent->IsInsertingControlsSupported()
+            || parent->IsInsertingStylesSupported();
+    });
+    DVASSERT(*iter == currentNode);
+    PackageBaseNode *nextNode = *(--iter);
+    DVASSERT(nullptr != nextNode);
+    DVASSERT(dynamic_cast<ControlNode*>(currentNode) == nullptr && dynamic_cast<ControlNode*>(nextNode) == nullptr
+             || dynamic_cast<StyleSheetsNode*>(currentNode) == nullptr && dynamic_cast<StyleSheetsNode*>(nextNode) == nullptr);
+    PackageBaseNode *nextNodeParent = nextNode->GetParent();
+    DVASSERT(nextNodeParent != nullptr);
+    PackageBaseNode *destNode = nextNodeParent;
+    DAVA::int32 destIndex = nextNodeParent->GetIndex(nextNode);
+    
+    auto commandExecutor = document->GetCommandExecutor();
+    if(dynamic_cast<ControlNode*>(currentNode) != nullptr)
+    {
+        DAVA::Vector<ControlNode*> nodes = { dynamic_cast<ControlNode*>(currentNode) };
+        ControlsContainerNode* upperControlNode = dynamic_cast<ControlsContainerNode*>(destNode);
+        commandExecutor->MoveControls(nodes, upperControlNode, destIndex);
+    }
+    else if(dynamic_cast<StyleSheetsNode*>(currentNode) != nullptr)
+    {
+        DAVA::Vector<StyleSheetNode*> nodes = { dynamic_cast<StyleSheetNode*>(currentNode) };
+        StyleSheetsNode* upperStyleSheetNode = dynamic_cast<StyleSheetsNode*>(destNode);
+        commandExecutor->MoveStyles(nodes, upperStyleSheetNode, destIndex);
+    }
+    else
+    {
+        DVASSERT(0 && "invalid type of moved node");
+    }
+}
+
+void PackageWidget::OnMoveDown()
+{
+    const SelectedNodes& nodes = selectionContainer.selectedNodes;
+    DVASSERT(nodes.size() == 1);
+    PackageBaseNode *currentNode = *nodes.begin();
+    PackageIterator iter(currentNode, [](const PackageBaseNode* dest)->bool {
+        const PackageBaseNode *parent = dest->GetParent();
+        return parent->IsInsertingControlsSupported()
+            || parent->IsInsertingStylesSupported();
+    });
+    DVASSERT(*iter == currentNode);
+    PackageBaseNode *nextNode = *(--iter);
+    DVASSERT(nullptr != nextNode);
+    DVASSERT(dynamic_cast<ControlNode*>(currentNode) == nullptr && dynamic_cast<ControlNode*>(nextNode) == nullptr
+             || dynamic_cast<StyleSheetsNode*>(currentNode) == nullptr && dynamic_cast<StyleSheetsNode*>(nextNode) == nullptr);
+    PackageBaseNode *nextNodeParent = nextNode->GetParent();
+    DVASSERT(nextNodeParent != nullptr);
+    PackageBaseNode *destNode = nextNodeParent;
+    DAVA::int32 destIndex = nextNodeParent->GetIndex(nextNode);
+    
+    auto commandExecutor = document->GetCommandExecutor();
+    if(dynamic_cast<ControlNode*>(currentNode) != nullptr)
+    {
+        DAVA::Vector<ControlNode*> nodes = { dynamic_cast<ControlNode*>(currentNode) };
+        ControlNode* upperControlNode = dynamic_cast<ControlNode*>(destNode);
+        commandExecutor->MoveControls(nodes, upperControlNode, destIndex);
+    }
+    else if(dynamic_cast<StyleSheetsNode*>(currentNode) != nullptr)
+    {
+        DAVA::Vector<StyleSheetNode*> nodes = { dynamic_cast<StyleSheetNode*>(currentNode) };
+        StyleSheetsNode* upperStyleSheetNode = dynamic_cast<StyleSheetsNode*>(destNode);
+        commandExecutor->MoveStyles(nodes, upperStyleSheetNode, destIndex);
+    }
+    else
+    {
+        DVASSERT(0 && "invalid type of moved node");
+    }
+
+}
+
 void PackageWidget::filterTextChanged(const QString &filterText)
 {
     if (nullptr != document)
@@ -470,13 +594,6 @@ void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
             treeView->setExpanded(mappedIndex, true);
         }
     }
-}
-
-QAction *PackageWidget::CreateSeparator()
-{
-    QAction *separator = new QAction(this);
-    separator->setSeparator(true);
-    return separator;
 }
 
 void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)

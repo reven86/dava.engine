@@ -71,15 +71,18 @@ private slots:
     void OnDelete();
     void OnRename();
     void OnAddStyle();
+    void OnMoveUp();
+    void OnMoveDown();
 
 private:
+    void CreateActions();
+    void PlaceActions ();
     void LoadContext();
     void SaveContext();
     void RefreshActions();
 
     void OnControlSelectedInEditor(const QList<ControlNode *> &node);
 
-    void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
@@ -92,7 +95,6 @@ private:
     void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
 
 private:
-    QAction *CreateSeparator();
     Document* document = nullptr;
     QAction* importPackageAction = nullptr;
     QAction* copyAction = nullptr;
@@ -101,6 +103,9 @@ private:
     QAction* delAction = nullptr;
     QAction* renameAction = nullptr;
     QAction* addStyleAction = nullptr;
+    
+    QAction* moveUpAction = nullptr;
+    QAction* moveDownAction = nullptr;
 
     FilteredPackageModel* filteredPackageModel = nullptr;
     PackageModel* packageModel = nullptr;
