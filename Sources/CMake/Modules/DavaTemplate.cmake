@@ -123,6 +123,7 @@ elseif ( WINDOWS_UAP )
     load_config ( ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
     
     #package languages settings
+    #TODO: remove default value setting for this variable after supporting of this feature by client
     if ( NOT WINDOWS_UAP_PACKAGE_LANGUAGES )
         set ( WINDOWS_UAP_PACKAGE_LANGUAGES "x-generate" )
     else ()
