@@ -121,6 +121,13 @@ elseif ( WINDOWS_UAP )
     endif ()
     configure_file( ${WINDOWS_UAP_CONFIG_FILE} ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
     load_config ( ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
+    
+    #package languages settings
+    if ( NOT WINDOWS_UAP_PACKAGE_LANGUAGES )
+        set ( WINDOWS_UAP_PACKAGE_LANGUAGES "x-generate" )
+    else ()
+        string ( REPLACE "|" ";" WINDOWS_UAP_PACKAGE_LANGUAGES ${WINDOWS_UAP_PACKAGE_LANGUAGES} )
+    endif ()
 
     set ( APP_MANIFEST_NAME "Package.appxmanifest" )
     set ( APP_CERT_NAME "${PROJECT_NAME}_Key.pfx" )
@@ -140,7 +147,7 @@ elseif ( WINDOWS_UAP )
     file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/${CERT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
 
     #copy priconfig files
-    file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigDefault.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+    configure_file ( "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigDefault.xml" "${CMAKE_CURRENT_BINARY_DIR}/UWPPriConfigDefault.xml" )
     file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigPackaging.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
     set(CONTENT_FILES ${CONTENT_FILES}
