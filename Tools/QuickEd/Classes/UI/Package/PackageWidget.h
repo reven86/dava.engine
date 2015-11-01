@@ -75,13 +75,14 @@ private slots:
     void OnMoveDown();
 
 private:
+    void MoveNode(bool up);
     void CreateActions();
-    void PlaceActions ();
+    void PlaceActions();
     void LoadContext();
     void SaveContext();
     void RefreshActions();
 
-    void OnControlSelectedInEditor(const QList<ControlNode *> &node);
+    void SelectNode(PackageBaseNode* node);
 
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
@@ -103,7 +104,7 @@ private:
     QAction* delAction = nullptr;
     QAction* renameAction = nullptr;
     QAction* addStyleAction = nullptr;
-    
+
     QAction* moveUpAction = nullptr;
     QAction* moveDownAction = nullptr;
 

@@ -33,25 +33,25 @@
 
 struct PackageIterator::IteratorData
 {
-    MatchFunction func = [](const PackageBaseNode*)->bool {return true;};
-    PackageBaseNode *currentNode = nullptr;
+    MatchFunction func = [](const PackageBaseNode*) -> bool { return true; };
+    PackageBaseNode* currentNode = nullptr;
     bool Accaptable() const;
-    PackageBaseNode *Next() const;
-    PackageBaseNode *Previous() const;
-    void InitFromNode(PackageBaseNode *node);
-    
+    PackageBaseNode* Next() const;
+    PackageBaseNode* Previous() const;
+    void InitFromNode(PackageBaseNode* node);
+
 private:
     mutable DAVA::int32 currentIndex = 0;
     mutable DAVA::Stack<DAVA::int32> parentIndexes;
 };
 
-PackageIterator::PackageIterator(const PackageIterator &it)
-    :  d_ptr(new IteratorData(*it.d_ptr))
+PackageIterator::PackageIterator(const PackageIterator& it)
+    : d_ptr(new IteratorData(*it.d_ptr))
 {
     DVASSERT(nullptr != d_ptr->func);
 }
 
-PackageIterator::PackageIterator(PackageNode *package, MatchFunction func_)
+PackageIterator::PackageIterator(PackageNode* package, MatchFunction func_)
     : d_ptr(new IteratorData())
 {
     DVASSERT(nullptr != package);
@@ -60,17 +60,16 @@ PackageIterator::PackageIterator(PackageNode *package, MatchFunction func_)
     d_ptr->currentNode = const_cast<PackageBaseNode*>(package->Get(0));
 }
 
-PackageIterator::PackageIterator(PackageBaseNode *node, MatchFunction func_)
-: d_ptr(new IteratorData())
+PackageIterator::PackageIterator(PackageBaseNode* node, MatchFunction func_)
+    : d_ptr(new IteratorData())
 {
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != func_);
     d_ptr->func = func_;
     d_ptr->InitFromNode(node);
-
 }
 
-PackageIterator::~PackageIterator() =  default;
+PackageIterator::~PackageIterator() = default;
 
 bool PackageIterator::IsValid() const
 {
@@ -82,7 +81,7 @@ void PackageIterator::SetMatchFunction(MatchFunction func)
     d_ptr->func = func;
 }
 
-PackageIterator &PackageIterator::operator=(const PackageIterator &it)
+PackageIterator& PackageIterator::operator=(const PackageIterator& it)
 {
     *d_ptr.get() = *it.d_ptr.get();
     return *this;
@@ -94,20 +93,19 @@ PackageIterator &PackageIterator::operator=(const PackageIterator &it)
  Sets the current pointer to 0 if the current item is the last matching item.
  */
 
-PackageIterator &PackageIterator::operator++()
+PackageIterator& PackageIterator::operator++()
 {
     if (d_ptr->currentNode != nullptr)
     {
         do
         {
             d_ptr->currentNode = d_ptr->Next();
-        }
-        while (IsValid() && !d_ptr->Accaptable());
+        } while (IsValid() && !d_ptr->Accaptable());
     }
     return *this;
 }
 
-PackageIterator &PackageIterator::operator+=(int n)
+PackageIterator& PackageIterator::operator+=(int n)
 {
     if (n < 0)
     {
@@ -126,20 +124,19 @@ PackageIterator &PackageIterator::operator+=(int n)
  Sets the current pointer to 0 if the current item is the first matching item.
  */
 
-PackageIterator &PackageIterator::operator--()
+PackageIterator& PackageIterator::operator--()
 {
     if (d_ptr->currentNode != nullptr)
     {
         do
         {
             d_ptr->currentNode = d_ptr->Previous();
-        }
-        while (IsValid() && !d_ptr->Accaptable());
+        } while (IsValid() && !d_ptr->Accaptable());
     }
     return *this;
 }
 
-PackageIterator &PackageIterator::operator-=(int n)
+PackageIterator& PackageIterator::operator-=(int n)
 {
     if (n < 0)
     {
@@ -157,25 +154,24 @@ PackageBaseNode* PackageIterator::operator*() const
     return d_ptr->currentNode;
 }
 
-
 bool PackageIterator::IteratorData::Accaptable() const
 {
     return func(currentNode);
 }
 
-void PackageIterator::IteratorData::InitFromNode(PackageBaseNode *node)
+void PackageIterator::IteratorData::InitFromNode(PackageBaseNode* node)
 {
     currentNode = node;
-    PackageBaseNode *parent = node->GetParent();
+    PackageBaseNode* parent = node->GetParent();
     decltype(parentIndexes) parentIndexesReverse;
-    
-    while(nullptr != parent)
+
+    while (nullptr != parent)
     {
         parentIndexesReverse.push(parent->GetIndex(node));
         node = parent;
         parent = parent->GetParent();
     }
-    while(!parentIndexesReverse.empty())
+    while (!parentIndexesReverse.empty())
     {
         parentIndexes.push(parentIndexesReverse.top());
         parentIndexesReverse.pop();
@@ -187,7 +183,7 @@ void PackageIterator::IteratorData::InitFromNode(PackageBaseNode *node)
 PackageBaseNode* PackageIterator::IteratorData::Next() const
 {
     DVASSERT(nullptr != currentNode && "calling Next for invalid iterator");
-    PackageBaseNode *next = nullptr;
+    PackageBaseNode* next = nullptr;
     if (currentNode->GetCount())
     {
         // walk the child
@@ -198,7 +194,7 @@ PackageBaseNode* PackageIterator::IteratorData::Next() const
     else
     {
         // walk the sibling
-        PackageBaseNode *parent = currentNode->GetParent();
+        PackageBaseNode* parent = currentNode->GetParent();
         DVASSERT(nullptr != parent) //orphan without parent and childs
         DAVA::uint32 count = parent->GetCount();
         next = currentIndex < (count - 1) ? parent->Get(currentIndex + 1) : nullptr;
@@ -206,7 +202,7 @@ PackageBaseNode* PackageIterator::IteratorData::Next() const
         {
             // if we had no sibling walk up the parent and try the sibling of that
             parent = parent->GetParent();
-            if(nullptr == parent)
+            if (nullptr == parent)
             {
                 DVASSERT(parentIndexes.empty());
                 return nullptr;
@@ -214,7 +210,7 @@ PackageBaseNode* PackageIterator::IteratorData::Next() const
             DVASSERT(!parentIndexes.empty());
             currentIndex = parentIndexes.top();
             parentIndexes.pop();
-            if(nullptr != parent)
+            if (nullptr != parent)
             {
                 count = parent->GetCount();
                 next = currentIndex < (count - 1) ? parent->Get(currentIndex + 1) : nullptr;
@@ -229,20 +225,22 @@ PackageBaseNode* PackageIterator::IteratorData::Next() const
 PackageBaseNode* PackageIterator::IteratorData::Previous() const
 {
     DVASSERT(nullptr != currentNode && "calling Previous for invalid iterator");
-    
-    PackageBaseNode *prev = nullptr;
-    PackageBaseNode *parent = currentNode->GetParent();
-    if(parent == nullptr)
+
+    PackageBaseNode* prev = nullptr;
+    PackageBaseNode* parent = currentNode->GetParent();
+    if (parent == nullptr)
     {
         DVASSERT(currentIndex == 0 && parentIndexes.empty());
         return nullptr;
     }
     // walk the previous sibling
     prev = currentIndex > 0 ? parent->Get(currentIndex - 1) : nullptr;
-    if (nullptr != prev) {
+    if (nullptr != prev)
+    {
         // Yes, we had a previous sibling but we need go down to the last leafnode.
         --currentIndex;
-        while (nullptr != prev && prev->GetCount()) {
+        while (nullptr != prev && prev->GetCount())
+        {
             parentIndexes.push(currentIndex);
             currentIndex = prev->GetCount() - 1;
             prev = prev->Get(currentIndex);
@@ -265,7 +263,7 @@ PackageBaseNode* PackageIterator::IteratorData::Previous() const
 
 PackageIterator operator+(PackageIterator iter, int n)
 {
-    while(iter.IsValid() && n++)
+    while (iter.IsValid() && n++)
     {
         ++iter;
     }
@@ -274,7 +272,7 @@ PackageIterator operator+(PackageIterator iter, int n)
 
 PackageIterator operator-(PackageIterator iter, int n)
 {
-    while(iter.IsValid() && n--)
+    while (iter.IsValid() && n--)
     {
         --iter;
     }

@@ -38,26 +38,26 @@ class PackageBaseNode;
 class PackageIterator
 {
 public:
-    using MatchFunction = std::function<bool(const PackageBaseNode* )>;
-    PackageIterator(const PackageIterator &it);
-    explicit PackageIterator(PackageNode *package, MatchFunction func = [](const PackageBaseNode*)->bool {return true;});
-    explicit PackageIterator(PackageBaseNode *node, MatchFunction func = [](const PackageBaseNode*)->bool {return true;});
+    using MatchFunction = std::function<bool(const PackageBaseNode*)>;
+    PackageIterator(const PackageIterator& it);
+    explicit PackageIterator(PackageNode* package, MatchFunction func = [](const PackageBaseNode*) -> bool { return true; });
+    explicit PackageIterator(PackageBaseNode* node, MatchFunction func = [](const PackageBaseNode*) -> bool { return true; });
     ~PackageIterator();
     bool IsValid() const;
     void SetMatchFunction(MatchFunction func);
-    
-    PackageIterator &operator=(const PackageIterator &it);
-    
-    bool operator==(const PackageIterator &it);
-    
-    PackageIterator &operator++();
+
+    PackageIterator& operator=(const PackageIterator& it);
+
+    bool operator==(const PackageIterator& it);
+
+    PackageIterator& operator++();
     const PackageIterator operator++(int);
-    PackageIterator &operator+=(int n);
-    
-    PackageIterator &operator--();
+    PackageIterator& operator+=(int n);
+
+    PackageIterator& operator--();
     const PackageIterator operator--(int);
-    PackageIterator &operator-=(int n);
-    
+    PackageIterator& operator-=(int n);
+
     PackageBaseNode* operator*() const;
 
 private:
