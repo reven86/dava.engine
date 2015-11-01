@@ -202,7 +202,7 @@ if ( DAVA_NO_RHI_GLES2 )
 endif ()
 
 if ( DAVA_NO_RHI_METAL )
-    list ( APPEND IGNORED_RHI_FOLDER "METAL" )
+    list ( APPEND IGNORED_RHI_FOLDER "Metal" )
     add_definitions ( -DDAVA_NO_RHI_METAL )
 endif ()
 
