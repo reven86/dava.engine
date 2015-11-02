@@ -31,59 +31,52 @@
 #include "PackageNode.h"
 #include "PackageBaseNode.h"
 
+const PackageIterator::MatchFunction PackageIterator::defaultFunction = [](const PackageBaseNode*) -> bool { return true; };
+
 struct PackageIterator::IteratorData
 {
-    MatchFunction func = [](const PackageBaseNode*) -> bool { return true; };
-    PackageBaseNode* currentNode = nullptr;
     bool Accaptable() const;
-    PackageBaseNode* Next() const;
-    PackageBaseNode* Previous() const;
+    PackageBaseNode* Next();
+    PackageBaseNode* Previous();
     void InitFromNode(PackageBaseNode* node);
 
+    MatchFunction func = defaultFunction;
+    PackageBaseNode* currentNode = nullptr;
 private:
-    mutable DAVA::int32 currentIndex = 0;
-    mutable DAVA::Stack<DAVA::int32> parentIndexes;
+    DAVA::uint32 currentIndex = 0;
+    DAVA::Stack<DAVA::int32> parentIndexes;
 };
 
 PackageIterator::PackageIterator(const PackageIterator& it)
-    : d_ptr(new IteratorData(*it.d_ptr))
+    : impl(new IteratorData(*it.impl))
 {
-    DVASSERT(nullptr != d_ptr->func);
-}
-
-PackageIterator::PackageIterator(PackageNode* package, MatchFunction func_)
-    : d_ptr(new IteratorData())
-{
-    DVASSERT(nullptr != package);
-    DVASSERT(nullptr != func_);
-    d_ptr->func = func_;
-    d_ptr->currentNode = const_cast<PackageBaseNode*>(package->Get(0));
+    DVASSERT(nullptr != impl->func);
 }
 
 PackageIterator::PackageIterator(PackageBaseNode* node, MatchFunction func_)
-    : d_ptr(new IteratorData())
+    : impl(new IteratorData())
 {
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != func_);
-    d_ptr->func = func_;
-    d_ptr->InitFromNode(node);
+    impl->func = func_;
+    impl->InitFromNode(node);
 }
 
 PackageIterator::~PackageIterator() = default;
 
 bool PackageIterator::IsValid() const
 {
-    return d_ptr->currentNode != nullptr;
+    return impl->currentNode != nullptr;
 }
 
 void PackageIterator::SetMatchFunction(MatchFunction func)
 {
-    d_ptr->func = func;
+    impl->func = func;
 }
 
 PackageIterator& PackageIterator::operator=(const PackageIterator& it)
 {
-    *d_ptr.get() = *it.d_ptr.get();
+    *impl.get() = *it.impl.get();
     return *this;
 }
 
@@ -95,12 +88,12 @@ PackageIterator& PackageIterator::operator=(const PackageIterator& it)
 
 PackageIterator& PackageIterator::operator++()
 {
-    if (d_ptr->currentNode != nullptr)
+    if (impl->currentNode != nullptr)
     {
         do
         {
-            d_ptr->currentNode = d_ptr->Next();
-        } while (IsValid() && !d_ptr->Accaptable());
+            impl->currentNode = impl->Next();
+        } while (IsValid() && !impl->Accaptable());
     }
     return *this;
 }
@@ -126,12 +119,12 @@ PackageIterator& PackageIterator::operator+=(int n)
 
 PackageIterator& PackageIterator::operator--()
 {
-    if (d_ptr->currentNode != nullptr)
+    if (impl->currentNode != nullptr)
     {
         do
         {
-            d_ptr->currentNode = d_ptr->Previous();
-        } while (IsValid() && !d_ptr->Accaptable());
+            impl->currentNode = impl->Previous();
+        } while (IsValid() && !impl->Accaptable());
     }
     return *this;
 }
@@ -151,7 +144,7 @@ PackageIterator& PackageIterator::operator-=(int n)
 
 PackageBaseNode* PackageIterator::operator*() const
 {
-    return d_ptr->currentNode;
+    return impl->currentNode;
 }
 
 bool PackageIterator::IteratorData::Accaptable() const
@@ -180,7 +173,7 @@ void PackageIterator::IteratorData::InitFromNode(PackageBaseNode* node)
     parentIndexes.pop();
 }
 
-PackageBaseNode* PackageIterator::IteratorData::Next() const
+PackageBaseNode* PackageIterator::IteratorData::Next()
 {
     DVASSERT(nullptr != currentNode && "calling Next for invalid iterator");
     PackageBaseNode* next = nullptr;
@@ -222,7 +215,7 @@ PackageBaseNode* PackageIterator::IteratorData::Next() const
     return next;
 }
 
-PackageBaseNode* PackageIterator::IteratorData::Previous() const
+PackageBaseNode* PackageIterator::IteratorData::Previous()
 {
     DVASSERT(nullptr != currentNode && "calling Previous for invalid iterator");
 
