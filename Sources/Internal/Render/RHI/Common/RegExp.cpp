@@ -1104,9 +1104,19 @@ int RegExp::_parse_piece()
         len = _buf->offset - offset;
         _buf->spread(offset, 1 + sizeof(unsigned) * 3);
         _buf->data[offset] = op;
+
+        // we are using temporary buffer + memcpy to prevent
+        // unaligned memory access on ARM devices
+        // got situation, where offset == 13 -> trying to write at (ptr + 14) address, using dereference
+        unsigned localBuffer[3] = { len, n, m };
+        memcpy(_buf->data + offset + 1, localBuffer, sizeof(localBuffer));
+
+        /*
+		// previous implementation:
         ((unsigned*)(_buf->data + offset + 1))[0] = len;
         ((unsigned*)(_buf->data + offset + 1))[1] = n;
         ((unsigned*)(_buf->data + offset + 1))[2] = m;
+		*/
         break;
     }
     return 1;
