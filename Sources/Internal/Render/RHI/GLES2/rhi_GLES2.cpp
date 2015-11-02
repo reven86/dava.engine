@@ -451,6 +451,21 @@ void gles2_Initialize(const InitParam& param)
         if (param.maxTextureCount)
             TextureGLES2::Init(param.maxTextureCount);
 
+        if (param.maxTextureSetCount)
+            InitTextreSetPool(param.maxTextureSetCount);
+        if (param.maxSamplerStateCount)
+            SamplerStateGLES2::Init(param.maxSamplerStateCount);
+        if (param.maxPipelineStateCount)
+            PipelineStateGLES2::Init(param.maxPipelineStateCount);
+        if (param.maxDepthStencilStateCount)
+            DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+        if (param.maxRenderPassCount)
+            RenderPassGLES2::Init(param.maxRenderPassCount);
+        if (param.maxCommandBuffer)
+            CommandBufferGLES2::Init(param.maxCommandBuffer);
+        if (param.maxPacketListCount)
+            InitPacketListPool(param.maxPacketListCount);
+
         uint32 ringBufferSize = 4 * 1024 * 1024;
         if (param.shaderConstRingBufferSize)
             ringBufferSize = param.shaderConstRingBufferSize;
@@ -509,6 +524,21 @@ void gles2_Initialize(const InitParam& param)
         ConstBufferGLES2::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
+
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
@@ -586,6 +616,21 @@ void gles2_Initialize(const InitParam& param)
         ConstBufferGLES2::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
+
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
@@ -666,6 +711,21 @@ void gles2_Initialize(const InitParam& param)
         ConstBufferGLES2::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
+
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
@@ -896,6 +956,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
         *internalFormat = GL_COMPRESSED_R11_EAC;
@@ -903,6 +964,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11_SIGNED:
         *internalFormat = GL_COMPRESSED_SIGNED_R11_EAC;
@@ -910,6 +972,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED:
         *internalFormat = GL_COMPRESSED_RG11_EAC;
@@ -917,6 +980,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *type = GL_UNSIGNED_BYTE;
         *compressed = true;
         success = true;
+        break;
 
     case TEXTURE_FORMAT_EAC_R11G11_SIGNED:
         *internalFormat = GL_COMPRESSED_SIGNED_RG11_EAC;
