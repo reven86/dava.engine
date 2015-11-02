@@ -1412,8 +1412,8 @@ void RenderSystem2D::DrawLines(const Vector<float32>& linePoints, const Color& c
     BatchDescriptor batch;
     batch.singleColor = color;
     batch.material = DEFAULT_2D_COLOR_MATERIAL;
-    batch.vertexCount = ptCount;
-    batch.indexCount = indices.size();
+    batch.vertexCount = static_cast<uint32>(ptCount);
+    batch.indexCount = static_cast<uint32>(indices.size());
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
     batch.vertexPointer = linePoints.data();
@@ -1466,7 +1466,7 @@ void RenderSystem2D::DrawPolygon(const Polygon2& polygon, bool closed, const Col
         batch.singleColor = color;
         batch.material = DEFAULT_2D_COLOR_MATERIAL;
         batch.vertexCount = ptCount;
-        batch.indexCount = indices.size();
+        batch.indexCount = static_cast<uint32>(indices.size());
         batch.vertexStride = 2;
         batch.texCoordStride = 2;
         batch.vertexPointer = pointsPtr;
@@ -1494,7 +1494,7 @@ void RenderSystem2D::FillPolygon(const Polygon2& polygon, const Color& color)
         batch.singleColor = color;
         batch.material = DEFAULT_2D_COLOR_MATERIAL;
         batch.vertexCount = ptCount;
-        batch.indexCount = indices.size();
+        batch.indexCount = static_cast<uint32>(indices.size());
         batch.vertexPointer = pointsPtr;
         batch.vertexStride = 2;
         batch.texCoordStride = 2;

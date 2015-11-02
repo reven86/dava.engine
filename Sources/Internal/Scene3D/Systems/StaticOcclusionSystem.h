@@ -72,20 +72,18 @@ public:
     void InvalidateOcclusion();
     void InvalidateOcclusionIndicesRecursively(Entity *entity);
 
-
 private:
-    Camera * camera;
-    StaticOcclusionData * activePVSSet;
-    uint32 activeBlockIndex;
-    bool isInPvs = false;
-
     // Final system part
-    void ProcessStaticOcclusion(Camera * camera);
     void ProcessStaticOcclusionForOneDataSet(uint32 blockIndex, StaticOcclusionData * data);
     void UndoOcclusionVisibility();
+
+private:
+    Camera* camera = nullptr;
+    StaticOcclusionData* activePVSSet = nullptr;
+    uint32 activeBlockIndex = 0;
     Vector<StaticOcclusionDataComponent*> staticOcclusionComponents;
     Vector<RenderObject*> indexedRenderObjects;
-
+    bool isInPvs = false;
 };
 
 
