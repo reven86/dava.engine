@@ -92,30 +92,28 @@ public:
     void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    void RecalcBoundingBox() override
-    {
-    }
+    void RecalcBoundingBox() override;
+
     void BindDynamicParameters(Camera* camera) override;
 
-protected:
+private:
+    void Clear();
+    void ClearRenderBatches();
     void Restore();
     void UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffer iBuffer);
-
-    void Clear();
 	void Init(Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint);
 	void SetupRenderBatch();
+    void RegisterRestoreCallback();
 
+private:
+    Sprite* sprite = nullptr;
     Matrix4 worldMatrix;
-
-    Sprite* sprite;
     Vector2 sprScale;
 	Vector2 sprPivot;
-	int32 frame;
-
-	eSpriteType spriteType;
+    int32 frame = 0;
+    eSpriteType spriteType = SPRITE_OBJECT;
 
 public:
-
 	INTROSPECTION_EXTEND(SpriteObject, RenderObject, 
 		NULL
 	);
