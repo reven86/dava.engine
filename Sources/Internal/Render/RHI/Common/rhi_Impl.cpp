@@ -117,7 +117,7 @@ bool NeedRestoreResources()
 
 void Uninitialize()
 {
-    if (_Impl != nullptr)
+    if (_Impl.impl_Uninitialize != nullptr)
     {
         (*_Impl.impl_Uninitialize)();
     }
