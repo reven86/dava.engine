@@ -81,7 +81,6 @@ void SpriteObject::ClearRenderBatches()
 
 void SpriteObject::Clear()
 {
-    DVASSERT_MSG(GetRenderBatchCount() <= 1, "Sprite contains two or more render batches.\nSkip this message and re-save the scene.");
     ClearRenderBatches();
     bbox.Empty();
     SafeRelease(sprite);
