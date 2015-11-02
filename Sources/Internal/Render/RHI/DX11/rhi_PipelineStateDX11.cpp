@@ -702,7 +702,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         Logger::Error("shader-uid : %s", desc.vprogUid.c_str());
         Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)(&vprog_bin[0]), vprog_bin.size());
+        DumpShaderText((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
     }
 
     // create fragment-shader
@@ -774,12 +774,12 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         Logger::Error("shader-uid : %s", desc.fprogUid.c_str());
         Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)(&fprog_bin[0]), fprog_bin.size());
+        DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
     }
 
     // create input-layout
     ps->vpCode = vp_code;
-    ps->inputLayout = _CreateInputLayout(desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize());
+    ps->inputLayout = _CreateInputLayout(desc.vertexLayout, vp_code->GetBufferPointer(), static_cast<unsigned>(vp_code->GetBufferSize()));
     ps->vertexLayout = desc.vertexLayout;
     DVASSERT(ps->inputLayout);
 
@@ -920,7 +920,7 @@ vbLayout->Dump();
 Logger::Info("vprog-layout:");
 ps11->vertexLayout.Dump();
 */
-            layout11 = _CreateCompatibleInputLayout(*vbLayout, ps11->vertexLayout, ps11->vpCode->GetBufferPointer(), ps11->vpCode->GetBufferSize());
+            layout11 = _CreateCompatibleInputLayout(*vbLayout, ps11->vertexLayout, ps11->vpCode->GetBufferPointer(), static_cast<unsigned>(ps11->vpCode->GetBufferSize()));
 
             if (layout11)
             {

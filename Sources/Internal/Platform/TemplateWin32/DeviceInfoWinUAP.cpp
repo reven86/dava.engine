@@ -86,6 +86,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     EasClientDeviceInformation deviceInfo;
     manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
     modelName = RTStringToString(deviceInfo.SystemSku);
+    localDeviceName = RTStringToString(deviceInfo.FriendlyName);
     deviceName = WideString(deviceInfo.FriendlyName->Data());
     gpu = GPUFamily();
     uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
@@ -344,7 +345,7 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
     if (isTouchPresent)
     {
         // skip because Windows touch mimics under mouse and keyboard
-        if (modelName.compare(RTStringToString(information->Name)) == 0)
+        if (localDeviceName.compare(RTStringToString(information->Name)) == 0)
         {
             return;
         }

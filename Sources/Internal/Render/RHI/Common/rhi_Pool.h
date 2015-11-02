@@ -331,8 +331,7 @@ private:
 };
 
 #define RHI_IMPL_RESOURCE(T, DT) \
-template <> \
-    unsigned rhi::ResourceImpl<T, DT>::needRestoreCount = 0;
+template<> unsigned rhi::ResourceImpl<T, DT>::needRestoreCount = 0;
 
 } // namespace rhi
 #endif // __RHI_POOL_H__
