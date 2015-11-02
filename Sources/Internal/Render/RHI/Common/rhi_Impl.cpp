@@ -117,7 +117,10 @@ bool NeedRestoreResources()
 
 void Uninitialize()
 {
-    (*_Impl.impl_Uninitialize)();
+    if (_Impl != nullptr)
+    {
+        (*_Impl.impl_Uninitialize)();
+    }
 }
 
 void PresentImpl(Handle sync)
