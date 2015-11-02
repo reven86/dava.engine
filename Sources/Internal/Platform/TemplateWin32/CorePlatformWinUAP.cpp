@@ -72,7 +72,6 @@ void CorePlatformWinUAP::Quit()
 
 void CorePlatformWinUAP::ResetScreen()
 {
-    xamlApp->ResetScreen();
 }
 
 Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
@@ -119,6 +118,12 @@ DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
     auto func = [this, &screenSize] { screenSize = xamlApp->GetCurrentScreenSize(); };
     RunOnUIThreadBlocked(func);
     return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+}
+
+void CorePlatformWinUAP::SetScreenScaleMultiplier(float32 multiplier)
+{
+    Core::SetScreenScaleMultiplier(multiplier);
+    xamlApp->ResetScreen();
 }
 
 bool CorePlatformWinUAP::GetCursorVisibility()

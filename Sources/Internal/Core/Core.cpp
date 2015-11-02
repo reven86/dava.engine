@@ -404,10 +404,6 @@ void Core::Quit()
     Logger::FrameworkDebug("[Core::Quit] do not supported by platform implementation of core");
 }
 
-void Core::ResetScreen()
-{
-}
-
 void Core::SetApplicationCore(ApplicationCore* _core)
 {
     core = _core;
