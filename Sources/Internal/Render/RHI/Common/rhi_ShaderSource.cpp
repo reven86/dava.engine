@@ -38,7 +38,7 @@ using DAVA::DynamicMemoryFile;
 
     #include "PreProcess.h"
 
-    #define RHI__USE_STD_REGEX 0
+    #define RHI__USE_STD_REGEX 1
 
     #if RHI__USE_STD_REGEX
         #include <regex>
@@ -1376,6 +1376,8 @@ void ShaderSourceCache::Save(const char* fileName)
             WriteUI4(file, e->srcHash);
             e->src->Save(file);
         }
+
+        file->Release();
     }
 }
 

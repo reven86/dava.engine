@@ -190,39 +190,29 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     resName += "  defines: ";
     for (auto& it : defines)
     {
-        bool do_add = true;
+        bool doAdd = true;
 
-        for (unsigned i = 0; i != progDefines.size(); i += 2)
+        for (size_t i = 0; i != progDefines.size(); i += 2)
         {
             if (strcmp(it.first.c_str(), progDefines[i].c_str()) < 0)
             {
                 progDefines.insert(progDefines.begin() + i, String(it.first.c_str()));
                 progDefines.insert(progDefines.begin() + i + 1, DAVA::Format("%d", it.second));
-                do_add = false;
+                doAdd = false;
                 break;
             }
         }
 
-        if (do_add)
+        if (doAdd)
         {
             progDefines.push_back(String(it.first.c_str()));
             progDefines.push_back(DAVA::Format("%d", it.second));
         }
     }
 
-    for (unsigned i = 0; i != progDefines.size(); i += 2)
+    for (size_t i = 0; i != progDefines.size(); i += 2)
         resName += Format("%s = %s, ", progDefines[i + 0].c_str(), progDefines[i + 1].c_str());
-    /*
-    //Sources
-    ShaderSourceCode sourceCode = GetSourceCode(name);
-    rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
-    rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
-    vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
-    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
-    //vSource.Dump();
-    //fSource.Dump();
 
-*/
     FastName vProgUid, fProgUid;
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
@@ -258,9 +248,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         rhi::ShaderSourceCache::Update(fProgUid, fSrcHash, fSource2);
         fSource = &fSource2;
     }
-
-    //vSource.Dump();
-    //fSource.Dump();
 
     rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
     rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
