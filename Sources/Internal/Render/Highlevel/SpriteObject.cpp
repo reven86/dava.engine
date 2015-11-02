@@ -37,8 +37,8 @@ namespace DAVA
 SpriteObject::SpriteObject()
 {
     ScopedPtr<Texture> pink(Texture::CreatePink());
-    ScopedPtr<Sprite> localSprite(Sprite::CreateFromTexture(pink, 0, 0, (float32)pink->GetWidth(), (float32)pink->GetHeight()));
-    Init(localSprite, 0, Vector2(1.f, 1.f), Vector2(0.f, 0.f));
+    ScopedPtr<Sprite> localSprite(Sprite::CreateFromTexture(pink, 0, 0, static_cast<float32>(pink->GetWidth()), static_cast<float32>(pink->GetHeight())));
+    Init(localSprite, 0, Vector2(1.0f, 1.0f), Vector2(0.0f, 0.0f));
     RegisterRestoreCallback();
 }
 
@@ -119,7 +119,7 @@ void SpriteObject::UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffe
     uint32 vxCount = framesCount * 4;
     uint32 indCount = framesCount * 6;
 
-    Vector<float> verticies(vxCount * (3 + 2));
+    Vector<float32> verticies(vxCount * (3 + 2));
     Vector<uint16> indices(indCount);
 
     float32* verticesPtr = verticies.data();
@@ -336,7 +336,7 @@ void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializati
 {
     // we dont need to save render batche(s)
     // because sprite creating it on loading
-    decltype(renderBatchArray) currentRenderBatches;
+    Vector<IndexedRenderBatch> currentRenderBatches;
     renderBatchArray.swap(currentRenderBatches);
     RenderObject::Save(archive, serializationContext);
     renderBatchArray.swap(currentRenderBatches);
@@ -366,7 +366,7 @@ void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializati
     if (!path.empty())
     {
         ScopedPtr<Sprite> localSprite(Sprite::Create(serializationContext->GetScenePath() + path));
-        if (localSprite.get() != nullptr)
+        if (localSprite)
         {
             Init(localSprite, 0, Vector2(1, 1), Vector2(localSprite->GetWidth(), localSprite->GetHeight()) * 0.5f);
             AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
