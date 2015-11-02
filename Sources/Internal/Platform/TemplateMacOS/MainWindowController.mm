@@ -48,23 +48,10 @@ namespace DAVA
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
         //detecting physical screen size and initing core system with this size
-        const DeviceInfo::ScreenInfo & screenInfo = DeviceInfo::GetScreenInfo();
-        int32 width = screenInfo.width;
-        int32 height = screenInfo.height;
-        
-        eScreenOrientation orientation = Instance()->GetScreenOrientation();
-        if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
-            (orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
-            (orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
-        {
-            width = screenInfo.height;
-            height = screenInfo.width;
-        }
-        
         float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
-        
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
+        const DeviceInfo::ScreenInfo & screenInfo = DeviceInfo::GetScreenInfo();
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(screenInfo.width, screenInfo.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(screenInfo.width * scale, screenInfo.height * scale);
         
         int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
@@ -419,7 +406,7 @@ namespace DAVA
     macCore->rendererParams.window = mainWindowController->openGLView;
     macCore->rendererParams.width = [mainWindowController->openGLView frame].size.width;
     macCore->rendererParams.height = [mainWindowController->openGLView frame].size.height;
-
+    
     Core::Instance()->SystemAppStarted();
 }
 
