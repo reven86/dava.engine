@@ -346,10 +346,10 @@ bool SceneFileV2::ReadVersionTags(VersionInfo::SceneVersion& _version, File * fi
         if (loaded)
         {
             const auto& keyedTags = tagsArchive->GetArchieveData();
-            for (auto it = keyedTags.begin(); it != keyedTags.end(); it++)
+            for (const auto& it : keyedTags)
             {
-                const String& tag = it->first;
-                const uint32 ver = it->second->AsUInt32();
+                const String& tag = it.first;
+                const uint32 ver = it.second->AsUInt32();
                 _version.tags.insert(VersionInfo::TagsMap::value_type(tag, ver));
             }
         }
