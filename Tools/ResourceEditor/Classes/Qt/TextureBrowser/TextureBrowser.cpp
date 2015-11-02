@@ -1034,5 +1034,18 @@ void TextureBrowser::clearFilter()
 void TextureBrowser::textureDescriptorChanged(DAVA::TextureDescriptor* descriptor)
 {
     setTexture(textureListModel->getTexture(descriptor), descriptor);
-    setTextureView(curTextureView, getConvertMode());
+
+    //update texture browser with actual texture info for all tabs
+    const DAVA::eGPUFamily curGPU = curTextureView;
+    const eTextureConvertMode requestedConvertMode = getConvertMode(CONVERT_MODIFIED);
+    for (DAVA::int32 i = 0; i < DAVA::GPU_DEVICE_COUNT; ++i)
+    {
+        DAVA::eGPUFamily gpu = static_cast<DAVA::eGPUFamily>(i);
+        if (gpu != curGPU)
+        {
+            setTextureView(gpu, requestedConvertMode);
+        }
+    }
+
+    setTextureView(curGPU, requestedConvertMode);
 }
