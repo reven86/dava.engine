@@ -38,7 +38,7 @@ using DAVA::DynamicMemoryFile;
 
     #include "PreProcess.h"
 
-    #define RHI__USE_STD_REGEX 1
+    #define RHI__USE_STD_REGEX 0
 
     #if RHI__USE_STD_REGEX
         #include <regex>
