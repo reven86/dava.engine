@@ -727,7 +727,7 @@ void Core::SetIcon(int32 /*iconId*/){};
 
 float32 Core::GetScreenScaleMultiplier() const
 {
-    float32 ret = 1.0;
+    float32 ret = 1.0f;
 
     if (options)
     {
