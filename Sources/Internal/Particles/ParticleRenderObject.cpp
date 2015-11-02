@@ -31,7 +31,6 @@
 #include "Render/Renderer.h"
 #include "Render/DynamicBufferAllocator.h"
 
-
 namespace DAVA
 {
 
@@ -44,14 +43,14 @@ static Vector3 basisVectors[7*2] = {Vector3(), Vector3(),
 									Vector3(1,0,0), Vector3(0,0,1), 
 									Vector3(0,1,0), Vector3(1,0,0)};
 
-
-
-ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectData(effect), sortingOffset(15)
+ParticleRenderObject::ParticleRenderObject(ParticleEffectData* effect)
+    : effectData(effect)
+    , sortingOffset(15)
 {
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
     //may be this is good place to determine 2d mode?
-    
+
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     layout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
@@ -59,12 +58,12 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
     regularVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
     layout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
     layout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 1);
-    frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);    
+    frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
 }
 
 ParticleRenderObject::~ParticleRenderObject()
 {
-    for (size_t i=0, sz = renderBatchCache.size(); i<sz; ++i)
+    for (size_t i = 0, sz = renderBatchCache.size(); i < sz; ++i)
     {
         SafeRelease(renderBatchCache[i]);
     }
@@ -73,12 +72,12 @@ ParticleRenderObject::~ParticleRenderObject()
 
 void ParticleRenderObject::PrepareToRender(Camera *camera)
 {
-    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_PREPARE_BUFFERS))
-		return;
-    
-	PrepareRenderData(camera);
-    
-    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_DRAW))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_PREPARE_BUFFERS))
+        return;
+
+    PrepareRenderData(camera);
+
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_DRAW))
     {
         activeRenderBatchArray.clear();
 		return;
@@ -89,24 +88,23 @@ void ParticleRenderObject::PrepareToRender(Camera *camera)
 void ParticleRenderObject::SetSortingOffset(uint32 offset)
 {
     sortingOffset = offset;
-    for (size_t i=0, sz = renderBatchCache.size(); i<sz; ++i)
+    for (size_t i = 0, sz = renderBatchCache.size(); i < sz; ++i)
         renderBatchCache[i]->SetSortingOffset(offset);
 }
 
 void ParticleRenderObject::PrepareRenderData(Camera * camera)
 {
-	
-	activeRenderBatchArray.clear();
+    activeRenderBatchArray.clear();
     currRenderBatchId = 0;
-	    
-    DVASSERT(worldTransform);        
 
-	Vector3 currCamDirection = camera->GetDirection();
+    DVASSERT(worldTransform);
 
-	/*prepare effect basises*/
-	const Matrix4 &mv = camera->GetMatrix();
-	basisVectors[0] = Vector3(mv._00, mv._10, mv._20);
-	basisVectors[1] = Vector3(mv._01, mv._11, mv._21);
+    Vector3 currCamDirection = camera->GetDirection();
+
+    /*prepare effect basises*/
+    const Matrix4& mv = camera->GetMatrix();
+    basisVectors[0] = Vector3(mv._00, mv._10, mv._20);
+    basisVectors[1] = Vector3(mv._01, mv._11, mv._21);
 	basisVectors[0].Normalize();
 	basisVectors[1].Normalize();	
 	Vector3 ex(worldTransform->_00, worldTransform->_01, worldTransform->_02);
@@ -117,22 +115,21 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 	ez.Normalize();
 	basisVectors[2] = ey; basisVectors[3] = ez;
 	basisVectors[4] = ex; basisVectors[5] = ez;
-	basisVectors[6] = ey; basisVectors[7] = ex;			
-    
-    
+    basisVectors[6] = ey;
+    basisVectors[7] = ex;
+
     auto itGroupStart = effectData->groups.begin();
     uint32 particlesInGroup = 0;
     for (List<ParticleGroup>::iterator itGroupCurr = effectData->groups.begin(), e = effectData->groups.end(); itGroupCurr != e; ++itGroupCurr)
-	{
+    {
         const ParticleGroup& group = (*itGroupCurr);
-        //note - isDisabled just stop it from being rendered, still processing particles in ParticleEffectSystem      
-        if ((!group.material) || (!group.head) || (group.layer->isDisabled) || (!group.layer->sprite)) 
+        //note - isDisabled just stop it from being rendered, still processing particles in ParticleEffectSystem
+        if ((!group.material) || (!group.head) || (group.layer->isDisabled) || (!group.layer->sprite))
             continue; //if no material was set up, or empty group, or layer rendering is disabled or sprite is removed - don't draw anyway
-        
-		
+
         if (itGroupStart->material != itGroupCurr->material)
-		{					
-			/*currMaterial = currGroup.material;
+        {
+            /*currMaterial = currGroup.material;
 			renderGroupCount++;
 			if (renderGroupCache.size()<renderGroupCount)
 			{
@@ -150,23 +147,22 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
             AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup, currCamDirection);
             itGroupStart = itGroupCurr;
             particlesInGroup = 0;
-		}                    
+        }
         particlesInGroup += CalculateParticleCount(*itGroupCurr);
-	}	
+    }
     if (itGroupStart != effectData->groups.end())
         AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup, currCamDirection);
-	    	
 }
 int32 ParticleRenderObject::CalculateParticleCount(const ParticleGroup& group)
 {
     int32 basisCount = 0;
-    if (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING)
+    if (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING)
         basisCount++;
-    if (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_X_FACING)
+    if (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_X_FACING)
         basisCount++;
-    if (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Y_FACING)
+    if (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_Y_FACING)
         basisCount++;
-    if (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Z_FACING)
+    if (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_Z_FACING)
         basisCount++;
 
     return group.activeParticleCount * basisCount;
@@ -176,7 +172,7 @@ struct ParticleVertex
 {
     Vector3 pos;
     Vector2 uv;
-    uint32  color;
+    uint32 color;
     Vector2 uv1;
     float32 time;
 };
@@ -216,7 +212,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
     if (!particlesCount)
         return; //hmmm?
 
-    uint32 vertexStride = (3 + 2 + 1) * sizeof(float); //vertex*3 + texcoord*2 + color * 1; 
+    uint32 vertexStride = (3 + 2 + 1) * sizeof(float); //vertex*3 + texcoord*2 + color * 1;
     if (begin->layer->enableFrameBlend)
         vertexStride += (2 + 1) * sizeof(float); //texcoord2 * 2 + time * 1;
 
@@ -235,21 +231,20 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
         //prepare basis indexes
         int32 basisCount = 0;
         int32 basises[4]; //4 basises max per particle
-        bool worldAlign = (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN) != 0;
-        if (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING)
+        bool worldAlign = (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN) != 0;
+        if (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING)
             basises[basisCount++] = 0;
-        if (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_X_FACING)
+        if (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_X_FACING)
             basises[basisCount++] = worldAlign ? 4 : 1;
-        if (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Y_FACING)
+        if (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_Y_FACING)
             basises[basisCount++] = worldAlign ? 5 : 2;
-        if (group.layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Z_FACING)
+        if (group.layer->particleOrientation & ParticleLayer::PARTICLE_ORIENTATION_Z_FACING)
             basises[basisCount++] = worldAlign ? 6 : 3;
 
-
-        Particle *current = group.head;       
+        Particle* current = group.head;
         while (current)
         {
-            float32 *pT = group.layer->sprite->GetTextureVerts(current->frame);
+            float32* pT = group.layer->sprite->GetTextureVerts(current->frame);
             Color currColor = current->color;
             if (group.layer->colorOverLife)
                 currColor = group.layer->colorOverLife->GetValue(current->life / current->lifeTime);
@@ -291,15 +286,15 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                     ey *= (group.layer->scaleVelocityBase / vel + group.layer->scaleVelocityFactor); //optimized ex=(svBase+svFactor*vel)/vel
                 }
 
-                Vector3 left = ex*cos_angle + ey*sin_angle;
+                Vector3 left = ex * cos_angle + ey * sin_angle;
                 Vector3 right = -left;
-                Vector3 top = ey*(-cos_angle) + ex*sin_angle;
+                Vector3 top = ey * (-cos_angle) + ex * sin_angle;
                 Vector3 bot = -top;
 
-                left *= 0.5f*current->currSize.x*(1 + group.layer->layerPivotPoint.x);
-                right *= 0.5f*current->currSize.x*(1 - group.layer->layerPivotPoint.x);
-                top *= 0.5f*current->currSize.y*(1 + group.layer->layerPivotPoint.y);
-                bot *= 0.5f*current->currSize.y*(1 - group.layer->layerPivotPoint.y);
+                left *= 0.5f * current->currSize.x * (1 + group.layer->layerPivotPoint.x);
+                right *= 0.5f * current->currSize.x * (1 - group.layer->layerPivotPoint.x);
+                top *= 0.5f * current->currSize.y * (1 + group.layer->layerPivotPoint.y);
+                bot *= 0.5f * current->currSize.y * (1 - group.layer->layerPivotPoint.y);
 
                 Vector3 particlePosition = current->position;
                 if (group.layer->inheritPosition)
@@ -314,7 +309,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                     verts[i]->uv.x = pT[i * 2];
                     verts[i]->uv.y = pT[i * 2 + 1];
                     verts[i]->color = color;
-                }                
+                }
 
                 if (begin->layer->enableFrameBlend)
                 {
@@ -326,14 +321,14 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                         else
                             nextFrame = group.layer->sprite->GetFrameCount() - 1;
                     }
-                    float32 *pT = group.layer->sprite->GetTextureVerts(nextFrame);
+                    float32* pT = group.layer->sprite->GetTextureVerts(nextFrame);
 
                     for (int32 i = 0; i < 4; i++)
                     {
                         verts[i]->uv1.x = *(pT++);
                         verts[i]->uv1.y = *(pT++);
                         verts[i]->time = current->animTime;
-                    }                    
+                    }
                 }
                 currpos += particleStride;
                 verteciesAppended += 4;
@@ -349,8 +344,8 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 }
 
 void ParticleRenderObject::BindDynamicParameters(Camera * camera)
-{        
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);    
+{
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
 }
 
 

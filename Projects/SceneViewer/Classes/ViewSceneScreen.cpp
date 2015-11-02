@@ -48,11 +48,11 @@ ViewSceneScreen::ViewSceneScreen()
 void ViewSceneScreen::LoadResources()
 {
     BaseScreen::LoadResources();
- 
+
     scene = new Scene();
     scene->LoadScene(GameCore::Instance()->GetScenePath());
 
-/*
+    /*
 {
     Entity* hullNode = entity->FindByName("hull")->Clone();
 
@@ -96,23 +96,21 @@ void ViewSceneScreen::LoadResources()
 }
 */
 
-
-
     ScopedPtr<Camera> camera(new Camera());
-    
+
     VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
-	float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;    
-	camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
-	camera->SetLeft(Vector3(1, 0, 0));
-	camera->SetUp(Vector3(0, 0, 1.f));
+    float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
+    camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
+    camera->SetLeft(Vector3(1, 0, 0));
+    camera->SetUp(Vector3(0, 0, 1.f));
     camera->SetTarget(Vector3(0, 0, 0));
     camera->SetPosition(Vector3(0, -45, 10));
-    //camera->SetPosition(Vector3(0, -10, 1));    
-    
-    scene->AddCamera(camera);    
+    //camera->SetPosition(Vector3(0, -10, 1));
+
+    scene->AddCamera(camera);
     scene->SetCurrentCamera(camera);
-    
-    Entity * cameraEntity = new Entity();
+
+    Entity* cameraEntity = new Entity();
     cameraEntity->AddComponent(new CameraComponent(camera));
     cameraEntity->AddComponent(new WASDControllerComponent());
     cameraEntity->AddComponent(new RotationControllerComponent());
@@ -121,11 +119,11 @@ void ViewSceneScreen::LoadResources()
 
     rotationControllerSystem = new RotationControllerSystem(scene);
     scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
-        Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
     wasdSystem = new WASDControllerSystem(scene);
     scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
-        Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
     Rect screenRect = GetRect();
     Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
@@ -140,7 +138,7 @@ void ViewSceneScreen::LoadResources()
     backButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ViewSceneScreen::OnBack));
     backButton->SetDebugDraw(true);
     AddControl(backButton);
-   
+
     DVASSERT(info == NULL);
     info = new UIStaticText(Rect(0, 0, screenRect.dx, 30.f));
     info->SetFont(font);
@@ -148,7 +146,7 @@ void ViewSceneScreen::LoadResources()
     info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
     
     AddControl(info);
-    
+
     moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
     moveJoyPAD->SetDebugDraw(true);
     AddControl(moveJoyPAD);
@@ -180,7 +178,6 @@ void ViewSceneScreen::Draw(const DAVA::UIGeometricData &geometricData)
 {
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
-
     BaseScreen::Draw(geometricData);
 
     drawTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
@@ -196,7 +193,7 @@ void ViewSceneScreen::Update(float32 timeElapsed)
 
     UpdateInfo(timeElapsed);
 
-    KeyboardDevice & keyboard = InputSystem::Instance()->GetKeyboard();
+    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(DVKEY_NUMPAD6))
         cursorPosition.x += timeElapsed / 16.f;
     if (keyboard.IsKeyPressed(DVKEY_NUMPAD4))
@@ -209,11 +206,11 @@ void ViewSceneScreen::Update(float32 timeElapsed)
         wasdSystem->SetMoveSpeed(30.f);
     else
         wasdSystem->SetMoveSpeed(10.f);
-    
-    Camera * camera = scene->GetDrawCamera();
+
+    Camera* camera = scene->GetDrawCamera();
     Vector2 joypadPos = moveJoyPAD->GetDigitalPosition();
     Vector3 cameraMoveOffset = (joypadPos.x * camera->GetLeft() - joypadPos.y * camera->GetDirection()) * timeElapsed * 20.f;
-    
+
     camera->SetPosition(camera->GetPosition() + cameraMoveOffset);
     camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
 }
@@ -246,9 +243,9 @@ void ViewSceneScreen::DidAppear()
     info->SetText(L"");
 }
 
-void ViewSceneScreen::Input(UIEvent *currentInput)
+void ViewSceneScreen::Input(UIEvent* currentInput)
 {
-    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    if (currentInput->phase == UIEvent::Phase::CHAR)
     {
         if (currentInput->keyChar == '+')
             cursorSize *= 1.25f;

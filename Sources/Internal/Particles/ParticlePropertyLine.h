@@ -102,18 +102,18 @@ public:
 	{
 		int32 keysSize = (int32)PropertyLine<T>::keys.size();
         DVASSERT(keysSize);
-        if(t > PropertyLine<T>::keys[keysSize - 1].t)
-		{
-			return PropertyLine<T>::keys[keysSize - 1].value;
-		}
+        if (t > PropertyLine<T>::keys[keysSize - 1].t)
+        {
+            return PropertyLine<T>::keys[keysSize - 1].value;
+        }
         if (t <= PropertyLine<T>::keys[0].t)
         {
             return PropertyLine<T>::keys[0].value;
         }
         if (PropertyLine<T>::keys.size() == 2)
-		{
-			if (t < PropertyLine<T>::keys[1].t)
-			{
+        {
+            if (t < PropertyLine<T>::keys[1].t)
+            {
 				float ti = (t - PropertyLine<T>::keys[0].t) / (PropertyLine<T>::keys[1].t - PropertyLine<T>::keys[0].t);
 				resultValue = PropertyLine<T>::keys[0].value + (PropertyLine<T>::keys[1].value - PropertyLine<T>::keys[0].value) * ti;
 				return resultValue;

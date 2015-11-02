@@ -79,15 +79,15 @@ void LandscapeEditorSystem::UpdateCursorPosition()
 		landPos.y = (float32)((int32)landPos.y);
 		
 		const AABBox3 & box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-		
-		cursorPosition.x = (landPos.x - box.min.x) / (box.max.x - box.min.x);
-		cursorPosition.y = (landPos.y - box.min.y) / (box.max.y - box.min.y);
-		cursorPosition.x = cursorPosition.x;
-		cursorPosition.y = 1.f - cursorPosition.y;
-        
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
+
+        cursorPosition.x = (landPos.x - box.min.x) / (box.max.x - box.min.x);
+        cursorPosition.y = (landPos.y - box.min.y) / (box.max.y - box.min.y);
+        cursorPosition.x = cursorPosition.x;
+        cursorPosition.y = 1.f - cursorPosition.y;
+
+        drawSystem->SetCursorPosition(cursorPosition);
+    }
+    else
 	{
 		// hide cursor
 		drawSystem->SetCursorPosition(DAVA::Vector2(-100.f, -100.f));

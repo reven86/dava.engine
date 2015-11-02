@@ -40,19 +40,17 @@
 
 @interface RenderViewController : UIViewController
 {
-	RenderView * renderView;
+    RenderView* renderView;
     BackgroundView* backgroundView;
 }
 
-@property (nonatomic, readonly) BackgroundView * backgroundView;
-@property (nonatomic, readonly) RenderView * renderView;
+@property(nonatomic, readonly) BackgroundView* backgroundView;
+@property(nonatomic, readonly) RenderView* renderView;
 
-- (GLRenderView *) createGLView;
-- (MetalRenderView *) createMetalView;
+- (GLRenderView*)createGLView;
+- (MetalRenderView*)createMetalView;
 
 @end
 #endif // #if defined(__DAVAENGINE_IPHONE__)
 
 #endif //__DAVAENGINE_RENDERVIEWCONTROLLER_H__
-
- 

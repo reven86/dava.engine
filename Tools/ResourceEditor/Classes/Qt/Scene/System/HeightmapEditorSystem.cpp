@@ -44,22 +44,22 @@
 #include <QApplication>
 
 HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
-:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	editingIsEnabled(false)
-,	curToolSize(0)
-,	originalHeightmap(NULL)
-,	curToolImage(NULL)
-,	strength(15)
-,	averageStrength(0.5f)
-,	inverseDrawingEnabled(false)
-,	toolImagePath("")
-,	drawingType(HEIGHTMAP_DRAW_ABSOLUTE)
-,	copyPasteFrom(-1.f, -1.f)
-,	copyPasteTo(-1.f, -1.f)
-,   squareTexture(NULL)
-,	toolImageIndex(0)
-,	curHeight(0.f)
-,	activeDrawingType(drawingType)
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    , editingIsEnabled(false)
+    , curToolSize(0)
+    , originalHeightmap(NULL)
+    , curToolImage(NULL)
+    , strength(15)
+    , averageStrength(0.5f)
+    , inverseDrawingEnabled(false)
+    , toolImagePath("")
+    , drawingType(HEIGHTMAP_DRAW_ABSOLUTE)
+    , copyPasteFrom(-1.f, -1.f)
+    , copyPasteTo(-1.f, -1.f)
+    , squareTexture(NULL)
+    , toolImageIndex(0)
+    , curHeight(0.f)
+    , activeDrawingType(drawingType)
 {
     curToolSize = 30;
 }
@@ -67,7 +67,7 @@ HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
 HeightmapEditorSystem::~HeightmapEditorSystem()
 {
     SafeRelease(curToolImage);
-	SafeRelease(squareTexture);
+    SafeRelease(squareTexture);
 }
 
 LandscapeEditorDrawSystem::eErrorType HeightmapEditorSystem::EnableLandscapeEditing()
@@ -96,12 +96,12 @@ LandscapeEditorDrawSystem::eErrorType HeightmapEditorSystem::EnableLandscapeEdit
 	landscapeSize = drawSystem->GetHeightmapProxy()->Size();
 	copyPasteFrom = Vector2(-1.f, -1.f);
 
-	drawSystem->EnableCursor();
-	drawSystem->SetCursorTexture(cursorTexture);
+    drawSystem->EnableCursor();
+    drawSystem->SetCursorTexture(cursorTexture);
     SetBrushSize(curToolSize);
 
-	enabled = true;
-	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    enabled = true;
+    return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 bool HeightmapEditorSystem::DisableLandscapeEdititing()
@@ -151,16 +151,16 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 		
 		switch(event->phase)
 		{
-			case UIEvent::PHASE_BEGAN:
-				if (drawingType == HEIGHTMAP_DRAW_ABSOLUTE_DROPPER ||
-					drawingType == HEIGHTMAP_DROPPER)
-				{
-					curHeight = drawSystem->GetHeightAtHeightmapPoint(GetHeightmapPositionFromCursor());
-					
-					SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
-				}
-				
-				if (isIntersectsLandscape)
+        case UIEvent::Phase::BEGAN:
+            if (drawingType == HEIGHTMAP_DRAW_ABSOLUTE_DROPPER ||
+                drawingType == HEIGHTMAP_DROPPER)
+            {
+                curHeight = drawSystem->GetHeightAtHeightmapPoint(GetHeightmapPositionFromCursor());
+
+                SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
+            }
+
+                if (isIntersectsLandscape)
 				{
 					if (drawingType == HEIGHTMAP_COPY_PASTE)
 					{
@@ -194,14 +194,14 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 
 				activeDrawingType = drawingType;
 				break;
-				
-			case UIEvent::PHASE_DRAG:
-				break;
-				
-			case UIEvent::PHASE_ENDED:
-				FinishEditing();
-				break;
-		}
+
+        case UIEvent::Phase::DRAG:
+            break;
+
+        case UIEvent::Phase::ENDED:
+            FinishEditing();
+            break;
+        }
 	}
 }
 
@@ -222,18 +222,18 @@ void HeightmapEditorSystem::UpdateToolImage()
     if (!toolImagePath.IsEmpty())
     {
         SafeRelease(curToolImage);
-        
-        Vector<Image *> images;
+
+        Vector<Image*> images;
         ImageSystem::Instance()->Load(toolImagePath, images);
-        if(images.size())
+        if (images.size())
         {
             DVASSERT(images.size() == 1);
             DVASSERT(images[0]->GetPixelFormat() == FORMAT_RGBA8888);
-            
+
             curToolImage = Image::Create(curToolSize, curToolSize, FORMAT_RGBA8888);
             ImageConvert::ResizeRGBA8Billinear((uint32*)images[0]->data, images[0]->GetWidth(), images[0]->GetHeight(),
                                                (uint32*)curToolImage->data, curToolSize, curToolSize);
-            
+
             SafeRelease(images[0]);
         }
     }
@@ -241,18 +241,18 @@ void HeightmapEditorSystem::UpdateToolImage()
 
 void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 {
-	if (!curToolImage)
-	{
-		DAVA::Logger::Error("Tool image is empty!");
-		return;
+    if (!curToolImage)
+    {
+        DAVA::Logger::Error("Tool image is empty!");
+        return;
 	}
 	
 	EditorHeightmap* editorHeightmap = drawSystem->GetHeightmapProxy();
-	
-	int32 scaleSize = curToolImage->GetWidth();
-	Vector2 pos = GetHeightmapPositionFromCursor() - Vector2((float32)scaleSize, (float32)scaleSize) / 2.0f;
-	{
-		switch (activeDrawingType)
+
+    int32 scaleSize = curToolImage->GetWidth();
+    Vector2 pos = GetHeightmapPositionFromCursor() - Vector2((float32)scaleSize, (float32)scaleSize) / 2.0f;
+    {
+        switch (activeDrawingType)
 		{
 			case HEIGHTMAP_DRAW_RELATIVE:
 			{
@@ -267,34 +267,34 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 					koef = -koef;
 				}
 
-				editorHeightmap->DrawRelativeRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef);
-				break;
-			}
-				
-			case HEIGHTMAP_DRAW_AVERAGE:
+                editorHeightmap->DrawRelativeRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef);
+                break;
+            }
+
+            case HEIGHTMAP_DRAW_AVERAGE:
 			{
 				float32 koef = (averageStrength * timeElapsed) * 2.0f;
-				editorHeightmap->DrawAverageRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef);
-				break;
-			}
+                editorHeightmap->DrawAverageRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef);
+                break;
+            }
 
-			case HEIGHTMAP_DRAW_ABSOLUTE:
+            case HEIGHTMAP_DRAW_ABSOLUTE:
 			case HEIGHTMAP_DRAW_ABSOLUTE_DROPPER:
 			{
 				float32 maxHeight = drawSystem->GetLandscapeMaxHeight();
 				float32 height = curHeight / maxHeight * Heightmap::MAX_VALUE;
 				
 				float32 koef = (averageStrength * timeElapsed) * 2.0f;
-				editorHeightmap->DrawAbsoluteRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef, height);
-				break;
-			}
+                editorHeightmap->DrawAbsoluteRGBA(curToolImage, (int32)pos.x, (int32)pos.y, scaleSize, scaleSize, koef, height);
+                break;
+            }
 
-			case HEIGHTMAP_DROPPER:
+            case HEIGHTMAP_DROPPER:
 			{
-				float32 curHeight = drawSystem->GetHeightAtHeightmapPoint(GetHeightmapPositionFromCursor());
-				SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
-				return;
-			}
+                float32 curHeight = drawSystem->GetHeightAtHeightmapPoint(GetHeightmapPositionFromCursor());
+                SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
+                return;
+            }
 
 			case HEIGHTMAP_COPY_PASTE:
 			{
@@ -310,12 +310,12 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 				
 				float32 koef = (averageStrength * timeElapsed) * 2.0f;
 
-				editorHeightmap->DrawCopypasteRGBA(curToolImage, posFrom, posTo, scaleSize, scaleSize, koef);
+                editorHeightmap->DrawCopypasteRGBA(curToolImage, posFrom, posTo, scaleSize, scaleSize, koef);
 
-				break;
-			}
-				
-			default:
+                break;
+            }
+
+            default:
 				DAVA::Logger::Error("Invalid drawing type!");
 				return;
 		}
@@ -370,19 +370,19 @@ void HeightmapEditorSystem::SetBrushSize(int32 brushSize)
     {
         curToolSize = brushSize;
         cursorSize = (float32)brushSize / landscapeSize;
-		drawSystem->SetCursorSize(cursorSize);
-        
+        drawSystem->SetCursorSize(cursorSize);
+
         UpdateToolImage();
-	}
+    }
 }
 
 void HeightmapEditorSystem::SetStrength(float32 strength)
 {
-	float32 s = Abs(strength);
-	this->strength = s;
-		
-	inverseDrawingEnabled = false;
-	if (strength < 0.f)
+    float32 s = Abs(strength);
+    this->strength = s;
+
+    inverseDrawingEnabled = false;
+    if (strength < 0.f)
 	{
 		inverseDrawingEnabled = true;
 	}
@@ -400,7 +400,7 @@ void HeightmapEditorSystem::SetToolImage(const FilePath& toolImagePath, int32 in
 {
 	this->toolImagePath = toolImagePath;
 	this->toolImageIndex = index;
-	UpdateToolImage();
+    UpdateToolImage();
 }
 
 void HeightmapEditorSystem::SetDrawingType(eHeightmapDrawType type)
@@ -411,7 +411,7 @@ void HeightmapEditorSystem::SetDrawingType(eHeightmapDrawType type)
 
 int32 HeightmapEditorSystem::GetBrushSize()
 {
-	return curToolSize;
+    return curToolSize;
 }
 
 float32 HeightmapEditorSystem::GetStrength()

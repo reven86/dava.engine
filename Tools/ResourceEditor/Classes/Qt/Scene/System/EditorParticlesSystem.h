@@ -63,9 +63,8 @@ private:
 	void DrawSizeCircleShockWave(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter,DAVA::Vector3 center);
 	void DrawSizeBox(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
 	void DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
-		
 
-	DAVA::Entity *selectedEffectEntity;
+    DAVA::Entity* selectedEffectEntity;
     DAVA::ParticleEmitter *selectedEmitter;
 };
 

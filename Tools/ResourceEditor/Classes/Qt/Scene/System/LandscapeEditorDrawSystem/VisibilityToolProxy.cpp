@@ -30,9 +30,9 @@
 #include "VisibilityToolProxy.h"
 
 VisibilityToolProxy::VisibilityToolProxy(int32 size)
-:	size(size)
-,	visibilityPoint(Vector2(-1.f, -1.f))
-,	isVisibilityPointSet(false)
+    : size(size)
+    , visibilityPoint(Vector2(-1.f, -1.f))
+    , isVisibilityPointSet(false)
 {
     visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
 

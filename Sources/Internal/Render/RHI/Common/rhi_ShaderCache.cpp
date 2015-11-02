@@ -31,162 +31,159 @@
 
     #include "../rhi_ShaderCache.h"
 
-    
-
 namespace rhi
 {
-static ShaderBuilder    _ShaderBuilder  = nullptr;
+static ShaderBuilder _ShaderBuilder = nullptr;
 
 struct
 ProgInfo
 {
-    DAVA::FastName      uid;
-    std::vector<uint8>  bin;
+    DAVA::FastName uid;
+    std::vector<uint8> bin;
 };
 
 static std::vector<ProgInfo> _ProgInfo;
 
-static std::string*         _PreprocessedText = nullptr;
+static std::string* _PreprocessedText = nullptr;
 
-static int 
-_mcpp__fputc( int ch, OUTDEST dst )
+static int
+_mcpp__fputc(int ch, OUTDEST dst)
 {
-    switch( dst )
+    switch (dst)
     {
-        case MCPP_OUT :
-        {
-            if( _PreprocessedText )
-                _PreprocessedText->push_back( (char)ch );
-        }   break;
+    case MCPP_OUT:
+    {
+        if (_PreprocessedText)
+            _PreprocessedText->push_back((char)ch);
+    }
+    break;
 
-        case MCPP_ERR :
-        {
-        }   break;
+    case MCPP_ERR:
+    {
+    }
+    break;
 
-        case MCPP_DBG :
-        {
-        }   break;
-            
-        default :
-        {}
+    case MCPP_DBG:
+    {
+    }
+    break;
+
+    default:
+    {
+    }
     }
 
     return ch;
 }
 
-
 static int
-_mcpp__fputs( const char* str, OUTDEST dst )
+_mcpp__fputs(const char* str, OUTDEST dst)
 {
-    switch( dst )
+    switch (dst)
     {
-        case MCPP_OUT :
-        {
-            if( _PreprocessedText )
-                *_PreprocessedText += str;
-        }   break;
-
-        case MCPP_ERR :
-        {
-        }   break;
-
-        case MCPP_DBG :
-        {
-        }   break;
-        
-        default :
-        {}
+    case MCPP_OUT:
+    {
+        if (_PreprocessedText)
+            *_PreprocessedText += str;
     }
-        
+    break;
+
+    case MCPP_ERR:
+    {
+    }
+    break;
+
+    case MCPP_DBG:
+    {
+    }
+    break;
+
+    default:
+    {
+    }
+    }
+
     return 0;
 }
 
-
-static int 
-_mcpp__fprintf( OUTDEST dst, const char* format, ... )
+static int
+_mcpp__fprintf(OUTDEST dst, const char* format, ...)
 {
-    va_list     arglist;
-    char        buf[2048];
-    int         count     = 0;
+    va_list arglist;
+    char buf[2048];
+    int count = 0;
 
-    va_start( arglist, format );
-    count = vsnprintf( buf, countof(buf), format, arglist );
-    va_end( arglist );
+    va_start(arglist, format);
+    count = vsnprintf(buf, countof(buf), format, arglist);
+    va_end(arglist);
 
-    switch( dst )
+    switch (dst)
     {
-        case MCPP_OUT :
-        {
-            if( _PreprocessedText )
-                *_PreprocessedText += buf;
-        }   break;
-
-        case MCPP_ERR :
-        {
-        }   break;
-
-        case MCPP_DBG :
-        {
-        }   break;
-            
-        default :
-        {}
+    case MCPP_OUT:
+    {
+        if (_PreprocessedText)
+            *_PreprocessedText += buf;
     }
-        
+    break;
+
+    case MCPP_ERR:
+    {
+    }
+    break;
+
+    case MCPP_DBG:
+    {
+    }
+    break;
+
+    default:
+    {
+    }
+    }
+
     return count;
 }
-
-
 
 namespace ShaderCache
 {
 //------------------------------------------------------------------------------
 
-bool
-Initialize( ShaderBuilder builder )
+bool Initialize(ShaderBuilder builder)
 {
     _ShaderBuilder = builder;
     return true;
 }
 
-
 //------------------------------------------------------------------------------
 
-void
-Unitialize()
+void Unitialize()
 {
 }
 
-
 //------------------------------------------------------------------------------
 
-void
-Clear()
+void Clear()
 {
 }
 
-
 //------------------------------------------------------------------------------
 
-void
-Load( const char* binFileName )
+void Load(const char* binFileName)
 {
 }
 
-
 //------------------------------------------------------------------------------
 
-bool
-GetProg( const DAVA::FastName& uid, std::vector<uint8>* bin )
+bool GetProg(const DAVA::FastName& uid, std::vector<uint8>* bin)
 {
-    bool    success = false;
+    bool success = false;
 
-    for( unsigned i=0; i!=_ProgInfo.size(); ++i )
+    for (unsigned i = 0; i != _ProgInfo.size(); ++i)
     {
-        if( _ProgInfo[i].uid == uid )
+        if (_ProgInfo[i].uid == uid)
         {
             bin->clear();
-            bin->insert( bin->begin(), _ProgInfo[i].bin.begin(), _ProgInfo[i].bin.end() );
+            bin->insert(bin->begin(), _ProgInfo[i].bin.begin(), _ProgInfo[i].bin.end());
             success = true;
             break;
         }
@@ -194,7 +191,6 @@ GetProg( const DAVA::FastName& uid, std::vector<uint8>* bin )
 
     return success;
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -228,9 +224,8 @@ static const char* _ShaderHeader_Metal =
 "#define FP_DISCARD_FRAGMENT discard_fragment()\n"
 "#define FP_A8(t) t.a\n"
 
-"#define STEP(edge,x) ((x)<(edge)) ? 0.0 : 1.0\n"
-;
-    
+"#define STEP(edge,x) ((x)<(edge)) ? 0.0 : 1.0\n";
+
 static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_BEGIN          struct VP_Input {\n"
 //"#define VPROG_IN_POSITION       packed_float3 position; \n"
@@ -344,7 +339,6 @@ static const char* _ShaderDefine_Metal =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.name\n"
 
-
 "#define FPROG_IN_BEGIN                        struct FP_Input { float4 position [[position]]; \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name [[ user(texcoord0) ]];\n"
 "#define FPROG_IN_TEXCOORD1(name,size)         float##size name [[ user(texcoord1) ]];\n"
@@ -436,8 +430,6 @@ static const char* _ShaderDefine_Metal =
 
 ;
 
-
-
 static const char* _ShaderHeader_GLES2 =
 "#define float2                 vec2\n"
 "#define float3                 vec3\n"
@@ -467,8 +459,7 @@ static const char* _ShaderHeader_GLES2 =
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.a\n"
 
-"#define STEP(edge,x) step( (edge), (x) )\n"
-;
+"#define STEP(edge,x) step( (edge), (x) )\n";
 
 static const char* _ShaderDefine_GLES2 =
 "#define VPROG_IN_BEGIN          \n"
@@ -552,7 +543,6 @@ static const char* _ShaderDefine_GLES2 =
 
 "#define VP_TEXTURE2D(unit,uv)   texture2DLod( VertexTexture##unit, uv, 0.0 )\n"
 
-
 "#define FPROG_IN_BEGIN          \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         varying vec##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD1(name,size)         varying vec##size var_##name;\n"
@@ -585,11 +575,10 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_OUT_BEGIN         \n"
 "#define FPROG_OUT_COLOR         \n"
 "#define FPROG_OUT_END           \n"
-            
+
 "#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit;\n"
 "#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit;\n"
 "#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
-        
 
 "#define FP_TEXTURE2D(unit,uv)   texture2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) textureCube( FragmentTexture##unit, uv )\n"
@@ -604,7 +593,6 @@ static const char* _ShaderDefine_GLES2 =
 
 ;
 
-
 static const char* _ShaderHeader_DX9 =
 "#define float1                 float\n"
 "#define half1                  half\n"
@@ -612,8 +600,7 @@ static const char* _ShaderHeader_DX9 =
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.a\n"
 
-"#define STEP(edge,x) step( (edge), (x) )\n"
-;
+"#define STEP(edge,x) step( (edge), (x) )\n";
 
 static const char* _ShaderDefine_DX9 =
 "#define VPROG_IN_BEGIN                 struct VP_Input {\n"
@@ -697,7 +684,6 @@ static const char* _ShaderDefine_DX9 =
 
 "#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
 
-
 "#define FPROG_IN_BEGIN                        struct FP_Input {\n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
 "#define FPROG_IN_TEXCOORD1(name,size)         float##size name : TEXCOORD1;\n"
@@ -748,7 +734,6 @@ static const char* _ShaderDefine_DX9 =
 
 ;
 
-
 static const char* _ShaderHeader_DX11 =
 "#define float1                 float\n"
 "#define half1                  half\n"
@@ -756,8 +741,7 @@ static const char* _ShaderHeader_DX11 =
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.r\n"
 
-"#define STEP(edge,x) step( (edge), (x) )\n"
-;
+"#define STEP(edge,x) step( (edge), (x) )\n";
 
 static const char* _ShaderDefine_DX11 =
 "#define VPROG_IN_BEGIN                 struct VP_Input {\n"
@@ -843,7 +827,6 @@ static const char* _ShaderDefine_DX11 =
 //"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
 "#define VP_TEXTURE2D(unit,uv)   VertexTexture##unit.SampleLevel( VertexTexture##unit##_Sampler, uv, 0 )\n"
 
-
 "#define FPROG_IN_BEGIN                        struct FP_Input { float4 pos : SV_POSITION; \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
 "#define FPROG_IN_TEXCOORD1(name,size)         float##size name : TEXCOORD1;\n"
@@ -894,267 +877,261 @@ static const char* _ShaderDefine_DX11 =
 
 ;
 
-
-
 static void
-PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
+PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedText)
 {
-    char    src[256*1024] = "";
-    int     src_len      = 0;
+    char src[256 * 1024] = "";
+    int src_len = 0;
 
     // inject vattr definitions
     {
         struct
         {
             const char* name;
-            int         value;
-        }   vattr[] = 
+            int value;
+        } vattr[] =
         {
-            { "VATTR_POSITION",     VATTR_POSITION },
-            { "VATTR_NORMAL",       VATTR_NORMAL },
-            { "VATTR_TEXCOORD_0",   VATTR_TEXCOORD_0 },
-            { "VATTR_TEXCOORD_1",   VATTR_TEXCOORD_1 },
-            { "VATTR_TEXCOORD_2",   VATTR_TEXCOORD_2 },
-            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_3 },
-            { "VATTR_TEXCOORD_4",   VATTR_TEXCOORD_4 },
-            { "VATTR_TEXCOORD_5",   VATTR_TEXCOORD_5 },
-            { "VATTR_TEXCOORD_6",   VATTR_TEXCOORD_6 },
-            { "VATTR_TEXCOORD_7",   VATTR_TEXCOORD_7 },
-            { "VATTR_COLOR_0",      VATTR_COLOR_0 },
-            { "VATTR_COLOR_1",      VATTR_COLOR_1 },
-            { "VATTR_TANGENT",      VATTR_TANGENT },
-            { "VATTR_BINORMAL",     VATTR_BINORMAL },
-            { "VATTR_BLENDWEIGHT",  VATTR_BLENDWEIGHT },
-            { "VATTR_BLENDINDEX",   VATTR_BLENDINDEX }
+          { "VATTR_POSITION", VATTR_POSITION },
+          { "VATTR_NORMAL", VATTR_NORMAL },
+          { "VATTR_TEXCOORD_0", VATTR_TEXCOORD_0 },
+          { "VATTR_TEXCOORD_1", VATTR_TEXCOORD_1 },
+          { "VATTR_TEXCOORD_2", VATTR_TEXCOORD_2 },
+          { "VATTR_TEXCOORD_3", VATTR_TEXCOORD_3 },
+          { "VATTR_TEXCOORD_4", VATTR_TEXCOORD_4 },
+          { "VATTR_TEXCOORD_5", VATTR_TEXCOORD_5 },
+          { "VATTR_TEXCOORD_6", VATTR_TEXCOORD_6 },
+          { "VATTR_TEXCOORD_7", VATTR_TEXCOORD_7 },
+          { "VATTR_COLOR_0", VATTR_COLOR_0 },
+          { "VATTR_COLOR_1", VATTR_COLOR_1 },
+          { "VATTR_TANGENT", VATTR_TANGENT },
+          { "VATTR_BINORMAL", VATTR_BINORMAL },
+          { "VATTR_BLENDWEIGHT", VATTR_BLENDWEIGHT },
+          { "VATTR_BLENDINDEX", VATTR_BLENDINDEX }
 
         };
 
-        for( unsigned i=0; i!=countof(vattr); ++i )
-            src_len += sprintf( src+src_len, "#define %s %i \n", vattr[i].name, vattr[i].value );
+        for (unsigned i = 0; i != countof(vattr); ++i)
+            src_len += sprintf(src + src_len, "#define %s %i \n", vattr[i].name, vattr[i].value);
     }
 
-    switch( targetApi )
+    switch (targetApi)
     {
-        case RHI_DX9 : 
+    case RHI_DX9:
+    {
+        strcat(src, _ShaderDefine_DX9);
+    }
+    break;
+
+    case RHI_DX11:
+    {
+        strcat(src, _ShaderDefine_DX11);
+    }
+    break;
+
+    case RHI_GLES2:
+    {
+        src_len += sprintf(src + src_len, "%s", _ShaderDefine_GLES2);
+    }
+    break;
+
+    case RHI_METAL:
+    {
+        const char* s = srcText;
+        const char* decl;
+        bool vp_buf_declared[16];
+        bool fp_buf_declared[16];
+        bool fp_tex_declared[16];
+
+        for (unsigned i = 0; i != countof(vp_buf_declared); ++i)
+            vp_buf_declared[i] = false;
+        for (unsigned i = 0; i != countof(fp_buf_declared); ++i)
+            fp_buf_declared[i] = false;
+        for (unsigned i = 0; i != countof(fp_tex_declared); ++i)
+            fp_tex_declared[i] = false;
+
+        while ((decl = strstr(s, "DECL_FPROG_BUFFER")))
         {
-            strcat( src, _ShaderDefine_DX9 );
-        }   break;
-        
-        case RHI_DX11 : 
+            int i = 0;
+
+            sscanf(decl, "DECL_FPROG_BUFFER(%i,", &i);
+
+            src_len += sprintf(src + src_len, "#define FPROG_IN_BUFFER_%i  ,constant __FP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, i);
+            src_len += sprintf(src + src_len, "#define FPROG_BUFFER_%i    constant packed_float4* FP_Buffer%i = buf%i->data; \n", i, i, i);
+            fp_buf_declared[i] = true;
+
+            s += strlen("DECL_FPROG_BUFFER");
+        }
+        for (unsigned i = 0; i != countof(fp_buf_declared); ++i)
         {
-            strcat( src, _ShaderDefine_DX11 );
-        }   break;
+            if (!fp_buf_declared[i])
+            {
+                src_len += sprintf(src + src_len, "#define FPROG_IN_BUFFER_%i \n", i);
+                src_len += sprintf(src + src_len, "#define FPROG_BUFFER_%i \n", i);
+            }
+        }
 
-        case RHI_GLES2 : 
+        s = srcText;
+        while ((decl = strstr(s, "DECL_FP_SAMPLER2D")))
         {
-            src_len += sprintf( src+src_len, "%s", _ShaderDefine_GLES2 );
-        }   break;
-        
-        case RHI_METAL : 
+            int i = 0;
+
+            sscanf(decl, "DECL_FP_SAMPLER2D(%i,", &i);
+
+            src_len += sprintf(src + src_len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i);
+            src_len += sprintf(src + src_len, "#define FPROG_SAMPLER_%i   , sampler fp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i);
+            fp_tex_declared[i] = true;
+
+            s += strlen("DECL_FP_SAMPLER2D");
+        }
+        s = srcText;
+        while ((decl = strstr(s, "DECL_FP_SAMPLERCUBE")))
         {
-            const char* s       = srcText;
-            const char* decl;
-            bool        vp_buf_declared[16];
-            bool        fp_buf_declared[16];
-            bool        fp_tex_declared[16];
+            int i = 0;
 
-            for( unsigned i=0; i!=countof(vp_buf_declared); ++i )
-                vp_buf_declared[i] = false;
-            for( unsigned i=0; i!=countof(fp_buf_declared); ++i )
-                fp_buf_declared[i] = false;
-            for( unsigned i=0; i!=countof(fp_tex_declared); ++i )
-                fp_tex_declared[i] = false;
+            sscanf(decl, "DECL_FP_SAMPLERCUBE(%i,", &i);
 
-            while( (decl = strstr( s, "DECL_FPROG_BUFFER" )) )
+            src_len += sprintf(src + src_len, "#define FPROG_IN_TEXTURE_%i  , texturecube<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i);
+            src_len += sprintf(src + src_len, "#define FPROG_SAMPLER_%i   , sampler fp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i);
+            fp_tex_declared[i] = true;
+
+            s += strlen("DECL_FP_SAMPLER2D");
+        }
+        for (unsigned i = 0; i != countof(fp_tex_declared); ++i)
+        {
+            if (!fp_tex_declared[i])
             {
-                int i = 0;
-
-                sscanf( decl, "DECL_FPROG_BUFFER(%i,", &i );
-
-                src_len += sprintf( src+src_len, "#define FPROG_IN_BUFFER_%i  ,constant __FP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, i );
-                src_len += sprintf( src+src_len, "#define FPROG_BUFFER_%i    constant packed_float4* FP_Buffer%i = buf%i->data; \n", i, i, i );
-                fp_buf_declared[i] = true;
-
-                s += strlen("DECL_FPROG_BUFFER");
+                src_len += sprintf(src + src_len, "#define FPROG_IN_TEXTURE_%i \n", i);
+                src_len += sprintf(src + src_len, "#define FPROG_SAMPLER_%i \n", i);
             }
-            for( unsigned i=0; i!=countof(fp_buf_declared); ++i )
+        }
+
+        s = srcText;
+        while ((decl = strstr(s, "DECL_VPROG_BUFFER")))
+        {
+            int i = 0;
+
+            sscanf(decl, "DECL_VPROG_BUFFER(%i,", &i);
+
+            src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, 1 + i);
+            src_len += sprintf(src + src_len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i);
+            vp_buf_declared[i] = true;
+
+            s += strlen("DECL_VPROG_BUFFER");
+        }
+        for (unsigned i = 0; i != countof(vp_buf_declared); ++i)
+        {
+            if (!vp_buf_declared[i])
             {
-                if( !fp_buf_declared[i] )
-                {
-                    src_len += sprintf( src+src_len, "#define FPROG_IN_BUFFER_%i \n", i );
-                    src_len += sprintf( src+src_len, "#define FPROG_BUFFER_%i \n", i );
-                }
+                src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i \n", i);
+                src_len += sprintf(src + src_len, "#define VPROG_BUFFER_%i \n", i);
             }
-            
-            s = srcText;
-            while( (decl = strstr( s, "DECL_FP_SAMPLER2D" )) )
-            {
-                int i = 0;
+        }
 
-                sscanf( decl, "DECL_FP_SAMPLER2D(%i,", &i );
-
-                src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i );
-                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i   , sampler fp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i );
-                fp_tex_declared[i] = true;
-
-                s += strlen("DECL_FP_SAMPLER2D");
-            }
-            s = srcText;
-            while( (decl = strstr( s, "DECL_FP_SAMPLERCUBE" )) )
-            {
-                int i = 0;
-
-                sscanf( decl, "DECL_FP_SAMPLERCUBE(%i,", &i );
-
-                src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texturecube<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i );
-                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i   , sampler fp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i );
-                fp_tex_declared[i] = true;
-
-                s += strlen("DECL_FP_SAMPLER2D");
-            }
-            for( unsigned i=0; i!=countof(fp_tex_declared); ++i )
-            {
-                if( !fp_tex_declared[i] )
-                {
-                    src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i \n", i );
-                    src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i \n", i );
-                }
-            }
-            
-
-            s = srcText;
-            while( (decl = strstr( s, "DECL_VPROG_BUFFER" )) )
-            {
-                int i   = 0;
-
-                sscanf( decl, "DECL_VPROG_BUFFER(%i,", &i );
-
-                src_len += sprintf( src+src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, 1+i );
-                src_len += sprintf( src+src_len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i );
-                vp_buf_declared[i] = true;
-
-                s += strlen("DECL_VPROG_BUFFER");
-            }
-            for( unsigned i=0; i!=countof(vp_buf_declared); ++i )
-            {
-                if( !vp_buf_declared[i] )
-                {
-                    src_len += sprintf( src+src_len, "#define VPROG_IN_BUFFER_%i \n", i );
-                    src_len += sprintf( src+src_len, "#define VPROG_BUFFER_%i \n", i );
-                }
-            }
-
-            strcat( src, _ShaderDefine_Metal );
-        }   break;
+        strcat(src, _ShaderDefine_Metal);
+    }
+    break;
     }
 
-    strcat( src, srcText );
+    strcat(src, srcText);
 
-
-    const char*   argv[] =
-    { 
-        "<mcpp>",   // we just need first arg
-        "-P",       // do not output #line directives 
-        "-C",       // keep comments
-        MCPP_Text
+    const char* argv[] =
+    {
+      "<mcpp>", // we just need first arg
+      "-P", // do not output #line directives
+      "-C", // keep comments
+      MCPP_Text
     };
 
-//DAVA::Logger::Info( "src=\n%s\n", src );
+    //DAVA::Logger::Info( "src=\n%s\n", src );
     _PreprocessedText = preprocessedText;
-    mcpp__set_input( src, strlen(src) );
+    mcpp__set_input(src, static_cast<unsigned>(strlen(src)));
 
-    mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
-    mcpp_lib_main( countof(argv), (char**)argv );
+    mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
+    mcpp_lib_main(countof(argv), (char**)argv);
     _PreprocessedText = 0;
-    switch( targetApi )
+    switch (targetApi)
     {
-        case RHI_DX11 :
-            preprocessedText->insert( 0, _ShaderHeader_DX11 );
-            break;
-            
-        case RHI_DX9 :
-            preprocessedText->insert( 0, _ShaderHeader_DX9 );
-            break;
-            
-        case RHI_GLES2 :
-            preprocessedText->insert( 0, _ShaderHeader_GLES2 );
-            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-            preprocessedText->insert( 0, "precision highp float;\n" );
-            #endif
-            break;
-            
-        case RHI_METAL :
-            preprocessedText->insert( 0, _ShaderHeader_Metal );
-            break;
-    }
-    
-//DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
-}
+    case RHI_DX11:
+        preprocessedText->insert(0, _ShaderHeader_DX11);
+        break;
 
+    case RHI_DX9:
+        preprocessedText->insert(0, _ShaderHeader_DX9);
+        break;
+
+    case RHI_GLES2:
+        preprocessedText->insert(0, _ShaderHeader_GLES2);
+            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+        preprocessedText->insert(0, "precision highp float;\n");
+            #endif
+        break;
+
+    case RHI_METAL:
+        preprocessedText->insert(0, _ShaderHeader_Metal);
+        break;
+    }
+
+    //DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
+}
 
 //------------------------------------------------------------------------------
 
-void
-UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText )
+void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText)
 {
-    std::string         txt;
+    std::string txt;
     std::vector<uint8>* bin = nullptr;
 
-    PreProcessSource( targetApi, srcText, &txt );
+    PreProcessSource(targetApi, srcText, &txt);
 
-    for( unsigned i=0; i!=_ProgInfo.size(); ++i )
+    for (unsigned i = 0; i != _ProgInfo.size(); ++i)
     {
-        if( _ProgInfo[i].uid == uid )
+        if (_ProgInfo[i].uid == uid)
         {
             bin = &(_ProgInfo[i].bin);
             break;
         }
     }
 
-    if( !bin )
+    if (!bin)
     {
-        _ProgInfo.push_back( ProgInfo() );
-        
-        _ProgInfo.back().uid = uid;        
+        _ProgInfo.push_back(ProgInfo());
+
+        _ProgInfo.back().uid = uid;
         bin = &(_ProgInfo.back().bin);
     }
 
     bin->clear();
-    bin->insert( bin->begin(), (const uint8*)(&(txt[0])), (const uint8*)(&(txt[txt.length()-1])+1) );
-    bin->push_back( 0 );
+    bin->insert(bin->begin(), (const uint8*)(&(txt[0])), (const uint8*)(&(txt[txt.length() - 1]) + 1));
+    bin->push_back(0);
 }
-
 
 //------------------------------------------------------------------------------
 
-void
-UpdateProgBinary( Api targetApi, ProgType progType, const DAVA::FastName& uid, const void* bin, unsigned binSize )
+void UpdateProgBinary(Api targetApi, ProgType progType, const DAVA::FastName& uid, const void* bin, unsigned binSize)
 {
     std::vector<uint8>* pbin = nullptr;
 
-    for( unsigned i=0; i!=_ProgInfo.size(); ++i )
+    for (unsigned i = 0; i != _ProgInfo.size(); ++i)
     {
-        if( _ProgInfo[i].uid == uid )
+        if (_ProgInfo[i].uid == uid)
         {
             pbin = &(_ProgInfo[i].bin);
             break;
         }
     }
 
-    if( !pbin )
+    if (!pbin)
     {
-        _ProgInfo.push_back( ProgInfo() );
-        
-        _ProgInfo.back().uid = uid;        
+        _ProgInfo.push_back(ProgInfo());
+
+        _ProgInfo.back().uid = uid;
         pbin = &(_ProgInfo.back().bin);
     }
 
     pbin->clear();
-    pbin->insert( pbin->begin(), (const uint8*)(bin), (const uint8*)(bin)+binSize );
-    pbin->push_back( 0 );
+    pbin->insert(pbin->begin(), (const uint8*)(bin), (const uint8*)(bin) + binSize);
+    pbin->push_back(0);
 }
-
-
 
 } // namespace ShaderCache
 } // namespace rhi

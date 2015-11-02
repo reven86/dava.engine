@@ -209,7 +209,7 @@ private:
 	}
 	
     bool SaveHierarchy(Entity * node, File * file, int32 level);
-    void LoadHierarchy(Scene * scene, Entity * node, File * file, int32 level);
+    void LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
     Entity * LoadEntity(Scene * scene, KeyedArchive * archive);
     Entity * LoadLandscape(Scene * scene, KeyedArchive * archive);

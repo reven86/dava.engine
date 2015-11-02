@@ -38,105 +38,97 @@ struct ID3D11DeviceContext;
 
 namespace rhi
 {
-
-void        dx11_Initialize( const InitParam& param );
-
+void dx11_Initialize(const InitParam& param);
 
 namespace VertexBufferDX11
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride, ID3D11DeviceContext* context );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride, ID3D11DeviceContext* context);
 }
 
 namespace IndexBufferDX11
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb, unsigned offset, ID3D11DeviceContext* context );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle vb, unsigned offset, ID3D11DeviceContext* context);
 }
 
 namespace QueryBufferDX11
 {
-void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 
-void        BeginQuery( Handle buf, uint32 objectIndex, ID3D11DeviceContext* context );
-void        EndQuery( Handle buf, uint32 objectIndex, ID3D11DeviceContext* context );
+void BeginQuery(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
+void EndQuery(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
 }
-
 
 namespace PipelineStateDX11
 {
-void        SetupDispatch( Dispatch* dispatch );
-unsigned    VertexLayoutStride( Handle ps );
-void        SetToRHI( Handle ps, uint32 layoutUID, ID3D11DeviceContext* context );
+void SetupDispatch(Dispatch* dispatch);
+unsigned VertexLayoutStride(Handle ps);
+void SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContext* context);
 }
 
 namespace ConstBufferDX11
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        InitializeRingBuffer( uint32 size );
-void        SetToRHI( Handle cb, ID3D11DeviceContext* context );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void InitializeRingBuffer(uint32 size);
+void SetToRHI(Handle cb, ID3D11DeviceContext* context);
 }
 
 namespace TextureDX11
 {
-void        Init( uint32 maxCount );
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHIFragment( Handle tex, unsigned unitIndex, ID3D11DeviceContext* context );
-void        SetToRHIVertex( Handle tex, unsigned unitIndex, ID3D11DeviceContext* context );
-void        SetRenderTarget( Handle color, Handle depthstencil, ID3D11DeviceContext* context );
-Size2i      Size( Handle tex );
+void Init(uint32 maxCount);
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHIFragment(Handle tex, unsigned unitIndex, ID3D11DeviceContext* context);
+void SetToRHIVertex(Handle tex, unsigned unitIndex, ID3D11DeviceContext* context);
+void SetRenderTarget(Handle color, Handle depthstencil, ID3D11DeviceContext* context);
+Size2i Size(Handle tex);
 }
-
 
 namespace DepthStencilStateDX11
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle state, ID3D11DeviceContext* context );
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle state, ID3D11DeviceContext* context);
 }
 
 namespace SamplerStateDX11
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle state, ID3D11DeviceContext* context );
+void SetupDispatch(Dispatch* dispatch);
+void SetToRHI(Handle state, ID3D11DeviceContext* context);
 }
-
 
 namespace RenderPassDX11
 {
-void        SetupDispatch( Dispatch* dispatch );
+void SetupDispatch(Dispatch* dispatch);
 }
 
 namespace CommandBufferDX11
 {
-void        SetupDispatch( Dispatch* dispatch );
-void        DiscardAll();
+void SetupDispatch(Dispatch* dispatch);
+void DiscardAll();
 }
 
 struct
 DX11Command
 {
-    enum 
-    Func
+    enum Func
     {
-        NOP                 = 0,
-        
-        MAP                 = 1,
-        UNMAP               = 2,
-        UPDATE_SUBRESOURCE  = 3
+        NOP = 0,
+
+        MAP = 1,
+        UNMAP = 2,
+        UPDATE_SUBRESOURCE = 3
     };
 
-    Func    func;
-    uint64  arg[12];
-    long    retval;
+    Func func;
+    uint64 arg[12];
+    long retval;
 };
 
-void     ExecDX11( DX11Command* cmd, uint32 cmdCount, bool force_immediate=false );
-
+void ExecDX11(DX11Command* cmd, uint32 cmdCount, bool force_immediate = false);
 
 //==============================================================================
 }
 #endif // __RHI_DX11_H__
-

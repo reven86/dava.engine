@@ -33,7 +33,7 @@ int32 BaseScreen::screensCount = 0;
 
 BaseScreen::BaseScreen()
     : UIScreen()
-    , font(NULL)
+    , font(nullptr)
     , screenID(screensCount++)
 {
     UIScreenManager::Instance()->RegisterScreen(screenID, this);
@@ -41,7 +41,7 @@ BaseScreen::BaseScreen()
 
 bool BaseScreen::SystemInput(UIEvent *currentInput)
 {
-    if ((currentInput->tid == DVKEY_BACK) && (currentInput->phase = UIEvent::PHASE_KEYCHAR))
+    if ((currentInput->tid == DVKEY_BACK) && (UIEvent::Phase::KEY_DOWN == currentInput->phase))
     {
         SetPreviousScreen();
     }

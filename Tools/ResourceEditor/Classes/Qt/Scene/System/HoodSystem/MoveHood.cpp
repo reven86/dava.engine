@@ -65,7 +65,6 @@ MoveHood::MoveHood() : HoodObject(4.0f)
 	
 	axisYZ2 = CreateLine(DAVA::Vector3(0, 0, c), DAVA::Vector3(0, c, c));
 	axisYZ2->axis = ST_AXIS_YZ;
-	  
 }
 
 MoveHood::~MoveHood()
@@ -73,7 +72,7 @@ MoveHood::~MoveHood()
 
 }
 
-void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper * drawer, TextDrawSystem *textDrawSystem)
+void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem)
 {
 	DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
 	DAVA::Vector3 curPos = axisX->curPos;
@@ -84,10 +83,10 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHel
 	// arrow x
     drawer->DrawArrow(axisX->curFrom, axisX->curTo, arrowLen, colorX, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
-	// arrow y
+    // arrow y
     drawer->DrawArrow(axisY->curFrom, axisY->curTo, arrowLen, colorY, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
-	// arrow z
+    // arrow z
     drawer->DrawArrow(axisZ->curFrom, axisZ->curTo, arrowLen, colorZ, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
     // x
@@ -108,66 +107,66 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHel
     else
         drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorZ, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
-	// xy
-	if(selectedAxis == ST_AXIS_XY) 
-	{
+    // xy
+    if (selectedAxis == ST_AXIS_XY)
+    {
         drawer->DrawLine(axisXY1->curFrom, axisXY1->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
         drawer->DrawLine(axisXY2->curFrom, axisXY2->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
-		DAVA::Polygon3 poly;
-		poly.AddPoint(curPos);
-		poly.AddPoint(axisXY1->curFrom);
+        DAVA::Polygon3 poly;
+        poly.AddPoint(curPos);
+        poly.AddPoint(axisXY1->curFrom);
 		poly.AddPoint(axisXY1->curTo);
 		poly.AddPoint(axisXY2->curFrom);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
-	}
-	else 
-	{
+    }
+    else
+    {
         drawer->DrawLine(axisXY1->curFrom, axisXY1->curTo, colorX, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
         drawer->DrawLine(axisXY2->curFrom, axisXY2->curTo, colorY, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-	}
+    }
 
-	// xz
-	if(selectedAxis == ST_AXIS_XZ) 
+    // xz
+    if(selectedAxis == ST_AXIS_XZ) 
 	{
         drawer->DrawLine(axisXZ1->curFrom, axisXZ1->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
         drawer->DrawLine(axisXZ2->curFrom, axisXZ2->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
-		DAVA::Polygon3 poly;
-		poly.AddPoint(curPos);
-		poly.AddPoint(axisXZ1->curFrom);
+        DAVA::Polygon3 poly;
+        poly.AddPoint(curPos);
+        poly.AddPoint(axisXZ1->curFrom);
 		poly.AddPoint(axisXZ1->curTo);
 		poly.AddPoint(axisXZ2->curFrom);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
-	}
-	else 
-	{
+    }
+    else
+    {
         drawer->DrawLine(axisXZ1->curFrom, axisXZ1->curTo, colorX, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
         drawer->DrawLine(axisXZ2->curFrom, axisXZ2->curTo, colorX, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-	}
+    }
 
-	// yz
-	if(selectedAxis == ST_AXIS_YZ) 
+    // yz
+    if(selectedAxis == ST_AXIS_YZ) 
 	{
         drawer->DrawLine(axisYZ1->curFrom, axisYZ1->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
         drawer->DrawLine(axisYZ2->curFrom, axisYZ2->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
-		DAVA::Polygon3 poly;
-		poly.AddPoint(curPos);
-		poly.AddPoint(axisYZ1->curFrom);
+        DAVA::Polygon3 poly;
+        poly.AddPoint(curPos);
+        poly.AddPoint(axisYZ1->curFrom);
 		poly.AddPoint(axisYZ1->curTo);
 		poly.AddPoint(axisYZ2->curFrom);
         drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
-	}
-	else 
-	{
+    }
+    else
+    {
         drawer->DrawLine(axisYZ1->curFrom, axisYZ1->curTo, colorY, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
         drawer->DrawLine(axisYZ2->curFrom, axisYZ2->curTo, colorZ, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-	}
+    }
 
-	DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
+    DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
-	if(!modifOffset.IsZero())
+    if(!modifOffset.IsZero())
 	{
 		char tmp[255];
 		DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);

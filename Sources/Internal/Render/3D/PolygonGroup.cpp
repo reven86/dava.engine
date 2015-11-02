@@ -34,7 +34,6 @@
 
 namespace DAVA 
 {
-
 PolygonGroup::PolygonGroup()
     : DataNode()
     , vertexCount(0)
@@ -42,7 +41,7 @@ PolygonGroup::PolygonGroup()
     , textureCoordCount(0)
     , vertexStride(0)
     , vertexFormat(0)
-    , indexFormat(EIF_16)    
+    , indexFormat(EIF_16)
     , primitiveType(rhi::PRIMITIVE_TRIANGLELIST)
     , cubeTextureCoordCount(0)
     , vertexArray(0)
@@ -63,17 +62,17 @@ PolygonGroup::PolygonGroup()
     , indexArray(0)
     , meshData(0)
     , baseVertexArray(0)
-    , vertexLayoutId(rhi::VertexLayout::InvalidUID)    
+    , vertexLayoutId(rhi::VertexLayout::InvalidUID)
 {
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &PolygonGroup::RestoreBuffers));
 }
 
 PolygonGroup::~PolygonGroup()
-{   
+{
     RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &PolygonGroup::RestoreBuffers));
-	ReleaseData();
+    ReleaseData();
     if (vertexBuffer.IsValid())
-        rhi::DeleteVertexBuffer(vertexBuffer);    
+        rhi::DeleteVertexBuffer(vertexBuffer);
     if (indexBuffer.IsValid())
         rhi::DeleteIndexBuffer(indexBuffer);
 }
@@ -201,23 +200,22 @@ void PolygonGroup::UpdateDataPointersAndStreams()
     vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
 }
 
-
 void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _indexCount)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	vertexCount = _vertexCount;
-	indexCount = _indexCount;
-	vertexStride = GetVertexSize(_meshFormat);
-	vertexFormat = _meshFormat;
-	textureCoordCount = GetTexCoordCount(vertexFormat);
-	cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
+    vertexCount = _vertexCount;
+    indexCount = _indexCount;
+    vertexStride = GetVertexSize(_meshFormat);
+    vertexFormat = _meshFormat;
+    textureCoordCount = GetTexCoordCount(vertexFormat);
+    cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
 
-	meshData = new uint8[vertexStride * vertexCount];
-	indexArray = new int16[indexCount];
-	textureCoordArray = new Vector2*[textureCoordCount];
-	cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];    
-    
+    meshData = new uint8[vertexStride * vertexCount];
+    indexArray = new int16[indexCount];
+    textureCoordArray = new Vector2*[textureCoordCount];
+    cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
+
     UpdateDataPointersAndStreams();
 }
     
@@ -268,7 +266,7 @@ void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 }
 	    
 void PolygonGroup::ReleaseData()
-{        
+{
     SafeDeleteArray(jointCountArray);
     SafeDeleteArray(meshData);
     SafeDeleteArray(indexArray);
@@ -316,23 +314,23 @@ uint32 PolygonGroup::ReleaseGeometryData()
 void PolygonGroup::BuildBuffers()
 {
     if (vertexBuffer.IsValid())
-        rhi::DeleteVertexBuffer(vertexBuffer);    
+        rhi::DeleteVertexBuffer(vertexBuffer);
 
-    if( indexBuffer.IsValid() )
-        rhi::DeleteIndexBuffer( indexBuffer );
+    if (indexBuffer.IsValid())
+        rhi::DeleteIndexBuffer(indexBuffer);
 
 #if 1
-    rhi::VertexBuffer::Descriptor   vbDesc;
-    rhi::IndexBuffer::Descriptor    ibDesc;
+    rhi::VertexBuffer::Descriptor vbDesc;
+    rhi::IndexBuffer::Descriptor ibDesc;
 
-    vbDesc.size         = vertexStride * vertexCount;
-    vbDesc.initialData  = meshData;
+    vbDesc.size = vertexStride * vertexCount;
+    vbDesc.initialData = meshData;
 
-    ibDesc.size         = indexCount * INDEX_FORMAT_SIZE[indexFormat];
-    ibDesc.initialData  = indexArray;
+    ibDesc.size = indexCount * INDEX_FORMAT_SIZE[indexFormat];
+    ibDesc.initialData = indexArray;
 
-    vertexBuffer = rhi::CreateVertexBuffer( vbDesc );
-    indexBuffer  = rhi::CreateIndexBuffer( ibDesc );
+    vertexBuffer = rhi::CreateVertexBuffer(vbDesc);
+    indexBuffer = rhi::CreateIndexBuffer(ibDesc);
 
 #else
     uint32 vertexDataSize = vertexStride * vertexCount;
@@ -356,11 +354,9 @@ void PolygonGroup::RestoreBuffers()
     }
     if (indexBuffer.IsValid() && rhi::NeedRestoreIndexBuffer(indexBuffer))
     {
-        uint32 indexDataSize = indexCount * INDEX_FORMAT_SIZE[indexFormat];        
+        uint32 indexDataSize = indexCount * INDEX_FORMAT_SIZE[indexFormat];
         rhi::UpdateIndexBuffer(indexBuffer, indexArray, 0, indexDataSize);
     }
-
-
 }
 
 
@@ -376,7 +372,7 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
     keyedArchive->SetInt32("indexCount", indexCount); 
     keyedArchive->SetInt32("textureCoordCount", textureCoordCount);
     keyedArchive->SetInt32("rhi_primitiveType", primitiveType);
-                           
+
     keyedArchive->SetInt32("packing", PACKING_NONE);
     keyedArchive->SetByteArray("vertices", meshData, vertexCount * vertexStride);
     keyedArchive->SetInt32("indexFormat", indexFormat);
@@ -393,7 +389,7 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
 
 }
 
-void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags, bool cutUnusedStreams)
+void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationContext* serializationContext, int32 requiredFlags, bool cutUnusedStreams)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -421,8 +417,8 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
         DVASSERT(resFormat);
         if (vertexFormat != resFormat) //not all streams in data are required or present - smart copy
         {
-            if ((~vertexFormat)&resFormat)
-                Logger::Debug("expanding polygon group vertex format for %d vertices!", vertexCount);                       
+            if ((~vertexFormat) & resFormat)
+                Logger::Debug("expanding polygon group vertex format for %d vertices!", vertexCount);
             int32 newVertexStride = GetVertexSize(resFormat);
             SafeDeleteArray(meshData);
             meshData = new uint8[vertexCount * newVertexStride];
@@ -493,14 +489,14 @@ void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint3
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     uint32 formatSize = GetVertexSize(format);
-	if (vertexFormat & format)
-	{		
-		if (newVertexFormat & format)
-		{
-			memcpy(*newMeshData, *meshData, formatSize);		
-		}
-		*meshData += formatSize;
-	}
+    if (vertexFormat & format)
+    {
+        if (newVertexFormat & format)
+        {
+            memcpy(*newMeshData, *meshData, formatSize);
+        }
+        *meshData += formatSize;
+    }
     if (newVertexFormat & format)
     {
         *newMeshData += formatSize;

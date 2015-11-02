@@ -76,10 +76,8 @@ class UIControlSystem : public Singleton<UIControlSystem>
 	int frameSkip;
 	int transitionType;
 
-	
-	Vector<UIEvent> totalInputs;
+    Vector<UIEvent> touchEvents;
 
-	
 protected:
 	~UIControlSystem();
 	/**
@@ -185,9 +183,7 @@ public:
 	/**
 	 \brief Calls by the system for input processing.
 	 */
-    void OnInput(const Vector<UIEvent>& activeInputs, const Vector<UIEvent>& allInputs);
-
-    void OnInput(UIEvent* event);
+    void OnInput(UIEvent* newEvent);
 
     /**
 	 \brief Callse very frame by the system for update.
@@ -301,8 +297,8 @@ public:
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
-    void SetClearColor(const Color & clearColor);
-    
+    void SetClearColor(const Color& clearColor);
+
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -318,16 +314,14 @@ private:
     void NotifyListenersWillSwitch( UIScreen* screen );
     void NotifyListenersDidSwitch( UIScreen* screen );
 
-    void CopyTouchData(UIEvent* dst, const UIEvent* src);
-
     UILayoutSystem *layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;
     UIScreenshoter* screenshoter;
 
-	Vector<ScreenSwitchListener*> screenSwitchListeners;
+    Vector<ScreenSwitchListener*> screenSwitchListeners;
 
-	UIScreen * currentScreen;
-	UIScreen * nextScreen;
+    UIScreen* currentScreen;
+    UIScreen * nextScreen;
 	UIScreen * prevScreen;
 
 	int32 screenLockCount;
@@ -350,10 +344,9 @@ private:
 
     Color clearColor;
 
-	friend class UIScreenTransition;
-	friend class UIScreenManager;
+    friend class UIScreenTransition;
+    friend class UIScreenManager;
 };
-
 };
 
 #endif

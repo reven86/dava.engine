@@ -60,11 +60,11 @@ public:
 	virtual Entity* Clone(Entity *dstNode = NULL);
 
     PolygonGroup * GetPolygonGroup() { return shadowPolygonGroup; };
-private:	
 
-	//shadow mesh generation
-	PolygonGroup * shadowPolygonGroup;
-	//int32 newIndexCount;
+private:
+    //shadow mesh generation
+    PolygonGroup* shadowPolygonGroup;
+    //int32 newIndexCount;
 	//int32 newVertexCount;
 
 	//int32 FindIndexInTriangleForPointInEdge(int32 * triangleStartIndex, int32 pointInEdge, const EdgeAdjacency::Edge & edge);

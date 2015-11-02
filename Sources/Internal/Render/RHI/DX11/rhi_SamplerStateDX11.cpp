@@ -32,10 +32,9 @@
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
-    using DAVA::Logger;
+using DAVA::Logger;
     
     #include "_dx11.h"
-
 
 namespace rhi
 {
@@ -43,167 +42,164 @@ namespace rhi
 
 struct
 SamplerStateDX11_t
-{    
-    uint32              fragmentSamplerCount;
+{
+    uint32 fragmentSamplerCount;
     ID3D11SamplerState* fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-                        
-                        SamplerStateDX11_t()
-                          : fragmentSamplerCount(0)
-                        {}
+
+    SamplerStateDX11_t()
+        : fragmentSamplerCount(0)
+    {
+    }
 };
 
-typedef ResourcePool<SamplerStateDX11_t,RESOURCE_SAMPLER_STATE,SamplerState::Descriptor,false>  SamplerStateDX11Pool;
-RHI_IMPL_POOL(SamplerStateDX11_t,RESOURCE_SAMPLER_STATE,SamplerState::Descriptor,false);
-
+typedef ResourcePool<SamplerStateDX11_t, RESOURCE_SAMPLER_STATE, SamplerState::Descriptor, false> SamplerStateDX11Pool;
+RHI_IMPL_POOL(SamplerStateDX11_t, RESOURCE_SAMPLER_STATE, SamplerState::Descriptor, false);
 
 //------------------------------------------------------------------------------
 
 static D3D11_FILTER
-_TextureFilterDX11( TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter )
+_TextureFilterDX11(TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter)
 {
-    D3D11_FILTER    f = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    D3D11_FILTER f = D3D11_FILTER_MIN_MAG_MIP_POINT;
 
-    switch( mip_filter )
+    switch (mip_filter)
     {
-        case TEXMIPFILTER_NONE :
-        case TEXMIPFILTER_NEAREST :
-        {
-            if( min_filter == TEXFILTER_NEAREST  &&  mag_filter == TEXFILTER_NEAREST )
-                f = D3D11_FILTER_MIN_MAG_MIP_POINT;
-            else if( min_filter == TEXFILTER_NEAREST  &&  mag_filter == TEXFILTER_LINEAR )
-                f = D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
-            else if( min_filter == TEXFILTER_LINEAR  &&  mag_filter == TEXFILTER_NEAREST )            
-                f = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
-            else if( min_filter == TEXFILTER_LINEAR  &&  mag_filter == TEXFILTER_LINEAR )  
-                f = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-        }   break;
+    case TEXMIPFILTER_NONE:
+    case TEXMIPFILTER_NEAREST:
+    {
+        if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_NEAREST)
+            f = D3D11_FILTER_MIN_MAG_MIP_POINT;
+        else if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_LINEAR)
+            f = D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+        else if (min_filter == TEXFILTER_LINEAR && mag_filter == TEXFILTER_NEAREST)
+            f = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+        else if (min_filter == TEXFILTER_LINEAR && mag_filter == TEXFILTER_LINEAR)
+            f = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+    }
+    break;
 
-        case TEXMIPFILTER_LINEAR :
-        {
-            if( min_filter == TEXFILTER_NEAREST  &&  mag_filter == TEXFILTER_NEAREST )
-                f = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-            else if( min_filter == TEXFILTER_NEAREST  &&  mag_filter == TEXFILTER_LINEAR )
-                f = D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
-            else if( min_filter == TEXFILTER_LINEAR  &&  mag_filter == TEXFILTER_NEAREST )            
-                f = D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-            else if( min_filter == TEXFILTER_LINEAR  &&  mag_filter == TEXFILTER_LINEAR )  
-                f = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        }   break;
+    case TEXMIPFILTER_LINEAR:
+    {
+        if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_NEAREST)
+            f = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        else if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_LINEAR)
+            f = D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+        else if (min_filter == TEXFILTER_LINEAR && mag_filter == TEXFILTER_NEAREST)
+            f = D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+        else if (min_filter == TEXFILTER_LINEAR && mag_filter == TEXFILTER_LINEAR)
+            f = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    }
+    break;
     }
 
     return f;
 }
 
-
 //------------------------------------------------------------------------------
 
 D3D11_TEXTURE_ADDRESS_MODE
-_TextureAddrModeDX11( TextureAddrMode mode )
+_TextureAddrModeDX11(TextureAddrMode mode)
 {
     D3D11_TEXTURE_ADDRESS_MODE m = D3D11_TEXTURE_ADDRESS_WRAP;
 
-    switch( mode )
+    switch (mode)
     {
-        case TEXADDR_WRAP   : m = D3D11_TEXTURE_ADDRESS_WRAP; break;
-        case TEXADDR_CLAMP  : m = D3D11_TEXTURE_ADDRESS_CLAMP; break;
-        case TEXADDR_MIRROR : m = D3D11_TEXTURE_ADDRESS_MIRROR; break;
+    case TEXADDR_WRAP:
+        m = D3D11_TEXTURE_ADDRESS_WRAP;
+        break;
+    case TEXADDR_CLAMP:
+        m = D3D11_TEXTURE_ADDRESS_CLAMP;
+        break;
+    case TEXADDR_MIRROR:
+        m = D3D11_TEXTURE_ADDRESS_MIRROR;
+        break;
     }
-    
+
     return m;
 }
-
 
 //------------------------------------------------------------------------------
 
 static void
-dx11_SamplerState_Delete( Handle hstate )
+dx11_SamplerState_Delete(Handle hstate)
 {
-    SamplerStateDX11_t* state  = SamplerStateDX11Pool::Get( hstate );
+    SamplerStateDX11_t* state = SamplerStateDX11Pool::Get(hstate);
 
-    if( state )
+    if (state)
     {
-        for( unsigned s=0; s!=state->fragmentSamplerCount; ++s )    
+        for (unsigned s = 0; s != state->fragmentSamplerCount; ++s)
         {
-            if( state->fragmentSampler[s] )
+            if (state->fragmentSampler[s])
             {
                 state->fragmentSampler[s]->Release();
             }
         }
 
-        SamplerStateDX11Pool::Free( hstate );
-    }    
+        SamplerStateDX11Pool::Free(hstate);
+    }
 }
-
 
 //------------------------------------------------------------------------------
 
 static Handle
-dx11_SamplerState_Create( const SamplerState::Descriptor& desc )
+dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
 {
-    Handle              handle  = SamplerStateDX11Pool::Alloc();
-    SamplerStateDX11_t* state   = SamplerStateDX11Pool::Get( handle );
-    bool                success = true;
-    
-    memset( state->fragmentSampler, 0, sizeof(state->fragmentSampler) );
-    
+    Handle handle = SamplerStateDX11Pool::Alloc();
+    SamplerStateDX11_t* state = SamplerStateDX11Pool::Get(handle);
+    bool success = true;
+
+    memset(state->fragmentSampler, 0, sizeof(state->fragmentSampler));
+
     state->fragmentSamplerCount = desc.fragmentSamplerCount;
-    for( unsigned s=0; s!=desc.fragmentSamplerCount; ++s )    
-    {        
-        D3D11_SAMPLER_DESC  s_desc;
-        HRESULT             hr;
-        
-        s_desc.Filter        = _TextureFilterDX11( TextureFilter(desc.fragmentSampler[s].minFilter), TextureFilter(desc.fragmentSampler[s].magFilter), TextureMipFilter(desc.fragmentSampler[s].mipFilter) );
-        s_desc.AddressU      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrU) );
-        s_desc.AddressV      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrV) );
-        s_desc.AddressW      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrW) );
-        s_desc.MipLODBias    = 0;
+    for (unsigned s = 0; s != desc.fragmentSamplerCount; ++s)
+    {
+        D3D11_SAMPLER_DESC s_desc;
+        HRESULT hr;
+
+        s_desc.Filter = _TextureFilterDX11(TextureFilter(desc.fragmentSampler[s].minFilter), TextureFilter(desc.fragmentSampler[s].magFilter), TextureMipFilter(desc.fragmentSampler[s].mipFilter));
+        s_desc.AddressU = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrU));
+        s_desc.AddressV = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrV));
+        s_desc.AddressW = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrW));
+        s_desc.MipLODBias = 0;
         s_desc.MaxAnisotropy = 0;
-        s_desc.MinLOD        = -D3D11_FLOAT32_MAX;
-        s_desc.MaxLOD        = D3D11_FLOAT32_MAX;
-        
-        hr = _D3D11_Device->CreateSamplerState( &s_desc, state->fragmentSampler+s );
-        
-        if( FAILED(hr) )
+        s_desc.MinLOD = -D3D11_FLOAT32_MAX;
+        s_desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+        hr = _D3D11_Device->CreateSamplerState(&s_desc, state->fragmentSampler + s);
+
+        if (FAILED(hr))
         {
             state->fragmentSampler[s] = nullptr;
             success = false;
         }
     }
 
-    if( !success )
+    if (!success)
     {
-        dx11_SamplerState_Delete( handle );
+        dx11_SamplerState_Delete(handle);
         handle = InvalidHandle;
     }
 
     return handle;
 }
 
-
 //==============================================================================
 
 namespace SamplerStateDX11
 {
-
-void
-SetupDispatch( Dispatch* dispatch )
+void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_SamplerState_Create = &dx11_SamplerState_Create;
     dispatch->impl_SamplerState_Delete = &dx11_SamplerState_Delete;
 }
 
-void
-SetToRHI( Handle hstate, ID3D11DeviceContext* context )
+void SetToRHI(Handle hstate, ID3D11DeviceContext* context)
 {
-    SamplerStateDX11_t* state = SamplerStateDX11Pool::Get( hstate );
-    
-      context->PSSetSamplers( 0, state->fragmentSamplerCount, state->fragmentSampler );
+    SamplerStateDX11_t* state = SamplerStateDX11Pool::Get(hstate);
+
+    context->PSSetSamplers(0, state->fragmentSamplerCount, state->fragmentSampler);
 }
-
 }
-
-
 
 //==============================================================================
 } // namespace rhi
-

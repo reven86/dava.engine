@@ -42,11 +42,11 @@
 
 namespace DAVA
 {
-
-RenderPass::RenderPass(const FastName & _name) : passName(_name)
+RenderPass::RenderPass(const FastName& _name)
+    : passName(_name)
 {
     renderLayers.reserve(RenderLayer::RENDER_LAYER_ID_COUNT);
-    
+
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     passConfig.colorBuffer[0].clearColor[0] = 0.0f;
@@ -65,32 +65,32 @@ RenderPass::RenderPass(const FastName & _name) : passName(_name)
 RenderPass::~RenderPass()
 {
     ClearLayersArrays();
-    for (RenderLayer * layer : renderLayers)
+    for (RenderLayer* layer : renderLayers)
         SafeDelete(layer);
 }
-    
-void RenderPass::AddRenderLayer(RenderLayer * layer, RenderLayer::eRenderLayerID afterLayer)
+
+void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID afterLayer)
 {
     if (RenderLayer::RENDER_LAYER_INVALID_ID != afterLayer)
-	{
-		uint32 size = static_cast<uint32>(renderLayers.size());
-		for(uint32 i = 0; i < size; ++i)
+    {
+        uint32 size = static_cast<uint32>(renderLayers.size());
+        for(uint32 i = 0; i < size; ++i)
 		{
             RenderLayer::eRenderLayerID layerID = renderLayers[i]->GetRenderLayerID();
-            if(afterLayer == layerID)
-			{
-				renderLayers.insert(renderLayers.begin() + i + 1, layer);
+            if (afterLayer == layerID)
+            {
+                renderLayers.insert(renderLayers.begin() + i + 1, layer);
                 layersBatchArrays[layerID].SetSortingFlags(layer->GetSortingFlags());
-				return;
-			}
-		}
+                return;
+            }
+        }
 		DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
 	}
 	else
 	{
         renderLayers.push_back(layer);
         layersBatchArrays[layer->GetRenderLayerID()].SetSortingFlags(layer->GetSortingFlags());
-	}
+    }
 }
     
 void RenderPass::RemoveRenderLayer(RenderLayer * layer)
@@ -101,14 +101,14 @@ void RenderPass::RemoveRenderLayer(RenderLayer * layer)
 	renderLayers.erase(it);
 }
 
-void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4 *externalClipPlane)
+void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4* externalClipPlane)
 {
     DVASSERT(drawCamera);
     DVASSERT(mainCamera);
-    
-    bool isRT = (passConfig.colorBuffer[0].texture != rhi::InvalidHandle)||
-                (passConfig.colorBuffer[1].texture != rhi::InvalidHandle)||
-                (passConfig.depthStencilBuffer.texture != rhi::InvalidHandle && passConfig.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
+
+    bool isRT = (passConfig.colorBuffer[0].texture != rhi::InvalidHandle) ||
+    (passConfig.colorBuffer[1].texture != rhi::InvalidHandle) ||
+    (passConfig.depthStencilBuffer.texture != rhi::InvalidHandle && passConfig.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
 
     bool needInvertCamera = isRT && (!rhi::DeviceCaps().isUpperLeftRTOrigin);
 
@@ -117,17 +117,15 @@ void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vecto
     drawCamera->SetupDynamicParameters(needInvertCamera, externalClipPlane);
     if (mainCamera != drawCamera)
         mainCamera->PrepareDynamicParameters(needInvertCamera, externalClipPlane);
-    
-    
 }
 
-void RenderPass::Draw(RenderSystem * renderSystem)
-{   
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();           
+void RenderPass::Draw(RenderSystem* renderSystem)
+{
+    Camera* mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
     SetupCameraParams(mainCamera, drawCamera);
-    
-    PrepareVisibilityArrays(mainCamera, renderSystem);        
+
+    PrepareVisibilityArrays(mainCamera, renderSystem);
 
     BeginRenderPass();
     DrawLayers(mainCamera);
@@ -147,12 +145,12 @@ void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSy
     PrepareLayersArrays(visibilityArray, camera);
 }
 
-void RenderPass::PrepareLayersArrays(const Vector<RenderObject *> objectsArray, Camera * camera)
+void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, Camera* camera)
 {
-    uint32 size = objectsArray.size();
-    for (uint32 ro = 0; ro < size; ++ro)
+    size_t size = objectsArray.size();
+    for (size_t ro = 0; ro < size; ++ro)
     {
-        RenderObject * renderObject = objectsArray[ro];
+        RenderObject* renderObject = objectsArray[ro];
         if (renderObject->GetFlags() & RenderObject::CUSTOM_PREPARE_TO_RENDER)
         {
             renderObject->PrepareToRender(camera);
@@ -161,9 +159,9 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject *> objectsArray, 
         uint32 batchCount = renderObject->GetActiveRenderBatchCount();
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch * batch = renderObject->GetActiveRenderBatch(batchIndex);
+            RenderBatch* batch = renderObject->GetActiveRenderBatch(batchIndex);
 
-            NMaterial * material = batch->GetMaterial();
+            NMaterial* material = batch->GetMaterial();
             DVASSERT(material);
             if (material->PreBuildMaterial(passName))
             {
@@ -174,10 +172,10 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject *> objectsArray, 
 }
 
 void RenderPass::DrawLayers(Camera *camera)
-{    
+{
     ShaderDescriptorCache::ClearDynamicBindigs();
-    
-    //per pass viewport bindings    
+
+    //per pass viewport bindings
     viewportSize = Vector2(viewport.dx, viewport.dy);
     rcpViewportSize = Vector2(1.0f / viewport.dx, 1.0f / viewport.dy);
     viewportOffset = Vector2(viewport.x, viewport.y);
@@ -185,17 +183,17 @@ void RenderPass::DrawLayers(Camera *camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, (pointer_size)&rcpViewportSize);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, (pointer_size)&viewportOffset);
 
-    uint32 size = (uint32)renderLayers.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = renderLayers.size();
+    for (size_t k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
-        RenderBatchArray & batchArray = layersBatchArrays[layer->GetRenderLayerID()];
+        RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
         layer->Draw(camera, batchArray, packetList);
     }
 }
 
-void RenderPass::DrawDebug(Camera *camera, RenderSystem * renderSystem)
+void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
 {
     if (!renderSystem->GetDebugDrawer()->IsEmpty())
     {
@@ -225,9 +223,10 @@ void RenderPass::ClearLayersArrays()
     }
 }
 
-MainForwardRenderPass::MainForwardRenderPass(const FastName & name) : RenderPass(name),
-    reflectionPass(nullptr),
-    refractionPass(nullptr)
+MainForwardRenderPass::MainForwardRenderPass(const FastName& name)
+    : RenderPass(name)
+    , reflectionPass(nullptr)
+    , refractionPass(nullptr)
 {
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, RenderLayer::LAYER_SORTING_FLAGS_OPAQUE));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, RenderLayer::LAYER_SORTING_FLAGS_AFTER_OPAQUE));
@@ -238,17 +237,14 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName & name) : RenderPass
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, RenderLayer::LAYER_SORTING_FLAGS_TRANSLUCENT));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, RenderLayer::LAYER_SORTING_FLAGS_AFTER_TRANSLUCENT));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_DEBUG_DRAW_ID, RenderLayer::LAYER_SORTING_FLAGS_DEBUG_DRAW));
-    
+
     passConfig.priority = PRIORITY_MAIN_3D;
 }
 
 void MainForwardRenderPass::InitReflectionRefraction()
 {
-    
-
     DVASSERT(!reflectionPass);
-    
-    
+
     reflectionPass = new WaterReflectionRenderPass(PASS_FORWARD);
     reflectionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION);
     reflectionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
@@ -257,7 +253,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     reflectionPass->SetViewport(Rect(0, 0, (float32)RuntimeTextures::REFLECTION_TEX_SIZE, (float32)RuntimeTextures::REFLECTION_TEX_SIZE));
-    
+
     refractionPass = new WaterRefractionRenderPass(PASS_FORWARD);
     refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
@@ -266,50 +262,46 @@ void MainForwardRenderPass::InitReflectionRefraction()
     refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     refractionPass->SetViewport(Rect(0, 0, (float32)RuntimeTextures::REFRACTION_TEX_SIZE, (float32)RuntimeTextures::REFRACTION_TEX_SIZE));
-    
 }
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * renderSystem)
 {
-
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
         return;
 
     if (!reflectionPass)
         InitReflectionRefraction();
 
-    const RenderBatchArray & waterLayerBatches = layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID];
+    const RenderBatchArray& waterLayerBatches = layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID];
     uint32 waterBatchesCount = waterLayerBatches.GetRenderBatchCount();
     if (waterBatchesCount)
     {
         waterBox.Empty();
         for (uint32 i = 0; i < waterBatchesCount; ++i)
         {
-            RenderBatch *batch = waterLayerBatches.Get(i);
+            RenderBatch* batch = waterLayerBatches.Get(i);
             waterBox.AddAABBox(batch->GetRenderObject()->GetWorldBoundingBox());
-
         }
     }
 
-    
     reflectionPass->SetWaterLevel(waterBox.max.z);
     reflectionPass->Draw(renderSystem);
 
     refractionPass->SetWaterLevel(waterBox.min.z);
-    refractionPass->Draw(renderSystem);            
+    refractionPass->Draw(renderSystem);
 }
 
-void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
-{ 
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();   
-        
-/*    drawCamera->SetPosition(Vector3(5, 5, 5));
+void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
+{
+    Camera* mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
+
+    /*    drawCamera->SetPosition(Vector3(5, 5, 5));
     drawCamera->SetTarget(Vector3(0, 0, 0));
     Vector4 clip(0, 0, 1, -1);*/
     SetupCameraParams(mainCamera, drawCamera);
-	
-    PrepareVisibilityArrays(mainCamera, renderSystem);        
+
+    PrepareVisibilityArrays(mainCamera, renderSystem);
 
     BeginRenderPass();
 
@@ -317,19 +309,22 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
 
     if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
         PrepareReflectionRefractionTextures(renderSystem);
-    
+
     DrawDebug(drawCamera, renderSystem);
 
     EndRenderPass();
 }
 
 MainForwardRenderPass::~MainForwardRenderPass()
-{		
-	SafeDelete(reflectionPass);
-	SafeDelete(refractionPass);
+{
+    SafeDelete(reflectionPass);
+    SafeDelete(refractionPass);
 }
 
-WaterPrePass::WaterPrePass(const FastName & name) : RenderPass(name), passMainCamera(NULL), passDrawCamera(NULL)
+WaterPrePass::WaterPrePass(const FastName& name)
+    : RenderPass(name)
+    , passMainCamera(NULL)
+    , passDrawCamera(NULL)
 {
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, RenderLayer::LAYER_SORTING_FLAGS_OPAQUE));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, RenderLayer::LAYER_SORTING_FLAGS_AFTER_OPAQUE));
@@ -345,7 +340,8 @@ WaterPrePass::~WaterPrePass()
     SafeRelease(passDrawCamera);
 }
 
-WaterReflectionRenderPass::WaterReflectionRenderPass(const FastName & name) : WaterPrePass(name)
+WaterReflectionRenderPass::WaterReflectionRenderPass(const FastName& name)
+    : WaterPrePass(name)
 {	
 }
 
@@ -360,7 +356,7 @@ void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
     camera->SetTarget(v);        
 }
 
-void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
+void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
 {    
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();    
@@ -374,9 +370,8 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
 
     passMainCamera->CopyMathOnly(*mainCamera);        
     UpdateCamera(passMainCamera);
-    
 
-    Vector4 clipPlane(0, 0, 1, -(waterLevel-0.1f));
+    Vector4 clipPlane(0, 0, 1, -(waterLevel - 0.1f));
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
     
@@ -388,30 +383,30 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
     {
         passDrawCamera->CopyMathOnly(*drawCamera);        
         UpdateCamera(passDrawCamera);
-        currDrawCamera = passDrawCamera;        
+        currDrawCamera = passDrawCamera;
     }
-    
+
     SetupCameraParams(currMainCamera, currDrawCamera, &clipPlane);
-        
-	visibilityArray.clear();
+
+    visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(currMainCamera, visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFLECTION);
 
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
-    
+
     BeginRenderPass();
     DrawLayers(currMainCamera);
     EndRenderPass();
 }
 
-
-WaterRefractionRenderPass::WaterRefractionRenderPass(const FastName & name) : WaterPrePass(name)
+WaterRefractionRenderPass::WaterRefractionRenderPass(const FastName& name)
+    : WaterPrePass(name)
 {
     /*const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
     AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_SHADOW_VOLUME), LAST_LAYER);*/
 }
 
-void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
+void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
 {
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();    
@@ -419,11 +414,11 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
 
     if (!passDrawCamera)
     {
-        passMainCamera = new Camera();    
-        passDrawCamera = new Camera();          
+        passMainCamera = new Camera();
+        passDrawCamera = new Camera();
     }
 
-    passMainCamera->CopyMathOnly(*mainCamera);                    
+    passMainCamera->CopyMathOnly(*mainCamera);
 
     //-0.1f ?
     //Vector4 clipPlane(0,0, -1, waterLevel*3);
@@ -438,21 +433,20 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
     }
     else
     {
-        passDrawCamera->CopyMathOnly(*drawCamera);                
-        currDrawCamera = passDrawCamera;                
+        passDrawCamera->CopyMathOnly(*drawCamera);
+        currDrawCamera = passDrawCamera;
     }
-    
-    SetupCameraParams(currMainCamera, currDrawCamera, &clipPlane);
 
+    SetupCameraParams(currMainCamera, currDrawCamera, &clipPlane);
 
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(currMainCamera, visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFRACTION);
 
     ClearLayersArrays();
-    PrepareLayersArrays(visibilityArray, currMainCamera);    
+    PrepareLayersArrays(visibilityArray, currMainCamera);
 
     BeginRenderPass();
-    DrawLayers(currMainCamera);       
+    DrawLayers(currMainCamera);
     EndRenderPass();
 }
 

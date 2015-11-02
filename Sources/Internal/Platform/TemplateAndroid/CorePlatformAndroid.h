@@ -67,12 +67,12 @@ public:
 
 	void Quit() override;
 
-	void RenderReset(int32 w, int32 h);
-	void ProcessFrame();
+    void RenderReset(int32 w, int32 h);
+    void ProcessFrame();
 
-	// called from Activity and manage a visible lifetime
-	void StartVisible();
-	void StopVisible();
+    // called from Activity and manage a visible lifetime
+    void StartVisible();
+    void StopVisible();
 
 	void StartForeground();
 	void StopForeground(bool isLock);
@@ -104,7 +104,7 @@ public:
     int32 GetViewWidth() const { return width; };
     int32 GetViewHeight() const { return height; };
 
-    void SetNativeWindow(void * nativeWindow);
+    void SetNativeWindow(void* nativeWindow);
 
 private:
 

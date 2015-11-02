@@ -199,14 +199,14 @@ void UIScrollBar::Input(UIEvent *currentInput)
         return;
     }
 
-    if ((currentInput->phase == UIEvent::PHASE_BEGAN) ||
-		(currentInput->phase == UIEvent::PHASE_DRAG) ||
-		(currentInput->phase == UIEvent::PHASE_ENDED))
+    if ((currentInput->phase == UIEvent::Phase::BEGAN) ||
+        (currentInput->phase == UIEvent::Phase::DRAG) ||
+        (currentInput->phase == UIEvent::Phase::ENDED))
     {
-		if (currentInput->phase == UIEvent::PHASE_BEGAN)
-		{
-			startPoint = currentInput->point;
-			CalculateStartOffset(currentInput->point);
+        if (currentInput->phase == UIEvent::Phase::BEGAN)
+        {
+            startPoint = currentInput->point;
+            CalculateStartOffset(currentInput->point);
 		}
 
         float32 newPos;

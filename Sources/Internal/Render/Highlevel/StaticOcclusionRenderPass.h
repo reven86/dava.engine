@@ -39,28 +39,40 @@
 
 namespace DAVA
 {
+// use only for debug purposes
+// enabling this will save each rendered frame to documents folder
+#define SAVE_OCCLUSION_IMAGES 0
 
 struct StaticOcclusionFrameResult;
+class StaticOcclusionData;
 
 class StaticOcclusionRenderPass : public RenderPass
 {
 public:
     StaticOcclusionRenderPass(const FastName & name);
     ~StaticOcclusionRenderPass();
-    
-    void DrawOcclusionFrame(RenderSystem * renderSystem, Camera *occlusionCamera, StaticOcclusionFrameResult& target);
-    static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
-    
-private:    
 
-    rhi::HTexture colorBuffer, depthBuffer;
-    
+    void DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
+                            StaticOcclusionFrameResult& target, const StaticOcclusionData&, uint32 blockIndex);
+
+private:
+    bool ShouldEnableDepthWriteForRenderObject(RenderObject*);
+
+private:
+    enum RenderBatchDepthOption : uint32
+    {
+        Option_DepthWriteDisabled = 0,
+        Option_DepthWriteEnabled = 1
+    };
+    using RenderBatchWithDepthOption = std::pair<RenderBatch*, RenderBatchDepthOption>;
+
+    rhi::HTexture colorBuffer;
+    rhi::HTexture depthBuffer;
+    rhi::HDepthStencilState depthWriteStateState[2];
+    Vector<RenderBatch*> terrainBatches;
+    UnorderedMap<RenderObject*, bool> switchRenderObjects;
+    Vector<RenderBatchWithDepthOption> meshBatchesWithDepthWriteOption;
 };
-    
-
-
-
-
 
 };
 

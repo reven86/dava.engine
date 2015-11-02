@@ -32,10 +32,9 @@
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
-    using DAVA::Logger;
+using DAVA::Logger;
 
     #include "_dx9.h"
-
 
 namespace rhi
 {
@@ -45,24 +44,20 @@ class
 QueryBufferDX9_t
 {
 public:
+    QueryBufferDX9_t();
+    ~QueryBufferDX9_t();
 
-                                    QueryBufferDX9_t();
-                                    ~QueryBufferDX9_t();
-
-    std::vector<IDirect3DQuery9*>   query;
+    std::vector<IDirect3DQuery9*> query;
 };
 
-typedef ResourcePool<QueryBufferDX9_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false>    QueryBufferDX9Pool;
-RHI_IMPL_POOL(QueryBufferDX9_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false);
-
+typedef ResourcePool<QueryBufferDX9_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false> QueryBufferDX9Pool;
+RHI_IMPL_POOL(QueryBufferDX9_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false);
 
 //==============================================================================
-
 
 QueryBufferDX9_t::QueryBufferDX9_t()
 {
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -71,71 +66,71 @@ QueryBufferDX9_t::~QueryBufferDX9_t()
 }
 
 static Handle
-dx9_QueryBuffer_Create( uint32 maxObjectCount )
+dx9_QueryBuffer_Create(uint32 maxObjectCount)
 {
-    Handle              handle = QueryBufferDX9Pool::Alloc();
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    Handle handle = QueryBufferDX9Pool::Alloc();
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
 
-    if( buf )
+    if (buf)
     {
-        buf->query.resize( maxObjectCount );
-        memset( &(buf->query[0]), 0, sizeof(buf->query[0])*buf->query.size() );
+        buf->query.resize(maxObjectCount);
+        memset(&(buf->query[0]), 0, sizeof(buf->query[0]) * buf->query.size());
     }
 
     return handle;
 }
 
 static void
-dx9_QueryBuffer_Delete( Handle handle )
+dx9_QueryBuffer_Delete(Handle handle)
 {
-    QueryBufferDX9_t*   buf = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
 
-    if( buf )
+    if (buf)
     {
         std::vector<DX9Command> cmd;
 
-        for( std::vector<IDirect3DQuery9*>::iterator q=buf->query.begin(),q_end=buf->query.end(); q!=q_end; ++q )
+        for (std::vector<IDirect3DQuery9 *>::iterator q = buf->query.begin(), q_end = buf->query.end(); q != q_end; ++q)
         {
-            DX9Command  c  = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(*q)) } };
-            
-            cmd.push_back( c );
+            DX9Command c = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(*q)) } };
+
+            cmd.push_back(c);
         }
 
-        ExecDX9( &cmd[0], cmd.size() );
+        ExecDX9(&cmd[0], cmd.size());
         buf->query.clear();
     }
 
-    QueryBufferDX9Pool::Free( handle );
+    QueryBufferDX9Pool::Free(handle);
 }
 
 static void
-dx9_QueryBuffer_Reset( Handle handle )
+dx9_QueryBuffer_Reset(Handle handle)
 {
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
 
-    if( buf )
+    if (buf)
     {
     }
 }
 
 static bool
-dx9_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
+dx9_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
 {
-    bool                ready = false;
-    QueryBufferDX9_t*   buf   = QueryBufferDX9Pool::Get( handle );
+    bool ready = false;
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
 
-    if( buf  &&  objectIndex < buf->query.size() )
+    if (buf && objectIndex < buf->query.size())
     {
-        IDirect3DQuery9*    iq = buf->query[objectIndex];
-        
-        if( iq )
-        {
-            DWORD       val;
-            DX9Command  cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
-            
-            ExecDX9( &cmd, 1 );
+        IDirect3DQuery9* iq = buf->query[objectIndex];
 
-            if( SUCCEEDED(cmd.retval) )
+        if (iq)
+        {
+            DWORD val;
+            DX9Command cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
+
+            ExecDX9(&cmd, 1);
+
+            if (SUCCEEDED(cmd.retval))
             {
                 ready = cmd.retval == S_OK;
             }
@@ -146,23 +141,23 @@ dx9_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
 }
 
 static int
-dx9_QueryBuffer_Value( Handle handle, uint32 objectIndex )
+dx9_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
-    int                 value = 0;
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    int value = 0;
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
 
-    if( buf  &&  objectIndex < buf->query.size() )
+    if (buf && objectIndex < buf->query.size())
     {
-        IDirect3DQuery9*    iq = buf->query[objectIndex];
-        
-        if( iq )
+        IDirect3DQuery9* iq = buf->query[objectIndex];
+
+        if (iq)
         {
-            DWORD       val = 0;
-            DX9Command  cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
+            DWORD val = 0;
+            DX9Command cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
 
-            ExecDX9( &cmd, 1 );
+            ExecDX9(&cmd, 1);
 
-            if( cmd.retval == S_OK )
+            if (cmd.retval == S_OK)
             {
                 value = val;
             }
@@ -172,34 +167,30 @@ dx9_QueryBuffer_Value( Handle handle, uint32 objectIndex )
     return value;
 }
 
-
 namespace QueryBufferDX9
 {
-
-void
-SetupDispatch( Dispatch* dispatch )
+void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_QueryBuffer_Create   = &dx9_QueryBuffer_Create;
-    dispatch->impl_QueryBuffer_Reset    = &dx9_QueryBuffer_Reset;
-    dispatch->impl_QueryBuffer_Delete   = &dx9_QueryBuffer_Delete;
-    dispatch->impl_QueryBuffer_IsReady  = &dx9_QueryBuffer_IsReady;
-    dispatch->impl_QueryBuffer_Value    = &dx9_QueryBuffer_Value;
+    dispatch->impl_QueryBuffer_Create = &dx9_QueryBuffer_Create;
+    dispatch->impl_QueryBuffer_Reset = &dx9_QueryBuffer_Reset;
+    dispatch->impl_QueryBuffer_Delete = &dx9_QueryBuffer_Delete;
+    dispatch->impl_QueryBuffer_IsReady = &dx9_QueryBuffer_IsReady;
+    dispatch->impl_QueryBuffer_Value = &dx9_QueryBuffer_Value;
 }
 
-void
-BeginQuery( Handle handle, uint32 objectIndex )
+void BeginQuery(Handle handle, uint32 objectIndex)
 {
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
 
-    if( buf  &&  objectIndex < buf->query.size() )
+    if (buf && objectIndex < buf->query.size())
     {
-        IDirect3DQuery9*    iq = buf->query[objectIndex];
+        IDirect3DQuery9* iq = buf->query[objectIndex];
 
-        if( !iq )
+        if (!iq)
         {
-            HRESULT hr = _D3D9_Device->CreateQuery( D3DQUERYTYPE_OCCLUSION, &iq );
-            
-            if( SUCCEEDED(hr) )
+            HRESULT hr = _D3D9_Device->CreateQuery(D3DQUERYTYPE_OCCLUSION, &iq);
+
+            if (SUCCEEDED(hr))
             {
                 buf->query[objectIndex] = iq;
             }
@@ -209,31 +200,26 @@ BeginQuery( Handle handle, uint32 objectIndex )
             }
         }
 
-        if( iq )
+        if (iq)
         {
-            iq->Issue( D3DISSUE_BEGIN );
+            iq->Issue(D3DISSUE_BEGIN);
         }
     }
 }
 
-
-void
-EndQuery( Handle handle, uint32 objectIndex )
+void EndQuery(Handle handle, uint32 objectIndex)
 {
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
 
-    if( buf  &&  objectIndex < buf->query.size() )
+    if (buf && objectIndex < buf->query.size())
     {
-        IDirect3DQuery9*    iq = buf->query[objectIndex];
-        
+        IDirect3DQuery9* iq = buf->query[objectIndex];
+
         DVASSERT(iq);
-        iq->Issue( D3DISSUE_END );
+        iq->Issue(D3DISSUE_END);
     }
 }
-
 }
-
 
 //==============================================================================
 } // namespace rhi
-

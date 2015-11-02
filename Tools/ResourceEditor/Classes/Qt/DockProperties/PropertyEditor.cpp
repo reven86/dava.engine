@@ -434,7 +434,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                         {
                             bool isRebuildTsEnabled = true;
                             const int32 requiredVertexFormat = (EVF_TEXCOORD0 | EVF_NORMAL);
-                            isRebuildTsEnabled &= (group->GetPrimitiveType() ==  rhi::PRIMITIVE_TRIANGLELIST);
+                            isRebuildTsEnabled &= (group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
                             isRebuildTsEnabled &= ((group->GetFormat() & requiredVertexFormat) == requiredVertexFormat);
 
                             if (isRebuildTsEnabled)
@@ -684,11 +684,11 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
 	QtPropertyDataInspDynamic *memberDymanic = dynamic_cast<QtPropertyDataInspDynamic *>(original);
 	if(NULL != memberData)
 	{
-		return CreateInspMember(memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
-	}
+        return CreateInspMember(memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
+    }
 
-	QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
-	if(NULL != metaData)
+    QtPropertyDataMetaObject* metaData = dynamic_cast<QtPropertyDataMetaObject*>(original);
+    if(NULL != metaData)
 	{
 		return new QtPropertyDataMetaObject(metaData->object, metaData->meta);
 	}

@@ -50,7 +50,7 @@ namespace DAVA
 SpeedTreeUpdateSystem::SpeedTreeUpdateSystem(Scene * scene)
     :	SceneSystem(scene)
 {
-    RenderOptions * options = Renderer::GetOptions();
+    RenderOptions* options = Renderer::GetOptions();
     options->AddObserver(this);
     isAnimationEnabled = options->IsOptionEnabled(RenderOptions::SPEEDTREE_ANIMATIONS);
 

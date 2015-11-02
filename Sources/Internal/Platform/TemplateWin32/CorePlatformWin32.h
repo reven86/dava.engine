@@ -43,12 +43,12 @@ class CoreWin32Platform : public CoreWin32PlatformBase
 public:
 	eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
-    void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
+    void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
 
-	DisplayMode GetCurrentDisplayMode() override;
+    DisplayMode GetCurrentDisplayMode() override;
 
-	bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
-	void Run();
+    bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
+    void Run();
 
 	void SetIcon(int32 iconId) override;
 
@@ -59,23 +59,22 @@ public:
 	RECT		windowPositionBeforeFullscreen;
 
 private:
-	static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
+    static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+    static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
-    void OnMouseEvent(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
-    void OnTouchEvent(UIEvent::eInputPhase phase, UIEvent::PointerDeviceID deviceId, uint32 fingerId, float32 x, float32 y, float presure);
+    void OnMouseEvent(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
+    void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
     static String GetDeviceName(HANDLE hDevice);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
-    int32 MoveTouchsToVector(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches);
+    UIEvent::Phase MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, UIEvent& outTouch);
 
     bool willQuit;
 
     bool isRightButtonPressed;
     bool isLeftButtonPressed;
     bool isMiddleButtonPressed;
-    Vector<DAVA::UIEvent> events;
     Vector<TOUCHINPUT> inputTouchBuffer;
 };
 

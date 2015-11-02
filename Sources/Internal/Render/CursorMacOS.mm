@@ -103,30 +103,31 @@ DAVA::Vector2 Cursor::GetPosition()
 {
     return static_cast<CoreMacOSPlatform *>(CoreMacOSPlatform::Instance())->GetMousePosition();
 }
-    
+
 static InputSystem::eMouseCaptureMode systemCursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
 
 bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
-    switch (mode) {
-        case InputSystem::eMouseCaptureMode::OFF:
-            SetSystemCursorVisibility(true);
-            CGAssociateMouseAndMouseCursorPosition(true);
-            systemCursorCaptureMode = mode;
-            return true;
-        case InputSystem::eMouseCaptureMode::PINING:
-            SetSystemCursorVisibility(false);
-            CGAssociateMouseAndMouseCursorPosition(false);
-            systemCursorCaptureMode = mode;
-            return true;
-        case InputSystem::eMouseCaptureMode::FRAME:
-            // Unsupported yet
-        default:
-            DVASSERT_MSG(false, "Unsupported cursor capture mode");
-            return false;
+    switch (mode)
+    {
+    case InputSystem::eMouseCaptureMode::OFF:
+        SetSystemCursorVisibility(true);
+        CGAssociateMouseAndMouseCursorPosition(true);
+        systemCursorCaptureMode = mode;
+        return true;
+    case InputSystem::eMouseCaptureMode::PINING:
+        SetSystemCursorVisibility(false);
+        CGAssociateMouseAndMouseCursorPosition(false);
+        systemCursorCaptureMode = mode;
+        return true;
+    case InputSystem::eMouseCaptureMode::FRAME:
+    // Unsupported yet
+    default:
+        DVASSERT_MSG(false, "Unsupported cursor capture mode");
+        return false;
     }
 }
-    
+
 InputSystem::eMouseCaptureMode Cursor::GetMouseCaptureMode()
 {
     return systemCursorCaptureMode;
@@ -155,7 +156,7 @@ bool Cursor::SetSystemCursorVisibility(bool show)
     systemCursorVisibility = show;
     return true;
 }
-    
+
 bool Cursor::GetSystemCursorVisibility()
 {
     return systemCursorVisibility;

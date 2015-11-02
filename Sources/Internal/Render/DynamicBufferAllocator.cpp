@@ -38,7 +38,8 @@ namespace //for private members
 {
 uint32 pageSize = DEFAULT_PAGE_SIZE;
 
-template <class HBuffer> class BufferProxy
+template <class HBuffer>
+class BufferProxy
 {
 public:
     static HBuffer CreateBuffer(uint32 size);
@@ -47,41 +48,59 @@ public:
     static void DeleteBuffer(HBuffer handle);
 };
 
-template <> class BufferProxy<rhi::HVertexBuffer>
+template <>
+class BufferProxy<rhi::HVertexBuffer>
 {
 public:
     static rhi::HVertexBuffer CreateBuffer(uint32 size)
-    { 
+    {
         rhi::VertexBuffer::Descriptor descr = rhi::VertexBuffer::Descriptor(size);
         descr.needRestore = false;
         descr.usage = rhi::USAGE_DYNAMICDRAW;
         return rhi::CreateVertexBuffer(descr);
     }
-    static uint8* MapBuffer(rhi::HVertexBuffer handle, uint32 offset, uint32 size){ return (uint8*) rhi::MapVertexBuffer(handle, offset, size); }
-    static void UnmapBuffer(rhi::HVertexBuffer handle){ rhi::UnmapVertexBuffer(handle); }
-    static void DeleteBuffer(rhi::HVertexBuffer handle){ rhi::DeleteVertexBuffer(handle); }
+    static uint8* MapBuffer(rhi::HVertexBuffer handle, uint32 offset, uint32 size)
+    {
+        return (uint8*)rhi::MapVertexBuffer(handle, offset, size);
+    }
+    static void UnmapBuffer(rhi::HVertexBuffer handle)
+    {
+        rhi::UnmapVertexBuffer(handle);
+    }
+    static void DeleteBuffer(rhi::HVertexBuffer handle)
+    {
+        rhi::DeleteVertexBuffer(handle);
+    }
 };
 
-template <> class BufferProxy < rhi::HIndexBuffer >
+template <>
+class BufferProxy<rhi::HIndexBuffer>
 {
 public:
     static rhi::HIndexBuffer CreateBuffer(uint32 size)
-    { 
+    {
         rhi::IndexBuffer::Descriptor descr = rhi::IndexBuffer::Descriptor(size);
         descr.needRestore = false;
         descr.usage = rhi::USAGE_DYNAMICDRAW;
-        return rhi::CreateIndexBuffer(descr); 
+        return rhi::CreateIndexBuffer(descr);
     }
-    static uint8* MapBuffer(rhi::HIndexBuffer handle, uint32 offset, uint32 size){ return (uint8*)rhi::MapIndexBuffer(handle, offset, size); }
-    static void UnmapBuffer(rhi::HIndexBuffer handle){ rhi::UnmapIndexBuffer(handle); }
-    static void DeleteBuffer(rhi::HIndexBuffer handle){ rhi::DeleteIndexBuffer(handle); }
+    static uint8* MapBuffer(rhi::HIndexBuffer handle, uint32 offset, uint32 size)
+    {
+        return (uint8*)rhi::MapIndexBuffer(handle, offset, size);
+    }
+    static void UnmapBuffer(rhi::HIndexBuffer handle)
+    {
+        rhi::UnmapIndexBuffer(handle);
+    }
+    static void DeleteBuffer(rhi::HIndexBuffer handle)
+    {
+        rhi::DeleteIndexBuffer(handle);
+    }
 };
 
-
-
-
-template <class HBuffer> struct BufferAllocator
-{    
+template <class HBuffer>
+struct BufferAllocator
+{
     struct BufferInfo
     {
         HBuffer buffer;
@@ -92,7 +111,7 @@ template <class HBuffer> struct BufferAllocator
     struct BufferAllocateResult
     {
         HBuffer buffer;
-        uint8 *data;
+        uint8* data;
         uint32 base;
         uint32 count;
     };
@@ -129,12 +148,12 @@ template <class HBuffer> struct BufferAllocator
                 currentlyMappedBuffer->allocatedSize = pageSize;
                 currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(pageSize);
             }
-            currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize); 
+            currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);
             currentlyMappedBuffer->readySync = rhi::GetCurrentFrameSyncObject();
             offset = 0;
             base = 0;
         }
-        
+
         BufferAllocateResult res;
         res.buffer = currentlyMappedBuffer->buffer;
         res.data = currentlyMappedData + offset;
@@ -145,7 +164,6 @@ template <class HBuffer> struct BufferAllocator
 
         return res;
     }
-
 
     void Clear()
     {
@@ -174,10 +192,10 @@ template <class HBuffer> struct BufferAllocator
         //update used buffers ttl
         auto it = usedBuffers.begin();
         while (it != usedBuffers.end())
-        {            
+        {
             if (rhi::SyncObjectSignaled((*it)->readySync))
-            {                                
-                freeBuffers.push_back(*it);                
+            {
+                freeBuffers.push_back(*it);
                 it = usedBuffers.erase(it);
             }
             else
@@ -198,12 +216,12 @@ template <class HBuffer> struct BufferAllocator
         if (currentlyMappedBuffer)
         {
             BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);
-            usedBuffers.push_back(currentlyMappedBuffer);            
+            usedBuffers.push_back(currentlyMappedBuffer);
             currentlyMappedData = nullptr;
             currentlyMappedBuffer = nullptr;
             currentlyUsedSize = 0;
         }
-    }    
+    }
 
 private:
     BufferInfo* currentlyMappedBuffer = nullptr;
@@ -215,25 +233,23 @@ private:
 };
 
 BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;
-BufferAllocator<rhi::HIndexBuffer>  indexBufferAllocator;
-
+BufferAllocator<rhi::HIndexBuffer> indexBufferAllocator;
 
 rhi::HIndexBuffer currQuadList;
 uint32 currMaxQuadCount = 0;
 bool quadListRestoreRegistered = false;
-
 }
 
 AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
 {
-    BufferAllocator<rhi::HVertexBuffer>::BufferAllocateResult result = vertexBufferAllocator.AllocateData(vertexSize, vertexCount);    
-    return AllocResultVB{ result.buffer, result.data, result.base, result.count };        
+    BufferAllocator<rhi::HVertexBuffer>::BufferAllocateResult result = vertexBufferAllocator.AllocateData(vertexSize, vertexCount);
+    return AllocResultVB{ result.buffer, result.data, result.base, result.count };
 }
 
 AllocResultIB AllocateIndexBuffer(uint32 indexCount)
 {
     BufferAllocator<rhi::HIndexBuffer>::BufferAllocateResult result = indexBufferAllocator.AllocateData(2, indexCount);
-    return AllocResultIB{ result.buffer, (uint16 *) result.data, result.base, result.count };
+    return AllocResultIB{ result.buffer, (uint16*)result.data, result.base, result.count };
 }
 
 const uint32 VERTICES_PER_QUAD = 4;
@@ -242,15 +258,15 @@ const uint32 INDICES_PER_QUAD = 6;
 void FillQuadListData()
 {
     uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
-    uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);
+    uint16* indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);
     for (uint32 i = 0; i < currMaxQuadCount; ++i)
     {
-        indices[i*INDICES_PER_QUAD + 0] = i*VERTICES_PER_QUAD + 0;
-        indices[i*INDICES_PER_QUAD + 1] = i*VERTICES_PER_QUAD + 1;
-        indices[i*INDICES_PER_QUAD + 2] = i*VERTICES_PER_QUAD + 2;
-        indices[i*INDICES_PER_QUAD + 3] = i*VERTICES_PER_QUAD + 2;
-        indices[i*INDICES_PER_QUAD + 4] = i*VERTICES_PER_QUAD + 1;
-        indices[i*INDICES_PER_QUAD + 5] = i*VERTICES_PER_QUAD + 3; //preserve order
+        indices[i * INDICES_PER_QUAD + 0] = i * VERTICES_PER_QUAD + 0;
+        indices[i * INDICES_PER_QUAD + 1] = i * VERTICES_PER_QUAD + 1;
+        indices[i * INDICES_PER_QUAD + 2] = i * VERTICES_PER_QUAD + 2;
+        indices[i * INDICES_PER_QUAD + 3] = i * VERTICES_PER_QUAD + 2;
+        indices[i * INDICES_PER_QUAD + 4] = i * VERTICES_PER_QUAD + 1;
+        indices[i * INDICES_PER_QUAD + 5] = i * VERTICES_PER_QUAD + 3; //preserve order
     }
     rhi::UnmapIndexBuffer(currQuadList);
 }
@@ -269,15 +285,15 @@ rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
         quadListRestoreRegistered = true;
     }
     if (quadCount > currMaxQuadCount)
-    {        
+    {
         if (currQuadList.IsValid())
-            rhi::DeleteIndexBuffer(currQuadList);                    
+            rhi::DeleteIndexBuffer(currQuadList);
 
         currMaxQuadCount = Max(currMaxQuadCount * 2, quadCount);
         uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
         currQuadList = rhi::CreateIndexBuffer(bufferSize);
         FillQuadListData();
-    }    
+    }
     return currQuadList;
 }
 
@@ -288,7 +304,7 @@ void BeginFrame()
 }
 
 void EndFrame()
-{    
+{
     vertexBufferAllocator.EndFrame();
     indexBufferAllocator.EndFrame();
 }
@@ -300,7 +316,7 @@ void Clear()
         rhi::DeleteIndexBuffer(currQuadList);
         currQuadList = rhi::HIndexBuffer();
         currMaxQuadCount = 0;
-    }        
+    }
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }
@@ -311,8 +327,5 @@ void SetPageSize(uint32 size)
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }
-
-
 }
 }
-

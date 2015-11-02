@@ -161,7 +161,6 @@ void FontConvertor::InitWithParams(Params _params)
         // We'll draw glyph form font as is
         params.scale = 1;
     }
-
 }
 
 void FontConvertor::SetDefaultParams()
@@ -203,14 +202,16 @@ bool FontConvertor::Convert()
 
     if (!ok)
     {
-        cerr << endl << "Error: chars will not fit into texture" << endl;
+        cerr << endl
+             << "Error: chars will not fit into texture" << endl;
         return false;
     }
 
     cout << "Packing chars into texture...";
     if (!GeneratePackedList(params.fontSize, params.textureSize))
     {
-        cerr << endl << "Error: chars will not fit into texture" << endl;
+        cerr << endl
+             << "Error: chars will not fit into texture" << endl;
         return false;
     }
     cout << " Done" << endl;
@@ -236,13 +237,14 @@ void FontConvertor::GenerateFontDescription()
     outFile.open(params.filename + ".fnt");
 
     outFile << "font:" << endl;
-    outFile << "  name: " << "" << endl;
+    outFile << "  name: "
+            << "" << endl;
     outFile << "  size: " << params.fontSize << endl;
     outFile << "  lineHeight: " << lineHeight << endl;
     outFile << "  baselineHeight: " << baselineHeight << endl;
     outFile << "  scaleW: " << params.textureSize << endl;
     outFile << "  scaleH: " << params.textureSize << endl;
-    
+
     outFile << "  distanceFieldFont: " << (params.output == TYPE_DISTANCE_FIELD ? "true" : "false") << endl;
     outFile << "  spread: " << params.spread << endl;
 
@@ -294,7 +296,8 @@ void FontConvertor::GenerateFontDescription()
 
     outFile.close();
 
-    cout << "Done" << endl << endl;
+    cout << "Done" << endl
+         << endl;
 }
 
 void FontConvertor::FillKerning()
@@ -343,7 +346,8 @@ void FontConvertor::FillKerning()
 
     font->SetSize(oldSize);
 
-    cout << kerningCount << " kerning pairs found" << endl << endl;
+    cout << kerningCount << " kerning pairs found" << endl
+         << endl;
 }
 
 bool FontConvertor::FillCharList()
@@ -395,7 +399,8 @@ bool FontConvertor::FillCharList()
         charGlyphPairs.push_back(make_pair(NOT_DEF_CHAR, glyphIndex));
     }
 
-    cout << " " << charGlyphPairs.size() << " characters found" << endl << endl;
+    cout << " " << charGlyphPairs.size() << " characters found" << endl
+         << endl;
     return true;
 }
 
@@ -460,8 +465,10 @@ bool FontConvertor::AdjustFontSize(int32& size)
         keepGoing = GeneratePackedList(curSize, params.textureSize);
     }
 
-    cout << endl << "Done" << endl;
-    cout << endl << "Font size: " << curSize << endl;
+    cout << endl
+         << "Done" << endl;
+    cout << endl
+         << "Font size: " << curSize << endl;
 
     if (!keepGoing)
     {
@@ -507,7 +514,8 @@ bool FontConvertor::AdjustTextureSize(int32& size)
         curSize = MIN_TEXTURE_SIZE;
     }
 
-    cout << endl << "Done" << endl;
+    cout << endl
+         << "Done" << endl;
     cout << "Texture size: " << curSize << endl;
 
     size = curSize;
@@ -615,7 +623,6 @@ void FontConvertor::GenerateOutputImage()
                                 charBuf[y + x] = 255 * val;
                             }
                         }
-
                     }
                     else //params.output == TYPE_GRAPHIC
                     {
@@ -845,7 +852,7 @@ bool FontConvertor::GeneratePackedList(int32 fontSize, int32 textureSize)
     font->SetSize(oldSize);
 
     BinPacker bp;
-    Vector<Vector<int32> > packedInfo;
+    Vector<Vector<int32>> packedInfo;
     bp.Pack(rectInfo, packedInfo, textureSize, false);
 
     if (packedInfo.size() == 1)

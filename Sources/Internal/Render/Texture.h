@@ -64,23 +64,20 @@ class Texture;
     class Texture : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
-public:       
-        
-
-
-	enum TextureState
-	{
-		STATE_INVALID	=	0,
-		STATE_DATA_LOADED,
-		STATE_VALID
-	};
+public:
+    enum TextureState
+    {
+        STATE_INVALID = 0,
+        STATE_DATA_LOADED,
+        STATE_VALID
+    };
 
     const static uint32 INVALID_CUBEMAP_FACE = -1;
     const static uint32 CUBE_FACE_COUNT = 6;
-	
+
     static Array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
 
-	// Main constructors
+    // Main constructors
     /**
         \brief Create texture from data arrray
         This function creates texture from given format, data pointer and width + height
@@ -91,7 +88,7 @@ public:
         \param[in] height height of new texture
         \param[in] generateMipMaps generate mipmaps or not
      */
-	static Texture * CreateFromData(PixelFormat format, const uint8 *data, uint32 width, uint32 height, bool generateMipMaps);
+    static Texture* CreateFromData(PixelFormat format, const uint8* data, uint32 width, uint32 height, bool generateMipMaps);
 
     /**
         \brief Create texture from data arrray stored at Image
@@ -119,16 +116,16 @@ public:
 		If file cannot be opened, returns "pink placeholder" texture.
         \param[in] pathName path to the png or pvr file
      */
-    static Texture * CreateFromFile(const FilePath & pathName, const FastName &group = FastName(), rhi::TextureType typeHint = rhi::TEXTURE_TYPE_2D);
+    static Texture* CreateFromFile(const FilePath& pathName, const FastName& group = FastName(), rhi::TextureType typeHint = rhi::TEXTURE_TYPE_2D);
 
-	/**
+    /**
         \brief Create texture from given file. Supported formats .png, .pvr (only on iOS). 
 		If file cannot be opened, returns 0
         \param[in] pathName path to the png or pvr file
      */
-	static Texture * PureCreate(const FilePath & pathName, const FastName &group = FastName());    	    
-	
-    static Texture * CreatePink(rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool checkers = true);
+    static Texture* PureCreate(const FilePath& pathName, const FastName& group = FastName());
+
+    static Texture* CreatePink(rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool checkers = true);
 
     static Texture* CreateFBO(uint32 width, uint32 height, PixelFormat format, bool needDepth = false, rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D);
 
@@ -152,30 +149,30 @@ public:
         return height;
     }
 
-    void GenerateMipmaps();	
-	
-	void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId);
-    
+    void GenerateMipmaps();
+
+    void TexImage(int32 level, uint32 width, uint32 height, const void* _data, uint32 dataSize, uint32 cubeFaceId);
+
     void SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV, rhi::TextureAddrMode wrapW = rhi::TEXADDR_WRAP);
     void SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter magFilter, rhi::TextureMipFilter mipFilter);
-        
+
     /**
         \brief Function to receive pathname of texture object
         \returns pathname of texture
      */
     const FilePath & GetPathname() const;
     void SetPathname(const FilePath& path);
-    
-    Image * CreateImageFromMemory();
 
-	bool IsPinkPlaceholder();
+    Image* CreateImageFromMemory();
+
+    bool IsPinkPlaceholder();
 
     void Reload();
-    void ReloadAs(eGPUFamily gpuFamily);	
+    void ReloadAs(eGPUFamily gpuFamily);
     void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
 
-	inline TextureState GetState() const;	    
-    
+    inline TextureState GetState() const;
+
     void SetDebugInfo(const String & _debugInfo);
     
 	static const TexturesMap & GetTextureMap();
@@ -198,9 +195,8 @@ public:
     static rhi::HSamplerState CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState);
 
 protected:
-
     void RestoreRenderResource();
-    
+
     void ReleaseTextureData();
 
 	static void AddToMap(Texture *tex);
@@ -210,41 +206,38 @@ protected:
 	bool LoadImages(eGPUFamily gpu, Vector<Image *> * images);
     
 	void SetParamsFromImages(const Vector<Image *> * images);
-	
-	void FlushDataToRenderer(Vector<Image *> * images);
 
-	void ReleaseImages(Vector<Image *> * images);
-    
-    void MakePink(bool checkers = true);	
-    	
-	void GenerateMipmapsInternal();
+    void FlushDataToRenderer(Vector<Image*>* images);
 
-	Texture();
-	virtual ~Texture();
+    void ReleaseImages(Vector<Image*>* images);
+
+    void MakePink(bool checkers = true);
+
+    void GenerateMipmapsInternal();
+
+    Texture();
+    virtual ~Texture();
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
 
 public:							// properties for fast access
-
-
     rhi::HTexture handle;
     rhi::HTexture handleDepthStencil; //it's legacy and should be removed. (maybe together with CreateFBO method)
     rhi::HSamplerState samplerStateHandle;
     rhi::HTextureSet singleTextureSet;
     rhi::SamplerState::Descriptor::Sampler samplerState;
-	
+
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height
 
-
     eGPUFamily loadedAsFile;
 
-    TextureState state:2;
-    uint32      textureType:2;
+    TextureState state : 2;
+    uint32 textureType : 2;
 
-    bool        isRenderTarget:1;
+    bool isRenderTarget : 1;
     bool isPink : 1;
 
     FastName		debugInfo;
@@ -261,7 +254,6 @@ public:							// properties for fast access
     
 // Implementation of inline functions
 
-    
 inline const eGPUFamily Texture::GetSourceFileGPUFamily() const
 {
     return loadedAsFile;

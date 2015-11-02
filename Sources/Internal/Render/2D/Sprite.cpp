@@ -64,8 +64,8 @@ Mutex Sprite::spriteMapMutex;
 Sprite::DrawState::DrawState()
 {
     Reset();
-    
-    material = RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;    
+
+    material = RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;
 }
 
 Sprite::Sprite()

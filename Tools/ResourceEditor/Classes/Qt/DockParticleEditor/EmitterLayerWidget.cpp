@@ -53,17 +53,15 @@ const EmitterLayerWidget::LayerTypeMap EmitterLayerWidget::layerTypeMap[] =
 	{ParticleLayer::TYPE_SUPEREMITTER_PARTICLES, "SuperEmitter"}
 };
 
-const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[]=
+const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[] =
 {
-    {BLENDING_ALPHABLEND, "Alpha blend"},
-    {BLENDING_ADDITIVE, "Additive" },
-    {BLENDING_ALPHA_ADDITIVE, "Alpha additive"},
-    {BLENDING_SOFT_ADDITIVE, "Soft additive"},
-	/*{BLEND_DST_COLOR, BLEND_ZERO, "Multiplicative"},
+  { BLENDING_ALPHABLEND, "Alpha blend" },
+  { BLENDING_ADDITIVE, "Additive" },
+  { BLENDING_ALPHA_ADDITIVE, "Alpha additive" },
+  { BLENDING_SOFT_ADDITIVE, "Soft additive" },
+  /*{BLEND_DST_COLOR, BLEND_ZERO, "Multiplicative"},
 	{BLEND_DST_COLOR, BLEND_SRC_COLOR, "2x Multiplicative"}*/
 };
-
-
 
 EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 	QWidget(parent),
@@ -257,31 +255,28 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 	mainBox->addWidget(blendOptionsLabel);	
 	
 	presetLabel = new QLabel("Preset");
-	
-	presetComboBox = new QComboBox();		
+
+    presetComboBox = new QComboBox();
     int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
     for (int32 i = 0; i < presetsCount; i++)
     {
         presetComboBox->addItem(blendPresetsMap[i].presetName);
     }
-	
-	QHBoxLayout *blendLayout = new QHBoxLayout();
-	QVBoxLayout *presetLayout = new QVBoxLayout();
-	
 
-	presetLayout->addWidget(presetLabel);
-	presetLayout->addWidget(presetComboBox);
-	
-	
-	blendLayout->addLayout(presetLayout);	
-	mainBox->addLayout(blendLayout);
-	
-    connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));	
+    QHBoxLayout* blendLayout = new QHBoxLayout();
+    QVBoxLayout* presetLayout = new QVBoxLayout();
 
-	
-	fogCheckBox = new QCheckBox("Enable fog");	
-	connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	mainBox->addWidget(fogCheckBox);
+    presetLayout->addWidget(presetLabel);
+    presetLayout->addWidget(presetComboBox);
+
+    blendLayout->addLayout(presetLayout);
+    mainBox->addLayout(blendLayout);
+
+    connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+
+    fogCheckBox = new QCheckBox("Enable fog");
+    connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    mainBox->addWidget(fogCheckBox);
 
 
 	lifeTimeLine = new TimeLineWidget(this);
@@ -440,8 +435,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     }
 	spritePathLabel->installEventFilter(this);
 
-	spriteUpdateTimer = new QTimer(this);
-	connect(spriteUpdateTimer, SIGNAL(timeout()), this, SLOT(OnSpriteUpdateTimerExpired()));
+    spriteUpdateTimer = new QTimer(this);
+    connect(spriteUpdateTimer, SIGNAL(timeout()), this, SLOT(OnSpriteUpdateTimerExpired()));
 }
 
 EmitterLayerWidget::~EmitterLayerWidget()
@@ -541,21 +536,21 @@ EmitterLayerWidget::~EmitterLayerWidget()
 	disconnect(yFacingCheckBox,
 		SIGNAL(stateChanged(int)),
 		this,
-		SLOT(OnLodsChanged()));		
-	disconnect(zFacingCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnLodsChanged()));		
-	disconnect(worldAlignCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnLodsChanged()));		
+		SLOT(OnLodsChanged()));
+    disconnect(zFacingCheckBox,
+               SIGNAL(stateChanged(int)),
+               this,
+               SLOT(OnLodsChanged()));
+    disconnect(worldAlignCheckBox,
+               SIGNAL(stateChanged(int)),
+               this,
+               SLOT(OnLodsChanged()));
 
-    disconnect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));	
-	disconnect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	disconnect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    disconnect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+    disconnect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
+    disconnect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
-	disconnect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+    disconnect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 	disconnect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 }
 
@@ -577,8 +572,8 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effe
 	this->emitter = emitter;
 	this->layer = layer;
 
-	SetActiveScene(scene);
-	Update(updateMinimized);
+    SetActiveScene(scene);
+    Update(updateMinimized);
 }
 
 void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
@@ -754,9 +749,9 @@ void EmitterLayerWidget::OnValueChanged()
 
     eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
 
-	int32 particleOrientation = 0;
-	if (cameraFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
+    int32 particleOrientation = 0;
+    if (cameraFacingCheckBox->isChecked())
+        particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
 	if (xFacingCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
 	if (yFacingCheckBox->isChecked())
@@ -770,58 +765,58 @@ void EmitterLayerWidget::OnValueChanged()
 
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 	CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
-	updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
-						 propLayerType,
+    updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
+                         propLayerType,
                          degradeStrategy,
-						 !enableCheckBox->isChecked(),						 
-						 inheritPostionCheckBox->isChecked(),
-						 isLongCheckBox->isChecked(),
-						 scaleVelocityBaseSpinBox->value(),
-						 scaleVelocityFactorSpinBox->value(),
-						 isLoopedCheckBox->isChecked(),
-						 sprite,
+                         !enableCheckBox->isChecked(),
+                         inheritPostionCheckBox->isChecked(),
+                         isLongCheckBox->isChecked(),
+                         scaleVelocityBaseSpinBox->value(),
+                         scaleVelocityFactorSpinBox->value(),
+                         isLoopedCheckBox->isChecked(),
+                         sprite,
                          blending,
-						 fogCheckBox->isChecked(),
-						 frameBlendingCheckBox->isChecked(),
-						 particleOrientation,
-						 propLife.GetPropLine(),
-						 propLifeVariation.GetPropLine(),
-						 propNumber.GetPropLine(),
-						 propNumberVariation.GetPropLine(),
-						 propSize.GetPropLine(),
-						 propSizeVariation.GetPropLine(),
-						 propsizeOverLife.GetPropLine(),
-						 propVelocity.GetPropLine(),
-						 propVelocityVariation.GetPropLine(),
-						 propVelocityOverLife.GetPropLine(),
-						 propSpin.GetPropLine(),
-						 propSpinVariation.GetPropLine(),
-						 propSpinOverLife.GetPropLine(),
-						 randomSpinDirectionCheckBox->isChecked(),
+                         fogCheckBox->isChecked(),
+                         frameBlendingCheckBox->isChecked(),
+                         particleOrientation,
+                         propLife.GetPropLine(),
+                         propLifeVariation.GetPropLine(),
+                         propNumber.GetPropLine(),
+                         propNumberVariation.GetPropLine(),
+                         propSize.GetPropLine(),
+                         propSizeVariation.GetPropLine(),
+                         propsizeOverLife.GetPropLine(),
+                         propVelocity.GetPropLine(),
+                         propVelocityVariation.GetPropLine(),
+                         propVelocityOverLife.GetPropLine(),
+                         propSpin.GetPropLine(),
+                         propSpinVariation.GetPropLine(),
+                         propSpinOverLife.GetPropLine(),
+                         randomSpinDirectionCheckBox->isChecked(),
 
-						 propColorRandom.GetPropLine(),
-						 propAlphaOverLife.GetPropLine(),
-						 propColorOverLife.GetPropLine(),
-						 propAngle.GetPropLine(),
-						 propAngleVariation.GetPropLine(),
+                         propColorRandom.GetPropLine(),
+                         propAlphaOverLife.GetPropLine(),
+                         propColorOverLife.GetPropLine(),
+                         propAngle.GetPropLine(),
+                         propAngleVariation.GetPropLine(),
 
-						 (float32)startTimeSpin->value(),
-						 (float32)endTimeSpin->value(),
-						 (float32)deltaSpin->value(),
-						 (float32)deltaVariationSpin->value(),
-						 (float32)loopEndSpin->value(),
-						 (float32)loopVariationSpin->value(),
-						 frameOverlifeCheckBox->isChecked(),
-						 (float32)frameOverlifeFPSSpin->value(),
-						 randomFrameOnStartCheckBox->isChecked(),
-						 loopSpriteAnimationCheckBox->isChecked(),
-						 propAnimSpeedOverLife.GetPropLine(),
-						 (float32)pivotPointXSpinBox->value(),
-						 (float32)pivotPointYSpinBox->value());
+                         (float32)startTimeSpin->value(),
+                         (float32)endTimeSpin->value(),
+                         (float32)deltaSpin->value(),
+                         (float32)deltaVariationSpin->value(),
+                         (float32)loopEndSpin->value(),
+                         (float32)loopVariationSpin->value(),
+                         frameOverlifeCheckBox->isChecked(),
+                         (float32)frameOverlifeFPSSpin->value(),
+                         randomFrameOnStartCheckBox->isChecked(),
+                         loopSpriteAnimationCheckBox->isChecked(),
+                         propAnimSpeedOverLife.GetPropLine(),
+                         (float32)pivotPointXSpinBox->value(),
+                         (float32)pivotPointYSpinBox->value());
 
-	DVASSERT(activeScene);
-	activeScene->Exec(updateLayerCmd);
-	activeScene->MarkAsChanged();
+    DVASSERT(activeScene);
+    activeScene->Exec(updateLayerCmd);
+    activeScene->MarkAsChanged();
 
     Update(false);
     if (superemitterStatusChanged)
@@ -850,21 +845,21 @@ void EmitterLayerWidget::OnLodsChanged()
 
 void EmitterLayerWidget::OnSpriteUpdateTimerExpired()
 {
-	DVASSERT(!spriteUpdateTexturesStack.empty());
+    DVASSERT(!spriteUpdateTexturesStack.empty());
 
-	if (rhi::SyncObjectSignaled(spriteUpdateTexturesStack.top().first))
-	{
-		ScopedPtr<Image> image(spriteUpdateTexturesStack.top().second->CreateImageFromMemory());
-		spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
+    if (rhi::SyncObjectSignaled(spriteUpdateTexturesStack.top().first))
+    {
+        ScopedPtr<Image> image(spriteUpdateTexturesStack.top().second->CreateImageFromMemory());
+        spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
 
-		while (!spriteUpdateTexturesStack.empty())
-		{
-			SafeRelease(spriteUpdateTexturesStack.top().second);
-			spriteUpdateTexturesStack.pop();
-		}
+        while (!spriteUpdateTexturesStack.empty())
+        {
+            SafeRelease(spriteUpdateTexturesStack.top().second);
+            spriteUpdateTexturesStack.pop();
+        }
 
-		spriteUpdateTimer->stop();
-	}
+        spriteUpdateTimer->stop();
+    }
 }
 
 void EmitterLayerWidget::Update(bool updateMinimized)
@@ -901,16 +896,16 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     if (sprite)
     {
-		Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-		RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
-		{
-			Sprite::DrawState drawState = { };
-			drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
-			RenderSystem2D::Instance()->Draw(sprite, &drawState, Color::White);
-		}
-		RenderSystem2D::Instance()->EndRenderTargetPass();
-		spriteUpdateTexturesStack.push({rhi::GetCurrentFrameSyncObject(), renderTarget});
-		spriteUpdateTimer->start(0);
+        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
+        {
+            Sprite::DrawState drawState = {};
+            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
+            RenderSystem2D::Instance()->Draw(sprite, &drawState, Color::White);
+        }
+        RenderSystem2D::Instance()->EndRenderTargetPass();
+        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
+        spriteUpdateTimer->start(0);
     }
     else
     {
@@ -941,7 +936,6 @@ void EmitterLayerWidget::Update(bool updateMinimized)
             break;
     }
     presetComboBox->setCurrentIndex(presetId);
-
 
     fogCheckBox->setChecked(layer->enableFog);
 
@@ -1174,11 +1168,11 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 	//blend and fog settings are set in inner emitter layers
 	blendOptionsLabel->setVisible(!isSuperemitter);
 	presetLabel->setVisible(!isSuperemitter);
-	presetComboBox->setVisible(!isSuperemitter);	
-	fogCheckBox->setVisible(!isSuperemitter);
-	frameBlendingCheckBox->setVisible(!isSuperemitter);
+    presetComboBox->setVisible(!isSuperemitter);
+    fogCheckBox->setVisible(!isSuperemitter);
+    frameBlendingCheckBox->setVisible(!isSuperemitter);
 
-	// Some controls are however specific for this mode only - display and update them.
+    // Some controls are however specific for this mode only - display and update them.
 	innerEmitterLabel->setVisible(isSuperemitter);
 	innerEmitterPathLabel->setVisible(isSuperemitter);
 	

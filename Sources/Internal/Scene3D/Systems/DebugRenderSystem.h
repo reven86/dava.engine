@@ -52,7 +52,7 @@ public:
 
 private:
 	Vector<Entity*> entities;
-    Camera * camera;	
+    Camera* camera;
 };
 
 }
