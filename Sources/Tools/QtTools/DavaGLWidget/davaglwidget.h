@@ -92,12 +92,14 @@ signals:
     void Resized(int width, int height, int dpr);
     void Initialized();
     void OnDrop(const QMimeData* mimeData);
+
 public slots:
     void OnSync();
 
 private slots:
     void OnResize();
     void OnCleanup();
+    void UpdateView();
 
 protected:
     void resizeEvent(QResizeEvent*) override;

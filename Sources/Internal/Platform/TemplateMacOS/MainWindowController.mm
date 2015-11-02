@@ -56,11 +56,11 @@ namespace DAVA
         globalPool = 0;
         return retVal;
     }
-	
-	int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
-	{
-		NSAutoreleasePool * globalPool = 0;
-		globalPool = [[NSAutoreleasePool alloc] init];
+
+    int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
+    {
+        NSAutoreleasePool* globalPool = 0;
+        globalPool = [[NSAutoreleasePool alloc] init];
 		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
 		core->SetCommandLine(argc, argv);
 		core->EnableConsoleMode();
@@ -179,7 +179,7 @@ namespace DAVA
     RenderManager::Instance()->DetectRenderingCapabilities();
 #endif
 
-    // start animation
+// start animation
 #if RHI_COMPLETE
     currFPS = RenderManager::Instance()->GetFPS();
 #else
@@ -188,9 +188,9 @@ namespace DAVA
     [self startAnimationTimer];
 
     // make window main
-	[mainWindow makeKeyAndOrderFront:nil];
-	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
-	[mainWindow setAcceptsMouseMovedEvents:YES];
+    [mainWindow makeKeyAndOrderFront:nil];
+    [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
+    [mainWindow setAcceptsMouseMovedEvents:YES];
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
@@ -365,9 +365,9 @@ namespace DAVA
     [openGLView setNeedsDisplay:YES];
 #if RHI_COMPLETE
     if (currFPS != RenderManager::Instance()->GetFPS())
-	{
-		currFPS = RenderManager::Instance()->GetFPS();
-		[self stopAnimationTimer];
+    {
+        currFPS = RenderManager::Instance()->GetFPS();
+        [self stopAnimationTimer];
 		[self startAnimationTimer];
 	}
 #endif

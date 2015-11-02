@@ -412,8 +412,8 @@ DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 {
     // before reloading textures we should save tile-mask texture for all opened scenes
-    if(SaveTilemask())
-	{
+    if (SaveTilemask())
+    {
         SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
         DAVA::Texture::SetDefaultGPU(gpu);
 
@@ -421,7 +421,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         DAVA::Vector<DAVA::NMaterial*> allSceneMaterials;
         for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
         {
-            SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
+            SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
             SceneHelper::EnumerateMaterialInstances(scene, allSceneMaterials);
         }
@@ -843,7 +843,6 @@ void QtMainWindow::SetupActions()
 #endif //#if defined(__DAVAENGINE_BEAST__)
     
     QObject::connect(ui->actionBuildStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnBuildStaticOcclusion()));
-    QObject::connect(ui->actionRebuildCurrentOcclusionCell, SIGNAL(triggered()), this, SLOT(OnRebuildCurrentOcclusionCell()));
     QObject::connect(ui->actionInvalidateStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnInavalidateStaticOcclusion()));
     
     connect(ui->actionHeightmap_Delta_Tool, SIGNAL(triggered()), this, SLOT(OnGenerateHeightDelta()));
@@ -2051,7 +2050,7 @@ void QtMainWindow::OnSaveTiledTexture()
     SceneEditor2* scene = GetCurrentScene();
     if (!IsSavingAllowed() || (nullptr == scene))
     {
-		return;
+        return;
 	}
 
 	LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
@@ -2579,6 +2578,7 @@ void QtMainWindow::OnBuildStaticOcclusion()
         else
         {
             waitOcclusionDlg->SetValue(scene->staticOcclusionBuildSystem->GetBuildStatus());
+            waitOcclusionDlg->SetMessage(QString::fromStdString(scene->staticOcclusionBuildSystem->GetBuildStatusInfo()));
         }
     }
     
@@ -2596,14 +2596,6 @@ void QtMainWindow::OnInavalidateStaticOcclusion()
     SceneEditor2* scene = GetCurrentScene();
     if(!scene) return;
     scene->staticOcclusionSystem->InvalidateOcclusion();
-}
-
-void QtMainWindow::OnRebuildCurrentOcclusionCell()
-{
-    SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-    scene->staticOcclusionBuildSystem->RebuildCurrentCell();
 }
 
 bool QtMainWindow::IsSavingAllowed()

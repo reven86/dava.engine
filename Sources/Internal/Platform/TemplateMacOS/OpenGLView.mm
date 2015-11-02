@@ -93,9 +93,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 #endif
 
     activeCursor = 0;
-    
-    //RenderManager::Create(Core::RENDERER_OPENGL);
-	
+
     willQuit = false;
 
     return self;
@@ -152,36 +150,29 @@ extern void FrameworkMain(int argc, char *argv[]);
     DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 #endif
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
-	
-	sizeChanged = YES;
-	[super reshape];
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+
+    sizeChanged = YES;
+    [super reshape];
 }
 
 - (void)userFireTimer: (id)timer
 {
 	[self setNeedsDisplay:YES];
 }
-
-//bool firstLaunch = true;
 	
 - (void)drawRect:(NSRect)theRect
 {
     if(willQuit)
         return;
-    
-//	Logger::FrameworkDebug("drawRect started");
 
     DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (void) resetCursorRects
 {
-//	NSLog(@"OpenGLView resetCursorRects");
-	//
 	if (activeCursor)
 	{
-		//activeCursor->MacOSX_Set();
 		NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
 		[self addCursorRect: [self bounds] cursor: cursor];
 	}else {
@@ -210,11 +201,11 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 static Vector<DAVA::UIEvent> activeTouches;
 
-void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
+void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
     NSPoint p = [curEvent locationInWindow];
-    
-    if(phase == UIEvent::PHASE_WHEEL)
+
+    if (phase == UIEvent::Phase::WHEEL)
     {
         event.physPoint.x = [curEvent scrollingDeltaX];
         event.physPoint.y = [curEvent scrollingDeltaY];
@@ -237,128 +228,135 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
     event.phase = phase;
 }
 
-void MoveTouchsToVector(NSEvent* curEvent, int touchPhase, Vector<UIEvent>* outTouches)
+- (void)moveTouchsToVector:(UIEvent::Phase)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
 {
-	int button = 0;
-    if (curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
+    int button = 0;
+    if (curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged)
     {
-		button = 1;
-	}
-	else if(curEvent.type == NSRightMouseDown || curEvent.type == NSRightMouseUp || curEvent.type == NSRightMouseDragged)
-	{
-		button = 2;
-	}
-    else
-    {
-		button = curEvent.buttonNumber + 1;
-	}
-	
-	int phase = UIEvent::PHASE_MOVE;
-	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSRightMouseDown || curEvent.type == NSOtherMouseDown)
-	{
-		phase = UIEvent::PHASE_BEGAN;
-	}
-	else if(curEvent.type == NSLeftMouseUp || curEvent.type == NSRightMouseUp || curEvent.type == NSOtherMouseUp)
-	{
-		phase = UIEvent::PHASE_ENDED;
-	}
-	else if(curEvent.type == NSLeftMouseDragged || curEvent.type == NSRightMouseDragged || curEvent.type == NSOtherMouseDragged)
-	{
-		phase = UIEvent::PHASE_DRAG;
-	}
-	else if(curEvent.type == NSScrollWheel)
-    {
-        phase = UIEvent::PHASE_WHEEL;
+        button = 1;
     }
-    
-	if(phase == UIEvent::PHASE_DRAG)
-	{
-        for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    else if (curEvent.type == NSRightMouseDown || curEvent.type == NSRightMouseUp || curEvent.type == NSRightMouseDragged)
+    {
+        button = 2;
+    }
+    else if (curEvent.type != NSMouseMoved)
+    {
+        button = curEvent.buttonNumber + 1;
+    }
+
+    UIEvent::Phase phase = UIEvent::Phase::MOVE;
+    if (curEvent.type == NSLeftMouseDown || curEvent.type == NSRightMouseDown || curEvent.type == NSOtherMouseDown)
+    {
+        phase = UIEvent::Phase::BEGAN;
+    }
+    else if (curEvent.type == NSLeftMouseUp || curEvent.type == NSRightMouseUp || curEvent.type == NSOtherMouseUp)
+    {
+        phase = UIEvent::Phase::ENDED;
+    }
+    else if (curEvent.type == NSLeftMouseDragged || curEvent.type == NSRightMouseDragged || curEvent.type == NSOtherMouseDragged)
+    {
+        phase = UIEvent::Phase::DRAG;
+    }
+    else if (curEvent.type == NSScrollWheel)
+    {
+        phase = UIEvent::Phase::WHEEL;
+    }
+
+    if (phase == UIEvent::Phase::DRAG)
+    {
+        for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
-		}
-	}
-    
-	bool isFind = false;
-    for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        }
+    }
+
+    bool isFind = false;
+    for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
-		if(it->tid == button)
-		{
-			isFind = true;
-			
+        if (it->tid == button)
+        {
+            isFind = true;
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
 
-			break;
-		}
-	}
-	
-	if(!isFind)
-	{
-		UIEvent newTouch;
-		newTouch.tid = button;
-        
+            break;
+        }
+    }
+
+    if (!isFind)
+    {
+        UIEvent newTouch;
+        newTouch.tid = button;
+        newTouch.device = UIEvent::Device::MOUSE;
+
         ConvertNSEventToUIEvent(curEvent, newTouch, phase);
 
-        activeTouches.push_back(newTouch);
+        allTouches.push_back(newTouch);
     }
 
-    for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
-		outTouches->push_back(*it);
-	}
+        outTouches->push_back(*it);
+    }
 
-	if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
-	{
-        for (Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    if (phase == UIEvent::Phase::ENDED || phase == UIEvent::Phase::MOVE)
+    {
+        for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-			if(it->tid == button)
-			{
-                activeTouches.erase(it);
+            if (it->tid == button)
+            {
+                allTouches.erase(it);
                 break;
-			}
-		}
-	}
-	
+            }
+        }
+    }
 }
 
-
--(void)process:(int)touchPhase touch:(NSEvent*)touch
+- (void)process:(UIEvent::Phase)touchPhase touch:(NSEvent*)touch
 {
-	Vector<DAVA::UIEvent> touches;
+    Vector<DAVA::UIEvent> touches;
 
-    MoveTouchsToVector(touch, touchPhase, &touches);
+    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
 
-    UIControlSystem::Instance()->OnInput(touches, allTouches);
+    for (auto& t : touches)
+    {
+        UIControlSystem::Instance()->OnInput(&t);
+    }
     touches.clear();
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_BEGAN touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::BEGAN touch:theEvent];
 }
 
 - (void)scrollWheel:(NSEvent *)theEvent
 {
-    [self process:DAVA::UIEvent::PHASE_WHEEL touch:theEvent];
+    DAVA::UIEvent ev;
+
+    ev.phase = DAVA::UIEvent::Phase::WHEEL;
+    ev.device = DAVA::UIEvent::Device::MOUSE;
+    ev.physPoint.y = [theEvent scrollingDeltaY];
+
+    UIControlSystem::Instance()->OnInput(&ev);
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_MOVE touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::MOVE touch:theEvent];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 - (void)mouseEntered:(NSEvent *)theEvent
 {
-	NSLog(@"mouse ENTERED");
+    NSLog(@"mouse ENTERED");
 #if RHI_COMPLETE
     if(RenderManager::Instance()->GetCursor())
     {
@@ -368,57 +366,83 @@ void MoveTouchsToVector(NSEvent* curEvent, int touchPhase, Vector<UIEvent>* outT
             [NSCursor hide];
     }
 #endif
-//	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    //	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)mouseExited:(NSEvent *)theEvent
 {
-	NSLog(@"mouse EXITED");
     [NSCursor unhide];
-//	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
 }
 
 static int32 oldModifersFlags = 0;
+
 - (void)keyDown:(NSEvent*)event
 {
-    int32 keyCode = [event keyCode];
     InputSystem* input = InputSystem::Instance();
     KeyboardDevice& keyboard = input->GetKeyboard();
 
-    DAVA::UIEvent ev;
-    ev.keyChar = [[event characters] characterAtIndex:0];
-    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-    ev.timestamp = event.timestamp;
-    ev.tapCount = 1;
-    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+    NSString* chars = [event characters];
+    bool isRepeat = [event isARepeat];
+    int32 keyCode = [event keyCode];
+    uint32 charsLength = [chars length];
 
-    Vector<DAVA::UIEvent> touches;
-    touches.push_back(ev);
+    for (uint32 i = 0; i < charsLength; ++i)
+    {
+        uint32 ch = [chars characterAtIndex:i];
+        DVASSERT(ch < 0xFFFF);
+        DAVA::UIEvent ev;
+        if (isRepeat)
+        {
+            ev.phase = UIEvent::Phase::CHAR_REPEAT;
+        }
+        else
+        {
+            ev.phase = UIEvent::Phase::CHAR;
+        }
+        ev.device = UIEvent::Device::KEYBOARD;
+        ev.keyChar = static_cast<char16>(ch);
 
-    UIControlSystem::Instance()->OnInput(touches, allTouches);
+        UIControlSystem::Instance()->OnInput(&ev);
+    }
+
+    {
+        DAVA::UIEvent ev;
+        if (isRepeat)
+        {
+            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN_REPEAT;
+        }
+        else
+        {
+            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+        }
+        ev.device = UIEvent::Device::KEYBOARD;
+        ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+
+        UIControlSystem::Instance()->OnInput(&ev);
+    }
 
     keyboard.OnSystemKeyPressed(keyCode);
 }
@@ -430,16 +454,12 @@ static int32 oldModifersFlags = 0;
     KeyboardDevice& keyboard = input->GetKeyboard();
 
     DAVA::UIEvent ev;
-    ev.keyChar = [[event characters] characterAtIndex:0];
-    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_RELEASE;
-    ev.timestamp = event.timestamp;
-    ev.tapCount = 1;
+
+    ev.phase = DAVA::UIEvent::Phase::KEY_UP;
     ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+    ev.device = UIEvent::Device::KEYBOARD;
 
-    Vector<DAVA::UIEvent> touches;
-    touches.push_back(ev);
-
-    UIControlSystem::Instance()->OnInput(touches, allTouches);
+    UIControlSystem::Instance()->OnInput(&ev);
 
     keyboard.OnSystemKeyUnpressed(keyCode);
 }
@@ -448,18 +468,31 @@ static int32 oldModifersFlags = 0;
 {
     int32 newModifers = [event modifierFlags];
     static int32 masks[] = {NSAlphaShiftKeyMask, NSShiftKeyMask, NSControlKeyMask, NSAlternateKeyMask, NSCommandKeyMask};
-    static int32 keyCodes[] = {DVMACOS_CAPS_LOCK, DVMACOS_SHIFT, DVMACOS_CONTROL, DVMACOS_OPTION, DVMACOS_COMMAND};
+    static int32 keyCodes[] = { DVKEY_CAPSLOCK, DVKEY_SHIFT, DVKEY_CTRL, DVKEY_ALT, DVKEY_LWIN };
 
     for (int i = 0; i < 5; i++) 
     {
-        if ((oldModifersFlags&masks[i]) != (newModifers&masks[i]))
+        if ((oldModifersFlags & masks[i]) != (newModifers & masks[i]))
         {
-            if (newModifers&masks[i]) 
+            DAVA::UIEvent ev;
+            ev.device = UIEvent::Device::KEYBOARD;
+
+            if (newModifers & masks[i])
             {
+                ev.tid = keyCodes[i];
+                ev.phase = UIEvent::Phase::KEY_DOWN;
+
+                UIControlSystem::Instance()->OnInput(&ev);
+
                 InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
             }
             else 
             {
+                ev.tid = keyCodes[i];
+                ev.phase = UIEvent::Phase::KEY_UP;
+
+                UIControlSystem::Instance()->OnInput(&ev);
+
                 InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
             }
         }

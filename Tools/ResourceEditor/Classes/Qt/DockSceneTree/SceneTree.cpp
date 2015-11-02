@@ -243,13 +243,14 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 	if(scene == treeModel->GetScene())
 	{
 		auto selectionWasBlocked = selectionModel()->blockSignals(true);
-
+        filteringProxyModel->setSourceModel(nullptr);
 		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+        filteringProxyModel->setSourceModel(treeModel);
 
 		treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
 
-		SyncSelectionToTree();
+        SyncSelectionToTree();
 		EmitParticleSignals(QItemSelection());
 
 		if (treeModel->IsFilterSet())

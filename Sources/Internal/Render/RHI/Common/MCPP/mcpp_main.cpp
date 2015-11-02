@@ -773,7 +773,7 @@ static void mcpp_main(void)
                 }
                 if (keep_spaces && wrong_line && infile && *(infile->bptr) != '\n' && *(infile->bptr) != EOS)
                 {
-                    src_col = infile->bptr - infile->buffer;
+                    src_col = static_cast<int>(infile->bptr - infile->buffer);
                     /* Remember the current colums  */
                     break; /* Do sharp() now       */
                 }

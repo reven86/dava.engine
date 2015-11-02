@@ -130,9 +130,9 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 		return;
 	}
 
-	if(DAVA::UIEvent::PHASE_BEGAN == event->phase)
-	{
-		// we can select only if mouse isn't over hood axis
+    if (DAVA::UIEvent::Phase::BEGAN == event->phase)
+    {
+        // we can select only if mouse isn't over hood axis
 		// or if hood is invisible now
 		// or if current mode is NORMAL (no modification)
 		if(!hoodSystem->IsVisible() ||
@@ -195,9 +195,9 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 			}
 		}
 	}
-	else if(DAVA::UIEvent::PHASE_ENDED == event->phase)
-	{
-		if(event->tid == DAVA::UIEvent::BUTTON_1)
+    else if (DAVA::UIEvent::Phase::ENDED == event->phase)
+    {
+        if(event->tid == DAVA::UIEvent::BUTTON_1)
 		{
 			if(applyOnPhaseEnd)
 			{
@@ -223,7 +223,7 @@ void SceneSelectionSystem::Draw()
         DAVA::RenderHelper::eDrawType solidDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_SOLID_DEPTH : DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH;
 
         for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
-		{
+        {
             DAVA::AABBox3 selectionBox = curSelections.GetBbox(i);
 
 			// draw selection share
@@ -231,19 +231,19 @@ void SceneSelectionSystem::Draw()
 			{
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
             }
-			// draw selection share
+            // draw selection share
 			else if(drawMode & SS_DRAW_CORNERS)
 			{
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxCorners(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
             }
 
-			// fill selection shape
+            // fill selection shape
 			if(drawMode & SS_DRAW_BOX)
 			{
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f), solidDrawType);
             }
         }
-	}
+    }
 }
 
 void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -273,7 +273,7 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
         uint32 count = newSelection.Size();
         for (uint32 i = 0; i < count; ++i)
         {
-			auto entity = newSelection.GetEntity(i);
+            auto entity = newSelection.GetEntity(i);
 			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
 			{
 				curSelections.Add(entity, GetSelectionAABox(entity));

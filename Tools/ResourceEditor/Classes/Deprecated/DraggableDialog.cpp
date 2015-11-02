@@ -50,11 +50,11 @@ void DraggableDialog::DidDisappear()
 
 void DraggableDialog::Input(UIEvent *currentInput)
 {
-    if (currentInput->phase == UIEvent::PHASE_BEGAN) 
+    if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
         basePoint = currentInput->point;
     }
-    if (currentInput->phase == UIEvent::PHASE_DRAG)
+    if (currentInput->phase == UIEvent::Phase::DRAG)
     {
         relativePosition += (currentInput->point - basePoint);
         basePoint = currentInput->point;

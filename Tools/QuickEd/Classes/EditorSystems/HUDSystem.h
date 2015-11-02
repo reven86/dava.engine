@@ -29,33 +29,17 @@
 #ifndef __QUICKED_HUD_SYSTEM_H__
 #define __QUICKED_HUD_SYSTEM_H__
 
-#include "Base/ScopedPtr.h"
 #include "Math/Vector.h"
-#include "Math/Rect.h"
-#include "UI/UIControl.h"
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Model/ControlProperties/PropertyListener.h"
-#include "Model/ControlProperties/RootProperty.h"
-
-class ControlContainer : public DAVA::UIControl
-{
-public:
-    explicit ControlContainer(const HUDAreaInfo::eArea area);
-
-    HUDAreaInfo::eArea GetArea() const;
-    virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
-
-protected:
-    const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
-};
 
 class HUDSystem final : public BaseEditorSystem
 {
 public:
     HUDSystem(EditorSystemsManager* parent);
-    ~HUDSystem() = default;
+    ~HUDSystem() override;
 
+    void OnActivated() override;
     void OnDeactivated() override;
 
     bool OnInput(DAVA::UIEvent* currentInput) override;
@@ -66,39 +50,34 @@ private:
         SEARCH_FORWARD,
         SEARCH_BACKWARD
     };
+    struct HUD;
+
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
+
+    void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
 
     void ProcessCursor(const DAVA::Vector2& pos, eSearchOrder searchOrder = SEARCH_FORWARD);
     HUDAreaInfo GetControlArea(const DAVA::Vector2& pos, eSearchOrder searchOrder) const;
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void SetCanDrawRect(bool canDrawRect_);
-    void SetEditingEnabled(bool arg);
     void UpdateAreasVisibility();
     HUDAreaInfo activeAreaInfo;
 
-    DAVA::ScopedPtr<DAVA::UIControl> hudControl;
+    DAVA::RefPtr<DAVA::UIControl> hudControl;
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
     bool canDrawRect = false; //selection rect state
-    struct HUD : private PropertyListener
-    {
-        HUD(ControlNode* node, DAVA::UIControl* hudControl);
-        ~HUD();
-        void PropertyChanged(AbstractProperty* property) override;
-        ControlNode* node = nullptr;
-        DAVA::UIControl* control = nullptr;
-        DAVA::ScopedPtr<ControlContainer> container;
-        DAVA::Map<HUDAreaInfo::eArea, DAVA::ScopedPtr<ControlContainer>> hudControls;
-    };
-    DAVA::Map<ControlNode*, HUD> hudMap;
-    DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
+
+    DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
+    DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
+    DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
-    bool editingEnabled = false;
     SelectionContainer selectionContainer;
+    bool hudVisible = false;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

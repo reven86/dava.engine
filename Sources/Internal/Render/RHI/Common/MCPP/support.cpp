@@ -2227,7 +2227,7 @@ int in_comment)
             mcpp_fprintf(MCPP_DBG, "\n#line %ld (%s)", src_line, cur_fullname);
             dump_string(NULL, ptr);
         }
-        len = strlen(ptr);
+        len = static_cast<int>(strlen(ptr));
         if (NBUFF - 1 <= ptr - infile->buffer + len && *(ptr + len - 1) != '\n')
         {
             /* The line does not yet end, though the buffer is full.    */
@@ -2261,7 +2261,7 @@ int in_comment)
             if (mcpp_mode == POST_STD && option_flags.dig)
                 converted += cnv_digraph(ptr);
             if (converted)
-                len = strlen(ptr);
+                len = static_cast<int>(strlen(ptr));
             /* Translation phase 2  */
             len -= 2;
             if (len >= 0)
@@ -2363,7 +2363,7 @@ char* in)
  */
 {
     int count = 0;
-    int i;
+    size_t i;
     int c1, c2;
 
     while ((i = strcspn(in, "%:<")), (c1 = *(in + i)) != '\0')
@@ -2729,7 +2729,7 @@ LINE_COL* p_line_col /* Line and column on phase 4   */
             cols--;
             col -= *cols;
         }
-        line = l_col_p->start_line + (cols - l_col_p->len);
+        line = static_cast<long>(l_col_p->start_line + (cols - l_col_p->len));
     }
 
     p_line_col->line = line;

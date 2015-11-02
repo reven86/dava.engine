@@ -67,8 +67,8 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 
     if (collisionSystem)
     {
-        if(NULL != effectEntity)
-		{
+        if (NULL != effectEntity)
+        {
 			DAVA::AABBox3 wordBox;
 			DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
 			collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);	
@@ -76,7 +76,7 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 			DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
             GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(wordBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
         }
-	}
+    }
 }
 
 void EditorParticlesSystem::Draw()
@@ -102,7 +102,7 @@ void EditorParticlesSystem::Draw()
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, 0.1f, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
         DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
 
-		switch (selectedEmitter->emitterType)
+        switch (selectedEmitter->emitterType)
 		{
 		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
 		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:

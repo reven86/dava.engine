@@ -299,7 +299,7 @@ protected:
 	Sprite* sprite;
     eBlending blending;
     bool enableFog;
-	bool enableFrameBlending;
+    bool enableFrameBlending;
 	int32 particleOrientation;
 	RefPtr< PropertyLine<float32> > life;
 	RefPtr< PropertyLine<float32> > lifeVariation;

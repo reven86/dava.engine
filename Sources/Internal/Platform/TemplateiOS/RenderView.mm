@@ -229,38 +229,24 @@ void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches
         CGPoint p = [curTouch locationInView:curTouch.view];
         newTouch.physPoint.x = p.x;
         newTouch.physPoint.y = p.y;
-        //      if(DAVA::RenderManager::Instance()->GetScreenOrientation() == DAVA::RenderManager::Instance()->ORIENTATION_LANDSCAPE_LEFT)
-        //      {
-        //          newTouch.point.x = (480 - p.y);
-        //          newTouch.point.y = (p.x);
-        //      }
-        //      else if(DAVA::RenderManager::Instance()->GetScreenOrientation() == DAVA::RenderManager::Instance()->ORIENTATION_LANDSCAPE_RIGHT)
-        //      {
-        //          newTouch.point.x = (p.y);
-        //          newTouch.point.y = (320 - p.x);
-        //      }
-        //      else
-        //      {
-        //          newTouch.point.x = p.x;
-        //          newTouch.point.y = p.y;
-        //      }
         newTouch.timestamp = curTouch.timestamp;
         newTouch.tapCount = static_cast<DAVA::int32>(curTouch.tapCount);
+        newTouch.device = DAVA::UIEvent::Device::TOUCH_SURFACE;
 
         switch (curTouch.phase)
         {
         case UITouchPhaseBegan:
-            newTouch.phase = DAVA::UIEvent::PHASE_BEGAN;
+            newTouch.phase = DAVA::UIEvent::Phase::BEGAN;
             break;
         case UITouchPhaseEnded:
-            newTouch.phase = DAVA::UIEvent::PHASE_ENDED;
+            newTouch.phase = DAVA::UIEvent::Phase::ENDED;
             break;
         case UITouchPhaseMoved:
         case UITouchPhaseStationary:
-            newTouch.phase = DAVA::UIEvent::PHASE_DRAG;
+            newTouch.phase = DAVA::UIEvent::Phase::DRAG;
             break;
         case UITouchPhaseCancelled:
-            newTouch.phase = DAVA::UIEvent::PHASE_CANCELLED;
+            newTouch.phase = DAVA::UIEvent::Phase::CANCELLED;
             break;
         }
         outTouches->push_back(newTouch);
@@ -270,14 +256,9 @@ void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches
 - (void)process:(int)touchType touch:(NSArray*)active withEvent:(NSArray*)total
 {
     MoveTouchsToVector(active, &activeTouches);
-    if (DAVA::InputSystem::Instance()->GetMultitouchEnabled())
+    for (auto& t : activeTouches)
     {
-        MoveTouchsToVector(total, &totalTouches);
-        DAVA::UIControlSystem::Instance()->OnInput(activeTouches, totalTouches);
-    }
-    else
-    {
-        DAVA::UIControlSystem::Instance()->OnInput(activeTouches, activeTouches);
+        DAVA::UIControlSystem::Instance()->OnInput(&t);
     }
     activeTouches.clear();
     totalTouches.clear();
@@ -285,22 +266,22 @@ void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event
 {
-    [self process:DAVA::UIEvent::PHASE_BEGAN touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
+    [self process:0 touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
 - (void)touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event
 {
-    [self process:DAVA::UIEvent::PHASE_DRAG touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
+    [self process:0 touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event
 {
-    [self process:DAVA::UIEvent::PHASE_ENDED touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
+    [self process:0 touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
 - (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event
 {
-    [self process:DAVA::UIEvent::PHASE_CANCELLED touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
+    [self process:0 touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
 - (void)blockDrawing

@@ -224,22 +224,29 @@ namespace DAVA
             std::shared_ptr<void> data;
         };
 
-		InspInfoDynamic() : memberDynamic(NULL) {};
-		virtual ~InspInfoDynamic() {};
+        InspInfoDynamic()
+            : memberDynamic(NULL){};
+        virtual ~InspInfoDynamic(){};
 
-        virtual DynamicData Prepare(void *object, int filter = 0) const = 0;
+        virtual DynamicData Prepare(void* object, int filter = 0) const = 0;
         virtual Vector<FastName> MembersList(const DynamicData& ddata) const = 0;
-        virtual InspDesc MemberDesc(const DynamicData& ddata, const FastName &member) const = 0;
-        virtual int MemberFlags(const DynamicData& ddata, const FastName &member) const = 0;
-        virtual VariantType MemberAliasGet(const DynamicData& ddata, const FastName &member) const { return VariantType(); };
-        virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName &member) const = 0;
-        virtual void MemberValueSet(const DynamicData& ddata, const FastName &member, const VariantType &value) = 0;
+        virtual InspDesc MemberDesc(const DynamicData& ddata, const FastName& member) const = 0;
+        virtual int MemberFlags(const DynamicData& ddata, const FastName& member) const = 0;
+        virtual VariantType MemberAliasGet(const DynamicData& ddata, const FastName& member) const
+        {
+            return VariantType();
+        };
+        virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName& member) const = 0;
+        virtual void MemberValueSet(const DynamicData& ddata, const FastName& member, const VariantType& value) = 0;
 
-		const InspMemberDynamic* GetMember() const { return memberDynamic; };
+        const InspMemberDynamic* GetMember() const
+        {
+            return memberDynamic;
+        };
 
-	protected:
-		const InspMemberDynamic* memberDynamic;
-	};
+    protected:
+        const InspMemberDynamic* memberDynamic;
+    };
 };
 
 // Определение интоспекции внутри класса. См. пример в описании класса IntrospectionInfo

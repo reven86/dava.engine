@@ -32,9 +32,12 @@
 
 using namespace DAVA;
 
-void* DVAssertMessage::messageBoxPtr = NULL;
+namespace
+{
+DAVA::Atomic<bool> messageDisplayed(false);
+}
 
-#if defined (ENABLE_ASSERT_MESSAGE)
+#if defined(ENABLE_ASSERT_MESSAGE)
 
 bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
 {
@@ -49,11 +52,11 @@ bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
 	// sizeof(tmp) - 2  - We need two characters for appending "\n" if the number of characters exceeds the size of buffer. 
 	vsnprintf(tmp, sizeof(tmp)-2, text, vl);
 	strcat(tmp, "\n");
+    messageDisplayed = true;
+    userClickBreak = InnerShow(modalType, tmp);
+    messageDisplayed = false;
+    va_end(vl);
 
-	userClickBreak = InnerShow(modalType, tmp);
-
-	va_end(vl);
-    
     return userClickBreak;
 }
 
@@ -68,6 +71,7 @@ bool DVAssertMessage::ShowMessage(eModalType /*modalType*/, const char8 * /*text
 
 #endif	// ENABLE_ASSERT_MESSAGE
 
-
-
-
+bool DVAssertMessage::IsMessageDisplayed()
+{
+    return messageDisplayed;
+}

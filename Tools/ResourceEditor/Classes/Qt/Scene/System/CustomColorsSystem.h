@@ -81,7 +81,7 @@ protected:
     void CreateToolImage(const FilePath& filePath);
 
     void AddRectToAccumulator(const Rect& rect);
-	void ResetAccumulatorRect();
+    void ResetAccumulatorRect();
 	Rect GetUpdatedRect();
 	
 	void StoreOriginalState();
