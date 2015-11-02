@@ -451,6 +451,21 @@ void gles2_Initialize(const InitParam& param)
         if (param.maxTextureCount)
             TextureGLES2::Init(param.maxTextureCount);
 
+        if (param.maxTextureSetCount)
+            InitTextreSetPool(param.maxTextureSetCount);
+        if (param.maxSamplerStateCount)
+            SamplerStateGLES2::Init(param.maxSamplerStateCount);
+        if (param.maxPipelineStateCount)
+            PipelineStateGLES2::Init(param.maxPipelineStateCount);
+        if (param.maxDepthStencilStateCount)
+            DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+        if (param.maxRenderPassCount)
+            RenderPassGLES2::Init(param.maxRenderPassCount);
+        if (param.maxCommandBuffer)
+            CommandBufferGLES2::Init(param.maxCommandBuffer);
+        if (param.maxPacketListCount)
+            InitPacketListPool(param.maxPacketListCount);
+
         uint32 ringBufferSize = 4 * 1024 * 1024;
         if (param.shaderConstRingBufferSize)
             ringBufferSize = param.shaderConstRingBufferSize;
@@ -509,6 +524,21 @@ void gles2_Initialize(const InitParam& param)
         ConstBufferGLES2::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
+
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
@@ -586,6 +616,21 @@ void gles2_Initialize(const InitParam& param)
         ConstBufferGLES2::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
+
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
@@ -666,6 +711,21 @@ void gles2_Initialize(const InitParam& param)
         ConstBufferGLES2::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
+
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxSamplerStateCount)
+        SamplerStateGLES2::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateGLES2::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassGLES2::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferGLES2::Init(param.maxCommandBuffer);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
