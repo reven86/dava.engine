@@ -1092,6 +1092,21 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     Matrix3 transformMatr;
     gd.BuildTransformMatrix(transformMatr);
 
+    Matrix3 flipMatrix;
+    if ((state->flags & ESM_HFLIP) && (state->flags & ESM_VFLIP))
+    {
+        flipMatrix = Matrix3(-1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, sd.size.x, sd.size.y, 1.0f);
+    }
+    else if (state->flags & ESM_HFLIP)
+    {
+        flipMatrix = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, sd.size.y, 1.0f);
+    }
+    else if (state->flags & ESM_VFLIP)
+    {
+        flipMatrix = Matrix3(-1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, sd.size.x, 0.0f, 1.0f);
+    }
+
+    transformMatr = flipMatrix * transformMatr;
     if (needGenerateData || sd.transformMatr != transformMatr)
     {
         sd.transformMatr = transformMatr;
