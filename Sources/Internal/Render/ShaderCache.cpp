@@ -218,8 +218,8 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     fProgUid = FastName(String("fSource: ") + resName);
 
     ShaderSourceCode sourceCode = GetSourceCode(name);
-    const uint32 vSrcHash = HashValue_N(sourceCode.vertexProgText, strlen(sourceCode.vertexProgText));
-    const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText, strlen(sourceCode.fragmentProgText));
+    const uint32 vSrcHash = HashValue_N(sourceCode.vertexProgText, static_cast<uint32>(strlen(sourceCode.vertexProgText)));
+    const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText, static_cast<uint32>(strlen(sourceCode.fragmentProgText)));
     const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, vSrcHash);
     const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, fSrcHash);
     rhi::ShaderSource vSource2(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
