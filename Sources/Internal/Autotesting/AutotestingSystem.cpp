@@ -351,7 +351,7 @@ namespace DAVA
     {
         Logger::Info("AutotestingSystem::OnTestsStarted");
         startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
-		luaSystem->StartTest();
+        luaSystem->StartTest();
 	}
 
 	void AutotestingSystem::OnError(const String &errorMessage)
@@ -391,7 +391,7 @@ namespace DAVA
     {
         Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
         return screenShotName;
-	}
+    }
 
 	void AutotestingSystem::OnScreenShot(Image *image)
 	{

@@ -57,7 +57,7 @@ public:
 
     bool empty() const;
 
-	iterator insert(const K &key, const V &value);
+    iterator insert(const K &key, const V &value);
 	void erase(const K &key);
 	void clear();
     

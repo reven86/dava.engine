@@ -190,7 +190,7 @@ namespace DAVA
     // make window main
     [mainWindow makeKeyAndOrderFront:nil];
     [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
-	[mainWindow setAcceptsMouseMovedEvents:YES];
+    [mainWindow setAcceptsMouseMovedEvents:YES];
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
@@ -367,8 +367,8 @@ namespace DAVA
     if (currFPS != RenderManager::Instance()->GetFPS())
     {
         currFPS = RenderManager::Instance()->GetFPS();
-		[self stopAnimationTimer];
-		[self startAnimationTimer];
+        [self stopAnimationTimer];
+        [self startAnimationTimer];
 	}
 #endif
 }

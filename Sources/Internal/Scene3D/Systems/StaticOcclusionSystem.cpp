@@ -56,17 +56,16 @@ namespace DAVA
 
 void StaticOcclusionSystem::UndoOcclusionVisibility()
 {
-    uint32 size = (uint32)indexedRenderObjects.size();
-    for (uint32 k = 0; k < size; ++k)
+    for (auto ro : indexedRenderObjects)
     {
-        RenderObject* ro = indexedRenderObjects[k];
-        if (!ro)
-            continue;
-        ro->SetFlags(ro->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
+        if (ro != nullptr)
+        {
+            ro->SetFlags(ro->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
+        }
     }
 
-    activePVSSet = 0;
     activeBlockIndex = 0;
+    activePVSSet = nullptr;
 }
 
 void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockIndex, StaticOcclusionData* data)
@@ -83,12 +82,15 @@ void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockInde
     {
         uint32 index = k / 32; // number of bits in uint32
         uint32 shift = k & 31; // bitmask for uint32
+
         RenderObject* ro = indexedRenderObjects[k];
-        if (!ro)
+        if (nullptr == ro)
             continue;
+
         if (bitdata[index] & (1 << shift))
         {
             ro->SetFlags(ro->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
+
 #if defined(LOG_DEBUG_OCCLUSION_APPLY)
             visCount++;
 #endif
@@ -96,11 +98,13 @@ void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockInde
         else
         {
             ro->SetFlags(ro->GetFlags() & ~RenderObject::VISIBLE_STATIC_OCCLUSION);
+
 #if defined(LOG_DEBUG_OCCLUSION_APPLY)
             invisCount++;
 #endif
         }
     }
+
 #if defined(LOG_DEBUG_OCCLUSION_APPLY)
     Logger::Debug("apply cell: %d vis:%d invis:%d", blockIndex, visCount, invisCount);
 #endif
@@ -111,10 +115,7 @@ StaticOcclusionSystem::StaticOcclusionSystem(Scene* scene)
 {
     indexedRenderObjects.reserve(2000);
     for (uint32 k = 0; k < indexedRenderObjects.size(); ++k)
-        indexedRenderObjects[k] = 0;
-
-    activePVSSet = 0;
-    activeBlockIndex = 0;
+        indexedRenderObjects[k] = nullptr;
 }
 
 StaticOcclusionSystem::~StaticOcclusionSystem()
@@ -251,7 +252,8 @@ void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObjec
     if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
     {
         indexedRenderObjects.resize(Max((uint32)indexedRenderObjects.size(), (uint32)(renderObject->GetStaticOcclusionIndex() + 1)));
-        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == 0);
+        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr);
+
         indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = renderObject;
     }
 }
@@ -310,13 +312,21 @@ void StaticOcclusionSystem::InvalidateOcclusion()
     InvalidateOcclusionIndicesRecursively(GetScene());
     indexedRenderObjects.clear();
 }
+
 void StaticOcclusionSystem::InvalidateOcclusionIndicesRecursively(Entity* entity)
 {
-    RenderObject* ro = GetRenderObject(entity);
-    if (ro)
-        ro->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
+    RenderObject* renderObject = GetRenderObject(entity);
+
+    if (renderObject != nullptr)
+    {
+        renderObject->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
+        renderObject->SetFlags(renderObject->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
+    }
+
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
+    {
         InvalidateOcclusionIndicesRecursively(entity->GetChild(i));
+    }
 }
 
 StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene* scene)
@@ -379,8 +389,8 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity* entity)
 
 void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity* entity)
 {
-    StaticOcclusionDebugDrawComponent* debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
-    DVASSERT(debugDrawComponent);
+    StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
+    DVASSERT(debugDrawComponent != nullptr);
     GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
     entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);
 }
@@ -388,8 +398,8 @@ void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity* entity)
 void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component* component, uint32 event)
 {
     Entity* entity = component->GetEntity();
-    StaticOcclusionDebugDrawComponent* debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
-    StaticOcclusionComponent* staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
+    StaticOcclusionComponent* staticOcclusionComponent = GetStaticOcclusionComponent(entity);
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
         // Update new transform pointer, and mark that transform is changed
@@ -439,6 +449,7 @@ void StaticOcclusionDebugDrawSystem::UpdateGeometry(StaticOcclusionDebugDrawComp
 void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawVertices(StaticOcclusionDebugDrawComponent* target, StaticOcclusionComponent* source)
 {
     rhi::DeleteVertexBuffer(target->vertices);
+
     uint32 xSubdivisions = source->GetSubdivisionsX();
     uint32 ySubdivisions = source->GetSubdivisionsY();
     uint32 zSubdivisions = source->GetSubdivisionsZ();

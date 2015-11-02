@@ -152,9 +152,9 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 		switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
-                if (drawingType == HEIGHTMAP_DRAW_ABSOLUTE_DROPPER ||
-					drawingType == HEIGHTMAP_DROPPER)
-				{
+            if (drawingType == HEIGHTMAP_DRAW_ABSOLUTE_DROPPER ||
+                drawingType == HEIGHTMAP_DROPPER)
+                {
                     curHeight = drawSystem->GetHeightAtHeightmapPoint(GetHeightmapPositionFromCursor());
 
                     SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
@@ -196,11 +196,11 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 				break;
 
         case UIEvent::Phase::DRAG:
-                break;
+            break;
 
         case UIEvent::Phase::ENDED:
-                FinishEditing();
-				break;
+            FinishEditing();
+                break;
 		}
 	}
 }

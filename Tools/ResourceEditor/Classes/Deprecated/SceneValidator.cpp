@@ -365,13 +365,13 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
         if ((*it)->GetEffectiveFXName().IsValid() && materialTemplates && (*it)->GetEffectiveFXName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
         {
             // ShadowVolume material is non-assignable and it's okey
-                    bool templateFound = false;
-                    for (int i = 0; i < materialTemplates->size(); ++i)
-                    {
-                        if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetEffectiveFXName().c_str()))
-                        {
-                            templateFound = true;
-                            break;
+            bool templateFound = false;
+            for (int i = 0; i < materialTemplates->size(); ++i)
+            {
+                if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetEffectiveFXName().c_str()))
+                {
+                    templateFound = true;
+                    break;
                 }
             }
             if (!templateFound)

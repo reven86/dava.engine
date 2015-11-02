@@ -154,7 +154,7 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 
     if (UIEvent::Phase::KEY_DOWN == event->phase)
     {
-		if (event->tid == DVKEY_ESCAPE)
+        if (event->tid == DVKEY_ESCAPE)
 		{
 			SetState(VT_STATE_NORMAL);
 		}
@@ -164,18 +164,18 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 		switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
-                if (isIntersectsLandscape)
-				{
+            if (isIntersectsLandscape)
+                {
 					editingIsEnabled = true;
 				}
 				break;
 
         case UIEvent::Phase::DRAG:
-                break;
+            break;
 
         case UIEvent::Phase::ENDED:
-                if (editingIsEnabled)
-				{
+            if (editingIsEnabled)
+                {
 					if (state == VT_STATE_SET_POINT)
 					{
 						SetVisibilityPointInternal();

@@ -164,10 +164,10 @@ namespace DAVA
         UpdateWindow(hWindow);
 
         // fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
-		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
+        MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
-		FrameworkDidLaunched();
-		KeyedArchive * options = Core::GetOptions();
+        FrameworkDidLaunched();
+        KeyedArchive * options = Core::GetOptions();
 
 		fullscreenMode = GetCurrentDisplayMode();//FindBestMode(fullscreenMode);
 		if (options)
