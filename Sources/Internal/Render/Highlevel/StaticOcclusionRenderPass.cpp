@@ -200,7 +200,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
               [](const RenderBatchWithDepthOption& a, const RenderBatchWithDepthOption& b) { return a.first->layerSortingKey < b.first->layerSortingKey; });
 
     target.blockIndex = blockIndex;
-    target.queryBuffer = rhi::CreateQueryBuffer(meshBatchesWithDepthWriteOption.size());
+    target.queryBuffer = rhi::CreateQueryBuffer(static_cast<uint32>(meshBatchesWithDepthWriteOption.size()));
     target.frameRequests.resize(meshBatchesWithDepthWriteOption.size(), nullptr);
 
     passConfig.queryBuffer = target.queryBuffer;

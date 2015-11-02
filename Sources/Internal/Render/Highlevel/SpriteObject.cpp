@@ -35,39 +35,25 @@ namespace DAVA
 {
 
 SpriteObject::SpriteObject()
-    : RenderObject()
-    , sprite(NULL)
 {
-    Texture* t = Texture::CreatePink();
-    Sprite *spr = Sprite::CreateFromTexture(t, 0, 0, (float32)t->GetWidth(), (float32)t->GetHeight());
-    Init(spr, 0, Vector2(1.f, 1.f), Vector2(0.f, 0.f));
-
-    SafeRelease(spr);
-    SafeRelease(t);
-
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
+    ScopedPtr<Texture> pink(Texture::CreatePink());
+    ScopedPtr<Sprite> localSprite(Sprite::CreateFromTexture(pink, 0, 0, static_cast<float32>(pink->GetWidth()), static_cast<float32>(pink->GetHeight())));
+    Init(localSprite, 0, Vector2(1.0f, 1.0f), Vector2(0.0f, 0.0f));
+    RegisterRestoreCallback();
 }
 
-SpriteObject::SpriteObject(const FilePath &pathToSprite, int32 _frame
-							, const Vector2 &reqScale, const Vector2 &pivotPoint)
-	:   RenderObject()
-    ,   sprite(NULL)
+SpriteObject::SpriteObject(const FilePath& pathToSprite, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint)
 {
-	Sprite *spr = Sprite::Create(pathToSprite);
-	Init(spr, _frame, reqScale, pivotPoint);
-	SafeRelease(spr);
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
+    ScopedPtr<Sprite> localSprite(Sprite::Create(pathToSprite));
+    Init(localSprite, _frame, reqScale, pivotPoint);
+    RegisterRestoreCallback();
 }
 
-SpriteObject::SpriteObject(Sprite *spr, int32 _frame
-							, const Vector2 &reqScale, const Vector2 &pivotPoint)
-	:   RenderObject()
-    ,   sprite(NULL)
+SpriteObject::SpriteObject(Sprite* spr, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint)
 {
 	Init(spr, _frame, reqScale, pivotPoint);
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
+    RegisterRestoreCallback();
 }
-
 
 SpriteObject::~SpriteObject()
 {
@@ -75,10 +61,14 @@ SpriteObject::~SpriteObject()
     RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
 }
 
-void SpriteObject::Clear()
+void SpriteObject::RegisterRestoreCallback()
 {
-    DVASSERT(GetRenderBatchCount() < 2);
-    if (GetRenderBatchCount())
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
+}
+
+void SpriteObject::ClearRenderBatches()
+{
+    while (GetRenderBatchCount() > 0)
     {
         RenderBatch* batch = GetRenderBatch(0U);
         if (batch->vertexBuffer.IsValid())
@@ -87,8 +77,12 @@ void SpriteObject::Clear()
             rhi::DeleteIndexBuffer(batch->indexBuffer);
         RemoveRenderBatch(0U);
     }
-    bbox.Empty();
+}
 
+void SpriteObject::Clear()
+{
+    ClearRenderBatches();
+    bbox.Empty();
     SafeRelease(sprite);
 }
 
@@ -97,7 +91,6 @@ void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, con
     Clear();
 
 	type = TYPE_SPRITE;
-
 	spriteType = SPRITE_OBJECT;
 
 	sprScale = reqScale;
@@ -111,7 +104,7 @@ void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, con
 void SpriteObject::Restore()
 {
     RenderBatch* batch = GetRenderBatch(0U);
-    if (!batch)
+    if (batch == nullptr)
         return;
 
     rhi::HVertexBuffer vBuffer = batch->vertexBuffer;
@@ -126,10 +119,11 @@ void SpriteObject::UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffe
     uint32 vxCount = framesCount * 4;
     uint32 indCount = framesCount * 6;
 
-    float32* verticies = new float32[vxCount * (3 + 2)];
-    uint16* indices = new uint16[indCount];
-    float32* verticesPtr = verticies;
-    uint16* indicesPtr = indices;
+    Vector<float32> verticies(vxCount * (3 + 2));
+    Vector<uint16> indices(indCount);
+
+    float32* verticesPtr = verticies.data();
+    uint16* indicesPtr = indices.data();
     for (uint32 i = 0; i < framesCount; ++i)
     {
         float32 x0 = sprite->GetRectOffsetValueForFrame(i, Sprite::X_OFFSET_TO_ACTIVE) - sprPivot.x;
@@ -178,16 +172,13 @@ void SpriteObject::UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffe
         *indicesPtr = i * 4 + 3;
         ++indicesPtr;
     }
-    rhi::UpdateVertexBuffer(vBuffer, verticies, 0, vxCount * (3 + 2) * sizeof(float32));
-    rhi::UpdateIndexBuffer(iBuffer, indices, 0, indCount * sizeof(uint16));
-
-    SafeDeleteArray(verticies);
-    SafeDeleteArray(indices);
+    rhi::UpdateVertexBuffer(vBuffer, verticies.data(), 0, vxCount * (3 + 2) * sizeof(float32));
+    rhi::UpdateIndexBuffer(iBuffer, indices.data(), 0, indCount * sizeof(uint16));
 }
 
 void SpriteObject::SetupRenderBatch()
 {
-    if (!sprite)
+    if (sprite == nullptr)
         return;
 
     uint32 vxCount = sprite->GetFrameCount() * 4;
@@ -226,10 +217,9 @@ void SpriteObject::SetupRenderBatch()
 
 RenderObject * SpriteObject::Clone(RenderObject *newObject)
 {
-	if(!newObject)
-	{
+    if (newObject == nullptr)
+    {
 		DVASSERT_MSG(IsPointerToExactClass<SpriteObject>(this), "Can clone only SpriteObject");
-
  		newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
 	}
 
@@ -248,9 +238,8 @@ void SpriteObject::SetFrame(int32 newFrame)
 {
 	frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
 
-	int32 count = GetRenderBatchCount();
-	if(count)
-	{
+    if (GetRenderBatchCount() > 0)
+    {
         GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
         GetRenderBatch(0)->startIndex = frame * 6;
     }
@@ -260,7 +249,6 @@ int32 SpriteObject::GetFrame() const
 {
 	return frame;
 }
-
 
 Sprite * SpriteObject::GetSprite() const
 {
@@ -346,14 +334,19 @@ void SpriteObject::BindDynamicParameters(Camera* camera)
 
 void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    // we dont need to save render batche(s)
+    // because sprite creating it on loading
+    Vector<IndexedRenderBatch> currentRenderBatches;
+    renderBatchArray.swap(currentRenderBatches);
     RenderObject::Save(archive, serializationContext);
+    renderBatchArray.swap(currentRenderBatches);
 
-    if (!archive || !sprite)
+    if ((archive == nullptr) || (sprite == nullptr))
     {
         return;
     }
 
-    FilePath filePath = this->sprite->GetRelativePathname();
+    FilePath filePath = sprite->GetRelativePathname();
     if (!filePath.IsEmpty())
     {
         archive->SetString("sprite.path", filePath.GetRelativePathname(serializationContext->GetScenePath()));
@@ -364,7 +357,7 @@ void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializati
 {
     RenderObject::Load(archive, serializationContext);
 
-    if (!archive)
+    if (archive == nullptr)
     {
         return;
     }
@@ -372,15 +365,16 @@ void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializati
     String path = archive->GetString("sprite.path");
     if (!path.empty())
     {
-        Sprite* spr = Sprite::Create(serializationContext->GetScenePath() + path);
-        if (spr != NULL)
+        ScopedPtr<Sprite> localSprite(Sprite::Create(serializationContext->GetScenePath() + path));
+        if (localSprite)
         {
-            Init(spr, 0, Vector2(1, 1), Vector2(spr->GetWidth(), spr->GetHeight()) * 0.5f);
+            Init(localSprite, 0, Vector2(1, 1), Vector2(localSprite->GetWidth(), localSprite->GetHeight()) * 0.5f);
             AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
-
-            spr->Release();
         }
 	}
 }
-	
+void SpriteObject::RecalcBoundingBox()
+{
+    // do nothing, box is being calculated during UpdateBufferData
+}
 };
