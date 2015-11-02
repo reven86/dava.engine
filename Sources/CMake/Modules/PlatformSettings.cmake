@@ -19,6 +19,7 @@ elseif ( IOS     )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
     set( CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 7.0 )
+    set( CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE No )
 
     set( CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" )
 
@@ -151,7 +152,14 @@ if( WARNINGS_AS_ERRORS )
 -Wno-old-style-cast \
 -Wno-unknown-warning-option \
 -Wno-unreachable-code-return \
--Wno-unreachable-code-break")
+-Wno-unreachable-code-break \
+-Wno-reserved-id-macro \
+-Wno-documentation-pedantic \
+-Wno-inconsistent-missing-override \
+-Wno-unused-local-typedef \
+-Wno-nullable-to-nonnull-conversion \
+-Wno-super-class-method-mismatch \
+-Wno-nonnull")
 
 
     if( ANDROID )

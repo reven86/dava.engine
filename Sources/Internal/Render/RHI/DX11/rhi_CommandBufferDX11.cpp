@@ -1128,7 +1128,7 @@ dx11_Present(Handle sync)
         do
         {
             _FrameSync.Lock();
-            frame_cnt = _Frame.size();
+            frame_cnt = static_cast<unsigned>(_Frame.size());
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _FrameSync.Unlock();
         } while (frame_cnt >= _DX11_RenderThreadFrameCount);
