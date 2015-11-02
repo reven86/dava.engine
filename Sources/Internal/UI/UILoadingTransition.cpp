@@ -46,7 +46,6 @@ UILoadingTransition::UILoadingTransition()
 	animationSprite = 0;
 	inTransition = 0;
 	outTransition = 0;
-    loaded = false;
 }
 
 UILoadingTransition::~UILoadingTransition()
@@ -125,9 +124,6 @@ void UILoadingTransition::DidAppear()
         thread->SetStackSize(LOADING_THREAD_STACK_SIZE);
         thread->Start();
     }
-    
-//    UILoadingTransition::ThreadMessage(this, nullptr, nullptr);
-//    loaded = true;
 }
 
 void UILoadingTransition::Update(float32 timeElapsed)
@@ -136,10 +132,6 @@ void UILoadingTransition::Update(float32 timeElapsed)
     {
 		JobManager::Instance()->WaitMainJobs(thread->GetId());
 
-//    if (loaded)
-//    {
-//        loaded = false;
-        
 		UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
         if (!inTransition) 
         {
