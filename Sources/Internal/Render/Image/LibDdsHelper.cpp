@@ -113,8 +113,13 @@ struct Header
 
 struct FileHeader
 {
-    uint32 magicNumber;
+    uint32 magicNumber = 0;
     Header formatHeader;
+
+    bool IsValid() const
+    {
+        return magicNumber == DDS_MAGIC_NUMBER;
+    }
 };
 
 FileHeader ReadHeader(File* inFile)
@@ -127,10 +132,6 @@ FileHeader ReadHeader(File* inFile)
     return header;
 }
 
-bool ISDDSHeader(const FileHeader& header)
-{
-    return header.magicNumber == DDS_MAGIC_NUMBER;
-}
 }
 
 class QualcommHelper
@@ -751,7 +752,7 @@ LibDdsHelper::LibDdsHelper()
 bool LibDdsHelper::IsMyImage(File* infile) const
 {
     DDSFile::FileHeader header = DDSFile::ReadHeader(infile);
-    return DDSFile::ISDDSHeader(header);
+    return header.IsValid();
 }
 
 eErrorCode LibDdsHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
@@ -841,7 +842,7 @@ bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     }
 
     DDSFile::FileHeader header = DDSFile::ReadHeader(ddsFile);
-    if (!DDSFile::ISDDSHeader(header))
+    if (!header.IsValid())
     {
         Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] is not DDS file %s", filePathname.GetStringValue().c_str());
         return false;
@@ -860,14 +861,10 @@ bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     }
 
     const uint32 fileSize = ddsFile->GetSize();
-    char8* fileBuffer = new char8[fileSize];
-    SCOPE_EXIT
-    {
-        SafeDeleteArray(fileBuffer);
-    };
+    Vector<char8> fileBuffer(fileSize);
 
     ddsFile->Seek(0, File::SEEK_FROM_START);
-    if (ddsFile->Read(fileBuffer, fileSize) != fileSize)
+    if (ddsFile->Read(fileBuffer.data(), fileSize) != fileSize)
     {
         Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot read from file %s", filePathname.GetStringValue().c_str());
         return false;
@@ -875,12 +872,12 @@ bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
 
     ddsFile.reset(); //to close file for reading
 
-    DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(fileBuffer);
+    DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(fileBuffer.data());
     outHeader->formatHeader.metadata.crcTag = METADATA_CRC_TAG;
-    outHeader->formatHeader.metadata.crcValue = CRC32::ForBuffer(fileBuffer, fileSize);
+    outHeader->formatHeader.metadata.crcValue = CRC32::ForBuffer(fileBuffer.data(), fileSize);
 
     ddsFile.reset(File::Create(filePathname, File::WRITE | File::CREATE));
-    if (fileSize != ddsFile->Write(fileBuffer, fileSize))
+    if (fileSize != ddsFile->Write(fileBuffer.data(), fileSize))
     {
         Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot write to file %s", filePathname.GetAbsolutePathname().c_str());
         return false;
@@ -899,7 +896,7 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     }
 
     DDSFile::FileHeader header = DDSFile::ReadHeader(ddsFile);
-    if (!DDSFile::ISDDSHeader(header))
+    if (!header.IsValid())
     {
         Logger::Error("[LibDdsHelper::GetCRCFromFile] is not DDS file %s", filePathname.GetStringValue().c_str());
         return false;
@@ -999,9 +996,8 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     }
 
     //VI: calculate image buffer size
-
-    int32 bufSize = 0;
-    Vector<int32> mipSize;
+    uint32 compressedDataSize = 0;
+    Vector<uint32> mipSize;
     mipSize.resize(imageSet.size());
     uint32 dataCount = static_cast<uint32>(imageSet.size());
     if (imageSet.size() == 0)
@@ -1034,20 +1030,16 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
             Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
             return false;
         }
-        bufSize += dstImg.nDataSize;
+        compressedDataSize += dstImg.nDataSize;
         mipSize[i] = dstImg.nDataSize;
     }
 
     //VI: convert faces
     unsigned int headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    unsigned char* outFileBuffer = new unsigned char[headerSize + bufSize];
-    SCOPE_EXIT
-    {
-        SafeDeleteArray(outFileBuffer);
-    };
-
-    unsigned char* header = outFileBuffer;
-    unsigned char* buffer = outFileBuffer + headerSize;
+    Vector<unsigned char> outFileBufferData(headerSize + compressedDataSize);
+    unsigned char* header = outFileBufferData.data();
+    unsigned char* compressedData = header + headerSize;
+    unsigned char* buffer = compressedData;
     for (uint32 i = 0; i < dataCount; ++i)
     {
         TQonvertImage srcImg = { 0 };
@@ -1084,20 +1076,22 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
     compressionOptions.setFormat(innerComprFormat);
 
     nvtt::Decompressor decompress;
-    headerSize = decompress.getHeader(header, headerSize, inputOptions, compressionOptions);
+    const uint32 realHeaderSize = decompress.getHeader(header, headerSize, inputOptions, compressionOptions);
 
-    FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
+    const FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
     bool res = false;
     File* file = File::Create(fileName, File::CREATE | File::WRITE);
     if (file)
     {
         { //Store PixelFormat format in metadata
-            DVASSERT(DECOMPRESSOR_MIN_HEADER_SIZE >= sizeof(DDSFile::FileHeader));
-            DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(outFileBuffer);
+            DVASSERT(realHeaderSize >= sizeof(DDSFile::FileHeader));
+            DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(header);
             outHeader->formatHeader.metadata.davaPixelFormat = compressionFormat;
         }
 
-        file->Write(outFileBuffer, headerSize + bufSize);
+        file->Write(header, realHeaderSize);
+        file->Write(compressedData, compressedDataSize);
+
         SafeRelease(file);
         FileSystem::Instance()->DeleteFile(fileNameOriginal);
         res = FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true);
@@ -1109,10 +1103,8 @@ bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<I
         Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
     }
 
-    SafeDeleteArray(buffer);
-
     return res;
-    #endif
+#endif
 }
 
 bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Vector<Vector<DAVA::Image*>>& imageSet, DAVA::PixelFormat compressionFormat, bool isCubemap)
@@ -1237,17 +1229,14 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Ve
         else
         {
             //I hope we Will remove this code after refactoring of DAVA::Image class
-            ScopedPtr<File> ddsFile(File::Create(fileNameOriginal, File::OPEN | File::READ));
-            const uint32 fileSize = ddsFile->GetSize();
-            uint8* fileData = new uint8[fileSize];
-            ddsFile->Read(fileData, fileSize);
-            ddsFile.reset();
+            ScopedPtr<File> ddsFile(File::Create(fileNameOriginal, File::OPEN | File::READ | File::WRITE));
 
-            DDSFile::FileHeader* ddsHeader = reinterpret_cast<DDSFile::FileHeader*>(fileData);
-            ddsHeader->formatHeader.metadata.davaPixelFormat = compressionFormat;
-            ddsFile.reset(File::Create(fileNameOriginal, File::WRITE | File::CREATE));
-            ddsFile->Write(fileData, fileSize);
-            SafeDeleteArray(fileData);
+            DDSFile::FileHeader ddsHeader;
+            ddsFile->Read(&ddsHeader);
+            ddsHeader.formatHeader.metadata.davaPixelFormat = compressionFormat;
+
+            ddsFile->Seek(0, File::SEEK_FROM_START);
+            ddsFile->Write(&ddsHeader);
         }
     }
     else
@@ -1288,8 +1277,8 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     const int facesCount = static_cast<int>(imageSet.size());
     const int mipmapsCount = static_cast<int>(imageSet[0].size());
 
-    int32 bufSize = 0;
-    Vector<Vector<int32>> mipSize;
+    uint32 compressedDataSize = 0;
+    Vector<Vector<uint32>> mipSize;
     mipSize.resize(facesCount);
 
     const int32 qualcommFormat = QualcommHelper::GetQualcommFormat(compressionFormat);
@@ -1325,21 +1314,17 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
                 return false;
             }
 
-            bufSize += dstImg.nDataSize;
+            compressedDataSize += dstImg.nDataSize;
             mipSize[f][m] = dstImg.nDataSize;
         }
     }
 
     //VI: convert faces
     unsigned int headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    unsigned char* outFileBuffer = new unsigned char[headerSize + bufSize];
-    SCOPE_EXIT
-    {
-        SafeDeleteArray(outFileBuffer);
-    };
-
-    unsigned char* header = outFileBuffer;
-    unsigned char* buffer = outFileBuffer + headerSize;
+    Vector<unsigned char> outFileBufferData(headerSize + compressedDataSize);
+    unsigned char* header = outFileBufferData.data();
+    unsigned char* compressedData = header + headerSize;
+    unsigned char* buffer = compressedData;
     for (int32 f = 0; f < facesCount; ++f)
     {
         for (int32 m = 0; m < mipmapsCount; ++m)
@@ -1382,20 +1367,22 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal,
     compressionOptions.setFormat(innerComprFormat);
 
     nvtt::Decompressor decompress;
-    headerSize = decompress.getHeader(header, headerSize, inputOptions, compressionOptions);
+    const uint32 realHeaderSize = decompress.getHeader(header, headerSize, inputOptions, compressionOptions);
 
-    FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
+    const FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
     bool res = false;
     File* file = File::Create(fileName, File::CREATE | File::WRITE);
     if (file)
     {
         { //Store PixelFormat format in metadata
-            DVASSERT(DECOMPRESSOR_MIN_HEADER_SIZE >= sizeof(DDSFile::FileHeader));
-            DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(outFileBuffer);
+            DVASSERT(realHeaderSize >= sizeof(DDSFile::FileHeader));
+            DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(header);
             outHeader->formatHeader.metadata.davaPixelFormat = compressionFormat;
         }
 
-        file->Write(outFileBuffer, headerSize + bufSize);
+        file->Write(header, realHeaderSize);
+        file->Write(compressedData, compressedDataSize);
+
         SafeRelease(file);
         FileSystem::Instance()->DeleteFile(fileNameOriginal);
         res = FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true);

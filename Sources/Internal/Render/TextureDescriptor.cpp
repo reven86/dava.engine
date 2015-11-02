@@ -1086,7 +1086,7 @@ uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const
 	static const uint32 CRC_BUFFER_SIZE = 16;
 	static const uint8 CRC_BUFFER_VALUE = 0x3F; //to create nonzero buffer
 
-    std::array<uint8, CRC_BUFFER_SIZE> crcBuffer; //this buffer need to calculate correct CRC of texture descriptor. I plan to fill this buffer with params that are important for compression of textures sush as textureFlags
+    Array<uint8, CRC_BUFFER_SIZE> crcBuffer; //this buffer need to calculate correct CRC of texture descriptor. I plan to fill this buffer with params that are important for compression of textures sush as textureFlags
     Memset(crcBuffer.data(), CRC_BUFFER_VALUE, crcBuffer.size());
 
     uint8* bufferPtr = crcBuffer.data();
