@@ -43,6 +43,8 @@ extern void FrameworkWillTerminate();
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Concurrency/Thread.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {
@@ -124,29 +126,11 @@ namespace DAVA
 
     void CorePlatformAndroid::ProcessFrame()
     {
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "CorePlatformAndroid::ProcessFrame");
+        SCOPE_EXIT { TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "CorePlatformAndroid::ProcessFrame"); };
+
 	    if(renderIsActive)
 	    {
-	        auto sysTimer = SystemTimer::Instance();
-	        //  Control FPS
-	        {
-	            // we count full frame time once per cycle
-	            // C++->Java->C++(frame ended)
-	            static uint64 startTime = sysTimer->AbsoluteMS();
-
-	            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
-                int32 fpsLimit = Renderer::GetDesiredFPS();
-                if (fpsLimit > 0)
-	            {
-	                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fpsLimit);
-	                if(averageFrameTime > elapsedTime)
-	                {
-	                    uint64 sleepMs = averageFrameTime - elapsedTime;
-	                    Thread::Sleep(static_cast<uint32>(sleepMs));
-	                }
-	            }
-	            startTime = sysTimer->AbsoluteMS();
-	        }
-
 	        Core::SystemProcessFrame();
 	    }
 	}

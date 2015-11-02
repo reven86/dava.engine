@@ -32,7 +32,9 @@
 
     #include "Core/Core.h"
 using DAVA::Logger;
-    #include "Debug/Profiler.h"
+
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
 
 namespace rhi
 {
@@ -1026,8 +1028,11 @@ void Present()
         DeleteSyncObject(frameSyncObjects[currFrameSyncId]);
         frameSyncObjects[currFrameSyncId] = HSyncObject();
     }
-
+    
+    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
     ProcessScheduledDelete();
+    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
+    
     sheduledDeleteMutex.Unlock();
 }
 

@@ -2,11 +2,9 @@
 
 #ifdef __DAVAENGINE_ANDROID__
 
-#include "android_gl.h"
 #include "_gl.h"
 
 #include <EGL/egl.h>
-#include <GLES/gl.h>
 #include <android/native_window.h>
 
 static EGLDisplay _display = EGL_NO_DISPLAY;

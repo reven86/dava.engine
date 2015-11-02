@@ -40,6 +40,7 @@
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {
@@ -311,7 +312,7 @@ void UIControlSystem::ProcessScreenLogic()
 void UIControlSystem::Update()
 {
     TIME_PROFILE("UIControlSystem::Update");
-
+    
     updateCounter = 0;
     ProcessScreenLogic();
 
@@ -334,7 +335,9 @@ void UIControlSystem::Update()
 void UIControlSystem::Draw()
 {
     TIME_PROFILE("UIControlSystem::Draw");
-
+    
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
+    
     FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
@@ -361,6 +364,8 @@ void UIControlSystem::Draw()
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     GetScreenshoter()->OnFrame();
+    
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 }
 
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl* targetControl)

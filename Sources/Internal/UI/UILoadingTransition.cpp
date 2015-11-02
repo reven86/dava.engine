@@ -46,6 +46,7 @@ UILoadingTransition::UILoadingTransition()
 	animationSprite = 0;
 	inTransition = 0;
 	outTransition = 0;
+    loaded = false;
 }
 
 UILoadingTransition::~UILoadingTransition()
@@ -123,17 +124,23 @@ void UILoadingTransition::DidAppear()
 		thread = Thread::Create(Message(this, &UILoadingTransition::ThreadMessage));
         thread->SetStackSize(LOADING_THREAD_STACK_SIZE);
         thread->Start();
-        //        thread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
     }
+    
+//    UILoadingTransition::ThreadMessage(this, nullptr, nullptr);
+//    loaded = true;
 }
 
 void UILoadingTransition::Update(float32 timeElapsed)
 {
 	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
     {
-        JobManager::Instance()->WaitMainJobs(thread->GetId());
+		JobManager::Instance()->WaitMainJobs(thread->GetId());
 
-        UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
+//    if (loaded)
+//    {
+//        loaded = false;
+        
+		UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
         if (!inTransition) 
         {
             UIControlSystem:: Instance()->UnlockInput();//need to call this because once its calls on loading start

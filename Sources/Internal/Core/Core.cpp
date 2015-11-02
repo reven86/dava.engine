@@ -82,8 +82,9 @@
 #include "Autotesting/AutotestingSystem.h"
 #endif
 
-
+#include "Concurrency/Thread.h"
 #include "Debug/Profiler.h"
+
 #define PROF__FRAME 0
 #define PROF__FRAME_UPDATE 1
 #define PROF__FRAME_DRAW 2
@@ -440,7 +441,7 @@ void Core::SystemAppFinished()
     {
 //rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
         #if TRACER_ENABLED
-        //        profiler::DumpEvents();
+//        profiler::DumpEvents();
         profiler::SaveEvents("trace.json");
         #endif
         core->OnAppFinished();
@@ -456,7 +457,8 @@ void Core::SystemProcessFrame()
     START_TIMING(PROF__FRAME);
     #endif
 
-    TRACE_BEGIN_EVENT(11, "core", "SystemProcessFrame")
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::SystemProcessFrame");
+    SCOPE_EXIT { TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::SystemProcessFrame"); };
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;
@@ -520,7 +522,11 @@ void Core::SystemProcessFrame()
 //      }
 // #else
         InputSystem::Instance()->OnBeforeUpdate();
+        
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
         core->BeginFrame();
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
+        
 //#endif
 
         // recalc frame inside begin / end frame
@@ -549,25 +555,33 @@ void Core::SystemProcessFrame()
         }
 
         START_TIMING(PROF__FRAME_UPDATE);
-
+        
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
+        
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
         JobManager::Instance()->Update();
-
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
+        
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
         core->Update(frameDelta);
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
+        
         InputSystem::Instance()->OnAfterUpdate();
         STOP_TIMING(PROF__FRAME_UPDATE);
 
         START_TIMING(PROF__FRAME_DRAW);
-        TRACE_BEGIN_EVENT(11, "core", "Draw")
+
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Draw")
         core->Draw();
-        TRACE_END_EVENT(11, "core", "Draw")
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Draw")
         STOP_TIMING(PROF__FRAME_DRAW);
 
         START_TIMING(PROF__FRAME_ENDFRAME);
-        TRACE_BEGIN_EVENT(11, "core", "EndFrame")
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::EndFrame")
         core->EndFrame();
-        TRACE_END_EVENT(11, "core", "EndFrame")
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::EndFrame")
+
         STOP_TIMING(PROF__FRAME_ENDFRAME);
     }
     Stats::Instance()->EndFrame();
@@ -577,8 +591,6 @@ void Core::SystemProcessFrame()
     EGLuint64NV end = eglGetSystemTimeNV() / frequency;
     EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
-
-    TRACE_END_EVENT(11, "core", "SystemProcessFrame")
 
     #if PROFILER_ENABLED
     STOP_TIMING(PROF__FRAME);

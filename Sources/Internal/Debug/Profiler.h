@@ -35,7 +35,7 @@
     using DAVA::uint64;
     #include <Base/Hash.h>
 
-    #define PROFILER_ENABLED 0
+    #define PROFILER_ENABLED        0
     #define TRACER_ENABLED 0
 
 namespace profiler
@@ -163,6 +163,10 @@ void InstantEvent(unsigned tid, const char* category, const char* name);
 
 void DumpEvents();
 void SaveEvents(const char* fileName);
+
+void StartTraceEvents();
+void StopTraceEvents();
+    
 }
 
 #if TRACER_ENABLED

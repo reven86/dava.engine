@@ -174,6 +174,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
 		Thread mainThread = new Thread(new Runnable() 
 		{
+			long startTime;
+			
 			@Override
 			public void run() 
 			{
@@ -186,8 +188,29 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		        
 		        UpdateGamepadAxises();
 		        
+		        startTime = System.currentTimeMillis();
+		        
 				while(true)
 				{
+					{
+			            long elapsedTime = System.currentTimeMillis() - startTime;
+		                long fpsLimit = 60;
+		                if (fpsLimit > 0)
+			            {
+			                long averageFrameTime = 1000L / fpsLimit;
+			                if(averageFrameTime > elapsedTime)
+			                {
+			                    long sleepMs = averageFrameTime - elapsedTime;
+			                    try {
+									Thread.sleep(sleepMs);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+			                }
+			            }
+			            startTime = System.currentTimeMillis();
+			        }
+					
 					surfaceView.ProcessQueueEvents();
 					surfaceView.ProcessFrame();
 					
