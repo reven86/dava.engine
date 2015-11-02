@@ -558,7 +558,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 #else
                 std::string sname;
                 vtexture2d_re.get_pattern(1, &sname);
-                size_t mbegin = ftexture2d_re.pattern(1)->begin;
+                size_t mbegin = vtexture2d_re.pattern(1)->begin;
                 #endif
                 FastName suid(sname);
 
@@ -593,7 +593,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 #else
                 std::string sname;
                 texturecube_re.get_pattern(1, &sname);
-                size_t mbegin = ftexture2d_re.pattern(1)->begin;
+                size_t mbegin = texturecube_re.pattern(1)->begin;
                 #endif
                 FastName suid(sname);
 
