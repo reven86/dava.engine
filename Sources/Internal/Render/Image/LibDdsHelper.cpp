@@ -247,11 +247,7 @@ bool NvttHelper::InitDecompressor(nvtt::Decompressor& dec, const FilePath& fileN
 
 bool NvttHelper::InitDecompressor(nvtt::Decompressor& dec, File* file)
 {
-    if (NULL == file)
-    {
-        Logger::Error("[NvttHelper::InitDecompressor] Wrong handler.");
-        return false;
-    }
+    DVASSERT(file != nullptr);
 
     file->Seek(0, File::SEEK_FROM_START);
     uint32 fileSize = file->GetSize();
@@ -711,7 +707,7 @@ LibDdsHelper::LibDdsHelper()
                            FORMAT_RGBA8888 } };
 }
 
-bool LibDdsHelper::IsMyImage(File* infile) const
+bool LibDdsHelper::CanProcessFile(File* infile) const
 {
     nvtt::Decompressor dec;
 
@@ -880,10 +876,8 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
 
 eErrorCode LibDdsHelper::ReadFile(File* file, Vector<Image*>& imageSet, int32 baseMipMap, bool forceSoftwareConvertation)
 {
-    if (nullptr == file)
-    {
-        return eErrorCode::ERROR_FILE_NOTFOUND;
-    }
+    DVASSERT(file != nullptr);
+
     nvtt::Decompressor dec;
 
     if (!NvttHelper::InitDecompressor(dec, file))
@@ -1023,7 +1017,7 @@ bool LibDdsHelper::GetCRCFromDDSHeader(const FilePath& filePathname, uint32* out
         return false;
     }
 
-    if (!ImageSystem::Instance()->GetImageFormatInterface(IMAGE_FORMAT_DDS)->IsMyImage(fileRead))
+    if (!ImageSystem::Instance()->GetImageFormatInterface(IMAGE_FORMAT_DDS)->CanProcessFile(fileRead))
     {
         Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader] file %s isn't a dds one", fileNameStr.c_str());
         SafeRelease(fileRead);

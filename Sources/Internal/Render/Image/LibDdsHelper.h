@@ -47,8 +47,8 @@ public:
     LibDdsHelper();
 
     virtual ImageFormat GetImageFormat() const override;
-    
-    virtual bool IsMyImage(File *infile) const override;
+
+    virtual bool CanProcessFile(File* infile) const override;
 
     virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
