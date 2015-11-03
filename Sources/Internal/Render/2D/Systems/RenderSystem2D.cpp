@@ -457,6 +457,12 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     DVASSERT_MSG(batchDesc.texCoordPointer == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
     DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
 
+    if (batchDesc.vertexCount == 0 && batchDesc.indexCount == 0)
+    {
+        // Ignore draw for empty geometry
+        return;
+    }
+
     if (currentClip.dx == 0.f || currentClip.dy == 0.f)
     {
         // Ignore draw if clip has zero width or height.
