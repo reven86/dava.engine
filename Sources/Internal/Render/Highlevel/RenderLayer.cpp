@@ -74,9 +74,8 @@ RenderLayer::RenderLayer(eRenderLayerID _id, uint32 sortingFlags)
     : layerID(_id)
     , sortFlags(sortingFlags)
 {
-    
 }
-    
+
 RenderLayer::~RenderLayer()
 {
 }
@@ -126,5 +125,4 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
 
     FrameOcclusionQueryManager::Instance()->EndQuery(GetLayerNameByID(layerID));
 }
-
 };

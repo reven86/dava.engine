@@ -41,7 +41,7 @@ const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
 void FixPositionForScroll(UIControl* controlInHud)
 {
     DVASSERT(controlInHud != nullptr);
-    static UIControl *backgroundControl = nullptr; //background control stay unchanged all the time
+    static UIControl* backgroundControl = nullptr; //background control stay unchanged all the time
     if (backgroundControl == nullptr)
     {
         backgroundControl = controlInHud;

@@ -213,7 +213,7 @@ protected:
     TextBlockRender* textBlockRender;
 
     float angle;
-	Vector2 pivot;
+    Vector2 pivot;
 };
 
 inline void TextBlock::CalculateCacheParamsIfNeed()

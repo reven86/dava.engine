@@ -44,7 +44,6 @@ class UIControl;
 class TransformSystem final : public BaseEditorSystem
 {
 public:
-
     explicit TransformSystem(EditorSystemsManager* parent);
     ~TransformSystem();
 

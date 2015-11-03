@@ -39,8 +39,8 @@ class NotPassableTerrainProxy
 public:
     NotPassableTerrainProxy(int32 heightmapSize);
     virtual ~NotPassableTerrainProxy();
-	
-	bool Enable();
+
+    bool Enable();
 	bool Disable();
 	bool IsEnabled() const;
 	
@@ -72,7 +72,7 @@ private:
     Vector<rhi::HVertexBuffer> gridBuffers;
 
     void LoadColorsArray();
-	bool PickColor(DAVA::float32 tan, DAVA::Color& color) const;
+    bool PickColor(DAVA::float32 tan, DAVA::Color& color) const;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__NOTPASSABLETERRAINPROXY__) */

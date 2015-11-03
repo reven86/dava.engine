@@ -190,12 +190,12 @@ void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 {
     if (NULL != toolbar && NULL != action)
     {
-		QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
+        QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
         if (NULL != toolBnt)
         {
             toolBnt->setToolButtonStyle(showText ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
         }
-	}
+    }
 }
 
 DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::String & what, const DAVA::String & on)
@@ -203,7 +203,7 @@ DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::Stri
 	String::size_type pos = sourceString.find(what);
     if (pos != String::npos)
     {
-		String newString = sourceString;
+        String newString = sourceString;
 		newString = newString.replace(pos, what.length(), on);
 		return newString;
 	}

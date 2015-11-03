@@ -93,7 +93,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 #endif
 
     activeCursor = 0;
-	
+
     willQuit = false;
 
     return self;
@@ -113,8 +113,11 @@ extern void FrameworkMain(int argc, char *argv[]);
 		depth = 16;
 	else if(CFStringCompare(pixEnc, CFSTR(IO8BitIndexedPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
 		depth = 8;
-    
-	return depth;
+
+    CGDisplayModeRelease(mode);
+    CFRelease(pixEnc);
+
+    return depth;
 }
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
@@ -150,10 +153,10 @@ extern void FrameworkMain(int argc, char *argv[]);
     DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 #endif
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
-	
-	sizeChanged = YES;
-	[super reshape];
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+
+    sizeChanged = YES;
+    [super reshape];
 }
 
 - (void)userFireTimer: (id)timer

@@ -159,11 +159,11 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     }
 
     if (!notPassableTerrainProxy)
-	{
+    {
         notPassableTerrainProxy = new NotPassableTerrainProxy(baseLandscape->GetHeightmap()->Size());
     }
-	
-	if (notPassableTerrainProxy->IsEnabled())
+
+    if (notPassableTerrainProxy->IsEnabled())
 	{
 		return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 	}
@@ -236,11 +236,11 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
         baseLandscape->UpdatePart(heightmapProxy, updateRect);
 
         if (notPassableTerrainProxy && notPassableTerrainProxy->IsEnabled())
-		{
+        {
             notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
         }
-		
-		if (customDrawRequestCount == 0)
+
+        if (customDrawRequestCount == 0)
 		{
 			UpdateBaseLandscapeHeightmap();
 		}
@@ -271,7 +271,7 @@ float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
 	float32 size = 0.f;
     Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
     if (texture)
-	{
+    {
 		size = (float32)texture->GetWidth();
 	}
 	return size;
@@ -432,16 +432,16 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	{
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
-	if (!visibilityToolProxy)
+    if (!visibilityToolProxy)
 	{
         visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
-	if (!rulerToolProxy)
+    if (!rulerToolProxy)
 	{
         rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
 
-	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(Entity* landscapeEntity, Landscape* landscape)
@@ -529,8 +529,8 @@ bool LandscapeEditorDrawSystem::SaveTileMaskTexture()
     {
         Image* image = texture->CreateImageFromMemory();
 
-        if(image)
-		{
+        if (image)
+        {
             ImageSystem::Instance()->Save(sourceTilemaskPath, image);
 			SafeRelease(image);
 		}
@@ -548,7 +548,7 @@ void LandscapeEditorDrawSystem::ResetTileMaskTexture()
     if (baseLandscape == nullptr)
     {
         return;
-	}
+    }
 
     ScopedPtr<Texture> texture(Texture::CreateFromFile(sourceTilemaskPath));
     texture->Reload();
@@ -607,7 +607,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
 
     Texture* tileMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK);
     if (tileMask == NULL || tileMask->IsPinkPlaceholder())
-	{
+    {
 		return LANDSCAPE_EDITOR_SYSTEM_TILE_MASK_TEXTURE_ABSENT;
 	}
 	
@@ -620,7 +620,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
     Texture* texTile0 = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILE);
 
     if ((texTile0 == NULL || texTile0->IsPinkPlaceholder()))
-	{
+    {
 		return LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE0_TEXTURE_ABSENT;
     }
 

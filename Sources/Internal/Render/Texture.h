@@ -66,11 +66,11 @@ class Texture;
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 public:
     enum TextureState
-	{
-		STATE_INVALID	=	0,
-		STATE_DATA_LOADED,
-		STATE_VALID
-	};
+    {
+        STATE_INVALID = 0,
+        STATE_DATA_LOADED,
+        STATE_VALID
+    };
 
     const static uint32 INVALID_CUBEMAP_FACE = -1;
     const static uint32 CUBE_FACE_COUNT = 6;
@@ -88,7 +88,7 @@ public:
         \param[in] height height of new texture
         \param[in] generateMipMaps generate mipmaps or not
      */
-	static Texture * CreateFromData(PixelFormat format, const uint8 *data, uint32 width, uint32 height, bool generateMipMaps);
+    static Texture* CreateFromData(PixelFormat format, const uint8* data, uint32 width, uint32 height, bool generateMipMaps);
 
     /**
         \brief Create texture from data arrray stored at Image
@@ -151,7 +151,7 @@ public:
 
     void GenerateMipmaps();
 
-    void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId);
+    void TexImage(int32 level, uint32 width, uint32 height, const void* _data, uint32 dataSize, uint32 cubeFaceId);
 
     void SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV, rhi::TextureAddrMode wrapW = rhi::TEXADDR_WRAP);
     void SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter magFilter, rhi::TextureMipFilter mipFilter);
@@ -207,16 +207,16 @@ protected:
     
 	void SetParamsFromImages(const Vector<Image *> * images);
 
-    void FlushDataToRenderer(Vector<Image *> * images);
+    void FlushDataToRenderer(Vector<Image*>* images);
 
-    void ReleaseImages(Vector<Image *> * images);
+    void ReleaseImages(Vector<Image*>* images);
 
     void MakePink(bool checkers = true);
 
     void GenerateMipmapsInternal();
 
-	Texture();
-	virtual ~Texture();
+    Texture();
+    virtual ~Texture();
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 

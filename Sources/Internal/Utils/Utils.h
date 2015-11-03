@@ -137,10 +137,9 @@ bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
     
     return false;
 }
-    
-    
-template<class T>
-void RemoveExchangingWithLast(Vector<T> & array, uint32 index)
+
+template <class T>
+void RemoveExchangingWithLast(Vector<T>& array, size_t index)
 {
     array[index] = array[array.size() - 1];
     array.pop_back();

@@ -119,14 +119,14 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
 				{
                     DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(_object);
                     DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata); // this function can be slow
-                    for(size_t i = 0; i < membersList.size(); ++i)
-					{
+                    for (size_t i = 0; i < membersList.size(); ++i)
+                    {
                         int memberFlags = dynamicInfo->MemberFlags(ddata, membersList[i]);
-                        if(memberFlags & DAVA::I_VIEW)
-						{
+                        if (memberFlags & DAVA::I_VIEW)
+                        {
                             QtPropertyDataInspDynamic* dynamicMember = new QtPropertyDataInspDynamic(dynamicInfo, ddata, membersList[i]);
-                            if(!(memberFlags & DAVA::I_EDIT))
-							{
+                            if (!(memberFlags & DAVA::I_EDIT))
+                            {
 								dynamicMember->SetEnabled(false);
 							}
 

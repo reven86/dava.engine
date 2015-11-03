@@ -179,7 +179,7 @@ namespace DAVA
     RenderManager::Instance()->DetectRenderingCapabilities();
 #endif
 
-    // start animation
+// start animation
 #if RHI_COMPLETE
     currFPS = RenderManager::Instance()->GetFPS();
 #else
@@ -188,9 +188,9 @@ namespace DAVA
     [self startAnimationTimer];
 
     // make window main
-	[mainWindow makeKeyAndOrderFront:nil];
-	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
-	[mainWindow setAcceptsMouseMovedEvents:YES];
+    [mainWindow makeKeyAndOrderFront:nil];
+    [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
+    [mainWindow setAcceptsMouseMovedEvents:YES];
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
@@ -365,10 +365,10 @@ namespace DAVA
     [openGLView setNeedsDisplay:YES];
 #if RHI_COMPLETE
     if (currFPS != RenderManager::Instance()->GetFPS())
-	{
-		currFPS = RenderManager::Instance()->GetFPS();
-		[self stopAnimationTimer];
-		[self startAnimationTimer];
+    {
+        currFPS = RenderManager::Instance()->GetFPS();
+        [self stopAnimationTimer];
+        [self startAnimationTimer];
 	}
 #endif
 }

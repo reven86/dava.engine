@@ -95,7 +95,7 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 
     drawSystem->SetCursorSize(0);
 
-	PrepareConfig();
+    PrepareConfig();
 
 	enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -119,7 +119,7 @@ bool VisibilityToolSystem::DisableLandscapeEdititing()
     drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, false);
 
     enabled = false;
-	return !enabled;
+    return !enabled;
 }
 
 void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
@@ -154,7 +154,7 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 
     if (UIEvent::Phase::KEY_DOWN == event->phase)
     {
-		if (event->tid == DVKEY_ESCAPE)
+        if (event->tid == DVKEY_ESCAPE)
 		{
 			SetState(VT_STATE_NORMAL);
 		}
@@ -164,18 +164,18 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 		switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
-                if (isIntersectsLandscape)
-				{
+            if (isIntersectsLandscape)
+                {
 					editingIsEnabled = true;
 				}
 				break;
 
         case UIEvent::Phase::DRAG:
-                break;
+            break;
 
         case UIEvent::Phase::ENDED:
-                if (editingIsEnabled)
-				{
+            if (editingIsEnabled)
+                {
 					if (state == VT_STATE_SET_POINT)
 					{
 						SetVisibilityPointInternal();
@@ -200,7 +200,7 @@ void VisibilityToolSystem::SetBrushSize(int32 brushSize)
 
         if (state == VT_STATE_SET_AREA)
         {
-			drawSystem->SetCursorSize(cursorSize);
+            drawSystem->SetCursorSize(cursorSize);
 		}
 	}
 }
@@ -255,7 +255,7 @@ void VisibilityToolSystem::SetState(eVisibilityToolState newState)
             drawSystem->SetCursorSize(cursorSize);
             break;
 
-		default:
+        default:
 			if (IsLandscapeEditingEnabled())
 			{
 				drawSystem->SetCursorSize(0);
@@ -301,7 +301,7 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
         RenderVisibilityPoint(false);
     }
     else
-	{
+    {
 		// show "could not check visibility without visibility point" error message
 	}
 }
@@ -316,7 +316,7 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
     if (heightValues.empty())
     {
         return;
-	}
+    }
 
     const float circleRadiusSquared = circleRadius * circleRadius;
     const uint32 sideLength = static_cast<uint32>((2.0f * circleRadius) / density + 0.5f);
@@ -483,8 +483,8 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
     static const float32 pointSize = 6.f;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityAreaTexture, false);
-    for(uint32 i = 0; i < points.size(); ++i)
-	{
+    for (uint32 i = 0; i < points.size(); ++i)
+    {
 		uint32 colorIndex = (uint32)points[i].z;
         Rect rect(points[i].x - pointSize / 2.f, points[i].y - pointSize / 2.f, pointSize, pointSize);
         RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);

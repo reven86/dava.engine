@@ -1533,8 +1533,8 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             if (currentInput->touchLocker == this)
             {
                 if (multiInput || currentInputID == currentInput->tid)
-            {
-                if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
+                {
+                    if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
                 {
                     if (IsPointInside(currentInput->point, true))
                     {
@@ -1578,13 +1578,13 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             if (currentInput->touchLocker == this)
             {
                 if (multiInput || currentInputID == currentInput->tid)
-            {
-                Input(currentInput);
-                if (currentInput->tid == currentInputID)
                 {
-                    currentInputID = 0;
-                }
-                if (totalTouches > 0)
+                    Input(currentInput);
+                    if (currentInput->tid == currentInputID)
+                    {
+                        currentInputID = 0;
+                    }
+                    if (totalTouches > 0)
                 {
                     --totalTouches;
                     if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)

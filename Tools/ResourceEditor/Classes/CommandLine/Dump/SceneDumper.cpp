@@ -126,7 +126,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
     Set<FilePath> descriptorPathnames;
 
     switch (renderObject->GetType())
-	{
+    {
 		case RenderObject::TYPE_LANDSCAPE:
 		{
 			Landscape *landscape = static_cast<Landscape *> (renderObject);
@@ -141,7 +141,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
             descriptorPathnames.insert(vegetation->GetLightmapPath());
             break;
-		}
+        }
 
 		default:
 			break;
@@ -150,7 +150,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
     //Enumerate textures from materials
     Set<MaterialTextureInfo*> materialTextures;
     const uint32 count = renderObject->GetRenderBatchCount();
-	for (uint32 rb = 0; rb < count; ++rb)
+    for (uint32 rb = 0; rb < count; ++rb)
 	{
 		auto renderBatch = renderObject->GetRenderBatch(rb);
 		auto material = renderBatch->GetMaterial();
@@ -159,7 +159,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 		{
             material->CollectLocalTextures(materialTextures);
             material = material->GetParent();
-		}
+        }
 	}
 
     // enumerate drscriptor pathnames
@@ -178,25 +178,33 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
         std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPath));
         if (descriptor)
         {
-            bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
-            if (descriptor->IsCubeMap() && !isCompressedSource)
+            if (descriptor->IsCompressedFile())
             {
-                Vector<FilePath> faceNames;
-                descriptor->GetFacePathnames(faceNames);
-
-                links.insert(faceNames.cbegin(), faceNames.cend());
+                FilePath compressedTexureName = descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily));
+                links.insert(compressedTexureName);
             }
             else
             {
-                links.insert(descriptor->GetSourceTexturePathname());
-            }
-
-            for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
-            {
-                const auto& compression = descriptor->compression[gpu];
-                if (compression.format != FORMAT_INVALID)
+                bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
+                if (descriptor->IsCubeMap() && !isCompressedSource)
                 {
-                    links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+                    Vector<FilePath> faceNames;
+                    descriptor->GetFacePathnames(faceNames);
+
+                    links.insert(faceNames.cbegin(), faceNames.cend());
+                }
+                else
+                {
+                    links.insert(descriptor->GetSourceTexturePathname());
+                }
+
+                for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
+                {
+                    const auto & compression = descriptor->compression[gpu];
+                    if (compression.format != FORMAT_INVALID)
+                    {
+                        links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+                    }
                 }
             }
         }

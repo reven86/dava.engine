@@ -42,8 +42,8 @@ void FrameworkDidLaunched()
 #define WIDTH 1024
 #define HEIGHT 768
 
-    KeyedArchive * appOptions = new KeyedArchive();
-	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
+    KeyedArchive* appOptions = new KeyedArchive();
+    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
 
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     //    appOptions->SetInt32("renderer", rhi::RHI_METAL);
@@ -84,8 +84,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
 
-    appOptions->SetInt32("width",	1024);
-	appOptions->SetInt32("height", 768);
+    appOptions->SetInt32("width", 1024);
+    appOptions->SetInt32("height", 768);
 
 // 	appOptions->SetInt("fullscreen.width",	1280);
 // 	appOptions->SetInt("fullscreen.height", 800);

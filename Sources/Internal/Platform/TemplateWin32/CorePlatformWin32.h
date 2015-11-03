@@ -47,8 +47,8 @@ public:
 
     DisplayMode GetCurrentDisplayMode() override;
 
-	bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
-	void Run();
+    bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
+    void Run();
 
 	void SetIcon(int32 iconId) override;
 
@@ -60,7 +60,7 @@ public:
 
 private:
     static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
+    static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
     void OnMouseEvent(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
     void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);

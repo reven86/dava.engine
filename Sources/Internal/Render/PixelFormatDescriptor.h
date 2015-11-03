@@ -64,8 +64,8 @@ public:
     static rhi::TextureFormat TEXTURE_FORMAT_INVALID;
 
     PixelFormat formatID;
-	FastName name;
-	uint8 pixelSize;
+    FastName name;
+    uint8 pixelSize;
     rhi::TextureFormat format;
     bool isHardwareSupported;
 };

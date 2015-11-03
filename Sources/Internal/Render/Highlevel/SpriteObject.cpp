@@ -219,7 +219,7 @@ void SpriteObject::SetupRenderBatch()
 
     AddRenderBatch(batch);
 
-	SafeRelease(material);
+    SafeRelease(material);
     SafeRelease(batch);
 }
 

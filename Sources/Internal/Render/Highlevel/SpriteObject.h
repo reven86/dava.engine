@@ -107,9 +107,9 @@ protected:
 
     Matrix4 worldMatrix;
 
-    Sprite *sprite;
-	Vector2 sprScale;
-	Vector2 sprPivot;
+    Sprite* sprite;
+    Vector2 sprScale;
+    Vector2 sprPivot;
 	int32 frame;
 
 	eSpriteType spriteType;

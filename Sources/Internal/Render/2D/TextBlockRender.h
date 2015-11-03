@@ -45,10 +45,10 @@ public:
 	virtual ~TextBlockRender();
 
     virtual void Prepare();
-    virtual void PreDraw() {};
-	virtual void Draw(const Color& /*textColor*/, const Vector2* /*offset*/){};
-	
-	Sprite* GetSprite() const {return sprite;};
+    virtual void PreDraw(){};
+    virtual void Draw(const Color& /*textColor*/, const Vector2* /*offset*/){};
+
+    Sprite* GetSprite() const {return sprite;};
 	
 protected:
 	void DrawText();

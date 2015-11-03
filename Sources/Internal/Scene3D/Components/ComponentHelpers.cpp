@@ -41,6 +41,7 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/SkeletonComponent.h"
+#include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -471,5 +472,24 @@ SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const
     
     return nullptr;
 }
-    
+
+StaticOcclusionComponent* GetStaticOcclusionComponent(const Entity* fromEntity)
+{
+    if (fromEntity)
+    {
+        return (static_cast<StaticOcclusionComponent*>(fromEntity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT)));
+    }
+
+    return nullptr;
+}
+
+StaticOcclusionDebugDrawComponent* GetStaticOcclusionDebugDrawComponent(const Entity* fromEntity)
+{
+    if (fromEntity)
+    {
+        return (static_cast<StaticOcclusionDebugDrawComponent*>(fromEntity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT)));
+    }
+
+    return nullptr;
+}
 }

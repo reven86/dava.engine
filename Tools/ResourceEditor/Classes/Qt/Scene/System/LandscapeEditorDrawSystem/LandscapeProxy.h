@@ -48,12 +48,12 @@ public:
     };
 
     enum eLandscapeMode
-	{
-		MODE_CUSTOM_LANDSCAPE = 0,
-		MODE_ORIGINAL_LANDSCAPE,
+    {
+        MODE_CUSTOM_LANDSCAPE = 0,
+        MODE_ORIGINAL_LANDSCAPE,
 
-		MODES_COUNT
-	};
+        MODES_COUNT
+    };
 
     static const FastName LANDSCAPE_TEXTURE_TOOL;
     static const FastName LANDSCAPE_TEXTURE_CURSOR; //should use clamp wrap mode
@@ -77,7 +77,7 @@ public:
     void SetToolTexture(Texture* texture, bool mixColors);
 
     RenderObject* GetRenderObject();
-	void SetHeightmap(Heightmap* heightmap);
+    void SetHeightmap(Heightmap* heightmap);
 
 	void CursorEnable();
 	void CursorDisable();
@@ -85,7 +85,7 @@ public:
     void SetCursorSize(float32 size);
     void SetCursorPosition(const Vector2& position);
 
-	Vector3 PlacePoint(const Vector3& point);
+    Vector3 PlacePoint(const Vector3& point);
 
 	bool IsTilemaskChanged();
 	void ResetTilemaskChanged();

@@ -115,7 +115,7 @@ TilemaskEditorSystem::~TilemaskEditorSystem()
     SafeRelease(editorMaterial);
 
     SafeRelease(toolImageTexture);
-	SafeRelease(toolTexture);
+    SafeRelease(toolTexture);
 }
 
 LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditing()
@@ -142,7 +142,7 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
 
-	landscapeSize = drawSystem->GetTextureSize(textureLevel);
+    landscapeSize = drawSystem->GetTextureSize(textureLevel);
 	copyPasteFrom = Vector2(-1.f, -1.f);
 
     drawSystem->EnableCursor();
@@ -165,7 +165,7 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
     editorMaterial->AddTexture(TILEMASK_EDTIOR_TEXTURE_SOURCE, srcSprite);
 
     enabled = true;
-	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
+    return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 bool TilemaskEditorSystem::DisableLandscapeEdititing()
@@ -190,7 +190,7 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
     SafeRelease(landscapeTilemaskTexture);
 
     enabled = false;
-	return !enabled;
+    return !enabled;
 }
 
 void TilemaskEditorSystem::Process(float32 timeElapsed)
@@ -222,7 +222,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
             }
 
             AddRectToAccumulator(toolRect);
-		}
+        }
 	}
 }
 
@@ -242,8 +242,8 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 		switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
-                if (isIntersectsLandscape && !needCreateUndo)
-				{
+            if (isIntersectsLandscape && !needCreateUndo)
+                {
 					if (drawingType == TILEMASK_DRAW_COPY_PASTE)
 					{
 						int32 curKeyModifiers = QApplication::keyboardModifiers();
@@ -252,7 +252,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 							copyPasteFrom = cursorPosition;
                             copyPasteOffset = Vector2();
                             return;
-						}
+                        }
 						else
 						{
 							if (copyPasteFrom == Vector2(-1.f, -1.f))
@@ -261,7 +261,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 							}
                             copyPasteOffset = copyPasteFrom - cursorPosition;
                         }
-					}
+                    }
 
 					ResetAccumulatorRect();
 					editingIsEnabled = true;
@@ -270,11 +270,11 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 				break;
 
         case UIEvent::Phase::DRAG:
-                break;
+            break;
 
         case UIEvent::Phase::ENDED:
-                FinishEditing();
-				break;
+            FinishEditing();
+                break;
 		}
 	}
 }
@@ -436,7 +436,7 @@ void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
     Color curColor = drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
 
     if (curColor != color)
-	{
+    {
 		SceneEditor2* scene = (SceneEditor2*)(GetScene());
         scene->Exec(new SetTileColorCommand(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
     }

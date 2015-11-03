@@ -104,13 +104,13 @@ public:
         NMaterial* material;
     };
 
-	enum eSpriteType
-	{
-			SPRITE_FROM_FILE = 0
-		,	SPRITE_FROM_TEXTURE
-	};
+    enum eSpriteType
+    {
+        SPRITE_FROM_FILE = 0,
+        SPRITE_FROM_TEXTURE
+    };
 
-	enum eRectsAndOffsets
+    enum eRectsAndOffsets
 	{
 			X_POSITION_IN_TEXTURE = 0
 		,	Y_POSITION_IN_TEXTURE
