@@ -222,12 +222,7 @@ ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
         ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
         if (infile)
         {
-            properWrapper = GetImageFormatInterface(infile); //slow by data
-            if (nullptr != properWrapper)
-            {
-                infile->Seek(0, File::SEEK_FROM_START); //reset file state after GetImageFormatInterface
-                return properWrapper->GetImageInfo(infile);
-            }
+            return GetImageInfo(infile);
         }
 
         return ImageInfo();
@@ -243,6 +238,7 @@ ImageInfo ImageSystem::GetImageInfo(File *infile) const
     const ImageFormatInterface* properWrapper = GetImageFormatInterface(infile);
     if (nullptr != properWrapper)
     {
+        infile->Seek(0, File::SEEK_FROM_START); //reset file state after GetImageFormatInterface
         return properWrapper->GetImageInfo(infile);
     }
 
