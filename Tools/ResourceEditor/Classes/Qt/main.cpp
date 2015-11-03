@@ -43,6 +43,7 @@
 #include "TextureCompression/PVRConverter.h"
 #include "CommandLine/CommandLineManager.h"
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "CommandLine/WinConsoleIOLocker.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
 #include "LicenceDialog/LicenceDialog.h"

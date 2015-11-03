@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "CommandLine/Beast/BeastCommandLineTool.h"
+#include "CommandLine/SceneUtils/SceneUtils.h"
 
 #include "Scene/SceneEditor2.h"
 #include "Commands2/BeastAction.h"

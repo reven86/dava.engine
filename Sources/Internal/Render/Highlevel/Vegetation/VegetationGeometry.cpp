@@ -564,7 +564,7 @@ void VegetationGeometry::GenerateIndexData(const Vector<CustomGeometryEntityData
             sourceCellIndices.push_back((VegetationIndex)index);
         }
 
-        vertexIndexOffset += layerGeometry.sourcePositions.size();
+        vertexIndexOffset += static_cast<uint32>(layerGeometry.sourcePositions.size());
     }
 
     AABBox3 boundingBox;

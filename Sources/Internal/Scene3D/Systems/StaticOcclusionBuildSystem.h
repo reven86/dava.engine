@@ -37,6 +37,7 @@
 namespace DAVA
 {
 class Camera;
+class Landscape;
 class RenderObject;
 class StaticOcclusion;
 class StaticOcclusionComponent;
@@ -48,12 +49,6 @@ class NMaterial;
 // System that allow to build occlusion information. Required only in editor.
 class StaticOcclusionBuildSystem : public SceneSystem
 {
-    enum eIndexRenew
-    {
-        RENEW_OCCLUSION_INDICES,
-        LEAVE_OLD_INDICES,
-    };
-
 public:
     StaticOcclusionBuildSystem(Scene* scene);
     virtual ~StaticOcclusionBuildSystem();
@@ -66,13 +61,14 @@ public:
     inline void SetCamera(Camera* camera);
 
     void Build();
-    void RebuildCurrentCell();
     void Cancel();
 
     bool IsInBuild() const;
     uint32 GetBuildStatus() const;
+    const String& GetBuildStatusInfo() const;
 
 private:
+    void PrepareRenderObjects();
     void StartBuildOcclusion();
     void FinishBuildOcclusion();
 
@@ -81,19 +77,14 @@ private:
 
     void SceneForceLod(int32 layerIndex);
     void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity* entity);
-    void UpdateMaterialsForOcclusionRecursively(Entity* entity);
-    void RestoreOcclusionMaterials();
 
-    Camera* camera;
-    Vector<Entity*> entities;
-    StaticOcclusion* staticOcclusion;
-    StaticOcclusionDataComponent* componentInProgress;
-    uint32 activeIndex;
-    eIndexRenew renewIndex;
-    
-#if RHI_COMPLETE
-    Map<NMaterial*, RenderStateData> originalRenderStateData;
-#endif // RHI_COMPLETE
+    Camera* camera = nullptr;
+    Landscape* landscape = nullptr;
+    Vector<Entity*> occlusionEntities;
+    StaticOcclusion* staticOcclusion = nullptr;
+    StaticOcclusionDataComponent* componentInProgress = nullptr;
+    uint32 activeIndex = -1;
+    uint32 objectsCount = 0;
 };
 
 inline void StaticOcclusionBuildSystem::SetCamera(Camera* _camera)

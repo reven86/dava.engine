@@ -348,7 +348,7 @@ void EditorMaterialSystem::AddMaterial(DAVA::NMaterial* material, const Material
     if (nullptr != material)
     {
         DAVA::NMaterial* curGlobalMaterial = nullptr;
-        if (nullptr != mapping.entity->GetScene())
+        if ((nullptr != mapping.entity) && (nullptr != mapping.entity->GetScene()))
         {
             curGlobalMaterial = mapping.entity->GetScene()->GetGlobalMaterial();
         }
