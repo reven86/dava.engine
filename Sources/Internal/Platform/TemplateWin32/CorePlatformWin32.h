@@ -48,7 +48,7 @@ public:
     DisplayMode GetCurrentDisplayMode() override;
 
     bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
-	void Run();
+    void Run();
 
 	void SetIcon(int32 iconId) override;
 
