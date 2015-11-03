@@ -102,6 +102,8 @@ void UnpackHelpDoc()
 class ResourceEditorPlugin : public PluginMain
 {
     std::vector<IInterface*> typesId;
+    std::unique_ptr<SceneObserver> observer;
+    std::unique_ptr<SceneEnumerator> enumerator;
 
 public:
     ResourceEditorPlugin(IComponentContext& contextManager)
@@ -110,8 +112,10 @@ public:
 
     bool PostLoad(IComponentContext& context) override
     {
-        typesId.emplace_back(context.registerInterface<INTERFACE_VERSION(ISceneObserver, 0, 0)>(new SceneObserver()));
-        typesId.emplace_back(context.registerInterface<INTERFACE_VERSION(ISceneEnumerator, 0, 0)>(new SceneEnumerator()));
+        observer.reset(new SceneObserver());
+        enumerator.reset(new SceneEnumerator());
+        typesId.emplace_back(context.registerInterface<INTERFACE_VERSION(ISceneObserver, 0, 0)>(observer.get(), false));
+        typesId.emplace_back(context.registerInterface<INTERFACE_VERSION(ISceneEnumerator, 0, 0)>(enumerator.get(), false));
         return true;
     }
 
@@ -206,32 +210,28 @@ private:
         QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
 
-        QTimer::singleShot(0, [&] {
-            // create and init UI
-            QtMainWindow* mainWindow = new QtMainWindow();
+        QtMainWindow* mainWindow = new QtMainWindow();
 
-            mainWindow->EnableGlobalTimeout(true);
-            glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
+        mainWindow->EnableGlobalTimeout(true);
+        glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
-            ProjectManager::Instance()->ProjectOpenLast();
-            QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
-            QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
-            QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
-            QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
+        ProjectManager::Instance()->ProjectOpenLast();
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
 
-            IQtFramework* qtFramework = Context::queryInterface<IQtFramework>();
-            DVASSERT(qtFramework != nullptr);
+        IQtFramework* qtFramework = Context::queryInterface<IQtFramework>();
+        DVASSERT(qtFramework != nullptr);
 
-            mainWindow_ = new QtWindow(*qtFramework, std::unique_ptr<QMainWindow>(mainWindow));
+        IUIApplication* application = Context::queryInterface<IUIApplication>();
+        DVASSERT(application != nullptr);
 
-            IUIApplication* application = Context::queryInterface<IUIApplication>();
-            DVASSERT(application != nullptr);
+        mainWindow_ = new QtWindow(*qtFramework, std::unique_ptr<QMainWindow>(mainWindow));
+        application->addWindow(*mainWindow_);
+        mainWindow_->show();
 
-            application->addWindow(*mainWindow_);
-            mainWindow_->show();
-
-            DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
-        });
+        DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
     }
 
     void FinaliseRE()

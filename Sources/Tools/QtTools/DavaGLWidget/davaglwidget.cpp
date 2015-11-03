@@ -171,7 +171,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     timer->start(16); //62.5 fps :)
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
-    connect(davaGLView, &QQuickWindow::beforeSynchronizing, this, &DavaGLWidget::OnSync, Qt::DirectConnection);
+    connect(davaGLView, &QQuickWindow::beforeRendering, this, &DavaGLWidget::OnPaint, Qt::DirectConnection);
     connect(davaGLView, &QQuickWindow::sceneGraphInvalidated, this, &DavaGLWidget::OnCleanup);
     connect(davaGLView, &DavaGLView::mouseScrolled, this, &DavaGLWidget::mouseScrolled);
     connect(davaGLView, &DavaGLView::OnDrop, this, &DavaGLWidget::OnDrop);
@@ -224,16 +224,18 @@ void DavaGLWidget::OnResize()
     }
 }
 
-void DavaGLWidget::OnSync()
+void DavaGLWidget::OnPaint()
 {
-    if (nullptr == renderer)
+    if (renderer == nullptr)
     {
         renderer = new DavaRenderer();
-        OnResize();
-        connect(davaGLView, &QQuickWindow::beforeRendering, renderer, &DavaRenderer::paint, Qt::DirectConnection);
         emit Initialized();
+        OnResize();
     }
+
+    renderer->paint();
 }
+
 void DavaGLWidget::resizeEvent(QResizeEvent*)
 {
     if (nullptr != renderer)
