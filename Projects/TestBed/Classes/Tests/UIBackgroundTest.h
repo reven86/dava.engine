@@ -34,8 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-class DAVA::UIStaticText;
-
 class UIBackgroundTest : public BaseScreen
 {
 public:

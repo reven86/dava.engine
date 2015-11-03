@@ -45,7 +45,6 @@
 #include "Tests/KeyboardTest.h"
 #include "Tests/FullscreenTest.h"
 #include "Tests/UIBackgroundTest.h"
-#include "Tests/TextFieldTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -73,7 +72,6 @@ void GameCore::RegisterTests()
     new KeyboardTest();
     new FullscreenTest();
     new UIBackgroundTest();
-    new TextFieldTest();
 //$UNITTEST_CTOR
 }
 
