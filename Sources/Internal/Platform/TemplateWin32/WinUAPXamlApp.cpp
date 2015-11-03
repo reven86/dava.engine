@@ -103,6 +103,11 @@ WinUAPXamlApp::~WinUAPXamlApp()
     delete deferredSizeScaleEvents;
 }
 
+void WinUAPXamlApp::SetDelegate(PushNotificationDelegate* dlg)
+{
+    pushDelegate = dlg;
+}
+
 DisplayOrientations WinUAPXamlApp::GetDisplayOrientation()
 {
     return displayOrientation;
@@ -200,6 +205,8 @@ void WinUAPXamlApp::PreStartAppSettings()
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
+    //TODO: will have added implementation for all platform, before remove this
+    launchArgs = args;
     // If renderLoopWorker is null then app performing cold start
     // else app is restored from background or resumed from suspended state
     if (nullptr == renderLoopWorker)
@@ -211,6 +218,10 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 
         WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction ^ action) { Run(); });
         renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+    }
+    else
+    {
+        SetLaunchArgs();
     }
 
     Window::Current->Activate();
@@ -276,6 +287,7 @@ void WinUAPXamlApp::NativeControlLostFocus(Control ^ control)
 void WinUAPXamlApp::Run()
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
+    SetLaunchArgs();
     Core::Instance()->CreateSingletons();
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
@@ -946,6 +958,19 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
     ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+}
+
+void WinUAPXamlApp::SetLaunchArgs()
+{
+    if (nullptr != dispatcher)
+    {
+        dispatcher->RunAsync([=]() {
+            if (nullptr != pushDelegate)
+            {
+                pushDelegate->Set(launchArgs);
+            }
+        });
+    }
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(

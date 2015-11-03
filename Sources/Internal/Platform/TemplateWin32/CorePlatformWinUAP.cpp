@@ -143,6 +143,11 @@ bool CorePlatformWinUAP::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode
     return GetMouseCaptureMode() == mode;
 }
 
+void CorePlatformWinUAP::SetDelegate(PushNotificationDelegate* dlg)
+{
+    xamlApp->SetDelegate(dlg);
+}
+
 bool CorePlatformWinUAP::IsUIThread() const
 {
     return xamlApp->UIThreadDispatcher()->HasThreadAccess;

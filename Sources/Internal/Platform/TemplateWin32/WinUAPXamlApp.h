@@ -41,6 +41,7 @@
 
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
+#include "Base/Delegates.h"
 
 namespace DAVA
 {
@@ -67,6 +68,8 @@ public:
     WinUAPXamlApp();
     virtual ~WinUAPXamlApp();
 
+    //TODO: add implementation for all platform, before remove this
+    internal : void SetDelegate(PushNotificationDelegate* dlg);
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
@@ -160,7 +163,7 @@ private:
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
-    void HideAsyncTaskBar();
+    void SetLaunchArgs();
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -214,6 +217,9 @@ private:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
+    //TODO: add implementation for all platform, before remove this
+    ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs = nullptr;
+    PushNotificationDelegate* pushDelegate = nullptr;
 };
 
 //////////////////////////////////////////////////////////////////////////
