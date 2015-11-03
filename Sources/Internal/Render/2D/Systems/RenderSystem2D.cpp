@@ -447,19 +447,6 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 {
-    if (batchDesc.vertexCount == 0 && batchDesc.indexCount == 0)
-    {
-        // Ignore draw if vertices and indeces count equal 0
-        return;
-    }
-
-    if (currentClip.dx == 0.f || currentClip.dy == 0.f)
-    {
-        // Ignore draw if clip has zero width or height.
-        // For disable clip and this check use Rect(0,0,-1,-1)
-        return;
-    }
-
     DVASSERT_MSG(batchDesc.vertexPointer != nullptr && batchDesc.vertexStride > 0 && batchDesc.vertexCount > 0, "Incorrect vertex position data");
     DVASSERT_MSG(batchDesc.indexPointer != nullptr && batchDesc.indexCount > 0, "Incorrect index data");
     DVASSERT_MSG(batchDesc.material != nullptr, "Incorrect material");
@@ -469,6 +456,13 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 
     DVASSERT_MSG(batchDesc.texCoordPointer == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
     DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
+
+    if (currentClip.dx == 0.f || currentClip.dy == 0.f)
+    {
+        // Ignore draw if clip has zero width or height.
+        // For disable clip and this check use Rect(0,0,-1,-1)
+        return;
+    }
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
     ++Renderer::GetRenderStats().batches2d;
@@ -1416,7 +1410,12 @@ void RenderSystem2D::DrawLine(const Vector2& start, const Vector2& end, float32 
 
 void RenderSystem2D::DrawLines(const Vector<float32>& linePoints, const Color& color)
 {
-    auto ptCount = linePoints.size() / 2;
+    auto ptCount = linePoints.size() / 2; // linePoints are pairs of XY
+    if (ptCount < 2)
+    {
+        return;
+    }
+
     Vector<uint16> indices;
     indices.reserve(ptCount);
     for (auto i = 0U; i < ptCount; ++i)
@@ -1709,6 +1708,8 @@ void TiledDrawData::GenerateTransformData()
         transformedVertices[index] = vertices[index] * transformMatr;
     }
 }
+
+/* StretchDrawData Implementation */
 
 const uint16 StretchDrawData::indeces[18 * 3] = {
     0, 1, 4,
