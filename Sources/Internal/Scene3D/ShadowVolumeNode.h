@@ -63,8 +63,8 @@ public:
 
 private:
     //shadow mesh generation
-    PolygonGroup * shadowPolygonGroup;
-	//int32 newIndexCount;
+    PolygonGroup* shadowPolygonGroup;
+    //int32 newIndexCount;
 	//int32 newVertexCount;
 
 	//int32 FindIndexInTriangleForPointInEdge(int32 * triangleStartIndex, int32 pointInEdge, const EdgeAdjacency::Edge & edge);

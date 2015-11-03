@@ -237,7 +237,7 @@ public:
     void CreateComponents();
     void CreateSystems();
 
-	EventSystem * GetEventSystem() const;
+    EventSystem * GetEventSystem() const;
 	RenderSystem * GetRenderSystem() const;
     AnimationSystem * GetAnimationSystem() const;
 

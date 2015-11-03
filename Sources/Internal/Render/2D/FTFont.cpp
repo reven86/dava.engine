@@ -422,7 +422,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
     for (uint32 i = 0; i < strLen; ++i)
     {
-		Glyph		& glyph = glyphs[i];
+        Glyph		& glyph = glyphs[i];
 		FT_Glyph	image = nullptr;;
 		FT_BBox		bbox;
 

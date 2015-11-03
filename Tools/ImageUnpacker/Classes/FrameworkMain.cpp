@@ -164,8 +164,6 @@ void ProcessImageUnpacker()
     RenderManager::Create(Core::RENDERER_OPENGL);
 #endif //#if RHI_COMPLETE
 
-    PixelFormatDescriptor::InitializePixelFormatDescriptors();
-    
     FilePath sourceFolderPath = CommandLineParser::GetCommandParam(String("-folder"));
     FilePath sourceFilePath = CommandLineParser::GetCommandParam(String("-file"));
     

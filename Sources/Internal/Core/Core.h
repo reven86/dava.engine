@@ -130,6 +130,7 @@ public:
     // Should be called after framework did launched to initialize proper render manager
     void CreateRenderer();
     // Should be called after full release
+    void ReleaseRenderer();
     void ReleaseSingletons();
 
     const Vector<String> & GetCommandLine(); 
