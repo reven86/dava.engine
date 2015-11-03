@@ -73,9 +73,12 @@ private slots:
     void OnAddStyle();
     void OnMoveUp();
     void OnMoveDown();
+    void OnMoveLeft();
+    void OnMoveRight();
 
 private:
-    void MoveNode(bool up);
+    void MoveNodeUpDown(bool up);
+    void MoveNodeImpl(PackageBaseNode *node, PackageBaseNode *dest, DAVA::uint32 destIndex);
     void CreateActions();
     void PlaceActions();
     void LoadContext();
@@ -107,6 +110,8 @@ private:
 
     QAction* moveUpAction = nullptr;
     QAction* moveDownAction = nullptr;
+    QAction* moveLeftAction = nullptr;
+    QAction* moveRightAction = nullptr;
 
     FilteredPackageModel* filteredPackageModel = nullptr;
     PackageModel* packageModel = nullptr;
