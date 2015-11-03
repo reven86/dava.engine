@@ -177,12 +177,15 @@ public:
 	*/
 	virtual void Quit();
 
-	/**
+    /**
 		\brief Set icon for application's window.
 		Windows: First of all, you should create icon resource through Project->Add Resource->Icon.
 		param[in] iconId resource id for icon from resource.h file. For example, 101 for #define IDI_ICON1 101
 	 */
 	virtual void SetIcon(int32 iconId);
+
+    virtual float32 GetScreenScaleMultiplier() const;
+    virtual void SetScreenScaleMultiplier(float32 multiplier);
 
     virtual float32 GetScreenScaleFactor() const;
 

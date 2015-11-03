@@ -370,8 +370,8 @@ Scene::~Scene()
 
     for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
     {
-        AnimatedMesh * obj = *t;
-		obj->Release();
+        AnimatedMesh* obj = *t;
+        obj->Release();
 	}
 	animatedMeshes.clear();
 	

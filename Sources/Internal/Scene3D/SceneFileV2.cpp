@@ -998,7 +998,7 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
             allowed_comp_count++;
         }
 
-		if (currentNode->GetComponentCount() > allowed_comp_count)
+        if (currentNode->GetComponentCount() > allowed_comp_count)
 		{
             return false;
 		}

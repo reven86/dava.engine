@@ -230,6 +230,7 @@ PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
     , uiTextField(uiTextField_)
     , properties()
 {
+    uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     properties.createNew = true;
 }
 

@@ -111,15 +111,15 @@ public:
     };
 
     enum eRectsAndOffsets
-	{
-			X_POSITION_IN_TEXTURE = 0
-		,	Y_POSITION_IN_TEXTURE
-		,	ACTIVE_WIDTH
-		,	ACTIVE_HEIGHT
-		,	X_OFFSET_TO_ACTIVE
-		,	Y_OFFSET_TO_ACTIVE
-	};
-    
+    {
+        X_POSITION_IN_TEXTURE = 0,
+        Y_POSITION_IN_TEXTURE,
+        ACTIVE_WIDTH,
+        ACTIVE_HEIGHT,
+        X_OFFSET_TO_ACTIVE,
+        Y_OFFSET_TO_ACTIVE
+    };
+
     const static int32 INVALID_FRAME_INDEX = -1; //Use it when we try to get sprite frame using invalid frameName
 
 	/**

@@ -203,7 +203,7 @@ namespace DAVA
         clientSize.top = 0;
         clientSize.left = 0;
         clientSize.right = currentMode.width;
-		clientSize.bottom = currentMode.height;
+        clientSize.bottom = currentMode.height;
 
 		AdjustWindowRect(&clientSize, style, FALSE);
 
@@ -298,7 +298,7 @@ namespace DAVA
             if (willQuit)
             {
                 break;
-			}
+            }
 		}
 
 		Core::Instance()->SystemAppFinished();
@@ -381,7 +381,7 @@ namespace DAVA
     {
         availableDisplayModes.clear();
 
-		DWORD iModeNum = 0;
+        DWORD iModeNum = 0;
 		DEVMODE	dmi;
 		ZeroMemory (&dmi, sizeof(dmi)) ;
 		dmi.dmSize = sizeof(dmi) ;

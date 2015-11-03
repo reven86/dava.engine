@@ -218,7 +218,7 @@ Texture * Texture::Get(const FilePath & pathName)
     TexturesMap::iterator it = textureMap.find(FILEPATH_MAP_KEY(pathName));
     if (it != textureMap.end())
     {
-		texture = it->second;
+        texture = it->second;
 		texture->Retain();
 	}
     return texture;
@@ -404,7 +404,7 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
     texture->SetParamsFromImages(images);
     texture->FlushDataToRenderer(images);
 
-	return texture;
+    return texture;
 }
 
 bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
@@ -686,7 +686,7 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
     {
         texture->loadedAsFile = gpuForLoading;
         AddToMap(texture);
-	}
+    }
 
 	delete descriptor;
 	return texture;
@@ -741,7 +741,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
         loadedAsFile = gpuForLoading;
 
         SetParamsFromImages(images);
-		FlushDataToRenderer(images);
+        FlushDataToRenderer(images);
 	}
 	else
     {
@@ -954,7 +954,7 @@ Texture* Texture::CreatePink(rhi::TextureType requestedType, bool checkers)
         tex->texDescriptor->dataSettings.cubefaceFlags = 0x000000FF;
     }
     else
-	{
+    {
         tex->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, false);
     }
 

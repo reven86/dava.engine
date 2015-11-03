@@ -152,7 +152,7 @@ void TextureDescriptor::TextureDataSettings::EnableFlag( bool enable, int8 flag 
     {
         textureFlags |= flag;
     }
-	else
+    else
 	{
 		textureFlags &= ~flag;
 	}
@@ -225,7 +225,7 @@ void TextureDescriptor::SetDefaultValues()
         compression[i].Clear();
     }
 
-	exportedAsGpuFamily = GPU_ORIGIN;
+    exportedAsGpuFamily = GPU_ORIGIN;
 }
 
 void TextureDescriptor::SetQualityGroup(const FastName &group)
@@ -263,14 +263,14 @@ bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
     {
         compression->sourceFileCrc = sourceCRC;
         wasUpdated = true;
-	}
+    }
     
     uint32 convertedCRC = GetConvertedCRC(forGPU);
     if (compression->convertedFileCrc != convertedCRC)
     {
         compression->convertedFileCrc = convertedCRC;
         wasUpdated = true;
-	}
+    }
     
     return wasUpdated;
 }
@@ -1014,7 +1014,7 @@ void TextureDescriptor::Initialize( const TextureDescriptor *descriptor )
     {
         SetDefaultValues();
         return;
-	}
+    }
 
 	pathname = descriptor->pathname;
 
@@ -1052,7 +1052,7 @@ bool TextureDescriptor::Reload()
     {
         FilePath descriptorPathname = pathname;
         SetDefaultValues();
-		return Load(descriptorPathname);
+        return Load(descriptorPathname);
 	}
 
 	return false;

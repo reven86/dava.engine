@@ -237,8 +237,8 @@ public:
     void CreateComponents();
     void CreateSystems();
 
-    EventSystem * GetEventSystem() const;
-	RenderSystem * GetRenderSystem() const;
+    EventSystem* GetEventSystem() const;
+    RenderSystem * GetRenderSystem() const;
     AnimationSystem * GetAnimationSystem() const;
 
     SceneFileV2::eError LoadScene(const DAVA::FilePath & pathname);

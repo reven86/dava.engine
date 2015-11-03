@@ -321,8 +321,8 @@ private:
     Vector<ScreenSwitchListener*> screenSwitchListeners;
 
     UIScreen* currentScreen;
-    UIScreen * nextScreen;
-	UIScreen * prevScreen;
+    UIScreen* nextScreen;
+    UIScreen * prevScreen;
 
 	int32 screenLockCount;
 

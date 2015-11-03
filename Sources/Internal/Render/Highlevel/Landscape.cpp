@@ -369,7 +369,7 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
     {
         Logger::Error("[Landscape::PlacePoint] Trying to place point on empty heightmap data!");
         return false;
-	}
+    }
 	
 	float32 kW = (float32)(heightmap->Size() - 1) / (bbox.max.x - bbox.min.x);
 	
@@ -882,7 +882,7 @@ void Landscape::PrepareToRender(Camera* camera)
     {
         fans.clear();
         lod0quads.clear();
-		lodNot0quads.clear();
+        lodNot0quads.clear();
         activeRenderBatchArray.clear();
         GenLods(&quadTreeHead, 0x3f, camera);
     }
@@ -930,7 +930,7 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
         }
     }
 
-	indices.resize(heightmap->Size()*heightmap->Size()*6);
+    indices.resize(heightmap->Size()*heightmap->Size()*6);
 	int32 step = 1;
 	int32 indexIndex = 0;
 	int32 quadWidth = heightmap->Size();
@@ -964,7 +964,7 @@ void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
     {
         return;
     }
-	BuildLandscapeFromHeightmapImage(newHeightMapPath, bbox);
+    BuildLandscapeFromHeightmapImage(newHeightMapPath, bbox);
 }
 	
 float32 Landscape::GetLandscapeSize() const
