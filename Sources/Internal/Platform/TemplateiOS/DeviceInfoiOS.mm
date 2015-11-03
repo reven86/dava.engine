@@ -132,7 +132,7 @@ String DeviceInfoPrivate::GetModel()
 
         if ([modelName hasPrefix:@"iPhone7,1"])
             model = "iPhone 6 Plus";
-		if ([modelName hasPrefix:@"iPhone7,2"])
+        if ([modelName hasPrefix:@"iPhone7,2"])
 			model = "iPhone 6";
 
         if ([modelName hasPrefix:@"iPhone8,1"])
@@ -141,7 +141,7 @@ String DeviceInfoPrivate::GetModel()
             model = "iPhone 6s Plus";
 
         // iPad
-		if ([modelName hasPrefix:@"iPad1,1"])
+        if ([modelName hasPrefix:@"iPad1,1"])
 			model = "iPad 1";
 
 		if ([modelName hasPrefix:@"iPad2,1"])
@@ -389,20 +389,16 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     }
 }
 
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    return (int32)[[NSProcessInfo processInfo] processorCount];
-}
-
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-        DVASSERT(false && "Not Implement");
-        return false;
+    //TODO: remove this empty realization and implement detection of HID connection
+    return false;
 }
 
-void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
+bool DeviceInfoPrivate::IsTouchPresented()
 {
-        DVASSERT(false && "Not Implement");
+    //TODO: remove this empty realization and implement detection touch
+    return true;
 }
 
 }

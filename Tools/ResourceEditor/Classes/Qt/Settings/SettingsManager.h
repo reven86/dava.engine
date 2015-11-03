@@ -68,9 +68,9 @@ namespace Settings
     static const DAVA::FastName Scene_CameraSpeed1("Scene/CameraSpeed1");
     static const DAVA::FastName Scene_CameraSpeed2("Scene/CameraSpeed2");
     static const DAVA::FastName Scene_CameraSpeed3("Scene/CameraSpeed3");
-	static const DAVA::FastName Scene_CameraFOV("Scene/CameraFOV");
-	static const DAVA::FastName Scene_CameraNear("Scene/CameraNear");
-	static const DAVA::FastName Scene_CameraFar("Scene/CameraFar");
+    static const DAVA::FastName Scene_CameraFOV("Scene/CameraFOV");
+    static const DAVA::FastName Scene_CameraNear("Scene/CameraNear");
+    static const DAVA::FastName Scene_CameraFar("Scene/CameraFar");
     static const DAVA::FastName Scene_CameraHeightOnLandscape("Scene/HeightOnLandscape");
     static const DAVA::FastName Scene_CameraHeightOnLandscapeStep("Scene/HeightOnLandscapeStep");
     static const DAVA::FastName Scene_SelectionSequent("Scene/SelectionSequent");

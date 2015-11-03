@@ -30,8 +30,6 @@
 #include "Base/Platform.h"
 
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
-#include "Render/OGLHelpers.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
@@ -40,6 +38,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/PixelFormatDescriptor.h"
 
 
@@ -66,6 +65,35 @@
 
 namespace DAVA
 {
+namespace PVRHelper
+{
+bool IsCompressedFormat(PixelFormat format)
+{
+    switch (format)
+    {
+    case FORMAT_PVR4:
+    case FORMAT_PVR2:
+    case FORMAT_ETC1:
+        return true;
+
+    case FORMAT_PVR2_2:
+    case FORMAT_PVR4_2:
+    case FORMAT_EAC_R11_UNSIGNED:
+    case FORMAT_EAC_R11_SIGNED:
+    case FORMAT_EAC_RG11_UNSIGNED:
+    case FORMAT_EAC_RG11_SIGNED:
+    case FORMAT_ETC2_RGB:
+    case FORMAT_ETC2_RGBA:
+    case FORMAT_ETC2_RGB_A1:
+        return true;
+
+    default:
+        return false;
+    }
+
+    return false;
+}
+}
 
 PVRFile::PVRFile()
     : metaData(nullptr)
@@ -569,6 +597,8 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
         return false;
     }
 
+    const bool imageIsCompressed = PVRHelper::IsCompressedFormat(formatDescriptor.formatID);
+
     uint32 cubemapLayout = GetCubemapLayout(pvrFile);
     for (uint32 faceIndex = 0; faceIndex < compressedHeader.u32NumFaces; ++faceIndex)
     {
@@ -584,7 +614,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->cubeFaceID = (cubemapLayout & (0x0000000F << (faceIndex * 4))) >> (faceIndex * 4);
         }
 
-        if (formatDescriptor.isHardwareSupported)
+        if (formatDescriptor.isHardwareSupported || !imageIsCompressed)
         {
             bool imageLoaded = CopyToImage(image, fileMipMapLevel, faceIndex, compressedHeader, pTextureData);
             if (!imageLoaded)
@@ -660,37 +690,37 @@ uint32 LibPVRHelper::GetCubemapLayout(const PVRFile *pvrFile)
             {
                 case 'X':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_X << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_X << (index * 4));
                     break;
                 }
 
                 case 'x':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_X << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_X << (index * 4));
                     break;
                 }
 
                 case 'Y':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_Y << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_Y << (index * 4));
                     break;
                 }
 
                 case 'y':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_Y << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_Y << (index * 4));
                     break;
                 }
 
                 case 'Z':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_Z << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_Z << (index * 4));
                     break;
                 }
 
                 case 'z':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_Z << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_Z << (index * 4));
                     break;
                 }
             }
@@ -699,12 +729,12 @@ uint32 LibPVRHelper::GetCubemapLayout(const PVRFile *pvrFile)
     else if (pvrFile->header.u32NumFaces > 1)
     {
         static uint32 faces[] = {
-            Texture::CUBE_FACE_POSITIVE_X,
-            Texture::CUBE_FACE_NEGATIVE_X,
-            Texture::CUBE_FACE_POSITIVE_Y,
-            Texture::CUBE_FACE_NEGATIVE_Y,
-            Texture::CUBE_FACE_POSITIVE_Z,
-            Texture::CUBE_FACE_NEGATIVE_Z
+            rhi::TEXTURE_FACE_POSITIVE_X,
+            rhi::TEXTURE_FACE_NEGATIVE_X,
+            rhi::TEXTURE_FACE_POSITIVE_Y,
+            rhi::TEXTURE_FACE_NEGATIVE_Y,
+            rhi::TEXTURE_FACE_POSITIVE_Z,
+            rhi::TEXTURE_FACE_NEGATIVE_Z
         };
         for (uint32 i = 0; i < pvrFile->header.u32NumFaces; ++i)
         {
@@ -2507,7 +2537,21 @@ bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceInde
     {
         //Setup temporary variables.
         uint8* data = (uint8*)pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
-        Memcpy(image->data, data, image->dataSize);
+
+        if (image->format == FORMAT_RGBA4444)
+        {
+            ConvertDirect<uint16, uint16, ConvertABGR4444toRGBA4444> convert;
+            convert(data, image->width, image->height, image->width * sizeof(uint16), image->data);
+        }
+        else if (image->format == FORMAT_RGBA5551)
+        {
+            ConvertDirect<uint16, uint16, ConvertABGR1555toRGBA5551> convert;
+            convert(data, image->width, image->height, image->width * sizeof(uint16), image->data);
+        }
+        else
+        {
+            Memcpy(image->data, data, image->dataSize);
+        }
 
         return true;
     }

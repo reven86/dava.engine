@@ -202,10 +202,9 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb)
     , isVisible(true)
     , uiWebView(uiWeb)
 {
-    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication]
-                                                                    delegate];
-    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
-    
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
+
     ::UIWebView* localWebView = [backgroundView CreateWebView];
     webViewPtr = localWebView;
     
@@ -279,7 +278,7 @@ void DAVA::WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& 
         
         // this way we can copy image from system memory into our buffer
         Memset(rawData, 0, width * height * bytesPerPixel);
-        
+
         CGContextRef context = CGBitmapContextCreate(rawData, width, height,
                                                      bitsPerComponent, bytesPerRow, colorSpace,
                                                      kCGImageAlphaPremultipliedLast
@@ -363,7 +362,7 @@ WebViewControl::~WebViewControl()
 
     
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
     [backgroundView ReleaseWebView:innerWebView];
     
 	webViewPtr = nil;
@@ -605,7 +604,7 @@ void WebViewControl::SetBounces(bool value)
 void WebViewControl::SetGestures(bool value)
 {
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    UIView * backView = appDelegate.glController.backgroundView;
+    UIView* backView = appDelegate.renderViewController.backgroundView;
 
     if (value && !gesturesEnabled)
     {

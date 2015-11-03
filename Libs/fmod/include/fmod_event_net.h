@@ -23,17 +23,16 @@
 /*
     Default port that the target (game) will listen on
 */
-#define FMOD_EVENT_NET_PORT    17997
+#define FMOD_EVENT_NET_PORT 17997
 
 #ifdef __cplusplus
-extern "C" 
-{
+extern "C" {
 #endif
 
-FMOD_RESULT F_API FMOD_NetEventSystem_Init       (FMOD_EVENTSYSTEM *eventsystem, unsigned short port);
-FMOD_RESULT F_API FMOD_NetEventSystem_Update     ();
-FMOD_RESULT F_API FMOD_NetEventSystem_Shutdown   ();
-FMOD_RESULT F_API FMOD_NetEventSystem_GetVersion (unsigned int *version);
+FMOD_RESULT F_API FMOD_NetEventSystem_Init(FMOD_EVENTSYSTEM* eventsystem, unsigned short port);
+FMOD_RESULT F_API FMOD_NetEventSystem_Update();
+FMOD_RESULT F_API FMOD_NetEventSystem_Shutdown();
+FMOD_RESULT F_API FMOD_NetEventSystem_GetVersion(unsigned int* version);
 
 #ifdef __cplusplus
 }

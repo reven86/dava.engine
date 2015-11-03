@@ -150,23 +150,25 @@ elseif ( WINDOWS_UAP )
         ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
-	#add dll's to project and package
-	file ( GLOB DAVA_DEBUG_DLL_LIST   "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.dll" )
-	file ( GLOB DAVA_RELEASE_DLL_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.dll" )
+    #add dll's to project and package
+    add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
 
-	if ( DAVA_DEBUG_DLL_LIST )
-	    source_group ("Binaries\\Debug"   FILES ${DAVA_DEBUG_DLL_LIST})
-		set_property(SOURCE ${DAVA_DEBUG_DLL_LIST} PROPERTY VS_DEPLOYMENT_CONTENT $<CONFIG:Debug>)
-	endif ()
+    #add found dll's to project and mark them as deployment content
+    if ( DAVA_DLL_LIST_DEBUG )
+        set ( NEED_DLL_FIX true )
+        source_group ("Binaries\\Debug"   FILES ${DAVA_DLL_LIST_DEBUG})
+        set_property(SOURCE ${DAVA_DLL_LIST_DEBUG} PROPERTY VS_DEPLOYMENT_CONTENT $<CONFIG:Debug>)
+    endif ()
 
-	if ( DAVA_RELEASE_DLL_LIST )
-	    source_group ("Binaries\\Release" FILES ${DAVA_RELEASE_DLL_LIST})
-        set_property(SOURCE ${DAVA_RELEASE_DLL_LIST} PROPERTY
-		    VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
-	endif ()
-
-    list( APPEND ADDED_SRC "${DAVA_DEBUG_DLL_LIST}"
-                           "${DAVA_RELEASE_DLL_LIST}" )
+    if ( DAVA_DLL_LIST_RELEASE )
+        set ( NEED_DLL_FIX true )
+        source_group ("Binaries\\Release" FILES ${DAVA_DLL_LIST_RELEASE})
+        set_property(SOURCE ${DAVA_DLL_LIST_RELEASE} PROPERTY
+            VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
+    endif ()
+    
+    list( APPEND ADDED_SRC "${DAVA_DLL_LIST_DEBUG}"
+                           "${DAVA_DLL_LIST_RELEASE}" )
 
 	set_property(SOURCE ${CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
 	set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
@@ -290,6 +292,10 @@ else()
         ${RESOURCES_LIST}
     )
 
+endif()
+
+if (QT5_FOUND)
+    link_with_qt5(${PROJECT_NAME})
 endif()
 
 if ( QT5_FOUND )
@@ -417,6 +423,11 @@ elseif( MACOS )
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 
+    if (QT5_FOUND AND NOT DEPLOY AND NOT TEAMCITY_DEPLOY)
+        set(LD_RUNPATHES "${LD_RUNPATHES} ${QT5_LIB_PATH}")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
+    endif()
+
 elseif ( WIN32 )
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
@@ -452,9 +463,28 @@ elseif ( WIN32 )
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
      endif()
 
-	if ( WINDOWS_UAP )
-		set_property(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
-	endif()
+    if ( WINDOWS_UAP )
+        set_property(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
+        
+        #add a build step for dll deploy fix. 
+        if ( NEED_DLL_FIX )
+            set ( DLL_FIX_TARGET_NAME "DLL_FIX_${PROJECT_NAME}" )
+            
+            if ( "${PROJECT_NAME}" STREQUAL "${CMAKE_PROJECT_NAME}" )
+                set ( VS_PROJECT_PATH "${CMAKE_BINARY_DIR}" )
+            else ()
+                set ( VS_PROJECT_PATH "${CMAKE_BINARY_DIR}/${PROJECT_NAME}" )
+            endif ()
+            
+            add_custom_target ( ${DLL_FIX_TARGET_NAME} ALL
+                    COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_uwp_dll_deploy_fix.py
+                                       ${VS_PROJECT_PATH}/${PROJECT_NAME}.vcxproj
+            )
+
+            add_dependencies( ${PROJECT_NAME} ${DLL_FIX_TARGET_NAME} )
+            set_property( TARGET ${DLL_FIX_TARGET_NAME} PROPERTY FOLDER "CMAKE" )
+        endif ()
+    endif()
 
 endif()
 

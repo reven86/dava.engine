@@ -35,6 +35,7 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include <QSettings>
 #include <QVariant>
@@ -91,8 +92,11 @@ EditorCore::EditorCore(QObject *parent)
     auto previewWidget = mainWindow->previewWidget;
     auto scrollAreaController = previewWidget->GetScrollAreaController();
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, previewWidget, &PreviewWidget::SetSelectedNodes);
+
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
+    connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
@@ -100,13 +104,17 @@ EditorCore::EditorCore(QObject *parent)
 
 void EditorCore::Start()
 {
+    mainWindow->show();
+}
+
+void EditorCore::OnGLWidgedInitialized()
+{
     int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
     QStringList projectList;
     if (projectCount > 0)
     {
         OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
     }
-    mainWindow->show();
 }
 
 void EditorCore::OnCleanChanged(bool clean)
@@ -266,8 +274,8 @@ void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
 {
     Vector<String> tokens;
     Split(classesStr.toStdString(), " ", tokens);
-    
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalFlags();
+
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
     for (String &token : tokens)
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
 

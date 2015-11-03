@@ -1,7 +1,3 @@
-<CONFIG>
-uniform vec2 decalTileCoordScale = vec2(1.0, 1.0);
-<VERTEX_SHADER>
-
 #ifdef GL_ES
 // define default precision for float, vec, mat.
 precision highp float;
@@ -10,6 +6,9 @@ precision highp float;
 #define highp
 #define mediump
 #endif
+
+
+#define MAX_JOINTS 32
 
 // INPUT ATTRIBUTES
 attribute vec4 inPosition;
@@ -24,7 +23,7 @@ attribute vec3 inTexCoord0;
 attribute vec2 inTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 attribute vec2 inTexCoord1;
 #endif
 
@@ -39,6 +38,12 @@ attribute vec4 inColor;
 attribute vec3 inTangent;
 attribute vec3 inBinormal;
 #endif
+
+#if defined (SKINNING)
+attribute vec4 inJointIndex;
+attribute vec4 inJointWeight;
+#endif
+
 
 #if defined(SPEED_TREE_LEAF)
 attribute vec3 inPivot;
@@ -74,6 +79,11 @@ uniform float inSpecularity;
 uniform float inGlossiness;
 uniform float physicalFresnelReflectance;
 uniform vec3 metalFresnelReflectance;
+#endif
+
+#if defined (SKINNING)
+    uniform vec4 jointPositions[MAX_JOINTS]; // (x, y, z, scale)
+    uniform vec4 jointQuaternions[MAX_JOINTS];    
 #endif
 
 #if defined(VERTEX_FOG)
@@ -150,8 +160,12 @@ uniform vec3 boundingBoxSize;
 	
 #endif
 
-#if defined(TILED_DECAL)
+#if defined(TILED_DECAL_MASK)
 uniform vec2 decalTileCoordScale;
+#endif
+
+#if defined(MATERIAL_DETAIL)
+uniform vec2 detailTileCoordScale;
 #endif
 
 // OUTPUT ATTRIBUTES
@@ -161,11 +175,15 @@ varying vec3 varTexCoord0;
 varying vec2 varTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 varying vec2 varTexCoord1;
 #endif
 
-#if defined(TILED_DECAL)
+#if defined(MATERIAL_DETAIL)
+varying mediump vec2 varDetailTexCoord;
+#endif
+
+#if defined(TILED_DECAL_MASK)
 varying vec2 varDecalTileTexCoord;
 #endif
 
@@ -264,6 +282,13 @@ vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
 	return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent));
 }
 
+vec3 JointTransformTangent(vec3 inVec, vec4 jointQuaternion)
+{
+    vec3 t = 2.0 * cross(jointQuaternion.xyz, inVec);
+    return inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t); 
+    //return inVec; 
+}
+
 #if defined(WAVE_ANIMATION)
 uniform float globalTime;
 #endif
@@ -302,7 +327,15 @@ vec4 Wave(float time, vec4 pos, vec2 uv)
 }
 
 void main()
-{	
+{
+
+#if defined (SKINNING)
+    //compute final state - for now just effected by 1 bone - later blend everything here
+    int index = int(inJointIndex);
+    vec4 weightedVertexPosition = jointPositions[index];
+    vec4 weightedVertexQuaternion = jointQuaternions[index];
+#endif
+
 #if defined(MATERIAL_SKYBOX)
 	vec4 vecPos = (worldViewProjMatrix * inPosition);
 	gl_Position = vec4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
@@ -459,7 +492,13 @@ void main()
         gl_Position = worldViewProjMatrix * pos;
     
     #else
-        gl_Position = worldViewProjMatrix * inPosition;
+        #if defined (SKINNING)
+            vec3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, inPosition.xyz);
+            vec4 skinnedPosition = vec4(weightedVertexPosition.xyz + (inPosition.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, inPosition.w);
+            gl_Position = worldViewProjMatrix * skinnedPosition;
+        #else
+            gl_Position = worldViewProjMatrix * inPosition;
+        #endif
     #endif
 
 #endif //defined(WIND_ANIMATION)
@@ -472,7 +511,11 @@ void main()
     #if defined(MATERIAL_GRASS_TRANSFORM)
         vec3 eyeCoordsPosition = vec3(worldViewMatrix * pos); // view direction in view space
     #else
-        vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition); // view direction in view space
+        #if defined (SKINNING)
+            vec3 eyeCoordsPosition = vec3(worldViewMatrix * skinnedPosition); // view direction in view space
+        #else
+            vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition); // view direction in view space
+        #endif
     #endif
 #endif
 
@@ -521,7 +564,7 @@ void main()
     float Dbp = NdotL;
     float Geo = 1.0 / LdotH * LdotH;
     
-	varDiffuseColor = NdotL / _PI;
+    varDiffuseColor = NdotL / _PI;
     
     varSpecularColor = Dbp * Geo * fresnelOut * specularity;
     varNdotH = NdotH;
@@ -531,23 +574,30 @@ void main()
 #endif
 
 #if defined(PIXEL_LIT)
-	vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
-	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);		
-	vec3 b = normalize (worldViewInvTransposeMatrix * inBinormal);	
+
+    #if defined (SKINNING)
+        vec3 n = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inNormal, weightedVertexQuaternion));
+        vec3 t = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inTangent, weightedVertexQuaternion));
+        vec3 b = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inBinormal, weightedVertexQuaternion));
+    #else
+        vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
+        vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
+        vec3 b = normalize (worldViewInvTransposeMatrix * inBinormal);
+    #endif
     
 #if defined(DISTANCE_ATTENUATION)
     varPerPixelAttenuation = length(toLightDir);
 #endif
     //lightDir = normalize(lightDir);
     
-	// transform light and half angle vectors by tangent basis
-	vec3 v;
-	v.x = dot (toLightDir, t);
-	v.y = dot (toLightDir, b);
-	v.z = dot (toLightDir, n);
+    // transform light and half angle vectors by tangent basis
+    vec3 v;
+    v.x = dot (toLightDir, t);
+    v.y = dot (toLightDir, b);
+    v.z = dot (toLightDir, n);
     
 #if !defined(FAST_NORMALIZATION)
-	varToLightVec = v;
+    varToLightVec = v;
 #else
     varToLightVec = normalize(v);
 #endif
@@ -620,20 +670,20 @@ void main()
             // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
             // to get more clear understanding about this calculations
             float fogK = step(cameraPosition.z, fogHalfspaceHeight);
+            float fogZ = abs(viewDirectionInWorldSpace.z) + 0.001;
+
             float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
             float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
             
             float fogC1 = fogK * (fogFdotP + fogFdotC);
             float fogC2 = (1.0 - 2.0 * fogK) * fogFdotP;
             float fogG = min(fogC2, 0.0);
-            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / abs(viewDirectionInWorldSpace.z));
-            
+            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / fogZ);
             float halfSpaceFogAmoung = 1.0 - exp2(-fogG);
         #else
-            float fogK = viewDirectionInWorldSpace.z / fogDistance;
-            float fogB = cameraPosition.z - fogHalfspaceHeight;
-            
-            float halfSpaceFogAmoung = fogHalfspaceDensity * exp(-fogHalfspaceFalloff * fogB) * (1.0 - exp(-fogHalfspaceFalloff * fogK * fogDistance)) / fogK;
+            float CdotF = cameraPosition.z - fogHalfspaceHeight;
+            float halfSpaceFogAmoung = (fogHalfspaceDensity * fogDistance * exp(-fogHalfspaceFalloff * CdotF)) *
+                clamp((1.0 - exp(-fogHalfspaceFalloff * viewDirectionInWorldSpace.z)) / viewDirectionInWorldSpace.z, 0.0, 1.0);
         #endif
         varFogAmoung = varFogAmoung + clamp(halfSpaceFogAmoung, 0.0, fogHalfspaceLimit);
     #endif
@@ -713,13 +763,9 @@ void main()
 #endif
 
 #endif
-	
-	#if defined(VERTEX_COLOR)
-		varVertexColor *= vec4(sphericalLightFactor * 2.0, 1.0);
-	#else
-		varVertexColor = vec4(sphericalLightFactor * 2.0, 1.0);
-	#endif
-	
+
+	varVertexColor = vec4(sphericalLightFactor * 2.0, 1.0);
+
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
     varVertexColor.rgb = varVertexColor.rgb * treeLeafColorMul * treeLeafOcclusionMul + vec3(treeLeafOcclusionOffset);
 #endif
@@ -734,11 +780,15 @@ void main()
     varTexCoord0 += tex0ShiftPerSecond * globalTime;
 #endif
 	
-#if defined(TILED_DECAL)
+#if defined(TILED_DECAL_MASK)
     varDecalTileTexCoord = varTexCoord0 * decalTileCoordScale;
 #endif
     
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DETAIL)
+    varDetailTexCoord = varTexCoord0 * detailTileCoordScale;
+#endif
+	
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 	
 	#if defined(SETUP_LIGHTMAP)
 		varLightmapSize = lightmapSize;

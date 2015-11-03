@@ -31,7 +31,6 @@
 #define __DAVAENGINE_BILLBOARD_NODE_H__
 
 #include "Scene3D/Entity.h"
-#include "Render/RenderDataObject.h"
 
 namespace DAVA 
 {

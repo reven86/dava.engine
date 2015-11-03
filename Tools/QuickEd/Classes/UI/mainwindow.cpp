@@ -177,12 +177,7 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DavaGLWidget* MainWindow::GetGLWidget()
-{
-    return previewWidget->GetDavaGLWidget();
-}
-
-DialogReloadSprites* MainWindow::GetDialogReloadSprites()
+DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
 {
     return dialogReloadSprites;
 }
@@ -602,5 +597,8 @@ void MainWindow::OnDocumentChanged(Document* doc)
     if (nullptr != doc)
     {
         doc->SetEmulationMode(emulationBox->isChecked());
+
+        const bool isPixelized = EditorSettings::Instance()->IsPixelized();
+        Texture::SetPixelization(isPixelized);
     }
 }

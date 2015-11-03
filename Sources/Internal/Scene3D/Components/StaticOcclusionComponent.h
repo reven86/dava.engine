@@ -59,9 +59,10 @@ public:
     
     inline uint32 GetDataSize() const;
     inline void SetDataSize(uint32 bytes);
-protected:
+
+private:
     StaticOcclusionData data;
-    uint32 sizeInKbytes;
+
 public:
 	INTROSPECTION_EXTEND(StaticOcclusionDataComponent, Component,
                          PROPERTY("Size in kBytes", "Size of occlusion information in kBytes", GetDataSize, SetDataSize, I_VIEW | I_EDIT)
@@ -119,6 +120,8 @@ public:
 
 class StaticOcclusionDebugDrawComponent : public Component
 {
+    friend class StaticOcclusionDebugDrawSystem;
+
 public:
     IMPLEMENT_COMPONENT_TYPE(STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);
 
@@ -134,7 +137,11 @@ protected:
     ~StaticOcclusionDebugDrawComponent();
 private:
     RenderObject * renderObject;
-    
+    rhi::HVertexBuffer vertices;
+    rhi::HIndexBuffer gridIndices, coverIndices;
+    uint32 vertexCount, gridIndexCount, coverIndexCount;
+    AABBox3 bbox;
+
 public:
     INTROSPECTION_EXTEND(StaticOcclusionDebugDrawComponent, Component,
         NULL

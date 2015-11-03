@@ -43,9 +43,8 @@ namespace DAVA
 
 class TextBlockRender;
 class TextBlockSoftwareRender;
-class TextBlockGraphicsRender;
-class TextBlockDistanceRender;
-    
+class TextBlockGraphicRender;
+
 /**
     \ingroup render_2d
     \brief Class to render text on the screen. 
@@ -127,8 +126,8 @@ public:
     TextBlock * Clone();
 
     const Vector<int32>& GetStringSizes();
+        
 
-    void ForcePrepare(Texture *texture);
 #if defined(LOCALIZATION_DEBUG)
     int32 GetFittingOptionUsed();
 	bool IsVisualTextCroped();
@@ -148,7 +147,8 @@ public:
     TextBlockRender* GetRenderer(){ return textBlockRender; }
 
     void SetAngle(const float32 _angle);
-    void SetPivot(const Vector2 & _pivot);
+    void SetPivot(const Vector2& _pivot);
+
 protected:
 
 	TextBlock();
@@ -157,7 +157,8 @@ protected:
 
     void NeedPrepare(Texture* texture = NULL);
     void PrepareInternal();
-	void CalculateCacheParams();
+
+    void CalculateCacheParams();
     void CalculateCacheParamsIfNeed();
 
     void SetFontInternal(Font* _font);
@@ -207,15 +208,12 @@ protected:
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;
-    friend class TextBlockGraphicsRender;
-    friend class TextBlockDistanceRender;
-    
-    TextBlockRender* textBlockRender;
-    TextureInvalidater *textureInvalidater;
-	Texture *textureForInvalidation;
+    friend class TextBlockGraphicRender;
 
-	float angle;
-	Vector2 pivot;
+    TextBlockRender* textBlockRender;
+
+    float angle;
+    Vector2 pivot;
 };
 
 inline void TextBlock::CalculateCacheParamsIfNeed()

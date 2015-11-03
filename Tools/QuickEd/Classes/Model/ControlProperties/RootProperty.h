@@ -57,7 +57,7 @@ protected:
     virtual ~RootProperty();
     
 public:
-    virtual int GetCount() const override;
+    virtual DAVA::uint32 GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
 
     ClassProperty *GetClassProperty() const { return classProperty; }

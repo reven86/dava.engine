@@ -133,10 +133,10 @@ void TextureBrowser::Close()
     TextureConvertor::Instance()->CancelConvert();
 	TextureConvertor::Instance()->WaitConvertedAll();
 
-	DAVA::SafeRelease(curScene);
+    setScene(nullptr);
 
-	// clear cache
-	TextureCache::Instance()->clearInsteadThumbnails();
+    // clear cache
+    TextureCache::Instance()->clearInsteadThumbnails();
 
     ui->textureAreaConverted->warningShow(false);
 }
@@ -751,9 +751,9 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
             updateConvertedImageAndInfo(images.images, *curDescriptor);
         }
 
-		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
-		if(NULL != texture)
-		{
+        DAVA::Texture* texture = textureListModel->getTexture(descriptor);
+        if (NULL != texture)
+        {
             // reload this texture into scene
             reloadTextureToScene(texture, descriptor, gpu);
         }
@@ -819,9 +819,9 @@ void TextureBrowser::textureZoomFit(bool checked)
 		}
 		else
 		{
-			if(DAVA::Texture::TEXTURE_CUBE == curTexture->textureType)
-			{
-				QSize size = ui->textureAreaOriginal->getContentSize();
+            if (rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
+            {
+                QSize size = ui->textureAreaOriginal->getContentSize();
 				w = size.width();
 				h = size.height();
 			}
@@ -968,14 +968,17 @@ void TextureBrowser::convertStatusQueue(int curJob, int jobCount)
 
 void TextureBrowser::setScene(DAVA::Scene *scene)
 {
-	DAVA::SafeRelease(curScene);
-	curScene = DAVA::SafeRetain(scene);
+    if (scene != curScene)
+    {
+        DAVA::SafeRelease(curScene);
+        curScene = DAVA::SafeRetain(scene);
+    }
 
-	// reset current texture
-	setTexture(NULL, NULL);
+    // reset current texture
+    setTexture(nullptr, nullptr);
 
-	// set new scene
-	textureListModel->setScene(curScene);
+    // set new scene
+    textureListModel->setScene(curScene);
 }
 
 void TextureBrowser::sceneActivated(SceneEditor2 *scene)
@@ -998,8 +1001,8 @@ void TextureBrowser::sceneDeactivated(SceneEditor2 *scene)
 {
 	if(curScene == scene)
 	{
-		setScene(NULL);
-	}
+        setScene(nullptr);
+    }
 }
 
 void TextureBrowser::sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)

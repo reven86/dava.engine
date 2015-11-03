@@ -39,45 +39,40 @@
 
 namespace DAVA
 {
+// use only for debug purposes
+// enabling this will save each rendered frame to documents folder
+#define SAVE_OCCLUSION_IMAGES 0
 
-class StaticOcclusion;
+struct StaticOcclusionFrameResult;
+class StaticOcclusionData;
+
 class StaticOcclusionRenderPass : public RenderPass
 {
 public:
-    StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * occlusion, RenderPassID id);
+    StaticOcclusionRenderPass(const FastName & name);
     ~StaticOcclusionRenderPass();
 
+    void DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
+                            StaticOcclusionFrameResult& target, const StaticOcclusionData&, uint32 blockIndex);
 
-
-    inline void SetIndex(int32 side, int32 i, int32 j, int32 k);
-    inline void SetOcclusionCamera(Camera * camera);
-    void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
-    static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
-    
 private:
-    int32 debugSide;
-    int32 debugI;
-    int32 debugJ;
-    int32 debugK;
-    
-    Camera * occlusionCamera;
-    StaticOcclusion * occlusion;
-    Set<RenderObject*> visibleObjectSet;
+    bool ShouldEnableDepthWriteForRenderObject(RenderObject*);
+
+private:
+    enum RenderBatchDepthOption : uint32
+    {
+        Option_DepthWriteDisabled = 0,
+        Option_DepthWriteEnabled = 1
+    };
+    using RenderBatchWithDepthOption = std::pair<RenderBatch*, RenderBatchDepthOption>;
+
+    rhi::HTexture colorBuffer;
+    rhi::HTexture depthBuffer;
+    rhi::HDepthStencilState depthWriteStateState[2];
+    Vector<RenderBatch*> terrainBatches;
+    UnorderedMap<RenderObject*, bool> switchRenderObjects;
+    Vector<RenderBatchWithDepthOption> meshBatchesWithDepthWriteOption;
 };
-    
-inline void StaticOcclusionRenderPass::SetOcclusionCamera(Camera * _camera)
-{
-    occlusionCamera = _camera;
-}
-
-inline void StaticOcclusionRenderPass::SetIndex(int32 side, int32 i, int32 j, int32 k)
-{
-    debugSide = side;
-    debugI = i;
-    debugJ = j;
-    debugK = k;
-}
-
 
 };
 

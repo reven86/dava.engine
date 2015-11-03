@@ -1,7 +1,0 @@
-MaterialTemplate:    
-    ULTRA_HIGH : "~res:/Materials/WaterPerPixelRealReflections.material"
-    HIGH : "~res:/Materials/WaterPerPixelCubemapAlphablend.material"
-    MEDIUM : "~res:/Materials/WaterPerPixelCubemapConstRefraction.material"
-    LOW : "~res:/Materials/WaterPerVertexCubemapDecal.material"
-    ULTRA_LOW : "~res:/Materials/Decal.Opaque.material"	
-

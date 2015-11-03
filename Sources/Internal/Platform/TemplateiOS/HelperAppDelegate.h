@@ -38,7 +38,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #include "UI/UIScreenManager.h"
-#import "Platform/TemplateiOS/EAGLViewController.h"
+#import "Platform/TemplateiOS/RenderViewController.h"
 
 enum 
 {
@@ -47,10 +47,10 @@ enum
 
 @interface HelperAppDelegate : NSObject <UIApplicationDelegate>
 {
-	EAGLViewController * glController;
+    RenderViewController* renderViewController;
 }
 
-@property (nonatomic, retain) EAGLViewController * glController;
+@property(nonatomic, retain) RenderViewController* renderViewController;
 
 @end
 

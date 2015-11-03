@@ -284,7 +284,7 @@ public:
         Rect coordinates will be recalculated to the hierarchy coordinates.
         Warning, rectInAbsoluteCoordinates isn't properly works for now!
      */
-    UIControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    UIControl(const Rect& rect = Rect());
 
     /**
      \brief Returns Sprite used for draw in the current UIControlBackground object.
@@ -396,8 +396,6 @@ public:
      */
     Rect GetAbsoluteRect();
 
-    DAVA_DEPRECATED(Rect GetRect(bool absoluteCoordinates));
-
     /**
      \brief Sets the untransformed control rect.
      \param[in] rect new control rect.
@@ -409,8 +407,6 @@ public:
      \param[in] rect new control absolute rect.
      */
     void SetAbsoluteRect(const Rect &rect);
-
-    DAVA_DEPRECATED(virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates));
 
     /**
      \brief Returns untransformed control position.
@@ -428,8 +424,6 @@ public:
      */
     Vector2 GetAbsolutePosition();
 
-    DAVA_DEPRECATED(Vector2 GetPosition(bool absoluteCoordinates));
-
     /**
      \brief Sets the untransformed control position.
      \param[in] position new control position.
@@ -441,8 +435,6 @@ public:
      \param[in] position new control absolute position.
      */
     void SetAbsolutePosition(const Vector2 &position);
-
-    DAVA_DEPRECATED(virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates));
 
     /**
      \brief Returns untransformed control size.
@@ -520,7 +512,6 @@ public:
      */
     inline float32 GetAngle() const;
     inline float32 GetAngleInDegrees() const;
-    
 
     /**
      \brief Sets contol rotation angle in radians.
@@ -742,23 +733,6 @@ public:
      \returns list of control children.
      */
     const List<UIControl*> &GetChildren() const;
-    /**
-     \brief Returns list of control children without internal controls.
-     \returns list of control children without internal controls.
-     */
-    virtual List<UIControl* >& GetRealChildren();
-
-    /**
-     \brief Returns the list of internal controls, which are editable
-     \ and belongs to the same control.
-     */
-    virtual List<UIControl* > GetSubcontrols();
-
-    /**
-     \brief Returns whether this control is subcontrol of its parent.
-     */
-    virtual bool IsSubcontrol();
-
     /**
      \brief Add control as a child.
         Children draws in the sequence of adding. If child has another parent
@@ -1260,8 +1234,6 @@ public:
     float32 angle;//!<control rotation angle. Rotation around pivot point.
 
 protected:
-    List<UIControl*> realChilds;
-
     UIControlBackground *background;
     int32 controlState;
     int32 prevControlState;
@@ -1359,9 +1331,11 @@ private:
 public:
     void AddClass(const FastName& clazz);
     void RemoveClass(const FastName& clazz);
-    bool HasClass(const FastName& clazz);
-    
-    String GetClassesAsString();
+    bool HasClass(const FastName& clazz) const;
+    void SetTaggedClass(const FastName& tag, const FastName& clazz);
+    void ResetTaggedClass(const FastName& tag);
+
+    String GetClassesAsString() const;
     void SetClassesFromString(const String &classes);
     
     const UIStyleSheetPropertySet& GetLocalPropertySet() const;
@@ -1384,7 +1358,7 @@ public:
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
 private:
-    Vector<FastName> classes;
+    UIStyleSheetClassSet classes;
     UIStyleSheetPropertySet localProperties;
     UIStyleSheetPropertySet styledProperties;
     RefPtr< UIControlPackageContext > packageContext;
@@ -1418,7 +1392,6 @@ public:
     inline void SetNoInput(bool noInput);
     inline bool GetDebugDraw() const;
     inline void SetDebugDrawNotHierarchic(bool val);
-    
 
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
                          PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
@@ -1433,11 +1406,9 @@ public:
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
-                         
-                         PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
-                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
-                         );
 
+                         PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
+                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT));
 };
 
 Vector2 UIControl::GetPivotPoint() const

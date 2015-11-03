@@ -462,14 +462,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
             
     case DropingMaterial:
         {
-			DAVA::Entity *targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
-
-			QVector<DAVA::NMaterial*> materialsV = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(data);
-			if(NULL != targetEntity && materialsV.size() == 1)
-			{
-				MaterialAssignSystem::AssignMaterialToEntity(curScene, targetEntity, materialsV[0]);
-				ret = true;
-			}
+            DVASSERT_MSG(false, "This can't be done. Materials should be assigned only on RenderBatch");
         }
 		break;
 

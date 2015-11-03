@@ -34,96 +34,97 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Platform/DeviceInfo.h"
+#include "Platform/DeviceInfoPrivateBase.h"
 
 namespace DAVA
 {
-    class DeviceInfoPrivate
+class DeviceInfoPrivate : public DeviceInfoPrivateBase
+{
+public:
+    DeviceInfoPrivate();
+    DeviceInfo::ePlatform GetPlatform();
+    String GetPlatformString();
+    String GetVersion();
+    String GetManufacturer();
+    String GetModel();
+    String GetLocale();
+    String GetRegion();
+    String GetTimeZone();
+    String GetUDID();
+    WideString GetName();
+    String GetHTTPProxyHost();
+    String GetHTTPNonProxyHosts();
+    int GetHTTPProxyPort();
+    DeviceInfo::ScreenInfo& GetScreenInfo();
+    int GetZBufferSize();
+    eGPUFamily GetGPUFamily();
+    DeviceInfo::NetworkInfo GetNetworkInfo();
+    List<DeviceInfo::StorageInfo> GetStoragesList();
+    void InitializeScreenInfo();
+    bool IsHIDConnected(DeviceInfo::eHIDType type);
+    bool IsTouchPresented();
+
+private:
+    enum NativeHIDType
     {
-    public:
-        DeviceInfoPrivate();
-        DeviceInfo::ePlatform GetPlatform();
-        String GetPlatformString();
-        String GetVersion();
-        String GetManufacturer();
-        String GetModel();
-        String GetLocale();
-        String GetRegion();
-        String GetTimeZone();
-        String GetUDID();
-        WideString GetName();
-        String GetHTTPProxyHost();
-        String GetHTTPNonProxyHosts();
-        int GetHTTPProxyPort();
-        DeviceInfo::ScreenInfo& GetScreenInfo();
-        int GetZBufferSize();
-        eGPUFamily GetGPUFamily();
-        DeviceInfo::NetworkInfo GetNetworkInfo();
-        List<DeviceInfo::StorageInfo> GetStoragesList();
-        int32 GetCpuCount();
-        void InitializeScreenInfo();
-        bool IsHIDConnected(DeviceInfo::eHIDType type);
-        void SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
-
-    private:
-
-        enum NativeHIDType
-        {
-            UNKNOWN = 0x00,
-            POINTER = 0x01,
-            MOUSE = 0x02,
-            JOYSTICK = 0x04,
-            GAMEPAD = 0x05,
-            KEYBOARD = 0x06,
-            KEYPAD = 0x07,
-            SYSTEM_CONTROL = 0x80
-        };
-        const uint16 USAGE_PAGE = 0x01;
-        using HIDConvPair = std::pair<NativeHIDType, DeviceInfo::eHIDType>;
-        Vector<HIDConvPair> HidConvSet =
-        { 
-            {UNKNOWN,        DeviceInfo::HID_UNKNOWN_TYPE},
-            {POINTER,        DeviceInfo::HID_POINTER_TYPE},
-            {MOUSE,          DeviceInfo::HID_MOUSE_TYPE},
-            {JOYSTICK,       DeviceInfo::HID_JOYSTICK_TYPE},
-            {GAMEPAD,        DeviceInfo::HID_GAMEPAD_TYPE},
-            {KEYBOARD,       DeviceInfo::HID_KEYBOARD_TYPE},
-            {KEYPAD,         DeviceInfo::HID_KEYPAD_TYPE},
-            {SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE}
-        };
-
-        class HIDsConnState
-        {
-        public:
-            uint16 hidCount = 0;
-            Vector<DeviceInfo::HIDCallBackFunc > callbacks;
-        };
-
-        Windows::Devices::Enumeration::DeviceWatcher^ CreateDeviceWatcher(NativeHIDType type);
-        void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation^ information);
-        void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate^ information);
-        bool IsEnabled(NativeHIDType type);
-        void NotifyAllClients(NativeHIDType type, bool isConnected);
-        eGPUFamily GPUFamily();
-
-        bool isTouchPresent = false;
-        bool isMobileMode = false;
-        Map<NativeHIDType, HIDsConnState> hids;
-        Vector<Windows::Devices::Enumeration::DeviceWatcher^> watchers;
-
-        DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
-        DeviceInfo::ScreenInfo screenInfo;
-        eGPUFamily gpu = GPU_INVALID;
-        String platformString;
-        String version;
-        String manufacturer;
-        String modelName;
-        String uDID;
-        WideString productName;
-        int32 zBufferSize = 24;
-        int32 cpuCount = 1;
+        UNKNOWN = 0x00,
+        POINTER = 0x01,
+        MOUSE = 0x02,
+        JOYSTICK = 0x04,
+        GAMEPAD = 0x05,
+        KEYBOARD = 0x06,
+        KEYPAD = 0x07,
+        SYSTEM_CONTROL = 0x80
+    };
+    const uint16 USAGE_PAGE = 0x01;
+    using HIDConvPair = std::pair<NativeHIDType, DeviceInfo::eHIDType>;
+    Vector<HIDConvPair> HidConvSet =
+    {
+      { UNKNOWN, DeviceInfo::HID_UNKNOWN_TYPE },
+      { POINTER, DeviceInfo::HID_POINTER_TYPE },
+      { MOUSE, DeviceInfo::HID_MOUSE_TYPE },
+      { JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE },
+      { GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE },
+      { KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE },
+      { KEYPAD, DeviceInfo::HID_KEYPAD_TYPE },
+      { SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE }
     };
 
+    Windows::Devices::Enumeration::DeviceWatcher ^ CreateDeviceWatcher(NativeHIDType type);
+    void CreateAndStartHIDWatcher();
+    void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation ^ information);
+    void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate ^ information);
+    bool IsEnabled(NativeHIDType type);
+    void NotifyAllClients(NativeHIDType type, bool isConnected);
+    eGPUFamily GPUFamily();
+
+    bool isTouchPresent = false;
+    bool isMobileMode = false;
+    Map<NativeHIDType, uint16> hids =
+    {
+      { UNKNOWN, 0 },
+      { POINTER, 0 },
+      { MOUSE, 0 },
+      { JOYSTICK, 0 },
+      { GAMEPAD, 0 },
+      { KEYBOARD, 0 },
+      { KEYPAD, 0 },
+      { SYSTEM_CONTROL, 0 }
+    };
+    Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
+
+    DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
+    DeviceInfo::ScreenInfo screenInfo;
+    eGPUFamily gpu = GPU_INVALID;
+    String platformString;
+    String version;
+    String manufacturer;
+    String modelName;
+    String uDID;
+    WideString deviceName;
+    String localDeviceName;
+    int32 zBufferSize = 24;
+};
 };
 
 #endif //  (__DAVAENGINE_WIN_UAP__)

@@ -57,22 +57,6 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, selectionHasChanges(false)
 	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
 {
-    DAVA::RenderStateData selectionStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, selectionStateData);
-	
-	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-								DAVA::RenderStateData::STATE_COLORMASK_ALL;
-	selectionStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	selectionStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	
-	selectionNormalDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
-
-	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-								DAVA::RenderStateData::STATE_COLORMASK_ALL |
-								DAVA::RenderStateData::STATE_DEPTH_TEST;
-	
-	selectionDepthDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
-
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
 
@@ -146,9 +130,9 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 		return;
 	}
 
-	if(DAVA::UIEvent::PHASE_BEGAN == event->phase)
-	{
-		// we can select only if mouse isn't over hood axis
+    if (DAVA::UIEvent::Phase::BEGAN == event->phase)
+    {
+        // we can select only if mouse isn't over hood axis
 		// or if hood is invisible now
 		// or if current mode is NORMAL (no modification)
 		if(!hoodSystem->IsVisible() ||
@@ -211,9 +195,9 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 			}
 		}
 	}
-	else if(DAVA::UIEvent::PHASE_ENDED == event->phase)
-	{
-		if(event->tid == DAVA::UIEvent::BUTTON_1)
+    else if (DAVA::UIEvent::Phase::ENDED == event->phase)
+    {
+        if(event->tid == DAVA::UIEvent::BUTTON_1)
 		{
 			if(applyOnPhaseEnd)
 			{
@@ -232,36 +216,34 @@ void SceneSelectionSystem::Draw()
 	}
 
 	if(curSelections.Size() > 0)
-	{
+    {
         DAVA::int32 drawMode = SettingsManager::GetValue(Settings::Scene_SelectionDrawMode).AsInt32();
-        DAVA::RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size) &Matrix4::IDENTITY);
-        UniqueHandle renderState = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? selectionDepthDrawState : selectionNormalDrawState;
 
-		for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
-		{
+        DAVA::RenderHelper::eDrawType wireDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_WIRE_DEPTH : DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH;
+        DAVA::RenderHelper::eDrawType solidDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_SOLID_DEPTH : DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH;
+
+        for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
+        {
             DAVA::AABBox3 selectionBox = curSelections.GetBbox(i);
 
 			// draw selection share
 			if(drawMode & SS_DRAW_SHAPE)
 			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawBox(selectionBox, 1.0f, renderState);
-			}
-			// draw selection share
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
+            }
+            // draw selection share
 			else if(drawMode & SS_DRAW_CORNERS)
 			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawCornerBox(selectionBox, 1.0f, renderState);
-			}
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxCorners(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
+            }
 
-			// fill selection shape
+            // fill selection shape
 			if(drawMode & SS_DRAW_BOX)
 			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f));
-				DAVA::RenderHelper::Instance()->FillBox(selectionBox, renderState);
-			}
-		}
-	}
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f), solidDrawType);
+            }
+        }
+    }
 }
 
 void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -288,10 +270,10 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
 	{
 		Clear();
 
-		auto count = newSelection.Size();
-		for (decltype(count) i = 0; i < count; ++i)
-		{
-			auto entity = newSelection.GetEntity(i);
+        uint32 count = newSelection.Size();
+        for (uint32 i = 0; i < count; ++i)
+        {
+            auto entity = newSelection.GetEntity(i);
 			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
 			{
 				curSelections.Add(entity, GetSelectionAABox(entity));

@@ -140,7 +140,7 @@ bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
     
     
 template<class T>
-void RemoveExchangingWithLast(Vector<T> & array, uint32 index)
+void RemoveExchangingWithLast(Vector<T> & array, size_t index)
 {
     array[index] = array[array.size() - 1];
     array.pop_back();
@@ -170,6 +170,26 @@ void Swap(T & v1, T & v2)
     v1 = v2;
     v2 = temp;
 }
+
+template <class T, std::size_t size>
+class CircularArray
+{
+public:
+    T& Next()
+    {
+        T& ret = elements[currentIndex];
+
+        if ((++currentIndex) == elements.size())
+            currentIndex = 0;
+
+        return ret;
+    }
+
+    std::array<T, size> elements;
+
+protected:
+    std::size_t currentIndex = 0;
+};
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	

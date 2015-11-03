@@ -1010,18 +1010,17 @@ void WebViewControl::Initialize(const Rect& rect)
 
     int32 isVisibleStyle = (renderToTexture) ? WS_VISIBLE : 0;
 
-	// Create the browser holder window.
-	browserWindow = ::CreateWindowEx(0, L"Static", L"", 
-        WS_CHILD 
-        | isVisibleStyle
-        | WS_CLIPCHILDREN, // Excludes the area occupied by child windows when drawing occurs within the parent window. This style is used when creating the parent window.
-		0, 0, static_cast<int>(rect.dx), static_cast<int>(rect.dy), 
-        core->GetWindow(), nullptr, core->GetInstance(), nullptr);
+    HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
+    // Create the browser holder window.
+    browserWindow = ::CreateWindowEx(0, L"Static", L"",
+                                     WS_CHILD | isVisibleStyle | WS_CLIPCHILDREN, // Excludes the area occupied by child windows when drawing occurs within the parent window. This style is used when creating the parent window.
+                                     0, 0, static_cast<int>(rect.dx), static_cast<int>(rect.dy),
+                                     (HWND)core->GetNativeView(), nullptr, hInstance, nullptr);
 
-	SetRect(rect);
+    SetRect(rect);
 
-	// Initialize the browser itself.
-	InititalizeBrowserContainer();
+    // Initialize the browser itself.
+    InititalizeBrowserContainer();
 }
 
 bool WebViewControl::InititalizeBrowserContainer()
@@ -1051,7 +1050,7 @@ void WebViewControl::LoadHtmlString(const WideString& htmlString)
     // document content with custom html from memory
     // http://msdn.microsoft.com/en-us/library/ie/aa752047%28v=vs.85%29.aspx
 
-    Rect r = uiWebView.GetRect(true);
+    Rect r = uiWebView.GetAbsoluteRect();
 
     // destroy browser window
     CleanData();

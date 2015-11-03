@@ -142,8 +142,6 @@ public:
     void LoadFromYamlNodeCompleted() override;
     YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
 
-    List<UIControl* > GetSubcontrols() override;
-
     SpinnerAdapter * GetAdater() const { return adapter; }
     void SetAdapter(SpinnerAdapter * adapter);
 

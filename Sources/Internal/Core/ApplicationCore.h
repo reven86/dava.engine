@@ -34,7 +34,6 @@
 
 namespace DAVA 
 {
-
 /**
 	\ingroup core
 	\brief Class that defines high-level application logic. 
@@ -94,7 +93,7 @@ namespace DAVA
 	\code
 	void GameCore::OnAppStarted()
 	{
-		RenderManager::Instance()->SetFPS(30);
+		Renderer::SetDesiredFPS(30);
 
 		mainMenuScreen.Set(new MainMenuScreen());
 		gameScreen.Set(new GameScreen());
@@ -191,7 +190,7 @@ public:
 	virtual bool OnQuit();
 
 protected:
-	/**
+    /**
 		\brief Called immediately after application initialized and all singletons are created. 
 		This function is second initialization function of your application. First initialization function is FrameworkDidLaunched and it actually allow you to set 
 		some important things like your application resolution, set available graphics resources folders and do preliminary initialization.
@@ -203,7 +202,7 @@ protected:
 		\code
 			void GameCore::OnAppStarted()
 			{
-				RenderManager::Instance()->SetFPS(30);
+				Renderer::SetDesiredFPS(30);
 
 				mainMenuScreen.Set(new MainMenuScreen());
 				gameScreen.Set(new GameScreen());
@@ -217,8 +216,8 @@ protected:
 			}
 		\endcode
 	 */
-	virtual void OnAppStarted() = 0;
-	/**
+    virtual void OnAppStarted() = 0;
+    /**
 		\brief Called when user requested to quit from application. 
 		You should put all deinitialization in this function. Here you can release all objects. 
 		Framework can help you to find memory leaks but to use memory leak detection you should release all objects carefully. 
@@ -226,41 +225,49 @@ protected:
 		We do not recommend to save game progress in this function, because on some platforms it can create problems. 
 		Our recommendation to perform in-game progress saves during the game immediately after changes that are important. 
 	 */
-	virtual void OnAppFinished() = 0;
-    
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) 
-	/**
+    virtual void OnAppFinished();
+
+    /**
 		\brief Called when application goes to background on mobile platforms
 	 */
-	virtual void OnBackground() = 0;
+    virtual void OnBackground();
 
-	/**
+    /**
 	 \brief Called when application returns to foreground on mobile platforms
 	 */
-	virtual void OnForeground();
+    virtual void OnForeground();
 
     /**
      \brief Called when application goes to background due to device lock on iOS platforms
 	 */
-	virtual void OnDeviceLocked() = 0;
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-	
-	/**	
+    virtual void OnDeviceLocked();
+
+    /**
+     \brief Called when application lost focus (desktop platforms)
+     */
+    virtual void OnFocusLost();
+
+    /**
+     \brief Called when application has received focus (desktop platforms)
+     */
+    virtual void OnFocusReceived();
+
+    /**	
 		\brief this function is called every frame to let you update your application. 
 		Normally this function can handle high-level tasks that is common between all application screens. 
 		Logic of the particular game screen should be inside that screen and it's Update function. 
 	 
-		To modify the frequency of Update calls you can use \ref RenderManager::Instance()->SetFPS() function
+		To modify the frequency of Update calls you can use \ref Renderer::SetDesiredFPS() function
 	 
 		\param[in] timeElapsed time in seconds that passed from the previous frame
 	 */
-	virtual void Update(float32 timeElapsed);
-	/**
+    virtual void Update(float32 timeElapsed);
+    /**
 		\brief Called when application is ready to draw the frame
 		In this function you can perform draw. Normally you should draw inside your particular screen but in some cases you can utilize this function when you need to draw something that will work on every screen.
 	 */
-	virtual void Draw();	
-	/**
+    virtual void Draw();
+    /**
 		\brief Called before draw to let you prepare to the rendering
 	 */
 	virtual void BeginFrame();

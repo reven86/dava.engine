@@ -171,11 +171,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     return l;
 }
 
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    return sysconf(_SC_NPROCESSORS_CONF);
-}
-
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
@@ -186,13 +181,14 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    DVASSERT(false && "Not Implement");
+    //TODO: remove this empty realization and implement detection of HID connection
     return false;
 }
 
-void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
+bool DeviceInfoPrivate::IsTouchPresented()
 {
-    DVASSERT(false && "Not Implement");
+    //TODO: remove this empty realization and implement detection touch
+    return true;
 }
 
 DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
@@ -227,7 +223,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
         info.path = JNI::ToString(jStr);
     }
 
-	return info;
+    return info;
 }
 
 int32 DeviceInfoPrivate::GetNetworkType()

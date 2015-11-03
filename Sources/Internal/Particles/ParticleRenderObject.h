@@ -31,40 +31,29 @@
 #define __DAVAENGINE_PARTICLE_RENDER_OBJECT_H_
 
 #include "ParticleGroup.h"
+#include "Render/Highlevel/RenderObject.h"
+#include "Render/DynamicBufferAllocator.h"
 
 namespace DAVA
 {
 
-struct ParticleRenderGroup
-{
-	RenderBatch *renderBatch;	
-	
-	Vector<float> vertices;
-	Vector<float> texcoords;
-	Vector<uint32> colors;
 
-	Vector<float> texcoords2;
-	Vector<float> times;	
-
-	uint16 currParticlesCount;
-	bool enableFrameBlend;
-
-	void ClearArrays();
-	void ResizeArrays(uint32 particlesCount);
-	void UpdateRenderBatch(uint32 vertexSize, uint32 vertexStride);
-};
 
 class ParticleRenderObject : public RenderObject
 {
 	ParticleEffectData *effectData;
-	Vector<ParticleRenderGroup*> renderGroupCache;
+    //Vector<ParticleRenderGroup*> renderGroupCache;
+    Vector<RenderBatch*> renderBatchCache;
 
-	void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);	
-	void PrepareRenderData(Camera * camera);    
-	Vector<uint16> indices;
+    //void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);
+    void AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection);
+    void AppendRenderBatch(NMaterial* material, uint32 particlesCount, uint32 vertexLayout, const DynamicBufferAllocator::AllocResultVB& vBuffer);
+    void PrepareRenderData(Camera* camera);
+    Vector<uint16> indices;
     uint32 sortingOffset;
 
-    uint32 vertexSize, vertexStride;
+    uint32 currRenderBatchId;
+
 public:
 	ParticleRenderObject(ParticleEffectData *effect);
 	~ParticleRenderObject();
@@ -74,13 +63,15 @@ public:
 
     void SetSortingOffset(uint32 offset);
 
-    void Set2DMode(bool is2d);
-
     virtual void BindDynamicParameters(Camera * camera);
 	virtual void RecalcBoundingBox(){}
 	virtual void RecalculateWorldBoundingBox(){
 		worldBBox = bbox;}
-	
+
+private:
+    int32 CalculateParticleCount(const ParticleGroup& group);
+
+    uint32 regularVertexLayoutId, frameBlendVertexLayoutId;
 };
 
 }
