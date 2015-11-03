@@ -159,7 +159,7 @@ private:
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
-    void HideAsyncTaskBar();
+    void SetUnLockedDisplay(bool activate);
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -213,6 +213,8 @@ private:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
+    Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
+    bool displayUnLock = false;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -96,10 +96,13 @@ WinUAPXamlApp::WinUAPXamlApp()
     deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY) {
         MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
     });
+    displayRequest = ref new Windows::System::Display::DisplayRequest;
+    SetUnLockedDisplay(true);
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
 {
+    SetUnLockedDisplay(false);
     delete deferredSizeScaleEvents;
 }
 
@@ -382,6 +385,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
     bool visible = args->Visible;
+    SetUnLockedDisplay(visible);
     core->RunOnMainThread([this, visible]() {
         if (visible)
         {
@@ -930,6 +934,22 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
     ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+}
+
+void WinUAPXamlApp::SetUnLockedDisplay(bool activate)
+{
+    if (activate != displayUnLock)
+    {
+        displayUnLock = activate;
+        if (displayUnLock)
+        {
+            displayRequest->RequestActive();
+        }
+        else
+        {
+            displayRequest->RequestRelease();
+        }
+    }
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
