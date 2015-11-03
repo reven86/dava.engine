@@ -29,7 +29,7 @@
 #if !defined __METAL_H__
 #define __METAL_H__
 
-#if !defined(TARGET_IPHONE_SIMULATOR)
+#if !(defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR==1)
 #include <Metal/Metal.h>
 #include <QuartzCore/CAMetalLayer.h>
 

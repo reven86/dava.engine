@@ -36,7 +36,7 @@ using DAVA::Logger;
 
     #include "_metal.h"
 
-#if !defined(TARGET_IPHONE_SIMULATOR)
+#if !(defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR==1)
 namespace rhi
 {
 //==============================================================================
@@ -166,4 +166,4 @@ void SetToRHI(Handle hstate, id<MTLRenderCommandEncoder> ce)
 
 //==============================================================================
 } // namespace rhi
-#endif //#if !defined(TARGET_IPHONE_SIMULATOR)
+#endif //#if !(defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR==1)

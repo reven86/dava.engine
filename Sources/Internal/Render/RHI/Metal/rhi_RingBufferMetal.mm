@@ -29,7 +29,7 @@
     #include "rhi_RingBufferMetal.h"
 
     #include "_metal.h"
-#if !defined(TARGET_IPHONE_SIMULATOR)
+#if !(defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR==1)
 namespace rhi
 {
 //------------------------------------------------------------------------------
@@ -80,4 +80,4 @@ RingBufferMetal::Offset(void* ptr) const
 
 } // namespace rhi
 
-#endif //#if !defined(TARGET_IPHONE_SIMULATOR)
+#endif //#if !(defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR==1)
