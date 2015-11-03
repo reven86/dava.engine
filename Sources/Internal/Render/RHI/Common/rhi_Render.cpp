@@ -55,6 +55,11 @@ TextureSet_t
 typedef ResourcePool<TextureSet_t, RESOURCE_TEXTURE_SET, TextureSet_t::Desc, false> TextureSetPool;
 RHI_IMPL_POOL(TextureSet_t, RESOURCE_TEXTURE_SET, TextureSet_t::Desc, false);
 
+void InitTextreSetPool(uint32 maxCount)
+{
+    TextureSetPool::Reserve(maxCount);
+}
+
 struct
 TextureSetInfo
 {
@@ -136,6 +141,11 @@ PacketList_t
 
 typedef ResourcePool<PacketList_t, RESOURCE_PACKET_LIST, PacketList_t::Desc, false> PacketListPool;
 RHI_IMPL_POOL(PacketList_t, RESOURCE_PACKET_LIST, PacketList_t::Desc, false);
+
+void InitPacketListPool(uint32 maxCount)
+{
+    PacketListPool::Reserve(maxCount);
+}
 
 //------------------------------------------------------------------------------
 

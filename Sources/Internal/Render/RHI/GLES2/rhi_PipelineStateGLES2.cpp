@@ -627,6 +627,11 @@ gles2_PipelineState_CreateFragmentConstBuffer(Handle ps, unsigned bufIndex)
 
 namespace PipelineStateGLES2
 {
+void Init(uint32 maxCount)
+{
+    PipelineStateGLES2Pool::Reserve(maxCount);
+}
+
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_PipelineState_Create = &gles2_PipelineState_Create;

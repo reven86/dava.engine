@@ -1104,9 +1104,11 @@ int RegExp::_parse_piece()
         len = _buf->offset - offset;
         _buf->spread(offset, 1 + sizeof(unsigned) * 3);
         _buf->data[offset] = op;
-        ((unsigned*)(_buf->data + offset + 1))[0] = len;
-        ((unsigned*)(_buf->data + offset + 1))[1] = n;
-        ((unsigned*)(_buf->data + offset + 1))[2] = m;
+
+        // we are using temporary buffer + memcpy to prevent
+        // unaligned memory access on ARM devices
+        unsigned localBuffer[3] = { len, n, m };
+        memcpy(_buf->data + offset + 1, localBuffer, sizeof(localBuffer));
         break;
     }
     return 1;
