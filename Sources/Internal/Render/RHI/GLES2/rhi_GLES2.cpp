@@ -286,6 +286,7 @@ static void
 gles2_InvalidateCache()
 {
     PipelineStateGLES2::InvalidateCache();
+    DepthStencilStateGLES2::InvalidateCache();
 }
 
 //------------------------------------------------------------------------------
@@ -481,10 +482,12 @@ void gles2_Initialize(const InitParam& param)
         stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
         RECT rc;
-
-        GetClientRect((HWND)_GLES2_Native_Window, &rc);
-        _GLES2_DefaultFrameBuffer_Width = rc.right - rc.left;
-        _GLES2_DefaultFrameBuffer_Height = rc.bottom - rc.top;
+        if (_GLES2_Native_Window)
+        {
+            GetClientRect((HWND)_GLES2_Native_Window, &rc);
+            _GLES2_DefaultFrameBuffer_Width = rc.right - rc.left;
+            _GLES2_DefaultFrameBuffer_Height = rc.bottom - rc.top;
+        }
 
         InitializeRenderThreadGLES2((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
 
