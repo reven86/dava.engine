@@ -166,8 +166,8 @@ namespace DAVA
         // fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
         MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
-		FrameworkDidLaunched();
-		KeyedArchive * options = Core::GetOptions();
+        FrameworkDidLaunched();
+        KeyedArchive * options = Core::GetOptions();
 
 		fullscreenMode = GetCurrentDisplayMode();//FindBestMode(fullscreenMode);
 		if (options)
@@ -202,8 +202,8 @@ namespace DAVA
 
         clientSize.top = 0;
         clientSize.left = 0;
-		clientSize.right = currentMode.width;
-		clientSize.bottom = currentMode.height;
+        clientSize.right = currentMode.width;
+        clientSize.bottom = currentMode.height;
 
 		AdjustWindowRect(&clientSize, style, FALSE);
 
@@ -296,9 +296,9 @@ namespace DAVA
             TRACE_END_EVENT(11, "core", "Sleep");
 
             if (willQuit)
-            {	
-				break;
-			}
+            {
+                break;
+            }
 		}
 
 		Core::Instance()->SystemAppFinished();
@@ -379,9 +379,9 @@ namespace DAVA
 
     void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDisplayModes)
     {
-		availableDisplayModes.clear();
+        availableDisplayModes.clear();
 
-		DWORD iModeNum = 0;
+        DWORD iModeNum = 0;
 		DEVMODE	dmi;
 		ZeroMemory (&dmi, sizeof(dmi)) ;
 		dmi.dmSize = sizeof(dmi) ;

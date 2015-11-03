@@ -151,8 +151,8 @@ void TextureDescriptor::TextureDataSettings::EnableFlag( bool enable, int8 flag 
     if (enable)
     {
         textureFlags |= flag;
-	}
-	else
+    }
+    else
 	{
 		textureFlags &= ~flag;
 	}
@@ -197,7 +197,7 @@ TextureDescriptor * TextureDescriptor::CreateFromFile(const FilePath &filePathna
     if (!descriptor->Initialize(filePathname))
     {
         Logger::Error("[TextureDescriptor::CreateFromFile(]: there are no descriptor file (%s).", filePathname.GetAbsolutePathname().c_str());
-		delete descriptor;
+        delete descriptor;
         return nullptr;
     }
 
@@ -223,9 +223,9 @@ void TextureDescriptor::SetDefaultValues()
     for (int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
     {
         compression[i].Clear();
-	}
+    }
 
-	exportedAsGpuFamily = GPU_ORIGIN;
+    exportedAsGpuFamily = GPU_ORIGIN;
 }
 
 void TextureDescriptor::SetQualityGroup(const FastName &group)
@@ -262,15 +262,15 @@ bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
     if (compression->sourceFileCrc != sourceCRC)
     {
         compression->sourceFileCrc = sourceCRC;
-		wasUpdated = true;
-	}
+        wasUpdated = true;
+    }
     
     uint32 convertedCRC = GetConvertedCRC(forGPU);
     if (compression->convertedFileCrc != convertedCRC)
     {
         compression->convertedFileCrc = convertedCRC;
-		wasUpdated = true;
-	}
+        wasUpdated = true;
+    }
     
     return wasUpdated;
 }
@@ -1003,7 +1003,7 @@ void TextureDescriptor::Initialize(rhi::TextureAddrMode wrap, bool generateMipma
         drawSettings.mipFilter = rhi::TEXMIPFILTER_LINEAR;
     }
     else
-	{
+    {
         drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
     }
 }
@@ -1013,8 +1013,8 @@ void TextureDescriptor::Initialize( const TextureDescriptor *descriptor )
     if (nullptr == descriptor)
     {
         SetDefaultValues();
-		return;
-	}
+        return;
+    }
 
 	pathname = descriptor->pathname;
 
@@ -1051,8 +1051,8 @@ bool TextureDescriptor::Reload()
     if ((pathname.IsEmpty() == false) && pathname.Exists())
     {
         FilePath descriptorPathname = pathname;
-		SetDefaultValues();
-		return Load(descriptorPathname);
+        SetDefaultValues();
+        return Load(descriptorPathname);
 	}
 
 	return false;

@@ -44,6 +44,7 @@ void FullscreenTest::LoadResources()
 
     currentModeText = new UIStaticText(Rect(310, 10, 300, 20));
     currentModeText->SetFont(font);
+    currentModeText->SetTextColor(Color::White);
     AddControl(currentModeText);
 
     ScopedPtr<UIButton> btn(new UIButton(Rect(10, 40, 300, 20)));
@@ -78,6 +79,29 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
 
+    btn.reset(new UIButton(Rect(10, 150, 145, 30)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Mul +0.1");
+    btn->SetDebugDraw(true);
+    btn->SetTag(99);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulUp));
+    AddControl(btn);
+
+    btn.reset(new UIButton(Rect(155, 150, 145, 30)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Mul -0.1");
+    btn->SetDebugDraw(true);
+    btn->SetTag(99);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulDown));
+    AddControl(btn);
+
+    currentScaleText = new UIStaticText(Rect(310, 150, 300, 30));
+    currentScaleText->SetFont(font);
+    currentScaleText->SetTextColor(Color::White);
+    currentScaleText->SetText(Format(L"%f", Core::Instance()->GetScreenScaleMultiplier()));
+
+    AddControl(currentScaleText);
+
     GetBackground()->SetColor(Color::White);
 
     UpdateMode();
@@ -108,6 +132,34 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
         UpdateMode();
         break;
     }
+}
+
+void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
+{
+    float32 mul = Core::Instance()->GetScreenScaleMultiplier();
+    if (mul < 2.0)
+    {
+        mul += 0.1;
+    }
+
+    Core::Instance()->SetScreenScaleMultiplier(mul);
+    Core::Instance()->ResetScreen();
+
+    currentScaleText->SetText(Format(L"%f", mul));
+}
+
+void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
+{
+    float32 mul = Core::Instance()->GetScreenScaleMultiplier();
+    if (mul > 0.2)
+    {
+        mul -= 0.1;
+    }
+
+    Core::Instance()->SetScreenScaleMultiplier(mul);
+    Core::Instance()->ResetScreen();
+
+    currentScaleText->SetText(Format(L"%f", mul));
 }
 
 void FullscreenTest::UpdateMode()

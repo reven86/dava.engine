@@ -87,9 +87,9 @@ public:
                       MEMBER(mipFilter, InspDesc("mipFilter", GlobalEnumMap<rhi::TextureMipFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE))
     };
 
-    struct TextureDataSettings: public InspBase
-	{
-	public:
+    struct TextureDataSettings : public InspBase
+    {
+    public:
 		enum eOptionsFlag
 		{
 			FLAG_GENERATE_MIPMAPS   = 1 << 0,
@@ -156,9 +156,9 @@ public:
 
     void Initialize(rhi::TextureAddrMode wrap, bool generateMipmaps);
     void Initialize(const TextureDescriptor* descriptor);
-    bool Initialize(const FilePath &filePathname);
+    bool Initialize(const FilePath& filePathname);
 
-	void SetDefaultValues();
+    void SetDefaultValues();
 
     void SetQualityGroup(const FastName &group);
     FastName GetQualityGroup() const;

@@ -127,7 +127,51 @@ void MultilineTest::LoadResources()
     AddControl(textField2);
     AddControl(textFieldMulti);
 
-    SafeRelease(font);
+    
+    const uint32 Y_OFFSET = 500;
+    const uint32 CONTROL_LENGHT = 400;
+    const uint32 CONTROL_HEIGTH = 70;
+    
+    BaseScreen::LoadResources();
+    
+    font->SetSize(25.f);
+    ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
+    bigFont->SetSize(50.f);
+    
+    UIButton * button = new UIButton(Rect(0,Y_OFFSET, CONTROL_LENGHT, CONTROL_HEIGTH));
+    button->SetStateFont(0xFF, font);
+    button->SetStateFontColor(0xFF, Color::White);
+    button->SetStateText(0xFF, L"Show/Hide");
+    button->SetDebugDraw(true);
+    button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &MultilineTest::OnShowHideClick));
+    AddControl(button);
+    SafeRelease(button);
+    
+    UITextField * field = new UITextField(Rect(0, Y_OFFSET+CONTROL_HEIGTH+10, CONTROL_LENGHT, CONTROL_HEIGTH));
+    field->SetFont(font);
+    field->SetDebugDraw(true);
+    field->SetText(L"Test text inside UITextField used for test");
+    field->SetDelegate(this);
+    AddControl(field);
+    SafeRelease(field);
+    
+    field = new UITextField(Rect(0, Y_OFFSET+2*(CONTROL_HEIGTH+10), CONTROL_LENGHT, CONTROL_HEIGTH));
+    field->SetFont(font);
+    field->SetFocused();
+    field->SetDebugDraw(true);
+    field->SetText(L"Test text inside UITextField used for test");
+    field->SetDelegate(this);
+    
+    AddControl(field);
+    SafeRelease(field);
+    
+    topLayerControl = new UIControl(Rect(CONTROL_LENGHT/3, Y_OFFSET, CONTROL_LENGHT/3, 3*(Y_OFFSET+CONTROL_HEIGTH+10)));
+    topLayerControl->GetBackground()->SetColor(Color(1.0f, 0.0f, 0.0f, 0.5f));
+    topLayerControl->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    topLayerControl->GetBackground()->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
+    topLayerControl->SetDebugDraw(true);
+    AddControl(topLayerControl);
+    
     BaseScreen::LoadResources();
 }
 
@@ -141,6 +185,17 @@ void MultilineTest::UnloadResources()
 
     SafeDelete(textDelegate1);
     SafeDelete(textDelegate2);
+    SafeRelease(topLayerControl);
+}
+
+void MultilineTest::OnShowHideClick(BaseObject* sender, void * data, void * callerData)
+{
+    if (nullptr != topLayerControl)
+    {
+        static bool isVisible = true;
+        topLayerControl->SetVisible(isVisible);
+        isVisible = !isVisible;
+    }
 }
 
 UIButton* MultilineTest::CreateUIButton(Font* font, const Rect& rect, const String& text,
