@@ -84,11 +84,22 @@ void UIScreenTransition::ReleaseRenderTargets()
 
 void UIScreenTransition::StartTransition(UIScreen* _prevScreen, UIScreen* _nextScreen)
 {
+    DVASSERT_MSG(_prevScreen != nullptr, "[UIScreenTransition::StartTransition] prevScreen is nullptr");
+    DVASSERT_MSG(_nextScreen != nullptr, "[UIScreenTransition::StartTransition] nextScreen is nullptr");
+
     CreateRenderTargets();
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture(), MakeFunction(this, &UIScreenTransition::OnPrevScreenScreenshotComplete));
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture());
+
+    if (prevScreen->IsOnScreen())
+        prevScreen->SystemWillBecomeInvisible();
+    prevScreen->SystemWillDisappear();
+    if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
+        prevScreen->UnloadGroup();
+    prevScreen->SystemDidDisappear();
+    SafeRelease(prevScreen);
 
     nextScreen->LoadGroup();
     nextScreen->SystemWillAppear();
@@ -178,17 +189,4 @@ UI3DView* UIScreenTransition::FindFirst3dView(UIControl* control)
     return nullptr;
 }
 
-void UIScreenTransition::OnPrevScreenScreenshotComplete(Texture* texture)
-{
-    if (prevScreen)
-    {
-        if (prevScreen->IsOnScreen())
-            prevScreen->SystemWillBecomeInvisible();
-        prevScreen->SystemWillDisappear();
-        if (nextScreen == nullptr || prevScreen->GetGroupId() != nextScreen->GetGroupId())
-            prevScreen->UnloadGroup();
-        prevScreen->SystemDidDisappear();
-        SafeRelease(prevScreen);
-    }
-}
 };

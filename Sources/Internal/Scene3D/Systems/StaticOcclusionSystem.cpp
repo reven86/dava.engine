@@ -428,7 +428,7 @@ void StaticOcclusionDebugDrawSystem::UpdateGeometry(StaticOcclusionDebugDrawComp
     CreateStaticOcclusionDebugDrawGridIndice(component, staticOcclusionComponent);
     CreateStaticOcclusionDebugDrawCoverIndice(component, staticOcclusionComponent);
 
-    RenderObject *debugRenderObject = component->renderObject;
+    RenderObject* debugRenderObject = component->renderObject;
     debugRenderObject->GetRenderBatch(0)->vertexBuffer = component->vertices;
     debugRenderObject->GetRenderBatch(0)->vertexCount = component->vertexCount;
     debugRenderObject->GetRenderBatch(0)->indexBuffer = component->coverIndices;

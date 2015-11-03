@@ -40,7 +40,8 @@ namespace DAVA
 {
 const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;
 
-StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
+StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName& name)
+    : RenderPass(name)
 {
     meshBatchesWithDepthWriteOption.reserve(1024);
     terrainBatches.reserve(256);
@@ -160,12 +161,12 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
-        const RenderBatchArray & renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
-    
+        const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+
         uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch * batch = renderBatchArray.Get(batchIndex);
+            RenderBatch* batch = renderBatchArray.Get(batchIndex);
             auto renderObject = batch->GetRenderObject();
             auto objectType = renderObject->GetType();
 

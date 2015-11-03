@@ -89,7 +89,7 @@ struct StaticOcclusionFrameResult
 
 class StaticOcclusion
 {
-public:    
+public:
     StaticOcclusion();
     ~StaticOcclusion();
 
@@ -149,7 +149,6 @@ private:
     uint32 currentFrameY = 0;
     uint32 currentFrameZ = 0;
 };
-
 };
 
 #endif //__DAVAENGINE_STATIC_OCCLUSION__
