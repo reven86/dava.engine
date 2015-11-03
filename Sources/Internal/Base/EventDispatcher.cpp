@@ -34,7 +34,6 @@ namespace DAVA
 {
 
 EventDispatcher::EventDispatcher()
-    : eraseLocked( false )
 {
 }
 
@@ -48,6 +47,7 @@ void EventDispatcher::AddEvent(int32 eventType, const Message &msg)
 	ev.msg = msg;
 	ev.eventType = eventType;
 	events.push_back(ev);
+    ++eventsCount;
 }
 	
 bool EventDispatcher::RemoveEvent(int32 eventType, const Message &msg)
@@ -55,16 +55,17 @@ bool EventDispatcher::RemoveEvent(int32 eventType, const Message &msg)
 	List<Event>::iterator it = events.begin();
 	for(; it != events.end(); it++)
 	{
-		//if(Event(*it).msg == msg && Event(*it).eventType == eventType)
 		if((it->msg == msg) && (it->eventType == eventType) && !it->needDelete)
 		{
 			it->needDelete = true;
-			if( !eraseLocked )
-				events.erase(it);
-			return true;
-		}
-	}
-	return false;
+            --eventsCount;
+            DVASSERT(eventsCount >= 0);
+            if (!eraseLocked)
+                events.erase(it);
+            return true;
+        }
+    }
+    return false;
 }
 	
 bool EventDispatcher::RemoveAllEvents()
@@ -74,6 +75,7 @@ bool EventDispatcher::RemoveAllEvents()
     {
         removedEventsCount = (int32)events.size();
         events.clear();
+        eventsCount = 0;
     }
     else
     {
@@ -84,10 +86,12 @@ bool EventDispatcher::RemoveAllEvents()
             if(!(*it).needDelete)
             {
                 (*it).needDelete = true;
+                --eventsCount;
                 ++removedEventsCount;
             }
         }
     }
+    DVASSERT(eventsCount == 0);
     return (removedEventsCount != 0);
 }
 
@@ -142,11 +146,12 @@ void EventDispatcher::CopyDataFrom(EventDispatcher *srcDispatcher)
 	{
 		events.push_back(*it);
 	}
+    eventsCount = srcDispatcher->eventsCount;
 }
 
 int32 EventDispatcher::GetEventsCount() const
 {
-    return static_cast<int32>(events.size());
+    return eventsCount;
 }
 
 }

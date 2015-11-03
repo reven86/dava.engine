@@ -109,9 +109,9 @@ public:
     virtual ~TextFieldPlatformImpl();
 
     void OpenKeyboard();
-	void CloseKeyboard();
-	void GetText(WideString & string) const;
-	void SetText(const WideString & string);
+    void CloseKeyboard();
+    void GetText(WideString& string) const;
+    void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect);
 
 	void SetTextColor(const DAVA::Color &color);
@@ -175,9 +175,9 @@ private:
     static UnorderedMap<uint32_t, TextFieldPlatformImpl*> controls;
     uint32_t id;
     Rect rect;
-	WideString text;
-	int32_t align;
-	bool useRtlAlign;
+    WideString text;
+    int32_t align;
+    bool useRtlAlign;
 };
 
 };

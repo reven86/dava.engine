@@ -1,3 +1,8 @@
+# Only interpret ``if()`` arguments as variables or keywords when unquoted.
+if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+    cmake_policy(SET CMP0054 NEW)
+endif()
+
 include ( GlobalVariables      )
 
 if ( DAVA_MEMORY_PROFILER )
@@ -394,7 +399,8 @@ macro ( add_content_win_uap_single CONTENT_DIR )
         set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
         
         #all resources deploys in specified location
-        set ( DEPLOYMENT_LOCATION "${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}\\${ITEM_GROUP}" )
+        #set ( DEPLOYMENT_LOCATION "${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}\\${ITEM_GROUP}" )
+        set ( DEPLOYMENT_LOCATION "${ITEM_GROUP}" )
         set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${DEPLOYMENT_LOCATION} )
         
     ENDFOREACH()
@@ -477,3 +483,30 @@ macro ( add_dynamic_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
     add_dynamic_config_lib_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
 
 endmacro ()
+
+function (ASSERT VAR_NAME MESSAGE)
+    if (NOT ${VAR_NAME})
+         message( FATAL_ERROR ${MESSAGE} )
+    endif()
+endfunction()
+
+function (append_qt5_deploy LIBRARIES)
+    GET_PROPERTY(QT_DEPLOY_LIST_VALUE GLOBAL PROPERTY QT_DEPLOY_LIST)
+    LIST(APPEND QT_DEPLOY_LIST_VALUE ${${LIBRARIES}})
+    SET_PROPERTY(GLOBAL PROPERTY QT_DEPLOY_LIST "${QT_DEPLOY_LIST_VALUE}")
+endfunction()
+
+function (set_linkage_qt5_modules LIBRARIES)
+    SET_PROPERTY(GLOBAL PROPERTY QT_LINKAGE_LIST ${${LIBRARIES}})
+endfunction()
+
+function (get_qt5_deploy_list OUTPUT_VAR_NAME)
+    GET_PROPERTY(QT_DEPLOY_LIST_VALUE GLOBAL PROPERTY QT_DEPLOY_LIST)
+    LIST(REMOVE_DUPLICATES QT_DEPLOY_LIST_VALUE)
+    set(${OUTPUT_VAR_NAME} ${QT_DEPLOY_LIST_VALUE} PARENT_SCOPE)
+endfunction()
+
+function (link_with_qt5 TARGET)
+    GET_PROPERTY(QT_LINKAGE_LIST_VALUE GLOBAL PROPERTY QT_LINKAGE_LIST)
+    target_link_libraries( ${TARGET} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${QT_LINKAGE_LIST_VALUE} )
+endfunction()

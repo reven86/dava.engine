@@ -136,15 +136,19 @@ inline void DavaDebugBreak()
 
 #else
 
+// uncomment exit(-1) to shut up static analyzer (null pointers usage)
+#define DV_EXIT_ON_ASSERT // exit(-1);
+
 #define DVASSERT(expr)\
     if (!(expr))\
     {\
         LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
         if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
-                #expr, "", __FILE__, __LINE__))\
+                            #expr, "", __FILE__, __LINE__))\
         { \
             DavaDebugBreak();\
         } \
+		DV_EXIT_ON_ASSERT \
 	}\
 
 #define DVASSERT_MSG(expr, msg)\
@@ -152,10 +156,11 @@ inline void DavaDebugBreak()
     {\
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
         if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
-                #expr, msg, __FILE__, __LINE__))\
+                            #expr, msg, __FILE__, __LINE__))\
         { \
             DavaDebugBreak();\
         } \
+		DV_EXIT_ON_ASSERT \
     }\
 
 #define DVWARNING(expr, msg)\

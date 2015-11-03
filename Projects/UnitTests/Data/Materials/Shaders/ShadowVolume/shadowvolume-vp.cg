@@ -1,0 +1,80 @@
+#include "common.cgh"
+
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION
+    VPROG_IN_NORMAL
+    
+    #if SKINNING
+    VPROG_IN_BLENDINDEX(1)
+    #endif
+    
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    VPROG_OUT_POSITION
+VPROG_OUT_END
+
+property float4x4 worldViewProjMatrix : dynamic,instance : ;
+property float4x4 worldViewMatrix : dynamic,instance : ;
+property float4x4 projMatrix : dynamic,instance : ;
+property float4x4 worldViewInvTransposeMatrix : dynamic,instance : ;
+
+property float4 lightPosition0 : dynamic,instance : ;
+
+#if SKINNING
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin1 : bigarray ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
+#endif
+
+// prototypes, to shut up Metal shader-compiler
+float3 JointTransformTangent( float3 inVec, float4 jointQuaternion );
+
+float3
+JointTransformTangent( float3 inVec, float4 jointQuaternion )
+{
+    float3 t = 2.0 * cross( jointQuaternion.xyz, inVec );
+    return inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t); 
+}
+
+VPROG_BEGIN
+
+    float3 in_pos      = VP_IN_POSITION;
+    float3 in_normal   = VP_IN_NORMAL;
+    
+#if SKINNING
+    // compute final state - for now just effected by 1 bone - later blend everything here
+    int     index                    = int(VP_IN_BLENDINDEX);
+    float4  weightedVertexPosition   = jointPositions[index];
+    float4  weightedVertexQuaternion = jointQuaternions[index];
+#endif
+
+    float3x3 normalMatrix = float3x3(worldViewInvTransposeMatrix[0].xyz, 
+                                     worldViewInvTransposeMatrix[1].xyz, 
+                                     worldViewInvTransposeMatrix[2].xyz);
+
+#if SKINNING
+    float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, in_pos.xyz);
+    float4 position = float4(weightedVertexPosition.xyz + (in_pos.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
+    float3 normal = normalize( mul( JointTransformTangent(in_normal, weightedVertexQuaternion), normalMatrix ) );
+#else
+    float4 position = float4(in_pos.x, in_pos.y, in_pos.z, 1.0);
+    float3 normal = mul( in_normal, normalMatrix );
+#endif
+    
+    float4 posView = mul( position, worldViewMatrix );
+    float3 lightVecView = posView.xyz * lightPosition0.w - lightPosition0.xyz;
+    
+    if(dot(normal, -lightVecView) < 0.0)
+	{
+		if(posView.z * lightPosition0.w < lightPosition0.z)
+		{
+			posView.xyz -= lightVecView * (1000.0 - 10.0 + posView.z) / lightVecView.z;
+		}
+		else
+		{
+			posView = float4(lightVecView, 0.0);
+		}
+	}
+    VP_OUT_POSITION = mul( posView, projMatrix );
+    
+VPROG_END

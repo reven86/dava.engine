@@ -56,8 +56,8 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     {
         DVASSERT(isSingleLine);
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [appDelegate glController].backgroundView;
-        
+        BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
+
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
         DVASSERT(textFieldHolder->textCtrl != nullptr);
         
@@ -81,7 +81,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         [textFieldHolder setTextField:(DAVA::UITextField *)nil];
         
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+        BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
 
         if (!isSingleLine)
         {
@@ -219,16 +219,16 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
     void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         [textFieldHolder setUseRtlAlign:useRtlAlign];
         isNeedToUpdateTexture = true;
 	}
 
     bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		return textFieldHolder->useRtlAlign == YES;
-	}
+        UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        return textFieldHolder->useRtlAlign == YES;
+    }
 
     void TextFieldPlatformImpl::OpenKeyboard()
     {
@@ -386,13 +386,13 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
     void TextFieldPlatformImpl::SetInputEnabled(bool value)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		[textFieldHolder setTextInputAllowed:value];
-	}
+        UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        [textFieldHolder setTextInputAllowed:value];
+    }
 
     void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         UIView* view = textFieldHolder->textCtrl;
         
         UITextAutocapitalizationType type_ = [textFieldHolder convertAutoCapitalizationType:
@@ -410,8 +410,8 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
     void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        
+        UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+
         UIView* view = textFieldHolder->textCtrl;
         UITextAutocorrectionType type_ = [textFieldHolder convertAutoCorrectionType:
                                           (DAVA::UITextField::eAutoCorrectionType)value];
@@ -448,7 +448,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
     void TextFieldPlatformImpl::SetKeyboardAppearanceType(DAVA::int32 value)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         UIView* view = textFieldHolder->textCtrl;
         UIKeyboardAppearance type_ = [textFieldHolder convertKeyboardAppearanceType:
                                       (DAVA::UITextField::eKeyboardAppearanceType)value];
@@ -482,7 +482,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
     void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         UIReturnKeyType type_ = [textFieldHolder convertReturnKeyType:
                                  (DAVA::UITextField::eReturnKeyType)value];
         UIView* view = textFieldHolder->textCtrl;
@@ -499,7 +499,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
     void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         BOOL type_ = [textFieldHolder convertEnablesReturnKeyAutomatically:value];
         UIView* view = textFieldHolder->textCtrl;
         if (isSingleLine)
@@ -653,7 +653,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
             textView.contentInset = UIEdgeInsetsMake(-10, -5, 0, 0);
 
             HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-            BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+            BackgroundView* backgroundView = [[appDelegate renderViewController] backgroundView];
             [backgroundView PrepareView: textFieldHolder->textCtrl];
             
             [textFieldHolder addSubview:textView];

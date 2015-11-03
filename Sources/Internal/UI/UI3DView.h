@@ -61,9 +61,6 @@ public:
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
-
     void SetSize(const Vector2& newSize) override;
     UI3DView* Clone() override;
 

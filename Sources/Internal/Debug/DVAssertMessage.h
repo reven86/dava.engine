@@ -34,30 +34,25 @@
 #include "Base/BaseTypes.h"
 
 namespace DAVA {
-
-class DVAssertMessage
+namespace DVAssertMessage
 {
-public:
-	
-	// Modality type,
-	enum eModalType
-	{
-		// Try to show non-modal assert message on the platforms where it is applicable.
-		TRY_NONMODAL,
+// Modality type,
+enum eModalType
+{
+    // Try to show non-modal assert message on the platforms where it is applicable.
+    TRY_NONMODAL,
 
-		// Always show the assertion message as modal.
-		ALWAYS_MODAL
-	};
+    // Always show the assertion message as modal.
+    ALWAYS_MODAL
+};
 
-	static bool ShowMessage(eModalType modalType, const char8 * text, ...);
+bool ShowMessage(eModalType modalType, const char8* text, ...);
+bool IsMessageDisplayed();
 
-protected:
     // return true if user click Break
-	static bool InnerShow(eModalType modalType, const char* content);
-	
-	// Pointer to the platform-specific message.
-	static void* messageBoxPtr;
+bool InnerShow(eModalType modalType, const char* content);
 };
 
 };
+
 #endif // __DAVAENGINE_DVASSERT_MESSAGE_H__

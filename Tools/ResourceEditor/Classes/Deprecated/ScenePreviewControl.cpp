@@ -70,7 +70,6 @@ void ScenePreviewControl::RecreateScene()
     }
     
     editorScene = new Scene();
-    editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
     rotationSystem = new RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);

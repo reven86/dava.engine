@@ -92,8 +92,8 @@ void UnpackFile(const FilePath & sourceImagePath)
         FilePath imagePathname = FilePath::CreateWithNewExtension(sourceImagePath,".png");
         
         Image *image = images[0];
-        
-        if(image->cubeFaceID == Texture::CUBE_FACE_INVALID)
+
+        if (image->cubeFaceID == Texture::INVALID_CUBEMAP_FACE)
         {
             SaveSingleImage(imagePathname, image);
         }
@@ -160,9 +160,10 @@ void ResavePNG(const FilePath & folderPath, const String & extension)
 
 void ProcessImageUnpacker()
 {
+#if RHI_COMPLETE
     RenderManager::Create(Core::RENDERER_OPENGL);
-    PixelFormatDescriptor::InitializePixelFormatDescriptors();
-    
+#endif //#if RHI_COMPLETE
+
     FilePath sourceFolderPath = CommandLineParser::GetCommandParam(String("-folder"));
     FilePath sourceFilePath = CommandLineParser::GetCommandParam(String("-file"));
     
@@ -200,7 +201,9 @@ void ProcessImageUnpacker()
         PrintUsage();
     }
     
+#if RHI_COMPLETE
     RenderManager::Instance()->Release();
+#endif //#if RHI_COMPLETE
 }
 
 void FrameworkDidLaunched()

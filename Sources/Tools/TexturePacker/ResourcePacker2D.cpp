@@ -63,13 +63,13 @@ enum AssetClientCode : int
 
 const String& GetCodeAsString(AssetClientCode code)
 {
-    static Array<String, 7> codeStrings = {{"OK",
-                                            "WRONG_COMMAND_LINE",
-                                            "WRONG_IP",
-                                            "TIMEOUT",
-                                            "CANNOT_CONNECT",
-                                            "SERVER_ERROR",
-                                            "CANNOT_READ_FILES"}};
+    static Array<String, 7> codeStrings = { { "OK",
+                                              "WRONG_COMMAND_LINE",
+                                              "WRONG_IP",
+                                              "TIMEOUT",
+                                              "CANNOT_CONNECT",
+                                              "SERVER_ERROR",
+                                              "CANNOT_READ_FILES" } };
     static String codeUnknown("CODE_UNKNOWN");
 
     if (code >= 0 && code < static_cast<int>(codeStrings.size()))

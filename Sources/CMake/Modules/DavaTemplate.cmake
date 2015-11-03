@@ -294,6 +294,10 @@ else()
 
 endif()
 
+if (QT5_FOUND)
+    link_with_qt5(${PROJECT_NAME})
+endif()
+
 if ( QT5_FOUND )
     if ( WIN32 )
         set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
@@ -416,6 +420,11 @@ elseif( MACOS )
 
     if( DAVA_FOUND )
         set(LD_RUNPATHES "@executable_path @executable_path/../Resources @executable_path/../Frameworks")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
+    endif()
+
+    if (QT5_FOUND AND NOT DEPLOY AND NOT TEAMCITY_DEPLOY)
+        set(LD_RUNPATHES "${LD_RUNPATHES} ${QT5_LIB_PATH}")
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 

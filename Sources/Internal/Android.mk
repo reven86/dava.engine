@@ -194,6 +194,12 @@ DV_LOCAL_CPPFLAGS += -Wno-unknown-warning-option
 DV_LOCAL_CPPFLAGS += -Wno-pedantic
 DV_LOCAL_CPPFLAGS += -Wno-extern-c-compat
 DV_LOCAL_CPPFLAGS += -Wno-unknown-pragmas
+DV_LOCAL_CPPFLAGS += -Wno-unused-private-field
+DV_LOCAL_CPPFLAGS += -Wno-unused-label
+DV_LOCAL_CPPFLAGS += -Wno-unused-function
+DV_LOCAL_CPPFLAGS += -Wno-unused-value
+DV_LOCAL_CPPFLAGS += -Wno-self-assign-field
+DV_LOCAL_CPPFLAGS += -Wno-undefined-reinterpret-cast
 
 DV_LOCAL_CPP_FEATURES += exceptions
 
@@ -352,6 +358,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Render/Highlevel/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Highlevel/Vegetation/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Material/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/Common/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/Common/MCPP/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/GLES2/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Components/*.cpp) \

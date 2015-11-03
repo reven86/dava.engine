@@ -112,6 +112,7 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *sec
 
 Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
 {
+#if RHI_COMPLETE_TESTBED
     Rect oldViewport = RenderManager::Instance()->GetViewport();
     Vector2 targetSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(sprite->GetSize());
     Texture * fbo = Texture::CreateFBO((uint32)targetSize.dx, (uint32)targetSize.dy, FORMAT_RGBA8888, Texture::DEPTH_NONE);
@@ -127,6 +128,9 @@ Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
     
     SafeRelease(fbo);
     return resultImage;
+#else
+    return nullptr;
+#endif //RHI_COMPLETE_TESTBED
 }
 
 

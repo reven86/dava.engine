@@ -28,38 +28,34 @@
 
 
 #include "Render/Highlevel/RenderBatch.h"
-#include "Render/Material.h"
-#include "Render/RenderDataObject.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderLayer.h"
-#include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Debug/DVAssert.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/OcclusionQuery.h"
 #include "Debug/Stats.h"
 
 namespace DAVA
 {
-
-    
 RenderBatch::RenderBatch()
-    :   renderLayerIDsBitmaskFromMaterial(0)
-    ,   dataSource(0)
-    ,   renderDataObject(0)
-    ,   material(0)
-    ,   renderObject(0)
-    ,   sortingTransformPtr(NULL)
-    ,   startIndex(0)
-    ,   indexCount(0)
-    ,   type(PRIMITIVETYPE_TRIANGLELIST)
-    ,   sortingKey(SORTING_KEY_DEF_VALUE)
-    ,   aabbox(Vector3(), Vector3())
+    : dataSource(0)
+    , material(0)
+    , renderObject(0)
+    , indexBuffer(rhi::InvalidHandle)
+    , startIndex(0)
+    , indexCount(0)
+    , vertexBuffer(rhi::InvalidHandle)
+    , vertexCount(0)
+    , vertexBase(0)
+    , primitiveType(rhi::PRIMITIVE_TRIANGLELIST)
+    , vertexLayoutId(rhi::VertexLayout::InvalidUID)
+    , sortingKey(SORTING_KEY_DEF_VALUE)
+    , aabbox(Vector3(), Vector3())
 {
-	
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     occlusionQuery = new OcclusionQuery();
     queryRequested = -1;
@@ -73,10 +69,9 @@ RenderBatch::~RenderBatch()
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     SafeDelete(occlusionQuery);
 #endif
-	SafeRelease(dataSource);
-	SafeRelease(renderDataObject);
-		
-	SafeRelease(material);
+    SafeRelease(dataSource);
+
+    SafeRelease(material);
 }
     
 void RenderBatch::SetPolygonGroup(PolygonGroup * _polygonGroup)
@@ -86,89 +81,13 @@ void RenderBatch::SetPolygonGroup(PolygonGroup * _polygonGroup)
 	UpdateAABBoxFromSource();
 }
 
-void RenderBatch::SetRenderDataObject(RenderDataObject * _renderDataObject)
-{
-	SafeRelease(renderDataObject);
-    renderDataObject = SafeRetain(_renderDataObject);
-}
-
 void RenderBatch::SetMaterial(NMaterial * _material)
 {
 	NMaterial* oldMat = material;
     material = SafeRetain(_material);
 	SafeRelease(oldMat);
-    
-    renderLayerIDsBitmaskFromMaterial = material->GetRenderLayerIDsBitmask();
 }    
 
-void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
-{
-//  TIME_PROFILE("RenderBatch::Draw");
-//	if(!renderObject)return;
-    DVASSERT(renderObject != 0);    
-    
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-    
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if ((queryRequested >= 0) && occlusionQuery->IsResultAvailable())
-        {
-            uint32 result = 0;
-            occlusionQuery->GetQuery(&result);
-            if (result == 0 && ((globalFrameIndex - queryRequestFrame) < 3) && (lastFraemDrawn == globalFrameIndex - 1))
-            {
-                //RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
-                occlusionQuery->ResetResult();
-                queryRequested = -2;
-            }
-            else queryRequested = -1;
-        }
-    }
-    
-    if (queryRequested < -1)
-    {
-        queryRequested++;
-        RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
-        return;
-    }
-#endif
-	
-    
-    
-    renderObject->BindDynamicParameters(camera);
-    material->BindMaterialTechnique(ownerRenderPass, camera);
-    
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if (queryRequested == -1)
-        {
-            queryRequestFrame = globalFrameIndex;
-            occlusionQuery->BeginQuery();
-            queryRequested = 0;
-        }
-        else queryRequested++;
-    }
-#endif
-
-	if (dataSource)
-		material->Draw(dataSource);
-	else
-		material->Draw(renderDataObject);
-    
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    lastFraemDrawn = globalFrameIndex;
-    
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if (queryRequested == 0)
-        {
-            occlusionQuery->EndQuery();
-        }
-    }
-#endif
-}
     
 void RenderBatch::SetRenderObject(RenderObject * _renderObject)
 {
@@ -197,11 +116,11 @@ void RenderBatch::SetSortingOffset(uint32 offset)
 void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 {
 	NMaterial* curNode = material;
-	while(curNode != NULL && curNode->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
-	{
-		dataNodes.insert(curNode);
-		curNode = curNode->GetParent();
-	}
+    while (curNode != NULL)
+    {
+        dataNodes.insert(curNode);
+        curNode = curNode->GetParent();
+    }
 	
 	if(dataSource)
 	{
@@ -226,27 +145,31 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
         rb = new RenderBatch();
 
     SafeRelease(rb->dataSource);
-	rb->dataSource = SafeRetain(dataSource);
-    
-    SafeRelease(rb->renderDataObject);
-	rb->renderDataObject = SafeRetain(renderDataObject);
-	
-    SafeRelease(rb->material);
-	if(material)
-	{
-		NMaterial *mat = material->Clone();
-		rb->SetMaterial(mat);
-		mat->Release();
+    rb->dataSource = SafeRetain(dataSource);
 
- 		//rb->material->SetMaterialSystem(NULL);
+    if (material)
+    {
+        NMaterial* mat = material->Clone();
+        rb->SetMaterial(mat);
+		mat->Release();
 	}
 
-	rb->startIndex = startIndex;
-	rb->indexCount = indexCount;
-	rb->type = type;
+    rb->vertexBuffer = vertexBuffer;
+    rb->vertexCount = vertexCount;
+    rb->vertexBase = vertexBase;
 
-	rb->aabbox = aabbox;
-	rb->sortingKey = sortingKey;
+    rb->indexBuffer = indexBuffer;
+    rb->startIndex = startIndex;
+    rb->indexCount = indexCount;
+
+    rb->primitiveType = primitiveType;
+    rb->vertexLayoutId = vertexLayoutId;
+
+    rb->startIndex = startIndex;
+    rb->indexCount = indexCount;
+
+    rb->aabbox = aabbox;
+    rb->sortingKey = sortingKey;
 
 	return rb;
 }
@@ -263,87 +186,41 @@ void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializati
             dataSourceID = dataSource->GetNodeID();
         }
 
-		archive->SetUInt32("rb.type", type);
-		archive->SetUInt32("rb.indexCount", indexCount);
-		archive->SetUInt32("rb.startIndex", startIndex);
 		archive->SetVariant("rb.aabbox", VariantType(aabbox));
         archive->SetUInt32("rb.sortingKey", sortingKey);
         archive->SetVariant("rb.datasource", VariantType(dataSourceID));
 
-		NMaterial* material = GetMaterial();
 		if(material)
 		{
 			uint64 matKey = material->GetNodeID();
 			archive->SetUInt64("rb.nmatname", matKey);
-		}
-		
-		//archive->SetVariant("rb.material", VariantType((uint64)GetMaterial()));
-		
-		//KeyedArchive *mia = new KeyedArchive();
-		//archive->SetArchive("rb.matinst", mia);
-		//mia->Release();
-	}
+        }
+    }
 }
 
 void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializationContext)
 {
 	if(NULL != archive)
-	{
-		type = archive->GetUInt32("rb.type", type);
-		indexCount = archive->GetUInt32("rb.indexCount", indexCount);
-		startIndex = archive->GetUInt32("rb.startIndex", startIndex);
-		aabbox = archive->GetVariant("rb.aabbox")->AsAABBox3();
+    {
         sortingKey = archive->GetUInt32("rb.sortingKey", SORTING_KEY_DEF_VALUE);
-		PolygonGroup *pg = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(archive->GetVariant("rb.datasource")->AsUInt64()));
-		
-		NMaterial * newMaterial = NULL;
-		bool shouldConvertMaterial = archive->IsKeyExists("rb.material");
-		if(shouldConvertMaterial)
-		{
-			uint64 materialId = archive->GetVariant("rb.material")->AsUInt64();
-			Material *mat = static_cast<Material*>(serializationContext->GetDataBlock(materialId));
-			
-			InstanceMaterialState * oldMaterialInstance = new InstanceMaterialState();
-			KeyedArchive *mia = archive->GetArchive("rb.matinst");
-			if(NULL != mia)
-			{
-				oldMaterialInstance->Load(mia, serializationContext);
-			}
-			
-			if(mat)
-			{
-				newMaterial = serializationContext->ConvertOldMaterialToNewMaterial(mat, oldMaterialInstance, materialId);
-			}
-			
-			SafeRelease(oldMaterialInstance);
-		}
-		else
-		{
-			int64 matKey = archive->GetUInt64("rb.nmatname");
-			
-			newMaterial = static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey));
 
-			SafeRetain(newMaterial); //VI: material refCount should be >1 at this point
-		}
+        aabbox = archive->GetVariant("rb.aabbox")->AsAABBox3(); //this is historical "shield" as polygon group data loads after structure
 
-        if (pg!=dataSource)
+        PolygonGroup* pg = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(archive->GetVariant("rb.datasource")->AsUInt64()));
+        if (pg != dataSource)
         {
             SafeRelease(dataSource);
             dataSource = SafeRetain(pg);
         }
 
-		if(newMaterial)
-		{
-			SetMaterial(newMaterial);
-			DVASSERT(material->GetRetainCount() > 1);
+        int64 matKey = archive->GetUInt64("rb.nmatname");
+        NMaterial* mat = static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey));
+        SetMaterial(mat);
+        if (material)
+            material->PreBuildMaterial(PASS_FORWARD);
+    }
 
-			SafeRelease(newMaterial);
-		}
-
-        
-	}
-
-	BaseObject::LoadObject(archive);
+    BaseObject::LoadObject(archive);
 }
 
 void RenderBatch::UpdateAABBoxFromSource()

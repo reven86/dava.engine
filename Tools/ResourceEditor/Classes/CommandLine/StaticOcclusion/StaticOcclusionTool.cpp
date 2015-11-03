@@ -28,7 +28,7 @@
 
 
 #include "StaticOcclusionTool.h"
-
+#include "CommandLine/SceneUtils/SceneUtils.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Scene/SceneEditor2.h"
 
@@ -82,20 +82,30 @@ void StaticOcclusionTool::DumpParams() const
 
 void StaticOcclusionTool::Process() 
 {
-    if(commandAction == ACTION_BUILD)
+    const rhi::HTexture nullTexture;
+    const rhi::Viewport nullViewport(0, 0, 1, 1);
+
+    if (commandAction == ACTION_BUILD)
     {
-        SceneEditor2 *scene = new SceneEditor2();
-        if(scene->Load(scenePathname))
+        SceneEditor2* scene = new SceneEditor2();
+        if (scene->Load(scenePathname))
         {
+            scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
             scene->staticOcclusionBuildSystem->Build();
-            while(scene->staticOcclusionBuildSystem->IsInBuild())
+            RenderObjectsFlusher::Flush();
+
+            while (scene->staticOcclusionBuildSystem->IsInBuild())
             {
+                Renderer::BeginFrame();
+                RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
                 scene->Update(0.1f);
+                Renderer::EndFrame();
             }
 
             scene->Save();
         }
         SafeRelease(scene);
+        RenderObjectsFlusher::Flush();
     }
 }
 

@@ -38,7 +38,7 @@
 
 using namespace DAVA;
 
-static const Set<String> ControlClassesWithoutChildren = {"UI3DView"};
+static const Set<String> ControlClassesWithoutChildren = { "UI3DView" };
 
 ControlNode::ControlNode(UIControl *control, bool recursively)
     : ControlsContainerNode(nullptr)

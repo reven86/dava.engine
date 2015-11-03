@@ -125,7 +125,7 @@ void StaticOcclusionDataComponent::Serialize(KeyedArchive *archive, Serializatio
         archive->SetUInt32("sodc.subX", data.sizeX);
         archive->SetUInt32("sodc.subY", data.sizeY);
         archive->SetUInt32("sodc.subZ", data.sizeZ);
-        archive->SetByteArray("sodc.data", (uint8*)data.data, data.blockCount * data.objectCount / 32 * 4);      
+        archive->SetByteArray("sodc.data", (uint8*)data.GetData(), data.blockCount * data.objectCount / 32 * sizeof(uint32));
         if (data.cellHeightOffset)
             archive->SetByteArray("sodc.cellHeightOffset", (uint8*)data.cellHeightOffset, data.sizeX*data.sizeY*sizeof(float32));
     }
@@ -141,10 +141,11 @@ void StaticOcclusionDataComponent::Deserialize(KeyedArchive *archive, Serializat
         data.sizeX = archive->GetUInt32("sodc.subX", 1);
         data.sizeY = archive->GetUInt32("sodc.subY", 1);
         data.sizeZ = archive->GetUInt32("sodc.subZ", 1);
-        
-        data.data = new uint32[data.blockCount * data.objectCount / 32];
-        DVASSERT(data.blockCount * data.objectCount / 32 * 4 == archive->GetByteArraySize("sodc.data"));
-        memcpy(data.data, archive->GetByteArray("sodc.data"), data.blockCount * data.objectCount / 32 * 4);
+
+        auto numElements = data.blockCount * data.objectCount / 32;
+        uint32 dataSize = static_cast<uint32>(sizeof(uint32) * numElements);
+        DVASSERT(dataSize == archive->GetByteArraySize("sodc.data"));
+        data.SetData(reinterpret_cast<const uint32*>(archive->GetByteArray("sodc.data")), dataSize);
 
         if (archive->IsKeyExists("sodc.cellHeightOffset"))
         {
@@ -165,6 +166,10 @@ StaticOcclusionDebugDrawComponent::StaticOcclusionDebugDrawComponent(RenderObjec
 StaticOcclusionDebugDrawComponent::~StaticOcclusionDebugDrawComponent()
 {
     SafeRelease(renderObject);
+
+    rhi::DeleteVertexBuffer(vertices);
+    rhi::DeleteIndexBuffer(gridIndices);
+    rhi::DeleteIndexBuffer(coverIndices);
 }    
     
 RenderObject * StaticOcclusionDebugDrawComponent::GetRenderObject() const

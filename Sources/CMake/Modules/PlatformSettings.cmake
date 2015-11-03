@@ -19,6 +19,7 @@ elseif ( IOS     )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
     set( CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 7.0 )
+    set( CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE No )
 
     set( CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" )
 
@@ -54,7 +55,7 @@ elseif ( IOS     )
                         CMAKE_MODULE_LINKER_FLAGS_ADHOC  )
 
 elseif ( MACOS )
-    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
@@ -75,10 +76,17 @@ elseif ( WIN32 )
     set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
     set ( CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
     set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /IGNORE:4099" )
+    if ( NOT WINDOWS_UAP )
+        set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /delayload:d3dcompiler_47.dll" )
+    endif ()
 
     set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od" ) 
     set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
     set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /ENTRY:mainCRTStartup /INCREMENTAL:NO" )
+
+    if ( DEBUG_INFO )
+        set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi" ) 
+    endif ()
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )
@@ -144,14 +152,22 @@ if( WARNINGS_AS_ERRORS )
 -Wno-old-style-cast \
 -Wno-unknown-warning-option \
 -Wno-unreachable-code-return \
--Wno-unreachable-code-break")
+-Wno-unreachable-code-break \
+-Wno-reserved-id-macro \
+-Wno-documentation-pedantic \
+-Wno-inconsistent-missing-override \
+-Wno-unused-local-typedef \
+-Wno-nullable-to-nonnull-conversion \
+-Wno-super-class-method-mismatch \
+-Wno-nonnull")
 
 
     if( ANDROID )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
 -Wno-reserved-id-macro \
 -Wno-unused-local-typedef \
--Wno-inconsistent-missing-override")
+-Wno-inconsistent-missing-override \
+-Wno-unknown-pragmas")
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \

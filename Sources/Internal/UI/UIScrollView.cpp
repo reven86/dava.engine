@@ -131,7 +131,7 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
         {
             childControl->SetRect(childRect);
         }
-}
+    }
 }
 
 Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 currentContentOffset)
@@ -288,15 +288,15 @@ void UIScrollView::RecalculateContentSize()
 
     Rect contentRect = scrollContainer->GetRect();
     Rect parentRect = GetRect();
-	
-	// Move all scrollContainer content with negative positions iside its rect
-	PushContentToBounds(scrollContainer);
-	// Get max size of content - all childrens
-	Vector2 maxSize = GetMaxSize(scrollContainer,
-									Vector2(parentRect.dx + Abs(contentRect.x), parentRect.dy + Abs(contentRect.y)),
-									Vector2(0, 0));
-									
-	// Update scroll view content size
+
+    // Move all scrollContainer content with negative positions iside its rect
+    PushContentToBounds(scrollContainer);
+    // Get max size of content - all childrens
+    Vector2 maxSize = GetMaxSize(scrollContainer,
+                                 Vector2(parentRect.dx + Abs(contentRect.x), parentRect.dy + Abs(contentRect.y)),
+                                 Vector2(0, 0));
+
+    // Update scroll view content size
     scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
     scrollHorizontal->SetElementSize(maxSize.x);
     scrollVertical->SetElementSize(maxSize.y);
