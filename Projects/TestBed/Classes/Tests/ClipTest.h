@@ -54,7 +54,7 @@ private:
 
     bool enableClip = true;
     bool enableDebugDraw = true;
-    DAVA::Rect defaultRect;
+    Rect defaultRect;
 
     UIControl* fullSizeWgt;
     UIControl* parent1;
