@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "Infrastructure/GameCore.h"
 
 #include "Platform/DateTime.h"
@@ -45,6 +44,7 @@
 #include "Tests/FunctionSignalTest.h"
 #include "Tests/KeyboardTest.h"
 #include "Tests/FullscreenTest.h"
+#include "Tests/UIBackgroundTest.h"
 #include "Tests/TextFieldTest.h"
 //$UNITTEST_INCLUDE
 
@@ -60,7 +60,6 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-    new TextFieldTest();
     new UIScrollViewTest();
     new NotificationScreen();
     new SpeedLoadImagesTest();
@@ -73,6 +72,8 @@ void GameCore::RegisterTests()
     new FunctionSignalTest();
     new KeyboardTest();
     new FullscreenTest();
+    new UIBackgroundTest();
+    new TextFieldTest();
 //$UNITTEST_CTOR
 }
 
@@ -85,13 +86,13 @@ void GameCore::OnAppStarted()
 {
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
-    
+
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
 }
 
-GameCore::GameCore() 
+GameCore::GameCore()
     : currentScreen(nullptr)
     , testListScreen(nullptr)
 {
@@ -101,7 +102,7 @@ GameCore::~GameCore()
 {
 }
 
-void GameCore::RegisterScreen(BaseScreen *screen)
+void GameCore::RegisterScreen(BaseScreen* screen)
 {
     UIScreenManager::Instance()->RegisterScreen(screen->GetScreenId(), screen);
 
@@ -118,30 +119,29 @@ void GameCore::ShowStartScreen()
 void GameCore::CreateDocumentsFolder()
 {
     FilePath documentsPath = FileSystem::Instance()->GetUserDocumentsPath() + "TestBed/";
-    
+
     FileSystem::Instance()->CreateDirectory(documentsPath, true);
     FileSystem::Instance()->SetCurrentDocumentsDirectory(documentsPath);
 }
 
-
-File * GameCore::CreateDocumentsFile(const String &filePathname)
+File* GameCore::CreateDocumentsFile(const String& filePathname)
 {
     FilePath workingFilepathname = FilePath::FilepathInDocuments(filePathname);
 
     FileSystem::Instance()->CreateDirectory(workingFilepathname.GetDirectory(), true);
-    
-    File *retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
+
+    File* retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
     return retFile;
 }
 
 void GameCore::OnAppFinished()
 {
-    for(auto testScreen : screens)
+    for (auto testScreen : screens)
     {
         SafeRelease(testScreen);
     }
     screens.clear();
-    
+
     SafeRelease(testListScreen);
 }
 
@@ -188,9 +188,3 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
-
-
-
-
-
-

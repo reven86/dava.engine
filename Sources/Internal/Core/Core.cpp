@@ -84,10 +84,10 @@
 
 
 #include "Debug/Profiler.h"
-#define PROF__FRAME 0
-#define PROF__FRAME_UPDATE 1
-#define PROF__FRAME_DRAW 2
-#define PROF__FRAME_ENDFRAME 3
+#define PROF__FRAME             0
+#define PROF__FRAME_UPDATE      1
+#define PROF__FRAME_DRAW        2
+#define PROF__FRAME_ENDFRAME    3
 
 namespace DAVA
 {
@@ -186,7 +186,7 @@ void Core::CreateRenderer()
 
     if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
-        rendererParams.threadedRenderEnabled = true;
+        rendererParams.threadedRenderEnabled    = true;
         rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
     }
 
@@ -194,6 +194,15 @@ void Core::CreateRenderer()
     rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
     rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
     rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
+
+    rendererParams.maxTextureSetCount = options->GetInt32("max_texture_set_count");
+    rendererParams.maxSamplerStateCount = options->GetInt32("max_sampler_state_count");
+    rendererParams.maxPipelineStateCount = options->GetInt32("max_pipeline_state_count");
+    rendererParams.maxDepthStencilStateCount = options->GetInt32("max_depthstencil_state_count");
+    rendererParams.maxRenderPassCount = options->GetInt32("max_render_pass_count");
+    rendererParams.maxCommandBuffer = options->GetInt32("max_command_buffer_count");
+    rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
+
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
     Renderer::Initialize(renderer, rendererParams);
@@ -578,10 +587,10 @@ void Core::SystemProcessFrame()
     TRACE_END_EVENT(11, "core", "SystemProcessFrame")
 
     #if PROFILER_ENABLED
-    STOP_TIMING(PROF__FRAME);
-    profiler::Stop();
-    //profiler::Dump();
-    profiler::DumpAverage();
+        STOP_TIMING(PROF__FRAME);
+        profiler::Stop();
+        //profiler::Dump();
+        profiler::DumpAverage();
     #endif
 }
 
