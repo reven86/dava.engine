@@ -74,8 +74,8 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
     if (RenderLayer::RENDER_LAYER_INVALID_ID != afterLayer)
     {
         uint32 size = static_cast<uint32>(renderLayers.size());
-		for(uint32 i = 0; i < size; ++i)
-		{
+        for (uint32 i = 0; i < size; ++i)
+        {
             RenderLayer::eRenderLayerID layerID = renderLayers[i]->GetRenderLayerID();
             if (afterLayer == layerID)
             {
@@ -83,8 +83,8 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
                 layersBatchArrays[layerID].SetSortingFlags(layer->GetSortingFlags());
                 return;
             }
-		}
-		DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
+        }
+        DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
 	}
 	else
 	{
@@ -293,7 +293,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
 void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 {
-    Camera *mainCamera = renderSystem->GetMainCamera();
+    Camera* mainCamera = renderSystem->GetMainCamera();
     Camera* drawCamera = renderSystem->GetDrawCamera();
 
     /*    drawCamera->SetPosition(Vector3(5, 5, 5));

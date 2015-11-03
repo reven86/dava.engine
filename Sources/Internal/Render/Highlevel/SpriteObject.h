@@ -109,8 +109,8 @@ protected:
 
     Sprite* sprite;
     Vector2 sprScale;
-	Vector2 sprPivot;
-	int32 frame;
+    Vector2 sprPivot;
+    int32 frame;
 
 	eSpriteType spriteType;
 

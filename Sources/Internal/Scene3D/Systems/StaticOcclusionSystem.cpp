@@ -394,7 +394,6 @@ void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity* entity)
     GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
     entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);
 }
-
 void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component* component, uint32 event)
 {
     Entity* entity = component->GetEntity();
