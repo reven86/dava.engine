@@ -208,6 +208,11 @@ void Core::CreateRenderer()
     Renderer::Initialize(renderer, rendererParams);
 }
 
+void Core::ReleaseRenderer()
+{
+    Renderer::Uninitialize();
+}
+
 void Core::ReleaseSingletons()
 {
     // Finish network infrastructure
@@ -238,7 +243,6 @@ void Core::ReleaseSingletons()
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
-    Renderer::Uninitialize();
 
     InputSystem::Instance()->Release();
     JobManager::Instance()->Release();
@@ -451,6 +455,7 @@ void Core::SystemAppFinished()
         profiler::SaveEvents("trace.json");
         #endif
         core->OnAppFinished();
+        Core::Instance()->ReleaseRenderer();
     }
 }
 

@@ -72,9 +72,9 @@ public:
 
     // called from Activity and manage a visible lifetime
     void StartVisible();
-	void StopVisible();
+    void StopVisible();
 
-	void StartForeground();
+    void StartForeground();
 	void StopForeground(bool isLock);
 
 	void OnCreateActivity();
