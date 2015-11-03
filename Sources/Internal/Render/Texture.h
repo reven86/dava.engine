@@ -88,7 +88,7 @@ public:
         \param[in] height height of new texture
         \param[in] generateMipMaps generate mipmaps or not
      */
-    static Texture * CreateFromData(PixelFormat format, const uint8 *data, uint32 width, uint32 height, bool generateMipMaps);
+    static Texture* CreateFromData(PixelFormat format, const uint8* data, uint32 width, uint32 height, bool generateMipMaps);
 
     /**
         \brief Create texture from data arrray stored at Image
@@ -216,7 +216,7 @@ protected:
     void GenerateMipmapsInternal();
 
     Texture();
-	virtual ~Texture();
+    virtual ~Texture();
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 

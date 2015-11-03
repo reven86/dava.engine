@@ -302,6 +302,10 @@ else()
 
 endif()
 
+if (QT5_FOUND)
+    link_with_qt5(${PROJECT_NAME})
+endif()
+
 if ( QT5_FOUND )
     if ( WIN32 )
         set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )

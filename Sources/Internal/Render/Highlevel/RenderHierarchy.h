@@ -55,7 +55,7 @@ public:
 
     virtual void Initialize(){};
     virtual void Update(){};
-	virtual void DebugDraw(const Matrix4 & cameraMatrix){};
+    virtual void DebugDraw(const Matrix4 & cameraMatrix){};
 };
 
 class LinearRenderHierarchy : public RenderHierarchy

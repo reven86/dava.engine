@@ -536,9 +536,6 @@
 		028C0F7F1BD66A6000B2266F /* bs_patch.c in Sources */ = {isa = PBXBuildFile; fileRef = 028C08EF1BD66A5E00B2266F /* bs_patch.c */; };
 		028C0F801BD66A6000B2266F /* bs_patch.c in Sources */ = {isa = PBXBuildFile; fileRef = 028C08EF1BD66A5E00B2266F /* bs_patch.c */; };
 		028C0F811BD66A6000B2266F /* bs_patch.c in Sources */ = {isa = PBXBuildFile; fileRef = 028C08EF1BD66A5E00B2266F /* bs_patch.c */; };
-		028C0F821BD66A6000B2266F /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 028C08F11BD66A5E00B2266F /* README.md */; };
-		028C0F831BD66A6000B2266F /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 028C08F11BD66A5E00B2266F /* README.md */; };
-		028C0F841BD66A6000B2266F /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 028C08F11BD66A5E00B2266F /* README.md */; };
 		028C0F851BD66A6000B2266F /* BSDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08F21BD66A5E00B2266F /* BSDiff.cpp */; };
 		028C0F861BD66A6000B2266F /* BSDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08F21BD66A5E00B2266F /* BSDiff.cpp */; };
 		028C0F871BD66A6000B2266F /* BSDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08F21BD66A5E00B2266F /* BSDiff.cpp */; };
@@ -1754,9 +1751,6 @@
 		028C15FD1BD66A6000B2266F /* RGBColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B421BD66A5F00B2266F /* RGBColor.h */; };
 		028C15FE1BD66A6000B2266F /* RGBColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B421BD66A5F00B2266F /* RGBColor.h */; };
 		028C15FF1BD66A6000B2266F /* RGBColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B421BD66A5F00B2266F /* RGBColor.h */; };
-		028C16001BD66A6000B2266F /* BinaryFormats.md in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B441BD66A5F00B2266F /* BinaryFormats.md */; };
-		028C16011BD66A6000B2266F /* BinaryFormats.md in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B441BD66A5F00B2266F /* BinaryFormats.md */; };
-		028C16021BD66A6000B2266F /* BinaryFormats.md in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B441BD66A5F00B2266F /* BinaryFormats.md */; };
 		028C16031BD66A6000B2266F /* dbg_Draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B461BD66A5F00B2266F /* dbg_Draw.cpp */; };
 		028C16041BD66A6000B2266F /* dbg_Draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B461BD66A5F00B2266F /* dbg_Draw.cpp */; };
 		028C16051BD66A6000B2266F /* dbg_Draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B461BD66A5F00B2266F /* dbg_Draw.cpp */; };
@@ -3233,7 +3227,6 @@
 		028C08EE1BD66A5E00B2266F /* bs_diff.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bs_diff.c; sourceTree = "<group>"; };
 		028C08EF1BD66A5E00B2266F /* bs_patch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bs_patch.c; sourceTree = "<group>"; };
 		028C08F01BD66A5E00B2266F /* LICENCE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENCE; sourceTree = "<group>"; };
-		028C08F11BD66A5E00B2266F /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		028C08F21BD66A5E00B2266F /* BSDiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BSDiff.cpp; sourceTree = "<group>"; };
 		028C08F31BD66A5E00B2266F /* BSDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSDiff.h; sourceTree = "<group>"; };
 		028C08F41BD66A5E00B2266F /* PatchFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PatchFile.cpp; sourceTree = "<group>"; };
@@ -3639,7 +3632,6 @@
 		028C0B401BD66A5F00B2266F /* RenderOptions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderOptions.cpp; sourceTree = "<group>"; };
 		028C0B411BD66A5F00B2266F /* RenderOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderOptions.h; sourceTree = "<group>"; };
 		028C0B421BD66A5F00B2266F /* RGBColor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RGBColor.h; sourceTree = "<group>"; };
-		028C0B441BD66A5F00B2266F /* BinaryFormats.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = BinaryFormats.md; sourceTree = "<group>"; };
 		028C0B461BD66A5F00B2266F /* dbg_Draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbg_Draw.cpp; sourceTree = "<group>"; };
 		028C0B471BD66A5F00B2266F /* dbg_FontNormal.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbg_FontNormal.cxx; sourceTree = "<group>"; };
 		028C0B481BD66A5F00B2266F /* dbg_FontSmall.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbg_FontSmall.cxx; sourceTree = "<group>"; };
@@ -4452,7 +4444,6 @@
 				028C08EE1BD66A5E00B2266F /* bs_diff.c */,
 				028C08EF1BD66A5E00B2266F /* bs_patch.c */,
 				028C08F01BD66A5E00B2266F /* LICENCE */,
-				028C08F11BD66A5E00B2266F /* README.md */,
 			);
 			path = bsdiff;
 			sourceTree = "<group>";
@@ -5067,7 +5058,6 @@
 		028C0B431BD66A5F00B2266F /* RHI */ = {
 			isa = PBXGroup;
 			children = (
-				028C0B441BD66A5F00B2266F /* BinaryFormats.md */,
 				028C0B451BD66A5F00B2266F /* Common */,
 				028C0B6B1BD66A5F00B2266F /* dbg_Draw.h */,
 				028C0B881BD66A5F00B2266F /* GLES2 */,
@@ -7401,7 +7391,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0640;
+				LastUpgradeCheck = 0710;
 			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "Framework" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -7688,7 +7678,6 @@
 				028C0FF31BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11131BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
 				028C1A161BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
-				028C0F841BD66A6000B2266F /* README.md in Sources */,
 				028C13AA1BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				028C17641BD66A6000B2266F /* BillboardNode.cpp in Sources */,
 				028C14CD1BD66A6000B2266F /* Frustum.cpp in Sources */,
@@ -7843,7 +7832,6 @@
 				028C16D11BD66A6000B2266F /* rhi_CommandBufferGLES2.cpp in Sources */,
 				028C11EE1BD66A6000B2266F /* LocalNotificationController.cpp in Sources */,
 				028C10E01BD66A6000B2266F /* RectPacker.cpp in Sources */,
-				028C16021BD66A6000B2266F /* BinaryFormats.md in Sources */,
 				028C17371BD66A6000B2266F /* Texture.cpp in Sources */,
 				028C11881BD66A6000B2266F /* Announcer.cpp in Sources */,
 				028C1A821BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */,
@@ -8158,7 +8146,6 @@
 				028C0FF11BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11111BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
 				028C1A141BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
-				028C0F821BD66A6000B2266F /* README.md in Sources */,
 				028C13A81BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				028C17621BD66A6000B2266F /* BillboardNode.cpp in Sources */,
 				028C14CB1BD66A6000B2266F /* Frustum.cpp in Sources */,
@@ -8310,7 +8297,6 @@
 				028C16CF1BD66A6000B2266F /* rhi_CommandBufferGLES2.cpp in Sources */,
 				028C11EC1BD66A6000B2266F /* LocalNotificationController.cpp in Sources */,
 				028C10DE1BD66A6000B2266F /* RectPacker.cpp in Sources */,
-				028C16001BD66A6000B2266F /* BinaryFormats.md in Sources */,
 				028C17351BD66A6000B2266F /* Texture.cpp in Sources */,
 				028C11861BD66A6000B2266F /* Announcer.cpp in Sources */,
 				028C1A801BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */,
@@ -8625,7 +8611,6 @@
 				028C0FF21BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
 				028C11121BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
 				028C1A151BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
-				028C0F831BD66A6000B2266F /* README.md in Sources */,
 				028C13A91BD66A6000B2266F /* MainWindowController.mm in Sources */,
 				028C17631BD66A6000B2266F /* BillboardNode.cpp in Sources */,
 				028C14CC1BD66A6000B2266F /* Frustum.cpp in Sources */,
@@ -8777,7 +8762,6 @@
 				028C16D01BD66A6000B2266F /* rhi_CommandBufferGLES2.cpp in Sources */,
 				028C11ED1BD66A6000B2266F /* LocalNotificationController.cpp in Sources */,
 				028C10DF1BD66A6000B2266F /* RectPacker.cpp in Sources */,
-				028C16011BD66A6000B2266F /* BinaryFormats.md in Sources */,
 				028C17361BD66A6000B2266F /* Texture.cpp in Sources */,
 				028C11871BD66A6000B2266F /* Announcer.cpp in Sources */,
 				028C1A811BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */,
@@ -9013,6 +8997,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
