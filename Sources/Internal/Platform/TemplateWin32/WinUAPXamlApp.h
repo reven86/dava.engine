@@ -70,10 +70,7 @@ public:
 
     //TODO: add implementation for all platform, before remove this
     using PushNotificationSignal = Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^>;
-    internal : PushNotificationSignal* GetPushNotificationSignal()
-    {
-        return &pushNotificationSignal;
-    }
+    internal : PushNotificationSignal* GetPushNotificationSignal();
 
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
@@ -254,6 +251,11 @@ inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetMouseCaptureMode()
 inline bool WinUAPXamlApp::GetCursorVisible()
 {
     return isMouseCursorShown;
+}
+
+inline WinUAPXamlApp::PushNotificationSignal* WinUAPXamlApp::GetPushNotificationSignal()
+{
+    return &pushNotificationSignal;
 }
 
 }   // namespace DAVA
