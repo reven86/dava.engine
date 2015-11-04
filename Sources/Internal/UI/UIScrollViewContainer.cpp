@@ -294,7 +294,14 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
             }
             else
             {
-                relativePosition.y = scrollView->GetVerticalScroll()->GetPosition(0, timeElapsed, false);
+                if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
+                {
+                    relativePosition.y = scrollView->GetVerticalScroll()->GetPosition(deltaScroll, timeElapsed, true);
+                }
+                else
+                {
+                    relativePosition.y = scrollView->GetVerticalScroll()->GetPosition(0, timeElapsed, false);
+                }
             }
         }
         else if (scrollView->IsAutoUpdate())
