@@ -60,10 +60,6 @@ void GameCore::OnError()
 void GameCore::RegisterTests()
 {
     new UIScrollViewTest();
-    new UIScrollViewTest();
-    new UIScrollViewTest();
-    new UIScrollViewTest();
-    new UIScrollViewTest();
     new NotificationScreen();
     new SpeedLoadImagesTest();
     new MultilineTest();

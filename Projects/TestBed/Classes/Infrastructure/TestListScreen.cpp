@@ -35,7 +35,6 @@ using namespace DAVA;
 TestListScreen::TestListScreen()
     : UIScreen()
     , testsGrid(nullptr)
-    , testsGrid2(nullptr)
     , cellHeight(50)
 {
 }
@@ -60,14 +59,10 @@ void TestListScreen::LoadResources()
     UIScreen::LoadResources();
     
     Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    
-    testsGrid = new UIList(Rect(0.0, 0.0, static_cast<DAVA::float32>(screenSize.dx/2), static_cast<DAVA::float32>(screenSize.dy)), UIList::ORIENTATION_VERTICAL);
+
+    testsGrid = new UIList(Rect(0.0, 0.0, static_cast<DAVA::float32>(screenSize.dx), static_cast<DAVA::float32>(screenSize.dy)), UIList::ORIENTATION_VERTICAL);
     testsGrid->SetDelegate(this);
     AddControl(testsGrid);
-    
-    testsGrid2 = new UIList(Rect(static_cast<DAVA::float32>(screenSize.dx/2)+1, 0.0, static_cast<DAVA::float32>(screenSize.dx/2)-1, static_cast<DAVA::float32>(screenSize.dy)), UIList::ORIENTATION_VERTICAL);
-    testsGrid2->SetDelegate(this);
-    AddControl(testsGrid2);
 }
 
 void TestListScreen::UnloadResources()
@@ -76,7 +71,6 @@ void TestListScreen::UnloadResources()
     RemoveAllControls();
     
     SafeRelease(testsGrid);
-    SafeRelease(testsGrid2);
 }
 
 int32 TestListScreen::ElementsCount(UIList * list)
