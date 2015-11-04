@@ -104,6 +104,36 @@ const List<FilePath> FilePath::GetResourcesFolders()
     return resourceFolders;
 }
 
+using ArchArray = std::array<String, 3>;
+String GetResourceDirName(const ArchArray& archs, const String& dirName, const String& resPrefix)
+{
+    String result;
+    String replace;
+
+    for (const auto& arch : archs)
+    {
+        replace = '_' + arch + '_'; // _x64_
+
+        size_t idx = dirName.find(replace);
+        if (idx == String::npos)
+        {
+            //not found, try in upper case
+            std::transform(replace.begin(), replace.end(), replace.begin(), ::toupper);
+
+            idx = dirName.find(replace);
+            if (idx == String::npos)
+            {
+                continue;
+            }
+        }
+
+        result = dirName;
+        result.replace(idx, replace.size(), '_' + resPrefix);
+        break;
+    }
+
+    return result;
+}
     
 #if defined(__DAVAENGINE_WINDOWS__)
 void FilePath::InitializeBundleName()
@@ -116,9 +146,26 @@ void FilePath::InitializeBundleName()
         AddResourcesFolder(workingDirectory);
     }
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION)
+    String additionalResourcePath;
+
+    //get the directory basename
+    String dirBaseName = execDirectory.GetAbsolutePathname();
+    dirBaseName.pop_back();
+    dirBaseName = dirBaseName.substr(dirBaseName.find_last_of('/') + 1);
+
+    //find resource dir name
+    ArchArray archs { "x64", "x86", "arm" };
+    String resourceDir = GetResourceDirName(archs, dirBaseName, "neutral_split.dxfeaturelevel-dx11");
+
+    //resource dir found, use it
+    if (!resourceDir.empty())
+    {
+        additionalResourcePath = "../" + resourceDir + '/';
+    }
+
     //additional resource path for resources
-    String additionalResourcePath = DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION;
+    additionalResourcePath += DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION;
     additionalResourcePath += '/';
 
     AddResourcesFolder(execDirectory + additionalResourcePath);
