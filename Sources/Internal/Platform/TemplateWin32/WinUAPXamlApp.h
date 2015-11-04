@@ -76,6 +76,7 @@ public:
     bool SetCursorVisible(bool isVisible);
 
     bool IsPhoneApiDetected();
+    void ResetScreen();
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
 

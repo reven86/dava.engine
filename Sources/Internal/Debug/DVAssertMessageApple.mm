@@ -97,15 +97,17 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
             {
                 // Create the new alert message and show it.
                 UIDismissionHandlerAlertView* alert =
-					[[[UIDismissionHandlerAlertView alloc] initWithTitle:@"Assert" message:contents
-												   cancelButtonTitle:@"OK" otherButtonTitles: nil] autorelease];
-				messageBoxPtr = alert;
+                [[[UIDismissionHandlerAlertView alloc] initWithTitle:@"Assert"
+                                                             message:contents
+                                                   cancelButtonTitle:@"OK"
+                                                   otherButtonTitles:nil] autorelease];
+                messageBoxPtr = alert;
                 [alert showWithDismissHandler:^(NSInteger selectedIndex, BOOL didCancel) {
                   messageBoxPtr = nil;
                 }];
             }
         }
-    }
+        }
     
 #endif
     return breakExecution;

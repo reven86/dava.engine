@@ -158,9 +158,9 @@ public:
 
     void Initialize(rhi::TextureAddrMode wrap, bool generateMipmaps);
     void Initialize(const TextureDescriptor* descriptor);
-    bool Initialize(const FilePath &filePathname);
+    bool Initialize(const FilePath& filePathname);
 
-	void SetDefaultValues();
+    void SetDefaultValues();
 
     void SetQualityGroup(const FastName &group);
     FastName GetQualityGroup() const;
