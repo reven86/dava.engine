@@ -72,7 +72,7 @@ void GameCore::RegisterTests()
     new KeyboardTest();
     new FullscreenTest();
     new UIBackgroundTest();
-//$UNITTEST_CTOR
+    //$UNITTEST_CTOR
 }
 
 #include <fstream>

@@ -74,8 +74,8 @@ public:
     void StartVisible();
     void StopVisible();
 
-	void StartForeground();
-	void StopForeground(bool isLock);
+    void StartForeground();
+    void StopForeground(bool isLock);
 
 	void OnCreateActivity();
 	void OnDestroyActivity();

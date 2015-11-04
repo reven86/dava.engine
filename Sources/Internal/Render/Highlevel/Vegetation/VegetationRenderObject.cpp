@@ -250,7 +250,7 @@ void VegetationRenderObject::Save(KeyedArchive *archive, SerializationContext *s
     {
         archive->SetString("vro.lightmap", lightmapTexturePath.GetRelativePathname(serializationContext->GetScenePath()));
     }
-    
+
     if(customGeometryPath.IsEmpty() == false)
     {
         archive->SetString("vro.customGeometry", customGeometryPath.GetRelativePathname(serializationContext->GetScenePath()));

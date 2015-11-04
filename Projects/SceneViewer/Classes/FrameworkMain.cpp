@@ -62,6 +62,7 @@ void FrameworkDidLaunched()
 
     appOptions->SetInt32("width", DeviceInfo::GetScreenInfo().width);
     appOptions->SetInt32("height", DeviceInfo::GetScreenInfo().height);
+    appOptions->SetFloat("userScreenScaleFactor", 0.5f);
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);

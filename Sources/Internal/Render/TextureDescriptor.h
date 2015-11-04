@@ -89,8 +89,8 @@ public:
 
     struct TextureDataSettings : public InspBase
     {
-	public:
-		enum eOptionsFlag
+    public:
+        enum eOptionsFlag
 		{
 			FLAG_GENERATE_MIPMAPS   = 1 << 0,
             FLAG_IS_NORMAL_MAP      = 1 << 1,
