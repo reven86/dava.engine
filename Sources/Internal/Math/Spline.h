@@ -90,6 +90,7 @@ public:
 	void	Construct(const Polygon3 & poly);
 	void	RebuildSpline();
 	Vector3 Evaluate(int segment, float t);
+    Vector3 EvaluateDerivative(int segment, float t);    
 };
 
 };

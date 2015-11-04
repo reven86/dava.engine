@@ -91,6 +91,10 @@ uniform sampler2D detail;
 uniform sampler2D lightmap;
 #endif
 
+#if defined(ALPHATESTVALUE)
+uniform lowp float alphatestThreshold;
+#endif
+
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 varying highp vec2 varTexCoord1;
 #endif
@@ -224,14 +228,11 @@ void main()
         #if defined(VERTEX_COLOR)
             alpha *= varVertexColor.a;
         #endif
-        if (alpha < 0.5)discard;
-    #endif
-    #if defined(ALPHATESTVALUE)
-        float alpha = textureColor0.a;
-        #if defined(VERTEX_COLOR)
-            alpha *= varVertexColor.a;
+        #if defined(ALPHATESTVALUE)
+            if (alpha < alphatestThreshold) discard;
+        #else
+            if (alpha < 0.5) discard;
         #endif
-        if (alpha < ALPHATESTVALUE)discard;
     #endif
 #endif
     

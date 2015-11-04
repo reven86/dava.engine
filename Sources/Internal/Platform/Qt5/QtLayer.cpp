@@ -29,7 +29,6 @@
 
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Render/RenderManager.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -52,7 +51,6 @@ QtLayer::QtLayer()
     :   delegate(NULL)
     ,   isDAVAEngineEnabled(true)
 {
-    AppStarted();
 }
     
 QtLayer::~QtLayer()
@@ -76,9 +74,7 @@ void QtLayer::SetDelegate(QtLayerDelegate *delegate)
     
 void QtLayer::AppStarted()
 {
-    RenderManager::Create(Core::RENDERER_OPENGL);
     FrameworkDidLaunched();
-
     Core::Instance()->SystemAppStarted();
 }
 
@@ -87,12 +83,6 @@ void QtLayer::AppFinished()
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-    if (MemoryManager::Instance() != 0)
-    {
-        MemoryManager::Instance()->FinalLog();
-    }
-#endif
 }
 
     
@@ -111,25 +101,18 @@ void QtLayer::OnResume()
     
 void QtLayer::ProcessFrame()
 {
-    RenderManager::Instance()->Lock();
-    
-    RenderManager::Instance()->SetColor(Color::White);
+    rhi::InvalidateCache(); //as QT itself can break gl states
     Core::Instance()->SystemProcessFrame();
-    
-    RenderManager::Instance()->Unlock();
 }
     
-void QtLayer::InitializeGlWindow(uint64 glContextId)
-{
-    RenderManager::Instance()->SetRenderContextId(glContextId);
-}
-
 
 void QtLayer::Resize(int32 width, int32 height)
 {
-    RenderManager::Instance()->Init(width, height);
-    RenderSystem2D::Instance()->Init();
-    
+    rhi::ResetParam resetParams;
+    resetParams.width = width;
+    resetParams.height = height;
+    Renderer::Reset(resetParams);
+
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
     if(vcs)
     {
@@ -153,33 +136,27 @@ void QtLayer::Resize(int32 width, int32 height)
     
 void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
 {
-    Vector<UIEvent> touches;
-    Vector<UIEvent> emptyTouches;
-    
-    for(auto it = allTouches.begin(); it != allTouches.end(); ++it)
-    {
-        touches.push_back(*it);
-    }
-    
     UIEvent ev;
-    ev.keyChar = 0;
-    ev.phase = UIEvent::PHASE_KEYCHAR;
+    ev.phase = UIEvent::Phase::KEY_DOWN;
     ev.timestamp = static_cast<float64>(timestamp);
-    ev.tapCount = 1;
+    ev.device = UIEvent::Device::KEYBOARD;
     ev.tid = key;
-    
-    touches.push_back(ev);
-    
-    UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
-    touches.pop_back();
-    UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
-    
+
+    UIControlSystem::Instance()->OnInput(&ev);
+
     InputSystem::Instance()->GetKeyboard().OnKeyPressed(key);
 }
 
 
 void QtLayer::KeyReleased(char16 key)
 {
+    UIEvent ev;
+    ev.phase = UIEvent::Phase::KEY_UP;
+    ev.device = UIEvent::Device::KEYBOARD;
+    ev.tid = key;
+
+    UIControlSystem::Instance()->OnInput(&ev);
+
     InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(key);
 }
     
@@ -191,20 +168,21 @@ void QtLayer::CopyEvents(DAVA::UIEvent &newEvent, const DAVA::UIEvent &sourceEve
     newEvent.physPoint = sourceEvent.physPoint;
     newEvent.timestamp = sourceEvent.timestamp;
     newEvent.phase = sourceEvent.phase;
+    newEvent.device = sourceEvent.device;
 }
     
 void QtLayer::MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches)
 {
-    if(event.phase == UIEvent::PHASE_DRAG)
+    if (event.phase == UIEvent::Phase::DRAG)
     {
-        for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+        for (Vector<DAVA::UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
         {
             CopyEvents(*it, event);
         }
     }
     
     bool isFind = false;
-    for(Vector<UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    for (Vector<UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
     {
         if(it->tid == event.tid)
         {
@@ -217,21 +195,21 @@ void QtLayer::MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouch
     
     if(!isFind)
     {
-        allTouches.push_back(event);
+        allEvents.push_back(event);
     }
-    
-    for(Vector<UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+
+    for (Vector<UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
     {
         outTouches.push_back(*it);
     }
-    
-    if(event.phase == UIEvent::PHASE_ENDED || event.phase == UIEvent::PHASE_MOVE)
+
+    if (event.phase == UIEvent::Phase::ENDED || event.phase == UIEvent::Phase::MOVE)
     {
-        for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+        for (Vector<DAVA::UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
         {
             if(it->tid == event.tid)
             {
-                allTouches.erase(it);
+                allEvents.erase(it);
                 break;
             }
         }
@@ -245,7 +223,10 @@ void QtLayer::MouseEvent(const UIEvent & event)
 
     MoveTouchsToVector(event, touches);
 
-    UIControlSystem::Instance()->OnInput(event.phase, touches, allTouches);
+    for (auto& touch : touches)
+    {
+        UIControlSystem::Instance()->OnInput(&touch);
+    }
     touches.clear();
 }
 

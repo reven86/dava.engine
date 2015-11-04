@@ -33,9 +33,9 @@
 #include "Base/BaseTypes.h"
 #include <libuv/uv.h>
 
-#include "Base/Function.h"
+#include "Functional/Function.h"
 #include "Base/Noncopyable.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {

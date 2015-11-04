@@ -32,7 +32,7 @@
 
 #include "NPAPICorePlatformMacOS.h"
 
-#include "Render/RenderManager.h"
+//#include "Render/RenderManager.h"
 
 #include <pwd.h>
 
@@ -175,28 +175,28 @@ extern void FrameworkWillTerminate();
 			break;
 
 		case NPCocoaEventMouseDown:
-			[self processEvent:DAVA::UIEvent::PHASE_BEGAN touch:event];
-			break;
+            [self processEvent:DAVA::UIEvent::Phase::BEGAN touch:event];
+            break;
 
-		case NPCocoaEventMouseUp:
-			[self processEvent:DAVA::UIEvent::PHASE_ENDED touch:event];
-			break;
+        case NPCocoaEventMouseUp:
+            [self processEvent:DAVA::UIEvent::Phase::ENDED touch:event];
+            break;
 
-		case NPCocoaEventMouseMoved:
-			[self processEvent:DAVA::UIEvent::PHASE_MOVE touch:event];
-			break;
+        case NPCocoaEventMouseMoved:
+            [self processEvent:DAVA::UIEvent::Phase::MOVE touch:event];
+            break;
 
-		case NPCocoaEventMouseEntered:
+        case NPCocoaEventMouseEntered:
 			break;
 
 		case NPCocoaEventMouseExited:
 			break;
 
 		case NPCocoaEventMouseDragged:
-			[self processEvent:DAVA::UIEvent::PHASE_DRAG touch:event];
-			break;
+            [self processEvent:DAVA::UIEvent::Phase::DRAG touch:event];
+            break;
 
-		case NPCocoaEventKeyDown:
+        case NPCocoaEventKeyDown:
 			[self keyDown:event];
 			break;
 
@@ -219,15 +219,15 @@ extern void FrameworkWillTerminate();
 	}
 }
 
--(void) moveTouchesToVector:(NPCocoaEvent*)curEvent touchPhase:(int)touchPhase outTouches:(DAVA::Vector<DAVA::UIEvent>*)outTouches
+- (void)moveTouchesToVector:(NPCocoaEvent*)curEvent touchPhase:(DAVA::UIEvent::Phase)touchPhase outTouches:(DAVA::Vector<DAVA::UIEvent>*)outTouches
 {
 	int button = 0;
 	button = curEvent->data.mouse.buttonNumber + 1;
 	time_t timestamp = time(NULL);
 
-	if (touchPhase == DAVA::UIEvent::PHASE_DRAG)
-	{
-		for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    if (touchPhase == DAVA::UIEvent::Phase::DRAG)
+    {
+        for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			NSPoint p;
 			p.x = curEvent->data.mouse.pluginX;
@@ -236,13 +236,13 @@ extern void FrameworkWillTerminate();
 			it->physPoint.x = p.x;
 			it->physPoint.y = p.y;
 
-			if(DAVA::InputSystem::Instance()->IsCursorPining())
-			{
-				it->physPoint.x = curEvent->data.mouse.deltaX;
-				it->physPoint.y = curEvent->data.mouse.deltaY;
-			}
+            if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+            {
+                it->physPoint.x = curEvent->data.mouse.deltaX;
+                it->physPoint.y = curEvent->data.mouse.deltaY;
+            }
 
-			it->tapCount = DAVA::Max(curEvent->data.mouse.clickCount, 1);
+            it->tapCount = DAVA::Max(curEvent->data.mouse.clickCount, 1);
 			it->timestamp = timestamp;
 			it->phase = touchPhase;
 		}
@@ -261,14 +261,14 @@ extern void FrameworkWillTerminate();
 
 			it->physPoint.x = p.x;
 			it->physPoint.y = p.y;
-			
-			if(DAVA::InputSystem::Instance()->IsCursorPining())
-			{
-				it->physPoint.x = curEvent->data.mouse.deltaX;
-				it->physPoint.y = curEvent->data.mouse.deltaY;
-			}
 
-			it->tapCount = curEvent->data.mouse.clickCount;
+            if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+            {
+                it->physPoint.x = curEvent->data.mouse.deltaX;
+                it->physPoint.y = curEvent->data.mouse.deltaY;
+            }
+
+            it->tapCount = curEvent->data.mouse.clickCount;
 			it->timestamp = timestamp;
 			it->phase = touchPhase;
 
@@ -287,13 +287,13 @@ extern void FrameworkWillTerminate();
 		newTouch.physPoint.x = p.x;
 		newTouch.physPoint.y = p.y;
 
-		if(DAVA::InputSystem::Instance()->IsCursorPining())
-		{
-			newTouch.physPoint.x = curEvent->data.mouse.deltaX;
-			newTouch.physPoint.y = curEvent->data.mouse.deltaY;
-		}
+        if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+        {
+            newTouch.physPoint.x = curEvent->data.mouse.deltaX;
+            newTouch.physPoint.y = curEvent->data.mouse.deltaY;
+        }
 
-		newTouch.tapCount = curEvent->data.mouse.clickCount;
+        newTouch.tapCount = curEvent->data.mouse.clickCount;
 		newTouch.timestamp = timestamp;
 		newTouch.phase = touchPhase;
 		allTouches.push_back(newTouch);
@@ -304,9 +304,9 @@ extern void FrameworkWillTerminate();
 		outTouches->push_back(*it);
 	}
 
-	if(touchPhase == DAVA::UIEvent::PHASE_ENDED || touchPhase == DAVA::UIEvent::PHASE_MOVE)
-	{
-		for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    if (touchPhase == DAVA::UIEvent::Phase::ENDED || touchPhase == DAVA::UIEvent::Phase::MOVE)
+    {
+        for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
 			{
@@ -317,13 +317,13 @@ extern void FrameworkWillTerminate();
 	}
 }
 
--(void) processEvent:(int)touchPhase touch:(NPCocoaEvent*)touch
+- (void)processEvent:(DAVA::UIEvent::Phase)touchPhase touch:(NPCocoaEvent*)touch
 {
 	DAVA::Vector<DAVA::UIEvent> touches;
 	[self moveTouchesToVector:touch touchPhase:touchPhase outTouches:&touches];
 
-	DAVA::UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
-	touches.clear();
+    DAVA::UIControlSystem::Instance()->OnInput(&touches[0]);
+    touches.clear();
 }
 
 -(void) keyDown:(NPCocoaEvent*)event
@@ -331,33 +331,65 @@ extern void FrameworkWillTerminate();
 	NSString* s = (NSString*)event->data.key.characters;
 	unichar c = [s characterAtIndex:0];
 
-	DAVA::Vector<DAVA::UIEvent> touches;
+    DAVA::InputSystem* input = DAVA::InputSystem::Instance();
+    DAVA::KeyboardDevice& keyboard = input->GetKeyboard();
+    DAVA::int32 keyCode = event->data.key.keyCode;
 
-	time_t timestamp = time(NULL);
+    time_t timestamp = time(NULL);
 
-	DAVA::UIEvent ev;
-	ev.keyChar = c;
-	ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-	ev.timestamp = timestamp;
-	ev.tapCount = 1;
-	ev.tid = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(event->data.key.keyCode);
+    DAVA::UIEvent ev;
+    ev.keyChar = c;
+    if (c == 0)
+    {
+        ev.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+    }
+    else
+    {
+        ev.phase = DAVA::UIEvent::Phase::CHAR;
+    }
+    ev.timestamp = timestamp;
+    ev.tapCount = 1;
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
-	touches.push_back(ev);
+    DAVA::Vector<DAVA::UIEvent> touches;
+    touches.push_back(ev);
 
-	DAVA::UIControlSystem::Instance()->OnInput(0, touches, allTouches);
-	touches.pop_back();
-	DAVA::UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+    DAVA::UIControlSystem::Instance()->OnInput(&touches[0]);
 
-	DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(event->data.key.keyCode);
-	if (event->data.key.modifierFlags & NSCommandKeyMask)
-	{
-		DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(event->data.key.keyCode);
-	}
+    keyboard.OnSystemKeyPressed(keyCode);
 }
 
 -(void) keyUp:(NPCocoaEvent*) event
 {
-	DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(event->data.key.keyCode);
+    NSString* s = (NSString*)event->data.key.characters;
+    unichar c = [s characterAtIndex:0];
+
+    DAVA::InputSystem* input = DAVA::InputSystem::Instance();
+    DAVA::KeyboardDevice& keyboard = input->GetKeyboard();
+    DAVA::int32 keyCode = event->data.key.keyCode;
+
+    time_t timestamp = time(NULL);
+
+    DAVA::UIEvent ev;
+    ev.keyChar = c;
+    if (c == 0)
+    {
+        ev.phase = DAVA::UIEvent::Phase::KEY_UP;
+    }
+    else
+    {
+        ev.phase = DAVA::UIEvent::Phase::CHAR;
+    }
+    ev.timestamp = timestamp;
+    ev.tapCount = 1;
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+
+    DAVA::Vector<DAVA::UIEvent> touches;
+    touches.push_back(ev);
+
+    DAVA::UIControlSystem::Instance()->OnInput(&touches[0]); // , allTouches
+
+    keyboard.OnSystemKeyUnpressed(keyCode);
 }
 
 -(void) flagsChanged:(NPCocoaEvent*) event
@@ -371,15 +403,16 @@ extern void FrameworkWillTerminate();
 		NSAlternateKeyMask,
 		NSCommandKeyMask};
 
-	static DAVA::int32 keyCodes[] = {
-		DAVA::DVMACOS_CAPS_LOCK,
-		DAVA::DVMACOS_SHIFT,
-		DAVA::DVMACOS_CONTROL,
-		DAVA::DVMACOS_OPTION,
-		DAVA::DVMACOS_COMMAND};
+    static DAVA::int32 keyCodes[] = {
+        DAVA::DVKEY_CAPSLOCK,
+        DAVA::DVKEY_SHIFT,
+        DAVA::DVKEY_CTRL,
+        DAVA::DVKEY_ALT,
+        DAVA::DVKEY_LWIN
+    };
 
-	for (int i = 0; i < 5; i++)
-	{
+    for (int i = 0; i < 5; i++)
+    {
 		if ((oldModifiersFlags & masks[i]) != (newModifiers & masks[i]))
 		{
 			if (newModifiers & masks[i])
@@ -472,7 +505,9 @@ extern void FrameworkWillTerminate();
 	#endif // #if defined (__DAVAENGINE_NPAPI__)
 
 	FrameworkDidLaunched();
+#if RHI_COMPLETE
     DAVA::RenderManager::Create(DAVA::Core::RENDERER_OPENGL);
+#endif
     DAVA::RenderSystem2D::Instance()->Init();
 
 	appCore = DAVA::Core::GetApplicationCore();
@@ -480,13 +515,17 @@ extern void FrameworkWillTerminate();
 
 -(void) doInitializationOnFirstDraw
 {
+#if RHI_COMPLETE
     DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
+#endif
 
-	NSRect rect = NSRectFromCGRect([openGLLayer frame]);
-	DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
-	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
-	DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+    NSRect rect = NSRectFromCGRect([openGLLayer frame]);
+#if RHI_COMPLETE
+    DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
+    DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
+#endif
+    DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
 	
 	NSLog(@"[NPAPICoreMacOSPlatform] SystemAppStarted");

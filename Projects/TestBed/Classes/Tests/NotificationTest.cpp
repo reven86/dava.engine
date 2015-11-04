@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "NotificationTest.h"
+#include "Tests/NotificationTest.h"
 #include "Base/Message.h"
 
 using namespace DAVA;
@@ -35,6 +35,7 @@ using namespace DAVA;
 NotificationScreen::NotificationScreen()
     : BaseScreen("NotificationScreen")
     , showNotificationText(nullptr)
+    , showNotificationTextDelayed(nullptr)
 	, showNotificationProgress(nullptr)
 	, hideNotificationProgress(nullptr)
 	, notificationProgress(nullptr)
@@ -59,8 +60,17 @@ void NotificationScreen::LoadResources()
 	showNotificationText->SetDebugDraw(true);
 	showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
 	AddControl(showNotificationText);
+    
+    showNotificationTextDelayed = new UIButton(Rect(10, 100, 450, 60));
+    showNotificationTextDelayed->SetStateFont(0xFF, font);
+    showNotificationTextDelayed->SetStateFontColor(0xFF, Color::White);
+    showNotificationTextDelayed->SetStateText(0xFF, L"Notify text in 5 seconds");
+    
+    showNotificationTextDelayed->SetDebugDraw(true);
+    showNotificationTextDelayed->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyTextDelayed));
+    AddControl(showNotificationTextDelayed);
 
-	hideNotificationText = new UIButton(Rect(10, 100, 450, 60));
+	hideNotificationText = new UIButton(Rect(10, 200, 450, 60));
 	hideNotificationText->SetStateFont(0xFF, font);
 	hideNotificationText->SetStateFontColor(0xFF, Color::White);
 	hideNotificationText->SetStateText(0xFF, L"Hide text");
@@ -126,7 +136,6 @@ void NotificationScreen::Update(float32 timeElapsed)
 
 void NotificationScreen::Draw(const UIGeometricData &geometricData)
 {
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void NotificationScreen::UpdateNotification()
@@ -161,6 +170,12 @@ void NotificationScreen::OnNotifyText(BaseObject *obj, void *data, void *callerD
 
 	hideNotificationText->SetDebugDraw(true);
 }
+
+void NotificationScreen::OnNotifyTextDelayed(BaseObject *obj, void *data, void *callerData)
+{
+    LocalNotificationController::Instance()->PostDelayedNotification(L"Test Delayed notification Title", L"Some text", 5);
+}
+
 
 void NotificationScreen::OnHideText(BaseObject *obj, void *data, void *callerData)
 {

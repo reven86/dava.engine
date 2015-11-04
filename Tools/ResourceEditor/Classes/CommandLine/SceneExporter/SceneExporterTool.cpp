@@ -30,12 +30,12 @@
 #include "SceneExporterTool.h"
 #include "SceneExporter.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 
 using namespace DAVA;
 
 
-void SceneExporterTool::PrintUsage()
+void SceneExporterTool::PrintUsage() const
 {
     printf("\n");
     printf("-sceneexporter [-scene|-texture] [-indir [directory]] [-outdir [directory]] [-processdir [directory]] [-processfile [directory]] [-format]\n");
@@ -59,7 +59,7 @@ void SceneExporterTool::PrintUsage()
     printf("-sceneexporter -texture -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/objects/images/stone.tex\n");
 }
 
-DAVA::String SceneExporterTool::GetCommandLineKey()
+DAVA::String SceneExporterTool::GetCommandLineKey() const
 {
     return "-sceneexporter";
 }
@@ -131,7 +131,7 @@ bool SceneExporterTool::InitializeFromCommandLine()
     return true;
 }
 
-void SceneExporterTool::DumpParams()
+void SceneExporterTool::DumpParams() const
 {
     Logger::Info("Export started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tQuality: %d\n\tGPU: %d\n\tFilename: %s\n\tFoldername: %s", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), quality, requestedGPU, filename.c_str(), foldername.c_str());
 }

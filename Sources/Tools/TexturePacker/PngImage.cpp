@@ -28,7 +28,7 @@
 
 
 #include "TexturePacker/PngImage.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Render/Image/LibPngHelper.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageConvert.h"
@@ -45,15 +45,14 @@ PngImageExt::PngImageExt()
 
 PngImageExt::~PngImageExt()
 {
-    SafeRelease(internalData);
 }
 
 bool PngImageExt::Read(const FilePath &filename)
 {
-    SafeRelease(internalData);
+    internalData.reset();
 
-    File *fileRead = File::Create(filename, File::READ | File::OPEN);
-    if (nullptr == fileRead)
+    ScopedPtr<File> fileRead(File::Create(filename, File::READ | File::OPEN));
+    if (!fileRead)
     {
         Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
         return false;
@@ -63,32 +62,48 @@ bool PngImageExt::Read(const FilePath &filename)
     eErrorCode innerRetCode = LibPngHelper::ReadPngFile(fileRead, internalData, FORMAT_RGBA8888);
     if (innerRetCode != eErrorCode::SUCCESS)
     {
-        SafeRelease(internalData);
+        internalData.reset();
         Logger::Error("[PngImageExt::Read] failed to read png file: %s", filename.GetAbsolutePathname().c_str());
     }
 
-    SafeRelease(fileRead);
-    return (internalData != nullptr);
+    return internalData.get() != nullptr;
 }
 
-void PngImageExt::Write(const FilePath &filename)
+void PngImageExt::Write(const FilePath &filename, ImageQuality quality)
 {
     DVASSERT(internalData);
-    ImageSystem::Instance()->Save(filename, internalData, internalData->format);
+    ImageSystem::Instance()->Save(filename, internalData, internalData->format, quality);
 }
 
 bool PngImageExt::Create(uint32 width, uint32 height)
 {
-    SafeRelease(internalData);
-
     internalData = Image::Create(width, height, FORMAT_RGBA8888);
-    if ( internalData != nullptr )
+    if (internalData)
     {
         memset( GetData(), 0, width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes( FORMAT_RGBA8888 ) );
         return true;
     }
 
 	return false;
+}
+
+bool PngImageExt::ConvertToFormat(PixelFormat newFormat)
+{
+    DVASSERT(internalData);
+    if (internalData->format == newFormat)
+    {
+        return true;
+    }
+
+    ScopedPtr<Image> newImage(Image::Create(GetWidth(), GetHeight(), newFormat));
+    bool convertResult = ImageConvert::ConvertImageDirect(internalData, newImage);
+
+    if (convertResult == true)
+    {
+        internalData = newImage;
+    }
+
+    return convertResult;
 }
 
 void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2i & srcRect)
@@ -327,36 +342,40 @@ void PngImageExt::DrawRect(const Rect2i &rect, uint32 color)
 
 void PngImageExt::DitherAlpha()
 {
-    Image *image = Image::Create(GetWidth(), GetHeight(), FORMAT_RGBA8888);
+    DVASSERT(internalData);
 
-    uint8 *ditheredPtr = image->GetData();
-    uint8 *dataPtr = GetData();
-
-    for (uint32 y = 0; y < GetHeight(); ++y)
+    if (internalData->format == FORMAT_RGBA8888)
     {
-        for (uint32 x = 0; x < GetWidth(); ++x)
+        ScopedPtr<Image> image(Image::Create(GetWidth(), GetHeight(), FORMAT_RGBA8888));
+
+        uint8 *ditheredPtr = image->GetData();
+        uint8 *dataPtr = GetData();
+
+        for (uint32 y = 0; y < GetHeight(); ++y)
         {
-            if (dataPtr[3])
+            for (uint32 x = 0; x < GetWidth(); ++x)
             {
-                Memcpy(ditheredPtr, dataPtr, 4);
-            }
-            else
-            {
-                Color color = GetDitheredColorForPoint(x, y);
+                if (dataPtr[3])
+                {
+                    Memcpy(ditheredPtr, dataPtr, 4);
+                }
+                else
+                {
+                    Color color = GetDitheredColorForPoint(x, y);
 
-                ditheredPtr[0] = (uint8)color.r;
-                ditheredPtr[1] = (uint8)color.g;
-                ditheredPtr[2] = (uint8)color.b;
-                ditheredPtr[3] = 0;
-            }
+                    ditheredPtr[0] = (uint8)color.r;
+                    ditheredPtr[1] = (uint8)color.g;
+                    ditheredPtr[2] = (uint8)color.b;
+                    ditheredPtr[3] = 0;
+                }
 
-            ditheredPtr += 4;
-            dataPtr += 4;
+                ditheredPtr += 4;
+                dataPtr += 4;
+            }
         }
-    }
 
-    SafeRelease(internalData);
-    internalData = image;
+        internalData = image;
+    }
 }
 
 Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)

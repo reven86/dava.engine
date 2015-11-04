@@ -39,6 +39,10 @@
 #include "Render/RenderBase.h"
 #include <sstream>
 
+#ifdef __DAVAENGINE_WIN_UAP__
+#   include <ppltasks.h>
+#endif
+
 namespace DAVA 
 {
 int read_handler(void *ext, unsigned char *buffer, size_t size, size_t *length);
@@ -62,7 +66,10 @@ void Merge(const Vector<String> & tokens, const char delim, String & outString);
 void ReplaceBundleName(const String &newBundlePath);
     
 template<class T>
-T ParseStringTo(const String & str);
+T ParseStringTo(const String & str); 
+
+template<class T>
+bool ParseFromString(const String & str, T& res);
 
 template<class T>
 void Swap(T & v1, T & v2);
@@ -104,6 +111,17 @@ inline String WStringToString(const WideString& s)
 	return temp; 
 }
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+inline  Platform::String^ StringToRTString(const String & s)
+{
+    return ref new Platform::String(StringToWString(s).c_str());
+}
+
+inline String RTStringToString(Platform::String^ s)
+{
+    return WStringToString(s->Data());
+}
+#endif
     
 template<class T>
 bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
@@ -119,10 +137,9 @@ bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
     
     return false;
 }
-    
-    
-template<class T>
-void RemoveExchangingWithLast(Vector<T> & array, uint32 index)
+
+template <class T>
+void RemoveExchangingWithLast(Vector<T>& array, size_t index)
 {
     array[index] = array[array.size() - 1];
     array.pop_back();
@@ -132,9 +149,17 @@ template<class T>
 T ParseStringTo(const String & str)
 {
     T result;
-    std::stringstream stream (str);
+    std::stringstream stream(str);
     stream >> result;
     return result;
+}
+
+template<class T>
+bool ParseFromString(const String & str, T& result)
+{
+    std::stringstream stream (str);
+    stream >> result;
+    return (stream.eof() == true && stream.fail() == false);
 }
 
 template<class T>
@@ -144,6 +169,26 @@ void Swap(T & v1, T & v2)
     v1 = v2;
     v2 = temp;
 }
+
+template <class T, std::size_t size>
+class CircularArray
+{
+public:
+    T& Next()
+    {
+        T& ret = elements[currentIndex];
+
+        if ((++currentIndex) == elements.size())
+            currentIndex = 0;
+
+        return ret;
+    }
+
+    std::array<T, size> elements;
+
+protected:
+    std::size_t currentIndex = 0;
+};
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	
@@ -155,6 +200,14 @@ uint64 EglGetCurrentContext();
 void OpenURL(const String& url);
 
 String GenerateGUID();
+
+#ifdef __DAVAENGINE_WIN_UAP__
+template <typename T>
+T WaitAsync(Windows::Foundation::IAsyncOperation<T>^ async_operation)
+{
+    return concurrency::create_task(async_operation).get();
+}
+#endif
 
 };
 

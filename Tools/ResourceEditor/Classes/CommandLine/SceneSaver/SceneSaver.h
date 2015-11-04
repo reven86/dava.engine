@@ -30,7 +30,6 @@
 #ifndef __SCENE_SAVER_H__
 #define __SCENE_SAVER_H__
 
-#include "DAVAEngine.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 
 using namespace DAVA;
@@ -49,9 +48,11 @@ public:
     void SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
     
     void EnableCopyConverted(bool enabled);
+
+    void ResaveYamlFilesRecursive(const DAVA::FilePath & folder, DAVA::Set<DAVA::String> &errorLog) const;
+
     
 protected:
-    
     void ReleaseTextures();
 
     void CopyTextures(Scene *scene);
@@ -64,13 +65,10 @@ protected:
 	void CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog);
 
 protected:
-    
     SceneUtils sceneUtils;
-    
     TexturesMap texturesForSave;
-    bool copyConverted;
-    
     DAVA::Set<DAVA::FilePath> effectFolders;
+    bool copyConverted = false;
 };
 
 

@@ -41,15 +41,22 @@ class UIComponent : public BaseObject
 public:
     enum eType
     {
-        FAKE_COMPONENT,
-        FAKE_MULTI_COMPONENT,
-        
+        LINEAR_LAYOUT_COMPONENT,
+        FLOW_LAYOUT_COMPONENT,
+        FLOW_LAYOUT_HINT_COMPONENT,
+        IGNORE_LAYOUT_COMPONENT,
+        SIZE_POLICY_COMPONENT,
+        ANCHOR_COMPONENT,
+
         COMPONENT_COUNT
     };
-    
+
 public:
     UIComponent();
+    UIComponent(const UIComponent &src);
     virtual ~UIComponent();
+    
+    UIComponent &operator=(const UIComponent &src);
 
     static UIComponent * CreateByType(uint32 componentType);
     static bool IsMultiple(uint32 componentType);
@@ -59,7 +66,7 @@ public:
     void SetControl(UIControl* _control);
     UIControl* GetControl() const;
 
-    virtual UIComponent* Clone() = 0;
+    virtual UIComponent* Clone() const = 0;
 
 private:
     UIControl* control;
@@ -71,8 +78,8 @@ public:
 
 };
 
-#define IMPLEMENT_COMPONENT_TYPE(TYPE) \
-    virtual uint32 GetType() const { return TYPE; }; \
+#define IMPLEMENT_UI_COMPONENT_TYPE(TYPE) \
+    virtual uint32 GetType() const override { return TYPE; }; \
     static const uint32 C_TYPE = TYPE;
 
 inline void UIComponent::SetControl(UIControl* _control)

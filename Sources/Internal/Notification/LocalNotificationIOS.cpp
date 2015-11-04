@@ -87,7 +87,7 @@ void LocalNotificationIOS::Hide()
     }
 }
 
-void LocalNotificationIOS::ShowText(const WideString &title, const WideString text)
+void LocalNotificationIOS::ShowText(const WideString &title, const WideString &text, bool useSound)
 {
     if (NULL == notification)
     {
@@ -100,19 +100,31 @@ void LocalNotificationIOS::ShowText(const WideString &title, const WideString te
     notification->impl.userInfo = @{ @"uid" : NSStringFromString(notificationId), @"action" : @"test action"};
 
     [[UIApplication sharedApplication] cancelLocalNotification:notification->impl];
+    
+    if (useSound)
+    {
+        notification->impl.soundName = UILocalNotificationDefaultSoundName;
+    }
+    
     [[UIApplication sharedApplication] scheduleLocalNotification:notification->impl];
 }
 
-void LocalNotificationIOS::ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress)
+void LocalNotificationIOS::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
 {
 }
 
-void LocalNotificationIOS::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds)
+void LocalNotificationIOS::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
 {
     UILocalNotification *notification = [[[UILocalNotification alloc] init] autorelease];
     notification.alertBody = NSStringFromWideString(text);
     notification.timeZone = [NSTimeZone defaultTimeZone];
     notification.fireDate = [NSDate dateWithTimeIntervalSinceNow:delaySeconds];
+    
+    if (useSound)
+    {
+        notification.soundName = UILocalNotificationDefaultSoundName;
+    }
+
     [[UIApplication sharedApplication] scheduleLocalNotification:notification];
 }
 

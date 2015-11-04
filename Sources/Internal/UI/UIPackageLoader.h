@@ -48,6 +48,12 @@ class UIControlBackground;
 class UIPackageLoader : public AbstractUIPackageLoader
 {
 public:
+    static const DAVA::int32 MIN_SUPPORTED_VERSION = 0;
+    static const DAVA::int32 CURRENT_VERSION = 1;
+
+    static const DAVA::int32 VERSION_WITH_LEGACY_ALIGNS = 0;
+    
+public:
     UIPackageLoader();
     virtual ~UIPackageLoader();
 
@@ -65,16 +71,18 @@ private:
     };
     
 private:
+    void LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractUIPackageBuilder *builder);
     void LoadControl(const YamlNode *node, bool root, AbstractUIPackageBuilder *builder);
 
     void LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node, AbstractUIPackageBuilder *builder);
     
     void LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
+    void ProcessLegacyAligns(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
     Vector<ComponentNode> ExtractComponentNodes(const YamlNode *node);
     
     void LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
     void LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
-    virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, AbstractUIPackageBuilder *builder);
+    virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, const DAVA::String &propertyName);
 
 private:
     enum eItemStatus
@@ -92,6 +100,9 @@ private:
     };
     
     Vector<QueueItem> loadingQueue;
+    DAVA::int32 version = CURRENT_VERSION;
+    
+    DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
 };
 
 };

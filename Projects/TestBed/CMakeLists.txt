@@ -1,22 +1,17 @@
 cmake_minimum_required (VERSION 3.0)
+project ( TestBed )
 
-# add DAVA_MEMORY_PROFILING_ENABLE to enable MemoryManagerTest in UnitTests
-# this macro should be defined in all dependant projects (dava framework, etc)
-add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+# Enable MemoryManagerTest in UnitTests
+# this variable should be defined in all dependant projects (dava framework, etc)
+if( NOT DAVA_MEGASOLUTION )
+    #set ( DAVA_MEMORY_PROFILER 1 )
+endif()
 
-set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
-
-if( ANDROID )
-    project ( TestBedLib )
-
-else()
-    project ( TestBed )
-
-endif()
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
@@ -31,7 +26,6 @@ elseif( IOS )
 elseif( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
-
 endif()
 
 file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/*.xib" )
@@ -56,6 +50,10 @@ set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-we
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
 set( LIBRARIES                  )
+
+if ( WINDOWS_UAP )
+    set ( WIN_STORE_MANIFEST_PACKAGE_GUID "5B2576F2-B514-432B-BD8B-0665D4F96BC2" )
+endif ()
 
 setup_main_executable()
 

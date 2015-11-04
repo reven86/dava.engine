@@ -31,7 +31,7 @@
 #define __DAVAENGINE_SERVICEREGISTRAR_H__
 
 #include <Base/BaseTypes.h>
-#include <Base/Function.h>
+#include <Functional/Function.h>
 
 namespace DAVA
 {
@@ -63,6 +63,7 @@ private:
 public:
     bool Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name = NULL);
     void UnregisterAll();
+    bool IsRegistered(uint32 serviceId) const;
 
     IChannelListener* Create(uint32 serviceId, void* context) const;
     bool Delete(uint32 serviceId, IChannelListener* obj, void* context) const;
@@ -88,6 +89,11 @@ inline ServiceRegistrar::Entry::Entry(uint32 id, const char8* serviceName, Servi
     strncpy(name, serviceName, MAX_NAME_LENGTH);
     name[MAX_NAME_LENGTH - 1] = '\0';
 #endif
+}
+
+inline bool ServiceRegistrar::IsRegistered(uint32 serviceId) const
+{
+    return std::find(registrar.begin(), registrar.end(), serviceId) != registrar.end();
 }
 
 inline bool operator == (const ServiceRegistrar::Entry& entry, uint32 serviceId)

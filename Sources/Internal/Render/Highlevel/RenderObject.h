@@ -70,35 +70,35 @@ class RenderObject : public AnimatedObject
 public:
     enum eType
     {
-        TYPE_RENDEROBJECT = 0,  // Base Render Object
-        TYPE_MESH,              // Normal mesh
-        TYPE_SKINNED_MESH,      // Animated mesh for skinned animations
-        TYPE_LANDSCAPE,         // Landscape object
-        TYPE_CUSTOM_DRAW,       // Custom drawn object
-		TYPE_SPRITE,			// Sprite Node
-		TYPE_PARTICLE_EMTITTER,  // Particle Emitter
-		TYPE_SKYBOX,
+        TYPE_RENDEROBJECT = 0, // Base Render Object
+        TYPE_MESH, // Normal mesh
+        TYPE_SKINNED_MESH, // Animated mesh for skinned animations
+        TYPE_LANDSCAPE, // Landscape object
+        TYPE_CUSTOM_DRAW, // Custom drawn object
+        TYPE_SPRITE, // Sprite Node
+        TYPE_PARTICLE_EMTITTER, // Particle Emitter
+        TYPE__DELETED__SKYBOX, //keept for legasy, skybox removed in RHI
         TYPE_VEGETATION,
         TYPE_SPEED_TREE
     };
-    
-	enum eFlags
-	{
-		VISIBLE = 1 << 0,        
-		ALWAYS_CLIPPING_VISIBLE = 1 << 4,
+
+    enum eFlags
+    {
+        VISIBLE = 1 << 0,
+        ALWAYS_CLIPPING_VISIBLE = 1 << 4,
         VISIBLE_STATIC_OCCLUSION = 1 << 5,
-		TREE_NODE_NEED_UPDATE = 1 << 6,
-		NEED_UPDATE = 1 << 7,
-		MARKED_FOR_UPDATE = 1 << 8,
+        TREE_NODE_NEED_UPDATE = 1 << 6,
+        NEED_UPDATE = 1 << 7,
+        MARKED_FOR_UPDATE = 1 << 8,
 
-        CUSTOM_PREPARE_TO_RENDER = 1<<9, //if set, PrepareToRender would be called
+        CUSTOM_PREPARE_TO_RENDER = 1 << 9, //if set, PrepareToRender would be called
 
-		VISIBLE_REFLECTION = 1<<10,
-        VISIBLE_REFRACTION = 1<<11,
+        VISIBLE_REFLECTION = 1 << 10,
+        VISIBLE_REFRACTION = 1 << 11,
         VISIBLE_QUALITY = 1 << 12,
 
         TRANSFORM_UPDATED = 1 << 15,
-	};
+    };
 
     static const uint32 VISIBILITY_CRITERIA = VISIBLE | VISIBLE_STATIC_OCCLUSION | VISIBLE_QUALITY;
     const static uint32 CLIPPING_VISIBILITY_CRITERIA = VISIBLE | VISIBLE_STATIC_OCCLUSION | VISIBLE_QUALITY;
@@ -244,7 +244,7 @@ protected:
     
 	void UpdateActiveRenderBatches();
     Vector<IndexedRenderBatch> renderBatchArray;
-	Vector<RenderBatch*> activeRenderBatchArray;
+    Vector<RenderBatch*> activeRenderBatchArray;
 
 public:
 	INTROSPECTION_EXTEND(RenderObject, AnimatedObject,

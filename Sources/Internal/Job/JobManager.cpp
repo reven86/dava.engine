@@ -30,8 +30,9 @@
 #include "Job/JobManager.h"
 #include "Debug/DVAssert.h"
 #include "Base/ScopedPtr.h"
-#include "Platform/Thread.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/UniqueLock.h"
 #include "Platform/DeviceInfo.h"
 
 namespace DAVA
@@ -85,7 +86,7 @@ void JobManager::Update()
                 DVASSERT(false);
             }
 
-            if(curMainJob.invokerThreadId != 0 && curMainJob.fn != 0)
+            if(curMainJob.invokerThreadId != Thread::Id() && curMainJob.fn != nullptr)
             {
                 // unlock queue mutex until function execution finished
                 mainQueueMutex.Unlock();
@@ -105,7 +106,7 @@ void JobManager::Update()
     if(hasFinishedJobs)
     {
         LockGuard<Mutex> cvguard(mainCVMutex);
-        Thread::Broadcast(&mainCV);
+        mainCV.NotifyAll();
     }
 }
 
@@ -127,7 +128,7 @@ uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJo
     else
     {
         // reserve job ID
-        jobID = AtomicIncrement((int32&)mainJobIDCounter);
+        jobID = ++mainJobIDCounter;
 
         // push requested job into queue
         MainJob job;
@@ -168,10 +169,10 @@ void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
         workerDoneSem.Post();
 
         // Now check if there are some jobs in the queue and wait for them
-        LockGuard<Mutex> guard(mainCVMutex);
+        UniqueLock<Mutex> lock(mainCVMutex);
         while(HasMainJobs())
         {
-            Thread::Wait(&mainCV, &mainCVMutex);
+            mainCV.Wait(lock);
         }
     }
 }
@@ -199,10 +200,10 @@ void JobManager::WaitMainJobID(uint32 mainJobID)
         workerDoneSem.Post();
 
         // Now check if there are some jobs in the queue and wait for them
-        LockGuard<Mutex> guard(mainCVMutex);
+        UniqueLock<Mutex> lock(mainCVMutex);
         while(HasMainJobID(mainJobID))
         {
-            Thread::Wait(&mainCV, &mainCVMutex);
+            mainCV.Wait(lock);
         }
     }
 }
@@ -212,7 +213,7 @@ bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
     bool ret = false;
 
     // tread id = 0 as current thread id, so we should get it
-    if(0 == invokerThreadId)
+    if(Thread::Id() == invokerThreadId)
     {
         invokerThreadId = Thread::GetCurrentId();
     }

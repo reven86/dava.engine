@@ -30,9 +30,7 @@
 #include "InternalControlPropertiesSection.h"
 
 #include "PropertyVisitor.h"
-#include "ValueProperty.h"
-#include "LocalizedTextValueProperty.h"
-#include "FontValueProperty.h"
+#include "IntrospectionProperty.h"
 
 #include "UI/UIControl.h"
 
@@ -60,22 +58,8 @@ InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIContr
         {
             const InspMember *member = insp->Member(j);
             
-            ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
-
-            ValueProperty *prop = nullptr;
-            //TODO: move it to fabric class
-            if (strcmp(member->Name(), "text") == 0)
-            {
-                prop = new LocalizedTextValueProperty(internalControl, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
-            }
-            else if (strcmp(member->Name(), "font") == 0)
-            {
-                prop = new FontValueProperty(internalControl, member, dynamic_cast<FontValueProperty*>(sourceProperty), cloneType);
-            }
-            else
-            {
-                prop = new IntrospectionProperty(internalControl, member, dynamic_cast<IntrospectionProperty*>(sourceProperty), cloneType);
-            }
+            IntrospectionProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
+            IntrospectionProperty *prop = IntrospectionProperty::Create(internalControl, member, sourceProperty, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -105,21 +89,7 @@ void InternalControlPropertiesSection::CreateInternalControl()
         {
             const InspMember *member = insp->Member(j);
 
-            ValueProperty *prop = nullptr;
-            //TODO: move it to fabric class
-            if (strcmp(member->Name(), "text") == 0)
-            {
-                prop = new LocalizedTextValueProperty(internalControl, member, nullptr, CT_COPY);
-            }
-            else if (strcmp(member->Name(), "font") == 0)
-            {
-                prop = new FontValueProperty(internalControl, member, nullptr, CT_COPY);
-            }
-            else
-            {
-                prop = new IntrospectionProperty(internalControl, member, nullptr, CT_COPY);
-            }
-            
+            IntrospectionProperty *prop = IntrospectionProperty::Create(internalControl, member, nullptr, CT_COPY);
             AddProperty(prop);
             SafeRelease(prop);
         }

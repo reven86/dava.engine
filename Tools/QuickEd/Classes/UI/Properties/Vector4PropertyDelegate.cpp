@@ -65,7 +65,7 @@ void Vector4PropertyDelegate::setEditorData(QWidget *rawEditor, const QModelInde
     if (variant.GetType() == VariantType::TYPE_VECTOR4)
     {
         const Vector4 &v = variant.AsVector4();
-        stringValue.QString::sprintf("%g; %g; %g; %g;", v.x, v.y, v.z, v.w);
+        stringValue.QString::sprintf("%g; %g; %g; %g", v.x, v.y, v.z, v.w);
     }
     else
     {

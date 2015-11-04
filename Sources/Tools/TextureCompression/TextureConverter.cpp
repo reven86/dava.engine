@@ -55,6 +55,12 @@ namespace DAVA
 		auto compressedFormat = GPUFamilyDescriptor::GetCompressedFileFormat(gpuFamily, (DAVA::PixelFormat)compression->format);
 		if(compressedFormat == IMAGE_FORMAT_PVR)
 		{
+            if (IMAGE_FORMAT_WEBP == descriptor.dataSettings.sourceFileFormat)
+            {
+                Logger::Error("Can not to convert from WebP (descriptor.pathname.GetAbsolutePathname().c_str()) to PVR");
+                return FilePath();
+            }
+
 			Logger::FrameworkDebug("Starting PVR (%s) conversion (%s)...",
 							   GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(compression->format), descriptor.pathname.GetAbsolutePathname().c_str());
 			

@@ -26,9 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/FunctionTraits.h"
+#include "Functional/Function.h"
 #include "Debug/DVAssert.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 #include "Network/Base/IOLoop.h"
 
@@ -43,7 +43,7 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
                                       , uvasync()
 {
 #ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+//__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     if (useDefaultIOLoop)
     {
@@ -64,7 +64,7 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
 IOLoop::~IOLoop()
 {
 #ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+//__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     // We can close default loop too
     DVVERIFY(0 == uv_loop_close(actualLoop));
@@ -90,7 +90,7 @@ int32 IOLoop::Run(eRunMode runMode)
 void IOLoop::Post(UserHandlerType handler)
 {
 #ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+//__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     {
         LockGuard<Mutex> lock(mutex);

@@ -35,38 +35,22 @@
 namespace DAVA
 {
 
-struct MMConst
-{
-    static const size_t BACKTRACE_DEPTH = 16;
-    static const size_t MAX_TAG_DEPTH = 8;              // Maximum depth of tag stack
-    static const size_t DEFAULT_TAG = 0;                // Default tag which corresponds to whole application time line
-    
-    static const size_t MAX_ALLOC_POOL_COUNT = 8;       // Max supported count of allocation pools
-    static const size_t MAX_TAG_COUNT = 8;              // Max supported count of tags
-    static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
-    
-    enum {
-        DUMP_REQUEST_USER,
-        DUMP_REQUEST_TAG,
-        DUMP_REQUEST_CHECKPOINT
-    };
-};
+/*
+ Most of structs declared inside namespace MemMgr can be transferred over network or saved to file
+ so theirs size and layout must be the same on all platforms. It's achieved by selecting
+ appropiate data types, layouting members and inserting necessary padding. Also static size
+ check is performed.
+*/
 
 /*
- GeneralAllocStat - general memory statistics
+ TagAllocStat - memory statistics for memory tag
 */
-struct GeneralAllocStat
+struct TagAllocStat
 {
-    uint32 allocInternal;       // Size of memory allocated for memory manager internal use: symbol table, etc
-    uint32 internalBlockCount;  // Number of internal memory blocks
-    uint32 ghostBlockCount;     // Number of blocks allocated bypassing memory manager
-    uint32 ghostSize;           // Size of bypassed memory
-    uint32 realSize;
-    //padding
-    uint32 padding[3];
+    uint32 allocByApp;      // Number of bytes allocated by application
+    uint32 blockCount;      // Number of allocated blocks
 };
-
-static_assert(sizeof(GeneralAllocStat) % 16 == 0, "sizeof(GeneralAllocStat) % 16 == 0");
+static_assert(sizeof(TagAllocStat) == 8, "sizeof(TagAllocStat) != 8");
 
 /*
  AllocPoolStat - memory statistics calculated for every allocation pool
@@ -78,113 +62,136 @@ struct AllocPoolStat
     uint32 blockCount;      // Number of allocated blocks
     uint32 maxBlockSize;    // Max allocated block size
 };
-
-static_assert(sizeof(AllocPoolStat) % 16 == 0, "sizeof(AllocPoolStat) % 16 == 0");
+static_assert(sizeof(AllocPoolStat) % 16 == 0, "sizeof(AllocPoolStat) % 16 != 0");
 
 /*
- MMTagStack holds stack of tags
+ GeneralAllocStat - general memory statistics
 */
-struct MMTagStack
+struct GeneralAllocStat
 {
-    uint32 depth;
-    uint32 padding[3];
-    uint32 stack[MMConst::MAX_TAG_DEPTH];
-    uint32 begin[MMConst::MAX_TAG_DEPTH];
+    uint32 nextBlockNo;         // Order number which will be assigned to next allocated memory block
+    uint32 activeTags;          // Current active tags
+    uint32 activeTagCount;      // Number of active tags
+    uint32 allocInternal;       // Size of memory allocated for memory manager internal use: symbol table, etc
+    uint32 internalBlockCount;  // Number of internal memory blocks
+    uint32 ghostBlockCount;     // Number of blocks allocated bypassing memory manager
+    uint32 ghostSize;           // Size of bypassed memory
+    uint32 allocInternalTotal;
 };
-
-static_assert(sizeof(MMTagStack) % 16 == 0, "sizeof(MMTagStack) % 16 == 0");
+static_assert(sizeof(GeneralAllocStat) % 16 == 0, "sizeof(GeneralAllocStat) % 16 != 0");
 
 /*
  MMItemName is used to store name of tag, allocation pool, etc
- It's desirable that name is not too long and size of struct is multiple of 16
 */
 struct MMItemName
 {
-    char8 name[MMConst::MAX_NAME_LENGTH];
+    static const size_t MAX_NAME_LENGTH = 16;
+    char8 name[MAX_NAME_LENGTH];
 };
-
-static_assert(sizeof(MMItemName) % 16 == 0, "sizeof(MMItemName) % 16 == 0");
+static_assert(sizeof(MMItemName) % 16 == 0, "sizeof(MMItemName) % 16 != 0");
 
 /*
- MMStatConfig represents memory manager configuration: number and names of registered tags and allocation pools
+ MMBacktrace is used to store stack frames
+ Layout after this header:
+    uint64 frames[MemoryManager::BACKTRACE_DEPTH] - stack frames
 */
-struct MMStatConfig
-{
-    uint32 maxTagCount;         // Max possible tag count
-    uint32 maxAllocPoolCount;   // Max possible count of allocation pools
-    uint32 tagCount;            // Number of registered tags
-    uint32 markCount;
-    uint32 allocPoolCount;      // Number of registered allocation pools
-    uint32 padding[3];
-    MMItemName names[1];        // Item names: elements in range [0, tagCount) - tag names
-                                //             elements in range [tagCount, tagCount + allocPoolCount) - allocation pool names
-};
-
-static_assert(sizeof(MMStatConfig) % 16 == 0, "sizeof(MMStatConfig) % 16 == 0");
-
-/*
- MMStat represents current memory allocation statistics
-*/
-struct MMStat
-{
-    uint64 timestamp;       // Some kind of timestamp (not necessary real time), filled by statistic transmitter
-    uint32 allocCount;      // Total number of allocation occured
-    uint32 allocPoolCount;  // Duplicate from MMStatConfig::allocPoolCount
-    MMTagStack tags;
-    GeneralAllocStat generalStat;
-    AllocPoolStat poolStat[1];  // Array size should be calculated as: tags.depth * allocPoolCount
-};
-
-static_assert(sizeof(MMStat) % 16 == 0, "sizeof(MMStat) % 16 == 0");
-
 struct MMBacktrace
 {
-    uint32 hash;
-    uint32 padding[3];
-    uint64 frames[MMConst::BACKTRACE_DEPTH];
+    uint32 hash;        // Backtrace hash
+    uint32 padding;
+    // uint64 frames[];
 };
+static_assert(sizeof(MMBacktrace) == 8, "sizeof(MMBacktrace) != 8");
 
+/*
+ MMSymbol is used to transfer symbol name
+*/
 struct MMSymbol
 {
-    static const size_t NAME_LENGTH = 136;
+    static const size_t NAME_LENGTH = 136;  // Reasons to select 136 as name length:
+                                            //  - make struct size to be multiple of 16
+                                            //  - allow to store long enough symbol name
     uint64 addr;
     char8 name[NAME_LENGTH];
 };
-
 static_assert(sizeof(MMSymbol) % 16 == 0, "sizeof(MMSymbol) % 16 == 0");
 
+/*
+ MMBlock is used to transfer symbol name
+*/
 struct MMBlock
 {
-    uint64 addr;
-    uint32 allocByApp;
-    uint32 allocTotal;
-    uint32 pool;
-    uint32 orderNo;
-    uint32 backtraceHash;
+    uint32 orderNo;         // Block order number
+    uint32 allocByApp;      // Size requested by application
+    uint32 allocTotal;      // Total allocated size
+    uint32 bktraceHash;     // Unique hash number to identify block backtrace
+    uint32 pool;            // Allocation pool block belongs to
+    uint32 tags;            // Tags block belongs to
+    uint32 type;
     uint32 padding;
 };
-
 static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");
 
-struct MMDump
-{
-    uint64 timestampBegin;      //
-    uint64 timestampEnd;        //
-    uint32 blockCount;          // Number of blocks in dump
-    uint32 backtraceCount;      // Number of backtraces in dump
-    uint32 symbolCount;         // Number of symbols in dump
-    uint32 blockBegin;          // Order number of first block in dump
-    uint32 blockEnd;            // Order number of last block in dump
-    uint32 type;                // Dump type: user request, tag ended, checkpoint
-    uint32 tag;                 // What tag has ended
-    uint32 padding;
-    // Memory layout after this struct
-    //MMBlock blocks[];
-    //MMBacktrace backtraces[];
-    //MMSymbol symbols[];
-};
+//////////////////////////////////////////////////////////////////////////
 
-static_assert(sizeof(MMDump) % 16 == 0, "sizeof(MMDump) % 16 == 0");
+/*
+ MMStatConfig contains information about memory manager configuration.
+ Layout after this header:
+    MMItemName allocPoolNames[allocPoolCount] - names of registered allocation pools
+    MMItemName tagNames[tagCount]             - names of all tags including empty and unused
+*/
+struct MMStatConfig
+{
+    uint32 size;                // Total size of configuration
+    uint32 allocPoolCount;      // Number of registered allocation pools
+    uint32 tagCount;            // Number of registered tags
+    uint32 bktraceDepth;        // Depth of collected backtrace
+    // MMItemName allocPoolNames[];
+    // MMItemName tagNames[];
+};
+static_assert(sizeof(MMStatConfig) == 16, "sizeof(MMStatConfig) != 16");
+
+/*
+ MMCurStat represents current memory allocation statistics
+ Layout after this header:
+    AllocPoolStat statAllocPool[] - allocation statistics by pools, size StatConfigHdr::allocPoolCount
+    TagAllocStat statTagAlloc[]   - allocation statistics by tags, size StatConfigHdr::tagCount
+*/
+struct MMCurStat
+{
+    uint64 timestamp;               // Room for timestamp, not filled by memory manager
+    uint32 size;                    // Total size of allocation statistics
+    uint32 padding;
+    GeneralAllocStat statGeneral;   // General statistics
+    // AllocPoolStat statAllocPool[];
+    // TagAllocStat statTagAlloc[];
+};
+static_assert(sizeof(MMCurStat) % 16 == 0, "sizeof(MMCurStat) % 16 == 0");
+
+/*
+ MMSnapshot represents memory snapshot
+ Layout after this header:
+    MMCurStat statCur                 - current memory allocation statistics with its layout
+    MMBlock blocks[blockCount]        - memory blocks
+    MMSymbol symbols[symbolCount]     - symbols
+    MMBacktrace bktrace[bktraceCount] - backtraces
+ Backtrace array size calculation formula:
+    size = (sizeof(MMBacktrace) + bktraceDepth * sizeof(uint64)) * bktraceCount;
+*/
+struct MMSnapshot
+{
+    uint64 timestamp;           // Room for timestamp
+    uint32 size;                // Total size of memory snapshot
+    uint32 dataOffset;          // Offset of snapshot data
+    uint32 blockCount;          // Number of blocks in snapshot
+    uint32 bktraceCount;        // Number of backtraces in snapshot
+    uint32 symbolCount;         // Number of symbols in snapshot
+    uint32 bktraceDepth;        // Depth of collected backtrace
+    // MMBlock blocks[];
+    // MMSymbol symbols[];
+    // MMBacktrace bktrace[];
+};
+static_assert(sizeof(MMSnapshot) % 16 == 0, "sizeof(MMSnapshot) % 16 == 0");
 
 }   // namespace DAVA
 

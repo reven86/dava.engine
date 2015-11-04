@@ -28,23 +28,32 @@
 
 
 #include "SceneValidator.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/TextureDescriptor.h"
-
-#include "Qt/Main/QtUtils.h"
-#include "StringConstants.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Main/QtUtils.h"
+#include "Project/ProjectManager.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneHelper.h"
+#include "Settings/SettingsManager.h"
+#include "StringConstants.h"
+
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
-#include "Scene/SceneEditor2.h"
 
-#include "Scene3D/Systems/MaterialSystem.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
-#include "Render/Material/NMaterialNames.h"
+template <typename ... A>
+void PushLogMessage(DAVA::Set<DAVA::String>& messages, DAVA::Entity* object, const char* format, A... args)
+{
+	auto infoText = DAVA::Format(format, args...);
+	if (nullptr != object)
+		infoText += PointerSerializer::FromPointer(object);
+	messages.insert(infoText);
+}
 
 SceneValidator::SceneValidator()
 {
@@ -58,10 +67,9 @@ SceneValidator::~SceneValidator()
 bool SceneValidator::ValidateSceneAndShowErrors(Scene *scene, const DAVA::FilePath &scenePath)
 {
     errorMessages.clear();
-
     ValidateScene(scene, scenePath, errorMessages);
-
     ShowErrorDialog(errorMessages);
+
     return (!errorMessages.empty());
 }
 
@@ -99,20 +107,16 @@ void SceneValidator::ValidateScene(Scene *scene, const DAVA::FilePath &scenePath
     }
     else 
     {
-        errorsLog.insert(String("Scene in NULL!"));
+		PushLogMessage(errorsLog, nullptr, "Scene is not initialized!");
     }
 }
 
 void SceneValidator::ValidateScales(Scene *scene, Set<String> &errorsLog)
 {
-	if(scene != nullptr)
-	{
-		ValidateScalesInternal(scene, errorsLog);
-	}
+	if (nullptr == scene)
+		PushLogMessage(errorsLog, nullptr, "Scene is not initializedr!");
 	else 
-	{
-		errorsLog.insert(String("Scene in NULL!"));
-	}
+		ValidateScalesInternal(scene, errorsLog);
 }
 
 void SceneValidator::ValidateScalesInternal(Entity *sceneNode, Set<String> &errorsLog)
@@ -141,11 +145,10 @@ void SceneValidator::ValidateScalesInternal(Entity *sceneNode, Set<String> &erro
 	float32 sy = sqrt(t._01 * t._01 + t._11 * t._11 + t._21 * t._21);
 	float32 sz = sqrt(t._02 * t._02 + t._12 * t._12 + t._22 * t._22);
 
-	if ((!FLOAT_EQUAL(sx, 1.0f)) 
-		|| (!FLOAT_EQUAL(sy, 1.0f))
-		|| (!FLOAT_EQUAL(sz, 1.0f)))
+	if ((!FLOAT_EQUAL(sx, 1.0f)) || (!FLOAT_EQUAL(sy, 1.0f)) || (!FLOAT_EQUAL(sz, 1.0f)))
 	{
- 		errorsLog.insert(Format("Node %s: has scale (%.3f, %.3f, %.3f) ! Re-design level. Scene: %s", sceneNode->GetName().c_str(), sx, sy, sz, sceneName.c_str()));
+		PushLogMessage(errorsLog, sceneNode, "Node %s: has scale (%.3f, %.3f, %.3f) ! Re-design level. Scene: %s", 
+			sceneNode->GetName().c_str(), sx, sy, sz, sceneName.c_str());
 	}
 
 	int32 count = sceneNode->GetChildrenCount();
@@ -214,7 +217,8 @@ void SceneValidator::ValidateRenderComponent(Entity *ownerNode, Set<String> &err
 	if (ro->GetType() == RenderObject::TYPE_LANDSCAPE)
     {
         ownerNode->SetLocked(true);
-        FixIdentityTransform(ownerNode, errorsLog, Format("Landscape had wrong transform. Please re-save scene: %s", sceneName.c_str()));
+        FixIdentityTransform(ownerNode, errorsLog, 
+			Format("Landscape had wrong transform. Please re-save scene: %s", sceneName.c_str()));
         
 		Landscape *landscape = static_cast<Landscape *>(ro);
         ValidateLandscape(landscape, errorsLog);
@@ -225,13 +229,12 @@ void SceneValidator::ValidateRenderComponent(Entity *ownerNode, Set<String> &err
     if (ro->GetType() == RenderObject::TYPE_VEGETATION)
     {
         ownerNode->SetLocked(true);
-        FixIdentityTransform(ownerNode, errorsLog, Format("Vegetation had wrong transform. Please re-save scene: %s", sceneName.c_str()));
+        FixIdentityTransform(ownerNode, errorsLog, 
+			Format("Vegetation had wrong transform. Please re-save scene: %s", sceneName.c_str()));
     }
 }
 
-void SceneValidator::FixIdentityTransform(Entity *ownerNode,
-                                          Set<String> &errorsLog,
-                                          const String& errorMessage)
+void SceneValidator::FixIdentityTransform(Entity *ownerNode, Set<String> &errorsLog, const String& errorMessage)
 {
     if (ownerNode->GetLocalTransform() != DAVA::Matrix4::IDENTITY)
     {
@@ -241,7 +244,7 @@ void SceneValidator::FixIdentityTransform(Entity *ownerNode,
         {
             sc->MarkAsChanged();
         }
-        errorsLog.insert(errorMessage);
+		PushLogMessage(errorsLog, ownerNode, errorMessage.c_str());
     }
 }
 
@@ -253,14 +256,15 @@ void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity *ownerNode, Se
         uint32 count = effect->GetEmittersCount();
         for (uint32 i = 0; i < count; ++i)
         {
-            ValidateParticleEmitter(effect->GetEmitter(i), errorsLog);
+            ValidateParticleEmitter(effect->GetEmitter(i), errorsLog, effect->GetEntity());
         }
 	}
 }
 
-void SceneValidator::ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog) const
+void SceneValidator::ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog, DAVA::Entity* owner) const
 {
     DVASSERT(emitter);
+
     if (nullptr == emitter)
     {
         return;
@@ -268,7 +272,8 @@ void SceneValidator::ValidateParticleEmitter(ParticleEmitter *emitter, Set<Strin
 
     if(emitter->configPath.IsEmpty())
     {
-        errorsLog.insert(Format("Empty config path for emitter %s. Scene: %s", emitter->name.c_str(), sceneName.c_str()));
+		PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s", 
+			emitter->name.c_str(), sceneName.c_str());
     }
     
     const Vector<ParticleLayer*> &layers = emitter->layers;
@@ -278,7 +283,7 @@ void SceneValidator::ValidateParticleEmitter(ParticleEmitter *emitter, Set<Strin
 	{
 		if (layers[i]->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
 		{
-			ValidateParticleEmitter(layers[i]->innerEmitter, errorsLog);
+			ValidateParticleEmitter(layers[i]->innerEmitter, errorsLog, owner);
 		}
 	}
 }
@@ -286,19 +291,17 @@ void SceneValidator::ValidateParticleEmitter(ParticleEmitter *emitter, Set<Strin
 void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog)
 {
     ownerNode->RemoveFlag(Entity::NODE_INVALID);
-    
-    NMaterial *material = renderBatch->GetMaterial();
-    if(material != nullptr)
-    {
-        ConvertIlluminationParamsFromProperty(ownerNode, material);
-    }
 }
 
 void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLog)
 {
-	DAVA::MaterialSystem *matSystem = scene->GetMaterialSystem();
 	Set<DAVA::NMaterial *> materials;
-	matSystem->BuildMaterialList(scene, materials);
+    SceneHelper::BuildMaterialList(scene, materials, false);
+    auto globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        materials.erase(globalMaterial);
+    }
 
     const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
     if (ProjectManager::Instance() != nullptr)
@@ -306,69 +309,74 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
         materialTemplates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
     }
 
-	DAVA::Map<DAVA::Texture *, DAVA::String> texturesMap;
-	auto endItMaterials = materials.end();
+    FastName textureNames[] = {
+        NMaterialTextureName::TEXTURE_ALBEDO,
+        NMaterialTextureName::TEXTURE_NORMAL,
+        NMaterialTextureName::TEXTURE_DETAIL,
+        NMaterialTextureName::TEXTURE_LIGHTMAP,
+        NMaterialTextureName::TEXTURE_DECAL,
+        NMaterialTextureName::TEXTURE_CUBEMAP,
+        NMaterialTextureName::TEXTURE_DECALMASK,
+        NMaterialTextureName::TEXTURE_DECALTEXTURE,
+    };
+
+    DAVA::Map<DAVA::Texture*, DAVA::String> texturesMap;
+    auto endItMaterials = materials.end();
 	for (auto it = materials.begin(); it != endItMaterials; ++it)
 	{
-        if (((*it)->GetNodeGlags() & DataNode::NodeRuntimeFlag) == 0) //VI: don't validate runtime materials
+        for (const FastName& textureName : textureNames)
         {
-            DAVA::uint32 count = (*it)->GetTextureCount();
-            for (DAVA::uint32 t = 0; t < count; ++t)
+            if ((*it)->HasLocalTexture(textureName))
             {
-                Texture *tex = (*it)->GetTexture(t);
-                if (tex && (!NMaterial::IsRuntimeTexture((*it)->GetTextureName(t))))
+                Texture* tex = (*it)->GetLocalTexture(textureName);
+                if ((*it)->GetParent())
                 {
-                    if (((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_INSTANCE) && (*it)->GetParent())
-                    {
-                        texturesMap[tex] = Format("Material: %s (%s). Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetParent()->GetMaterialName().c_str(), (*it)->GetTextureName(t).c_str());
-                    }
-                    else
-                    {
-                        texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetTextureName(t).c_str());
-                    }
+                    texturesMap[tex] = Format("Material: %s (parent - %s). Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetParent()->GetMaterialName().c_str(), textureName.c_str());
+                }
+                else
+                {
+                    texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetMaterialName().c_str(), textureName.c_str());
+                }
+            }
+        }
+
+        bool qualityGroupIsOk = false;
+        DAVA::FastName materialGroup = (*it)->GetQualityGroup();
+
+        // if some group is set in material we should check it exists in quality system
+        if (materialGroup.IsValid())
+        {
+            size_t qcount = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount();
+            for (size_t q = 0; q < qcount; ++q)
+            {
+                if (materialGroup == DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(q))
+                {
+                    qualityGroupIsOk = true;
+                    break;
                 }
             }
 
-            if ((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
+            if (!qualityGroupIsOk)
             {
-                bool qualityGroupIsOk = false;
-                DAVA::FastName materialGroup = (*it)->GetMaterialGroup();
+                errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
+            }
+        }
 
-                // if some group is set in material we should check it exists in quality system
-                if (materialGroup.IsValid())
+        if ((*it)->GetEffectiveFXName().IsValid() && materialTemplates && (*it)->GetEffectiveFXName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
+        {
+            // ShadowVolume material is non-assignable and it's okey
+            bool templateFound = false;
+            for (int i = 0; i < materialTemplates->size(); ++i)
+            {
+                if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetEffectiveFXName().c_str()))
                 {
-                    size_t qcount = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount();
-                    for (size_t q = 0; q < qcount; ++q)
-                    {
-                        if (materialGroup == DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(q))
-                        {
-                            qualityGroupIsOk = true;
-                            break;
-                        }
-                    }
-
-                    if (!qualityGroupIsOk)
-                    {
-                        errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
-                    }
+                    templateFound = true;
+                    break;
                 }
-
-                if (materialTemplates && (*it)->GetMaterialTemplateName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
-                {
-                    bool templateFound = false;
-                    for (int i = 0; i < materialTemplates->size(); ++i)
-                    {
-                        if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetMaterialTemplateName().c_str()))
-                        {
-                            templateFound = true;
-                            break;
-                        }
-                    }
-                    if (!templateFound)
-                    {
-                        errorsLog.insert(Format("Material \"%s\" has non-assignable template", (*it)->GetMaterialName().c_str()));
-                    }
-                }
+            }
+            if (!templateFound)
+            {
+                errorsLog.insert(Format("Material \"%s\" has non-assignable template", (*it)->GetMaterialName().c_str()));
             }
         }
 	}
@@ -382,76 +390,32 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 
 void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errorsLog)
 {
-    if (nullptr == landscape)
-    {
-        return;
-    }
-    
-    
-    for (int32 i = 0; i < Landscape::TEXTURE_COUNT; ++i)
-    {
-        Landscape::eTextureLevel texLevel = (Landscape::eTextureLevel)i;
-        if (texLevel == Landscape::TEXTURE_COLOR || texLevel == Landscape::TEXTURE_TILE_MASK || texLevel == Landscape::TEXTURE_TILE0)
-        {
-            ValidateLandscapeTexture(landscape, texLevel, errorsLog);
-        }
-        
-        Color color = landscape->GetTileColor(texLevel);
-        if (!ValidateColor(color))
-        {
-            landscape->SetTileColor(texLevel, color);
-        }
-    }
+    if (nullptr == landscape) return;
+    ValidateLandscapeTexture(landscape, Landscape::TEXTURE_COLOR, errorsLog);
+    ValidateLandscapeTexture(landscape, Landscape::TEXTURE_TILE, errorsLog);
+    ValidateLandscapeTexture(landscape, Landscape::TEXTURE_TILEMASK, errorsLog);
 
-	//validate heightmap
+    //validate heightmap
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), String("Landscape. Heightmap."));
     if (!pathIsCorrect)
     {
-        String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->CurProjectDataSourcePath());
-        errorsLog.insert(Format("Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str()));
+        String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->GetDataSourcePath());
+        PushLogMessage(errorsLog, nullptr, "Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str());
     }
 }
 
-void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog)
+void SceneValidator::ValidateLandscapeTexture(Landscape* landscape, const FastName& texLevel, Set<String>& errorsLog)
 {
-	DAVA::FilePath landTexName = landscape->GetTextureName(texLevel);
-	if (!IsTextureDescriptorPath(landTexName) &&
-	    landTexName.GetAbsolutePathname().size() > 0)
-	{
-		landscape->SetTextureName(texLevel, TextureDescriptor::GetDescriptorPathname(landTexName));
-	}
-
-	ValidateTexture(landscape->GetTexture(texLevel), Format("Landscape. TextureLevel %d", texLevel), errorsLog);
-}
-
-
-void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material)
-{
-    IlluminationParams *params = material->GetIlluminationParams();
-
-    VariantType * variant = nullptr;
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.used");
-    if (variant != nullptr)
+    Texture* texture = landscape->GetMaterial()->GetEffectiveTexture(texLevel);
+    if (texture)
     {
-        params->isUsed = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.castshadows");
-    
-    if (variant != nullptr)
-    {
-        params->castShadow = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.receiveshadows");
-    
-    if (variant != nullptr)
-    {
-        params->receiveShadow = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "lightmap.size");
-    
-    if (variant != nullptr)
-    {
-        params->lightmapSize = variant->AsInt32();
+        DAVA::FilePath landTexName = landscape->GetMaterial()->GetEffectiveTexture(texLevel)->GetPathname();
+        if (!IsTextureDescriptorPath(landTexName) && landTexName.GetAbsolutePathname().size() > 0)
+        {
+            texture->SetPathname(TextureDescriptor::GetDescriptorPathname(landTexName));
+        }
+
+        ValidateTexture(texture, Format("Landscape. %s", texLevel.c_str()), errorsLog);
     }
 }
 
@@ -504,11 +468,13 @@ void SceneValidator::ValidateTexture(Texture *texture, const String &validatedOb
 	{
 		if (texturePathname.IsEmpty())
 		{
-			errorsLog.insert(Format("Texture not set for object: %s. Scene: %s", validatedObjectName.c_str(), sceneName.c_str()));
+			PushLogMessage(errorsLog, nullptr, "Texture not set for object: %s. Scene: %s", 
+				validatedObjectName.c_str(), sceneName.c_str());
 		}
 		else
 		{
-			errorsLog.insert(Format("Can't load texture: %s. Scene: %s", textureInfo.c_str(), sceneName.c_str()));
+			PushLogMessage(errorsLog, nullptr, "Can't load texture: %s. Scene: %s",
+				textureInfo.c_str(), sceneName.c_str());
 		}
 		return;
 	}
@@ -516,18 +482,21 @@ void SceneValidator::ValidateTexture(Texture *texture, const String &validatedOb
 	bool pathIsCorrect = ValidatePathname(texturePathname, validatedObjectName);
 	if (!pathIsCorrect)
 	{
-		errorsLog.insert(Format("Wrong path of: %s. Scene: %s", textureInfo.c_str(), sceneName.c_str()));
+		PushLogMessage(errorsLog, nullptr, "Wrong path of: %s. Scene: %s", 
+			textureInfo.c_str(), sceneName.c_str());
 		return;
 	}
 	
 	if (!IsPowerOf2(texture->GetWidth()) || !IsPowerOf2(texture->GetHeight()))
 	{
-		errorsLog.insert(Format("Wrong size of %s. Scene: %s", textureInfo.c_str(), sceneName.c_str()));
+		PushLogMessage(errorsLog, nullptr, "Texture %s has now power of two dimensions. Scene: %s", 
+			textureInfo.c_str(), sceneName.c_str());
 	}
     
-    if (texture->GetWidth() > 2048 || texture->GetHeight() > 2048)
+    if ((texture->GetWidth() > 2048) || (texture->GetHeight() > 2048))
 	{
-		errorsLog.insert(Format("Texture is too big: %s. Scene: %s", textureInfo.c_str(), sceneName.c_str()));
+		PushLogMessage(errorsLog, nullptr, "Texture %s is too big. Scene: %s", 
+			textureInfo.c_str(), sceneName.c_str());
 	}
 }
 
@@ -575,13 +544,15 @@ bool SceneValidator::ValidateTexturePathname(const FilePath &pathForValidation, 
 		String textureExtension = pathForValidation.GetExtension();
 		if (!TextureDescriptor::IsSupportedTextureExtension(textureExtension))
 		{
-			errorsLog.insert(Format("Path %s has incorrect extension. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
+			PushLogMessage(errorsLog, nullptr, "Path %s has incorrect extension. Scene: %s",
+				pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str());
 			return false;
 		}
 	}
 	else
 	{
-		errorsLog.insert(Format("Path %s is incorrect for project %s. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str(), sceneName.c_str()));
+		PushLogMessage(errorsLog, nullptr, "Path %s is incorrect for project %s. Scene: %s",
+			pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str(), sceneName.c_str());
 	}
 
 	return pathIsCorrect;
@@ -609,7 +580,8 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
         pathIsCorrect = isSourceTexture || isHeightmap;
         if (!pathIsCorrect)
         {
-            errorsLog.insert(Format("Heightmap path %s is wrong. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
+			PushLogMessage(errorsLog, nullptr, "Heightmap path %s is wrong. Scene: %s",
+				pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str());
             return false;
         }
 
@@ -626,21 +598,24 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
 
         if (!pathIsCorrect)
         {
-            errorsLog.insert(Format("Can't load Heightmap from path %s. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
+            PushLogMessage(errorsLog, nullptr, "Can't load Heightmap from path %s. Scene: %s",
+				pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str());
             return false;
         }
 
         pathIsCorrect = IsPowerOf2(heightmap->Size() - 1);
         if(!pathIsCorrect)
         {
-            errorsLog.insert(Format("Heightmap %s has wrong size. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
+			PushLogMessage(errorsLog, nullptr, "Heightmap %s has wrong size. Scene: %s",
+				pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str());
         }
 
 		return pathIsCorrect;
 	}
 	else
 	{
-		errorsLog.insert(Format("Path %s is incorrect for project %s.", pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str()));
+		PushLogMessage(errorsLog, nullptr, "Path %s is incorrect for project %s.",
+			pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str());
 	}
 
 	return pathIsCorrect;
@@ -733,13 +708,15 @@ void SceneValidator::ValidateCustomColorsTexture(Entity *landscapeEntity, Set<St
         
         if(!TextureDescriptor::IsSourceTextureExtension(path.GetExtension()))
 		{
-			errorsLog.insert(Format("Custom colors texture has to have .png, .jpeg or .tga extension. Scene: %s", sceneName.c_str()));
+			PushLogMessage(errorsLog, landscapeEntity, 
+				"Custom colors texture has to have .png, .jpeg or .tga extension. Scene: %s", sceneName.c_str());
 		}
 
         String::size_type foundPos = currentSaveName.find("DataSource/3d/");
         if (String::npos == foundPos)
         {
-			errorsLog.insert(Format("Custom colors texture has to begin from DataSource/3d/. Scene: %s", sceneName.c_str()));
+			PushLogMessage(errorsLog, landscapeEntity, 
+				"Custom colors texture has to begin from DataSource/3d/. Scene: %s", sceneName.c_str());
         }
 	}
 }
@@ -811,4 +788,32 @@ bool SceneValidator::IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObj
     }
 
     return ((maxLod[0] != maxLod[1]) && (maxLod[0] != -1 && maxLod[1] != -1));
+}
+
+
+void SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity *entity)
+{
+	Set<String> errors;
+	SceneValidator::ExtractEmptyRenderObjects(entity, errors);
+	if (!errors.empty())
+	{
+		ShowErrorDialog(errors);
+	}
+}
+
+
+void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity *entity, Set<String> &errorsLog)
+{
+	auto renderObject = GetRenderObject(entity);
+	if ((nullptr != renderObject) && (0 == renderObject->GetRenderBatchCount()) && RenderObject::TYPE_MESH == renderObject->GetType())
+	{
+		entity->RemoveComponent(Component::RENDER_COMPONENT);
+		PushLogMessage(errorsLog, entity, "Entity %s has empty render object", entity->GetName().c_str());
+	}
+
+	const uint32 count = entity->GetChildrenCount();
+	for (uint32 i = 0; i < count; ++i)
+	{
+		ExtractEmptyRenderObjects(entity->GetChild(i), errorsLog);
+	}
 }

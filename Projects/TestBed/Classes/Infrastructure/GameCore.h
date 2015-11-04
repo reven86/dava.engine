@@ -33,20 +33,18 @@
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
 
-using namespace DAVA;
-
 class TestData;
 class BaseScreen;
 class TestListScreen;
-class GameCore : public ApplicationCore
+class GameCore : public DAVA::ApplicationCore
 {
     struct ErrorData
     {
-        int32 line;
-        String command;
-        String filename;
-        String testName;
-        String testMessage;
+        DAVA::int32 line;
+        DAVA::String command;
+        DAVA::String filename;
+        DAVA::String testName;
+        DAVA::String testMessage;
     };
 
 protected:
@@ -80,19 +78,19 @@ protected:
     void RunTests();
     
     void CreateDocumentsFolder();
-    File * CreateDocumentsFile(const String &filePathname);
+    DAVA::File * CreateDocumentsFile(const DAVA::String &filePathname);
     
 private:
     void RunOnlyThisTest();
     void OnError();
     bool IsNeedSkipTest(const BaseScreen& screen) const;
 
-    String runOnlyThisTest;
+    DAVA::String runOnlyThisTest;
 
     BaseScreen *currentScreen;
     TestListScreen *testListScreen;
     
-    Vector<BaseScreen *> screens;
+    DAVA::Vector<BaseScreen *> screens;
 };
 
 

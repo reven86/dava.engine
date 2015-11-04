@@ -4,20 +4,17 @@
 #set local path
 LOCAL_PATH := $(call my-dir)
 
-MY_PROJECT_ROOT := $(LOCAL_PATH)/../..
-DAVA_ROOT := $(MY_PROJECT_ROOT)/../..
+DV_PROJECT_ROOT := $(LOCAL_PATH)/../..
+DAVA_ROOT := $(DV_PROJECT_ROOT)/../..
 
 # clear all variables
 include $(CLEAR_VARS)
 
 # set module name
-LOCAL_MODULE := UnitTestsLib
+LOCAL_MODULE := TestBed
 
 # set path for includes
-LOCAL_C_INCLUDES := $(LOCAL_PATH)
-LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes
-LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes/Infrastructure
-LOCAL_C_INCLUDES += $(DAVA_ROOT)/Sources/Tools
+LOCAL_C_INCLUDES := $(DV_PROJECT_ROOT)/Classes
 
 # set exported includes
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
@@ -25,23 +22,19 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 # set source files
 LOCAL_SRC_FILES := \
 	$(subst $(LOCAL_PATH)/,, \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/*.cpp) \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/Infrastructure/*.cpp) \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/*.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
+	$(wildcard $(DV_PROJECT_ROOT)/Classes/*/*.cpp))
 
 LOCAL_LDLIBS := -lz -lOpenSLES -landroid
 
-ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
+ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
+LOCAL_ARM_MODE := arm
 LOCAL_ARM_NEON := true
 LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
 endif
-LOCAL_CFLAGS += -std=c++11
+LOCAL_CPPFLAGS += -std=c++1y
 
 # set included libraries
-LOCAL_STATIC_LIBRARIES := libInternal
+LOCAL_WHOLE_STATIC_LIBRARIES := libInternal
 
 # build shared library
 include $(BUILD_SHARED_LIBRARY)

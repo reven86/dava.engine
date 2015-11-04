@@ -40,7 +40,6 @@ ClassProperty::ClassProperty(ControlNode *aControl)
     : ValueProperty("Class")
     , control(aControl) // weak
 {
-    
 }
 
 ClassProperty::~ClassProperty()
@@ -61,6 +60,11 @@ bool ClassProperty::IsReadOnly() const
 ClassProperty::ePropertyType ClassProperty::GetType() const
 {
     return TYPE_VARIANT;
+}
+
+DAVA::uint32 ClassProperty::GetFlags() const
+{
+    return EF_AFFECTS_STYLES;
 }
 
 VariantType ClassProperty::GetValue() const

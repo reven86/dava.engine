@@ -55,7 +55,7 @@ class UIControl
 {
 public:
 
-	UIControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+	UIControl(const Rect &rect = Rect());
 	
 	inline const Rect GetRect() const;
     
@@ -87,7 +87,7 @@ public:
 
 	int32 GetFrame() const;
 
-	const Vector2 & UIControl::GetPivotPoint() const;
+	Vector2 UIControl::GetPivotPoint() const;
 
 protected:
 	virtual ~UIControl();

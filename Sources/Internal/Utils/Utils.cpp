@@ -29,8 +29,6 @@
 
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
-#include "Platform/Thread.h"
-#include "Render/RenderManager.h"
 #include "FileSystem/YamlParser.h"
 
 namespace DAVA
@@ -120,13 +118,13 @@ void Merge(const Vector<String> & tokens, const char delim, String & outString)
 {
     outString.clear();
 
-    auto tokensSize = tokens.size();
+    size_t tokensSize = tokens.size();
     if (tokensSize > 0)
     {
         outString.append(tokens[0]);
         if (tokensSize > 1)
         {
-            for (decltype(tokensSize) i = 1; i < tokensSize; ++i)
+            for (size_t i = 1; i < tokensSize; ++i)
             {
                 outString += delim;
                 outString += tokens[i];

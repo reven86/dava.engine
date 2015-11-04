@@ -18,12 +18,11 @@ import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.InputDevice;
+import android.view.InputDevice.MotionRange;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.InputDevice.MotionRange;
 
 import com.bda.controller.Controller;
 import com.dava.framework.InputManagerCompat.InputDeviceListener;
@@ -33,7 +32,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private static int errorState = 0;
 
 	private JNIAccelerometer accelerometer = null;
-	protected JNIGLSurfaceView glView = null;
+	protected JNISurfaceView surfaceView = null;
 	private View splashView = null;
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
@@ -42,7 +41,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	private InputManagerCompat inputManager = null;
 	
-	private native void nativeOnCreate(boolean isFirstRun);
+	private long mainLoopThreadID = 0;
+	
+	private native void nativeOnCreate();
 	private native void nativeOnStart();
 	private native void nativeOnStop();
 	private native void nativeOnDestroy();
@@ -51,14 +52,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private native void nativeOnGamepadAvailable(boolean isAvailable);
 	private native void nativeOnGamepadTriggersAvailable(boolean isAvailable);
 	private native boolean nativeIsMultitouchEnabled();
-    
-    private boolean isFirstRun = true;
+	private native int nativeGetDesiredFPS();
+	
     private static String commandLineParams = null;
+	
+    private boolean mainThreadExit = false;
     
-	public abstract JNIGLSurfaceView GetSurfaceView();
-    
+    public abstract JNISurfaceView FindSurfaceView();
+	
     private static JNIActivity activity = null;
-    private static long glThreadId = 0;
     protected static SingalStrengthListner singalStrengthListner = null;
     private boolean isPausing = false;
     
@@ -80,11 +82,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     }
     
     /**
-     * Get instance of {@link JNIGLSurfaceView} without loading content view
-     * @return instance of {@link JNIGLSurfaceView} or null
+     * Get instance of {@link JNISurfaceView} without loading content view
+     * @return instance of {@link JNISurfaceView} or null
      */
-    public JNIGLSurfaceView GetGLView() {
-    	return glView;
+    public JNISurfaceView GetSurfaceView() {
+    	return surfaceView;
     }
     
     @Override
@@ -97,16 +99,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onCreate(savedInstanceState);
         
         commandLineParams = initCommandLineParams();
-
-        // Initialize native framework core         
-        JNIApplication.GetApplication().InitFramework(commandLineParams);
         
         //JNINotificationProvider.AttachToActivity();
-        
-        if(null != savedInstanceState)
-        {
-        	isFirstRun = savedInstanceState.getBoolean("isFirstRun");
-        }
         
         // initialize accelerometer
         SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
@@ -132,16 +126,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		});
         
         // initialize GL VIEW
-        glView = GetSurfaceView();
-        assert(glView != null);
-        glView.setFocusableInTouchMode(true);
-        glView.setClickable(true);
-        glView.setFocusable(true);
-        glView.requestFocus();
+        surfaceView = FindSurfaceView();
+        assert(surfaceView != null);
+        surfaceView.setFocusableInTouchMode(true);
+        surfaceView.setClickable(true);
+        surfaceView.setFocusable(true);
+        surfaceView.requestFocus();
         
         inputManager = InputManagerCompat.Factory.getInputManager(this);
-
-        UpdateGamepadAxises();
         
         splashView = GetSplashView();
         
@@ -155,11 +147,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             {
                 mController.init();
             }
-        	mController.setListener(glView.mogaListener, new Handler());
+        	mController.setListener(surfaceView.mogaListener, new Handler());
         }
-        
-        Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
-        nativeOnCreate(isFirstRun);
 
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
         if (tm != null) {
@@ -183,6 +172,66 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		{
 		    splashView.setVisibility(View.GONE);
 		}
+
+		Thread mainThread = new Thread(new Runnable() 
+		{
+			long startTime;
+			
+			@Override
+			public void run() 
+			{
+	        	Log.e(JNIConst.LOG_TAG, "main thread stopped!");
+	        	
+		        // Initialize native framework core         
+		        JNIApplication.GetApplication().InitFramework(commandLineParams);
+
+		        nativeOnCreate();
+		        
+		        UpdateGamepadAxises();
+		        
+		        startTime = System.currentTimeMillis();
+		        
+				while(true)
+				{
+					{
+			            long elapsedTime = System.currentTimeMillis() - startTime;
+		                long fpsLimit = nativeGetDesiredFPS();
+		                if (fpsLimit > 0)
+			            {
+			                long averageFrameTime = 1000L / fpsLimit;
+			                if(averageFrameTime > elapsedTime)
+			                {
+			                    long sleepMs = averageFrameTime - elapsedTime;
+			                    try {
+									Thread.sleep(sleepMs);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+			                }
+			            }
+			            startTime = System.currentTimeMillis();
+			        }
+					
+					surfaceView.ProcessQueueEvents();
+					surfaceView.ProcessFrame();
+					
+					boolean needExit = false;
+			        synchronized (JNIActivity.this) 
+			        {
+			        	needExit = mainThreadExit;
+					}
+			        
+			        if(needExit) 
+			        {
+			        	Log.e(JNIConst.LOG_TAG, "main thread stopped!");
+			        	break;
+			        }
+				}
+			}
+		});
+		mainLoopThreadID = mainThread.getId();
+		mainThread.start();
+		
         // The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] finish");
     }
@@ -202,6 +251,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		return commandLine;
 	}
     
+	public long GetMainLoopThreadID()
+	{
+		return mainLoopThreadID;
+	}
+	
     @Override
     protected void onStart()
     {
@@ -218,17 +272,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onRestart] start");
         super.onRestart();
         Log.i(JNIConst.LOG_TAG, "[Activity::onRestart] start");
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) 
-    {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onSaveInstanceState] start");
-
-        outState.putBoolean("isFirstRun", isFirstRun);
-    	
-    	super.onSaveInstanceState(outState);
-    	Log.i(JNIConst.LOG_TAG, "[Activity::onSaveInstanceState] finish");
     }
     
     @Override
@@ -261,7 +304,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // can destroy eglContext
         // we need to stop rendering before quit application because some objects could became invalid after
         // "nativeFinishing" call.
-        glView.onPause();
+        surfaceView.onPause();
         
         if(isActivityFinishing)
         {
@@ -296,13 +339,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         inputManager.registerInputDeviceListener(this, null);
 
-        UpdateGamepadAxises();
+        //UpdateGamepadAxises();
         
         JNIUtils.keepScreenOnOnResume();
         
-        {
-            glView.onResume();
-        }
+        surfaceView.onResume();
         
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
@@ -322,7 +363,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		};
 		
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.postDelayed(navigationBarHider, 300);
+        handler.postDelayed(navigationBarHider, 500);
         
         // end of workaround
         
@@ -353,6 +394,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     {
         Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] start");
 
+        synchronized (this) 
+        {
+        	mainThreadExit = true;
+		}
+        
         if(mController != null)
         {
             mController.exit();
@@ -391,7 +437,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     		Runnable action = onResumeGLThread;
     		if (action != null)
     		{
-    		    glView.queueEvent(action);
+    			RunOnMainLoopThread(action);
     		    setResumeGLActionOnWindowReady(null);
     		}
     		
@@ -403,19 +449,39 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     // we have to call next function after initialization of glView
     void InitKeyboardLayout() {
         // first destroy if any keyboard layout
-        WindowManager windowManager = getWindowManager();
+        final WindowManager windowManager = getWindowManager();
         JNITextField.DestroyKeyboardLayout(windowManager);
         
         // now initialize one more time
         // http://stackoverflow.com/questions/7776768/android-what-is-android-r-id-content-used-for
         final View v = findViewById(android.R.id.content);
+        
+        if (v == null)
+        {
+            throw new RuntimeException("findViewById returned null - strange null pointer view");
+        }
+        
         if(v.getWindowToken() != null)
         {
             JNITextField.InitializeKeyboardLayout(windowManager, v.getWindowToken());
         }
         else
         {
-            throw new RuntimeException("v.getWindowToken() != null strange null pointer view");
+            // if there is no window token - seems view is still not attached to window.
+            // wait for it.
+            v.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                    v.removeOnAttachStateChangeListener(this);
+                }
+                
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    JNITextField.InitializeKeyboardLayout(windowManager, v.getWindowToken());
+                    v.removeOnAttachStateChangeListener(this);
+                }
+            });
         }
     }
     
@@ -434,29 +500,37 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     protected void UpdateGamepadAxises()
     {
-    	boolean isGamepadAvailable = false;
-		int[] inputDevices = InputDevice.getDeviceIds();
-		Set<Integer> avalibleAxises = new HashSet<Integer>(); 
-		for(int id : inputDevices)
-		{
-			if((InputDevice.getDevice(id).getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
+		RunOnMainLoopThread(new Runnable() 
+		{			
+			@Override
+			public void run() 
 			{
-				isGamepadAvailable = true;
-				
-				List<MotionRange> ranges = InputDevice.getDevice(id).getMotionRanges();
-				for(MotionRange r : ranges)
+
+		    	boolean isGamepadAvailable = false;
+				int[] inputDevices = InputDevice.getDeviceIds();
+				Set<Integer> avalibleAxises = new HashSet<Integer>(); 
+				for(int id : inputDevices)
 				{
-					int axisId = r.getAxis();
-					if(supportedAxises.contains(axisId))
-						avalibleAxises.add(axisId);
+					if((InputDevice.getDevice(id).getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
+					{
+						isGamepadAvailable = true;
+						
+						List<MotionRange> ranges = InputDevice.getDevice(id).getMotionRanges();
+						for(MotionRange r : ranges)
+						{
+							int axisId = r.getAxis();
+							if(supportedAxises.contains(axisId))
+								avalibleAxises.add(axisId);
+						}
+					}
 				}
+				
+				surfaceView.SetAvailableGamepadAxises(avalibleAxises.toArray(new Integer[0]));
+				
+				nativeOnGamepadAvailable(isGamepadAvailable);
+				nativeOnGamepadTriggersAvailable(avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) || avalibleAxises.contains(MotionEvent.AXIS_BRAKE));
 			}
-		}
-		
-		glView.SetAvailableGamepadAxises(avalibleAxises.toArray(new Integer[0]));
-		
-		nativeOnGamepadAvailable(isGamepadAvailable);
-		nativeOnGamepadTriggersAvailable(avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) || avalibleAxises.contains(MotionEvent.AXIS_BRAKE));
+		});
     }
     
 	@Override
@@ -481,17 +555,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	{
 		nativeOnAccelerometer(x, y, z);
 	}
-    
-    public void setGLThreadId(long id) {
-        glThreadId = id;
-    }
-    
-    public long getGLThreadId() {
-        return glThreadId;
-    }
 	
-	public void PostEventToGL(Runnable event) {
-		glView.queueEvent(event);
+	public void RunOnMainLoopThread(Runnable event) {
+		surfaceView.queueEvent(event);
 	}
 
 	public int GetNotificationIcon() {
@@ -571,7 +637,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			}
 		});
 		
-		glView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
+		surfaceView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
 	}
 	
 	// Workaround! this function called from c++ when game wish to 
@@ -579,8 +645,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     // return to GLThread back
     public static void finishActivity()
     {
-        final Object mutex = new Object();
         final JNIActivity activity = JNIActivity.GetActivity();
+        
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
@@ -588,15 +654,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 System.exit(0);
             }
         });
-        // never return back from this function!
-        synchronized(mutex)
-        {
-            try {
-                mutex.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        // try NOT to block this GLThread because sometime Main thread
+        // can block and waiting for GLThread
     }
 }
 

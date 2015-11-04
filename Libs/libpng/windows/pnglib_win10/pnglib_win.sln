@@ -7,14 +7,26 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pnglib_win", "pnglib_win.vc
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
 		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|ARM = Release|ARM
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Debug|ARM.ActiveCfg = Debug|ARM
+		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Debug|ARM.Build.0 = Debug|ARM
 		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Debug|Win32.ActiveCfg = Debug|Win32
 		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Debug|Win32.Build.0 = Debug|Win32
+		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Debug|x64.ActiveCfg = Debug|x64
+		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Debug|x64.Build.0 = Debug|x64
+		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Release|ARM.ActiveCfg = Release|ARM
+		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Release|ARM.Build.0 = Release|ARM
 		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Release|Win32.ActiveCfg = Release|Win32
 		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Release|Win32.Build.0 = Release|Win32
+		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Release|x64.ActiveCfg = Release|x64
+		{180DD3B4-7C9E-43F4-99EC-E8D3E8068E57}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

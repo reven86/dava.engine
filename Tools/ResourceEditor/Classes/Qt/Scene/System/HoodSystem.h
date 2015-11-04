@@ -41,7 +41,6 @@
 #include "bullet/btBulletCollisionCommon.h"
 
 // framework
-#include "Render/2D/GraphicsFont.h"
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
 

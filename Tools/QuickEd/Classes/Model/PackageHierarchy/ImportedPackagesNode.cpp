@@ -85,7 +85,7 @@ PackageNode *ImportedPackagesNode::GetImportedPackage(DAVA::int32 index) const
 
 int ImportedPackagesNode::GetCount() const
 {
-    return (int) packages.size();
+    return static_cast<int>(packages.size());
 }
 
 PackageBaseNode *ImportedPackagesNode::Get(int index) const
@@ -101,6 +101,11 @@ void ImportedPackagesNode::Accept(PackageVisitor *visitor)
 String ImportedPackagesNode::GetName() const
 {
     return "Imported Packages";
+}
+
+bool ImportedPackagesNode::IsInsertingPackagesSupported() const
+{
+    return !IsReadOnly();
 }
 
 bool ImportedPackagesNode::CanInsertImportedPackage(PackageNode *package) const
@@ -122,5 +127,5 @@ PackageNode *ImportedPackagesNode::FindPackageByName(const DAVA::String &name) c
 
 bool ImportedPackagesNode::IsReadOnly() const
 {
-    return true;
+    return GetParent() != nullptr ? GetParent()->IsReadOnly() : true;
 }

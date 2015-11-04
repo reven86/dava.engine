@@ -9,10 +9,10 @@ import android.graphics.Paint;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.KeyEvent;
 import android.webkit.CookieManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -29,7 +29,7 @@ public class JNIWebView {
         private final static int MAX_DELAY = 1600;
         private final static int START_DELAY = 50;
         private int delay = 50; //50, 100, 200, 400, 800, 1600
-        private String lastLoadedUrl = null;
+        private String[] lastLoadData = null;
         
         public WebViewWrapper(Context context, InternalViewClientV14 client) {
             super(context);
@@ -61,28 +61,50 @@ public class JNIWebView {
             }
             setLayoutParams(params);
         }
+        
         public void restoreVisibility()
         {
             client.setVisible(this, client.isVisible());
-            // on unlock we have to call reload() to show webview content 
+            // on unlock we have to call super.loadUrl() to show webview content 
             // we have to do that because user may lock phone before webView loading finishes
-            reload();
+            // and sometimes already loaded content disappear after going to background
+            if(lastLoadData != null) {
+	            switch (lastLoadData.length) {
+				case 1: // If length equals 1 then load content by URL (see WebViewWrapper.loadUrl(...))
+					super.loadUrl(lastLoadData[0]);
+					break;
+				case 3: // If length equals 3 then load content from html string with mime type (see WebViewWrapper.loadData(...))
+					super.loadData(lastLoadData[0], lastLoadData[1], lastLoadData[2]);
+					break;
+				case 5: // If length equals 5 then load content from string data with some base url (see WebViewWrapper.loadDataWithBaseURL(...))  
+					super.loadDataWithBaseURL(lastLoadData[0], lastLoadData[1], lastLoadData[2], lastLoadData[3], lastLoadData[4]);
+					break;
+				default:
+					Log.e(JNIConst.LOG_TAG, "Incorrect data to reload WebView content");
+					break;
+				}
+            }
         }
+        
         @Override
         public void loadUrl(String url)
         {
-            lastLoadedUrl = url;
+        	lastLoadData = new String[]{url}; // Using for reload lost content (see WebViewWrapper.restoreVisibility)
             super.loadUrl(url);
         }
+        
         @Override
         public void loadData(String htmlString, String mimeType, String encoding)
         {
+        	lastLoadData = new String[]{htmlString, mimeType, encoding}; // Using for reload lost content (see WebViewWrapper.restoreVisibility)
             super.loadData(htmlString, mimeType, encoding);
         }
+        
         @Override
         public void loadDataWithBaseURL(String baseUrl, String data, String mimeType,
                 String encoding, String failUrl)
         {
+        	lastLoadData = new String[]{baseUrl, data, mimeType, encoding, failUrl}; // Using for reload lost content (see WebViewWrapper.restoreVisibility)
             super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);
         }
         
@@ -96,13 +118,18 @@ public class JNIWebView {
             }
             return super.onKeyPreIme(keyCode, event);
         }
+        
         /*
          * HACK to get last known loaded url from any thread
          * cause standard getUrl method can't be called from chromium thread
          */
         public String getLastLoadedUrl()
         {
-            return lastLoadedUrl;
+        	if(lastLoadData != null && lastLoadData.length > 0)
+        	{
+        		return lastLoadData[0];
+        	}
+        	return null;
         }
     }
 
@@ -194,7 +221,7 @@ public class JNIWebView {
     }
 
     public static void OpenURL(final int id, final String url) {
-        final JNIActivity activity = JNIActivity.GetActivity();
+    	final JNIActivity activity = JNIActivity.GetActivity();
         if (null == activity || activity.GetIsPausing())
             return;
 
@@ -414,6 +441,25 @@ public class JNIWebView {
             }
         });
     }
+    
+    public static void WillDraw(final int id) {
+        final JNIActivity activity = JNIActivity.GetActivity();
+        if (null == activity || activity.GetIsPausing())
+            return;
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!views.containsKey(id)) {
+                    Log.e(TAG, String.format("Unknown view id %d", id));
+                    return;
+                }
+                WebViewWrapper view = views.get(id);
+                InternalViewClientV14 client = view.getInternalViewClient();
+                client.updateVisible(view);
+            }
+        });
+    }
 
     public static void setRenderToTexture(final int id,
             final boolean renderToTexture) {
@@ -492,8 +538,7 @@ public class JNIWebView {
                 }
             }
 
-            JNIActivity.GetActivity()
-                    .PostEventToGL(new jsCallback(id, message));
+            JNIActivity.GetActivity().RunOnMainLoopThread(new jsCallback(id, message));
             result.confirm();
             return true;
         }

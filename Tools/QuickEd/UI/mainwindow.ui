@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>851</height>
+    <height>865</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -98,8 +98,18 @@
     <property name="title">
      <string>Tools</string>
     </property>
+    <widget class="QMenu" name="menuDebug">
+     <property name="title">
+      <string>Debug</string>
+     </property>
+     <addaction name="actionDump_Controls"/>
+     <addaction name="actionDump_Sprites"/>
+     <addaction name="actionDump_Textures"/>
+    </widget>
     <addaction name="actionFontManager"/>
     <addaction name="actionLocalizationManager"/>
+    <addaction name="separator"/>
+    <addaction name="menuDebug"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="contextMenuPolicy">
@@ -212,15 +222,7 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="ConsoleDockWidget" name="consoleDockWidget">
-   <property name="windowTitle">
-    <string>Console</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBarLanguage">
+  <widget class="QToolBar" name="toolBarPlugins">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -230,6 +232,15 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+  </widget>
+  <widget class="QDockWidget" name="consoleDockWidget">
+   <property name="windowTitle">
+    <string>Console</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="LogWidget" name="logWidget"/>
   </widget>
   <action name="actionOpen_project">
    <property name="enabled">
@@ -438,7 +449,7 @@
   </action>
   <action name="actionRepack_And_Reload">
    <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
+    <iconset>
      <normaloff>:/Icons/reloadtextures.png</normaloff>:/Icons/reloadtextures.png</iconset>
    </property>
    <property name="text">
@@ -461,6 +472,26 @@
    </property>
    <property name="toolTip">
     <string>Pixelized/Smooth Graphics</string>
+   </property>
+  </action>
+  <action name="menuTexturesForGPU">
+   <property name="text">
+    <string>GPU</string>
+   </property>
+  </action>
+  <action name="actionDump_Controls">
+   <property name="text">
+    <string>Dump Controls</string>
+   </property>
+  </action>
+  <action name="actionDump_Sprites">
+   <property name="text">
+    <string>Dump Sprites</string>
+   </property>
+  </action>
+  <action name="actionDump_Textures">
+   <property name="text">
+    <string>Dump Textures</string>
    </property>
   </action>
  </widget>
@@ -495,15 +526,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ConsoleDockWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/ConsoleView/ConsoleDockWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>FileSystemDockWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/FileSystemView/FileSystemDockWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LogWidget</class>
+   <extends>QWidget</extends>
+   <header>QtTools/ConsoleWidget/logwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

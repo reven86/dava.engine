@@ -26,22 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "TeamcityOutput.h"
 #include "Utils/Utils.h"
 
 #include <iostream>
 
-#ifdef __DAVAENGINE_ANDROID__
-
-#include <android/log.h>
-#define  LOG_TAG    "TeamcityOutput"
-
-#elif  defined(__DAVAENGINE_IPHONE__)
-#import "UIKit/UIKit.h"
-
+#if defined(__DAVAENGINE_ANDROID__)
+#   include <android/log.h>
+#   define LOG_TAG      "TeamcityOutput"
+#elif defined(__DAVAENGINE_IPHONE__)
+#   import "UIKit/UIKit.h"
 #endif
-
 
 namespace DAVA
 {
@@ -52,21 +47,17 @@ void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text)
         return;
     
     String outStr = NormalizeString(text);
-	String output;
+    String output;
     String status;
     
     switch (ll)
     {
     case Logger::LEVEL_ERROR:
-		status = "ERROR";
-        output = "##teamcity[buildProblem description=\'ERROR: " + outStr + "\']";
-        PlatformOutput(output);
+        status = "ERROR";
         break;
-
     case Logger::LEVEL_WARNING:
-		status = "WARNING";
+        status = "WARNING";
         break;
-            
     default:
         status = "NORMAL";
         break;
@@ -74,12 +65,6 @@ void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text)
 
     output = "##teamcity[message text=\'" + outStr + "\' errorDetails=\'\' status=\'" + status + "\']\n";
     PlatformOutput(output);
-}
-
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char16 *text)
-{
-    WideString wstr = text;
-    Output(ll, WStringToString(wstr).c_str());
 }
 
 String TeamcityOutput::NormalizeString(const char8 *text) const
@@ -105,7 +90,7 @@ void TeamcityOutput::PlatformOutput(const String &text) const
 #elif  defined(__DAVAENGINE_ANDROID__)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", text.c_str());
 #else
-    std::cout << text << std::endl;
+    std::cout << text << std::endl << std::flush;
 #endif
 }
     

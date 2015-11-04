@@ -41,7 +41,7 @@ using Timestamp = time_t;
 class DateTime
 {
 public:
-    
+    DateTime() = default;
     /**
 	 \brief Creates DateTime with specified params. Hours, seconds, minuntes will be setted to 0.
 	 \param[in] year: 1969 and lower is not allowed.
@@ -163,14 +163,31 @@ public:
      \returns bool value of success.
 	 */
     bool ParseRFC822Date(const DAVA::String&);
-    
+
     /**
-	 \brief Present DateTime according to pattern.
+	 \brief Present DateTime according to pattern. (deprecated use GetLocalizedDate
+     or GetLocalizedTime)
 	 \param[in] string pattern in strftime format.
      \returns localized string representation.
 	 */
-    DAVA::WideString AsWString(const wchar_t* format) const;
-   
+    DAVA_DEPRECATED(WideString AsWString(const wchar_t* format) const);
+
+    /**
+    \brief for current locale print date, platform dependent
+    example:
+    locale "ru_RU" -> "08.09.1984"
+    locale "en_US" -> "9/8/1984
+    */
+    WideString GetLocalizedDate() const;
+
+    /**
+    \brief for current locale print time, platform dependent
+    example:
+    locale ru_RU -> "15:20:35"
+    locale en_US -> "10:15:15 PM"
+    */
+    WideString GetLocalizedTime() const;
+
 private:
     
     DateTime(Timestamp timeStamp, int32 timeZone);
@@ -195,11 +212,11 @@ private:
     
     Timestamp InternalTimeGm(tm *t) const;
     
-    bool IsNumber(const char * s) const;
-    
-    Timestamp   innerTime;
-    int32       timeZoneOffset;// offset in seconds
-    tm          localTime;
+    bool IsNumber(const String & s) const;
+
+    tm localTime = tm();
+    Timestamp innerTime = 0;
+    int32 timeZoneOffset = 0; // offset in seconds
 };
     
 int32 DateTime::GetTimeZoneOffset() const
@@ -219,7 +236,7 @@ bool DateTime::IsLeap(int32 year) const
         return true;
     if(year % 100 == 0)
         return false;
-    if(year % 4 == 0)
+    if(year % 4 == 0) //-V112 // PVS warning disable: not an adderss
         return true;
     return false;
 }
@@ -228,7 +245,7 @@ int32 DateTime::DaysFrom0(int32 year) const
 {
     DVASSERT(year >= 1970);
     year--;
-    return 365 * year + (year / 400) - (year/100) + (year / 4);
+    return 365 * year + (year / 400) - (year/100) + (year / 4); //-V112 // PVS warning disable: not an adderss
 }
 
 int32 DateTime::DaysFrom1970(int32 year) const

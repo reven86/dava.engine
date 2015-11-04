@@ -36,6 +36,8 @@ using namespace DAVA;
 
 DAVA_TESTCLASS(HashMapTest)
 {
+    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+
     DAVA_TEST(HashMapInsertRemoveGetTest)
     {
         const int32 SIZE = 20000;

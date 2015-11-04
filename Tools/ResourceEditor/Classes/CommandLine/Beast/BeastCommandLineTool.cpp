@@ -28,9 +28,8 @@
 
 
 #include "BeastCommandLineTool.h"
-
-#include "TexturePacker/CommandLineParser.h"
-
+#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
 #include "Commands2/BeastAction.h"
@@ -45,7 +44,7 @@ BeastCommandLineTool::BeastCommandLineTool()
 {
 }
 
-void BeastCommandLineTool::PrintUsage()
+void BeastCommandLineTool::PrintUsage() const
 {
     printf("\n");
     printf("-beast -file <file> -output <output_path>\n");
@@ -58,7 +57,7 @@ void BeastCommandLineTool::PrintUsage()
 
 }
 
-DAVA::String BeastCommandLineTool::GetCommandLineKey()
+DAVA::String BeastCommandLineTool::GetCommandLineKey() const
 {
     return "-beast";
 }
@@ -82,18 +81,17 @@ bool BeastCommandLineTool::InitializeFromCommandLine()
     return true;
 }
 
-void BeastCommandLineTool::Process()
+void BeastCommandLineTool::Process() 
 {
 	SceneEditor2 *scene = new SceneEditor2();
 	if(scene->Load(scenePathname))
 	{
-		//scene->Update(0.1f);
-
+        scene->Update(0.1f);
         scene->Exec(new BeastAction( scene, outputPath, BeastProxy::MODE_LIGHTMAPS, NULL ));
-
 		scene->Save();
 	}
 	SafeRelease(scene);
+    RenderObjectsFlusher::Flush();
 }
 
 const DAVA::FilePath & BeastCommandLineTool::GetScenePathname() const

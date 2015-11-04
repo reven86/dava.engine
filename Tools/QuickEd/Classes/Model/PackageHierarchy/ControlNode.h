@@ -33,6 +33,11 @@
 #include "PackageBaseNode.h"
 #include "ControlsContainerNode.h"
 
+namespace DAVA
+{
+    class UIControlPackageContext;
+}
+
 class PackageNode;
 class RootProperty;
 
@@ -47,12 +52,13 @@ public:
     };
     
 private:
-    ControlNode(DAVA::UIControl *control);
+    ControlNode(DAVA::UIControl *control, bool recursively);
     ControlNode(ControlNode *node, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
+    static ControlNode *CreateFromControlWithChildren(DAVA::UIControl *control);
     static ControlNode *CreateFromPrototype(ControlNode *sourceNode);
     static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode);
 
@@ -69,14 +75,16 @@ public:
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const override;
-    
     DAVA::UIControl *GetControl() const;
+    DAVA::UIControlPackageContext *GetPackageContext() const;
+    void SetPackageContext(DAVA::UIControlPackageContext *context);
+    
     ControlNode *GetPrototype() const;
     const DAVA::Vector<ControlNode*> &GetInstances() const;
     bool IsDependsOnPackage(PackageNode *package) const;
 
     virtual bool IsEditingSupported() const override;
-    virtual bool IsInsertingSupported() const override;
+    virtual bool IsInsertingControlsSupported() const override;
     virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;
     virtual bool CanRemove() const override;
     virtual bool CanCopy() const override;

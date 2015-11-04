@@ -28,7 +28,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIScreenManager.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 #include "UnitTests/UnitTests.h"
 
@@ -39,38 +39,65 @@ using namespace DAVA;
 namespace
 {
 
-String runOnlyThisTest = "";
-bool teamcityOutputEnabled = true;
+// List of semicolon separated names specifying which test classes should run
+String runOnlyTheseTestClasses = "";
+// List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
+String disableTheseTestClasses = "";
 
+bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
+bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
+
+}
+
+void GameCore::ProcessCommandLine()
+{
+    CommandLineParser* cmdline = CommandLineParser::Instance();
+    if (cmdline->CommandIsFound("-only_test"))
+    {
+        runOnlyTheseTestClasses = cmdline->GetCommandParam("-only_test");
+    }
+    if (cmdline->CommandIsFound("-disable_test"))
+    {
+        disableTheseTestClasses = cmdline->GetCommandParam("-disable_test");
+    }
+    if (cmdline->CommandIsFound("-noteamcity"))
+    {
+        teamcityOutputEnabled = false;
+    }
+    if (cmdline->CommandIsFound("-teamcity_capture_stdout"))
+    {
+        teamcityCaptureStdout = true;
+    }
 }
 
 void GameCore::OnAppStarted()
 {
-    if (CommandLineParser::Instance()->CommandIsFound("-only_test"))
-    {
-        runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
-    }
-    if (CommandLineParser::Instance()->CommandIsFound("-noteamcity"))
-    {
-        teamcityOutputEnabled = false;
-    }
+    ProcessCommandLine();
 
     if (teamcityOutputEnabled)
     {
+        teamCityOutput.SetCaptureStdoutFlag(teamcityCaptureStdout);
         Logger::Instance()->AddCustomOutput(&teamCityOutput);
     }
 
-    UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestStarted),
+    UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestClassStarted),
+                                          MakeFunction(this, &GameCore::OnTestClassFinished),
+                                          MakeFunction(this, &GameCore::OnTestStarted),
                                           MakeFunction(this, &GameCore::OnTestFinished),
-                                          MakeFunction(this, &GameCore::OnTestFailed));
-    if (!runOnlyThisTest.empty())
+                                          MakeFunction(this, &GameCore::OnTestFailed),
+                                          MakeFunction(this, &GameCore::OnTestClassDisabled));
+    if (!runOnlyTheseTestClasses.empty())
     {
-        UnitTests::TestCore::Instance()->RunOnlyThisTest(runOnlyThisTest);
+        UnitTests::TestCore::Instance()->RunOnlyTheseTestClasses(runOnlyTheseTestClasses);
+    }
+    if (!disableTheseTestClasses.empty())
+    {
+        UnitTests::TestCore::Instance()->DisableTheseTestClasses(disableTheseTestClasses);
     }
 
-    if (!UnitTests::TestCore::Instance()->HasTests())
+    if (!UnitTests::TestCore::Instance()->HasTestClasses())
     {
-        Logger::Error("%s", "There are no tests.");
+        Logger::Error("%s", "There are no test classes");
         Core::Instance()->Quit();
     }
 }
@@ -113,14 +140,29 @@ void GameCore::OnError()
     DavaDebugBreak();
 }
 
-void GameCore::OnTestStarted(const DAVA::String& testClassName)
+void GameCore::OnTestClassStarted(const DAVA::String& testClassName)
 {
-    Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName).c_str());
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
 }
 
-void GameCore::OnTestFinished(const DAVA::String& testClassName)
+void GameCore::OnTestClassFinished(const DAVA::String& testClassName)
 {
-    Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName).c_str());
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
+}
+
+void GameCore::OnTestClassDisabled(const DAVA::String& testClassName)
+{
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassDisabled(testClassName).c_str());
+}
+
+void GameCore::OnTestStarted(const DAVA::String& testClassName, const DAVA::String& testName)
+{
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName, testName).c_str());
+}
+
+void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::String& testName)
+{
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName, testName).c_str());
 }
 
 void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
@@ -136,28 +178,32 @@ void GameCore::OnTestFailed(const String& testClassName, const String& testName,
     {
         errorString = Format("%s:%d: %s (%s)", filename, lineno, testName.c_str(), userMessage.c_str());
     }
-    Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, condition, errorString).c_str());
+    Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
 }
 
 void GameCore::ProcessTests(float32 timeElapsed)
 {
     if (!UnitTests::TestCore::Instance()->ProcessTests(timeElapsed))
     {
+        // Output test coverage for sample
+        Map<String, Vector<String>> map = UnitTests::TestCore::Instance()->GetTestCoverage();
+        Logger::Info("Test coverage");
+        for (const auto& x : map)
+        {
+            Logger::Info("  %s:", x.first.c_str());
+            const Vector<String>& v = x.second;
+            for (const auto& s : v)
+            {
+                Logger::Info("        %s", s.c_str());
+            }
+        }
         FinishTests();
     }
 }
 
 void GameCore::FinishTests()
 {
-    if (teamcityOutputEnabled)
-    {
-        // inform teamcity script we just finished all tests
-        // useful on ios devices (run with lldb)
-        teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
-    }
-    else
-    {
-        Logger::Debug("Finish all tests.");
-    }
+    // Inform teamcity script we just finished all tests
+    Logger::Debug("Finish all tests.");
     Core::Instance()->Quit();
 }

@@ -36,8 +36,9 @@
 #include "UI/UIScreenManager.h"
 #import "UIAlertView_Modal.h"
 #import "UIDismissionHandlerAlertView.h"
-#endif
 
+UIDismissionHandlerAlertView* messageBoxPtr = nil;
+#endif
 
 bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
@@ -69,12 +70,12 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 		case ALWAYS_MODAL:
 		{
 			// Yuri Coder, 2013/02/06. This method is specific for iOS-implementation only,
-			// it blocks drawing to avoid deadlocks. See EAGLView.mm file for details.
-			UIScreenManager::Instance()->BlockDrawing();
-			
-			// Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.
-			UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
-            
+            // it blocks drawing to avoid deadlocks. See RenderView.mm file for details.
+            UIScreenManager::Instance()->BlockDrawing();
+
+            // Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.
+            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
+
             long breakButtonIndex = [alert firstOtherButtonIndex];
             
             [alert performSelectorOnMainThread:@selector(showModal) withObject:nil waitUntilDone:YES];
@@ -92,22 +93,22 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 		{
             // if we already open one Alert messagebox skip all new
             // while waiting user click Ok
-			if (NULL == messageBoxPtr)
-			{
-				// Create the new alert message and show it.
-				UIDismissionHandlerAlertView* alert =
-					[[[UIDismissionHandlerAlertView alloc] initWithTitle:@"Assert" message:contents
-												   cancelButtonTitle:@"OK" otherButtonTitles: nil] autorelease];
-				messageBoxPtr = alert;
-				[alert showWithDismissHandler:^(NSInteger selectedIndex, BOOL didCancel)
-				 {
-					 messageBoxPtr = NULL;
-				 }];
-			}
-		}
-	}
+            if (nil == messageBoxPtr)
+            {
+                // Create the new alert message and show it.
+                UIDismissionHandlerAlertView* alert =
+                [[[UIDismissionHandlerAlertView alloc] initWithTitle:@"Assert"
+                                                             message:contents
+                                                   cancelButtonTitle:@"OK"
+                                                   otherButtonTitles:nil] autorelease];
+                messageBoxPtr = alert;
+                [alert showWithDismissHandler:^(NSInteger selectedIndex, BOOL didCancel) {
+                  messageBoxPtr = nil;
+                }];
+            }
+        }
+        }
     
 #endif
     return breakExecution;
 }
-

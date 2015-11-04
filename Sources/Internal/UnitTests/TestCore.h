@@ -30,7 +30,7 @@
 #define __DAVAENGINE_TESTCORE_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -49,45 +49,56 @@ class TestCore final
         ~TestClassInfo();
 
         String name;
+        bool runTest = true;
         std::unique_ptr<TestClassFactoryBase> factory;
+        Vector<String> testedClasses;
     };
 
 public:
-    using TestStartedCallback  = Function<void (const String&)>;
-    using TestFinishedCallback = Function<void (const String&)>;
+    using TestClassStartedCallback = Function<void (const String&)>;
+    using TestClassFinishedCallback = Function<void (const String&)>;
+    using TestClassDisabledCallback = Function<void (const String&)>;
+    using TestStartedCallback = Function<void (const String&, const String&)>;
+    using TestFinishedCallback = Function<void (const String&, const String&)>;
     using TestFailedCallback = Function<void (const String&, const String&, const String&, const char*, int, const String&)>;
+
+private:
+    TestCore() = default;
+    ~TestCore() = default;
 
 public:
     static TestCore* Instance();
 
-    TestCore() = default;
-    ~TestCore() = default;
+    void Init(TestClassStartedCallback testClassStartedCallback, TestClassFinishedCallback testClassFinishedCallback,
+              TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback,
+              TestFailedCallback testFailedCallback, TestClassDisabledCallback testClassDisabledCallback);
 
-    void Init(TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback, TestFailedCallback testFailedCallback);
+    void RunOnlyTheseTestClasses(const String& testClassNames);
+    void DisableTheseTestClasses(const String& testClassNames);
 
-    void RunOnlyThisTest(const String& testClassName);
-
-    bool HasTests() const;
+    bool HasTestClasses() const;
 
     bool ProcessTests(float32 timeElapsed);
+
+    Map<String, Vector<String>> GetTestCoverage();
 
     void TestFailed(const String& condition, const char* filename, int lineno, const String& userMessage);
     void RegisterTestClass(const char* name, TestClassFactoryBase* factory);
 
 private:
-    bool IsTestRegistered(const String& testClassName) const;
-
-private:
     Vector<TestClassInfo> testClasses;
-    String runOnlyThisTest;
 
     TestClass* curTestClass = nullptr;
     String curTestClassName;
     String curTestName;
     size_t curTestClassIndex = 0;
     size_t curTestIndex = 0;
+    bool runLoopInProgress = false;
     bool testSetUpInvoked = false;
 
+    TestClassStartedCallback testClassStartedCallback;
+    TestClassFinishedCallback testClassFinishedCallback;
+    TestClassDisabledCallback testClassDisabledCallback;
     TestStartedCallback testStartedCallback;
     TestFinishedCallback testFinishedCallback;
     TestFailedCallback testFailedCallback;

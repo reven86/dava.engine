@@ -99,7 +99,7 @@ const QString PROJECT_DATA_GFX = PROJECT_DATA + GFX;
 // Project converted graphics fonts sprites folder
 const QString PROJECT_DATA_GRAPHICS_FONTS = PROJECT_DATA_GFX + FONTS;
 // Default project title
-const QString PROJECT_TITLE = "UIEdtior";
+const QString PROJECT_TITLE = "QuickEd";
 
 // Resource wrong location error message
 const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not located inside project 'Data' folder. It can't be linked with project or control!";
@@ -139,17 +139,17 @@ bool ResourcesManageHelper::ValidateResourcePath(const QString& resourcePath)
 
 QString ResourcesManageHelper::GetGraphicsFontPath(Font* font)
 {
-    if (font && (font->GetFontType() == Font::TYPE_GRAPHICAL))
+    if (font && (font->GetFontType() == Font::TYPE_GRAPHIC))
     {
-		GraphicsFont *gFont = dynamic_cast<GraphicsFont*>(font);
-		// Get graphics font sprite if it's available
-        Sprite *fontSprite = gFont->GetFontSprite();
-        if (fontSprite)
+        GraphicFont* gFont = dynamic_cast<GraphicFont*>(font);
+        // Get graphics font sprite if it's available
+        Texture* fontTexture = gFont->GetTexture();
+        if (fontTexture)
         {
 			// Save graphics font sprite path
-        	return QString::fromStdString(fontSprite->GetRelativePathname().GetAbsolutePathname());
-    	}
-	}
+            return QString::fromStdString(fontTexture->GetPathname().GetAbsolutePathname());
+        }
+    }
 
 	return QString();
 }

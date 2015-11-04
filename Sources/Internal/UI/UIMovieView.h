@@ -26,55 +26,61 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_UIMOVIEVIEW__H__
 #define __DAVAENGINE_UIMOVIEVIEW__H__
 
 #include "Base/BaseTypes.h"
-#include "UI/UIControl.h"
-#include "IMovieViewControl.h"
 
-namespace DAVA {
+#include "UI/UIControl.h"
+#include "UI/IMovieViewControl.h"
+
+namespace DAVA
+{
 
 // The purpose of UIMovieView class is to display movies.
 class UIMovieView : public UIControl
 {
-protected:
-	virtual ~UIMovieView();
 public:
-	UIMovieView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-
-	// Open the Movie.
-	void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
-
-	// Overloaded virtual methods.
-	virtual void SetPosition(const Vector2 &position);
-	virtual void SetSize(const Vector2 &newSize);
-
-	virtual void SystemDraw(const UIGeometricData &geometricData);
-
-    virtual void WillBecomeVisible();
-    virtual void WillBecomeInvisible();
-
-    virtual UIControl* Clone();
-
-	// Start/stop the video playback.
-	void Play();
-	void Stop();
-
-	// Pause/resume the playback.
-	void Pause();
-	void Resume();
-	
-	// Whether the movie is being played?
-	bool IsPlaying();
+    UIMovieView(const Rect& rect = Rect());
 
 protected:
-	// Platform-specific implementation of the Movie Control.
-	IMovieViewControl* movieViewControl;
+    virtual ~UIMovieView();
+
+public:
+    // Open the Movie.
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
+
+    // Overloaded virtual methods.
+    void SetPosition(const Vector2 &position) override;
+    void SetSize(const Vector2 &newSize) override;
+
+    void SystemDraw(const UIGeometricData &geometricData) override;
+
+    void WillBecomeVisible() override;
+    void WillBecomeInvisible() override;
+
+    UIMovieView* Clone() override;
+
+    // Start/stop the video playback.
+    void Play();
+    void Stop();
+
+    // Pause/resume the playback.
+    void Pause();
+    void Resume();
+
+    // Whether the movie is being played?
+    bool IsPlaying();
+
+protected:
+    // Platform-specific implementation of the Movie Control.
+    IMovieViewControl* movieViewControl;
+
+public:
+    INTROSPECTION_EXTEND(UIMovieView, UIControl,
+                         nullptr);
 };
 
-};
+}   // namespace DAVA
 
-
-#endif /* defined(__DAVAENGINE_UIMOVIEVIEW__H__) */
+#endif  // __DAVAENGINE_UIMOVIEVIEW__H__

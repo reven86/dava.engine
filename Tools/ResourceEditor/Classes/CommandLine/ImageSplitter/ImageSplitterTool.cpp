@@ -29,12 +29,12 @@
 
 #include "ImageSplitterTool.h"
 #include "ImageTools/ImageTools.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 
 using namespace DAVA;
 
 
-void ImageSplitterTool::PrintUsage()
+void ImageSplitterTool::PrintUsage() const
 {
     printf("\n");
     printf("-imagesplitter -split [-file [file]]\n");
@@ -49,7 +49,7 @@ void ImageSplitterTool::PrintUsage()
     printf("-imagesplitter -merge -folder /Users/User/Project/Data/3d/\n");
 }
 
-DAVA::String ImageSplitterTool::GetCommandLineKey()
+DAVA::String ImageSplitterTool::GetCommandLineKey() const
 {
     return "-imagesplitter";
 }
@@ -89,7 +89,7 @@ bool ImageSplitterTool::InitializeFromCommandLine()
     return true;
 }
 
-void ImageSplitterTool::Process()
+void ImageSplitterTool::Process() 
 {
     if(commandAction == ACTION_SPLIT)
     {

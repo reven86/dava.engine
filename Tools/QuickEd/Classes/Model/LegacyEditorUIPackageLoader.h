@@ -48,7 +48,7 @@ public:
     const Data *Get(const DAVA::String &fwPath)
     {
         auto it = map.find(fwPath);
-        return it == map.end() ? NULL : &(it->second);
+        return it == map.end() ? nullptr : &(it->second);
     }
     
     void Put(const DAVA::String &fwPath, const Data &data)
@@ -64,7 +64,7 @@ public:
 class LegacyEditorUIPackageLoader : public DAVA::AbstractUIPackageLoader
 {
 public:
-    LegacyEditorUIPackageLoader(LegacyControlData *data = NULL);
+    LegacyEditorUIPackageLoader(LegacyControlData* data = nullptr);
     virtual ~LegacyEditorUIPackageLoader();
     
 public:
@@ -78,6 +78,7 @@ private:
     void LoadControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
     void LoadBgPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
     void LoadInternalControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
+    void ProcessLegacyAligns(DAVA::UIControl *control, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
     
 protected:
     virtual DAVA::VariantType ReadVariantTypeFromYamlNode(const DAVA::InspMember *member, const DAVA::YamlNode *node, DAVA::int32 subNodeIndex, const DAVA::String &propertyName);
@@ -90,11 +91,10 @@ private:
 private:
     DAVA::Map<DAVA::String, DAVA::Map<DAVA::String, DAVA::String> > propertyNamesMap;
     DAVA::Map<DAVA::String, DAVA::String> baseClasses;
-    
+    DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
+
 private:
-    LegacyControlData *legacyData;
-    bool storeAggregatorName;
-    DAVA::String aggregatorName;
+    LegacyControlData* legacyData = nullptr;
 };
 
 

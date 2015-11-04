@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControlBackground.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
 
@@ -45,6 +46,7 @@ class UIControlBackground;
 class Message;
 class UIComponent;
 class UIControlFamily;
+class UIControlPackageContext;
 
 #define CONTROL_TOUCH_AREA  15
     /**
@@ -243,6 +245,9 @@ public:
 
         STATE_COUNT             = 6
     };
+
+    static const char* STATE_NAMES[STATE_COUNT];
+
     /**
      \enum Control events supported by default.
      */
@@ -279,7 +284,7 @@ public:
         Rect coordinates will be recalculated to the hierarchy coordinates.
         Warning, rectInAbsoluteCoordinates isn't properly works for now!
      */
-    UIControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    UIControl(const Rect& rect = Rect());
 
     /**
      \brief Returns Sprite used for draw in the current UIControlBackground object.
@@ -350,125 +355,29 @@ public:
      */
     virtual UIControlBackground * GetBackground() const;
 
-    /**
-     \brief Sets left align of control relative to its parent.
-     \param[in] align left align of control.
-     */
-    virtual void SetLeftAlign(float32 align, bool applyAlign = true);
-    /**
-     \brief Returns left align of control relative to its parent.
-     \returns left align of control.
-     */
+    virtual void SetLeftAlign(float32 align);
     virtual float32 GetLeftAlign() const;
-    /**
-     \brief Sets horizontal central align of control relative to its parent.
-     \param[in] align horizontal central align of control.
-     */
-    virtual void SetHCenterAlign(float32 align, bool applyAlign = true);
-    /**
-     \brief Returns horizontal central align of control relative to its parent.
-     \returns horizontal central align of control.
-     */
+    virtual void SetHCenterAlign(float32 align);
     virtual float32 GetHCenterAlign() const;
-    /**
-     \brief Sets right align of control relative to its parent.
-     \param[in] align right align of control.
-     */
-    virtual void SetRightAlign(float32 align, bool applyAlign = true);
-    /**
-     \brief Returns right align of control relative to its parent.
-     \returns right align of control.
-     */
+    virtual void SetRightAlign(float32 align);
     virtual float32 GetRightAlign() const;
-        /**
-     \brief Sets top align of control relative to its parent.
-     \param[in] align top align of control.
-     */
-    virtual void SetTopAlign(float32 align, bool applyAlign = true);
-    /**
-     \brief Returns top align of control relative to its parent.
-     \returns top align of control.
-     */
+    virtual void SetTopAlign(float32 align);
     virtual float32 GetTopAlign() const;
-        /**
-     \brief Sets vertical central align of control relative to its parent.
-     \param[in] align l vertical central align of control.
-     */
-    virtual void SetVCenterAlign(float32 align, bool applyAlign = true);
-    /**
-     \brief Returns vertical central align of control relative to its parent.
-     \returns vertical central align of control.
-     */
+    virtual void SetVCenterAlign(float32 align);
     virtual float32 GetVCenterAlign() const;
-        /**
-     \brief Sets bottom align of control relative to its parent.
-     \param[in] align bottom align of control.
-     */
-    virtual void SetBottomAlign(float32 align, bool applyAlign = true);
-    /**
-     \brief Returns bottom align of control relative to its parent.
-     \returns bottom align of control.
-     */
+    virtual void SetBottomAlign(float32 align);
     virtual float32 GetBottomAlign() const;
-    /**
-     \brief Sets control ability to change left align.
-     \param[in] isEnabled left align availability.
-     */
-    virtual void SetLeftAlignEnabled(bool isEnabled, bool applyAlign = true);
-    /**
-     \brief Returns availability of left align of control.
-     \returns ability to change left align.
-     */
+    virtual void SetLeftAlignEnabled(bool isEnabled);
     virtual bool GetLeftAlignEnabled() const;
-    /**
-     \brief Sets horizontal central align of control relative to its parent.
-     \param[in] align horizontal central align of control.
-     */
-    virtual void SetHCenterAlignEnabled(bool isEnabled, bool applyAlign = true);
-    /**
-     \brief Returns horizontal central align of control relative to its parent.
-     \returns horizontal central align of control.
-     */
+    virtual void SetHCenterAlignEnabled(bool isEnabled);
     virtual bool GetHCenterAlignEnabled() const;
-    /**
-     \brief Sets right align of control relative to its parent.
-     \param[in] align right align of control.
-     */
-    virtual void SetRightAlignEnabled(bool isEnabled, bool applyAlign = true);
-    /**
-     \brief Returns right align of control relative to its parent.
-     \returns right align of control.
-     */
+    virtual void SetRightAlignEnabled(bool isEnabled);
     virtual bool GetRightAlignEnabled() const;
-        /**
-     \brief Sets top align of control relative to its parent.
-     \param[in] align top align of control.
-     */
-    virtual void SetTopAlignEnabled(bool isEnabled, bool applyAlign = true);
-    /**
-     \brief Returns top align of control relative to its parent.
-     \returns top align of control.
-     */
+    virtual void SetTopAlignEnabled(bool isEnabled);
     virtual bool GetTopAlignEnabled() const;
-        /**
-     \brief Sets vertical central align of control relative to its parent.
-     \param[in] align l vertical central align of control.
-     */
-    virtual void SetVCenterAlignEnabled(bool isEnabled, bool applyAlign = true);
-    /**
-     \brief Returns vertical central align of control relative to its parent.
-     \returns vertical central align of control.
-     */
+    virtual void SetVCenterAlignEnabled(bool isEnabled);
     virtual bool GetVCenterAlignEnabled() const;
-        /**
-     \brief Sets bottom align of control relative to its parent.
-     \param[in] align bottom align of control.
-     */
-    virtual void SetBottomAlignEnabled(bool isEnabled, bool applyAlign = true);
-    /**
-     \brief Returns bottom align of control relative to its parent.
-     \returns bottom align of control.
-     */
+    virtual void SetBottomAlignEnabled(bool isEnabled);
     virtual bool GetBottomAlignEnabled() const;
 
     /**
@@ -487,8 +396,6 @@ public:
      */
     Rect GetAbsoluteRect();
 
-    DAVA_DEPRECATED(Rect GetRect(bool absoluteCoordinates));
-
     /**
      \brief Sets the untransformed control rect.
      \param[in] rect new control rect.
@@ -500,8 +407,6 @@ public:
      \param[in] rect new control absolute rect.
      */
     void SetAbsoluteRect(const Rect &rect);
-
-    DAVA_DEPRECATED(virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates));
 
     /**
      \brief Returns untransformed control position.
@@ -519,8 +424,6 @@ public:
      */
     Vector2 GetAbsolutePosition();
 
-    DAVA_DEPRECATED(Vector2 GetPosition(bool absoluteCoordinates));
-
     /**
      \brief Sets the untransformed control position.
      \param[in] position new control position.
@@ -532,8 +435,6 @@ public:
      \param[in] position new control absolute position.
      */
     void SetAbsolutePosition(const Vector2 &position);
-
-    DAVA_DEPRECATED(virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates));
 
     /**
      \brief Returns untransformed control size.
@@ -553,25 +454,25 @@ public:
      \brief Returns control pivot point.
      \returns control pivot point.
      */
-    inline const Vector2 &GetPivotPoint() const;
+    inline Vector2 GetPivotPoint() const;
 
     /**
      \brief Sets the control pivot point.
      \param[in] newPivot new control pivot point.
      */
-    inline void SetPivotPoint(const Vector2 &newPivot);
+    void SetPivotPoint(const Vector2& newPivot);
 
     /**
      \brief Returns control pivot.
      \returns control pivot.
      */
-    inline Vector2 GetPivot() const;
+    inline const Vector2& GetPivot() const;
 
     /**
      \brief Sets the control pivot.
      \param[in] newPivot new control pivot.
      */
-    inline void SetPivot(const Vector2 &newPivot);
+    void SetPivot(const Vector2& newPivot);
 
     /**
      \brief Returns control scale.
@@ -611,7 +512,7 @@ public:
      */
     inline float32 GetAngle() const;
     inline float32 GetAngleInDegrees() const;
-    
+
     /**
      \brief Sets contol rotation angle in radians.
         Control rotates around the pivot point.
@@ -620,6 +521,9 @@ public:
     virtual void SetAngle(float32 angleInRad);
 
     void SetAngleInDegrees(float32 angle);
+    
+    virtual Vector2 GetContentPreferredSize(const Vector2 &constraints) const; // -1.0f means no constraint for axis
+    virtual bool IsHeightDependsOnWidth() const;
 
     /**
      \brief Returns control visibility.
@@ -776,6 +680,7 @@ public:
      \returns control name.
      */
     inline const String & GetName() const;
+    inline const FastName & GetFastName() const;
 
     /**
      \brief Sets the contol tag.
@@ -828,23 +733,6 @@ public:
      \returns list of control children.
      */
     const List<UIControl*> &GetChildren() const;
-    /**
-     \brief Returns list of control children without internal controls.
-     \returns list of control children without internal controls.
-     */
-    virtual List<UIControl* >& GetRealChildren();
-
-    /**
-     \brief Returns the list of internal controls, which are editable
-     \ and belongs to the same control.
-     */
-    virtual List<UIControl* > GetSubcontrols();
-
-    /**
-     \brief Returns whether this control is subcontrol of its parent.
-     */
-    virtual bool IsSubcontrol();
-
     /**
      \brief Add control as a child.
         Children draws in the sequence of adding. If child has another parent
@@ -950,7 +838,6 @@ public:
      \param[in] srcControl Source control to copy parameters from.
      */
     virtual void CopyDataFrom(UIControl *srcControl);
-
 
      //Animation helpers
 
@@ -1318,16 +1205,10 @@ public:
     void SetSizeFromBg(bool pivotToCenter = true);
 
     virtual void UpdateLayout();
-    virtual void UpdateChildrenLayout();
-    // Recalculate the size and positions for the child controls according to their Align Options.
-    void ApplyAlignSettingsForChildren();
+    virtual void OnSizeChanged();
 
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
-
-    // Get/set the Initial State.
-    int32 GetInitialState() const;
-    void SetInitialState(int32 newState);
 
     // Get/set visible flag for UI editor. Should not be serialized.
     bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
@@ -1338,6 +1219,8 @@ public:
     static void DumpControls(bool onlyOrphans);
 private:
     String name;
+    FastName fastName;
+    Vector2 pivot; //!<control pivot. Top left control corner by default.
 protected:
     UIControl *parent;
     List<UIControl*> childs;
@@ -1347,15 +1230,13 @@ public:
     Vector2 relativePosition;//!<position in the parent control.
     Vector2 size;//!<control size.
 
-    Vector2 pivotPoint;//!<control pivot point. Top left control corner by default.
     Vector2 scale;//!<control scale. Scale relative to pivot point.
     float32 angle;//!<control rotation angle. Rotation around pivot point.
 
 protected:
-    List<UIControl*> realChilds;
-
     UIControlBackground *background;
     int32 controlState;
+    int32 prevControlState;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
@@ -1367,29 +1248,18 @@ protected:
     bool visibleForUIEditor : 1;
 
     // Enable align options
-    bool leftAlignEnabled : 1;
-    bool hcenterAlignEnabled : 1;
-    bool rightAlignEnabled : 1;
-    bool topAlignEnabled : 1;
-    bool vcenterAlignEnabled : 1;
-    bool bottomAlignEnabled : 1;
-
     bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
+
+    bool styleSheetDirty : 1;
+    bool styleSheetInitialized : 1;
+    bool layoutDirty : 1;
 
     int32 inputProcessorsCount;
 
     int32 currentInputID;
     int32 touchesInside;
     int32 totalTouches;
-
-    // Align options
-    float32 leftAlign;
-    float32 hcenterAlign;
-    float32 rightAlign;
-    float32 topAlign;
-    float32 vcenterAlign;
-    float32 bottomAlign;
 
     mutable UIGeometricData tempGeometricData;
 
@@ -1398,9 +1268,6 @@ protected:
     Color debugDrawColor;
 
     eDebugDrawPivotMode drawPivotPointMode;
-
-    // Initial control's state which is stored on Yaml.
-    int32 initialState;
 
     void SetParent(UIControl *newParent);
 
@@ -1423,20 +1290,6 @@ private:
     bool inputEnabled : 1;
     bool focusEnabled : 1;
 
-    void CalculateAlignSettings();
-
-    void ApplyAlignSettings();
-
-    void GetAxisDataByAlignData(float32 size, float32 parentSize,
-                                bool firstSideAlignEnabled, float32 firstSideAlign,
-                                bool centerAlignEnabled, float32 centerAlign,
-                                bool secondSideAlignEnabled, float32 secondSideAlign,
-                                float32 &newPos, float32 &newSize);
-
-    void GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize,
-                                bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled,
-                                float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign);
-    
 /* Components */
 public:
     void AddComponent(UIComponent * component);
@@ -1466,12 +1319,53 @@ public:
     uint32 GetComponentCount(uint32 componentType) const;
     uint64 GetAvailableComponentFlags() const;
 
+    const Vector<UIComponent *>& GetComponents();
 private:
     Vector<UIComponent *> components;
     UIControlFamily * family;
     void RemoveComponent(const Vector<UIComponent *>::iterator & it);
     void UpdateFamily();
 /* Components */
+
+/* Styles */
+public:
+    void AddClass(const FastName& clazz);
+    void RemoveClass(const FastName& clazz);
+    bool HasClass(const FastName& clazz) const;
+    void SetTaggedClass(const FastName& tag, const FastName& clazz);
+    void ResetTaggedClass(const FastName& tag);
+
+    String GetClassesAsString() const;
+    void SetClassesFromString(const String &classes);
+    
+    const UIStyleSheetPropertySet& GetLocalPropertySet() const;
+    void SetLocalPropertySet(const UIStyleSheetPropertySet &set);
+    void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
+    
+    const UIStyleSheetPropertySet& GetStyledPropertySet() const;
+    void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
+
+    bool IsStyleSheetInitialized() const;
+    void SetStyleSheetInitialized();
+
+    void SetStyleSheetDirty();
+    void ResetStyleSheetDirty();
+
+    void SetLayoutDirty();
+    void ResetLayoutDirty();
+
+    UIControlPackageContext* GetPackageContext() const;
+    UIControlPackageContext* GetLocalPackageContext() const;
+    void SetPackageContext(UIControlPackageContext* packageContext);
+private:
+    UIStyleSheetClassSet classes;
+    UIStyleSheetPropertySet localProperties;
+    UIStyleSheetPropertySet styledProperties;
+    RefPtr< UIControlPackageContext > packageContext;
+    UIControl* parentWithContext;
+
+    void PropagateParentWithContext(UIControl* newParentWithContext);
+/* Styles */
 
 public:
     inline bool GetSystemVisible() const;
@@ -1493,25 +1387,11 @@ public:
     // for introspection
     inline bool GetEnabled() const;
     inline void SetEnabledNotHierarchic(bool enabled);
+    inline void SetSelectedNotHierarchic(bool enabled);
     inline bool GetNoInput() const;
     inline void SetNoInput(bool noInput);
     inline bool GetDebugDraw() const;
     inline void SetDebugDrawNotHierarchic(bool val);
-    
-
-    inline void SetAndApplyLeftAlign(float32 align);
-    inline void SetAndApplyRightAlign(float32 align);
-    inline void SetAndApplyBottomAlign(float32 align);
-    inline void SetAndApplyTopAlign(float32 align);
-    inline void SetAndApplyHCenterAlign(float32 align);
-    inline void SetAndApplyVCenterAlign(float32 align);
-
-    inline void SetAndApplyLeftAlignEnabled(bool isEnabled);
-    inline void SetAndApplyHCenterAlignEnabled(bool isEnabled);
-    inline void SetAndApplyRightAlignEnabled(bool isEnabled);
-    inline void SetAndApplyTopAlignEnabled(bool isEnabled);
-    inline void SetAndApplyVCenterAlignEnabled(bool isEnabled);
-    inline void SetAndApplyBottomAlignEnabled(bool isEnabled);
 
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
                          PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
@@ -1521,55 +1401,24 @@ public:
                          PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("initialState", "Initial State", GetInitialState, SetInitialState, I_SAVE | I_VIEW | I_EDIT)
-                         
-                         PROPERTY("leftAlignEnabled", "Left Align Enabled", GetLeftAlignEnabled, SetAndApplyLeftAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("leftAlign", "Left Align", GetLeftAlign, SetAndApplyLeftAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
 
-                         PROPERTY("rightAlignEnabled", "Right Align Enabled", GetRightAlignEnabled, SetAndApplyRightAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("rightAlign", "Right Align", GetRightAlign, SetAndApplyRightAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("bottomAlignEnabled", "Bottom Align Enabled", GetBottomAlignEnabled, SetAndApplyBottomAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("bottomAlign", "Bottom Align", GetBottomAlign, SetAndApplyBottomAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("topAlignEnabled", "Top Align Enabled", GetTopAlignEnabled, SetAndApplyTopAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("topAlign", "Top Align", GetTopAlign, SetAndApplyTopAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("hcenterAlignEnabled", "Horizontal Center Align Enabled", GetHCenterAlignEnabled, SetAndApplyHCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("hcenterAlign", "Horizontal Center Align", GetHCenterAlign, SetAndApplyHCenterAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("vcenterAlignEnabled", "Vertical Center Align Enabled", GetVCenterAlignEnabled, SetAndApplyVCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("vcenterAlign", "Vertical Center Align", GetVCenterAlign, SetAndApplyVCenterAlign, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
-                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
-                         );
-
+                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT));
 };
 
-const Vector2 & UIControl::GetPivotPoint() const
+Vector2 UIControl::GetPivotPoint() const
 {
-    return pivotPoint;
+    return pivot * size;
 }
 
-void UIControl::SetPivotPoint(const Vector2 &newPivot)
+const Vector2& UIControl::GetPivot() const
 {
-    pivotPoint = newPivot;
-}
-
-Vector2 UIControl::GetPivot() const
-{
-    Vector2 pivot;
-    pivot.x = (size.x == 0.0f) ? 0.0f : (pivotPoint.x/size.x);
-    pivot.y = (size.y == 0.0f) ? 0.0f : (pivotPoint.y/size.y);
     return pivot;
-}
-
-void UIControl::SetPivot(const Vector2 &newPivot)
-{
-    SetPivotPoint(size*newPivot);
 }
 
 const Vector2 & UIControl::GetScale() const
@@ -1605,6 +1454,11 @@ float32 UIControl::GetAngleInDegrees() const
 const String & UIControl::GetName() const
 {
     return name;
+}
+
+const FastName & UIControl::GetFastName() const
+{
+    return fastName;
 }
 
 int32 UIControl::GetTag() const
@@ -1667,6 +1521,11 @@ void UIControl::SetEnabledNotHierarchic(bool enabled)
     SetDisabled(!enabled, false);
 }
 
+void UIControl::SetSelectedNotHierarchic(bool selected)
+{
+    SetSelected(selected, false);
+}
+
 bool UIControl::GetNoInput() const
 {
     return !GetInputEnabled();
@@ -1685,66 +1544,6 @@ bool UIControl::GetDebugDraw() const
 void UIControl::SetDebugDrawNotHierarchic(bool val)
 {
     SetDebugDraw(val, false);
-}
-
-void UIControl::SetAndApplyLeftAlign(float32 align)
-{
-    SetLeftAlign(align, true);
-}
-
-void UIControl::SetAndApplyRightAlign(float32 align)
-{
-    SetRightAlign(align, true);
-}
-
-void UIControl::SetAndApplyBottomAlign(float32 align)
-{
-    SetBottomAlign(align, true);
-}
-
-void UIControl::SetAndApplyTopAlign(float32 align)
-{
-    SetTopAlign(align, true);
-}
-
-void UIControl::SetAndApplyHCenterAlign(float32 align)
-{
-    SetHCenterAlign(align, true);
-}
-
-void UIControl::SetAndApplyVCenterAlign(float32 align)
-{
-    SetVCenterAlign(align, true);
-}
-
-void UIControl::SetAndApplyLeftAlignEnabled(bool isEnabled)
-{
-    SetLeftAlignEnabled(isEnabled, true);
-}
-
-void UIControl::SetAndApplyHCenterAlignEnabled(bool isEnabled)
-{
-    SetHCenterAlignEnabled(isEnabled, true);
-}
-
-void UIControl::SetAndApplyRightAlignEnabled(bool isEnabled)
-{
-    SetRightAlignEnabled(isEnabled, true);
-}
-
-void UIControl::SetAndApplyTopAlignEnabled(bool isEnabled)
-{
-    SetTopAlignEnabled(isEnabled, true);
-}
-
-void UIControl::SetAndApplyVCenterAlignEnabled(bool isEnabled)
-{
-    SetVCenterAlignEnabled(isEnabled, true);
-}
-
-void UIControl::SetAndApplyBottomAlignEnabled(bool isEnabled)
-{
-    SetBottomAlignEnabled(isEnabled, true);
 }
 
 

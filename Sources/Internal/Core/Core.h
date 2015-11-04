@@ -36,6 +36,7 @@
 #include "Core/ApplicationCore.h"
 #include "Core/DisplayMode.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Render/RHI/rhi_Public.h"
 
 /**
 	\defgroup core Core
@@ -91,40 +92,28 @@ namespace DAVA
 class Core : public Singleton<Core>
 {
 public:
-	
-	enum eScreenOrientation
-	{
-			SCREEN_ORIENTATION_TEXTURE = -1// uses only for the draw to texture purposes
-		,	SCREEN_ORIENTATION_LANDSCAPE_RIGHT = 0
-		,	SCREEN_ORIENTATION_LANDSCAPE_LEFT
-		,	SCREEN_ORIENTATION_PORTRAIT
-		,	SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN
-        ,   SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE
-        ,   SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE
-	};
-    
-    enum eRenderer
+
+    enum eScreenOrientation
     {
-        RENDERER_OPENGL_ES_1_0, // 1.0 compatible OpenGL ES. Old generation iOS / Android devices. 
-        RENDERER_OPENGL_ES_2_0, // 2.0 compatible OpenGL ES. New generation iOS / Android devices. 
-        RENDERER_OPENGL_ES_3_0, // 3.0 compatible OpenGL ES. New generation iOS / Android devices.
-        RENDERER_OPENGL,        // here we assuming that it's 2.0 compatible. Renderer for MacOS X.
-        RENDERER_DIRECTX9,      // only renderer that works on win platforms right now. 
-//        RENDERER_DIRECTX10,   // written for self-motivation
-//        RENDERER_DIRECTX11,   // written for self-motivation
+        SCREEN_ORIENTATION_TEXTURE = -1,     // Use only for texture purpose drawings
+        SCREEN_ORIENTATION_LANDSCAPE_RIGHT = 0,
+        SCREEN_ORIENTATION_LANDSCAPE_LEFT,
+        SCREEN_ORIENTATION_PORTRAIT,
+        SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN,
+        SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE,
+        SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE
     };
-    
-	
-	Core();
-	virtual ~Core();
-	
-	enum eScreenMode
-	{
-		MODE_UNSUPPORTED = 0,	// for all devices that do not support 
-		MODE_FULLSCREEN, 
-		MODE_WINDOWED,
-	};
-	
+
+    Core();
+    virtual ~Core();
+
+    enum class eScreenMode
+    {
+        FULLSCREEN = 0, //<! True full screen
+        WINDOWED_FULLSCREEN, //<! Windowed mode without border and full screen sized
+        WINDOWED, //<! Windowed mode
+    };
+
     enum eDeviceFamily
     {
         DEVICE_UNKNOWN = -1,
@@ -133,22 +122,23 @@ public:
         DEVICE_DESKTOP
     };
     
-	static int Run(int argc, char *argv[], AppHandle handle = 0);
-	static int RunCmdTool(int argc, char *argv[], AppHandle handle = 0);
+    static int Run(int argc, char *argv[], AppHandle handle = 0);
+    static int RunCmdTool(int argc, char *argv[], AppHandle handle = 0);
 
-	// Should be called in platform initialization before FrameworkDidLaunched
-	void CreateSingletons();
+    // Should be called in platform initialization before FrameworkDidLaunched
+    void CreateSingletons();
     // Should be called after framework did launched to initialize proper render manager
-    void CreateRenderManager();
+    void CreateRenderer();
     // Should be called after full release
-	void ReleaseSingletons();
+    void ReleaseRenderer();
+    void ReleaseSingletons();
 
-	const Vector<String> & GetCommandLine(); 
-	bool IsConsoleMode();
-	
+    const Vector<String> & GetCommandLine(); 
+    bool IsConsoleMode();
+
 public:
-	void SetOptions(KeyedArchive * archiveOfOptions);
-	KeyedArchive * GetOptions();
+    void SetOptions(KeyedArchive * archiveOfOptions);
+    KeyedArchive * GetOptions();
 
 	
 	static void SetApplicationCore(ApplicationCore * core);
@@ -162,27 +152,22 @@ public:
 		\brief This function should perform switching from one mode to another (fullscreen => windowed and back)
 		\param[in] screenMode mode of the screen we want to switch to
 	*/
-	virtual void SwitchScreenToMode(eScreenMode screenMode); 
-	
-	/**
+    virtual bool SetScreenMode(eScreenMode screenMode);
+
+    /**
 		\brief Get list of available display modes supported by hardware
 		\param[out] availableModes list of available modes that is supported by hw
 	*/
-	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
-	
-	/**
-		
-	*/
-	virtual void ToggleFullscreen();
+    virtual void GetAvailableDisplayModes(List<DisplayMode>& availableModes);
 
-	/**
+    /**
 		\brief Find mode that matches best to the mode you've requested
 		\param[in] requestedMode mode you want to get
 		\returns best mode found in current HW
 	*/
-	virtual DisplayMode FindBestMode(const DisplayMode & requestedMode);
+    virtual DisplayMode FindBestMode(const DisplayMode& requestedMode);
 
-	/**
+    /**
 		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor
 	*/
 	virtual DisplayMode GetCurrentDisplayMode();
@@ -192,17 +177,20 @@ public:
 	*/
 	virtual void Quit();
 
-	/**
+    /**
 		\brief Set icon for application's window.
 		Windows: First of all, you should create icon resource through Project->Add Resource->Icon.
 		param[in] iconId resource id for icon from resource.h file. For example, 101 for #define IDI_ICON1 101
 	 */
-	virtual void SetIcon(int32 iconId);
-	
-    inline float32 GetScreenScaleFactor() const;
-    
-	virtual Core::eScreenOrientation GetScreenOrientation();
-	
+    virtual void SetIcon(int32 iconId);
+
+    virtual float32 GetScreenScaleMultiplier() const;
+    virtual void SetScreenScaleMultiplier(float32 multiplier);
+
+    virtual float32 GetScreenScaleFactor() const;
+
+    virtual Core::eScreenOrientation GetScreenOrientation();
+
     virtual uint32 GetScreenDPI();
 	
 	/*
@@ -260,22 +248,28 @@ public:
 	
 	virtual void GoBackground(bool isLock);
 	virtual void GoForeground();
-    
-	/**
+    virtual void FocusLost();
+    virtual void FocusReceived();
+
+    /**
      \brief Get device familty
      */
     eDeviceFamily GetDeviceFamily();
 	
 	// Needs to be overriden for the platforms where it has sence (MacOS only for now).
-	virtual void* GetOpenGLView() { return NULL; };
-	
-	void EnableConsoleMode();
+    void* GetNativeView() const;
+    void SetNativeView(void* nativeView);
+
+    void EnableConsoleMode();
+
+    rhi::InitParam rendererParams;
 
 protected:
 	int32 screenOrientation;
 
 	void SetCommandLine(int argc, char *argv[]);
-	void SetCommandLine(const DAVA::String& cmdLine);
+	void SetCommandLine(Vector<String>&& args);
+    void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
     KeyedArchive * options;
@@ -288,8 +282,7 @@ private:
 	
 	Vector<String> commandLine;
 	bool isConsoleMode;
-
-    float32 screenScaleFactor;
+    void* nativeView;
 };
     
 inline bool Core::IsActive()
@@ -297,11 +290,6 @@ inline bool Core::IsActive()
     return isActive;
 }
     
-inline float32 Core::GetScreenScaleFactor() const
-{
-    return screenScaleFactor;
-}
-
 };
 
 #endif // __DAVAENGINE_CORE_H__

@@ -40,18 +40,18 @@ namespace Net
 
 bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name)
 {
-    DVASSERT(creator != 0 && deleter != 0);
-    DVASSERT(std::find(registrar.begin(), registrar.end(), serviceId) == registrar.end());
+    DVASSERT(creator != nullptr && deleter != nullptr);
+    DVASSERT(!IsRegistered(serviceId));
 
     // Duplicate services are not allowed in registrar
-    if (std::find(registrar.begin(), registrar.end(), serviceId) == registrar.end())
+    if (!IsRegistered(serviceId))
     {
         // If name hasn'y been set then generate name string based on service ID
-        char8 generatedName[Entry::MAX_NAME_LENGTH];
+        Array<char8, Entry::MAX_NAME_LENGTH> generatedName;
         if (NULL == name)
         {
-            Snprintf(generatedName, COUNT_OF(generatedName), "service-%u", serviceId);
-            name = generatedName;
+            Snprintf(generatedName.data(), generatedName.size(), "service-%u", serviceId);
+            name = generatedName.data();
         }
         Entry en(serviceId, name, creator, deleter);
         registrar.push_back(en);

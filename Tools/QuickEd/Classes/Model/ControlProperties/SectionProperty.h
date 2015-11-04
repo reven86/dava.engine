@@ -27,13 +27,12 @@
 =====================================================================================*/
 
 
-#ifndef __UI_EDITOR_PROPERTIES_SECTION_H__
-#define __UI_EDITOR_PROPERTIES_SECTION_H__
+#ifndef __QUICKED_SECTION_PROPERTY_H__
+#define __QUICKED_SECTION_PROPERTY_H__
 
 #include "AbstractProperty.h"
 
-class ValueProperty;
-
+template <typename ValueType>
 class SectionProperty : public AbstractProperty
 {
 public:
@@ -42,14 +41,18 @@ protected:
     virtual ~SectionProperty();
     
 public:
-    void AddProperty(ValueProperty *section);
-    virtual int GetCount() const override;
-    virtual AbstractProperty *GetProperty(int index) const override;
-    
-    virtual void Refresh() override;
-    virtual const DAVA::String &GetName() const;
+    void AddProperty(ValueType *property);
+    void InsertProperty(ValueType *property, DAVA::int32 index);
+    void RemoveProperty(ValueType *property);
+    DAVA::uint32 GetCount() const override;
+    ValueType* GetProperty(DAVA::int32 index) const override;
 
-    DAVA_DEPRECATED(virtual ValueProperty *FindProperty(const DAVA::InspMember *member) const);
+    void Refresh(DAVA::int32 refreshFlags) override;
+    void Accept(PropertyVisitor *visitor) override;
+    
+    const DAVA::String &GetName() const override;
+
+    virtual ValueType *FindProperty(const DAVA::InspMember *member) const;
 
     virtual ePropertyType GetType() const
     {
@@ -57,9 +60,113 @@ public:
     }
 
 protected:
-    DAVA::Vector<ValueProperty*> children;
+    DAVA::Vector<ValueType*> children;
     DAVA::String name;
 
 };
 
-#endif // __UI_EDITOR_PROPERTIES_SECTION_H__
+template <typename ValueType>
+inline SectionProperty<ValueType>::SectionProperty(const DAVA::String &sectionName)
+: name(sectionName)
+{
+}
+
+template <typename ValueType>
+inline SectionProperty<ValueType>::~SectionProperty()
+{
+    for (auto it = children.begin(); it != children.end(); ++it)
+    {
+        DVASSERT((*it)->GetParent() == this);
+        (*it)->SetParent(nullptr);
+        (*it)->Release();
+    }
+    children.clear();
+}
+
+template <typename ValueType>
+inline void SectionProperty<ValueType>::AddProperty(ValueType *property)
+{
+    DVASSERT(property->GetParent() == nullptr);
+    property->SetParent(this);
+    children.push_back(SafeRetain(property));
+}
+
+template <typename ValueType>
+inline void SectionProperty<ValueType>::InsertProperty(ValueType *property, DAVA::int32 index)
+{
+    DVASSERT(property->GetParent() == nullptr);
+    if (0 <= index && index <= static_cast<DAVA::int32>(children.size()))
+    {
+        property->SetParent(this);
+        children.insert(children.begin() + index, SafeRetain(property));
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+template <typename ValueType>
+inline void SectionProperty<ValueType>::RemoveProperty(ValueType *property)
+{
+    auto it = std::find(children.begin(), children.end(), property);
+    if (it != children.end())
+    {
+        DVASSERT((*it)->GetParent() == this);
+        (*it)->SetParent(nullptr);
+        (*it)->Release();
+        children.erase(it);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+template <typename ValueType>
+inline DAVA::uint32 SectionProperty<ValueType>::GetCount() const
+{
+    return children.size();
+}
+
+template <typename ValueType>
+inline ValueType* SectionProperty<ValueType>::GetProperty(DAVA::int32 index) const
+{
+    if (0 <= index && index < static_cast<DAVA::int32>(children.size()))
+        return children[index];
+    
+    DVASSERT(false);
+    return nullptr;
+}
+
+template <typename ValueType>
+inline void SectionProperty<ValueType>::Refresh(DAVA::int32 refreshFlags)
+{
+    for (ValueType *prop : children)
+        prop->Refresh(refreshFlags);
+}
+
+template <typename ValueType>
+inline void SectionProperty<ValueType>::Accept(PropertyVisitor *visitor)
+{
+    // do nothing
+}
+
+template <typename ValueType>
+const DAVA::String & SectionProperty<ValueType>::GetName() const
+{
+    return name;
+}
+
+template <typename ValueType>
+ValueType *SectionProperty<ValueType>::FindProperty(const DAVA::InspMember *member) const
+{
+    for (auto child : children)
+    {
+        if (child->IsSameMember(member))
+            return child;
+    }
+    return nullptr;
+}
+
+#endif // __QUICKED_SECTION_PROPERTY_H__

@@ -31,38 +31,54 @@
 #define __QUICKED_PROPERTIES_WIDGET_H__
 
 #include <QDockWidget>
+#include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
-
-class SharedData;
+#include "EditorSystems/SelectionContainer.h"
 
 class ControlNode;
+class StyleSheetNode;
+class Document;
+class PackageBaseNode;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
     Q_OBJECT
 public:
-    PropertiesWidget(QWidget *parent = NULL);
+    PropertiesWidget(QWidget* parent = nullptr);
 
 public slots:
-    void OnDocumentChanged(SharedData *sharedData);
-    void OnDataChanged(const QByteArray &role);
+    void OnDocumentChanged(Document* doc);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     void OnAddComponent(QAction *action);
-    void OnRemoveComponent();
+    void OnAddStyleProperty(QAction *action);
+    void OnAddStyleSelector();
+    void OnRemove();
+    
     void OnSelectionChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
+    void OnModelChanged();
 
 private:
+    QAction *CreateAddComponentAction();
+    QAction *CreateAddStyleSelectorAction();
+    QAction *CreateAddStylePropertyAction();
+    QAction *CreateRemoveAction();
+    QAction *CreateSeparator();
+
     ControlNode *GetSelectedControlNode() const;
-    void UpdateActivatedControls();
-    void UpdateActions();
+    StyleSheetNode *GetSelectedStyleSheetNode() const;
     
-private:
-    SharedData *sharedData;
-    QAction *addComponentAction;
-    QAction *removeComponentAction;
-    int selectedComponentType;
-    int selectedComponentIndex;
+    void UpdateSelection();
+    void UpdateActions();
+
+    Document* document = nullptr;
+    QAction* addComponentAction = nullptr;
+    QAction* addStylePropertyAction = nullptr;
+    QAction* addStyleSelectorAction = nullptr;
+    QAction* removeAction = nullptr;
+
+    SelectionContainer selectionContainer;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

@@ -45,8 +45,9 @@ public:
         MULTILINE_ENABLED,
         MULTILINE_ENABLED_BY_SYMBOL
     };
+    
 #if defined(LOCALIZATION_DEBUG)
-    static const Color  HIGHLITE_COLORS[];
+    static const Color HIGHLIGHT_COLORS[];
     enum DebugHighliteColor
     {
         RED = 0,
@@ -62,8 +63,7 @@ public:
 protected:
     virtual ~UIStaticText();
 public:
-
-    UIStaticText(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    UIStaticText(const Rect& rect = Rect());
 
     virtual void Draw(const UIGeometricData &geometricData) override;
     virtual void SetParentColor(const Color &parentColor) override;
@@ -71,6 +71,8 @@ public:
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
     virtual void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
+    void SetTextWithoutRect(const WideString &text);
+    
     void SetFont(Font * font);
     void SetTextColor(const Color& color);
 
@@ -95,10 +97,17 @@ public:
     virtual int32 GetTextAlign() const;
 	virtual int32 GetTextVisualAlign() const;
 	virtual bool GetTextIsRtl() const;
-	virtual void SetTextUseRtlAlign(bool useRtlAlign);
-    virtual bool GetTextUseRtlAlign() const;
+    virtual void SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign);
+    virtual TextBlock::eUseRtlAlign GetTextUseRtlAlign() const;
+    
+    virtual void SetTextUseRtlAlignFromInt(int32 value);
+    virtual int32 GetTextUseRtlAlignAsInt() const;
 
+    virtual const WideString& GetVisualText() const;
     const Vector2 & GetTextSize();
+
+    Vector2 GetContentPreferredSize(const Vector2 &constraints) const override;
+    bool IsHeightDependsOnWidth() const override;
 
     void PrepareSprite();
 
@@ -125,7 +134,6 @@ public:
     const Vector<int32> & GetStringSizes() const;
 
 protected:
-    void PrepareSpriteInternal();
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
 #if defined(LOCALIZATION_DEBUG)
     void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;
@@ -147,9 +155,6 @@ public:
     virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
     
 public:
-    void SetTextWithoutRect(const WideString &text) {
-        SetText(text);
-    }
     
     String GetFontPresetName() const;
     void SetFontByPresetName(const String &presetName);
@@ -167,9 +172,6 @@ public:
     void SetMarginsAsVector4(const Vector4 &margins);
     
     INTROSPECTION_EXTEND(UIStaticText, UIControl,
-                         PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
-                         
                          PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textperPixelAccuracyType", InspDesc("Text Per Pixel Accuracy Type", GlobalEnumMap<UIControlBackground::ePerPixelAccuracyType>::Instance()), GetTextPerPixelAccuracyType, SetTextPerPixelAccuracyType, I_SAVE | I_VIEW | I_EDIT)
@@ -180,8 +182,10 @@ public:
                          PROPERTY("multiline", InspDesc("Multi Line", GlobalEnumMap<eMultiline>::Instance()), GetMultilineType, SetMultilineType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("fitting", InspDesc("Fitting", GlobalEnumMap<TextBlock::eFitType>::Instance(), InspDesc::T_FLAGS), GetFittingOption, SetFittingOption, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textUseRtlAlign", InspDesc("Use Rtl Align", GlobalEnumMap<TextBlock::eUseRtlAlign>::Instance(), InspDesc::T_ENUM), GetTextUseRtlAlignAsInt, SetTextUseRtlAlignFromInt, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          );
 
 };

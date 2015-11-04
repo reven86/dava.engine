@@ -6,22 +6,27 @@ if( NOT DISABLE_DEBUG )
 endif  ()
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )
-    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )    
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
     
 elseif ( IOS     ) 
-    set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
     set( CMAKE_CXX_FLAGS_DEBUG    "${CMAKE_CXX_FLAGS} -O0" )
-    set( CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS} -O2" )
-    
+    set( CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS} -O3" )
+
+    set( CMAKE_XCODE_ATTRIBUTE_OTHER_LDFLAGS "-ObjC" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
     set( CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 7.0 )
+    set( CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE No )
 
-    set( CMAKE_IOS_SDK_ROOT Latest IOS )
-    set( CMAKE_OSX_ARCHITECTURES armv7 armv7s i386 arm64 )
+    set( CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" )
+
+    if( NOT CMAKE_IOS_SDK_ROOT )
+        set( CMAKE_IOS_SDK_ROOT Latest IOS )
+
+    endif()
 
     if( NOT IOS_BUNDLE_IDENTIFIER )
         set( IOS_BUNDLE_IDENTIFIER com.davaconsulting.${PROJECT_NAME} )
@@ -33,8 +38,24 @@ elseif ( IOS     )
     set( CMAKE_MACOSX_BUNDLE YES )
     set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
 
+    set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES} AdHoc" CACHE STRING
+        "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
+        FORCE)
+     
+    set(CMAKE_C_FLAGS_ADHOC             ${CMAKE_C_FLAGS_RELEASE} )
+    set(CMAKE_CXX_FLAGS_ADHOC           ${CMAKE_CXX_FLAGS_RELEASE} )
+    set(CMAKE_EXE_LINKER_FLAGS_ADHOC    ${CMAKE_EXE_LINKER_FLAGS_RELEASE} )
+    set(CMAKE_SHARED_LINKER_FLAGS_ADHOC ${CMAKE_SHARED_LINKER_FLAGS_RELEASE} )
+    set(CMAKE_MODULE_LINKER_FLAGS_ADHOC ${CMAKE_MODULE_LINKER_FLAGS_RELEASE} )
+     
+    mark_as_advanced(   CMAKE_C_FLAGS_ADHOC 
+                        CMAKE_CXX_FLAGS_ADHOC
+                        CMAKE_EXE_LINKER_FLAGS_ADHOC 
+                        CMAKE_SHARED_LINKER_FLAGS_ADHOC 
+                        CMAKE_MODULE_LINKER_FLAGS_ADHOC  )
+
 elseif ( MACOS )
-    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
@@ -42,18 +63,30 @@ elseif ( MACOS )
 elseif ( WIN32 )
     #dynamic runtime on windows store
     if ( WINDOWS_UAP )
-	    set ( CRT_TYPE_DEBUG "/MDd" )
-		set ( CRT_TYPE_RELEASE "/MD" )
-		#consume windows runtime extension (C++/CX)
-		set ( ADDITIONAL_CXX_FLAGS "/ZW")
-	else ()
-	    set ( CRT_TYPE_DEBUG "/MTd" )
-		set ( CRT_TYPE_RELEASE "/MT" )
-	endif ()
-	
+        set ( CRT_TYPE_DEBUG "/MDd" )
+        set ( CRT_TYPE_RELEASE "/MD" )
+        #consume windows runtime extension (C++/CX)
+        set ( ADDITIONAL_CXX_FLAGS "/ZW")
+    else ()
+        set ( CRT_TYPE_DEBUG "/MTd" )
+        set ( CRT_TYPE_RELEASE "/MT" )
+    endif ()
+    
+    # ignorance of linker warnings
+    set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
+    set ( CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
+    set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /IGNORE:4099" )
+    if ( NOT WINDOWS_UAP )
+        set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /delayload:d3dcompiler_47.dll" )
+    endif ()
+
     set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od" ) 
     set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
-    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup /INCREMENTAL:NO" )
+    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /ENTRY:mainCRTStartup /INCREMENTAL:NO" )
+
+    if ( DEBUG_INFO )
+        set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi" ) 
+    endif ()
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )
@@ -115,17 +148,31 @@ if( WARNINGS_AS_ERRORS )
 -Wno-consumed \
 -Wno-sometimes-uninitialized \
 -Wno-delete-non-virtual-dtor \
--Wno-header-hygiene")
+-Wno-header-hygiene \
+-Wno-old-style-cast \
+-Wno-unknown-warning-option \
+-Wno-unreachable-code-return \
+-Wno-unreachable-code-break \
+-Wno-reserved-id-macro \
+-Wno-documentation-pedantic \
+-Wno-inconsistent-missing-override \
+-Wno-unused-local-typedef \
+-Wno-nullable-to-nonnull-conversion \
+-Wno-super-class-method-mismatch \
+-Wno-nonnull")
+
 
     if( ANDROID )
+        set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
+-Wno-reserved-id-macro \
+-Wno-unused-local-typedef \
+-Wno-inconsistent-missing-override \
+-Wno-unknown-pragmas")
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
--Wno-old-style-cast \
 -Wno-cstring-format-directive \
 -Wno-duplicate-enum \
--Wno-unreachable-code-break \
--Wno-unreachable-code-return \
 -Wno-infinite-recursion \
 -Wno-objc-interface-ivars \
 -Wno-direct-ivar-access \

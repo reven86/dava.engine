@@ -117,15 +117,16 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
 				DAVA::InspInfoDynamic *dynamicInfo = member->Dynamic()->GetDynamicInfo();
 				if(NULL != dynamicInfo)
 				{
-					DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(_object); // this function can be slow
-					for(size_t i = 0; i < membersList.size(); ++i)
-					{
-						int memberFlags = dynamicInfo->MemberFlags(_object, membersList[i]);
-						if(memberFlags & DAVA::I_VIEW)
-						{
-							QtPropertyDataInspDynamic *dynamicMember = new QtPropertyDataInspDynamic(_object, dynamicInfo, membersList[i]);
-							if(!(memberFlags & DAVA::I_EDIT))
-							{
+                    DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(_object);
+                    DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata); // this function can be slow
+                    for (size_t i = 0; i < membersList.size(); ++i)
+                    {
+                        int memberFlags = dynamicInfo->MemberFlags(ddata, membersList[i]);
+                        if (memberFlags & DAVA::I_VIEW)
+                        {
+                            QtPropertyDataInspDynamic* dynamicMember = new QtPropertyDataInspDynamic(dynamicInfo, ddata, membersList[i]);
+                            if (!(memberFlags & DAVA::I_EDIT))
+                            {
 								dynamicMember->SetEnabled(false);
 							}
 
@@ -167,7 +168,7 @@ void QtPropertyDataIntrospection::AddMember(const DAVA::InspMember *member)
 		const DAVA::MetaInfo *memberMetaInfo = member->Type();
 		const DAVA::InspInfo *memberIntrospection = memberMetaInfo->GetIntrospection(memberObject);
 	
-		ChildAdd(member->Name(), data);
+		ChildAdd(member->Name().c_str(), data);
 		//condition for variant
 		if((!memberMetaInfo->IsPointer()) && (!member->Collection()) && 
 			(NULL == memberIntrospection || (memberIntrospection->Type() != DAVA::MetaInfo::Instance<DAVA::KeyedArchive>())))
@@ -183,6 +184,6 @@ void QtPropertyDataIntrospection::AddMember(const DAVA::InspMember *member)
 
 QVariant QtPropertyDataIntrospection::GetValueInternal() const
 {
-	return QVariant(info->Name());
+	return QVariant(info->Name().c_str());
 }
 

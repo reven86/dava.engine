@@ -33,10 +33,29 @@ int32 BaseScreen::screensCount = 0;
 
 BaseScreen::BaseScreen()
     : UIScreen()
-    , font(NULL)
+    , font(nullptr)
     , screenID(screensCount++)
 {
     UIScreenManager::Instance()->RegisterScreen(screenID, this);
+}
+
+bool BaseScreen::SystemInput(UIEvent *currentInput)
+{
+    if ((currentInput->tid == DVKEY_BACK) && (UIEvent::Phase::KEY_DOWN == currentInput->phase))
+    {
+        SetPreviousScreen();
+    }
+    else
+    {
+        return UIScreen::SystemInput(currentInput);
+    }
+    return true;
+}
+
+void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
+{
+    UnloadResources();
+    LoadResources();
 }
 
 void BaseScreen::LoadResources()

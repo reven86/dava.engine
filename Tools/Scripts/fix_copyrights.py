@@ -12,7 +12,8 @@ import platform;
 import re;
 import codecs;
   
-excludeDirs = ["Box2D", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
+excludeDirs = [ "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
+excludeFiles = ["Classes/Tests/TextSizeTest.cpp"]
 includePaths = {}
 
 replaceString = "\
@@ -79,21 +80,21 @@ def process_files(arg, dirname, names):
 		if (string.find(relPath, exDir) != -1):
 			excludeLogFile.write("exclude: " + relPath + "\n");
 			return;
-	includeLogFile.write("include: " + relPath + "\n");
 
 	(dirhead, dirtail) = os.path.split(dirname);
 	fullpath = os.path.normpath( dirname + "/");
 	for fullname in names:
 		pathname = fullpath + "/" + fullname;
-		if (
-			os.path.isdir(pathname)
-			or fullname[0] == '.'
-			or fullname[0] == '..'
-			or fullname[0] == '$'
-			):
+		if(
+		os.path.isdir(pathname)
+		or fullname[0] == '$'
+		):
 			continue;
 		(name, ext) = os.path.splitext(fullname); 
 		if ext in supported_exts:
+			if any(s.replace("\\", "/") in pathname.replace("\\", "/") for s in excludeFiles):
+				print("exclude file detected: " + pathname)
+				continue;
 			with open(pathname, 'rt') as file:
 				content = file.read()
 				file.close();
@@ -101,7 +102,7 @@ def process_files(arg, dirname, names):
 					file.write(process_contents(content));
 			
 	return
-	
+
 export_script_dir = os.getcwd() + "../../../";
 os.path.walk(export_script_dir, process_files, None);
 

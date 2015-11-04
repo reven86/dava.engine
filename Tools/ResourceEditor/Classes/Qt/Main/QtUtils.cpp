@@ -36,10 +36,11 @@
 
 #include "mainwindow.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include "DAVAEngine.h"
 #include <QProcess>
@@ -73,12 +74,12 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
 DAVA::String SizeInBytesToString(DAVA::float32 size)
 {
     DAVA::String retString = "";
-    
-    if(1000000 < size)
+
+    if (1000000 < size)
     {
         retString = Format("%0.2f MB", size / (1024 * 1024) );
     }
-    else if(1000 < size)
+    else if (1000 < size)
     {
         retString = Format("%0.2f KB", size / 1024);
     }
@@ -112,28 +113,42 @@ DAVA::Image * CreateTopLevelImage(const DAVA::FilePath &imagePathname)
 
 void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 {
-    if(errors.empty())
-        return;
-    
-    String errorMessage = String("");
-    Set<String>::const_iterator endIt = errors.end();
-    for(Set<String>::const_iterator it = errors.begin(); it != endIt; ++it)
-    {
-		Logger::Error((*it).c_str());
+    if (errors.empty()) return;
 
-        errorMessage += *it + String("\n");
+	const uint32 maxErrorsPerDialog = 6;
+	uint32 totalErrors = errors.size();
+
+    const String dialogTitle = Format("%u error(s)", totalErrors);
+    const String errorDivideLine("\n--------------------\n");
+
+    String errorMessage;
+    uint32 errorCounter = 0;
+    for (const auto& message : errors)
+    {
+        errorMessage += PointerSerializer::CleanUpString(message) + errorDivideLine;
+        errorCounter++;
+
+        if (errorCounter == maxErrorsPerDialog)
+        {
+            errorMessage += "\n\nSee console log for details.";
+            ShowErrorDialog(errorMessage, dialogTitle);
+            errorMessage.clear();
+            break;
+        }
     }
-    
-    ShowErrorDialog(errorMessage);
+
+    if (!errorMessage.empty())
+        ShowErrorDialog(errorMessage, dialogTitle);
 }
 
-void ShowErrorDialog(const DAVA::String &errorMessage)
+void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title)
 {
-    bool forceClose = CommandLineParser::CommandIsFound(String("-force"))
-                      || CommandLineParser::CommandIsFound(String("-forceclose"));
+    bool forceClose = CommandLineParser::CommandIsFound(String("-force")) ||
+    CommandLineParser::CommandIsFound(String("-forceclose"));
+
     if (!forceClose && !Core::Instance()->IsConsoleMode())
     {
-        QMessageBox::critical(QApplication::activeWindow(), "Error", errorMessage.c_str());
+        QMessageBox::critical(QApplication::activeWindow(), title.c_str(), errorMessage.c_str());
     }
 }
 
@@ -167,34 +182,28 @@ int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int b
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),
                                        (QMessageBox::StandardButton)buttons, (QMessageBox::StandardButton)defaultButton);
+
     return answer;
 }
 
 void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 {
-	if(NULL != toolbar && NULL != action)
-	{
-		QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
-		if(NULL != toolBnt)
-		{
-			if(showText)
-			{
-				toolBnt->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-			}
-			else
-			{
-				toolBnt->setToolButtonStyle(Qt::ToolButtonIconOnly);
-			}
-		}
-	}
+    if (NULL != toolbar && NULL != action)
+    {
+        QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
+        if (NULL != toolBnt)
+        {
+            toolBnt->setToolButtonStyle(showText ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
+        }
+    }
 }
 
 DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::String & what, const DAVA::String & on)
 {
 	String::size_type pos = sourceString.find(what);
-	if(pos != String::npos)
-	{
-		String newString = sourceString;
+    if (pos != String::npos)
+    {
+        String newString = sourceString;
 		newString = newString.replace(pos, what.length(), on);
 		return newString;
 	}
@@ -227,7 +236,7 @@ void ShowFileInExplorer(const QString& path)
 
 void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
 {
-    if(sprite)
+    if (sprite)
     {
         SaveTextureToFile(sprite->GetTexture(), path);
     }
@@ -235,9 +244,9 @@ void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
 
 void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
 {
-    if(texture)
+    if (texture)
     {
-        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_OPAQUE);
+        DAVA::Image* img = texture->CreateImageFromMemory();
         SaveImageToFile(img, path);
         img->Release();
     }
@@ -247,4 +256,6 @@ void SaveImageToFile(DAVA::Image * image, const DAVA::FilePath & path)
 {
     DAVA::ImageSystem::Instance()->Save(path, image);
 }
+
+
 

@@ -25,12 +25,6 @@
 		A69854C517CE41EC001E9FDE /* PVRConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854AC17CE41EC001E9FDE /* PVRConverter.h */; };
 		A69854C617CE41EC001E9FDE /* PVRConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854AC17CE41EC001E9FDE /* PVRConverter.h */; };
 		A69854C717CE41EC001E9FDE /* PVRConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854AC17CE41EC001E9FDE /* PVRConverter.h */; };
-		A69854C817CE41EC001E9FDE /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854AE17CE41EC001E9FDE /* CommandLineParser.cpp */; };
-		A69854C917CE41EC001E9FDE /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854AE17CE41EC001E9FDE /* CommandLineParser.cpp */; };
-		A69854CA17CE41EC001E9FDE /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854AE17CE41EC001E9FDE /* CommandLineParser.cpp */; };
-		A69854CB17CE41EC001E9FDE /* CommandLineParser.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854AF17CE41EC001E9FDE /* CommandLineParser.h */; };
-		A69854CC17CE41EC001E9FDE /* CommandLineParser.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854AF17CE41EC001E9FDE /* CommandLineParser.h */; };
-		A69854CD17CE41EC001E9FDE /* CommandLineParser.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854AF17CE41EC001E9FDE /* CommandLineParser.h */; };
 		A69854CE17CE41EC001E9FDE /* DefinitionFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B017CE41EC001E9FDE /* DefinitionFile.cpp */; };
 		A69854CF17CE41EC001E9FDE /* DefinitionFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B017CE41EC001E9FDE /* DefinitionFile.cpp */; };
 		A69854D017CE41EC001E9FDE /* DefinitionFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B017CE41EC001E9FDE /* DefinitionFile.cpp */; };
@@ -43,12 +37,6 @@
 		A69854D717CE41EC001E9FDE /* FramePathHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854B317CE41EC001E9FDE /* FramePathHelper.h */; };
 		A69854D817CE41EC001E9FDE /* FramePathHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854B317CE41EC001E9FDE /* FramePathHelper.h */; };
 		A69854D917CE41EC001E9FDE /* FramePathHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854B317CE41EC001E9FDE /* FramePathHelper.h */; };
-		A69854DA17CE41EC001E9FDE /* ImagePacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B417CE41EC001E9FDE /* ImagePacker.cpp */; };
-		A69854DB17CE41EC001E9FDE /* ImagePacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B417CE41EC001E9FDE /* ImagePacker.cpp */; };
-		A69854DC17CE41EC001E9FDE /* ImagePacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B417CE41EC001E9FDE /* ImagePacker.cpp */; };
-		A69854DD17CE41EC001E9FDE /* ImagePacker.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854B517CE41EC001E9FDE /* ImagePacker.h */; };
-		A69854DE17CE41EC001E9FDE /* ImagePacker.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854B517CE41EC001E9FDE /* ImagePacker.h */; };
-		A69854DF17CE41EC001E9FDE /* ImagePacker.h in Headers */ = {isa = PBXBuildFile; fileRef = A69854B517CE41EC001E9FDE /* ImagePacker.h */; };
 		A69854E017CE41EC001E9FDE /* PngImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B617CE41EC001E9FDE /* PngImage.cpp */; };
 		A69854E117CE41EC001E9FDE /* PngImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B617CE41EC001E9FDE /* PngImage.cpp */; };
 		A69854E217CE41EC001E9FDE /* PngImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854B617CE41EC001E9FDE /* PngImage.cpp */; };
@@ -73,6 +61,20 @@
 		A6A617E317CF502C00375E11 /* TextureConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = A6A617DF17CF502C00375E11 /* TextureConverter.h */; };
 		A6A617E417CF502C00375E11 /* TextureConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = A6A617DF17CF502C00375E11 /* TextureConverter.h */; };
 		A6A617E517CF502C00375E11 /* TextureConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = A6A617DF17CF502C00375E11 /* TextureConverter.h */; };
+		E834DEA51B171F8200E4B2DB /* CacheItemKey.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE721B171F8200E4B2DB /* CacheItemKey.h */; };
+		E834DEA61B171F8200E4B2DB /* CacheItemKey.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE721B171F8200E4B2DB /* CacheItemKey.h */; };
+		E834DEA71B171F8200E4B2DB /* CacheItemKey.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE721B171F8200E4B2DB /* CacheItemKey.h */; };
+		E8BB52271B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
+		E8BB52281B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
+		E8BB52291B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
+		E8BB522A1B74979300D3866C /* DoubleMD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52241B74979300D3866C /* DoubleMD5Key.h */; };
+		E8BB522B1B74979300D3866C /* DoubleMD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52241B74979300D3866C /* DoubleMD5Key.h */; };
+		E8BB522C1B74979300D3866C /* DoubleMD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52241B74979300D3866C /* DoubleMD5Key.h */; };
+		FE66A5161BB44941002D7272 /* TextureAtlas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FE66A5141BB44941002D7272 /* TextureAtlas.cpp */; settings = {ASSET_TAGS = (); }; };
+		FE66A5171BB44941002D7272 /* TextureAtlas.h in Headers */ = {isa = PBXBuildFile; fileRef = FE66A5151BB44941002D7272 /* TextureAtlas.h */; settings = {ASSET_TAGS = (); }; };
+		FE66A51A1BB4495E002D7272 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FE66A5181BB4495E002D7272 /* CommandLineParser.cpp */; settings = {ASSET_TAGS = (); }; };
+		FE66A51B1BB4495E002D7272 /* CommandLineParser.h in Headers */ = {isa = PBXBuildFile; fileRef = FE66A5191BB4495E002D7272 /* CommandLineParser.h */; settings = {ASSET_TAGS = (); }; };
+		FECAA1C81B735563008BC3FC /* ProgramOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = FECAA1C71B735563008BC3FC /* ProgramOptions.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -85,14 +87,10 @@
 		A69854AA17CE41EC001E9FDE /* DXTConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DXTConverter.h; sourceTree = "<group>"; };
 		A69854AB17CE41EC001E9FDE /* PVRConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRConverter.cpp; sourceTree = "<group>"; };
 		A69854AC17CE41EC001E9FDE /* PVRConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRConverter.h; sourceTree = "<group>"; };
-		A69854AE17CE41EC001E9FDE /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommandLineParser.cpp; sourceTree = "<group>"; };
-		A69854AF17CE41EC001E9FDE /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandLineParser.h; sourceTree = "<group>"; };
 		A69854B017CE41EC001E9FDE /* DefinitionFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DefinitionFile.cpp; sourceTree = "<group>"; };
 		A69854B117CE41EC001E9FDE /* DefinitionFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefinitionFile.h; sourceTree = "<group>"; };
 		A69854B217CE41EC001E9FDE /* FramePathHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FramePathHelper.cpp; sourceTree = "<group>"; };
 		A69854B317CE41EC001E9FDE /* FramePathHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FramePathHelper.h; sourceTree = "<group>"; };
-		A69854B417CE41EC001E9FDE /* ImagePacker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImagePacker.cpp; sourceTree = "<group>"; };
-		A69854B517CE41EC001E9FDE /* ImagePacker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImagePacker.h; sourceTree = "<group>"; };
 		A69854B617CE41EC001E9FDE /* PngImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PngImage.cpp; sourceTree = "<group>"; };
 		A69854B717CE41EC001E9FDE /* PngImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PngImage.h; sourceTree = "<group>"; };
 		A69854B817CE41EC001E9FDE /* ResourcePacker2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourcePacker2D.cpp; sourceTree = "<group>"; };
@@ -101,8 +99,16 @@
 		A69854BB17CE41EC001E9FDE /* TexturePacker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TexturePacker.h; sourceTree = "<group>"; };
 		A6A617DE17CF502C00375E11 /* TextureConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureConverter.cpp; sourceTree = "<group>"; };
 		A6A617DF17CF502C00375E11 /* TextureConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureConverter.h; sourceTree = "<group>"; };
+		E834DE721B171F8200E4B2DB /* CacheItemKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CacheItemKey.h; sourceTree = "<group>"; };
+		E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DoubleMD5Key.cpp; sourceTree = "<group>"; };
+		E8BB52241B74979300D3866C /* DoubleMD5Key.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DoubleMD5Key.h; sourceTree = "<group>"; };
 		E8BE2FDD1A80CC7500AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
 		E8BE2FDF1A80CCA300AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../../Tools/Bin/libTextureConverter.dylib; sourceTree = "<group>"; };
+		FE66A5141BB44941002D7272 /* TextureAtlas.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureAtlas.cpp; sourceTree = "<group>"; };
+		FE66A5151BB44941002D7272 /* TextureAtlas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureAtlas.h; sourceTree = "<group>"; };
+		FE66A5181BB4495E002D7272 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = CommandLine/CommandLineParser.cpp; sourceTree = "<group>"; };
+		FE66A5191BB4495E002D7272 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = CommandLine/CommandLineParser.h; sourceTree = "<group>"; };
+		FECAA1C71B735563008BC3FC /* ProgramOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProgramOptions.h; path = CommandLine/ProgramOptions.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -162,6 +168,8 @@
 		A69854A717CE41EC001E9FDE /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				FECAA1C91B73556D008BC3FC /* ProgramOptions */,
+				E834DE661B171F8200E4B2DB /* AssetCache */,
 				76962824196BF8130064C3A0 /* TeamcitOutput */,
 				A69854A817CE41EC001E9FDE /* TextureCompression */,
 				A69854AD17CE41EC001E9FDE /* TexturePacker */,
@@ -186,14 +194,12 @@
 		A69854AD17CE41EC001E9FDE /* TexturePacker */ = {
 			isa = PBXGroup;
 			children = (
-				A69854AE17CE41EC001E9FDE /* CommandLineParser.cpp */,
-				A69854AF17CE41EC001E9FDE /* CommandLineParser.h */,
+				FE66A5141BB44941002D7272 /* TextureAtlas.cpp */,
+				FE66A5151BB44941002D7272 /* TextureAtlas.h */,
 				A69854B017CE41EC001E9FDE /* DefinitionFile.cpp */,
 				A69854B117CE41EC001E9FDE /* DefinitionFile.h */,
 				A69854B217CE41EC001E9FDE /* FramePathHelper.cpp */,
 				A69854B317CE41EC001E9FDE /* FramePathHelper.h */,
-				A69854B417CE41EC001E9FDE /* ImagePacker.cpp */,
-				A69854B517CE41EC001E9FDE /* ImagePacker.h */,
 				A69854B617CE41EC001E9FDE /* PngImage.cpp */,
 				A69854B717CE41EC001E9FDE /* PngImage.h */,
 				A69854B817CE41EC001E9FDE /* ResourcePacker2D.cpp */,
@@ -204,6 +210,26 @@
 			path = TexturePacker;
 			sourceTree = "<group>";
 		};
+		E834DE661B171F8200E4B2DB /* AssetCache */ = {
+			isa = PBXGroup;
+			children = (
+				E834DE721B171F8200E4B2DB /* CacheItemKey.h */,
+				E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */,
+				E8BB52241B74979300D3866C /* DoubleMD5Key.h */,
+			);
+			path = AssetCache;
+			sourceTree = "<group>";
+		};
+		FECAA1C91B73556D008BC3FC /* ProgramOptions */ = {
+			isa = PBXGroup;
+			children = (
+				FE66A5181BB4495E002D7272 /* CommandLineParser.cpp */,
+				FE66A5191BB4495E002D7272 /* CommandLineParser.h */,
+				FECAA1C71B735563008BC3FC /* ProgramOptions.h */,
+			);
+			name = ProgramOptions;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -212,16 +238,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				A69854BF17CE41EC001E9FDE /* DXTConverter.h in Headers */,
+				FE66A51B1BB4495E002D7272 /* CommandLineParser.h in Headers */,
 				A69854C517CE41EC001E9FDE /* PVRConverter.h in Headers */,
-				A69854CB17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
 				A69854D117CE41EC001E9FDE /* DefinitionFile.h in Headers */,
+				FECAA1C81B735563008BC3FC /* ProgramOptions.h in Headers */,
 				A69854D717CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962821196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
-				A69854DD17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				A69854E317CE41EC001E9FDE /* PngImage.h in Headers */,
 				A69854E917CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
 				A69854EF17CE41EC001E9FDE /* TexturePacker.h in Headers */,
 				A6A617E317CF502C00375E11 /* TextureConverter.h in Headers */,
+				E834DEA51B171F8200E4B2DB /* CacheItemKey.h in Headers */,
+				FE66A5171BB44941002D7272 /* TextureAtlas.h in Headers */,
+				E8BB522A1B74979300D3866C /* DoubleMD5Key.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -231,15 +260,15 @@
 			files = (
 				A69854C017CE41EC001E9FDE /* DXTConverter.h in Headers */,
 				A69854C617CE41EC001E9FDE /* PVRConverter.h in Headers */,
-				A69854CC17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
 				A69854D217CE41EC001E9FDE /* DefinitionFile.h in Headers */,
+				E8BB522B1B74979300D3866C /* DoubleMD5Key.h in Headers */,
 				A69854D817CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962822196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
-				A69854DE17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				A69854E417CE41EC001E9FDE /* PngImage.h in Headers */,
 				A69854EA17CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
 				A69854F017CE41EC001E9FDE /* TexturePacker.h in Headers */,
 				A6A617E417CF502C00375E11 /* TextureConverter.h in Headers */,
+				E834DEA61B171F8200E4B2DB /* CacheItemKey.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,15 +278,15 @@
 			files = (
 				A69854C117CE41EC001E9FDE /* DXTConverter.h in Headers */,
 				A69854C717CE41EC001E9FDE /* PVRConverter.h in Headers */,
-				A69854CD17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
 				A69854D317CE41EC001E9FDE /* DefinitionFile.h in Headers */,
+				E8BB522C1B74979300D3866C /* DoubleMD5Key.h in Headers */,
 				A69854D917CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962823196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
-				A69854DF17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				A69854E517CE41EC001E9FDE /* PngImage.h in Headers */,
 				A69854EB17CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
 				A69854F117CE41EC001E9FDE /* TexturePacker.h in Headers */,
 				A6A617E517CF502C00375E11 /* TextureConverter.h in Headers */,
+				E834DEA71B171F8200E4B2DB /* CacheItemKey.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -348,11 +377,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				A69854BC17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
+				E8BB52271B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C217CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
-				A69854C817CE41EC001E9FDE /* CommandLineParser.cpp in Sources */,
 				A69854CE17CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D417CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
-				A69854DA17CE41EC001E9FDE /* ImagePacker.cpp in Sources */,
+				FE66A5161BB44941002D7272 /* TextureAtlas.cpp in Sources */,
+				FE66A51A1BB4495E002D7272 /* CommandLineParser.cpp in Sources */,
 				7696281E196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E017CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E617CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
@@ -366,11 +396,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A69854BD17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
+				E8BB52281B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C317CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
-				A69854C917CE41EC001E9FDE /* CommandLineParser.cpp in Sources */,
 				A69854CF17CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D517CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
-				A69854DB17CE41EC001E9FDE /* ImagePacker.cpp in Sources */,
 				7696281F196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E117CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E717CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
@@ -384,11 +413,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A69854BE17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
+				E8BB52291B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C417CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
-				A69854CA17CE41EC001E9FDE /* CommandLineParser.cpp in Sources */,
 				A69854D017CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D617CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
-				A69854DC17CE41EC001E9FDE /* ImagePacker.cpp in Sources */,
 				76962820196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E217CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E817CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,

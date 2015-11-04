@@ -30,6 +30,8 @@
 #ifndef __DAVAENGINE_LIBPVRHELPER_H__
 #define __DAVAENGINE_LIBPVRHELPER_H__
 
+#include "Base/Platform.h"
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
@@ -50,7 +52,12 @@
 //    #include "libpvr/PVRTError.h"
 //    #include "libpvr/PVRTDecompress.h"
 //    #include "libpvr/PVRTMap.h"
+#if defined (__DAVAENGINE_WIN_UAP__)
+#include "libpvr/PVRTextureDefines.h"
+#else
 #include "libpvr/PVRTextureHeader.h"
+#endif
+
 //    #include "libpvr/PVRTexture.h"
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
@@ -146,9 +153,9 @@ public:
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap = 0) const override;
 
-    eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
+    eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
     ImageInfo GetImageInfo(File *infile) const override;
 
@@ -200,6 +207,11 @@ protected:
 inline ImageFormat LibPVRHelper::GetImageFormat() const
 {
     return IMAGE_FORMAT_PVR;
+}
+
+inline LibPVRHelper* CreateLibPVRHelper()
+{
+    return new LibPVRHelper;
 }
 
 };

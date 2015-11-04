@@ -63,11 +63,17 @@ public:
     virtual void Update(float32 timeElapsed, const String& testName) {}
     virtual bool TestComplete(const String& testName) const { return true; }
 
+    virtual Vector<String> ClassesCoveredByTests() const { return Vector<String>(); }
+
     const String& TestName(size_t index) const;
     size_t TestCount() const;
     void RunTest(size_t index);
 
     void RegisterTest(const char* name, void (*testFunc)(TestClass*));
+
+protected:
+    String PrettifyTypeName(const String& name) const;
+    String RemoveTestPostfix(const String& name) const;
 
 private:
     Vector<TestInfo> tests;

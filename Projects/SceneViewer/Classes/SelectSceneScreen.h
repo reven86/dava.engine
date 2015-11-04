@@ -51,6 +51,7 @@ protected:
   
     void OnSelectDocumentsPath(BaseObject *caller, void *param, void *callerData);
     void OnSelectResourcesPath(BaseObject *caller, void *param, void *callerData);
+    void OnSelectExternalStoragePath(BaseObject *caller, void *param, void *callerData);
     void OnClearPath(BaseObject *caller, void *param, void *callerData);
     void OnStart(BaseObject *caller, void *param, void *callerData);
 

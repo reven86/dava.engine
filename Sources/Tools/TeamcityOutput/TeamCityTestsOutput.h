@@ -31,21 +31,43 @@
 
 #include "TeamcityOutput/TeamcityOutput.h"
 
-namespace DAVA 
+namespace DAVA
 {
 
-class TeamcityTestsOutput: public TeamcityOutput
+class TeamcityTestsOutput : public TeamcityOutput
 {
 public:
     virtual void Output(Logger::eLogLevel ll, const char8* text);
 
-    static String FormatTestStarted(const String& testName);
-    static String FormatTestFinished(const String& testName);
-    static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
+    bool CaptureStdoutFlag() const;
+    void SetCaptureStdoutFlag(bool value);
+
+    static String FormatTestStarted(const String& testClassName, const String& testName);
+    static String FormatTestFinished(const String& testClassName, const String& testName);
+    static String FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg);
+
+    static String FormatTestClassStarted(const String& testClassName);
+    static String FormatTestClassFinished(const String& testClassName);
+    static String FormatTestClassDisabled(const String& testClassName);
+
 private:
     void TestOutput(const String& data);
+
+private:
+    bool captureStdoutFlag = false;     // Flag controls whether TeamCity attribute 'captureStandardOutput=true' is set on test start
 };
 
-};
+//////////////////////////////////////////////////////////////////////////
+inline bool TeamcityTestsOutput::CaptureStdoutFlag() const
+{
+    return captureStdoutFlag;
+}
+
+inline void TeamcityTestsOutput::SetCaptureStdoutFlag(bool value)
+{
+    captureStdoutFlag = value;
+}
+
+}   // namespace DAVA
 
 #endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__

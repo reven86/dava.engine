@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_PLATFORM__
 #define __DAVAENGINE_PLATFORM__
 
-#include "DavaConfig.h"
+#include "DAVAConfig.h"
 
 //-------------------------------------------------------------------------------------
 //Compiler features
@@ -40,9 +40,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   define DAVA_NOINLINE    __attribute__((noinline))
 #   define DAVA_FORCEINLINE __attribute__((always_inline))
 #   define DAVA_ALIGNOF(x)  alignof(x)
-#   define DAVA_NOEXCEPT    noexcept
 #   define DAVA_CONSTEXPR   constexpr
 #   define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
+#   define DAVA_ALIGNED(Var, Len) Var __attribute__((aligned(Len)))
+#   define DAVA_NOEXCEPT    noexcept
 
 //Microsoft Visual C++
 #elif defined(_MSC_VER)
@@ -61,6 +62,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   endif
 
 #   define DAVA_DEPRECATED(func) __declspec(deprecated) func
+#   define DAVA_ALIGNED(Var, Len) __declspec(align(Len)) Var
 
 #endif
 
@@ -70,7 +72,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     !defined(DAVA_ALIGNOF)     || \
     !defined(DAVA_NOEXCEPT)    || \
     !defined(DAVA_CONSTEXPR)   || \
-    !defined(DAVA_DEPRECATED)
+    !defined(DAVA_DEPRECATED)  || \
+    !defined(DAVA_ALIGNED)
 #   error Some compiler features is not defined for current platform
 #endif
 
@@ -132,6 +135,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   undef GetCommandLine
 #   undef GetClassName
 #   undef Yield
+#undef ERROR
 
 //Detection of windows platform type
 #   if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -140,6 +144,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #       define __DAVAENGINE_WIN_UAP__
 #       define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #       define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__ DVASSERT_MSG(false, "Feature has no implementation or partly implemented")
+#   endif
+
+//Using C++11 concurrency as default
+#   if defined(__DAVAENGINE_WIN_UAP__) && !defined(USE_CPP11_CONCURRENCY)
+#       define USE_CPP11_CONCURRENCY
 #   endif
 
 //Detection of Android

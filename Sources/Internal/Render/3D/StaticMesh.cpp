@@ -30,7 +30,6 @@
 #include "Render/3D/StaticMesh.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/Scene.h"
-#include "Render/RenderManager.h"
 #include "FileSystem/Logger.h"
 #include "Render/Shader.h"
 #include "Scene3D/SceneFileV2.h"
@@ -82,7 +81,6 @@ void StaticMesh::AddNode(DataNode * node)
     if (group)
     {
         group->Retain();
-        group->SetDataIndex(static_cast<int32>(children.size()));
         children.push_back(node);
     }
 }

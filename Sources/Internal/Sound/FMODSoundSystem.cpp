@@ -60,11 +60,27 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void * handle, void * buffer,
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void * handle, unsigned int pos, void * userdata);
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userdata);
 
+namespace
+{
+
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-void * F_CALLBACK DAVA_FMOD_MEMORY_ALLOCCALLBACK(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr);
-void * F_CALLBACK DAVA_FMOD_MEMORY_REALLOCCALLBACK(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr);
-void  F_CALLBACK DAVA_FMOD_MEMORY_FREECALLBACK(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr);
-#endif
+void* F_CALLBACK fmod_tracking_alloc(unsigned int size, FMOD_MEMORY_TYPE /*type*/, const char* /*sourcestr*/)
+{
+    return MemoryManager::Instance()->Allocate(size, ALLOC_POOL_FMOD);
+}
+
+void* F_CALLBACK fmod_tracking_realloc(void* ptr, unsigned int size, FMOD_MEMORY_TYPE /*type*/, const char* /*sourcestr*/)
+{
+    return MemoryManager::Instance()->Reallocate(ptr, ALLOC_POOL_FMOD);
+}
+
+void F_CALLBACK fmod_tracking_free(void* ptr, FMOD_MEMORY_TYPE /*type*/, const char* /*sourcestr*/)
+{
+    MemoryManager::Instance()->Deallocate(ptr);
+}
+#endif  // DAVA_MEMORY_PROFILING_ENABLE
+
+}   // unnamed namespace
 
 static const FastName SEREALIZE_EVENTTYPE_EVENTFILE("eventFromFile");
 static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
@@ -76,9 +92,9 @@ SoundSystem::SoundSystem()
     DVASSERT(sizeof(FMOD_VECTOR) == sizeof(Vector3));
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-   
-    FMOD::Memory_Initialize(nullptr, 0, &DAVA_FMOD_MEMORY_ALLOCCALLBACK, &DAVA_FMOD_MEMORY_REALLOCCALLBACK, &DAVA_FMOD_MEMORY_FREECALLBACK);
+    FMOD::Memory_Initialize(nullptr, 0, &fmod_tracking_alloc, &fmod_tracking_realloc, &fmod_tracking_free);
 #endif
+
     void * extraDriverData = 0;
 #ifdef __DAVAENGINE_IPHONE__
     FMOD_IPHONE_EXTRADRIVERDATA iphoneDriverData;
@@ -100,7 +116,9 @@ SoundSystem::SoundSystem()
 #ifdef DAVA_FMOD_PROFILE
     initFlags |= FMOD_INIT_ENABLE_PROFILE;
 #endif
+
     FMOD_RESULT initResult = fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, initFlags, extraDriverData);
+
     if (initResult != FMOD_OK)
     {
         Logger::Error("Failed to initialize FMOD: %s", FMOD_ErrorString(initResult));
@@ -381,7 +399,7 @@ void SoundSystem::Update(float32 timeElapsed)
 
     if (fmodEventSystem)
     {
-        fmodEventSystem->update();
+        FMOD_VERIFY(fmodEventSystem->update());
     }
     
 	uint32 size = static_cast<uint32>(soundsToReleaseOnUpdate.size());
@@ -463,6 +481,18 @@ void SoundSystem::SetCurrentLocale(const String & langID)
     }
 }
 
+String SoundSystem::GetCurrentLocale() const
+{
+    if (fmodEventSystem)
+    {
+        char lang[256] = {};
+        FMOD_VERIFY(fmodEventSystem->getLanguage(lang));
+        return String(lang);
+    }
+
+    return String();
+}
+
 void SoundSystem::SetListenerPosition(const Vector3 & position)
 {
     if (fmodEventSystem)
@@ -479,6 +509,10 @@ void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 
         forwardNorm.Normalize();
         Vector3 upNorm = forwardNorm.CrossProduct(left);
         upNorm.Normalize();
+        
+        DVASSERT(forwardNorm.SquareLength() > EPSILON);
+        DVASSERT(upNorm.SquareLength() > EPSILON);
+        DVASSERT(left.SquareLength() > EPSILON);
 
         FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
     }
@@ -723,25 +757,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userda
 
     return FMOD_OK;
 }
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-void * F_CALLBACK DAVA_FMOD_MEMORY_ALLOCCALLBACK(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_FMOD);
-}
-void * F_CALLBACK DAVA_FMOD_MEMORY_REALLOCCALLBACK(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
-{
-    if (ptr == nullptr)
-    {
-        return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_FMOD);
-    }
-    return DAVA::MemoryManager::Instance()->Reallocate(ptr, DAVA::ALLOC_POOL_FMOD);
-}
-void  F_CALLBACK DAVA_FMOD_MEMORY_FREECALLBACK(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr)
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
 
-#endif
 };
 
 #endif //DAVA_FMOD

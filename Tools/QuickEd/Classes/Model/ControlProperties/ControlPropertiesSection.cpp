@@ -31,15 +31,14 @@
 
 #include "PropertyVisitor.h"
 #include "ValueProperty.h"
-#include "LocalizedTextValueProperty.h"
-#include "FontValueProperty.h"
+#include "IntrospectionProperty.h"
 
 #include "UI/UIControl.h"
 
 using namespace DAVA;
 
 ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCloneType cloneType)
-    : SectionProperty(typeInfo->Name())
+	: SectionProperty(typeInfo->Name().c_str())
     , control(SafeRetain(aControl))
 {
     for (int i = 0; i < typeInfo->MembersCount(); i++)
@@ -47,25 +46,8 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, co
         const InspMember *member = typeInfo->Member(i);
         if ((member->Flags() & I_EDIT) != 0)
         {
-            String memberName = member->Name();
-            
-            ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
-
-            ValueProperty *prop = nullptr;
-            //TODO: move it to fabric class
-            if (strcmp(member->Name(), "text") == 0)
-            {
-                prop = new LocalizedTextValueProperty(control, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
-            }
-            else if (strcmp(member->Name(), "font") == 0)
-            {
-                prop = new FontValueProperty(control, member, dynamic_cast<FontValueProperty*>(sourceProperty), cloneType);
-            }
-            else
-            {
-                prop = new IntrospectionProperty(control, member, dynamic_cast<IntrospectionProperty *>(sourceProperty), cloneType);
-            }
-
+            IntrospectionProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
+            IntrospectionProperty *prop = IntrospectionProperty::Create(control, member, sourceProperty, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }

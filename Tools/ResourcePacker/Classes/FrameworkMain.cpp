@@ -30,7 +30,7 @@
 #include "DAVAEngine.h"
 #include "GameCore.h"
 #include "TexturePacker/ResourcePacker2D.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 
 #include "TextureCompression/PVRConverter.h"
 
@@ -50,43 +50,23 @@ void PrintUsage()
     printf("\t-s or --silent - silent mode. Log only warnings and errors.\n");
     printf("\t-teamcity - extra output in teamcity format\n");
     printf("\t-md5mode - only process md5 for output resources\n");
+    printf("\t-useCache - use asset cache\n");
+    printf("\t-ip - asset cache ip\n");
+    printf("\t-p - asset cache port\n");
+    printf("\t-t - asset cache timeout\n");
 
     printf("\n");
     printf("resourcepacker [src_dir] - will pack resources from src_dir\n");
 }
 
-
-bool CheckPosition(int32 commandPosition)
-{
-    if(CommandLineParser::CheckPosition(commandPosition))
-    {
-        printf("Wrong arguments\n");
-        PrintUsage();
-
-        return false;
-    }
-    
-    return true;
-}
-
-
 void DumpCommandLine()
 {
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
-    int32 count = CommandLineParser::GetCommandsCount();
-    for(int32 i = 0; i < count; ++i)
-    {
-        String command = CommandLineParser::GetCommand(i);
-        Logger::FrameworkDebug("command: %s, param: %s", command.c_str(), CommandLineParser::GetCommandParam(command).c_str());
-    }
+    const Vector<String> & commandLine = Core::Instance()->GetCommandLine();
     
     Logger::FrameworkDebug("");
-    
-    count = commandLine.size();
-    for(int32 i = 0; i < count; ++i)
+    for(auto& param : commandLine)
     {
-        String command = commandLine[i];
-        Logger::FrameworkDebug("command: %s", command.c_str());
+        Logger::FrameworkDebug("parameter: %s", param.c_str());
     }
     Logger::FrameworkDebug("");
 }
@@ -98,24 +78,24 @@ void ProcessRecourcePacker()
         DumpCommandLine();
     }
 
-    ResourcePacker2D * resourcePacker = new ResourcePacker2D();
-    
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
-    FilePath commandLinePath(commandLine[1]);
-    commandLinePath.MakeDirectoryPathname();
-    
-    String lastDir = commandLinePath.GetDirectory().GetLastDirectoryName();
-    FilePath outputh = commandLinePath + ("../../Data/" + lastDir + "/");
-    
-    resourcePacker->InitFolders(commandLinePath, outputh);
-    
-    if(resourcePacker->excludeDirectory.IsEmpty())
+    ResourcePacker2D resourcePacker;
+
+    auto& commandLine = Core::Instance()->GetCommandLine();
+    FilePath inputDir(commandLine[1]);
+    inputDir.MakeDirectoryPathname();
+
+    String lastDir = inputDir.GetDirectory().GetLastDirectoryName();
+    FilePath outputDir = inputDir + ("../../Data/" + lastDir + "/");
+
+    resourcePacker.InitFolders(inputDir, outputDir);
+
+    if (resourcePacker.rootDirectory.IsEmpty())
     {
         Logger::Error("[FATAL ERROR: Packer has wrong input pathname]");
         return;
     }
-    
-    if (resourcePacker->excludeDirectory.GetLastDirectoryName() != "DataSource")
+
+    if (resourcePacker.rootDirectory.GetLastDirectoryName() != "DataSource")
     {
         Logger::Error("[FATAL ERROR: Packer working only inside DataSource directory]");
         return;
@@ -126,47 +106,57 @@ void ProcessRecourcePacker()
         Logger::Error("[FATAL ERROR: PVRTexTool path need to be second parameter]");
         return;
     }
-    
-#if defined (__DAVAENGINE_MACOS__)
-	String toolName = String("/PVRTexToolCLI");
-#elif defined (__DAVAENGINE_WIN32__)
-	String toolName = String("/PVRTexToolCLI.exe");
-#endif
-    PVRConverter::Instance()->SetPVRTexTool(resourcePacker->excludeDirectory + (commandLine[2] + toolName));
-    
+
+    auto toolFolderPath = resourcePacker.rootDirectory + (commandLine[2] + "/");
+    String pvrTexToolName = "PVRTexToolCLI";
+    String cacheToolName = "AssetCacheClient";
+
+    PVRConverter::Instance()->SetPVRTexTool(toolFolderPath + pvrTexToolName);
+
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("[Resource Packer Started]");
-    Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker->inputGfxDirectory.GetAbsolutePathname().c_str());
-    Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker->outputGfxDirectory.GetAbsolutePathname().c_str());
-    Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker->excludeDirectory.GetAbsolutePathname().c_str());
-    
-    PixelFormatDescriptor::InitializePixelFormatDescriptors();
+    Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker.inputGfxDirectory.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker.rootDirectory.GetAbsolutePathname().c_str());
+
     GPUFamilyDescriptor::SetupGPUParameters();
     
     
     eGPUFamily exportForGPU = GPU_ORIGIN;
     if(CommandLineParser::CommandIsFound(String("-gpu")))
     {
-        String gpuName = CommandLineParser::GetCommandParam(String("-gpu"));
+        String gpuName = CommandLineParser::GetCommandParam("-gpu");
         exportForGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
 		if (GPU_INVALID == exportForGPU)
 		{
 			exportForGPU = GPU_ORIGIN;
 		}
     }
-    
-    if (CommandLineParser::CommandIsFound(String("-md5mode")))
+
+    if (CommandLineParser::CommandIsFound(String("-useCache")))
     {
-        resourcePacker->RecalculateMD5ForOutputDir();
+        Logger::FrameworkDebug("Using asset cache");
+        String ip = CommandLineParser::GetCommandParam("-ip");
+        String port = CommandLineParser::GetCommandParam("-p");
+        String timeout = CommandLineParser::GetCommandParam("-t");
+        resourcePacker.SetCacheClientTool(toolFolderPath + cacheToolName, ip, port, timeout);
     }
     else
     {
-        resourcePacker->PackResources(exportForGPU);
+        Logger::FrameworkDebug("Asset cache will not be used");
+        resourcePacker.ClearCacheClientTool();
+    }
+
+    if (CommandLineParser::CommandIsFound(String("-md5mode")))
+    {
+        resourcePacker.RecalculateMD5ForOutputDir();
+    }
+    else
+    {
+        resourcePacker.PackResources(exportForGPU);
     }
     elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
     Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
-    
-    SafeDelete(resourcePacker);
 }
 
 void FrameworkDidLaunched()

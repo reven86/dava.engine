@@ -28,15 +28,34 @@
 
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Render/Image/LibJpegHelper.h"
 
 using namespace DAVA;
 
 DAVA_TESTCLASS(LoadImageTest)
 {
+    DAVA_TEST(JpegExifTest)
+    {
+        LibJpegHelper helper;
+        
+        Vector<Image *> set;
+        
+        ScopedPtr<File> imgFile(File::Create("~res:/TestData/LoadImageTest/EXIF.jpg", File::OPEN | File::READ));
+        
+        eErrorCode res = helper.ReadFile(imgFile, set, 0);
+        TEST_VERIFY(eErrorCode::SUCCESS == res);
+        
+        for (auto item : set)
+        {
+            SafeRelease(item);
+        }
+        set.clear();
+    }
+
     DAVA_TEST(TgaTest)
     {
         // array of pixels in format R,G,B,A. It is the expected contents of image.data buffer after loading of either 10x10_rgba8888.tga or 10x10_rgba8888_norle.tga files
-        static const std::array<uint8, 4 * 10 * 10> tga10x10data = {
+        static const Array<uint8, 4 * 10 * 10> tga10x10data = {
             0xf3, 0x00, 0x12, 0xff, 0xf3, 0x00, 0x12, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xf3, 0x00, 0x12, 0xff, 0xf3, 0x00, 0x12, 0xff, 0xf3, 0x00, 0x12, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf3, 0x00, 0x12, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x24, 0xff, 0x00, 0xff, 0x24, 0xff,
@@ -52,9 +71,12 @@ DAVA_TESTCLASS(LoadImageTest)
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf3, 0x00, 0x12, 0xff, 0xf3, 0x00, 0x12, 0xff};
 
         DAVA::Vector<DAVA::Image*> imgSet;
-        auto ClearImgSet = [&]()
+        auto ClearImgSet = [&imgSet]()
         {
-            for (auto image : imgSet) { image->Release(); }
+            for (auto image : imgSet)
+            {
+                image->Release();
+            }
             imgSet.clear();
         };
 
@@ -80,6 +102,27 @@ DAVA_TESTCLASS(LoadImageTest)
         TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGBA8888);
         TEST_VERIFY(imgSet[0]->dataSize == 4 * 10 * 10);
         TEST_VERIFY(Memcmp(imgSet[0]->data, &tga10x10data, tga10x10data.size()) == 0);
+        ClearImgSet();
+    }
+
+    DAVA_TEST(WebPTest)
+    {
+        DAVA::Vector<DAVA::Image*> imgSet;
+        auto ClearImgSet = [&imgSet]()
+        {
+            for (auto image : imgSet)
+            {
+                image->Release();
+            }
+            imgSet.clear();
+        };
+
+        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgb888.webp", imgSet) == DAVA::eErrorCode::SUCCESS);
+        TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGB888);
+        ClearImgSet();
+
+        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgba8888.webp", imgSet) == DAVA::eErrorCode::SUCCESS);
+        TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGBA8888);
         ClearImgSet();
     }
 };

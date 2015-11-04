@@ -35,6 +35,7 @@
 #include <Base/Noncopyable.h>
 #include <FileSystem/Logger.h>
 #include <Platform/DateTime.h>
+#include <Concurrency/Mutex.h>
 
 #include <Network/NetService.h>
 
@@ -71,14 +72,13 @@ public:
     void Uninstall();
 
     // IChannelListener
-    virtual void OnPacketSent(IChannel* channel, const void* buffer, size_t length);
-    virtual void OnPacketDelivered(IChannel* channel, uint32 packetId);
+    void OnPacketSent(IChannel* channel, const void* buffer, size_t length) override;
+    void OnPacketDelivered(IChannel* channel, uint32 packetId) override;
 
     // LoggerOutput
-    virtual void Output(Logger::eLogLevel ll, const char8* text);
-    virtual void Output(Logger::eLogLevel ll, const char16* text);
+    void Output(Logger::eLogLevel ll, const char8* text) override;
 
-    virtual void ChannelOpen();
+    void ChannelOpen() override;
 
 private:
     void DoOutput(Logger::eLogLevel ll, const char8* text);

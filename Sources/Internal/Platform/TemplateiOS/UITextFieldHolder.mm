@@ -53,21 +53,25 @@
 		textInputAllowed = YES;
         useRtlAlign = NO;
 
-        textField = [[UITextField alloc] initWithFrame: CGRectMake(0.f, 0.f, 0.f, 0.f)];
-		textField.delegate = self;
+        textCtrl = [[UITextField alloc] initWithFrame: CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        [textCtrl setValue:self forKey:@"delegate"];
 		
 		[self setupTraits];
         
-        textField.userInteractionEnabled = NO;
+        textCtrl.userInteractionEnabled = NO;
 
-        cachedText = [[NSString alloc] initWithString:textField.text];
+        cachedText = [[NSString alloc] initWithString: [textCtrl valueForKey:@"text"]];
         
-        [textField addTarget: self
-                      action: @selector(eventEditingChanged:)
-            forControlEvents: UIControlEventEditingChanged];
+        if([textCtrl respondsToSelector:@selector(addTarget:action:forControlEvents:)]) {
+            [(id)textCtrl addTarget: self
+                          action: @selector(eventEditingChanged:)
+                forControlEvents: UIControlEventEditingChanged];
+        }
+        
+        textField = nullptr;
 
 		// Done!
-		[self addSubview:textField];
+		[self addSubview:textCtrl];
 	}
 	return self;
 }
@@ -84,12 +88,12 @@
                                        , physicalRect.dx
                                        , physicalRect.dy);
         
-        textField.frame = nativeRect;
+        textCtrl.frame = nativeRect;
 
     }
     else
     {
-        textField.frame = CGRectMake(0.f, 0.f, 0.f, 0.f);
+        textCtrl.frame = CGRectMake(0.f, 0.f, 0.f, 0.f);
     }
 }
 
@@ -105,6 +109,7 @@
     }
 }
 
+// next method(hitTest) fix sometime field editing(do not remove it)
 -(id)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
     id hitView = [super hitTest:point withEvent:event];
@@ -112,12 +117,26 @@
     else return hitView;
 }
 
+-(void)textViewDidBeginEditing:(UITextView *)textView
+{
+    if (cppTextField)
+    {
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
+        {
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField, false);
+        }
+    }
+}
+
 - (void) dealloc
 {
     [cachedText release];
-    cachedText = nil;
-	[textField release];
-	textField = 0;
+    cachedText = nullptr;
+	[textCtrl release];
+    textCtrl = nullptr;
+    [textField release];
+    textField = nullptr;
+    
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
 	[super dealloc];
@@ -134,7 +153,7 @@
 	return TRUE;
 }
 
-- (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+- (BOOL)textField:(UITextField *)textField_ shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
 	if (cppTextField && (cppTextField->GetDelegate() != 0))
     {
@@ -143,16 +162,24 @@
         int maxLength = cppTextField->GetMaxLength();
         if (maxLength >= 0)
         {
-            NSString* newString = [textField.text stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
-            NSUInteger newLength = [newString lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
-            if (newLength > (NSUInteger)maxLength)
+            NSString* newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
+            NSInteger newLength = [newString length]; // Length in UTF32 charactres
+            if (newLength > maxLength)
             {
                 NSUInteger charsToInsert = 0;
                 if (range.length == 0)
                 {
-                    NSUInteger curLength = [textField.text lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
+                    // charactres count independent from encoding and bytes per each charracter
+                    NSUInteger curLength = [[textCtrl valueForKey:@"text"] length];
                     // Inserting without replace.
-                    charsToInsert = (NSUInteger)maxLength - curLength;
+                    if (maxLength >= (NSInteger)curLength)
+                    {
+                        charsToInsert = maxLength - (NSInteger)curLength;
+                    }
+                    else
+                    {
+                        charsToInsert = 0;
+                    }
                 }
                 else
                 {
@@ -160,17 +187,27 @@
                     charsToInsert = range.length;
                 }
                 
-                // Convert NSString to UTF32 bytes array with length of charsToInsert*4 and
-                // back for decrease string length in UTF32 code points
-                NSUInteger byteCount = charsToInsert * 4; // 4 bytes per utf32 character
-                char buffer[byteCount];
-                NSUInteger usedBufferCount;
-                [string getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, string.length) remainingRange:NULL];
-                string = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
-                DVASSERT(string && "Error on convert utf32 to NSString");
                 
-                [textField setText: [textField.text stringByReplacingCharactersInRange:range withString:string]];
-                needIgnoreDelegateResult = TRUE;
+                if (0 < charsToInsert)
+                {
+                    // Convert NSString to UTF32 bytes array with length of charsToInsert*4 and
+                    // back for decrease string length in UTF32 code points
+                    NSUInteger byteCount = charsToInsert * 4; // 4 bytes per utf32 character
+                    char buffer[byteCount];
+                    NSUInteger usedBufferCount;
+                    [string getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, string.length) remainingRange:NULL];
+                    string = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
+                    DVASSERT(string && "Error on convert utf32 to NSString");
+                    
+                    NSString* currentText =[textCtrl valueForKey:@"text"];
+                    NSString* newText = [currentText stringByReplacingCharactersInRange:range withString:string];
+                    [textCtrl setValue:newText forKey:@"text"];
+                    needIgnoreDelegateResult = TRUE;
+                }
+                else
+                {
+                    return FALSE;
+                }
             }
         }
 
@@ -186,21 +223,53 @@
         return needIgnoreDelegateResult ? FALSE : delegateResult;
 	}
 
-	return TRUE;
+	return YES;
 }
 
-- (void)eventEditingChanged:(UITextField *)sender
+- (BOOL)textView:(UITextView*)textView_ shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)string
 {
-    if (sender == textField && cppTextField && cppTextField->GetDelegate()
-        && ![cachedText isEqualToString:textField.text])
+    BOOL result = [self textField:(UITextField*)textView_ shouldChangeCharactersInRange:range replacementString:string];
+    return result;
+}
+
+- (void)eventEditingChanged:(UIView *)sender
+{
+    NSString* fieldText = [textCtrl valueForKey:@"text"];
+    
+    if (sender == textCtrl
+        && cppTextField
+        && cppTextField->GetDelegate()
+        && ![cachedText isEqualToString:fieldText])
     {
         DAVA::WideString oldString;
         const char * cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), oldString);
         
-        [cachedText release];
-        cachedText = [[NSString alloc] initWithString:textField.text];
         
+        // Workaround: Additional check on the maximum length for cases
+        // where the system event shouldChangeCharactersInRange does not work for Asian keyboards
+        int maxLength = cppTextField->GetMaxLength();
+        if(maxLength > 0 && (int)fieldText.length > maxLength)
+        {
+            fieldText = [fieldText substringToIndex:maxLength];
+            if ([textCtrl class] == [::UITextField class])
+            {
+                auto textFieldPtr = (::UITextField*)textCtrl;
+                auto selection = [textFieldPtr selectedTextRange];
+                [textFieldPtr setText:fieldText];
+                [textFieldPtr setSelectedTextRange:selection];
+            } else {
+                auto textViewPtr = (::UITextView*)textCtrl;
+                auto selection = [textViewPtr selectedTextRange];
+                [textViewPtr setText:fieldText];
+                [textViewPtr setSelectedTextRange:selection];
+            }
+        }
+        // End workaround
+
+        [cachedText release];
+        cachedText = [[NSString alloc] initWithString:fieldText];
+
         DAVA::WideString newString;
         cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newString);
@@ -209,14 +278,32 @@
     }
 }
 
+- (void)textViewDidChange:(UITextView*)textView
+{
+    [self eventEditingChanged:textView];
+}
+
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
 	return textInputAllowed;
 }
 
+- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
+{
+    return textInputAllowed;
+}
+
+- (void)dropCachedText
+{
+    [cachedText release];
+    cachedText = [[NSString alloc] initWithString:[textCtrl valueForKey:@"text"]];
+}
+
 - (void)setIsPassword:(bool)isPassword
 {
-	[textField setSecureTextEntry:isPassword ? YES: NO];
+    if ([textCtrl respondsToSelector:@selector(setSecureTextEntry:)]) {
+        [(id)textCtrl setSecureTextEntry:isPassword ? YES: NO];
+    }
 }
 
 - (void)setTextInputAllowed:(bool)value
@@ -228,37 +315,62 @@
 {
     useRtlAlign = (value == true);
     
-    // Set natural alignment if need
-    switch (textField.contentHorizontalAlignment)
+    if ([textCtrl class] == [::UITextField class])
     {
-        case UIControlContentHorizontalAlignmentLeft:
-            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
-            break;
-        case UIControlContentHorizontalAlignmentRight:
-            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
-            break;
-            
-        default: break;
+        ::UITextField* textFieldPtr = (::UITextField*)textCtrl;
+        // Set natural alignment if need
+        switch (textFieldPtr.contentHorizontalAlignment)
+        {
+            case UIControlContentHorizontalAlignmentLeft:
+                textFieldPtr.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
+                break;
+            case UIControlContentHorizontalAlignmentRight:
+                textFieldPtr.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
+                break;
+                
+            default: break;
+        }
+    } else {
+        DAVA::Logger::Error("UITextField::setUseRtlAlign not work in multiline");
     }
 }
 
 - (void) setupTraits
 {
-	if (!cppTextField || !textField)
+	if (!cppTextField || !textCtrl)
 	{
 		return;
 	}
-
-	textField.autocapitalizationType = [self convertAutoCapitalizationType: (DAVA::UITextField::eAutoCapitalizationType)cppTextField->GetAutoCapitalizationType()];
-	textField.autocorrectionType = [self convertAutoCorrectionType: (DAVA::UITextField::eAutoCorrectionType)cppTextField->GetAutoCorrectionType()];
-	
+    
+    if ([textCtrl class] == [::UITextView class])
+    {
+        ::UITextView* textView = (::UITextView*)textCtrl;
+        
+        textView.autocapitalizationType = [self convertAutoCapitalizationType: (DAVA::UITextField::eAutoCapitalizationType)cppTextField->GetAutoCapitalizationType()];
+        textView.autocorrectionType = [self convertAutoCorrectionType: (DAVA::UITextField::eAutoCorrectionType)cppTextField->GetAutoCorrectionType()];
+        
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
-	textField.spellCheckingType = [self convertSpellCheckingType: (DAVA::UITextField::eSpellCheckingType)cppTextField->GetSpellCheckingType()];
+        textView.spellCheckingType = [self convertSpellCheckingType: (DAVA::UITextField::eSpellCheckingType)cppTextField->GetSpellCheckingType()];
 #endif
-	textField.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
-	textField.keyboardAppearance = [self convertKeyboardAppearanceType: (DAVA::UITextField::eKeyboardAppearanceType)cppTextField->GetKeyboardAppearanceType()];
-	textField.keyboardType = [self convertKeyboardType: (DAVA::UITextField::eKeyboardType)cppTextField->GetKeyboardType()];
-	textField.returnKeyType = [self convertReturnKeyType: (DAVA::UITextField::eReturnKeyType)cppTextField->GetReturnKeyType()];
+        textView.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
+        textView.keyboardAppearance = [self convertKeyboardAppearanceType: (DAVA::UITextField::eKeyboardAppearanceType)cppTextField->GetKeyboardAppearanceType()];
+        textView.keyboardType = [self convertKeyboardType: (DAVA::UITextField::eKeyboardType)cppTextField->GetKeyboardType()];
+        textView.returnKeyType = [self convertReturnKeyType: (DAVA::UITextField::eReturnKeyType)cppTextField->GetReturnKeyType()];
+    } else
+    {
+        ::UITextField* textFieldPtr = (::UITextField*)textCtrl;
+        
+        textFieldPtr.autocapitalizationType = [self convertAutoCapitalizationType: (DAVA::UITextField::eAutoCapitalizationType)cppTextField->GetAutoCapitalizationType()];
+        textFieldPtr.autocorrectionType = [self convertAutoCorrectionType: (DAVA::UITextField::eAutoCorrectionType)cppTextField->GetAutoCorrectionType()];
+        
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
+        textFieldPtr.spellCheckingType = [self convertSpellCheckingType: (DAVA::UITextField::eSpellCheckingType)cppTextField->GetSpellCheckingType()];
+#endif
+        textFieldPtr.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
+        textFieldPtr.keyboardAppearance = [self convertKeyboardAppearanceType: (DAVA::UITextField::eKeyboardAppearanceType)cppTextField->GetKeyboardAppearanceType()];
+        textFieldPtr.keyboardType = [self convertKeyboardType: (DAVA::UITextField::eKeyboardType)cppTextField->GetKeyboardType()];
+        textFieldPtr.returnKeyType = [self convertReturnKeyType: (DAVA::UITextField::eReturnKeyType)cppTextField->GetReturnKeyType()];
+    }
 }
 
 - (UITextAutocapitalizationType) convertAutoCapitalizationType:(DAVA::UITextField::eAutoCapitalizationType) davaType
@@ -491,19 +603,26 @@
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
-	if (!cppTextField || !cppTextField->GetDelegate())
-	{
+    if (nullptr == cppTextField)
+    {
+        return;
+    }
+
+    auto* delegate = cppTextField->GetDelegate();
+
+    if (nullptr == delegate)
+    {
 		return;
 	}
 
 	// convert own frame to window coordinates, frame is in superview's coordinates
-	CGRect ownFrame = [textField.window convertRect:self.frame fromView:textField.superview];
+	CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
 
 	// calculate the area of own frame that is covered by keyboard
 	CGRect keyboardFrame = CGRectIntersection(ownFrame, lastKeyboardFrame);
 
 	// now this might be rotated, so convert it back
-	keyboardFrame = [textField.window convertRect:keyboardFrame toView:textField.superview];
+	keyboardFrame = [textCtrl.window convertRect:keyboardFrame toView:textCtrl.superview];
 
 	// Recalculate to virtual coordinates.
 	DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
@@ -512,9 +631,8 @@
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
     keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
-	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
+    delegate->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
-
 
 @end
 

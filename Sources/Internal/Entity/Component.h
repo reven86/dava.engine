@@ -35,12 +35,16 @@
 #include "Base/Introspection.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA 
 {
     
 class Entity;
 class Component : public Serializable, public InspBase
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT);
+
 public:
     enum eType
     {
@@ -51,20 +55,20 @@ public:
         SWITCH_COMPONENT,
         CAMERA_COMPONENT,
         LIGHT_COMPONENT,
-		PARTICLE_EFFECT_COMPONENT,
-		BULLET_COMPONENT,
-		UPDATABLE_COMPONENT,
+        PARTICLE_EFFECT_COMPONENT,
+        BULLET_COMPONENT,
+        UPDATABLE_COMPONENT,
         ANIMATION_COMPONENT,
-        COLLISION_COMPONENT,    // multiple instances
+        COLLISION_COMPONENT, // multiple instances
         PHYSICS_COMPONENT,
-        ACTION_COMPONENT,       // actions, something simplier than scripts that can influence logic, can be multiple
-        SCRIPT_COMPONENT,       // multiple instances, not now, it will happen much later.
-		USER_COMPONENT,
-		SOUND_COMPONENT,
-		CUSTOM_PROPERTIES_COMPONENT,
+        ACTION_COMPONENT, // actions, something simplier than scripts that can influence logic, can be multiple
+        SCRIPT_COMPONENT, // multiple instances, not now, it will happen much later.
+        USER_COMPONENT,
+        SOUND_COMPONENT,
+        CUSTOM_PROPERTIES_COMPONENT,
         STATIC_OCCLUSION_COMPONENT,
-        STATIC_OCCLUSION_DATA_COMPONENT, 
-        QUALITY_SETTINGS_COMPONENT,   // type as fastname for detecting type of model
+        STATIC_OCCLUSION_DATA_COMPONENT,
+        QUALITY_SETTINGS_COMPONENT, // type as fastname for detecting type of model
         SPEEDTREE_COMPONENT,
         WIND_COMPONENT,
         WAVE_COMPONENT,
@@ -73,15 +77,15 @@ public:
         ROTATION_CONTROLLER_COMPONENT,
         SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT,
         WASD_CONTROLLER_COMPONENT,
-        
+
         //debug components - note that everything below won't be serialized
         DEBUG_COMPONENTS,
         STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT,
         WAYPOINT_COMPONENT,
         EDGE_COMPONENT,
 
-        COMPONENT_COUNT,
-        FIRST_USER_DEFINED_COMPONENT = 0xFFFF
+        FIRST_USER_DEFINED_COMPONENT = 48,
+        COMPONENT_COUNT = 64
     };
 
 public:
@@ -111,7 +115,7 @@ public:
          \brief Function to get data nodes of requested type to specific container you provide.
      */
     template<template <typename> class Container, class T>
-	void GetDataNodes(Container<T> & container);
+    void GetDataNodes(Container<T> & container);
 
 protected:
     Entity * entity; // entity is a Entity, that this component belongs to

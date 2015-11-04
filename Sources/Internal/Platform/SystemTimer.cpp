@@ -52,27 +52,11 @@ static int frameCount;
 
 
 #if defined(__DAVAENGINE_ANDROID__)
-void SystemTimer::InitTickCount()
-{
-	struct timeval tv;
-	gettimeofday(&tv,NULL); 
-	savedSec = tv.tv_sec;
-
-	Logger::FrameworkDebug("[SystemTimer::InitTickCount] savedSec = %ld", savedSec);
-}
-
 uint64 SystemTimer::GetTickCount() 
 {
-	struct timeval tv; 
-	gettimeofday(&tv,NULL);
-
-	uint64 sec = tv.tv_sec - savedSec;
-	uint64 msec = tv.tv_usec;
-	sec = sec*1000;
-	msec = msec / 1000;
-	uint64 ret = sec + msec;
-
-    return  ret;
+	struct timespec ts;
+	clock_gettime( CLOCK_MONOTONIC, &ts );
+	return ts.tv_nsec / 1000000 + ts.tv_sec * 1000;
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
@@ -89,9 +73,7 @@ SystemTimer::SystemTimer()
 		Logger::FrameworkDebug("[SystemTimer] High frequency timer support enabled\n");
 	}
 #elif defined(__DAVAENGINE_ANDROID__)
-	savedSec = 0;
-	InitTickCount();
- 	t0 = (float32)(GetTickCount() / 1000.0f);
+ 	t0 = GetTickCount();
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	(void) mach_timebase_info(&timebase);
     
@@ -145,7 +127,7 @@ void SystemTimer::Start()
 
 #elif defined (__DAVAENGINE_ANDROID__)
 
- 	t0 = (float32)(GetTickCount() / 1000.0f);
+ 	t0 = GetTickCount();
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 
@@ -185,8 +167,8 @@ float32 SystemTimer::ElapsedSec()
 		return currentTime - t0;
 	}
 #elif defined(__DAVAENGINE_ANDROID__)
-	float32 currentTime = (float32)(GetTickCount() / 1000.0f);
-	return (currentTime - t0);
+	uint64 currentTime = GetTickCount();
+	return (float32)(currentTime - t0) / 1000.f;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	uint64_t current = mach_absolute_time();
 	uint64_t elapsed = (current - t0) * timebase.numer / timebase.denom;

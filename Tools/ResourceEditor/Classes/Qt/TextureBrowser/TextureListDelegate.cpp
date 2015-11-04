@@ -44,6 +44,7 @@
 #include "Main/QtUtils.h"
 
 #include "Project/ProjectManager.h"
+#include "Preset/Preset.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -56,6 +57,12 @@
 #define FORMAT_INFO_SPACING 1
 #include <QDesktopServices>
 
+namespace ActionIcon
+{
+QIcon loadPresetIcon;
+QIcon savePresetIcon;
+}
+
 TextureListDelegate::TextureListDelegate(QObject *parent /* = 0 */)
 	: QAbstractItemDelegate(parent)
 	, nameFont("Arial", 10, QFont::Bold)
@@ -63,6 +70,15 @@ TextureListDelegate::TextureListDelegate(QObject *parent /* = 0 */)
 	, drawRule(DRAW_PREVIEW_BIG)
 {
 	QObject::connect(TextureCache::Instance(), SIGNAL(ThumbnailLoaded(const DAVA::TextureDescriptor *, const TextureInfo &)), this, SLOT(textureReadyThumbnail(const DAVA::TextureDescriptor *, const TextureInfo &)));
+
+    if (ActionIcon::loadPresetIcon.isNull())
+    {
+        ActionIcon::loadPresetIcon.addFile(QStringLiteral(":/QtIcons/openscene.png"), QSize(), QIcon::Normal, QIcon::Off);
+    }
+    if (ActionIcon::savePresetIcon.isNull())
+    {
+        ActionIcon::savePresetIcon.addFile(QStringLiteral(":/QtIcons/save_as.png"), QSize(), QIcon::Normal, QIcon::Off);
+    }
 };
 
 void TextureListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -252,9 +268,9 @@ QString TextureListDelegate::CreateInfoString(const QModelIndex & index) const
             infoText += dimen;
             infoText += "\nData size: ";
             infoText += QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
-            
-            auto dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-            
+
+            auto dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+
             infoText += "\nPath: ";
             infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
             
@@ -340,17 +356,18 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
 		gpuInfoColors[DAVA::GPU_TEGRA] = TextureBrowser::gpuColor_Tegra;
 		gpuInfoColors[DAVA::GPU_MALI] = TextureBrowser::gpuColor_MALI;
 		gpuInfoColors[DAVA::GPU_ADRENO] = TextureBrowser::gpuColor_Adreno;
+        gpuInfoColors[DAVA::GPU_DX11] = TextureBrowser::gpuColor_DX11;
 
-		// format lines
-		for(int i = (DAVA::GPU_DEVICE_COUNT - 1); i >= 0; --i)
-		{
-			r.moveLeft(r.x() - FORMAT_INFO_WIDTH);
+        // format lines
+        for (int i = (DAVA::GPU_DEVICE_COUNT - 1); i >= 0; --i)
+        {
+            r.moveLeft(r.x() - FORMAT_INFO_WIDTH);
 
-			if(descriptor->compression[i].format != DAVA::FORMAT_INVALID)
-			{
-				QColor c = gpuInfoColors[i];
+            if (descriptor->compression[i].format != DAVA::FORMAT_INVALID)
+            {
+                QColor c = gpuInfoColors[i];
 
-				painter->setPen(Qt::NoPen);
+                painter->setPen(Qt::NoPen);
 				painter->setBrush(c);
 				painter->drawRect(r);
 			}
@@ -390,16 +407,22 @@ bool TextureListDelegate::editorEvent(QEvent * event, QAbstractItemModel * model
 
             const TextureListModel *curModel = qobject_cast<const TextureListModel *>(index.model());
             DVASSERT(curModel);
-            DAVA::TextureDescriptor *curTextureDescriptor = curModel->getDescriptor(index);
-            if (curTextureDescriptor == NULL)
+            lastSelectedTextureDescriptor = curModel->getDescriptor(index);
+            if (lastSelectedTextureDescriptor == nullptr)
             {
                 break;
             }
 
-            lastSelectedTextureFolder = curTextureDescriptor->pathname.GetAbsolutePathname().c_str();
             QMenu menu;
-            QAction *act = menu.addAction("Open texture folder");
-            connect(act, SIGNAL( triggered() ), SLOT( onOpenTexturePath() ));
+            QAction* openTextureFolder = menu.addAction("Open texture folder");
+            QObject::connect(openTextureFolder, &QAction::triggered, this, &TextureListDelegate::onOpenTexturePath);
+
+            QAction* savePresetAction = menu.addAction(ActionIcon::savePresetIcon, "Save Preset");
+            QObject::connect(savePresetAction, &QAction::triggered, this, &TextureListDelegate::onSavePreset);
+
+            QAction* loadPresetAction = menu.addAction(ActionIcon::loadPresetIcon, "Load Preset");
+            QObject::connect(loadPresetAction, &QAction::triggered, this, &TextureListDelegate::onLoadPreset);
+
             menu.exec( QCursor::pos() );
         }
         break;
@@ -413,6 +436,41 @@ bool TextureListDelegate::editorEvent(QEvent * event, QAbstractItemModel * model
 
 void TextureListDelegate::onOpenTexturePath()
 {
-    ShowFileInExplorer(lastSelectedTextureFolder);
-    lastSelectedTextureFolder.clear();
+    if (nullptr == lastSelectedTextureDescriptor)
+    {
+        return;
+    }
+
+    const QString pathname = lastSelectedTextureDescriptor->pathname.GetAbsolutePathname().c_str();
+    ShowFileInExplorer(pathname);
+
+    lastSelectedTextureDescriptor = nullptr;
+}
+
+void TextureListDelegate::onLoadPreset()
+{
+    if (nullptr == lastSelectedTextureDescriptor)
+    {
+        return;
+    }
+
+    bool loaded = Preset::LoadPresetForTexture(lastSelectedTextureDescriptor);
+    if (loaded)
+    {
+        emit textureDescriptorChanged(lastSelectedTextureDescriptor);
+    }
+
+    lastSelectedTextureDescriptor = nullptr;
+}
+
+void TextureListDelegate::onSavePreset()
+{
+    if (nullptr == lastSelectedTextureDescriptor)
+    {
+        return;
+    }
+
+    Preset::SavePresetForTexture(lastSelectedTextureDescriptor);
+
+    lastSelectedTextureDescriptor = nullptr;
 }

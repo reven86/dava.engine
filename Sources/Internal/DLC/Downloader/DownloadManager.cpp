@@ -26,12 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Functional/Function.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
-#include "Platform/Thread.h"
-#include "Platform/Mutex.h"
-#include "Base/FunctionTraits.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Mutex.h"
 
 #include "DownloadManager.h"
 #include "Downloader.h"
@@ -161,7 +160,7 @@ void DownloadManager::Update()
         {
             CallbackData cbData = (*it);
             it = callbackMessagesQueue.erase(it);
-            if (callNotify != 0)
+            if (callNotify != nullptr)
             {
                 callNotify(cbData.id, cbData.status);
             }

@@ -153,7 +153,7 @@ public:
      */
 	virtual const FilePath GetPublicDocumentsPath();
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)  
+#if defined(__DAVAENGINE_APPLE__)  
     /**
         \brief Function to retrieve user’s home path
         \returns user’s home path
@@ -269,6 +269,8 @@ public:
     \returns true if files are equals and false if not
     */
     bool CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2);
+
+    bool GetFileSize(const FilePath& path, uint32& size);
 
 private:
     bool HasLineEnding(File *f);

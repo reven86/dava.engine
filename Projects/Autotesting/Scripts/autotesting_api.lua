@@ -9,10 +9,11 @@ MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
 EPSILON = 1
 
 MAX_LIST_COUNT = 100 -- Max item of list
+lPrint = print
 
 -- API setup
 function SetPackagePath(path)
-    package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;"
+    package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;" .. ";" .. path .. "Tests/?.lua;"
     require "coxpcall"
 end
 
@@ -25,6 +26,7 @@ function assertEq(arg1, arg2, errorMsg)
         Log(string.format("Assert failed: '%s' is not equals to '%s'", tostring(arg1), tostring(arg2)), "ERROR")
         OnError(tostring(errorMsg)) 
     end
+	return true
 end
 
 local function toboolean(condition)
@@ -63,6 +65,13 @@ local function __GetNewPosition(list, vertical, invert, notInCenter)
     return position, newPosition
 end
 
+function print(...)
+    local printResult = ""
+    for i,v in ipairs(arg) do
+        printResult = printResult .. tostring(v) .. "\t"
+    end
+    lPrint(printResult)
+end
 
 ----------------------------------------------------------------------------------------------------
 -- High-level test function
@@ -476,53 +485,53 @@ function WaitUntil(time, func, ...)
         coroutine.yield()
         status, err = copcall(func, ...)
         if status and err then
-            return true
+            return elapsedTime
         end
     end
-    return false
+    return nil
 end
 
 function WaitControl(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
     Log("WaitControl name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local find_control_lua = function(x) return aSys:FindControl(x) or aSys:FindControlOnPopUp(x) end
-    if WaitUntil(waitTime, find_control_lua, name) then
-        return true
+	local result = WaitUntil(waitTime, find_control_lua, name)
+    if not result then
+        Log("Control not found " .. name, "DEBUG")
     end
-    Log("Control not found " .. name, "DEBUG")
-    return false
+    return result
 end
 
 function WaitControlDisappeared(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
     Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local not_find_control_lua = function(x) return not aSys:FindControl(x) and not aSys:FindControlOnPopUp(x) end
-    if WaitUntil(waitTime, not_find_control_lua, name) then
-        return true
+    local result = WaitUntil(waitTime, not_find_control_lua, name)
+	if not result then
+        Log("Control still on the screen: " .. name, "DEBUG")
     end
-    Log("Control still on the screen: " .. name, "DEBUG")
-    return false
+    return result
 end
 
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
     Log("WaitControlBecomeVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    if WaitUntil(waitTime, IsVisible, name) then
-        return true
+    local result = WaitUntil(waitTime, IsVisible, name)
+	if not result then
+        Log("Control not found " .. name, "DEBUG")
     end
-    Log("Control not found " .. name, "DEBUG")
-    return false
+    return result
 end
 
 function WaitUntilControlBecomeEnabled(name, time)
     local waitTime = time or TIMEOUT
     Log("WaitUntilControlBecomeEnabled name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local is_enabled = function(x) return not IsDisabled(x) end
-    if WaitUntil(waitTime, is_enabled, name) then
-        return true
+    local result = WaitUntil(waitTime, is_enabled, name)
+	if not result then
+        Log("Control is disabled " .. name, "DEBUG")
     end
-    Log("Control is disabled " .. name, "DEBUG")
-    return false
+    return result
 end
 
 ------------------------------------------------------------------------------------------------------------------------

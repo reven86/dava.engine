@@ -32,19 +32,18 @@
 
 #include <QWidget>
 #include <QDockWidget>
-#include <QPointer>
-#include <QItemSelectionModel>
-#include "UI/Package/FilteredPackageModel.h"
-#include "UI/Package/PackageModel.h"
-#include "DAVAEngine.h"
+#include "EditorSystems/SelectionContainer.h"
+#include "Base/BaseTypes.h"
 #include "ui_PackageWidget.h"
 
-namespace Ui {
-    class PackageWidget;
-}
-
+class Document;
 class ControlNode;
-class SharedData;
+class StyleSheetNode;
+class PackageNode;
+class PackageBaseNode;
+class FilteredPackageModel;
+class PackageModel;
+class QItemSelection;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
@@ -53,43 +52,63 @@ public:
     explicit PackageWidget(QWidget *parent = 0);
     ~PackageWidget() = default;
 
-public slots:
-    void OnDocumentChanged(SharedData *context);
-    void OnDataChanged(const QByteArray &role);
-private:
-    void LoadContext();
-    void SaveContext();
-private:
-    void OnControlSelectedInEditor(const QList<ControlNode *> &node);
+    using ExpandedIndexes = QModelIndexList ;
 
-    void RefreshActions(const QModelIndexList &indexList);
-    void RefreshAction(QAction *action, bool enabled, bool visible);
-    void CollectSelectedNodes(DAVA::Vector<ControlNode*> &nodes);
-    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes);
-    void RemoveNodes(const DAVA::Vector<ControlNode*> &nodes);
-    QList<QPersistentModelIndex> GetExpandedIndexes() const;
-    
+signals:
+    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+
+public slots:
+    void OnDocumentChanged(Document* context);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+
 private slots:
-    void OnRowsInserted(const QModelIndex &parent, int first, int last);
-    void OnRowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
-    void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
-    void filterTextChanged(const QString &);
+    void OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
+    void filterTextChanged(const QString&);
     void OnImport();
     void OnCopy();
     void OnPaste();
     void OnCut();
     void OnDelete();
+    void OnRename();
+    void OnAddStyle();
 
 private:
-    SharedData *sharedData;
-    QAction *importPackageAction;
-    QAction *copyAction;
-    QAction *pasteAction;
-    QAction *cutAction;
-    QAction *delAction;
+    void LoadContext();
+    void SaveContext();
+    void RefreshActions();
 
-    QPointer<FilteredPackageModel> filteredPackageModel;
-    QPointer<PackageModel> packageModel;
+    void OnControlSelectedInEditor(const QList<ControlNode *> &node);
+
+    void RefreshAction(QAction *action, bool enabled, bool visible);
+    void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
+    void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
+    void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
+    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
+
+    template <typename NodeType>
+    void CollectSelectedNodes(const QItemSelection &selected, DAVA::Vector<NodeType*> &nodes, bool forCopy, bool forRemove);
+
+    ExpandedIndexes GetExpandedIndexes() const;
+    void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
+
+private:
+    QAction *CreateSeparator();
+    Document* document = nullptr;
+    QAction* importPackageAction = nullptr;
+    QAction* copyAction = nullptr;
+    QAction* pasteAction = nullptr;
+    QAction* cutAction = nullptr;
+    QAction* delAction = nullptr;
+    QAction* renameAction = nullptr;
+    QAction* addStyleAction = nullptr;
+
+    FilteredPackageModel* filteredPackageModel = nullptr;
+    PackageModel* packageModel = nullptr;
+
+    QString lastFilterText;
+    ExpandedIndexes expandedIndexes;
+
+    SelectionContainer selectionContainer;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

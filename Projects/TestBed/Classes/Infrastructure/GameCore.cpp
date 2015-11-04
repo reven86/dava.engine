@@ -26,15 +26,25 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "GameCore.h"
+#include "Infrastructure/GameCore.h"
 
 #include "Platform/DateTime.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
+#include "Tests/SpeedLoadImagesTest.h"
+#include "Tests/MultilineTest.h"
+#include "Tests/StaticTextTest.h"
+#include "Tests/StaticWebViewTest.h"
+#include "Tests/UIMovieTest.h"
+#include "Tests/FontTest.h"
+#include "Tests/WebViewTest.h"
+#include "Tests/FunctionSignalTest.h"
+#include "Tests/KeyboardTest.h"
+#include "Tests/FullscreenTest.h"
+#include "Tests/UIBackgroundTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -51,6 +61,18 @@ void GameCore::RegisterTests()
 {
     new UIScrollViewTest();
     new NotificationScreen();
+    new SpeedLoadImagesTest();
+    new MultilineTest();
+    new StaticTextTest();
+    new StaticWebViewTest();
+    new UIMovieTest();
+    new FontTest();
+    new WebViewTest();
+    new FunctionSignalTest();
+    new KeyboardTest();
+    new FullscreenTest();
+    new UIBackgroundTest();
+    //$UNITTEST_CTOR
 }
 
 #include <fstream>
@@ -62,13 +84,13 @@ void GameCore::OnAppStarted()
 {
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
-    
+
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
 }
 
-GameCore::GameCore() 
+GameCore::GameCore()
     : currentScreen(nullptr)
     , testListScreen(nullptr)
 {
@@ -78,7 +100,7 @@ GameCore::~GameCore()
 {
 }
 
-void GameCore::RegisterScreen(BaseScreen *screen)
+void GameCore::RegisterScreen(BaseScreen* screen)
 {
     UIScreenManager::Instance()->RegisterScreen(screen->GetScreenId(), screen);
 
@@ -95,37 +117,35 @@ void GameCore::ShowStartScreen()
 void GameCore::CreateDocumentsFolder()
 {
     FilePath documentsPath = FileSystem::Instance()->GetUserDocumentsPath() + "TestBed/";
-    
+
     FileSystem::Instance()->CreateDirectory(documentsPath, true);
     FileSystem::Instance()->SetCurrentDocumentsDirectory(documentsPath);
 }
 
-
-File * GameCore::CreateDocumentsFile(const String &filePathname)
+File* GameCore::CreateDocumentsFile(const String& filePathname)
 {
     FilePath workingFilepathname = FilePath::FilepathInDocuments(filePathname);
 
     FileSystem::Instance()->CreateDirectory(workingFilepathname.GetDirectory(), true);
-    
-    File *retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
+
+    File* retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
     return retFile;
 }
 
 void GameCore::OnAppFinished()
 {
-    for(auto testScreen : screens)
+    for (auto testScreen : screens)
     {
         SafeRelease(testScreen);
     }
     screens.clear();
-    
+
     SafeRelease(testListScreen);
 }
 
 void GameCore::BeginFrame()
 {
     ApplicationCore::BeginFrame();
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 }
 
 void GameCore::RunTests()
@@ -166,9 +186,3 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
-
-
-
-
-
-

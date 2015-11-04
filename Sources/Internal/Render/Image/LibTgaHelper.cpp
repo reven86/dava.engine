@@ -44,6 +44,15 @@ LibTgaHelper::LibTgaHelper()
     name.assign("TGA");
     supportedExtensions.emplace_back(".tga");
     supportedExtensions.emplace_back(".tpic");
+    supportedFormats = { {  FORMAT_RGBA8888,
+                            FORMAT_RGBA5551,
+                            FORMAT_RGBA4444,
+                            FORMAT_RGB888,
+                            FORMAT_RGB565,
+                            FORMAT_RGBA16161616,
+                            FORMAT_RGBA32323232,
+                            FORMAT_A8,
+                            FORMAT_A16 } };
 }
 
 bool LibTgaHelper::IsMyImage(File *infile) const
@@ -113,7 +122,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const FilePath& filepath, TgaInfo& 
 DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) const
 {
     Array<uint8, 18> fields;
-    size_t bytesRead = infile->Read(&fields, fields.size());
+    size_t bytesRead = infile->Read(&fields, static_cast<uint32>(fields.size()));
     if (bytesRead != fields.size())
         return eErrorCode::ERROR_READ_FAIL;
 
@@ -367,13 +376,13 @@ eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo,
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibTgaHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat pixelFormat) const
+eErrorCode LibTgaHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat pixelFormat, ImageQuality quality) const
 {
     Logger::Error("[%s] CubeMaps are not supported for TGA", __FUNCTION__);
     return DAVA::eErrorCode::ERROR_WRITE_FAIL;
 }
 
-eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat piexelFormat) const
+eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat piexelFormat, ImageQuality quality) const
 {
     DVASSERT(imageSet.size() == 1);
     int32 width = imageSet[0]->width;
@@ -483,8 +492,9 @@ DAVA::eErrorCode LibTgaHelper::WriteTgaHeader(File *dstFile, const TgaInfo& tgaI
     fields[bppOffset] = tgaInfo.bytesPerPixel << 3;
     fields[descriptorOffset] = tgaInfo.alphaBits | (tgaInfo.origin_corner & 0x03) << 4;
 
-    auto bytesWritten = dstFile->Write(&fields, fields.size());
-    return (bytesWritten == fields.size()) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
+    uint32 fieldsCount = static_cast<uint32>(fields.size());
+    auto bytesWritten = dstFile->Write(&fields, fieldsCount);
+    return (bytesWritten == fieldsCount) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibTgaHelper::WriteUncompressedTga(File *dstFile, const TgaInfo& tgaInfo, const uint8* data) const

@@ -38,7 +38,7 @@
 #include "Base/EventDispatcher.h"
 #include "Base/FastName.h"
 #include "Sound/SoundEvent.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 
 #ifdef DAVA_FMOD
 namespace FMOD
@@ -80,6 +80,7 @@ public:
     void Resume();
 
     void SetCurrentLocale(const String & langID);
+    String GetCurrentLocale() const;
 
     void SetListenerPosition(const Vector3 & position);
     void SetListenerOrientation(const Vector3 & forward, const Vector3 & left);

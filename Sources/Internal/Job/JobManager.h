@@ -33,17 +33,17 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
-#include "Base/Function.h"
-#include "Base/Bind.h"
+#include "Functional/Function.h"
 #include "Base/FastName.h"
-#include "Platform/Thread.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Atomic.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/Thread.h"
 #include "JobQueue.h"
 #include "JobThread.h"
 
 namespace DAVA
 {
-class JobManager;
+
 class JobManager : public Singleton<JobManager>
 {
 public:
@@ -74,7 +74,7 @@ public:
 	/*! Wait for the main-thread jobs, that were added from other thread with the given ID. 
 		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
 	*/
-    void WaitMainJobs(Thread::Id invokerThreadId = 0);
+    void WaitMainJobs(Thread::Id invokerThreadId = Thread::Id());
 
     void WaitMainJobID(uint32 mainJobID);
 
@@ -82,7 +82,7 @@ public:
 		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
 		\return Return true if there are some jobs, otherwise false.
 	*/
-    bool HasMainJobs(Thread::Id invokerThreadId = 0);
+    bool HasMainJobs(Thread::Id invokerThreadId = Thread::Id());
 
     bool HasMainJobID(uint32 mainJobID);
 
@@ -105,7 +105,7 @@ public:
 protected:
     struct MainJob
     {
-        MainJob() : id(0), type(JOB_MAIN), invokerThreadId(0) {}
+        MainJob() : id(0), type(JOB_MAIN), invokerThreadId(Thread::Id()) {}
 
         uint32 id;
         eMainJobType type;
@@ -114,13 +114,13 @@ protected:
         Function<void ()> fn;
     };
 
-    uint32 mainJobIDCounter;
+    Atomic<uint32> mainJobIDCounter;
     uint32 mainJobLastExecutedID;
 
     Mutex mainQueueMutex;
     Mutex mainCVMutex;
     Deque<MainJob> mainJobs;
-    ConditionalVariable mainCV;
+    ConditionVariable mainCV;
     MainJob curMainJob;
 
     Semaphore workerDoneSem;

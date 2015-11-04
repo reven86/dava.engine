@@ -38,10 +38,10 @@
 
 #include "DeviceListWidget.h"
 
-#include "Classes/Qt/DeviceInfo/DeviceInfo/DeviceLogController.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfController.h"
-#include <Base/FunctionTraits.h>
+#include "Qt/DeviceInfo/DeviceInfo/DeviceLogController.h"
+#include "Qt/DeviceInfo/MemoryTool/MemProfController.h"
 
+#include <Network/NetworkCommon.h>
 #include <Network/PeerDesription.h>
 
 using namespace DAVA;
@@ -182,7 +182,14 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
     {
         IPAddress addr = endp.Address();    // Use IP address from multicast packets
         NetConfig config = peer.NetworkConfig().Mirror(addr);
-        trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()));
+        const Vector<uint32>& servIds = config.Services();
+
+        // Check whether remote device is under memory profiler and increase read timeout
+        // Else leave it zero to allow underlying network system to choose timeout itself
+        bool deviceUnderMemoryProfiler = std::find(servIds.begin(), servIds.end(), SERVICE_MEMPROF) != servIds.end();
+        uint32 readTimeout = deviceUnderMemoryProfiler ? 120 * 1000 : Net::DEFAULT_READ_TIMEOUT;
+
+        trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()), readTimeout);
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
             QStandardItem* item = model->itemFromIndex(index);
@@ -197,7 +204,6 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
             {
                 DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
                 // Check whether remote device has corresponding services
-                const Vector<uint32>& servIds = config.Services();
                 auto iterService = std::find(servIds.begin(), servIds.end(), SERVICE_LOG);
                 if (iterService != servIds.end())
                 {
@@ -229,7 +235,7 @@ void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
 
     item->setData(QVariant(static_cast<qulonglong>(NetCore::INVALID_TRACK_ID)), ROLE_CONNECTION_ID);
     // And destroy controller related to remote device
-    DAVA::Net::NetCore::Instance()->DestroyController(trackId);
+    DAVA::Net::NetCore::Instance()->DestroyControllerBlocked(trackId);
 
     QString s = item->text();
     int pos = s.indexOf('!');

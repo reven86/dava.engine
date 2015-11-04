@@ -33,6 +33,8 @@ using namespace DAVA;
 
 DAVA_TESTCLASS(FileSystemTest)
 {
+    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+
     FileSystemTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
@@ -206,6 +208,20 @@ DAVA_TESTCLASS(FileSystemTest)
 
         moved = FileSystem::Instance()->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file2.zip", "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
         TEST_VERIFY(moved);
+
+#if   defined(__DAVAENGINE_WINDOWS__)
+        FileSystem* fs = FileSystem::Instance();
+        String externalDrive = "d:\\";
+        bool isDdriveExist = fs->IsDirectory(externalDrive);
+        if (isDdriveExist)
+        {
+            String tmpFileName = externalDrive + "test_on_other_drive.file";
+            moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", tmpFileName, true);
+            TEST_VERIFY(moved);
+            moved = fs->MoveFile(tmpFileName, "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
+            TEST_VERIFY(moved);
+        }
+#endif
 
         FileSystem::Instance()->DeleteFile("~doc:/TestData/FileSystemTest/Folder1/file1_new");
         File *f = File::Create("~doc:/TestData/FileSystemTest/Folder1/file1_new", File::OPEN | File::READ);

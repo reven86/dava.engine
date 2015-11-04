@@ -69,8 +69,11 @@ public:
 	~SceneSelectionSystem();
 
 	void SetSelection(DAVA::Entity *entity);
+    void SetSelection(const EntityGroup &newSelection);
 	void AddSelection(DAVA::Entity *entity);
+    void AddSelection(const EntityGroup &entities);
 	void RemSelection(DAVA::Entity *entity);
+    void RemSelection(const EntityGroup &entities);
 	void Clear();
     
     bool IsEntitySelectable(DAVA::Entity *entity) const;
@@ -141,9 +144,6 @@ private:
 	DAVA::Entity *lastSelection;
 
 	ST_PivotPoint curPivotPoint;
-	
-	DAVA::UniqueHandle selectionNormalDrawState;
-	DAVA::UniqueHandle selectionDepthDrawState;
 };
 
 

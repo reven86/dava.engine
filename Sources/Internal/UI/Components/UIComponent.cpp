@@ -30,30 +30,57 @@
 #include "UIComponent.h"
 #include "UI/UIControl.h"
 
-#include "UIFakeComponent.h"
-#include "UIFakeMultiComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UIIgnoreLayoutComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
 
 namespace DAVA
 {
 
 UIComponent::UIComponent()
-    : control(NULL)
+    : control(nullptr)
 {
+}
+
+UIComponent::UIComponent(const UIComponent &src)
+    : control(nullptr)
+{
+    
 }
 
 UIComponent::~UIComponent()
 {
 }
 
+UIComponent &UIComponent::operator=(const UIComponent &src)
+{
+    return *this;
+}
+
 UIComponent * UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
-        case FAKE_COMPONENT:
-            return new UIFakeComponent();
+        case LINEAR_LAYOUT_COMPONENT:
+            return new UILinearLayoutComponent();
 
-        case FAKE_MULTI_COMPONENT:
-            return new UIFakeMultiComponent();
+        case FLOW_LAYOUT_COMPONENT:
+            return new UIFlowLayoutComponent();
+
+        case FLOW_LAYOUT_HINT_COMPONENT:
+            return new UIFlowLayoutHintComponent();
+
+        case IGNORE_LAYOUT_COMPONENT:
+            return new UIIgnoreLayoutComponent();
+            
+        case SIZE_POLICY_COMPONENT:
+            return new UISizePolicyComponent();
+            
+        case ANCHOR_COMPONENT:
+            return new UIAnchorComponent();
             
         default:
             DVASSERT(false);
@@ -66,11 +93,23 @@ bool UIComponent::IsMultiple(uint32 componentType)
 {
     switch (componentType)
     {
-        case FAKE_COMPONENT:
+        case LINEAR_LAYOUT_COMPONENT:
+            return false;
+
+        case FLOW_LAYOUT_COMPONENT:
+            return false;
+
+        case FLOW_LAYOUT_HINT_COMPONENT:
+            return false;
+
+        case IGNORE_LAYOUT_COMPONENT:
             return false;
             
-        case FAKE_MULTI_COMPONENT:
-            return true;
+        case SIZE_POLICY_COMPONENT:
+            return false;
+            
+        case ANCHOR_COMPONENT:
+            return false;
             
         default:
             DVASSERT(false);

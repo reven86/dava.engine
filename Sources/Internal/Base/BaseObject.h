@@ -30,6 +30,7 @@
 #ifndef __DAVAENGINE_BASEOBJECT_H__
 #define __DAVAENGINE_BASEOBJECT_H__
 
+#include "Concurrency/Atomic.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseObjectChecker.h"
 #include "Base/Introspection.h"
@@ -37,9 +38,11 @@
 #include "DAVAConfig.h"
 #include "Base/RefPtr.h"
 #include "Base/ScopedPtr.h"
-#include "Base/Atomic.h"
+
+#include "MemoryManager/MemoryProfiler.h"
 
 #include <typeinfo>
+#include <memory>
 
 namespace DAVA
 {
@@ -64,6 +67,8 @@ class KeyedArchive;
 	
 class BaseObject: public InspBase
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT);
+
 protected:
 	//! Destructor
 	virtual ~BaseObject()
@@ -89,7 +94,7 @@ public:
 	 */
 	virtual void Retain()
 	{
-		AtomicIncrement(referenceCount);
+        referenceCount++;
 	}
 	
 	/** 
@@ -105,7 +110,7 @@ public:
 		}	
 #endif		
 
-		int32 refCounter = AtomicDecrement(referenceCount);
+        int32 refCounter = --referenceCount;
 		if (!refCounter)
 		{
 			delete this;
@@ -119,7 +124,7 @@ public:
 	 */
 	int32 GetRetainCount() const
 	{
-		return referenceCount;
+		return referenceCount.Get();
 	}
     
     /**
@@ -156,7 +161,7 @@ protected:
 		return *this;
 	}
 	
-	int32 referenceCount;
+	Atomic<int32> referenceCount;
 
 public:
 	INTROSPECTION(BaseObject,
@@ -164,6 +169,13 @@ public:
 	);
 };
 
+template<typename T>
+auto MakeSharedObject(T *obj) -> typename std::enable_if<std::is_base_of<BaseObject, T>::value, std::shared_ptr<T>>::type
+{
+    DVASSERT(nullptr != obj);
+    obj->Retain();
+    return std::shared_ptr<T>(obj, [](T *obj) { obj->Release(); });
+}
 
 /** 
 	\ingroup baseobjects

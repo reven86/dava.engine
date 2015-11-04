@@ -45,7 +45,7 @@ protected:
     virtual ~SubValueProperty();
 
 public:
-    int GetCount() const override;
+    DAVA::uint32 GetCount() const override;
     AbstractProperty *GetProperty(int index) const override;
     void Accept(PropertyVisitor *visitor) override;
     
@@ -56,7 +56,7 @@ public:
     DAVA::VariantType GetDefaultValue() const override;
     void SetDefaultValue(const DAVA::VariantType &newValue) override;
     void ResetValue() override;
-    bool IsReplaced() const override;
+    bool IsOverriddenLocally() const override;
 
 private:
     ValueProperty *GetValueProperty() const;

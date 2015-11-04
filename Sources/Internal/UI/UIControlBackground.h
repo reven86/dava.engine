@@ -45,6 +45,7 @@ class UIControl;
 class UIGeometricData;
 struct TiledDrawData;
 struct StretchDrawData;
+class NMaterial;
 
     /**
      \ingroup controlsystem
@@ -297,9 +298,6 @@ public:
     // WTF? Probably we should move it to protected to avoid problems in future?
     Color color;//!<Control color. By default is Color(1,1,1,1).
 
-
-    void SetShader(Shader *shader);
-    
     /**
      \brief Sets the margins for drawing background. Positive values means inner
      offset, negative ones - outer.
@@ -311,8 +309,8 @@ public:
      */
     inline const UIMargins* GetMargins() const;
 
-    void SetRenderState(UniqueHandle renderState);
-    UniqueHandle GetRenderState() const;
+    void SetMaterial(NMaterial* material);
+    NMaterial* GetMaterial() const;
 
 protected:
 
@@ -344,9 +342,7 @@ protected:
     ~UIControlBackground();
     Color drawColor;
 
-    Shader *shader;
-    
-    UniqueHandle renderState;
+    NMaterial* material;
 #if defined(LOCALIZATION_DEBUG)
     Sprite::DrawState lastDrawState;
 #endif
@@ -365,21 +361,19 @@ public:
     inline void SetBgPerPixelAccuracy(int32 type);
     Vector4 GetMarginsAsVector4() const;
     void SetMarginsAsVector4(const Vector4 &margins);
-    
+
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("sprite", "Sprite", GetBgSpritePath, SetBgSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("spriteModification", "Spirte Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("spriteModification", "Sprite Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("colorInherit", InspDesc("Color Inherit", GlobalEnumMap<eColorInheritType>::Instance()), GetBgColorInherit, SetBgColorInherit, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("perPixelAccuracy", InspDesc("Per Pixel Accuracy", GlobalEnumMap<ePerPixelAccuracyType>::Instance()), GetBgPerPixelAccuracy, SetBgPerPixelAccuracy, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("align", InspDesc("Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetAlign, SetAlign, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("leftRightStretchCap", "Left-Right Stretch Cap", GetLeftRightStretchCap, SetLeftRightStretchCap, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("topBottomStretchCap", "Top-Bottom Stretch Cap", GetTopBottomStretchCap, SetTopBottomStretchCap, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("margins", "Margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
-                         );
-
+                         PROPERTY("margins", "Margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT));
 };
 
 // Implementation
@@ -391,16 +385,6 @@ inline void UIControlBackground::SetColor(const Color & _color)
 inline const Color &UIControlBackground::GetColor() const
 {
     return color;
-}
-    
-inline void UIControlBackground::SetRenderState(UniqueHandle _renderState)
-{
-    renderState = _renderState;
-}
-    
-inline UniqueHandle UIControlBackground::GetRenderState() const
-{
-    return renderState;
 }
 
 inline const UIControlBackground::UIMargins* UIControlBackground::GetMargins() const

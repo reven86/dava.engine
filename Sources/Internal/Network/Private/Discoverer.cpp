@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include <Base/FunctionTraits.h>
+#include <Functional/Function.h>
 #include <Debug/DVAssert.h>
 
 #include <Network/Private/Discoverer.h>
@@ -46,9 +46,9 @@ Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size
     , runningObjects(0)
     , dataCallback(dataReadyCallback)
 {
-    DVVERIFY(true == endpoint.Address().ToString(endpAsString, COUNT_OF(endpAsString)));
+    DVVERIFY(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
     DVASSERT(true == endpoint.Address().IsMulticast());
-    DVASSERT(loop != NULL && dataCallback != 0);
+    DVASSERT(loop != nullptr && dataCallback != nullptr);
 }
 
 Discoverer::~Discoverer()
@@ -65,7 +65,7 @@ void Discoverer::Start()
 void Discoverer::Stop(Function<void (IController*)> callback)
 {
     DVASSERT(false == isTerminating);
-    DVASSERT(callback != 0);
+    DVASSERT(callback != nullptr);
     isTerminating = true;
     stopCallback = callback;
     loop->Post(MakeFunction(this, &Discoverer::DoStop));
@@ -81,7 +81,7 @@ void Discoverer::DoStart()
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);
     if (0 == error)
     {
-        error = socket.JoinMulticastGroup(endpAsString, NULL);
+        error = socket.JoinMulticastGroup(endpAsString.data(), NULL);
         if (0 == error)
             error = socket.StartReceive(CreateBuffer(inbuf, sizeof(inbuf)), MakeFunction(this, &Discoverer::SocketHandleReceive));
     }

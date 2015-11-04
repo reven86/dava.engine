@@ -37,15 +37,13 @@ SubValueProperty::SubValueProperty(int anIndex, const DAVA::String &propName)
     : index(anIndex)
     , name(propName)
 {
-    
 }
 
 SubValueProperty::~SubValueProperty()
 {
-    
 }
 
-int SubValueProperty::GetCount() const
+uint32 SubValueProperty::GetCount() const
 {
     return 0;
 }
@@ -95,9 +93,9 @@ void SubValueProperty::ResetValue()
     GetValueProperty()->ResetValue();
 }
 
-bool SubValueProperty::IsReplaced() const
+bool SubValueProperty::IsOverriddenLocally() const
 {
-    return GetValueProperty()->IsReplaced();
+    return GetValueProperty()->IsOverriddenLocally();
 }
 
 ValueProperty *SubValueProperty::GetValueProperty() const

@@ -63,13 +63,17 @@ public:
     void Update(DAVA::float32 update) override;
 
 private:
+    void ProcessCommandLine();
     void ProcessTests(DAVA::float32 timeElapsed);
     void FinishTests();
 
     void OnError();
 
-    void OnTestStarted(const DAVA::String& testClassName);
-    void OnTestFinished(const DAVA::String& testClassName);
+    void OnTestClassStarted(const DAVA::String& testClassName);
+    void OnTestClassFinished(const DAVA::String& testClassName);
+    void OnTestClassDisabled(const DAVA::String& testClassName);
+    void OnTestStarted(const DAVA::String& testClassName, const DAVA::String& testName);
+    void OnTestFinished(const DAVA::String& testClassName, const DAVA::String& testName);
     void OnTestFailed(const DAVA::String& testClassName, const DAVA::String& testName, const DAVA::String& condition, const char* filename, int lineno, const DAVA::String& userMessage);
 
 private:

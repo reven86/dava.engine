@@ -27,9 +27,9 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
-#include "Render/OGLHelpers.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
@@ -38,16 +38,17 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/PixelFormatDescriptor.h"
 
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 #include "libpvr/PVRTError.h"
 #include "libpvr/PVRTDecompress.h"
 #include "libpvr/PVRTMap.h"
 #include "libpvr/PVRTextureHeader.h"
 #include "libpvr/PVRTexture.h"
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 
 #define METADATA_FOURCC_OFFSET 0
 #define METADATA_KEY_OFFSET 4
@@ -64,6 +65,35 @@
 
 namespace DAVA
 {
+namespace PVRHelper
+{
+bool IsCompressedFormat(PixelFormat format)
+{
+    switch (format)
+    {
+    case FORMAT_PVR4:
+    case FORMAT_PVR2:
+    case FORMAT_ETC1:
+        return true;
+
+    case FORMAT_PVR2_2:
+    case FORMAT_PVR4_2:
+    case FORMAT_EAC_R11_UNSIGNED:
+    case FORMAT_EAC_R11_SIGNED:
+    case FORMAT_EAC_RG11_UNSIGNED:
+    case FORMAT_EAC_RG11_SIGNED:
+    case FORMAT_ETC2_RGB:
+    case FORMAT_ETC2_RGBA:
+    case FORMAT_ETC2_RGB_A1:
+        return true;
+
+    default:
+        return false;
+    }
+
+    return false;
+}
+}
 
 PVRFile::PVRFile()
     : metaData(nullptr)
@@ -127,14 +157,14 @@ eErrorCode LibPVRHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
     return eErrorCode::ERROR_READ_FAIL;
 }
 
-eErrorCode LibPVRHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibPVRHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     //not implemented due to external tool
     DVASSERT(0);
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     //not implemented due to external tool
     DVASSERT(0);
@@ -567,6 +597,8 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
         return false;
     }
 
+    const bool imageIsCompressed = PVRHelper::IsCompressedFormat(formatDescriptor.formatID);
+
     uint32 cubemapLayout = GetCubemapLayout(pvrFile);
     for (uint32 faceIndex = 0; faceIndex < compressedHeader.u32NumFaces; ++faceIndex)
     {
@@ -582,7 +614,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->cubeFaceID = (cubemapLayout & (0x0000000F << (faceIndex * 4))) >> (faceIndex * 4);
         }
 
-        if (formatDescriptor.isHardwareSupported)
+        if (formatDescriptor.isHardwareSupported || !imageIsCompressed)
         {
             bool imageLoaded = CopyToImage(image, fileMipMapLevel, faceIndex, compressedHeader, pTextureData);
             if (!imageLoaded)
@@ -604,13 +636,13 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->format = FORMAT_RGBA8888;
 
             //Setup temporary variables.
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             uint8* pTempDecompData = image->data;
             uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
 #endif
             if ((FORMAT_PVR4 == formatDescriptor.formatID) || (FORMAT_PVR2 == formatDescriptor.formatID))
             {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
                 DVASSERT_MSG(false, "Must be hardware supported PVR Compression");
                 image->Release();
                 return false;
@@ -624,13 +656,13 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             else if (FORMAT_ETC1 == formatDescriptor.formatID)
             {
                 //Create a near-identical texture header for the decompressed header.
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
                 DVASSERT_MSG(false, "Must be hardware supported ETC1");
                 image->Release();
                 return false;
 #else
                 PVRTDecompressETC(pTempCompData, image->width, image->height, pTempDecompData, 0);
-#endif //defined (__DAVAENGINE_ANDROID__)
+#endif //defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
             }
 #endif //#if !defined(__DAVAENGINE_IPHONE__)
             else
@@ -658,37 +690,37 @@ uint32 LibPVRHelper::GetCubemapLayout(const PVRFile *pvrFile)
             {
                 case 'X':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_X << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_X << (index * 4));
                     break;
                 }
 
                 case 'x':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_X << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_X << (index * 4));
                     break;
                 }
 
                 case 'Y':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_Y << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_Y << (index * 4));
                     break;
                 }
 
                 case 'y':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_Y << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_Y << (index * 4));
                     break;
                 }
 
                 case 'Z':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_Z << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_Z << (index * 4));
                     break;
                 }
 
                 case 'z':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_Z << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_Z << (index * 4));
                     break;
                 }
             }
@@ -697,12 +729,12 @@ uint32 LibPVRHelper::GetCubemapLayout(const PVRFile *pvrFile)
     else if (pvrFile->header.u32NumFaces > 1)
     {
         static uint32 faces[] = {
-            Texture::CUBE_FACE_POSITIVE_X,
-            Texture::CUBE_FACE_NEGATIVE_X,
-            Texture::CUBE_FACE_POSITIVE_Y,
-            Texture::CUBE_FACE_NEGATIVE_Y,
-            Texture::CUBE_FACE_POSITIVE_Z,
-            Texture::CUBE_FACE_NEGATIVE_Z
+            rhi::TEXTURE_FACE_POSITIVE_X,
+            rhi::TEXTURE_FACE_NEGATIVE_X,
+            rhi::TEXTURE_FACE_POSITIVE_Y,
+            rhi::TEXTURE_FACE_NEGATIVE_Y,
+            rhi::TEXTURE_FACE_POSITIVE_Z,
+            rhi::TEXTURE_FACE_NEGATIVE_Z
         };
         for (uint32 i = 0; i < pvrFile->header.u32NumFaces; ++i)
         {
@@ -777,7 +809,7 @@ bool LibPVRHelper::GetCRCFromMetaData(const PVRFile *pvrFile, uint32* outputCRC)
 
 uint32 LibPVRHelper::GetBitsPerPixel(uint64 pixelFormat)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     if((pixelFormat & PVRTEX_PFHIGHMASK) != 0)
     {
         uint8 *pixelFormatChar = (uint8 *)&pixelFormat;
@@ -823,14 +855,14 @@ uint32 LibPVRHelper::GetBitsPerPixel(uint64 pixelFormat)
         }
     }
     return 0;
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     return PVRTGetBitsPerPixel(pixelFormat);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 void LibPVRHelper::GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &minY, uint32 &minZ)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     switch(pixelFormat)
     {
         case ePVRTPF_DXT1:
@@ -891,14 +923,14 @@ void LibPVRHelper::GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &mi
             minZ = 1;
             break;
     }
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     PVRTGetFormatMinDims(pixelFormat, minX, minY, minZ);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLevel, bool allSurfaces, bool allFaces)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     //The smallest divisible sizes for a pixel format
     uint32 uiSmallestWidth = 1;
     uint32 uiSmallestHeight = 1;
@@ -961,10 +993,10 @@ uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLeve
     //Multiply the data size by number of faces and surfaces specified, and return.
     return (uint32)(uiDataSize / 8) * numsurfs * numfaces;
 
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     PVRTextureHeaderV3 *header = (PVRTextureHeaderV3 *)&textureHeader;
     return PVRTGetTextureDataSize(*header, mipLevel, allSurfaces, allFaces);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 int32 LibPVRHelper::GetMipMapLayerOffset(uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header)
@@ -979,7 +1011,7 @@ int32 LibPVRHelper::GetMipMapLayerOffset(uint32 mipMapLevel, uint32 faceIndex, c
 
 void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint64& newType, EPVRTColourSpace& newCSpace, EPVRTVariableType& newChanType, bool& isPreMult)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     //Default value.
     isPreMult = false;
 
@@ -2239,9 +2271,9 @@ void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint
         }
     }
 
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     PVRTMapLegacyTextureEnumToNewFormat(OldFormat, newType, newCSpace, newChanType, isPreMult);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 const PixelFormat LibPVRHelper::GetTextureFormat(const PVRHeaderV3& textureHeader)
@@ -2505,7 +2537,21 @@ bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceInde
     {
         //Setup temporary variables.
         uint8* data = (uint8*)pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
-        Memcpy(image->data, data, image->dataSize);
+
+        if (image->format == FORMAT_RGBA4444)
+        {
+            ConvertDirect<uint16, uint16, ConvertABGR4444toRGBA4444> convert;
+            convert(data, image->width, image->height, image->width * sizeof(uint16), image->data);
+        }
+        else if (image->format == FORMAT_RGBA5551)
+        {
+            ConvertDirect<uint16, uint16, ConvertABGR1555toRGBA5551> convert;
+            convert(data, image->width, image->height, image->width * sizeof(uint16), image->data);
+        }
+        else
+        {
+            Memcpy(image->data, data, image->dataSize);
+        }
 
         return true;
     }

@@ -32,12 +32,14 @@
 
 #include "UI/AbstractUIPackageBuilder.h"
 #include "FileSystem/FilePath.h"
+#include "UI/Styles/UIStyleSheetStructs.h"
+#include "Model/ControlProperties/SectionProperty.h"
 
 class PackageNode;
 class ControlNode;
-class SectionProperty;
-class PackageCommandExecutor;
+class StyleSheetNode;
 class ControlsContainerNode;
+class IntrospectionProperty;
 
 class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
@@ -49,7 +51,8 @@ public:
     virtual void EndPackage() override;
     
     virtual bool ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
-    
+    virtual void ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties) override;
+
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithPrototype(const DAVA::String &packageName, const DAVA::String &prototypeName, const DAVA::String *customClassName, DAVA::AbstractUIPackageLoader *loader) override;
@@ -70,15 +73,16 @@ public:
     virtual void EndInternalControlSection() override;
     
     virtual void ProcessProperty(const DAVA::InspMember *member, const DAVA::VariantType &value) override;
-
+    
     DAVA::RefPtr<PackageNode> BuildPackage() const;
     const DAVA::Vector<ControlNode*> &GetRootControls() const;
     const DAVA::Vector<PackageNode*> &GetImportedPackages() const;
+    const DAVA::Vector<StyleSheetNode*> &GetStyles() const;
     void AddImportedPackage(PackageNode *node);
 
 private:
     ControlNode *FindRootControl(const DAVA::String &name) const;
-    
+
 private:
     struct ControlDescr {
         ControlNode *node;
@@ -97,10 +101,11 @@ private:
     
     DAVA::Vector<PackageNode*> importedPackages;
     DAVA::Vector<ControlNode*> rootControls;
+    DAVA::Vector<StyleSheetNode*> styleSheets;
     DAVA::Vector<DAVA::FilePath> declinedPackages;
     
     DAVA::BaseObject *currentObject;
-    SectionProperty *currentSection;
+    SectionProperty<IntrospectionProperty> *currentSection;
 };
 
 #endif // __EDITOR_UI_PACKAGE_BUILDER_H__

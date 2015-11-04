@@ -30,13 +30,13 @@
 #include "TextureDescriptorTool.h"
 #include "TextureDescriptorUtils.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Render/PixelFormatDescriptor.h"
 
 using namespace DAVA;
 
 
-void TextureDescriptorTool::PrintUsage()
+void TextureDescriptorTool::PrintUsage() const
 {
     printf("\n");
     printf("-texdescriptor [-resave] [-copycompression] [-create] [-folder [folder for action with descriptors]]\n");
@@ -59,7 +59,7 @@ void TextureDescriptorTool::PrintUsage()
 	printf("-texdescriptor -setcompression -folder /Users/User/Project/DataSource/3d/Tanks/images/ -PowerVR_iOS PVR4 -tegra DXT1 -mali ETC1 -adreno RGBA4444 -f -convert -quality 0\n");
 }
 
-DAVA::String TextureDescriptorTool::GetCommandLineKey()
+DAVA::String TextureDescriptorTool::GetCommandLineKey() const
 {
     return "-texdescriptor";
 }
@@ -126,8 +126,6 @@ bool TextureDescriptorTool::InitializeFromCommandLine()
 
 void TextureDescriptorTool::ReadCompressionParams()
 {
-    PixelFormatDescriptor::InitializePixelFormatDescriptors();
-    
 	compressionParams.clear();
 	for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
 	{
@@ -163,7 +161,7 @@ void TextureDescriptorTool::ReadCompressionParams()
 }
 
 
-void TextureDescriptorTool::Process()
+void TextureDescriptorTool::Process() 
 {
     switch(commandAction)
     {

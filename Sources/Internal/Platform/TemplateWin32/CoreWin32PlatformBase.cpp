@@ -30,32 +30,36 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
+#include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
+
 #include <shellapi.h>
 
 namespace DAVA
 {
-
-CoreWin32PlatformBase::CoreWin32PlatformBase() :
-    hWindow(0),
-    hInstance(0)
+CoreWin32PlatformBase::CoreWin32PlatformBase()
 {
-}
-
-HINSTANCE CoreWin32PlatformBase::GetInstance() const
-{
-    return hInstance;
-}
-
-HWND CoreWin32PlatformBase::GetWindow() const
-{
-    return hWindow;
 }
 
 void CoreWin32PlatformBase::InitArgs()
 {
-    SetCommandLine(WStringToString(::GetCommandLineW()));
+    int argc = 0;
+    LPWSTR *szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+
+    if (argc > 0 && NULL != szArglist)
+    {
+        Vector<String> args;
+        args.reserve(argc);
+        for (int i = 0; i < argc; ++i)
+        {
+            args.emplace_back(WStringToString(szArglist[i]));
+        }
+
+        SetCommandLine(std::move(args));
+    }
+
+    ::LocalFree(szArglist);
 }
 
 void CoreWin32PlatformBase::Quit()
@@ -75,7 +79,7 @@ void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
 
 void CoreWin32PlatformBase::SetCursorPositionCenter()
 {
-    SetCursorPosCenterInternal(hWindow);
+    SetCursorPosCenterInternal((HWND)GetNativeView());
 }
 
 void CoreWin32PlatformBase::SetCursorPosition(Point2i position)

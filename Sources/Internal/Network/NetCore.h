@@ -30,15 +30,16 @@
 #ifndef __DAVAENGINE_NETCORE_H__
 #define __DAVAENGINE_NETCORE_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Function.h>
-#include <Base/Singleton.h>
+#include "Base/BaseTypes.h"
+#include "Functional/Function.h"
+#include "Base/Singleton.h"
 
-#include <Network/Base/IOLoop.h>
-#include <Network/Base/IfAddress.h>
-#include <Network/Base/Endpoint.h>
-#include <Network/ServiceRegistrar.h>
-#include <Network/IController.h>
+#include "Network/Base/IOLoop.h"
+#include "Network/Base/IfAddress.h"
+#include "Network/Base/Endpoint.h"
+#include "Network/ServiceRegistrar.h"
+#include "Network/IController.h"
+#include "Network/NetworkCommon.h"
 
 namespace DAVA
 {
@@ -60,16 +61,20 @@ public:
 
     bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* serviceName = NULL);
     void UnregisterAllServices();
+    bool IsServiceRegistered(uint32 serviceId) const;
     const char8* ServiceName(uint32 serviceId) const;
 
-    TrackId CreateController(const NetConfig& config, void* context = NULL);
+    TrackId CreateController(const NetConfig& config, void* context = nullptr, uint32 readTimeout = DEFAULT_READ_TIMEOUT);
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     void DestroyController(TrackId id);
+    void DestroyControllerBlocked(TrackId id);
     void DestroyAllControllers(Function<void ()> callback);
     void DestroyAllControllersBlocked();
 
     void RestartAllControllers();
+
+    size_t ControllersCount() const;
 
     int32 Run();
     int32 Poll();
@@ -80,17 +85,17 @@ public:
 private:
     void DoStart(IController* ctrl);
     void DoRestart();
-    void DoDestroy(TrackId id);
+    void DoDestroy(TrackId id, volatile bool* stoppedFlag);
     void DoDestroyAll();
     void AllDestroyed();
     IController* GetTrackedObject(TrackId id) const;
-    void TrackedObjectStopped(IController* obj);
+    void TrackedObjectStopped(IController* obj, volatile bool* stoppedFlag);
 
     TrackId ObjectToTrackId(const IController* obj) const;
     IController* TrackIdToObject(TrackId id) const;
 
 private:
-    IOLoop loop;                                    // Heart of NetCore and networ library - event loop
+    IOLoop loop;                                    // Heart of NetCore and network library - event loop
     Set<IController*> trackedObjects;               // Running objects
     Set<IController*> dyingObjects;
     ServiceRegistrar registrar;
@@ -110,9 +115,19 @@ inline void NetCore::UnregisterAllServices()
     registrar.UnregisterAll();
 }
 
+inline bool NetCore::IsServiceRegistered(uint32 serviceId) const
+{
+    return registrar.IsRegistered(serviceId);
+}
+
 inline const char8* NetCore::ServiceName(uint32 serviceId) const
 {
     return registrar.Name(serviceId);
+}
+
+inline size_t NetCore::ControllersCount() const
+{
+    return trackedObjects.size();
 }
 
 inline Vector<IfAddress> NetCore::InstalledInterfaces() const

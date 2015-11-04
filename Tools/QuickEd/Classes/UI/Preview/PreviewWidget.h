@@ -31,24 +31,19 @@
 #define __QUICKED_PREVIEW_WIDGET_H__
 
 #include <QWidget>
-#include <QPointer>
 #include "ui_PreviewWidget.h"
-#include "Result.h"
+#include "EditorSystems/SelectionContainer.h"
+#include <UI/UIControl.h>
 
 namespace Ui {
     class PreviewWidget;
 }
 
-class SharedData;
-class PreviewModel;
+class Document;
 class DavaGLWidget;
 class ControlNode;
-
-enum ScreenId
-{
-    UNKNOWN_SCREEN = -1,
-    EDIT_SCREEN = 0,
-};
+class ScrollAreaController;
+class PackageBaseNode;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -56,10 +51,16 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
-    DavaGLWidget *GetDavaGLWidget();
+    DavaGLWidget* GetGLWidget();
+    ScrollAreaController* GetScrollAreaController();
+
+    void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
+signals:
+    void ScaleChanged(float scale);
+
 public slots:
-    void OnDocumentChanged(SharedData *context);
-    void OnDataChanged(const QByteArray &role);
+    void OnDocumentChanged(Document* document);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private slots:
     // Zoom.
@@ -68,28 +69,29 @@ private slots:
 	void OnZoomInRequested();
 	void OnZoomOutRequested();
     
-    void OnCanvasScaleChanged(int newScale);
     void OnGLWidgetResized(int width, int height, int dpr);
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
-    void OnScrollPositionChanged(const QPoint &newPosition);
-    void OnScrollAreaChanged(const QSize &viewSize, const QSize &contentSize);
     
     void OnMonitorChanged();
 
-    void OnControlNodeSelected(QList<ControlNode*> selectedNodes);
-
-    void OnError(const Result &result);
+    void UpdateScrollArea();
 
 private:
-    void OnScaleByZoom(int scaleDelta); 
-    void UpdateActiveRootControls();
+    void OnScaleByZoom(int scaleDelta);
 
-private:
-    DavaGLWidget *davaGLWidget;
-    SharedData *sharedData;
-    PreviewModel *model;
+    Document* document = nullptr;
+    DavaGLWidget* davaGLWidget = nullptr;
+    ScrollAreaController* scrollAreaController = nullptr;
+    QList<int> percentages;
+
+    SelectionContainer selectionContainer;
 };
+
+inline DavaGLWidget* PreviewWidget::GetGLWidget()
+{
+    return davaGLWidget;
+}
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

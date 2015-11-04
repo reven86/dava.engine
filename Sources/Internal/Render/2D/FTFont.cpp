@@ -26,10 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Render/Renderer.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
-#include "Render/RenderManager.h"
 #include "FileSystem/Logger.h"
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
@@ -419,13 +418,14 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     
 	int32 layoutWidth = 0; // width in FT points
 
-	bool drawNondefGlyph = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
-		
-	for(uint32 i = 0; i < strLen; ++i)
-	{
-		Glyph		& glyph = glyphs[i];
-		FT_Glyph	image = nullptr;;
-		FT_BBox		bbox;
+    bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
+
+    for (uint32 i = 0; i < strLen; ++i)
+    {
+        Glyph& glyph = glyphs[i];
+        FT_Glyph image = nullptr;
+        ;
+        FT_BBox		bbox;
 
 		bool skipGlyph = true;
         if(glyph.image && (glyph.index != 0 || drawNondefGlyph))
@@ -626,15 +626,19 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 		advances[i] = glyph.image->advance;
 		advances[i].x >>= 10;
 		advances[i].y >>= 10;
-		
-		if(prevAdvance)
+
+        if(prevAdvance)
 		{
 			if(useKerning)
 			{
 				FT_Vector  kern;
 				FT_Get_Kerning(face, prevIndex, glyph.index, FT_KERNING_UNFITTED, &kern );
-				prevAdvance->x += kern.x;
-				prevAdvance->y += kern.y;
+                // Scale kerning from virtual to physical, because FT_Set_Transform
+                // converts only glyph advances without kerning.
+                // It used for mobile platforms with different DPI and scale factor (iOS/Android).
+                // See http://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#FT_Set_Transform
+                prevAdvance->x += static_cast<FT_Pos>(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(static_cast<float32>(kern.x)));
+                prevAdvance->y += static_cast<FT_Pos>(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(static_cast<float32>(kern.y)));
             	prevAdvance->x += glyph.delta;
 			}
 		}

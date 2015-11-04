@@ -27,7 +27,7 @@ public class InternalViewClientV14 extends WebViewClient {
         int id;
 
         volatile boolean isRenderToTexture = false;
-        volatile boolean isVisible = true;
+        volatile boolean pendingVisible = true;
 
         // precache as much as possible
         Bitmap bitmapCache = null;
@@ -38,19 +38,30 @@ public class InternalViewClientV14 extends WebViewClient {
 
         public boolean isVisible()
         {
-            return isVisible;
+            return pendingVisible;
         }
 
         public void setVisible(WebViewWrapper view, boolean isVisible)
         {
-            this.isVisible = isVisible;
-            if (isVisible)
-            {
-                view.setVisibility(View.VISIBLE);
+            this.pendingVisible = isVisible;
+            
+            // Workaround: call updateVisible instantly because it will not be called on SystemDraw
+            if(!isVisible) {
+                updateVisible(view);
             }
-            else
-            {
-                view.setVisibility(View.GONE);
+        }
+        
+        public void updateVisible(WebViewWrapper view) {
+        	boolean visible = view.getVisibility() == View.VISIBLE;
+            if(visible != pendingVisible) {
+                if (pendingVisible)
+                {
+                    view.setVisibility(View.VISIBLE);
+                }
+                else
+                {
+                    view.setVisibility(View.GONE);
+                }
             }
         }
 
@@ -77,8 +88,7 @@ public class InternalViewClientV14 extends WebViewClient {
             JNIActivity activity = JNIActivity.GetActivity();
             if (!activity.GetIsPausing())
             {
-                activity.PostEventToGL(new OnPageLoadedNativeRunnable(pixels,
-                    width, height));
+                activity.RunOnMainLoopThread(new OnPageLoadedNativeRunnable(pixels, width, height));
             }
         }
 
@@ -100,7 +110,7 @@ public class InternalViewClientV14 extends WebViewClient {
             @Override
             public void run() {
                 // if user lock screen just return - prevent crush in gl thread
-                if(!JNIGLSurfaceView.isPaused())
+                if(!JNISurfaceView.isPaused())
                 {
                     JNIWebView.OnPageLoaded(id, pixels, width, height);
                 }
@@ -127,15 +137,15 @@ public class InternalViewClientV14 extends WebViewClient {
             } 
             else 
             {
-                activity.PostEventToGL(new OnPageLoadedNativeRunnable(null, 0, 0));
+                activity.RunOnMainLoopThread(new OnPageLoadedNativeRunnable(null, 0, 0));
             }
         }
 
         private void renderToBitmapAndCopyPixels(WebView view) {
             Bitmap bitmap = renderWebViewIntoBitmap(view);
             if (bitmap != null) {
-                if (pixels == null || width != bitmap.getWidth()
-                        || height != bitmap.getHeight()) {
+                if (pixels == null || width != bitmap.getWidth() || height != bitmap.getHeight())
+                {
                     width = bitmap.getWidth();
                     height = bitmap.getHeight();
                     pixels = new int[width * height];
@@ -224,7 +234,7 @@ public class InternalViewClientV14 extends WebViewClient {
 
             FutureTask<Integer> task = new FutureTask<Integer>(urlChanged);
 
-            JNIActivity.GetActivity().PostEventToGL(task);
+            JNIActivity.GetActivity().RunOnMainLoopThread(task);
 
             return task;
         }

@@ -28,7 +28,7 @@
 
 
 #include "SpritePackerHelper.h"
-#include "SpritesPacker.h"
+#include "SpriteResourcesPacker.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include <QtConcurrentRun>
@@ -48,7 +48,7 @@ SpritePackerHelper::SpritePackerHelper()
 
 void SpritePackerHelper::UpdateParticleSprites(DAVA::eGPUFamily gpu)
 {
-	FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
+    FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
     if(projectPath.IsEmpty())
     {
         Logger::Warning("[ParticlesEditorSpritePackerHelper::UpdateParticleSprites] Project path not set.");
@@ -63,8 +63,8 @@ void SpritePackerHelper::UpdateParticleSprites(DAVA::eGPUFamily gpu)
 void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 {
 	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
-	FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
-	FilePath inputDir = projectPath + "DataSource/Gfx/Particles/";
+    FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
+    FilePath inputDir = projectPath + "DataSource/Gfx/Particles/";
 	FilePath outputDir = projectPath + "Data/Gfx/Particles/";
 
 	if(!FileSystem::Instance()->IsDirectory(inputDir))
@@ -74,22 +74,18 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 		return;
 	}
 
-	ResourcePacker2D * resourcePacker = new ResourcePacker2D();
-	
-	bool isChanged = resourcePacker->IsMD5ChangedDir(projectPath+"DataSource/Gfx/",inputDir,"particles.md5",true);
-	
-	SafeDelete(resourcePacker);
-	if(!isChanged)
-	{
-        DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
-		return;
-	}
-	
-	SpritesPacker packer;
-	packer.SetInputDir(inputDir);
-	packer.SetOutputDir(outputDir);
-	packer.PackTextures(gpu);
-	DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
+    ResourcePacker2D resourcePacker;
+
+    bool isSrcChanged = resourcePacker.RecalculateDirMD5(inputDir, projectPath + "DataSource/Gfx/particles.md5", true);
+    if (isSrcChanged)
+    {
+        SpriteResourcesPacker packer;
+        packer.SetInputDir(inputDir);
+        packer.SetOutputDir(outputDir);
+        packer.PackTextures(gpu);
+    }
+
+    DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
 }
 
 void SpritePackerHelper::Reload()

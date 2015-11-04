@@ -33,190 +33,167 @@ using namespace DAVA;
 
 DAVA_TESTCLASS(StringFormatTest)
 {
-    inline void checkFloatFormat(const WideString &formatStr, float32 value)
+    inline void CheckFloatFormat(const WideString& format, float32 value)
     {
-        WideString testStr = Format(formatStr.c_str(), value);
-        String tmpStr = WStringToString(formatStr);
-        String tmpFormated = Format(tmpStr.c_str(), value);
-        WideString checkStr = StringToWString(tmpFormated);
-        TEST_VERIFY_WITH_MESSAGE(testStr == checkStr, "\"" + WStringToString(testStr) + "\" == \"" + WStringToString(checkStr) + "\"");
+        String wideFormatting = WStringToString(Format(format.c_str(), value));
+        String narrowFormatting = Format(WStringToString(format).c_str(), value);
+        TEST_VERIFY_WITH_MESSAGE(wideFormatting == narrowFormatting, "'" + wideFormatting + " == " + narrowFormatting + "'");
     }
 
     DAVA_TEST(StringTestFunction)
     {
-        //     WideString formatStr1 = L"%ls %ls";
-        //     WideString value1 = L"test string";
-        //     WideString value2 = L"second";
-        //     TEST_VERIFY( Format( formatStr1.c_str(), value1.c_str(), value2.c_str()) == StringToWString( Format( WStringToString(formatStr1).c_str(), WStringToString(value1).c_str(), WStringToString(value2).c_str() ) ) );
+#if !defined(__DAVAENGINE_ANDROID__)
+        // Android doesn't support formatting wide string into narrow buffer
+        WideString formatStr1 = L"%ls %ls";
+        WideString value1 = L"test string";
+        WideString value2 = L"second";
+        TEST_VERIFY(Format(formatStr1.c_str(), value1.c_str(), value2.c_str()) == StringToWString(Format(WStringToString(formatStr1).c_str(), value1.c_str(), value2.c_str() ) ) );
+#endif
     }
 
     DAVA_TEST(IntegerTestFunction)
     {
-        WideString formatStr1 = L"%i%%";
-        WideString formatStr2 = L"%d%%";
-        WideString formatStr3 = L"%lld%%";
-
         int32 value = 1234567890;
         int64 value64 = 1234567890123456789;
 
-        TEST_VERIFY(Format(formatStr1.c_str(), value) == StringToWString(Format(WStringToString(formatStr1).c_str(), value)));
-        TEST_VERIFY(Format(formatStr2.c_str(), value) == StringToWString(Format(WStringToString(formatStr2).c_str(), value)));
-        TEST_VERIFY(Format(formatStr3.c_str(), value64) == StringToWString(Format(WStringToString(formatStr3).c_str(), value64)));
+        TEST_VERIFY(Format(L"%i%%", value) == StringToWString(Format("%i%%", value)));
+        TEST_VERIFY(Format(L"%d%%", value) == StringToWString(Format("%d%%", value)));
+        TEST_VERIFY(Format(L"%lld%%", value64) == StringToWString(Format("%lld%%", value64)));
 
         value *= -1;
         value64 *= -1;
 
-        TEST_VERIFY(Format(formatStr1.c_str(), value) == StringToWString(Format(WStringToString(formatStr1).c_str(), value)));
-        TEST_VERIFY(Format(formatStr2.c_str(), value) == StringToWString(Format(WStringToString(formatStr2).c_str(), value)));
-        TEST_VERIFY(Format(formatStr3.c_str(), value64) == StringToWString(Format(WStringToString(formatStr3).c_str(), value64)));
+        TEST_VERIFY(Format(L"%i%%", value) == StringToWString(Format("%i%%", value)));
+        TEST_VERIFY(Format(L"%d%%", value) == StringToWString(Format("%d%%", value)));
+        TEST_VERIFY(Format(L"%lld%%", value64) == StringToWString(Format("%lld%%", value64)));
     }
 
     DAVA_TEST(FloatTestFunction)
     {
-        WideString formatStr1 = L"%f";
-        WideString formatStr2 = L"%6.f";
-        WideString formatStr3 = L"%5.f";
-        WideString formatStr4 = L"%4.f";
-        WideString formatStr5 = L"%3.f";
-        WideString formatStr6 = L"%2.f";
-        WideString formatStr7 = L"%1.f";
-        WideString formatStr8 = L"%0.f";
-        WideString formatStr9 = L"%.6f";
-        WideString formatStr10 = L"%.5f";
-        WideString formatStr11 = L"%.4f";
-        WideString formatStr12 = L"%.3f";
-        WideString formatStr13 = L"%.2f";
-        WideString formatStr14 = L"%.1f";
-        WideString formatStr15 = L"%.0f";
-        WideString formatStr16 = L"%6.6f";
-        WideString formatStr17 = L"%5.5f";
-        WideString formatStr18 = L"%4.4f";
-        WideString formatStr19 = L"%3.3f";
-        WideString formatStr20 = L"%2.2f";
-        WideString formatStr21 = L"%1.1f";
-        WideString formatStr22 = L"%0.0f";
-
+        WideString formatStr[] = {
+            L"%f",
+            L"%6.f", L"%5.f", L"%4.f", L"%3.f", L"%2.f", L"%1.f", L"%0.f",
+            L"%.6f", L"%.5f", L"%.4f", L"%.3f", L"%.2f", L"%.1f", L"%.0f",
+            L"%6.6f", L"%5.5f", L"%4.4f", L"%3.3f", L"%2.2f", L"%1.1f", L"%0.0f"
+        };
+        float32 values[] = {
+            1234.1234f, 876.876f, 0.1234f, 0.2567f, 0.5f, 0.7543f,
+            -1234.1234f, -876.876f, -0.1234f, -0.2567f, -0.5f, -0.7543f,
+            12.1234f, 12.2567f, 12.5f, 12.7543f,
+            -12.1234f, -12.2567f, -12.5f, -12.7543f,
+            5.97391319f, -5.97391319f,
+            12345.9876f, -12345.9876f, 12345.5638f, -12345.5638f,
+            666.98f, -666.98f
+        };
+        for (auto& fmt : formatStr)
         {
-            float32 value1 = 1234.1234f;
-            checkFloatFormat(formatStr1, value1);
-            checkFloatFormat(formatStr2, value1);
-            checkFloatFormat(formatStr3, value1);
-            checkFloatFormat(formatStr4, value1);
-            checkFloatFormat(formatStr5, value1);
-            checkFloatFormat(formatStr6, value1);
-            checkFloatFormat(formatStr7, value1);
-            checkFloatFormat(formatStr8, value1);
-            checkFloatFormat(formatStr9, value1);
-            checkFloatFormat(formatStr10, value1);
-            checkFloatFormat(formatStr11, value1);
-            checkFloatFormat(formatStr12, value1);
-            checkFloatFormat(formatStr13, value1);
-            checkFloatFormat(formatStr14, value1);
-            checkFloatFormat(formatStr15, value1);
-            checkFloatFormat(formatStr16, value1);
-            checkFloatFormat(formatStr17, value1);
-            checkFloatFormat(formatStr18, value1);
-            checkFloatFormat(formatStr19, value1);
-            checkFloatFormat(formatStr20, value1);
-            checkFloatFormat(formatStr21, value1);
-            checkFloatFormat(formatStr22, value1);
-
-            float32 value2 = 876.876f;
-            checkFloatFormat(formatStr1, value2);
-            checkFloatFormat(formatStr2, value2);
-            checkFloatFormat(formatStr3, value2);
-            checkFloatFormat(formatStr4, value2);
-            checkFloatFormat(formatStr5, value2);
-            checkFloatFormat(formatStr6, value2);
-            checkFloatFormat(formatStr7, value2);
-            checkFloatFormat(formatStr8, value2);
-            checkFloatFormat(formatStr9, value2);
-            checkFloatFormat(formatStr10, value2);
-            checkFloatFormat(formatStr11, value2);
-            checkFloatFormat(formatStr12, value2);
-            checkFloatFormat(formatStr13, value2);
-            checkFloatFormat(formatStr14, value2);
-            checkFloatFormat(formatStr15, value2);
-            checkFloatFormat(formatStr16, value2);
-            checkFloatFormat(formatStr17, value2);
-            checkFloatFormat(formatStr18, value2);
-            checkFloatFormat(formatStr19, value2);
-            checkFloatFormat(formatStr20, value2);
-            checkFloatFormat(formatStr21, value2);
-            checkFloatFormat(formatStr22, value2);
-
-            float32 value3 = 0.1234f;
-            float32 value4 = 0.2567f;
-            float32 value5 = 0.5f;
-            float32 value6 = 0.7543f;
-
-            checkFloatFormat(formatStr15, value3);
-            checkFloatFormat(formatStr15, value4);
-            checkFloatFormat(formatStr15, value5);
-            checkFloatFormat(formatStr15, value6);
-        }
-        {
-            float32 value1 = -1234.1234f;
-            checkFloatFormat(formatStr1, value1);
-            checkFloatFormat(formatStr2, value1);
-            checkFloatFormat(formatStr3, value1);
-            checkFloatFormat(formatStr4, value1);
-            checkFloatFormat(formatStr5, value1);
-            checkFloatFormat(formatStr6, value1);
-            checkFloatFormat(formatStr7, value1);
-            checkFloatFormat(formatStr8, value1);
-            checkFloatFormat(formatStr9, value1);
-            checkFloatFormat(formatStr10, value1);
-            checkFloatFormat(formatStr11, value1);
-            checkFloatFormat(formatStr12, value1);
-            checkFloatFormat(formatStr13, value1);
-            checkFloatFormat(formatStr14, value1);
-            checkFloatFormat(formatStr15, value1);
-            checkFloatFormat(formatStr16, value1);
-            checkFloatFormat(formatStr17, value1);
-            checkFloatFormat(formatStr18, value1);
-            checkFloatFormat(formatStr19, value1);
-            checkFloatFormat(formatStr20, value1);
-            checkFloatFormat(formatStr21, value1);
-            checkFloatFormat(formatStr22, value1);
-
-            float32 value2 = -876.876f;
-            checkFloatFormat(formatStr1, value2);
-            checkFloatFormat(formatStr2, value2);
-            checkFloatFormat(formatStr3, value2);
-            checkFloatFormat(formatStr4, value2);
-            checkFloatFormat(formatStr5, value2);
-            checkFloatFormat(formatStr6, value2);
-            checkFloatFormat(formatStr7, value2);
-            checkFloatFormat(formatStr8, value2);
-            checkFloatFormat(formatStr9, value2);
-            checkFloatFormat(formatStr10, value2);
-            checkFloatFormat(formatStr11, value2);
-            checkFloatFormat(formatStr12, value2);
-            checkFloatFormat(formatStr13, value2);
-            checkFloatFormat(formatStr14, value2);
-            checkFloatFormat(formatStr15, value2);
-            checkFloatFormat(formatStr16, value2);
-            checkFloatFormat(formatStr17, value2);
-            checkFloatFormat(formatStr18, value2);
-            checkFloatFormat(formatStr19, value2);
-            checkFloatFormat(formatStr20, value2);
-            checkFloatFormat(formatStr21, value2);
-            checkFloatFormat(formatStr22, value2);
-
-            float32 value3 = -0.1234f;
-            float32 value4 = -0.2567f;
-            float32 value5 = -0.5f;
-            float32 value6 = -0.7543f;
-
-            checkFloatFormat(formatStr15, value3);
-            checkFloatFormat(formatStr15, value4);
-            checkFloatFormat(formatStr15, value5);
-            checkFloatFormat(formatStr15, value6);
+            for (float32 value : values)
+            {
+                CheckFloatFormat(fmt.c_str(), value);
+            }
         }
 
-        checkFloatFormat(L"%.3f", 10);
-        checkFloatFormat(L"%.0f", 12980.0f / 1000.0f);
-        checkFloatFormat(L"%.3f", 2.00671148f);
+        CheckFloatFormat(L"%.3f", 10);
+        CheckFloatFormat(L"%.0f", 12980.0f / 1000.0f);
+        CheckFloatFormat(L"%.3f", 2.00671148f);
+    }
+
+    DAVA_TEST(NarrowStringFormatTest)
+    {
+        TEST_VERIFY(Format("%%") == "%");
+        TEST_VERIFY(Format("%c", 'A') == "A");
+        TEST_VERIFY(Format("%lc", L'A') == "A");
+        TEST_VERIFY(Format("%s", "this is a test") == "this is a test");
+
+        TEST_VERIFY(Format("%d", 348) == "348");
+        TEST_VERIFY(Format("%2d", 348) == "348");
+        TEST_VERIFY(Format("%4d", 348) == " 348");
+        TEST_VERIFY(Format("%04d", 348) == "0348");
+        TEST_VERIFY(Format("%-4d", 348) == "348 ");
+        TEST_VERIFY(Format("%+d", 348) == "+348");
+        TEST_VERIFY(Format("%d", -348) == "-348");
+        TEST_VERIFY(Format("%i", 348) == "348");
+        TEST_VERIFY(Format("%+i", 348) == "+348");
+        TEST_VERIFY(Format("%i", -348) == "-348");
+
+        TEST_VERIFY(Format("%X", 0x1A0D) == "1A0D");
+        TEST_VERIFY(Format("%06X", 0x1A0D) == "001A0D");
+
+        TEST_VERIFY(Format("%llX", 0x123456489ABCDEF0) == "123456489ABCDEF0");
+        TEST_VERIFY(Format("%lld", 0x8000000000000000) == "-9223372036854775808");
+    }
+
+    DAVA_TEST(WideStringFormatTest)
+    {
+        TEST_VERIFY(Format(L"%%") == L"%");
+        TEST_VERIFY(Format(L"%c", 'A') == L"A");
+        TEST_VERIFY(Format(L"%lc", L'A') == L"A");
+        TEST_VERIFY(Format(L"%s", "this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%S", "this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%hs", "this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%hS", "this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%ls", L"this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%lS", L"this is a test") == L"this is a test");
+
+        TEST_VERIFY(Format(L"%d", 348) == L"348");
+        TEST_VERIFY(Format(L"%2d", 348) == L"348");
+        TEST_VERIFY(Format(L"%4d", 348) == L" 348");
+        TEST_VERIFY(Format(L"%04d", 348) == L"0348");
+        TEST_VERIFY(Format(L"%-4d", 348) == L"348 ");
+        TEST_VERIFY(Format(L"%+d", 348) == L"+348");
+        TEST_VERIFY(Format(L"%d", -348) == L"-348");
+        TEST_VERIFY(Format(L"%i", 348) == L"348");
+        TEST_VERIFY(Format(L"%+i", 348) == L"+348");
+        TEST_VERIFY(Format(L"%i", -348) == L"-348");
+
+        TEST_VERIFY(Format(L"%X", 0x1A0D) == L"1A0D");
+        TEST_VERIFY(Format(L"%06X", 0x1A0D) == L"001A0D");
+
+        TEST_VERIFY(Format(L"%llX", 0x123456489ABCDEF0) == L"123456489ABCDEF0");
+        TEST_VERIFY(Format(L"%lld", 0x8000000000000000) == L"-9223372036854775808");
+    }
+
+    DAVA_TEST(VeryLongStringFormatTest)
+    {
+        TEST_VERIFY(Format("%s%s%s", String(100, 'A').c_str(), String(200, 'B').c_str(), String(400, 'C').c_str()).length() == 700);
+        TEST_VERIFY(Format(L"%hs%hs%hs", String(100, 'A').c_str(), String(200, 'B').c_str(), String(400, 'C').c_str()).length() == 700);
+        TEST_VERIFY(Format(L"%ls%ls%ls", WideString(100, 'A').c_str(), WideString(200, 'B').c_str(), WideString(400, 'C').c_str()).length() == 700);
+    }
+
+    DAVA_TEST(StringFormatAsUsedByClientTest)
+    {
+        // Special test case for emulating StringFormat behavior from wot.blitz client
+        // Works only for wide strings
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", std::nullptr_t()) == L"[]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", L"%s", "", std::nullptr_t()) == L"[][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", std::nullptr_t()) == L"[]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", L"%ls", L"", std::nullptr_t()) == L"[][]");
+
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "str", L"%d", 13, L"%ls", L"wstr", L"%s", "", std::nullptr_t()) == L"[str][13][wstr][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s %ls", "str", L"wstr", L"%s", "", std::nullptr_t()) == L"[str wstr][]");
+    }
+
+    WideString StringFormatAsUsedByClient(const char16* mileStone, ...)
+    {
+        va_list args;
+        va_start(args, mileStone);
+        WideString result = StringFormatAsUsedByClientV(args);
+        va_end(args);
+        return result;
+    }
+
+    WideString StringFormatAsUsedByClientV(va_list& args)
+    {
+        WideString result;
+        while (true)
+        {
+            const char16* fmt = va_arg(args, const char16*);
+            if (fmt == nullptr)
+                break;
+
+            WideString v = FormatVL(fmt, args);
+            result += L"[" + v + L"]";  // Bracket output for testing purpose
+        }
+        return result;
     }
 };

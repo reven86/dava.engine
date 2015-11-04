@@ -62,7 +62,7 @@ def start_unittests_on_android_device():
     # start adb logcat and gather output DO NOT filter by TeamcityOutput tag
     # because we need interrupt gather log when unittests process finished
     sub_process = subprocess.Popen(
-        ["adb", "logcat", "-s", "TeamcityOutput"],
+        ["adb", "logcat", "-s", "TeamcityOutput", "AndroidRuntime:E", "ActivityManager:W"],
         stdout=subprocess.PIPE)
     # start unittests on device
     subprocess.Popen(
@@ -113,6 +113,23 @@ while continue_process_stdout:
             if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
                                                         #  finish tests on ios device (run with lldb)
                 app_exit_code = 0
+                if start_on_android:
+                    # we want to exit from logcat process because sub_process.stdout.readline() will block
+                    # current thread
+                    if sys.platform == "win32":
+                        sub_process.send_signal(signal.CTRL_C_EVENT)
+                    else:
+                        sub_process.send_signal(signal.SIGINT)
+                    continue_process_stdout = False
+            if line.find("E/AndroidRuntime") != -1:
+                sys.stdout.write(line)
+                sys.stdout.flush()
+            if line.find("Force finishing activity com.dava.unittests") != -1 or \
+               line.find("end=assert=msg") != -1:
+                app_exit_code = 1
+                sys.stdout.write(line)
+                sys.stdout.flush()
+                
                 if start_on_android:
                     # we want to exit from logcat process because sub_process.stdout.readline() will block
                     # current thread

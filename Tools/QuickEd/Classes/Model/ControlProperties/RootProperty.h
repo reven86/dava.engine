@@ -57,7 +57,7 @@ protected:
     virtual ~RootProperty();
     
 public:
-    virtual int GetCount() const override;
+    virtual DAVA::uint32 GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
 
     ClassProperty *GetClassProperty() const { return classProperty; }
@@ -79,6 +79,9 @@ public:
     void RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex);
     void RemoveComponentPropertiesSection(ComponentPropertiesSection *section);
 
+    void AttachPrototypeComponent(ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection);
+    void DetachPrototypeComponent(ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection);
+
     const DAVA::Vector<BackgroundPropertiesSection*> &GetBackgroundProperties() const;
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
 
@@ -91,15 +94,15 @@ public:
     void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     void SetDefaultProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetProperty(AbstractProperty *property);
-    void RefreshProperty(AbstractProperty *property);
+    void RefreshProperty(AbstractProperty *property, DAVA::int32 refreshFlags);
+    AbstractProperty* FindPropertyByName(const DAVA::String& name) const;
 
-    void Refresh() override;
+    void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor *visitor) override;
     bool IsReadOnly() const override;
 
     const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
-
 private:
     void AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
     void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType cloneType);

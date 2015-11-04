@@ -77,12 +77,11 @@ namespace DAVA
 
 	AutotestingSystemLua::AutotestingSystemLua() : delegate(nullptr), luaState(nullptr), memoryPool(nullptr), memorySpace(nullptr)
 	{
-		autotestingLocalizationSystem = new LocalizationSystem();
+
 	}
 
 	AutotestingSystemLua::~AutotestingSystemLua()
 	{
-		SafeRelease(autotestingLocalizationSystem);
 
 		if (!luaState)
 		{
@@ -109,9 +108,6 @@ namespace DAVA
 		}
 
 		Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
-		autotestingLocalizationSystem->SetDirectory("~res:/Autotesting/Strings/");
-		autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
-		autotestingLocalizationSystem->Init();
 
 		memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
 		memset(memoryPool, 0, LUA_MEMORY_POOL_SIZE);
@@ -130,14 +126,14 @@ namespace DAVA
 		{
 			AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
 		}
-
-		if (!RunScriptFromFile("~res:/Autotesting/Scripts/autotesting_api.lua"))
+        String automationAPIStrPath = AutotestingSystem::ResolvePathToAutomation("/Autotesting/Scripts/autotesting_api.lua");
+		if (automationAPIStrPath.empty() || !RunScriptFromFile(automationAPIStrPath))
 		{
 			AutotestingSystem::Instance()->ForceQuit("Initialization of 'autotesting_api.lua' was failed.");
 		}
 
 		lua_getglobal(luaState, "SetPackagePath");
-		lua_pushstring(luaState, "~res:/Autotesting/");
+		lua_pushstring(luaState,  AutotestingSystem::ResolvePathToAutomation("/Autotesting/").c_str());
 		if (lua_pcall(luaState, 1, 1, 0))
 		{
 			const char* err = lua_tostring(luaState, -1);
@@ -368,8 +364,9 @@ namespace DAVA
 
 	void AutotestingSystemLua::OnStepStart(const String &stepName)
 	{
+		AutotestingSystem::Instance()->stepIndex++;
 		Logger::FrameworkDebug("AutotestingSystemLua::OnStepStart %s", stepName.c_str());
-		AutotestingSystem::Instance()->OnStepStart(stepName);
+		AutotestingSystem::Instance()->OnStepStart(Format("%d %s", AutotestingSystem::Instance()->stepIndex, stepName.c_str()));
 	}
 
 	void AutotestingSystemLua::Log(const String &level, const String &message)
@@ -530,9 +527,9 @@ namespace DAVA
 
 		UIEvent keyPress;
 		keyPress.tid = keyChar;
-		keyPress.phase = UIEvent::PHASE_KEYCHAR;
-		keyPress.tapCount = 1;
-		keyPress.keyChar = keyChar;
+        keyPress.phase = UIEvent::Phase::CHAR;
+        keyPress.tapCount = 1;
+        keyPress.keyChar = keyChar;
 
 		Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
 			keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
@@ -693,8 +690,6 @@ namespace DAVA
 	bool AutotestingSystemLua::CheckMsgText(UIControl* control, const String &key)
 	{
 		WideString expectedText = StringToWString(key);
-		//TODO: check key in localized strings for Lua
-		expectedText = autotestingLocalizationSystem->GetLocalizedString(expectedText);
 
 		UIStaticText *uiStaticText = dynamic_cast<UIStaticText*>(control);
 		if (uiStaticText)
@@ -714,9 +709,9 @@ namespace DAVA
 	void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId, int32 tapCount)
 	{
 		UIEvent touchDown;
-		touchDown.phase = UIEvent::PHASE_BEGAN;
-		touchDown.tid = touchId;
-		touchDown.tapCount = tapCount;
+        touchDown.phase = UIEvent::Phase::BEGAN;
+        touchDown.tid = touchId;
+        touchDown.tapCount = tapCount;
 		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
 		touchDown.point = point;
 		ProcessInput(touchDown);
@@ -732,16 +727,16 @@ namespace DAVA
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{
-			touchMove.phase = UIEvent::PHASE_DRAG;
-			ProcessInput(touchMove);
-		}
+            touchMove.phase = UIEvent::Phase::DRAG;
+            ProcessInput(touchMove);
+        }
 		else
 		{
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 			Logger::Warning("AutotestingSystemLua::TouchMove point=(%f, %f) ignored no touch down found", point.x, point.y);
 #else
-			touchMove.phase = UIEvent::PHASE_MOVE;
-			ProcessInput(touchMove);
+            touchMove.phase = UIEvent::Phase::MOVE;
+            ProcessInput(touchMove);
 #endif
 		}
 	}
@@ -753,28 +748,27 @@ namespace DAVA
 		{
 			AutotestingSystem::Instance()->OnError("TouchAction::TouchUp touch down not found");
 		}
-		touchUp.phase = UIEvent::PHASE_ENDED;
-		touchUp.tid = touchId;
+        touchUp.phase = UIEvent::Phase::ENDED;
+        touchUp.tid = touchId;
 
-		ProcessInput(touchUp);
+        ProcessInput(touchUp);
 	}
 
 	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
 	{
-		Vector<UIEvent> touches;
-		touches.push_back(input);
-		UIControlSystem::Instance()->OnInput(0, touches, touches);
+        UIEvent ev = input;
+        UIControlSystem::Instance()->OnInput(&ev);
 
-		AutotestingSystem::Instance()->OnInput(input);
-	}
+        AutotestingSystem::Instance()->OnInput(input);
+    }
 
-	inline void AutotestingSystemLua::ParsePath(const String &path, Vector<String> &parsedPath)
-	{
-		Split(path, "/", parsedPath);
-	}
+    inline void AutotestingSystemLua::ParsePath(const String& path, Vector<String>& parsedPath)
+    {
+        Split(path, "/", parsedPath);
+    }
 
-	bool AutotestingSystemLua::LoadWrappedLuaObjects()
-	{
+    bool AutotestingSystemLua::LoadWrappedLuaObjects()
+    {
 		if (!luaState)
 		{
 			return false; //TODO: report error?
@@ -865,11 +859,49 @@ namespace DAVA
 		if (lua_pcall(luaState, 1, 1, 0))
 		{
 			const char* err = lua_tostring(luaState, -1);
-			Logger::FrameworkDebug("AutotestingSystemLua::RunScript error: %s", err);
+			Logger::Debug("AutotestingSystemLua::RunScript error: %s", err);
 			return false;
 		}
 		return true;
 	}
+	int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
+    {
+		int32 queueState = 0;
+		if (AutotestingSystem::Instance()->isDB)
+		{
+			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
+			KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject.Get(), "clusters_queue");
+			String serverName = Format("%s", cluster.c_str());
+			
+			if (!clustersQueue->IsKeyExists(serverName))
+			{
+				clustersQueue->SetInt32(serverName, 0);
+			}
+			else
+			{
+				queueState = clustersQueue->GetInt32(serverName);
+			}
+		}
+        return queueState;
+    }
+    
+    bool AutotestingSystemLua::SetServerQueueState(const String &cluster, int32 state)
+    {
+		if (!AutotestingSystem::Instance()->isDB)
+		{ 
+			return true;
+		}
+		RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
+		KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject.Get(), "clusters_queue");
+        String serverName = Format("%s", cluster.c_str());
+        bool isSet = false;
+        if (!clustersQueue->IsKeyExists(serverName) || clustersQueue->GetInt32(serverName) != state)
+        {
+            clustersQueue->SetInt32(serverName, state);
+            isSet = AutotestingDB::Instance()->SaveToDB(dbUpdateObject.Get());
+        }
+        return isSet;
+    }
 };
 
 #endif //__DAVAENGINE_AUTOTESTING__

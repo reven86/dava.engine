@@ -32,7 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/Image/Image.h"
-#include "TexturePacker/ImagePacker.h"
+#include "TexturePacker/TextureAtlas.h"
 
 namespace DAVA
 {
@@ -46,7 +46,7 @@ public:
     bool Create(uint32 width, uint32 height);
 
     bool Read(const FilePath &filename);
-    void Write(const FilePath &filename);
+    void Write(const FilePath &filename, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
 
     void DrawImage(const PackedInfo &drawRect, const Rect2i &imageOffsetRect, PngImageExt *image);
     void DrawImage(int32 sx, int32 sy, PngImageExt *image, const Rect2i &srcRect);
@@ -54,6 +54,8 @@ public:
     void DrawRect(const Rect2i &rect, uint32 color);
 
     void FindNonOpaqueRect(Rect2i &rect);
+
+    bool ConvertToFormat(PixelFormat format);
 
     void DitherAlpha();
 
@@ -69,7 +71,7 @@ private:
 
     Color GetDitheredColorForPoint(int32 x, int32 y);
 
-    Image *internalData;
+    ScopedPtr<Image> internalData;
 };
 
 inline uint8 * PngImageExt::GetData() const

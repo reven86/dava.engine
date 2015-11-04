@@ -31,6 +31,7 @@
 #define __QUICKED_PROPERTIES_MODEL_H__
 
 #include <QAbstractItemModel>
+#include <QSet>
 
 #include "FileSystem/VariantType.h"
 #include "Model/ControlProperties/PropertyListener.h"
@@ -43,8 +44,11 @@ namespace DAVA {
     };
 }
 
+class QTimer;
+
 class AbstractProperty;
 class ControlNode;
+class StyleSheetNode;
 class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
 
@@ -54,38 +58,61 @@ class PropertiesModel : public QAbstractItemModel, private PropertyListener
     
 public:
     PropertiesModel(ControlNode *controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
+    PropertiesModel(StyleSheetNode *styleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     virtual ~PropertiesModel();
-    
+    void Init();
     ControlNode *GetControlNode() const {return controlNode; }
-    
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    virtual QModelIndex parent(const QModelIndex &child) const override;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const  override;
-    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const  override;
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
-    virtual QVariant headerData(int section, Qt::Orientation orientation,
-                                int role = Qt::DisplayRole) const override;
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex& child) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override;
+private slots:
+    void UpdateAllChangedProperties();
 
 private: // PropertyListener
-    virtual void PropertyChanged(AbstractProperty *property) override;
+    void PropertyChanged(AbstractProperty *property) override;
 
-    virtual void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
-    virtual void ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
     
-    virtual void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
-    virtual void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+
+    void StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    
+    void StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+
+    void StyleSelectorWillBeAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
+    void StyleSelectorWasAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
+    
+    void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
+    void StyleSelectorWasRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
 
 private:
+    void ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value);
+    void ResetProperty(AbstractProperty *property);
+    
+private:
     QModelIndex indexByProperty(AbstractProperty *property, int column = 0);
-    QVariant makeQVariant(const AbstractProperty *property) const;
+    QString makeQVariant(const AbstractProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
     
 private:
-    ControlNode *controlNode;
-    QtModelPackageCommandExecutor *commandExecutor;
+    ControlNode *controlNode = nullptr;
+    StyleSheetNode *styleSheet = nullptr;
+    AbstractProperty *rootProperty = nullptr;
+    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
+    QTimer* updatePropertyTimer = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

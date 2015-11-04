@@ -138,10 +138,10 @@ protected:
 public: 
     enum eError{
         ERROR_NO_ERROR = 0,
-        ERROR_VERSION_IS_TOO_OLD = 1,
-        ERROR_FAILED_TO_CREATE_FILE = 2,
-        ERROR_FILE_WRITE_ERROR = 3,
-        ERROR_VERSION_TAGS_INVALID = 4,
+        ERROR_VERSION_IS_TOO_OLD,
+        ERROR_FAILED_TO_CREATE_FILE,
+        ERROR_FILE_WRITE_ERROR,
+        ERROR_VERSION_TAGS_INVALID,
     };
 
 	enum eFileType
@@ -160,15 +160,11 @@ public:
     bool DebugLogEnabled();
     void EnableSaveForGame(bool _isSaveForGame);
     
-    const FilePath GetScenePath();
-    
     //Material * GetMaterial(int32 index);
     //StaticMesh * GetStaticMesh(int32 index);
     
     //DataNode * GetNodeByPointer(uint64 pointer);
     
-    void SetVersion(const VersionInfo::SceneVersion& version);
-    const VersionInfo::SceneVersion& GetVersion() const;
     void SetError(eError error);
     eError GetError();
     
@@ -179,12 +175,10 @@ public:
     void RebuildTangentSpace(Entity *entity);
     void ConvertShadowVolumes(Entity * rootNode, NMaterial * shadowMaterialParent);
     void RemoveDeprecatedMaterialFlags(Entity * rootNode);
+    void ConvertAlphatestValueMaterials(Entity * rootNode);
     int32 removedNodeCount;
     	    
     void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);
-
-	Scene* GetScene() {return scene;}
-
     SceneArchive *LoadSceneArchive(const FilePath & filename); //purely load data
 	
 private:
@@ -206,18 +200,16 @@ private:
     bool SaveDataHierarchy(DataNode * node, File * file, int32 level);
     void LoadDataHierarchy(Scene * scene, DataNode * node, File * file, int32 level);
     bool SaveDataNode(DataNode * node, File * file);
-    void LoadDataNode(DataNode * parent, File * file);
+    void LoadDataNode(Scene *scene, DataNode * parent, File * file);
 	
 	inline bool IsDataNodeSerializable(DataNode* node)
 	{
 		//VI: runtime nodes (such as ShadowVolume materials are not serializable)
-		return ((node->GetNodeGlags() & DataNode::NodeRuntimeFlag) == 0);
+		return (!node->IsRuntime());
 	}
 	
-	uint32 GetSerializableDataNodesCount(List<DataNode*>& nodeList);
-
     bool SaveHierarchy(Entity * node, File * file, int32 level);
-    void LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * node, File * file, int32 level);
+    void LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
     Entity * LoadEntity(Scene * scene, KeyedArchive * archive);
     Entity * LoadLandscape(Scene * scene, KeyedArchive * archive);
@@ -234,8 +226,6 @@ private:
 	
     bool isDebugLogEnabled;
     bool isSaveForGame;
-    FilePath rootNodePathName;
-    Scene * scene;
     eError lastError;
 	
 	SerializationContext serializationContext;

@@ -50,6 +50,8 @@ public:
 
 	void SetTitle(const WideString &_title);
 	void SetText(const WideString &_text);
+    void SetUseSound(const bool value);
+    
 	void Show();
     void Hide();
     void Update();
@@ -61,15 +63,16 @@ private:
     virtual void ImplShow() = 0;
 
 protected:
-    LocalNotificationImpl *impl;
+    LocalNotificationImpl *impl = nullptr;
 
-    bool isChanged;
-    bool isVisible;
+    bool isChanged = false;
+    bool isVisible = true;
 
     Message action;
 
-    WideString title;
-    WideString text;
+    WideString title = L"";
+    WideString text = L"";
+    bool useSound = false;
 };
     
     

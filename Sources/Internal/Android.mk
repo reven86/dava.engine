@@ -5,11 +5,6 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := iconv_android-prebuilt
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libiconv_android.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
 LOCAL_MODULE := fmodex-prebuild
 LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
 include $(PREBUILT_SHARED_LIBRARY)
@@ -94,6 +89,10 @@ LOCAL_MODULE := uv_android
 LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := webp_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libwebp_android.a
+include $(PREBUILT_STATIC_LIBRARY)
 
 DAVA_ROOT := $(LOCAL_PATH)
 
@@ -182,6 +181,25 @@ DV_LOCAL_CPPFLAGS += -Wno-mismatched-tags
 DV_LOCAL_CPPFLAGS += -Wno-missing-noreturn
 DV_LOCAL_CPPFLAGS += -Wno-consumed
 DV_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
+DV_LOCAL_CPPFLAGS += -Wno-reserved-id-macro
+DV_LOCAL_CPPFLAGS += -Wno-old-style-cast
+# we have to do it because clang3.6 bug http://bugs.mitk.org/show_bug.cgi?id=18883
+DV_LOCAL_CPPFLAGS += -Wno-error=inconsistent-missing-override
+DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
+DV_LOCAL_CPPFLAGS += -Wno-null-conversion
+DV_LOCAL_CPPFLAGS += -Wno-unused-local-typedef
+DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-return
+DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-break
+DV_LOCAL_CPPFLAGS += -Wno-unknown-warning-option
+DV_LOCAL_CPPFLAGS += -Wno-pedantic
+DV_LOCAL_CPPFLAGS += -Wno-extern-c-compat
+DV_LOCAL_CPPFLAGS += -Wno-unknown-pragmas
+DV_LOCAL_CPPFLAGS += -Wno-unused-private-field
+DV_LOCAL_CPPFLAGS += -Wno-unused-label
+DV_LOCAL_CPPFLAGS += -Wno-unused-function
+DV_LOCAL_CPPFLAGS += -Wno-unused-value
+DV_LOCAL_CPPFLAGS += -Wno-self-assign-field
+DV_LOCAL_CPPFLAGS += -Wno-undefined-reinterpret-cast
 
 DV_LOCAL_CPP_FEATURES += exceptions
 
@@ -203,7 +221,7 @@ DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
 DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
 # set included libraries
-DV_LOCAL_STATIC_LIBRARIES := libbox2d
+DV_LOCAL_STATIC_LIBRARIES := fmodex-prebuild
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
@@ -211,8 +229,6 @@ DV_LOCAL_STATIC_LIBRARIES += android-ndk-profiler
 endif
 endif
 
-DV_LOCAL_SHARED_LIBRARIES += iconv_android-prebuilt
-DV_LOCAL_SHARED_LIBRARIES += fmodex-prebuild
 DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
 
 DV_LOCAL_STATIC_LIBRARIES += xml_android
@@ -230,8 +246,10 @@ DV_LOCAL_STATIC_LIBRARIES += zip_android
 DV_LOCAL_STATIC_LIBRARIES += fribidi_android
 DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
+DV_LOCAL_STATIC_LIBRARIES += webp_android
+DV_LOCAL_STATIC_LIBRARIES += cpufeatures
 
-DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
+DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic
 
 ifeq ($(APP_PLATFORM), android-14)
 	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
@@ -256,6 +274,13 @@ include $(CLEAR_VARS)
 
 # set module name
 LOCAL_MODULE := libInternalPart1
+
+# On arm architectures add sysroot option to be able to use 
+# _Unwind_Backtrace and _Unwind_GetIP for collecting backtraces
+# TODO: review checking arm arch and $(ANDROID_NDK_ROOT) 
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+       DV_LOCAL_CFLAGS += --sysroot=$(ANDROID_NDK_ROOT)/platforms/$(APP_PLATFORM)/arch-arm
+endif
 
 LOCAL_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
 LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_EXPORT_C_INCLUDES)
@@ -292,11 +317,13 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Network/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Services/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Services/MMNet/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
+	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -331,6 +358,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Render/Highlevel/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Highlevel/Vegetation/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Material/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/Common/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/Common/MCPP/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/GLES2/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Components/*.cpp) \
@@ -341,9 +371,11 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
@@ -362,7 +394,6 @@ include $(BUILD_STATIC_LIBRARY)
 # include modules
 $(call import-add-path,$(DAVA_ROOT)/..)
 $(call import-add-path,$(DAVA_ROOT)/../External)
-$(call import-add-path,$(DAVA_ROOT)/../External/Box2D)
 $(call import-add-path,$(DAVA_ROOT))
 
 ifeq ($(DAVA_PROFILE), true)
@@ -372,4 +403,4 @@ $(call import-module,android-ndk-profiler)
 endif
 endif
 
-$(call import-module,Box2D)
+$(call import-module,android/cpufeatures)

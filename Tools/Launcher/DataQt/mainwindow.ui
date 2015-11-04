@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>973</width>
-    <height>414</height>
+    <width>1107</width>
+    <height>567</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -183,7 +183,7 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="2,6">
+      <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,6">
        <property name="spacing">
         <number>5</number>
        </property>
@@ -200,31 +200,42 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QListWidget" name="listWidget">
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
-         </property>
-         <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectRows</enum>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>32</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="resizeMode">
-          <enum>QListView::Fixed</enum>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
+         <item>
+          <widget class="QLineEdit" name="lineEdit_search">
+           <property name="placeholderText">
+            <string>filter</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListView" name="listView">
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="resizeMode">
+            <enum>QListView::Fixed</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="page">
           <layout class="QHBoxLayout" name="horizontalLayout_2">

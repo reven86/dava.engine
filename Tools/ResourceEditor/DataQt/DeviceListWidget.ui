@@ -45,6 +45,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="viewDump">
+       <property name="text">
+        <string>View dump</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>

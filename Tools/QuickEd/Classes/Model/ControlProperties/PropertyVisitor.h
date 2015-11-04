@@ -13,6 +13,9 @@ class IntrospectionProperty;
 class LocalizedTextValueProperty;
 class NameProperty;
 class PrototypeNameProperty;
+class StyleSheetRootProperty;
+class StyleSheetSelectorProperty;
+class StyleSheetProperty;
 
 class PropertyVisitor
 {
@@ -33,6 +36,10 @@ public:
     virtual void VisitCustomClassProperty(CustomClassProperty *property) = 0;
     
     virtual void VisitIntrospectionProperty(IntrospectionProperty *property) = 0;
+    
+    virtual void VisitStyleSheetRoot(StyleSheetRootProperty *property) = 0;
+    virtual void VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property) = 0;
+    virtual void VisitStyleSheetProperty(StyleSheetProperty *property) = 0;
 };
 
 #endif // __QUICKED_PROPERTY_VISITOR_H__

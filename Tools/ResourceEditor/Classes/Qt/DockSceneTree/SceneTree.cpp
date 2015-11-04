@@ -56,11 +56,19 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
+#include "FileSystem/VariantType.h"
+
+#include "Tools/LazyUpdater/LazyUpdater.h"
+
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	: QTreeView(parent)
 	, isInSync(false)
 {
+	Function<void()> fn(this, &SceneTree::UpdateTree);
+	treeUpdater = new LazyUpdater(fn, this);
+
 	CleanupParticleEditorSelectedItems();
 
 	treeModel = new SceneTreeModel();
@@ -78,31 +86,25 @@ SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
 	// scene signals
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), this, SLOT(SceneStructureChanged(SceneEditor2 *, DAVA::Entity *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &SceneTree::SceneActivated);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &SceneTree::SceneDeactivated);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, this, &SceneTree::SceneStructureChanged);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &SceneTree::SceneSelectionChanged);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &SceneTree::CommandExecuted);
 
 	// particles signals
-	QObject::connect(SceneSignals::Instance(), SIGNAL(ParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)), this, SLOT(ParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)));
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::ParticleLayerValueChanged, this, &SceneTree::ParticleLayerValueChanged);
 
 	// this widget signals
-	QObject::connect(selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(TreeSelectionChanged(const QItemSelection &, const QItemSelection &)));
-	QObject::connect(this, SIGNAL(clicked(const QModelIndex &)), this, SLOT(TreeItemClicked(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(TreeItemDoubleClicked(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), this, SLOT(TreeItemCollapsed(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), this, SLOT(TreeItemExpanded(const QModelIndex &)));
-	QObject::connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(OnRefreshTimeout()));
+	QObject::connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, &SceneTree::TreeSelectionChanged);
+	QObject::connect(this, &QTreeView::clicked, this, &SceneTree::TreeItemClicked);
+	QObject::connect(this, &QTreeView::doubleClicked, this, &SceneTree::TreeItemDoubleClicked);
+	QObject::connect(this, &QTreeView::collapsed, this, &SceneTree::TreeItemCollapsed);
+	QObject::connect(this, &QTreeView::expanded, this, &SceneTree::TreeItemExpanded);
 
-	QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
-
-	refreshTimer.start(1500);
+	QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
 }
 
-SceneTree::~SceneTree()
-{
-
-}
 
 void SceneTree::SetFilter(const QString &filter)
 {
@@ -240,15 +242,57 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
 	if(scene == treeModel->GetScene())
 	{
-		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+		auto selectionWasBlocked = selectionModel()->blockSignals(true);
+        filteringProxyModel->setSourceModel(nullptr);
+        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+        filteringProxyModel->setSourceModel(treeModel);
+
         treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
+
         SyncSelectionToTree();
+        EmitParticleSignals(QItemSelection());
 
         if (treeModel->IsFilterSet())
         {
             ExpandFilteredItems();
         }
+
+		selectionModel()->blockSignals(selectionWasBlocked);
+	}
+}
+
+void SceneTree::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
+{	
+	auto commandID = command->GetId();
+
+	switch (commandID)
+	{
+	case CMDID_COMPONENT_ADD:
+	case CMDID_COMPONENT_REMOVE:
+	case CMDID_INSP_MEMBER_MODIFY:
+	case CMDID_INSP_DYNAMIC_MODIFY:
+	case CMDID_ENTITY_LOCK:
+	case CMDID_PARTICLE_EMITTER_ADD:
+	case CMDID_PARTICLE_EMITTER_MOVE:
+	case CMDID_PARTICLE_EMITTER_REMOVE:
+	case CMDID_PARTICLE_LAYER_REMOVE:
+	case CMDID_PARTICLE_LAYER_MOVE:
+	case CMDID_PARTICLE_FORCE_REMOVE:
+	case CMDID_PARTICLE_FORCE_MOVE:
+	case CMDID_META_OBJ_MODIFY:
+	case CMDID_PARTICLE_EMITTER_LAYER_ADD:
+	case CMDID_PARTICLE_EMITTER_LAYER_REMOVE:
+	case CMDID_PARTICLE_EMITTER_LAYER_CLONE:
+	case CMDID_PARTICLE_EMITTER_FORCE_ADD:
+	case CMDID_PARTICLE_EMITTER_FORCE_REMOVE:
+	{
+		treeUpdater->Update();
+	}
+	break;
+
+	default:
+		break;
 	}
 }
 
@@ -555,12 +599,20 @@ void SceneTree::RemoveSelection()
             {
                 selection.Rem(entity);
                 --i;
+                DAVA::StringStream ss;
+                ss << "Can not remove entity "
+                    << entity->GetName().c_str()
+                    << ": entity is locked!"
+                    << PointerSerializer::FromPointer(entity);
+                Logger::Warning("%s", ss.str().c_str());
             }
         }
         
-        if(selection.Size())
-		sceneEditor->structureSystem->Remove(selection);
-	}
+        if (selection.Size())
+        {
+            sceneEditor->structureSystem->Remove(selection);
+        }
+    }
 }
 
 void SceneTree::CollapseSwitch()
@@ -679,8 +731,8 @@ void SceneTree::ReloadModelAs()
 				}
 				else
 				{
-					ownerPath = ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname();
-				}
+                    ownerPath = ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname();
+                }
 			}
 
 			QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
@@ -703,8 +755,8 @@ void SceneTree::SaveEntityAs()
 			DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
 			if(!scenePath.Exists() || !sceneEditor->IsLoaded())
 			{
-				scenePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-			}
+                scenePath = ProjectManager::Instance()->GetDataSourcePath();
+            }
 
 			QString filePath = FileDialog::getSaveFileName(NULL, QString("Save scene file"), QString(scenePath.GetDirectory().GetAbsolutePathname().c_str()), QString("DAVA SceneV2 (*.sc2)"));
 			if(!filePath.isEmpty())
@@ -817,20 +869,21 @@ void SceneTree::SyncSelectionFromTree()
 		SceneEditor2* curScene = treeModel->GetScene();
 		if(NULL != curScene)
 		{
-			// remove from selection system all entities that are not selected in tree
-            curScene->selectionSystem->Clear();
-
 			// select items in scene
+			EntityGroup group;
+
 			QModelIndexList indexList = selectionModel()->selection().indexes();
 			for (int i = 0; i < indexList.size(); ++i)
 			{
 				DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
-                curScene->selectionSystem->AddSelection(entity);
+				group.Add(entity);
 			}
+
+			curScene->selectionSystem->SetSelection(group);
 
 			// force selection system emit signals about new selection
 			// this should be done until we are inSync mode, to prevent unnecessary updates
-			// when signals from selection system will be emited on next frame
+			// when signals from selection system will be emitted on next frame
 			curScene->selectionSystem->ForceEmitSignals();
 		}
 
@@ -917,14 +970,15 @@ void SceneTree::EmitParticleSignals(const QItemSelection & selected)
 void SceneTree::AddEmitter()
 {
 	SceneEditor2* sceneEditor = treeModel->GetScene();
-	if(NULL != sceneEditor)
+	if (nullptr != sceneEditor)
 	{
 		QModelIndex realIndex = filteringProxyModel->mapToSource(currentIndex());
 		DAVA::Entity *curEntity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(realIndex));
-		if(NULL != curEntity && DAVA::GetEffectComponent(curEntity))
+		if (nullptr != curEntity && DAVA::GetEffectComponent(curEntity))
 		{
 			CommandAddParticleEmitter* command = new CommandAddParticleEmitter(curEntity);
 			sceneEditor->Exec(command);
+			sceneEditor->MarkAsChanged();
 			treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 		}
 	}
@@ -943,13 +997,13 @@ void SceneTree::SaveEffectEmittersAs()
 void SceneTree::StartEffect()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if(NULL != sceneEditor)
+	if (nullptr != sceneEditor)
 	{
 		SceneSelectionSystem *ss = sceneEditor->selectionSystem;
 		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
 		{
 			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
-			if(NULL != effect)
+			if (nullptr != effect)
 			{
 				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
 				CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(ss->GetSelectionEntity(i), true);
@@ -962,13 +1016,13 @@ void SceneTree::StartEffect()
 void SceneTree::StopEffect()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if(NULL != sceneEditor)
+	if (nullptr != sceneEditor)
 	{
 		SceneSelectionSystem *ss = sceneEditor->selectionSystem;
 		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
 		{
 			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
-			if(NULL != effect)
+			if (nullptr != effect)
 			{
 				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
 				CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(ss->GetSelectionEntity(i), false);
@@ -981,13 +1035,13 @@ void SceneTree::StopEffect()
 void SceneTree::RestartEffect()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if(NULL != sceneEditor)
+	if(nullptr != sceneEditor)
 	{
 		SceneSelectionSystem *ss = sceneEditor->selectionSystem;
 		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
 		{
 			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
-			if(NULL != effect)
+			if (nullptr != effect)
 			{
 				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
 				CommandRestartParticleEffect* command = new CommandRestartParticleEffect(ss->GetSelectionEntity(i));
@@ -1000,12 +1054,12 @@ void SceneTree::RestartEffect()
 void SceneTree::RemoveEmitter()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if (sceneEditor == NULL)
+	if (nullptr == sceneEditor)
 	{
 		return;
 	}
 
-	if ((!selectedEffect)||(!selectedEmitter))
+	if ((nullptr == selectedEffect) || (nullptr == selectedEmitter))
 	{
 		DVASSERT(false);
 		return;
@@ -1013,7 +1067,7 @@ void SceneTree::RemoveEmitter()
 
 	CommandRemoveParticleEmitter* command = new CommandRemoveParticleEmitter(selectedEffect, selectedEmitter);
 	sceneEditor->Exec(command);
-
+	sceneEditor->MarkAsChanged();
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 
 }
@@ -1021,7 +1075,7 @@ void SceneTree::RemoveEmitter()
 void SceneTree::AddLayer()
 {
 	SceneEditor2* sceneEditor = treeModel->GetScene();
-	if(NULL != sceneEditor)
+	if(nullptr != sceneEditor)
 	{
 		QModelIndex realIndex = filteringProxyModel->mapToSource(currentIndex());
 		SceneTreeItem *curItem = treeModel->GetItem(realIndex);
@@ -1034,6 +1088,7 @@ void SceneTree::AddLayer()
 		{
 			CommandAddParticleEmitterLayer* command = new CommandAddParticleEmitterLayer(curEmitter);
 			sceneEditor->Exec(command);
+			sceneEditor->MarkAsChanged();
 			treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 		}
 	}
@@ -1042,22 +1097,23 @@ void SceneTree::AddLayer()
 void SceneTree::LoadEmitterFromYaml()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if(!sceneEditor) 
+	if (nullptr == sceneEditor || nullptr == selectedEmitter)
+	{
 		return;
-	if (!selectedEmitter) 
-		return;	
+	}
 
 	QString filePath = FileDialog::getOpenFileName(NULL, QString("Open Particle Emitter Yaml file"),
 														GetParticlesConfigPath(), QString("YAML File (*.yaml)"));
-		if (filePath.isEmpty())
-		{
-			return;
-		}
+	if (filePath.isEmpty())
+	{
+		return;
+	}
 
 	CommandLoadParticleEmitterFromYaml* command = new CommandLoadParticleEmitterFromYaml(selectedEmitter, filePath.toStdString());
-			sceneEditor->Exec(command);
+	sceneEditor->Exec(command);
+	sceneEditor->MarkAsChanged();
 
-		treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
+	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 
 void SceneTree::SaveEmitterToYaml()
@@ -1072,14 +1128,12 @@ void SceneTree::SaveEmitterToYamlAs()
 
 
 void SceneTree::LoadInnerEmitterFromYaml()
-{	
+{
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if(!sceneEditor) 
+	if (nullptr == sceneEditor || nullptr == selectedEmitter || nullptr == selectedLayer)
+	{
 		return;
-	if (!selectedEmitter) 
-		return;
-	if (!selectedLayer)
-		return;
+	}
 	
 	QString filePath = FileDialog::getOpenFileName(NULL, QString("Open Particle Emitter Yaml file"),
 		GetParticlesConfigPath(), QString("YAML File (*.yaml)"));
@@ -1091,6 +1145,7 @@ void SceneTree::LoadInnerEmitterFromYaml()
 	selectedLayer->innerEmitterPath = filePath.toStdString();	
 	CommandLoadParticleEmitterFromYaml* command = new CommandLoadParticleEmitterFromYaml(selectedEmitter, filePath.toStdString());
 	sceneEditor->Exec(command);			
+	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 
@@ -1106,18 +1161,18 @@ void SceneTree::SaveInnerEmitterToYamlAs()
 void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if(!sceneEditor)	
+	if (nullptr == sceneEditor || nullptr == selectedEmitter)
+	{
 		return;
-	if (!selectedEmitter)
-		return;	
+	}
 	
-	forceAskFileName|=selectedEmitter->configPath.IsEmpty();	
+	forceAskFileName |= selectedEmitter->configPath.IsEmpty();	
 
-	FilePath yamlPath;
+	FilePath yamlPath = selectedEmitter->configPath;
 	if (forceAskFileName)
 	{
-		QString projectPath = ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str();
-		QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter YAML file"),
+        QString projectPath = ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str();
+        QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter YAML file"),
 			projectPath, QString("YAML File (*.yaml)"));
 
 		if (filePath.isEmpty())
@@ -1128,30 +1183,25 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
 		yamlPath = FilePath(filePath.toStdString());
 	}		
 
-	FilePath curEmitterFilePath;
-	if (forceAskFileName)
-	{
-		curEmitterFilePath = yamlPath;
-	}
-	else
-	{
-		curEmitterFilePath = selectedEmitter->configPath.IsEmpty() ? yamlPath : selectedEmitter->configPath;
-	}
-	selectedLayer->innerEmitterPath = curEmitterFilePath;
-	CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(selectedEmitter, curEmitterFilePath);
+    selectedLayer->innerEmitterPath = yamlPath;
+    CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(selectedEmitter, yamlPath);
 	sceneEditor->Exec(command);	
+    if (forceAskFileName)
+    {
+        sceneEditor->MarkAsChanged();
+    }
 }
 
 
 void SceneTree::CloneLayer()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if (sceneEditor == NULL)
+	if (nullptr == sceneEditor)
 	{
 		return;
 	}
 
-	if ((!selectedEmitter)||(!selectedLayer))
+	if (nullptr == selectedEmitter || nullptr == selectedLayer)
 	{
 		DVASSERT(false);
 		return;
@@ -1159,6 +1209,7 @@ void SceneTree::CloneLayer()
 
 	CommandCloneParticleEmitterLayer* command = new CommandCloneParticleEmitterLayer(selectedEmitter, selectedLayer);
 	sceneEditor->Exec(command);
+	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
@@ -1166,7 +1217,7 @@ void SceneTree::CloneLayer()
 void SceneTree::RemoveLayer()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if (sceneEditor == NULL)
+	if (nullptr == sceneEditor)
 	{
 		return;
 	}
@@ -1179,14 +1230,15 @@ void SceneTree::RemoveLayer()
 	
 	CommandRemoveParticleEmitterLayer* command = new CommandRemoveParticleEmitterLayer(selectedEmitter, selectedLayer);
 	sceneEditor->Exec(command);
-	
+	sceneEditor->MarkAsChanged();
+
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 
 void SceneTree::AddForce()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if (sceneEditor == NULL)
+	if (nullptr == sceneEditor)
 	{
 		return;
 	}
@@ -1199,6 +1251,7 @@ void SceneTree::AddForce()
 	
 	CommandAddParticleEmitterForce* command = new CommandAddParticleEmitterForce(selectedLayer);
 	sceneEditor->Exec(command);
+	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
@@ -1206,12 +1259,12 @@ void SceneTree::AddForce()
 void SceneTree::RemoveForce()
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if (sceneEditor == NULL)
+	if (nullptr == sceneEditor)
 	{
 		return;
 	}
 
-	if (!selectedLayer || !selectedForce)
+	if (nullptr == selectedLayer || nullptr == selectedForce)
 	{
 		DVASSERT(false);
 		return;
@@ -1219,27 +1272,28 @@ void SceneTree::RemoveForce()
 
 	CommandRemoveParticleEmitterForce* command = new CommandRemoveParticleEmitterForce(selectedLayer, selectedForce);
 	sceneEditor->Exec(command);
-	
+	sceneEditor->MarkAsChanged();
+
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 
 void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName, const QString& defaultName)
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
-	if(!sceneEditor)
+	if(nullptr == sceneEditor || nullptr == emitter)
 	{
 		return;
 	}
 
 	// Verify whether we have to ask about the file name. If emitter
 	// does not have emitter path - treat this as "force ask".
-	forceAskFileName|=(emitter&&emitter->configPath.IsEmpty());
+	forceAskFileName |= (emitter->configPath.IsEmpty());
 
-	FilePath yamlPath;
+    FilePath yamlPath = emitter->configPath;
     if (forceAskFileName)
     {
         FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-        QString particlesPath = defaultPath.IsEmpty()?ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str():defaultPath.GetAbsolutePathname().c_str();
+        QString particlesPath = defaultPath.IsEmpty() ? ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str() : defaultPath.GetAbsolutePathname().c_str();
 
         FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
         
@@ -1257,19 +1311,12 @@ void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileNa
         SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPath.GetDirectory()));
 	}
 	
-
-    FilePath curEmitterFilePath;
+    CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(emitter, yamlPath);
+    sceneEditor->Exec(command);
     if (forceAskFileName)
     {
-        curEmitterFilePath = yamlPath;
+        sceneEditor->MarkAsChanged();
     }
-    else
-    {
-        curEmitterFilePath = emitter->configPath.IsEmpty() ? yamlPath : emitter->configPath;
-    }
-
-    CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(emitter, curEmitterFilePath);
-    sceneEditor->Exec(command);
 }
 
 void SceneTree::PerformSaveEffectEmitters(bool forceAskFileName)
@@ -1294,7 +1341,7 @@ void SceneTree::PerformSaveEffectEmitters(bool forceAskFileName)
 
 QString SceneTree::GetParticlesConfigPath()
 {
-	return ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str();
+    return ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str();
 }
 
 void SceneTree::CleanupParticleEditorSelectedItems()
@@ -1303,11 +1350,6 @@ void SceneTree::CleanupParticleEditorSelectedItems()
 	this->selectedForce = NULL;
 	this->selectedEmitter = NULL;
 	this->selectedEffect = NULL;
-}
-
-void SceneTree::OnRefreshTimeout()
-{
-	dataChanged(QModelIndex(), QModelIndex());
 }
 
 void SceneTree::SetEntityNameAsFilter()
@@ -1378,5 +1420,9 @@ void SceneTree::SetCustomDrawCamera()
 			sceneEditor->SetCustomDrawCamera(camera);
 		}
 	}
+}
 
+void SceneTree::UpdateTree()
+{
+	dataChanged(QModelIndex(), QModelIndex());
 }

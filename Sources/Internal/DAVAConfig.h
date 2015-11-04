@@ -80,5 +80,8 @@
 
 #define REBUILD_TANGENT_SPACE_ON_IMPORT
 
+//Uncomment this define to using C++11 concurrency instead native
+//#define USE_CPP11_CONCURRENCY
+
 #endif // __DAVAENGINE_CONFIG_H__
 

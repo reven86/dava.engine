@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include <Base/FunctionTraits.h>
+#include <Functional/Function.h>
 #include <Debug/DVAssert.h>
 
 #include <Network/Private/Announcer.h>
@@ -48,8 +48,8 @@ Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Fu
     , dataCallback(needDataCallback)
 {
     DVASSERT(true == endpoint.Address().IsMulticast());
-    DVVERIFY(true == endpoint.Address().ToString(endpAsString, COUNT_OF(endpAsString)));
-    DVASSERT(loop != NULL && announcePeriod > 0 && dataCallback != 0);
+    DVVERIFY(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
+    DVASSERT(loop != nullptr && announcePeriod > 0 && dataCallback != nullptr);
 }
 
 Announcer::~Announcer()
@@ -66,7 +66,7 @@ void Announcer::Start()
 void Announcer::Stop(Function<void (IController*)> callback)
 {
     DVASSERT(false == isTerminating);
-    DVASSERT(callback != 0);
+    DVASSERT(callback != nullptr);
     isTerminating = true;
     stopCallback = callback;
     loop->Post(MakeFunction(this, &Announcer::DoStop));
@@ -82,7 +82,7 @@ void Announcer::DoStart()
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);
     if (0 == error)
     {
-        error = socket.JoinMulticastGroup(endpAsString, NULL);
+        error = socket.JoinMulticastGroup(endpAsString.data(), NULL);
         if (0 == error)
             error = timer.Wait(0, MakeFunction(this, &Announcer::TimerHandleTimer));
     }

@@ -60,8 +60,6 @@ public:
     void AppStarted();
     void AppFinished();
 
-    void InitializeGlWindow(uint64 glContextId);
-    
 	void Resize(int32 width, int32 height);
     void ProcessFrame();
 
@@ -88,7 +86,7 @@ protected:
     void MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches);
     
     QtLayerDelegate *delegate;
-    Vector<UIEvent> allTouches;
+    Vector<UIEvent> allEvents;
     bool isDAVAEngineEnabled;
 };
 

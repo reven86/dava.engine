@@ -98,6 +98,30 @@ Vector3 BasicSpline3::Evaluate(int segment, float t)
 	return res;
 }
 
+Vector3 BasicSpline3::EvaluateDerivative(int segment, float t)
+{
+    //int segment = tglobal / (pointCount - 1);
+    //float t = fmod(tglobal, 1.0f);
+
+    Vector3 p1 = points[segment].point;
+    Vector3 p2 = p1;
+    Vector3 r1 = points[segment].r;
+    Vector3 r2 = r1;
+    if (segment + 1 < pointCount)
+    {
+        p2 = points[segment + 1].point;
+        r2 = points[segment + 1].r;
+    }
+
+    Vector3 a = 2 * p1 - 2 * p2 + r1 + r2;
+    Vector3 b = -3 * p1 + 3 * p2 - 2 * r1 - r2;
+    Vector3 c = r1;
+    Vector3 d = p1;
+
+    Vector3 res = 3.0f * a * t * t  +2.0f * b * t  + c ;
+    return res;
+}
+
 
 BasicSpline2::BasicSpline2()
 {

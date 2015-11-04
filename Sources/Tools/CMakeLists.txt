@@ -1,26 +1,33 @@
-cmake_minimum_required( VERSION 3.0 )
-                   
+cmake_minimum_required (VERSION 3.0)
 project( DavaTools )
 
+if (WIN32)
+    add_definitions (-D_CRT_SECURE_NO_DEPRECATE)
+elseif (MACOS AND NOT ANDROID)
+    add_definitions (-DDARWIN_NO_CARBON)
+endif()
+
+# Igor DO WE NEED next defines?
 add_definitions       ( 
--D_CRT_SECURE_NO_DEPRECATE
 -DSTATIC_MAGICK 
 -D_MAGICKLIB_
 -D_LIB
--DDDARWIN_NO_CARBON
 )
 
+include ( PlatformSettings )
+
+include_directories   ( . )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 
 if( IOS OR ANDROID )
-    set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  TexturePacker/CommandLineParser.cpp )
-    set( ADDED_H_PATTERNS   TeamcityOutput/*.h   TexturePacker/CommandLineParser.h    )
+    set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  CommandLine/CommandLineParser.cpp )
+    set( ADDED_H_PATTERNS   TeamcityOutput/*.h   CommandLine/CommandLineParser.h    )
 
 else()
-    set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )
-    set( ADDED_H_PATTERNS   TeamcityOutput/*.h   TextureCompression/*.h   TexturePacker/*.h   )
+    set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp CommandLine/*.cpp TeamcityOutput/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )
+    set( ADDED_H_PATTERNS   AssetCache/*/*.h   AssetCache/*.h   CommandLine/*.h   TeamcityOutput/*.h   TextureCompression/*.h   TexturePacker/*.h   )
 
 endif()
 
@@ -39,12 +46,10 @@ set_project_files_properties( "${CPP_FILES}" )
 generate_source_groups_project ( )
 add_library                    ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 
-if( MACOS )
+if( MACOS AND NOT ANDROID )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )
-
 elseif( WIN32 )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/IMagickHelper.lib )
-
 endif()
 
 foreach ( FILE ${DAVA_IMAGE_MAGICK_LIBRARIES_DEBUG} )

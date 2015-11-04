@@ -30,17 +30,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __$UNITTEST_GUARD_IFDEF$_TEST_H__
 #define __$UNITTEST_GUARD_IFDEF$_TEST_H__
 
-#include "DAVAEngine.h"
-#include "TestTemplate.h"
+#include <DAVAEngine.h>
+#include "Infrastructure/BaseScreen.h"
 
-using namespace DAVA;
-
-class $UNITTEST_CLASSNAME$ : public TestTemplate < $UNITTEST_CLASSNAME$ >
+class $UNITTEST_CLASSNAME$ : public BaseScreen
 {
 public:
-    $UNITTEST_CLASSNAME$ ();
+    $UNITTEST_CLASSNAME$();
 
-    void TestFunc (PerfFuncData * data);
+protected:
+    void LoadResources() override;
+    void UnloadResources() override;
 };
 
 #endif //__$UNITTEST_GUARD_IFDEF$_TEST_H__

@@ -30,22 +30,29 @@
 #include "CheckableComboBox.h"
 
 #include <QAbstractItemView>
-#include <QEvent>
 #include <QListView>
+#include <QEvent>
 #include <QStylePainter>
-#include <QDebug>
 
+
+ComboBoxModel::ComboBoxModel(QObject* parent)
+    : QStandardItemModel(parent)
+{
+}
+
+Qt::ItemFlags ComboBoxModel::flags(const QModelIndex &index) const
+{
+    return QStandardItemModel::flags(index) | Qt::ItemIsUserCheckable;
+}
 
 CheckableComboBox::CheckableComboBox(QWidget* parent)
     : QComboBox(parent)
 {
-    connect( model(), &QAbstractItemModel::rowsInserted, this, &CheckableComboBox::onRowsInserted );
-    connect( this, &CheckableComboBox::done, this, &CheckableComboBox::updateTextHints );
+    setModel(new ComboBoxModel(this));
+    setView(new QListView());
+    connect(model(), &QAbstractItemModel::dataChanged, this, &CheckableComboBox::onDataChanged);
+    connect(this, &CheckableComboBox::selectedUserDataChanged, this, &CheckableComboBox::updateTextHints);
 
-    auto v = new QListView();
-    setView(v);
-
-    installEventFilter(this);
     view()->viewport()->installEventFilter(this);
 }
 
@@ -53,20 +60,7 @@ CheckableComboBox::~CheckableComboBox()
 {
 }
 
-QStringList CheckableComboBox::selectedItems() const
-{
-    const auto& indexes = checkedIndexes();
-    QStringList list;
-
-    for ( auto i = 0; i < indexes.size(); i++)
-    {
-        list << indexes[i].data(Qt::DisplayRole).toString();
-    }
-
-    return list;
-}
-
-QList<QVariant> CheckableComboBox::selectedUserData() const
+QVariantList CheckableComboBox::selectedUserData() const
 {
     const auto& indexes = checkedIndexes();
     QVariantList list;
@@ -79,7 +73,7 @@ QList<QVariant> CheckableComboBox::selectedUserData() const
     return list;
 }
 
-void CheckableComboBox::selectUserData(const QList<QVariant>& dataList)
+void CheckableComboBox::selectUserData(const QVariantList& dataList)
 {
     auto m = model();
     const auto n = m->rowCount();
@@ -91,33 +85,26 @@ void CheckableComboBox::selectUserData(const QList<QVariant>& dataList)
     }
 
     updateTextHints();
+    emit selectedUserDataChanged(dataList);
 }
 
-void CheckableComboBox::onRowsInserted(const QModelIndex& parent, int start, int end)
-{
-    QStandardItemModel* m = qobject_cast<QStandardItemModel *>(model());
-    if (m == nullptr)
-        return ;
-
-    for ( auto i = start; i <= end; i++)
-    {
-        auto item = m->item(i);
-        item->setCheckable(true);
-    }
-
-    if ( isVisible() )
-    {
-        updateTextHints();
-    }
+void CheckableComboBox::onDataChanged(const QModelIndex & topLeft, const QModelIndex & bottomRight, const QVector<int> & roles)
+{       
+    emit selectedUserDataChanged(selectedUserData());
 }
 
 void CheckableComboBox::updateTextHints()
 {
-    const auto& items = selectedItems();
+    const auto& indexes = checkedIndexes();
+    QStringList list;
 
-    textHint = items.join(", ");
-    const auto toolTip = items.join("\n");
-    setToolTip(toolTip);
+    for (auto i = 0; i < indexes.size(); i++)
+    {
+        list << indexes[i].data(Qt::DisplayRole).toString();
+    }
+
+    textHint = list.join(", ");
+    setToolTip(list.join("\n"));
 
     update();
 }
@@ -158,28 +145,6 @@ bool CheckableComboBox::eventFilter(QObject* obj, QEvent* e)
             break;
         case QEvent::MouseButtonRelease:
             return true;
-
-        case QEvent::Show:
-            updateTextHints();
-            break;
-
-        case QEvent::Hide:
-            emit done();
-            break;
-
-        default:
-            break;
-        }
-    }
-
-    if ( obj == this )
-    {
-        switch(e->type())
-        {
-        case QEvent::Show:
-            updateTextHints();
-            break;
-
         default:
             break;
         }

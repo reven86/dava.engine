@@ -27,10 +27,9 @@
 =====================================================================================*/
 
 
-#include <Base/FunctionTraits.h>
+#include <Functional/Function.h>
 #include <Debug/DVAssert.h>
-#include <Base/Atomic.h>
-#include <Thread/LockGuard.h>
+#include <Concurrency/LockGuard.h>
 
 #include <Network/Base/IOLoop.h>
 #include <Network/ServiceRegistrar.h>
@@ -42,7 +41,7 @@ namespace DAVA
 namespace Net
 {
 
-uint32 ProtoDriver::nextPacketId = 0;
+Atomic<uint32> ProtoDriver::nextPacketId;
 
 ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* aServiceContext)
     : loop(aLoop)
@@ -215,7 +214,6 @@ void ProtoDriver::OnSendComplete()
         if (curPacket.sentLength == curPacket.dataLength)
         {
             Channel* ch = GetChannel(curPacket.channelId);
-            pendingAckQueue.push_back(curPacket.packetId);
 
             ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
             curPacket.data = NULL;
@@ -255,6 +253,7 @@ bool ProtoDriver::ProcessDataPacket(ProtoDecoder::DecodeResult* result)
         // Send back delivery confirmation
         SendControl(TYPE_DELIVERY_ACK, result->channelId, result->packetId);
         ch->service->OnPacketReceived(ch, result->data, result->dataSize);
+
         return true;
     }
     DVASSERT(0);
@@ -368,7 +367,10 @@ void ProtoDriver::SendCurPacket()
     Buffer buffers[2];
     buffers[0] = CreateBuffer(&header);
     buffers[1] = CreateBuffer(curPacket.data + curPacket.sentLength, curPacket.chunkLength);
-    transport->Send(buffers, 2);
+    if (0 == transport->Send(buffers, 2) && 0 == curPacket.sentLength)
+    {
+        pendingAckQueue.push_back(curPacket.packetId);
+    }
 }
 
 void ProtoDriver::SendCurControl()
@@ -384,7 +386,7 @@ void ProtoDriver::PreparePacket(Packet* packet, uint32 channelId, const void* bu
     DVASSERT(buffer != NULL && length > 0);
 
     packet->channelId = channelId;
-    packet->packetId = AtomicIncrement(reinterpret_cast<int32&>(nextPacketId));;
+    packet->packetId = ++nextPacketId;
     packet->dataLength = length;
     packet->sentLength = 0;
     packet->chunkLength = 0;

@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.0)
+cmake_minimum_required (VERSION 3.0)
 
 macro ( set_deploy_dir TARGET_NAME )
     if( MACOS )
@@ -40,3 +40,14 @@ add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/UnitTests"   ${CMAKE_CURRENT_
 set_deploy_dir        ( SceneViewer )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/SceneViewer"   ${CMAKE_CURRENT_BINARY_DIR}/SceneViewer )
 
+set_deploy_dir        ( ResourcePacker )
+add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ResourcePacker" ${CMAKE_CURRENT_BINARY_DIR}/ResourcePacker )
+
+set_deploy_dir        ( ImageUnpacker )
+add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ImageUnpacker" ${CMAKE_CURRENT_BINARY_DIR}/ImageUnpacker )
+
+set_deploy_dir        ( AssetCacheClient )
+add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/AssetCacheClient" ${CMAKE_CURRENT_BINARY_DIR}/AssetCacheClient )
+
+set_deploy_dir        ( AssetCacheServer )
+add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/AssetCacheServer" ${CMAKE_CURRENT_BINARY_DIR}/AssetCacheServer )

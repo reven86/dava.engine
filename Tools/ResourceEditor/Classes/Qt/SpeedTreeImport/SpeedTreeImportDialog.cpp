@@ -76,6 +76,9 @@ void SpeedTreeImportDialog::OnCancel()
 void SpeedTreeImportDialog::OnOk()
 {
 #ifdef __DAVAENGINE_SPEEDTREE__
+    sc2FolderPath = ui->sc2EditLine->text().toStdString();
+    sc2FolderPath.MakeDirectoryPathname();
+
     FilePath texturesDirPath = sc2FolderPath + "images/";
 
     //make out files
@@ -130,7 +133,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
         xmlFiles.push_back(FilePath(selectedFiles.at(i).toStdString()));
 
     if(sc2FolderPath.IsEmpty())
-        SetSC2FolderValue(ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str());
+        SetSC2FolderValue(ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str());
 
     ui->xmlListWidget->clear();
     ui->xmlListWidget->addItems(selectedFiles);
@@ -138,7 +141,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
 
 void SpeedTreeImportDialog::OnSc2Select()
 {
-    QString dialogPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
+    QString dialogPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
     if(!sc2FolderPath.IsEmpty())
         dialogPath = QString(sc2FolderPath.GetAbsolutePathname().c_str());
 

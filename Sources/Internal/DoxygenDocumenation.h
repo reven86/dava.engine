@@ -106,14 +106,6 @@
 				<li><b>3D Primitives</b> - plane, frustum, bounding box and operations between them</li>
 			 </ul>
 		 </li>
-		<li><b>Collision detection</b>
-			 <ul>
-				 <li><b>Basic 2D collisions</b> - SAT based collision detection system</li>
-				 <li><b>Box2D integrated</b> - you can use Box2D if you more familiar with it</li>
-			 </ul>
-		</li>
-		<li><b>Physics</b> - we've integrated Box2D for you to save your time.
-		</li>
 		<li><b>Filesystem utils</b>
 			<ul>	
 				<li><b>XML parser</b> - simple interface, so you do not need to learn libxml</li>
@@ -316,7 +308,7 @@
 	\code
 	void GameCore::OnAppStarted()
 	{
-		RenderManager::Instance()->SetFPS(30);
+		Renderer::SetDesiredFPS(30);
 
 		mainMenuScreen.Set(new MainMenuScreen());
 		gameScreen.Set(new GameScreen());
@@ -378,7 +370,7 @@
 	
 	
  */
- 
+
 /**
 	\page page_tutorial_packer Packer Tutorial
 

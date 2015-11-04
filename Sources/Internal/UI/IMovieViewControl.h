@@ -26,57 +26,60 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_IMOVIEVIEWCONTROL__H__
 #define __DAVAENGINE_IMOVIEVIEWCONTROL__H__
 
 #include "FileSystem/FilePath.h"
-#include "Math/Vector.h"
 #include "Math/Rect.h"
 
-namespace DAVA {
+namespace DAVA
+{
 
 enum eMovieScalingMode
 {
-	scalingModeNone = 0,       // No scaling
-    scalingModeAspectFit,  // Uniform scale until one dimension fits
-    scalingModeAspectFill, // Uniform scale until the movie fills the visible bounds. One dimension may have clipped contents
-    scalingModeFill        // Non-uniform scale. Both render dimensions will exactly match the visible bounds
+    scalingModeNone = 0,        // No scaling
+    scalingModeAspectFit,       // Uniform scale until one dimension fits
+    scalingModeAspectFill,      // Uniform scale until the movie fills the visible bounds. One dimension may have clipped contents
+    scalingModeFill             // Non-uniform scale. Both render dimensions will exactly match the visible bounds
 };
 
 struct OpenMovieParams
 {
-	eMovieScalingMode scalingMode;
+    OpenMovieParams(eMovieScalingMode mode = scalingModeNone)
+        : scalingMode(mode)
+    {}
+
+    eMovieScalingMode scalingMode;
 };
 
 // Common interface for Movie View Controls for different platforms.
 class IMovieViewControl
 {
 public:
-	virtual ~IMovieViewControl() {};
+    virtual ~IMovieViewControl() {};
 
-	// Initialize the control.
-	virtual void Initialize(const Rect& rect) = 0;
-	
-	// Position/visibility.
-	virtual void SetRect(const Rect& rect) = 0;
-	virtual void SetVisible(bool isVisible) = 0;
+    // Initialize the control.
+    virtual void Initialize(const Rect& rect) = 0;
 
-	// Open the Movie.
-	virtual void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) = 0;
-	
-	// Start/stop the video playback.
-	virtual void Play() = 0;
-	virtual void Stop() = 0;
-	
-	// Pause/resume the playback.
-	virtual void Pause() = 0;
-	virtual void Resume() = 0;
-	
-	// Whether the movie is being played?
-	virtual bool IsPlaying() = 0;
+    // Position/visibility.
+    virtual void SetRect(const Rect& rect) = 0;
+    virtual void SetVisible(bool isVisible) = 0;
+
+    // Open the Movie.
+    virtual void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) = 0;
+
+    // Start/stop the video playback.
+    virtual void Play() = 0;
+    virtual void Stop() = 0;
+
+    // Pause/resume the playback.
+    virtual void Pause() = 0;
+    virtual void Resume() = 0;
+
+    // Whether the movie is being played?
+    virtual bool IsPlaying() = 0;
 };
 
-};
+}   // namespace DAVA
 
 #endif //__DAVAENGINE_IMOVIEVIEWCONTROL__H__

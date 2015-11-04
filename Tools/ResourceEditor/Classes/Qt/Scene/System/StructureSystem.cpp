@@ -56,37 +56,13 @@ StructureSystem::~StructureSystem()
 
 bool StructureSystem::Init(const DAVA::FilePath & path)
 {
-	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL == sceneEditor)
-	{
-		return false;
-	}
+    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
+    if(NULL == sceneEditor)
+    {
+        return false;
+    }
 
-	Entity* entity = Load(path, false);
-	if(NULL == entity)
-	{
-		return false;
-	}
-
-	DAVA::Vector<DAVA::Entity*> tmpEntities;
-	int entitiesCount = entity->GetChildrenCount();
-
-	// remember all child pointers, but don't add them to scene in this cycle
-	// because when entity is adding it is automatically removing from its old hierarchy
-	tmpEntities.reserve(entitiesCount);
-	for (DAVA::int32 i = 0; i < entitiesCount; ++i)
-	{
-		tmpEntities.push_back(entity->GetChild(i));
-	}
-
-	// now we can safely add entities into our hierarchy
-	for (DAVA::int32 i = 0; i < (DAVA::int32) tmpEntities.size(); ++i)
-	{
-		sceneEditor->AddNode(tmpEntities[i]);
-	}
-
-	entity->Release();
-	return true;
+    return (SceneFileV2::ERROR_NO_ERROR == sceneEditor->LoadScene(path));
 }
 
 void StructureSystem::Move(const EntityGroup &entityGroup, DAVA::Entity *newParent, DAVA::Entity *newBefore)
@@ -330,7 +306,7 @@ void StructureSystem::ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload
 		if(entitiesToReload.size() > 0)
 		{
 			// try to load new model
-			DAVA::Entity *loadedEntity = LoadInternal(newModelPath, true, true);
+			DAVA::Entity *loadedEntity = LoadInternal(newModelPath, true);
 
 			if(NULL != loadedEntity)
 			{
@@ -349,6 +325,8 @@ void StructureSystem::ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload
 						DAVA::Entity *before = origEntity->GetParent()->GetNextChild(origEntity);
 
 						newEntityInstance->SetLocalTransform(origEntity->GetLocalTransform());
+                        newEntityInstance->SetID(origEntity->GetID());
+                        newEntityInstance->SetSceneID(origEntity->GetSceneID());
 
 						if(saveLightmapSettings)
 						{
@@ -358,7 +336,7 @@ void StructureSystem::ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload
 						sceneEditor->Exec(new EntityParentChangeCommand(newEntityInstance, origEntity->GetParent(), before));
 						sceneEditor->Exec(new EntityRemoveCommand(origEntity));
 
-						newEntityInstance->Release();
+                        newEntityInstance->Release();
 					}
 				}
 
@@ -374,7 +352,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(nullptr != sceneEditor)
 	{
-        ScopedPtr<Entity> loadedEntity(Load(newModelPath, true));
+        ScopedPtr<Entity> loadedEntity(Load(newModelPath));
         if (static_cast<DAVA::Entity *>(loadedEntity) != nullptr)
 		{
 			DAVA::Vector3 entityPos = pos;
@@ -419,7 +397,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 			// 
 			// Перенести в Load и завалидейтить только подгруженную Entity
 			// -->
-            SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
+			SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
 			// <--
             
 			EmitChanged();
@@ -556,61 +534,57 @@ void StructureSystem::CheckAndMarkSolid(DAVA::Entity *entity)
 	}
 }
 
-DAVA::Entity* StructureSystem::Load(const DAVA::FilePath& sc2path, bool optimize)
+DAVA::Entity* StructureSystem::Load(const DAVA::FilePath& sc2path)
 {
-	return LoadInternal(sc2path, optimize, false);
+	return LoadInternal(sc2path, false);
 }
 
-DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool optimize, bool clearCache)
+DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool clearCache)
 {
-	DAVA::Entity* loadedEntity = NULL;
+	DAVA::Entity* loadedEntity = nullptr;
 
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL != sceneEditor && sc2path.IsEqualToExtension(".sc2") && sc2path.Exists())
+    if(nullptr != sceneEditor && sc2path.IsEqualToExtension(".sc2") && sc2path.Exists())
 	{
-		if(clearCache)
-		{
-			// if there is already entity for such file, we should release it
-			// to be sure that latest version will be loaded 
-			sceneEditor->ReleaseRootNode(sc2path);
-		}
-
-		// load entity from file
-		Entity *rootNode = sceneEditor->GetRootNode(sc2path);
-        if(rootNode)
+        if(clearCache)
         {
-            Entity *parentForOptimize = new Entity();
+            // if there is already entity for such file, we should release it
+            // to be sure that latest version will be loaded 
+            sceneEditor->cache.Clear(sc2path);
+        }
 
-			Entity *nodeForOptimize = rootNode->Clone();
-			parentForOptimize->AddNode(nodeForOptimize);
-			nodeForOptimize->Release();
+        loadedEntity = sceneEditor->cache.GetClone(sc2path);
+        if(nullptr != loadedEntity)
+        {
+            // this is for backward compatibility.
+            // sceneFileV2 will remove empty nodes only
+            // if there is parent for such nodes. 
+            {
+                SceneFileV2* tmpSceneFile = new SceneFileV2();
+                Entity* tmpParent = new Entity();
+                Entity* tmpEntity = loadedEntity;
 
-			if(optimize)
-			{
-				ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
-				sceneFile->SetVersion(VersionInfo::Instance()->GetCurrentVersion());
-				sceneFile->OptimizeScene(parentForOptimize);
-			}
+                tmpParent->AddNode(tmpEntity);
+                tmpSceneFile->RemoveEmptyHierarchy(tmpEntity);
 
-			if(parentForOptimize->GetChildrenCount())
-			{
-				loadedEntity = parentForOptimize->GetChild(0);
-				loadedEntity->SetSolid(true);
-				loadedEntity->Retain();
+                loadedEntity = SafeRetain(tmpParent->GetChild(0));
 
-                KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
-				props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
-                
-                CheckAndMarkSolid(loadedEntity);
-			}
+                SafeRelease(tmpEntity);
+                SafeRelease(tmpParent);
+                SafeRelease(tmpSceneFile);
+            }
 
-			// release loaded entity
-			SafeRelease(parentForOptimize);
-		}
+            KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
+            props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
+            
+            CheckAndMarkSolid(loadedEntity);
+
+			SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(loadedEntity);
+        }
 	}
     else
     {
-        DAVA::Logger::Instance()->Error("Wrong extension or no such file: %s", sc2path.GetAbsolutePathname().c_str());
+        DAVA::Logger::Error("Wrong extension or no such file: %s", sc2path.GetAbsolutePathname().c_str());
     }
 
 	return loadedEntity;
@@ -618,32 +592,32 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 
 void StructureSystem::CopyLightmapSettings(DAVA::NMaterial *fromState, DAVA::NMaterial *toState) const
 {
-	Texture* lightmap = fromState->GetTexture(NMaterial::TEXTURE_LIGHTMAP);
-	bool needReleaseTexture = false;
-	if(!lightmap)
-	{
-		lightmap = Texture::CreatePink();
-		needReleaseTexture = true;
-	}
-	
-	toState->SetTexture(NMaterial::TEXTURE_LIGHTMAP, lightmap);
-	
-	if(needReleaseTexture)
-	{
-		SafeRelease(lightmap);
-	}
-	
-	NMaterialProperty* uvScale = fromState->GetMaterialProperty(NMaterial::PARAM_UV_SCALE);
-	if(uvScale)
-	{
-		toState->SetPropertyValue(NMaterial::PARAM_UV_SCALE, uvScale->type, uvScale->size, uvScale->data);
-	}
-	
-	NMaterialProperty* uvOffset = fromState->GetMaterialProperty(NMaterial::PARAM_UV_OFFSET);
-	if(uvScale)
-	{
-		toState->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, uvOffset->type, uvOffset->size, uvOffset->data);
-	}
+    if (fromState->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
+    {
+        Texture* lightmap = fromState->GetLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
+        if (toState->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
+            toState->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
+        else
+            toState->AddTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, lightmap);
+    }
+
+    if (fromState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))
+    {
+        const float* data = fromState->GetLocalPropValue(NMaterialParamName::PARAM_UV_SCALE);
+        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_SCALE))
+            toState->SetPropertyValue(NMaterialParamName::PARAM_UV_SCALE, data);
+        else
+            toState->AddProperty(NMaterialParamName::PARAM_UV_SCALE, data, rhi::ShaderProp::TYPE_FLOAT2);
+    }
+
+    if (fromState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))
+    {
+        const float* data = fromState->GetLocalPropValue(NMaterialParamName::PARAM_UV_OFFSET);
+        if (toState->HasLocalProperty(NMaterialParamName::PARAM_UV_OFFSET))
+            toState->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, data);
+        else
+            toState->AddProperty(NMaterialParamName::PARAM_UV_OFFSET, data, rhi::ShaderProp::TYPE_FLOAT2);
+    }
 }
 
 struct BatchInfo

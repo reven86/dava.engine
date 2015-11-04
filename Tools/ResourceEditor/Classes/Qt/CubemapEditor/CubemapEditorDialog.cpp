@@ -101,7 +101,7 @@ void CubemapEditorDialog::ConnectSignals()
 void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 {
     FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastFaceDir",
-                                                            ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
+                                                            ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
 
     QString fileName = FileDialog::getOpenFileName(this,
                                                      tr("Open Cubemap Face Image"),
@@ -126,6 +126,8 @@ void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 
 bool CubemapEditorDialog::LoadImageTo(const DAVA::FilePath& filePath, int face, bool silent)
 {
+    DVASSERT(face >= 0 && face <= Texture::CUBE_FACE_COUNT);
+
     bool result = true;
 
     QString fileName = filePath.GetAbsolutePathname().c_str();
@@ -251,8 +253,8 @@ bool CubemapEditorDialog::IsFormatValid(const DAVA::ImageInfo &info)
         case FORMAT_RGBA4444:
         case FORMAT_RGBA5551:
         case FORMAT_RGBA8888:
-        case FORMAT_RGB565:
         case FORMAT_RGB888:
+        case FORMAT_RGB565:
         case FORMAT_A8:
         case FORMAT_A16:
             return true;
@@ -366,7 +368,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
     if (!descriptorReady)
     {
         descriptor->SetDefaultValues();
-        descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
+        descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = rhi::TEXADDR_CLAMP;
         descriptor->pathname = filePath;
     }
 
@@ -486,32 +488,32 @@ void CubemapEditorDialog::InitForCreating(DAVA::FilePath& textureDescriptorPath,
 
 void CubemapEditorDialog::OnPXClicked()
 {
-    LoadImageFromUserFile(0, Texture::CUBE_FACE_POSITIVE_X);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_POSITIVE_X);
 }
 
 void CubemapEditorDialog::OnNXClicked()
 {
-    LoadImageFromUserFile(0, Texture::CUBE_FACE_NEGATIVE_X);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_NEGATIVE_X);
 }
 
 void CubemapEditorDialog::OnPYClicked()
 {
-    LoadImageFromUserFile(0, Texture::CUBE_FACE_POSITIVE_Y);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_POSITIVE_Y);
 }
 
 void CubemapEditorDialog::OnNYClicked()
 {
-    LoadImageFromUserFile(0, Texture::CUBE_FACE_NEGATIVE_Y);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_NEGATIVE_Y);
 }
 
 void CubemapEditorDialog::OnPZClicked()
 {
-    LoadImageFromUserFile(0, Texture::CUBE_FACE_POSITIVE_Z);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_POSITIVE_Z);
 }
 
 void CubemapEditorDialog::OnNZClicked()
 {
-    LoadImageFromUserFile(0, Texture::CUBE_FACE_NEGATIVE_Z);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_NEGATIVE_Z);
 }
 
 void CubemapEditorDialog::OnLoadTexture()

@@ -1,4 +1,5 @@
-cmake_minimum_required( VERSION 3.0 )
+cmake_minimum_required (VERSION 3.0)
+
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 project               ( QuickEd )
@@ -29,9 +30,6 @@ add_definitions       (
 -DQT_LARGEFILE_SUPPORT
 -DQT_THREAD_SUPPORT
 )
-                              
-file                          ( GLOB_RECURSE QT_LIST "Classes/*.h" )
-qt5_wrap_cpp                  ( MOC_APP_SRCS ${QT_LIST} )
 
 file                          ( GLOB UI_LIST "Ui/*.ui" )
 qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
@@ -39,7 +37,7 @@ qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
 file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
-set                           ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
 
@@ -51,8 +49,7 @@ set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.pli
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 set( MACOS_DYLIB                ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
-set( ADDED_SRC                  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set( LIBRARIES                  ${QT_LIBRARIES} )
+set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()
@@ -63,12 +60,5 @@ if( WIN32 AND NOT DAVA_MEGASOLUTION )
         string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
     endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-
-endif()
-
-get_filename_component(version_file "../../gitTime.txt" ABSOLUTE)
-if( EXISTS ${version_file})
-    file (STRINGS ${version_file} BUILD_VERION)
-    add_definitions( -DUI_EDITOR_VERSION=\"${BUILD_VERION}\" )   
 
 endif()

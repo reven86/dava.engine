@@ -29,6 +29,8 @@
 
 #include "Sound/SoundSystem.h"
 
+#ifndef DAVA_FMOD
+
 namespace DAVA
 {
     Mutex SoundSystem::soundGroupsMutex;
@@ -80,7 +82,12 @@ namespace DAVA
     void SoundSystem::SetCurrentLocale(const String &langID)
     {
     }
-    
+
+    String SoundSystem::GetCurrentLocale() const
+    {
+        return String();
+    }
+
     void SoundSystem::SetListenerPosition(const Vector3 &position)
     {
     }
@@ -107,3 +114,5 @@ namespace DAVA
     }
     
 }//DAVA
+
+#endif //DAVA_FMOD

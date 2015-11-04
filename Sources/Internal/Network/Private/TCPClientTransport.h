@@ -44,14 +44,13 @@ namespace Net
 class IOLoop;
 class TCPClientTransport : public IClientTransport
 {
-    static const uint32 DEFAULT_READ_TIMEOUT = 5 * 1000;
     static const uint32 RESTART_DELAY_PERIOD = 3000;
 
 public:
     // Constructor for accepted connection
-    TCPClientTransport(IOLoop* aLoop);
+    TCPClientTransport(IOLoop* aLoop, uint32 readTimeout);
     // Constructor for connection initiator
-    TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint);
+    TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeout);
     virtual ~TCPClientTransport();
 
     TCPSocket& Socket();

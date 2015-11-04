@@ -43,22 +43,17 @@
 #include "Project/ProjectManager.h"
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
-:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	curToolSize(0)
-,	toolImageTexture(NULL)
-,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
-,	colorIndex(0)
-,	editingIsEnabled(false)
-,	originalImage(NULL)
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    , drawColor(Color(0.f, 0.f, 0.f, 0.f))
 {
-    cursorSize = 120;
-
+    curToolSize = 120;
     SetColor(colorIndex);
 }
 
 CustomColorsSystem::~CustomColorsSystem()
 {
-	SafeRelease(toolImageTexture);
+    SafeRelease(toolImageTexture);
+    SafeRelease(loadedTexture);
 }
 
 LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing()
@@ -82,10 +77,10 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
-    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_TILE_FULL);
+    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_COLOR);
 
-	FilePath filePath = GetCurrentSaveFileName();
-	if (!filePath.IsEmpty())
+    FilePath filePath = GetCurrentSaveFileName();
+    if (!filePath.IsEmpty())
 	{
         const bool isTextureLoaded = LoadTexture(filePath, false);
         drawSystem->GetCustomColorsProxy()->ResetLoadedState(isTextureLoaded);
@@ -95,20 +90,19 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 		drawSystem->GetCustomColorsProxy()->UpdateSpriteFromConfig();
 	}
 
-	drawSystem->EnableCursor(landscapeSize);
-	drawSystem->SetCursorTexture(cursorTexture);
-	drawSystem->SetCursorSize(cursorSize);
-	
-	Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(customColorsTexture);
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTextureEnabled(true);
-	
-	if (!toolImageTexture)
-	{
-		CreateToolImage(512, "~res:/LandscapeEditor/Tools/customcolorsbrush/circle.tex");
-	}
-	
-	enabled = true;
+    drawSystem->EnableCursor();
+    drawSystem->SetCursorTexture(cursorTexture);
+    SetBrushSize(curToolSize);
+
+    Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
+    drawSystem->GetLandscapeProxy()->SetToolTexture(customColorsTexture, true);
+
+    if (!toolImageTexture)
+    {
+        CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.tex");
+    }
+
+    enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
@@ -139,12 +133,14 @@ bool CustomColorsSystem::DisableLandscapeEdititing( bool saveNeeded)
 	
 	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
-	
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(NULL);
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTextureEnabled(false);
-	enabled = false;
-	
-	return !enabled;
+
+    drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, true);
+    enabled = false;
+
+    SafeRelease(toolImageTexture);
+    SafeRelease(loadedTexture);
+
+    return !enabled;
 }
 
 void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
@@ -158,9 +154,9 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
 	{
 		if (prevCursorPos != cursorPosition)
 		{
-			UpdateBrushTool(timeElapsed);
-			prevCursorPos = cursorPosition;
-		}
+            UpdateBrushTool();
+            prevCursorPos = cursorPosition;
+        }
 	}
 }
 
@@ -179,21 +175,21 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
 		
 		switch(event->phase)
 		{
-			case UIEvent::PHASE_BEGAN:
-				if (isIntersectsLandscape)
-				{
+        case UIEvent::Phase::BEGAN:
+            if (isIntersectsLandscape)
+                {
 					UpdateToolImage();
 					StoreOriginalState();
 					editingIsEnabled = true;
 				}
 				break;
-				
-			case UIEvent::PHASE_DRAG:
-				break;
-				
-			case UIEvent::PHASE_ENDED:
-				FinishEditing();
-				break;
+
+        case UIEvent::Phase::DRAG:
+            break;
+
+        case UIEvent::Phase::ENDED:
+            FinishEditing();
+                break;
 		}
 	}
 }
@@ -212,42 +208,36 @@ void CustomColorsSystem::UpdateToolImage(bool force)
 {
 }
 
-Image* CustomColorsSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
+void CustomColorsSystem::CreateToolImage(const FilePath& filePath)
 {
 	Texture* toolTexture = Texture::CreateFromFile(filePath);
 	if (!toolTexture)
 	{
-		return NULL;
-	}
-	
-	SafeRelease(toolImageTexture);
+        return;
+    }
+
+    SafeRelease(toolImageTexture);
+
     toolImageTexture = toolTexture;
-	toolImageTexture->GeneratePixelesation();
-	
-	return NULL;
+    toolImageTexture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 }
 
-void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
+void CustomColorsSystem::UpdateBrushTool()
 {
 	Texture* colorTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
-	
-	Vector2 spriteSize = Vector2(cursorSize, cursorSize);
-	Vector2 spritePos = cursorPosition - spriteSize / 2.f;
+
+    Vector2 spriteSize = Vector2(cursorSize, cursorSize) * landscapeSize;
+    Vector2 spritePos = cursorPosition * landscapeSize - spriteSize / 2.f;
 
     Rect updatedRect;
-    updatedRect.SetCenter(spritePos);
+    updatedRect.SetPosition(spritePos);
     updatedRect.SetSize(spriteSize);
     AddRectToAccumulator(updatedRect);
 
-    RenderManager::Instance()->SetColor(drawColor);
-
-    RenderHelper::Instance()->Set2DRenderTarget(colorTexture);
-    RenderHelper::Instance()->DrawTexture(toolImageTexture, RenderState::RENDERSTATE_2D_BLEND, updatedRect);
-	
-    RenderManager::Instance()->SetRenderTarget(0);
-	RenderManager::Instance()->SetColor(Color::White);
-	
-    drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(colorTexture);
+    auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
+    RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
+    RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
 void CustomColorsSystem::ResetAccumulatorRect()
@@ -264,18 +254,19 @@ void CustomColorsSystem::AddRectToAccumulator(const Rect &rect)
 Rect CustomColorsSystem::GetUpdatedRect()
 {
 	Rect r = updatedRectAccumulator;
-	drawSystem->ClampToTexture(Landscape::TEXTURE_TILE_FULL, r);
+    drawSystem->ClampToTexture(Landscape::TEXTURE_COLOR, r);
 
-	return r;
+    return r;
 }
 
 void CustomColorsSystem::SetBrushSize(int32 brushSize, bool updateDrawSystem /*= true*/)
 {
 	if (brushSize > 0)
 	{
-		cursorSize = (uint32)brushSize;
-		if(updateDrawSystem)
-		{
+        curToolSize = brushSize;
+        cursorSize = (float32)brushSize / landscapeSize;
+        if (updateDrawSystem)
+        {
 			drawSystem->SetCursorSize(cursorSize);
 		}
 	}
@@ -294,8 +285,8 @@ void CustomColorsSystem::SetColor(int32 colorIndex)
 void CustomColorsSystem::StoreOriginalState()
 {
 	DVASSERT(originalImage == NULL);
-	originalImage = drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-	ResetAccumulatorRect();
+    originalImage = drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory();
+    ResetAccumulatorRect();
 }
 
 void CustomColorsSystem::CreateUndoPoint()
@@ -306,10 +297,10 @@ void CustomColorsSystem::CreateUndoPoint()
 		SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
 		DVASSERT(scene);
 
-		scene->Exec(new ModifyCustomColorsCommand(originalImage, drawSystem->GetCustomColorsProxy(), updatedRect));
-	}
+        scene->Exec(new ModifyCustomColorsCommand(originalImage, ScopedPtr<Image>(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory()), drawSystem->GetCustomColorsProxy(), updatedRect));
+    }
 
-	SafeRelease(originalImage);
+    SafeRelease(originalImage);
 }
 
 void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
@@ -319,7 +310,7 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
 
     Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
 
-	Image* image = customColorsTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+    Image* image = customColorsTexture->CreateImageFromMemory();
     ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
 
@@ -338,37 +329,68 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		return false;
 
 	Image* image = images.front();
-	if(image)
-	{
-		Texture* texture = Texture::CreateFromData(image->GetPixelFormat(),
-												   image->GetData(),
-												   image->GetWidth(),
-												   image->GetHeight(),
-												   false);
-		if (createUndo)
-		{
-			StoreOriginalState();
-		}
+    if (CouldApplyImage(image, filePath.GetFilename()))
+    {
+        AddRectToAccumulator(Rect(Vector2(0.f, 0.f), Vector2(image->GetWidth(), image->GetHeight())));
 
-        Texture * target = drawSystem->GetCustomColorsProxy()->GetTexture();
+        if (createUndo)
+        {
+            originalImage = drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory();
 
-        RenderHelper::Instance()->Set2DRenderTarget(target);
-        RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_BLEND);
-        
-        RenderManager::Instance()->SetRenderTarget(0);
-		AddRectToAccumulator(Rect(Vector2(0.f, 0.f), Vector2(texture->GetWidth(), texture->GetHeight())));
+            SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
 
-		SafeRelease(texture);
-		for_each(images.begin(), images.end(), SafeRelease<Image>);
+            scene->BeginBatch("Load custom colors texture");
+            StoreSaveFileName(filePath);
+            scene->Exec(new ModifyCustomColorsCommand(originalImage, image,
+                                                      drawSystem->GetCustomColorsProxy(), GetUpdatedRect()));
+            scene->EndBatch();
 
-		if (createUndo)
-		{
-			((SceneEditor2*)GetScene())->BeginBatch("Load custom colors texture");
-			StoreSaveFileName(filePath);
-			CreateUndoPoint();
-			((SceneEditor2*)GetScene())->EndBatch();
-		}
-	}
+            SafeRelease(originalImage);
+        }
+        else
+        {
+            SafeRelease(loadedTexture);
+
+            loadedTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false);
+
+            Texture* target = drawSystem->GetCustomColorsProxy()->GetTexture();
+
+            auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
+            RenderSystem2D::Instance()->BeginRenderTargetPass(target, false);
+            RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
+            RenderSystem2D::Instance()->EndRenderTargetPass();
+        }
+    }
+
+    for_each(images.begin(), images.end(), SafeRelease<Image>);
+    return true;
+}
+
+bool CustomColorsSystem::CouldApplyImage(Image* image, const String& imageName) const
+{
+    if (image == nullptr)
+    {
+        return false;
+    }
+
+    if (image->GetPixelFormat() != FORMAT_RGBA8888)
+    {
+        Logger::Error("[CustomColorsSystem] %s has wrong format (%s). We need RGBA888", imageName.c_str(), GlobalEnumMap<PixelFormat>::Instance()->ToString(image->GetPixelFormat()));
+        return false;
+    }
+
+    const Texture* oldTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
+    if (oldTexture != nullptr)
+    {
+        const Size2i imageSize(image->GetWidth(), image->GetHeight());
+        const Size2i textureSize(oldTexture->GetWidth(), oldTexture->GetHeight());
+
+        if (imageSize != textureSize)
+        {
+            Logger::Error("[CustomColorsSystem] %s has wrong size (%d x %d). We need (%d x %d)", imageName.c_str(), imageSize.dx, imageSize.dy, textureSize.dx, textureSize.dy);
+            return false;
+        }
+    }
 
     return true;
 }
@@ -445,20 +467,20 @@ String CustomColorsSystem::GetRelativePathToProjectPath(const FilePath& absolute
 	if(absolutePath.IsEmpty())
 		return String();
 
-	return absolutePath.GetRelativePathname(ProjectManager::Instance()->CurProjectPath());
+    return absolutePath.GetRelativePathname(ProjectManager::Instance()->GetProjectPath());
 }
 
 FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const String& relativePath)
 {
 	if(relativePath.empty())
 		return FilePath();
-	
-	return ProjectManager::Instance()->CurProjectPath() + relativePath;
+
+    return ProjectManager::Instance()->GetProjectPath() + relativePath;
 }
 
 int32 CustomColorsSystem::GetBrushSize()
 {
-	return cursorSize;
+    return curToolSize;
 }
 
 int32 CustomColorsSystem::GetColor()

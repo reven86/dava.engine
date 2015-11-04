@@ -35,15 +35,14 @@
 
 namespace DAVA 
 {
-
 Image::Image()
-:   dataSize(0)
-,   width(0)
-,   height(0)
-,   data(0)
-,   mipmapLevel(-1)
-,   format(FORMAT_RGB565)
-,   cubeFaceID(Texture::CUBE_FACE_INVALID)
+    : dataSize(0)
+    , width(0)
+    , height(0)
+    , data(0)
+    , mipmapLevel(-1)
+    , format(FORMAT_RGB565)
+    , cubeFaceID(Texture::INVALID_CUBEMAP_FACE)
 {
 }
 
@@ -57,6 +56,8 @@ Image::~Image()
 
 Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Image * image = new Image();
 	image->width = width;
 	image->height = height;
@@ -99,6 +100,8 @@ Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 
 Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Image * image = Image::Create(width, height, format);
 	if(!image) return NULL;
 
@@ -112,6 +115,8 @@ Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, c
 
 Image * Image::CreatePinkPlaceholder(bool checkers)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Image * image = Image::Create(16, 16, FORMAT_RGBA8888);
     image->MakePink(checkers);
     
@@ -120,6 +125,8 @@ Image * Image::CreatePinkPlaceholder(bool checkers)
 
 void Image::MakePink(bool checkers)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(data == NULL) return;
     
     uint32 pink = 0xffff00ff;
@@ -140,6 +147,8 @@ void Image::MakePink(bool checkers)
 
 bool Image::Normalize()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    
     const int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     const uint32 pitch = width * formatSize;
     const uint32 dataSize = height * pitch;
@@ -156,6 +165,8 @@ bool Image::Normalize()
     
 Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Vector<Image *> imageSet;
 
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
@@ -166,7 +177,7 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
     uint32 imageWidth = width;
     uint32 imageHeight = height;
     uint32 curMipMapLevel = 0;
-    image0->mipmapLevel = curMipMapLevel;
+    image0->mipmapLevel = curMipMapLevel++;
 
     if(isNormalMap)
         image0->Normalize();
@@ -185,8 +196,6 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
             image0->data, imageWidth, imageHeight, imageWidth * formatSize,
             newData, newWidth, newHeight, newWidth * formatSize, isNormalMap);
 
-        curMipMapLevel++;
-
         Image * halfSizeImg = Image::CreateFromData(newWidth, newHeight, format, newData);
         halfSizeImg->cubeFaceID = image0->cubeFaceID;
         halfSizeImg->mipmapLevel = curMipMapLevel;
@@ -197,6 +206,7 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         SafeDeleteArray(newData);
 
         image0 = halfSizeImg;
+        curMipMapLevel++;
     }
 
     return imageSet;
@@ -204,6 +214,8 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 
 void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	uint8 * newData = NULL;
 	int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
 
@@ -255,6 +267,8 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 
 void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     uint8 * newData = NULL;
     uint32 newDataSize = 0;
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
@@ -318,6 +332,8 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 							  uint32 newWidth, uint32 newHeight,
 							  uint32 xOffset, uint32 yOffset)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	uint32 oldWidth = imageToCopy->GetWidth();
 	uint32 oldHeight = imageToCopy->GetHeight();
 	DVASSERT((newWidth + xOffset) <= oldWidth && (newHeight + yOffset) <= oldHeight);
@@ -349,6 +365,8 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 						uint32 srcX /* = 0 */, uint32 srcY /* = 0 */,
 						uint32 srcWidth /* = -1 */, uint32 srcHeight /* = -1 */)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if (GetPixelFormat() != image->GetPixelFormat())
 	{
 		return;
@@ -403,12 +421,15 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 
 bool Image::Save(const FilePath &path) const
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
     return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
 }
     
 
 void Image::FlipHorizontal()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	switch(format)
 	{
 	case FORMAT_A8:
@@ -438,6 +459,8 @@ void Image::FlipHorizontal()
 
 void Image::FlipVertical()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	switch(format)
 	{
 	case FORMAT_A8:

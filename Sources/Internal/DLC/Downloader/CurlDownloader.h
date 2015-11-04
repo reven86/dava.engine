@@ -186,6 +186,8 @@ private:
     
     const uint32 maxChunkSize;
     const uint32 minChunkSize;
+    
+    bool isRangeRequestSent = false;
 };
 
 }

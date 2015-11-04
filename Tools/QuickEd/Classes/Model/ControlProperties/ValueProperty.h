@@ -43,21 +43,28 @@ protected:
     virtual ~ValueProperty();
     
 public:
-    virtual int GetCount() const override;
-    virtual AbstractProperty *GetProperty(int index) const override;
+    virtual DAVA::uint32 GetCount() const override;
+    virtual AbstractProperty* GetProperty(DAVA::int32 index) const override;
 
-    virtual void Refresh() override;
-    virtual bool HasChanges() const override;
+    virtual void Refresh(DAVA::int32 refreshFlags) override;
 
-    virtual const DAVA::String &GetName() const override;
-    virtual ePropertyType GetType() const override;
+    void AttachPrototypeProperty(const ValueProperty *prototypeProperty);
+    void DetachPrototypeProperty(const ValueProperty *prototypeProperty);
+    const ValueProperty *GetPrototypeProperty() const;
+    AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
 
-    virtual DAVA::VariantType GetValue() const override;
-    virtual void SetValue(const DAVA::VariantType &newValue) override;
-    virtual DAVA::VariantType GetDefaultValue() const override;
-    virtual void SetDefaultValue(const DAVA::VariantType &newValue) override;
-    virtual void ResetValue() override;
-    virtual bool IsReplaced() const override;
+    bool HasChanges() const override;
+    const DAVA::String &GetName() const override;
+    ePropertyType GetType() const override;
+    DAVA::int32 GetStylePropertyIndex() const override;
+
+    DAVA::VariantType GetValue() const override;
+    void SetValue(const DAVA::VariantType &newValue) override;
+    DAVA::VariantType GetDefaultValue() const override;
+    void SetDefaultValue(const DAVA::VariantType &newValue) override;
+    void ResetValue() override;
+    bool IsOverridden() const override;
+    bool IsOverriddenLocally() const override;
     
     virtual DAVA::VariantType GetSubValue(int index) const;
     virtual void SetSubValue(int index, const DAVA::VariantType &newValue);
@@ -69,19 +76,30 @@ public:
     {
         return false;
     }
-
+    
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);
+    void SetName(const DAVA::String &newName);
+    void SetOverridden(bool overridden);
+    void SetStylePropertyIndex(DAVA::int32 index);
+    void AddSubValueProperty(SubValueProperty *prop);
     
 private:
     DAVA::VariantType ChangeValueComponent(const DAVA::VariantType &value, const DAVA::VariantType &component, DAVA::int32 index) const;
     DAVA::VariantType GetValueComponent(const DAVA::VariantType &value, DAVA::int32 index) const;
     
-protected:
+private:
     DAVA::String name;
-    bool replaced;
     DAVA::VariantType defaultValue;
     DAVA::Vector<SubValueProperty*> children;
+    DAVA::int32 stylePropertyIndex;
+    bool overridden;
+    const ValueProperty *prototypeProperty; // weak
+    
+public:
+    INTROSPECTION_EXTEND(ValueProperty, AbstractProperty,
+                         nullptr
+                         );
 };
 
 #endif //__UI_EDITOR_VALUE_PROPERTY__

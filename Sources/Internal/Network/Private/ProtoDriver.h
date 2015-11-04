@@ -31,8 +31,9 @@
 #define __DAVAENGINE_PROTODRIVER_H__
 
 #include <Base/BaseTypes.h>
-#include <Platform/Mutex.h>
-#include <Thread/Spinlock.h>
+#include <Concurrency/Atomic.h>
+#include <Concurrency/Mutex.h>
+#include <Concurrency/Spinlock.h>
 
 #include <Network/Base/Endpoint.h>
 #include <Network/NetworkCommon.h>
@@ -56,7 +57,7 @@ private:
     {
         uint32 channelId;
         uint32 packetId;
-        uint8* data;            // Data
+        uint8* data = nullptr; // Data
         size_t dataLength;      //  and its length
         size_t sentLength;      // Number of bytes that have been already transfered
         size_t chunkLength;     // Number of bytes transfered during last operation
@@ -66,14 +67,14 @@ private:
     {
         Channel(uint32 id, ProtoDriver* driver);
 
-        virtual bool Send(const void* data, size_t length, uint32 flags, uint32* packetId);
-        virtual const Endpoint& RemoteEndpoint() const;
+        bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) override;
+        const Endpoint& RemoteEndpoint() const override;
 
         bool confirmed;     // Channel is confirmed by other side
         uint32 channelId;
         Endpoint remoteEndpoint;
-        ProtoDriver* driver;
-        IChannelListener* service;
+        ProtoDriver* driver = nullptr;
+        IChannelListener* service = nullptr;
     };
 
     friend bool operator == (const Channel& ch, uint32 channelId);
@@ -120,11 +121,11 @@ private:
     bool DequeueControl(ProtoHeader* dest);
 
 private:
-    IOLoop* loop;
+    IOLoop* loop = nullptr;
     eNetworkRole role;
     const ServiceRegistrar& registrar;
-    void* serviceContext;
-    IClientTransport* transport;
+    void* serviceContext = nullptr;
+    IClientTransport* transport = nullptr;
     Vector<Channel> channels;
 
     Spinlock senderLock;
@@ -142,7 +143,7 @@ private:
     ProtoDecoder proto;
     ProtoHeader header;
 
-    static uint32 nextPacketId;     // Global for all instances
+    static Atomic<uint32> nextPacketId;     // Global for all instances
 };
 
 //////////////////////////////////////////////////////////////////////////

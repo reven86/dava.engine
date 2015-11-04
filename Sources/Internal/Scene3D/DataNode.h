@@ -45,79 +45,40 @@ namespace DAVA
  */
 class DataNode : public BaseObject
 {
-protected:
-	virtual ~DataNode();
-	
 public:
-	
-	static const uint16 NodeRuntimeFlag;
-	
-public:	
-	DataNode();
-    virtual int32 Release();
-
     
-    /**
-     */
+    static const int32 INVALID_ID = 0;
+    
+public:
+    DataNode();
+
     void SetScene(Scene * _scene);
-    inline Scene * GetScene() { return scene; };
+    Scene* GetScene() const;
     
-    DataNode *	FindByName(const String & searchName);
-	virtual void	AddNode(DataNode * node);
+    DataNode* FindByName(const String & searchName);
 
-    int32  GetNodeIndex();
-    uint64 GetPreviousPointer();
-	
-	inline uint16 GetNodeGlags() const
-	{
-		return nodeFlags;
-	}
-	
-	inline void AddNodeFlags(uint16 flags)
-	{
-		nodeFlags = nodeFlags | flags;
-	}
-	
-	inline void RemoveNodeFlags(uint16 flags)
-	{
-		nodeFlags = nodeFlags & ~flags;
-	}
+    uint64 GetNodeID() const;
+    void SetNodeID(uint64 id);
+
+    void SetRuntime(bool isRuntime);
+    bool IsRuntime() const;
     
-    /**
-        \brief virtual function to save node to KeyedArchive
-     */
     virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-    
-    /**
-        \brief virtual function to load node to KeyedArchive
-     */
-	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
-    
-    virtual void UpdateUniqueKey(uint64 newKeyValue) {};
-    
-    inline void SetDataIndex(int32 idx);
+    virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
     
 protected:
-    uint64 pointer;
+    virtual ~DataNode();
+
+    uint64 id;
+    bool isRuntime;
     Scene * scene;
 
-    int32 index;
-	uint16 nodeFlags;
-    
 public:
-    
     INTROSPECTION_EXTEND(DataNode, BaseObject,
-        MEMBER(index, "Index", I_SAVE)
-        MEMBER(pointer, "Pointer", I_SAVE)
+        MEMBER(id, "Id", I_SAVE)
     );
 };
 
-inline void DataNode::SetDataIndex(int32 idx)
-{
-    index = idx;
-}
-
-    
 };
 
 #endif // __DAVAENGINE_DATANODE_H__

@@ -76,7 +76,7 @@ public:
 
 DAVA_TESTCLASS(UnlimitedLogOutputTest)
 {
-    DAVA_TEST(CompileTest)
+    DAVA_TEST(TestFunction)
     {
         TestLoggerOutput testOutput;
         Logger::AddCustomOutput(&testOutput);

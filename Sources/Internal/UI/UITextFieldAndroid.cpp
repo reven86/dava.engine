@@ -31,6 +31,8 @@
 #include "Utils/UTF8Utils.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 using namespace DAVA;
 
@@ -64,6 +66,7 @@ JniTextField::JniTextField(uint32_t id)
     getCursorPos = jniTextField.GetStaticMethod<jint, jint>("GetCursorPos");
     setCursorPos = jniTextField.GetStaticMethod<void, jint, jint>("SetCursorPos");
     setMaxLength = jniTextField.GetStaticMethod<void, jint, jint>("SetMaxLength");
+    setMultiline = jniTextField.GetStaticMethod<void, jint, jboolean>("SetMultiline");
 }
 
 void JniTextField::Create(Rect controlRect)
@@ -196,202 +199,187 @@ void JniTextField::SetMaxLength(int32_t value)
     setMaxLength(id, value);
 }
 
-uint32_t UITextFieldAndroid::sId = 0;
-DAVA::Map<uint32_t, UITextFieldAndroid*> UITextFieldAndroid::controls;
+void JniTextField::SetMultiline(bool value)
+{
+    jboolean isMulti = static_cast<jboolean>(value);
+    setMultiline(id, isMulti);
+}
 
-UITextFieldAndroid::UITextFieldAndroid(UITextField* textField)
+uint32_t TextFieldPlatformImpl::sId = 0;
+DAVA::UnorderedMap<uint32_t, TextFieldPlatformImpl*> TextFieldPlatformImpl::controls;
+
+TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* textField)
 {
     this->textField = textField;
     id = sId++;
     rect = textField->GetRect();
-    JniTextField jniTextField(id);
-    jniTextField.Create(rect);
+    jniTextField = std::make_shared<JniTextField>(id);
+    jniTextField->Create(rect);
 
     controls[id] = this;
 }
 
-UITextFieldAndroid::~UITextFieldAndroid()
+TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
     controls.erase(id);
-
-    JniTextField jniTextField(id);
-    jniTextField.Destroy();
+    jniTextField->Destroy();
 }
 
-void UITextFieldAndroid::OpenKeyboard()
+void TextFieldPlatformImpl::OpenKeyboard()
 {
-    JniTextField jniTextField(id);
-    jniTextField.OpenKeyboard();
+    jniTextField->OpenKeyboard();
 }
 
-void UITextFieldAndroid::CloseKeyboard()
+void TextFieldPlatformImpl::CloseKeyboard()
 {
-    JniTextField jniTextField(id);
-    jniTextField.CloseKeyboard();
+    jniTextField->CloseKeyboard();
 }
 
-void UITextFieldAndroid::GetText(WideString & string) const
+void TextFieldPlatformImpl::GetText(WideString& string) const
 {
     string = text;
 }
 
-void UITextFieldAndroid::SetText(const WideString & string)
+void TextFieldPlatformImpl::SetText(const WideString& string)
 {
     if (text.compare(string) != 0)
     {
         text = TruncateText(string, textField->GetMaxLength());
 
-        JniTextField jniTextField(id);
         String utfText = UTF8Utils::EncodeToUTF8(text);
-        jniTextField.SetText(utfText.c_str());
+        jniTextField->SetText(utfText.c_str());
     }
 }
 
-void UITextFieldAndroid::UpdateRect(const Rect & rect)
+void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 {
     if (rect != this->rect)
     {
         this->rect = rect;
-        JniTextField jniTextField(id);
-        jniTextField.UpdateRect(rect);
+        jniTextField->UpdateRect(rect);
     }
 }
 
-void UITextFieldAndroid::SetTextColor(const DAVA::Color &color)
+void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetTextColor(color.r, color.g, color.b, color.a);
+    jniTextField->SetTextColor(color.r, color.g, color.b, color.a);
 }
 
-void UITextFieldAndroid::SetFontSize(float size)
+void TextFieldPlatformImpl::SetFontSize(float size)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetFontSize(size);
+    jniTextField->SetFontSize(size);
 }
 
-void UITextFieldAndroid::SetTextAlign(DAVA::int32 align)
+void TextFieldPlatformImpl::SetTextAlign(DAVA::int32 align)
 {
     this->align = align;
-    JniTextField jniTextField(id);
-    jniTextField.SetTextAlign(align);
+    jniTextField->SetTextAlign(align);
 }
 
-DAVA::int32 UITextFieldAndroid::GetTextAlign()
+DAVA::int32 TextFieldPlatformImpl::GetTextAlign()
 {
     return align;
 }
 
-void UITextFieldAndroid::SetTextUseRtlAlign(bool useRtlAlign)
+void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 {
     this->useRtlAlign = useRtlAlign;
-    JniTextField jniTextField(id);
-    jniTextField.SetTextUseRtlAlign(useRtlAlign);
+    jniTextField->SetTextUseRtlAlign(useRtlAlign);
 }
 
-bool UITextFieldAndroid::GetTextUseRtlAlign() const
+bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 {
     return useRtlAlign;
 }
 
-void UITextFieldAndroid::SetVisible(bool isVisible)
+void TextFieldPlatformImpl::SetVisible(bool isVisible)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetVisible(isVisible);
+    jniTextField->SetVisible(isVisible);
 }
 
-void UITextFieldAndroid::SetIsPassword(bool isPassword)
+void TextFieldPlatformImpl::SetIsPassword(bool isPassword)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetIsPassword(isPassword);
+    jniTextField->SetIsPassword(isPassword);
 }
 
-void UITextFieldAndroid::SetInputEnabled(bool value)
+void TextFieldPlatformImpl::SetInputEnabled(bool value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetInputEnabled(value);
+    jniTextField->SetInputEnabled(value);
 }
 
-void UITextFieldAndroid::SetRenderToTexture(bool value)
+void TextFieldPlatformImpl::SetRenderToTexture(bool value)
 {
-    JniTextField  jniTextField(id);
-    jniTextField.SetRenderToTexture(value);
+    jniTextField->SetRenderToTexture(value);
 }
 
-bool UITextFieldAndroid::IsRenderToTexture() const
+bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
-    JniTextField jniTextField(id);
-    return jniTextField.IsRenderToTexture();
+    return jniTextField->IsRenderToTexture();
 }
 
 // Keyboard traits.
-void UITextFieldAndroid::SetAutoCapitalizationType(DAVA::int32 value)
+void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetAutoCapitalizationType(value);
+    jniTextField->SetAutoCapitalizationType(value);
 }
 
-void UITextFieldAndroid::SetAutoCorrectionType(DAVA::int32 value)
+void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetAutoCorrectionType(value);
+    jniTextField->SetAutoCorrectionType(value);
 }
 
-void UITextFieldAndroid::SetSpellCheckingType(DAVA::int32 value)
+void TextFieldPlatformImpl::SetSpellCheckingType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetSpellCheckingType(value);
+    jniTextField->SetSpellCheckingType(value);
 }
 
-void UITextFieldAndroid::SetKeyboardAppearanceType(DAVA::int32 value)
+void TextFieldPlatformImpl::SetKeyboardAppearanceType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetKeyboardAppearanceType(value);
+    jniTextField->SetKeyboardAppearanceType(value);
 }
 
-void UITextFieldAndroid::SetKeyboardType(DAVA::int32 value)
+void TextFieldPlatformImpl::SetKeyboardType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetKeyboardType(value);
+    jniTextField->SetKeyboardType(value);
 }
 
-void UITextFieldAndroid::SetReturnKeyType(DAVA::int32 value)
+void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetReturnKeyType(value);
+    jniTextField->SetReturnKeyType(value);
 }
 
-void UITextFieldAndroid::SetEnableReturnKeyAutomatically(bool value)
+void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetEnableReturnKeyAutomatically(value);
+    jniTextField->SetEnableReturnKeyAutomatically(value);
 }
 
-uint32 UITextFieldAndroid::GetCursorPos()
+uint32 TextFieldPlatformImpl::GetCursorPos()
 {
-    JniTextField jniTextField(id);
-    return jniTextField.GetCursorPos();
+    return jniTextField->GetCursorPos();
 }
 
-void UITextFieldAndroid::SetCursorPos(uint32 pos)
+void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetCursorPos(pos);
+    jniTextField->SetCursorPos(pos);
 }
 
-void UITextFieldAndroid::SetMaxLength(DAVA::int32 value)
+void TextFieldPlatformImpl::SetMaxLength(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-
     WideString truncated = TruncateText(text, value);
     if (truncated != text)
     {
         SetText(truncated);
     }
 
-    return jniTextField.SetMaxLength(value);
+    return jniTextField->SetMaxLength(value);
 }
 
-WideString UITextFieldAndroid::TruncateText(const WideString& text, int32 maxLength)
+void TextFieldPlatformImpl::SetMultiline(bool value)
+{
+	jniTextField->SetMultiline(value);
+}
+
+WideString TextFieldPlatformImpl::TruncateText(const WideString& text, int32 maxLength)
 {
     WideString str = text;
 
@@ -403,7 +391,7 @@ WideString UITextFieldAndroid::TruncateText(const WideString& text, int32 maxLen
     return str;
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text)
+bool TextFieldPlatformImpl::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString& text)
 {
     bool res = true;
     UITextFieldDelegate* delegate = textField->GetDelegate();
@@ -422,16 +410,16 @@ bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 re
     return res;
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString &text)
+bool TextFieldPlatformImpl::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString& text)
 {
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if (!control)
         return false;
 
     return control->TextFieldKeyPressed(replacementLocation, replacementLength, text);
 }
 
-void UITextFieldAndroid::TextFieldOnTextChanged(const WideString& newText, const WideString& oldText)
+void TextFieldPlatformImpl::TextFieldOnTextChanged(const WideString& newText, const WideString& oldText)
 {
     UITextFieldDelegate* delegate = textField->GetDelegate();
     if (delegate)
@@ -440,9 +428,9 @@ void UITextFieldAndroid::TextFieldOnTextChanged(const WideString& newText, const
     }
 }
 
-void UITextFieldAndroid::TextFieldOnTextChanged(uint32_t id, const WideString& newText, const WideString& oldText)
+void TextFieldPlatformImpl::TextFieldOnTextChanged(uint32_t id, const WideString& newText, const WideString& oldText)
 {
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if (!control)
     {
         return;
@@ -450,62 +438,62 @@ void UITextFieldAndroid::TextFieldOnTextChanged(uint32_t id, const WideString& n
     control->TextFieldOnTextChanged(newText, oldText);
 }
 
-void UITextFieldAndroid::TextFieldShouldReturn()
+void TextFieldPlatformImpl::TextFieldShouldReturn()
 {
     UITextFieldDelegate* delegate = textField->GetDelegate();
     if (delegate)
         delegate->TextFieldShouldReturn(textField);
 }
 
-void UITextFieldAndroid::TextFieldShouldReturn(uint32_t id)
+void TextFieldPlatformImpl::TextFieldShouldReturn(uint32_t id)
 {
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if (!control)
         return;
 
     control->TextFieldShouldReturn();
 }
 
-UITextFieldAndroid* UITextFieldAndroid::GetUITextFieldAndroid(uint32_t id)
+TextFieldPlatformImpl* TextFieldPlatformImpl::GetUITextFieldAndroid(uint32_t id)
 {
-    DAVA::Map<uint32_t, UITextFieldAndroid*>::iterator iter = controls.find(id);
+    auto iter = controls.find(id);
     if (iter != controls.end())
         return iter->second;
 
-    return NULL;
+    return nullptr;
 }
 
-void UITextFieldAndroid::TextFieldKeyboardShown(const Rect& rect)
+void TextFieldPlatformImpl::TextFieldKeyboardShown(const Rect& rect)
 {
     UITextFieldDelegate* delegate = textField->GetDelegate();
     if (delegate)
         delegate->OnKeyboardShown(rect);
 }
 
-void UITextFieldAndroid::TextFieldKeyboardShown(uint32_t id, const Rect& rect)
+void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect)
 {
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if (!control)
         return;
     control->TextFieldKeyboardShown(rect);
 }
 
-void UITextFieldAndroid::TextFieldKeyboardHidden()
+void TextFieldPlatformImpl::TextFieldKeyboardHidden()
 {
     UITextFieldDelegate* delegate = textField->GetDelegate();
     if (delegate)
         delegate->OnKeyboardHidden();
 }
 
-void UITextFieldAndroid::TextFieldKeyboardHidden(uint32_t id)
+void TextFieldPlatformImpl::TextFieldKeyboardHidden(uint32_t id)
 {
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if (!control)
         return;
     control->TextFieldKeyboardHidden();
 }
 
-void UITextFieldAndroid::TextFieldFocusChanged(bool hasFocus)
+void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
 {
     if(textField)
     {
@@ -526,19 +514,19 @@ void UITextFieldAndroid::TextFieldFocusChanged(bool hasFocus)
     }
 }
 
-void UITextFieldAndroid::TextFieldFocusChanged(uint32_t id, bool hasFocus)
+void TextFieldPlatformImpl::TextFieldFocusChanged(uint32_t id, bool hasFocus)
 {
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if(nullptr != control)
     {
         control->TextFieldFocusChanged(hasFocus);
     }
 }
 
-void UITextFieldAndroid::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
-        int width, int height)
+void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
+                                                   int width, int height)
 {
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if (nullptr != control)
     {
         UITextField& textField = *control->textField;
@@ -568,4 +556,8 @@ void UITextFieldAndroid::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
             textField.SetSprite(nullptr, 0);
         }
     }
+}
+
+void TextFieldPlatformImpl::SystemDraw(const UIGeometricData& geometricData)
+{
 }

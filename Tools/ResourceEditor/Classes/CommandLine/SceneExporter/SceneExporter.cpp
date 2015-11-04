@@ -70,7 +70,6 @@ void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
     exportForGPU = newGPU;
 }
 
-
 void SceneExporter::ExportSceneFolder(const String &folderName, Set<String> &errorLog)
 {
     FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
@@ -115,33 +114,20 @@ void SceneExporter::ExportSceneFile(const String &fileName, Set<String> &errorLo
     
     FilePath filePath = sceneUtils.dataSourceFolder + fileName;
     
-    //Load scene with *.sc2
+    //Load scene from *.sc2
     Scene *scene = new Scene();
-    Entity *rootNode = scene->GetRootNode(filePath);
-    if(rootNode)
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(filePath))
     {
-        int32 count = rootNode->GetChildrenCount();
-		Vector<Entity*> tempV;
-		tempV.reserve((count));
-        for(int32 i = 0; i < count; ++i)
-        {
-			tempV.push_back(rootNode->GetChild(i));
-        }
-		for(int32 i = 0; i < count; ++i)
-		{
-			scene->AddNode(tempV[i]);
-		}
-		
-		ExportScene(scene, filePath, errorLog);
+        ExportScene(scene, filePath, errorLog);
     }
-	else
-	{
-		errorLog.insert(Format("[SceneExporter::ExportFile] Can't open file %s", filePath.GetAbsolutePathname().c_str()));
-	}
+    else
+    {
+        errorLog.insert(Format("[SceneExporter::ExportFile] Can't open file %s", filePath.GetAbsolutePathname().c_str()));
+    }
 
     SafeRelease(scene);
+    RenderObjectsFlusher::Flush();
 }
-
 
 void SceneExporter::ExportTextureFolder(const String &folderName, Set<String> &errorLog)
 {
@@ -169,7 +155,6 @@ void SceneExporter::ExportTextureFolder(const String &folderName, Set<String> &e
             }
         }
     }
-    
     SafeRelease(fileList);
 }
 
@@ -186,7 +171,7 @@ void SceneExporter::ExportTextureFile(const String &fileName, Set<String> &error
 void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog)
 {
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-    
+
     //Create destination folder
     String relativeFilename = fileName.GetRelativePathname(sceneUtils.dataSourceFolder);
     sceneUtils.workingFolder = fileName.GetDirectory().GetRelativePathname(sceneUtils.dataSourceFolder);
@@ -209,29 +194,22 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     bool sceneWasExportedCorrectly = ExportDescriptors(scene, errorLog);
     uint64 exportDescriptorsTime = SystemTimer::Instance()->AbsoluteMS() - exportDescriptorsStart;
 
-    
     uint64 validationStart = SystemTimer::Instance()->AbsoluteMS();
     FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
     SceneValidator::Instance()->ValidateScene(scene, fileName, errorLog);
 	//SceneValidator::Instance()->ValidateScales(scene, errorLog);
     uint64 validationTime = SystemTimer::Instance()->AbsoluteMS() - validationStart;
 
-    
     uint64 landscapeStart = SystemTimer::Instance()->AbsoluteMS();
     sceneWasExportedCorrectly &= ExportLandscape(scene, errorLog);
     uint64 landscapeTime = SystemTimer::Instance()->AbsoluteMS() - landscapeStart;
 
-    uint64 vegetationStart = SystemTimer::Instance()->AbsoluteMS();
-    sceneWasExportedCorrectly &= ExportVegetation(scene, errorLog);
-    uint64 vegetationTime = SystemTimer::Instance()->AbsoluteMS() - vegetationStart;
-
-    //save scene to new place
+    // save scene to new place
     uint64 saveStart = SystemTimer::Instance()->AbsoluteMS();
     FilePath tempSceneName = FilePath::CreateWithNewExtension(sceneUtils.dataSourceFolder + relativeFilename, ".exported.sc2");
     scene->SaveScene(tempSceneName, optimizeOnExport);
     uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - saveStart;
 
-    
     uint64 moveStart = SystemTimer::Instance()->AbsoluteMS();
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
 	if(!moved)
@@ -251,9 +229,8 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     
     uint64 exportTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
     Logger::Info("Export Status\n\tScene: %s\n\tExport time: %ldms\n\tRemove editor nodes time: %ldms\n\tRemove custom properties: %ldms\n\tExport descriptors: %ldms\n\tValidation time: %ldms\n\tLandscape time: %ldms\n\tVegetation time: %ldms\n\tSave time: %ldms\n\tMove time: %ldms\n\tErrors occured: %d",
-                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, vegetationTime, saveTime, moveTime, !sceneWasExportedCorrectly
-                 );
-    
+                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, saveTime, moveTime, !sceneWasExportedCorrectly);
+
     return;
 }
 
@@ -336,23 +313,22 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
 bool SceneExporter::ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog)
 {
     bool allDescriptorsWereExported = true;
-    
-    DAVA::TexturesMap textures;
-    SceneHelper::EnumerateSceneTextures(scene, textures, SceneHelper::INCLUDE_NULL);
 
-    auto endIt = textures.end();
-    for(auto it = textures.begin(); it != endIt; ++it)
+    DAVA::TexturesMap sceneTextures;
+    SceneHelper::EnumerateSceneTextures(scene, sceneTextures, SceneHelper::TexturesEnumerateMode::INCLUDE_NULL);
+
+    for (const auto& scTex : sceneTextures)
     {
-        DAVA::FilePath pathname = it->first;
-        if((pathname.GetType() == DAVA::FilePath::PATH_IN_MEMORY) || pathname.IsEmpty())
+        const DAVA::FilePath& path = scTex.first;
+        if (path.GetType() == DAVA::FilePath::PATH_IN_MEMORY)
         {
             continue;
         }
 
-        allDescriptorsWereExported &= ExportTextureDescriptor(it->first, errorLog);
-    }
+        DVASSERT(path.IsEmpty() == false);
 
-    textures.clear();
+        allDescriptorsWereExported &= ExportTextureDescriptor(path, errorLog);
+    }
     
     return allDescriptorsWereExported;
 }
@@ -437,25 +413,6 @@ bool SceneExporter::ExportLandscape(Scene *scene, Set<String> &errorLog)
     }
     
     return true;
-}
-
-bool SceneExporter::ExportVegetation(Scene *scene, Set<String> &errorLog)
-{
-    DVASSERT(scene);
-    
-    bool wasExported = true;
-    
-    VegetationRenderObject *vegetation = FindVegetation(scene);
-    if (vegetation)
-    {
-        const FilePath& textureSheetPath = vegetation->GetTextureSheetPath();
-        if(textureSheetPath.Exists())
-        {
-            wasExported |= sceneUtils.CopyFile(vegetation->GetTextureSheetPath(), errorLog);
-        }
-    }
-    
-    return wasExported;
 }
 
 void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog)

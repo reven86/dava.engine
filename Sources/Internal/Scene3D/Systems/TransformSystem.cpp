@@ -257,14 +257,14 @@ void TransformSystem::RemoveEntity(Entity * entity)
 	{
 		if(updatableEntities[i] == entity)
 		{
-			entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE);
-			entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
-
 			updatableEntities[i] = updatableEntities[size-1];
 			updatableEntities.pop_back();
-			return;
+            break;
 		}
 	}
+
+    entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE);
+    entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
 }
 
 };

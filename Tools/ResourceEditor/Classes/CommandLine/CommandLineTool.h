@@ -34,23 +34,22 @@
 
 class CommandLineTool
 {    
-    
 public:
     
 	CommandLineTool();
     virtual ~CommandLineTool() {};
 
-    virtual DAVA::String GetCommandLineKey() = 0;
+	virtual DAVA::String GetCommandLineKey() const = 0;
     
     virtual bool InitializeFromCommandLine() = 0;
-  
+
+	virtual void PrintUsage() const = 0;
+
     virtual void Process() = 0;
 
-    virtual void PrintUsage() = 0;
-    
     virtual DAVA::FilePath GetQualityConfigPath() const {return DAVA::FilePath(); };
     
-    virtual void DumpParams() {};
+	virtual void DumpParams() const {};
 
     inline const DAVA::Set<DAVA::String> & GetErrorList() const;
     
@@ -58,7 +57,6 @@ public:
 
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath & pathname);
 
-    
 protected:
     
     DAVA::FilePath CreateQualityConfigPath(const DAVA::FilePath & path) const;

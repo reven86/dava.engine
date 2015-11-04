@@ -110,11 +110,23 @@ void FilePath::InitializeBundleName()
 {
 	FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
 	FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
-	SetBundleName(execDirectory);
-	if(workingDirectory != execDirectory)
-	{
-		AddResourcesFolder(workingDirectory);
-	}
+    SetBundleName(execDirectory);
+    if (workingDirectory != execDirectory)
+    {
+        AddResourcesFolder(workingDirectory);
+    }
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    //additional resource path for resources
+    String additionalResourcePath = DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION;
+    additionalResourcePath += '/';
+
+    AddResourcesFolder(execDirectory + additionalResourcePath);
+    if (workingDirectory != execDirectory)
+    {
+        AddResourcesFolder(workingDirectory + additionalResourcePath);
+    }
+#endif
 }
 #endif //#if defined(__DAVAENGINE_WINDOWS__)
 
@@ -230,14 +242,20 @@ FilePath::FilePath(const FilePath &directory, const String &filename)
 
 void FilePath::Initialize(const String &_pathname)
 {
-	String pathname = NormalizePathname(_pathname);
-    pathType = GetPathType(pathname);
+    pathType = GetPathType(_pathname);
+    if (pathType == PATH_IN_MEMORY)
+    {
+        absolutePathname = _pathname;
+        return;
+    }
 
+    String pathname = NormalizePathname(_pathname);
+    
 	if (pathType == PATH_EMPTY)
 	{
 		absolutePathname = String();
 	}
-    else if(pathType == PATH_IN_RESOURCES || pathType == PATH_IN_MEMORY)
+    else if(pathType == PATH_IN_RESOURCES)
     {
         absolutePathname = pathname;
 #if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)

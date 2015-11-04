@@ -42,7 +42,6 @@
 #include "Scene3D/Scene.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
@@ -79,7 +78,6 @@ SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	, distanceToCamera(0.f)
 	, activeSpeedIndex(0)
 {
-	renderState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL | RenderStateData::STATE_DEPTH_WRITE);
 }
 
 SceneCameraSystem::~SceneCameraSystem()
@@ -298,12 +296,9 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
 {
     switch ( event->phase )
     {
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
         OnKeyboardInput( event );
         break;
-    case UIEvent::PHASE_WHEEL:
-        break;
-
     default:
         break;
     }
@@ -378,8 +373,6 @@ void SceneCameraSystem::Draw()
 
 		if(nullptr != collSystem)
 		{
-			DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));		
-
 			DAVA::Set<DAVA::Entity *>::iterator it = sceneCameras.begin();
 			for(; it != sceneCameras.end(); ++it)
 			{
@@ -394,12 +387,10 @@ void SceneCameraSystem::Draw()
 
 					transform.Identity();
 					transform.SetTranslationVector(camera->GetPosition());
-					collBox.GetTransformedBox(transform, worldBox);	
-					DAVA::RenderHelper::Instance()->FillBox(worldBox, renderState);
-				}
-			}
-
-			DAVA::RenderManager::Instance()->ResetColor();
+                    collBox.GetTransformedBox(transform, worldBox);
+                    sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
+                }
+            }
 		}
 	}
 }
@@ -450,7 +441,14 @@ void SceneCameraSystem::CreateDebugCameras()
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
-		scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
+        if(scene->GetChildrenCount() > 0)
+        {
+            scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
+        }
+        else
+        {
+            scene->AddNode(topCameraEntity);
+        }
 
 		// set current default camera
 		if(nullptr == scene->GetCurrentCamera())

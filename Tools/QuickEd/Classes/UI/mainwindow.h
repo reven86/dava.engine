@@ -30,7 +30,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "Result.h"
+#include "Base/Result.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
@@ -44,7 +44,8 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
-class DavaGLWidget;
+class DialogReloadSprites;
+class Document;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -63,13 +64,16 @@ public:
     explicit MainWindow(QWidget *parent = 0);
 
     ~MainWindow();
+
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    void OnProjectOpened(Result result, QString projectPath);
+    void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
-    DavaGLWidget *GetGLWidget() const;
+
+    DialogReloadSprites* GetDialogReloadSprites() const;
+    QCheckBox* GetCheckboxEmulation();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -84,41 +88,55 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
+    void RtlChanged(bool isRtl);
+    void GlobalStyleClassesChanged(const QString &classesStr);
+    void ReloadSprites(DAVA::eGPUFamily gpu);
+
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
+    void OnSetupCacheSettingsForPacker();
+    void OnDocumentChanged(Document* doc);
+
 private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
     void OnOpenFontManager();
-    void OnOpenLocalizationManager();
     void OnShowHelp();
-	
+    
     void OnOpenProject();
-	
-	void RebuildRecentMenu();
+    
+    void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
-    
+
     // Pixelization.
     void OnPixelizationStateChanged();
+    
+    void OnRtlChanged(int arg);
+    void OnGlobalClassesChanged(const QString &str);
+
 private:
     void InitLanguageBox();
+    void InitRtlBox();
+    void InitGlobalClasses();
+    void InitEmulationMode();
 	void InitMenu();
     void SetupViewMenu();
     void DisableActions();
-	void UpdateProjectSettings(const QString& filename);
+    void UpdateProjectSettings(const QString& filename);
 
-	// Save/restore positions of DockWidgets and main window geometry
-	void SaveMainWindowState();
-	void RestoreMainWindowState();
-
+    // Save/restore positions of DockWidgets and main window geometry
+    void SaveMainWindowState();
+    void RestoreMainWindowState();
 private:
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
-    QAction* backgroundFrameUseCustomColorAction;
-    QAction* backgroundFrameSelectCustomColorAction;
-    LocalizationEditorDialog *localizationEditorDialog;
+    QAction* backgroundFrameUseCustomColorAction = nullptr;
+    QAction* backgroundFrameSelectCustomColorAction = nullptr;
+    LocalizationEditorDialog* localizationEditorDialog = nullptr;
+    DialogReloadSprites* dialogReloadSprites = nullptr;
+    QCheckBox* emulationBox = nullptr;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

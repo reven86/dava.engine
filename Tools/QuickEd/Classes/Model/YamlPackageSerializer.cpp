@@ -69,6 +69,11 @@ void YamlPackageSerializer::PutValue(const DAVA::String &name, const DAVA::Vecto
     nodesStack.back()->Add(name, node);
 }
 
+void YamlPackageSerializer::PutValue(const DAVA::VariantType &value)
+{
+    nodesStack.back()->Add(value);
+}
+
 void YamlPackageSerializer::PutValue(const DAVA::String &value)
 {
     nodesStack.back()->Add(value);
@@ -81,9 +86,10 @@ void YamlPackageSerializer::BeginMap()
     nodesStack.push_back(node);
 }
 
-void YamlPackageSerializer::BeginMap(const DAVA::String &name)
+void YamlPackageSerializer::BeginMap(const DAVA::String &name, bool quotes)
 {
-    YamlNode *node = YamlNode::CreateMapNode(false, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_PLAIN_REPRESENTATION);
+    YamlNode *node = YamlNode::CreateMapNode(false, YamlNode::MR_BLOCK_REPRESENTATION,
+                                             quotes ? YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION : YamlNode::SR_PLAIN_REPRESENTATION);
     nodesStack.back()->Add(name, node);
     nodesStack.push_back(node);
 }
@@ -93,9 +99,9 @@ void YamlPackageSerializer::EndMap()
     nodesStack.pop_back();
 }
 
-void YamlPackageSerializer::BeginArray(const DAVA::String &name)
+void YamlPackageSerializer::BeginArray(const DAVA::String &name, bool flow)
 {
-    YamlNode *node = YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION);
+    YamlNode *node = YamlNode::CreateArrayNode(flow ? YamlNode::AR_FLOW_REPRESENTATION : YamlNode::AR_BLOCK_REPRESENTATION);
     nodesStack.back()->Add(name, node);
     nodesStack.push_back(node);
 }

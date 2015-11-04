@@ -35,13 +35,15 @@
 #include "Classes/StringConstants.h"
 #include "Classes/Qt/Main/QtUtils.h"
 
+#include "FileSystem/FileList.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+
 #include "CommandLine/CommandLineTool.h"
+
 
 using namespace DAVA;
 
 SceneSaver::SceneSaver()
-    : copyConverted(false)
 {
 }
 
@@ -74,21 +76,8 @@ void SceneSaver::SaveFile(const String &fileName, Set<String> &errorLog)
 
     //Load scene with *.sc2
     Scene *scene = new Scene();
-    Entity *rootNode = scene->GetRootNode(filePath);
-    if(rootNode)
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(filePath))
     {
-        int32 count = rootNode->GetChildrenCount();
-		Vector<Entity*> tempV;
-		tempV.reserve((count));
-        for(int32 i = 0; i < count; ++i)
-        {
-			tempV.push_back(rootNode->GetChild(i));
-        }
-		for(int32 i = 0; i < count; ++i)
-		{
-			scene->AddNode(tempV[i]);
-		}
-		
 		SaveScene(scene, filePath, errorLog);
     }
 	else
@@ -97,6 +86,7 @@ void SceneSaver::SaveFile(const String &fileName, Set<String> &errorLog)
 	}
 
     SafeRelease(scene);
+    RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
@@ -106,32 +96,18 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
 	FilePath sc2Filename = sceneUtils.dataSourceFolder + fileName;
 
 	//Load scene with *.sc2
-	Scene *scene = new Scene();
-	Entity *rootNode = scene->GetRootNode(sc2Filename);
-	if(rootNode)
-	{
-		int32 count = rootNode->GetChildrenCount();
-
-		Vector<Entity*> tempV;
-		tempV.reserve((count));
-		for(int32 i = 0; i < count; ++i)
-		{
-			tempV.push_back(rootNode->GetChild(i));
-		}
-		for(int32 i = 0; i < count; ++i)
-		{
-			scene->AddNode(tempV[i]);
-		}
-
-		//scene->Update(0.f);
+    Scene *scene = new Scene();
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(sc2Filename))
+    {
         scene->SaveScene(sc2Filename, false);
-	}
-	else
+    }
+    else
 	{
 		errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
 	}
 
 	SafeRelease(scene);
+    RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog)
@@ -151,7 +127,7 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     SceneValidator::Instance()->ValidateScene(scene, fileName, errorLog);
 
     texturesForSave.clear();
-    SceneHelper::EnumerateSceneTextures(scene, texturesForSave, SceneHelper::INCLUDE_NULL);
+    SceneHelper::EnumerateSceneTextures(scene, texturesForSave, SceneHelper::TexturesEnumerateMode::INCLUDE_NULL);
 
     CopyTextures(scene);
 	ReleaseTextures();
@@ -165,12 +141,6 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     VegetationRenderObject* vegetation = FindVegetation(scene);
     if(vegetation)
     {
-        const FilePath& textureSheetPath = vegetation->GetTextureSheetPath();
-        if(!textureSheetPath.IsEmpty())
-        {
-            sceneUtils.AddFile(vegetation->GetTextureSheetPath());
-        }
-        
         const FilePath vegetationCustomGeometry = vegetation->GetCustomGeometryPath();
         if(!vegetationCustomGeometry.IsEmpty())
         {
@@ -341,7 +311,6 @@ void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
 			psdPath.ReplaceExtension(".psd");
 			sceneUtils.AddFile(psdPath);
             
-            
             effectFolders.insert(psdPath.GetDirectory());
 		}
 	}
@@ -378,4 +347,30 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
     
     //save new path to custom colors texture
     customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, newTexPathname.GetRelativePathname(newProjectPathname));
+}
+
+void SceneSaver::ResaveYamlFilesRecursive(const FilePath & folder, Set<String> &errorLog) const
+{
+    ScopedPtr<FileList> fileList(new FileList(folder));
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        const FilePath & pathname = fileList->GetPathname(i);
+        if (fileList->IsDirectory(i))
+        {
+            if (!fileList->IsNavigationDirectory(i))
+            {
+                ResaveYamlFilesRecursive(pathname, errorLog);
+            }
+        }
+        else
+        {
+            if (pathname.IsEqualToExtension(".yaml"))
+            {
+                ParticleEmitter *emitter = new ParticleEmitter();
+                emitter->LoadFromYaml(pathname);
+                emitter->SaveToYaml(pathname);
+                SafeRelease(emitter);
+            }
+        }
+    }
 }

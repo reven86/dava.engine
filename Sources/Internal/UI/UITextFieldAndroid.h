@@ -69,6 +69,7 @@ public:
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(int32_t value);
+	void SetMultiline(bool value);
 
 private:
 	uint32_t id;
@@ -98,17 +99,18 @@ private:
 	Function<jint (jint)> getCursorPos;
 	Function<void (jint, jint)> setCursorPos;
 	Function<void (jint, jint)> setMaxLength;
+	Function<void (jint, jboolean)> setMultiline;
 };
 
-class UITextFieldAndroid
+class TextFieldPlatformImpl
 {
 public:
-	UITextFieldAndroid(UITextField* textField);
-	virtual ~UITextFieldAndroid();
+    TextFieldPlatformImpl(UITextField* textField);
+    virtual ~TextFieldPlatformImpl();
 
-	void OpenKeyboard();
-	void CloseKeyboard();
-	void GetText(WideString & string) const;
+    void OpenKeyboard();
+    void CloseKeyboard();
+    void GetText(WideString & string) const;
 	void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect);
 
@@ -141,6 +143,7 @@ public:
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(DAVA::int32 value);
+	void SetMultiline(bool value);
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
 	void TextFieldOnTextChanged(const WideString& newText, const WideString& oldText);
@@ -156,21 +159,24 @@ public:
 	static void TextFieldFocusChanged(uint32_t id, bool hasFocus);
 	static void TextFieldUpdateTexture(uint32_t id, int32* pixels, int width, int height);
 
+    void SystemDraw(const UIGeometricData& geometricData);
+
 private:
-	static UITextFieldAndroid* GetUITextFieldAndroid(uint32_t id);
+    static TextFieldPlatformImpl* GetUITextFieldAndroid(uint32_t id);
 
 protected:
     // Truncate the text to maxLength characters.
     WideString TruncateText(const WideString& text, int32 maxLength);
 
 private:
-	UITextField* textField;
+    std::shared_ptr<JniTextField> jniTextField;
+	UITextField* textField = nullptr;
 	static uint32_t sId;
-	static Map<uint32_t, UITextFieldAndroid*> controls;
-	uint32_t id;
-	Rect rect;
-	WideString text;
-	int32_t align;
+    static UnorderedMap<uint32_t, TextFieldPlatformImpl*> controls;
+    uint32_t id;
+    Rect rect;
+    WideString text;
+    int32_t align;
 	bool useRtlAlign;
 };
 

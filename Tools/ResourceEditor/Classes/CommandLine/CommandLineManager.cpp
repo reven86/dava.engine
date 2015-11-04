@@ -34,15 +34,15 @@
 #include "SceneUtils/CleanFolderTool.h"
 #include "SceneSaver/SceneSaverTool.h"
 #include "SceneExporter/SceneExporterTool.h"
-#include "DDSExtractor/DDSExtractorTool.h"
 #include "StaticOcclusion/StaticOcclusionTool.h"
+#include "Dump/DumpTool.h"
 
 #include "Beast/BeastCommandLineTool.h"
 #include "TextureDescriptor/TextureDescriptorTool.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 
-#include "../Qt/Main/QtUtils.h"
+#include "Main/QtUtils.h"
 #include "TeamcityOutput/TeamcityOutput.h"
 
 
@@ -92,7 +92,6 @@ CommandLineManager::CommandLineManager()
     AddCommandLineTool(new ImageSplitterTool());
     AddCommandLineTool(new SceneExporterTool());
     AddCommandLineTool(new SceneSaverTool());
-	AddCommandLineTool(new DDSExtractorTool());
     AddCommandLineTool(new StaticOcclusionTool());
 
 #if defined (__DAVAENGINE_BEAST__)
@@ -100,6 +99,7 @@ CommandLineManager::CommandLineManager()
 #endif //#if defined (__DAVAENGINE_BEAST__)
     
     AddCommandLineTool(new TextureDescriptorTool());
+	AddCommandLineTool(new DumpTool());
     
  
     ParseCommandLine();
@@ -198,7 +198,7 @@ void CommandLineManager::FindActiveTool()
 
 void CommandLineManager::Process()
 {
-    if(activeTool)
+    if (activeTool)
     {
         const FilePath qualitySettings = activeTool->GetQualityConfigPath();
         if(!qualitySettings.IsEmpty())

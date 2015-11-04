@@ -38,7 +38,7 @@
 #include "FileSystem/FilePath.h"
 #include "Base/EventDispatcher.h"
 #include "Sound/SoundEvent.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 #include "Sound/FMODUtils.h"
 
 namespace FMOD

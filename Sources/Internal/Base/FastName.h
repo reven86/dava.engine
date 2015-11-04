@@ -33,12 +33,12 @@
 #include "Base/HashMap.h"
 #include "Base/StaticSingleton.h"
 
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 
 #include <cstdlib>
 namespace DAVA
 {
-class Mutex;
+
 struct FastNameDB : public StaticSingleton<FastNameDB>
 {
 	FastNameDB()
@@ -192,5 +192,17 @@ const char* FastName::c_str() const
 
 
 };
+
+namespace std
+{
+    template <>
+    struct hash<DAVA::FastName>
+    {
+        std::size_t operator()(const DAVA::FastName& k) const
+        {
+            return k.Index();
+        }
+    };
+}
 
 #endif // __DAVAENGINE_FAST_NAME__

@@ -34,7 +34,7 @@
 
 ////Global launcher defines
 
-#define LAUNCHER_VER "0.9 build 9"
+#define LAUNCHER_VER "0.9 build 11"
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
 
@@ -62,7 +62,6 @@
 #define COLUMN_APP_AVAL 2
 #define COLUMN_BUTTONS 3
 
-#define DAVA_WIDGET_ROLE 32
 #define DAVA_CUSTOM_PROPERTY_NAME "DAVA_ID"
 
 #ifdef Q_OS_WIN

@@ -27,282 +27,153 @@
 =====================================================================================*/
 
 #include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Utils/Utils.h"
-#include "Render/RenderManager.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "Platform/SystemTimer.h"
 
-#include "CorePlatformWinUAP.h"
-#include <angle_windowsstore.h>
+#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 
-extern void FrameworkDidLaunched();
-extern void FrameworkWillTerminate();
+using namespace Windows::UI::Core;
+using namespace Windows::UI::Xaml;
+using namespace Windows::UI::ViewManagement;
 
 namespace DAVA
 {
 
-using namespace Windows::UI::Core;
-using namespace Windows::Foundation;
-using namespace Windows::ApplicationModel;
-using namespace Windows::ApplicationModel::Core;
-using namespace Windows::ApplicationModel::Activation;
-
-//------------------------------------------------------------------------------------------------------
-//                                      Core
-//------------------------------------------------------------------------------------------------------
-int Core::Run(int argc, char * argv[], AppHandle handle)
+int Core::Run(int /*argc*/, char* /*argv*/[], AppHandle /*handle*/)
 {
-	// create window
-	auto winStoreApplicationSource = ref new WinStoreApplicationSource();
-	CoreApplication::Run(winStoreApplicationSource);
-
-	return 0;
+    std::unique_ptr<CorePlatformWinUAP> core = std::make_unique<CorePlatformWinUAP>();
+    core->InitArgs();
+    core->Run();
+    return 0;
 }
 
-int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
-{
-	return 1;
-}
-//------------------------------------------------------------------------------------------------------
-//                                      CorePlatformWinStore
-//------------------------------------------------------------------------------------------------------
-CorePlatformWinStore::CorePlatformWinStore()
-{
-}
-
-CorePlatformWinStore::~CorePlatformWinStore()
-{
-}
-
-void CorePlatformWinStore::InitArgs()
+//////////////////////////////////////////////////////////////////////////
+void CorePlatformWinUAP::InitArgs()
 {
     SetCommandLine(WStringToString(::GetCommandLineW()));
 }
 
-void CorePlatformWinStore::Run()
+void CorePlatformWinUAP::Run()
 {
-
+    auto appStartCallback = ref new ApplicationInitializationCallback([this](ApplicationInitializationCallbackParams^) {
+        xamlApp = ref new WinUAPXamlApp();
+    });
+    Application::Start(appStartCallback);
 }
 
-Core::eScreenMode CorePlatformWinStore::GetScreenMode()
+void CorePlatformWinUAP::Quit()
 {
-	return Core::MODE_FULLSCREEN;
+    xamlApp->SetQuitFlag();
 }
 
-void CorePlatformWinStore::SwitchScreenToMode(eScreenMode screenMode)
+Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
 {
-
+    // will be called from UI thread
+    ApplicationViewWindowingMode viewMode;
+    auto func = [this, &viewMode] { viewMode = xamlApp->GetScreenMode(); };
+    RunOnUIThreadBlocked(func);
+    switch (viewMode)
+    {
+    case ApplicationViewWindowingMode::FullScreen:
+        return eScreenMode::FULLSCREEN;
+    case ApplicationViewWindowingMode::PreferredLaunchViewSize:
+        return eScreenMode::WINDOWED;
+    case ApplicationViewWindowingMode::Auto:
+    default:
+        // Unknown screen mode -> return default value
+        return eScreenMode::FULLSCREEN;
+    }
 }
 
-void CorePlatformWinStore::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
+bool CorePlatformWinUAP::SetScreenMode(eScreenMode screenMode)
 {
-
+    switch (screenMode)
+    {
+    case DAVA::Core::eScreenMode::FULLSCREEN:
+        RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen); });
+        return true;
+    case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
+        Logger::Error("Unimplemented screen mode");
+        return false;
+    case DAVA::Core::eScreenMode::WINDOWED:
+        RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize); });
+        return true;
+    default:
+        DVASSERT_MSG(false, "Unknown screen mode");
+        return false;
+    }
 }
 
-void CorePlatformWinStore::ToggleFullscreen()
+DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
 {
-
+    Windows::Foundation::Size screenSize;
+    auto func = [this, &screenSize] { screenSize = xamlApp->GetCurrentScreenSize(); };
+    RunOnUIThreadBlocked(func);
+    return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
 }
 
-DisplayMode CorePlatformWinStore::FindBestMode(const DisplayMode & requestedMode)
+void CorePlatformWinUAP::SetScreenScaleMultiplier(float32 multiplier)
 {
-	return DisplayMode(0, 0, 0, 0);
+    Core::SetScreenScaleMultiplier(multiplier);
+    xamlApp->ResetScreen();
 }
 
-DisplayMode CorePlatformWinStore::GetCurrentDisplayMode()
+bool CorePlatformWinUAP::GetCursorVisibility()
 {
-	return DisplayMode(0, 0, 0, 0);
+    return xamlApp->GetCursorVisible();
 }
 
-void CorePlatformWinStore::Quit()
+InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetMouseCaptureMode()
 {
-    CoreApplication::Exit();
+    return xamlApp->GetMouseCaptureMode();
 }
 
-void CorePlatformWinStore::SetIcon(int32 iconId)
+bool CorePlatformWinUAP::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
-
+    RunOnUIThreadBlocked([this, mode]() {
+        if (xamlApp->SetMouseCaptureMode(mode))
+        {
+            xamlApp->SetCursorVisible(mode != InputSystem::eMouseCaptureMode::PINING);
+        }
+    });
+    return GetMouseCaptureMode() == mode;
 }
 
-Core::eScreenOrientation CorePlatformWinStore::GetScreenOrientation()
+bool CorePlatformWinUAP::IsUIThread() const
 {
-	return Core::eScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
+    return xamlApp->UIThreadDispatcher()->HasThreadAccess;
 }
 
-uint32 CorePlatformWinStore::GetScreenDPI()
+void CorePlatformWinUAP::RunOnUIThread(std::function<void()>&& fn, bool blocked)
 {
-	return 1;
+    if (!blocked)
+    {
+        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(std::forward<std::function<void()>>(fn)));
+    }
+    else
+    {
+        DispatcherWinUAP::BlockingTaskWrapper wrapper = xamlApp->MainThreadDispatcher()->GetBlockingTaskWrapper(std::forward<std::function<void()>>(fn));
+        RunOnUIThread([&wrapper]() { wrapper.RunTask(); });
+        wrapper.WaitTaskComplete();
+    }
 }
 
-void CorePlatformWinStore::GoBackground(bool isLock)
+void CorePlatformWinUAP::RunOnMainThread(std::function<void()>&& fn, bool blocked)
 {
-
+    if (!blocked)
+    {
+        xamlApp->MainThreadDispatcher()->RunAsync(std::forward<std::function<void()>>(fn));
+    }
+    else
+    {
+        xamlApp->MainThreadDispatcher()->RunAsyncAndWait(std::forward<std::function<void()>>(fn));
+    }
 }
 
-void CorePlatformWinStore::GoForeground()
-{
+}   // namespace DAVA
 
-}
-//------------------------------------------------------------------------------------------------------
-//                          WinStoreApplicationSource
-//------------------------------------------------------------------------------------------------------
-IFrameworkView^ WinStoreApplicationSource::CreateView()
-{
-	return ref new WinStoreFrame();
-}
-//------------------------------------------------------------------------------------------------------
-//                          WinStoreFrame
-//------------------------------------------------------------------------------------------------------
-WinStoreFrame::WinStoreFrame() : willQuit(true), isWindowClosed(true), isWindowVisible(false),
-                                 windowWidth(0), windowHeight(0)
-{
-}
-
-// This method is called on application launch.
-void WinStoreFrame::Initialize(CoreApplicationView^ applicationView)
-{
-    CorePlatformWinStore* core = new CorePlatformWinStore();
-    core->InitArgs(); // if need
-    core->CreateSingletons();
-
-	applicationView->Activated +=
-		ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &WinStoreFrame::OnActivated);
-
-	CoreApplication::Suspending +=
-		ref new EventHandler<SuspendingEventArgs^>(this, &WinStoreFrame::OnSuspending);
-
-	CoreApplication::Resuming +=
-		ref new EventHandler<Platform::Object^>(this, &WinStoreFrame::OnResuming);
-
-	// At this point we have access to the device. 
-	// We can create the device-dependent resources.
-	
-	// Create resource
-}
-
-// This method is called after Initialize.
-void WinStoreFrame::SetWindow(CoreWindow^ window)
-{
-	windowWidth = static_cast<uint32>(window->Bounds.Width);
-	windowHeight = static_cast<uint32>(window->Bounds.Height);
-
-	frameWinStore = window;
-	//init angle
-	RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-	RenderManager::Instance()->Create(frameWinStore.Get());
-    RenderManager::Instance()->Init(windowWidth, windowHeight);
-    RenderSystem2D::Instance()->Init();
-	FrameworkDidLaunched();
-	//RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
-	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowWidth, windowHeight);
-	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(windowWidth, windowHeight);
-
-	// Specify the cursor type as the standard arrow cursor.
-	frameWinStore->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
-	// Allow the application to respond when the window size changes.
-	frameWinStore->Activated +=
-		ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinStoreFrame::OnWindowActivationChanged);
-	frameWinStore->SizeChanged +=
-		ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &WinStoreFrame::OnWindowSizeChanged);
-	frameWinStore->Closed +=
-		ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &WinStoreFrame::OnWindowClosed);
-}
-
-void WinStoreFrame::Load(Platform::String^ entryPoint)
-{
-}
-
-// This method is called after Load.
-void WinStoreFrame::Run()
-{
-	Core::Instance()->SystemAppStarted();
-
-	while (!isWindowClosed)
-	{
-		if (isWindowVisible)
-		{
-			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-			DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
-			RenderManager::Instance()->Lock();
-			CorePlatformWinStore::Instance()->SystemProcessFrame();
-			RenderManager::Instance()->Unlock();
-			uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
-			int32 sleepMs = 1;
-			int32 fps = RenderManager::Instance()->GetFPS();
-			if (fps > 0)
-			{
-				sleepMs = (1000 / fps) - elapsedTime;
-				if (sleepMs > 0)
-				{
-					Thread::Sleep(sleepMs);
-				}
-			}
-		}
-		else
-		{
-			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-		}
-	}
-	RenderManager::Instance()->Release();
-
-	ApplicationCore * appCore = Core::Instance()->GetApplicationCore();
-	if (appCore && appCore->OnQuit())
-	{
-		exit(0);
-	}
-	else
-	{
-		willQuit = true;
-	}
-	Core::Instance()->SystemAppFinished();
-	
-	FrameworkWillTerminate();
-}
-
-// This method is called before the application exits.
-void WinStoreFrame::Uninitialize()
-{
-}
-
-void WinStoreFrame::OnActivated(CoreApplicationView^ /* applicationView */, IActivatedEventArgs^ /* args */)
-{
-	// Activate the application window, making it visible and enabling it to receive events.
-	CoreWindow::GetForCurrentThread()->Activate();
-	isWindowClosed = false;
-	isWindowVisible = true;
-    Core::Instance()->SetIsActive(true);
-}
-
-void WinStoreFrame::OnSuspending(Platform::Object^ /* sender */, SuspendingEventArgs^ args)
-{
-    Core::Instance()->SetIsActive(false);
-    isWindowVisible = false;
-}
-
-void WinStoreFrame::OnResuming(Platform::Object^ /* sender */, Platform::Object^ /* args */)
-{
-    Core::Instance()->SetIsActive(true);
-    isWindowVisible = true;
-}
-
-void WinStoreFrame::OnWindowActivationChanged(CoreWindow^ sender, WindowActivatedEventArgs^ args)
-{
-}
-
-void WinStoreFrame::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
-{
-	isWindowClosed = true;
-}
-
-// This method is called whenever the application window size changes.
-void WinStoreFrame::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
-{
-
-}
-
-} // namespace DAVA
-
-#endif // #if defined(__DAVAENGINE_WIN_UAP__)
+#endif  // __DAVAENGINE_WIN_UAP__

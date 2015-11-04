@@ -31,12 +31,10 @@
 #define __DAVAENGINE_JOB_QUEUE_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Atomic.h"
-#include "Base/Function.h"
-#include "Platform/Mutex.h"
-#include "Platform/Thread.h"
-#include "Thread/Spinlock.h"
-#include "Thread/Semaphore.h"
+#include "Functional/Function.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/Spinlock.h"
 
 namespace DAVA
 {
@@ -65,7 +63,7 @@ protected:
     int32 processingCount;
 
     Spinlock lock;
-    ConditionalVariable jobsInQueueCV;
+    ConditionVariable jobsInQueueCV;
     Mutex jobsInQueueMutex;
 };
 

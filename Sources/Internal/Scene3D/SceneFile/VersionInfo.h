@@ -41,8 +41,7 @@
 
 namespace DAVA
 {
-
-static const int32 SCENE_FILE_CURRENT_VERSION = 16;
+static const int32 SCENE_FILE_CURRENT_VERSION = 18;
 static const int32 SCENE_FILE_MINIMAL_SUPPORTED_VERSION = 9;
 
 static const int32 CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION = 8;
@@ -52,6 +51,8 @@ static const int32 TREE_ANIMATION_SCENE_VERSION = 12;
 static const int32 PREREQUIRED_BINORMAL_SCENE_VERSION = 13;
 static const int32 SHADOW_VOLUME_SCENE_VERSION = 15;
 static const int32 DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION = 16;
+static const int32 ALPHATEST_VALUE_FLAG_SCENE_VERSION = 17;
+static const int32 RHI_SCENE_VERSION = 18;
 
 class VersionInfo
     : public Singleton<VersionInfo>

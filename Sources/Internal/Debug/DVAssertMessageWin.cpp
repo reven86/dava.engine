@@ -27,21 +27,18 @@
 =====================================================================================*/
 
 #include "Base/Platform.h"
-#if defined (__DAVAENGINE_WINDOWS__)
+
+#if defined (__DAVAENGINE_WIN32__)
 
 #include "Debug/DVAssertMessage.h"
 #include "FileSystem/Logger.h"
-#include "Utils/UTF8Utils.h"
-#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 
-#if defined (__DAVAENGINE_WIN32__)
-
 bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
-	// Modal Type is ignored by Win32.
+    // Modal Type is ignored by Win32.
     const int flags = MB_OKCANCEL | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
     int buttonId = ::MessageBoxA(HWND_DESKTOP, content, "Assert", flags);
     switch (buttonId)
@@ -52,51 +49,107 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
         return false; // continue execution
     default:
         // should never happen!
-        DAVA::Logger::Instance()->Error(
+        Logger::Instance()->Error(
             "Return button id(%d) unknown! Error during handle assert message",
             buttonId);
         return true;
     }
 }
 
+}   // namespace DAVA
+
 #elif defined (__DAVAENGINE_WIN_UAP__)
+
+#include "Debug/DVAssertMessage.h"
+#include "Utils/Utils.h"
+
+#include "Concurrency/Mutex.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/LockGuard.h"
+
+#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
+
+namespace DAVA
+{
 
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    DAVA::Logger::Instance()->Warning("DVAssertMessage::InnerShow for Windows UAP is not implemented");
-    return false;
+    using namespace Windows::UI::Popups;
 
-    /*using namespace Windows::UI::Popups;
-    
-    WideString contentStr = UTF8Utils::EncodeToWideString(content);
-    Platform::String^ lbl = ref new Platform::String(contentStr.c_str());
-    MessageDialog^ msg = ref new MessageDialog(lbl);
+    enum eUserChoice
+    {
+        USER_HASNT_CHOOSE_YET,
+        USER_CHOOSE_CONTINUE,
+        USER_CHOOSE_BREAK
+    } userChoice = USER_HASNT_CHOOSE_YET;
 
-    //creating commands for message dialog
-    UICommand^ continueCommand = ref new UICommand(
-		"OK", 
-        ref new UICommandInvokedHandler([&] (IUICommand^) {} ));
-    UICommand^ cancelCommand = ref new UICommand(
-		"Cancel", 
-        ref new UICommandInvokedHandler([&] (IUICommand^) {} ));
+    CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+    // Depending on what thread assertion has occured we should take different actions:
+    //  - for UI thread
+    //      MessageDialog always run asynchronously so breaking has no sense so dialog has only one button for continuation
+    //      As we asserting on UI thread we can simply show dialog
+    //  - for main and other threads
+    //      MessageDialog must be run only on UI thread, so RunOnUIThread is used
+    //      Also we block asserting thread to be able to retrieve user response: continue or break
+    Platform::String^ text = ref new Platform::String(StringToWString(content).c_str());
+    if (!core->IsUIThread())
+    {
+        // If MainThreadDispatcher is in blocking call to UI thread we cannot show dialog box
+        // performing this action can lead to deadlock or system simply discards dialog box without showing it
+        // 
+        // So we simply tell caller to always debug break on DVASSERT to notify programmer about problems
+        if (core->XamlApplication()->MainThreadDispatcher()->InBlockingCall())
+        {
+            return true;
+        }
 
-    msg->Commands->Append(continueCommand);
-    msg->Commands->Append(cancelCommand);
+        Mutex mutex;
+        ConditionVariable cv;
 
-	//command options
-	msg->DefaultCommandIndex = 0;
-	msg->CancelCommandIndex = 1;
+        auto f = [text, &userChoice, &cv, &mutex]()
+        {
+            auto cmdHandler = [&cv, &mutex, &userChoice](IUICommand^ uiCmd)
+            {
+                {
+                    LockGuard<Mutex> lock(mutex);
+                    userChoice = (0 == Platform::String::CompareOrdinal(uiCmd->Label, L"break")) ? USER_CHOOSE_BREAK : USER_CHOOSE_CONTINUE;
+                }
+                cv.NotifyOne();
+            };
 
-	//show message and blocking thread
-	//msg->ShowAsync();
-    //assert(false);
+            UICommand^ continueCommand = ref new UICommand("Continue", ref new UICommandInvokedHandler(cmdHandler));
+            UICommand^ breakCommand = ref new UICommand("Break", ref new UICommandInvokedHandler(cmdHandler));
+            breakCommand->Label = "break";
 
-    return false;*/
+            MessageDialog^ msg = ref new MessageDialog(text);
+            msg->Commands->Append(continueCommand);
+            msg->Commands->Append(breakCommand);
+            msg->DefaultCommandIndex = 0;
+            msg->CancelCommandIndex = 0;
+
+            msg->ShowAsync();   // This is always async call
+        };
+
+        UniqueLock<Mutex> lock(mutex);
+        core->RunOnUIThread(f);
+        cv.Wait(lock, [&userChoice]() { return userChoice != USER_HASNT_CHOOSE_YET; });
+    }
+    else
+    {
+        UICommand^ continueCommand = ref new UICommand("Continue", ref new UICommandInvokedHandler([](IUICommand^) {}));
+
+        MessageDialog^ msg = ref new MessageDialog(text);
+        msg->Commands->Append(continueCommand);
+        msg->DefaultCommandIndex = 0;
+
+        userChoice = USER_CHOOSE_CONTINUE;
+        msg->ShowAsync();   // This is always async call
+    }
+    return USER_CHOOSE_BREAK == userChoice;
 }
 
+}   // namespace DAVA
+
 #endif // defined (__DAVAENGINE_WIN_UAP__)
-
-} // namespace DAVA
-
-#endif //#if defined (__DAVAENGINE_WINDOWS__)

@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_WIN_UAP__
 
 #include "PVRConverter.h"
 #include "Render/TextureDescriptor.h"
@@ -411,3 +413,5 @@ DAVA::String PVRConverter::GenerateInputName( const TextureDescriptor& descripto
 }
 
 };
+
+#endif // #ifndef __DAVAENGINE_WIN_UAP__

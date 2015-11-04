@@ -26,11 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Utils/Utils.h"
+#include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Utils/Utils.h"
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
@@ -40,8 +40,7 @@
 namespace DAVA
 {
 
-JniDeviceInfo::JniDeviceInfo()
-    : jniDeviceInfo("com/dava/framework/JNIDeviceInfo")
+DeviceInfoPrivate::DeviceInfoPrivate() : jniDeviceInfo("com/dava/framework/JNIDeviceInfo")
 {
 	getVersion = jniDeviceInfo.GetStaticMethod<jstring>("GetVersion");
 	getManufacturer = jniDeviceInfo.GetStaticMethod<jstring>("GetManufacturer");
@@ -62,103 +61,137 @@ JniDeviceInfo::JniDeviceInfo()
 
 }
 
-namespace
+DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
-    String jstringToString(jstring s)
+    return 	DeviceInfo::PLATFORM_ANDROID;
+}
+
+String DeviceInfoPrivate::GetPlatformString()
+{
+    return GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
+}
+
+String DeviceInfoPrivate::GetVersion()
+{
+    return JNI::ToString(getVersion());
+}
+
+String DeviceInfoPrivate::GetManufacturer()
+{
+    return JNI::ToString(getManufacturer());
+}
+
+String DeviceInfoPrivate::GetModel()
+{
+    return JNI::ToString(getModel());
+}
+
+String DeviceInfoPrivate::GetLocale()
+{
+    return JNI::ToString(getLocale());
+}
+
+String DeviceInfoPrivate::GetRegion()
+{
+    return JNI::ToString(getRegion());
+}
+
+String DeviceInfoPrivate::GetTimeZone()
+{
+    return JNI::ToString(getTimeZone());
+}
+
+String DeviceInfoPrivate::GetUDID()
+{
+    return JNI::ToString(getUDID());
+}
+
+WideString DeviceInfoPrivate::GetName()
+{
+    return StringToWString(JNI::ToString(getName()));
+}
+
+int32 DeviceInfoPrivate::GetZBufferSize()
+{
+	return static_cast<int32>(getZBufferSize());
+}
+
+String DeviceInfoPrivate::GetHTTPProxyHost()
+{
+    return JNI::ToString(getHTTPProxyHost());
+}
+
+String DeviceInfoPrivate::GetHTTPNonProxyHosts()
+{
+    return JNI::ToString(getHTTPNonProxyHosts());
+}
+
+int32 DeviceInfoPrivate::GetHTTPProxyPort()
+{
+	return static_cast<int32>(getHTTPProxyPort());
+}
+
+DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
+{
+    return screenInfo;
+}
+
+eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+{
+	return static_cast<eGPUFamily>(getGPUFamily());
+}
+
+DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
+{
+    DeviceInfo::NetworkInfo info;
+    info.networkType = static_cast<DeviceInfo::eNetworkType>(GetNetworkType());
+    info.signalStrength = GetSignalStrength(info.networkType);
+    return info;
+}
+
+List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
+{
+    List<DeviceInfo::StorageInfo> l;
+
+    DeviceInfo::StorageInfo internal = GetInternalStorageInfo();
+    DeviceInfo::StorageInfo external = GetPrimaryExternalStorageInfo();
+    List<DeviceInfo::StorageInfo> secondaryList = GetSecondaryExternalStoragesList();
+
+    if (internal.type != DeviceInfo::STORAGE_TYPE_UNKNOWN)
     {
-        DVASSERT(0 != s);
-        String result;
-        JNI::CreateStringFromJni(s, result);
-        return result;
+        l.push_back(internal);
     }
+    if (external.type != DeviceInfo::STORAGE_TYPE_UNKNOWN)
+    {
+        l.push_back(external);
+    }
+
+    std::copy(secondaryList.begin(), secondaryList.end(), back_inserter(l));
+
+    return l;
 }
 
-String JniDeviceInfo::GetVersion()
+void DeviceInfoPrivate::InitializeScreenInfo()
 {
-	jstring s = getVersion();
-	return jstringToString(s);
+    CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
+    screenInfo.width = core->GetViewWidth();
+    screenInfo.height = core->GetViewHeight();
+    screenInfo.scale = 1;
 }
 
-String JniDeviceInfo::GetManufacturer()
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-	jstring s = getManufacturer();
-	return jstringToString(s);
+    //TODO: remove this empty realization and implement detection of HID connection
+    return false;
 }
 
-String JniDeviceInfo::GetModel()
+bool DeviceInfoPrivate::IsTouchPresented()
 {
-	jstring s = getModel();
-	return jstringToString(s);
+    //TODO: remove this empty realization and implement detection touch
+    return true;
 }
 
-String JniDeviceInfo::GetLocale()
-{
-	jstring s = getLocale();
-	return jstringToString(s);
-}
-
-String JniDeviceInfo::GetRegion()
-{
-	jstring s = getRegion();
-	return jstringToString(s);
-}
-
-String JniDeviceInfo::GetTimeZone()
-{
-	jstring s = getTimeZone();
-	return jstringToString(s);
-}
-
-String JniDeviceInfo::GetUDID()
-{
-	jstring s = getUDID();
-	return jstringToString(s);
-}
-
-String JniDeviceInfo::GetName()
-{
-    jstring s = getName();
-	return jstringToString(s);
-}
-
-int32 JniDeviceInfo::GetZBufferSize()
-{
-	return getZBufferSize();
-}
-
-String JniDeviceInfo::GetHTTPProxyHost()
-{
-	jstring s = getHTTPProxyHost();
-	return jstringToString(s);
-}
-
-String JniDeviceInfo::GetHTTPNonProxyHosts()
-{
-	jstring s = getHTTPNonProxyHosts();
-	return jstringToString(s);
-}
-
-int32 JniDeviceInfo::GetHTTPProxyPort()
-{
-	return getHTTPProxyPort();
-}
-
-int32 JniDeviceInfo::GetGPUFamily()
-{
-	return getGPUFamily();
-}
-
-int32 JniDeviceInfo::GetNetworkType()
-{
-	return getNetworkType();
-}
-
-int32 JniDeviceInfo::GetSignalStrength(int32 networkType)
-{
-	return getSignalStrength(networkType);
-}
-
-DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
+DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
 {
 	DeviceInfo::StorageInfo info;
 
@@ -186,15 +219,24 @@ DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
 
 		fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
 		jstring jStr = (jstring)env->GetObjectField(object, fieldID);
-		char str[512] = {0};
-		JNI::CreateStringFromJni(env, jStr, str);
-		info.path = String(str);
-	}
 
-	return info;
+        info.path = JNI::ToString(jStr);
+    }
+
+    return info;
 }
 
-DeviceInfo::StorageInfo JniDeviceInfo::GetInternalStorageInfo()
+int32 DeviceInfoPrivate::GetNetworkType()
+{
+    return getNetworkType();
+}
+
+int32 DeviceInfoPrivate::GetSignalStrength(int32 networkType)
+{
+    return getSignalStrength(networkType);
+}
+
+DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
 {
 	JNIEnv *env = JNI::GetEnv();
 	jmethodID mid = env->GetStaticMethodID(jniDeviceInfo, "GetInternalStorageInfo", "()Lcom/dava/framework/JNIDeviceInfo$StorageInfo;");
@@ -215,12 +257,12 @@ DeviceInfo::StorageInfo JniDeviceInfo::GetInternalStorageInfo()
 	return info;
 }
 
-bool JniDeviceInfo::IsPrimaryExternalStoragePresent()
+bool DeviceInfoPrivate::IsPrimaryExternalStoragePresent()
 {
 	return isPrimaryExternalStoragePresent();
 }
 
-DeviceInfo::StorageInfo JniDeviceInfo::GetPrimaryExternalStorageInfo()
+DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
 {
 	DeviceInfo::StorageInfo info;
 	if (!IsPrimaryExternalStoragePresent())
@@ -246,7 +288,7 @@ DeviceInfo::StorageInfo JniDeviceInfo::GetPrimaryExternalStorageInfo()
 	return info;
 }
 
-List<DeviceInfo::StorageInfo> JniDeviceInfo::GetSecondaryExternalStoragesList()
+List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesList()
 {
 	List<DeviceInfo::StorageInfo> list;
 
@@ -278,147 +320,6 @@ List<DeviceInfo::StorageInfo> JniDeviceInfo::GetSecondaryExternalStoragesList()
 	}
 
 	return list;
-}
-
-String DeviceInfo::GetVersion()
-{
-	JniDeviceInfo jniDeviceInfo;
-	String version = jniDeviceInfo.GetVersion();
-
-	return version;
-}
-
-String DeviceInfo::GetManufacturer()
-{
-	JniDeviceInfo jniDeviceInfo;
-	String version = jniDeviceInfo.GetManufacturer();
-
-	return version;
-}
-
-String DeviceInfo::GetModel()
-{
-	JniDeviceInfo jniDeviceInfo;
-	String version = jniDeviceInfo.GetModel();
-
-	return version;
-}
-
-String DeviceInfo::GetLocale()
-{
-	JniDeviceInfo jniDeviceInfo;
-	String version = jniDeviceInfo.GetLocale();
-
-	return version;
-}
-
-String DeviceInfo::GetRegion()
-{
-	JniDeviceInfo jniDeviceInfo;
-	String version = jniDeviceInfo.GetRegion();
-
-	return version;
-}
-
-String DeviceInfo::GetTimeZone()
-{
-	JniDeviceInfo jniDeviceInfo;
-	String version = jniDeviceInfo.GetTimeZone();
-
-	return version;
-}
-
-String DeviceInfo::GetUDID()
-{
-	JniDeviceInfo jniDeviceInfo;
-	String udid = jniDeviceInfo.GetUDID();
-
-	return udid;
-}
-
-WideString DeviceInfo::GetName()
-{
-	JniDeviceInfo jniDeviceInfo;
-	String name = jniDeviceInfo.GetName();
-
-	return StringToWString(name);
-}
-
-int DeviceInfo::GetZBufferSize()
-{
-	JniDeviceInfo jniDeviceInfo;
-	return jniDeviceInfo.GetZBufferSize();
-}
-
-String DeviceInfo::GetHTTPProxyHost()
-{
-	JniDeviceInfo jniDeviceInfo;
-	return jniDeviceInfo.GetHTTPProxyHost();
-}
-
-String DeviceInfo::GetHTTPNonProxyHosts()
-{
-	JniDeviceInfo jniDeviceInfo;
-	return jniDeviceInfo.GetHTTPNonProxyHosts();
-}
-
-int DeviceInfo::GetHTTPProxyPort()
-{
-	JniDeviceInfo jniDeviceInfo;
-	return jniDeviceInfo.GetHTTPProxyPort();
-}
-
-eGPUFamily DeviceInfo::GetGPUFamily()
-{
-	JniDeviceInfo jniDeviceInfo;
-	return (eGPUFamily) jniDeviceInfo.GetGPUFamily();
-}
-
-DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
-{
-	DeviceInfo::NetworkInfo info;
-	JniDeviceInfo jniDeviceInfo;
-	info.networkType = (DeviceInfo::eNetworkType) jniDeviceInfo.GetNetworkType();
-	info.signalStrength = jniDeviceInfo.GetSignalStrength(info.networkType);
-	return info;
-}
-
-List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
-{
-	JniDeviceInfo jniDeviceInfo;
-
-	List<DeviceInfo::StorageInfo> l;
-
-	StorageInfo internal = jniDeviceInfo.GetInternalStorageInfo();
-	StorageInfo external = jniDeviceInfo.GetPrimaryExternalStorageInfo();
-	List<DeviceInfo::StorageInfo> secondaryList = jniDeviceInfo.GetSecondaryExternalStoragesList();
-
-	if (internal.type != DeviceInfo::STORAGE_TYPE_UNKNOWN)
-	{
-		l.push_back(internal);
-	}
-	if (external.type != DeviceInfo::STORAGE_TYPE_UNKNOWN)
-	{
-		l.push_back(external);
-	}
-
-	std::copy(secondaryList.begin(), secondaryList.end(), back_inserter(l));
-
-    return l;
-}
-
-void DeviceInfo::InitializeScreenInfo()
-{
-    CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-    screenInfo.width = core->GetViewWidth();
-    screenInfo.height = core->GetViewHeight();
-    screenInfo.scale = 1;
-}
-
-
-int32 DeviceInfo::GetCpuCount()
-{
-	return sysconf(_SC_NPROCESSORS_CONF);
 }
 
 }

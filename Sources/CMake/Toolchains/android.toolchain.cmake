@@ -186,13 +186,12 @@
 
 cmake_minimum_required( VERSION 2.6.3 )
 
-if( NOT ANDROID_TOOLCHAIN_NAME )
-    set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.4 )
-
-endif()
-
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Modules/" ) 
 include               ( GlobalVariables )
+
+if( NOT ANDROID_TOOLCHAIN_NAME )
+    set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.6 )
+endif()
 
 if( DEFINED CMAKE_CROSSCOMPILING )
  # subsequent toolchain loading is not really needed
@@ -224,7 +223,7 @@ set( CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "" )
 set( CMAKE_SKIP_RPATH TRUE CACHE BOOL "If set, runtime paths are not added when using shared libraries." )
 
 # NDK search paths
-set( ANDROID_SUPPORTED_NDK_VERSIONS ${ANDROID_EXTRA_NDK_VERSIONS} -r10d -r10c -r10b -r10 -r9d -r9c -r9b -r9 -r8e -r8d -r8c -r8b -r8 -r7c -r7b -r7 -r6b -r6 -r5c -r5b -r5 "" )
+set( ANDROID_SUPPORTED_NDK_VERSIONS ${ANDROID_EXTRA_NDK_VERSIONS} -r10e -r10d -r10c -r10b -r10 -r9d -r9c -r9b -r9 -r8e -r8d -r8c -r8b -r8 -r7c -r7b -r7 -r6b -r6 -r5c -r5b -r5 "" )
 if( NOT DEFINED ANDROID_NDK_SEARCH_PATHS )
  if( CMAKE_HOST_WIN32 )
   file( TO_CMAKE_PATH "$ENV{PROGRAMFILES}" ANDROID_NDK_SEARCH_PATHS )
@@ -834,7 +833,7 @@ endif()
 
 # runtime choice (STL, rtti, exceptions)
 if( NOT ANDROID_STL )
-  set( ANDROID_STL gnustl_static )
+  set( ANDROID_STL gnustl_shared )
 endif()
 set( ANDROID_STL "${ANDROID_STL}" CACHE STRING "C++ runtime" )
 set( ANDROID_STL_FORCE_FEATURES ON CACHE BOOL "automatically configure rtti and exceptions support based on C++ runtime" )
@@ -1509,7 +1508,7 @@ if( DEFINED LIBRARY_OUTPUT_PATH_ROOT
   endif()
 endif()
 
-# copy shaed stl library to build directory
+# copy shared stl library to build directory
 if( NOT _CMAKE_IN_TRY_COMPILE AND __libstl MATCHES "[.]so$" AND DEFINED LIBRARY_OUTPUT_PATH )
   get_filename_component( __libstlname "${__libstl}" NAME )
   execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${__libstl}" "${LIBRARY_OUTPUT_PATH}/${__libstlname}" RESULT_VARIABLE __fileCopyProcess )
@@ -1613,8 +1612,6 @@ if( NOT _CMAKE_IN_TRY_COMPILE )
  file( WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/android.toolchain.config.cmake" "${__toolchain_config}" )
  unset( __toolchain_config )
 endif()
-
-include ( PlatformSettings     )
 
 # force cmake to produce / instead of \ in build commands for Ninja generator
 if( CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_HOST_WIN32 )

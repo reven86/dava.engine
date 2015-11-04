@@ -33,13 +33,13 @@
 namespace DAVA
 {
 
-InspMember::InspMember(const char *_name, const InspDesc &_desc, const long int _offset, const MetaInfo *_type, int _flags /* = 0 */)
-: name(_name), desc(_desc), offset(_offset), type(_type), flags(_flags), parentInsp(NULL)
+InspMember::InspMember(const char *_name, const InspDesc &_desc, const size_t _offset, const MetaInfo *_type, int _flags /* = 0 */)
+: name(_name), desc(_desc), offset(_offset), type(_type), flags(_flags), parentInsp(nullptr)
 { }
 
-const char* InspMember::Name() const
+const FastName& InspMember::Name() const
 {
-	return name;
+    return name;
 }
 
 const InspDesc& InspMember::Desc() const
@@ -54,14 +54,14 @@ const MetaInfo* InspMember::Type() const
 
 void* InspMember::Pointer(void *object) const
 {
-	return (((char *) object) + offset);
+    return OffsetPointer<void>(object, offset);
 }
 
 void* InspMember::Data(void *object) const
 {
 	if(type->IsPointer())
 	{
-		return *(void **) Pointer(object);
+		return *static_cast<void **>(Pointer(object));
 	}
 	else
 	{
@@ -79,14 +79,19 @@ void InspMember::SetValue(void *object, const VariantType &val) const
 	VariantType::SaveData(Pointer(object), type, val);
 }
 
+void InspMember::SetValueRaw(void *object, void* val) const
+{
+	DVASSERT(false);
+}
+
 const InspColl* InspMember::Collection() const
 {
-	return NULL;
+	return nullptr;
 }
 
 const InspMemberDynamic* InspMember::Dynamic() const
 {
-	return NULL;
+	return nullptr;
 }
 
 int InspMember::Flags() const

@@ -33,6 +33,8 @@
 #include "PackageHierarchy/ImportedPackagesNode.h"
 #include "PackageHierarchy/PackageControlsNode.h"
 #include "PackageHierarchy/ControlNode.h"
+#include "PackageHierarchy/StyleSheetsNode.h"
+#include "PackageHierarchy/StyleSheetNode.h"
 
 #include "ControlProperties/RootProperty.h"
 #include "ControlProperties/BackgroundPropertiesSection.h"
@@ -46,6 +48,9 @@
 #include "ControlProperties/LocalizedTextValueProperty.h"
 #include "ControlProperties/NameProperty.h"
 #include "ControlProperties/PrototypeNameProperty.h"
+#include "ControlProperties/StyleSheetRootProperty.h"
+#include "ControlProperties/StyleSheetSelectorProperty.h"
+#include "ControlProperties/StyleSheetProperty.h"
 
 using namespace DAVA;
 
@@ -67,6 +72,11 @@ void PackageSerializer::SerializePackage(PackageNode *package)
         importedPackages.push_back(package->GetImportedPackagesNode()->GetImportedPackage(i));
     }
     
+    for (int32 i = 0; i < package->GetStyleSheets()->GetCount(); i++)
+    {
+        styles.push_back(package->GetStyleSheets()->Get(i));
+    }
+    
     for (int32 i = 0; i < package->GetPackageControlsNode()->GetCount(); i++)
     {
         controls.push_back(package->GetPackageControlsNode()->Get(i));
@@ -75,9 +85,10 @@ void PackageSerializer::SerializePackage(PackageNode *package)
     package->Accept(this);
     importedPackages.clear();
     controls.clear();
+    styles.clear();
 }
 
-void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &serializationControls)
+void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &serializationControls, const DAVA::Vector<StyleSheetNode*> &serializationStyles)
 {
     for (ControlNode *control : serializationControls)
     {
@@ -88,27 +99,48 @@ void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::
         }
     }
 
+    for (StyleSheetNode *style : serializationStyles)
+    {
+        if (style->CanCopy())
+            styles.push_back(style);
+    }
+
     package->Accept(this);
 
     importedPackages.clear();
     controls.clear();
+    styles.clear();
 }
 
 void PackageSerializer::VisitPackage(PackageNode *node)
 {
     BeginMap("Header");
-    PutValue("version", String("0"));
+    PutValue("version", Format("%d", CURRENT_VERSION));
     EndMap();
-    
-    BeginArray("ImportedPackages");
-    for (PackageNode *package : importedPackages)
-        PutValue(package->GetPath().GetFrameworkPath());
-    EndArray();
 
-    BeginArray("Controls");
-    for (ControlNode *control : controls)
-        control->Accept(this);
-    EndArray();
+    if (!importedPackages.empty())
+    {
+        BeginArray("ImportedPackages");
+        for (const PackageNode *package : importedPackages)
+            PutValue(package->GetPath().GetFrameworkPath());
+        EndArray();
+    }
+    
+    if (!styles.empty())
+    {
+        BeginArray("StyleSheets");
+        for (StyleSheetNode *style : styles)
+            style->Accept(this);
+        EndMap();
+    }
+
+    if (!controls.empty())
+    {
+        BeginArray("Controls");
+        for (ControlNode *control : controls)
+            control->Accept(this);
+        EndArray();
+    }
 }
 
 void PackageSerializer::VisitImportedPackages(ImportedPackagesNode *node)
@@ -155,6 +187,18 @@ void PackageSerializer::VisitControl(ControlNode *node)
         }
     }
     
+    EndMap();
+}
+
+void PackageSerializer::VisitStyleSheets(StyleSheetsNode *node)
+{
+    // do nothing
+}
+
+void PackageSerializer::VisitStyleSheet(StyleSheetNode *node)
+{
+    BeginMap();
+    node->GetRootProperty()->Accept(this);
     EndMap();
 }
 
@@ -361,7 +405,7 @@ void PackageSerializer::VisitClassProperty(ClassProperty *property)
 
 void PackageSerializer::VisitCustomClassProperty(CustomClassProperty *property)
 {
-    if (property->IsReplaced())
+    if (property->IsOverriddenLocally())
     {
         PutValue("customClass", property->GetCustomClassName());
     }
@@ -369,35 +413,44 @@ void PackageSerializer::VisitCustomClassProperty(CustomClassProperty *property)
 
 void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *property)
 {
-    if (property->IsReplaced())
+    if (property->IsOverriddenLocally())
     {
-        VariantType value = property->GetValue();
-        String key = property->GetMember()->Name();
-        
-        if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_FLAGS)
-        {
-            Vector<String> values;
-            const EnumMap *enumMap = property->GetEnumMap();
-            int val = value.AsInt32();
-            int p = 1;
-            while (val > 0)
-            {
-                if ((val & 0x01) != 0)
-                    values.push_back(enumMap->ToString(p));
-                val >>= 1;
-                p <<= 1;
-            }
-            PutValue(key, values);
-        }
-        else if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_ENUM)
-        {
-            const EnumMap *enumMap = property->GetEnumMap();
-            PutValue(key, enumMap->ToString(value.AsInt32()));
-        }
-        else
-        {
-            PutValue(key, value);
-        }
+        PutValueProperty(property->GetMember()->Name().c_str(), property);
+    }
+}
+
+void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
+{
+    PutValue("selector", property->GetSelectorsAsString());
+
+    BeginMap("properties", false);
+    if (property->GetPropertiesSection()->GetCount() > 0)
+    {
+        AcceptChildren(property->GetPropertiesSection());
+    }
+    EndMap();
+}
+
+void PackageSerializer::VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property)
+{
+    // do nothing
+}
+
+void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty *property)
+{
+    if (property->HasTransition())
+    {
+        BeginMap(property->GetName());
+        PutValueProperty("value", property);
+        PutValue("transitionTime", VariantType(property->GetTransitionTime()));
+
+        const EnumMap *enumMap = GlobalEnumMap<Interpolation::FuncType>::Instance();
+        PutValue("transitionFunction", enumMap->ToString(property->GetTransitionFunction()));
+        EndMap();
+    }
+    else
+    {
+        PutValueProperty(property->GetName(), property);
     }
 }
 
@@ -405,4 +458,34 @@ void PackageSerializer::AcceptChildren(AbstractProperty *property)
 {
     for (int32 i = 0; i < property->GetCount(); i++)
         property->GetProperty(i)->Accept(this);
+}
+
+void PackageSerializer::PutValueProperty(const DAVA::String &name, ValueProperty *property)
+{
+    VariantType value = property->GetValue();
+    
+    if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_FLAGS)
+    {
+        Vector<String> values;
+        const EnumMap *enumMap = property->GetEnumMap();
+        int val = value.AsInt32();
+        int p = 1;
+        while (val > 0)
+        {
+            if ((val & 0x01) != 0)
+                values.push_back(enumMap->ToString(p));
+            val >>= 1;
+            p <<= 1;
+        }
+        PutValue(name, values);
+    }
+    else if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_ENUM)
+    {
+        const EnumMap *enumMap = property->GetEnumMap();
+        PutValue(name, enumMap->ToString(value.AsInt32()));
+    }
+    else
+    {
+        PutValue(name, value);
+    }
 }

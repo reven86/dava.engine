@@ -55,8 +55,6 @@ class VersionInfoWidget;
 
 class DeviceListController;
 
-
-
 class QtMainWindow
     : public QMainWindow
     , public DAVA::Singleton<QtMainWindow>
@@ -150,7 +148,6 @@ public slots:
     void OnImageSplitter();
 	
 	void OnAddLandscape();
-    void OnAddSkybox();
     void OnAddVegetation();
 	void OnLightDialog();
 	void OnCameraDialog();
@@ -168,21 +165,17 @@ public slots:
 	void OnShowSettings();
 	void OnOpenHelp();
 
-	void OnShadowBlendModeWillShow();
-	void OnShadowBlendModeAlpha();
-	void OnShadowBlendModeMultiply();
-
 	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
+    void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
 
-	void OnConvertModifiedTextures();
-    
-	void OnCloseTabRequest(int tabIndex, Request *closeRequest);
+    void OnConvertModifiedTextures();
+
+    void OnCloseTabRequest(int tabIndex, Request *closeRequest);
 
 	void OnBeastAndSave();
     
     void OnBuildStaticOcclusion();
-    void OnRebuildCurrentOcclusionCell();
     void OnInavalidateStaticOcclusion();
 
 	void OnLandscapeEditorToggled(SceneEditor2* scene);
@@ -192,7 +185,6 @@ public slots:
 	void OnTilemaskEditor();
 	void OnVisibilityTool();
 	void OnNotPassableTerrain();
-    void OnGrasEditor();
     void OnWayEditor();
 	
 	void OnObjectsTypeChanged(QAction *action);
@@ -213,7 +205,9 @@ public slots:
     void OnBatchProcessScene();
     
     void OnSnapCameraToLandscape(bool);
-    
+
+    void SetupTitle();
+
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);
@@ -223,7 +217,6 @@ protected:
 	void SetupStatusBar();
 	void SetupDocks();
 	void SetupActions();
-	void SetupTitle();
 	void SetupShortCuts();
 
     void StartGlobalInvalidateTimer();
@@ -241,8 +234,9 @@ protected:
     void OpenProject(const DAVA::FilePath & projectPath);
     
     void OnSceneSaveAsInternal(bool saveWithCompressed);
-    
-    
+
+    void SaveAllSceneEmitters(SceneEditor2* scene) const;
+
 private slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
@@ -260,6 +254,7 @@ private slots:
     void DebugVersionInfo();
     void DebugColorPicker();
     void DebugDeviceList();
+    void OnConsoleItemClicked(const QString &data);
 
 private:
 	Ui::MainWindow *ui;
@@ -287,7 +282,6 @@ private:
 	void LoadUndoRedoState(SceneEditor2 *scene);
 	void LoadModificationState(SceneEditor2 *scene);
 	void LoadEditorLightState(SceneEditor2 *scene);
-	void LoadShadowBlendModeState(SceneEditor2* scene);
 	void LoadGPUFormat();
 	void LoadLandscapeEditorState(SceneEditor2* scene);
 	void LoadObjectTypes(SceneEditor2 *scene);
@@ -311,6 +305,25 @@ private:
 
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
+
+private:
+
+    struct EmitterDescriptor
+    {
+        EmitterDescriptor(ParticleEmitter * _emitter, ParticleLayer *layer, FilePath path, String name)
+            : emitter(_emitter), ownerLayer(layer), yamlPath(path), entityName(name)
+        {
+        }
+
+        ParticleEmitter * emitter = nullptr;
+        ParticleLayer *ownerLayer = nullptr;
+        FilePath yamlPath;
+        String entityName;
+    };
+
+    void CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA::List<EmitterDescriptor> &emitters, const String &entityName) const;
+
+
 };
 
 

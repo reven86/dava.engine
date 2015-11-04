@@ -41,8 +41,6 @@ ScenePreviewControl::ScenePreviewControl(const Rect & rect)
     :   UI3DView(rect)
 {
     needSetCamera = false;
-    rootNode = NULL;
-    
     editorScene = NULL;
     rotationSystem = NULL;
     RecreateScene();
@@ -58,7 +56,6 @@ ScenePreviewControl::~ScenePreviewControl()
     rotationSystem = NULL;
 }
 
-
 void ScenePreviewControl::Input(DAVA::UIEvent *event)
 {
     UI3DView::Input(event);
@@ -69,12 +66,10 @@ void ScenePreviewControl::RecreateScene()
     if(editorScene)
     {
         SetScene(NULL);
-        SafeRelease(editorScene);
-        rotationSystem = NULL;
+        ReleaseScene();
     }
     
     editorScene = new Scene();
-    editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
     rotationSystem = new RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);
@@ -85,14 +80,8 @@ void ScenePreviewControl::RecreateScene()
 
 void ScenePreviewControl::ReleaseScene()
 {
-    if(!currentScenePath.IsEmpty())
-    {
-        editorScene->RemoveNode(rootNode);
-        editorScene->ReleaseRootNode(currentScenePath);
-        
-        rootNode = NULL;
-        currentScenePath = FilePath();
-    }
+    SafeRelease(editorScene);
+    currentScenePath = FilePath();
 }
 
 int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
@@ -124,19 +113,6 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
         retError = ERROR_WRONG_EXTENSION;
     }
     
-    if(SceneFileV2::ERROR_NO_ERROR == retError)
-    {
-        rootNode = editorScene->GetRootNode(pathToFile);
-        if(rootNode)
-        {
-			rootNode = rootNode->Clone();
-
-            currentScenePath = pathToFile;
-            editorScene->AddNode(rootNode);
-			rootNode->Release();
-        }
-    }
-
     CreateCamera();
 
 	Set<String> errorsLogToHideDialog;
@@ -182,9 +158,9 @@ void ScenePreviewControl::CreateCamera()
 void ScenePreviewControl::SetupCamera()
 {
     Camera *camera = editorScene->GetCurrentCamera();
-    if (camera && rootNode)
+    if (camera && editorScene)
     {
-        AABBox3 sceneBox = rootNode->GetWTMaximumBoundingBoxSlow();
+        AABBox3 sceneBox = editorScene->GetWTMaximumBoundingBoxSlow();
         Vector3 target = sceneBox.GetCenter();
         camera->SetTarget(target);
         Vector3 dir = (sceneBox.max - sceneBox.min);

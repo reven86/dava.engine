@@ -4,27 +4,6 @@
     <Filter Include="External">
       <UniqueIdentifier>{4e46aae7-90c4-4fd8-a85a-2d1a2fc60b22}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External\Box2D">
-      <UniqueIdentifier>{243367d4-6971-4ce9-b57f-98bb38b5327d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Collision">
-      <UniqueIdentifier>{8751008f-5d5d-41f3-b973-1de0262469c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Collision\Shapes">
-      <UniqueIdentifier>{28292208-57d4-4037-bb1c-15914fefccb9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Common">
-      <UniqueIdentifier>{fb5de757-8ccc-492e-9709-dfa38396a4f7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Dynamics">
-      <UniqueIdentifier>{c59a56b8-c802-465e-81fd-0c16a423613f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Dynamics\Contacts">
-      <UniqueIdentifier>{4934f1b4-31f7-4dd5-abe6-ea18522a5409}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Dynamics\Joints">
-      <UniqueIdentifier>{ce06b154-b8a0-4b9b-a2e1-f330d7eb8340}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal">
       <UniqueIdentifier>{ffd93e08-e98d-4f64-85eb-9e318a1b40d2}</UniqueIdentifier>
     </Filter>
@@ -85,9 +64,6 @@
     <Filter Include="Internal\Utils">
       <UniqueIdentifier>{190e9a7b-9cd9-4a83-86a7-64af948b776d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Render\Effects">
-      <UniqueIdentifier>{61100d52-442d-45fd-b286-f3baf188d2bb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\Autotesting">
       <UniqueIdentifier>{9c48b596-2306-460c-82bd-f3a4279468b9}</UniqueIdentifier>
     </Filter>
@@ -133,9 +109,6 @@
     <Filter Include="Internal\Render\Highlevel\Vegetation">
       <UniqueIdentifier>{e44970a1-4a1f-4e97-aaf5-44659db3a9de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Thread">
-      <UniqueIdentifier>{e940db21-ebe2-45bb-bc09-5f3e66960d95}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\DLC\Patcher">
       <UniqueIdentifier>{99a0f84c-8f10-4225-b742-de1df099c7ae}</UniqueIdentifier>
     </Filter>
@@ -144,12 +117,6 @@
     </Filter>
     <Filter Include="Internal\Notification">
       <UniqueIdentifier>{4b5695b8-6b14-4d0c-8f8d-86535f5de24e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Internal\Platform\Qt4">
-      <UniqueIdentifier>{9ccf6d8e-2ffb-4645-862d-59b75598b00e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Internal\Platform\Qt4\Win32">
-      <UniqueIdentifier>{802c9b10-286b-4081-add3-d26ed34ac6d0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Internal\Render\2D\Systems">
       <UniqueIdentifier>{012e0df1-1251-4d03-8523-68ada6fd9f72}</UniqueIdentifier>
@@ -193,62 +160,41 @@
     <Filter Include="Internal\UnitTests">
       <UniqueIdentifier>{74ad4986-9f1f-46aa-a7e2-2f8bc3f5dfe1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Network\Services\MMNet">
+      <UniqueIdentifier>{d0f16e2c-89a6-4e92-a990-9a10aa9bfe40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\UI\Styles">
+      <UniqueIdentifier>{f37298db-a685-43f6-a8a7-7aee2f5f2b57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Concurrency">
+      <UniqueIdentifier>{fef8edc5-3139-4a47-9e07-d9bc662be831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\UI\Layouts">
+      <UniqueIdentifier>{35e9d1cc-cb7d-4460-b271-1e7012178889}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Functional">
+      <UniqueIdentifier>{1ed60acd-379f-473d-95ba-060107948670}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI">
+      <UniqueIdentifier>{35bbdebb-d80e-428e-b07d-b79b391d0449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\Common">
+      <UniqueIdentifier>{ae2c9b07-a3b0-42ab-9a74-1ce0ba9970d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\Common\MCPP">
+      <UniqueIdentifier>{d176b79a-badf-4f45-a963-0200f54425c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\DX9">
+      <UniqueIdentifier>{3489c4b7-c7bf-4ad0-bbd9-b492f64fa1bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\GLES2">
+      <UniqueIdentifier>{00466469-de6a-4d8a-b762-d6345840b949}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\RHI\DX11">
+      <UniqueIdentifier>{b48afc8e-9353-403b-a35d-d68a17d86a0f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
-      <Filter>External\Box2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.h">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2Collision.h">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2Distance.h">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2DynamicTree.h">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2TimeOfImpact.h">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Common\b2BlockAllocator.h">
-      <Filter>External\Box2D\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Common\b2GrowableStack.h">
-      <Filter>External\Box2D\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Common\b2Math.h">
-      <Filter>External\Box2D\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Common\b2Settings.h">
-      <Filter>External\Box2D\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Common\b2StackAllocator.h">
-      <Filter>External\Box2D\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\b2Body.h">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\b2ContactManager.h">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\b2Fixture.h">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\b2Island.h">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\b2TimeStep.h">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\b2World.h">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\b2WorldCallbacks.h">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h">
       <Filter>Internal</Filter>
     </ClInclude>
@@ -477,52 +423,16 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h">
       <Filter>Internal\Particles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\D3D9Helpers.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\DynamicIndexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\DynamicVertexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\IndexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\OGLHelpers.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderBase.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderEffect.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderGrayscaleEffect.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderHelper.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderManager.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderResource.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RGBColor.h">
@@ -531,16 +441,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Shader.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\StaticIndexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\StaticVertexBuffer.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Texture.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\VertexBuffer.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Font.h">
@@ -550,9 +451,6 @@
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\FTFont.h">
-      <Filter>Internal\Render\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\GraphicsFont.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\GridSprite.h">
@@ -572,21 +470,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\3D\StaticMesh.h">
       <Filter>Internal\Render\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene2D\Box2DDebugDraw.h">
-      <Filter>Internal\Scene2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene2D\Box2DGameObject.h">
-      <Filter>Internal\Scene2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene2D\Box2DGameObjectManager.h">
-      <Filter>Internal\Scene2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene2D\Box2DHelper.h">
-      <Filter>Internal\Scene2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene2D\Box2DTileCollider.h">
-      <Filter>Internal\Scene2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene2D\GameObject.h">
       <Filter>Internal\Scene2D</Filter>
@@ -627,9 +510,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SkeletonNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SpriteNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -652,15 +532,6 @@
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIFadeTransition.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchy.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchyCell.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchyNode.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIHoleTransition.h">
@@ -720,9 +591,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h">
-      <Filter>Internal\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Utils\MD5.h">
       <Filter>Internal\Utils</Filter>
     </ClInclude>
@@ -744,101 +612,8 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Bitstream.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\Shapes\b2ChainShape.h">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\Shapes\b2CircleShape.h">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\Shapes\b2EdgeShape.h">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\Shapes\b2PolygonShape.h">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Collision\Shapes\b2Shape.h">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2DistanceJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2FrictionJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2GearJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2Joint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2MouseJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2PrismaticJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2PulleyJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2RevoluteJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2RopeJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2WeldJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2WheelJoint.h">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2ChainAndCircleContact.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2ChainAndPolygonContact.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2CircleContact.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2Contact.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2ContactSolver.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2EdgeAndCircleContact.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2EdgeAndPolygonContact.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2PolygonAndCircleContact.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2PolygonContact.h">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderDataObject.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Effects\ColorOnlyEffect.h">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Effects\MultiTextureEffect.h">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Effects\TextureMulColorEffect.h">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Effects\TextureMulColorAlphaTestEffect.h">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Data.h">
       <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\UberShader.h">
-      <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene2D\TextGameObject.h">
       <Filter>Internal\Scene2D</Filter>
@@ -852,9 +627,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -862,9 +634,6 @@
       <Filter>Internal\Input</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFileV2.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneManager.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ShadowVolumeNode.h">
@@ -878,9 +647,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Debug\Stats.h">
       <Filter>Internal\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\SharedFBO.h">
-      <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Math\RectPacker.h">
       <Filter>Internal\Math</Filter>
@@ -951,19 +717,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialGraph.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialGraphNode.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterial.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialConsts.h">
       <Filter>Internal\Render\Material</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Entity\Component.h">
@@ -1026,15 +780,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Heightmap.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\LandscapeChunk.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\LandscapeCursor.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderDataSource.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\IRenderUpdatable.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
@@ -1083,9 +828,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -1098,13 +840,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h">
       <Filter>Internal\Base\Radix</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowRect.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolume.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\FilePath.h">
@@ -1112,9 +848,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\GlobalEventSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.h">
-      <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.h">
       <Filter>Internal\Render\Highlevel</Filter>
@@ -1160,9 +893,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\UpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderState.h">
-      <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Entity.h">
       <Filter>Internal\Scene3D</Filter>
@@ -1218,23 +948,11 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialOptimazer.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.h">
-      <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h">
       <Filter>Internal\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h">
       <Filter>Internal\Platform</Filter>
@@ -1275,12 +993,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderHierarchy.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ImposterManager.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ImposterNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFile\SerializationContext.h">
       <Filter>Internal\Scene3D\SceneFile</Filter>
     </ClInclude>
@@ -1291,9 +1003,6 @@
       <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\UniqueStateSet.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderStateData.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.h">
@@ -1335,25 +1044,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialTemplate.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\RenderTechnique.h">
-      <Filter>Internal\Render\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\MaterialSystem.h">
-      <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderPassManager.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderLayerManager.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\VisibilityArray.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialNames.h">
@@ -1370,9 +1061,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIParticles.h">
       <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h">
-      <Filter>Internal\Base\Radix</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
@@ -1438,14 +1126,14 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.h">
+      <Filter>Internal\Render\Image</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
       <Filter>Internal\Render\Image</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.h">
-      <Filter>Internal\Render\Material</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.h">
       <Filter>Internal\Render\Material</Filter>
@@ -1459,28 +1147,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationSpatialData.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\TextureSheet.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometry.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometrySerializationData.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomSLGeometry.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationFixedGeometry.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometry.h">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationMaterialTransformer.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationPropertyNames.h">
@@ -1491,9 +1158,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h">
-      <Filter>Internal\Thread</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h">
       <Filter>Internal\FileSystem</Filter>
@@ -1513,9 +1177,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Bind.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Function.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
       <Filter>Internal\DLC</Filter>
     </ClInclude>
@@ -1531,15 +1192,6 @@
     <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\DownloadManager.h">
       <Filter>Internal\DLC\Downloader</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h">
-      <Filter>Internal\Render\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.h">
-      <Filter>Internal\Render\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.h">
-      <Filter>Internal\Render\2D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockRender.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
@@ -1548,9 +1200,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
       <Filter>Internal\FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h">
-      <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -1609,23 +1258,8 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h">
-      <Filter>Internal\Thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h">
-      <Filter>Internal\Thread</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
       <Filter>Internal\Job</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h">
-      <Filter>Internal\Platform\Qt4</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.h">
-      <Filter>Internal\Platform\Qt4\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.h">
-      <Filter>Internal\Platform\Qt4\Win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -1798,26 +1432,11 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h">
       <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h">
-      <Filter>Internal\Network\Services</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
       <Filter>Internal\MemoryManager</Filter>
@@ -1834,15 +1453,6 @@
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
       <Filter>Internal\Timer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocalPtr.h">
-      <Filter>Internal\Thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h">
-      <Filter>Internal\UI\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
-      <Filter>Internal\UI\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h">
       <Filter>Internal\UnitTests</Filter>
     </ClInclude>
@@ -1855,62 +1465,272 @@
     <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h">
       <Filter>Internal\UnitTests</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetProto.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlPackageContext.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicGNU.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicWindows.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Concurrency.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConcurrentObject.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConditionVariable.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\LockGuard.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\PosixThreads.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Semaphore.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Spinlock.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.h">
+      <Filter>Internal\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Function.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Functional.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Signal.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\SignalBase.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h">
+      <Filter>Internal\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\ControlLayoutData.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\LayoutHelpers.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\LinearLayoutAlgorithm.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\SizeMeasuringAlgorithm.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\dbg_Draw.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\rhi_Public.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\rhi_ShaderCache.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\rhi_ShaderSource.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\rhi_Type.h">
+      <Filter>Internal\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX9\_dx9.h">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DX9.h">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\GLES2\_gl.h">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_GLES2.h">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_ProgGLES2.h">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\DynamicBindings.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\DynamicBufferAllocator.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RenderCallbacks.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Renderer.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RuntimeTextures.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\dbg_StatSet.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\PreProcess.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\RegExp.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_FormatConversion.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Impl.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Pool.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Private.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\rhi_RingBuffer.h">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\_mcpp.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\internal.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\mcpp_lib.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\mcpp_out.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\noconfig.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\system.h">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenshoter.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\FXCache.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\GraphicFont.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometryData.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderLayer.h">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX11\_dx11.h">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.h">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideCircle.cpp">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideEdge.cpp">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollidePolygon.cpp">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2Collision.cpp">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2Distance.cpp">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2DynamicTree.cpp">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2TimeOfImpact.cpp">
-      <Filter>External\Box2D\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Common\b2BlockAllocator.cpp">
-      <Filter>External\Box2D\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Common\b2Math.cpp">
-      <Filter>External\Box2D\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Common\b2Settings.cpp">
-      <Filter>External\Box2D\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Common\b2StackAllocator.cpp">
-      <Filter>External\Box2D\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\b2Body.cpp">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\b2ContactManager.cpp">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\b2Fixture.cpp">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\b2Island.cpp">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\b2World.cpp">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\b2WorldCallbacks.cpp">
-      <Filter>External\Box2D\Dynamics</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
       <Filter>Internal</Filter>
     </ClCompile>
@@ -2043,9 +1863,6 @@
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp">
       <Filter>Internal\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp">
-      <Filter>Internal\Particles</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>
@@ -2055,73 +1872,22 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\D3D9Helpers.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\DynamicIndexBuffer.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\DynamicVertexBuffer.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RenderBase.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderEffect.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderGrayscaleEffect.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RenderHelper.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManager.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManagerDX.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManagerGL.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderResource.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Shader.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\ShaderDX.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\ShaderGL.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\StaticIndexBuffer.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\StaticVertexBuffer.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Texture.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\TextureDX9.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Font.cpp">
@@ -2131,9 +1897,6 @@
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\FTFont.cpp">
-      <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\GraphicsFont.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Sprite.cpp">
@@ -2150,30 +1913,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\3D\StaticMesh.cpp">
       <Filter>Internal\Render\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\Box2DDebugDraw.cpp">
-      <Filter>Internal\Scene2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\Box2DGameObject.cpp">
-      <Filter>Internal\Scene2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\Box2DGameObjectManager.cpp">
-      <Filter>Internal\Scene2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\Box2DHelper.cpp">
-      <Filter>Internal\Scene2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\Box2DTileCollider.cpp">
-      <Filter>Internal\Scene2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\GameObject.cpp">
-      <Filter>Internal\Scene2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\GameObjectAnimations.cpp">
-      <Filter>Internal\Scene2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\GameObjectManager.cpp">
-      <Filter>Internal\Scene2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\BoneNode.cpp">
       <Filter>Internal\Scene3D</Filter>
@@ -2194,9 +1933,6 @@
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimation.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimationKey.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneNodeAnimationList.cpp">
@@ -2227,15 +1963,6 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIFadeTransition.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchy.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchyCell.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchyNode.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIHoleTransition.cpp">
@@ -2289,116 +2016,14 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\Utils.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManagerFactory.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\Bitstream.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\Shapes\b2ChainShape.cpp">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\Shapes\b2CircleShape.cpp">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\Shapes\b2EdgeShape.cpp">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Collision\Shapes\b2PolygonShape.cpp">
-      <Filter>External\Box2D\Collision\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2DistanceJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2FrictionJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2GearJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2Joint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2MouseJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2PrismaticJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2PulleyJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2RevoluteJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2RopeJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2WeldJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2WheelJoint.cpp">
-      <Filter>External\Box2D\Dynamics\Joints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2ChainAndCircleContact.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2ChainAndPolygonContact.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2CircleContact.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2Contact.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2ContactSolver.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2EdgeAndCircleContact.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2EdgeAndPolygonContact.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2PolygonAndCircleContact.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Contacts\b2PolygonContact.cpp">
-      <Filter>External\Box2D\Dynamics\Contacts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderDataObject.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Effects\ColorOnlyEffect.cpp">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Effects\MultiTextureEffect.cpp">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Effects\TextureMulColorEffect.cpp">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Effects\TextureMulColorAlphaTestEffect.cpp">
-      <Filter>Internal\Render\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\Data.cpp">
       <Filter>Internal\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\UberShader.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene2D\TextGameObject.cpp">
-      <Filter>Internal\Scene2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SpriteNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIFileSystemDialog.cpp">
       <Filter>Internal\UI</Filter>
@@ -2412,9 +2037,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\DataNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp">
       <Filter>Internal\Input</Filter>
     </ClCompile>
@@ -2422,9 +2044,6 @@
       <Filter>Internal\Input</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFileV2.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneManager.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ShadowVolumeNode.cpp">
@@ -2441,9 +2060,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Debug\Stats.cpp">
       <Filter>Internal\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\SharedFBO.cpp">
-      <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp">
       <Filter>Internal\Math</Filter>
@@ -2489,15 +2105,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.cpp">
       <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraph.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraphNode.cpp">
-      <Filter>Internal\Render\Material</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterial.cpp">
       <Filter>Internal\Render\Material</Filter>
@@ -2562,12 +2169,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Heightmap.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\LandscapeChunk.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\LandscapeCursor.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ParticleEffectComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
@@ -2610,13 +2211,7 @@
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp">
       <Filter>Internal\Base\Radix</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowRect.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolume.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\FilePath.cpp">
@@ -2627,9 +2222,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\GlobalEventSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
@@ -2661,9 +2253,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp">
-      <Filter>Internal\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -2687,9 +2276,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\UpdateSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderState.cpp">
-      <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Entity.cpp">
       <Filter>Internal\Scene3D</Filter>
@@ -2745,32 +2331,17 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialOptimazer.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\AllocatorFactory.cpp">
       <Filter>Internal\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.cpp">
-      <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp">
       <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.cpp">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp">
       <Filter>Internal\Math</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.cpp">
       <Filter>Internal\Autotesting</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp">
-      <Filter>Internal\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIMovieView.cpp">
       <Filter>Internal\UI</Filter>
@@ -2801,12 +2372,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderHierarchy.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ImposterManager.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ImposterNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFile\SerializationContext.cpp">
       <Filter>Internal\Scene3D\SceneFile</Filter>
@@ -2856,22 +2421,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialTemplate.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\RenderTechnique.cpp">
-      <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\MaterialSystem.cpp">
-      <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderPassManager.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderLayerManager.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\Color.cpp">
@@ -2894,9 +2444,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIParticles.cpp">
       <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Base\AtomicWin32.cpp">
-      <Filter>Internal\Base\Radix</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
@@ -2956,14 +2503,14 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp">
+      <Filter>Internal\Render\Image</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.cpp">
-      <Filter>Internal\Render\Material</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.cpp">
       <Filter>Internal\Render\Material</Filter>
@@ -2973,24 +2520,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp">
       <Filter>Internal\Render\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\TextureSheet.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometry.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometrySerializationData.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomSLGeometry.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationFixedGeometry.cpp">
-      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometry.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
@@ -3040,26 +2569,11 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlEmitter.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\OGLHelpers.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp">
-      <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.cpp">
-      <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp">
-      <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockRender.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.cpp">
       <Filter>Internal\Render\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneCache.cpp">
-      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -3123,15 +2637,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp">
       <Filter>Internal\Autotesting</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp">
-      <Filter>Internal\Platform\Qt4</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp">
-      <Filter>Internal\Platform\Qt4\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.cpp">
-      <Filter>Internal\Platform\Qt4\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp">
       <Filter>Internal\Render\2D\Systems</Filter>
@@ -3271,18 +2776,6 @@
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp">
       <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp">
-      <Filter>Internal\Network\Services</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp">
-      <Filter>Internal\Network\Services</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
       <Filter>Internal\Autotesting</Filter>
     </ClCompile>
@@ -3295,14 +2788,299 @@
     <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
       <Filter>Internal\Timer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp">
-      <Filter>Internal\UI\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp">
-      <Filter>Internal\UI\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp">
       <Filter>Internal\UnitTests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.cpp">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp">
+      <Filter>Internal\UnitTests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlPackageContext.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\PosixThreads.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Thread.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadPosix.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.cpp">
+      <Filter>Internal\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp">
+      <Filter>Internal\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8Utils.cpp">
+      <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\ControlLayoutData.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\LayoutHelpers.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\LinearLayoutAlgorithm.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\SizeMeasuringAlgorithm.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.cpp">
+      <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\_dx9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_CommandBufferDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DepthStencilStateDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_DX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_IndexBufferDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PipelineStateDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_QueryBufferDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_SamplerStateDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_TextureDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_VertexBufferDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_CommandBufferGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_DepthStencilStateGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_GLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_IndexBufferGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PipelineStateGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_ProgGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_QueryBufferGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_TextureGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_VertexBufferGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\DynamicBindings.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\DynamicBufferAllocator.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RenderCallbacks.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Renderer.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RuntimeTextures.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\dbg_Draw.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\dbg_FontNormal.cxx">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\dbg_FontSmall.cxx">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\dbg_StatSet.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\PreProcess.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\RegExp.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Impl.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_Render.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_ShaderCache.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_ShaderSource.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\rhi_VertexLayout.cpp">
+      <Filter>Internal\Render\RHI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\_mcpp.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\directive.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\eval.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\expand.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\mbchar.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\mcpp_main.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\preproc.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\support.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\Common\MCPP\system.cpp">
+      <Filter>Internal\Render\RHI\Common\MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIScreenshoter.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\FXCache.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\GraphicFont.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometryData.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderLayer.cpp">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\_dx11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_CommandBufferDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DepthStencilStateDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_IndexBufferDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PipelineStateDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_QueryBufferDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_SamplerStateDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_TextureDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_VertexBufferDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

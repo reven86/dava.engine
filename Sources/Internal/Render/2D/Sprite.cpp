@@ -30,7 +30,6 @@
 #include "Render/2D/Sprite.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
-#include "Render/RenderManager.h"
 #include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
@@ -45,6 +44,7 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/ImageConvert.h"
 
 #define NEW_PPA
 
@@ -64,9 +64,8 @@ Mutex Sprite::spriteMapMutex;
 Sprite::DrawState::DrawState()
 {
     Reset();
-    
-    renderState = RenderState::RENDERSTATE_2D_BLEND;
-    shader = RenderSystem2D::TEXTURE_MUL_FLAT_COLOR;
+
+    material = RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;
 }
 
 Sprite::Sprite()
@@ -221,8 +220,6 @@ void Sprite::InitFromFile(File *file)
 		textureNames[k] = tp;
 		DVASSERT_MSG(textures[k], "ERROR: Texture loading failed"/* + pathName*/);
 	}
-	
-	RegisterTextureStates();
 
 	int32 width, height;
 	file->ReadLine(tempBuf, 1024);
@@ -338,12 +335,11 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
 {
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
-    
-    Image *img = ImageSystem::Instance()->EnsurePowerOf2Image(image);
 
-    Texture* texture = Texture::CreateFromData(img, false);
+    ScopedPtr<Image> squareImage(ImageSystem::Instance()->EnsurePowerOf2Image(image));
+    ScopedPtr<Texture> texture(Texture::CreateFromData(squareImage, false));
 
-    Sprite* sprite = NULL;
+    Sprite* sprite = nullptr;
     if (texture)
     {
         Vector2 sprSize((float32)width, (float32)height);
@@ -360,62 +356,53 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
         }
     }
 
-    SafeRelease(texture);
-    SafeRelease(img);
-
     return sprite;
 }
 
 Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
-    if (data == NULL || size == 0)
+    if (data == nullptr || size == 0)
     {
-        return NULL;
+        return nullptr;
     }
 
-    DynamicMemoryFile* file = DynamicMemoryFile::Create(data, size, File::OPEN | File::READ);
-    if (!file)
-    {
-        return NULL;
-    }
+    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
+    DVASSERT(file);
 
     Vector<Image*> images;
     ImageSystem::Instance()->Load(file, images);
     if (images.size() == 0)
     {
-        return NULL;
+        return nullptr;
     }
 
     Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
     
     for_each(images.begin(), images.end(), SafeRelease<Image>);
-    SafeRelease(file);
 
     return sprite;
 }
 
 String Sprite::GetPathString( const Sprite *sprite )
 {
-    if (!sprite)
-    {
-        return "";
-    }
+    if (nullptr == sprite)
+        return String();
 
     FilePath path(sprite->GetRelativePathname());
-    String pathName = "";
+
+    String pathName;
     if (!path.IsEmpty())
     {
         path.TruncateExtension();
         pathName = path.GetFrameworkPath();
     }
-
     return pathName;
 }
 
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
     Sprite* sprite = GetSpriteFromMap(path);
-    if (sprite)
+    if (sprite != nullptr)
     {
         return sprite;
     }
@@ -424,7 +411,7 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
     ImageSystem::Instance()->Load(path, images);
     if (images.size() == 0)
     {
-        return NULL;
+        return nullptr;
     }
 
     sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
@@ -540,8 +527,6 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 
     fboCounter++;
     Reset();
-
-    RegisterTextureStates();
 }
 
 void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
@@ -563,7 +548,6 @@ void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 
 void Sprite::Clear()
 {
-	UnregisterTextureStates();
 	for (int32 k = 0; k < textureCount; ++k)
 	{
 		SafeRelease(textures[k]);
@@ -605,12 +589,6 @@ Texture* Sprite::GetTexture(int32 frameNumber) const
 {
 	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return textures[frameTextureIndex[frameNumber]];
-}
-	
-UniqueHandle Sprite::GetTextureHandle(int32 frameNumber) const
-{
-	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
-	return textureHandles[frameTextureIndex[frameNumber]];
 }
 
 float32 *Sprite::GetTextureVerts(int32 frameNumber)
@@ -801,6 +779,7 @@ void Sprite::DumpSprites()
 	Logger::FrameworkDebug("--------------- Currently allocated sprites ----------------");
 
     spriteMapMutex.Lock();
+    uint32 spritesCount = static_cast<uint32>(spriteMap.size()); 
 	for(SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
 	{
 		Sprite *sp = it->second; //[spriteDict objectForKey:[txKeys objectAtIndex:i]];
@@ -808,7 +787,8 @@ void Sprite::DumpSprites()
 	}
     spriteMapMutex.Unlock();
 
-	Logger::FrameworkDebug("============================================================");
+    Logger::FrameworkDebug("Total spritesCount: %d", spritesCount);
+    Logger::FrameworkDebug("============================================================");
 }
 
 void Sprite::SetClipPolygon(Polygon2 * _clipPolygon)
@@ -942,33 +922,6 @@ File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeInde
     }
 
     return fp;
-}
-
-void Sprite::RegisterTextureStates()
-{
-	textureHandles.resize(textureCount, InvalidUniqueHandle);
-	for(int32 i = 0; i < textureCount; ++i)
-    {
-        if(textures[i])
-        {
-            //VI: always set "0" texture for each sprite part
-			TextureStateData data;
-			data.SetTexture(0, textures[i]);
-			
-			textureHandles[i] = RenderManager::Instance()->CreateTextureState(data);
-		}
-	}
-}
-
-void Sprite::UnregisterTextureStates()
-{
-	for(int32 i = 0; i < textureCount; ++i)
-    {
-		if(textureHandles[i] != InvalidUniqueHandle)
-		{
-			RenderManager::Instance()->ReleaseTextureState(textureHandles[i]);
-		}
-	}
 }
 
 void Sprite::ReloadExistingTextures()

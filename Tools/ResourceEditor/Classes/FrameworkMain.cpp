@@ -26,23 +26,36 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Core/Core.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Render/RHI/rhi_Type.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "DAVAEngine.h"
 #include "GameCore.h"
-#include "version.h"
-#include "Config.h"
+#include "Version.h"
 
 void FrameworkDidLaunched()
 {
 	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
 
-	appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s-%s", DAVAENGINE_VERSION, EDITOR_VERSION, RESOURCE_EDITOR_VERSION));
-	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32);
-	
-	GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
+    appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
+
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("width", 1024);
+    appOptions->SetInt32("height", 768);
+
+    appOptions->SetInt32("max_index_buffer_count", 8192);
+    appOptions->SetInt32("max_vertex_buffer_count", 8192);
+    appOptions->SetInt32("max_const_buffer_count", 32767);
+    appOptions->SetInt32("max_texture_count", 2048);
+
+    appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
+
+    GameCore* core = new GameCore();
+    DAVA::Core::SetApplicationCore(core);
+    DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
 //    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");

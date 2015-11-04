@@ -33,69 +33,58 @@
 
 namespace DAVA 
 {
-
-const uint16 DataNode::NodeRuntimeFlag = 1;
-    
-    
 DataNode::DataNode()
-:   pointer(0),
-    scene(0),
-    index(-1),
-    nodeFlags(0)
-{
-}
+    : id(INVALID_ID)
+    , isRuntime(false)
+    , scene(nullptr)
+{ }
 
 DataNode::~DataNode()
-{
-    //RemoveAllChildren();
-}
-    
-int32 DataNode::Release()
-{
-    int32 retainCount = BaseObject::Release();
-    return retainCount;
-}
+{ }
 
-    
 void DataNode::SetScene(Scene * _scene)
 {
-    DVASSERT(scene == 0 || scene == _scene);
+    DVASSERT(scene == nullptr || scene == _scene);
     scene = _scene;
 }
-  
-void DataNode::AddNode(DataNode * node)
+
+Scene* DataNode::GetScene() const
 {
-    DVASSERT(false && "DataNode::AddNode is deprecated!");
+    return scene;
 }
 
-int32  DataNode::GetNodeIndex()
+void DataNode::SetNodeID(uint64 _id)
 {
-    return index;
+    id = _id;
 }
 
-uint64 DataNode::GetPreviousPointer()
+uint64 DataNode::GetNodeID() const
 {
-    return pointer;
+    return id;
 }
 
-    
+bool DataNode::IsRuntime() const
+{
+    return isRuntime;
+}
+
+void DataNode::SetRuntime(bool _isRuntime)
+{
+    isRuntime = _isRuntime;
+}
+
 void DataNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     BaseObject::LoadObject(archive);
-    
-    index = archive->GetInt32("#index", -1);
-    pointer = archive->GetByteArrayAsType("#id", (uint64)0);
+    id = archive->GetByteArrayAsType("#id", (uint64) 0);
 }
 
 void DataNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     BaseObject::SaveObject(archive);
-    archive->SetInt32("#index", index);
     
-    pointer = (uint64)this;
-    archive->SetByteArrayAsType("#id", pointer);
+    DVASSERT(INVALID_ID != id);
+    archive->SetByteArrayAsType("#id", id);
 }
-
-
 
 }

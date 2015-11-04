@@ -42,7 +42,8 @@ CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
     { DLE_COMMON_ERROR, 5 },
     { DLE_UNKNOWN, 6 },
     { DLE_CANCELLED, 7 },
-    { DLE_NO_ERROR, 8 },
+    { DLE_NO_RANGE_REQUEST, 8 },
+    { DLE_NO_ERROR, 9 },
 };
 
 CurlDownloader::CurlDownloader()
@@ -227,9 +228,9 @@ DownloadError CurlDownloader::SetupDownload(uint64 seek, uint32 size)
             retCode = DLE_INIT_ERROR;
             break;
         }
-    }  
+    }
 
-    return DLE_NO_ERROR;
+    return retCode;
 }
 
 CURLMcode CurlDownloader::Perform()
@@ -390,7 +391,8 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
                 chunksToSave.pop_front();
             }
             chunksMutex.Unlock();
-            
+
+            // TODO: Aleksei, what if chunk == nullptr?
             bool isWritten = SaveData(chunk->buffer, storePath, chunk->progress);
             
             SafeRelease(chunk);
@@ -412,10 +414,9 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
     } while(hasChunksToSave || !thisThread->IsCancelling());
     
     chunksMutex.Lock();
-    List<DataChunkInfo *>::iterator endC = chunksToSave.end();
-    for (List<DataChunkInfo *>::iterator it = chunksToSave.begin(); it != endC; ++it)
+    for (auto item : chunksToSave)
     {
-        SafeDelete(*it);
+        SafeRelease(item);
     }
     chunksToSave.clear();
     chunksMutex.Unlock();
@@ -500,6 +501,12 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     // if file size is 0 - we don't need more than 1 download thread.
     // if file exists
     uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : Max<uint32>(1, static_cast<uint32>(sizeToDownload / fileChunkSize));
+    
+    // Range Request is a trying to download a part of file from some offset.
+    // file is dividen on fileChunksCount, so if they are more than 1 - then RangeRequest will be performed
+    // if we want to use more than 1 download part - then we need RangeRequest
+    isRangeRequestSent = 1 < fileChunksCount || 1 < partsCount;
+
     // part size could not be bigger than 4Gb
     uint32 lastFileChunkSize =  fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount*fileChunkSize);
 
@@ -592,6 +599,7 @@ void CurlDownloader::SetDownloadSpeedLimit(const uint64 limit)
 
 DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, int32 timeout)
 {
+    isRangeRequestSent = false;
     operationTimeout = timeout;
     float64 sizeToDownload = 0.0;
     CURL *currentCurlHandle = CurlSimpleInit();
@@ -681,6 +689,12 @@ DownloadError CurlDownloader::HttpCodeToDownloadError(uint32 code) const
         case HTTP_CLIENT_ERROR:
         case HTTP_SERVER_ERROR:
             return DLE_CONTENT_NOT_FOUND;
+        case HTTP_SUCCESS:
+            if (isRangeRequestSent && 200 == code)
+            {
+                // Seems Server doesn't supports Range requests.
+                return DLE_NO_RANGE_REQUEST;
+            } // else return DLE_NO_ERROR
         default:
             return DLE_NO_ERROR;
     }

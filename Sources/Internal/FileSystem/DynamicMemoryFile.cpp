@@ -36,7 +36,7 @@ namespace DAVA
 DynamicMemoryFile * DynamicMemoryFile::Create(const uint8 * data, int32 dataSize, uint32 attributes)
 {
 	DynamicMemoryFile *fl = new DynamicMemoryFile();
-	fl->filename = Format("memoryfile_%p", fl);
+	fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
 	fl->Write(data, dataSize);
 	fl->fileAttributes = attributes;
 	fl->currentPtr = 0;
@@ -48,7 +48,7 @@ DynamicMemoryFile * DynamicMemoryFile::Create(uint32 attributes)
 {
 	DynamicMemoryFile *fl = new DynamicMemoryFile();
 	fl->fileAttributes = attributes;
- 	fl->filename = Format("memoryfile_%p", fl);
+    fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
 	
 	return fl;
 }
@@ -65,21 +65,22 @@ DynamicMemoryFile::~DynamicMemoryFile()
 {
 	
 }
-	
-void * DynamicMemoryFile::GetData()
+
+const uint8* DynamicMemoryFile::GetData() const
 {
-	if(!data.size())
-	{
-		return NULL;
-	}
-	return &(data[0]);
+    if (!data.empty())
+    {
+        return data.data();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 
 uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 {
-    DVASSERT(NULL != pointerToData);
-
 	if (!(fileAttributes & File::WRITE) && !(fileAttributes & File::APPEND))
 	{
 		return 0;
@@ -91,11 +92,12 @@ uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 	}
 	if(dataSize)
 	{
-		Memcpy(&(data[currentPtr]), pointerToData, dataSize);
-		currentPtr += dataSize;
-	}
-	
-	return dataSize;
+        DVASSERT(nullptr != pointerToData);
+        Memcpy(&(data[currentPtr]), pointerToData, dataSize);
+        currentPtr += dataSize;
+    }
+
+    return dataSize;
 }
 
 uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
@@ -125,12 +127,12 @@ uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
 	return 0;
 }
 
-uint32 DynamicMemoryFile::GetPos()
+uint32 DynamicMemoryFile::GetPos() const
 {
 	return currentPtr;
 }
 
-uint32 DynamicMemoryFile::GetSize()
+uint32 DynamicMemoryFile::GetSize() const
 {
 	return (uint32)data.size();
 }
@@ -169,7 +171,7 @@ bool DynamicMemoryFile::Seek(int32 position, uint32 seekType)
 	
 }
 
-bool DynamicMemoryFile::IsEof()
+bool DynamicMemoryFile::IsEof() const
 {
     return isEof;
 }

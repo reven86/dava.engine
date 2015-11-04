@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_TEAMCITY_OUTPUT_H__
 #define __DAVAENGINE_TEAMCITY_OUTPUT_H__
 
@@ -42,19 +41,14 @@ namespace DAVA
 class TeamcityOutput: public LoggerOutput
 {
 public:
-
-    virtual void Output(Logger::eLogLevel ll, const char8* text);
-    virtual void Output(Logger::eLogLevel ll, const char16* text);
+    void Output(Logger::eLogLevel ll, const char8* text) override;
     
 protected:
-    
     void PlatformOutput(const String & text) const;
-    
+
     String NormalizeString(const char8 *text) const;
 };
 
-
-};
+}   // namespace DAVA 
 
 #endif // __DAVAENGINE_TEAMCITY_OUTPUT_H__
-

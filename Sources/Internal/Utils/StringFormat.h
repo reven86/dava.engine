@@ -26,33 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __LOGENGINE_STRINGFORMAT_H__
-#define __LOGENGINE_STRINGFORMAT_H__
+#ifndef __DAVAENGINE_STRINGFORMAT_H__
+#define __DAVAENGINE_STRINGFORMAT_H__
 
 #include "Base/BaseTypes.h"
-#include <stdarg.h>
+
+#include <cstdarg>
 
 namespace DAVA
 {
-	//! String formating functions
-	//! Functions for use together with Global::Log
 
-	//! Formatting function (use printf syntax)
-	//! Function support recursive calls as : 
-	//! Format("%s", Format("%d: %d: %d", 10, 20, 33));
+//! String formating functions
+//! Functions for use together with Global::Log
 
-	String Format(const char8 * text, ... );
-	String FormatVL(const char8 * text, va_list &vl);
+//! Formatting function (printf-like syntax)
+//! Function support recursive calls as : 
+//! Format("%s", Format("%d: %d: %d", 10, 20, 33).c_str());
 
-	//! Formatting function (use printf syntax)
-	WideString Format(const char16 * text, ... );
-	WideString FormatVL(const char16 * text, va_list &vl);
-	
-	
-	//! Function to get indent strings for usage in printf and similar functions
-	String GetIndentString(char8 indentChar, int32 level);
+String Format(const char8* format, ... );
+String FormatVL(const char8* format, va_list& args);
 
-}; // end of namespace
+WideString Format(const char16* format, ... );
+WideString FormatVL(const char16* format, va_list& args);
 
-#endif // __LOGENGINE_STRINGFORMAT_H__
+//! Function to get indent strings for usage in printf and similar functions
+inline String GetIndentString(char8 indentChar, int32 level)
+{
+    return String(level, indentChar);
+}
+
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_STRINGFORMAT_H__

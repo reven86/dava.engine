@@ -69,6 +69,7 @@ enum DownloadError
     DLE_COULDNT_RESOLVE_HOST,   // DNS request failed and we cannot to take IP from full qualified domain name
     DLE_COULDNT_CONNECT,        // we cannot connect to given adress at given port
     DLE_CONTENT_NOT_FOUND,      // server replies that there is no requested content
+    DLE_NO_RANGE_REQUEST,       // Range requests is not supported. Use 1 thread without reconnects only.
     DLE_COMMON_ERROR,           // some common error which is rare and requires to debug the reason
     DLE_INIT_ERROR,             // any handles initialisation was unsuccessful
     DLE_FILE_ERROR,             // file read and write errors
@@ -198,10 +199,13 @@ inline Downloader *DownloadPart::GetDownloader() const
     return downloader;
 }
 
-struct DataChunkInfo : public BaseObject
+class DataChunkInfo : public BaseObject
 {
-    DataChunkInfo(uint32 size);
+protected:
     ~DataChunkInfo();
+
+public:
+    DataChunkInfo(uint32 size);
 
     char8 *buffer;
     uint32 bufferSize;

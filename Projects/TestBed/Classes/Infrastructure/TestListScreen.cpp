@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#include "TestListScreen.h"
-#include "Utils/UTF8Utils.h"
+#include "Infrastructure/TestListScreen.h"
+#include <Utils/UTF8Utils.h>
 
 using namespace DAVA;
 
@@ -60,7 +60,7 @@ void TestListScreen::LoadResources()
     
     Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
     
-    testsGrid = new UIList(Rect(0, 0, screenSize.dx, screenSize.dy), UIList::ORIENTATION_VERTICAL);
+    testsGrid = new UIList(Rect(0.0, 0.0, static_cast<DAVA::float32>(screenSize.dx), static_cast<DAVA::float32>(screenSize.dy)), UIList::ORIENTATION_VERTICAL);
     testsGrid->SetDelegate(this);
     AddControl(testsGrid);
 }

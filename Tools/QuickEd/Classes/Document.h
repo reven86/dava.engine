@@ -31,69 +31,76 @@
 #define __QUICKED_DOCUMENT_H__
 
 #include <QUndoStack>
+#include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "EditorSystems/EditorSystemsManager.h"
+#include "Functional/Signal.h"
+#include "EditorSystems/SelectionContainer.h"
+#include "Math/Rect.h"
+
+struct WidgetContext
+{
+    virtual ~WidgetContext() = 0;
+};
+
+inline WidgetContext::~WidgetContext()
+{
+}
 
 namespace DAVA {
     class FilePath;
+    class UIControl;
+    class UIEvent;
 }
 
 class PackageNode;
 class QtModelPackageCommandExecutor;
 
-class SharedData;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
+class AbstractProperty;
 
-class Document : public QObject
+class Document final : public QObject
 {
     Q_OBJECT
+
 public:
-    Document(PackageNode *package, QObject *parent = nullptr);
+    explicit Document(PackageNode* package, QObject* parent = nullptr);
+    ~Document();
 
-    virtual ~Document();
+    void Activate();
+    void Deactivate();
 
+    EditorSystemsManager* GetSystemManager();
     const DAVA::FilePath &GetPackageFilePath() const;
-    PackageNode *GetPackage() const;
+    QUndoStack* GetUndoStack();
+    PackageNode* GetPackage();
+    QtModelPackageCommandExecutor* GetCommandExecutor();
+    WidgetContext* GetContext(QObject* requester) const;
 
-    SharedData *GetContext() const;
-    QUndoStack *GetUndoStack() const;
-    QtModelPackageCommandExecutor *GetCommandExecutor() const;
+    void SetContext(QObject* requester, WidgetContext* widgetContext);
+
+    void RefreshLayout();
 
 signals:
-    void SharedDataChanged(const QByteArray &role);
+    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void CanvasSizeChanged();
 public slots:
+    void SetScale(float scale);
+    void SetEmulationMode(bool emulationMode);
     void RefreshAllControlProperties();
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
-    void InitSharedData();
+    void OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
 
-private:
-    PackageNode *package;
+    PackageNode* package = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
+    QUndoStack* undoStack = nullptr;
 
-    SharedData *sharedData;
-
-    QtModelPackageCommandExecutor *commandExecutor;
-    QUndoStack *undoStack;
+    EditorSystemsManager systemManager;
+    SelectionContainer selectionContainer;
 };
-
-inline QUndoStack *Document::GetUndoStack() const
-{
-    return undoStack;
-}
-
-inline PackageNode *Document::GetPackage() const
-{
-    return package;
-}
-
-inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
-{
-    return commandExecutor;
-}
-
-inline SharedData *Document::GetContext() const
-{
-    return sharedData;
-}
 
 #endif // __QUICKED_DOCUMENT_H__

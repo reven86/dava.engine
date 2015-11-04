@@ -26,12 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Platform/DeviceInfo.h"
+#include "Base/BaseTypes.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 
+#include "Platform/TemplateiOS/DeviceInfoiOS.h"
 #include "Utils/StringFormat.h"
+#include "Base/GlobalEnum.h"
 
 #import <UIKit/UIDevice.h>
 #import <UIKit/UIKit.h>
@@ -44,22 +45,40 @@
 namespace DAVA
 {
 
-String DeviceInfo::GetVersion()
+DeviceInfoPrivate::DeviceInfoPrivate()
+{
+}
+
+DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
+{
+	#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR == 1
+		return 	DeviceInfo::PLATFORM_IOS_SIMULATOR;
+	#else
+		return 	DeviceInfo::PLATFORM_IOS;
+	#endif
+}
+
+String DeviceInfoPrivate::GetPlatformString()
+{
+    return GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
+}
+
+String DeviceInfoPrivate::GetVersion()
 {
 	NSString* systemVersion = [[UIDevice currentDevice] systemVersion];
 	return String([systemVersion UTF8String]);
 }
 
-String DeviceInfo::GetManufacturer()
+String DeviceInfoPrivate::GetManufacturer()
 {
 	return "Apple inc.";
 }
 
-String DeviceInfo::GetModel()
+String DeviceInfoPrivate::GetModel()
 {
 	String model = "";
 
-	if (GetPlatform() == PLATFORM_IOS_SIMULATOR)
+	if (GetPlatform() == DeviceInfo::PLATFORM_IOS_SIMULATOR)
 	{
 		model = [[[UIDevice currentDevice] model] UTF8String];
 	}
@@ -112,12 +131,17 @@ String DeviceInfo::GetModel()
 			model = "iPhone 5S GSM+CDMA";
 
         if ([modelName hasPrefix:@"iPhone7,1"])
-			model = "iPhone 6 Plus";
-		if ([modelName hasPrefix:@"iPhone7,2"])
+            model = "iPhone 6 Plus";
+        if ([modelName hasPrefix:@"iPhone7,2"])
 			model = "iPhone 6";
-        
-		// iPad
-		if ([modelName hasPrefix:@"iPad1,1"])
+
+        if ([modelName hasPrefix:@"iPhone8,1"])
+            model = "iPhone 6s";
+        if ([modelName hasPrefix:@"iPhone8,2"])
+            model = "iPhone 6s Plus";
+
+        // iPad
+        if ([modelName hasPrefix:@"iPad1,1"])
 			model = "iPad 1";
 
 		if ([modelName hasPrefix:@"iPad2,1"])
@@ -208,7 +232,7 @@ String DeviceInfo::GetModel()
 	return model;
 }
 
-String DeviceInfo::GetLocale()
+String DeviceInfoPrivate::GetLocale()
 {
 	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
@@ -219,7 +243,7 @@ String DeviceInfo::GetLocale()
 	return res;
 }
 
-String DeviceInfo::GetRegion()
+String DeviceInfoPrivate::GetRegion()
 {
 	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
@@ -230,13 +254,13 @@ String DeviceInfo::GetRegion()
 	return res;
 }
 
-String DeviceInfo::GetTimeZone()
+String DeviceInfoPrivate::GetTimeZone()
 {
 	NSTimeZone *localTime = [NSTimeZone systemTimeZone];
 	return [[localTime name] UTF8String];
 }
     
-String DeviceInfo::GetUDID()
+String DeviceInfoPrivate::GetUDID()
 {
 	bool hasAdvertisingId = (NSClassFromString(@"ASIdentifierManager") != nil);
 
@@ -261,7 +285,7 @@ String DeviceInfo::GetUDID()
 	return [udid UTF8String];
 }
     
-WideString DeviceInfo::GetName()
+WideString DeviceInfoPrivate::GetName()
 {
     NSString * deviceName = [[UIDevice currentDevice] name];
     
@@ -272,29 +296,39 @@ WideString DeviceInfo::GetName()
 }
     
 // Not impletemted yet
-String DeviceInfo::GetHTTPProxyHost()
+String DeviceInfoPrivate::GetHTTPProxyHost()
 {
 	return String();
 }
 
 // Not impletemted yet
-String DeviceInfo::GetHTTPNonProxyHosts()
+String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
 	return String();
 }
 
 // Not impletemted yet
-int DeviceInfo::GetHTTPProxyPort()
+int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
 	return 0;
 }
     
-eGPUFamily DeviceInfo::GetGPUFamily()
+DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
+{
+    return screenInfo;
+}
+
+int32 DeviceInfoPrivate::GetZBufferSize()
+{
+    return 24;
+}
+
+eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
     return GPU_POWERVR_IOS;
 }
     
-DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
+DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
     static const struct
     {
@@ -308,7 +342,7 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
         { ReachableViaWWAN, DeviceInfo::NETWORK_TYPE_CELLULAR }
     };
 
-    NetworkInfo networkInfo;
+    DeviceInfo::NetworkInfo networkInfo;
     
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
     [reachability startNotifier];
@@ -331,8 +365,13 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     return networkInfo;
 }
 
+List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
+{
+    List<DeviceInfo::StorageInfo> l;
+    return l;
+}
 
-void DeviceInfo::InitializeScreenInfo()
+void DeviceInfoPrivate::InitializeScreenInfo()
 {
     //detecting physical screen size and initing core system with this size
     ::UIScreen* mainScreen = [::UIScreen mainScreen];
@@ -350,11 +389,16 @@ void DeviceInfo::InitializeScreenInfo()
     }
 }
 
-
-
-int32 DeviceInfo::GetCpuCount()
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    return (int32)[[NSProcessInfo processInfo] processorCount];
+    //TODO: remove this empty realization and implement detection of HID connection
+    return false;
+}
+
+bool DeviceInfoPrivate::IsTouchPresented()
+{
+    //TODO: remove this empty realization and implement detection touch
+    return true;
 }
 
 }

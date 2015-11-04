@@ -60,19 +60,16 @@ public:
 	virtual Entity* Clone(Entity *dstNode = NULL);
 
     PolygonGroup * GetPolygonGroup() { return shadowPolygonGroup; };
+
 private:
-	Shader * shader;
+    //shadow mesh generation
+    PolygonGroup* shadowPolygonGroup;
+    //int32 newIndexCount;
+    //int32 newVertexCount;
 
-    int32 uniformLightPosition0;
-
-	//shadow mesh generation
-	PolygonGroup * shadowPolygonGroup;
-	//int32 newIndexCount;
-	//int32 newVertexCount;
-
-	//int32 FindIndexInTriangleForPointInEdge(int32 * triangleStartIndex, int32 pointInEdge, const EdgeAdjacency::Edge & edge);
-	//int32 DuplicateVertexAndSetNormalAtIndex(const Vector3 & normal, int32 index);
-	//Vector3 CalculateNormalForVertex(int32 * originalTriangleVertices);
+    //int32 FindIndexInTriangleForPointInEdge(int32 * triangleStartIndex, int32 pointInEdge, const EdgeAdjacency::Edge & edge);
+    //int32 DuplicateVertexAndSetNormalAtIndex(const Vector3 & normal, int32 index);
+    //Vector3 CalculateNormalForVertex(int32 * originalTriangleVertices);
 
 ///
 	struct EdgeMapping

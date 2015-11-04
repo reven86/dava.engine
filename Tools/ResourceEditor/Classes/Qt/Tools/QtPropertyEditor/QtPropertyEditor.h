@@ -75,7 +75,6 @@ public:
 	virtual void ApplyStyle(QtPropertyData *data, int style);
 
 public slots:
-	void SetFilter(const QString &regex);
 	void Update();
 
 	void OnExpanded(const QModelIndex & index);
@@ -92,10 +91,8 @@ protected:
 	QTimer updateTimer;
 	bool doUpdateOnPaintEvent;
 
-	virtual void leaveEvent(QEvent * event);
-	virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
-	
-	//virtual QtPropertyToolButton* GetButton(QMouseEvent * event);
+	void leaveEvent(QEvent * event) override;
+    void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
 
 protected slots:
 	virtual void OnItemClicked(const QModelIndex &);

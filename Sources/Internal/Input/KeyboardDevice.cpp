@@ -41,8 +41,8 @@ KeyboardDevice::KeyboardDevice()
 KeyboardDevice::~KeyboardDevice()
 {
 }
-    
-bool KeyboardDevice::IsKeyPressed(int32 keyCode)
+
+bool KeyboardDevice::IsKeyPressed(int32 keyCode) const
 {
     DVASSERT( keyCode < DVKEY_COUNT );
 
@@ -50,28 +50,31 @@ bool KeyboardDevice::IsKeyPressed(int32 keyCode)
 	if (DVKEY_ALT == keyCode)
 	{
 		auto current_frame =  Windows::UI::Core::CoreWindow::GetForCurrentThread();
-		auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
-		keyStatus[keyCode] = (Windows::UI::Core::CoreVirtualKeyStates::Down  == isAlt);
-	}
+        if (current_frame)
+        {
+            // dragon: or else it crashes on win10-device
+            auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
+            return Windows::UI::Core::CoreVirtualKeyStates::Down == isAlt;
+        }
+    }
 #elif defined (__DAVAENGINE_WIN32__)
 	if(DVKEY_ALT == keyCode)
 	{
-		auto isAlt = ::GetKeyState(VK_MENU);
-        keyStatus[keyCode] = (isAlt < 0);
-	}
+        return ::GetKeyState(VK_MENU) < 0;
+    }
 #endif //  __DAVAENGINE_WIN_UAP__ | __DAVAENGINE_WIN32__
 
     return keyStatus[keyCode];
 }
 
-void KeyboardDevice::OnKeyPressed(int32 keyCode)
+void KeyboardDevice::OnKeyPressed(uint32 keyCode)
 {
     DVASSERT(keyCode < DVKEY_COUNT);
     keyStatus[keyCode] = true;
     realKeyStatus[keyCode] = true;
 }
 
-void KeyboardDevice::OnKeyUnpressed(int32 keyCode)
+void KeyboardDevice::OnKeyUnpressed(uint32 keyCode)
 {
     DVASSERT(keyCode < DVKEY_COUNT);
     realKeyStatus[keyCode] = false;
@@ -83,25 +86,22 @@ void KeyboardDevice::OnBeforeUpdate()
 
 void KeyboardDevice::OnAfterUpdate()
 {
-    for (int32 i = 0; i < DVKEY_COUNT; i++) 
-    {
-        keyStatus[i] = realKeyStatus[i];
-    }
+    keyStatus = realKeyStatus;
 }
-    
-int32 KeyboardDevice::GetDavaKeyForSystemKey(int32 systemKeyCode)
+
+uint32 KeyboardDevice::GetDavaKeyForSystemKey(uint32 systemKeyCode) const
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     return keyTranslator[systemKeyCode];
 }
 
-void KeyboardDevice::OnSystemKeyPressed(int32 systemKeyCode)
+void KeyboardDevice::OnSystemKeyPressed(uint32 systemKeyCode)
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     OnKeyPressed(keyTranslator[systemKeyCode]);
 }
 
-void KeyboardDevice::OnSystemKeyUnpressed(int32 systemKeyCode)
+void KeyboardDevice::OnSystemKeyUnpressed(uint32 systemKeyCode)
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     OnKeyUnpressed(keyTranslator[systemKeyCode]);
@@ -110,14 +110,13 @@ void KeyboardDevice::OnSystemKeyUnpressed(int32 systemKeyCode)
     
 void KeyboardDevice::PrepareKeyTranslator()
 {
-    for (auto& key : keyTranslator)
-    {
-        key = DVKEY_UNKNOWN;
-    }
+    std::uninitialized_fill(begin(keyTranslator), end(keyTranslator), DVKEY_UNKNOWN);
 
 #if defined(__DAVAENGINE_WINDOWS__)
-	keyTranslator[VK_LEFT] = DVKEY_LEFT;
-	keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
+    // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
+
+    keyTranslator[VK_LEFT] = DVKEY_LEFT;
+    keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
 	keyTranslator[VK_UP] = DVKEY_UP;
 	keyTranslator[VK_DOWN] = DVKEY_DOWN;
 	keyTranslator[VK_ESCAPE] = DVKEY_ESCAPE;
@@ -130,10 +129,25 @@ void KeyboardDevice::PrepareKeyTranslator()
 	keyTranslator[VK_CAPITAL] = DVKEY_CAPSLOCK;
     keyTranslator[VK_SPACE] = DVKEY_SPACE;
     keyTranslator[VK_TAB] = DVKEY_TAB;
-    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
-    keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
     keyTranslator[VK_ADD] = DVKEY_ADD;
     keyTranslator[VK_SUBTRACT] = DVKEY_SUBTRACT;
+    keyTranslator[VK_HOME] = DVKEY_HOME;
+    keyTranslator[VK_END] = DVKEY_END;
+    keyTranslator[VK_PRIOR] = DVKEY_PGUP;
+    keyTranslator[VK_NEXT] = DVKEY_PGDN;
+    keyTranslator[VK_INSERT] = DVKEY_INSERT;
+
+    keyTranslator[VK_OEM_PLUS] = DVKEY_ADD;
+    keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
+    keyTranslator[VK_OEM_PERIOD] = DVKEY_PERIOD;
+    keyTranslator[VK_OEM_COMMA] = DVKEY_COMMA;
+    keyTranslator[VK_OEM_1] = DVKEY_SEMICOLON;
+    keyTranslator[VK_OEM_2] = DVKEY_SLASH;
+    keyTranslator[VK_OEM_3] = DVKEY_GRAVE;
+    keyTranslator[VK_OEM_4] = DVKEY_LBRACKET;
+    keyTranslator[VK_OEM_5] = DVKEY_BACKSLASH;
+    keyTranslator[VK_OEM_6] = DVKEY_RBRACKET;
+    keyTranslator[VK_OEM_7] = DVKEY_APOSTROPHE;
 
     for (auto i = 0; i <= DVKEY_F12 - DVKEY_F1; i++)
     {
@@ -152,7 +166,10 @@ void KeyboardDevice::PrepareKeyTranslator()
         keyTranslator[0x30 + i] = DVKEY_0 + i;
         keyTranslator[0x60 + i] = DVKEY_NUMPAD0 + i;
     }
-    
+    keyTranslator[VK_MULTIPLY] = DVKEY_MULTIPLY;
+    keyTranslator[VK_DIVIDE] = DVKEY_DIVIDE;
+    keyTranslator[VK_DECIMAL] = DVKEY_DECIMAL;
+
 #endif
 
 #if defined(__DAVAENGINE_MACOS__)
@@ -165,11 +182,37 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x33] = DVKEY_BACKSPACE;
     keyTranslator[0x24] = DVKEY_ENTER;
     keyTranslator[0x30] = DVKEY_TAB;
-    keyTranslator[DVMACOS_COMMAND] = DVKEY_CTRL;
-    keyTranslator[DVMACOS_OPTION] = DVKEY_ALT;
-    keyTranslator[DVMACOS_SHIFT] = DVKEY_SHIFT;
-    keyTranslator[DVMACOS_CAPS_LOCK] = DVKEY_CAPSLOCK;
+    keyTranslator[59] = DVKEY_CTRL; // left ctrl
+    keyTranslator[58] = DVKEY_ALT; // left alt
+    keyTranslator[56] = DVKEY_SHIFT; // left shift
+    keyTranslator[57] = DVKEY_CAPSLOCK;
+    keyTranslator[55] = DVKEY_LWIN; // LGUI in SDL
     keyTranslator[0x31] = DVKEY_SPACE;
+
+    // from SDL2 scancodes_darwin.h
+    //keyTranslator[10] = DVKEY_NON_US_BACKSLASH;
+    keyTranslator[24] = DVKEY_EQUALS;
+    keyTranslator[27] = DVKEY_MINUS;
+    keyTranslator[47] = DVKEY_PERIOD;
+    keyTranslator[43] = DVKEY_COMMA;
+    keyTranslator[41] = DVKEY_SEMICOLON;
+    keyTranslator[44] = DVKEY_SLASH;
+    keyTranslator[50] = DVKEY_GRAVE;
+    keyTranslator[33] = DVKEY_LBRACKET;
+    keyTranslator[42] = DVKEY_BACKSLASH;
+    keyTranslator[30] = DVKEY_RBRACKET;
+    keyTranslator[39] = DVKEY_APOSTROPHE;
+    keyTranslator[114] = DVKEY_INSERT;
+    keyTranslator[115] = DVKEY_HOME;
+    keyTranslator[116] = DVKEY_PGUP;
+    keyTranslator[119] = DVKEY_END;
+    keyTranslator[121] = DVKEY_PGDN;
+    keyTranslator[69] = DVKEY_ADD;
+    keyTranslator[78] = DVKEY_MINUS;
+    keyTranslator[67] = DVKEY_MULTIPLY;
+    keyTranslator[75] = DVKEY_DIVIDE;
+    keyTranslator[81] = DVKEY_EQUALS;
+    keyTranslator[65] = DVKEY_PERIOD;
 
     keyTranslator[0x00] = DVKEY_A;
     keyTranslator[0x0B] = DVKEY_B;
@@ -213,11 +256,11 @@ void KeyboardDevice::PrepareKeyTranslator()
     
     keyTranslator[0x7A] = DVKEY_F1;
     keyTranslator[0x78] = DVKEY_F2;
-    keyTranslator[0x73] = DVKEY_F3;
     keyTranslator[0x76] = DVKEY_F4;
     keyTranslator[0x60] = DVKEY_F5;
     keyTranslator[0x61] = DVKEY_F6;
     keyTranslator[0x62] = DVKEY_F7;
+    keyTranslator[0x63] = DVKEY_F3;
     keyTranslator[0x64] = DVKEY_F8;
     keyTranslator[0x65] = DVKEY_F9;
     keyTranslator[0x6D] = DVKEY_F10;
@@ -240,10 +283,8 @@ void KeyboardDevice::PrepareKeyTranslator()
 
 void KeyboardDevice::ClearAllKeys()
 {
-	for (auto i = 0; i < DVKEY_COUNT; i++) 
-	{
-		keyStatus[i] = realKeyStatus[i] = false;
-	}
+    keyStatus.reset();
+    realKeyStatus.reset();
 }
 
 

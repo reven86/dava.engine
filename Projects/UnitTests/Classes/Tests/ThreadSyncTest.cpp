@@ -36,7 +36,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
     Thread* someThread = nullptr;
 
     Mutex cvMutex;
-    ConditionalVariable cv;
+    ConditionVariable cv;
     int someValue;
 
     DAVA_TEST(ThreadSyncTestFunction)
@@ -45,7 +45,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
         someValue = -1;
         someThread->Start();
-        Thread::Wait(&cv, &cvMutex);
+        cv.Wait(cvMutex);
         cvMutex.Unlock();
 
         TEST_VERIFY(someValue == 0);
@@ -144,7 +144,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
     {
         someValue = 0;
         cvMutex.Lock();
-        Thread::Signal(&cv);
+        cv.NotifyOne();
         cvMutex.Unlock();
     }
 
@@ -167,5 +167,27 @@ DAVA_TESTCLASS(ThreadSyncTest)
             if (thread->IsCancelling())
                 break;
         }
+    }
+
+    static void StackHurtFunc()
+    {
+        const int theGreatestNumber = 42;
+        volatile char data[1 * 1024 * 1024]; //1 MB
+        volatile int sum = 0;
+
+        for (auto& x : data)
+        {
+            sum += theGreatestNumber;
+            x = sum;
+        }
+    }
+
+    //if stack size is not set, app will crash
+    DAVA_TEST(StackHurtTest)
+    {
+        auto stackHurtThread = RefPtr<Thread>(Thread::Create(StackHurtFunc));
+        stackHurtThread->SetStackSize(2 * 1024 * 1024); //2 MB
+        stackHurtThread->Start();
+        stackHurtThread->Join();
     }
 };

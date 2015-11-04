@@ -43,8 +43,8 @@ namespace DAVA
 static const UIControl::eControlState stateArray[] = {UIControl::STATE_NORMAL, UIControl::STATE_PRESSED_OUTSIDE, UIControl::STATE_PRESSED_INSIDE, UIControl::STATE_DISABLED, UIControl::STATE_SELECTED, UIControl::STATE_HOVER};
 static const String statePostfix[] = {"Normal", "PressedOutside", "PressedInside", "Disabled", "Selected", "Hover"};
 
-UIButton::UIButton(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
-    : UIControl(rect, rectInAbsoluteCoordinates)
+UIButton::UIButton(const Rect& rect)
+    : UIControl(rect)
     , selectedBackground(NULL)
     , selectedTextBlock(NULL)
     , oldControlState(0)
@@ -385,7 +385,7 @@ void UIButton::SetStateTextAlign(int32 state, int32 align)
     }
 }
 	
-void UIButton::SetStateTextUseRtlAlign(int32 state, bool value)
+void UIButton::SetStateTextUseRtlAlign(int32 state, TextBlock::eUseRtlAlign value)
 {
     for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
     {
@@ -783,7 +783,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 			
 			if (stateTextUseRtlAlignNode)
             {
-                stateTextBlock->SetTextUseRtlAlign(stateTextUseRtlAlignNode->AsBool());
+                stateTextBlock->SetTextUseRtlAlign(stateTextUseRtlAlignNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE);
             }
 
             if (stateTextColorNode)
@@ -1008,8 +1008,8 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
                 node->SetNodeToMap(Format("stateTextAlign%s", statePostfixLocal.c_str()), loader->GetAlignNodeValue(textAlign));
             }
 			
-			bool textUseRtlAlign = stateTextBlock->GetTextUseRtlAlign();
-            if (baseStaticText->GetTextUseRtlAlign() != textUseRtlAlign)
+            bool textUseRtlAlign = stateTextBlock->GetTextUseRtlAlign() == TextBlock::RTL_USE_BY_CONTENT;
+            if (baseStaticText->GetTextUseRtlAlign() != stateTextBlock->GetTextUseRtlAlign())
             {
                 node->Set(Format("stateTextUseRtlAlign%s", statePostfixLocal.c_str()), textUseRtlAlign);
             }

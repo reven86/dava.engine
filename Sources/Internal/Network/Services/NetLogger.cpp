@@ -28,7 +28,7 @@
 
 
 #include <Utils/UTF8Utils.h>
-#include <Thread/LockGuard.h>
+#include <Concurrency/LockGuard.h>
 
 #include <Network/Base/Endpoint.h>
 
@@ -96,17 +96,6 @@ void NetLogger::Output(Logger::eLogLevel ll, const char8* text)
         DoOutput(ll, text);
 }
 
-void NetLogger::Output(Logger::eLogLevel ll, const char16* text)
-{
-    // Logging of wide characters is not supported on Android for now
-    // see PlatformLog in LoggerAndroid.cpp :)
-    DVASSERT(0 && "Do not log wide strings");
-    if(text)
-    {
-        DoOutput(ll, UTF8Utils::EncodeToUTF8(WideString(text)).c_str());
-    }
-}
-
 void NetLogger::DoOutput(Logger::eLogLevel ll, const char8* text)
 {
     // if queue has been previously empty then start sending
@@ -167,9 +156,9 @@ String NetLogger::TimestampToString(time_t timestamp) const
 #else   // __DAVAENGINE_WINDOWS__
     localtime_r(&timestamp, &tms);
 #endif  // __DAVAENGINE_WINDOWS__
-    char8 buf[50] = {0};
-    strftime(buf, COUNT_OF(buf), "%Y-%m-%d %H:%M:%S", &tms);
-    return String(buf);
+    Array<char8, 50> buf = {0};
+    std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M:%S", &tms);
+    return String(buf.data());
 }
 
 }   // namespace Net

@@ -53,6 +53,9 @@
 #   include <Shlobj.h>
 #   include <tchar.h>
 #   include <process.h>
+#   if defined(__DAVAENGINE_WIN_UAP__)
+#       include "Platform/DeviceInfo.h"
+#   endif
 #elif defined(__DAVAENGINE_ANDROID__)
 #   include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #   include <unistd.h>
@@ -215,44 +218,29 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-#if defined(__DAVAENGINE_WINDOWS__)
+    String toFile = newFile.GetAbsolutePathname();
+    String fromFile = existingFile.GetAbsolutePathname();
 
-	DWORD flags = (overwriteExisting) ? MOVEFILE_REPLACE_EXISTING : 0;
-	// Add flag MOVEFILE_COPY_ALLOWED to allow file moving between different volumes
-    // Without this flags MoveFileEx fails and GetLastError return ERROR_NOT_SAME_DEVICE
-    // see https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-    flags |= MOVEFILE_COPY_ALLOWED;
-
-#if defined(__DAVAENGINE_WIN32__)
-
-    BOOL ret = ::MoveFileExA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), flags);
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-
-    WideString existingFileWide = StringToWString(existingFile.GetAbsolutePathname());
-    WideString newFileWide = StringToWString(newFile.GetAbsolutePathname());
-    BOOL ret = ::MoveFileExW(existingFileWide.c_str(), newFileWide.c_str(), flags);
-
-#endif
-
-	return	ret != 0;
-
-#elif defined(__DAVAENGINE_ANDROID__)
-	if (!overwriteExisting && access(newFile.GetAbsolutePathname().c_str(), 0) != -1)
-	{
-		return false;
-	}
-	remove(newFile.GetAbsolutePathname().c_str());
-	int ret = rename(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str());
-	return ret == 0;
-#else //iphone & macos
-	int flags = COPYFILE_ALL | COPYFILE_MOVE;
-	if(!overwriteExisting)
-		flags |= COPYFILE_EXCL;
-	
-	int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, flags);
-	return ret==0;
-#endif //PLATFORMS
+    if (overwriteExisting)
+    {
+        std::remove(toFile.c_str());
+    }
+    else
+    {
+        if (IsFile(toFile))
+        {
+            return false;
+        }
+    }
+    int result = std::rename(fromFile.c_str(), toFile.c_str());
+    bool error = (0 != result);
+    if (error)
+    {
+        const char* errorReason = strerror(errno);
+        Logger::Error("rename failed (\"%s\" -> \"%s\") with error: %s",
+            fromFile.c_str(), toFile.c_str(), errorReason);
+    }
+    return !error;
 }
 
 
@@ -396,21 +384,20 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
     String path;
 
 #if defined(__DAVAENGINE_WIN_UAP__)
-
+    
     Array<wchar_t, MAX_PATH> tempDir;
-    ::GetCurrentDirectoryW(tempDir.size(), tempDir.data());
+    ::GetCurrentDirectoryW(MAX_PATH, tempDir.data());
     path = WStringToString(tempDir.data());
 
 #elif defined(__DAVAENGINE_WIN32__)
 
     Array<char, MAX_PATH> tempDir;
-    ::GetCurrentDirectoryA(tempDir.size(), tempDir.data());
+    ::GetCurrentDirectoryA(MAX_PATH, tempDir.data());
     path = tempDir.data();
-
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
     Array<char, PATH_MAX> tempDir;
-    getcwd(tempDir.data(), tempDir.size());
+    getcwd(tempDir.data(), PATH_MAX);
     path = tempDir.data();
 
 #endif //PLATFORMS
@@ -424,12 +411,12 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     FilePath currentExecuteDirectory;
 
 #if defined(__DAVAENGINE_WIN32__)
-    std::array<char, MAX_PATH> tempDir;
-    ::GetModuleFileNameA( NULL, tempDir.data(), tempDir.size() );
+    Array<char, MAX_PATH> tempDir;
+    ::GetModuleFileNameA(nullptr, tempDir.data(), MAX_PATH);
     currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
-    std::array<char, PATH_MAX> tempDir;
-    proc_pidpath(getpid(), tempDir.data(), tempDir.size());
+    Array<char, PATH_MAX> tempDir;
+    proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
     currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #else
     const String& str = Core::Instance()->GetCommandLine().at(0);
@@ -650,8 +637,8 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #if defined(__DAVAENGINE_WIN32__)
 
     char szPath[MAX_PATH + 1];
-    SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, szPath);
-    int32 n = strlen(szPath);
+    SHGetFolderPathA(nullptr, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, szPath);
+    size_t n = strlen(szPath);
     szPath[n] = '\\';
     szPath[n+1] = 0;
     String str(szPath);
@@ -660,9 +647,9 @@ const FilePath FileSystem::GetUserDocumentsPath()
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    //take roaming folder as user documents folder
+    //take local folder as user documents folder
     using namespace Windows::Storage;
-    WideString roamingFolder = ApplicationData::Current->RoamingFolder->Path->Data();
+    WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
     return FilePath(WStringToString(roamingFolder)).MakeDirectoryPathname();
 
 #endif
@@ -674,7 +661,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 
     char szPath[MAX_PATH + 1];
     SHGetFolderPathA(NULL, CSIDL_COMMON_DOCUMENTS, NULL, SHGFP_TYPE_CURRENT, szPath);
-    int32 n = strlen(szPath);
+    size_t n = strlen(szPath);
     szPath[n] = '\\';
     szPath[n+1] = 0;
     String str(szPath);
@@ -683,10 +670,17 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    //take roaming folder as user documents folder
-    using namespace Windows::Storage;
-    WideString localFolder = ApplicationData::Current->LocalFolder->Path->Data();
-    return FilePath(WStringToString(localFolder)).MakeDirectoryPathname();
+    //take the first removable storage as public documents folder
+    auto storageList = DeviceInfo::GetStoragesList();
+    for (const auto& x : storageList)
+    {
+        if (x.type == DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL || 
+            x.type == DeviceInfo::STORAGE_TYPE_SECONDARY_EXTERNAL)
+        {
+            return x.path;
+        }
+    }
+    return FilePath();
 
 #endif
 }
@@ -709,26 +703,26 @@ const FilePath FileSystem::GetPublicDocumentsPath()
     
 String FileSystem::ReadFileContents(const FilePath & pathname)
 {
-    File * fp = File::Create(pathname, File::OPEN|File::READ);
+	String fileContents;
+    RefPtr<File> fp(File::Create(pathname, File::OPEN|File::READ));
 	if (!fp)
 	{
 		Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
-		return 0;
-	}
-	uint32 fileSize = fp->GetSize();
-
-    String fileContents;
-    uint32 dataRead = fp->ReadString(fileContents);
-    
-	if (dataRead != fileSize)
+	} else
 	{
-		Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
-		return 0;
+		uint32 fileSize = fp->GetSize();
+
+		fileContents.resize(fileSize);
+
+		uint32 dataRead = fp->Read(&fileContents[0], fileSize);
+
+		if (dataRead != fileSize)
+		{
+			Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+			fileContents.clear();
+		}
 	}
-    
-	SafeRelease(fp);
     return fileContents;
-    
 }
 
 
@@ -858,7 +852,7 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
 
     if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
     {
-        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        Logger::Error("Couldn't compare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -921,7 +915,7 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
 
     if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
     {
-        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        Logger::Error("Couldn't compare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -960,4 +954,15 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
     return res;
 }
 
+bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
+{
+    ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
+    if (file)
+    {
+        size = file->GetSize();
+        return true;
+    }
+
+    return false;
+}
 }

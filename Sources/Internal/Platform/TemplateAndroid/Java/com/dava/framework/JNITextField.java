@@ -133,7 +133,7 @@ public class JNITextField {
 
         @Override
         public void run() {
-            if(!JNIGLSurfaceView.isPaused())
+            if(!JNISurfaceView.isPaused())
             {
                 TextFieldUpdateTexture(id, pixels, width, height);
 
@@ -170,6 +170,7 @@ public class JNITextField {
         private boolean logicVisible = false; 
         
         private volatile boolean isRenderToTexture = false;
+        private boolean isSingleLine = true; // default in c++
         // we have to make next field static because all TextField
         // affected if we filtering and send data to c++ thread
         private static volatile boolean isFilteringOnText = false;
@@ -201,10 +202,10 @@ public class JNITextField {
             // clear static texture
             JNIActivity activity = JNIActivity.GetActivity();
             UpdateTexture task = new UpdateTexture(id, null, 0, 0);
-            if (activity.getGLThreadId() == Thread.currentThread().getId()){
+            if (activity.GetMainLoopThreadID() == Thread.currentThread().getId()){
                 task.run();
             } else {
-                activity.PostEventToGL(task);
+                activity.RunOnMainLoopThread(task);
             }
         }
         
@@ -214,11 +215,20 @@ public class JNITextField {
         }
         
         @Override
+        public void setSingleLine(boolean value) {
+            super.setSingleLine(value);
+            isSingleLine = value;
+        }
+        
+        @Override
         public boolean onTouchEvent(MotionEvent event) {
-            MotionEvent newEvent = MotionEvent.obtain(event);
-            newEvent.setLocation(getLeft() + event.getX(),
-                    getTop() + event.getY());
-            JNIActivity.GetActivity().glView.dispatchTouchEvent(newEvent);
+            if (isSingleLine) {
+                // pass event to glView only in single line mode
+                MotionEvent newEvent = MotionEvent.obtain(event);
+                newEvent.setLocation(getLeft() + event.getX(),
+                        getTop() + event.getY());
+                JNIActivity.GetActivity().GetSurfaceView().dispatchTouchEvent(newEvent);
+            }
             return super.onTouchEvent(event);
         }
 
@@ -301,7 +311,7 @@ public class JNITextField {
 
             if (isTransparent && getText().length() > 0)
             {
-                Log.d(TAG, "WARNING render second one more time to texture");
+                Log.e(TAG, "ERROR render one more time to texture");
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -309,11 +319,12 @@ public class JNITextField {
                     }
                 }, 1); // 1 - milliseconds tested on different values
                 // stay with 1
-            } else
+            } 
+            else
             {
                 JNIActivity activity = JNIActivity.GetActivity();
                 UpdateTexture task = new UpdateTexture(id, pixels, width, height);
-                activity.PostEventToGL(task);
+                activity.RunOnMainLoopThread(task);
             }
         }
         
@@ -364,7 +375,7 @@ public class JNITextField {
                             }
                         };
                         
-                        if (activity.getGLThreadId() == Thread.currentThread().getId()) {
+                        if (activity.GetMainLoopThreadID() == Thread.currentThread().getId()) {
                             activity.runOnUiThread(action);
                         } else {
                             action.run();
@@ -475,14 +486,12 @@ public class JNITextField {
                         @Override
                         public void onSoftKeyboardOpened(final Rect keyboardRect) {
                             // Send open event to native
-                            JNIActivity.GetActivity().PostEventToGL(
-                                    new Runnable() {
+                            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                                         final int localId = activeTextField;
 
                                         @Override
                                         public void run() {
-                                            KeyboardOpened(localId,
-                                                    keyboardRect);
+                                            KeyboardOpened(localId, keyboardRect);
                                         }
                                     });
                         }
@@ -505,8 +514,7 @@ public class JNITextField {
                                 }
                             }
                             // Send close event to native
-                            JNIActivity.GetActivity().PostEventToGL(
-                                    new Runnable() {
+                            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                                         final int localId = lastClosedTextField;
 
                                         @Override
@@ -545,7 +553,7 @@ public class JNITextField {
         // automatically closed.
         if (activeTextField != NO_ACTIVE_TEXTFIELD) {
             // Send event about keyboard closing
-            JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                 final int localId = activeTextField;
 
                 @Override
@@ -564,7 +572,7 @@ public class JNITextField {
         // activity
         // lost focus too before keyboard was hidden (animation not finished)
         else if (lastClosedTextField != NO_ACTIVE_TEXTFIELD) {
-            JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
                 final int localId = lastClosedTextField;
 
                 @Override
@@ -638,7 +646,9 @@ public class JNITextField {
                 params.topMargin = Math.round(y);
                 params.gravity = Gravity.LEFT | Gravity.TOP;
                 text.setPadding(0, 0, 0, 0);
-                text.setSingleLine(true);
+                
+                text.setSingleLine(true); // reset default, and only then set you need
+                
                 text.setBackgroundColor(Color.TRANSPARENT);
                 text.setTextColor(Color.WHITE);
                 text.setVisibility(View.GONE);
@@ -728,7 +738,7 @@ public class JNITextField {
 
                         try {
                             TextField.isFilteringOnText = true;
-                            JNIActivity.GetActivity().PostEventToGL(t);
+                            JNIActivity.GetActivity().RunOnMainLoopThread(t);
                             String s = t.get();
                             TextField.isFilteringOnText = false;
                             if (s.equals(origSource))
@@ -753,14 +763,18 @@ public class JNITextField {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId,
                             KeyEvent event) {
-                        JNIActivity.GetActivity().PostEventToGL(new Runnable() {
-                            @Override
-                            public void run() {
-                                JNITextField.TextFieldShouldReturn(id);
-                            }
-                        });
-                        text.updateStaticTexture();
-                        return true;
+                        // action link to button with SetReturnKeyType
+                        if (text.isSingleLine) {
+                            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    JNITextField.TextFieldShouldReturn(id);
+                                }
+                            });
+                            text.updateStaticTexture();
+                            return true; // Return true if you have consumed the action
+                        }
+                        return false;
                     }
                 });
 
@@ -777,7 +791,7 @@ public class JNITextField {
                         
                         // Select UITextField when native filed selected (like
                         // iOS)
-                        JNIActivity.GetActivity().PostEventToGL(new SafeRunnable() {
+                        JNIActivity.GetActivity().RunOnMainLoopThread(new SafeRunnable() {
                             @Override
                             public void safeRun() {
                                 JNITextField
@@ -797,7 +811,7 @@ public class JNITextField {
                                 if (keyboardHelper != null
                                         && keyboardHelper
                                         .isSoftKeyboardOpened()) {
-                                    JNIActivity.GetActivity().PostEventToGL(
+                                    JNIActivity.GetActivity().RunOnMainLoopThread(
                                             new Runnable() {
                                                 final int localActiveId = activeTextField;
                                                 final int localLastCloseId = lastClosedTextField;
@@ -896,7 +910,7 @@ public class JNITextField {
                                 }
                             }
                         };
-                        JNIActivity.GetActivity().PostEventToGL(action);
+                        JNIActivity.GetActivity().RunOnMainLoopThread(action);
                     }
                 };
 
@@ -1395,12 +1409,36 @@ public class JNITextField {
         }
     }
     
+    public static void SetMultiline(final int id, final boolean isMultiline) {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+            @Override
+            public void safeRun() {
+                final TextField text = GetTextField(id);
+                if (isMultiline)
+                {
+                    text.setSingleLine(false);
+                    // Workaround! in multiline mode user need ability to
+                    // scroll text so disable render into texture
+                    text.setRenderToTexture(false);
+                } else {
+                    text.setSingleLine(true);
+                }
+            }
+        });
+    }
+    
     public static void SetRenderToTexture(final int id, final boolean value) {
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
             public void safeRun() {
                 final TextField text = GetTextField(id);
-                text.setRenderToTexture(value);
+                // Workaround! Users need scroll on large text in
+                // multiline mode so we have to disable render into texture
+                if(text.isSingleLine) {
+                    text.setRenderToTexture(value);
+                } else {
+                    text.setRenderToTexture(false);
+                }
             }
         });
     }

@@ -28,7 +28,6 @@
 
 
 #include "CorePlatformWin32Qt.h"
-#include "Platform/Thread.h"
 #include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)

@@ -49,6 +49,9 @@ namespace DAVA
 {
 
 class UIScreen;
+class UILayoutSystem;
+class UIStyleSheetSystem;
+class UIScreenshoter;
 
 class ScreenSwitchListener
 {
@@ -73,10 +76,8 @@ class UIControlSystem : public Singleton<UIControlSystem>
 	int frameSkip;
 	int transitionType;
 
-	
-	Vector<UIEvent> totalInputs;
+    Vector<UIEvent> touchEvents;
 
-	
 protected:
 	~UIControlSystem();
 	/**
@@ -179,26 +180,22 @@ public:
 	 \brief Sets the current screen to 0 LOL.
 	 */
 	void Reset();
-
-    /// TODO: touchType to be removed?
 	/**
 	 \brief Calls by the system for input processing.
 	 */
-	void OnInput(int32 touchType, const Vector<UIEvent> &activeInputs, const Vector<UIEvent> &allInputs, bool fromReplay = false);
-	
-	void OnInput(UIEvent * event);
+    void OnInput(UIEvent* newEvent);
 
-	/**
+    /**
 	 \brief Callse very frame by the system for update.
 	 */
-	void Update();
+    void Update();
 
-	/**
+    /**
 	 \brief Calls every frame by the system for draw.
 		Draws all controls hierarchy to the screen.
 	 */
-	void Draw();
-	
+    void Draw();
+
 //	void SetTransitionType(int newTransitionType);
 	
 			
@@ -293,9 +290,14 @@ public:
 	 \returns current screen switch lock counter
 	 */
 	int32 UnlockSwitch();
+    
+    bool IsRtl() const;
+    void SetRtl(bool rtl);
+    UILayoutSystem *GetLayoutSystem() const;
+    UIStyleSheetSystem* GetStyleSheetSystem() const;
+    UIScreenshoter* GetScreenshoter();
 
-    void UI3DViewAdded();
-    void UI3DViewRemoved();
+    void SetClearColor(const Color& clearColor);
 
 private:
 	/**
@@ -312,15 +314,17 @@ private:
     void NotifyListenersWillSwitch( UIScreen* screen );
     void NotifyListenersDidSwitch( UIScreen* screen );
 
-    void CopyTouchData(UIEvent* dst, const UIEvent* src);
+    UILayoutSystem *layoutSystem;
+    UIStyleSheetSystem* styleSheetSystem;
+    UIScreenshoter* screenshoter;
 
-	Vector<ScreenSwitchListener*> screenSwitchListeners;
+    Vector<ScreenSwitchListener*> screenSwitchListeners;
 
-	UIScreen * currentScreen;
-	UIScreen * nextScreen;
-	UIScreen * prevScreen;
+    UIScreen* currentScreen;
+    UIScreen* nextScreen;
+    UIScreen* prevScreen;
 
-	int32 screenLockCount;
+    int32 screenLockCount;
 
 	bool removeCurrentScreen;
 	
@@ -338,10 +342,10 @@ private:
 	
 	UIGeometricData baseGeometricData;
 
-    int32 ui3DViewCount;
-	
-	friend class UIScreenTransition;
-	friend class UIScreenManager;
+    Color clearColor;
+
+    friend class UIScreenTransition;
+    friend class UIScreenManager;
 };
 };
 

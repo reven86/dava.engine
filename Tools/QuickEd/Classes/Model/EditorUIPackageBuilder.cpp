@@ -41,10 +41,13 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageCommandExecutor.h"
-
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/StyleSheetsNode.h"
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
+#include "UI/UIControlPackageContext.h"
+#include "UI/Styles/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheetYamlLoader.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 
@@ -68,6 +71,10 @@ EditorUIPackageBuilder::~EditorUIPackageBuilder()
     for (ControlNode *control : rootControls)
         control->Release();
     rootControls.clear();
+
+    for (StyleSheetNode *styleSheet : styleSheets)
+        styleSheet->Release();
+    styleSheets.clear();
 }
 
 void EditorUIPackageBuilder::BeginPackage(const FilePath &aPackagePath)
@@ -109,31 +116,39 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr
     return false;
 }
 
+void EditorUIPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
+{
+    StyleSheetNode *node = new StyleSheetNode(selectorChains, properties);
+    styleSheets.push_back(node);
+}
+
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
 {
-    UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
+    RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
-    return control;
+    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control.Get()), true));
+
+    return control.Get();
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
-    UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
+    RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    ControlNode *node = ControlNode::CreateFromControl(control);
+    ControlNode *node = ControlNode::CreateFromControl(control.Get());
     node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
     controlsStack.push_back(ControlDescr(node, true));
-    return control;
+
+    return control.Get();
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
@@ -208,7 +223,10 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
     if (addToParent)
     {
         if (controlsStack.empty() || isRoot)
+        {
+            lastControl->GetControl()->UpdateLayout();
             rootControls.push_back(SafeRetain(lastControl));
+        }
         else
             controlsStack.back().node->Add(lastControl);
     }
@@ -303,7 +321,12 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
     {
         ValueProperty *property = currentSection->FindProperty(member);
         if (property && value.GetType() != VariantType::TYPE_NONE)
+        {
+            if (property->GetStylePropertyIndex() != -1)
+                controlsStack.back().node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), true);
+
             property->SetValue(value);
+        }
     }
 }
 
@@ -325,6 +348,11 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         }
     }
     
+    for (StyleSheetNode *styleSheet : styleSheets)
+    {
+        package->GetStyleSheets()->Add(styleSheet);
+    }
+    
     for (ControlNode *control : rootControls)
     {
         bool canInsert = true;
@@ -335,8 +363,12 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         }
         
         if (canInsert)
+        {
             package->GetPackageControlsNode()->Add(control);
+        }
     }
+    
+    package->RefreshPackageStylesAndLayout();
     
     DVASSERT(declinedPackages.empty());
     
@@ -351,6 +383,11 @@ const Vector<ControlNode*> &EditorUIPackageBuilder::GetRootControls() const
 const Vector<PackageNode*> &EditorUIPackageBuilder::GetImportedPackages() const
 {
     return importedPackages;
+}
+
+const Vector<StyleSheetNode*> &EditorUIPackageBuilder::GetStyles() const
+{
+    return styleSheets;
 }
 
 void EditorUIPackageBuilder::AddImportedPackage(PackageNode *node)

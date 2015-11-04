@@ -41,6 +41,8 @@
 #include "FileSystem/LocalizationIPhone.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/LocalizationAndroid.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "FileSystem/LocalizationWinUAP.h"
 #else
 #include "Core/Core.h"
 #endif
@@ -49,7 +51,7 @@
 namespace DAVA 
 {
 //TODO: move it to DateTimeWin32 or remove
-const LocalizationSystem::LanguageLocalePair LocalizationSystem::languageLocaleMap[] =
+const Vector<LocalizationSystem::LanguageLocalePair> LocalizationSystem::languageLocaleMap =
 {
     { "en", "en_US" },
     { "ru", "ru_RU" },
@@ -85,16 +87,19 @@ void LocalizationSystem::InitWithDirectory(const FilePath &directoryPath)
     Init();
 }
 
-void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
+void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
-    DVASSERT(directoryPath.IsDirectoryPathname());
-    this->directoryPath = directoryPath;
+    DVASSERT(dirPath.IsDirectoryPathname());
+    directoryPath = dirPath;
 #if defined(__DAVAENGINE_IPHONE__)
 	LocalizationIPhone::SelectPreferedLocalizationForPath(directoryPath);
 #elif defined(__DAVAENGINE_ANDROID__)
     LocalizationAndroid::SelectPreferedLocalization();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    LocalizationWinUAP::SelectPreferedLocalization();
 #else
-    SetCurrentLocale(Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE));
+    String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
+    SetCurrentLocale(loc);
 #endif
 }
 
@@ -109,6 +114,8 @@ String LocalizationSystem::GetDeviceLocale() const
 	return String(LocalizationIPhone::GetDeviceLang());
 #elif defined(__DAVAENGINE_ANDROID__)
     return LocalizationAndroid::GetDeviceLang();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    return LocalizationWinUAP::GetDeviceLang();
 #else
     return DEFAULT_LOCALE;
 #endif
@@ -249,13 +256,14 @@ LocalizationSystem::StringFile * LocalizationSystem::LoadFromYamlFile(const Stri
 				
 			case YAML_SCALAR_EVENT:
 			{
-				
+				const uint8* str = reinterpret_cast<uint8*>(event.data.scalar.value);
+				size_t size = static_cast<size_t>(event.data.scalar.length);
 				if (isKey)
 				{
-					UTF8Utils::EncodeToWideString((uint8*)event.data.scalar.value, (int32)event.data.scalar.length, key);
+					UTF8Utils::EncodeToWideString(str, size, key);
 				}else 
 				{
-					UTF8Utils::EncodeToWideString((uint8*)event.data.scalar.value, (int32)event.data.scalar.length, value);
+					UTF8Utils::EncodeToWideString(str, size, value);
 					strFile->strings[key] = value;
 				}
 				
@@ -444,14 +452,16 @@ bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>&
     
 String LocalizationSystem::GetCountryCode() const
 {
-    int32 knownLocalesNumber = COUNT_OF(languageLocaleMap);
-	for (int32 i = 0; i < knownLocalesNumber; i ++)
-	{
-		if (languageLocaleMap[i].languageCode == langId)
-		{
-			return languageLocaleMap[i].localeCode;
-		}
-	}
+    auto iter = std::find_if(languageLocaleMap.begin(), languageLocaleMap.end(), [&](const LocalizationSystem::LanguageLocalePair & langPair)
+    {
+        return langPair.languageCode == langId;
+    });
+
+    if (iter != languageLocaleMap.end())
+    {
+        return (*iter).localeCode;
+    }
+
     return "en_US";
 }
 	

@@ -30,29 +30,48 @@
 #ifndef __UI_EDITOR_LIBRARY_MODEL_H__
 #define __UI_EDITOR_LIBRARY_MODEL_H__
 
-#include <QAbstractItemModel>
+#include <QStandardItemModel>
 #include "Base/BaseTypes.h"
+#include "Model/PackageHierarchy/PackageListener.h"
 
 class PackageNode;
+class PackageBaseNode;
 
-class LibraryModel : public QAbstractListModel
+class LibraryModel : public QStandardItemModel, private PackageListener
 {
     Q_OBJECT
-    
+    enum
+    {
+        POINTER_DATA = Qt::UserRole + 1,
+        INNER_NAME_DATA
+    };
 public:
-    LibraryModel(PackageNode *node, QObject *parent = NULL);
-    virtual ~LibraryModel();
-    
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
-    virtual QStringList mimeTypes() const override;
-    virtual QMimeData *mimeData(const QModelIndexList &indexes) const override;
+    LibraryModel(PackageNode *root, QObject *parent = nullptr);
+    ~LibraryModel() override;
 
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    QStringList mimeTypes() const override;
+    QMimeData *mimeData(const QModelIndexList &indexes) const override;
 private:
-    DAVA::Vector<DAVA::String> libraryControls;
-    size_t defaultCountrolsCount;
+    QModelIndex indexByNode(const void *node, const QStandardItem *item) const;
+    void BuildModel();
+    void AddControl(ControlNode* node);
+    void AddImportedControl(PackageNode* node);
+    void CreateControlsRootItem();
+    void CreateImportPackagesRootItem();
+    
+private:
+    PackageNode *root;
+    QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
+    DAVA::Vector<ControlNode*> defaultControls;
+
+private: // PackageListener
+    void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
+    void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
+    void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) override;
+    void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) override;
+    void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) override;
+
 };
 
 #endif // __UI_EDITOR_LIBRARY_MODEL_H__

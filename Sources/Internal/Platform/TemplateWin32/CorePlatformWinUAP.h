@@ -26,96 +26,121 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
-#define __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
+#ifndef __DAVAENGINE_COREPLATFORMWINUAP_H__
+#define __DAVAENGINE_COREPLATFORMWINUAP_H__
 
 #include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Core\Core.h"
-#include <agile.h>
+#include "Base/BaseTypes.h"
+#include "Core/Core.h"
+#include "Platform/DeviceInfo.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
 
-class CorePlatformWinStore : public Core
+ref class WinUAPXamlApp;
+
+class CorePlatformWinUAP : public Core
 {
 public:
-	CorePlatformWinStore();
-	virtual ~CorePlatformWinStore();
+    CorePlatformWinUAP() = default;
+    virtual ~CorePlatformWinUAP() = default;
 
-    CorePlatformWinStore(const CorePlatformWinStore&) = delete;
-    CorePlatformWinStore& operator=(const CorePlatformWinStore&) = delete;
+    CorePlatformWinUAP(const CorePlatformWinUAP&) = delete;
+    CorePlatformWinUAP& operator = (const CorePlatformWinUAP&) = delete;
 
-	void Run();
-	void InitArgs(); // if need
+    void InitArgs();
+    void Run();
+    void Quit() override;
 
-	eScreenMode GetScreenMode() override;
-	void SwitchScreenToMode(eScreenMode screenMode) override;
+    eScreenMode GetScreenMode() override;
+    bool SetScreenMode(eScreenMode screenMode) override;
+    DisplayMode GetCurrentDisplayMode() override;
 
-	void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
-	void ToggleFullscreen();
-	DisplayMode FindBestMode(const DisplayMode & requestedMode) override;
-	DisplayMode GetCurrentDisplayMode() override;
-	void Quit() override;
-	void SetIcon(int32 iconId) override;
+    void SetScreenScaleMultiplier(float32 multiplier) override;
 
-	eScreenOrientation GetScreenOrientation() override;
-	uint32 GetScreenDPI() override;
+    bool GetCursorVisibility();
+    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
+    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
 
-	void GoBackground(bool isLock) override;
-	void GoForeground() override;
-private:
+    // Win10 specific member functions
 
-};
+    // Get pointer to underlying XAML application object
+    WinUAPXamlApp^ XamlApplication() DAVA_NOEXCEPT;
 
-ref class WinStoreApplicationSource : Windows::ApplicationModel::Core::IFrameworkViewSource
-{
-public:
-	virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView();
-};
+    // Check whether current thread is UI thread
+    bool IsUIThread() const;
 
-ref class WinStoreFrame sealed : public Windows::ApplicationModel::Core::IFrameworkView
-{
-public:
-	WinStoreFrame();
+    // Run specified function on UI thread
+    template<typename F>
+    void RunOnUIThread(F&& fn);
+    // Run specified function on UI thread and block calling thread until function finishes
+    template<typename F>
+    void RunOnUIThreadBlocked(F&& fn);
 
-	// IFrameworkView Methods
-	virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
-	virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
-	virtual void Load(Platform::String^ entryPoint);
-	virtual void Run();
-	virtual void Uninitialize();
-
-protected:
-	// Application lifecycle event handlers.
-	void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView,
-		             Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
-	void OnSuspending(Platform::Object^ sender,
-		              Windows::ApplicationModel::SuspendingEventArgs^ args);
-	void OnResuming(Platform::Object^ sender,
-		            Platform::Object^ args);
-	// Window event handlers.
-	void OnWindowActivationChanged(Windows::UI::Core::CoreWindow^ sender,
-		                           Windows::UI::Core::WindowActivatedEventArgs^ args);
-	void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender,
-						Windows::UI::Core::CoreWindowEventArgs^ args
-		);
-	void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender,
-							 Windows::UI::Core::WindowSizeChangedEventArgs^ args);
+    // Run specified function on main thread
+    template<typename F>
+    void RunOnMainThread(F&& fn);
+    // Run specified function on main thread and block calling thread until function finishes
+    template<typename F>
+    void RunOnMainThreadBlocked(F&& fn);
 
 private:
-	Platform::Agile<Windows::UI::Core::CoreWindow> frameWinStore;
-	bool willQuit;
-	bool isWindowClosed;
-	bool isWindowVisible;
-	uint32 windowWidth;
-	uint32 windowHeight;
+    void RunOnUIThread(std::function<void()>&& fn, bool blocked);
+    void RunOnMainThread(std::function<void()>&& fn, bool blocked);
 
+private:
+    WinUAPXamlApp^ xamlApp = nullptr;
 };
 
-} // namespace DAVA
+//////////////////////////////////////////////////////////////////////////
+inline WinUAPXamlApp^ CorePlatformWinUAP::XamlApplication() DAVA_NOEXCEPT
+{
+    return xamlApp;
+}
 
-#endif // #if defined(__DAVAENGINE_WIN_UAP__)
-#endif // __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
+template<typename F>
+void CorePlatformWinUAP::RunOnUIThread(F&& fn)
+{
+    if (IsUIThread())
+    {
+        fn();
+    }
+    else
+    {
+        RunOnUIThread(std::function<void()>(std::forward<F>(fn)), false);
+    }
+}
+
+template<typename F>
+void CorePlatformWinUAP::RunOnUIThreadBlocked(F&& fn)
+{
+    if (IsUIThread())
+    {
+        fn();
+    }
+    else
+    {
+        RunOnUIThread(std::function<void()>(std::forward<F>(fn)), true);
+    }
+}
+
+template<typename F>
+void CorePlatformWinUAP::RunOnMainThread(F&& fn)
+{
+    RunOnMainThread(std::function<void()>(std::forward<F>(fn)), false);
+}
+
+template<typename F>
+void CorePlatformWinUAP::RunOnMainThreadBlocked(F&& fn)
+{
+    RunOnMainThread(std::function<void()>(std::forward<F>(fn)), true);
+}
+
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_WIN_UAP__
+#endif  // __DAVAENGINE_COREPLATFORMWINUAP_H__

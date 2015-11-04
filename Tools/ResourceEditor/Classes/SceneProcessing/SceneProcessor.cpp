@@ -100,10 +100,9 @@ bool SceneProcessor::Execute(DAVA::Scene *currentScene)
             if (insertResult.second)
             {
                 Scene *newScene = new Scene();
-                Entity *root = newScene->GetRootNode(referenceToOwner);
-                newScene->AddNode(root);
-                DVASSERT(root->GetChildrenCount() == 1);
-                entityProcessor->ProcessEntity(root->GetChild(0), currentEntity->GetName(), true);
+                newScene->LoadScene(referenceToOwner);
+                DVASSERT(newScene->GetChildrenCount() == 1);
+                entityProcessor->ProcessEntity(newScene, currentEntity->GetName(), true);
                 newScene->SaveScene(referenceToOwner);
                 SafeRelease(newScene);
             }

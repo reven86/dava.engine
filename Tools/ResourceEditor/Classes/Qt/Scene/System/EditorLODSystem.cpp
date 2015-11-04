@@ -36,6 +36,7 @@
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 EditorLODSystem::ForceData::ForceData(DAVA::int32 newForceLayer /* = -1 */, DAVA::float32 newDistance /* = -1 */)
     : forceLayer(newForceLayer)
@@ -43,15 +44,8 @@ EditorLODSystem::ForceData::ForceData(DAVA::int32 newForceLayer /* = -1 */, DAVA
 {
 }
 
-EditorLODSystem::EditorLODSystem(DAVA::Scene *scene)
+EditorLODSystem::EditorLODSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
-    , currentLodsLayersCount(0)
-    , forceDistanceEnabled(false)
-    , forceDistance(DAVA::LodComponent::MIN_LOD_DISTANCE)
-    , forceLayer(DAVA::LodComponent::INVALID_LOD_LAYER)
-    , allSceneModeEnabled(false)
-    , allSceneForceLayer(DAVA::LodComponent::MAX_LOD_LAYERS)
-    , allSceneForceDistance(DAVA::LodComponent::INVALID_DISTANCE)
 {
 }
 
@@ -183,7 +177,7 @@ void EditorLODSystem::ResetForceState(DAVA::LodComponent *lodComponent)
 void EditorLODSystem::CollectLODDataFromScene()
 {
     currentLodsLayersCount = 0;
-    std::fill(lodDistances.begin(), lodDistances.end(), 0);
+    std::fill(lodDistances.begin(), lodDistances.end(), 0.0f);
     std::fill(lodTrianglesCount.begin(), lodTrianglesCount.end(), 0);
     std::array<DAVA::int32, DAVA::LodComponent::MAX_LOD_LAYERS> lodsComponentsCount = { 0 };
 
@@ -242,7 +236,8 @@ void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodCompone
         RenderBatch *rb = ro->GetRenderBatch(i, lodIndex, switchIndex);
         if (lodIndex < 0 || lodIndex >= DAVA::LodComponent::MAX_LOD_LAYERS)
         {
-            Logger::Error("got unexpected lod index (%d) when collecting triangles on entitie %s. Correct values for lod index is %d", lodIndex, en->GetName().c_str(), DAVA::LodComponent::MAX_LOD_LAYERS);
+            Logger::Error("Unexpected lod index (%d) when collecting triangles on entity %s. Max lod index is %d%s", 
+				lodIndex, en->GetName().c_str(), DAVA::LodComponent::MAX_LOD_LAYERS, PointerSerializer::FromPointer(en).c_str());
             continue;
         }
     
@@ -346,15 +341,35 @@ bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 texture
 
     SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
 
-    sceneEditor2->BeginBatch("LOD Added");
-
     auto lods = GetCurrentLODs();
-    for (auto &lod : lods)
+    for (auto& lod : lods)
     {
-        sceneEditor2->Exec(new CreatePlaneLODCommand(lod, fromLayer, textureSize, texturePath));
+        auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath);
+        planeLODRequests.push_back(request);
     }
-    sceneEditor2->EndBatch();
+
     return true;
+}
+
+void EditorLODSystem::Process(DAVA::float32 elapsedTime)
+{
+    bool allRequestsProcessed = !planeLODRequests.empty();
+
+    for (const auto& req : planeLODRequests)
+        allRequestsProcessed = allRequestsProcessed && req->completed;
+
+    if (allRequestsProcessed)
+    {
+        SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
+        sceneEditor2->BeginBatch("LOD Added");
+        for (const auto& req : planeLODRequests)
+        {
+            sceneEditor2->Exec(new CreatePlaneLODCommand(req));
+        }
+        sceneEditor2->EndBatch();
+
+        planeLODRequests.clear();
+    }
 }
 
 bool EditorLODSystem::CopyLastLodToLod0()

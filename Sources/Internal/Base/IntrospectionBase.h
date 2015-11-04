@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 #include "Base/GlobalEnum.h"
+#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -68,13 +69,13 @@ namespace DAVA
 
         InspDesc()
             : text("")
-			, enumMap(NULL)
+			, enumMap(nullptr)
             , type(T_UNDEFINED)
         { }
 
 		InspDesc(const char *_text) 
 			: text(_text)
-			, enumMap(NULL)
+			, enumMap(nullptr)
             , type(T_UNDEFINED)
 		{ }
 
@@ -100,11 +101,11 @@ namespace DAVA
 		friend class InspInfo;
 
 	public:
-		InspMember(const char *_name, const InspDesc &_desc, const long int _offset, const MetaInfo *_type, int _flags = 0);
+		InspMember(const char *_name, const InspDesc &_desc, const size_t _offset, const MetaInfo *_type, int _flags = 0);
         virtual ~InspMember() {};
 
 		// Имя члена интроспекции, соответствует имени члена класса
-		const char* Name() const;
+		const FastName& Name() const;
 
 		// Описание члена интроспекции, произвольно указанное пользователем при объявлении интроспекции
 		const InspDesc& Desc() const;
@@ -147,6 +148,8 @@ namespace DAVA
 		// Устанавливает данные члена интроспекции из указанного варианта. 
 		virtual void SetValue(void *object, const VariantType &val) const;
 
+		virtual void SetValueRaw(void *object, void *val) const;
+
 		// Возвращает данные члена интроспекции в виде коллекции
 		virtual const InspColl* Collection() const;
 
@@ -157,9 +160,9 @@ namespace DAVA
 	protected:
 		void ApplyParentInsp(const InspInfo *parentInsp) const;
 
-		const char* name;
+		FastName name;
 		InspDesc desc;
-		const long int offset;
+		const size_t offset;
 		const MetaInfo* type;
 		const int flags;
 		mutable const InspInfo *parentInsp;
@@ -171,7 +174,7 @@ namespace DAVA
 	public:
         using Iterator = void*;
 
-		InspColl(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags = 0)
+		InspColl(const char *_name, const InspDesc &_desc, const size_t _offset, const MetaInfo *_type, int _flags = 0)
 			: InspMember(_name, _desc, _offset, _type, _flags)
 		{ }
 
@@ -272,7 +275,7 @@ namespace DAVA
 	template<typename T>
 	typename EnableIf<!HasInsp<T>::result, const InspInfo*>::type GetIntrospection() 
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	// Глобальная шаблонная функция(#3) для получения интроспекции типа заданного объекта. 
@@ -284,14 +287,14 @@ namespace DAVA
 	// class B : public class A { ... INTROSPECTION ... }
 	// B *b;
 	// GetIntrospection(b)			// вернет интроспекцию класса B
-	// GetIntrospection((A *) b)	// вернет NULL, т.к. будет вызвана функция #4, см. ниже
+	// GetIntrospection((A *) b)	// вернет nullptr, т.к. будет вызвана функция #4, см. ниже
 	//
 	template<typename T> 
 	typename EnableIf<HasInsp<T>::result, const InspInfo*>::type GetIntrospection(const T *t) 
 	{
-		const InspInfo* ret = NULL;
+		const InspInfo* ret = nullptr;
 
-		if(NULL != t)
+		if (nullptr != t)
 		{
 			ret = t->GetTypeInfo();
 		}
@@ -305,7 +308,7 @@ namespace DAVA
 	template<typename T>
 	typename EnableIf<!HasInsp<T>::result, const InspInfo*>::type GetIntrospection(const T *t) 
 	{
-		return NULL;
+		return nullptr;
 	}
 	
 	template<typename T>
@@ -346,7 +349,7 @@ namespace DAVA
 	template<typename T> 
 	struct GetIntrospectionBase<T, false>
 	{
-		static inline const IntrospectionInfo* GetInfo() { return NULL; }
+		static inline const IntrospectionInfo* GetInfo() { return nullptr; }
 	};
 
 	template<typename T> 

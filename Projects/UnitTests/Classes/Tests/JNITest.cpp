@@ -29,21 +29,21 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-using namespace DAVA;
-
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
+using namespace DAVA;
+
 DAVA_TESTCLASS(JNITest)
 {
     JNI::JavaClass javaNotificationProvider;
-    Function<void (jstring, jstring, jstring)> showNotificationText;
+    Function<void (jstring, jstring, jstring, jboolean)> showNotificationText;
 
     JNITest()
         : javaNotificationProvider("com/dava/framework/JNINotificationProvider")
     {
-        showNotificationText = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring>("NotifyText");
+        showNotificationText = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, jboolean>("NotifyText");
     }
 
     DAVA_TEST(TestFunction)
@@ -68,12 +68,12 @@ DAVA_TESTCLASS(JNITest)
         JNIEnv *env = JNI::GetEnv();
 
         // get class reference
-        JNI::JavaClass jtest("com/dava/unittests/JINTest");
+        JNI::JavaClass jtest("com/dava/unittests/JNITest");
         // get Function as Static Method for PassString
         auto passString = jtest.GetStaticMethod<jboolean, jstring>("PassString");
 
         // prepare data
-        jstring str = JNI::CreateJString(L"TestString");
+        jstring str = JNI::ToJNIString(L"TestString");
 
         // call Java Method
         jboolean isPassed = passString(str);
@@ -95,7 +95,7 @@ DAVA_TESTCLASS(JNITest)
         // fill array
         for (uint32 i = 0; i < stringsToPass; ++i)
         {
-            jstring str = JNI::CreateJString(L"TestString");
+            jstring str = JNI::ToJNIString(L"TestString");
             env->SetObjectArrayElement(stringArray, i, str);
             env->DeleteLocalRef(str);
         }
@@ -107,7 +107,7 @@ DAVA_TESTCLASS(JNITest)
         env->DeleteLocalRef(stringArray);
 
         // Try to call dinamic method for object
-        str = JNI::CreateJString(L"TestString");
+        str = JNI::ToJNIString(L"TestString");
         // Take method to retrive some jobject
         auto notGet = jtest.GetStaticMethod<jobject> ("GetN");
 
@@ -131,14 +131,14 @@ DAVA_TESTCLASS(JNITest)
     {
         JNI::JavaClass inThreadInitedClass("com/dava/framework/JNINotificationProvider");
 
-        auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
-        auto showNotificationProgressThread = inThreadInitedClass.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
+        auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int, jboolean>("NotifyProgress");
+        auto showNotificationProgressThread = inThreadInitedClass.GetStaticMethod<void, jstring, jstring, jstring, int, int, jboolean>("NotifyProgress");
 
-        jstring jStrTitle = JNI::CreateJString(L"test");
-        jstring jStrText = JNI::CreateJString(L"test2");
+        jstring jStrTitle = JNI::ToJNIString(L"test");
+        jstring jStrText = JNI::ToJNIString(L"test2");
 
-        showNotificationText(jStrTitle, jStrTitle, jStrTitle);
-        showNotificationProgressThread(jStrTitle, jStrTitle, jStrTitle, 100, 100);
+        showNotificationText(jStrTitle, jStrTitle, jStrTitle, false);
+        showNotificationProgressThread(jStrTitle, jStrTitle, jStrTitle, 100, 100, false);
 
         JNI::GetEnv()->DeleteLocalRef(jStrTitle);
         JNI::GetEnv()->DeleteLocalRef(jStrText);

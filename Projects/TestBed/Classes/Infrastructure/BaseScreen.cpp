@@ -28,8 +28,10 @@
 
 
 
-#include "BaseScreen.h"
-#include "GameCore.h"
+#include "Infrastructure/BaseScreen.h"
+#include "Infrastructure/GameCore.h"
+
+using namespace DAVA;
 
 int32 BaseScreen::globalScreenId = 1;
 
@@ -51,6 +53,26 @@ BaseScreen::BaseScreen()
     GameCore::Instance()->RegisterScreen(this);
 }
 
+void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
+{
+    UIScreen::SystemScreenSizeDidChanged(newFullScreenSize);
+    UnloadResources();
+    LoadResources();
+}
+
+bool BaseScreen::SystemInput(UIEvent *currentInput)
+{
+    if ((currentInput->tid == DVKEY_BACK) && (currentInput->phase == UIEvent::Phase::KEY_DOWN))
+    {
+        OnExitButton(nullptr, nullptr, nullptr);
+    }
+    else
+    {
+        return UIScreen::SystemInput(currentInput);
+    }
+    return true;
+}
+
 void BaseScreen::LoadResources()
 {
     ScopedPtr<FTFont> font (FTFont::Create("~res:/Fonts/korinna.ttf"));
@@ -58,7 +80,7 @@ void BaseScreen::LoadResources()
     font->SetSize(30);
 
     Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    exitButton = new UIButton(Rect(screenSize.dx-300, screenSize.dy-30, 300, 30));
+    exitButton = new UIButton(Rect(static_cast<DAVA::float32>(screenSize.dx-300), static_cast<DAVA::float32>(screenSize.dy-30), 300.0, 30.0));
     exitButton->SetStateFont(0xFF, font);
     exitButton->SetStateFontColor(0xFF, Color::White);
     exitButton->SetStateText(0xFF, L"Exit From Screen");

@@ -43,7 +43,7 @@ class Image;
 
 struct ImageInfo
 {
-    bool isEmpty()
+    bool isEmpty() const
     {
         return (0 == width || 0 == height);
     }
@@ -53,7 +53,7 @@ struct ImageInfo
         return Size2i(width, height);
     }
 
-    bool operator==(const ImageInfo& another)
+    bool operator==(const ImageInfo& another) const
     {
         return (
             width == another.width && 
@@ -79,17 +79,20 @@ public:
 
     virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
 
-    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const = 0;
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const = 0;
+    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
 
-    inline ImageInfo GetImageInfo(const FilePath &path) const;
     virtual ImageInfo GetImageInfo(File *infile) const = 0;
+    inline ImageInfo GetImageInfo(const FilePath &path) const;
 
+    inline bool IsFormatSupported(PixelFormat format) const;
     inline bool IsFileExtensionSupported(const String& extension) const;
+
     inline const Vector<String>& Extensions() const;
     inline const char* Name() const;
     
 protected:
+    Vector<PixelFormat> supportedFormats;
     Vector<String> supportedExtensions;
     String name;
 };
@@ -104,6 +107,11 @@ ImageInfo ImageFormatInterface::GetImageInfo(const FilePath &path) const
     ImageInfo info = GetImageInfo(infile);
     infile->Release();
     return info;
+}
+
+inline bool ImageFormatInterface::IsFormatSupported(PixelFormat format) const
+{
+    return (std::find(supportedFormats.begin(), supportedFormats.end(), format) != supportedFormats.end());
 }
 
 inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extension) const

@@ -62,6 +62,7 @@ JniWebView::JniWebView()
 	setBackgroundTransparency = jniWebView.GetStaticMethod<void, jint, jboolean>("SetBackgroundTransparency");
 	setRenderToTexture = jniWebView.GetStaticMethod<void, jint, jboolean>("setRenderToTexture");
 	isRenderToTexture = jniWebView.GetStaticMethod<jboolean, jint>("isRenderToTexture");
+	willDraw = jniWebView.GetStaticMethod<void, jint>("WillDraw");
 }
 
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
@@ -123,13 +124,13 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 {
 	JNIEnv *env = JNI::GetEnv();
 
-	String returnStr = "";
+    String returnStr;
 
     jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
     jstring jName = env->NewStringUTF(cookieName.c_str());
     jobject item = getCookie(jTargetURL, jName);
 
-    JNI::CreateStringFromJni(jstring(item), returnStr);
+    returnStr = JNI::ToString(jstring(item));
 
     env->DeleteLocalRef(jTargetURL);
     env->DeleteLocalRef(jName);
@@ -152,8 +153,7 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
         for (jsize i = 0; i < size; ++i)
         {
             jobject item = env->GetObjectArrayElement(jArray, i);
-            String cookiesString = "";
-            JNI::CreateStringFromJni(jstring(item), cookiesString);
+            String cookiesString = JNI::ToString(jstring(item));
 
             Vector<String> cookieEntry;
             Split(cookiesString, "=", cookieEntry);
@@ -205,6 +205,11 @@ void JniWebView::SetRenderToTexture(int id, bool renderToTexture)
 bool JniWebView::IsRenderToTexture(int id)
 {
     return isRenderToTexture(id) == 0 ? false : true;
+}
+
+void JniWebView::WillDraw(int id)
+{
+	willDraw(id);
 }
 
 IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL, bool isRedirectedByMouseClick)
@@ -372,6 +377,12 @@ bool WebViewControl::IsRenderToTexture() const
 {
     JniWebView jniWebView;
     return jniWebView.IsRenderToTexture(webViewId);
+}
+
+void WebViewControl::WillDraw()
+{
+	JniWebView jniWebView;
+	jniWebView.WillDraw(webViewId);
 }
 
 }//namespace DAVA

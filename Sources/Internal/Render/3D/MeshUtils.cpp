@@ -102,7 +102,7 @@ uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
         for (uint32 i = 0; i < rbCount; ++i)
         {
             PolygonGroup * pg = ro->GetRenderBatch(i)->GetPolygonGroup();
-            if (pg && pg->renderDataObject && pg->renderDataObject->GetVertexBufferID() && pg->renderDataObject->GetIndexBufferID())
+            if (pg && pg->vertexBuffer != rhi::InvalidHandle && pg->indexBuffer != rhi::InvalidHandle)
             {
                 ret += pg->ReleaseGeometryData();
             }
@@ -114,7 +114,7 @@ uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
 
 void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true*/)
 {
-    DVASSERT(group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST); //only triangle lists for now    
+    DVASSERT(group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST); //only triangle lists for now
     DVASSERT(group->GetFormat()&EVF_TEXCOORD0);
     DVASSERT(group->GetFormat()&EVF_NORMAL);
 
@@ -324,6 +324,8 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
 
 SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::JointConfig> & outJoints)
 {
+    SkinnedMesh* newRenderObject = new SkinnedMesh();
+
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> > collapseDataMap;
 
     Vector<Entity *> childrenNodes;
@@ -383,8 +385,6 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
         }
     }
 
-    SkinnedMesh * newRenderObject = new SkinnedMesh();
-
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator it = collapseDataMap.begin();
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator itEnd = collapseDataMap.end();
     for(;it != itEnd; ++it)
@@ -433,9 +433,9 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
             indexOffset += currentBatchIndexCount;
         }
 
-        NMaterial * material = NMaterial::CreateMaterialInstance();
+        NMaterial* material = new NMaterial();
         material->SetParent(key.materialParent);
-        material->SetFlag(NMaterial::FLAG_SKINNING, NMaterial::FlagOn);
+        material->AddFlag(NMaterialFlagName::FLAG_SKINNING, 1);
 
         RenderBatch * newBatch = new RenderBatch();
         polygonGroup->RecalcAABBox();
@@ -485,6 +485,8 @@ PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
     newPolygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL, oldIndexCount, oldIndexCount + numEdges*3);
     int32 nextIndex = 0;
 
+    bool indefiniteNormals = false;
+
     int32 facesCount = oldIndexCount/3;
     for(int32 f = 0; f < facesCount; ++f)
     {
@@ -511,6 +513,15 @@ PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
         Vector3 v1 = oldPos2 - oldPos0;
         Vector3 normal = v0.CrossProduct(v1);
         normal.Normalize();
+
+        // check normals 
+        if (std::isnan(normal.x) || std::isnan(normal.y) || std::isnan(normal.z))
+        {
+            indefiniteNormals = true;
+
+            // temporary fix indefinite normal. normal length must be equals 1
+            normal.Set(1.0f, 0.0f, 0.0f);
+        }
 
         newPolygonGroup->SetNormal(f*3+0, normal);
         newPolygonGroup->SetNormal(f*3+1, normal);
@@ -707,6 +718,15 @@ PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
                                 Vector3 normal = v0.CrossProduct(v1);
                                 normal.Normalize();
 
+                                // check normals 
+                                if (std::isnan(normal.x) || std::isnan(normal.y) || std::isnan(normal.z))
+                                {
+                                    indefiniteNormals = true;
+
+                                    // temporary fix indefinite normal. normal length must be equals 1
+                                    normal.Set(1.0f, 0.0f, 0.0f);
+                                }
+
                                 newPolygonGroup->SetNormal(nextVertex+0, normal);
                                 newPolygonGroup->SetNormal(nextVertex+1, normal);
                                 newPolygonGroup->SetNormal(nextVertex+2, normal);
@@ -782,6 +802,11 @@ PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
     SafeRelease(newPolygonGroup);
     SafeDeleteArray(adjacency);
     SafeDeleteArray(mapping);
+
+    if (indefiniteNormals)
+    {
+        Logger::Error("Shadow data source has indefinite normals. Fix triangles with identical vertices.");
+    }
 
     return shadowDataSource;
 }

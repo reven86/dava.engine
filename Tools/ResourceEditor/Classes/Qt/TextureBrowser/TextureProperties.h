@@ -38,6 +38,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspMember.h"
 
+class LazyUpdater;
 class TextureProperties : public QtPropertyEditor
 {
 	Q_OBJECT
@@ -54,63 +55,71 @@ public:
 	} PropertiesType;
 
 public:
-	TextureProperties(QWidget *parent = 0);
-	~TextureProperties();
+    TextureProperties(QWidget* parent = nullptr);
+    ~TextureProperties() override;
 
-	void setTextureDescriptor(DAVA::TextureDescriptor *descriptor);
-	void setTextureGPU(DAVA::eGPUFamily gpu);
+    void setTextureDescriptor(DAVA::TextureDescriptor* descriptor);
+    void setTextureGPU(DAVA::eGPUFamily gpu);
 
-	const DAVA::TextureDescriptor* getTextureDescriptor();
-	void setOriginalImageSize(const QSize &size);
+    const DAVA::TextureDescriptor* getTextureDescriptor();
+    void setOriginalImageSize(const QSize &size);
 
 signals:
 	void PropertyChanged(int type);
 
+private slots:
+
+    void OnPropertyChanged(int type);
+
 protected:
-	DAVA::TextureDescriptor *curTextureDescriptor;
-	DAVA::eGPUFamily curGPU;
+    void OnItemEdited(const QModelIndex&) override;
 
-    QtPropertyDataInspMember *propMipMap;
-    QtPropertyDataInspMember *propNormalMap;
-	QtPropertyDataInspMember *propWrapModeS;
-	QtPropertyDataInspMember *propWrapModeT;
-	QtPropertyDataInspMember *propMinFilter;
-	QtPropertyDataInspMember *propMagFilter;
-	QtPropertyDataInspMember *propFormat;
-	QtPropertyDataMetaObject *propSizes;
+    void Save();
 
-	bool skipPropSizeChanged;
+    void MipMapSizesInit(int baseWidth, int baseHeight);
+    void MipMapSizesReset();
 
-	QSize origImageSize;
-	int curSizeLevelObject;
+    void ReloadEnumFormats();
+    void ReloadEnumWrap();
+    void ReloadEnumFilters();
+    void ReloadProperties();
 
-	EnumMap enumFormats;
+    QtPropertyDataInspMember* AddPropertyItem(const DAVA::FastName& name, DAVA::InspBase* object, const QModelIndex& parent);
+    void SetPropertyItemValidValues(QtPropertyDataInspMember* item, EnumMap* validValues);
+    void SetPropertyItemValidValues(QtPropertyDataMetaObject* item, EnumMap* validValues);
+
+    void LoadCurSizeToProp();
+    void SaveCurSizeFromProp();
+
+protected:
+    DAVA::TextureDescriptor* curTextureDescriptor = nullptr;
+    DAVA::eGPUFamily curGPU;
+
+    QtPropertyDataInspMember* propMipMap = nullptr;
+    QtPropertyDataInspMember* propNormalMap = nullptr;
+    QtPropertyDataInspMember* propWrapModeS = nullptr;
+    QtPropertyDataInspMember* propWrapModeT = nullptr;
+    QtPropertyDataInspMember* propMinFilter = nullptr;
+    QtPropertyDataInspMember* propMagFilter = nullptr;
+    QtPropertyDataInspMember* propMipFilter = nullptr;
+    QtPropertyDataInspMember* propFormat = nullptr;
+    QtPropertyDataMetaObject* propSizes = nullptr;
+
+    bool skipPropSizeChanged;
+
+    QSize origImageSize;
+    int curSizeLevelObject;
+
+    EnumMap enumFormats;
 	EnumMap enumSizes;
 	EnumMap enumWpar;
 	EnumMap enumFiltersMin;
 	EnumMap enumFiltersMag;
+    EnumMap enumFiltersMip;
 
-	QMap<int, QSize> availableSizes;
+    QMap<int, QSize> availableSizes;
 
-	void Save();
-
-	void MipMapSizesInit(int baseWidth, int baseHeight);
-	void MipMapSizesReset();
-
-	void ReloadEnumFormats();
-	void ReloadEnumWrap();
-	void ReloadEnumFilters();
-	void ReloadProperties();
-
-	QtPropertyDataInspMember* AddPropertyItem(const char *name, DAVA::InspBase *object, const QModelIndex &parent);
-	void SetPropertyItemValidValues(QtPropertyDataInspMember* item, EnumMap *validValues);
-	void SetPropertyItemValidValues(QtPropertyDataMetaObject* item, EnumMap *validValues);
-
-	void LoadCurSizeToProp();
-	void SaveCurSizeFromProp();
-
-protected:
-	virtual void OnItemEdited(const QModelIndex &);
+    LazyUpdater* updater = nullptr;
 };
 
 #endif // __TEXTURE_PROPERTIES_H__

@@ -73,14 +73,17 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
+#include "Tools/LazyUpdater/LazyUpdater.h"
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
 	, viewMode(VIEW_NORMAL)
 	, treeStateHelper(this, curModel)
 	, favoriteGroup(NULL)
-    , resetRequests(0)
 {
+	Function<void()> fn(this, &PropertyEditor::ResetProperties);
+	propertiesUpdater = new LazyUpdater(fn, this);
+
 	if(connectToSceneSignals)
 	{
 		QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
@@ -181,14 +184,6 @@ void PropertyEditor::ClearCurrentNodes()
 
 void PropertyEditor::ResetProperties()
 {
-    if (resetRequests > 1)
-    {
-        resetRequests--;
-        return;
-    }
-
-    resetRequests = 0;
-
     // Store the current Property Editor Tree state before switching to the new node.
 	// Do not clear the current states map - we are using one storage to share opened
 	// Property Editor nodes between the different Scene Nodes.
@@ -212,7 +207,7 @@ void PropertyEditor::ResetProperties()
             PropEditorUserData* userData = GetUserData(curEntityData);
             userData->entity = node;
 
-            root->MergeChild( curEntityData, node->GetTypeInfo()->Name());
+            root->MergeChild( curEntityData, node->GetTypeInfo()->Name().c_str());
 
 		    // add info about components
             for (int ic = 0; ic < Component::COMPONENT_COUNT; ic++)
@@ -243,17 +238,18 @@ void PropertyEditor::ResetProperties()
                         if (isRemovable)
                         {
 				            QtPropertyToolButton * deleteButton = CreateButton(componentData, QIcon(":/QtIcons/remove.png"), "Remove Component");
+                            deleteButton->setObjectName("RemoveButton");
                             deleteButton->setEnabled(true);
 				            QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(OnRemoveComponent()));
                         }
 
                         if ( i == 0 )
                         {
-                            root->ChildAdd(component->GetTypeInfo()->Name(),componentData);
+                            root->ChildAdd(component->GetTypeInfo()->Name().c_str(), componentData);
                         }
                         else
                         {
-                            root->MergeChild(componentData, component->GetTypeInfo()->Name());
+                            root->MergeChild(componentData, component->GetTypeInfo()->Name().c_str());
                         }
 			        }
                 }
@@ -438,7 +434,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                         {
                             bool isRebuildTsEnabled = true;
                             const int32 requiredVertexFormat = (EVF_TEXCOORD0 | EVF_NORMAL);
-                            isRebuildTsEnabled &= (group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST);
+                            isRebuildTsEnabled &= (group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
                             isRebuildTsEnabled &= ((group->GetFormat() & requiredVertexFormat) == requiredVertexFormat);
 
                             if (isRebuildTsEnabled)
@@ -578,7 +574,7 @@ QtPropertyData* PropertyEditor::CreateInsp(void *object, const DAVA::InspInfo *i
 					const DAVA::InspMember *member = baseInfo->Member(i);
 
                     QtPropertyData *memberData = CreateInspMember(object, member);
-					ret->ChildAdd(member->Name(), memberData);
+					ret->ChildAdd(member->Name().c_str(), memberData);
 				}
 
 				baseInfo = baseInfo->BaseInfo();
@@ -688,10 +684,10 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
 	QtPropertyDataInspDynamic *memberDymanic = dynamic_cast<QtPropertyDataInspDynamic *>(original);
 	if(NULL != memberData)
 	{
-		return CreateInspMember(memberDymanic->object, memberDymanic->dynamicInfo->GetMember());
-	}
+        return CreateInspMember(memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
+    }
 
-	QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
+    QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
 	if(NULL != metaData)
 	{
 		return new QtPropertyDataMetaObject(metaData->object, metaData->meta);
@@ -737,12 +733,6 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2 *scene, const EntityGrou
     SetEntities(selected);
 }
 
-void PropertyEditor::QueueResetProperties()
-{
-    resetRequests++;
-    QTimer::singleShot(0, this, SLOT(ResetProperties()));
-}
-
 void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
 	int cmdId = command->GetId();
@@ -770,7 +760,7 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
             }
             if (doReset)
             {
-                QueueResetProperties();
+				propertiesUpdater->Update();
             }
             break;
         }
@@ -1549,9 +1539,9 @@ void PropertyEditor::OnTriggerWaveComponent()
 
 QString PropertyEditor::GetDefaultFilePath()
 {
-	QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
-	FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-	if (dataSourcePath.Exists())
+    QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+    FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+    if (dataSourcePath.Exists())
 	{
 		defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
 	}

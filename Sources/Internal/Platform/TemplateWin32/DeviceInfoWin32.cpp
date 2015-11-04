@@ -26,65 +26,98 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+
 #include "Platform/DeviceInfo.h"
 #include "Utils/StringFormat.h"
 #include "Utils/MD5.h"
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
-
-#if defined(__DAVAENGINE_WIN32__)
-
+#include "Platform/TemplateWin32/DeviceInfoWin32.h"
+#include "Base/GlobalEnum.h"
 #include "winsock2.h"
 #include "Iphlpapi.h"
 
 namespace DAVA
 {
 
-String DeviceInfo::GetVersion()
+DeviceInfoPrivate::DeviceInfoPrivate()
+{
+}
+
+DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
+{
+    return DeviceInfo::PLATFORM_WIN32;
+}
+
+String DeviceInfoPrivate::GetPlatformString()
+{
+    return GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
+}
+
+String DeviceInfoPrivate::GetVersion()
 {
 	return "Not yet implemented";
 }
 
-String DeviceInfo::GetManufacturer()
+String DeviceInfoPrivate::GetManufacturer()
 {
 	return "Not yet implemented";
 }
 
-String DeviceInfo::GetModel()
+String DeviceInfoPrivate::GetModel()
 {
 	return "Not yet implemented";
 }
 
-String DeviceInfo::GetLocale()
+String DeviceInfoPrivate::GetLocale()
 {
 	return "Not yet implemented";
 }
 
-String DeviceInfo::GetRegion()
+String DeviceInfoPrivate::GetRegion()
 {
 	return "Not yet implemented";
 }
 
-String DeviceInfo::GetTimeZone()
+String DeviceInfoPrivate::GetTimeZone()
 {
 	return "Not yet implemented";
 }
-String DeviceInfo::GetHTTPProxyHost()
-{
-	return "Not yet implemented";
-}
-
-String DeviceInfo::GetHTTPNonProxyHosts()
+String DeviceInfoPrivate::GetHTTPProxyHost()
 {
 	return "Not yet implemented";
 }
 
-int DeviceInfo::GetHTTPProxyPort()
+String DeviceInfoPrivate::GetHTTPNonProxyHosts()
+{
+	return "Not yet implemented";
+}
+
+int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
 	return 0;
 }
 
-String DeviceInfo::GetUDID()
+DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
+{
+    return screenInfo;
+}
+
+int32 DeviceInfoPrivate::GetZBufferSize()
+{
+    return 24;
+}
+
+List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
+{
+    List<DeviceInfo::StorageInfo> l;
+    return l;
+}
+
+String DeviceInfoPrivate::GetUDID()
 {
     ULONG family = AF_INET;
     ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_UNICAST;
@@ -166,18 +199,15 @@ String DeviceInfo::GetUDID()
         SafeDeleteArray(buf);
     }
 
-    MD5 md5;
-    md5.Init();
-    md5.Update((uint8*)res.c_str(), (uint32)res.size());
-    md5.Final();
+    MD5::MD5Digest md5Digest;
+    MD5::ForData(reinterpret_cast<const uint8*>(res.c_str()), static_cast<uint32>(res.size()), md5Digest);
 
-    char8 digest[MD5::DIGEST_SIZE * 2 + 1];
-    MD5::HashToChar(md5.GetDigest(), digest, MD5::DIGEST_SIZE * 2 + 1);
-
-    return String(digest);
+    String digest(MD5::MD5Digest::DIGEST_SIZE * 2 + 1, '\0');
+    MD5::HashToChar(md5Digest, const_cast<char8*>(digest.data()), digest.size());
+    return digest;
 }
 
-WideString DeviceInfo::GetName()
+WideString DeviceInfoPrivate::GetName()
 {
 	//http://msdn.microsoft.com/en-us/library/windows/desktop/ms724295(v=vs.85).aspx
 	char16 compName[MAX_COMPUTERNAME_LENGTH + 1];
@@ -192,24 +222,39 @@ WideString DeviceInfo::GetName()
     return WideString ();
 }
 
-eGPUFamily DeviceInfo::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
     return GPU_INVALID;
 }
 
-DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
+DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
     // For now return default network info for Windows.
-    return NetworkInfo();
+    return DeviceInfo::NetworkInfo();
 }
 
-void DeviceInfo::InitializeScreenInfo()
+void DeviceInfoPrivate::InitializeScreenInfo()
 {
 	screenInfo.width = ::GetSystemMetrics(SM_CXSCREEN);
 	screenInfo.height = ::GetSystemMetrics(SM_CYSCREEN);
 	screenInfo.scale = 1;
 }
 
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
+{
+    //TODO: remove this empty realization and implement detection of HID connection
+    if (type == DeviceInfo::HID_MOUSE_TYPE || type == DeviceInfo::HID_KEYBOARD_TYPE)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool DeviceInfoPrivate::IsTouchPresented()
+{
+    //TODO: remove this empty realization and implement detection touch
+    return false;
+}
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)

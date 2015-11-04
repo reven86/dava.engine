@@ -7,9 +7,9 @@ precision highp float;
 #define mediump
 #endif
 
-varying lowp vec4 varColor;
+uniform lowp vec4 flatColor;
 
 void main()
 {
-	gl_FragColor = varColor;
+	gl_FragColor = flatColor;
 }
