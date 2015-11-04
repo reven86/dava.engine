@@ -54,32 +54,6 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, selectionHasChanges(false)
 	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
 {
-    //    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-}
-
-SceneSelectionSystem::~SceneSelectionSystem()
-{
-    //	if(GetScene())
-    //	{
-    //		GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-    //	}
-}
-
-void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
-{
-    //    if(EventSystem::SWITCH_CHANGED == event)
-    //    {
-    //        for(DAVA::uint32 i = 0; i < curSelections.Size(); i++)
-    //        {
-    //            DAVA::Entity *selectedEntity = curSelections.GetEntity(i);
-    //
-    //            // if switched entity selected - update it bounding box
-    //            if(selectedEntity == entity)
-    //            {
-    //                invalidSelectionBoxes = true;
-    //            }
-    //        }
-    //    }
 }
 
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
@@ -126,13 +100,13 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 		return;
 	}
 
-    if (DAVA::UIEvent::PHASE_BEGAN == event->phase)
+    if (DAVA::UIEvent::Phase::BEGAN == event->phase)
     {
         // we can select only if mouse isn't over hood axis
         // or if hood is invisible now
         // or if current mode is NORMAL (no modification)
     }
-    else if (DAVA::UIEvent::PHASE_ENDED == event->phase)
+    else if (DAVA::UIEvent::Phase::ENDED == event->phase)
     {
         if (event->tid == DAVA::UIEvent::BUTTON_1)
         {

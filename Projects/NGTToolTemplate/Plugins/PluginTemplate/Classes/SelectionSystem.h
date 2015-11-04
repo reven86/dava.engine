@@ -65,7 +65,6 @@ class SceneSelectionSystem : public DAVA::SceneSystem
 
 public:
     SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys);
-    ~SceneSelectionSystem();
 
     void SetSelection(DAVA::Entity* entity);
     void SetSelection(const EntityGroup& newSelection);
@@ -112,11 +111,7 @@ public:
     bool IsEntitySelectedHierarchically(DAVA::Entity* entity);
 
 protected:
-    void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
-
     void Draw();
-
-    //void ProcessCommand(const Command2 *command, bool redo);
 
     void UpdateHoodPos() const;
     void SelectedItemsWereModified();
@@ -130,14 +125,13 @@ private:
     bool applyOnPhaseEnd;
     bool invalidSelectionBoxes;
 
-    SceneCollisionSystem* collisionSystem;
-    HoodSystem* hoodSystem;
+    SceneCollisionSystem* collisionSystem = nullptr;
 
     bool selectionHasChanges;
     EntityGroup curSelections;
     EntityGroup curDeselections;
 
-    DAVA::Entity* lastSelection;
+    DAVA::Entity* lastSelection = nullptr;
 
     ST_PivotPoint curPivotPoint;
 };

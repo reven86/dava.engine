@@ -84,7 +84,6 @@ protected:
     void OnKeyboardInput( DAVA::UIEvent *event );
 
 	void Draw();
-    //void ProcessCommand(const Command2 *command, bool redo);
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity * entity) override;

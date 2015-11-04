@@ -42,6 +42,7 @@
 #include "Input/KeyboardDevice.h"
 #include "Render/RenderHelper.h"
 
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 
@@ -121,21 +122,7 @@ DAVA::Vector3 SceneCameraSystem::GetCameraDirection() const
 
 DAVA::float32 SceneCameraSystem::GetMoveSpeed()
 {
-    DAVA::float32 speed = 1.0;
-
-    switch (activeSpeedIndex)
-    {
-    case 0:
-        speed = 1.0; //SettingsManager::GetValue(Settings::Scene_CameraSpeed0).AsFloat(); break;
-    case 1:
-        speed = 1.0; //SettingsManager::GetValue(Settings::Scene_CameraSpeed1).AsFloat(); break;
-    case 2:
-        speed = 1.0; //SettingsManager::GetValue(Settings::Scene_CameraSpeed2).AsFloat(); break;
-    case 3:
-        speed = 1.0; //SettingsManager::GetValue(Settings::Scene_CameraSpeed3).AsFloat(); break;
-    }
-
-    return speed;
+    return 1.0;
 }
 
 DAVA::uint32 SceneCameraSystem::GetActiveSpeedIndex()
@@ -281,12 +268,9 @@ void SceneCameraSystem::Input(DAVA::UIEvent* event)
 {
     switch (event->phase)
     {
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
         OnKeyboardInput(event);
         break;
-    case UIEvent::PHASE_WHEEL:
-        break;
-
     default:
         break;
     }
@@ -305,29 +289,8 @@ void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)
     {
     case DVKEY_ADD:
     case DVKEY_EQUALS:
-    {
-        auto entity = GetEntityWithEditorCamera();
-        //            auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
-        //            if ( snapComponent != nullptr )
-        //            {
-        //                const auto height = snapComponent->GetHeightOnLandscape() + SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
-        //                snapComponent->SetHeightOnLandscape( height );
-        //                SettingsManager::Instance()->SetValue( Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType( height ) );
-        //            }
-    }
-    break;
     case DVKEY_SUBTRACT:
     case DVKEY_MINUS:
-    {
-        //            auto entity = GetEntityWithEditorCamera();
-        //            auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
-        //            if ( snapComponent != nullptr )
-        //            {
-        //                const auto height = snapComponent->GetHeightOnLandscape() - SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
-        //                snapComponent->SetHeightOnLandscape( height );
-        //                SettingsManager::Instance()->SetValue( Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType( height ) );
-        //            }
-    }
     break;
 
     case DVKEY_T:
@@ -354,41 +317,41 @@ void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)
 
 void SceneCameraSystem::Draw()
 {
-    //	if(nullptr != GetScene())
-    //	{
-    //        SceneCollisionSystem *collSystem = findSystem<SceneCollisionSystem>(GetScene());
-    //
-    //		if(nullptr != collSystem)
-    //		{
-    //			DAVA::Set<DAVA::Entity *>::iterator it = sceneCameras.begin();
-    //			for(; it != sceneCameras.end(); ++it)
-    //			{
-    //				DAVA::Entity *entity = *it;
-    //				DAVA::Camera *camera = GetCamera(entity);
-    //
-    //				if(nullptr != entity && nullptr != camera && camera != curSceneCamera)
-    //				{
-    //					AABBox3 worldBox;
-    //					AABBox3 collBox = collSystem->GetBoundingBox(*it);
-    //					Matrix4 transform;
-    //
-    //					transform.Identity();
-    //					transform.SetTranslationVector(camera->GetPosition());
-    //                    collBox.GetTransformedBox(transform, worldBox);
-    //                    findSystem<RenderSystem>(GetScene())->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
-    //                }
-    //            }
-    //		}
-    //	}
+    if (nullptr != GetScene())
+    {
+        SceneCollisionSystem* collSystem = findSystem<SceneCollisionSystem>(GetScene());
+
+        if (nullptr != collSystem)
+        {
+            DAVA::Set<DAVA::Entity*>::iterator it = sceneCameras.begin();
+            for (; it != sceneCameras.end(); ++it)
+            {
+                DAVA::Entity* entity = *it;
+                DAVA::Camera* camera = GetCamera(entity);
+
+                if (nullptr != entity && nullptr != camera && camera != curSceneCamera)
+                {
+                    AABBox3 worldBox;
+                    AABBox3 collBox = collSystem->GetBoundingBox(*it);
+                    Matrix4 transform;
+
+                    transform.Identity();
+                    transform.SetTranslationVector(camera->GetPosition());
+                    collBox.GetTransformedBox(transform, worldBox);
+                    findSystem<RenderSystem>(GetScene())->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
+                }
+            }
+        }
+    }
 }
 
 void SceneCameraSystem::AddEntity(DAVA::Entity* entity)
 {
-    //	DAVA::Camera *camera = GetCamera(entity);
-    //	if(nullptr != camera)
-    //	{
-    //		sceneCameras.insert(entity);
-    //	}
+    DAVA::Camera* camera = GetCamera(entity);
+    if (nullptr != camera)
+    {
+        sceneCameras.insert(entity);
+    }
 }
 
 void SceneCameraSystem::RemoveEntity(DAVA::Entity* entity)
@@ -419,7 +382,7 @@ void SceneCameraSystem::CreateDebugCameras()
         topCamera->SetAspect(1.0f);
 
         DAVA::Entity* topCameraEntity = new DAVA::Entity();
-        //		topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
+        topCameraEntity->SetName("NGTCamera");
         topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
@@ -498,8 +461,8 @@ void SceneCameraSystem::MoveAnimate(DAVA::float32 timeElapsed)
             curSceneCamera->SetTarget(newTar);
             curSceneCamera->SetPosition(newPos);
 
-            //            SceneEditor2 *sc = static_cast<SceneEditor2 *>(GetScene());
-            //            sc->rotationSystem->RecalcCameraViewAngles(curSceneCamera);
+            RotationControllerSystem* rotationSystem = findSystem<RotationControllerSystem>(GetScene());
+            rotationSystem->RecalcCameraViewAngles(curSceneCamera);
         }
 
         UpdateDistanceToCamera();
@@ -508,19 +471,17 @@ void SceneCameraSystem::MoveAnimate(DAVA::float32 timeElapsed)
 
 void SceneCameraSystem::UpdateDistanceToCamera()
 {
-    //    SceneEditor2 *sc = (SceneEditor2 *)GetScene();
-    //
-    //    Vector3 center = sc->selectionSystem->GetSelection().GetCommonBbox().GetCenter();
-    //
-    //    const Camera *cam = GetScene()->GetCurrentCamera();
-    //    if(cam)
-    //    {
-    //        distanceToCamera = (cam->GetPosition() - center).Length();
-    //    }
-    //    else
-    //    {
-    //        distanceToCamera = 0.f;
-    //    }
+    SceneSelectionSystem* selectionSystem = findSystem<SceneSelectionSystem>(GetScene());
+    Vector3 center = selectionSystem->GetSelection().GetCommonBbox().GetCenter();
+    const Camera* cam = GetScene()->GetCurrentCamera();
+    if (cam)
+    {
+        distanceToCamera = (cam->GetPosition() - center).Length();
+    }
+    else
+    {
+        distanceToCamera = 0.f;
+    }
 }
 
 DAVA::float32 SceneCameraSystem::GetDistanceToCamera() const
@@ -536,13 +497,12 @@ DAVA::Entity* SceneCameraSystem::GetEntityFromCamera(DAVA::Camera* c) const
     for (; it != sceneCameras.end(); ++it)
     {
         DAVA::Entity* entity = *it;
-        //		DAVA::Camera *camera = GetCamera(entity);
-        //
-        //		if(camera == c)
-        //		{
-        //			ret = entity;
-        //			break;
-        //		}
+        DAVA::Camera* camera = GetCamera(entity);
+        if (camera == c)
+        {
+            ret = entity;
+            break;
+        }
     }
 
     return ret;
@@ -570,67 +530,40 @@ void SceneCameraSystem::GetRayTo2dPoint(const DAVA::Vector2& point, DAVA::float3
 
 DAVA::Entity* SceneCameraSystem::GetEntityWithEditorCamera() const
 {
-    //    int32 cameraCount = GetScene()->GetCameraCount();
-    //    for(int32 i = 0; i < cameraCount; ++i)
-    //    {
-    //        Camera *c = GetScene()->GetCamera(i);
-    //        Entity *e = GetEntityFromCamera(c);
-    //        if(e && e->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
-    //        {
-    //            return e;
-    //        }
-    //    }
+    int32 cameraCount = GetScene()->GetCameraCount();
+    for (int32 i = 0; i < cameraCount; ++i)
+    {
+        Camera* c = GetScene()->GetCamera(i);
+        Entity* e = GetEntityFromCamera(c);
+        if (e && e->GetName() == DAVA::FastName("NGTCamera"))
+        {
+            return e;
+        }
+    }
 
     return nullptr;
 }
 
 bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
 {
-    Entity* entity = GetEntityWithEditorCamera();
-    if (!entity)
-        return false;
-
-    //    SceneEditor2 *scene = static_cast<SceneEditor2 *>(GetScene());
-    //
-    //    SnapToLandscapeControllerComponent *snapComponent = GetSnapToLandscapeControllerComponent(entity);
-    //    if(snap)
-    //    {
-    //        if(!snapComponent)
-    //        {
-    //            float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
-    //
-    //            snapComponent = static_cast<SnapToLandscapeControllerComponent *>(Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
-    //            snapComponent->SetHeightOnLandscape(height);
-    //
-    //            scene->Exec(new AddComponentCommand(entity, snapComponent));
-    //        }
-    //    }
-    //    else if(snapComponent)
-    //    {
-    //        scene->Exec(new RemoveComponentCommand(entity, snapComponent));
-    //    }
-
-    return true;
+    return false;
 }
 
 bool SceneCameraSystem::IsEditorCameraSnappedToLandscape() const
 {
-    Entity* entity = GetEntityWithEditorCamera();
-    //return (GetSnapToLandscapeControllerComponent(entity) != nullptr);
     return false;
 }
 
 void SceneCameraSystem::MoveToSelection()
 {
-    //    auto sceneEditor = dynamic_cast<SceneEditor2*>( GetScene() );
-    //    if ( sceneEditor == nullptr )
-    //        return;
-    //
-    //    auto selection = sceneEditor->selectionSystem->GetSelection();
-    //    if ( selection.Size() > 0 )
-    //    {
-    //        sceneEditor->cameraSystem->LookAt( selection.GetCommonBbox() );
-    //    }
+    Scene* scene = GetScene();
+    if (scene == nullptr)
+        return;
+
+    SceneSelectionSystem* selectionSystem = findSystem<SceneSelectionSystem>(scene);
+    auto selection = selectionSystem->GetSelection();
+    if (selection.Size() > 0)
+        findSystem<SceneCameraSystem>(scene)->LookAt(selection.GetCommonBbox());
 }
 
 void SceneCameraSystem::MoveToStep(int ofs)

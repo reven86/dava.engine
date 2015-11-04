@@ -56,9 +56,7 @@ class PluginScene : public DAVA::Scene
 public:
     void Draw() override
     {
-        //        Scene::Draw();
-        //
-        //        findSystem<SceneSelectionSystem>(this)->Draw();
+        Scene::Draw();
     }
 };
 
@@ -149,7 +147,7 @@ void SceneViewer::OnGlInitialized()
     
     ScopedPtr<UIScreen> screen(new UIScreen());
     DVASSERT(nullptr == uiView);
-    uiView = new DAVA::UI3DView(screen->GetRect());
+    uiView = new DAVA::UI3DView(screen->GetAbsoluteRect());
     uiView->SetInputEnabled(true, true);
     
     screen->AddControl(uiView);

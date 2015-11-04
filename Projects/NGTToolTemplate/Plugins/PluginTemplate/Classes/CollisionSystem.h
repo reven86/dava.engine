@@ -93,9 +93,6 @@ public:
 protected:
     void Draw();
 
-    //void ProcessCommand(const Command2 *command, bool redo);
-
-    virtual void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
     virtual void AddEntity(DAVA::Entity* entity);
     virtual void RemoveEntity(DAVA::Entity* entity);
 
@@ -115,19 +112,19 @@ protected:
     bool landIntersectCached;
     bool landIntersectCachedResult;
 
-    DAVA::Entity* curLandscapeEntity;
+    DAVA::Entity* curLandscapeEntity = nullptr;
 
-    btDefaultCollisionConfiguration* objectsCollConf;
-    btCollisionDispatcher* objectsCollDisp;
-    btAxisSweep3* objectsBroadphase;
-    btCollisionWorld* objectsCollWorld;
-    SceneCollisionDebugDrawer* objectsDebugDrawer;
+    btDefaultCollisionConfiguration* objectsCollConf = nullptr;
+    btCollisionDispatcher* objectsCollDisp = nullptr;
+    btAxisSweep3* objectsBroadphase = nullptr;
+    btCollisionWorld* objectsCollWorld = nullptr;
+    SceneCollisionDebugDrawer* objectsDebugDrawer = nullptr;
 
-    btDefaultCollisionConfiguration* landCollConf;
-    btCollisionDispatcher* landCollDisp;
-    btAxisSweep3* landBroadphase;
-    btCollisionWorld* landCollWorld;
-    SceneCollisionDebugDrawer* landDebugDrawer;
+    btDefaultCollisionConfiguration* landCollConf = nullptr;
+    btCollisionDispatcher* landCollDisp = nullptr;
+    btAxisSweep3* landBroadphase = nullptr;
+    btCollisionWorld* landCollWorld = nullptr;
+    SceneCollisionDebugDrawer* landDebugDrawer = nullptr;
 
     QMap<DAVA::Entity*, CollisionBaseObject*> entityToCollision;
     QMap<btCollisionObject*, DAVA::Entity*> collisionToEntity;
@@ -154,7 +151,7 @@ public:
 
 protected:
     int dbgMode;
-    DAVA::RenderHelper* drawer;
+    DAVA::RenderHelper* drawer = nullptr;
 };
 
 #endif // __SCENE_COLLISION_SYSTEM_H__
