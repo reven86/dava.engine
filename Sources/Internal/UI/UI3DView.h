@@ -67,6 +67,12 @@ public:
     void Input(UIEvent* currentInput) override;
 
 protected:
+    bool drawToFrameBuffer;
+    float32 fbScaleFactor;
+    Vector2 fbRenderSize;
+    Vector2 fbTexSize;
+    Texture* frameBuffer;
+
     Scene * scene;
     Rect viewportRc;
     bool registeredInUIControlSystem;
