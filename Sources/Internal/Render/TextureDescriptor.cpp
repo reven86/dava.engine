@@ -45,7 +45,7 @@ namespace DAVA
 {
 namespace Validator
 {
-DAVA_DEPRECATED(void FixCompressionFormat(TextureDescriptor& descriptor))
+DAVA_DEPRECATED(void CopyDX11CompressionFormat(TextureDescriptor& descriptor))
 {
     if (!descriptor.isCompressedFile)
     {
@@ -57,7 +57,13 @@ DAVA_DEPRECATED(void FixCompressionFormat(TextureDescriptor& descriptor))
                 descriptor.compression[GPU_DX11].format = FORMAT_DXT1;
             }
         }
+    }
+}
 
+DAVA_DEPRECATED(void FixDX11CompressionFormat(TextureDescriptor& descriptor))
+{
+    if (!descriptor.isCompressedFile)
+    {
         if (descriptor.compression[GPU_DX11].format == FORMAT_RGB888)
         {
             descriptor.compression[GPU_DX11].Clear();
@@ -117,7 +123,7 @@ void TextureDescriptor::TextureDrawSettings::SetDefaultValues()
 //================   TextureDataSettings  ===================
 void TextureDescriptor::TextureDataSettings::SetDefaultValues()
 {
-	textureFlags = FLAG_GENERATE_MIPMAPS;
+    textureFlags = FLAG_DEFAULT;
     cubefaceFlags = 0;
     
     static ImageFormat defaultImageFormat = IMAGE_FORMAT_PNG;
@@ -152,8 +158,8 @@ void TextureDescriptor::TextureDataSettings::EnableFlag( bool enable, int8 flag 
     {
         textureFlags |= flag;
     }
-	else
-	{
+    else
+    {
 		textureFlags &= ~flag;
 	}
 }
@@ -225,7 +231,7 @@ void TextureDescriptor::SetDefaultValues()
         compression[i].Clear();
     }
 
-	exportedAsGpuFamily = GPU_ORIGIN;
+    exportedAsGpuFamily = GPU_ORIGIN;
 }
 
 void TextureDescriptor::SetQualityGroup(const FastName &group)
@@ -240,11 +246,24 @@ FastName TextureDescriptor::GetQualityGroup() const
     
 bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
 {
-    const Compression *compression = GetCompressionParams(forGPU);
-	uint32 sourceCRC = ReadSourceCRC();
-    uint32 convertedCRC = GetConvertedCRC(forGPU);
-    
-	return ((compression->sourceFileCrc == sourceCRC) && (compression->convertedFileCrc == convertedCRC));
+    const Compression* compressionForGPU = GetCompressionParams(forGPU);
+    const uint32 sourceCRC = ReadSourceCRC();
+    const uint32 convertedCRC = GetConvertedCRC(forGPU);
+
+    const bool crcIsEqual = ((compressionForGPU->sourceFileCrc == sourceCRC) && (compressionForGPU->convertedFileCrc == convertedCRC));
+    if (crcIsEqual)
+    {
+        //this code need until using of convertation params in crc
+        const ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
+        const FilePath filePath = CreateCompressedTexturePathname(forGPU, imageFormat);
+        ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(filePath);
+
+        const bool imageIsActual = (imageInfo.format == compressionForGPU->format) &&
+        ((compressionForGPU->compressToWidth == 0) || (imageInfo.width == compressionForGPU->compressToWidth)) && ((compressionForGPU->compressToHeight == 0) || (imageInfo.height == compressionForGPU->compressToHeight));
+        return imageIsActual;
+    }
+
+    return crcIsEqual;
 }
 
 bool TextureDescriptor::HasCompressionFor(eGPUFamily forGPU) const
@@ -263,15 +282,15 @@ bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
     {
         compression->sourceFileCrc = sourceCRC;
         wasUpdated = true;
-	}
-    
+    }
+
     uint32 convertedCRC = GetConvertedCRC(forGPU);
     if (compression->convertedFileCrc != convertedCRC)
     {
         compression->convertedFileCrc = convertedCRC;
         wasUpdated = true;
-	}
-    
+    }
+
     return wasUpdated;
 }
     
@@ -333,7 +352,11 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
     }
     }
 
-    Validator::FixCompressionFormat(*this);
+    if (version < 10)
+    { //10 is version of adding of DX11 GPU
+        Validator::CopyDX11CompressionFormat(*this);
+    }
+    Validator::FixDX11CompressionFormat(*this);
 
     return true;
 }
@@ -911,14 +934,14 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         return 0;
 #else
         LibPVRHelper helper;
-        return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
+        return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC(forGPU);
 #endif
 	}
     else if (imageFormat == IMAGE_FORMAT_DDS)
     {
         LibDdsHelper helper;
-		return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
-	}
+        return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC(forGPU);
+    }
     else
     {
         Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s", filePath.GetStringValue().c_str());
@@ -1014,9 +1037,9 @@ void TextureDescriptor::Initialize( const TextureDescriptor *descriptor )
     {
         SetDefaultValues();
         return;
-	}
+    }
 
-	pathname = descriptor->pathname;
+    pathname = descriptor->pathname;
 
     drawSettings = descriptor->drawSettings;
     dataSettings = descriptor->dataSettings;
@@ -1052,23 +1075,41 @@ bool TextureDescriptor::Reload()
     {
         FilePath descriptorPathname = pathname;
         SetDefaultValues();
-		return Load(descriptorPathname);
-	}
+        return Load(descriptorPathname);
+    }
 
 	return false;
 }
 
-uint32 TextureDescriptor::GenerateDescriptorCRC() const
+uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const
 {
 	static const uint32 CRC_BUFFER_SIZE = 16;
 	static const uint8 CRC_BUFFER_VALUE = 0x3F; //to create nonzero buffer
 
-	uint8 crcBuffer[CRC_BUFFER_SIZE]; //this buffer need to calculate correct CRC of texture descriptor. I plan to fill this buffer with params that are important for compression of textures sush as textureFlags
-	Memset(crcBuffer, CRC_BUFFER_VALUE, CRC_BUFFER_SIZE); 
+    Array<uint8, CRC_BUFFER_SIZE> crcBuffer; //this buffer need to calculate correct CRC of texture descriptor. I plan to fill this buffer with params that are important for compression of textures sush as textureFlags
+    Memset(crcBuffer.data(), CRC_BUFFER_VALUE, crcBuffer.size());
 
-	crcBuffer[0] = dataSettings.textureFlags;
+    uint8* bufferPtr = crcBuffer.data();
+    *bufferPtr++ = dataSettings.textureFlags;
 
-	return CRC32::ForBuffer((const char8 *)crcBuffer, CRC_BUFFER_SIZE);
+#if 0   
+    // We need to enable this code before global re-saving or reloading of texture descriptors. 
+    // This code will affect "Not Relevant" image in texture descriptors and we need custom loading of old descripters
+
+    // add convertation params
+    *bufferPtr++ = compression[forGPU].format;
+
+    const uint32 sizeOfWidth = sizeof(compression[forGPU].compressToWidth);
+    Memcpy(bufferPtr, &compression[forGPU].compressToWidth, sizeOfWidth);
+    bufferPtr += sizeOfWidth;
+
+    const uint32 sizeOfHeight = sizeof(compression[forGPU].compressToHeight);
+    Memcpy(bufferPtr, &compression[forGPU].compressToHeight, sizeOfHeight);
+    bufferPtr += sizeOfHeight;
+    //end of convertation params
+#endif //
+
+    return CRC32::ForBuffer((const char8*)crcBuffer.data(), CRC_BUFFER_SIZE);
 }
 
 

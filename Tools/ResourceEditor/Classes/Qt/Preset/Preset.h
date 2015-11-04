@@ -27,52 +27,22 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_SCREEN_TRANSITION_H__
-#define __DAVAENGINE_UI_SCREEN_TRANSITION_H__
-
-#include "Base/BaseTypes.h"
-#include "UI/UIScreen.h"
-
+#ifndef __PRESET_MANAGER_H__
+#define __PRESET_MANAGER_H__
 
 namespace DAVA
 {
-class UI3DView;
-class UIScreenshoter;
+class TextureDescriptor;
+class NMaterial;
+}
 
-class UIScreenTransition : public UIScreen
+namespace Preset
 {
-public:
-	UIScreenTransition();
-	virtual ~UIScreenTransition();
-	
-	static void CreateRenderTargets();
-	static void ReleaseRenderTargets();
-	
-	virtual void StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen);
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
-	virtual void SetDuration(float32 timeInSeconds);
-    virtual bool IsLoadingTransition();
+bool SavePresetForTexture(const DAVA::TextureDescriptor* descriptor);
+bool LoadPresetForTexture(DAVA::TextureDescriptor* descriptor);
 
-protected:
-    UI3DView* FindFirst3dView(UIControl* control);
-
-    static Sprite* renderTargetPrevScreen;
-    static Sprite* renderTargetNextScreen;
-
-    Interpolation::Func interpolationFunc;
-    float32 currentTime;
-    float32 duration;
-	float32 normalizedTime;
-	
-	UIScreen * prevScreen;
-	UIScreen * nextScreen;
-    UIScreenshoter* shooter;
-
+bool SavePresetForMaterial(DAVA::NMaterial* material);
+bool LoadPresetForMaterial(DAVA::NMaterial* material);
 };
 
-};
-
-
-
-#endif // __DAVAENGINE_UI_SCREEN_TRANSITION_H__
+#endif // __PRESET_MANAGER_H__

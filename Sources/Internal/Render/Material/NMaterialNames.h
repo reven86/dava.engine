@@ -77,8 +77,8 @@ public:
     static const FastName PIXELLIT_OPAQUE;
     static const FastName TEXTURE_LIGHTMAP_ALPHABLEND;
     static const FastName VERTEXLIT_ALPHATEST;
-	static const FastName PIXELLIT_SPECULAR_ALPHATEST;
-	static const FastName TEXTURE_LIGHTMAP_ALPHATEST;
+    static const FastName PIXELLIT_SPECULAR_ALPHATEST;
+    static const FastName TEXTURE_LIGHTMAP_ALPHATEST;
 	static const FastName VERTEXLIT_OPAQUE;
 	static const FastName PIXELLIT_SPECULAR_OPAQUE;
 	static const FastName TEXTURE_LIGHTMAP_OPAQUE;
