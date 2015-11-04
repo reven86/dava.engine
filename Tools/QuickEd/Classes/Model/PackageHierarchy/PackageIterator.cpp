@@ -35,6 +35,7 @@ const PackageIterator::MatchFunction PackageIterator::defaultFunction = [](const
 
 struct PackageIterator::IteratorData
 {
+    using ParentIndexes = DAVA::Stack<DAVA::uint32>;
     bool Accaptable() const;
     PackageBaseNode* Next();
     PackageBaseNode* Previous();
@@ -44,7 +45,7 @@ struct PackageIterator::IteratorData
     PackageBaseNode* currentNode = nullptr;
 private:
     DAVA::uint32 currentIndex = 0;
-    DAVA::Stack<DAVA::int32> parentIndexes;
+    ParentIndexes parentIndexes;
 };
 
 PackageIterator::PackageIterator(const PackageIterator& it)
@@ -119,12 +120,13 @@ PackageIterator& PackageIterator::operator+=(int n)
 
 PackageIterator& PackageIterator::operator--()
 {
-    if (impl->currentNode != nullptr)
+    if (IsValid())
     {
         do
         {
             impl->currentNode = impl->Previous();
-        } while (IsValid() && !impl->Accaptable());
+        }
+        while (IsValid() && !impl->Accaptable());
     }
     return *this;
 }
@@ -156,7 +158,8 @@ void PackageIterator::IteratorData::InitFromNode(PackageBaseNode* node)
 {
     currentNode = node;
     PackageBaseNode* parent = node->GetParent();
-    decltype(parentIndexes) parentIndexesReverse;
+    
+    ParentIndexes parentIndexesReverse;
 
     while (nullptr != parent)
     {
