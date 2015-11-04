@@ -63,8 +63,6 @@ class DeferredScreenMetricEvents;
  To run code on main thread you should use CorePlatformWinUAP::RunOnMainThread
 ************************************************************************/
 
-using ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs;
-
 ref class WinUAPXamlApp sealed : public ::Windows::UI::Xaml::Application
 {
 public:
@@ -87,7 +85,7 @@ public:
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
-    Signal<LaunchActivatedEventArgs ^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
+    Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
     bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
     InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
