@@ -68,8 +68,8 @@ private:
     //int32 newVertexCount;
 
     //int32 FindIndexInTriangleForPointInEdge(int32 * triangleStartIndex, int32 pointInEdge, const EdgeAdjacency::Edge & edge);
-	//int32 DuplicateVertexAndSetNormalAtIndex(const Vector3 & normal, int32 index);
-	//Vector3 CalculateNormalForVertex(int32 * originalTriangleVertices);
+    //int32 DuplicateVertexAndSetNormalAtIndex(const Vector3 & normal, int32 index);
+    //Vector3 CalculateNormalForVertex(int32 * originalTriangleVertices);
 
 ///
 	struct EdgeMapping

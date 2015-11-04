@@ -27,52 +27,29 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_SCREEN_TRANSITION_H__
-#define __DAVAENGINE_UI_SCREEN_TRANSITION_H__
+#ifndef __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__
+#define __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__
 
 #include "Base/BaseTypes.h"
-#include "UI/UIScreen.h"
+#include "Base/Platform.h"
 
+#if defined(__DAVAENGINE_WIN32__)
 
-namespace DAVA
+namespace WinConsoleIO
 {
-class UI3DView;
-class UIScreenshoter;
+struct IOHandle;
+} //END of WinConsoleIO
 
-class UIScreenTransition : public UIScreen
+class WinConsoleIOLocker final
 {
 public:
-	UIScreenTransition();
-	virtual ~UIScreenTransition();
-	
-	static void CreateRenderTargets();
-	static void ReleaseRenderTargets();
-	
-	virtual void StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen);
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
-	virtual void SetDuration(float32 timeInSeconds);
-    virtual bool IsLoadingTransition();
+    WinConsoleIOLocker();
+    ~WinConsoleIOLocker();
 
-protected:
-    UI3DView* FindFirst3dView(UIControl* control);
-
-    static Sprite* renderTargetPrevScreen;
-    static Sprite* renderTargetNextScreen;
-
-    Interpolation::Func interpolationFunc;
-    float32 currentTime;
-    float32 duration;
-	float32 normalizedTime;
-	
-	UIScreen * prevScreen;
-	UIScreen * nextScreen;
-    UIScreenshoter* shooter;
-
+private:
+    std::unique_ptr<WinConsoleIO::IOHandle> ioHandle;
 };
 
-};
+#endif //#if defined(__DAVAENGINE_WIN32__)
 
-
-
-#endif // __DAVAENGINE_UI_SCREEN_TRANSITION_H__
+#endif // __QT_TOOLS_WIN_CONSOLE_IO_LOCKER_H__

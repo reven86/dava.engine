@@ -63,6 +63,8 @@ public:
                            const QStyleOptionViewItem &option,
                            const QModelIndex &index) override;
 
+signals:
+    void textureDescriptorChanged(DAVA::TextureDescriptor* descriptor);
 
 protected:
     bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index);
@@ -71,13 +73,16 @@ private slots:
 	void textureReadyThumbnail(const DAVA::TextureDescriptor *descriptor,  const TextureInfo & images);
     void onOpenTexturePath();
 
+    void onLoadPreset();
+    void onSavePreset();
+
 private:
 	QFont nameFont;
 	QFontMetrics nameFontMetrics;
 	mutable QMap<DAVA::FilePath, QModelIndex> descriptorIndexes;
-    QString lastSelectedTextureFolder;
-    
-	DrawRule drawRule;
+    DAVA::TextureDescriptor* lastSelectedTextureDescriptor = nullptr;
+
+    DrawRule drawRule;
 
 	void drawPreviewBig(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 	void drawPreviewSmall(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
