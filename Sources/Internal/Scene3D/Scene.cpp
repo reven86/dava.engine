@@ -372,7 +372,7 @@ Scene::~Scene()
     {
         AnimatedMesh* obj = *t;
         obj->Release();
-	}
+    }
 	animatedMeshes.clear();
 	
 	for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)

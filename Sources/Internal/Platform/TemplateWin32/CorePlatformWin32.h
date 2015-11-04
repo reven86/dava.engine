@@ -52,7 +52,7 @@ public:
 
     void SetIcon(int32 iconId) override;
 
-	DisplayMode currentMode;
+    DisplayMode currentMode;
 	DisplayMode fullscreenMode;
 	DisplayMode windowedMode;
 	bool isFullscreen;

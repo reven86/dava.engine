@@ -81,8 +81,8 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
     if (type <= FROM_BOTTOM)
     {
         float32 endXPos[4] = { VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, 0.0f, 0.0f };
-        float32 endYPos[4] = {0.0f, 0.0f, VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy};
-		float32 xPrevPosition = endXPos[type] * normalizedTime;
+        float32 endYPos[4] = { 0.0f, 0.0f, VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy };
+        float32 xPrevPosition = endXPos[type] * normalizedTime;
 		float32 yPrevPosition = endYPos[type] * normalizedTime;
 		float32 xNextPosition = xPrevPosition - endXPos[type];
 		float32 yNextPosition = yPrevPosition - endYPos[type];
@@ -102,8 +102,8 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
     }
     else
     {
-        float32 endXPos[4] = {VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, 0.0f, 0.0f};
-		float32 endYPos[4] = {0.0f, 0.0f, VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy};
+        float32 endXPos[4] = { VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, 0.0f, 0.0f };
+        float32 endYPos[4] = {0.0f, 0.0f, VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy};
 		float32 xPrevPosition = endXPos[type - 4] * normalizedTime;
 		float32 yPrevPosition = endYPos[type - 4] * normalizedTime;
 		float32 xNextPosition = xPrevPosition - endXPos[type - 4];
