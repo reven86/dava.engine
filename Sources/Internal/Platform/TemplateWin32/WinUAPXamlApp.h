@@ -85,8 +85,7 @@ public:
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
-//TODO: add implementation for all platform, before remove this
-Signal<LaunchActivatedEventArgs ^> pushNotificationSignal;
+Signal<LaunchActivatedEventArgs ^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
 
 bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
 InputSystem::eMouseCaptureMode GetMouseCaptureMode();
