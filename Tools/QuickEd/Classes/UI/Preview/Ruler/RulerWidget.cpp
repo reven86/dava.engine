@@ -33,8 +33,8 @@
 #include <QApplication>
 #include <QDrag>
 #include <QMimeData>
-
-using namespace DAVA;
+#include <cmath>
+#include <sstream>
 
 RulerWidget::RulerWidget(QWidget* parent)
     : QWidget(parent)
@@ -61,7 +61,7 @@ void RulerWidget::OnRulerSettingsChanged(const RulerSettings& rulerSettings)
     SetRulerSettings(rulerSettings);
 }
 
-void RulerWidget::OnMarkerPositionChanged(int32 position)
+void RulerWidget::OnMarkerPositionChanged(int position)
 {
     markerPosition = position;
     update();
@@ -116,7 +116,7 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
         return;
     }
 
-    int numberOffset = ceilf((float)(settings.startPos) / (float)(tickStep)) * (float)tickStep;
+    int numberOffset = std::ceilf((float)(settings.startPos) / (float)(tickStep)) * (float)tickStep;
     int tickOffset = numberOffset - settings.startPos;
 
     int fontPos = 0;
@@ -160,8 +160,8 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
                 digits << curPosValue;
 
                 int digitPos = curPos + fontSize - 1;
-                int32 digitsSize = digits.str().size();
-                for (int32 j = 0; j < digitsSize; j++)
+                int digitsSize = digits.str().size();
+                for (int j = 0; j < digitsSize; j++)
                 {
                     nextDigit[0] = digits.str().at(j); // next char is always 0x00
                     painter.drawText(fontPos, digitPos, QString::fromLatin1(nextDigit));

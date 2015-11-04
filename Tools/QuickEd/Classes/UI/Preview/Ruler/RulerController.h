@@ -26,9 +26,9 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+
 #ifndef __RULERCONTROLLER__H__
 #define __RULERCONTROLLER__H__
-
 
 #include "RulerSettings.h"
 

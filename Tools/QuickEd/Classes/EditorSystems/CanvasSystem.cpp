@@ -179,12 +179,12 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
     } //unnamed namespace
 
-void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition, Vector2& totalRootControlPosition)
+void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition, Vector2& absoluteRootControlPosition)
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
 
-    totalRootControlPosition = gd.position;
+    absoluteRootControlPosition = gd.position;
     gd.position.SetZero();
     UIControl* scalableControl = gridControl->GetParent()->GetParent();
     DVASSERT_MSG(nullptr != scalableControl, "grid update without being attached to screen");
@@ -204,13 +204,13 @@ void BackgroundController::AdjustToNestedControl()
 {
     Rect rect;
     Vector2 pos;
-    Vector2 globalPos;
-    CalculateTotalRect(rect, pos, globalPos);
+    Vector2 absolutePos;
+    CalculateTotalRect(rect, pos, absolutePos);
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
     ContentSizeChanged.Emit();
-    RootControlPosChanged.Emit(globalPos);
+    RootControlPosChanged.Emit(absolutePos);
 }
 
 void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)

@@ -26,6 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+
+#include <cmath>
 #include "RulerController.h"
 
 RulerController::RulerController(QObject* parent)
@@ -114,7 +116,7 @@ void RulerController::RecalculateRulerSettings()
 
     for (int i = 0; i < sizeof(ticksMap); i++)
     {
-        float curScaleDistance = fabs(ticksMap[i].scaleLevel - screenScale);
+        float curScaleDistance = std::fabs(ticksMap[i].scaleLevel - screenScale);
         if (curScaleDistance < closestScaleDistance)
         {
             closestScaleDistance = curScaleDistance;
