@@ -143,7 +143,6 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
     }
 
     Core::Instance()->SetScreenScaleMultiplier(mul);
-    Core::Instance()->ResetScreen();
 
     currentScaleText->SetText(Format(L"%f", mul));
 }
@@ -157,7 +156,6 @@ void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
     }
 
     Core::Instance()->SetScreenScaleMultiplier(mul);
-    Core::Instance()->ResetScreen();
 
     currentScaleText->SetText(Format(L"%f", mul));
 }

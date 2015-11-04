@@ -400,7 +400,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     inputCounter = 0;
 
     newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
-
+    
     if (Replay::IsPlayback())
     {
         return;

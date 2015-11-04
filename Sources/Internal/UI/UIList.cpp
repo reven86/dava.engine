@@ -309,16 +309,36 @@ void UIList::Update(float32 timeElapsed)
         FullRefresh();
     }
 
-    float d = newPos - oldPos;
+    float32 d = newPos - oldPos;
     oldPos = newPos;
+    
+    float32 deltaScroll = newScroll - oldScroll;
+    oldScroll = newScroll;
+    
+    const float32 accuracyDelta = 0.1;
+    
     Rect r = scrollContainer->GetRect();
     if(orientation == ORIENTATION_HORIZONTAL)
     {
-        r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+        if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
+        {
+            r.x = scroll->GetPosition(deltaScroll, SystemTimer::FrameDelta(), true);
+        }
+        else
+        {
+            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+        }
     }
     else
     {
-        r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+        if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
+        {
+            r.y = scroll->GetPosition(deltaScroll, SystemTimer::FrameDelta(), true);
+        }
+        else
+        {
+            r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+        }
     }
 
     if (r != scrollContainer->GetRect())
@@ -476,11 +496,26 @@ void UIList::Input(UIEvent *currentInput)
 
     if(orientation == ORIENTATION_HORIZONTAL)
     {
-        newPos = currentInput->point.x;
+        
+        if (UIEvent::Phase::WHEEL == currentInput->phase)
+        {
+            newScroll += currentInput->scrollDelta.x;
+        }
+        else
+        {
+            newPos = currentInput->point.x;
+        }
     }
     else
     {
-        newPos = currentInput->point.y;
+        if (UIEvent::Phase::WHEEL == currentInput->phase)
+        {
+            newScroll += currentInput->scrollDelta.y;
+        }
+        else
+        {
+            newPos = currentInput->point.y;
+        }
     }
 
     switch (currentInput->phase)
@@ -518,7 +553,14 @@ bool UIList::SystemInput(UIEvent *currentInput)
 
     if(currentInput->touchLocker != this)
     {
-        if (currentInput->phase == UIEvent::Phase::BEGAN)
+        if (UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase)
+        {
+            if(IsPointInside(currentInput->point))
+            {
+                Input(currentInput);
+            }
+        }
+        else if (currentInput->phase == UIEvent::Phase::BEGAN)
         {
             if(IsPointInside(currentInput->point))
             {
