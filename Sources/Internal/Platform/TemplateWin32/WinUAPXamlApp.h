@@ -61,16 +61,14 @@ class DeferredScreenMetricEvents;
  To run code on main thread you should use CorePlatformWinUAP::RunOnMainThread
 ************************************************************************/
 
+using ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs;
+
 ref class WinUAPXamlApp sealed : public ::Windows::UI::Xaml::Application
 {
 public:
     // Deleted and defaulted functions are not supported in WinRT classes
     WinUAPXamlApp();
     virtual ~WinUAPXamlApp();
-
-    //TODO: add implementation for all platform, before remove this
-    using PushNotificationSignal = Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^>;
-    internal : PushNotificationSignal* GetPushNotificationSignal();
 
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
@@ -87,6 +85,8 @@ public:
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
+//TODO: add implementation for all platform, before remove this
+Signal<LaunchActivatedEventArgs ^> pushNotificationSignal;
 
 bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
 InputSystem::eMouseCaptureMode GetMouseCaptureMode();
@@ -165,7 +165,7 @@ private:
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
-    void SetLaunchArgs(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
+    void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -219,7 +219,6 @@ private:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
-    PushNotificationSignal pushNotificationSignal;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -251,11 +250,6 @@ inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetMouseCaptureMode()
 inline bool WinUAPXamlApp::GetCursorVisible()
 {
     return isMouseCursorShown;
-}
-
-inline WinUAPXamlApp::PushNotificationSignal* WinUAPXamlApp::GetPushNotificationSignal()
-{
-    return &pushNotificationSignal;
 }
 
 }   // namespace DAVA

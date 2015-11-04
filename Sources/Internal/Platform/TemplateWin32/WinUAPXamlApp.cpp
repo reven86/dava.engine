@@ -214,7 +214,7 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
     }
     else
     {
-        SetLaunchArgs(args);
+        EmitPushNotification(args);
     }
 
     Window::Current->Activate();
@@ -280,7 +280,7 @@ void WinUAPXamlApp::NativeControlLostFocus(Control ^ control)
 void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
-    SetLaunchArgs(args);
+    EmitPushNotification(args);
     Core::Instance()->CreateSingletons();
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
@@ -953,7 +953,7 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 }
 
-void WinUAPXamlApp::SetLaunchArgs(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
+void WinUAPXamlApp::EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     if (nullptr != dispatcher)
     {
