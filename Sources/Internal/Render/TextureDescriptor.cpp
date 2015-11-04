@@ -1071,7 +1071,7 @@ void TextureDescriptor::SetGenerateMipmaps( bool generateMipmaps )
 
 bool TextureDescriptor::Reload()
 {
-    if ((pathname.IsEmpty() == false) && pathname.Exists())
+    if (FileSystem::Instance()->Exists(pathname))
     {
         FilePath descriptorPathname = pathname;
         SetDefaultValues();

@@ -47,13 +47,13 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 , patchingThread(NULL)
 {
     DVASSERT(workingDir.IsDirectoryPathname());
-    DVASSERT(workingDir.Exists());
+    DVASSERT(FileSystem::Instance()->Exists(workingDir));
 
     DVASSERT(destinationDir.IsDirectoryPathname());
-    DVASSERT(destinationDir.Exists());
+    DVASSERT(FileSystem::Instance()->Exists(destinationDir));
 
     DVASSERT(sourceDir.IsDirectoryPathname());
-    DVASSERT(sourceDir.Exists());
+    DVASSERT(FileSystem::Instance()->Exists(sourceDir));
 
     DVASSERT(!gameVersion.empty());
 
@@ -199,10 +199,10 @@ void DLC::FSM(DLCEvent event)
 
                 case EVENT_CHECK_START:
                     // if last time stopped on the patching state and patch file exists - continue patching
-                    if( !dlcContext.forceFullUpdate &&
+                    if (!dlcContext.forceFullUpdate &&
                         DS_PATCHING == dlcContext.prevState &&
-                        dlcContext.remotePatchStorePath.Exists() &&
-                        dlcContext.remoteVerStotePath.Exists())
+                        FileSystem::Instance()->Exists(dlcContext.remotePatchStorePath) &&
+                        FileSystem::Instance()->Exists(dlcContext.remoteVerStotePath))
                     {
                         dlcContext.prevState = 0;
                         dlcState = DS_PATCHING;
@@ -489,7 +489,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
             DownloadError downloadError;
             DownloadManager::Instance()->GetError(id, downloadError);
 
-            if(DLE_NO_ERROR == downloadError && dlcContext.remoteVerStotePath.Exists())
+            if (DLE_NO_ERROR == downloadError && FileSystem::Instance()->Exists(dlcContext.remoteVerStotePath))
             {
                 if(ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer))
                 {
