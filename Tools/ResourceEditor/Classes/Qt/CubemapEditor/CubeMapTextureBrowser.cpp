@@ -58,12 +58,12 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
 	ui->listTextures->setItemDelegate(&cubeListItemDelegate);
 	
 	ConnectSignals();
-	
-	FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
-															ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
-		
-	ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
-	ReloadTextures(projectPath.GetAbsolutePathname());
+
+    FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
+                                                            ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
+
+    ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
+    ReloadTextures(projectPath.GetAbsolutePathname());
 	
 	UpdateCheckedState();
 }

@@ -126,27 +126,6 @@ void CorePlatformAndroid::ProcessFrame()
 {
     if (renderIsActive)
     {
-        auto sysTimer = SystemTimer::Instance();
-        //  Control FPS
-        {
-            // we count full frame time once per cycle
-            // C++->Java->C++(frame ended)
-            static uint64 startTime = sysTimer->AbsoluteMS();
-
-            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
-            int32 fpsLimit = Renderer::GetDesiredFPS();
-            if (fpsLimit > 0)
-            {
-                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fpsLimit);
-                if (averageFrameTime > elapsedTime)
-                {
-                    uint64 sleepMs = averageFrameTime - elapsedTime;
-                    Thread::Sleep(static_cast<uint32>(sleepMs));
-                }
-            }
-            startTime = sysTimer->AbsoluteMS();
-        }
-
         Core::SystemProcessFrame();
     }
 }
@@ -156,7 +135,6 @@ void CorePlatformAndroid::ResizeView(int32 w, int32 h)
     width = w;
     height = h;
     DeviceInfo::InitializeScreenInfo();
-
     UpdateScreenMode();
 }
 
