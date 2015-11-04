@@ -100,30 +100,38 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     if (!scene)
         return;
 
-    if (!drawToFrameBuffer)
+    Rect viewportRect = geometricData.GetUnrotatedRect();
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
+
+    if (drawToFrameBuffer)
+    {
+        // Calculate viewport for frame buffer
+        viewportRc.x = 0.f;
+        viewportRc.y = 0.f;
+        viewportRc.dx *= fbScaleFactor;
+        viewportRc.dy *= fbScaleFactor;
+    }
+    else
+    {
+        viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
         RenderSystem2D::Instance()->Flush();
+    }
 
     bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
-
 	if (uiDrawQueryWasOpen)
         FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     PrepareFrameBufferIfNeed();
-
-    Rect viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
-    viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-    viewportRc.dx *= fbScaleFactor;
-    viewportRc.dy *= fbScaleFactor;
     scene->SetMainPassViewport(viewportRc);
-
     scene->Draw();
 
     if (uiDrawQueryWasOpen)
         FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     if (drawToFrameBuffer)
-        RenderSystem2D::Instance()->DrawTexture(frameBuffer, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, Rect(GetPosition(), GetSize()), Rect(Vector2(), fbTexSize));
+    {
+        RenderSystem2D::Instance()->DrawTexture(frameBuffer, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, geometricData.GetUnrotatedRect(), Rect(Vector2(), fbTexSize));
+    }
 }
     
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)

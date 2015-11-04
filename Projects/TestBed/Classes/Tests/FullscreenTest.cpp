@@ -40,7 +40,11 @@ void FullscreenTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
+    GetBackground()->SetColor(Color::White);
+
     ScopedPtr<Font> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
+
+    // Screen mode test
 
     currentModeText = new UIStaticText(Rect(310, 10, 300, 20));
     currentModeText->SetFont(font);
@@ -79,11 +83,12 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
 
+    // Scale factor test
+
     btn.reset(new UIButton(Rect(10, 150, 145, 30)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul +0.1");
     btn->SetDebugDraw(true);
-    btn->SetTag(99);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulUp));
     AddControl(btn);
 
@@ -91,7 +96,6 @@ void FullscreenTest::LoadResources()
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul -0.1");
     btn->SetDebugDraw(true);
-    btn->SetTag(99);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulDown));
     AddControl(btn);
 
@@ -99,18 +103,91 @@ void FullscreenTest::LoadResources()
     currentScaleText->SetFont(font);
     currentScaleText->SetTextColor(Color::White);
     currentScaleText->SetText(Format(L"%f", Core::Instance()->GetScreenScaleMultiplier()));
-
     AddControl(currentScaleText);
 
-    GetBackground()->SetColor(Color::White);
+    // UI3DView test   
+
+    ui3dview = new UI3DView(Rect(10, 200, 320, 240));
+    ui3dview->SetDebugDraw(true);
+    
+    ScopedPtr<Scene> scene(new Scene());
+    scene->LoadScene("~res:/3d/Objects/Sniper_1.sc2");
+
+    ScopedPtr<Camera> camera(new Camera());
+    VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
+    float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
+    camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
+    camera->SetLeft(Vector3(1, 0, 0));
+    camera->SetUp(Vector3(0, 0, 1.f));
+    camera->SetTarget(Vector3(0, 0, 0));
+    camera->SetPosition(Vector3(0, -10, 10));
+    
+    ScopedPtr<Entity> cameraEntity(new Entity());
+    cameraEntity->AddComponent(new CameraComponent(camera));
+    cameraEntity->AddComponent(new RotationControllerComponent());
+    scene->AddNode(cameraEntity);
+    
+    rotationControllerSystem = new RotationControllerSystem(scene);
+    scene->AddSystem(rotationControllerSystem, 
+        MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
+        Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+
+    scene->AddCamera(camera);
+    scene->SetCurrentCamera(camera);
+    ui3dview->SetScene(scene);
+    AddControl(ui3dview);
+
+    btn.reset(new UIButton(Rect(340, 200, 145, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"3d Scale +0.1");
+    btn->SetDebugDraw(true);
+    btn->SetTag(0);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
+    AddControl(btn);
+
+    btn.reset(new UIButton(Rect(340, 230, 145, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"3d Scale -0.1");
+    btn->SetDebugDraw(true);
+    btn->SetTag(1);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
+    AddControl(btn);
+
+    currentScaleText = new UIStaticText(Rect(340, 260, 145, 20));
+    currentScaleText->SetFont(font);
+    currentScaleText->SetTextColor(Color::White);
+    currentScaleText->SetText(Format(L"%f", ui3dview->GetFrameBufferScaleFactor()));
+    AddControl(currentScaleText);
+
+    btn.reset(new UIButton(Rect(340, 290, 145, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"On draw to FBO");
+    btn->SetDebugDraw(true);
+    btn->SetTag(2);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
+    AddControl(btn);
+
+    btn.reset(new UIButton(Rect(340, 320, 145, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Off draw to FBO");
+    btn->SetDebugDraw(true);
+    btn->SetTag(3);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
+    AddControl(btn);
 
     UpdateMode();
 }
 
 void FullscreenTest::UnloadResources()
 {
+    if (ui3dview->GetScene())
+    {
+        ui3dview->GetScene()->RemoveSystem(rotationControllerSystem);
+    }
+    SafeDelete(rotationControllerSystem);
+    SafeRelease(ui3dview);
+    SafeRelease(currect3dScaleText);
     SafeRelease(currentModeText);
-
     BaseScreen::UnloadResources();
 }
 
@@ -137,13 +214,12 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
     float32 mul = Core::Instance()->GetScreenScaleMultiplier();
-    if (mul < 2.0)
+    if (mul < 2.0f)
     {
-        mul += 0.1;
+        mul += 0.1f;
     }
 
     Core::Instance()->SetScreenScaleMultiplier(mul);
-    Core::Instance()->ResetScreen();
 
     currentScaleText->SetText(Format(L"%f", mul));
 }
@@ -151,15 +227,50 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
     float32 mul = Core::Instance()->GetScreenScaleMultiplier();
-    if (mul > 0.2)
+    if (mul > 0.2f)
     {
-        mul -= 0.1;
+        mul -= 0.1f;
     }
 
     Core::Instance()->SetScreenScaleMultiplier(mul);
-    Core::Instance()->ResetScreen();
-
+    
     currentScaleText->SetText(Format(L"%f", mul));
+}
+
+void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void* callerData)
+{
+    UIButton* btn = static_cast<UIButton*>(sender);
+    switch (btn->GetTag())
+    {
+    case 0: // + scale
+    {
+        float32 mul = ui3dview->GetFrameBufferScaleFactor();
+        if (mul < 2.0f)
+        {
+            mul += 0.1f;
+        }
+        ui3dview->SetFrameBufferScaleFactor(mul);
+        currentScaleText->SetText(Format(L"%f", mul));
+        break;
+    }
+    case 1: // - scale
+    {
+        float32 mul = ui3dview->GetFrameBufferScaleFactor();
+        if (mul > 0.2f)
+        {
+            mul -= 0.1f;
+        }
+        ui3dview->SetFrameBufferScaleFactor(mul);
+        currentScaleText->SetText(Format(L"%f", mul));
+        break;
+    }
+    case 2: // turn off
+        ui3dview->SetDrawToFrameBuffer(true);
+        break;
+    case 3: // turn on
+        ui3dview->SetDrawToFrameBuffer(false);
+        break;
+    }
 }
 
 void FullscreenTest::UpdateMode()
