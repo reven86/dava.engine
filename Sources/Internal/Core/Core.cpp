@@ -203,7 +203,6 @@ void Core::CreateSingletons()
         std::move(netLoggerService), role, endPoint, "RawNetLogger", true);
 
     DVASSERT_MSG(service != nullptr, "Failed to create a NetLogger service");
-    DVASSERT_MSG(false, "");
     
 #endif  // __DAVAENGINE_WIN_UAP__
 
