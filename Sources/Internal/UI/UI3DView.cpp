@@ -44,9 +44,10 @@ namespace DAVA
 UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
     , scene(nullptr)
-    , drawToFrameBuffer(true)
+    , drawToFrameBuffer(false)
+    , needUpdateFrameBuffer(false)
     , frameBuffer(nullptr)
-    , fbScaleFactor(0.5f)
+    , fbScaleFactor(1.f)
     , fbRenderSize()
     , registeredInUIControlSystem(false)
 {
@@ -55,6 +56,7 @@ UI3DView::UI3DView(const Rect& rect)
 
 UI3DView::~UI3DView()
 {
+    SafeRelease(frameBuffer);
     SafeRelease(scene);
 }
 
@@ -72,40 +74,7 @@ void UI3DView::SetScene(Scene * _scene)
         {
             scene->GetCamera(k)->SetAspect(aspect);
         }
-
-        if (drawToFrameBuffer)
-        {
-            fbRenderSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
-
-            if (frameBuffer != nullptr)
-            {
-                if (frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
-                {
-                    SafeRelease(frameBuffer);
-                    frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
-                }
-            }
-            else
-            {
-                frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
-            }
-
-            Vector2 fbSize = Vector2(frameBuffer->GetWidth(), frameBuffer->GetHeight());
-
-            fbTexSize.x = fbRenderSize.x / fbSize.x;
-            fbTexSize.y = fbRenderSize.y / fbSize.y;
-
-            rhi::RenderPassConfig& config = scene->GetMainPassConfig();
-
-            config.colorBuffer[0].texture = frameBuffer->handle;
-            config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-            config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-            Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
-
-            config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
-            config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-            config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
-        }
+        needUpdateFrameBuffer = true;
     }
 }
 
@@ -139,12 +108,15 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	if (uiDrawQueryWasOpen)
         FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
+    PrepareFrameBufferIfNeed();
+
     Rect viewportRect = geometricData.GetUnrotatedRect();
     viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
     viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
     viewportRc.dx *= fbScaleFactor;
     viewportRc.dy *= fbScaleFactor;
     scene->SetMainPassViewport(viewportRc);
+
     scene->Draw();
 
     if (uiDrawQueryWasOpen)
@@ -165,40 +137,7 @@ void UI3DView::SetSize(const DAVA::Vector2 &newSize)
         {
             scene->GetCamera(k)->SetAspect(aspect);
         }
-
-        if (drawToFrameBuffer)
-        {
-            fbRenderSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
-
-            if (frameBuffer != nullptr)
-            {
-                if (frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
-                {
-                    SafeRelease(frameBuffer);
-                    frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
-                }
-            }
-            else
-            {
-                frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
-            }
-
-            Vector2 fbSize = Vector2(frameBuffer->GetWidth(), frameBuffer->GetHeight());
-
-            fbTexSize.x = fbRenderSize.x / fbSize.x;
-            fbTexSize.y = fbRenderSize.y / fbSize.y;
-
-            rhi::RenderPassConfig& config = scene->GetMainPassConfig();
-
-            config.colorBuffer[0].texture = frameBuffer->handle;
-            config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-            config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-            Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
-
-            config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
-            config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-            config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
-        }
+        needUpdateFrameBuffer = true;
     }
 }
 
@@ -218,6 +157,58 @@ void UI3DView::Input(UIEvent *currentInput)
     
     UIControl::Input(currentInput);
 }
-    
 
+void UI3DView::SetDrawToFrameBuffer(bool enable)
+{
+    if (drawToFrameBuffer != enable)
+    {
+        drawToFrameBuffer = enable;
+        needUpdateFrameBuffer = true;
+    }
+}
+
+void UI3DView::SetFrameBufferScaleFactor(float32 scale)
+{
+    if (!FLOAT_EQUAL(scale, fbScaleFactor))
+    {
+        fbScaleFactor = scale;
+        needUpdateFrameBuffer = true;
+    }
+}
+
+void UI3DView::PrepareFrameBuffer()
+{
+    DVASSERT(scene);
+
+    if (drawToFrameBuffer)
+    {
+        fbRenderSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
+
+        if (frameBuffer == nullptr || frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
+        {
+            SafeRelease(frameBuffer);
+            frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
+        }
+
+        Vector2 fbSize = Vector2(frameBuffer->GetWidth(), frameBuffer->GetHeight());
+
+        fbTexSize = fbRenderSize / fbSize;
+
+        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
+        config.colorBuffer[0].texture = frameBuffer->handle;
+        config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+        Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
+        config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
+        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+        config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+    }
+    else if (frameBuffer != nullptr)
+    {
+        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
+        config.colorBuffer[0].texture = rhi::InvalidHandle;
+        config.depthStencilBuffer.texture = rhi::InvalidHandle;
+        SafeRelease(frameBuffer);
+    }
+}
 }

@@ -66,21 +66,57 @@ public:
 
     void Input(UIEvent* currentInput) override;
 
+    void SetDrawToFrameBuffer(bool enable);
+    bool GetDrawToFrameBuffer() const;
+    void SetFrameBufferScaleFactor(float32 scale);
+    float32 GetFrameBufferScaleFactor() const;
+    const Vector2& GetFrameBufferRenderSize() const;
+
 protected:
+    Scene* scene;
+    Rect viewportRc;
+    bool registeredInUIControlSystem;
+
+private:
+    void PrepareFrameBuffer();
+    void PrepareFrameBufferIfNeed();
+
     bool drawToFrameBuffer;
+    bool needUpdateFrameBuffer;
     float32 fbScaleFactor;
     Vector2 fbRenderSize;
     Vector2 fbTexSize;
     Texture* frameBuffer;
 
-    Scene * scene;
-    Rect viewportRc;
-    bool registeredInUIControlSystem;
-
 public:
     INTROSPECTION_EXTEND(UI3DView, UIControl,
-                         nullptr);
+                         PROPERTY("drawToFrameBuffer", "Draw sceene draw through the frame buffer", GetDrawToFrameBuffer, SetDrawToFrameBuffer, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("frameBufferScaleFactor", "Set scale factor to draw the frame buffer", GetFrameBufferScaleFactor, SetFrameBufferScaleFactor, I_SAVE | I_VIEW | I_EDIT) nullptr);
 };
+
+inline bool UI3DView::GetDrawToFrameBuffer() const
+{
+    return drawToFrameBuffer;
+}
+
+inline float32 UI3DView::GetFrameBufferScaleFactor() const
+{
+    return fbScaleFactor;
+}
+
+inline const Vector2& UI3DView::GetFrameBufferRenderSize() const
+{
+    return fbRenderSize;
+}
+
+inline void UI3DView::PrepareFrameBufferIfNeed()
+{
+    if (needUpdateFrameBuffer)
+    {
+        PrepareFrameBuffer();
+        needUpdateFrameBuffer = false;
+    }
+}
 };
 
 #endif
