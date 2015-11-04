@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+// clang-format off
+
 #ifndef __DAVAENGINE_WINUAPFRAME_H__
 #define __DAVAENGINE_WINUAPFRAME_H__
 
@@ -85,10 +87,9 @@ public:
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
-Signal<LaunchActivatedEventArgs ^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
-
-bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-InputSystem::eMouseCaptureMode GetMouseCaptureMode();
+    Signal<LaunchActivatedEventArgs ^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
+    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
 public:
     void SetQuitFlag();
