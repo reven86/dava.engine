@@ -185,6 +185,10 @@ void gles2_DepthStencilState_Delete(Handle state)
 
 namespace DepthStencilStateGLES2
 {
+void Init(uint32 maxCount)
+{
+    DepthStencilStateGLES2Pool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_DepthStencilState_Create = &gles2_DepthStencilState_Create;

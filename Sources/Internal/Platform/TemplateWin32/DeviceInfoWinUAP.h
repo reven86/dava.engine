@@ -122,6 +122,7 @@ private:
     String modelName;
     String uDID;
     WideString deviceName;
+    String localDeviceName;
     int32 zBufferSize = 24;
 };
 };

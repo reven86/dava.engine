@@ -111,7 +111,7 @@ public:
 
 private:
     void _Reset();
-    void _AppendLine(const char* line, uint32 lineLen);
+    void _AppendLine(const char* line, size_t lineLen);
 
     struct
     buf_t

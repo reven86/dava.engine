@@ -28,6 +28,9 @@
 
 
 #include "Scene/System/GridSystem.h"
+#include "Scene3D/Scene.h"
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/RenderHelper.h"
 #include "Qt/Settings/SettingsManager.h"
 
 // framework

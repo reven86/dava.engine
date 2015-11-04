@@ -178,25 +178,33 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
         std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPath));
         if (descriptor)
         {
-            bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
-            if (descriptor->IsCubeMap() && !isCompressedSource)
+            if (descriptor->IsCompressedFile())
             {
-                Vector<FilePath> faceNames;
-                descriptor->GetFacePathnames(faceNames);
-
-                links.insert(faceNames.cbegin(), faceNames.cend());
+                FilePath compressedTexureName = descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily));
+                links.insert(compressedTexureName);
             }
             else
             {
-                links.insert(descriptor->GetSourceTexturePathname());
-            }
-
-            for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
-            {
-                const auto& compression = descriptor->compression[gpu];
-                if (compression.format != FORMAT_INVALID)
+                bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
+                if (descriptor->IsCubeMap() && !isCompressedSource)
                 {
-                    links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+                    Vector<FilePath> faceNames;
+                    descriptor->GetFacePathnames(faceNames);
+
+                    links.insert(faceNames.cbegin(), faceNames.cend());
+                }
+                else
+                {
+                    links.insert(descriptor->GetSourceTexturePathname());
+                }
+
+                for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
+                {
+                    const auto& compression = descriptor->compression[gpu];
+                    if (compression.format != FORMAT_INVALID)
+                    {
+                        links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+                    }
                 }
             }
         }
