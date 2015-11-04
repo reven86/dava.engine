@@ -26,8 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Core/Core.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Render/RHI/rhi_Type.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "DAVAEngine.h"
 #include "GameCore.h"
 #include "Version.h"
 

@@ -138,8 +138,8 @@ void SelectPathWidgetBase::OpenClicked()
     {
         return;
     }
-    
-    DAVA::String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+
+    DAVA::String projectPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
 
     if(checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
     {

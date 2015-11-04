@@ -78,8 +78,8 @@ GameObject::GameObject()
     collision = 0;
     groupId = 0;
     priority = 0;
-	parent = 0;
-	userData = 0;
+    parent = 0;
+    userData = 0;
 	isDebugDraw = false;
     nextManager = 0;
 }

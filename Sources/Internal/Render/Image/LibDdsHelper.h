@@ -46,38 +46,25 @@ class LibDdsHelper: public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibDdsHelper();
 
-    virtual ImageFormat GetImageFormat() const override;
-    
-    virtual bool IsMyImage(File *infile) const override;
+    ImageFormat GetImageFormat() const override;
+    bool IsMyImage(File* infile) const override;
 
-    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap = 0) const override;
 
-    virtual eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    virtual ImageInfo GetImageInfo(File *infile) const override;
+    ImageInfo GetImageInfo(File* infile) const override;
 
-    virtual bool AddCRCIntoMetaData(const FilePath &filePathname) const override;
-    virtual uint32 GetCRCFromFile(const FilePath &filePathname) const override;
+    bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
+    uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
     static eErrorCode ReadFile(File *file, Vector<Image*> &imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
-
     static bool DecompressImageToRGBA(const DAVA::Image & image, Vector<DAVA::Image*> &imageSet, bool forceSoftwareConvertation = false);
 
-    static uint32 GetMipMapLevelsCount(const FilePath & fileName);
-    static uint32 GetMipMapLevelsCount(File * file);
-
 private:
-    static PixelFormat GetPixelFormat(const FilePath & fileName);
-    static PixelFormat GetPixelFormat(File * file);
-
-    static bool GetTextureSize(const FilePath & fileName, uint32 & width, uint32 & height);
-    static bool GetTextureSize(File * file, uint32 & width, uint32 & height);
-
-    static bool GetCRCFromDDSHeader(const FilePath &filePathname, uint32* tag, uint32* outputCRC);
 
     static bool WriteDxtFile(const FilePath & fileNameOriginal, const Vector<Vector<Image *>> &imageSets, PixelFormat compressionFormat, bool isCubemap);
-
     static bool WriteAtcFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat);
     static bool WriteAtcFileAsCubemap(const FilePath & fileNameOriginal, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat);
 };

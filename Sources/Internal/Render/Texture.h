@@ -217,7 +217,7 @@ protected:
 
     Texture();
     virtual ~Texture();
-    
+
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);

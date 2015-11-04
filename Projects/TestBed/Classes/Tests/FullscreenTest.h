@@ -47,8 +47,11 @@ protected:
 private:
     void UpdateMode();
     void OnSelectModeClick(BaseObject* sender, void* data, void* callerData);
+    void OnMulUp(BaseObject* sender, void* data, void* callerData);
+    void OnMulDown(BaseObject* sender, void* data, void* callerData);
 
     UIStaticText* currentModeText;
+    UIStaticText* currentScaleText;
 };
 
 #endif //__FULLSCREENTEST_TEST_H__
