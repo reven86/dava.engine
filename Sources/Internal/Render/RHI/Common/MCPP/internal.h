@@ -35,7 +35,7 @@
  */
 
 #ifndef SYSTEM_H
-    #error "system.H" must be included prior to "internal.H"
+    #error "system.h" must be included prior to "internal.h"
 #endif
 
 #include "mcpp_out.h"

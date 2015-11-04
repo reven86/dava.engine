@@ -38,10 +38,10 @@
 #include "_mcpp.h"
 
 #if PREPROCESSED /* Use "pre-preprocessed" header    */
-#include "mcpp.H"
+#include "mcpp.h"
 #else
-#include "system.H"
-#include "internal.H"
+#include "system.h"
+#include "internal.h"
 #endif
 
 /* Function pointer to expand_macro() functions.    */

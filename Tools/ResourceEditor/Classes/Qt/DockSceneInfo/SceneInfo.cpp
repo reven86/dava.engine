@@ -277,7 +277,7 @@ void SceneInfo::RefreshLODInfoForSelection()
 
 uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
 {
-	String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+    String projectPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
     uint32 textureSize = 0;
 
     eGPUFamily requestedGPU = static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());

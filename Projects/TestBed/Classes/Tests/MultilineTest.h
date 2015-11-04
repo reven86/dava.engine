@@ -48,13 +48,15 @@ public:
 
     void LoadResources() override;
     void UnloadResources() override;
-    
+
     // UITextFieldDelegate interface
-    void TextFieldOnTextChanged(DAVA::UITextField * textField, const DAVA::WideString& newText, const DAVA::WideString& oldText) override {}
-    
+    void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& oldText) override
+    {
+    }
+
 private:
-    void OnShowHideClick(BaseObject* sender, void * data, void * callerData);
-    UIControl * topLayerControl = nullptr;
+    void OnShowHideClick(BaseObject* sender, void* data, void* callerData);
+    UIControl* topLayerControl = nullptr;
 
     DAVA::UIButton* CreateUIButton(DAVA::Font* font, const DAVA::Rect& rect, const DAVA::String& text,
                              void (MultilineTest::*onClick)(DAVA::BaseObject*, void*, void*));
