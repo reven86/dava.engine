@@ -63,6 +63,7 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     const auto &item = items.at(index.row());
     switch (role)
     {
+    case Qt::ToolTipRole:
     case Qt::DisplayRole:
         return item.text;
 
@@ -109,14 +110,20 @@ void LogModel::AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray& tex
 void LogModel::Sync()
 {
     DVASSERT(QThread::currentThread() == qApp->thread());
-    QMutexLocker lock(mutex.get());
-    if (itemsToAdd.empty())
+    QVector<LogItem> itemsToAddCopy;
+    {
+        QMutexLocker lock(mutex.get());
+        itemsToAddCopy.swap(itemsToAdd);
+    }
+
+    if (itemsToAddCopy.empty())
     {
         return;
     }
+
     int count = rowCount();
-    beginInsertRows(QModelIndex(), count, count + itemsToAdd.size() - 1);
-    items += itemsToAdd;
+    beginInsertRows(QModelIndex(), count, count + itemsToAddCopy.size() - 1);
+    items += itemsToAddCopy;
     endInsertRows();
 }
 
