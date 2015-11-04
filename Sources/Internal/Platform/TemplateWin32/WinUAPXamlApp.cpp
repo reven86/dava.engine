@@ -103,11 +103,6 @@ WinUAPXamlApp::~WinUAPXamlApp()
     delete deferredSizeScaleEvents;
 }
 
-void WinUAPXamlApp::SetDelegate(PushNotificationDelegate* dlg)
-{
-    pushDelegate = dlg;
-}
-
 DisplayOrientations WinUAPXamlApp::GetDisplayOrientation()
 {
     return displayOrientation;
@@ -205,8 +200,6 @@ void WinUAPXamlApp::PreStartAppSettings()
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
-    //TODO: will have added implementation for all platform, before remove this
-    launchArgs = args;
     // If renderLoopWorker is null then app performing cold start
     // else app is restored from background or resumed from suspended state
     if (nullptr == renderLoopWorker)
@@ -216,12 +209,12 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 
         CreateBaseXamlUI();
 
-        WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction ^ action) { Run(); });
+        WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this, args](Windows::Foundation::IAsyncAction ^ action) { Run(args); });
         renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
     }
     else
     {
-        SetLaunchArgs();
+        SetLaunchArgs(args);
     }
 
     Window::Current->Activate();
@@ -284,10 +277,10 @@ void WinUAPXamlApp::NativeControlLostFocus(Control ^ control)
     }
 }
 
-void WinUAPXamlApp::Run()
+void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
-    SetLaunchArgs();
+    SetLaunchArgs(args);
     Core::Instance()->CreateSingletons();
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
@@ -960,15 +953,12 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 }
 
-void WinUAPXamlApp::SetLaunchArgs()
+void WinUAPXamlApp::SetLaunchArgs(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     if (nullptr != dispatcher)
     {
         dispatcher->RunAsync([=]() {
-            if (nullptr != pushDelegate)
-            {
-                pushDelegate->Set(launchArgs);
-            }
+            pushNotificationSignal.Emit(args);
         });
     }
 }

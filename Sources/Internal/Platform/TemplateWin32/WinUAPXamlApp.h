@@ -41,7 +41,7 @@
 
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
-#include "Base/Delegates.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -69,7 +69,12 @@ public:
     virtual ~WinUAPXamlApp();
 
     //TODO: add implementation for all platform, before remove this
-    internal : void SetDelegate(PushNotificationDelegate* dlg);
+    using PushNotificationSignal = Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^>;
+    internal : PushNotificationSignal* GetPushNotificationSignal()
+    {
+        return &pushNotificationSignal;
+    }
+
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
@@ -105,7 +110,7 @@ protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
 
 private:
-    void Run();
+    void Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
 
     // App state handlers
     void OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
@@ -163,7 +168,7 @@ private:
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
-    void SetLaunchArgs();
+    void SetLaunchArgs(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -217,9 +222,7 @@ private:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
-    //TODO: add implementation for all platform, before remove this
-    ::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ launchArgs = nullptr;
-    PushNotificationDelegate* pushDelegate = nullptr;
+    PushNotificationSignal pushNotificationSignal;
 };
 
 //////////////////////////////////////////////////////////////////////////

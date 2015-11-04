@@ -37,7 +37,6 @@
 #include "Core/Core.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
-#include "Base/Delegates.h"
 
 namespace DAVA
 {
@@ -68,9 +67,6 @@ public:
     bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
 
     // Win10 specific member functions
-
-    //Set delegate for push notification
-    void SetDelegate(PushNotificationDelegate* dlg);
 
     // Get pointer to underlying XAML application object
     WinUAPXamlApp^ XamlApplication() DAVA_NOEXCEPT;
