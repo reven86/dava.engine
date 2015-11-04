@@ -97,12 +97,12 @@ WinUAPXamlApp::WinUAPXamlApp()
         MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
     });
     displayRequest = ref new Windows::System::Display::DisplayRequest;
-    SetUnLockedDisplay(true);
+    DisplayCouldBeLocked(false);
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
 {
-    SetUnLockedDisplay(false);
+    DisplayCouldBeLocked(true);
     delete deferredSizeScaleEvents;
 }
 
@@ -385,7 +385,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
     bool visible = args->Visible;
-    SetUnLockedDisplay(visible);
+    DisplayCouldBeLocked(!visible);
     core->RunOnMainThread([this, visible]() {
         if (visible)
         {
@@ -936,19 +936,15 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 }
 
-void WinUAPXamlApp::SetUnLockedDisplay(bool activate)
+void WinUAPXamlApp::DisplayCouldBeLocked(bool lock)
 {
-    if (activate != displayUnLock)
+    if (lock)
     {
-        displayUnLock = activate;
-        if (displayUnLock)
-        {
-            displayRequest->RequestActive();
-        }
-        else
-        {
-            displayRequest->RequestRelease();
-        }
+        displayRequest->RequestRelease();
+    }
+    else
+    {
+        displayRequest->RequestActive();
     }
 }
 
