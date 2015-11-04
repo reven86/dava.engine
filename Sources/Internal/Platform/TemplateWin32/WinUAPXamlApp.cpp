@@ -955,12 +955,10 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
 
 void WinUAPXamlApp::EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
-    if (nullptr != dispatcher)
-    {
-        dispatcher->RunAsync([=]() {
-            pushNotificationSignal.Emit(args);
-        });
-    }
+    DVASSERT(nullptr != dispatcher);
+    dispatcher->RunAsync([=]() {
+        pushNotificationSignal.Emit(args);
+    });
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
