@@ -70,7 +70,7 @@ PackageOptions ParseShortFormArgs(const String& packagePath)
     Split(FilePath(packagePath).GetBasename(), "_", packageInfo);
 
     PackageOptions options;
-    options.package = packagePath;
+    options.mainPackage = packagePath;
     options.dependencies = FilePath(packagePath).GetDirectory().GetAbsolutePathname();
 
     return options;
@@ -91,7 +91,7 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
 
     if (parser.IsFlagSet("--package"))
     {
-        out.package = parser.GetParamForFlag("--package");
+        out.mainPackage = parser.GetParamForFlag("--package");
     }
 
     if (parser.IsFlagSet("--profile"))
@@ -105,9 +105,9 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
     {
         out.dependencies = parser.GetParamForFlag("--dependencies");
     }
-    else if (!out.package.empty())
+    else if (!out.mainPackage.empty())
     {
-        out.dependencies = FilePath(out.package).GetDirectory().GetAbsolutePathname();
+        out.dependencies = FilePath(out.mainPackage).GetDirectory().GetAbsolutePathname();
     }
 
     if (parser.IsFlagSet("--tc_test"))
@@ -140,12 +140,12 @@ bool CheckPackageOption(const String& package)
 
     if (package.empty())
     {
-        std::cout << "Package file is not set";
+        std::cout << "Package file is not set" << std::endl;
         return false;
     }
     else if (!file.exists() || !file.isFile())
     {
-        std::cout << "Cannot find the specified file: " << package;
+        std::cout << "Cannot find the specified file: " << package << std::endl;
         return false;
     }
 
@@ -158,12 +158,12 @@ bool CheckDependenciesOption(const String& dependencies)
 
     if (dependencies.empty())
     {
-        std::cout << "Package dependencies path is not set";
+        std::cout << "Package dependencies path is not set" << std::endl;
         return false;
     }
     else if (!fs->IsDirectory(dependencies))
     {
-        std::cout << "Cannot find the specified path: " << dependencies;
+        std::cout << "Cannot find the specified path: " << dependencies << std::endl;
         return false;
     }
 
@@ -172,7 +172,7 @@ bool CheckDependenciesOption(const String& dependencies)
 
 bool CheckOptions(const PackageOptions& options)
 {
-    bool packageIsOk = CheckPackageOption(options.package);
+    bool packageIsOk = CheckPackageOption(options.mainPackage);
     bool dependenciesIsOk = CheckDependenciesOption(options.dependencies);
 
     bool allIsOk = packageIsOk && dependenciesIsOk;

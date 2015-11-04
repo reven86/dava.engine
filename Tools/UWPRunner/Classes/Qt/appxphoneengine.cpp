@@ -132,6 +132,7 @@ class AppxPhoneEnginePrivate : public AppxEnginePrivate
 {
 public:
     QString productId;
+    QString mainPackage;
 
     ComPtr<ICcConnection> connection;
     CoreConDevice *device;
@@ -222,6 +223,8 @@ AppxPhoneEngine::AppxPhoneEngine(Runner *runner)
     Q_D(AppxPhoneEngine);
     if (d->hasFatalError)
         return;
+
+    d->mainPackage = runner->mainPackage();
     d->hasFatalError = true;
 
     ComPtr<IStream> manifestStream;
@@ -257,6 +260,7 @@ bool AppxPhoneEngine::installPackage(IAppxManifestReader *reader, const QString 
 {
     Q_D(AppxPhoneEngine);
     qCDebug(lcWinRtRunner) << __FUNCTION__ << filePath;
+    qCWarning(lcWinRtRunner) << "Installing package:" << filePath;
 
     ComPtr<ICcConnection3> connection;
     HRESULT hr = d->connection.As(&connection);
@@ -350,7 +354,7 @@ bool AppxPhoneEngine::install(bool removeFirst)
             return false;
     }
 
-    if (!installDependencies() || !installResources())
+    if (!installDependencies())
         return false;
 
     ComPtr<IStream> manifestStream;
@@ -361,7 +365,19 @@ bool AppxPhoneEngine::install(bool removeFirst)
     hr = d->packageFactory->CreateManifestReader(manifestStream.Get(), &manifestReader);
     RETURN_FALSE_IF_FAILED("Failed to create manifest reader for installation");
 
-    return installPackage(manifestReader.Get(), d->runner->app());
+    QString package;
+    //if package has no resources, install appx
+    if (d->runner->resources().isEmpty())
+    {
+        package = d->runner->app();
+    }
+    //otherwise install appxbundle
+    else
+    {
+        package = d->runner->mainPackage();
+    }
+
+    return installPackage(manifestReader.Get(), package);
 }
 
 bool AppxPhoneEngine::remove()

@@ -40,7 +40,8 @@ using DAVA::Vector;
 struct PackageOptions
 {
     //TODO: replace on Optional
-    String package;
+    String mainPackage;
+    String packageToInstall;
     String architecture;
     String profile;
     String dependencies;

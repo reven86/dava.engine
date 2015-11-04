@@ -51,7 +51,8 @@ class Runner
 public:
     static QMap<QString, QStringList> deviceNames();
 
-    Runner(const QString &app,
+    Runner(const QString &mainPackage,
+           const QString &app,
            const QStringList &resources,
            const QString &dependenciesDir,
            const QStringList &arguments,
@@ -60,6 +61,7 @@ public:
     ~Runner();
 
     bool isValid() const;
+    QString mainPackage() const;
     QString app() const;
     QStringList resources() const;
     QString profile() const;

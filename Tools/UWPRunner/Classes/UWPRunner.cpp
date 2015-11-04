@@ -64,7 +64,7 @@ void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString);
 bool ConfigureIpOverUsb();
 void WaitApp();
 
-void LaunchPackage(const PackageOptions& opt);
+void LaunchPackage(PackageOptions opt);
 void LaunchAppPackage(const PackageOptions& opt);
 
 String GetCurrentArchitecture();
@@ -83,17 +83,17 @@ void FrameworkDidLaunched()
     LaunchPackage(commandLineOptions);
 }
 
-void LaunchPackage(const PackageOptions& opt)
+void LaunchPackage(PackageOptions opt)
 {
     //if package is bundle, extract concrete package from it
-    if (!AppxBundleHelper::IsBundle(opt.package))
+    if (!AppxBundleHelper::IsBundle(opt.mainPackage))
     {
+        opt.packageToInstall = opt.mainPackage;
         LaunchAppPackage(opt);
         return;
     }
 
-    PackageOptions options = opt;
-    FilePath package = opt.package;
+    FilePath package = opt.mainPackage;
     AppxBundleHelper bundle(package);
 
     //try to extract package for specified architecture
@@ -120,11 +120,11 @@ void LaunchPackage(const PackageOptions& opt)
         Vector<AppxBundleHelper::PackageInfo> resources = bundle.GetResources();
         for (const auto& x : resources)
         {
-            options.resources.push_back(x.path.GetAbsolutePathname());
+            opt.resources.push_back(x.path.GetAbsolutePathname());
         }
 
-        options.package = package.GetAbsolutePathname();
-        LaunchAppPackage(options);
+        opt.packageToInstall = package.GetAbsolutePathname();
+        LaunchAppPackage(opt);
     }
 }
 
@@ -132,7 +132,7 @@ void LaunchAppPackage(const PackageOptions& opt)
 {
     //Extract manifest from package
     Logger::Instance()->Info("Extracting manifest...");
-    FilePath manifest = ExtractManifest(opt.package);
+    FilePath manifest = ExtractManifest(opt.packageToInstall);
     if (manifest.IsEmpty())
     {
         DVASSERT_MSG(false, "Can't extract manifest file from package");
@@ -167,7 +167,8 @@ void LaunchAppPackage(const PackageOptions& opt)
         resources.push_back(QString::fromStdString(x));
     }
 
-    Runner runner(QString::fromStdString(opt.package),
+    Runner runner(QString::fromStdString(opt.mainPackage),
+                  QString::fromStdString(opt.packageToInstall),
                   resources,
                   QString::fromStdString(opt.dependencies),
                   QStringList(),

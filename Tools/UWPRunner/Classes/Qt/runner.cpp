@@ -60,6 +60,7 @@ class RunnerPrivate
 {
 public:
     bool isValid;
+    QString mainPackage;
     QString app;
     QString manifest;
     QStringList resources;
@@ -90,7 +91,8 @@ QMap<QString, QStringList> Runner::deviceNames()
     return deviceNames;
 }
 
-Runner::Runner(const QString &app,
+Runner::Runner(const QString &mainPackage, 
+               const QString &app,
                const QStringList &resources,
                const QString &dependenciesDir,
                const QStringList &arguments,
@@ -100,6 +102,7 @@ Runner::Runner(const QString &app,
 {
     Q_D(Runner);
     d->isValid = false;
+    d->mainPackage = mainPackage;
     d->app = app;
     d->resources = resources;
     d->arguments = arguments;
@@ -165,6 +168,12 @@ QStringList Runner::resources() const
 {
     Q_D(const Runner);
     return d->resources;
+}
+
+QString Runner::mainPackage() const
+{
+    Q_D(const Runner);
+    return d->mainPackage;
 }
 
 QString Runner::app() const
