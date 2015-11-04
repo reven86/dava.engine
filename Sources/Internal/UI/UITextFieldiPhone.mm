@@ -416,7 +416,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         {
             ::UITextView* textView = (::UITextView*)view;
             textView.autocapitalizationType = type_;
-    }
+        }
     }
 
     void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
@@ -455,7 +455,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         {
             ::UITextView* textView = (::UITextView*)view;
             textView.spellCheckingType = type_;
-    }
+        }
 #endif
     }
 
@@ -474,7 +474,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         {
             ::UITextView* textView = (::UITextView*)view;
             textView.keyboardAppearance = type_;
-    }
+        }
     }
 
     void TextFieldPlatformImpl::SetKeyboardType(DAVA::int32 value)
@@ -492,7 +492,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         {
             ::UITextView* textView = (::UITextView*)view;
             textView.keyboardType = type_;
-    }
+        }
     }
 
     void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
@@ -527,7 +527,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         {
             ::UITextView* textView = (::UITextView*)view;
             textView.enablesReturnKeyAutomatically = type_;
-    }
+        }
     }
 
     uint32 TextFieldPlatformImpl::GetCursorPos()

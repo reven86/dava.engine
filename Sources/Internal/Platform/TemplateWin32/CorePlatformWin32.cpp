@@ -169,8 +169,8 @@ namespace DAVA
         FrameworkDidLaunched();
         KeyedArchive* options = Core::GetOptions();
 
-        fullscreenMode = GetCurrentDisplayMode();//FindBestMode(fullscreenMode);
-		if (options)
+        fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
+        if (options)
 		{
 			windowedMode.width = options->GetInt32("width");
 			windowedMode.height = options->GetInt32("height");

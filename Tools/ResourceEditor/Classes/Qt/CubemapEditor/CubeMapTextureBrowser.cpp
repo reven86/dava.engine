@@ -63,7 +63,7 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
                                                             ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
 
     ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
-	ReloadTextures(projectPath.GetAbsolutePathname());
+    ReloadTextures(projectPath.GetAbsolutePathname());
 	
 	UpdateCheckedState();
 }

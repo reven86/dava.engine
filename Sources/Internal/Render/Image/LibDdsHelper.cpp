@@ -131,7 +131,6 @@ FileHeader ReadHeader(File* inFile)
 
     return header;
 }
-
 }
 
 class QualcommHelper

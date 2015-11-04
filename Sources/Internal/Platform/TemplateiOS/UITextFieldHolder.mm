@@ -612,7 +612,7 @@
 
     if (nullptr == delegate)
     {
-		return;
+        return;
 	}
 
 	// convert own frame to window coordinates, frame is in superview's coordinates

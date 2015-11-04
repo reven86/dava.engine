@@ -1542,7 +1542,7 @@ QString PropertyEditor::GetDefaultFilePath()
     QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
     FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
     if (dataSourcePath.Exists())
-	{
+    {
 		defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
 	}
 	SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();

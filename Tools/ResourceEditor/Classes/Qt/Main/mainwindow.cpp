@@ -535,7 +535,7 @@ void QtMainWindow::SetupTitle()
         title += ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
     }
 
-	this->setWindowTitle(title);
+    this->setWindowTitle(title);
 }
 
 void QtMainWindow::SetupMainMenu()
@@ -938,7 +938,7 @@ void QtMainWindow::ProjectOpened(const QString &path)
     EditorConfig::Instance()->ParseConfig(ProjectManager::Instance()->GetProjectPath() + "EditorConfig.yaml");
 
     EnableProjectActions(true);
-	SetupTitle();
+    SetupTitle();
 }
 
 void QtMainWindow::ProjectClosed()
@@ -2369,8 +2369,8 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	}
 
     String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname());
-    customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,pathToSave);
-	
+    customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, pathToSave);
+
     return true;
 }
 
@@ -2661,7 +2661,7 @@ bool QtMainWindow::OpenScene( const QString & path )
         FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
         FilePath argumentPath(path.toStdString());
 
-		if(!FilePath::ContainPath(argumentPath, projectPath))
+        if(!FilePath::ContainPath(argumentPath, projectPath))
 		{
 			QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
 				projectPath.GetAbsolutePathname().c_str(),
