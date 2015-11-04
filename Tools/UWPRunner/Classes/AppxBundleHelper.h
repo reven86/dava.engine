@@ -50,6 +50,8 @@ public:
     AppxBundleHelper(const FilePath &fileName);
     ~AppxBundleHelper();
 
+    void RemoveFiles();
+
     static bool IsBundle(const FilePath &fileName);
     const Vector<PackageInfo>& GetPackages() const;
     Vector<PackageInfo> GetApplications() const;

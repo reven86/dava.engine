@@ -18,6 +18,7 @@ $process/
 *.pbxuser
 #doc/*.txt # ignore doc/notes.txt, but not doc/server/arch.txt
 Documentation/doxygen/*
+Debug
 Debug_Win32
 DebugQt
 _DebugQt
@@ -56,10 +57,10 @@ AppPackages
 !/Libs/lib_CMake/win10/x64/Release
 !/Libs/lib_CMake/win10/Win32/Debug
 !/Libs/lib_CMake/win10/Win32/Release
+!/Sources/Internal/Debug
 Projects/TestBed/android/assets/
 Projects/TestBed/android/obj/
 Projects/TestBed/android/bin/
 Projects/TestBed/android/libs/
 Projects/TestBed/android/gen/
 Projects/TestBed/android/.settings/
-Projects/Win32Framework/Debug/*

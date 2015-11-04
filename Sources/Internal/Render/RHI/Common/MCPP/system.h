@@ -377,12 +377,12 @@ typedef long expr_t;
 #endif
 
 #ifndef STDC_VERSION
-#define STDC_VERSION 0L /* 199409L  : For conforming    \ \
-implementation to ISO 9899:1990 / Amendment 1:1995      \ \
+#define STDC_VERSION 0L /* 199409L  : For conforming    \ \                                              \
+implementation to ISO 9899:1990 / Amendment 1:1995      \ \                                              \
 199901L : For C99   */
 #endif
 #ifndef STDC_HOSTED
-#define STDC_HOSTED 1 /* 1 : for hosted implementation, \ \
+#define STDC_HOSTED 1 /* 1 : for hosted implementation, \ \                                              \
 0 : for free-standing implementation (C99 specification)    */
 #endif
 

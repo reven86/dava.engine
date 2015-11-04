@@ -35,17 +35,6 @@
 namespace DAVA
 {
 
-String GetTempFileName()
-{
-    Array<char, 128> tempPath {};
-    ::GetTempPathA(tempPath.size(), tempPath.data());
-
-    Array<char, MAX_PATH> tempFilePath {};
-    ::GetTempFileNameA(tempPath.data(), "DAVA", 0, tempFilePath.data());
-
-    return tempFilePath.data();
-}
-
 //We don't have any API for working with ZIP, so we use Python
 //https://upload.wikimedia.org/wikipedia/ru/7/78/Trollface.svg
 bool RunPythonScript(const String& script)
@@ -73,11 +62,11 @@ bool ExtractFileFromArchive(const String& zipFile, const String& file, const Str
     String outPath = FilePath(outFile).GetDirectory().GetAbsolutePathname();
     String unzippedFile = (FilePath(outPath) + file).GetAbsolutePathname();
 
-    String script = "import zipfile                                        \n"
-                    "import shutil                                         \n"
-                    "zf = zipfile.ZipFile('" + zipFile + "')               \n"
-                    "zf.extract('" + file + "', '" + outPath + "')         \n"
-                    "shutil.move('" + unzippedFile + "', '" + outFile + "')\n";
+    String script = "import zipfile                                      \n"
+                    "import os                                           \n"
+                    "zf = zipfile.ZipFile('" + zipFile + "')             \n"
+                    "zf.extract('" + file + "', '" + outPath + "')       \n"
+                    "os.rename('" + unzippedFile + "', '" + outFile + "')\n";
 
     return RunPythonScript(script);
 }

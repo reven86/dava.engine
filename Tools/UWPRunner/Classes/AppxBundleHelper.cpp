@@ -56,9 +56,17 @@ AppxBundleHelper::AppxBundleHelper(const FilePath &fileName)
     }
 }
 
+void AppxBundleHelper::RemoveFiles()
+{
+    if (bundlePackageDir.Exists())
+    {
+        FileSystem::Instance()->DeleteDirectory(bundlePackageDir);
+    }
+}
+
 AppxBundleHelper::~AppxBundleHelper()
 {
-    FileSystem::Instance()->DeleteDirectory(bundlePackageDir);
+    RemoveFiles();
 }
 
 bool AppxBundleHelper::IsBundle(const FilePath &fileName)

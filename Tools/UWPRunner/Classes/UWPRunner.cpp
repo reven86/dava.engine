@@ -36,6 +36,7 @@
 #include "Concurrency/Thread.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
+#include "Functional/Function.h"
 #include "Network/Services/LogConsumer.h"
 #include "Network/SimpleNetworking/SimpleNetCore.h"
 #include "Network/SimpleNetworking/SimpleNetService.h"
@@ -54,6 +55,8 @@ using namespace DAVA;
 
 const Net::SimpleNetService* gNetLogger = nullptr;
 Atomic<bool> interrupt = false;
+Vector<Function<void(void)>> cleaningFunctors;
+
 using StringRecv = Function<void(const String&)>;
 
 void Run(Runner& runner);
@@ -95,6 +98,7 @@ void LaunchPackage(PackageOptions opt)
 
     FilePath package = opt.mainPackage;
     AppxBundleHelper bundle(package);
+    cleaningFunctors.push_back([&]{ bundle.RemoveFiles(); });
 
     //try to extract package for specified architecture
     if (!opt.architecture.empty())
@@ -187,6 +191,10 @@ void Run(Runner& runner)
 {
     //Start app
     Start(runner);
+
+    //Clean 
+    for (const auto& x : cleaningFunctors) { x(); }
+    cleaningFunctors.clear();
 
     //Wait app exit
     WaitApp();
@@ -435,12 +443,12 @@ QString GetQtWinRTRunnerProfile(const String& profile, const FilePath& manifest)
 
 FilePath ExtractManifest(const FilePath& package)
 {
-    FilePath manifestFilePath = GetTempFileName();
+    String manifestFilePath = package.GetAbsolutePathname() + "_manifest.xml";
 
     //extract manifest from appx
     if (ExtractFileFromArchive(package.GetAbsolutePathname(),
                                "AppxManifest.xml",
-                               manifestFilePath.GetAbsolutePathname()))
+                               manifestFilePath))
     {
         return manifestFilePath;
     }

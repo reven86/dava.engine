@@ -170,11 +170,8 @@ elseif( WIN32 )
                                                 "delayimp.lib" )
                                                 
     if ( NOT DAVA_NO_RHI_DX9 )
-        if ( ENV{DXSDK_DIR} )
-            list ( APPEND LIST_SHARED_LIBRARIES "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" )
-        endif ()
-    
-        list ( APPEND LIST_SHARED_LIBRARIES "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  
+        list ( APPEND LIST_SHARED_LIBRARIES "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
+                                            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  
                                             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" 
                                             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" 
                                             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
@@ -199,7 +196,7 @@ if ( DAVA_NO_RHI_DX9 )
 endif ()
 
 if ( DAVA_NO_RHI_DX11 )
-    list ( APPEND IGNORED_RHI_FOLDER "DX1" )
+    list ( APPEND IGNORED_RHI_FOLDER "DX11" )
     add_definitions ( -DDAVA_NO_RHI_DX11 )
 endif ()
 
@@ -209,7 +206,7 @@ if ( DAVA_NO_RHI_GLES2 )
 endif ()
 
 if ( DAVA_NO_RHI_METAL )
-    list ( APPEND IGNORED_RHI_FOLDER "METAL" )
+    list ( APPEND IGNORED_RHI_FOLDER "Metal" )
     add_definitions ( -DDAVA_NO_RHI_METAL )
 endif ()
 

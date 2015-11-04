@@ -35,7 +35,6 @@
 namespace DAVA
 {
 
-String GetTempFileName();
 bool ExtractFileFromArchive(const String& zipFile, const String& file, const String& outFile);
 bool ExtractAllFromArchive(const String& zipFile, const String& outPath);
 

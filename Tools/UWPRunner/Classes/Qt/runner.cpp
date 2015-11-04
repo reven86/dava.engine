@@ -109,7 +109,7 @@ Runner::Runner(const QString &mainPackage,
     d->profile = profile;
     d->dependenciesDir = dependenciesDir;
 
-    DAVA::String manifestFileName = DAVA::GetTempFileName();
+    DAVA::String manifestFileName = app.toStdString() + "_manifest.xml";
     bool result = DAVA::ExtractFileFromArchive(app.toStdString(), 
                                                "AppxManifest.xml", manifestFileName);
     d->manifest = QString::fromStdString(manifestFileName);
