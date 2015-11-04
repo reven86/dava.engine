@@ -126,8 +126,6 @@ bool TextureDescriptorTool::InitializeFromCommandLine()
 
 void TextureDescriptorTool::ReadCompressionParams()
 {
-    PixelFormatDescriptor::InitializePixelFormatDescriptors();
-    
 	compressionParams.clear();
 	for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
 	{

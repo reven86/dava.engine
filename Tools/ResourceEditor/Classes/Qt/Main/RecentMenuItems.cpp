@@ -28,7 +28,9 @@
 
 
 #include "Main/RecentMenuItems.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
+
+#include "FileSystem/KeyedArchive.h"
 
 #include <QMenu>
 #include <QAction>
