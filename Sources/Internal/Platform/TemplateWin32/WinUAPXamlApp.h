@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+// clang-format off
+
 #ifndef __DAVAENGINE_WINUAPFRAME_H__
 #define __DAVAENGINE_WINUAPFRAME_H__
 
@@ -41,6 +43,7 @@
 
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -82,9 +85,9 @@ public:
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
-
-bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-InputSystem::eMouseCaptureMode GetMouseCaptureMode();
+    Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
+    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
 public:
     void SetQuitFlag();
@@ -102,7 +105,7 @@ protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
 
 private:
-    void Run();
+    void Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
 
     // App state handlers
     void OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
@@ -160,7 +163,7 @@ private:
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
-    void HideAsyncTaskBar();
+    void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
 
 private:
     CorePlatformWinUAP* core = nullptr;

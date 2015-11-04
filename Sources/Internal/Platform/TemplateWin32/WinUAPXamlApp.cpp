@@ -209,8 +209,12 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 
         CreateBaseXamlUI();
 
-        WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction ^ action) { Run(); });
+        WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this, args](Windows::Foundation::IAsyncAction ^ action) { Run(args); });
         renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+    }
+    else
+    {
+        EmitPushNotification(args);
     }
 
     Window::Current->Activate();
@@ -273,9 +277,10 @@ void WinUAPXamlApp::NativeControlLostFocus(Control ^ control)
     }
 }
 
-void WinUAPXamlApp::Run()
+void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
+    EmitPushNotification(args);
     Core::Instance()->CreateSingletons();
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
@@ -946,6 +951,14 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
     ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+}
+
+void WinUAPXamlApp::EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
+{
+    DVASSERT(nullptr != dispatcher);
+    dispatcher->RunAsync([=]() {
+        pushNotificationSignal.Emit(args);
+    });
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
