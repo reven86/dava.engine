@@ -183,7 +183,8 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
-    eSearchOrder searchOrder = IsKeyPressed(KeyboardProxy::KEY_ALT) ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
+    eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
     switch (currentInput->phase)
     {
     case UIEvent::Phase::MOVE:
