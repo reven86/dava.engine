@@ -30,7 +30,7 @@ LogModel::LogModel(QObject* parent)
     , syncTimer(new QTimer(this))
 {
     DVASSERT_MSG(thread() == qApp->thread(), "don't create this model in the separate thread!");
-    createIcons();
+    CreateIcons();
     func = [](const DAVA::String &str)
     {
         return str;
@@ -99,6 +99,7 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& text)
     items.append(LogItem(ll,
         QString::fromStdString(func(text.toStdString())),
         text));
+    RecalculateRowWidth(text);
     endInsertRows();
 }
 
@@ -130,6 +131,10 @@ void LogModel::Sync()
 
     int count = rowCount();
     beginInsertRows(QModelIndex(), count, count + itemsToAddCopy.size() - 1);
+    for (auto &item : itemsToAddCopy)
+    {
+        RecalculateRowWidth(item.text);
+    }
     items += itemsToAddCopy;
     endInsertRows();
 }
@@ -146,7 +151,7 @@ void LogModel::Clear()
     endRemoveRows();
 }
 
-void LogModel::createIcons()
+void LogModel::CreateIcons()
 {
     const auto &logMap = GlobalEnumMap<DAVA::Logger::eLogLevel>::Instance();
     for (size_t i = 0; i < logMap->GetCount(); ++i)
@@ -197,6 +202,12 @@ void LogModel::createIcons()
     }
 }
 
+void LogModel::RecalculateRowWidth(const QString &text)
+{
+    QFontMetrics fm(QApplication::font());
+    const int margin = 10;
+    rowSize.setWidth(qMax(rowSize.width(), fm.width(text) + margin));
+}
 const QPixmap &LogModel::GetIcon(int ll) const
 {
     return icons.at(ll);
