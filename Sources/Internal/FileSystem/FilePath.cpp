@@ -104,34 +104,28 @@ const List<FilePath> FilePath::GetResourcesFolders()
     return resourceFolders;
 }
 
-using ArchArray = std::array<String, 3>;
-String GetResourceDirName(const ArchArray& archs, const String& dirName, const String& resPrefix)
+String GetResourceDirName(const String& arch, const String& dirName, const String& resPrefix)
 {
     String result;
     String replace;
 
-    for (const auto& arch : archs)
-    {
-        replace = '_' + arch + '_'; // _x64_
+    replace = '_' + arch + '_'; // for example _x64_
 
-        size_t idx = dirName.find(replace);
+    size_t idx = dirName.find(replace);
+    if (idx == String::npos)
+    {
+        //not found, try in upper case
+        std::transform(replace.begin(), replace.end(), replace.begin(), ::toupper);
+
+        idx = dirName.find(replace);
         if (idx == String::npos)
         {
-            //not found, try in upper case
-            std::transform(replace.begin(), replace.end(), replace.begin(), ::toupper);
-
-            idx = dirName.find(replace);
-            if (idx == String::npos)
-            {
-                continue;
-            }
+            return "";
         }
-
-        result = dirName;
-        result.replace(idx, replace.size(), '_' + resPrefix);
-        break;
     }
 
+    result = dirName;
+    result.replace(idx, replace.size(), '_' + resPrefix);
     return result;
 }
     
@@ -150,13 +144,17 @@ void FilePath::InitializeBundleName()
     String additionalResourcePath;
 
     //get the directory basename
-    String dirBaseName = execDirectory.GetAbsolutePathname();
-    dirBaseName.pop_back();
-    dirBaseName = dirBaseName.substr(dirBaseName.find_last_of('/') + 1);
+    String dirBaseName = execDirectory.GetLastDirectoryName();
 
     //find resource dir name
-    ArchArray archs { "x64", "x86", "arm" };
-    String resourceDir = GetResourceDirName(archs, dirBaseName, "neutral_split.dxfeaturelevel-dx11");
+#if defined(_M_IX86)
+    const char* arch = "x86";
+#elif defined(_M_X64)
+    const char* arch = "x64";
+#elif defined(_M_ARM)
+    const char* arch = "arm";
+#endif
+    String resourceDir = GetResourceDirName(arch, dirBaseName, "neutral_split.dxfeaturelevel-dx11");
 
     //resource dir found, use it
     if (!resourceDir.empty())
@@ -617,7 +615,7 @@ String FilePath::GetLastDirectoryName() const
     DVASSERT(!IsEmpty() && IsDirectoryPathname());
     
     String path = absolutePathname;
-    path = path.substr(0, path.length() - 1);
+    path.pop_back();
     
     return FilePath(path).GetFilename();
 }
