@@ -68,7 +68,7 @@ public:
 
     struct TextureDrawSettings : public InspBase
     {
-	public:
+    public:
 		TextureDrawSettings() { SetDefaultValues(); }
 		void SetDefaultValues();
 
@@ -105,7 +105,7 @@ public:
         }
         void SetDefaultValues();
 
-		void SetGenerateMipmaps(const bool & generateMipmaps);
+        void SetGenerateMipmaps(const bool & generateMipmaps);
 		bool GetGenerateMipMaps() const;
 
         void SetIsNormalMap(const bool & isNormalMap);

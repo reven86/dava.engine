@@ -1403,6 +1403,8 @@ void ShaderSourceCache::Save(const char* fileName)
             WriteUI4(file, e->srcHash);
             e->src->Save(file);
         }
+
+        file->Release();
     }
 }
 

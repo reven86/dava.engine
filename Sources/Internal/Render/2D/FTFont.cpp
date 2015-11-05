@@ -425,9 +425,9 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
         Glyph& glyph = glyphs[i];
         FT_Glyph image = nullptr;
         ;
-        FT_BBox		bbox;
+        FT_BBox bbox;
 
-		bool skipGlyph = true;
+        bool skipGlyph = true;
         if(glyph.image && (glyph.index != 0 || drawNondefGlyph))
         {
             error = FT_Glyph_Copy(glyph.image, &image);
