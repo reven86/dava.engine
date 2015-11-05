@@ -293,7 +293,10 @@ void StaticOcclusionSystem::ClearOcclusionObjects()
     for (size_t i=0, sz = indexedRenderObjects.size(); i<sz; ++i)
     {
         if (indexedRenderObjects[i])
+        {
             indexedRenderObjects[i]->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
+            indexedRenderObjects[i]->AddFlag(RenderObject::VISIBLE_STATIC_OCCLUSION);
+        }
     }
     indexedRenderObjects.clear();
 }
@@ -322,7 +325,7 @@ void StaticOcclusionSystem::InvalidateOcclusionIndicesRecursively(Entity *entity
     if (renderObject != nullptr)
     {
         renderObject->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
-        renderObject->SetFlags(renderObject->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
+        renderObject->AddFlag(RenderObject::VISIBLE_STATIC_OCCLUSION);
     }
 
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
