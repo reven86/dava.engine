@@ -39,8 +39,7 @@
 
 namespace DAVA
 {
-
-StaticOcclusion::StaticOcclusion()    
+StaticOcclusion::StaticOcclusion()
 {
     for (uint32 k = 0; k < 6; ++k)
     {
@@ -48,21 +47,21 @@ StaticOcclusion::StaticOcclusion()
         cameras[k]->SetupPerspective(95.0f, 1.0f, 1.0f, 2500.0f); //aspect of one is anyway required to avoid side occlusion errors
     }
 }
-    
+
 StaticOcclusion::~StaticOcclusion()
 {
     for (uint32 k = 0; k < 6; ++k)
     {
         SafeRelease(cameras[k]);
     }
-    SafeDelete(staticOcclusionRenderPass);        
+    SafeDelete(staticOcclusionRenderPass);
 }
 
 void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, RenderSystem* _renderSystem, Landscape* _landscape)
 {
     lastInfoMessage = "Preparing to build static occlusion...";
     staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD);
-        
+
     currentData = _currentData;
     occlusionAreaRect = currentData->bbox;
     cellHeightOffset = currentData->cellHeightOffset;
@@ -77,26 +76,26 @@ void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, Ren
 
     currentFrameX = -1; // we increasing this, before rendering, so we will start from zero
     currentFrameY = 0;
-    currentFrameZ = 0;            
-                
+    currentFrameZ = 0;
+
     renderSystem = _renderSystem;
-    landscape = _landscape;        
-}       
-    
+    landscape = _landscape;
+}
+
 AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
 {
     Vector3 size = occlusionAreaRect.GetSize();
-        
+
     size.x /= xBlockCount;
     size.y /= yBlockCount;
     size.z /= zBlockCount;
-        
+
     Vector3 min(occlusionAreaRect.min.x + x * size.x,
                 occlusionAreaRect.min.y + y * size.y,
                 occlusionAreaRect.min.z + z * size.z);
     if (cellHeightOffset)
     {
-        min.z += cellHeightOffset[x+y*xBlockCount];
+        min.z += cellHeightOffset[x + y * xBlockCount];
     }
     AABBox3 blockBBox(min, Vector3(min.x + size.x, min.y + size.y, min.z + size.z));
     return blockBBox;
@@ -415,22 +414,21 @@ void StaticOcclusion::UpdateInfoString()
 }
 
 StaticOcclusionData::StaticOcclusionData()
-: sizeX(5)
-, sizeY(5)
-, sizeZ(2)
-, blockCount(0)
-, objectCount(0)
-, cellHeightOffset(0)
+    : sizeX(5)
+    , sizeY(5)
+    , sizeZ(2)
+    , blockCount(0)
+    , objectCount(0)
+    , cellHeightOffset(0)
 {
-        
 }
-    
+
 StaticOcclusionData::~StaticOcclusionData()
 {
     SafeDeleteArray(cellHeightOffset);
 }
-    
-StaticOcclusionData & StaticOcclusionData::operator= (const StaticOcclusionData & other)
+
+StaticOcclusionData& StaticOcclusionData::operator=(const StaticOcclusionData& other)
 {
     sizeX = other.sizeX;
     sizeY = other.sizeY;
@@ -443,8 +441,8 @@ StaticOcclusionData & StaticOcclusionData::operator= (const StaticOcclusionData 
     SafeDeleteArray(cellHeightOffset);
     if (other.cellHeightOffset)
     {
-        cellHeightOffset = new float32[sizeX*sizeY];
-        memcpy(cellHeightOffset, other.cellHeightOffset, sizeof(float32)*sizeX*sizeY);
+        cellHeightOffset = new float32[sizeX * sizeY];
+        memcpy(cellHeightOffset, other.cellHeightOffset, sizeof(float32) * sizeX * sizeY);
     }
 
     return *this;
@@ -453,15 +451,15 @@ StaticOcclusionData & StaticOcclusionData::operator= (const StaticOcclusionData 
 void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint32 _objectCount,
                                const AABBox3& _bbox, const float32* _cellHeightOffset)
 {
-    SafeDeleteArray(cellHeightOffset);    
-        
+    SafeDeleteArray(cellHeightOffset);
+
     objectCount = _objectCount;
     sizeX = _sizeX;
     sizeY = _sizeY;
     sizeZ = _sizeZ;
     blockCount = sizeX * sizeY * sizeZ;
     bbox = _bbox;
-        
+
     objectCount += (32 - objectCount & 31);
 
     auto numElements = blockCount * objectCount / 32;
@@ -470,8 +468,8 @@ void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint
 
     if (_cellHeightOffset)
     {
-        cellHeightOffset = new float32[sizeX*sizeY];
-        memcpy(cellHeightOffset, _cellHeightOffset, sizeof(float32)*sizeX*sizeY);
+        cellHeightOffset = new float32[sizeX * sizeY];
+        memcpy(cellHeightOffset, _cellHeightOffset, sizeof(float32) * sizeX * sizeY);
     }
 }
 
@@ -489,16 +487,15 @@ void StaticOcclusionData::EnableVisibilityForObject(uint32 blockIndex, uint32 ob
     DVASSERT(index < dataHolder.size());
     dataHolder[index] |= 1 << (objectIndex & 31);
 }
-    
+
 void StaticOcclusionData::DisableVisibilityForObject(uint32 blockIndex, uint32 objectIndex)
 {
     auto index = (blockIndex * objectCount / 32) + (objectIndex / 32);
     DVASSERT(index < dataHolder.size());
     dataHolder[index] &= ~(1 << (objectIndex & 31));
 }
-    
-    
-uint32 * StaticOcclusionData::GetBlockVisibilityData(uint32 blockIndex)
+
+uint32* StaticOcclusionData::GetBlockVisibilityData(uint32 blockIndex)
 {
     auto index = blockIndex * objectCount / 32;
     DVASSERT(index < dataHolder.size());

@@ -373,10 +373,10 @@ Scene::~Scene()
 
     for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
     {
-		AnimatedMesh * obj = *t;
-		obj->Release();
-	}
-	animatedMeshes.clear();
+        AnimatedMesh* obj = *t;
+        obj->Release();
+    }
+    animatedMeshes.clear();
 	
 	for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
 	{
@@ -1049,7 +1049,7 @@ void Scene::ImportShadowColor(Entity * rootNode)
                 sceneGlobalMaterial->AddProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
                 props->DeleteKey("ShadowColor");
             }
-		}
+        }
     }
 }
 

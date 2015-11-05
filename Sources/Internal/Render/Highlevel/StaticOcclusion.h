@@ -89,7 +89,7 @@ struct StaticOcclusionFrameResult
 
 class StaticOcclusion
 {
-public:    
+public:
     StaticOcclusion();
     ~StaticOcclusion();
 
@@ -102,7 +102,7 @@ public:
 
     const String& GetInfoMessage() const;
 
-private:    
+private:
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
 
     void MarkQueriesAsCompletedForObjectInBlock(uint16 objectIndex, uint32 blockIndex);
@@ -149,7 +149,6 @@ private:
     uint32 currentFrameY = 0;
     uint32 currentFrameZ = 0;
 };
-
 };
 
 #endif //__DAVAENGINE_STATIC_OCCLUSION__

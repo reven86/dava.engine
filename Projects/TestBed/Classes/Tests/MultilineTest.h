@@ -41,7 +41,7 @@ class TextDelegate1;
 class TextDelegate2;
 class TextDelegateMulti;
 
-class MultilineTest : public BaseScreen
+class MultilineTest : public BaseScreen, public DAVA::UITextFieldDelegate
 {
 public:
     MultilineTest();
@@ -49,11 +49,18 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
 
+    // UITextFieldDelegate interface
+    void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& oldText) override
+    {
+    }
+
 private:
+    void OnShowHideClick(BaseObject* sender, void* data, void* callerData);
+    UIControl* topLayerControl = nullptr;
+
     DAVA::UIButton* CreateUIButton(DAVA::Font* font, const DAVA::Rect& rect, const DAVA::String& text,
                              void (MultilineTest::*onClick)(DAVA::BaseObject*, void*, void*));
 
-private:
     DAVA::UITextField* textField1 = nullptr;
     DAVA::UITextField* textField2 = nullptr;
     DAVA::UITextField* textFieldMulti = nullptr;

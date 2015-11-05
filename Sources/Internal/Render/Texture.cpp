@@ -217,10 +217,10 @@ Texture * Texture::Get(const FilePath & pathName)
     Texture* texture = nullptr;
     TexturesMap::iterator it = textureMap.find(FILEPATH_MAP_KEY(pathName));
     if (it != textureMap.end())
-	{
-		texture = it->second;
-		texture->Retain();
-	}
+    {
+        texture = it->second;
+        texture->Retain();
+    }
     return texture;
 }
 
@@ -394,7 +394,7 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
     if (!loaded)
     {
         Logger::Error("[Texture::CreateFromImage] Cannot load texture from image. Descriptor: %s, GPU: %s",
-            descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
+                      descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
 
         SafeDelete(images);
 		SafeRelease(texture);
@@ -402,9 +402,9 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
     }
 
     texture->SetParamsFromImages(images);
-	texture->FlushDataToRenderer(images);
+    texture->FlushDataToRenderer(images);
 
-	return texture;
+    return texture;
 }
 
 bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
@@ -685,11 +685,11 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
     if (texture)
     {
         texture->loadedAsFile = gpuForLoading;
-		AddToMap(texture);
-	}
+        AddToMap(texture);
+    }
 
-	delete descriptor;
-	return texture;
+    delete descriptor;
+    return texture;
 }
     
 void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, uint32 _height)
@@ -740,10 +740,10 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
     {
         loadedAsFile = gpuForLoading;
 
-		SetParamsFromImages(images);
-		FlushDataToRenderer(images);
-	}
-	else
+        SetParamsFromImages(images);
+        FlushDataToRenderer(images);
+    }
+    else
     {
         SafeDelete(images);
         
@@ -953,14 +953,14 @@ Texture* Texture::CreatePink(rhi::TextureType requestedType, bool checkers)
         tex->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, true);
         tex->texDescriptor->dataSettings.cubefaceFlags = 0x000000FF;
     }
-	else
-	{
+    else
+    {
         tex->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, false);
     }
 
     tex->MakePink(checkers);
 
-	return tex;
+    return tex;
 }
 
 void Texture::MakePink(bool checkers)
@@ -970,8 +970,8 @@ void Texture::MakePink(bool checkers)
     Vector<Image *> *images = new Vector<Image *> ();
     if (texDescriptor->IsCubeMap())
     {
-        for(uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
-		{
+        for (uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
+        {
             Image *img = Image::CreatePinkPlaceholder(checkers);
 			img->cubeFaceID = i;
 			img->mipmapLevel = 0;
