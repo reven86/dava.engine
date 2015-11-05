@@ -41,6 +41,8 @@
 #include "FileSystem/LocalizationIPhone.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/LocalizationAndroid.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "FileSystem/LocalizationWinUAP.h"
 #else
 #include "Core/Core.h"
 #endif
@@ -85,16 +87,19 @@ void LocalizationSystem::InitWithDirectory(const FilePath &directoryPath)
     Init();
 }
 
-void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
+void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
-    DVASSERT(directoryPath.IsDirectoryPathname());
-    this->directoryPath = directoryPath;
+    DVASSERT(dirPath.IsDirectoryPathname());
+    directoryPath = dirPath;
 #if defined(__DAVAENGINE_IPHONE__)
 	LocalizationIPhone::SelectPreferedLocalizationForPath(directoryPath);
 #elif defined(__DAVAENGINE_ANDROID__)
     LocalizationAndroid::SelectPreferedLocalization();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    LocalizationWinUAP::SelectPreferedLocalization();
 #else
-    SetCurrentLocale(Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE));
+    String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
+    SetCurrentLocale(loc);
 #endif
 }
 
@@ -109,6 +114,8 @@ String LocalizationSystem::GetDeviceLocale() const
 	return String(LocalizationIPhone::GetDeviceLang());
 #elif defined(__DAVAENGINE_ANDROID__)
     return LocalizationAndroid::GetDeviceLang();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    return LocalizationWinUAP::GetDeviceLang();
 #else
     return DEFAULT_LOCALE;
 #endif

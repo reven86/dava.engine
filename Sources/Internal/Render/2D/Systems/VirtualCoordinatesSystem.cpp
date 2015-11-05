@@ -130,7 +130,9 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
 		inputScaleFactor = h;
 		inputOffset.x = 0.5f * ((float32)virtualScreenSize.dx - (float32)inputAreaSize.dx * inputScaleFactor);
 	}
-    
+
+    virtualSizeChanged.Emit(virtualScreenSize);
+
     if(enabledReloadResourceOnResize)
     {
         Sprite::ValidateForSize();
@@ -150,6 +152,8 @@ void VirtualCoordinatesSystem::SetPhysicalScreenSize(int32 width, int32 height)
     physicalScreenSize.dx = width;
     physicalScreenSize.dy = height;
     wasScreenResized = true;
+
+    physicalSizeChanged.Emit(physicalScreenSize);
 }
 
 void VirtualCoordinatesSystem::SetVirtualScreenSize(int32 width, int32 height)
@@ -165,6 +169,8 @@ void VirtualCoordinatesSystem::SetInputScreenAreaSize(int32 width, int32 height)
     inputAreaSize.dx = width;
     inputAreaSize.dy = height;
     wasScreenResized = true;
+
+    inputAreaSizeChanged.Emit(inputAreaSize);
 }
     
 void VirtualCoordinatesSystem::SetProportionsIsFixed( bool needFixed )

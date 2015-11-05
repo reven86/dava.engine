@@ -34,11 +34,11 @@
 
 #include "Animation/LinearAnimation.h"
 #include "Animation/BezierSplineAnimation.h"
-#include "Render/RenderManager.h"
 #include "Collision/CollisionObject2.h"
 #include "Animation/KeyframeAnimation.h"
 #include "Scene2D/GameObjectAnimations.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA
 {
@@ -73,16 +73,14 @@ GameObject::GameObject()
 	sprite = 0;
 	manager = 0;
 	color = Color(1.0f, 1.0f, 1.0f, 1.0f);
-	srcOp = BLEND_SRC_ALPHA;
-	destOp = BLEND_ONE_MINUS_SRC_ALPHA;
+    blending = BLENDING_ALPHABLEND;
 
-    
-	collision = 0;
-	groupId = 0;
-	priority = 0;
-	parent = 0;
-	userData = 0;
-	isDebugDraw = false;
+    collision = 0;
+    groupId = 0;
+    priority = 0;
+    parent = 0;
+    userData = 0;
+    isDebugDraw = false;
     nextManager = 0;
 }
 	
@@ -310,23 +308,23 @@ void GameObject::Draw()
 
 	if (sprite)
 	{
-		RenderManager::Instance()->SetColor(color.r, color.g, color.b, color.a);
-        RenderSystem2D::Instance()->Draw(sprite, &globalDrawState);
+        RenderSystem2D::Instance()->Draw(sprite, &globalDrawState, color);
 
-//		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x - 1, globalDrawState.position.y - 1, 3, 3));
-//		RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	}else
-	{
-//		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x, globalDrawState.position.y, 10, 10));
-//		RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	}
-	
-	if (isDebugDraw && collision)
-	{
-		collision->DebugDraw(RenderState::RENDERSTATE_2D_BLEND);
-	}
+        //		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x - 1, globalDrawState.position.y - 1, 3, 3));
+        //		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+    else
+    {
+        //		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x, globalDrawState.position.y, 10, 10));
+        //		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    if (isDebugDraw && collision)
+    {
+        collision->DebugDraw();
+    }
 //	if (align == ALIGN_LEFTTOP)
 //	{
 //		//[sprite drawFrameF:frame atX:position.x atY:position.y];

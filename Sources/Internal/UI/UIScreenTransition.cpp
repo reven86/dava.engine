@@ -28,7 +28,6 @@
 
 
 #include "UI/UIScreenTransition.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
@@ -36,19 +35,20 @@
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#include "UI/UI3DView.h"
+#include "Scene3D/Scene.h"
+#include "UI/UIScreenshoter.h"
+
 namespace DAVA
 {
-Sprite * UIScreenTransition::renderTargetPrevScreen = 0;
-Sprite * UIScreenTransition::renderTargetNextScreen = 0;
-
-UniqueHandle UIScreenTransition::alphaClearStateHandle = InvalidUniqueHandle;
+Sprite* UIScreenTransition::renderTargetPrevScreen = 0;
+Sprite* UIScreenTransition::renderTargetNextScreen = 0;
 
 UIScreenTransition::UIScreenTransition()
 {
     duration = 0.7f;
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
-
 }
 
 UIScreenTransition::~UIScreenTransition()
@@ -62,14 +62,12 @@ void UIScreenTransition::CreateRenderTargets()
         Logger::FrameworkDebug("Render targets already created");
         return;
     }
-    /*copy of default 3d blend with alpha write only - to minimize state changes*/
-    alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_COLORMASK_ALPHA);
 
     uint32 width = (uint32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
     uint32 height = (uint32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 
-    Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
-    Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
+    Texture* tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, true);
+    Texture* tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, true);
 
     renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height, true);
     renderTargetNextScreen = Sprite::CreateFromTexture(tex2, 0, 0, (float32)width, (float32)height, true);
@@ -84,86 +82,30 @@ void UIScreenTransition::ReleaseRenderTargets()
     SafeRelease(renderTargetNextScreen);
 }
 
-void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen)
+void UIScreenTransition::StartTransition(UIScreen* _prevScreen, UIScreen* _nextScreen)
 {
+    DVASSERT_MSG(_prevScreen != nullptr, "[UIScreenTransition::StartTransition] prevScreen is nullptr");
+    DVASSERT_MSG(_nextScreen != nullptr, "[UIScreenTransition::StartTransition] nextScreen is nullptr");
+
     CreateRenderTargets();
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
-    Rect oldViewport = RenderManager::Instance()->GetViewport();
-    
-    RenderSystem2D::Instance()->Flush();
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture());
 
-    Texture * textureTargetPrev = renderTargetPrevScreen->GetTexture();
-    RenderManager::Instance()->SetRenderTarget(textureTargetPrev);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)textureTargetPrev->GetWidth(), (float32)textureTargetPrev->GetHeight()));
-    RenderManager::Instance()->ResetColor();
-    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-    RenderManager::Instance()->FlushState();
-    RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
-
-    RenderSystem2D::Instance()->Setup2DMatrices();
-
-    if (prevScreen)
-    {
-        prevScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-
-        if (prevScreen->IsOnScreen())
-            prevScreen->SystemWillBecomeInvisible();
-
-        prevScreen->SystemWillDisappear();
-        // prevScreen->UnloadResources();
-        if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
-            prevScreen->UnloadGroup();
-        prevScreen->SystemDidDisappear();
-
-        SafeRelease(prevScreen);
-    }
-
-    RenderSystem2D::Instance()->Flush();
-
-    /*clear alpha*/
-    RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
-    RenderManager::Instance()->FlushState();
-    RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
+    if (prevScreen->IsOnScreen())
+        prevScreen->SystemWillBecomeInvisible();
+    prevScreen->SystemWillDisappear();
+    if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
+        prevScreen->UnloadGroup();
+    prevScreen->SystemDidDisappear();
+    SafeRelease(prevScreen);
 
     nextScreen->LoadGroup();
     nextScreen->SystemWillAppear();
+    nextScreen->SystemUpdate(SystemTimer::FrameDelta());
 
-    //
-    Texture * textureTargetNext = renderTargetNextScreen->GetTexture();
-    RenderManager::Instance()->SetRenderTarget(textureTargetNext);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)textureTargetNext->GetWidth(), (float32)textureTargetNext->GetHeight()));
-    RenderManager::Instance()->ResetColor();
-    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-    RenderManager::Instance()->FlushState();
-    RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
-
-    RenderSystem2D::Instance()->Setup2DMatrices();
-
-    float32 timeElapsed = SystemTimer::FrameDelta();
-    nextScreen->SystemUpdate(timeElapsed);
-    nextScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-
-    RenderSystem2D::Instance()->Flush();
-
-    /*clear alpha*/
-    RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
-    RenderManager::Instance()->FlushState();
-    RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
-    
-    RenderManager::Instance()->SetRenderTarget(0);
-    RenderManager::Instance()->SetViewport(oldViewport);
-    RenderSystem2D::Instance()->Setup2DMatrices();
-
-    //  Debug images. Left here for future bugs :)
-    //    Image * image = renderTargetPrevScreen->GetTexture()->CreateImageFromMemory();
-    //    ImageLoader::Save(image, "~doc:/render_target_prev.png");
-    //    SafeRelease(image);
-    //
-    //    Image * image2 = renderTargetNextScreen->GetTexture()->CreateImageFromMemory();
-    //    ImageLoader::Save(image2, "~doc:/render_target_next.png");
-    //    SafeRelease(image2);
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(nextScreen, renderTargetNextScreen->GetTexture());
 
     currentTime = 0;
 }
@@ -175,11 +117,15 @@ void UIScreenTransition::Update(float32 timeElapsed)
     if (currentTime >= duration)
     {
         currentTime = duration;
+
         UIControlSystem::Instance()->ReplaceScreen(nextScreen);
+
         nextScreen->SystemDidAppear();
         if (nextScreen->IsOnScreen())
             nextScreen->SystemWillBecomeVisible();
+
         ReleaseRenderTargets();
+
         // go to next screen
         UIControlSystem::Instance()->UnlockInput();
         UIControlSystem::Instance()->UnlockSwitch();
@@ -189,26 +135,24 @@ void UIScreenTransition::Update(float32 timeElapsed)
             Here we call update control to make calls to update / draw sequential and avoid problem with missing Update
             We pass current timeElapsed because we miss current frame time
             */
-        nextScreen->SystemUpdate(timeElapsed); // 
+        nextScreen->SystemUpdate(timeElapsed); //
     }
 }
 
-void UIScreenTransition::Draw(const UIGeometricData &geometricData)
+void UIScreenTransition::Draw(const UIGeometricData& geometricData)
 {
-    RenderSystem2D::Instance()->Setup2DMatrices();
-
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 
     drawState.SetScale(0.5f, 1.0f);
     drawState.SetPosition(0, 0);
 
-    RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
+    RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
 
     drawState.SetScale(0.5f, 1.0f);
     drawState.SetPosition((VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx) / 2.0f, 0);
 
-    RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
+    RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
 }
 
 void UIScreenTransition::SetDuration(float32 timeInSeconds)
@@ -221,5 +165,28 @@ bool UIScreenTransition::IsLoadingTransition()
     return false;
 }
 
-};
+UI3DView* UIScreenTransition::FindFirst3dView(UIControl* control)
+{
+    List<UIControl*> processControls;
+    processControls.push_back(control);
+    while (!processControls.empty())
+    {
+        auto currentCtrl = processControls.front();
+        processControls.pop_front();
 
+        UI3DView* current3dView = dynamic_cast<UI3DView*>(currentCtrl);
+        if (nullptr != current3dView)
+        {
+            return current3dView;
+        }
+
+        auto& children = currentCtrl->GetChildren();
+        for (auto child : children)
+        {
+            processControls.push_back(child);
+        }
+    }
+    return nullptr;
+}
+
+};

@@ -34,15 +34,13 @@
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
 
 	class Scene;
 	class DataNode;
-	class MaterialSystem;
-	class Material;
-	class InstanceMaterialState;
 	class NMaterial;
 	class Texture;
 	class NMaterial;
@@ -52,41 +50,13 @@ namespace DAVA
 	{
     public:
         struct PolygonGroupLoadInfo
-        {            
-            uint32 filePos;
-            int32 requestedFormat;
-            bool onScene;
-            PolygonGroupLoadInfo():filePos(0), requestedFormat(0), onScene(false) {}
+        {
+            uint32 filePos = 0;
+            int32 requestedFormat = 0;
+            bool onScene = false;
         };
-	private:
-		
-		struct MaterialBinding
-		{
-			uint64 parentKey;
-			NMaterial* instanceMaterial;
-			
-			MaterialBinding()
-			{
-				parentKey = 0;
-				instanceMaterial = NULL;
-			}
-		};
-		
-		FilePath rootNodePathName;
-		FilePath scenePath;
-		bool debugLogEnabled;
-		Scene* scene;
-		uint32 lastError;
-		uint32 version;
-		FastName defaultMaterialQuality;
-		Map<uint64, DataNode*> dataBlocks;
-		Map<uint64, NMaterial*> importedMaterials;
-		Vector<MaterialBinding> materialBindings;
-
-        Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
 	
 	public:        
-		
         SerializationContext();
 		~SerializationContext();
 				
@@ -153,33 +123,32 @@ namespace DAVA
 			return (it != dataBlocks.end()) ? it->second : NULL;
 		}
 		
-		inline void SetImportedMaterial(uint64 blockId, NMaterial* data)
-		{
-			importedMaterials[blockId] = data;
-		}
-		
-		inline NMaterial* GetImportedMaterial(uint64 blockId)
-		{
-			Map<uint64, NMaterial*>::iterator it = importedMaterials.find(blockId);
-			return (it != importedMaterials.end()) ? it->second : NULL;
-		}
-		
 		inline void AddBinding(uint64 parentKey, NMaterial* material)
 		{
 			MaterialBinding binding;
-			binding.instanceMaterial = material;
-			binding.parentKey = parentKey;
-			
-			materialBindings.push_back(binding);
-		}
-		
-		inline void SetLastError(uint32 error)
-		{
-			lastError = error;
-		}
-		
-		inline uint32 GetLastError()
-		{
+            binding.childMaterial = material;
+            binding.parentKey = parentKey;
+
+            materialBindings.push_back(binding);
+        }
+
+        inline void SetGlobalMaterialKey(uint64 materialKey)
+        {
+            globalMaterialKey = materialKey;
+        }
+
+        inline uint64 GetGlobalMaterialKey()
+        {
+            return globalMaterialKey;
+        }
+
+        inline void SetLastError(uint32 error)
+        {
+            lastError = error;
+        }
+
+        inline uint32 GetLastError()
+        {
 			return lastError;
 		}
 		
@@ -193,18 +162,34 @@ namespace DAVA
 			return defaultMaterialQuality;
 		}
 		
-		NMaterial* ConvertOldMaterialToNewMaterial(Material* oldMaterial,
-											InstanceMaterialState* oldMaterialState,
-												   uint64 oldMaterialId);
-		
-		Texture* PrepareTexture(uint32 textureTypeHint, Texture* tx);
-		
 		void ResolveMaterialBindings();
 
         void AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos);
         void AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format);
         void LoadPolygonGroupData(File *file);
-	};
+
+    private:
+        struct MaterialBinding
+        {
+            uint64 parentKey = 0;
+            NMaterial* childMaterial = nullptr;
+        };
+
+        Map<uint64, DataNode*> dataBlocks;
+        Map<uint64, NMaterial*> importedMaterials;
+        Vector<MaterialBinding> materialBindings;
+        Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
+
+        Scene* scene = nullptr;
+        FilePath rootNodePathName;
+        FilePath scenePath;
+        FastName defaultMaterialQuality;
+        uint64 globalMaterialKey = 0;
+        uint32 lastError = 0;
+        uint32 version = 0;
+
+        bool debugLogEnabled = false;
+    };
 };
 
 #endif

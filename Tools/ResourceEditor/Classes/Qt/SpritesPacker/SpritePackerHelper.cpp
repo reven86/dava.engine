@@ -28,7 +28,7 @@
 
 
 #include "SpritePackerHelper.h"
-#include "SpritesPacker.h"
+#include "SpriteResourcesPacker.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include <QtConcurrentRun>
@@ -48,7 +48,7 @@ SpritePackerHelper::SpritePackerHelper()
 
 void SpritePackerHelper::UpdateParticleSprites(DAVA::eGPUFamily gpu)
 {
-	FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
+    FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
     if(projectPath.IsEmpty())
     {
         Logger::Warning("[ParticlesEditorSpritePackerHelper::UpdateParticleSprites] Project path not set.");
@@ -63,9 +63,9 @@ void SpritePackerHelper::UpdateParticleSprites(DAVA::eGPUFamily gpu)
 void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 {
 	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
-	FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
-	FilePath inputDir = projectPath + "DataSource/Gfx/Particles/";
-	FilePath outputDir = projectPath + "Data/Gfx/Particles/";
+    FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
+    FilePath inputDir = projectPath + "DataSource/Gfx/Particles/";
+    FilePath outputDir = projectPath + "Data/Gfx/Particles/";
 
 	if(!FileSystem::Instance()->IsDirectory(inputDir))
 	{
@@ -79,7 +79,7 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
     bool isSrcChanged = resourcePacker.RecalculateDirMD5(inputDir, projectPath + "DataSource/Gfx/particles.md5", true);
     if (isSrcChanged)
     {
-        SpritesPacker packer;
+        SpriteResourcesPacker packer;
         packer.SetInputDir(inputDir);
         packer.SetOutputDir(outputDir);
         packer.PackTextures(gpu);

@@ -30,7 +30,7 @@
 #include "TextureDescriptorTool.h"
 #include "TextureDescriptorUtils.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Render/PixelFormatDescriptor.h"
 
 using namespace DAVA;
@@ -126,8 +126,6 @@ bool TextureDescriptorTool::InitializeFromCommandLine()
 
 void TextureDescriptorTool::ReadCompressionParams()
 {
-    PixelFormatDescriptor::InitializePixelFormatDescriptors();
-    
 	compressionParams.clear();
 	for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
 	{

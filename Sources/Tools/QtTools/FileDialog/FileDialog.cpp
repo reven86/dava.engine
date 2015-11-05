@@ -28,38 +28,10 @@
 
 
 #include "QtTools/FileDialog/FileDialog.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
-
-class FrameworkLoopGuard
-{
-public:
-    
-    FrameworkLoopGuard()
-    {
-        auto loop = FrameworkLoop::Instance();
-        if(loop)
-        {
-            loop->SetPaused(true);
-        }
-    }
-    
-    ~FrameworkLoopGuard()
-    {
-        auto loop = FrameworkLoop::Instance();
-        if(loop)
-        {   //INFO: this magic helps us with OSX OpenGL Context on File dialog
-            loop->Context();
-            loop->SetPaused(false);
-        }
-    }
-};
-
 
 QString FileDialog::getOpenFileName(QWidget *parent, const QString &caption, const QString &dir,
                                      const QString &filter, QString *selectedFilter, Options options)
 {
-    FrameworkLoopGuard guard;
-
     auto fileName = QFileDialog::getOpenFileName(parent, caption, dir, filter, selectedFilter, options);
 
     return fileName;
@@ -69,8 +41,6 @@ QString FileDialog::getOpenFileName(QWidget *parent, const QString &caption, con
 QUrl FileDialog::getOpenFileUrl(QWidget *parent, const QString &caption, const QUrl &dir,
                                  const QString &filter, QString *selectedFilter, Options options, const QStringList &supportedSchemes)
 {
-    FrameworkLoopGuard guard;
-
     auto fileUrl = QFileDialog::getOpenFileUrl(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
     
     return fileUrl;
@@ -80,8 +50,6 @@ QUrl FileDialog::getOpenFileUrl(QWidget *parent, const QString &caption, const Q
 QString FileDialog::getSaveFileName(QWidget *parent, const QString &caption, const QString &dir,
                                const QString &filter, QString *selectedFilter, Options options)
 {
-    FrameworkLoopGuard guard;
-
     auto fileName = QFileDialog::getSaveFileName(parent, caption, dir, filter, selectedFilter, options);
     
     return fileName;
@@ -92,8 +60,6 @@ QUrl FileDialog::getSaveFileUrl(QWidget *parent, const QString &caption, const Q
                            const QString &filter, QString *selectedFilter, Options options,
                            const QStringList &supportedSchemes)
 {
-    FrameworkLoopGuard guard;
-
     auto fileUrl = QFileDialog::getSaveFileUrl(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
     
     return fileUrl;
@@ -102,8 +68,6 @@ QUrl FileDialog::getSaveFileUrl(QWidget *parent, const QString &caption, const Q
 
 QString FileDialog::getExistingDirectory(QWidget *parent, const QString &caption, const QString &dir, Options options)
 {
-    FrameworkLoopGuard guard;
-
     auto directory = QFileDialog::getExistingDirectory(parent, caption, dir, options);
     
     return directory;
@@ -113,8 +77,6 @@ QString FileDialog::getExistingDirectory(QWidget *parent, const QString &caption
 QUrl FileDialog::getExistingDirectoryUrl(QWidget *parent, const QString &caption, const QUrl &dir,
                                           Options options, const QStringList &supportedSchemes)
 {
-    FrameworkLoopGuard guard;
-
     auto dirrectoryUrl = QFileDialog::getExistingDirectoryUrl(parent, caption, dir, options, supportedSchemes);
     
     return dirrectoryUrl;
@@ -124,8 +86,6 @@ QUrl FileDialog::getExistingDirectoryUrl(QWidget *parent, const QString &caption
 QStringList FileDialog::getOpenFileNames(QWidget *parent, const QString &caption, const QString &dir,
                                     const QString &filter, QString *selectedFilter, Options options)
 {
-    FrameworkLoopGuard guard;
-
     auto fileNames = QFileDialog::getOpenFileNames(parent, caption, dir, filter, selectedFilter, options);
     
     return fileNames;
@@ -136,10 +96,7 @@ QList<QUrl> FileDialog::getOpenFileUrls(QWidget *parent, const QString &caption,
                                    const QString &filter, QString *selectedFilter, Options options,
                                    const QStringList &supportedSchemes)
 {
-    FrameworkLoopGuard guard;
-
     auto fileUrls = QFileDialog::getOpenFileUrls(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
     
     return fileUrls;
 }
-

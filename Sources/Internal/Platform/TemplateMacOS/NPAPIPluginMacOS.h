@@ -84,8 +84,8 @@
 - (void) onResume;
 
 -(void) parseEvent:(NPCocoaEvent*) event;
--(void) processEvent:(int)touchPhase touch:(NPCocoaEvent*)touch;
--(void) moveTouchesToVector:(NPCocoaEvent*)curEvent touchPhase:(int)touchPhase outTouches:(DAVA::Vector<DAVA::UIEvent>*)outTouches;
+- (void)processEvent:(DAVA::UIEvent::Phase)touchPhase touch:(NPCocoaEvent*)touch;
+- (void)moveTouchesToVector:(NPCocoaEvent*)curEvent touchPhase:(DAVA::UIEvent::Phase)touchPhase outTouches:(DAVA::Vector<DAVA::UIEvent>*)outTouches;
 
 -(void) keyDown:(NPCocoaEvent*) event;
 -(void) keyUp:(NPCocoaEvent*) event;

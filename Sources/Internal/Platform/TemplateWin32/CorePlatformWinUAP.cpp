@@ -76,32 +76,36 @@ Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
     ApplicationViewWindowingMode viewMode;
     auto func = [this, &viewMode] { viewMode = xamlApp->GetScreenMode(); };
     RunOnUIThreadBlocked(func);
-
     switch (viewMode)
     {
     case ApplicationViewWindowingMode::FullScreen:
-        return eScreenMode::MODE_FULLSCREEN;
+        return eScreenMode::FULLSCREEN;
     case ApplicationViewWindowingMode::PreferredLaunchViewSize:
-        return eScreenMode::MODE_WINDOWED;
+        return eScreenMode::WINDOWED;
     case ApplicationViewWindowingMode::Auto:
-        return eScreenMode::MODE_UNSUPPORTED;
     default:
-        return eScreenMode::MODE_UNSUPPORTED;
+        // Unknown screen mode -> return default value
+        return eScreenMode::FULLSCREEN;
     }
 }
 
-void CorePlatformWinUAP::SwitchScreenToMode(eScreenMode screenMode)
+bool CorePlatformWinUAP::SetScreenMode(eScreenMode screenMode)
 {
-    ApplicationViewWindowingMode mode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
-    if (screenMode == Core::MODE_FULLSCREEN)
+    switch (screenMode)
     {
-        mode = ApplicationViewWindowingMode::FullScreen;
+    case DAVA::Core::eScreenMode::FULLSCREEN:
+        RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen); });
+        return true;
+    case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
+        Logger::Error("Unimplemented screen mode");
+        return false;
+    case DAVA::Core::eScreenMode::WINDOWED:
+        RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize); });
+        return true;
+    default:
+        DVASSERT_MSG(false, "Unknown screen mode");
+        return false;
     }
-    else if (screenMode == Core::MODE_WINDOWED)
-    {
-        mode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
-    }
-    RunOnUIThread([this, mode]() { xamlApp->SetScreenMode(mode); });
 }
 
 DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
@@ -112,12 +116,31 @@ DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
     return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
 }
 
-void CorePlatformWinUAP::SetCursorPinning(bool isPinning)
+void CorePlatformWinUAP::SetScreenScaleMultiplier(float32 multiplier)
 {
-    RunOnUIThread([this, isPinning]() {
-        xamlApp->SetCursorPinning(isPinning);
-        xamlApp->SetCursorVisible(!isPinning);
+    Core::SetScreenScaleMultiplier(multiplier);
+    xamlApp->ResetScreen();
+}
+
+bool CorePlatformWinUAP::GetCursorVisibility()
+{
+    return xamlApp->GetCursorVisible();
+}
+
+InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetMouseCaptureMode()
+{
+    return xamlApp->GetMouseCaptureMode();
+}
+
+bool CorePlatformWinUAP::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
+{
+    RunOnUIThreadBlocked([this, mode]() {
+        if (xamlApp->SetMouseCaptureMode(mode))
+        {
+            xamlApp->SetCursorVisible(mode != InputSystem::eMouseCaptureMode::PINING);
+        }
     });
+    return GetMouseCaptureMode() == mode;
 }
 
 bool CorePlatformWinUAP::IsUIThread() const
@@ -149,16 +172,6 @@ void CorePlatformWinUAP::RunOnMainThread(std::function<void()>&& fn, bool blocke
     {
         xamlApp->MainThreadDispatcher()->RunAsyncAndWait(std::forward<std::function<void()>>(fn));
     }
-}
-
-// temporary decision, need change when signal will be enabled
-DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func)
-{
-    return [=](DeviceInfo::eHIDType type, bool b) {
-        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
-        DVASSERT(nullptr != core && "In MainThreadRedirector() function CorePlatformWinUAP* = nullptr");
-        core->RunOnMainThread([=]() { func(type, b); });
-    };
 }
 
 }   // namespace DAVA

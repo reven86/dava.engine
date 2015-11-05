@@ -132,20 +132,19 @@ public:
         This function normally is called internally from RenderPass class (or from SetupDynamicParameters). In most cases you'll not need it. 
          \param[in] externalClipPlane - if not NULL replaces near clipping plane with this and build projection matrix accordingly
      */
-	void PrepareDynamicParameters(Vector4 *externalClipPlane = NULL);
-	/** 
+    void PrepareDynamicParameters(bool invertProjection, Vector4* externalClipPlane = NULL);
+    /** 
         \brief Function applies camera transformations (projection, model-view matrices) to RenderManager
         This function normally is called internally from RenderPass class. In most cases you'll not need it. 
         \param[in] externalClipPlane - if not NULL replaces near clipping plane with this and build projection matrix accordingly
      */
-	void SetupDynamicParameters(Vector4 *externalClipPlane = NULL);
-	
-	/**     
+    void SetupDynamicParameters(bool invertProjection, Vector4* externalClipPlane = NULL);
+
+    /**     
         \brief Restore camera transform to original camera transform that was set using 
      */
-	void RestoreOriginalSceneTransform();
-	
-    
+    void RestoreOriginalSceneTransform();
+
     /**
          \brief return current xmin of this camera
          \returns xmin for this camera
@@ -283,8 +282,10 @@ public:
         This matrix is right matrix that should be used in all 3D computations, that depends from camera, but final multiplication should be done to model view matrix.
         \returns current camera matrix
      */
-    const Matrix4 & GetMatrix() const;  
-	
+    const Matrix4& GetMatrix() const;
+
+    const Matrix4& GetProjectionMatrix() const;
+
     /**
         \brief Rebuild camera from all values that set inside it.
      */
@@ -295,10 +296,9 @@ public:
         This function is called when you load camera from file, using camera matrix
      */
 	void ExtractCameraToValues();
-	
 
-    void RebuildProjectionMatrix();
-	void RebuildViewMatrix();
+    void RebuildProjectionMatrix(bool invertProjection = false);
+    void RebuildViewMatrix();
 
     /**
         \brief Clone current camera
@@ -310,8 +310,8 @@ public:
         \brief Get project * camera matrix
         \returns matrix 
      */
-    const Matrix4 &GetViewProjMatrix();
-    
+    const Matrix4& GetViewProjMatrix(bool invertProjection = false);
+
     /**
         \brief Function to return 2D position of 3D point that is transformed to screen. 
         \returns 2D point on screen.
@@ -335,20 +335,14 @@ public:
         \returns pointer to frustum object
      */
     Frustum * GetFrustum() const;
-    
+
     /**
         \brief Get camera zoom factor. 
-        You can use zoom factor to have dependencies between camera zoom and visualisation of object
+        You can use zoom factor to have dependencies between camera zoom and visualization of object
         \returns tanf(fov / 2). 
      */
     float32 GetZoomFactor() const;
-    
-    /**
-        \brief Request camera to invert cull order direction.
-     */
-    void SetCullInvert(bool enabled);
 
-    
     /**
         \brief Draw debug camera information if debug flags enabled
      */
@@ -363,16 +357,14 @@ public:
     void CopyMathOnly(const Camera & c);
 
     protected:
-    enum
-    {
-        REQUIRE_REBUILD = 1,
-        REQUIRE_REBUILD_MODEL = 1 << 1,
-        REQUIRE_REBUILD_PROJECTION = 1 << 2,
-        REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1 << 3,
-        INVERT_CULL = 1 << 4,
-    };
-    
-    
+        enum
+        {
+            REQUIRE_REBUILD = 1,
+            REQUIRE_REBUILD_MODEL = 1 << 1,
+            REQUIRE_REBUILD_PROJECTION = 1 << 2,
+            REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1 << 3
+        };
+
 //    virtual SceneNode* CopyDataTo(SceneNode *dstNode);
 	float32 xmin, xmax, ymin, ymax, znear, zfar, aspect;
 	float32 fovX;
@@ -403,16 +395,9 @@ public:
 	
 	void ExtractValuesFromMatrix();
 	void ConstructMatrixFromValues();
-	void Recalc();	
-    
-	
-	/** calls glFrustum for projection matrix */
-	void ApplyFrustum();
-	
-	/** operates on model-view matrix */
-	void ApplyTransform();
-    
-    
+    void Recalc();
+    void ValidateProperties();
+
     void CalculateZoomFactor();
     
     float32 zoomFactor;

@@ -52,7 +52,6 @@ void Mesh::AddPolygonGroup(PolygonGroup * polygonGroup, NMaterial * material)
     RenderBatch * batch = new RenderBatch();
     batch->SetPolygonGroup(polygonGroup);
     batch->SetMaterial(material);
-    batch->SetRenderDataObject(polygonGroup->renderDataObject);
     batch->SetStartIndex(0);
     batch->SetIndexCount(polygonGroup->GetIndexCount());
     AddRenderBatch(batch);

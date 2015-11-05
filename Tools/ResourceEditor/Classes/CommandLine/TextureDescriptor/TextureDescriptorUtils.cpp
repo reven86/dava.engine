@@ -106,7 +106,21 @@ void TextureDescriptorUtils::CopyCompressionParams(const FilePath &descriptorPat
         
         if((srcCompression->format == FORMAT_PVR2 || srcCompression->format == FORMAT_PVR4) && (gpu != GPU_POWERVR_ANDROID))
         {
-            descriptor->compression[gpu].format = FORMAT_ETC1;
+            PixelFormat newFormat = FORMAT_ETC1;
+            switch (gpu)
+            {
+            case GPU_TEGRA:
+            case GPU_DX11:
+                newFormat = FORMAT_DXT1;
+                break;
+            case GPU_ADRENO:
+                newFormat = FORMAT_ATC_RGB;
+                break;
+            default:
+                break;
+            }
+
+            descriptor->compression[gpu].format = newFormat;
         }
         else
         {

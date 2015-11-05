@@ -30,9 +30,6 @@ add_definitions       (
 -DQT_LARGEFILE_SUPPORT
 -DQT_THREAD_SUPPORT
 )
-                              
-file                          ( GLOB_RECURSE QT_LIST "Classes/*.h" )
-qt5_wrap_cpp                  ( MOC_APP_SRCS ${QT_LIST} )
 
 file                          ( GLOB UI_LIST "Ui/*.ui" )
 qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
@@ -40,7 +37,7 @@ qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
 file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
-set                           ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
 
@@ -52,8 +49,7 @@ set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.pli
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 set( MACOS_DYLIB                ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
-set( ADDED_SRC                  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set( LIBRARIES                  ${QT_LIBRARIES} )
+set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()

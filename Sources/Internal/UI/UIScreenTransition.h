@@ -36,6 +36,8 @@
 
 namespace DAVA
 {
+class UI3DView;
+class UIScreenshoter;
 
 class UIScreenTransition : public UIScreen
 {
@@ -50,21 +52,23 @@ public:
 	virtual void Update(float32 timeElapsed);
 	virtual void Draw(const UIGeometricData &geometricData);
 	virtual void SetDuration(float32 timeInSeconds);
-	virtual bool IsLoadingTransition(); 
+    virtual bool IsLoadingTransition();
+
 protected:
-	static Sprite * renderTargetPrevScreen;
-	static Sprite * renderTargetNextScreen;
-	
-	
-	Interpolation::Func interpolationFunc;
-	float32 currentTime;
-	float32 duration;
-	float32 normalizedTime;
+    UI3DView* FindFirst3dView(UIControl* control);
+
+    static Sprite* renderTargetPrevScreen;
+    static Sprite* renderTargetNextScreen;
+
+    Interpolation::Func interpolationFunc;
+    float32 currentTime;
+    float32 duration;
+    float32 normalizedTime;
 	
 	UIScreen * prevScreen;
 	UIScreen * nextScreen;
-    
-    static UniqueHandle alphaClearStateHandle;
+    UIScreenshoter* shooter;
+
 };
 
 };

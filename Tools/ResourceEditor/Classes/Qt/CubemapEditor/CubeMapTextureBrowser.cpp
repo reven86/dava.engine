@@ -33,7 +33,6 @@
 #include "Qt/Main/QtUtils.h"
 #include "ui_CubeMapTextureBrowser.h"
 #include "../../StringConstants.h"
-#include "Scene3D/Systems/SkyboxSystem.h"
 #include "Project/ProjectManager.h"
 #include "ImageTools/ImageTools.h"
 
@@ -59,12 +58,12 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
 	ui->listTextures->setItemDelegate(&cubeListItemDelegate);
 	
 	ConnectSignals();
-	
-	FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
-															ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
-		
-	ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
-	ReloadTextures(projectPath.GetAbsolutePathname());
+
+    FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
+                                                            ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
+
+    ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
+    ReloadTextures(projectPath.GetAbsolutePathname());
 	
 	UpdateCheckedState();
 }
@@ -200,11 +199,6 @@ void CubeMapTextureBrowser::OnChooseDirectoryClicked()
 void CubeMapTextureBrowser::OnReloadClicked()
 {
 	QString path = ui->textRootPath->text();
-	
-	if(scene)
-	{
-		scene->skyboxSystem->Reload();
-	}
 	
 	ReloadTexturesFromUI(path);
 }

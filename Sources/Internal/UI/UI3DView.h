@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
 
-namespace DAVA 
+namespace DAVA
 {
 /**
     \ingroup controlsystem
@@ -41,40 +41,83 @@ namespace DAVA
  */
 
 class Scene;
-class UI3DView : public UIControl 
+class UI3DView : public UIControl
 {
+public:
+    UI3DView(const Rect& rect = Rect());
+
 protected:
     virtual ~UI3DView();
 public:
-	UI3DView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-    
     void SetScene(Scene * scene);
     Scene * GetScene() const;
 
-    virtual void AddControl(UIControl *control);
-    virtual void Update(float32 timeElapsed);
-    virtual void Draw(const UIGeometricData &geometricData);
+    inline const Rect& GetLastViewportRect()
+    {
+        return viewportRc;
+    }
 
-    virtual void WillBecomeVisible(); 	
-	virtual void WillBecomeInvisible();
+    void AddControl(UIControl* control) override;
+    void Update(float32 timeElapsed) override;
+    void Draw(const UIGeometricData& geometricData) override;
 
-	inline const Rect & GetLastViewportRect()
-	{
-		return viewportRc;
-	}
+    void SetSize(const Vector2& newSize) override;
+    UI3DView* Clone() override;
+    void CopyDataFrom(UIControl* srcControl) override;
 
-    virtual void SetSize(const Vector2 &newSize);
-    virtual UIControl* Clone();
+    void Input(UIEvent* currentInput) override;
 
-    virtual void Input(UIEvent *currentInput);
+    void SetDrawToFrameBuffer(bool enable);
+    bool GetDrawToFrameBuffer() const;
+    void SetFrameBufferScaleFactor(float32 scale);
+    float32 GetFrameBufferScaleFactor() const;
+    const Vector2& GetFrameBufferRenderSize() const;
 
-    
 protected:
-    Scene * scene;
-	Rect viewportRc;
+    Scene* scene;
+    Rect viewportRc;
     bool registeredInUIControlSystem;
+
+private:
+    void PrepareFrameBuffer();
+    void PrepareFrameBufferIfNeed();
+
+    bool drawToFrameBuffer;
+    bool needUpdateFrameBuffer;
+    float32 fbScaleFactor;
+    Vector2 fbRenderSize;
+    Vector2 fbTexSize;
+    Texture* frameBuffer;
+
+public:
+    INTROSPECTION_EXTEND(UI3DView, UIControl,
+                         PROPERTY("drawToFrameBuffer", "Draw sceene draw through the frame buffer", GetDrawToFrameBuffer, SetDrawToFrameBuffer, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("frameBufferScaleFactor", "Set scale factor to draw the frame buffer", GetFrameBufferScaleFactor, SetFrameBufferScaleFactor, I_SAVE | I_VIEW | I_EDIT) nullptr);
 };
-	
+
+inline bool UI3DView::GetDrawToFrameBuffer() const
+{
+    return drawToFrameBuffer;
+}
+
+inline float32 UI3DView::GetFrameBufferScaleFactor() const
+{
+    return fbScaleFactor;
+}
+
+inline const Vector2& UI3DView::GetFrameBufferRenderSize() const
+{
+    return fbRenderSize;
+}
+
+inline void UI3DView::PrepareFrameBufferIfNeed()
+{
+    if (needUpdateFrameBuffer)
+    {
+        PrepareFrameBuffer();
+        needUpdateFrameBuffer = false;
+    }
+}
 };
 
 #endif

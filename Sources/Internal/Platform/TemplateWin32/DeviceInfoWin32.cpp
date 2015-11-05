@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -115,13 +115,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 {
     List<DeviceInfo::StorageInfo> l;
     return l;
-}
-
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo(&sysinfo);
-    return sysinfo.dwNumberOfProcessors;
 }
 
 String DeviceInfoPrivate::GetUDID()
@@ -249,15 +242,19 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-        DVASSERT(false && "Not Implement");
-        return false;
+    //TODO: remove this empty realization and implement detection of HID connection
+    if (type == DeviceInfo::HID_MOUSE_TYPE || type == DeviceInfo::HID_KEYBOARD_TYPE)
+    {
+        return true;
+    }
+    return false;
 }
 
-void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
+bool DeviceInfoPrivate::IsTouchPresented()
 {
-        DVASSERT(false && "Not Implement");
+    //TODO: remove this empty realization and implement detection touch
+    return false;
 }
-
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)

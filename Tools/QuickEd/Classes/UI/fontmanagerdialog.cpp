@@ -216,7 +216,7 @@ void FontManagerDialog::ValidateFont(const Font* font) const
     {
         case Font::TYPE_DISTANCE:
         {
-            const DFFont* distanceFont = static_cast<const DFFont*>(font);
+            const GraphicFont* distanceFont = static_cast<const GraphicFont*>(font);
             DistanceFontValidator validator;
  
             QString texPath = QString::fromStdString(distanceFont->GetTexture()->GetPathname().GetAbsolutePathname());
@@ -258,7 +258,7 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
 	QString fontName = selectedIndexes.value(0).data().toString();
     QString fontType = selectedIndexes.value(1).data().toString();
 	// Created font according to its type
-	if (fontType == FONT_TYPE_GRAPHIC)
+    if ((fontType == FONT_TYPE_GRAPHIC) || (fontType == FONT_TYPE_DISTANCE)) //RHI_COMPLETE - review this
     {
 		// Get sprites directory to open
 		QString currentFontSpriteDir = ResourcesManageHelper::GetDefaultFontSpritesPath(currentFontPath);
@@ -278,9 +278,9 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
 				// Get sprite file relative path
 				QString fontSprite = ResourcesManageHelper::GetResourceRelativePath(fontSpritePath);
 				// Create Graphics font to validate it - but first truncate "*.txt" extension of sprite
-				returnFont = GraphicsFont::Create(fontDefinition.toStdString(), fontSprite.toStdString());
-			}
-			else
+                returnFont = GraphicFont::Create(fontDefinition.toStdString(), fontSprite.toStdString());
+            }
+            else
 			{
 				ResourcesManageHelper::ShowErrorMessage(fontName);
 				return returnFont;
@@ -294,15 +294,10 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
         QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontName);
         //Try to create font to validate it
         returnFont = FTFont::Create(fontPath.toStdString());
-	}
-	else if (fontType == FONT_TYPE_DISTANCE)
-	{
-		QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontName);
-        returnFont = DFFont::Create(fontPath.toStdString());
-	}
-	
-	if (!returnFont)
-	{
+    }
+
+    if (!returnFont)
+    {
     	//If font was not created - show error message
         //No dialog result will be set in this case
          QString message;

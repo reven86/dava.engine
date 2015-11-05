@@ -80,8 +80,10 @@ void TileTexturePreviewWidget::Clear()
 
 void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& color /*  = Color::White */)
 {
-	bool blocked = signalsBlocked();
-	blockSignals(true);
+    DVASSERT(previewTexture->GetPixelFormat() == FORMAT_RGBA8888);
+
+    bool blocked = signalsBlocked();
+    blockSignals(true);
 
 	images.push_back(SafeRetain(previewTexture));
 
@@ -219,9 +221,10 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
     
 	QTreeWidgetItem* item = topLevelItem(number);
 	QColor color = ColorToQColor(colors[number]);
+    color.setAlpha(255);
 
-	QPalette palette = labels[number]->palette();
-	palette.setColor(labels[number]->backgroundRole(), color);
+    QPalette palette = labels[number]->palette();
+    palette.setColor(labels[number]->backgroundRole(), color);
 	labels[number]->setPalette(palette);
 
 	QString str;
@@ -350,27 +353,30 @@ void TileTexturePreviewWidget::SetMode(TileTexturePreviewWidget::eWidgetModes mo
 
 Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, const DAVA::Color &color)
 {
-	uint32 width = image->GetWidth();
-	uint32 height = image->GetHeight();
+    DVASSERT(image->GetPixelFormat() == FORMAT_RGBA8888);
 
-	Texture* srcTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-												  width, height, false);
-    Texture * dstTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    Image* newImage = Image::Create(image->GetWidth(), image->GetHeight(), image->GetPixelFormat());
 
-    RenderManager::Instance()->SetColor(color);
-    RenderHelper::Instance()->Set2DRenderTarget(dstTexture);
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
-    RenderHelper::Instance()->DrawTexture(srcTexture, RenderState::RENDERSTATE_2D_BLEND, Rect(0.f, 0.f, (float32)width, (float32)height));
+    uint32* imageData = (uint32*)image->GetData();
+    uint32* newImageData = (uint32*)newImage->GetData();
 
-	RenderManager::Instance()->ResetColor();
-    RenderManager::Instance()->SetRenderTarget(0);
+    int32 pixelsCount = image->dataSize / sizeof(uint32);
 
-    Image* res = dstTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+    for (int32 i = 0; i < pixelsCount; ++i)
+    {
+        uint8* pixelData = (uint8*)imageData;
+        uint8* newPixelData = (uint8*)newImageData;
 
-    SafeRelease(dstTexture);
-	SafeRelease(srcTexture);
+        newPixelData[0] = (uint8)floorf(pixelData[0] * color.r);
+        newPixelData[1] = (uint8)floorf(pixelData[1] * color.g);
+        newPixelData[2] = (uint8)floorf(pixelData[2] * color.b);
+        newPixelData[3] = 255;
 
-	return res;
+        ++imageData;
+        ++newImageData;
+    }
+
+    return newImage;
 }
 
 void TileTexturePreviewWidget::UpdateColor(int32 index, const Color& color)

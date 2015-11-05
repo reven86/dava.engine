@@ -44,18 +44,11 @@ class AndroidDelegate: public DAVA::AndroidSystemDelegate
 	};
 
 	char httpDownloaderName[MAX_PATH_SZ];
-    
-    GLint frameBuffer;
-    GLint renderBuffer;
 
 public:
 
 	AndroidDelegate(JavaVM *vm);
 
-	void SetBuffers(GLint newFrameBuffer, GLint newRenderBuffer);
-
-    virtual GLint RenderBuffer();
-	virtual GLint FrameBuffer();
 	virtual bool DownloadHttpFile(const DAVA::String & url, const DAVA::String & documentsPathname);
 };
 

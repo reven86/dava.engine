@@ -28,61 +28,62 @@
 
 
 #include "Render/Highlevel/SpriteObject.h"
-#include "Render/Highlevel/SpriteRenderBatch.h"
-#include "Render/Highlevel/RenderFastNames.h"
-#include "Scene3D/Systems/MaterialSystem.h"
-
+#include "Render/RenderCallbacks.h"
 #include "Render/Material/NMaterialNames.h"
 
 namespace DAVA 
 {
 
 SpriteObject::SpriteObject()
-    : RenderObject()
-    , sprite(NULL)
 {
-    Texture* t = Texture::CreatePink();
-    Sprite *spr = Sprite::CreateFromTexture(t, 0, 0, (float32)t->GetWidth(), (float32)t->GetHeight());
-    Init(spr, 0, Vector2(1.f, 1.f), Vector2(0.f, 0.f));
-
-    SafeRelease(spr);
-    SafeRelease(t);
+    ScopedPtr<Texture> pink(Texture::CreatePink());
+    ScopedPtr<Sprite> localSprite(Sprite::CreateFromTexture(pink, 0, 0, static_cast<float32>(pink->GetWidth()), static_cast<float32>(pink->GetHeight())));
+    Init(localSprite, 0, Vector2(1.0f, 1.0f), Vector2(0.0f, 0.0f));
+    RegisterRestoreCallback();
 }
 
-SpriteObject::SpriteObject(const FilePath &pathToSprite, int32 _frame
-							, const Vector2 &reqScale, const Vector2 &pivotPoint)
-	:   RenderObject()
-    ,   sprite(NULL)
+SpriteObject::SpriteObject(const FilePath& pathToSprite, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint)
 {
-	Sprite *spr = Sprite::Create(pathToSprite);
-	Init(spr, _frame, reqScale, pivotPoint);
-	SafeRelease(spr);
+    ScopedPtr<Sprite> localSprite(Sprite::Create(pathToSprite));
+    Init(localSprite, _frame, reqScale, pivotPoint);
+    RegisterRestoreCallback();
 }
 
-SpriteObject::SpriteObject(Sprite *spr, int32 _frame
-							, const Vector2 &reqScale, const Vector2 &pivotPoint)
-	:   RenderObject()
-    ,   sprite(NULL)
+SpriteObject::SpriteObject(Sprite* spr, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint)
 {
 	Init(spr, _frame, reqScale, pivotPoint);
+    RegisterRestoreCallback();
 }
-
 
 SpriteObject::~SpriteObject()
 {
-	SafeRelease(sprite);
+    Clear();
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
+}
+
+void SpriteObject::RegisterRestoreCallback()
+{
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
+}
+
+void SpriteObject::ClearRenderBatches()
+{
+    while (GetRenderBatchCount() > 0)
+    {
+        RenderBatch* batch = GetRenderBatch(0U);
+        if (batch->vertexBuffer.IsValid())
+            rhi::DeleteVertexBuffer(batch->vertexBuffer);
+        if (batch->indexBuffer.IsValid())
+            rhi::DeleteIndexBuffer(batch->indexBuffer);
+        RemoveRenderBatch(0U);
+    }
 }
 
 void SpriteObject::Clear()
 {
-    while (GetRenderBatchCount())
-    {
-        RemoveRenderBatch(GetRenderBatchCount() - 1);
-    }
-
+    ClearRenderBatches();
+    bbox.Empty();
     SafeRelease(sprite);
-    verts.clear();
-    textures.clear();
 }
 
 void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint )
@@ -90,7 +91,6 @@ void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, con
     Clear();
 
 	type = TYPE_SPRITE;
-
 	spriteType = SPRITE_OBJECT;
 
 	sprScale = reqScale;
@@ -101,54 +101,127 @@ void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, con
 	SetupRenderBatch();
 }
 
+void SpriteObject::Restore()
+{
+    RenderBatch* batch = GetRenderBatch(0U);
+    if (batch == nullptr)
+        return;
+
+    rhi::HVertexBuffer vBuffer = batch->vertexBuffer;
+    rhi::HIndexBuffer iBuffer = batch->indexBuffer;
+
+    if (rhi::NeedRestoreVertexBuffer(vBuffer) || rhi::NeedRestoreIndexBuffer(iBuffer))
+        UpdateBufferData(vBuffer, iBuffer);
+}
+void SpriteObject::UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffer iBuffer)
+{
+    uint32 framesCount = sprite->GetFrameCount();
+    uint32 vxCount = framesCount * 4;
+    uint32 indCount = framesCount * 6;
+
+    Vector<float32> verticies(vxCount * (3 + 2));
+    Vector<uint16> indices(indCount);
+
+    float32* verticesPtr = verticies.data();
+    uint16* indicesPtr = indices.data();
+    for (uint32 i = 0; i < framesCount; ++i)
+    {
+        float32 x0 = sprite->GetRectOffsetValueForFrame(i, Sprite::X_OFFSET_TO_ACTIVE) - sprPivot.x;
+        float32 y0 = sprite->GetRectOffsetValueForFrame(i, Sprite::Y_OFFSET_TO_ACTIVE) - sprPivot.y;
+        float32 x1 = x0 + sprite->GetRectOffsetValueForFrame(i, Sprite::ACTIVE_WIDTH);
+        float32 y1 = y0 + sprite->GetRectOffsetValueForFrame(i, Sprite::ACTIVE_HEIGHT);
+        x0 *= sprScale.x;
+        x1 *= sprScale.y;
+        y0 *= sprScale.x;
+        y1 *= sprScale.y;
+
+        float32* pT = sprite->GetTextureVerts(i);
+
+        *((Vector3*)verticesPtr) = Vector3(x0, y0, 0);
+        bbox.AddPoint(*((Vector3*)verticesPtr));
+        verticesPtr += 3;
+        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 0));
+        verticesPtr += 2;
+        *((Vector3*)verticesPtr) = Vector3(x1, y0, 0);
+        bbox.AddPoint(*((Vector3*)verticesPtr));
+        verticesPtr += 3;
+        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 2));
+        verticesPtr += 2;
+        *((Vector3*)verticesPtr) = Vector3(x0, y1, 0);
+        bbox.AddPoint(*((Vector3*)verticesPtr));
+        verticesPtr += 3;
+        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 4));
+        verticesPtr += 2;
+        *((Vector3*)verticesPtr) = Vector3(x1, y1, 0);
+        bbox.AddPoint(*((Vector3*)verticesPtr));
+        verticesPtr += 3;
+        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 6));
+        verticesPtr += 2;
+
+        *indicesPtr = i * 4 + 0;
+        ++indicesPtr;
+        *indicesPtr = i * 4 + 1;
+        ++indicesPtr;
+        *indicesPtr = i * 4 + 2;
+        ++indicesPtr;
+
+        *indicesPtr = i * 4 + 2;
+        ++indicesPtr;
+        *indicesPtr = i * 4 + 1;
+        ++indicesPtr;
+        *indicesPtr = i * 4 + 3;
+        ++indicesPtr;
+    }
+    rhi::UpdateVertexBuffer(vBuffer, verticies.data(), 0, vxCount * (3 + 2) * sizeof(float32));
+    rhi::UpdateIndexBuffer(iBuffer, indices.data(), 0, indCount * sizeof(uint16));
+}
+
 void SpriteObject::SetupRenderBatch()
 {
-	if(sprite)
-	{
-		for (int32 i = 0; i < sprite->GetFrameCount(); ++i) 
-		{
-			CreateMeshFromSprite(i);
-		}
-	}
+    if (sprite == nullptr)
+        return;
 
-	RenderDataObject *renderDataObject = new RenderDataObject();
-	renderDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, &verts.front());
-	renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &textures.front());
+    uint32 vxCount = sprite->GetFrameCount() * 4;
+    uint32 indCount = sprite->GetFrameCount() * 6;
 
-//	Material * material = new Material();
-//	material->SetType(Material::MATERIAL_UNLIT_TEXTURE);
-//	material->SetAlphablend(true);
-//	material->SetBlendSrc(BLEND_SRC_ALPHA);
-//	material->SetBlendDest(BLEND_ONE_MINUS_SRC_ALPHA);
-//	material->SetName("SpriteObject_material");
-//	material->GetRenderState()->SetTexture(sprite->GetTexture(frame));
+    NMaterial* material = new NMaterial();
+    material->SetMaterialName(FastName("SpriteObject_material"));
+    material->SetFXName(NMaterialName::TEXTURED_ALPHABLEND);
+    material->SetRuntime(true);
+    material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
 
-	NMaterial* material = NMaterial::CreateMaterialInstance(FastName("SpriteObject_material"),
-															NMaterialName::TEXTURED_ALPHABLEND,
-															NMaterial::DEFAULT_QUALITY_NAME);
-	material->GetParent()->SetRuntime(true);
-	material->SetRuntime(true);
-	material->SetTexture(NMaterial::TEXTURE_ALBEDO, sprite->GetTexture(frame));
-        
-	SpriteRenderBatch *batch = new SpriteRenderBatch();
-	batch->SetMaterial(material);
-    batch->SetRenderDataObject(renderDataObject);
-	AddRenderBatch(batch);
+    RenderBatch* batch = new RenderBatch();
+    batch->SetMaterial(material);
 
-	SafeRelease(material);
-	SafeRelease(renderDataObject);
-	SafeRelease(batch);
+    batch->vertexBuffer = rhi::CreateVertexBuffer(vxCount * (3 + 2) * sizeof(float32));
+    batch->indexBuffer = rhi::CreateIndexBuffer(indCount * sizeof(uint16));
+    UpdateBufferData(batch->vertexBuffer, batch->indexBuffer);
+
+    batch->vertexBase = 0;
+    batch->vertexCount = vxCount;
+    batch->primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    batch->indexCount = 6;
+    batch->startIndex = frame * 6;
+
+    rhi::VertexLayout vxLayout;
+    vxLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    vxLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vxLayout);
+
+    AddRenderBatch(batch);
+
+    SafeRelease(material);
+    SafeRelease(batch);
 }
 
 
 RenderObject * SpriteObject::Clone(RenderObject *newObject)
 {
-	if(!newObject)
-	{
-		DVASSERT_MSG(IsPointerToExactClass<SpriteObject>(this), "Can clone only SpriteObject");
-
- 		newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
-	}
+    if (newObject == nullptr)
+    {
+        DVASSERT_MSG(IsPointerToExactClass<SpriteObject>(this), "Can clone only SpriteObject");
+        newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
+    }
 
 	SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
 
@@ -165,18 +238,17 @@ void SpriteObject::SetFrame(int32 newFrame)
 {
 	frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
 
-	int32 count = GetRenderBatchCount();
-	if(count)
-	{
-		GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterial::TEXTURE_ALBEDO, sprite->GetTexture(frame));
-	}
+    if (GetRenderBatchCount() > 0)
+    {
+        GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
+        GetRenderBatch(0)->startIndex = frame * 6;
+    }
 }
 
 int32 SpriteObject::GetFrame() const
 {
 	return frame;
 }
-
 
 Sprite * SpriteObject::GetSprite() const
 {
@@ -203,71 +275,78 @@ const Vector2 & SpriteObject::GetPivot() const
 	return sprPivot;
 }
 
-
-void SpriteObject::CreateMeshFromSprite(int32 frameToGen)
+void SpriteObject::BindDynamicParameters(Camera* camera)
 {
-	float32 x0 = sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::X_OFFSET_TO_ACTIVE) - sprPivot.x;
-	float32 y0 = sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::Y_OFFSET_TO_ACTIVE) - sprPivot.y;
-	float32 x1 = x0 + sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::ACTIVE_WIDTH);
-	float32 y1 = y0 + sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::ACTIVE_HEIGHT);
-	x0 *= sprScale.x;
-	x1 *= sprScale.y;
-	y0 *= sprScale.x;
-	y1 *= sprScale.y;
+    const Matrix4& cameraMatrix = camera->GetMatrix();
+    switch (spriteType)
+    {
+    case SpriteObject::SPRITE_OBJECT:
+    {
+        worldMatrix = (*worldTransform);
+        break;
+    };
+    case SpriteObject::SPRITE_BILLBOARD:
+    {
+        Matrix4 inverse(Matrix4::IDENTITY);
 
-	//triangle 1
-	//0, 0
-	float32 *pT = sprite->GetTextureVerts(frameToGen);
+        inverse._00 = cameraMatrix._00;
+        inverse._01 = cameraMatrix._10;
+        inverse._02 = cameraMatrix._20;
 
-    verts.reserve(3 * 4);
+        inverse._10 = cameraMatrix._01;
+        inverse._11 = cameraMatrix._11;
+        inverse._12 = cameraMatrix._21;
 
-	verts.push_back(x0);
-	verts.push_back(y0);
-	verts.push_back(0);
-	//textures.push_back(pT[2 * 2 + 0]);
-	//textures.push_back(pT[2 * 2 + 1]);
+        inverse._20 = cameraMatrix._02;
+        inverse._21 = cameraMatrix._12;
+        inverse._22 = cameraMatrix._22;
 
+        worldMatrix = inverse * (*worldTransform);
+        break;
+    };
+    case SpriteObject::SPRITE_BILLBOARD_TO_CAMERA:
+    {
+        Vector3 look = camera->GetPosition() - Vector3(0.0f, 0.0f, 0.0f) * (*worldTransform);
+        look.Normalize();
+        Vector3 right = CrossProduct(camera->GetUp(), look);
+        Vector3 up = CrossProduct(look, right);
 
-	//1, 0
-	verts.push_back(x1);
-	verts.push_back(y0);
-	verts.push_back(0);
-	//textures.push_back(pT[3 * 2 + 0]);
-	//textures.push_back(pT[3 * 2 + 1]);
+        Matrix4 matrix = Matrix4::IDENTITY;
+        matrix._00 = right.x;
+        matrix._01 = right.y;
+        matrix._02 = right.z;
 
+        matrix._10 = up.x;
+        matrix._11 = up.y;
+        matrix._12 = up.z;
 
-	//0, 1
-	verts.push_back(x0);
-	verts.push_back(y1);
-	verts.push_back(0);
-	//textures.push_back(pT[0 * 2 + 0]);
-	//textures.push_back(pT[0 * 2 + 1]);
+        matrix._20 = look.x;
+        matrix._21 = look.y;
+        matrix._22 = look.z;
 
-	//1, 1
-	verts.push_back(x1);
-	verts.push_back(y1);
-	verts.push_back(0);
-	//textures.push_back(pT[1 * 2 + 0]);
-	//textures.push_back(pT[1 * 2 + 1]);
+        worldMatrix = matrix * (*worldTransform);
+        break;
+    };
+    }
 
-    textures.reserve(2*4);
-	for (int32 i = 0; i < 2*4; i++) 
-	{
-		textures.push_back(*pT);
-		pT++;
-	}
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMatrix, (pointer_size)&worldMatrix);
 }
 
 void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    // we dont need to save render batche(s)
+    // because sprite creating it on loading
+    Vector<IndexedRenderBatch> currentRenderBatches;
+    renderBatchArray.swap(currentRenderBatches);
     RenderObject::Save(archive, serializationContext);
+    renderBatchArray.swap(currentRenderBatches);
 
-    if (!archive || !sprite)
+    if ((archive == nullptr) || (sprite == nullptr))
     {
         return;
     }
 
-    FilePath filePath = this->sprite->GetRelativePathname();
+    FilePath filePath = sprite->GetRelativePathname();
     if (!filePath.IsEmpty())
     {
         archive->SetString("sprite.path", filePath.GetRelativePathname(serializationContext->GetScenePath()));
@@ -278,7 +357,7 @@ void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializati
 {
     RenderObject::Load(archive, serializationContext);
 
-    if (!archive)
+    if (archive == nullptr)
     {
         return;
     }
@@ -286,15 +365,16 @@ void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializati
     String path = archive->GetString("sprite.path");
     if (!path.empty())
     {
-        Sprite* spr = Sprite::Create(serializationContext->GetScenePath() + path);
-        if (spr != NULL)
+        ScopedPtr<Sprite> localSprite(Sprite::Create(serializationContext->GetScenePath() + path));
+        if (localSprite)
         {
-            Init(spr, 0, Vector2(1, 1), Vector2(spr->GetWidth(), spr->GetHeight()) * 0.5f);
+            Init(localSprite, 0, Vector2(1, 1), Vector2(localSprite->GetWidth(), localSprite->GetHeight()) * 0.5f);
             AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
-
-            spr->Release();
         }
 	}
 }
-	
+void SpriteObject::RecalcBoundingBox()
+{
+    // do nothing, box is being calculated during UpdateBufferData
+}
 };
