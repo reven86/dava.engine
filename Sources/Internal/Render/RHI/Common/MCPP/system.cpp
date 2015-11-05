@@ -33,17 +33,17 @@
  *
  * Routines dependent on O.S., compiler or compiler-driver.
  * To port MCPP for the systems not yet ported, you must
- *      1. specify the constants in "configed.H" or "noconfig.H",
+ *      1. specify the constants in "configed.h" or "noconfig.h",
  *      2. append the system-dependent routines in this file.
  */
 
 #include "_mcpp.h"
 
 #if PREPROCESSED
-#include "mcpp.H"
+#include "mcpp.h"
 #else
-#include "system.H"
-#include "internal.H"
+#include "system.h"
+#include "internal.h"
 #endif
 
 #if HOST_SYS_FAMILY == SYS_UNIX
@@ -2694,7 +2694,7 @@ int hmap /* "header map" file of Apple-GCC       */
     inf = inf && (mcpp_debug & PATH); /* Output information   */
 
     strcpy(slbuf1, dir); /* Include directory    */
-    len = strlen(slbuf1);
+    len = static_cast<int>(strlen(slbuf1));
     if (fname && len && slbuf1[len - 1] != PATH_DELIM)
     {
         slbuf1[len] = PATH_DELIM; /* Append PATH_DELIM    */
@@ -2766,7 +2766,7 @@ int hmap /* "header map" file of Apple-GCC       */
             mcpp_fprintf(MCPP_DBG, "Dereferenced \"%s%s\" to \"%s\"\n", dir, fname ? fname : null, slbuf1);
     }
 #endif
-    len = strlen(slbuf1);
+    len = static_cast<int>(strlen(slbuf1));
     start = norm_name = xmalloc(len + 1); /* Need a new buffer    */
     strcpy(norm_name, slbuf1);
 #if SYS_FAMILY == SYS_WIN

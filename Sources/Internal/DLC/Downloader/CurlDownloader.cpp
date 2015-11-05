@@ -228,9 +228,9 @@ DownloadError CurlDownloader::SetupDownload(uint64 seek, uint32 size)
             retCode = DLE_INIT_ERROR;
             break;
         }
-    }  
+    }
 
-    return DLE_NO_ERROR;
+    return retCode;
 }
 
 CURLMcode CurlDownloader::Perform()
@@ -391,7 +391,8 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
                 chunksToSave.pop_front();
             }
             chunksMutex.Unlock();
-            
+
+            // TODO: Aleksei, what if chunk == nullptr?
             bool isWritten = SaveData(chunk->buffer, storePath, chunk->progress);
             
             SafeRelease(chunk);

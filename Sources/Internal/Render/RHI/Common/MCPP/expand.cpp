@@ -38,10 +38,10 @@
 
 
 #if PREPROCESSED
-#include "mcpp.H"
+#include "mcpp.h"
 #else
-#include "system.H"
-#include "internal.H"
+#include "system.h"
+#include "internal.h"
 #endif
 
 #define ARG_ERROR (-255)
@@ -2367,7 +2367,7 @@ int* pragma_op /* Flag of _Pragma (not used in prestd)     */
         case NUM: /* Number token         */
         case OPE: /* Operator or punct.   */
         case NAM: /* Identifier           */
-            len = strlen(mp);
+            len = static_cast<int>(strlen(mp));
             mp += len;
             break;
         case SEP: /* Special character    */

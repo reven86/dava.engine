@@ -841,10 +841,10 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 }
                 control->Release();
                 isIteratorCorrupted = true;
+                SetLayoutDirty();
                 return;
             }
         }
-        SetLayoutDirty();
     }
 
     void UIControl::RemoveFromParent()
@@ -1533,8 +1533,8 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             if (currentInput->touchLocker == this)
             {
                 if (multiInput || currentInputID == currentInput->tid)
-            {
-                if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
+                {
+                    if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
                 {
                     if (IsPointInside(currentInput->point, true))
                     {

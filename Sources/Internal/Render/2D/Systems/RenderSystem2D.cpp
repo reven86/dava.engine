@@ -447,8 +447,8 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 {
-    DVASSERT_MSG(batchDesc.vertexCount > 0 && batchDesc.vertexStride > 0 && batchDesc.vertexPointer != nullptr, "Incorrect vertex position data");
-    DVASSERT_MSG(batchDesc.indexCount > 0 && batchDesc.indexPointer != nullptr, "Incorrect index data");
+    DVASSERT_MSG(batchDesc.vertexPointer != nullptr && batchDesc.vertexStride > 0 && batchDesc.vertexCount > 0, "Incorrect vertex position data");
+    DVASSERT_MSG(batchDesc.indexPointer != nullptr && batchDesc.indexCount > 0, "Incorrect index data");
     DVASSERT_MSG(batchDesc.material != nullptr, "Incorrect material");
     DVASSERT_MSG((batchDesc.samplerStateHandle != rhi::InvalidHandle && batchDesc.textureSetHandle != rhi::InvalidHandle) ||
                  (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
@@ -456,6 +456,12 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 
     DVASSERT_MSG(batchDesc.texCoordPointer == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
     DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
+
+    if (batchDesc.vertexCount == 0 && batchDesc.indexCount == 0)
+    {
+        // Ignore draw for empty geometry
+        return;
+    }
 
     if (currentClip.dx == 0.f || currentClip.dy == 0.f)
     {
@@ -532,46 +538,40 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         static Color magenta = Color(1.f, 0.f, 1.f, 1.f);
         useColor = magenta;
     }
+    uint32 useColorRGBA = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
     // End define draw color
 
-    uint32 useColorRGBA = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
-
-    uint32 colorStride = batchDesc.colorStride;
+    // Prepare vertex color ptr (batchDesc.singleColor or batchDesc.colorPointer)
     const uint32* colorPtr = batchDesc.colorPointer;
+    uint32 colorStride = batchDesc.colorStride;
     if (colorPtr == nullptr)
     {
         colorPtr = &useColorRGBA;
         colorStride = 0;
     }
 
+    // Prepare texture coordinates ptr (batchDesc.texCoordPointer or zero vector)
+    const float32* texPtr = batchDesc.texCoordPointer;
+    uint32 texStride = batchDesc.texCoordStride;
+    if (texPtr == nullptr)
+    {
+        static float32 TEX_ZERO[2] = { 0.f, 0.f };
+        texPtr = TEX_ZERO;
+        texStride = 0;
+    }
+
     // Begin fill vertex and index buffers
     uint32 vi = vertexIndex;
     uint32 ii = indexIndex;
-    if (batchDesc.texCoordPointer)
+    for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
     {
-        for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
-        {
-            BatchVertex& v = currentVertexBuffer[vi++];
-            v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
-            v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
-            v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
-            v.uv.x = batchDesc.texCoordPointer[i * batchDesc.texCoordStride];
-            v.uv.y = batchDesc.texCoordPointer[i * batchDesc.texCoordStride + 1];
-            v.color = colorPtr[i * batchDesc.colorStride];
-        }
-    }
-    else
-    {
-        for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
-        {
-            BatchVertex& v = currentVertexBuffer[vi++];
-            v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
-            v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
-            v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
-            v.uv.x = 0.f;
-            v.uv.y = 0.f;
-            v.color = colorPtr[i * batchDesc.colorStride];
-        }
+        BatchVertex& v = currentVertexBuffer[vi++];
+        v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
+        v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
+        v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
+        v.uv.x = texPtr[i * texStride];
+        v.uv.y = texPtr[i * texStride + 1];
+        v.color = colorPtr[i * colorStride];
     }
     for (uint32 i = 0; i < batchDesc.indexCount; ++i)
     {
@@ -678,7 +678,7 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
         return;
-	}
+    }
 
     static uint16 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
     Vector<uint16> spriteClippedIndecex;
@@ -1092,6 +1092,21 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     Matrix3 transformMatr;
     gd.BuildTransformMatrix(transformMatr);
 
+    Matrix3 flipMatrix;
+    if ((state->flags & ESM_HFLIP) && (state->flags & ESM_VFLIP))
+    {
+        flipMatrix = Matrix3(-1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, sd.size.x, sd.size.y, 1.0f);
+    }
+    else if (state->flags & ESM_HFLIP)
+    {
+        flipMatrix = Matrix3(-1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, sd.size.x, 0.0f, 1.0f);
+    }
+    else if (state->flags & ESM_VFLIP)
+    {
+        flipMatrix = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, sd.size.y, 1.0f);
+    }
+
+    transformMatr = flipMatrix * transformMatr;
     if (needGenerateData || sd.transformMatr != transformMatr)
     {
         sd.transformMatr = transformMatr;
@@ -1401,7 +1416,12 @@ void RenderSystem2D::DrawLine(const Vector2& start, const Vector2& end, float32 
 
 void RenderSystem2D::DrawLines(const Vector<float32>& linePoints, const Color& color)
 {
-    auto ptCount = linePoints.size() / 2;
+    auto ptCount = linePoints.size() / 2; // linePoints are pairs of XY
+    if (ptCount < 2)
+    {
+        return;
+    }
+
     Vector<uint16> indices;
     indices.reserve(ptCount);
     for (auto i = 0U; i < ptCount; ++i)
@@ -1412,8 +1432,8 @@ void RenderSystem2D::DrawLines(const Vector<float32>& linePoints, const Color& c
     BatchDescriptor batch;
     batch.singleColor = color;
     batch.material = DEFAULT_2D_COLOR_MATERIAL;
-    batch.vertexCount = ptCount;
-    batch.indexCount = indices.size();
+    batch.vertexCount = static_cast<uint32>(ptCount);
+    batch.indexCount = static_cast<uint32>(indices.size());
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
     batch.vertexPointer = linePoints.data();
@@ -1466,7 +1486,7 @@ void RenderSystem2D::DrawPolygon(const Polygon2& polygon, bool closed, const Col
         batch.singleColor = color;
         batch.material = DEFAULT_2D_COLOR_MATERIAL;
         batch.vertexCount = ptCount;
-        batch.indexCount = indices.size();
+        batch.indexCount = static_cast<uint32>(indices.size());
         batch.vertexStride = 2;
         batch.texCoordStride = 2;
         batch.vertexPointer = pointsPtr;
@@ -1494,7 +1514,7 @@ void RenderSystem2D::FillPolygon(const Polygon2& polygon, const Color& color)
         batch.singleColor = color;
         batch.material = DEFAULT_2D_COLOR_MATERIAL;
         batch.vertexCount = ptCount;
-        batch.indexCount = indices.size();
+        batch.indexCount = static_cast<uint32>(indices.size());
         batch.vertexPointer = pointsPtr;
         batch.vertexStride = 2;
         batch.texCoordStride = 2;
@@ -1694,6 +1714,8 @@ void TiledDrawData::GenerateTransformData()
         transformedVertices[index] = vertices[index] * transformMatr;
     }
 }
+
+/* StretchDrawData Implementation */
 
 const uint16 StretchDrawData::indeces[18 * 3] = {
     0, 1, 4,

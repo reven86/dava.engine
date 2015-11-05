@@ -230,6 +230,7 @@ PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
     , uiTextField(uiTextField_)
     , properties()
 {
+    uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     properties.createNew = true;
 }
 
@@ -263,9 +264,18 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
     if (properties.visible != isVisible)
     {
         properties.visible = isVisible;
-        properties.visibleChanged = true;
-        properties.visibleAssigned = true;
-        properties.anyPropertyChanged = true;
+        if (isVisible)
+        { // Defer control showing till Update call
+            properties.visibleChanged = true;
+            properties.visibleAssigned = true;
+            properties.anyPropertyChanged = true;
+        }
+        else
+        { // Immediatly hide native control
+            core->RunOnUIThreadBlocked([this]() {
+                SetNativeVisible(false);
+            });
+        }
     }
 }
 

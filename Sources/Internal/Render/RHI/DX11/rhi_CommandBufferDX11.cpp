@@ -447,7 +447,7 @@ void dx11_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 
     if (!(x == 0 && y == 0 && w == 0 && h == 0))
     {
-        D3D11_RECT rect = { x, y, x + w - 1, y + h - 1 };
+        D3D11_RECT rect = { x, y, x + w, y + h };
 
         cb->rs_param.scissorEnabled = true;
         cb->cur_rs = nullptr;
@@ -1128,7 +1128,7 @@ dx11_Present(Handle sync)
         do
         {
             _FrameSync.Lock();
-            frame_cnt = _Frame.size();
+            frame_cnt = static_cast<unsigned>(_Frame.size());
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _FrameSync.Unlock();
         } while (frame_cnt >= _DX11_RenderThreadFrameCount);
