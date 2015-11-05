@@ -242,7 +242,8 @@ bool RegExp::compile(const char* pattern, const char* attributes)
     re_nsub = 0;
     _error_count = 0;
 
-    _buf = new RegBuffer();
+    RegBuffer regBuffer;
+    _buf = &regBuffer;
     _buf->reserve((unsigned)_tcslen(pattern) * 8);
     _parser_pos = this->_pattern;
     _parse_regexp();
@@ -252,8 +253,8 @@ bool RegExp::compile(const char* pattern, const char* attributes)
     }
     _optimize();
     _program = (char*)_buf->data;
-    _buf->data = NULL;
-    delete _buf;
+    _buf->data = nullptr;
+    _buf = nullptr;
 
     if (re_nsub > oldre_nsub)
     {
