@@ -117,20 +117,43 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
         if (cmd1.status == GL_NO_ERROR)
         {
-            GLCommand cmd2[] =
+            if (_GLES2_IsGlDepth24Stencil8Supported)
             {
-              { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-              { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
-              { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
-              /*
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, (need_stencil)?GL_DEPTH_COMPONENT24:GL_DEPTH_COMPONENT16, desc.width, desc.height } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-*/
-            };
+                GLCommand d24s8cmd[] =
+                {
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+                };
+                ExecGL(d24s8cmd, countof(d24s8cmd), force_immediate);
+            }
+            else if (_GLES2_IsGlDepthNvNonLinearSupported)
+            {
+                GLCommand d16s8nvcmd[] =
+                {
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+                };
+                ExecGL(d16s8nvcmd, countof(d16s8nvcmd), force_immediate);
+            }
+            else
+            {
+                GLCommand d16s8cmd[] =
+                {
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+                };
+                ExecGL(d16s8cmd, countof(d16s8cmd), force_immediate);
+            }
+
             /*
             if( !need_stencil )
             {
@@ -139,7 +162,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 cmd2[5].func = GLCommand::NOP;
             }
 */
-            ExecGL(cmd2, countof(cmd2), force_immediate);
 
             uid[1] = uid[0];
         }
