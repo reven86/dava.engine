@@ -154,17 +154,23 @@ UI3DView* UI3DView::Clone()
 {
     UI3DView* ui3DView = new UI3DView(GetRect());
     ui3DView->CopyDataFrom(this);
-    ui3DView->drawToFrameBuffer = drawToFrameBuffer;
-    ui3DView->fbScaleFactor = fbScaleFactor;
-    ui3DView->fbRenderSize = fbRenderSize;
-    ui3DView->fbTexSize = fbTexSize;
-
     // Create FBO on first draw if need
-    ui3DView->frameBuffer = nullptr;
     ui3DView->needUpdateFrameBuffer = true;
     return ui3DView;
 }
-    
+
+void UI3DView::CopyDataFrom(UIControl* srcControl)
+{
+    UIControl::CopyDataFrom(srcControl);
+
+    UI3DView* srcView = DynamicTypeCheck<UI3DView*>(srcControl);
+    drawToFrameBuffer = srcView->drawToFrameBuffer;
+    fbScaleFactor = srcView->fbScaleFactor;
+    fbRenderSize = srcView->fbRenderSize;
+    fbTexSize = srcView->fbTexSize;
+    needUpdateFrameBuffer = srcView->needUpdateFrameBuffer;
+}
+
 void UI3DView::Input(UIEvent *currentInput)
 {
     if(scene)

@@ -63,6 +63,7 @@ public:
 
     void SetSize(const Vector2& newSize) override;
     UI3DView* Clone() override;
+    void CopyDataFrom(UIControl* srcControl) override;
 
     void Input(UIEvent* currentInput) override;
 
