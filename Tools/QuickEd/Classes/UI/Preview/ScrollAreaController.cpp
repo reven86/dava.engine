@@ -35,24 +35,29 @@ ScrollAreaController::ScrollAreaController(QObject* parent)
     : QObject(parent)
     , backgroundControl(new UIControl)
 {
-    backgroundControl->SetName("background control");
+    backgroundControl->SetName("Background control of scroll area controller");
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
-    UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
+    UIScreenManager::Instance()->RegisterScreen(0,  davaUIScreen);
     UIScreenManager::Instance()->SetFirst(0);
+    
     UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
 }
 
 void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
 {
+    if(nullptr != nestedControl)
+    {
+        backgroundControl->RemoveControl(nestedControl);
+    }
     nestedControl = arg;
-    UpdateCanvasContentSize();
-}
-
-UIControl* ScrollAreaController::GetBackgroundControl()
-{
-    return backgroundControl;
+    if(nullptr != nestedControl)
+    {
+        backgroundControl->AddControl(nestedControl);
+        nestedControl->SetPosition(Vector2(Margin, Margin));
+        UpdateCanvasContentSize();
+    }
 }
 
 QSize ScrollAreaController::GetCanvasSize() const
@@ -77,14 +82,58 @@ void ScrollAreaController::UpdateCanvasContentSize()
     {
         const auto& gd = nestedControl->GetGeometricData();
 
-        contentSize = gd.GetAABBox().GetSize();
+        contentSize = gd.GetAABBox().GetSize() * scale;
     }
-    Vector2 marginsSize(margin * 2, margin * 2);
+    Vector2 marginsSize(Margin * 2, Margin * 2);
     Vector2 tmpSize = contentSize + marginsSize;
     backgroundControl->SetSize(tmpSize);
     canvasSize = QSize(tmpSize.dx, tmpSize.dy);
     UpdatePosition();
     emit CanvasSizeChanged(canvasSize);
+}
+
+void ScrollAreaController::SetScale(float arg)
+{
+    arg /= 100.0f;
+    if(scale == arg)
+    {
+        return;
+    }
+    float oldScale = scale;
+    scale = arg;
+
+    QPoint prevPosition = position;
+    QSize prevOffset = canvasSize - viewSize;
+    UpdateCanvasContentSize();
+    QSize newOffset = canvasSize - viewSize;
+    
+    QPoint newPosition;
+    float relativeScale = scale / oldScale;
+    if(prevOffset.width() > 0)
+    {
+        int deltaViewSize = viewSize.width() * 0.5f * (1.0f - 1.0f / relativeScale);
+        int newPositionX = prevPosition.x() + deltaViewSize;
+        newPosition.setX(newPositionX * 1.0f * relativeScale);
+    }
+    else
+    {
+        newPosition.setX(newOffset.width() / 2);
+    }
+       
+    if(prevOffset.height() > 0)
+    {
+        int deltaViewSize = viewSize.height() * 0.5f * (1.0f - 1.0f / relativeScale);
+        int newPositionY = prevPosition.y() + deltaViewSize;
+        newPosition.setY(newPositionY * 1.0f * relativeScale);
+    }
+    else
+    {
+        newPosition.setY(newOffset.height() / 2);
+    }
+    
+    newPosition.setX(qBound(0, newPosition.x(), newOffset.width()));
+    newPosition.setY(qBound(0, newPosition.y(), newOffset.height()));
+    SetPosition(newPosition);
 }
 
 void ScrollAreaController::SetViewSize(const QSize& viewSize_)
@@ -104,8 +153,7 @@ void ScrollAreaController::SetPosition(const QPoint& position_)
     if (position_ != position)
     {
         position = position_;
-        auto newPos = Vector2(-position.x(), -position.y());
-        backgroundControl->SetPosition(newPos);
+        UpdatePosition();
         emit PositionChanged(position);
     }
 }
@@ -114,15 +162,16 @@ void ScrollAreaController::UpdatePosition()
 {
     if (nullptr != nestedControl)
     {
-        Vector2 position(margin, margin);
-        if (viewSize.width() > canvasSize.width())
+        QSize offset = (canvasSize - viewSize) / 2;
+        
+        if(offset.width() > 0)
         {
-            position.x += (viewSize.width() - canvasSize.width()) / 2.0f;
+            offset.setWidth(position.x());
         }
-        if (viewSize.height() > canvasSize.height())
+        if(offset.height() > 0)
         {
-            position.y += (viewSize.height() - canvasSize.height()) / 2.0f;
+            offset.setHeight(position.y());
         }
-        nestedControl->SetPosition(position);
+        backgroundControl->SetPosition(-Vector2(offset.width(), offset.height()));
     }
 }

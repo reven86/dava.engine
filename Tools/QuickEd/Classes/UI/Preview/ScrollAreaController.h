@@ -54,7 +54,6 @@ public:
 
     void SetNestedControl(DAVA::UIControl* nestedControl);
 
-    DAVA::UIControl* GetBackgroundControl();
     QSize GetCanvasSize() const;
     QSize GetViewSize() const;
     QPoint GetPosition() const;
@@ -63,6 +62,7 @@ public slots:
     void SetViewSize(const QSize& size);
     void SetPosition(const QPoint& position);
     void UpdateCanvasContentSize();
+    void SetScale(float scale);
 
 signals:
     void CanvasSizeChanged(const QSize& canvasSize);
@@ -76,7 +76,8 @@ private:
     QSize canvasSize = QSize(0, 0);
     QSize viewSize = QSize(0, 0);
     QPoint position = QPoint(0, 0);
-    const int margin = 50;
+    float scale = 0.0f;
+    const int Margin = 50;
 };
 
 #endif // __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__

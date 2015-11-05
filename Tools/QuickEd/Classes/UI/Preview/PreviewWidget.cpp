@@ -80,9 +80,9 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     }
     connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
-
     connect(scrollAreaController, &ScrollAreaController::PositionChanged, this, &PreviewWidget::OnPositionChanged);
-
+    connect(this, &PreviewWidget::ScaleChanged, scrollAreaController, &ScrollAreaController::SetScale);
+    
     connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
@@ -189,10 +189,8 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     {
         EditorSystemsManager* systemManager = document->GetSystemManager();
         UIControl* root = systemManager->GetRootControl();
-        UIControl* scalableControl = systemManager->GetScalableControl();
         DVASSERT(nullptr != root);
-        scrollAreaController->GetBackgroundControl()->AddControl(root);
-        scrollAreaController->SetNestedControl(scalableControl);
+        scrollAreaController->SetNestedControl(root);
     }
     else
     {

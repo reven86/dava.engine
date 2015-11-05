@@ -38,6 +38,8 @@
 #include <QScreen>
 #include <QTimer>
 #include <QBoxLayout>
+#include <QApplication>
+#include <QAction>
 
 namespace
 {
@@ -146,7 +148,7 @@ void DavaGLView::handleDragMoveEvent(QDragMoveEvent* e)
 {
     controlMapper->dragMoveEvent(e);
 }
-
+#include <QApplication>
 
 ///=======================
 DavaGLWidget::DavaGLWidget(QWidget *parent)
@@ -166,6 +168,16 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     setMinimumSize(cMinSize);
 
     davaGLView = new DavaGLView();
+
+    connect(qApp, &QApplication::focusWindowChanged, [this](QWindow* now) //fix bug with actions focus scope
+            {
+                bool isActive = now == davaGLView;
+                for (auto& action : actions())
+                {
+                    action->setEnabled(isActive);
+                }
+            });
+
     davaGLView->setClearBeforeRendering(false);
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &DavaGLWidget::UpdateView);

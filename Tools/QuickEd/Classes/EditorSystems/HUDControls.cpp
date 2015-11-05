@@ -50,7 +50,7 @@ void FixPositionForScroll(UIControl* controlInHud)
             backgroundControl = backgroundControl->GetParent();
         }
     }
-    controlInHud->SetPosition(controlInHud->GetPosition() - backgroundControl->GetPosition());
+    controlInHud->SetPosition(controlInHud->GetPosition() - backgroundControl->GetPosition() - backgroundControl->GetChildren().front()->GetPosition());
 }
 
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
