@@ -1486,7 +1486,10 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         break;
         case UIEvent::Phase::WHEEL:
         {
-            Input(currentInput);
+            if (IsPointInside(currentInput->point))
+            {
+                Input(currentInput);
+            }
         }
         break;
         case UIEvent::Phase::BEGAN:
