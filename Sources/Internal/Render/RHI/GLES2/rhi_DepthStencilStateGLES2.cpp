@@ -196,7 +196,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_DepthStencilState_Delete = &gles2_DepthStencilState_Delete;
 }
 
-void DepthStencilStateGLES2::InvalidateCache()
+void InvalidateCache()
 {
     _GLES2_depthTestEnabled = -1;
     _GLES2_stencilEnabled = -1;
