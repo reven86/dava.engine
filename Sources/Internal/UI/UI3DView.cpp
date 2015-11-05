@@ -49,6 +49,7 @@ UI3DView::UI3DView(const Rect& rect)
     , frameBuffer(nullptr)
     , fbScaleFactor(1.f)
     , fbRenderSize()
+    , fbTexSize()
     , registeredInUIControlSystem(false)
 {
 
@@ -153,6 +154,14 @@ UI3DView* UI3DView::Clone()
 {
     UI3DView* ui3DView = new UI3DView(GetRect());
     ui3DView->CopyDataFrom(this);
+    ui3DView->drawToFrameBuffer = drawToFrameBuffer;
+    ui3DView->fbScaleFactor = fbScaleFactor;
+    ui3DView->fbRenderSize = fbRenderSize;
+    ui3DView->fbTexSize = fbTexSize;
+
+    // Create FBO on first draw if need
+    ui3DView->frameBuffer = nullptr;
+    ui3DView->needUpdateFrameBuffer = true;
     return ui3DView;
 }
     
@@ -198,7 +207,7 @@ void UI3DView::PrepareFrameBuffer()
             frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
         }
 
-        Vector2 fbSize = Vector2(frameBuffer->GetWidth(), frameBuffer->GetHeight());
+        Vector2 fbSize = Vector2(static_cast<float32>(frameBuffer->GetWidth()), static_cast<float32>(frameBuffer->GetHeight()));
 
         fbTexSize = fbRenderSize / fbSize;
 
