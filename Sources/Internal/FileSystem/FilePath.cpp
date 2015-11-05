@@ -104,28 +104,21 @@ const List<FilePath> FilePath::GetResourcesFolders()
     return resourceFolders;
 }
 
+#if defined(__DAVAENGINE_WIN_UAP__)
 String GetResourceDirName(const String& arch, const String& dirName, const String& resPrefix)
 {
     String result;
-    String replace = '_' + arch + '_'; // for example _x64_
 
-    size_t idx = dirName.find(replace);
-    if (idx == String::npos)
+    size_t idx = dirName.find(arch);
+    if (idx != String::npos)
     {
-        //not found, try in upper case
-        std::transform(replace.begin(), replace.end(), replace.begin(), ::toupper);
-
-        idx = dirName.find(replace);
-        if (idx == String::npos)
-        {
-            return "";
-        }
+        result = dirName;
+        result.replace(idx, arch.size(), resPrefix);
     }
 
-    result = dirName;
-    result.replace(idx, replace.size(), '_' + resPrefix);
     return result;
 }
+#endif
     
 #if defined(__DAVAENGINE_WINDOWS__)
 void FilePath::InitializeBundleName()
@@ -143,16 +136,17 @@ void FilePath::InitializeBundleName()
 
     //get the directory basename
     String dirBaseName = execDirectory.GetLastDirectoryName();
+    std::transform(dirBaseName.begin(), dirBaseName.end(), dirBaseName.begin(), ::tolower);
 
     //find resource dir name
 #if defined(_M_IX86)
-    const char* arch = "x86";
+    String arch = "_x86_";
 #elif defined(_M_X64)
-    const char* arch = "x64";
+    String arch = "_x64_";
 #elif defined(_M_ARM)
-    const char* arch = "arm";
+    String arch = "_arm_";
 #endif
-    String resourceDir = GetResourceDirName(arch, dirBaseName, "neutral_split.dxfeaturelevel-dx11");
+    String resourceDir = GetResourceDirName(arch, dirBaseName, DAVA_WIN_UAP_RESOURCES_PREFIX);
 
     //resource dir found, use it
     if (!resourceDir.empty())
