@@ -44,7 +44,7 @@
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "FileSystem/Logger.h"
 #include "UI/UIWebView.h"
-#include "Render/RHI/rhi_type.h"
+#include "Render/RHI/rhi_Type.h"
 
 using namespace DAVA;
 

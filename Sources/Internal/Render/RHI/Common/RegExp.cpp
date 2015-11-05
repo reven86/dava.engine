@@ -96,12 +96,15 @@ inline char _tcsnextc(const char* str)
 struct
 RegExp::RegBuffer
 {
-    unsigned char* data;
-    unsigned offset;
-    unsigned size;
+    unsigned char* data = nullptr;
+    unsigned offset = 0;
+    unsigned size = 0;
 
-    RegBuffer();
+    RegBuffer() = default;
     ~RegBuffer();
+
+    RegBuffer(const RegBuffer&) = delete;
+    RegBuffer& operator=(const RegBuffer&) = delete;
 
     void reserve(unsigned nbytes);
     void write(const void* data, unsigned nbytes);
@@ -182,7 +185,7 @@ RegExp::~RegExp()
     if (pmatch != &_match)
         free(pmatch); //lint !e424 Inappropriate deallocation
 
-    memset(this, 0, sizeof(RegExp));
+    free(_program);
 }
 
 //------------------------------------------------------------------------------
@@ -239,7 +242,8 @@ bool RegExp::compile(const char* pattern, const char* attributes)
     re_nsub = 0;
     _error_count = 0;
 
-    _buf = new RegBuffer();
+    RegBuffer regBuffer;
+    _buf = &regBuffer;
     _buf->reserve((unsigned)_tcslen(pattern) * 8);
     _parser_pos = this->_pattern;
     _parse_regexp();
@@ -249,8 +253,8 @@ bool RegExp::compile(const char* pattern, const char* attributes)
     }
     _optimize();
     _program = (char*)_buf->data;
-    _buf->data = NULL;
-    delete _buf;
+    _buf->data = nullptr;
+    _buf = nullptr;
 
     if (re_nsub > oldre_nsub)
     {
@@ -1104,9 +1108,11 @@ int RegExp::_parse_piece()
         len = _buf->offset - offset;
         _buf->spread(offset, 1 + sizeof(unsigned) * 3);
         _buf->data[offset] = op;
-        ((unsigned*)(_buf->data + offset + 1))[0] = len;
-        ((unsigned*)(_buf->data + offset + 1))[1] = n;
-        ((unsigned*)(_buf->data + offset + 1))[2] = m;
+
+        // we are using temporary buffer + memcpy to prevent
+        // unaligned memory access on ARM devices
+        unsigned localBuffer[3] = { len, n, m };
+        memcpy(_buf->data + offset + 1, localBuffer, sizeof(localBuffer));
         break;
     }
     return 1;
@@ -2165,15 +2171,6 @@ char* RegExp::replace4(char* input, Match* match, char* replacement)
            (input_len - match->end) * sizeof(char));
     result[result_len] = 0;
     return result;
-}
-
-//------------------------------------------------------------------------------
-
-RegExp::RegBuffer::RegBuffer()
-{
-    data = NULL;
-    offset = 0;
-    size = 0;
 }
 
 //------------------------------------------------------------------------------

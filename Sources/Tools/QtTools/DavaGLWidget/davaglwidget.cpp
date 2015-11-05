@@ -30,9 +30,10 @@
 
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Davaglwidget.h"
-#include "ControlMapper.h"
 #include "DavaRenderer.h"
+#include "Davaglwidget.h"
+
+#include "ControlMapper.h"
 
 #include <QKeyEvent>
 #include <QScreen>
@@ -51,7 +52,7 @@ DavaGLView::DavaGLView()
     , controlMapper(new ControlMapper(this))
 {
     setSurfaceType(QWindow::OpenGLSurface);
-    
+
     setKeyboardGrabEnabled(true);
     setMouseGrabEnabled(true);
 
@@ -119,6 +120,7 @@ void DavaGLView::mouseMoveEvent(QMouseEvent* e)
 
 void DavaGLView::mousePressEvent(QMouseEvent* e)
 {
+    requestActivate();
     controlMapper->mousePressEvent(e);
 }
 
@@ -135,7 +137,9 @@ void DavaGLView::mouseDoubleClickEvent(QMouseEvent* e)
 void DavaGLView::wheelEvent(QWheelEvent* e)
 {
     if ( e->phase() != Qt::ScrollUpdate )
+    {
         return;
+    }
 
     controlMapper->wheelEvent(e);
     if ( e->orientation() == Qt::Vertical )

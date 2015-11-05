@@ -320,15 +320,15 @@ private:
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
 
-    UIScreen * currentScreen;
-	UIScreen * nextScreen;
-	UIScreen * prevScreen;
+    UIScreen* currentScreen;
+    UIScreen* nextScreen;
+    UIScreen* prevScreen;
 
-	int32 screenLockCount;
+    int32 screenLockCount;
 
-	bool removeCurrentScreen;
-	
-	UIControl *exclusiveInputLocker;
+    bool removeCurrentScreen;
+
+    UIControl *exclusiveInputLocker;
     UIControl *hovered;
     
     UIControl *focusedControl;

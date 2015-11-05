@@ -39,11 +39,12 @@ using DAVA::DynamicMemoryFile;
     #include "PreProcess.h"
 
     #define RHI__USE_STD_REGEX 0
+    #define RHI__OPTIMIZED_REGEX 1
 
     #if RHI__USE_STD_REGEX
         #include <regex>
     #else
-        #include "Regexp.h"
+        #include "RegExp.h"
     #endif
 
 namespace rhi
@@ -105,13 +106,12 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     // pre-process source text with #defines, if any
 
     DVASSERT(defines.size() % 2 == 0);
-    def.resize(defines.size() / 2);
-    for (unsigned i = 0; i != def.size(); ++i)
+    def.reserve(defines.size() / 2);
+    for (size_t i = 0, n = defines.size() / 2; i != n; ++i)
     {
-        char d[256];
-
-        sprintf(d, "-D %s=%s", defines[i * 2 + 0].c_str(), defines[i * 2 + 1].c_str());
-        def[i] = d;
+        const char* s1 = defines[i * 2 + 0].c_str();
+        const char* s2 = defines[i * 2 + 1].c_str();
+        def.push_back(DAVA::Format("-D %s=%s", s1, s2));
     }
     for (unsigned i = 0; i != def.size(); ++i)
         argv[argc++] = def[i].c_str();
@@ -151,6 +151,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         RegExp colormask_re;
         RegExp comment_re;
 
+#if !(RHI__OPTIMIZED_REGEX)
         prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
@@ -163,6 +164,20 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         blending2_re.compile(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
         colormask_re.compile(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
         comment_re.compile("^\\s*//.*");
+#else
+        prop_re.compile("property\\s*(\\w+)\\s*(\\w+)\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w\\s=,\\.]*);");
+        proparr_re.compile("property\\s*(float4|float4x4)\\s*(\\w+)\\s*\\[\\s*([\\d]+)\\s*\\]\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w,]*)");
+        fsampler2d_re.compile("DECL_FP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
+        vsampler2d_re.compile("DECL_VP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
+        samplercube_re.compile("DECL_FP_SAMPLERCUBE\\s*\\(\\s*(\\w+)\\s*\\)");
+        ftexture2d_re.compile("FP_TEXTURE2D\\s*\\(\\s*(\\w+)\\s*\\,");
+        vtexture2d_re.compile("VP_TEXTURE2D\\s*\\(\\s*(\\w+)\\s*\\,");
+        texturecube_re.compile("FP_TEXTURECUBE\\s*\\(\\s*(\\w+)\\s*\\,");
+        blend_re.compile("BLEND_MODE\\s*\\(\\s*(\\w+)\\s*\\)");
+        blending2_re.compile("blending\\s*\\:\\s*src=(\\w+)\\s+dst=(\\w+)");
+        colormask_re.compile("color_mask\\s*\\:\\s*(\\w+)");
+        comment_re.compile("^\\s*//.*");
+#endif
         #endif
 
         _Reset();
@@ -473,11 +488,12 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
             {
                 #if RHI__USE_STD_REGEX
                 std::string sname = match[1].str();
+                size_t mbegin = match.position(1);
                 #else
                 std::string sname;
                 ftexture2d_re.get_pattern(1, &sname);
+                size_t mbegin = ftexture2d_re.pattern(1)->begin;
                 #endif
-                size_t mbegin = strstr(line, sname.c_str()) - line;
                 FastName suid(sname);
 
                 for (unsigned s = 0; s != sampler.size(); ++s)
@@ -537,11 +553,12 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
             {
                 #if RHI__USE_STD_REGEX
                 std::string sname = match[1].str();
+                size_t mbegin = match.position(1);
                 #else
                 std::string sname;
                 vtexture2d_re.get_pattern(1, &sname);
+                size_t mbegin = vtexture2d_re.pattern(1)->begin;
                 #endif
-                size_t mbegin = strstr(line, sname.c_str()) - line;
                 FastName suid(sname);
 
                 for (unsigned s = 0; s != sampler.size(); ++s)
@@ -571,11 +588,12 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
             {
                 #if RHI__USE_STD_REGEX
                 std::string sname = match[1].str();
+                size_t mbegin = match.position(1);
                 #else
                 std::string sname;
                 texturecube_re.get_pattern(1, &sname);
+                size_t mbegin = texturecube_re.pattern(1)->begin;
                 #endif
-                size_t mbegin = strstr(line, sname.c_str()) - line;
                 FastName suid(sname);
 
                 for (unsigned s = 0; s != sampler.size(); ++s)
@@ -686,7 +704,11 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::regex texcoord_re(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
                 #else
                 RegExp texcoord_re;
+#if !(RHI__OPTIMIZED_REGEX)
                 texcoord_re.compile(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
+#else
+                texcoord_re.compile("VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(\\s*([0-7])\\s*\\)");
+#endif
                 #endif
 
                 if ( 
@@ -730,7 +752,11 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::regex index_re(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
                 #else
                 RegExp index_re;
+#if !(RHI__OPTIMIZED_REGEX)
                 index_re.compile(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
+#else
+                index_re.compile("VPROG_IN_BLENDINDEX\\s*\\(\\s*([0-7])\\s*\\)");
+#endif
                 #endif
 
                 if ( 
@@ -1376,6 +1402,8 @@ void ShaderSourceCache::Save(const char* fileName)
             WriteUI4(file, e->srcHash);
             e->src->Save(file);
         }
+
+        file->Release();
     }
 }
 

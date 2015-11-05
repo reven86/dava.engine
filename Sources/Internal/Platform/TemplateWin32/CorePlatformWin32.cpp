@@ -167,12 +167,12 @@ namespace DAVA
         MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
         FrameworkDidLaunched();
-        KeyedArchive * options = Core::GetOptions();
+        KeyedArchive* options = Core::GetOptions();
 
-		fullscreenMode = GetCurrentDisplayMode();//FindBestMode(fullscreenMode);
-		if (options)
-		{
-			windowedMode.width = options->GetInt32("width");
+        fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
+        if (options)
+        {
+            windowedMode.width = options->GetInt32("width");
 			windowedMode.height = options->GetInt32("height");
 			windowedMode.bpp = options->GetInt32("bpp");
 			
@@ -202,13 +202,13 @@ namespace DAVA
 
         clientSize.top = 0;
         clientSize.left = 0;
-		clientSize.right = currentMode.width;
-		clientSize.bottom = currentMode.height;
+        clientSize.right = currentMode.width;
+        clientSize.bottom = currentMode.height;
 
-		AdjustWindowRect(&clientSize, style, FALSE);
+        AdjustWindowRect(&clientSize, style, FALSE);
 
-		realWidth = clientSize.right - clientSize.left;
-		realHeight = clientSize.bottom - clientSize.top;
+        realWidth = clientSize.right - clientSize.left;
+        realHeight = clientSize.bottom - clientSize.top;
 
 		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
@@ -296,13 +296,13 @@ namespace DAVA
             TRACE_END_EVENT(11, "core", "Sleep");
 
             if (willQuit)
-            {	
-				break;
-			}
-		}
+            {
+                break;
+            }
+        }
 
-		Core::Instance()->SystemAppFinished();
-		FrameworkWillTerminate();
+        Core::Instance()->SystemAppFinished();
+        FrameworkWillTerminate();
 	}
 
 	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
@@ -379,12 +379,12 @@ namespace DAVA
 
     void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDisplayModes)
     {
-		availableDisplayModes.clear();
+        availableDisplayModes.clear();
 
-		DWORD iModeNum = 0;
-		DEVMODE	dmi;
-		ZeroMemory (&dmi, sizeof(dmi)) ;
-		dmi.dmSize = sizeof(dmi) ;
+        DWORD iModeNum = 0;
+        DEVMODE dmi;
+        ZeroMemory(&dmi, sizeof(dmi));
+        dmi.dmSize = sizeof(dmi) ;
 
 		while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
 		{
