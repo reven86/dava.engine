@@ -439,7 +439,7 @@ void Core::SystemAppStarted()
 
     if (core != nullptr)
     {
-        //rhi::ShaderSourceCache::Load( "~doc:/ShaderSource.bin" );
+        rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
         Core::Instance()->CreateRenderer();
         RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
@@ -450,7 +450,6 @@ void Core::SystemAppFinished()
 {
     if (core != nullptr)
     {
-//rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
         #if TRACER_ENABLED
         //        profiler::DumpEvents();
         profiler::SaveEvents("trace.json");
@@ -604,6 +603,7 @@ void Core::GoBackground(bool isLock)
 {
     if (core)
     {
+        rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         if (isLock)
         {
             core->OnDeviceLocked();
