@@ -96,12 +96,15 @@ inline char _tcsnextc(const char* str)
 struct
 RegExp::RegBuffer
 {
-    unsigned char* data;
-    unsigned offset;
-    unsigned size;
+    unsigned char* data = nullptr;
+    unsigned offset = 0;
+    unsigned size = 0;
 
-    RegBuffer();
+    RegBuffer() = default;
     ~RegBuffer();
+
+    RegBuffer(const RegBuffer&) = delete;
+    RegBuffer& operator=(const RegBuffer&) = delete;
 
     void reserve(unsigned nbytes);
     void write(const void* data, unsigned nbytes);
@@ -182,7 +185,7 @@ RegExp::~RegExp()
     if (pmatch != &_match)
         free(pmatch); //lint !e424 Inappropriate deallocation
 
-    memset(this, 0, sizeof(RegExp));
+    free(_program);
 }
 
 //------------------------------------------------------------------------------
@@ -2167,15 +2170,6 @@ char* RegExp::replace4(char* input, Match* match, char* replacement)
            (input_len - match->end) * sizeof(char));
     result[result_len] = 0;
     return result;
-}
-
-//------------------------------------------------------------------------------
-
-RegExp::RegBuffer::RegBuffer()
-{
-    data = NULL;
-    offset = 0;
-    size = 0;
 }
 
 //------------------------------------------------------------------------------
