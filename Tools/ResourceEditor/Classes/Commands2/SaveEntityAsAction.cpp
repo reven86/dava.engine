@@ -56,8 +56,8 @@ void SaveEntityAsAction::Redo()
     if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != entities) && (count > 0))
     {
         const auto RemoveReferenceToOwner = [](Entity* entity) {
-			KeyedArchive *props = GetCustomPropertiesArchieve(entity);
-			if(nullptr != props)
+            KeyedArchive* props = GetCustomPropertiesArchieve(entity);
+            if(nullptr != props)
 			{
 				props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
 			}
@@ -72,16 +72,16 @@ void SaveEntityAsAction::Redo()
             RemoveReferenceToOwner(container);
             container->SetLocalTransform(Matrix4::IDENTITY);
         }
-		else // saving of group of objects
-		{
+        else // saving of group of objects
+        {
             container.reset(new Entity());
 
             const Vector3 oldZero = entities->GetCommonZeroPos();
             for (uint32 i = 0; i < count; ++i)
             {
-				ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
+                ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
 
-				const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
+                const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
 				Matrix4 newLocalTransform = clone->GetLocalTransform();
 				newLocalTransform.SetTranslationVector(offset);
 				clone->SetLocalTransform(newLocalTransform);
@@ -144,7 +144,7 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
         }
     }
 
-	const int32 count = entity->GetChildrenCount();
+    const int32 count = entity->GetChildrenCount();
 	for (int32 ch = 0; ch < count; ++ch)
 	{
 		RemoveLightmapsRecursive(entity->GetChild(ch));

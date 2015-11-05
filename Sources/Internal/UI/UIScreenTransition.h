@@ -61,9 +61,9 @@ protected:
     static Sprite* renderTargetNextScreen;
 
     Interpolation::Func interpolationFunc;
-	float32 currentTime;
-	float32 duration;
-	float32 normalizedTime;
+    float32 currentTime;
+    float32 duration;
+    float32 normalizedTime;
 	
 	UIScreen * prevScreen;
 	UIScreen * nextScreen;

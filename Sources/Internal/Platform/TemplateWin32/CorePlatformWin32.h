@@ -50,10 +50,10 @@ public:
     bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
     void Run();
 
-	void SetIcon(int32 iconId) override;
+    void SetIcon(int32 iconId) override;
 
-	DisplayMode currentMode;
-	DisplayMode fullscreenMode;
+    DisplayMode currentMode;
+    DisplayMode fullscreenMode;
 	DisplayMode windowedMode;
 	bool isFullscreen;
 	RECT		windowPositionBeforeFullscreen;

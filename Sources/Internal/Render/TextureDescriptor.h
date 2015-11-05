@@ -56,7 +56,6 @@ class TextureDescriptor
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
-    static const int8 CURRENT_VERSION = 11;
 
     enum eSignatures
     {
@@ -65,10 +64,11 @@ class TextureDescriptor
     };
 
 public:
+    static const int8 CURRENT_VERSION = 11;
 
-	struct TextureDrawSettings: public InspBase
-	{
-	public:
+    struct TextureDrawSettings : public InspBase
+    {
+    public:
 		TextureDrawSettings() { SetDefaultValues(); }
 		void SetDefaultValues();
 
@@ -89,18 +89,23 @@ public:
 
     struct TextureDataSettings : public InspBase
     {
-	public:
-		enum eOptionsFlag
-		{
-			FLAG_GENERATE_MIPMAPS   = 1 << 0,
-            FLAG_IS_NORMAL_MAP      = 1 << 1,
-			FLAG_INVALID            = 1 << 7
-		};
+    public:
+        enum eOptionsFlag
+        {
+            FLAG_GENERATE_MIPMAPS = 1 << 0,
+            FLAG_IS_NORMAL_MAP = 1 << 1,
+            FLAG_INVALID = 1 << 7,
 
-		TextureDataSettings() { SetDefaultValues(); }
-		void SetDefaultValues();
+            FLAG_DEFAULT = FLAG_GENERATE_MIPMAPS
+        };
 
-		void SetGenerateMipmaps(const bool & generateMipmaps);
+        TextureDataSettings()
+        {
+            SetDefaultValues();
+        }
+        void SetDefaultValues();
+
+        void SetGenerateMipmaps(const bool & generateMipmaps);
 		bool GetGenerateMipMaps() const;
 
         void SetIsNormalMap(const bool & isNormalMap);
@@ -231,8 +236,8 @@ protected:
     uint32 ReadSourceCRC_V8_or_less() const;
 	uint32 GetConvertedCRC(eGPUFamily forGPU) const;
 
-	uint32 GenerateDescriptorCRC() const;
-    
+    uint32 GenerateDescriptorCRC(eGPUFamily forGPU) const;
+
     void SaveInternal(File *file, const int32 signature, const uint8 compressionCount) const;
 
 public:

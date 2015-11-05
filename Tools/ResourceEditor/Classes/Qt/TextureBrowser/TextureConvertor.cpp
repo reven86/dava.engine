@@ -608,6 +608,10 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
                 convert = !DAVA::FileSystem::Instance()->IsFile(outputPath);
                 break;
 
+            case CONVERT_NOT_REQUESTED:
+                convert = false;
+                break;
+
             default:
                 DVASSERT(false && "Invalid case");
                 break;

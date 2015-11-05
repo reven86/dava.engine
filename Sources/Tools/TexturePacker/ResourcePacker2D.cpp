@@ -263,8 +263,8 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
 DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
-    
-    uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+
+    uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
     bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
@@ -532,14 +532,22 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                 {
                     TexturePacker packer;
                     packer.SetConvertQuality(quality);
+
                     if (isLightmapsPacking)
                     {
                         packer.UseOnlySquareTextures();
                         packer.SetMaxTextureSize(2048);
                     }
-                    else if (CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
+                    else
                     {
-                        packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
+                        if (CommandLineParser::Instance()->IsFlagSet("--square"))
+                        {
+                            packer.UseOnlySquareTextures();
+                        }
+                        if (CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
+                        {
+                            packer.SetMaxTextureSize(4096);
+                        }
                     }
 
                     packer.SetTwoSideMargin(useTwoSideMargin);

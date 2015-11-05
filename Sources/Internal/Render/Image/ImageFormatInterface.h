@@ -43,7 +43,7 @@ class Image;
 
 struct ImageInfo
 {
-    bool isEmpty()
+    bool isEmpty() const
     {
         return (0 == width || 0 == height);
     }
@@ -53,7 +53,7 @@ struct ImageInfo
         return Size2i(width, height);
     }
 
-    bool operator==(const ImageInfo& another)
+    bool operator==(const ImageInfo& another) const
     {
         return (
             width == another.width && 

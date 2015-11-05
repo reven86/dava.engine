@@ -74,10 +74,10 @@ public:
     void StartVisible();
     void StopVisible();
 
-	void StartForeground();
-	void StopForeground(bool isLock);
+    void StartForeground();
+    void StopForeground(bool isLock);
 
-	void OnCreateActivity();
+    void OnCreateActivity();
 	void OnDestroyActivity();
 
 	void KeyUp(int32 keyCode);

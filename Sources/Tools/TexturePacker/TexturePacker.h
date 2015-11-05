@@ -56,7 +56,6 @@ class TexturePacker
 public:
 
 	static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
-	static const uint32 TSIZE_4096 = 4096;
 	static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
 	static const uint32 DEFAULT_MARGIN = 1;
 

@@ -420,7 +420,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
 
         UIEvent* eventToHandle = nullptr;
 
-        if (newEvent->phase >= UIEvent::Phase::BEGAN && newEvent->phase <= UIEvent::Phase::ENDED)
+        if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
         {
             auto it = std::find_if(begin(touchEvents), end(touchEvents), [newEvent](const UIEvent& ev) {
                 return ev.tid == newEvent->tid;
@@ -455,17 +455,15 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             }
         }
 
-        auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), [](const UIEvent& ev) {
-            return ev.phase == UIEvent::Phase::ENDED || ev.phase == UIEvent::Phase::CANCELLED;
-        });
-
-        if (startRemoveIt != end(touchEvents))
-        {
-            std::for_each(startRemoveIt, end(touchEvents), [this](UIEvent& ev) {
+        auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), [this](UIEvent& ev) {
+            bool shouldRemove = (ev.phase == UIEvent::Phase::ENDED || ev.phase == UIEvent::Phase::CANCELLED);
+            if (shouldRemove)
+            {
                 CancelInput(&ev);
-            });
-            touchEvents.erase(startRemoveIt, end(touchEvents));
-        }
+            }
+            return shouldRemove;
+        });
+        touchEvents.erase(startRemoveIt, end(touchEvents));
     } // end if frameSkip <= 0
 }
 
