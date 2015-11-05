@@ -2047,8 +2047,6 @@
 		02E7CF821BD639E1002F026D /* bs_diff.c in Sources */ = {isa = PBXBuildFile; fileRef = 02E7CF611BD639E1002F026D /* bs_diff.c */; };
 		02E7CF831BD639E1002F026D /* bs_patch.c in Sources */ = {isa = PBXBuildFile; fileRef = 02E7CF621BD639E1002F026D /* bs_patch.c */; };
 		02E7CF841BD639E1002F026D /* bs_patch.c in Sources */ = {isa = PBXBuildFile; fileRef = 02E7CF621BD639E1002F026D /* bs_patch.c */; };
-		02E7CF851BD639E1002F026D /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 02E7CF641BD639E1002F026D /* README.md */; };
-		02E7CF861BD639E1002F026D /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 02E7CF641BD639E1002F026D /* README.md */; };
 		02E7CF871BD639E1002F026D /* BSDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7CF651BD639E1002F026D /* BSDiff.cpp */; };
 		02E7CF881BD639E1002F026D /* BSDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7CF651BD639E1002F026D /* BSDiff.cpp */; };
 		02E7CF891BD639E1002F026D /* BSDiff.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7CF661BD639E1002F026D /* BSDiff.h */; };
@@ -3153,7 +3151,6 @@
 		02E7CF611BD639E1002F026D /* bs_diff.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bs_diff.c; sourceTree = "<group>"; };
 		02E7CF621BD639E1002F026D /* bs_patch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bs_patch.c; sourceTree = "<group>"; };
 		02E7CF631BD639E1002F026D /* LICENCE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENCE; sourceTree = "<group>"; };
-		02E7CF641BD639E1002F026D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		02E7CF651BD639E1002F026D /* BSDiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BSDiff.cpp; sourceTree = "<group>"; };
 		02E7CF661BD639E1002F026D /* BSDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSDiff.h; sourceTree = "<group>"; };
 		02E7CF671BD639E1002F026D /* PatchFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PatchFile.cpp; sourceTree = "<group>"; };
@@ -4783,7 +4780,6 @@
 				02E7CF611BD639E1002F026D /* bs_diff.c */,
 				02E7CF621BD639E1002F026D /* bs_patch.c */,
 				02E7CF631BD639E1002F026D /* LICENCE */,
-				02E7CF641BD639E1002F026D /* README.md */,
 			);
 			path = bsdiff;
 			sourceTree = "<group>";
@@ -6502,7 +6498,6 @@
 				02E7CEBA1BD624A7002F026D /* UIScreenTransition.cpp in Sources */,
 				02E7C7821BD624A7002F026D /* LoggerWin.cpp in Sources */,
 				02E7C6381BD624A6002F026D /* MongodbUpdateObject.cpp in Sources */,
-				02E7CF861BD639E1002F026D /* README.md in Sources */,
 				02E7CD221BD624A7002F026D /* VersionInfo.cpp in Sources */,
 				02E7CF951BD63A20002F026D /* DynamicMemoryFile.cpp in Sources */,
 				02E7CA9E1BD624A7002F026D /* CursorWin32.cpp in Sources */,
@@ -6999,7 +6994,6 @@
 				02E7CEB91BD624A7002F026D /* UIScreenTransition.cpp in Sources */,
 				02E7C7811BD624A7002F026D /* LoggerWin.cpp in Sources */,
 				02E7C6371BD624A6002F026D /* MongodbUpdateObject.cpp in Sources */,
-				02E7CF851BD639E1002F026D /* README.md in Sources */,
 				02E7CD211BD624A7002F026D /* VersionInfo.cpp in Sources */,
 				02E7CF941BD63A20002F026D /* DynamicMemoryFile.cpp in Sources */,
 				02E7CA9D1BD624A7002F026D /* CursorWin32.cpp in Sources */,

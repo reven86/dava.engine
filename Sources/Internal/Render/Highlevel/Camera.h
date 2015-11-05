@@ -144,8 +144,7 @@ public:
         \brief Restore camera transform to original camera transform that was set using 
      */
     void RestoreOriginalSceneTransform();
-	
-    
+
     /**
          \brief return current xmin of this camera
          \returns xmin for this camera

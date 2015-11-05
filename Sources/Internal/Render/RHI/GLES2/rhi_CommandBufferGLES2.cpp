@@ -231,6 +231,10 @@ gles2_RenderPass_End(Handle pass)
 
 namespace RenderPassGLES2
 {
+void Init(uint32 maxCount)
+{
+    RenderPassPool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_Renderpass_Allocate = &gles2_RenderPass_Allocate;
@@ -1379,8 +1383,14 @@ gles2_Present(Handle sync)
         {
             _FrameSync.Lock();
             frame_cnt = _Frame.size();
-            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _FrameSync.Unlock();
+
+            if (frame_cnt >= _GLES2_RenderThreadFrameCount)
+            {
+                DAVA::Thread::Yield();
+            }
+            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
+
         } while (frame_cnt >= _GLES2_RenderThreadFrameCount);
     }
     else
@@ -1906,6 +1916,10 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
 
 namespace CommandBufferGLES2
 {
+void Init(uint32 maxCount)
+{
+    CommandBufferPool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_CommandBuffer_Begin = &gles2_CommandBuffer_Begin;

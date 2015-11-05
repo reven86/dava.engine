@@ -277,7 +277,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
     DAVA::FilePath saveAsPath = scene->GetScenePath();
     if (!saveAsPath.Exists())
     {
-        DAVA::FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+        DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
         saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
     }
 
@@ -317,7 +317,7 @@ QString GetSaveFolderForEmitters()
     QString particlesPath;
     if (defaultPath.IsEmpty())
     {
-        particlesPath = QString::fromStdString(ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname());
+        particlesPath = QString::fromStdString(ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname());
     }
     else
     {
@@ -532,10 +532,10 @@ void QtMainWindow::SetupTitle()
 	if(ProjectManager::Instance()->IsOpened())
 	{
 		title += " | Project - ";
-		title += ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
-	}
+        title += ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+    }
 
-	this->setWindowTitle(title);
+    this->setWindowTitle(title);
 }
 
 void QtMainWindow::SetupMainMenu()
@@ -843,7 +843,6 @@ void QtMainWindow::SetupActions()
 #endif //#if defined(__DAVAENGINE_BEAST__)
     
     QObject::connect(ui->actionBuildStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnBuildStaticOcclusion()));
-    QObject::connect(ui->actionRebuildCurrentOcclusionCell, SIGNAL(triggered()), this, SLOT(OnRebuildCurrentOcclusionCell()));
     QObject::connect(ui->actionInvalidateStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnInavalidateStaticOcclusion()));
     
     connect(ui->actionHeightmap_Delta_Tool, SIGNAL(triggered()), this, SLOT(OnGenerateHeightDelta()));
@@ -936,10 +935,10 @@ void QtMainWindow::SetupShortCuts()
 
 void QtMainWindow::ProjectOpened(const QString &path)
 {
-	EditorConfig::Instance()->ParseConfig(ProjectManager::Instance()->CurProjectPath() + "EditorConfig.yaml");
+    EditorConfig::Instance()->ParseConfig(ProjectManager::Instance()->GetProjectPath() + "EditorConfig.yaml");
 
-	EnableProjectActions(true);
-	SetupTitle();
+    EnableProjectActions(true);
+    SetupTitle();
 }
 
 void QtMainWindow::ProjectClosed()
@@ -1148,11 +1147,11 @@ void QtMainWindow::OnProjectOpen()
 
 void QtMainWindow::OpenProject(const DAVA::FilePath & projectPath)
 {
-    if(!projectPath.IsEmpty() &&
-       ProjectManager::Instance()->CurProjectPath() != projectPath &&
-       ui->sceneTabWidget->CloseAllTabs())
+    if (!projectPath.IsEmpty() &&
+        ProjectManager::Instance()->GetProjectPath() != projectPath &&
+        ui->sceneTabWidget->CloseAllTabs())
     {
-        ProjectManager::Instance()->ProjectOpen(projectPath);
+        ProjectManager::Instance()->OpenProject(projectPath);
         recentProjects.Add(projectPath.GetAbsolutePathname());
     }
 }
@@ -1162,7 +1161,7 @@ void QtMainWindow::OnProjectClose()
 {
     if(ui->sceneTabWidget->CloseAllTabs())
     {
-        ProjectManager::Instance()->ProjectClose();
+        ProjectManager::Instance()->CloseProject();
     }
 }
 
@@ -1176,8 +1175,8 @@ void QtMainWindow::OnSceneNew()
 
 void QtMainWindow::OnSceneOpen()
 {
-	QString path = FileDialog::getOpenFileName(this, "Open scene file", ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
-	OpenScene(path);
+    QString path = FileDialog::getOpenFileName(this, "Open scene file", ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
+    OpenScene(path);
 }
 
 void QtMainWindow::OnSceneSave()
@@ -1842,7 +1841,7 @@ void QtMainWindow::On2DCameraDialog()
 }
 void QtMainWindow::On2DSpriteDialog()
 {
-    FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
+    FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
     projectPath += "Data/Gfx/";
 
     QString filePath = FileDialog::getOpenFileName(nullptr, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
@@ -2074,7 +2073,7 @@ void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Tex
     if (pathToSave.IsEmpty())
     {
         QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
-                                                           ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(),
+                                                           ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str(),
                                                            PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
         if (selectedPath.isEmpty())
@@ -2368,10 +2367,10 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	{
 		return false;
 	}
-	
-	String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname());
-	customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,pathToSave);
-	
+
+    String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname());
+    customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, pathToSave);
+
     return true;
 }
 
@@ -2579,6 +2578,7 @@ void QtMainWindow::OnBuildStaticOcclusion()
         else
         {
             waitOcclusionDlg->SetValue(scene->staticOcclusionBuildSystem->GetBuildStatus());
+            waitOcclusionDlg->SetMessage(QString::fromStdString(scene->staticOcclusionBuildSystem->GetBuildStatusInfo()));
         }
     }
     
@@ -2596,14 +2596,6 @@ void QtMainWindow::OnInavalidateStaticOcclusion()
     SceneEditor2* scene = GetCurrentScene();
     if(!scene) return;
     scene->staticOcclusionSystem->InvalidateOcclusion();
-}
-
-void QtMainWindow::OnRebuildCurrentOcclusionCell()
-{
-    SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-    scene->staticOcclusionBuildSystem->RebuildCurrentCell();
 }
 
 bool QtMainWindow::IsSavingAllowed()
@@ -2666,10 +2658,10 @@ bool QtMainWindow::OpenScene( const QString & path )
 
 	if(!path.isEmpty())
 	{
-		FilePath projectPath(ProjectManager::Instance()->CurProjectPath());
-		FilePath argumentPath(path.toStdString());
+        FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
+        FilePath argumentPath(path.toStdString());
 
-		if(!FilePath::ContainPath(argumentPath, projectPath))
+        if(!FilePath::ContainPath(argumentPath, projectPath))
 		{
 			QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
 				projectPath.GetAbsolutePathname().c_str(),

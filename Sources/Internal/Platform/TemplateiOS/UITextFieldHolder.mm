@@ -603,10 +603,17 @@
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
-	if (!cppTextField || !cppTextField->GetDelegate())
-	{
-		return;
-	}
+    if (nullptr == cppTextField)
+    {
+        return;
+    }
+
+    auto* delegate = cppTextField->GetDelegate();
+
+    if (nullptr == delegate)
+    {
+        return;
+    }
 
 	// convert own frame to window coordinates, frame is in superview's coordinates
 	CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
@@ -624,7 +631,7 @@
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
     keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
-	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
+    delegate->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
 @end

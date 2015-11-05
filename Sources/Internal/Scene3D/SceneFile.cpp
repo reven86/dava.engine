@@ -612,10 +612,10 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
                 Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
 
             if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
-			{
-				StaticMesh * staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
-				meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
-			}else
+            {
+                StaticMesh* staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
+                meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
+            }else
 			{
 				// add animated mesh
 				AnimatedMesh * animatedMesh = scene->GetAnimatedMesh(meshIndex + animatedMeshIndexOffset);
