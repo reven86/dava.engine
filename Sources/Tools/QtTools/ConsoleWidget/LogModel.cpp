@@ -38,6 +38,11 @@ LogModel::LogModel(QObject* parent)
     syncTimer->setSingleShot(true);
     syncTimer->setInterval(50);
     connect(syncTimer, &QTimer::timeout, this, &LogModel::Sync);
+
+    QFontMetrics fm(QApplication::font());
+    const int margin = 5;
+    rowSize.setHeight(fm.height() + margin); //5 is margin
+
 }
 
 LogModel::~LogModel()
@@ -66,6 +71,8 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     case Qt::ToolTipRole:
     case Qt::DisplayRole:
         return item.text;
+    case Qt::SizeHintRole:
+        return rowSize;
 
     case Qt::DecorationRole:
         return GetIcon(item.ll);
