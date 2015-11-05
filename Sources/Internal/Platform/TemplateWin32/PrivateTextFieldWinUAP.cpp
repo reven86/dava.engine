@@ -646,13 +646,16 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
     SetNativeCaretPosition(GetNativeText()->Length());
 
+    Windows::Foundation::Rect nativeKeyboardRect = InputPane::GetForCurrentView()->OccludedRect;
+    DAVA::Rect keyboardRect(nativeKeyboardRect.X, nativeKeyboardRect.Y, nativeKeyboardRect.Width, nativeKeyboardRect.Height);
+
     bool multiline = IsMultiline();
     if (!multiline)
     {
         SetNativePositionAndSize(rectInWindowSpace, false);
     }
     auto self{ shared_from_this() };
-    core->RunOnMainThread([this, self, multiline]() {
+    core->RunOnMainThread([this, self, multiline, keyboardRect]() {
         if (uiTextField != nullptr)
         {
             if (!multiline)
@@ -666,6 +669,14 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
             if (curFocused != uiTextField)
                 uiTextField->SetFocused();
+
+            // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
+            // If keyboard rect is not empty so manually notify delegate about keyboard size and position
+            if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
+            {
+                Rect rect = WindowToVirtual(keyboardRect);
+                textFieldDelegate->OnKeyboardShown(rect);
+            }
         }
     });
 }
