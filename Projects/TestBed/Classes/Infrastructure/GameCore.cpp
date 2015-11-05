@@ -88,7 +88,9 @@ void GameCore::OnAppStarted()
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
 
+#if !defined(__DAVAENGINE_WIN_UAP__)
     InitNetwork();
+#endif
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
@@ -145,7 +147,9 @@ void GameCore::OnAppFinished()
     screens.clear();
 
     SafeRelease(testListScreen);
+#if !defined(__DAVAENGINE_WIN_UAP__)
     netLogger.Uninstall();
+#endif
 }
 
 void GameCore::BeginFrame()
@@ -192,6 +196,7 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
 
+#if !defined(__DAVAENGINE_WIN_UAP__)
 const char8 GameCore::announceMulticastGroup[] = "239.192.100.1";
 void GameCore::InitNetwork()
 {
@@ -245,3 +250,4 @@ size_t GameCore::AnnounceDataSupplier(size_t length, void* buffer)
     }
     return peerDescr.Serialize(buffer, length);
 }
+#endif // !defined(__DAVAENGINE_WIN_UAP__)

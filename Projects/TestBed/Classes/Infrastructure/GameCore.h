@@ -100,6 +100,7 @@ private:
     
     DAVA::Vector<BaseScreen *> screens;
 
+#if !defined(__DAVAENGINE_WIN_UAP__)
     // Network support
     void InitNetwork();
 
@@ -121,6 +122,7 @@ private:
     static const DAVA::uint32 ANNOUNCE_TIME_PERIOD = 5;
     static const DAVA::char8 announceMulticastGroup[];
     static const DAVA::uint16 LOGGER_PORT = 9999;
+#endif // !defined(__DAVAENGINE_WIN_UAP__)
 };
 
 
