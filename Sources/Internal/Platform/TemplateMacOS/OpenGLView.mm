@@ -414,25 +414,7 @@ static int32 oldModifersFlags = 0;
     int32 keyCode = [event keyCode];
     uint32 charsLength = [chars length];
 
-    for (uint32 i = 0; i < charsLength; ++i)
-    {
-        uint32 ch = [chars characterAtIndex:i];
-        DVASSERT(ch < 0xFFFF);
-        DAVA::UIEvent ev;
-        if (isRepeat)
-        {
-            ev.phase = UIEvent::Phase::CHAR_REPEAT;
-        }
-        else
-        {
-            ev.phase = UIEvent::Phase::CHAR;
-        }
-        ev.device = UIEvent::Device::KEYBOARD;
-        ev.keyChar = static_cast<char16>(ch);
-
-        UIControlSystem::Instance()->OnInput(&ev);
-    }
-
+    // first key_down event to send
     {
         DAVA::UIEvent ev;
         if (isRepeat)
@@ -448,7 +430,27 @@ static int32 oldModifersFlags = 0;
 
         UIControlSystem::Instance()->OnInput(&ev);
     }
+    // not send char event to be consistent with Windows
+    for (uint32 i = 0; i < charsLength; ++i)
+    {
+        uint32 ch = [chars characterAtIndex:i];
+        DVASSERT(ch < 0xFFFF);
+        DAVA::UIEvent ev;
+        if (isRepeat)
+        {
+            ev.phase = UIEvent::Phase::CHAR_REPEAT;
+        }
+        else
+        {
+            ev.phase = UIEvent::Phase::CHAR;
+        }
+        ev.device = UIEvent::Device::KEYBOARD;
+        ev.keyChar = static_cast<char16>(ch);
+        2
 
+        UIControlSystem::Instance()
+        ->OnInput(&ev);
+    }
     keyboard.OnSystemKeyPressed(keyCode);
 }
 
