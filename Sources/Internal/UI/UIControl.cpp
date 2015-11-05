@@ -1486,10 +1486,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         break;
         case UIEvent::Phase::WHEEL:
         {
-            if (IsPointInside(currentInput->point))
-            {
-                Input(currentInput);
-            }
+            Input(currentInput);
         }
         break;
         case UIEvent::Phase::BEGAN:
@@ -1667,7 +1664,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         //if(currentInput->touchLocker != this)
         {
-            if (clipContents && (currentInput->phase != UIEvent::Phase::DRAG && currentInput->phase != UIEvent::Phase::ENDED && currentInput->phase != UIEvent::Phase::CHAR && currentInput->phase != UIEvent::Phase::JOYSTICK))
+            if (clipContents && (currentInput->phase != UIEvent::Phase::WHEEL && currentInput->phase != UIEvent::Phase::DRAG && currentInput->phase != UIEvent::Phase::ENDED && currentInput->phase != UIEvent::Phase::CHAR && currentInput->phase != UIEvent::Phase::JOYSTICK))
             {
                 if(!IsPointInside(currentInput->point))
                 {
