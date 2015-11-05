@@ -116,6 +116,12 @@ DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
     return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
 }
 
+void CorePlatformWinUAP::SetScreenScaleMultiplier(float32 multiplier)
+{
+    Core::SetScreenScaleMultiplier(multiplier);
+    xamlApp->ResetScreen();
+}
+
 bool CorePlatformWinUAP::GetCursorVisibility()
 {
     return xamlApp->GetCursorVisible();

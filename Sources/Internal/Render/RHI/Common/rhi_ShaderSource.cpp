@@ -44,7 +44,7 @@ using DAVA::DynamicMemoryFile;
     #if RHI__USE_STD_REGEX
         #include <regex>
     #else
-        #include "Regexp.h"
+        #include "RegExp.h"
     #endif
 
 namespace rhi

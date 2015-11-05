@@ -25,11 +25,12 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+#include "Render/RenderBase.h"
 
-#include "DAVAEngine.h"
-
-#include "Platform/Qt5/QtLayer.h"
 #include "DavaRenderer.h"
+
+#include "Core/Core.h"
+#include "Platform/Qt5/QtLayer.h"
 
 DavaRenderer::DavaRenderer()
 {

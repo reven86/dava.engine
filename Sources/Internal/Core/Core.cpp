@@ -84,6 +84,7 @@
 
 
 #include "Debug/Profiler.h"
+#include "Core.h"
 #define PROF__FRAME 0
 #define PROF__FRAME_UPDATE 1
 #define PROF__FRAME_DRAW 2
@@ -208,6 +209,11 @@ void Core::CreateRenderer()
     Renderer::Initialize(renderer, rendererParams);
 }
 
+void Core::ReleaseRenderer()
+{
+    Renderer::Uninitialize();
+}
+
 void Core::ReleaseSingletons()
 {
     // Finish network infrastructure
@@ -238,7 +244,6 @@ void Core::ReleaseSingletons()
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
-    Renderer::Uninitialize();
 
     InputSystem::Instance()->Release();
     JobManager::Instance()->Release();
@@ -450,6 +455,7 @@ void Core::SystemAppFinished()
         profiler::SaveEvents("trace.json");
         #endif
         core->OnAppFinished();
+        Core::Instance()->ReleaseRenderer();
     }
 }
 
@@ -724,12 +730,25 @@ uint32 Core::GetScreenDPI()
 
 void Core::SetIcon(int32 /*iconId*/){};
 
-float32 Core::GetScreenScaleFactor() const
+float32 Core::GetScreenScaleMultiplier() const
 {
+    float32 ret = 1.0f;
+
     if (options)
     {
-        return DeviceInfo::GetScreenInfo().scale * options->GetFloat("userScreenScaleFactor", 1.f);
+        ret = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
-    return DeviceInfo::GetScreenInfo().scale;
+
+    return ret;
+}
+
+void Core::SetScreenScaleMultiplier(float32 multiplier)
+{
+    options->SetFloat("userScreenScaleFactor", multiplier);
+}
+
+float32 Core::GetScreenScaleFactor() const
+{
+    return (DeviceInfo::GetScreenInfo().scale * GetScreenScaleMultiplier());
 }
 };
