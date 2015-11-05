@@ -446,7 +446,6 @@ static int32 oldModifersFlags = 0;
         }
         ev.device = UIEvent::Device::KEYBOARD;
         ev.keyChar = static_cast<char16>(ch);
-        2
 
         UIControlSystem::Instance()
         ->OnInput(&ev);
