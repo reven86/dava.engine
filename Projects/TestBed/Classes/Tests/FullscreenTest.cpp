@@ -111,7 +111,7 @@ void FullscreenTest::LoadResources()
     ui3dview->SetDebugDraw(true);
     
     ScopedPtr<Scene> scene(new Scene());
-    scene->LoadScene("~res:/3d/Objects/Sniper_1.sc2");
+    scene->LoadScene("~res:/3d/Objects/monkey.sc2");
 
     ScopedPtr<Camera> camera(new Camera());
     VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
@@ -120,7 +120,7 @@ void FullscreenTest::LoadResources()
     camera->SetLeft(Vector3(1, 0, 0));
     camera->SetUp(Vector3(0, 0, 1.f));
     camera->SetTarget(Vector3(0, 0, 0));
-    camera->SetPosition(Vector3(0, -10, 10));
+    camera->SetPosition(Vector3(0, -10, 1));
     
     ScopedPtr<Entity> cameraEntity(new Entity());
     cameraEntity->AddComponent(new CameraComponent(camera));
@@ -264,10 +264,10 @@ void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void*
         currentScaleText->SetText(Format(L"%f", mul));
         break;
     }
-    case 2: // turn off
+    case 2: // turn on
         ui3dview->SetDrawToFrameBuffer(true);
         break;
-    case 3: // turn on
+    case 3: // turn off
         ui3dview->SetDrawToFrameBuffer(false);
         break;
     }
