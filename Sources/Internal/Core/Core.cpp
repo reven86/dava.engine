@@ -84,10 +84,11 @@
 
 
 #include "Debug/Profiler.h"
-#define PROF__FRAME             0
-#define PROF__FRAME_UPDATE      1
-#define PROF__FRAME_DRAW        2
-#define PROF__FRAME_ENDFRAME    3
+#include "Core.h"
+#define PROF__FRAME 0
+#define PROF__FRAME_UPDATE 1
+#define PROF__FRAME_DRAW 2
+#define PROF__FRAME_ENDFRAME 3
 
 namespace DAVA
 {
@@ -186,7 +187,7 @@ void Core::CreateRenderer()
 
     if (options->IsKeyExists("rhi_threaded_frame_count"))
     {
-        rendererParams.threadedRenderEnabled    = true;
+        rendererParams.threadedRenderEnabled = true;
         rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
     }
 
@@ -206,6 +207,11 @@ void Core::CreateRenderer()
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
     Renderer::Initialize(renderer, rendererParams);
+}
+
+void Core::ReleaseRenderer()
+{
+    Renderer::Uninitialize();
 }
 
 void Core::ReleaseSingletons()
@@ -238,7 +244,6 @@ void Core::ReleaseSingletons()
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
-    Renderer::Uninitialize();
 
     InputSystem::Instance()->Release();
     JobManager::Instance()->Release();
@@ -434,7 +439,7 @@ void Core::SystemAppStarted()
 
     if (core != nullptr)
     {
-        //rhi::ShaderSourceCache::Load( "~doc:/ShaderSource.bin" );
+        rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
         Core::Instance()->CreateRenderer();
         RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
@@ -445,12 +450,12 @@ void Core::SystemAppFinished()
 {
     if (core != nullptr)
     {
-//rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
         #if TRACER_ENABLED
         //        profiler::DumpEvents();
         profiler::SaveEvents("trace.json");
         #endif
         core->OnAppFinished();
+        Core::Instance()->ReleaseRenderer();
     }
 }
 
@@ -587,10 +592,10 @@ void Core::SystemProcessFrame()
     TRACE_END_EVENT(11, "core", "SystemProcessFrame")
 
     #if PROFILER_ENABLED
-        STOP_TIMING(PROF__FRAME);
-        profiler::Stop();
-        //profiler::Dump();
-        profiler::DumpAverage();
+    STOP_TIMING(PROF__FRAME);
+    profiler::Stop();
+    //profiler::Dump();
+    profiler::DumpAverage();
     #endif
 }
 
@@ -598,6 +603,7 @@ void Core::GoBackground(bool isLock)
 {
     if (core)
     {
+        rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         if (isLock)
         {
             core->OnDeviceLocked();
@@ -724,12 +730,25 @@ uint32 Core::GetScreenDPI()
 
 void Core::SetIcon(int32 /*iconId*/){};
 
-float32 Core::GetScreenScaleFactor() const
+float32 Core::GetScreenScaleMultiplier() const
 {
+    float32 ret = 1.0f;
+
     if (options)
     {
-        return DeviceInfo::GetScreenInfo().scale * options->GetFloat("userScreenScaleFactor", 1.f);
+        ret = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
-    return DeviceInfo::GetScreenInfo().scale;
+
+    return ret;
+}
+
+void Core::SetScreenScaleMultiplier(float32 multiplier)
+{
+    options->SetFloat("userScreenScaleFactor", multiplier);
+}
+
+float32 Core::GetScreenScaleFactor() const
+{
+    return (DeviceInfo::GetScreenInfo().scale * GetScreenScaleMultiplier());
 }
 };

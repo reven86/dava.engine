@@ -496,7 +496,7 @@ void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint3
             memcpy(*newMeshData, *meshData, formatSize);
         }
         *meshData += formatSize;
-	}
+    }
     if (newVertexFormat & format)
     {
         *newMeshData += formatSize;

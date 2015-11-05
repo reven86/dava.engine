@@ -841,10 +841,10 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 }
                 control->Release();
                 isIteratorCorrupted = true;
+                SetLayoutDirty();
                 return;
             }
         }
-        SetLayoutDirty();
     }
 
     void UIControl::RemoveFromParent()

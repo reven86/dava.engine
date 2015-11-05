@@ -26,14 +26,14 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
 
-#include "ControlMapper.h"
-
-#include "DAVAEngine.h"
 #include "UI/UIControlSystem.h"
 #include "Platform/Qt5/QtLayer.h"
 
-#include <QWindow>
+#include "ControlMapper.h"
+
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QDragMoveEvent>

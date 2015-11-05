@@ -140,7 +140,7 @@ void ViewSceneScreen::LoadResources()
     AddControl(backButton);
 
     DVASSERT(info == NULL);
-    info = new UIStaticText(Rect(0, 0, screenRect.dx, 30.f));
+    info = new UIStaticText(Rect(0, 0, 35, 30.f));
     info->SetFont(font);
     info->SetTextColor(Color::White);
     info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
@@ -224,8 +224,8 @@ void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
     if(framesTime > INFO_UPDATE_TIME)
     {
         int32 fps = (int32)(frameCounter / framesTime);
-        info->SetText(Format(L"FPS: %d  Draw: %ldns  Update: %ldns", fps, drawTime / frameCounter, updateTime / frameCounter));
-        
+        info->SetText(Format(L"FPS: %d", fps));
+
         framesTime -= INFO_UPDATE_TIME;
         frameCounter = 0;
         
