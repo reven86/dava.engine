@@ -618,7 +618,7 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode *node, PackageBaseNode *dest, D
     else if (dynamic_cast<StyleSheetNode*>(node) != nullptr)
     {
         DAVA::Vector<StyleSheetNode*> nodes = { static_cast<StyleSheetNode*>(node) };
-        StyleSheetsNode* nextStyleSheetNode = static_cast<StyleSheetsNode*>(dest);
+        StyleSheetsNode* nextStyleSheetNode = dynamic_cast<StyleSheetsNode*>(dest);
         commandExecutor->MoveStyles(nodes, nextStyleSheetNode, destIndex);
     }
     else
