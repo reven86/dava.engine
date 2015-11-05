@@ -154,8 +154,6 @@ UI3DView* UI3DView::Clone()
 {
     UI3DView* ui3DView = new UI3DView(GetRect());
     ui3DView->CopyDataFrom(this);
-    // Create FBO on first draw if need
-    ui3DView->needUpdateFrameBuffer = true;
     return ui3DView;
 }
 
@@ -169,6 +167,9 @@ void UI3DView::CopyDataFrom(UIControl* srcControl)
     fbRenderSize = srcView->fbRenderSize;
     fbTexSize = srcView->fbTexSize;
     needUpdateFrameBuffer = srcView->needUpdateFrameBuffer;
+
+    // Create FBO on first draw if need
+    needUpdateFrameBuffer = true;
 }
 
 void UI3DView::Input(UIEvent *currentInput)
