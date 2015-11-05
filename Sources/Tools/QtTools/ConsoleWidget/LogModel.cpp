@@ -41,7 +41,7 @@ LogModel::LogModel(QObject* parent)
 
     QFontMetrics fm(QApplication::font());
     const int margin = 5;
-    rowSize.setHeight(fm.height() + margin); //5 is margin
+    rowSize.setHeight(fm.height() + margin);
 
 }
 
