@@ -1139,7 +1139,11 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
         core->RunOnMainThread([this, self, sprite, moveOffScreenOnCompletion]() {
             if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
-                uiTextField->SetSprite(sprite.Get(), 0);
+                UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
+                if (curFocused != uiTextField)
+                { // Do not set rendered texture if control has focus
+                    uiTextField->SetSprite(sprite.Get(), 0);
+                }
             }
             if (moveOffScreenOnCompletion)
             {
