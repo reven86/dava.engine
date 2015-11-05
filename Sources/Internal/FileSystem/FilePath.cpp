@@ -107,9 +107,7 @@ const List<FilePath> FilePath::GetResourcesFolders()
 String GetResourceDirName(const String& arch, const String& dirName, const String& resPrefix)
 {
     String result;
-    String replace;
-
-    replace = '_' + arch + '_'; // for example _x64_
+    String replace = '_' + arch + '_'; // for example _x64_
 
     size_t idx = dirName.find(replace);
     if (idx == String::npos)
