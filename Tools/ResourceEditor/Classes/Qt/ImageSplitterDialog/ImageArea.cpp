@@ -94,7 +94,7 @@ void ImageArea::ConnectSignals()
 
 DAVA::String ImageArea::GetDefaultPath() const
 {
-    return ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+    return ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
 }
 
 void ImageArea::mousePressEvent (QMouseEvent * ev)

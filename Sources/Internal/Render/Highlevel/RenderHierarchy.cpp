@@ -65,8 +65,8 @@ namespace DAVA
         uint32 size = static_cast<uint32>(renderObjectArray.size());
         for (uint32 pos = 0; pos < size; ++pos)
         {
-			RenderObject * node = renderObjectArray[pos];						
-			if ((node->GetFlags() & visibilityCriteria) != visibilityCriteria)
+            RenderObject* node = renderObjectArray[pos];
+            if ((node->GetFlags() & visibilityCriteria) != visibilityCriteria)
 				continue;					
 			//still need to add flags for particles to dicede if to use DefferedUpdate
             if ((RenderObject::ALWAYS_CLIPPING_VISIBLE & node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))

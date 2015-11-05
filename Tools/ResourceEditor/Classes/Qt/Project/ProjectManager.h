@@ -54,24 +54,26 @@ public:
         QVector<QString> values;
     };
 
-	ProjectManager();
-	~ProjectManager();
+    ProjectManager() = default;
+    ~ProjectManager() = default;
 
-	bool IsOpened() const;
+    bool IsOpened() const;
 
-	const DAVA::FilePath & CurProjectPath() const;
-	const DAVA::FilePath & CurProjectDataSourcePath() const;
-    const DAVA::FilePath & CurProjectDataParticles() const;
-    
+    const DAVA::FilePath& GetProjectPath() const;
+    const DAVA::FilePath& GetDataSourcePath() const;
+    const DAVA::FilePath& GetParticlesPath() const;
+
+    const DAVA::FilePath& GetWorkspacePath() const;
+
     const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
     const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;
 
 public slots:
-    DAVA::FilePath ProjectOpenDialog();
-	void ProjectOpen(const QString &path);
-    void ProjectOpen(const DAVA::FilePath &path);
-	void ProjectOpenLast();
-	void ProjectClose();
+    DAVA::FilePath ProjectOpenDialog() const;
+    void OpenProject(const QString& path);
+    void OpenProject(const DAVA::FilePath& path);
+    void OpenLastProject();
+    void CloseProject();
     void OnSceneViewInitialized();
     void UpdateParticleSprites();
 
@@ -83,13 +85,17 @@ private:
     void LoadProjectSettings();
     void LoadMaterialsSettings();
 
-    DAVA::FilePath curProjectPath;
-	DAVA::FilePath curProjectPathDataSource;
-    DAVA::FilePath curProjectPathParticles;
+    void UpdateInternalValues();
+
+    DAVA::FilePath projectPath;
+    DAVA::FilePath dataSourcePath;
+    DAVA::FilePath particlesPath;
+    DAVA::FilePath workspacePath;
+
     QVector<AvailableMaterialTemplate> templates;
     QVector<AvailableMaterialQuality> qualities;
-    bool useDelayInitialization;
-    bool isParticleSpritesUpdated;
+    bool useDelayInitialization = true;
+    bool isParticleSpritesUpdated = false;
 };
 
 #endif // __PROJECT_MANAGER_H__ 

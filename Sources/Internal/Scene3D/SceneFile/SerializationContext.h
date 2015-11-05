@@ -146,9 +146,9 @@ namespace DAVA
         {
             lastError = error;
         }
-		
-		inline uint32 GetLastError()
-		{
+
+        inline uint32 GetLastError()
+        {
 			return lastError;
 		}
 		

@@ -654,10 +654,10 @@ void EmitterLayerWidget::StoreVisualState(KeyedArchive* visualStateProps)
 
 void EmitterLayerWidget::OnSpriteBtn()
 {
-	FilePath projectPath(ProjectManager::Instance()->CurProjectPath());
-	projectPath += "Data/Gfx/Particles/";
-    
-	QString filePath = FileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
+    FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
+    projectPath += "Data/Gfx/Particles/";
+
+    QString filePath = FileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
 	if (filePath.isEmpty())
 		return;
 	

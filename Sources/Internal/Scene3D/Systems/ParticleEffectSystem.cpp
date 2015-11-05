@@ -62,7 +62,7 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
     {
         return (*it).second;
     }
-	else //create new
+    else //create new
     {
         NMaterial* material = new NMaterial();
         material->SetParent(particleBaseMaterial);
@@ -257,9 +257,9 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
         return;
     /*shortEffectTime*/
     float32 currFps = 1.0f / timeElapsed;
-    float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS())/(PerformanceSettings::Instance()->GetPsPerformanceMaxFPS()-PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
-	currPSValue = Clamp(currPSValue, 0.0f, 1.0f);
-	float32 speedMult = 1.0f+(PerformanceSettings::Instance()->GetPsPerformanceSpeedMult()-1.0f)*(1-currPSValue);
+    float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS()) / (PerformanceSettings::Instance()->GetPsPerformanceMaxFPS() - PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
+    currPSValue = Clamp(currPSValue, 0.0f, 1.0f);
+    float32 speedMult = 1.0f+(PerformanceSettings::Instance()->GetPsPerformanceSpeedMult()-1.0f)*(1-currPSValue);
 	float32 shortEffectTime = timeElapsed*speedMult;
 	
 	size_t componentsCount = activeComponents.size();

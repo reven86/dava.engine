@@ -96,8 +96,8 @@ class QuadTree : public RenderHierarchy
     static const int32 RECALCULATE_Z_PER_FRAME = 10;
     static const int32 RECALCULATE_OBJECTS_PER_FRAME = 10;
     void RecalculateNodeZLimits(uint16 nodeId);
-	void MarkNodeDirty(uint16 nodeId);
-	void MarkObjectDirty(RenderObject *object);
+    void MarkNodeDirty(uint16 nodeId);
+    void MarkObjectDirty(RenderObject *object);
 
 	bool worldInitialized;
 	List<RenderObject *> worldInitObjects;	

@@ -447,7 +447,7 @@ void dx11_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 
     if (!(x == 0 && y == 0 && w == 0 && h == 0))
     {
-        D3D11_RECT rect = { x, y, x + w - 1, y + h - 1 };
+        D3D11_RECT rect = { x, y, x + w, y + h };
 
         cb->rs_param.scissorEnabled = true;
         cb->cur_rs = nullptr;

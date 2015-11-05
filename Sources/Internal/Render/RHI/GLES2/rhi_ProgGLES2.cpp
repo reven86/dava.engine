@@ -443,7 +443,7 @@ ProgGLES2::ConstBuf::Instance() const
     if (!inst)
     {
         //SCOPED_NAMED_TIMING("gl.cb-inst");
-        inst = DefaultConstRingBuffer.Alloc(count * 4 * sizeof(float));
+        inst = DefaultConstRingBuffer.Alloc(count * 4);
         memcpy(inst, data, 4 * count * sizeof(float));
         frame = CurFrame;
     }

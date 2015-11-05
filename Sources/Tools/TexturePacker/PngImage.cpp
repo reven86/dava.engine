@@ -155,12 +155,14 @@ void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffs
 	}
 
 	// add image
+    const int32 imageHeight = static_cast<int32>(image->GetHeight());
+    const int32 imageWidth = static_cast<int32>(image->GetWidth());
     int32 srcPos = 0;
     int32 destPos = sx + sy * GetWidth();
-    int32 destPosInc = GetWidth() - image->GetWidth();
-    for (int32 y = 0; y < image->GetHeight(); ++y, destPos += destPosInc)
+    int32 destPosInc = GetWidth() - imageWidth;
+    for (int32 y = 0; y < imageHeight; ++y, destPos += destPosInc)
     {
-        for (int32 x = 0; x < image->GetWidth(); ++x, ++srcPos, ++destPos)
+        for (int32 x = 0; x < imageWidth; ++x, ++srcPos, ++destPos)
         {
             if ((sx + x) < 0)
                 continue;
