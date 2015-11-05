@@ -920,13 +920,13 @@ On the other hand, '#pragma GCC visibility *' is outputted, because it is for th
 
 <h3><a name="3.1.1" href="#toc.3.1.1">3.1.1. Pre-preprocessing of Header File</a></h3>
 <p>With above directives, you can "pre-preprocess" header files.  Pre-preprocessing considerably saves the entire preprocessing time.  I think the explanation so far has already given you an understanding of how to pre-preprocess header files, but to deepen your understanding, let me explain it by taking an example of <b>mcpp</b>'s own source code.</p>
-<p><b>mcpp</b> source consists of eight *.c files, of which seven files include "system.H" and "internal.H".  No other headers are included.  The source looks like this:</p>
+<p><b>mcpp</b> source consists of eight *.c files, of which seven files include "system.h" and "internal.h".  No other headers are included.  The source looks like this:</p>
 <pre>
 #if PREPROCESSED
-#include  "mcpp.H"
+#include  "mcpp.h"
 #else
-#include  "system.H"
-#include  "internal.H"
+#include  "system.h"
+#include  "internal.h"
 #endif
 </pre>
 <p>The system.H includes noconfig.H or configed.H, as well as several standard header files.  mcpp.H is not a source file I provide and is a "pre-preprocessed" header file I am going to generate.</p>
@@ -938,8 +938,8 @@ mcpp &gt; mcpp.H
 <p>Enter the following directives from the keyboard:</p>
 <pre>
 #pragma MCPP preprocess
-#include "system.H"
-#include "internal.H"
+#include "system.h"
+#include "internal.h"
 #pragma MCPP put_defines
 </pre>
 <p>Enter "end-of-file" to terminate <b>mcpp</b>.</p>
@@ -971,7 +971,7 @@ mcpp &gt; mcpp.H
 #endif
 </pre>
 <p>#pragma once provides similar functionality to this.  Using macros always involves reading a header file. (The preprocessor cannot skip reading the code as people do and must read the entire header file for #if's or #endif's; It must read a comment before it can determine whether a line is a directive line, that is, a line with # at the beginning followed by a preprocessing directive; To do so, the preprocessor must identify a string literal; After all, it must read through the entire header file and perform most of tokenization.)  #pragma once eliminates the need of even accessing to a header file, resulting in a improved processing speed for multiple includes.</p>
-<p>To determine whether two header files are identical, file name characters, including directory names in a search path, are compared.  Windows is not case sensitive.  Therefore, "/DIR1/header.h" and "/DIR2/header.h" are regarded as distinct, but "header.h" and "HEADER.H" are regarded as the same on Windows, but distinct on UNIX-like systems.  A directory is memorized after converting to absolute path, and a symbolic link in UNIX systems is memorized after dereferencing.  Moreover, path-list is normalized by removing redundant part such as <samp>"foo/../"</samp>.  So, the identical files are determined always correctly. *1, *2, *3</p>
+<p>To determine whether two header files are identical, file name characters, including directory names in a search path, are compared.  Windows is not case sensitive.  Therefore, "/DIR1/header.h" and "/DIR2/header.h" are regarded as distinct, but "header.h" and "HEADER.h" are regarded as the same on Windows, but distinct on UNIX-like systems.  A directory is memorized after converting to absolute path, and a symbolic link in UNIX systems is memorized after dereferencing.  Moreover, path-list is normalized by removing redundant part such as <samp>"foo/../"</samp>.  So, the identical files are determined always correctly. *1, *2, *3</p>
 <p>I borrowed the idea of #pragma once from GCC V.1.*/cpp.  GCC V.2.*, and V.3.* still has this functionality but it is regarded as obsolete.  The specification of GCC V.2.*/cpp has been changed as follows: If the entire header file is enclosed with #ifndef _MACRO, #define _MACRO, and #endif, the cpp memorizes it and inclusion occurs only once, even without #pragma once.</p>
 <p>However, this GCC V.2 and V.3 specification sometimes does not work for commercially available compiler systems that are not based on the GCC specification, due to a difference in the standard header file notation.  In addition, the GCC V.2 and V.3 specification is more complex to implement.  For this reason, I decided to implement only #pragma once.</p>
 <p>As with other preprocessors, it is not advisable to rely only on #pragma once when the same header files are used.  It is recommended that #pragma once should be combined with macros as follows:</p>
@@ -4258,7 +4258,7 @@ An identifier has a '$'.  The only <b>mcpp</b> compiled with <i>DOLLAR_IN_NAME</
 <br>
 
 <h2><a name="5.7" href="#toc.5.7">5.7. Warnings (Class 4)</a></h2>
-<p>Standard C guarantees some minimum translation limits.  It is desirable that a preprocessor imposes translation limits that exceed these values, but source programs that uses preprocessor' own translation limits will restrict portability.  <b>mcpp</b> provides some macros in "system.H" that allows you to set translation limits to any values you like.  <b>mcpp</b> in Standard mode issues a warning to source code that exceeds a Standard C guaranteed limit.  However, these messages are excluded from Class 1 and 2 because they may be issued frequently, depending on standard headers of compiler systems or source programs.</p>
+<p>Standard C guarantees some minimum translation limits.  It is desirable that a preprocessor imposes translation limits that exceed these values, but source programs that uses preprocessor' own translation limits will restrict portability.  <b>mcpp</b> provides some macros in "system.h" that allows you to set translation limits to any values you like.  <b>mcpp</b> in Standard mode issues a warning to source code that exceeds a Standard C guaranteed limit.  However, these messages are excluded from Class 1 and 2 because they may be issued frequently, depending on standard headers of compiler systems or source programs.</p>
 <ul>
 <li><samp>Logical source line longer than 509 bytes</samp><br>
 The length of a logical source line has exceeded 509 bytes.<br>

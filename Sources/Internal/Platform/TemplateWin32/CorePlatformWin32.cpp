@@ -167,10 +167,10 @@ namespace DAVA
         MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
         FrameworkDidLaunched();
-		KeyedArchive * options = Core::GetOptions();
+        KeyedArchive* options = Core::GetOptions();
 
-		fullscreenMode = GetCurrentDisplayMode();//FindBestMode(fullscreenMode);
-		if (options)
+        fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
+        if (options)
 		{
 			windowedMode.width = options->GetInt32("width");
 			windowedMode.height = options->GetInt32("height");
@@ -202,10 +202,10 @@ namespace DAVA
 
         clientSize.top = 0;
         clientSize.left = 0;
-		clientSize.right = currentMode.width;
-		clientSize.bottom = currentMode.height;
+        clientSize.right = currentMode.width;
+        clientSize.bottom = currentMode.height;
 
-		AdjustWindowRect(&clientSize, style, FALSE);
+        AdjustWindowRect(&clientSize, style, FALSE);
 
 		realWidth = clientSize.right - clientSize.left;
 		realHeight = clientSize.bottom - clientSize.top;
@@ -296,10 +296,10 @@ namespace DAVA
             TRACE_END_EVENT(11, "core", "Sleep");
 
             if (willQuit)
-            {	
-				break;
-			}
-		}
+            {
+                break;
+            }
+        }
 
 		Core::Instance()->SystemAppFinished();
 		FrameworkWillTerminate();
@@ -379,10 +379,10 @@ namespace DAVA
 
     void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode>& availableDisplayModes)
     {
-		availableDisplayModes.clear();
+        availableDisplayModes.clear();
 
-		DWORD iModeNum = 0;
-		DEVMODE	dmi;
+        DWORD iModeNum = 0;
+        DEVMODE	dmi;
 		ZeroMemory (&dmi, sizeof(dmi)) ;
 		dmi.dmSize = sizeof(dmi) ;
 

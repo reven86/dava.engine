@@ -209,8 +209,12 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 
         CreateBaseXamlUI();
 
-        WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction ^ action) { Run(); });
+        WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this, args](Windows::Foundation::IAsyncAction ^ action) { Run(args); });
         renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+    }
+    else
+    {
+        EmitPushNotification(args);
     }
 
     Window::Current->Activate();
@@ -260,7 +264,7 @@ void WinUAPXamlApp::UnfocusUIElement()
     controlThatTakesFocus->Focus(FocusState::Pointer);
 }
 
-void WinUAPXamlApp::Run()
+void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
     Core::Instance()->CreateSingletons();
@@ -289,8 +293,9 @@ void WinUAPXamlApp::Run()
     InitCoordinatesSystem();
 
     Core::Instance()->SetIsActive(true);
-
     Core::Instance()->SystemAppStarted();
+
+    EmitPushNotification(args);
 
     SystemTimer* sysTimer = SystemTimer::Instance();
     while (!quitFlag)
@@ -811,6 +816,21 @@ void WinUAPXamlApp::SetDisplayOrientations()
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
 }
 
+void WinUAPXamlApp::ResetScreen()
+{
+    core->RunOnUIThreadBlocked([this]() {
+        float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
+        float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
+        float32 scaleX = swapChainPanel->CompositionScaleX;
+        float32 scaleY = swapChainPanel->CompositionScaleY;
+        UpdateScreenSizeAndScale(width, height, scaleX, scaleY);
+    });
+
+    ResetRender();
+    ReInitCoordinatesSystem();
+    UIScreenManager::Instance()->ScreenSizeChanged();
+}
+
 void WinUAPXamlApp::ResetRender()
 {
     rhi::ResetParam params;
@@ -859,12 +879,13 @@ void WinUAPXamlApp::PrepareScreenSize()
 
 void WinUAPXamlApp::UpdateScreenSizeAndScale(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    viewScaleX = scaleX;
-    viewScaleY = scaleY;
+    float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
+    viewScaleX = scaleX * userScale;
+    viewScaleY = scaleY * userScale;
     viewWidth = static_cast<int32>(width);
     viewHeight = static_cast<int32>(height);
-    physicalWidth = static_cast<int32>(width * scaleX);
-    physicalHeight = static_cast<int32>(height * scaleY);
+    physicalWidth = static_cast<int32>(width * viewScaleX);
+    physicalHeight = static_cast<int32>(height * viewScaleY);
 }
 
 void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
@@ -901,6 +922,14 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
     ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+}
+
+void WinUAPXamlApp::EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
+{
+    DVASSERT(nullptr != dispatcher);
+    dispatcher->RunAsync([=]() {
+        pushNotificationSignal.Emit(args);
+    });
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(

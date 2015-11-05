@@ -79,7 +79,8 @@ void GameCore::OnAppStarted()
 
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
     //    SetScenePath("~doc:/effect.sc2");
-    SetScenePath("~doc:/karelia/karelia.sc2");
+    // SetScenePath("~doc:/karelia/karelia.sc2");
+    SetScenePath("~res:/3d/Maps/amigosville/amigosville.sc2");
     //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
     //      SetScenePath("~doc:/amigosville/amigosville.sc2");
     //      SetScenePath("~doc:/fort/fort.sc2");
@@ -144,6 +145,7 @@ void GameCore::BeginFrame()
 
 void GameCore::EndFrame()
 {
+#if 0
     rhi::RenderPassConfig pass_desc;
 
     pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
@@ -162,9 +164,9 @@ void GameCore::EndFrame()
     DbgDraw::FlushBatched(pl, Matrix4(), Matrix4());
     rhi::EndPacketList(pl);
     rhi::EndRenderPass(pass);
-
+#endif
     ApplicationCore::EndFrame();
-
+#if 0
     // stats must be obtained and reset AFTER frame is finished (and Present called)
 
     const char* backend = "";
@@ -199,4 +201,5 @@ void GameCore::EndFrame()
     DbgDraw::Text2D(x0, y0 + 5 * (DbgDraw::NormalCharH + 1), color1, "  SET-CB  %u", StatSet::StatValue(rhi::stat_SET_CB));
 
     StatSet::ResetAll();
+#endif
 }

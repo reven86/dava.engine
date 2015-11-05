@@ -368,10 +368,10 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
     if (heightmap->Data() == NULL)
     {
         Logger::Error("[Landscape::PlacePoint] Trying to place point on empty heightmap data!");
-		return false;
-	}
-	
-	float32 kW = (float32)(heightmap->Size() - 1) / (bbox.max.x - bbox.min.x);
+        return false;
+    }
+
+    float32 kW = (float32)(heightmap->Size() - 1) / (bbox.max.x - bbox.min.x);
 	
 	float32 x = (point.x - bbox.min.x) * kW;
 	float32 y = (point.y - bbox.min.y) * kW;
@@ -867,7 +867,7 @@ void Landscape::PrepareToRender(Camera* camera)
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
     {
         return;
-	}
+    }
 
     ClearQueue();
 
@@ -881,8 +881,8 @@ void Landscape::PrepareToRender(Camera* camera)
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
     {
         fans.clear();
-		lod0quads.clear();
-		lodNot0quads.clear();
+        lod0quads.clear();
+        lodNot0quads.clear();
         activeRenderBatchArray.clear();
         GenLods(&quadTreeHead, 0x3f, camera);
     }
@@ -928,10 +928,10 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 
             index++;
         }
-	}
+    }
 
-	indices.resize(heightmap->Size()*heightmap->Size()*6);
-	int32 step = 1;
+    indices.resize(heightmap->Size() * heightmap->Size() * 6);
+    int32 step = 1;
 	int32 indexIndex = 0;
 	int32 quadWidth = heightmap->Size();
 	for(int32 y = 0; y < currentNode->data.size-1; y += step)
@@ -963,8 +963,8 @@ void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
     if (newHeightMapPath == heightmapPath)
     {
         return;
-	}
-	BuildLandscapeFromHeightmapImage(newHeightMapPath, bbox);
+    }
+    BuildLandscapeFromHeightmapImage(newHeightMapPath, bbox);
 }
 	
 float32 Landscape::GetLandscapeSize() const
@@ -1000,11 +1000,11 @@ void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
     if (newLandscapeSize.z < 0.0f || newLandscapeSize.x < 0 || newLandscapeSize.y < 0)
     {
         return;
-	}
+    }
     if (newLandscapeSize == bbox.GetSize())
     {
         return;
-	}
+    }
     bbox.Empty();
 	bbox.AddPoint(Vector3(-newLandscapeSize.x/2.f, -newLandscapeSize.y/2.f, 0.f));
 	bbox.AddPoint(Vector3(newLandscapeSize.x/2.f, newLandscapeSize.y/2.f, newLandscapeSize.z));
@@ -1149,7 +1149,7 @@ RenderObject* Landscape::Clone(RenderObject* newObject)
     if (!newObject)
     {
         DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
-		newObject = new Landscape();
+        newObject = new Landscape();
     }
 
     Landscape *newLandscape = static_cast<Landscape *>(newObject);

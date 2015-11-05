@@ -119,10 +119,10 @@ void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
     while (curNode != NULL)
     {
         dataNodes.insert(curNode);
-		curNode = curNode->GetParent();
-	}
-	
-	if(dataSource)
+        curNode = curNode->GetParent();
+    }
+
+    if(dataSource)
 	{
 		InsertDataNode(dataSource, dataNodes);
 	}
@@ -149,9 +149,9 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 
     if (material)
     {
-		NMaterial *mat = material->Clone();
-		rb->SetMaterial(mat);
-		mat->Release();
+        NMaterial* mat = material->Clone();
+        rb->SetMaterial(mat);
+        mat->Release();
 	}
 
     rb->vertexBuffer = vertexBuffer;
@@ -168,10 +168,10 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
     rb->startIndex = startIndex;
     rb->indexCount = indexCount;
 
-	rb->aabbox = aabbox;
-	rb->sortingKey = sortingKey;
+    rb->aabbox = aabbox;
+    rb->sortingKey = sortingKey;
 
-	return rb;
+    return rb;
 }
 
 void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializationContext)

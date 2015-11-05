@@ -84,6 +84,7 @@
 
 
 #include "Debug/Profiler.h"
+#include "Core.h"
 #define PROF__FRAME 0
 #define PROF__FRAME_UPDATE 1
 #define PROF__FRAME_DRAW 2
@@ -194,9 +195,23 @@ void Core::CreateRenderer()
     rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
     rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
     rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
+
+    rendererParams.maxTextureSetCount = options->GetInt32("max_texture_set_count");
+    rendererParams.maxSamplerStateCount = options->GetInt32("max_sampler_state_count");
+    rendererParams.maxPipelineStateCount = options->GetInt32("max_pipeline_state_count");
+    rendererParams.maxDepthStencilStateCount = options->GetInt32("max_depthstencil_state_count");
+    rendererParams.maxRenderPassCount = options->GetInt32("max_render_pass_count");
+    rendererParams.maxCommandBuffer = options->GetInt32("max_command_buffer_count");
+    rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
+
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
     Renderer::Initialize(renderer, rendererParams);
+}
+
+void Core::ReleaseRenderer()
+{
+    Renderer::Uninitialize();
 }
 
 void Core::ReleaseSingletons()
@@ -229,7 +244,6 @@ void Core::ReleaseSingletons()
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
-    Renderer::Uninitialize();
 
     InputSystem::Instance()->Release();
     JobManager::Instance()->Release();
@@ -442,6 +456,7 @@ void Core::SystemAppFinished()
         profiler::SaveEvents("trace.json");
         #endif
         core->OnAppFinished();
+        Core::Instance()->ReleaseRenderer();
     }
 }
 
@@ -715,12 +730,25 @@ uint32 Core::GetScreenDPI()
 
 void Core::SetIcon(int32 /*iconId*/){};
 
-float32 Core::GetScreenScaleFactor() const
+float32 Core::GetScreenScaleMultiplier() const
 {
+    float32 ret = 1.0f;
+
     if (options)
     {
-        return DeviceInfo::GetScreenInfo().scale * options->GetFloat("userScreenScaleFactor", 1.f);
+        ret = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
-    return DeviceInfo::GetScreenInfo().scale;
+
+    return ret;
+}
+
+void Core::SetScreenScaleMultiplier(float32 multiplier)
+{
+    options->SetFloat("userScreenScaleFactor", multiplier);
+}
+
+float32 Core::GetScreenScaleFactor() const
+{
+    return (DeviceInfo::GetScreenInfo().scale * GetScreenScaleMultiplier());
 }
 };

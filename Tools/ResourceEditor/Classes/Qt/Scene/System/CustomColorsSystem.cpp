@@ -467,15 +467,15 @@ String CustomColorsSystem::GetRelativePathToProjectPath(const FilePath& absolute
 	if(absolutePath.IsEmpty())
 		return String();
 
-	return absolutePath.GetRelativePathname(ProjectManager::Instance()->CurProjectPath());
+    return absolutePath.GetRelativePathname(ProjectManager::Instance()->GetProjectPath());
 }
 
 FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const String& relativePath)
 {
 	if(relativePath.empty())
 		return FilePath();
-	
-	return ProjectManager::Instance()->CurProjectPath() + relativePath;
+
+    return ProjectManager::Instance()->GetProjectPath() + relativePath;
 }
 
 int32 CustomColorsSystem::GetBrushSize()
