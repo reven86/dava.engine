@@ -98,6 +98,7 @@ namespace DepthStencilStateGLES2
 {
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle hstate);
+void InvalidateCache();
 }
 namespace ConstBufferGLES2
 {

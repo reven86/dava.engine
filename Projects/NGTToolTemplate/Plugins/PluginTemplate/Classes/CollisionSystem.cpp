@@ -32,23 +32,16 @@
 #include "CollisionSystem/CollisionLandscape.h"
 #include "CollisionSystem/CollisionParticleEmitter.h"
 #include "CollisionSystem/CollisionBox.h"
-
-#include "SceneUtils.h"
-
-#include "SceneUtils.h"
-
-#include "Scene3D/Scene.h"
-#include "Scene3D/Systems/EventSystem.h"
-
-#include "Render/RenderStateData.h"
-
 #include "CameraSystem.h"
 #include "SelectionSystem.h"
+#include "SceneUtils.h"
 
 // framework
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Scene.h"
+
+using namespace DAVA;
 
 #define SIMPLE_COLLISION_BOX_SIZE 1.0f
 
@@ -61,8 +54,6 @@ ENUM_DECLARE(CollisionSystemDrawMode)
 	ENUM_ADD(CS_DRAW_LAND_RAYTEST);
 	//ENUM_ADD(CS_DRAW_LAND_COLLISION);
 }
-
-using namespace DAVA;
 
 SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
@@ -77,44 +68,30 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	objectsCollConf = new btDefaultCollisionConfiguration();
 	objectsCollDisp = new btCollisionDispatcher(objectsCollConf);
 	objectsBroadphase = new btAxisSweep3(worldMin,worldMax);
-	objectsDebugDrawer = new SceneCollisionDebugDrawer();
-	objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-	objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
-	objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
+    objectsDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
+    objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+    objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
+    objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
 
-	landCollConf = new btDefaultCollisionConfiguration();
-	landCollDisp = new btCollisionDispatcher(landCollConf);
-	landBroadphase = new btAxisSweep3(worldMin,worldMax);
-	landDebugDrawer = new SceneCollisionDebugDrawer();
-	landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-	landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
-	landCollWorld->setDebugDrawer(landDebugDrawer);
-
-	renderState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_COLORMASK_ALL |
-                                                                         DAVA::RenderStateData::STATE_DEPTH_WRITE |
-                                                                         DAVA::RenderStateData::STATE_DEPTH_TEST);
-    
-    objectsDebugDrawer->SetRenderState(renderState);
-    landDebugDrawer->SetRenderState(renderState);
-
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    landCollConf = new btDefaultCollisionConfiguration();
+    landCollDisp = new btCollisionDispatcher(landCollConf);
+    landBroadphase = new btAxisSweep3(worldMin, worldMax);
+    landDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
+    landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+    landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
+    landCollWorld->setDebugDrawer(landDebugDrawer);
 }
 
 SceneCollisionSystem::~SceneCollisionSystem()
 {
-	if(GetScene())
-	{
-		GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-	}
+    QMapIterator<DAVA::Entity*, CollisionBaseObject*> i(entityToCollision);
+    while (i.hasNext())
+    {
+        i.next();
 
-	QMapIterator<DAVA::Entity*, CollisionBaseObject*> i(entityToCollision);
-	while(i.hasNext())
-	{
-		i.next();
-
-		CollisionBaseObject *cObj = i.value();
-		delete cObj;
-	}
+        CollisionBaseObject* cObj = i.value();
+        delete cObj;
+    }
 
 	DAVA::SafeDelete(objectsCollWorld);
 	DAVA::SafeDelete(objectsBroadphase);
@@ -200,7 +177,7 @@ const EntityGroup* SceneCollisionSystem::ObjectsRayTestFromCamera()
     DAVA::Vector3 traceFrom;
     DAVA::Vector3 traceTo;
 
-    SceneCameraSystem * cameraSystem = findSystem<SceneCameraSystem>(GetScene());
+    SceneCameraSystem* cameraSystem = findSystem<SceneCameraSystem>(GetScene());
     cameraSystem->GetRayTo2dPoint(lastMousePos, 1000.0f, traceFrom, traceTo);
 
 	return ObjectsRayTest(traceFrom, traceTo);
@@ -328,63 +305,61 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 	// reset ray cache on new frame
 	rayIntersectCached = false;
 
-    drawMode = CS_DRAW_OBJECTS_SELECTED;
-	if(drawMode & CS_DRAW_LAND_COLLISION)
-	{
-		DAVA::Vector3 tmp;
-		LandRayTestFromCamera(tmp);
-	}
+    drawMode = CS_DRAW_DEFAULT; //SettingsManager::GetValue(Settings::Scene_CollisionDrawMode).AsInt32();
+    if (drawMode & CS_DRAW_LAND_COLLISION)
+    {
+        DAVA::Vector3 tmp;
+        LandRayTestFromCamera(tmp);
+    }
 }
 
 void SceneCollisionSystem::Input(DAVA::UIEvent *event)
 {
 	// don't have to update last mouse pos when event is not from the mouse
-	if (event->phase != UIEvent::PHASE_KEYCHAR && event->phase != UIEvent::PHASE_JOYSTICK)
-	{
-		lastMousePos = event->point;
+    if (event->phase != UIEvent::Phase::KEY_DOWN && event->phase != UIEvent::Phase::JOYSTICK)
+    {
+        lastMousePos = event->point;
 	}
 }
 
 void SceneCollisionSystem::Draw()
 {
-	if(drawMode & CS_DRAW_LAND)
-	{
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 0.5f, 0, 1.0f));
-		landCollWorld->debugDrawWorld();
-	}
+    RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
 
-	if(drawMode & CS_DRAW_LAND_RAYTEST)
-	{
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(lastLandRayFrom, lastLandRayTo, 1.0f, renderState);
-	}
+    if (drawMode & CS_DRAW_LAND)
+    {
+        landCollWorld->debugDrawWorld();
+    }
 
-	if(drawMode & CS_DRAW_LAND_COLLISION)
-	{
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawPoint(lastLandCollision, 7.0f, renderState);
-	}
+    if (drawMode & CS_DRAW_LAND_RAYTEST)
+    {
+        drawer->DrawLine(lastLandRayFrom, lastLandRayTo, DAVA::Color(0, 1.0f, 0, 1.0f));
+    }
 
-	if(drawMode & CS_DRAW_OBJECTS)
-	{
-		objectsCollWorld->debugDrawWorld();
-	}
+    if (drawMode & CS_DRAW_LAND_COLLISION)
+    {
+        drawer->DrawIcosahedron(lastLandCollision, 0.5f, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
+    }
 
-	if(drawMode & CS_DRAW_OBJECTS_RAYTEST)
-	{
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(lastRayFrom, lastRayTo, 1.0f, renderState);
-	}
+    if (drawMode & CS_DRAW_OBJECTS)
+    {
+        objectsCollWorld->debugDrawWorld();
+    }
 
-	if(drawMode & CS_DRAW_OBJECTS_SELECTED)
-	{
-		// current selected entities
-		SceneSelectionSystem *selectionSystem = findSystem<SceneSelectionSystem>(GetScene());
-		if(NULL != selectionSystem)
-		{
-			for (size_t i = 0; i < selectionSystem->GetSelectionCount(); i++)
-			{
-				// get collision object for solid selected entity
+    if (drawMode & CS_DRAW_OBJECTS_RAYTEST)
+    {
+        drawer->DrawLine(lastRayFrom, lastRayTo, DAVA::Color(1.0f, 0, 0, 1.0f));
+    }
+
+    if (drawMode & CS_DRAW_OBJECTS_SELECTED)
+    {
+        // current selected entities
+        SceneSelectionSystem* selectionSystem = findSystem<SceneSelectionSystem>(GetScene());
+        if (NULL != selectionSystem)
+        {
+            for (size_t i = 0; i < selectionSystem->GetSelectionCount(); i++)
+            {
+                // get collision object for solid selected entity
 				CollisionBaseObject *cObj = entityToCollision.value(selectionSystem->GetSelectionEntity(i), NULL);
 
 				// if no collision object for solid selected entity,
@@ -401,15 +376,6 @@ void SceneCollisionSystem::Draw()
 			}
 		}
 	}
-}
-
-
-void SceneCollisionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
-{
-    if(EventSystem::SWITCH_CHANGED == event)
-    {
-        UpdateCollisionObject(entity);
-    }
 }
 
 void SceneCollisionSystem::AddEntity(DAVA::Entity * entity)
@@ -447,31 +413,29 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 	CollisionBaseObject *cObj = NULL;
 	bool isLandscape = false;
 
-    DAVA::float32 debugBoxScale = 1.0f;
+    DAVA::float32 debugBoxScale = 1.0; //SettingsManager::GetValue(Settings::Scene_DebugBoxScale).AsFloat();
 
-	// check if this entity is landscape
-	DAVA::Landscape *landscape = DAVA::GetLandscape(entity);
-	if( NULL == cObj &&
-		NULL != landscape)
-	{
-		cObj = new CollisionLandscape(entity, landCollWorld, landscape);
-		isLandscape = true;
-	}
+    // check if this entity is landscape
+    DAVA::Landscape* landscape = DAVA::GetLandscape(entity);
+    if (NULL == cObj &&
+        NULL != landscape)
+    {
+        cObj = new CollisionLandscape(entity, landCollWorld, landscape);
+        isLandscape = true;
+    }
 
-	
-	DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
+    DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
 	if( NULL == cObj &&
 		NULL != particleEffect)
 	{
-        DAVA::float32 scale = 1.0f;
-		cObj = new CollisionParticleEffect(entity, objectsCollWorld, SIMPLE_COLLISION_BOX_SIZE * scale);
-	}
+        DAVA::float32 scale = 1.0; //SettingsManager::GetValue(Settings::Scene_DebugBoxParticleScale).AsFloat();
+        cObj = new CollisionParticleEffect(entity, objectsCollWorld, SIMPLE_COLLISION_BOX_SIZE * scale);
+    }
 
-
-	DAVA::RenderObject *renderObject = DAVA::GetRenderObject(entity);
-	if( NULL == cObj &&
-		NULL != renderObject && entity->IsLodMain(0))
-	{
+    DAVA::RenderObject* renderObject = DAVA::GetRenderObject(entity);
+    if (NULL == cObj &&
+        NULL != renderObject && entity->IsLodMain(0))
+    {
         RenderObject::eType objType = renderObject->GetType();
         if( objType != RenderObject::TYPE_SPRITE &&
             objType != RenderObject::TYPE_VEGETATION)
@@ -499,12 +463,12 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 		}
         else if(NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
         {
-            DAVA::float32 scale = 1.0f;
+            DAVA::float32 scale = 1.0; //SettingsManager::GetValue(Settings::Scene_DebugBoxUserScale).AsFloat();
             cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), SIMPLE_COLLISION_BOX_SIZE * scale);
         }
         else if(NULL != GetWaypointComponent(entity))
         {
-            DAVA::float32 scale = 1.0f;
+            DAVA::float32 scale = 1.0; //SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
             cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), SIMPLE_COLLISION_BOX_SIZE * scale);
         }
 	}
@@ -550,39 +514,14 @@ void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)
 // debug draw
 // -----------------------------------------------------------------------------------------------
 
-SceneCollisionDebugDrawer::SceneCollisionDebugDrawer()
-	: dbgMode(0)
-	, manager(DAVA::RenderManager::Instance())
-	, helper(DAVA::RenderHelper::Instance())
+SceneCollisionDebugDrawer::SceneCollisionDebugDrawer(RenderHelper* _drawer)
+    : dbgMode(0)
+    , drawer(_drawer)
 {
-    renderState = DAVA::RenderState::RENDERSTATE_2D_BLEND;
-    manager->RetainRenderState(renderState);
 }
 
 SceneCollisionDebugDrawer::~SceneCollisionDebugDrawer()
 {
-    if(InvalidUniqueHandle != renderState)
-    {
-        manager->ReleaseRenderState(renderState);
-    }
-}
-
-void SceneCollisionDebugDrawer::SetRenderState(UniqueHandle _renderState)
-{
-    if(_renderState != renderState)
-    {
-        if(InvalidUniqueHandle != renderState)
-        {
-            manager->ReleaseRenderState(renderState);
-        }
-
-        renderState = _renderState;
-        
-        if(InvalidUniqueHandle != renderState)
-        {
-            manager->RetainRenderState(renderState);
-        }
-    }
 }
 
 void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
@@ -591,16 +530,13 @@ void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3&
 	DAVA::Vector3 davaTo(to.x(), to.y(), to.z());
 	DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
 
-	manager->SetColor(davaColor);
-	helper->DrawLine(davaFrom, davaTo, 1.0f, renderState);
+    drawer->DrawLine(davaFrom, davaTo, davaColor, RenderHelper::DRAW_WIRE_DEPTH);
 }
 
 void SceneCollisionDebugDrawer::drawContactPoint( const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color )
 {
 	DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
-
-	manager->SetColor(davaColor);
-	helper->DrawPoint(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()), 1.0f, renderState);
+    drawer->DrawIcosahedron(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()), distance / 20.f, davaColor, RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void SceneCollisionDebugDrawer::reportErrorWarning( const char* warningString )

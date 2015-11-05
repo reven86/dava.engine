@@ -85,7 +85,7 @@ protected:
 
 	void Draw();
 
-	void AddEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity * entity) override;
 
 	void CreateDebugCameras();
@@ -109,8 +109,7 @@ protected:
 
     DAVA::float32 distanceToCamera;
 
-    DAVA::UniqueHandle renderState;
-	DAVA::uint32 activeSpeedIndex;
+    DAVA::uint32 activeSpeedIndex;
 };
 
 #endif

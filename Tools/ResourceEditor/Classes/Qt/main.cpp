@@ -211,10 +211,10 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     {
         // create and init UI
         mainWindow = new QtMainWindow();
-        
+
         mainWindow->EnableGlobalTimeout( true );
-        glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
-        
+        glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
+
         ProjectManager::Instance()->ProjectOpenLast();
         QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
         QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
@@ -222,11 +222,10 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
         QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
 
         mainWindow->show();
-        
+
         DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
     } );
-    
-    
+
     // start app
     QApplication::exec();
  

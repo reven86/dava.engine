@@ -41,7 +41,6 @@
 #include "UI/UIEvent.h"
 #include "Entity/SceneSystem.h"
 #include "Render/Highlevel/Landscape.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 class CollisionBaseObject;
@@ -49,117 +48,110 @@ class SceneCollisionDebugDrawer;
 
 enum CollisionSystemDrawMode
 {
-	CS_DRAW_NOTHING = 0x0,
+    CS_DRAW_NOTHING = 0x0,
 
-	CS_DRAW_OBJECTS = 0x1,
-	CS_DRAW_OBJECTS_SELECTED = 0x2,
-	CS_DRAW_OBJECTS_RAYTEST = 0x4,
+    CS_DRAW_OBJECTS = 0x1,
+    CS_DRAW_OBJECTS_SELECTED = 0x2,
+    CS_DRAW_OBJECTS_RAYTEST = 0x4,
 
-	CS_DRAW_LAND = 0x10,
-	CS_DRAW_LAND_RAYTEST = 0x20,
-	CS_DRAW_LAND_COLLISION = 0x40,
+    CS_DRAW_LAND = 0x10,
+    CS_DRAW_LAND_RAYTEST = 0x20,
+    CS_DRAW_LAND_COLLISION = 0x40,
 
     CS_DRAW_DEFAULT = CS_DRAW_NOTHING,
-	CS_DRAW_ALL = 0xFFFFFFFF
+    CS_DRAW_ALL = 0xFFFFFFFF
 };
 
 class SceneCollisionSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
-	friend class EntityModificationSystem;
+    friend class SceneEditor2;
+    friend class EntityModificationSystem;
 
 public:
-	SceneCollisionSystem(DAVA::Scene * scene);
-	~SceneCollisionSystem();
+    SceneCollisionSystem(DAVA::Scene* scene);
+    ~SceneCollisionSystem();
 
-	void SetDrawMode(int mode);
-	int GetDrawMode() const;
+    void SetDrawMode(int mode);
+    int GetDrawMode() const;
 
-	DAVA::AABBox3 GetBoundingBox(DAVA::Entity *entity);
+    DAVA::AABBox3 GetBoundingBox(DAVA::Entity* entity);
 
-	const EntityGroup* ObjectsRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to);
-	const EntityGroup* ObjectsRayTestFromCamera();
+    const EntityGroup* ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
+    const EntityGroup* ObjectsRayTestFromCamera();
 
-	bool LandRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to, DAVA::Vector3& intersectionPoint);
-	bool LandRayTestFromCamera(DAVA::Vector3& intersectionPoint);
+    bool LandRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to, DAVA::Vector3& intersectionPoint);
+    bool LandRayTestFromCamera(DAVA::Vector3& intersectionPoint);
 
-	DAVA::Landscape* GetLandscape() const;
+    DAVA::Landscape* GetLandscape() const;
 
-	void UpdateCollisionObject(DAVA::Entity *entity);
-	void RemoveCollisionObject(DAVA::Entity *entity);
+    void UpdateCollisionObject(DAVA::Entity* entity);
+    void RemoveCollisionObject(DAVA::Entity* entity);
 
-	virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
-
-protected:
-	void Draw();
-
-    virtual void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+    virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent* event);
 
 protected:
-	int drawMode;
+    void Draw();
 
-	DAVA::Vector3 lastRayFrom;
-	DAVA::Vector3 lastRayTo;
-	DAVA::Vector2 lastMousePos;
+    virtual void AddEntity(DAVA::Entity* entity);
+    virtual void RemoveEntity(DAVA::Entity* entity);
 
-	EntityGroup rayIntersectedEntities;
-	bool rayIntersectCached;
+protected:
+    int drawMode;
 
-	DAVA::Vector3 lastLandRayFrom;
-	DAVA::Vector3 lastLandRayTo;
-	DAVA::Vector3 lastLandCollision;
-	bool landIntersectCached;
-	bool landIntersectCachedResult;
+    DAVA::Vector3 lastRayFrom;
+    DAVA::Vector3 lastRayTo;
+    DAVA::Vector2 lastMousePos;
 
-	DAVA::Entity *curLandscapeEntity;
-	
-	DAVA::UniqueHandle renderState;
+    EntityGroup rayIntersectedEntities;
+    bool rayIntersectCached;
 
-	btDefaultCollisionConfiguration* objectsCollConf;
-	btCollisionDispatcher* objectsCollDisp;
-	btAxisSweep3* objectsBroadphase;
-	btCollisionWorld *objectsCollWorld;
-	SceneCollisionDebugDrawer *objectsDebugDrawer;
+    DAVA::Vector3 lastLandRayFrom;
+    DAVA::Vector3 lastLandRayTo;
+    DAVA::Vector3 lastLandCollision;
+    bool landIntersectCached;
+    bool landIntersectCachedResult;
 
-	btDefaultCollisionConfiguration* landCollConf;
-	btCollisionDispatcher* landCollDisp;
-	btAxisSweep3* landBroadphase;
-	btCollisionWorld *landCollWorld;
-	SceneCollisionDebugDrawer *landDebugDrawer;
+    DAVA::Entity* curLandscapeEntity = nullptr;
 
-	QMap<DAVA::Entity*, CollisionBaseObject*> entityToCollision;
-	QMap<btCollisionObject*, DAVA::Entity*> collisionToEntity;
+    btDefaultCollisionConfiguration* objectsCollConf = nullptr;
+    btCollisionDispatcher* objectsCollDisp = nullptr;
+    btAxisSweep3* objectsBroadphase = nullptr;
+    btCollisionWorld* objectsCollWorld = nullptr;
+    SceneCollisionDebugDrawer* objectsDebugDrawer = nullptr;
 
-	DAVA::Set<DAVA::Entity*> entitiesToAdd;
-	DAVA::Set<DAVA::Entity*> entitiesToRemove;
+    btDefaultCollisionConfiguration* landCollConf = nullptr;
+    btCollisionDispatcher* landCollDisp = nullptr;
+    btAxisSweep3* landBroadphase = nullptr;
+    btCollisionWorld* landCollWorld = nullptr;
+    SceneCollisionDebugDrawer* landDebugDrawer = nullptr;
 
-	CollisionBaseObject* BuildFromEntity(DAVA::Entity * entity);
-	void DestroyFromEntity(DAVA::Entity * entity);
+    QMap<DAVA::Entity*, CollisionBaseObject*> entityToCollision;
+    QMap<btCollisionObject*, DAVA::Entity*> collisionToEntity;
+
+    DAVA::Set<DAVA::Entity*> entitiesToAdd;
+    DAVA::Set<DAVA::Entity*> entitiesToRemove;
+
+    CollisionBaseObject* BuildFromEntity(DAVA::Entity* entity);
+    void DestroyFromEntity(DAVA::Entity* entity);
 };
 
 class SceneCollisionDebugDrawer : public btIDebugDraw
 {
 public:
-	SceneCollisionDebugDrawer();
+    SceneCollisionDebugDrawer(DAVA::RenderHelper* _drawer);
     ~SceneCollisionDebugDrawer();
-    
-    void SetRenderState(DAVA::UniqueHandle _renderState);
 
-	virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
-	virtual void drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color);
-	virtual void reportErrorWarning(const char* warningString);
-	virtual void draw3dText(const btVector3& location,const char* textString);
-	virtual void setDebugMode(int debugMode);
-	virtual int	getDebugMode() const;
+    virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
+    virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color);
+    virtual void reportErrorWarning(const char* warningString);
+    virtual void draw3dText(const btVector3& location, const char* textString);
+    virtual void setDebugMode(int debugMode);
+    virtual int getDebugMode() const;
 
 protected:
-	int dbgMode;
-	DAVA::RenderManager *manager;
-	DAVA::RenderHelper *helper;
-    DAVA::UniqueHandle renderState;
+    int dbgMode;
+    DAVA::RenderHelper* drawer = nullptr;
 };
 
 #endif // __SCENE_COLLISION_SYSTEM_H__

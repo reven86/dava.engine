@@ -57,138 +57,137 @@ using namespace DAVA;
 class ParticlesExtraInfoColumn;
 class ParticleTimeLineWidget : public ScrollZoomWidget
 {
-	Q_OBJECT
-	friend class ParticlesExtraInfoColumn;
+    Q_OBJECT
+    friend class ParticlesExtraInfoColumn;
 
 public:
-	explicit ParticleTimeLineWidget(QWidget *parent = 0);
-	~ParticleTimeLineWidget();
-	
-	void Init(float32 minTime, float32 maxTime);
+    explicit ParticleTimeLineWidget(QWidget* parent = 0);
+    ~ParticleTimeLineWidget();
 
-	struct LINE
-	{
-		float32 startTime;
-		float32 endTime;
-		float32 deltaTime;
-		float32 loopEndTime;
-		bool isLooped;
-		bool hasLoopVariation;
-		QColor color;
-		QString legend;
-		ParticleLayer* layer;
-	};
-	typedef DAVA::Map<uint32, LINE> LINE_MAP;
+    void Init(float32 minTime, float32 maxTime);
+
+    struct LINE
+    {
+        float32 startTime;
+        float32 endTime;
+        float32 deltaTime;
+        float32 loopEndTime;
+        bool isLooped;
+        bool hasLoopVariation;
+        QColor color;
+        QString legend;
+        ParticleLayer* layer;
+    };
+    typedef DAVA::Map<uint32, LINE> LINE_MAP;
 
 signals:
-	void ChangeVisible(bool visible);
-	
-protected slots:		
-	
-	// Scene Tree signals - Particles are selected.
-	void OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-	void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-	void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-	void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
-    void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
+    void ChangeVisible(bool visible);
 
-	// Scene Tree signals - values are changed for Particles.
-	void OnParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
-	void OnParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
-	void OnParticleEffectStateChanged(SceneEditor2* scene, DAVA::Entity* effect, bool isStarted);
-	
-	// Scene Tree signals - Particle Emitter is loaded.
-	void OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+protected slots:
 
-	// Scene Tree signals - structure changes.
-	void OnParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
-	void OnParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    // Scene Tree signals - Particles are selected.
+    void OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
+    void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
+    void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
+    void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
+    void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, int forceIndex);
 
-	void OnUpdate();
+    // Scene Tree signals - values are changed for Particles.
+    void OnParticleEmitterValueChanged(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+    void OnParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
+    void OnParticleEffectStateChanged(SceneEditor2* scene, DAVA::Entity* effect, bool isStarted);
 
-	void OnUpdateLayersExtraInfoNeeded();
+    // Scene Tree signals - Particle Emitter is loaded.
+    void OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+
+    // Scene Tree signals - structure changes.
+    void OnParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
+    void OnParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+
+    void OnUpdate();
+
+    void OnUpdateLayersExtraInfoNeeded();
 
 protected:
-	void OnParticleEffectSelected(DAVA::ParticleEffectComponent* effect);	
+    void OnParticleEffectSelected(DAVA::ParticleEffectComponent* effect);
 
-	virtual void paintEvent(QPaintEvent *);
-	virtual void mouseMoveEvent(QMouseEvent *);
-	virtual void mousePressEvent(QMouseEvent *);
-	virtual void mouseReleaseEvent(QMouseEvent *);
-	virtual void mouseDoubleClickEvent(QMouseEvent *);
-
-private:
-	bool GetLineRect(uint32 id, QRect& startPoint, QRect& endPoint) const;
-	bool GetLoopedLineRect(uint32 id, QRect& startPoint, QRect& endPoint, float32 startTime, float32 endTime) const;
-	QRect GetGraphRect() const;
-	QPoint GetPoint(const QPoint&) const;
-	
-	void AddLayerLine(uint32 layerLineID, float32 minTime, float32 maxTime,
-					  const QColor& layerColor, ParticleLayer* layer);
-	void AddLine(uint32 lineId, float32 startTime, float32 endTime, float32 deltaTime, float32 loopEndTime, bool isLooped,
-					bool hasLoopVariation, const QColor& color, const QString& legend, ParticleLayer* layer);
-
-	void OnValueChanged(int lineId);
-	void UpdateSizePolicy();
-
-	void ShowLayersExtraInfoValues(bool isVisible);
-	
-	void NotifyLayersExtraInfoChanged();
-	void UpdateLayersExtraInfoPosition();
-	void UpdateLayersExtraInfoValues();
-	void ResetLayersExtraInfoValues();
-
-	// Handle situation when the Particle Emitter Node is selected (including
-	// case when separate Layer node is selected.
-	void HandleEmitterSelected(ParticleEffectComponent *effect, ParticleEmitter* emitter, ParticleLayer* layer);
-	
-	virtual QRect GetSliderRect() const;
-	virtual QRect GetIncreaseRect() const;
-	virtual QRect GetScaleRect() const;
-	virtual QRect GetDecreaseRect() const;
+    virtual void paintEvent(QPaintEvent*);
+    virtual void mouseMoveEvent(QMouseEvent*);
+    virtual void mousePressEvent(QMouseEvent*);
+    virtual void mouseReleaseEvent(QMouseEvent*);
+    virtual void mouseDoubleClickEvent(QMouseEvent*);
 
 private:
-	// Get the width/height for particle counter label.
-	void GetParticlesCountWidthHeight(const LINE& line, int32& width, int32& height);
+    bool GetLineRect(uint32 id, QRect& startPoint, QRect& endPoint) const;
+    bool GetLoopedLineRect(uint32 id, QRect& startPoint, QRect& endPoint, float32 startTime, float32 endTime) const;
+    QRect GetGraphRect() const;
+    QPoint GetPoint(const QPoint&) const;
 
-	
-	// Cleanup all the timelines and info.
-	void CleanupTimelines();
+    void AddLayerLine(uint32 layerLineID, float32 minTime, float32 maxTime,
+                      const QColor& layerColor, ParticleLayer* layer);
+    void AddLine(uint32 lineId, float32 startTime, float32 endTime, float32 deltaTime, float32 loopEndTime, bool isLooped,
+                 bool hasLoopVariation, const QColor& color, const QString& legend, ParticleLayer* layer);
 
-	LINE_MAP lines;
-	QFont nameFont;
-	
-	QPoint selectedPoint;
+    void OnValueChanged(int lineId);
+    void UpdateSizePolicy();
 
-	ParticleEffectComponent* selectedEffect;
-	ParticleEmitter* selectedEmitter;
+    void ShowLayersExtraInfoValues(bool isVisible);
 
-	int32 selectedLine;
-	int32 selectedLineOrigin;
-	Entity* emitterNode;
-	Entity* effectNode;
-	ParticleLayer* selectedLayer;
-	
-	QTimer updateTimer;
+    void NotifyLayersExtraInfoChanged();
+    void UpdateLayersExtraInfoPosition();
+    void UpdateLayersExtraInfoValues();
+    void ResetLayersExtraInfoValues();
 
-	// List of data columns.
-	List<ParticlesExtraInfoColumn*> infoColumns;
-	
-	// Scene currently selected.
-	SceneEditor2* activeScene;
+    // Handle situation when the Particle Emitter Node is selected (including
+    // case when separate Layer node is selected.
+    void HandleEmitterSelected(ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer);
 
-	class SetPointValueDlg: public QDialog
-	{
-		//Q_OBJECT
-		
-	public:
-		explicit SetPointValueDlg(float32 value, float32 minValue, float32 maxValue, QWidget *parent = 0);
-		
-		float32 GetValue() const;
-		
-	private:
-		EventFilterDoubleSpinBox* valueSpin;
-	};
+    virtual QRect GetSliderRect() const;
+    virtual QRect GetIncreaseRect() const;
+    virtual QRect GetScaleRect() const;
+    virtual QRect GetDecreaseRect() const;
+
+private:
+    // Get the width/height for particle counter label.
+    void GetParticlesCountWidthHeight(const LINE& line, int32& width, int32& height);
+
+    // Cleanup all the timelines and info.
+    void CleanupTimelines();
+
+    LINE_MAP lines;
+    QFont nameFont;
+
+    QPoint selectedPoint;
+
+    ParticleEffectComponent* selectedEffect;
+    ParticleEmitter* selectedEmitter;
+
+    int32 selectedLine;
+    int32 selectedLineOrigin;
+    Entity* emitterNode;
+    Entity* effectNode;
+    ParticleLayer* selectedLayer;
+
+    QTimer updateTimer;
+
+    // List of data columns.
+    List<ParticlesExtraInfoColumn*> infoColumns;
+
+    // Scene currently selected.
+    SceneEditor2* activeScene;
+
+    class SetPointValueDlg : public QDialog
+    {
+        //Q_OBJECT
+
+    public:
+        explicit SetPointValueDlg(float32 value, float32 minValue, float32 maxValue, QWidget* parent = 0);
+
+        float32 GetValue() const;
+
+    private:
+        EventFilterDoubleSpinBox* valueSpin;
+    };
 };
 
 #endif /* defined(__ResourceEditorQt__ParticleTimeLineWidget__) */
