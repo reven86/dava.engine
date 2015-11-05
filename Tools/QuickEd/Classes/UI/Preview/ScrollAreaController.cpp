@@ -60,6 +60,55 @@ void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
     }
 }
 
+void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
+{
+    if(scale == newScale)
+    {
+        return;
+    }
+    if(scale == 0 || viewSize.width() <= 0 || viewSize.height() <= 0)
+    {
+        SetPosition(QPoint(0, 0));
+    }
+    float oldScale = scale;
+    scale = newScale;
+    emit ScaleChanged(scale);
+    QPoint prevPosition = position;
+    QSize prevOffset = canvasSize - viewSize;
+    UpdateCanvasContentSize();
+    QSize newOffset = canvasSize - viewSize;
+    
+    QPoint newPosition;
+    QPointF relativePos(mousePos.x() / viewSize.width()
+                        , mousePos.y() / viewSize.height());
+    float relativeScale = scale / oldScale;
+    if(prevOffset.width() > 0)
+    {
+        int deltaViewSize = viewSize.width() * (1.0f - 1.0f / relativeScale) * relativePos.x();
+        int newPositionX = prevPosition.x() + deltaViewSize;
+        newPosition.setX(newPositionX * 1.0f * relativeScale);
+    }
+    else
+    {
+        newPosition.setX(newOffset.width() / 2);
+    }
+    
+    if(prevOffset.height() > 0)
+    {
+        int deltaViewSize = viewSize.height() * (1.0f - 1.0f / relativeScale) * relativePos.y();
+        int newPositionY = prevPosition.y() + deltaViewSize;
+        newPosition.setY(newPositionY * 1.0f * relativeScale);
+    }
+    else
+    {
+        newPosition.setY(newOffset.height() / 2);
+    }
+    
+    newPosition.setX(qBound(0, newPosition.x(), newOffset.width()));
+    newPosition.setY(qBound(0, newPosition.y(), newOffset.height()));
+    SetPosition(newPosition);
+}
+
 QSize ScrollAreaController::GetCanvasSize() const
 {
     return canvasSize;
@@ -73,6 +122,11 @@ QSize ScrollAreaController::GetViewSize() const
 QPoint ScrollAreaController::GetPosition() const
 {
     return position;
+}
+
+qreal ScrollAreaController::GetScale() const
+{
+    return scale;
 }
 
 void ScrollAreaController::UpdateCanvasContentSize()
@@ -92,51 +146,15 @@ void ScrollAreaController::UpdateCanvasContentSize()
     emit CanvasSizeChanged(canvasSize);
 }
 
-void ScrollAreaController::SetScale(float arg)
+void ScrollAreaController::SetScale(qreal arg)
 {
-    arg /= 100.0f;
-    if(scale == arg)
+    if(scale != arg)
     {
-        return;
+        AdjustScale(arg, QPoint(viewSize.width() / 2, viewSize.height() / 2)); //like cursor at center of view
     }
-    float oldScale = scale;
-    scale = arg;
-
-    QPoint prevPosition = position;
-    QSize prevOffset = canvasSize - viewSize;
-    UpdateCanvasContentSize();
-    QSize newOffset = canvasSize - viewSize;
-    
-    QPoint newPosition;
-    float relativeScale = scale / oldScale;
-    if(prevOffset.width() > 0)
-    {
-        int deltaViewSize = viewSize.width() * 0.5f * (1.0f - 1.0f / relativeScale);
-        int newPositionX = prevPosition.x() + deltaViewSize;
-        newPosition.setX(newPositionX * 1.0f * relativeScale);
-    }
-    else
-    {
-        newPosition.setX(newOffset.width() / 2);
-    }
-       
-    if(prevOffset.height() > 0)
-    {
-        int deltaViewSize = viewSize.height() * 0.5f * (1.0f - 1.0f / relativeScale);
-        int newPositionY = prevPosition.y() + deltaViewSize;
-        newPosition.setY(newPositionY * 1.0f * relativeScale);
-    }
-    else
-    {
-        newPosition.setY(newOffset.height() / 2);
-    }
-    
-    newPosition.setX(qBound(0, newPosition.x(), newOffset.width()));
-    newPosition.setY(qBound(0, newPosition.y(), newOffset.height()));
-    SetPosition(newPosition);
 }
 
-void ScrollAreaController::SetViewSize(const QSize& viewSize_)
+void ScrollAreaController::SetViewSize(QSize viewSize_)
 {
     if (viewSize_ != viewSize)
     {
@@ -148,7 +166,7 @@ void ScrollAreaController::SetViewSize(const QSize& viewSize_)
     }
 }
 
-void ScrollAreaController::SetPosition(const QPoint& position_)
+void ScrollAreaController::SetPosition(QPoint position_)
 {
     if (position_ != position)
     {

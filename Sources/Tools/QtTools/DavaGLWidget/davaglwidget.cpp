@@ -144,7 +144,7 @@ void DavaGLView::wheelEvent(QWheelEvent* e)
     controlMapper->wheelEvent(e);
     if ( e->orientation() == Qt::Vertical )
     {
-        emit mouseScrolled( e->delta() );
+        emit mouseScrolled(e->angleDelta().y());
     }
 }
 
@@ -152,7 +152,6 @@ void DavaGLView::handleDragMoveEvent(QDragMoveEvent* e)
 {
     controlMapper->dragMoveEvent(e);
 }
-#include <QApplication>
 
 ///=======================
 DavaGLWidget::DavaGLWidget(QWidget *parent)

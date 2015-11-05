@@ -129,7 +129,7 @@ void Document::RefreshLayout()
 
 void Document::SetScale(float scale)
 {
-    DAVA::float32 realScale = scale / 100.0f;
+    DAVA::float32 realScale = scale;
     systemManager.GetScalableControl()->SetScale(Vector2(realScale, realScale));
     emit CanvasSizeChanged();
 }

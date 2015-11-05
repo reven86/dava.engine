@@ -45,6 +45,9 @@ class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
 
+class QWheelEvent;
+class QNativeGestureEvent;
+
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
     Q_OBJECT
@@ -72,11 +75,9 @@ public slots:
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private slots:
-    // Zoom.
+    void OnScaleChanged(qreal scale);
 	void OnScaleByComboIndex(int value);
 	void OnScaleByComboText();
-	void OnZoomInRequested();
-	void OnZoomOutRequested();
     
     void OnGLWidgetResized(int width, int height, int dpr);
 
@@ -87,9 +88,13 @@ private slots:
 
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
+    
+protected:
+    bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
-    void OnScaleByZoom(int scaleDelta);
+    void OnWheelEvent(QWheelEvent* event);
+    void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void SetDPR(qreal dpr);
 
     qreal dpr = 1.0f;

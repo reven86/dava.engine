@@ -106,7 +106,7 @@ EditorCore::EditorCore(QObject *parent)
 
     documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
     documentGroup->SetPixelization(mainWindow->isPixelized());
-    documentGroup->SetScale(previewWidget->GetScale());
+    documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
     documentGroup->SetDPR(previewWidget->GetDPR());
 
     qApp->installEventFilter(this);
