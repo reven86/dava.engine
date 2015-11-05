@@ -264,16 +264,16 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
     if (properties.visible != isVisible)
     {
         properties.visible = isVisible;
-        if (isVisible)
-        { // Defer control showing till Update call
-            properties.visibleChanged = true;
-            properties.visibleAssigned = true;
-            properties.anyPropertyChanged = true;
-        }
-        else
-        { // Immediatly hide native control
+        properties.visibleChanged = true;
+        properties.visibleAssigned = true;
+        properties.anyPropertyChanged = true;
+        if (!isVisible)
+        { // Immediately hide native control if it has been already created
             core->RunOnUIThreadBlocked([this]() {
-                SetNativeVisible(false);
+                if (nativeControl != nullptr)
+                {
+                    SetNativeVisible(false);
+                }
             });
         }
     }
