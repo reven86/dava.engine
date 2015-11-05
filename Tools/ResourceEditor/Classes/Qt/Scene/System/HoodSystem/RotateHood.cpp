@@ -80,7 +80,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     DAVA::Color lineColor = colorX;
 
     // x
-	if(selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ) 
+    if(selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ) 
 	{
 		if(0 == modifRotate)
 		{
@@ -93,7 +93,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 			poly.AddPoint(axisXc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
             drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
         }
-		// draw rotate circle
+        // draw rotate circle
 		else
 		{
 			DAVA::float32 step = modifRotate / 24;
@@ -123,14 +123,14 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     }
 
     drawer->DrawLine(axisX->curFrom, axisX->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-    for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
-	{
+    for (int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+    {
         drawer->DrawLine(axisXc[i]->curFrom, axisXc[i]->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
     }
 
     lineColor = colorY;
     // y
-	if(selectedAxis == ST_AXIS_Y || selectedAxis == ST_AXIS_XZ) 
+    if(selectedAxis == ST_AXIS_Y || selectedAxis == ST_AXIS_XZ) 
 	{
 		if(0 == modifRotate)
 		{
@@ -143,7 +143,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 			poly.AddPoint(axisYc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
             drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
         }
-		// draw rotate circle
+        // draw rotate circle
 		else
 		{
 			DAVA::float32 step = modifRotate / 24;
@@ -173,14 +173,14 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     }
 
     drawer->DrawLine(axisY->curFrom, axisY->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-    for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
-	{
+    for (int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+    {
         drawer->DrawLine(axisYc[i]->curFrom, axisYc[i]->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
     }
 
     lineColor = colorZ;
     // z
-	if(selectedAxis == ST_AXIS_Z || selectedAxis == ST_AXIS_XY)
+    if(selectedAxis == ST_AXIS_Z || selectedAxis == ST_AXIS_XY)
 	{
 		if(0 == modifRotate)
 		{
@@ -193,7 +193,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 			poly.AddPoint(axisZc[ROTATE_HOOD_CIRCLE_PARTS_COUNT - 1]->curTo);
             drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
         }
-		// draw rotate circle
+        // draw rotate circle
 		else
 		{
 			DAVA::float32 step = modifRotate / 24;
@@ -223,12 +223,12 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
     }
 
     drawer->DrawLine(axisZ->curFrom, axisZ->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
-    for(int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
-	{
+    for (int i = 0; i < ROTATE_HOOD_CIRCLE_PARTS_COUNT; ++i)
+    {
         drawer->DrawLine(axisZc[i]->curFrom, axisZc[i]->curTo, lineColor, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
     }
 
-	// draw axis spheres
+    // draw axis spheres
 	DAVA::float32 radius = axisX->curScale * baseSize / 24;
 
     drawer->DrawIcosahedron(axisX->curTo, radius, colorX, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
@@ -237,7 +237,7 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderH
 
     DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
-	if(0 != modifRotate)
+    if(0 != modifRotate)
 	{
 		char tmp[255];
 		tmp[0] = 0;

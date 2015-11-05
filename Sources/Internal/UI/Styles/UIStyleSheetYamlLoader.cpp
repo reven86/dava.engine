@@ -63,8 +63,10 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
             {
                 uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
                 const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
-                if (!propertyDescr.targetMembers.empty())
-                    propertiesToSet.push_back(UIStyleSheetProperty{ index, propertyIter.second->AsVariantType(propertyDescr.targetMembers[0].memberInfo) }); // AsVariantType uses only type info and we assert that all targetMembers have the same type
+                if (propertyDescr.memberInfo != nullptr)
+                {
+                    propertiesToSet.push_back(UIStyleSheetProperty{ index, propertyIter.second->AsVariantType(propertyDescr.memberInfo) });
+                }
             }
 
             auto transitionSectionIter = styleSheet.find("transition");

@@ -83,7 +83,7 @@ void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& co
     DVASSERT(previewTexture->GetPixelFormat() == FORMAT_RGBA8888);
 
     bool blocked = signalsBlocked();
-	blockSignals(true);
+    blockSignals(true);
 
 	images.push_back(SafeRetain(previewTexture));
 
@@ -224,7 +224,7 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
     color.setAlpha(255);
 
     QPalette palette = labels[number]->palette();
-	palette.setColor(labels[number]->backgroundRole(), color);
+    palette.setColor(labels[number]->backgroundRole(), color);
 	labels[number]->setPalette(palette);
 
 	QString str;

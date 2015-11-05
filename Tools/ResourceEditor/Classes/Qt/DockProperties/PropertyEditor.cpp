@@ -687,7 +687,7 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
         return CreateInspMember(memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
     }
 
-	QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
+    QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
 	if(NULL != metaData)
 	{
 		return new QtPropertyDataMetaObject(metaData->object, metaData->meta);
@@ -1539,10 +1539,10 @@ void PropertyEditor::OnTriggerWaveComponent()
 
 QString PropertyEditor::GetDefaultFilePath()
 {
-	QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
-	FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-	if (dataSourcePath.Exists())
-	{
+    QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+    FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+    if (dataSourcePath.Exists())
+    {
 		defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
 	}
 	SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();

@@ -86,17 +86,17 @@ class QuadTree : public RenderHierarchy
 	bool CheckBoxIntersectBranch(const AABBox3& objBox, float32 xmin, float32 ymin, float32 xmax, float32 ymax);		
 	bool CheckBoxIntersectChild(const AABBox3& objBox, const AABBox3& nodeBox, QuadTreeNode::eNodeType nodeType); //assuming it already fit parent!
 	void UpdateChildBox(AABBox3 &parentBox, QuadTreeNode::eNodeType childType);
-	void UpdateParentBox(AABBox3 &childBox, QuadTreeNode::eNodeType childType);
+    void UpdateParentBox(AABBox3& childBox, QuadTreeNode::eNodeType childType);
 
     void ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<RenderObject*>& visibilityArray);
     void GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3& bbox, Vector<RenderObject*>& visibilityArray);
 
     uint16 FindObjectAddNode(uint16 startNodeId, const AABBox3& objBox);
-	
-	static const int32 RECALCULATE_Z_PER_FRAME = 10;
-	static const int32 RECALCULATE_OBJECTS_PER_FRAME = 10;
-	void RecalculateNodeZLimits(uint16 nodeId);
-	void MarkNodeDirty(uint16 nodeId);
+
+    static const int32 RECALCULATE_Z_PER_FRAME = 10;
+    static const int32 RECALCULATE_OBJECTS_PER_FRAME = 10;
+    void RecalculateNodeZLimits(uint16 nodeId);
+    void MarkNodeDirty(uint16 nodeId);
 	void MarkObjectDirty(RenderObject *object);
 
 	bool worldInitialized;
@@ -121,8 +121,8 @@ public:
 
     virtual void Initialize();
 
-	virtual void Update();
-	virtual void DebugDraw(const Matrix4& cameraMatrix);
+    virtual void Update();
+    virtual void DebugDraw(const Matrix4& cameraMatrix);
 };
 
 } //namespace DAVA

@@ -42,18 +42,18 @@ namespace DAVA
 class ParticleRenderObject : public RenderObject
 {
 	ParticleEffectData *effectData;
-	//Vector<ParticleRenderGroup*> renderGroupCache;
-    Vector<RenderBatch *> renderBatchCache;
+    //Vector<ParticleRenderGroup*> renderGroupCache;
+    Vector<RenderBatch*> renderBatchCache;
 
-	//void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);	
+    //void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);
     void AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection);
     void AppendRenderBatch(NMaterial* material, uint32 particlesCount, uint32 vertexLayout, const DynamicBufferAllocator::AllocResultVB& vBuffer);
-    void PrepareRenderData(Camera * camera);    
-	Vector<uint16> indices;
+    void PrepareRenderData(Camera* camera);
+    Vector<uint16> indices;
     uint32 sortingOffset;
-    
+
     uint32 currRenderBatchId;
-    
+
 public:
 	ParticleRenderObject(ParticleEffectData *effect);
 	~ParticleRenderObject();
@@ -71,8 +71,7 @@ public:
 private:
     int32 CalculateParticleCount(const ParticleGroup& group);
 
-    uint32 regularVertexLayoutId, frameBlendVertexLayoutId;        
-	
+    uint32 regularVertexLayoutId, frameBlendVertexLayoutId;
 };
 
 }

@@ -73,7 +73,7 @@ public:
 	uint32 GetTileTextureCount() const;
     Texture* GetTileTexture();
     Color GetTileColor(int32 index);
-	void SetTileColor(int32 index, const Color& color);
+    void SetTileColor(int32 index, const Color& color);
 
 	void SetDrawingType(eTilemaskDrawType type);
 	eTilemaskDrawType GetDrawingType();
@@ -81,7 +81,7 @@ public:
 protected:
 	uint32 curToolSize;
 
-    Texture * toolImageTexture;
+    Texture* toolImageTexture;
     Texture* landscapeTilemaskTexture;
 
     uint32 tileTextureNum;
@@ -89,7 +89,7 @@ protected:
     NMaterial* editorMaterial;
 
     eTilemaskDrawType drawingType;
-	eTilemaskDrawType activeDrawingType;
+    eTilemaskDrawType activeDrawingType;
 	float32 strength;
 	FilePath toolImagePath;
 	int32 toolImageIndex;
@@ -102,8 +102,8 @@ protected:
     Vector2 copyPasteOffset;
 
     Rect updatedRectAccumulator;
-	
-	bool editingIsEnabled;
+
+    bool editingIsEnabled;
 	
 	Texture * toolTexture;
 	bool toolSpriteUpdated;
@@ -116,7 +116,7 @@ protected:
     void UpdateToolImage();
 
     void AddRectToAccumulator(const Rect& rect);
-	void ResetAccumulatorRect();
+    void ResetAccumulatorRect();
 	Rect GetUpdatedRect();
 	
 	void CreateMaskTexture();

@@ -320,8 +320,8 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
         NMaterialTextureName::TEXTURE_DECALTEXTURE,
     };
 
-    DAVA::Map<DAVA::Texture *, DAVA::String> texturesMap;
-	auto endItMaterials = materials.end();
+    DAVA::Map<DAVA::Texture*, DAVA::String> texturesMap;
+    auto endItMaterials = materials.end();
 	for (auto it = materials.begin(); it != endItMaterials; ++it)
 	{
         for (const FastName& textureName : textureNames)
@@ -364,14 +364,14 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 
         if ((*it)->GetEffectiveFXName().IsValid() && materialTemplates && (*it)->GetEffectiveFXName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
         {
-                    // ShadowVolume material is non-assignable and it's okey
-                    bool templateFound = false;
-                    for (int i = 0; i < materialTemplates->size(); ++i)
-                    {
-                        if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetEffectiveFXName().c_str()))
-                        {
-                            templateFound = true;
-                            break;
+            // ShadowVolume material is non-assignable and it's okey
+            bool templateFound = false;
+            for (int i = 0; i < materialTemplates->size(); ++i)
+            {
+                if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetEffectiveFXName().c_str()))
+                {
+                    templateFound = true;
+                    break;
                 }
             }
             if (!templateFound)
@@ -399,8 +399,8 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), String("Landscape. Heightmap."));
     if (!pathIsCorrect)
     {
-        String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->CurProjectDataSourcePath());
-		PushLogMessage(errorsLog, nullptr, "Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str());
+        String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->GetDataSourcePath());
+        PushLogMessage(errorsLog, nullptr, "Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str());
     }
 }
 

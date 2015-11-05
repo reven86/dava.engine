@@ -420,11 +420,12 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
     bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
 
-    for(uint32 i = 0; i < strLen; ++i)
-	{
-		Glyph		& glyph = glyphs[i];
-		FT_Glyph	image = nullptr;;
-		FT_BBox		bbox;
+    for (uint32 i = 0; i < strLen; ++i)
+    {
+        Glyph& glyph = glyphs[i];
+        FT_Glyph image = nullptr;
+        ;
+        FT_BBox		bbox;
 
 		bool skipGlyph = true;
         if(glyph.image && (glyph.index != 0 || drawNondefGlyph))

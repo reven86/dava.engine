@@ -251,7 +251,7 @@ void HeightmapEditorPanel::RestoreState()
 	int32 averageStrength = AverageStrengthSystemToUI(sceneEditor->heightmapEditorSystem->GetAverageStrength());
     int32 toolImage = sceneEditor->heightmapEditorSystem->GetToolImageIndex();
     HeightmapEditorSystem::eHeightmapDrawType drawingType = sceneEditor->heightmapEditorSystem->GetDrawingType();
-	float32 height = sceneEditor->heightmapEditorSystem->GetDropperHeight();
+    float32 height = sceneEditor->heightmapEditorSystem->GetDropperHeight();
 
 	int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
 	int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;

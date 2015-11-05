@@ -38,10 +38,10 @@
 #include "_mcpp.h"
 
 #if PREPROCESSED
-#include "mcpp.H"
+#include "mcpp.h"
 #else
-#include "system.H"
-#include "internal.H"
+#include "system.h"
+#include "internal.h"
 #endif
 
 typedef struct optab

@@ -156,7 +156,7 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
         SceneHelper::EnumerateSceneTextures(scene, allTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 
         // add jobs to convert every texture
-		if(allTextures.size() > 0)
+        if(allTextures.size() > 0)
 		{
 			DAVA::TexturesMap::iterator begin = allTextures.begin();
 			DAVA::TexturesMap::iterator end = allTextures.end();
@@ -606,6 +606,10 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 
             case CONVERT_NOT_EXISTENT:
                 convert = !DAVA::FileSystem::Instance()->IsFile(outputPath);
+                break;
+
+            case CONVERT_NOT_REQUESTED:
+                convert = false;
                 break;
 
             default:

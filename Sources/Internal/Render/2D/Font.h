@@ -67,8 +67,8 @@ public:
 		\brief Structure with sizes of string
 		Contents draw rect (buffer, sprite bounds), height, baseline, width.
 	*/
-	struct StringMetrics
-	{
+    struct StringMetrics
+    {
         inline StringMetrics(): drawRect(), height(0), width(0), baseline(0) {}
 		Rect2i drawRect;
 		int32 height;

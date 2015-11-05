@@ -296,12 +296,9 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
 {
     switch ( event->phase )
     {
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
         OnKeyboardInput( event );
         break;
-    case UIEvent::PHASE_WHEEL:
-        break;
-
     default:
         break;
     }
@@ -390,10 +387,10 @@ void SceneCameraSystem::Draw()
 
 					transform.Identity();
 					transform.SetTranslationVector(camera->GetPosition());
-					collBox.GetTransformedBox(transform, worldBox);
+                    collBox.GetTransformedBox(transform, worldBox);
                     sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
                 }
-			}
+            }
 		}
 	}
 }

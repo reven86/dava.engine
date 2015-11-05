@@ -73,7 +73,7 @@ protected:
     Texture* crossTexture;
     uint32 curToolSize;
 
-	bool editingIsEnabled;
+    bool editingIsEnabled;
 
 	eVisibilityToolState state;
 
@@ -87,7 +87,7 @@ protected:
     const FastName& textureLevel;
 
     void PrepareConfig();
-	void SetState(eVisibilityToolState newState);
+    void SetState(eVisibilityToolState newState);
 
 	void SetVisibilityPointInternal();
 	void SetVisibilityAreaInternal();

@@ -58,7 +58,7 @@ public:
     void Process() override;
 
     void PrintUsage() const override;
-	void DumpParams() const override;
+    void DumpParams() const override;
 	DAVA::FilePath GetQualityConfigPath() const override;
 
 protected:

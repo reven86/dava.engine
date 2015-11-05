@@ -28,6 +28,9 @@
 
 
 #include "Scene/System/GridSystem.h"
+#include "Scene3D/Scene.h"
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/RenderHelper.h"
 #include "Qt/Settings/SettingsManager.h"
 
 // framework
@@ -72,7 +75,7 @@ void SceneGridSystem::Draw()
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(v1, v2, DAVA::Color(0.4f, 0.4f, 0.4f, 1.0f));
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(v3, v4, DAVA::Color(0.4f, 0.4f, 0.4f, 1.0f));
             }
-	    }
+        }
 
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(DAVA::Vector3(-gridMax, 0, 0), DAVA::Vector3(gridMax, 0, 0), DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f));
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(DAVA::Vector3(0, -gridMax, 0), DAVA::Vector3(0, gridMax, 0), DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f));

@@ -58,11 +58,11 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
     materialKey += (uint32)texture->handle << 6;
 
     Map<uint64, NMaterial*>::iterator it = materialMap.find(materialKey);
-    if (it!=materialMap.end()) //return existing
-	{
-		return (*it).second;  
-	}
-	else //create new
+    if (it != materialMap.end()) //return existing
+    {
+        return (*it).second;
+    }
+    else //create new
     {
         NMaterial* material = new NMaterial();
         material->SetParent(particleBaseMaterial);
@@ -84,7 +84,7 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
         material->PreBuildMaterial(PASS_FORWARD);
 
         return material;
-	}
+    }
 }
 
 ParticleEffectSystem::ParticleEffectSystem(Scene* scene, bool _is2DMode)
@@ -105,8 +105,8 @@ ParticleEffectSystem::~ParticleEffectSystem()
 {
     for (Map<uint64, NMaterial *>::iterator it = materialMap.begin(), e = materialMap.end(); it != e; ++it)
     {
-		SafeRelease(it->second);
-	}
+        SafeRelease(it->second);
+    }
     SafeRelease(particleBaseMaterial);
 }
 
@@ -149,10 +149,10 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 		if (layer->sprite&&(layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
             group.material = GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
         else
-			group.material = NULL;
+            group.material = NULL;
 
-		effect->effectData.groups.push_back(group);			
-	}
+        effect->effectData.groups.push_back(group);
+    }
 }
 
 void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
@@ -254,11 +254,11 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
     TIME_PROFILE("ParticleEffectSystem::Process");
 
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS))
-        return;		
-	/*shortEffectTime*/
-	float32 currFps = 1.0f/timeElapsed;
-	float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS())/(PerformanceSettings::Instance()->GetPsPerformanceMaxFPS()-PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
-	currPSValue = Clamp(currPSValue, 0.0f, 1.0f);
+        return;
+    /*shortEffectTime*/
+    float32 currFps = 1.0f / timeElapsed;
+    float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS()) / (PerformanceSettings::Instance()->GetPsPerformanceMaxFPS() - PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
+    currPSValue = Clamp(currPSValue, 0.0f, 1.0f);
 	float32 speedMult = 1.0f+(PerformanceSettings::Instance()->GetPsPerformanceSpeedMult()-1.0f)*(1-currPSValue);
 	float32 shortEffectTime = timeElapsed*speedMult;
 	

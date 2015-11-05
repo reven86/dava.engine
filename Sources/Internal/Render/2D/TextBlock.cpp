@@ -259,7 +259,7 @@ void TextBlock::SetFittingOption(int32 _fittingType)
 {
     if (fittingType != _fittingType)
     {
-		fittingType = _fittingType;
+        fittingType = _fittingType;
         NeedPrepare();
     }
 }
@@ -906,8 +906,8 @@ void TextBlock::PreDraw()
 
     if (needPrepareInternal)
     {
-		PrepareInternal();
-	}
+        PrepareInternal();
+    }
     
 	if (textBlockRender)
 	{

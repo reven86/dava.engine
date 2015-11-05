@@ -71,11 +71,11 @@ public:
     void ProcessFrame();
 
     // called from Activity and manage a visible lifetime
-	void StartVisible();
-	void StopVisible();
+    void StartVisible();
+    void StopVisible();
 
-	void StartForeground();
-	void StopForeground(bool isLock);
+    void StartForeground();
+    void StopForeground(bool isLock);
 
 	void OnCreateActivity();
 	void OnDestroyActivity();

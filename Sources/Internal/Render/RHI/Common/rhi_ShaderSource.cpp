@@ -39,11 +39,12 @@ using DAVA::DynamicMemoryFile;
     #include "PreProcess.h"
 
     #define RHI__USE_STD_REGEX 0
+    #define RHI__OPTIMIZED_REGEX 1
 
     #if RHI__USE_STD_REGEX
         #include <regex>
     #else
-        #include "Regexp.h"
+        #include "RegExp.h"
     #endif
 
 namespace rhi
@@ -120,7 +121,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
     // parse properties/samplers
 
-    DynamicMemoryFile* in = DynamicMemoryFile::Create((const uint8*)src.c_str(), src.length() + 1, DAVA::File::READ);
+    DAVA::ScopedPtr<DynamicMemoryFile> in(DynamicMemoryFile::Create((const uint8*)src.c_str(), (uint32)(src.length() + 1), DAVA::File::READ));
 
     if (in)
     {
@@ -151,6 +152,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         RegExp colormask_re;
         RegExp comment_re;
 
+#if !(RHI__OPTIMIZED_REGEX)
         prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
@@ -163,6 +165,20 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         blending2_re.compile(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
         colormask_re.compile(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
         comment_re.compile("^\\s*//.*");
+#else
+        prop_re.compile("property\\s*(\\w+)\\s*(\\w+)\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w\\s=,\\.]*);");
+        proparr_re.compile("property\\s*(float4|float4x4)\\s*(\\w+)\\s*\\[\\s*([\\d]+)\\s*\\]\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w,]*)");
+        fsampler2d_re.compile("DECL_FP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
+        vsampler2d_re.compile("DECL_VP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
+        samplercube_re.compile("DECL_FP_SAMPLERCUBE\\s*\\(\\s*(\\w+)\\s*\\)");
+        ftexture2d_re.compile("FP_TEXTURE2D\\s*\\(\\s*(\\w+)\\s*\\,");
+        vtexture2d_re.compile("VP_TEXTURE2D\\s*\\(\\s*(\\w+)\\s*\\,");
+        texturecube_re.compile("FP_TEXTURECUBE\\s*\\(\\s*(\\w+)\\s*\\,");
+        blend_re.compile("BLEND_MODE\\s*\\(\\s*(\\w+)\\s*\\)");
+        blending2_re.compile("blending\\s*\\:\\s*src=(\\w+)\\s+dst=(\\w+)");
+        colormask_re.compile("color_mask\\s*\\:\\s*(\\w+)");
+        comment_re.compile("^\\s*//.*");
+#endif
         #endif
 
         _Reset();
@@ -285,7 +301,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
                     if (ss)
                     {
-                        int n = ss - tags.c_str();
+                        size_t n = ss - tags.c_str();
 
                         strncpy(storage, tags.c_str(), n);
                         storage[n] = '\0';
@@ -346,7 +362,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                     cbuf->regCount = 0;
                 }
 
-                p.bufferindex = cbuf - &(buf[0]);
+                p.bufferindex = static_cast<uint32>(cbuf - &(buf[0]));
 
                 if (p.type == ShaderProp::TYPE_FLOAT1 || p.type == ShaderProp::TYPE_FLOAT2 || p.type == ShaderProp::TYPE_FLOAT3)
                 {
@@ -417,15 +433,15 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::string sname;
                 fsampler2d_re.get_pattern(1, &sname);
                 #endif
-                int mbegin = strstr(line, sname.c_str()) - line;
-                int sn = sname.length();
+                size_t mbegin = strstr(line, sname.c_str()) - line;
+                size_t sn = sname.length();
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
                 int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
-                DVASSERT(sn >= sl);
+                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
-                if (sn > sl)
+                if (sn > static_cast<size_t>(sl))
                     memset(line + mbegin + sl, ' ', sn - sl);
                 sampler.resize(sampler.size() + 1);
                 sampler.back().uid = FastName(sname);
@@ -447,15 +463,15 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::string sname;
                 samplercube_re.get_pattern(1, &sname);
                 #endif
-                int mbegin = strstr(line, sname.c_str()) - line;
-                int sn = sname.length();
+                size_t mbegin = strstr(line, sname.c_str()) - line;
+                size_t sn = sname.length();
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
                 int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
-                DVASSERT(sn >= sl);
+                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
-                if (sn > sl)
+                if (sn > static_cast<size_t>(sl))
                     memset(line + mbegin + sl, ' ', sn - sl);
                 sampler.resize(sampler.size() + 1);
                 sampler.back().uid = FastName(sname);
@@ -477,7 +493,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::string sname;
                 ftexture2d_re.get_pattern(1, &sname);
                 #endif
-                int mbegin = strstr(line, sname.c_str()) - line;
+                size_t mbegin = strstr(line, sname.c_str()) - line;
                 FastName suid(sname);
 
                 for (unsigned s = 0; s != sampler.size(); ++s)
@@ -485,10 +501,10 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                     if (sampler[s].uid == suid)
                     {
                         int sl = sprintf(line + mbegin, "%u", s);
-                        int sn = sname.length();
-                        DVASSERT(sn >= sl);
+                        size_t sn = sname.length();
+                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                         line[mbegin + sl] = ',';
-                        if (sn > sl)
+                        if (sn > static_cast<size_t>(sl))
                             memset(line + mbegin + sl, ' ', sn - sl);
 
                         break;
@@ -511,15 +527,15 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::string sname;
                 vsampler2d_re.get_pattern(1, &sname);
                 #endif
-                int mbegin = strstr(line, sname.c_str()) - line;
-                int sn = sname.length();
+                size_t mbegin = strstr(line, sname.c_str()) - line;
+                size_t sn = sname.length();
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
                 int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
-                DVASSERT(sn >= sl);
+                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
-                if (sn > sl)
+                if (sn > static_cast<size_t>(sl))
                     memset(line + mbegin + sl, ' ', sn - sl);
                 sampler.resize(sampler.size() + 1);
                 sampler.back().uid = FastName(sname);
@@ -541,7 +557,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::string sname;
                 vtexture2d_re.get_pattern(1, &sname);
                 #endif
-                int mbegin = strstr(line, sname.c_str()) - line;
+                size_t mbegin = strstr(line, sname.c_str()) - line;
                 FastName suid(sname);
 
                 for (unsigned s = 0; s != sampler.size(); ++s)
@@ -549,10 +565,10 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                     if (sampler[s].uid == suid)
                     {
                         int sl = sprintf(line + mbegin, "%u", s);
-                        int sn = sname.length();
-                        DVASSERT(sn >= sl);
+                        size_t sn = sname.length();
+                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                         line[mbegin + sl] = ',';
-                        if (sn > sl)
+                        if (sn > static_cast<size_t>(sl))
                             memset(line + mbegin + sl, ' ', sn - sl);
 
                         break;
@@ -575,7 +591,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::string sname;
                 texturecube_re.get_pattern(1, &sname);
                 #endif
-                int mbegin = strstr(line, sname.c_str()) - line;
+                size_t mbegin = strstr(line, sname.c_str()) - line;
                 FastName suid(sname);
 
                 for (unsigned s = 0; s != sampler.size(); ++s)
@@ -583,10 +599,10 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                     if (sampler[s].uid == suid)
                     {
                         int sl = sprintf(line + mbegin, "%u", s);
-                        int sn = sname.length();
-                        DVASSERT(sn >= sl);
+                        size_t sn = sname.length();
+                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                         line[mbegin + sl] = ',';
-                        if (sn > sl)
+                        if (sn > static_cast<size_t>(sl))
                             memset(line + mbegin + sl, ' ', sn - sl);
 
                         break;
@@ -686,7 +702,11 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::regex texcoord_re(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
                 #else
                 RegExp texcoord_re;
+#if !(RHI__OPTIMIZED_REGEX)
                 texcoord_re.compile(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
+#else
+                texcoord_re.compile("VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(\\s*([0-7])\\s*\\)");
+#endif
                 #endif
 
                 if ( 
@@ -730,7 +750,11 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 std::regex index_re(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
                 #else
                 RegExp index_re;
+#if !(RHI__OPTIMIZED_REGEX)
                 index_re.compile(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
+#else
+                index_re.compile("VPROG_IN_BLENDINDEX\\s*\\(\\s*([0-7])\\s*\\)");
+#endif
                 #endif
 
                 if ( 
@@ -765,7 +789,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     {
         // check if any const-buffer has more than one bigarray-prop
 
-        for (unsigned b = 0, b_end = buf.size(); b != b_end; ++b)
+        for (size_t b = 0, b_end = buf.size(); b != b_end; ++b)
         {
             unsigned bigarray_cnt = 0;
 
@@ -887,8 +911,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
             }
             var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    //--------\n");
             var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "\n\n");
-
-            unsigned var_pos = (prog - code.c_str()) + strlen("XPROG_BEGIN") + buf_len + 2;
+            size_t var_pos = (prog - code.c_str()) + strlen("XPROG_BEGIN") + buf_len + 2;
 
             code.insert(prog - code.c_str(), buf_def, buf_len);
             code.insert(var_pos, var_def, var_len);
@@ -1030,7 +1053,7 @@ bool ShaderSource::Save(DAVA::File* out) const
 
     vdecl.Save(out);
 
-    WriteUI4(out, prop.size());
+    WriteUI4(out, static_cast<uint32>(prop.size()));
     for (unsigned p = 0; p != prop.size(); ++p)
     {
         WriteS0(out, prop[p].uid.c_str());
@@ -1045,7 +1068,7 @@ bool ShaderSource::Save(DAVA::File* out) const
         out->Write(prop[p].defaultValue, 16 * sizeof(float));
     }
 
-    WriteUI4(out, buf.size());
+    WriteUI4(out, static_cast<uint32>(buf.size()));
     for (unsigned b = 0; b != buf.size(); ++b)
     {
         WriteUI4(out, buf[b].storage);
@@ -1053,7 +1076,7 @@ bool ShaderSource::Save(DAVA::File* out) const
         WriteUI4(out, buf[b].regCount);
     }
 
-    WriteUI4(out, sampler.size());
+    WriteUI4(out, static_cast<uint32>(sampler.size()));
     for (unsigned s = 0; s != sampler.size(); ++s)
     {
         WriteUI4(out, sampler[s].type);
@@ -1113,7 +1136,7 @@ ShaderSource::ShaderVertexLayout() const
 uint32
 ShaderSource::ConstBufferCount() const
 {
-    return buf.size();
+    return static_cast<uint32>(buf.size());
 }
 
 //------------------------------------------------------------------------------
@@ -1169,7 +1192,7 @@ void ShaderSource::_Reset()
 
 //------------------------------------------------------------------------------
 
-void ShaderSource::_AppendLine(const char* line, uint32 lineLen)
+void ShaderSource::_AppendLine(const char* line, size_t lineLen)
 {
     code.append(line, lineLen);
     code.push_back('\n');
@@ -1368,7 +1391,7 @@ void ShaderSourceCache::Save(const char* fileName)
     {
         WriteUI4(file, FormatVersion);
 
-        WriteUI4(file, Entry.size());
+        WriteUI4(file, static_cast<uint32>(Entry.size()));
         Logger::Info("saving cached-shaders (%u) :", Entry.size());
         for (std::vector<entry_t>::const_iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
         {

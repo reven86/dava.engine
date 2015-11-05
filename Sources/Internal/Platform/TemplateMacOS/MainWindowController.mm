@@ -47,6 +47,12 @@ namespace DAVA
 
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
+        //detecting physical screen size and initing core system with this size
+        float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
+        const DeviceInfo::ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(screenInfo.width, screenInfo.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(screenInfo.width * scale, screenInfo.height * scale);
+
         int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
@@ -56,11 +62,11 @@ namespace DAVA
         globalPool = 0;
         return retVal;
     }
-	
-	int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
-	{
-		NSAutoreleasePool * globalPool = 0;
-		globalPool = [[NSAutoreleasePool alloc] init];
+
+    int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
+    {
+        NSAutoreleasePool* globalPool = 0;
+        globalPool = [[NSAutoreleasePool alloc] init];
 		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
 		core->SetCommandLine(argc, argv);
 		core->EnableConsoleMode();
@@ -179,7 +185,7 @@ namespace DAVA
     RenderManager::Instance()->DetectRenderingCapabilities();
 #endif
 
-    // start animation
+// start animation
 #if RHI_COMPLETE
     currFPS = RenderManager::Instance()->GetFPS();
 #else
@@ -188,9 +194,9 @@ namespace DAVA
     [self startAnimationTimer];
 
     // make window main
-	[mainWindow makeKeyAndOrderFront:nil];
-	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
-	[mainWindow setAcceptsMouseMovedEvents:YES];
+    [mainWindow makeKeyAndOrderFront:nil];
+    [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
+    [mainWindow setAcceptsMouseMovedEvents:YES];
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
@@ -365,11 +371,11 @@ namespace DAVA
     [openGLView setNeedsDisplay:YES];
 #if RHI_COMPLETE
     if (currFPS != RenderManager::Instance()->GetFPS())
-	{
-		currFPS = RenderManager::Instance()->GetFPS();
-		[self stopAnimationTimer];
-		[self startAnimationTimer];
-	}
+    {
+        currFPS = RenderManager::Instance()->GetFPS();
+        [self stopAnimationTimer];
+        [self startAnimationTimer];
+    }
 #endif
 }
 

@@ -160,8 +160,8 @@ void NMaterial::BindParams(rhi::Packet& target)
         materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
     }
 
-    target.vertexConstCount = activeVariantInstance->vertexConstBuffers.size();
-    target.fragmentConstCount = activeVariantInstance->fragmentConstBuffers.size();
+    target.vertexConstCount = static_cast<uint32>(activeVariantInstance->vertexConstBuffers.size());
+    target.fragmentConstCount = static_cast<uint32>(activeVariantInstance->fragmentConstBuffers.size());
     /*bind material const buffers*/
     for (size_t i = 0, sz = activeVariantInstance->vertexConstBuffers.size(); i < sz; ++i)
         target.vertexConst[i] = activeVariantInstance->vertexConstBuffers[i];
@@ -210,7 +210,7 @@ Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
     if (localInfo)
     {
         if (localInfo->texture == nullptr)
-            localInfo->texture = Texture::CreateFromFile(localInfo->path);
+            localInfo->texture = Texture::CreateFromFile(localInfo->path, slotName);
         return localInfo->texture;
     }
 
@@ -691,8 +691,8 @@ void NMaterial::RebuildTextureBindings()
         const rhi::ShaderSamplerList& fragmentSamplerList = currShader->GetFragmentSamplerList();
         const rhi::ShaderSamplerList& vertexSamplerList = currShader->GetVertexSamplerList();
 
-        textureDescr.fragmentTextureCount = fragmentSamplerList.size();
-        samplerDescr.fragmentSamplerCount = fragmentSamplerList.size();
+        textureDescr.fragmentTextureCount = static_cast<uint32>(fragmentSamplerList.size());
+        samplerDescr.fragmentSamplerCount = static_cast<uint32>(fragmentSamplerList.size());
         for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
         {
             RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->GetFragmentSamplerList()[i].uid);
@@ -720,8 +720,8 @@ void NMaterial::RebuildTextureBindings()
             DVASSERT(textureDescr.fragmentTexture[i].IsValid());
         }
 
-        textureDescr.vertexTextureCount = vertexSamplerList.size();
-        samplerDescr.vertexSamplerCount = vertexSamplerList.size();
+        textureDescr.vertexTextureCount = static_cast<uint32>(vertexSamplerList.size());
+        samplerDescr.vertexSamplerCount = static_cast<uint32>(vertexSamplerList.size());
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
             Texture* tex = GetEffectiveTexture(vertexSamplerList[i].uid);
@@ -1029,16 +1029,20 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
     NMaterialParamName::PARAM_FOG_COLOR,
     NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
     NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN,
-    NMaterialParamName::PARAM_DECAL_TILE_COLOR,
     Landscape::PARAM_TILE_COLOR0,
     Landscape::PARAM_TILE_COLOR1,
     Landscape::PARAM_TILE_COLOR2,
     Landscape::PARAM_TILE_COLOR3,
     } };
-    Array<FastName, 1> propertyFloat3toFloat4 =
-    { {
-    NMaterialParamName::PARAM_FLAT_COLOR,
-    } };
+
+    Array<FastName, 2> propertyFloat3toFloat4 =
+    { { NMaterialParamName::PARAM_FLAT_COLOR,
+        NMaterialParamName::PARAM_DECAL_TILE_COLOR } };
+
+    Array<FastName, 1> propertyFloat1toFloat2 =
+    {
+      { NMaterialParamName::PARAM_DECAL_TILE_SCALE }
+    };
 
     if (archive->IsKeyExists("properties"))
     {
@@ -1078,6 +1082,15 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
                             data[3] = 1.f;
 
                             AddProperty(propName, data, rhi::ShaderProp::TYPE_FLOAT4, 1);
+                            continue;
+                        }
+                    }
+                    else if (propertyTypeRemapping[i].newType == rhi::ShaderProp::TYPE_FLOAT1)
+                    {
+                        if (std::find(propertyFloat1toFloat2.begin(), propertyFloat1toFloat2.end(), propName) != propertyFloat1toFloat2.end())
+                        {
+                            Vector2 v2(*data, *data);
+                            AddProperty(propName, v2.data, rhi::ShaderProp::TYPE_FLOAT2, 1);
                             continue;
                         }
                     }

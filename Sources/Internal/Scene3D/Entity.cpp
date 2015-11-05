@@ -393,10 +393,10 @@ void Entity::BakeTransforms()
         AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
     }
 
-    for(uint32 c = 0; c < size; ++c)
-	{
-		children[c]->BakeTransforms();
-	}
+    for (uint32 c = 0; c < size; ++c)
+    {
+        children[c]->BakeTransforms();
+    }
 }
 	
 void Entity::PropagateBoolProperty(String name, bool value)

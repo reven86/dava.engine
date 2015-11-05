@@ -60,6 +60,14 @@ InitParam
     uint32 maxConstBufferCount;
     uint32 maxTextureCount;
 
+    uint32 maxTextureSetCount; //+gl+
+    uint32 maxSamplerStateCount; //+gl+
+    uint32 maxPipelineStateCount; //+gl+
+    uint32 maxDepthStencilStateCount; // +gl+
+    uint32 maxRenderPassCount; //+gl+
+    uint32 maxCommandBuffer; //+gl
+    uint32 maxPacketListCount; //+gl
+
     uint32 shaderConstRingBufferSize;
 
     void (*acquireContextFunc)();
@@ -79,6 +87,13 @@ InitParam
         , maxVertexBufferCount(0)
         , maxConstBufferCount(0)
         , maxTextureCount(0)
+        , maxTextureSetCount(0)
+        , maxSamplerStateCount(0)
+        , maxPipelineStateCount(0)
+        , maxDepthStencilStateCount(0)
+        , maxRenderPassCount(0)
+        , maxCommandBuffer(0)
+        , maxPacketListCount(0)
         , shaderConstRingBufferSize(0)
         , acquireContextFunc(nullptr)
         , releaseContextFunc(nullptr)

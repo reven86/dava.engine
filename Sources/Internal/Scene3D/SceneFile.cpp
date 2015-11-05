@@ -608,12 +608,13 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
             DVASSERT(0 <= materialIndex);
 
             NMaterial* material = (0 <= materialIndex) ? materials[materialIndex] : NULL;
-            if (debugLogEnabled)Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
-		
-			if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
-			{
-				StaticMesh * staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
-				meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
+            if (debugLogEnabled)
+                Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
+
+            if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
+            {
+                StaticMesh* staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
+                meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
 			}else
 			{
 				// add animated mesh

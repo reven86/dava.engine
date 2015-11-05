@@ -441,6 +441,8 @@ void ShadowVolumeNode::CopyGeometryFrom(MeshInstanceNode * meshInstance)
 	Memcpy(shadowPolygonGroup->indexArray, newPolygonGroup->indexArray, nextIndex*sizeof(int16));
 
 	SafeRelease(newPolygonGroup);
+    SafeDeleteArray(mapping);
+    SafeDeleteArray(adjacency);
 }
 
 void ShadowVolumeNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)

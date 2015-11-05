@@ -161,8 +161,8 @@ void TextureListModel::setScene(DAVA::Scene *scene)
 	DAVA::TexturesMap texturesInNode;
     SceneHelper::EnumerateSceneTextures(scene, texturesInNode, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 
-    for(DAVA::TexturesMap::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
-	{
+    for (DAVA::TexturesMap::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
+    {
 		DAVA::TextureDescriptor * descriptor = t->second->texDescriptor;
 		if(NULL != descriptor && descriptor->pathname.Exists())
 		{

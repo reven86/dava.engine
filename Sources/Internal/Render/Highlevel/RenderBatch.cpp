@@ -118,11 +118,11 @@ void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 	NMaterial* curNode = material;
     while (curNode != NULL)
     {
-		dataNodes.insert(curNode);
-		curNode = curNode->GetParent();
-	}
-	
-	if(dataSource)
+        dataNodes.insert(curNode);
+        curNode = curNode->GetParent();
+    }
+
+    if(dataSource)
 	{
 		InsertDataNode(dataSource, dataNodes);
 	}
@@ -147,11 +147,11 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
     SafeRelease(rb->dataSource);
     rb->dataSource = SafeRetain(dataSource);
 
-    if(material)
-	{
-		NMaterial *mat = material->Clone();
-		rb->SetMaterial(mat);
-		mat->Release();
+    if (material)
+    {
+        NMaterial* mat = material->Clone();
+        rb->SetMaterial(mat);
+        mat->Release();
 	}
 
     rb->vertexBuffer = vertexBuffer;
@@ -166,12 +166,12 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
     rb->vertexLayoutId = vertexLayoutId;
 
     rb->startIndex = startIndex;
-	rb->indexCount = indexCount;
+    rb->indexCount = indexCount;
 
-	rb->aabbox = aabbox;
-	rb->sortingKey = sortingKey;
+    rb->aabbox = aabbox;
+    rb->sortingKey = sortingKey;
 
-	return rb;
+    return rb;
 }
 
 void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializationContext)
@@ -220,7 +220,7 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
             material->PreBuildMaterial(PASS_FORWARD);
     }
 
-	BaseObject::LoadObject(archive);
+    BaseObject::LoadObject(archive);
 }
 
 void RenderBatch::UpdateAABBoxFromSource()

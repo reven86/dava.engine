@@ -30,9 +30,10 @@
 
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Davaglwidget.h"
-#include "ControlMapper.h"
 #include "DavaRenderer.h"
+#include "Davaglwidget.h"
+
+#include "ControlMapper.h"
 
 #include <QKeyEvent>
 #include <QScreen>
@@ -49,7 +50,7 @@ DavaGLView::DavaGLView()
     , controlMapper(new ControlMapper(this))
 {
     setSurfaceType(QWindow::OpenGLSurface);
-    
+
     setKeyboardGrabEnabled(true);
     setMouseGrabEnabled(true);
 
@@ -117,6 +118,7 @@ void DavaGLView::mouseMoveEvent(QMouseEvent* e)
 
 void DavaGLView::mousePressEvent(QMouseEvent* e)
 {
+    requestActivate();
     controlMapper->mousePressEvent(e);
 }
 
@@ -133,7 +135,9 @@ void DavaGLView::mouseDoubleClickEvent(QMouseEvent* e)
 void DavaGLView::wheelEvent(QWheelEvent* e)
 {
     if ( e->phase() != Qt::ScrollUpdate )
+    {
         return;
+    }
 
     controlMapper->wheelEvent(e);
     if ( e->orientation() == Qt::Vertical )
@@ -168,7 +172,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     davaGLView = new DavaGLView();
     davaGLView->setClearBeforeRendering(false);
     QTimer* timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, davaGLView, &QQuickWindow::update);
+    connect(timer, &QTimer::timeout, this, &DavaGLWidget::UpdateView);
     timer->start(16); //62.5 fps :)
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
@@ -186,6 +190,12 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     container->setFocusPolicy(Qt::NoFocus);
 
     layout->addWidget(container);
+    
+#if defined(Q_OS_MAC)
+    DAVA::Core::Instance()->SetNativeView((void*)davaGLView->winId());
+#elif defined(Q_OS_WIN)
+    DAVA::Core::Instance()->SetNativeView((void*)container->winId());
+#endif //Q_OS_MAC / Q_OS_WIN
 }
 
 void DavaGLWidget::MakeInvisible()
@@ -240,4 +250,12 @@ void DavaGLWidget::resizeEvent(QResizeEvent*)
 void DavaGLWidget::OnCleanup()
 {
     DAVA::SafeDelete(renderer);
+}
+
+void DavaGLWidget::UpdateView()
+{
+    if (!DAVA::DVAssertMessage::IsMessageDisplayed())
+    {
+        davaGLView->update();
+    }
 }

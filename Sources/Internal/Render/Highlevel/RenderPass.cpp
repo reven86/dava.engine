@@ -73,19 +73,19 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
 {
     if (RenderLayer::RENDER_LAYER_INVALID_ID != afterLayer)
     {
-		uint32 size = static_cast<uint32>(renderLayers.size());
-		for(uint32 i = 0; i < size; ++i)
-		{
+        uint32 size = static_cast<uint32>(renderLayers.size());
+        for (uint32 i = 0; i < size; ++i)
+        {
             RenderLayer::eRenderLayerID layerID = renderLayers[i]->GetRenderLayerID();
             if (afterLayer == layerID)
             {
                 renderLayers.insert(renderLayers.begin() + i + 1, layer);
                 layersBatchArrays[layerID].SetSortingFlags(layer->GetSortingFlags());
                 return;
-			}
-		}
-		DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
-	}
+            }
+        }
+        DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
+    }
 	else
 	{
         renderLayers.push_back(layer);
@@ -147,8 +147,8 @@ void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSy
 
 void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, Camera* camera)
 {
-    uint32 size = objectsArray.size();
-    for (uint32 ro = 0; ro < size; ++ro)
+    size_t size = objectsArray.size();
+    for (size_t ro = 0; ro < size; ++ro)
     {
         RenderObject* renderObject = objectsArray[ro];
         if (renderObject->GetFlags() & RenderObject::CUSTOM_PREPARE_TO_RENDER)
@@ -183,8 +183,8 @@ void RenderPass::DrawLayers(Camera *camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, (pointer_size)&rcpViewportSize);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, (pointer_size)&viewportOffset);
 
-    uint32 size = (uint32)renderLayers.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = renderLayers.size();
+    for (size_t k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
@@ -293,8 +293,8 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
 void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 {
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();
+    Camera* mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
 
     /*    drawCamera->SetPosition(Vector3(5, 5, 5));
     drawCamera->SetTarget(Vector3(0, 0, 0));
@@ -318,7 +318,7 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 MainForwardRenderPass::~MainForwardRenderPass()
 {
     SafeDelete(reflectionPass);
-	SafeDelete(refractionPass);
+    SafeDelete(refractionPass);
 }
 
 WaterPrePass::WaterPrePass(const FastName& name)

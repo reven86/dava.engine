@@ -130,6 +130,7 @@ public:
     // Should be called after framework did launched to initialize proper render manager
     void CreateRenderer();
     // Should be called after full release
+    void ReleaseRenderer();
     void ReleaseSingletons();
 
     const Vector<String> & GetCommandLine(); 
@@ -157,16 +158,16 @@ public:
 		\brief Get list of available display modes supported by hardware
 		\param[out] availableModes list of available modes that is supported by hw
 	*/
-	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
-	
-	/**
+    virtual void GetAvailableDisplayModes(List<DisplayMode>& availableModes);
+
+    /**
 		\brief Find mode that matches best to the mode you've requested
 		\param[in] requestedMode mode you want to get
 		\returns best mode found in current HW
 	*/
-	virtual DisplayMode FindBestMode(const DisplayMode & requestedMode);
+    virtual DisplayMode FindBestMode(const DisplayMode& requestedMode);
 
-	/**
+    /**
 		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor
 	*/
 	virtual DisplayMode GetCurrentDisplayMode();
@@ -176,17 +177,20 @@ public:
 	*/
 	virtual void Quit();
 
-	/**
+    /**
 		\brief Set icon for application's window.
 		Windows: First of all, you should create icon resource through Project->Add Resource->Icon.
 		param[in] iconId resource id for icon from resource.h file. For example, 101 for #define IDI_ICON1 101
 	 */
-	virtual void SetIcon(int32 iconId);
+    virtual void SetIcon(int32 iconId);
+
+    virtual float32 GetScreenScaleMultiplier() const;
+    virtual void SetScreenScaleMultiplier(float32 multiplier);
 
     virtual float32 GetScreenScaleFactor() const;
 
     virtual Core::eScreenOrientation GetScreenOrientation();
-	
+
     virtual uint32 GetScreenDPI();
 	
 	/*

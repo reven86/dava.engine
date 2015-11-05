@@ -80,7 +80,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
     landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_COLOR);
 
     FilePath filePath = GetCurrentSaveFileName();
-	if (!filePath.IsEmpty())
+    if (!filePath.IsEmpty())
 	{
         const bool isTextureLoaded = LoadTexture(filePath, false);
         drawSystem->GetCustomColorsProxy()->ResetLoadedState(isTextureLoaded);
@@ -98,11 +98,11 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
     drawSystem->GetLandscapeProxy()->SetToolTexture(customColorsTexture, true);
 
     if (!toolImageTexture)
-	{
+    {
         CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.tex");
     }
-	
-	enabled = true;
+
+    enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
@@ -156,7 +156,7 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
 		{
             UpdateBrushTool();
             prevCursorPos = cursorPosition;
-		}
+        }
 	}
 }
 
@@ -175,21 +175,21 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
 		
 		switch(event->phase)
 		{
-			case UIEvent::PHASE_BEGAN:
-				if (isIntersectsLandscape)
-				{
+        case UIEvent::Phase::BEGAN:
+            if (isIntersectsLandscape)
+                {
 					UpdateToolImage();
 					StoreOriginalState();
 					editingIsEnabled = true;
 				}
 				break;
-				
-			case UIEvent::PHASE_DRAG:
-				break;
-				
-			case UIEvent::PHASE_ENDED:
-				FinishEditing();
-				break;
+
+        case UIEvent::Phase::DRAG:
+            break;
+
+        case UIEvent::Phase::ENDED:
+            FinishEditing();
+                break;
 		}
 	}
 }
@@ -265,8 +265,8 @@ void CustomColorsSystem::SetBrushSize(int32 brushSize, bool updateDrawSystem /*=
 	{
         curToolSize = brushSize;
         cursorSize = (float32)brushSize / landscapeSize;
-        if(updateDrawSystem)
-		{
+        if (updateDrawSystem)
+        {
 			drawSystem->SetCursorSize(cursorSize);
 		}
 	}
@@ -300,7 +300,7 @@ void CustomColorsSystem::CreateUndoPoint()
         scene->Exec(new ModifyCustomColorsCommand(originalImage, ScopedPtr<Image>(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory()), drawSystem->GetCustomColorsProxy(), updatedRect));
     }
 
-	SafeRelease(originalImage);
+    SafeRelease(originalImage);
 }
 
 void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
@@ -467,15 +467,15 @@ String CustomColorsSystem::GetRelativePathToProjectPath(const FilePath& absolute
 	if(absolutePath.IsEmpty())
 		return String();
 
-	return absolutePath.GetRelativePathname(ProjectManager::Instance()->CurProjectPath());
+    return absolutePath.GetRelativePathname(ProjectManager::Instance()->GetProjectPath());
 }
 
 FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const String& relativePath)
 {
 	if(relativePath.empty())
 		return FilePath();
-	
-	return ProjectManager::Instance()->CurProjectPath() + relativePath;
+
+    return ProjectManager::Instance()->GetProjectPath() + relativePath;
 }
 
 int32 CustomColorsSystem::GetBrushSize()

@@ -161,8 +161,8 @@ uint16* ModifyHeightmapCommand::GetHeightmapRegion(Heightmap* heightmap)
     int32 yOffset = (int32)floorf(updatedRect.y);
 
     DVASSERT((xOffset + width) <= size && (yOffset + height) <= size);
-	
-	uint16* newData = new uint16[width * height];
+
+    uint16* newData = new uint16[width * height];
 	uint16* oldData = heightmap->Data();
 	
 	for (int32 i = 0; i < height; ++i)
@@ -184,8 +184,8 @@ void ModifyHeightmapCommand::ApplyHeightmapRegion(uint16* region)
     int32 yOffset = (int32)floorf(updatedRect.y);
 
     DVASSERT((xOffset + width) <= size && (yOffset + height) <= size);
-	
-	uint16* data = heightmapProxy->Data();
+
+    uint16* data = heightmapProxy->Data();
 	
 	for (int32 i = 0; i < height; ++i)
 	{

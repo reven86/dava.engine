@@ -73,7 +73,7 @@ public slots:
 protected slots:
 	void OnTemplateChanged(int index);
     void OnTemplateButton();
-    void OnPropertyEdited(const QModelIndex &);
+    void OnPropertyEdited(const QModelIndex&);
     void OnAddRemoveButton();
 
     void OnMaterialAddGlobal(bool checked);
