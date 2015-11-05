@@ -315,7 +315,7 @@ void UIList::Update(float32 timeElapsed)
     float32 deltaScroll = newScroll - oldScroll;
     oldScroll = newScroll;
     
-    const float32 accuracyDelta = 0.1;
+    const float32 accuracyDelta = 0.1f;
     
     Rect r = scrollContainer->GetRect();
     if(orientation == ORIENTATION_HORIZONTAL)

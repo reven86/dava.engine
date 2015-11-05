@@ -258,8 +258,8 @@ protected:
     float32 addPos;
     float32 oldPos;
     float32 newPos;
-    float32 oldScroll = 0;
-    float32 newScroll = 0;
+    float32 oldScroll = 0.f;
+    float32 newScroll = 0.f;
 
     int32 touchHoldSize;
 

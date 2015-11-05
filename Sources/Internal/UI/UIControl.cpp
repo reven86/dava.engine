@@ -1467,7 +1467,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
         case UIEvent::Phase::CHAR:
         case UIEvent::Phase::CHAR_REPEAT:
-        case UIEvent::Phase ::KEY_DOWN:
+        case UIEvent::Phase::KEY_DOWN:
         case UIEvent::Phase::KEY_DOWN_REPEAT:
         {
             Input(currentInput);
