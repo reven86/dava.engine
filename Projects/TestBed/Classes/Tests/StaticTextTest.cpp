@@ -33,7 +33,6 @@ using namespace DAVA;
 
 namespace
 {
-
 class InputDelegate : public UITextFieldDelegate
 {
 public:
@@ -59,7 +58,6 @@ struct ButtonInfo {
     int32 tag;
     Rect rect;
 };
-
 }
 
 static const ButtonInfo alignButtonsInfo[] = {

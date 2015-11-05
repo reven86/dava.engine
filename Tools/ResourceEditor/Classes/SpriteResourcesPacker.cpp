@@ -26,10 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "FileSystem/FileSystem.h"
+
 #include "SpriteResourcesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "CommandLine/CommandLineParser.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 
 SpriteResourcesPacker::~SpriteResourcesPacker()
 {
