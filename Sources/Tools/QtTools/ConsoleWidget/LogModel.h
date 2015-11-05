@@ -6,6 +6,7 @@
 #include <QAbstractListModel>
 #include <functional>
 #include <QPointer>
+#include <QSize>
 #include "FileSystem/Logger.h"
 
 class QMutex;
@@ -70,6 +71,7 @@ private:
     QVector<LogItem> itemsToAdd;
     std::unique_ptr<QMutex> mutex = nullptr;
     QTimer *syncTimer = nullptr;
+    QSize rowSize;
 };
 
 #endif // __LOGMODEL_H__
