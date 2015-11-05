@@ -242,9 +242,9 @@ extern void FrameworkWillTerminate();
                 it->physPoint.y = curEvent->data.mouse.deltaY;
             }
 
-			it->tapCount = DAVA::Max(curEvent->data.mouse.clickCount, 1);
-			it->timestamp = timestamp;
-			it->phase = touchPhase;
+            it->tapCount = DAVA::Max(curEvent->data.mouse.clickCount, 1);
+            it->timestamp = timestamp;
+            it->phase = touchPhase;
 		}
 	}
 
@@ -268,9 +268,9 @@ extern void FrameworkWillTerminate();
                 it->physPoint.y = curEvent->data.mouse.deltaY;
             }
 
-			it->tapCount = curEvent->data.mouse.clickCount;
-			it->timestamp = timestamp;
-			it->phase = touchPhase;
+            it->tapCount = curEvent->data.mouse.clickCount;
+            it->timestamp = timestamp;
+            it->phase = touchPhase;
 
 			break;
 		}
@@ -293,9 +293,9 @@ extern void FrameworkWillTerminate();
             newTouch.physPoint.y = curEvent->data.mouse.deltaY;
         }
 
-		newTouch.tapCount = curEvent->data.mouse.clickCount;
-		newTouch.timestamp = timestamp;
-		newTouch.phase = touchPhase;
+        newTouch.tapCount = curEvent->data.mouse.clickCount;
+        newTouch.timestamp = timestamp;
+        newTouch.phase = touchPhase;
 		allTouches.push_back(newTouch);
 	}
 

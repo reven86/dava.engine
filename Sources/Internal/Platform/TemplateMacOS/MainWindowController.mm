@@ -375,7 +375,7 @@ namespace DAVA
         currFPS = RenderManager::Instance()->GetFPS();
         [self stopAnimationTimer];
         [self startAnimationTimer];
-	}
+    }
 #endif
 }
 

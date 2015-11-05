@@ -29,7 +29,8 @@
 #ifndef __SPRITES_PACKER_H__
 #define __SPRITES_PACKER_H__
 
-#include "DAVAEngine.h"
+#include "FileSystem/FilePath.h"
+#include "Render/RenderBase.h"
 
 class SpriteResourcesPacker
 {
