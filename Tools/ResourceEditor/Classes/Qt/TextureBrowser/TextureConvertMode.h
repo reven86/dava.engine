@@ -35,8 +35,7 @@ enum eTextureConvertMode
     CONVERT_FORCE = 0,
     CONVERT_MODIFIED,
     CONVERT_NOT_EXISTENT,
-    
-    CONVERT_MODES_COUNT
+    CONVERT_NOT_REQUESTED,
 };
 
 #endif

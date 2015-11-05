@@ -219,7 +219,7 @@ Texture * Texture::Get(const FilePath & pathName)
     if (it != textureMap.end())
     {
         texture = it->second;
-		texture->Retain();
+        texture->Retain();
 	}
     return texture;
 }
@@ -688,7 +688,7 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
         AddToMap(texture);
     }
 
-	delete descriptor;
+    delete descriptor;
 	return texture;
 }
     
@@ -742,7 +742,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
 
         SetParamsFromImages(images);
         FlushDataToRenderer(images);
-	}
+    }
 	else
     {
         SafeDelete(images);

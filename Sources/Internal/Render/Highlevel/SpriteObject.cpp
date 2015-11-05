@@ -220,7 +220,7 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
     if (newObject == nullptr)
     {
         DVASSERT_MSG(IsPointerToExactClass<SpriteObject>(this), "Can clone only SpriteObject");
- 		newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
+        newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
 	}
 
 	SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
