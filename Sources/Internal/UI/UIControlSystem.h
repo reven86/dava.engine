@@ -326,7 +326,7 @@ private:
 
     int32 screenLockCount;
 
-	bool removeCurrentScreen;
+    bool removeCurrentScreen;
 	
 	UIControl *exclusiveInputLocker;
     UIControl *hovered;
