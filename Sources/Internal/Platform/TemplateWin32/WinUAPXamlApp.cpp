@@ -97,12 +97,12 @@ WinUAPXamlApp::WinUAPXamlApp()
         MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
     });
     displayRequest = ref new Windows::System::Display::DisplayRequest;
-    DisplayCouldBeLocked(false);
+    AllowDisplaySleep(false);
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
 {
-    DisplayCouldBeLocked(true);
+    AllowDisplaySleep(true);
     delete deferredSizeScaleEvents;
 }
 
@@ -390,7 +390,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
     bool visible = args->Visible;
-    DisplayCouldBeLocked(!visible);
+    AllowDisplaySleep(!visible);
     core->RunOnMainThread([this, visible]() {
         if (visible)
         {
@@ -965,9 +965,9 @@ void WinUAPXamlApp::EmitPushNotification(::Windows::ApplicationModel::Activation
     });
 }
 
-void WinUAPXamlApp::DisplayCouldBeLocked(bool lock)
+void WinUAPXamlApp::AllowDisplaySleep(bool sleep)
 {
-    if (lock)
+    if (sleep)
     {
         displayRequest->RequestRelease();
     }

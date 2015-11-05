@@ -164,7 +164,7 @@ private:
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
-    void DisplayCouldBeLocked(bool lock);
+    void AllowDisplaySleep(bool sleep);
 
 private:
     CorePlatformWinUAP* core = nullptr;
