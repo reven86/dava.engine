@@ -595,10 +595,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         Logger::Info("[%s] - unchanged", inputPath.GetAbsolutePathname().c_str());
     }
 
-    if (false == CommandLineParser::Instance()->IsFlagSet("--recursive"))
-    {
-        currentFlags.clear();
-    }
+    const auto& flagsToPass = CommandLineParser::Instance()->IsFlagSet("--recursive") ? currentFlags : passedFlags;
 
     for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
@@ -615,7 +612,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
 
-                    RecursiveTreeWalk(input, output, currentFlags);
+                    RecursiveTreeWalk(input, output, flagsToPass);
                 }
     		}
     	}
