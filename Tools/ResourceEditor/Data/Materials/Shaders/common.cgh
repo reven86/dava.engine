@@ -252,7 +252,7 @@ FogParam
     float   atmosphere_scattering;
 };
 
-float4 CalculateVertexFog( FogParam param ); // to shut up Metal shader-compiler
+min10float4 CalculateVertexFog( FogParam param ); // to shut up Metal shader-compiler
 
 
 min10float4
