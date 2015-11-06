@@ -1585,54 +1585,54 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                         currentInputID = 0;
                     }
                     if (totalTouches > 0)
-                {
-                    --totalTouches;
-                    if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
                     {
-                        --touchesInside;
+                        --totalTouches;
+                        if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
+                        {
+                            --touchesInside;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                        if (totalTouches == 0)
+                            if (totalTouches == 0)
                         {
                             controlState |= STATE_HOVER;
                         }
 #endif
-                    }
+                        }
 
-                    currentInput->controlState =
-                    UIEvent::CONTROL_STATE_RELEASED;
+                        currentInput->controlState =
+                        UIEvent::CONTROL_STATE_RELEASED;
 
-                    if (totalTouches == 0)
-                    {
-                        if (IsPointInside(currentInput->point, true))
+                        if (totalTouches == 0)
                         {
-                            if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
+                            if (IsPointInside(currentInput->point, true))
+                            {
+                                if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
                             {
                                 UIControlSystem::Instance()->SetFocusedControl(
                                 this, false);
                             }
                             PerformEventWithData(EVENT_TOUCH_UP_INSIDE,
                                                  currentInput);
+                            }
+                            else
+                            {
+                                PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE,
+                                                     currentInput);
+                            }
+                            controlState &= ~STATE_PRESSED_INSIDE;
+                            controlState &= ~STATE_PRESSED_OUTSIDE;
+                            controlState |= STATE_NORMAL;
+                            if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
+                            {
+                                UIControlSystem::Instance()->SetExclusiveInputLocker(
+                                NULL, -1);
+                            }
                         }
-                        else
+                        else if (touchesInside <= 0)
                         {
-                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE,
-                                                 currentInput);
-                        }
-                        controlState &= ~STATE_PRESSED_INSIDE;
-                        controlState &= ~STATE_PRESSED_OUTSIDE;
-                        controlState |= STATE_NORMAL;
-                        if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
-                        {
-                            UIControlSystem::Instance()->SetExclusiveInputLocker(
-                            NULL, -1);
-                        }
-                    }
-                    else if (touchesInside <= 0)
-                    {
-                        controlState |= STATE_PRESSED_OUTSIDE;
-                        controlState &= ~STATE_PRESSED_INSIDE;
+                            controlState |= STATE_PRESSED_OUTSIDE;
+                            controlState &= ~STATE_PRESSED_INSIDE;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                        controlState &= ~STATE_HOVER;
+                            controlState &= ~STATE_HOVER;
 #endif
                     }
                 }

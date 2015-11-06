@@ -908,8 +908,8 @@ void TextBlock::PreDraw()
     {
         PrepareInternal();
     }
-    
-	if (textBlockRender)
+
+    if (textBlockRender)
 	{
         font->SetSize(renderSize);
         textBlockRender->PreDraw();

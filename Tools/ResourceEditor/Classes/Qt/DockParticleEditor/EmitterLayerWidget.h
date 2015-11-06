@@ -78,8 +78,8 @@ protected slots:
     void OnValueChanged();
     void OnSpriteBtn();
     void OnSpritePathChanged(const QString& text);
-	
-	void OnPivotPointReset();
+
+    void OnPivotPointReset();
     void OnSpriteUpdateTimerExpired();
 
 private:

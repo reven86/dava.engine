@@ -739,13 +739,13 @@ void YamlNode::InternalSetByteArray(const uint8* byteArray, int32 byteArraySize)
 void YamlNode::InternalSetKeyedArchive(KeyedArchive* archive)
 {
     //creation array with variables
-    const Map<String, VariantType*> & innerArchiveMap =  archive->GetArchieveData();
-    for (Map<String, VariantType*>::const_iterator it = innerArchiveMap.begin(); it != innerArchiveMap.end(); ++it)
+    const auto& innerArchiveMap = archive->GetArchieveData();
+    for (const auto& it : innerArchiveMap)
     {
         YamlNode* arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
-        arrayElementNodeValue->InternalAddNodeToMap(it->second->GetTypeName(), CreateNodeFromVariantType(*it->second), false);
+        arrayElementNodeValue->InternalAddNodeToMap(it.second->GetTypeName(), CreateNodeFromVariantType(*it.second), false);
 
-        InternalAddNodeToMap(it->first, arrayElementNodeValue, false);
+        InternalAddNodeToMap(it.first, arrayElementNodeValue, false);
     }
     objectMap->style = MR_BLOCK_REPRESENTATION;
 }

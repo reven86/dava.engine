@@ -52,7 +52,7 @@ public:
 
     void PrintUsage() const override;
     void DumpParams() const override;
-	DAVA::FilePath GetQualityConfigPath() const override;
+    DAVA::FilePath GetQualityConfigPath() const override;
 
 private:
 

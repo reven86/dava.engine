@@ -440,11 +440,10 @@ bool MongodbClient::KeyedArchiveToDBObject(KeyedArchive* archive, MongodbObject*
     
     if(!outObject->IsFinished())
     {
-        //copy data from archive into db object
-        Map<String, VariantType*> archiveData = archive->GetArchieveData();
-        for(Map<String, VariantType*>::iterator it = archiveData.begin(); it != archiveData.end(); ++it)
+        // copy data from archive into db object
+        for (const auto& ad : archive->GetArchieveData())
         {
-            MongodbClient::WriteData(outObject, it->first, it->second);
+            MongodbClient::WriteData(outObject, ad.first, ad.second);
         }
         return true;
     }

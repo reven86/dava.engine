@@ -79,7 +79,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     textureListSortModes["File size"] = TextureListModel::SortByFileSize;
     textureListSortModes["Data size"] = TextureListModel::SortByDataSize;
-	textureListSortModes["Image size"] = TextureListModel::SortByImageSize;
+    textureListSortModes["Image size"] = TextureListModel::SortByImageSize;
 	textureListSortModes["Name"] = TextureListModel::SortByName;
 
 	// global scene manager signals
@@ -89,9 +89,9 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     // convector signals
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
-    QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor *, const DAVA::eGPUFamily, const TextureInfo &)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor *, const DAVA::eGPUFamily, const TextureInfo &)));
+    QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)));
 
-	setupStatusBar();
+    setupStatusBar();
 	setupTexturesList();
 	setupImagesScrollAreas();
 	setupTextureListToolbar();
@@ -271,7 +271,7 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
             // Start convert. Signal will be emitted when conversion done
             TextureConvertor::Instance()->GetConverted(curDescriptor, view, convertMode);
         }
-	}
+    }
 
 	if(infoConvertedIsUpToDate)
 	{
@@ -706,7 +706,7 @@ void TextureBrowser::texturePropertyChanged(int type)
         setTextureView(curTextureView, getConvertMode(CONVERT_FORCE));
     }
     // other settings don't need texture to reconvert
-	else
+    else
 	{
         const DAVA::TextureDescriptor* descriptor = ui->textureProperties->getTextureDescriptor();
         descriptor->Save();
@@ -829,7 +829,7 @@ void TextureBrowser::textureZoomFit(bool checked)
             if (rhi::TEXTURE_TYPE_CUBE == curTexture->textureType)
             {
                 QSize size = ui->textureAreaOriginal->getContentSize();
-				w = size.width();
+                w = size.width();
 				h = size.height();
 			}
 			else

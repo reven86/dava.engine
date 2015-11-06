@@ -77,7 +77,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
     landscapeSize = drawSystem->GetHeightmapProxy()->Size();
 
     previewLength = -1.f;
-	previewEnabled = true;
+    previewEnabled = true;
 
 	Clear();
 	DrawPoints();
@@ -104,7 +104,7 @@ bool RulerToolSystem::DisableLandscapeEdititing()
 
     Clear();
     previewLength = -1.f;
-	SendUpdatedLength();
+    SendUpdatedLength();
 
 	enabled = false;
 	return !enabled;
@@ -200,7 +200,7 @@ void RulerToolSystem::AddPoint(const DAVA::Vector2& point)
         float32 l = lengths.back();
         l += GetLength(prevPoint, point);
 
-		linePoints.push_back(point);
+        linePoints.push_back(point);
 		lengths.push_back(l);
 
 		SendUpdatedLength();
@@ -216,7 +216,7 @@ void RulerToolSystem::RemoveLastPoint()
         --pointsIter;
         linePoints.erase(pointsIter);
 
-		List<float32>::iterator lengthsIter = lengths.end();
+        List<float32>::iterator lengthsIter = lengths.end();
 		--lengthsIter;
 		lengths.erase(lengthsIter);
 
@@ -237,7 +237,7 @@ void RulerToolSystem::CalcPreviewPoint(const Vector2& point, bool force)
         float32 previewLen = GetLength(lastPoint, point);
 
         previewPoint = point;
-		previewLength = lengths.back() + previewLen;
+        previewLength = lengths.back() + previewLen;
 	}
 	else if (!isIntersectsLandscape)
 	{
@@ -253,14 +253,14 @@ DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector2& startPoint, const 
     Vector3 prevPoint = Vector3(startPoint);
     Vector3 prevLandscapePoint = drawSystem->GetLandscapeProxy()->PlacePoint(prevPoint); //
 
-    for(int32 i = 1; i <= APPROXIMATION_COUNT; ++i)
-	{
+    for (int32 i = 1; i <= APPROXIMATION_COUNT; ++i)
+    {
         Vector3 point = Vector3(startPoint + (endPoint - startPoint) * i / (float32)APPROXIMATION_COUNT);
         Vector3 landscapePoint = drawSystem->GetLandscapeProxy()->PlacePoint(point); //
 
         lineSize += (landscapePoint - prevLandscapePoint).Length();
 
-		prevPoint = point;
+        prevPoint = point;
 		prevLandscapePoint = landscapePoint;
 	}
 
@@ -282,7 +282,7 @@ void RulerToolSystem::DrawPoints()
     points.reserve(linePoints.size() + 1);
     std::copy(linePoints.begin(), linePoints.end(), std::back_inserter(points));
 
-	if (previewEnabled && isIntersectsLandscape)
+    if (previewEnabled && isIntersectsLandscape)
 	{
 		points.push_back(previewPoint);
 	}
@@ -323,7 +323,7 @@ void RulerToolSystem::DrawPoints()
 
             startPoint = endPoint;
         }
-	}
+    }
 
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
