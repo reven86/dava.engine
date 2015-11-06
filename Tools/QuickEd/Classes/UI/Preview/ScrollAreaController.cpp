@@ -66,46 +66,26 @@ void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
     {
         return;
     }
-    if(scale == 0 || viewSize.width() <= 0 || viewSize.height() <= 0)
-    {
-        SetPosition(QPoint(0, 0));
-    }
+    QPoint oldPos = position;
     float oldScale = scale;
     scale = newScale;
-    emit ScaleChanged(scale);
-    QPoint prevPosition = position;
-    QSize prevOffset = canvasSize - viewSize;
     UpdateCanvasContentSize();
-    QSize newOffset = canvasSize - viewSize;
+    emit ScaleChanged(scale);
     
-    QPoint newPosition;
-    QPointF relativePos(mousePos.x() / viewSize.width()
-                        , mousePos.y() / viewSize.height());
-    float relativeScale = scale / oldScale;
-    if(prevOffset.width() > 0)
+    if(oldScale == 0 || viewSize.width() <= 0 || viewSize.height() <= 0)
     {
-        int deltaViewSize = viewSize.width() * (1.0f - 1.0f / relativeScale) * relativePos.x();
-        int newPositionX = prevPosition.x() + deltaViewSize;
-        newPosition.setX(newPositionX * 1.0f * relativeScale);
-    }
-    else
-    {
-        newPosition.setX(newOffset.width() / 2);
+        SetPosition(QPoint(0, 0));
+        return;
     }
     
-    if(prevOffset.height() > 0)
-    {
-        int deltaViewSize = viewSize.height() * (1.0f - 1.0f / relativeScale) * relativePos.y();
-        int newPositionY = prevPosition.y() + deltaViewSize;
-        newPosition.setY(newPositionY * 1.0f * relativeScale);
-    }
-    else
-    {
-        newPosition.setY(newOffset.height() / 2);
-    }
+    QPoint absPosition = oldPos / oldScale;
+    QPointF deltaMousePos = mousePos * (1 - newScale / oldScale);
+    QPoint newPosition(absPosition.x() * scale - deltaMousePos.x()
+                  , absPosition.y() * scale - deltaMousePos.y());
     
-    newPosition.setX(qBound(0, newPosition.x(), newOffset.width()));
-    newPosition.setY(qBound(0, newPosition.y(), newOffset.height()));
+    
+    newPosition.setX(qBound(0, newPosition.x(), (canvasSize - viewSize).width()));
+    newPosition.setY(qBound(0, newPosition.y(), (canvasSize - viewSize).height()));
     SetPosition(newPosition);
 }
 
