@@ -27,67 +27,28 @@
  =====================================================================================*/
 
 
-#ifndef __LOGMODEL_H__
-#define __LOGMODEL_H__
+#include "LoggerOutputObject.h"
 
-#include "FileSystem/Logger.h"
-#include <functional>
-
-#include <QObject>
-#include <QAbstractListModel>
-#include <QPointer>
-
-class QMutex;
-class QTimer;
-
-class LogModel
-    : public QAbstractListModel
+LoggerOutputObject::LoggerOutputObject(QObject* parent)
+    : QObject(parent)
 {
-    Q_OBJECT
-
-public:
-    enum Roles
+    if (nullptr != parent)
     {
-        LEVEL_ROLE = Qt::UserRole,
-        INTERNAL_DATA_ROLE
-    };
-    using ConvertFunc = std::function < DAVA::String(const DAVA::String &) >;
+        connect(parent, &QObject::destroyed, [this]() {
+            DAVA::Logger::RemoveCustomOutput(this);
+        });
+    }
+    DAVA::Logger::AddCustomOutput(this);
+    qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
+}
 
-    explicit LogModel(QObject* parent = nullptr);
-    ~LogModel() = default;
-    void SetConvertFunction(ConvertFunc func); //provide mechanism to convert data string to string to be displayed
+void LoggerOutputObject::Destroy()
+{
+    DAVA::Logger::RemoveCustomOutput(this);
+    delete this;
+}
 
-    const QPixmap &GetIcon(int ll) const;
-
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
-    void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray &text);
-    void AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray &msg);
-
-public slots:
-    void Clear();
-
-private slots:
-    void Sync();
-
-private:
-    void createIcons();
-    struct LogItem
-    {
-        LogItem(DAVA::Logger::eLogLevel ll_ = DAVA::Logger::LEVEL_FRAMEWORK, const QString &text_ = QString(), const QString &data_ = QString());
-        DAVA::Logger::eLogLevel ll;
-        QString text;
-        QString data;
-    };
-    QVector<LogItem> items;
-
-    QVector<QPixmap> icons;
-    ConvertFunc func;
-
-    QVector<LogItem> itemsToAdd;
-    std::unique_ptr<QMutex> mutex = nullptr;
-    QTimer *syncTimer = nullptr;
-};
-
-#endif // __LOGMODEL_H__
+void LoggerOutputObject::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
+{
+    emit OutputReady(ll, text);
+}

@@ -27,67 +27,32 @@
  =====================================================================================*/
 
 
-#ifndef __LOGMODEL_H__
-#define __LOGMODEL_H__
+#ifndef __LOGGER_OUTPUT_OBJECT_H__
+#define __LOGGER_OUTPUT_OBJECT_H__
 
 #include "FileSystem/Logger.h"
-#include <functional>
-
 #include <QObject>
-#include <QAbstractListModel>
-#include <QPointer>
 
-class QMutex;
-class QTimer;
-
-class LogModel
-    : public QAbstractListModel
+class LoggerOutputObject final
+: public QObject,
+  public DAVA::LoggerOutput
 {
     Q_OBJECT
-
 public:
-    enum Roles
-    {
-        LEVEL_ROLE = Qt::UserRole,
-        INTERNAL_DATA_ROLE
-    };
-    using ConvertFunc = std::function < DAVA::String(const DAVA::String &) >;
-
-    explicit LogModel(QObject* parent = nullptr);
-    ~LogModel() = default;
-    void SetConvertFunction(ConvertFunc func); //provide mechanism to convert data string to string to be displayed
-
-    const QPixmap &GetIcon(int ll) const;
-
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
-    void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray &text);
-    void AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray &msg);
-
-public slots:
-    void Clear();
-
-private slots:
-    void Sync();
+    LoggerOutputObject(QObject* parent = nullptr);
+    void Destroy();
+    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
+signals:
+    void OutputReady(DAVA::Logger::eLogLevel ll, QByteArray text);
 
 private:
-    void createIcons();
-    struct LogItem
-    {
-        LogItem(DAVA::Logger::eLogLevel ll_ = DAVA::Logger::LEVEL_FRAMEWORK, const QString &text_ = QString(), const QString &data_ = QString());
-        DAVA::Logger::eLogLevel ll;
-        QString text;
-        QString data;
-    };
-    QVector<LogItem> items;
-
-    QVector<QPixmap> icons;
-    ConvertFunc func;
-
-    QVector<LogItem> itemsToAdd;
-    std::unique_ptr<QMutex> mutex = nullptr;
-    QTimer *syncTimer = nullptr;
+    using QObject::deleteLater;
+    ~LoggerOutputObject() override = default; //will be removed by logger
 };
 
-#endif // __LOGMODEL_H__
+void DestroyerFunction(LoggerOutputObject* obj) //to use it in smart pointers
+{
+    obj->Destroy();
+}
+
+#endif // __LOGGER_OUTPUT_OBJECT_H__

@@ -3,6 +3,7 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
+#include <QThread>
 
 #include "LogModel.h"
 #include "LogFilterModel.h"
@@ -87,9 +88,16 @@ void LogWidget::Deserialize(const QByteArray& data)
     ui->filter->selectUserData(logLevels);
 }
 
-void LogWidget::AddMessage(DAVA::Logger::eLogLevel ll, const char* msg)
+void LogWidget::AddMessage(DAVA::Logger::eLogLevel ll, QByteArray msg)
 {
-    logModel->AddMessage(ll, msg);
+    if (QThread::currentThread() == qApp->thread())
+    {
+        logModel->AddMessage(ll, msg);
+    }
+    else
+    {
+        logModel->AddMessageAsync(ll, msg);
+    }
 }
 
 void LogWidget::FillFiltersCombo()
