@@ -130,27 +130,23 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 // Store depth/stencil buffer index as secondary stencil index for iOS/Android
                 uid[1] = uid[0];
             }
-#if defined(__DAVAENGINE_ANDROID__)
-            else if (_GLES2_IsGlDepthNvNonLinearSupported)
-            {
-                GLCommand d16s8nvcmd[] =
-                {
-                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, desc.width, desc.height } },
-                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
-                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
-                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
-                };
-                ExecGL(d16s8nvcmd, countof(d16s8nvcmd), force_immediate);
-            }
-#endif
             else
             {
+                GLCommand depthCmd;
+#if defined(__DAVAENGINE_ANDROID__)
+                if (_GLES2_IsGlDepthNvNonLinearSupported)
+                {
+                    depthCmd = { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, desc.width, desc.height } };
+                }
+                else
+#endif
+                {
+                    depthCmd = { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } };
+                }
                 GLCommand d16s8cmd[] =
                 {
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } },
+                  depthCmd,
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
                   { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
