@@ -586,9 +586,15 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_OUT_COLOR         \n"
 "#define FPROG_OUT_END           \n"
 
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+"#define DECL_FP_SAMPLER2D(unit)    uniform lowp sampler2D FragmentTexture##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform lowp samplerCube FragmentTexture##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform lowp sampler2D VertexTexture##unit;\n"
+#else
 "#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit;\n"
 "#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit;\n"
 "#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
+#endif
 
 "#define FP_TEXTURE2D(unit,uv)   texture2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) textureCube( FragmentTexture##unit, uv )\n"
@@ -727,9 +733,15 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_OUT_COLOR         float4 color : COLOR0;\n"
 "#define FPROG_OUT_END           };\n"
 
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+"#define DECL_FP_SAMPLER2D(unit)    uniform lowp sampler2D FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform lowp samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform lowp sampler2D VertexTexture##unit : TEXUNIT##unit;\n"
+#else
 "#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit : TEXUNIT##unit;\n"
 "#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
 "#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit : TEXUNIT##unit;\n"
+#endif
 
 "#define FP_TEXTURE2D(unit,uv)   tex2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) texCUBE( FragmentTexture##unit, uv )\n"
