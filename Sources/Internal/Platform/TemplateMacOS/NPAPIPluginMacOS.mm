@@ -190,7 +190,7 @@ extern void FrameworkWillTerminate();
             break;
 
         case NPCocoaEventMouseExited:
-			break;
+            break;
 
 		case NPCocoaEventMouseDragged:
             [self processEvent:DAVA::UIEvent::Phase::DRAG touch:event];
@@ -200,7 +200,7 @@ extern void FrameworkWillTerminate();
             [self keyDown:event];
             break;
 
-		case NPCocoaEventKeyUp:
+        case NPCocoaEventKeyUp:
 			[self keyUp:event];
 			break;
 
@@ -230,7 +230,7 @@ extern void FrameworkWillTerminate();
         for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
             NSPoint p;
-			p.x = curEvent->data.mouse.pluginX;
+            p.x = curEvent->data.mouse.pluginX;
 			p.y = curEvent->data.mouse.pluginY;
 
 			it->physPoint.x = p.x;
@@ -245,7 +245,7 @@ extern void FrameworkWillTerminate();
             it->tapCount = DAVA::Max(curEvent->data.mouse.clickCount, 1);
             it->timestamp = timestamp;
             it->phase = touchPhase;
-		}
+        }
 	}
 
 	bool isFind = false;
@@ -272,7 +272,7 @@ extern void FrameworkWillTerminate();
             it->timestamp = timestamp;
             it->phase = touchPhase;
 
-			break;
+            break;
 		}
 	}
 
@@ -296,7 +296,7 @@ extern void FrameworkWillTerminate();
         newTouch.tapCount = curEvent->data.mouse.clickCount;
         newTouch.timestamp = timestamp;
         newTouch.phase = touchPhase;
-		allTouches.push_back(newTouch);
+        allTouches.push_back(newTouch);
 	}
 
 	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
@@ -308,8 +308,8 @@ extern void FrameworkWillTerminate();
     {
         for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-            if(it->tid == button)
-			{
+            if (it->tid == button)
+            {
 				allTouches.erase(it);
 				break;
 			}
@@ -415,7 +415,7 @@ extern void FrameworkWillTerminate();
     {
         if ((oldModifiersFlags & masks[i]) != (newModifiers & masks[i]))
         {
-			if (newModifiers & masks[i])
+            if (newModifiers & masks[i])
 			{
 				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
 			}

@@ -534,7 +534,7 @@ namespace DAVA
         Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
                                keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
         switch (keyPress.tid)
-		{
+        {
 		case DVKEY_BACKSPACE:
 		{
 			//TODO: act the same way on iPhone
@@ -714,7 +714,7 @@ namespace DAVA
         touchDown.tapCount = tapCount;
         touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchDown.point = point;
-		ProcessInput(touchDown);
+        ProcessInput(touchDown);
 	}
 
 	void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
@@ -754,8 +754,8 @@ namespace DAVA
         ProcessInput(touchUp);
     }
 
-    void AutotestingSystemLua::ProcessInput(const UIEvent &input)
-	{
+    void AutotestingSystemLua::ProcessInput(const UIEvent& input)
+    {
         UIEvent ev = input;
         UIControlSystem::Instance()->OnInput(&ev);
 
@@ -771,7 +771,7 @@ namespace DAVA
     {
         if (!luaState)
         {
-			return false; //TODO: report error?
+            return false; //TODO: report error?
 		}
 
 		luaopen_AutotestingSystem(luaState);	// load the wrappered module

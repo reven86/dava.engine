@@ -937,7 +937,7 @@ void TexturePacker::DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawe
     finalImage.DrawImage(packedCell, alphaOffsetRect, &drawedImage);
 
     if (CommandLineParser::Instance()->IsFlagSet("--debug"))
-    {
+	{
         finalImage.DrawRect(packedCell.rect, 0xFF0000FF);
     }
 }

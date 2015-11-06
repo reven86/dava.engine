@@ -44,7 +44,7 @@ public:
     bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
 
     DefinitionFile();
-    ~DefinitionFile();
+	~DefinitionFile();
 	
 	void ClearPackedFrames();
 	void LoadPNG(const FilePath & fullname, const FilePath & processDirectoryPath);

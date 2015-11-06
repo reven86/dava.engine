@@ -428,7 +428,7 @@ void VariantType::SetVariant(const VariantType& var)
             Vector<uint8>* ar = (Vector<uint8>*)var.pointerValue;
             SetByteArray(ar->data(), static_cast<int32>(ar->size()));
         }
-		break;
+        break;
 	case TYPE_KEYED_ARCHIVE:
 		{
 			SetKeyedArchive(var.AsKeyedArchive());
@@ -1484,7 +1484,7 @@ void* VariantType::MetaObject()
     case TYPE_MATRIX4:
     case TYPE_COLOR:
     case TYPE_FASTNAME:
-	case TYPE_AABBOX3:
+    case TYPE_AABBOX3:
 	case TYPE_FILEPATH:
 		ret = pointerValue;
 		break;
@@ -1547,8 +1547,8 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetKeyedArchive(*((DAVA::KeyedArchive**)src));
         break;
     case TYPE_INT64:
-        v.SetInt64(*((DAVA::int64 *) src));
-		break;
+        v.SetInt64(*((DAVA::int64*)src));
+        break;
 	case TYPE_UINT64:
 		v.SetUInt64(*((DAVA::uint64 *) src));
 		break;
@@ -1670,8 +1670,8 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
         {
             DAVA::KeyedArchive* dstArchive = *((DAVA::KeyedArchive**)dst);
             if (nullptr != dstArchive)
-                {
-					dstArchive->DeleteAllKeys();
+            {
+                    dstArchive->DeleteAllKeys();
                     for(const auto &obj : val.AsKeyedArchive()->GetArchieveData())
                     {
                         dstArchive->SetVariant(obj.first, *obj.second);
@@ -1766,8 +1766,8 @@ VariantType VariantType::FromType(int type)
         break;
     case TYPE_KEYED_ARCHIVE:
     {
-            KeyedArchive *ka = new KeyedArchive();
-			v.SetKeyedArchive(ka);
+        KeyedArchive* ka = new KeyedArchive();
+            v.SetKeyedArchive(ka);
 			ka->Release();
 		}
 		break;

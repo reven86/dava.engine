@@ -124,24 +124,16 @@ private:
 };
 
 #define RHI_IMPL_POOL(T, RT, DT, nr) \
-template <> \
-    rhi::ResourcePool<T, RT, DT, nr>::Entry* rhi::ResourcePool<T, RT, DT, nr>::Object = 0;    \
-template <> \
-    uint32 rhi::ResourcePool<T, RT, DT, nr>::ObjectCount = 2048; \
-template <> \
-    uint32 rhi::ResourcePool<T, RT, DT, nr>::HeadIndex = 0;    \
-template <> \
-    DAVA::Spinlock rhi::ResourcePool<T, RT, DT, nr>::ObjectSync = {};   \
+template<> rhi::ResourcePool<T, RT, DT, nr>::Entry* rhi::ResourcePool<T, RT, DT, nr>::Object = 0;    \
+template<> uint32 rhi::ResourcePool<T, RT, DT, nr>::ObjectCount = 2048; \
+template<> uint32 rhi::ResourcePool<T, RT, DT, nr>::HeadIndex = 0;    \
+template<> DAVA::Spinlock rhi::ResourcePool<T, RT, DT, nr>::ObjectSync = {};   \
 
 #define RHI_IMPL_POOL_SIZE(T, RT, DT, nr, sz) \
-template <> \
-    rhi::ResourcePool<T, RT, DT, nr>::Entry* rhi::ResourcePool<T, RT, DT, nr>::Object = 0;    \
-template <> \
-    uint32 rhi::ResourcePool<T, RT, DT, nr>::ObjectCount = sz;   \
-template <> \
-    uint32 rhi::ResourcePool<T, RT, DT, nr>::HeadIndex = 0;    \
-template <> \
-    DAVA::Spinlock rhi::ResourcePool<T, RT, DT, nr>::ObjectSync = {};
+template<> rhi::ResourcePool<T, RT, DT, nr>::Entry* rhi::ResourcePool<T, RT, DT, nr>::Object = 0;    \
+template<> uint32 rhi::ResourcePool<T, RT, DT, nr>::ObjectCount = sz;   \
+template<> uint32 rhi::ResourcePool<T, RT, DT, nr>::HeadIndex = 0;    \
+template<> DAVA::Spinlock rhi::ResourcePool<T, RT, DT, nr>::ObjectSync = {};
 
 //------------------------------------------------------------------------------
 
@@ -337,8 +329,7 @@ private:
 };
 
 #define RHI_IMPL_RESOURCE(T, DT) \
-template <> \
-    unsigned rhi::ResourceImpl<T, DT>::needRestoreCount = 0;
+template<> unsigned rhi::ResourceImpl<T, DT>::needRestoreCount = 0;
 
 } // namespace rhi
 #endif // __RHI_POOL_H__

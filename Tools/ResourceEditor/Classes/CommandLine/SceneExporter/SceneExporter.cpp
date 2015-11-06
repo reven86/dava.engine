@@ -329,7 +329,7 @@ bool SceneExporter::ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog)
 
         allDescriptorsWereExported &= ExportTextureDescriptor(path, errorLog);
     }
-
+    
     return allDescriptorsWereExported;
 }
 

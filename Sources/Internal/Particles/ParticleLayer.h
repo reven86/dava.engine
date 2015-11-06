@@ -128,7 +128,7 @@ struct ParticleLayer : public BaseObject
     /*
 	 Properties of particle layer that describe particle system logic
 	 */
-	RefPtr< PropertyLine<float32> > life;				// in seconds
+    RefPtr< PropertyLine<float32> > life;				// in seconds
 	RefPtr< PropertyLine<float32> > lifeVariation;		// variation part of life that added to particle life during generation of the particle
 	
 	RefPtr< PropertyLine<float32> > number;				// number of particles per second
