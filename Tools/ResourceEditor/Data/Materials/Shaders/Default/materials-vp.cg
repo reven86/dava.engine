@@ -88,7 +88,7 @@ VPROG_OUT_BEGIN
     
     
     #if VERTEX_LIT
-        VPROG_OUT_COLOR0(varDiffuseColor,1)
+        VPROG_OUT_COLOR0_LOW(varDiffuseColor,1)
         #if BLINN_PHONG
             VPROG_OUT_TEXCOORD4_LOW(varSpecularColor,1)
         #elif NORMALIZED_BLINN_PHONG
@@ -98,9 +98,9 @@ VPROG_OUT_BEGIN
 
     #if PIXEL_LIT
         #if FAST_NORMALIZATION
-        VPROG_OUT_COLOR0(varHalfVec,3)
+        VPROG_OUT_COLOR0_LOW(varHalfVec,3)
         #endif
-        VPROG_OUT_COLOR1(varToLightVec,3)
+        VPROG_OUT_COLOR1_LOW(varToLightVec,3)
         #if DISTANCE_ATTENUATION
         VPROG_OUT_TEXCOORD6(varPerPixelAttenuation,1)
         #endif
@@ -108,7 +108,7 @@ VPROG_OUT_BEGIN
     #endif    
     
     #if VERTEX_COLOR || SPHERICAL_LIT
-        VPROG_OUT_COLOR1(varVertexColor,4)
+        VPROG_OUT_COLOR1_LOW(varVertexColor,4)
     #endif
     
     #if VERTEX_FOG

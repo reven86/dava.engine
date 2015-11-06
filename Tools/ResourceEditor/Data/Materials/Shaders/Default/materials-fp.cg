@@ -38,7 +38,7 @@ FPROG_IN_BEGIN
 
     #if VERTEX_LIT
 
-        FPROG_IN_COLOR0(varDiffuseColor,1)
+        FPROG_IN_COLOR0_LOW(varDiffuseColor,1)
 
         #if BLINN_PHONG
             FPROG_IN_TEXCOORD4_LOW(varSpecularColor,1) // lowp
@@ -49,9 +49,9 @@ FPROG_IN_BEGIN
     #elif PIXEL_LIT
         
         #if FAST_NORMALIZATION
-        FPROG_IN_COLOR0(varHalfVec,3)
+        FPROG_IN_COLOR0_LOW(varHalfVec,3)
         #endif
-        FPROG_IN_COLOR1(varToLightVec,3)
+        FPROG_IN_COLOR1_LOW(varToLightVec,3)
         #if DISTANCE_ATTENUATION
         FPROG_IN_TEXCOORD6(varPerPixelAttenuation,1)
         #endif
@@ -60,7 +60,7 @@ FPROG_IN_BEGIN
     #endif
     
     #if VERTEX_COLOR || SPHERICAL_LIT
-        FPROG_IN_COLOR1(varVertexColor,4)
+        FPROG_IN_COLOR1_LOW(varVertexColor,4)
     #endif
 
     #if VERTEX_FOG
