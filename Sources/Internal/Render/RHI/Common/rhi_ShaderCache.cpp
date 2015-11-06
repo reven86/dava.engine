@@ -437,19 +437,29 @@ static const char* _ShaderHeader_GLES2 =
 "#define float4x4               mat4\n"
 "#define float3x3               mat3\n"
 "#define vec1                   float\n"
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 "#define half                   mediump float\n"
-"#define min10float             lowp float\n"
-
 "#define half1                  mediump float\n"
 "#define half2                  mediump vec2\n"
 "#define half3                  mediump vec3\n"
 "#define half4                  mediump vec4\n"
-
+"#define min10float             lowp float\n"
 "#define min10float1            lowp float\n"
 "#define min10float2            lowp vec2\n"
 "#define min10float3            lowp vec3\n"
 "#define min10float4            lowp vec4\n"
-
+#else
+"#define half                   float\n"
+"#define half1                  float\n"
+"#define half2                  vec2\n"
+"#define half3                  vec3\n"
+"#define half4                  vec4\n"
+"#define min10float             float\n"
+"#define min10float1            float\n"
+"#define min10float2            vec2\n"
+"#define min10float3            vec3\n"
+"#define min10float4            vec4\n"
+#endif
 "vec4 mul( vec4 v, mat4 m ) { return m*v; }\n"
 "vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
 "vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
@@ -568,8 +578,8 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_IN_TEXCOORD5_LOW(name,size)     varying min10float##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD6_LOW(name,size)     varying min10float##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD7_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_COLOR0(name,size)            varying vec##size var_##name;\n"
-"#define FPROG_IN_COLOR1(name,size)            varying vec##size var_##name;\n"
+"#define FPROG_IN_COLOR0(name,size)            varying min10float##size var_##name;\n"
+"#define FPROG_IN_COLOR1(name,size)            varying min10float##size var_##name;\n"
 "#define FPROG_IN_END            \n"
 
 "#define FPROG_OUT_BEGIN         \n"
