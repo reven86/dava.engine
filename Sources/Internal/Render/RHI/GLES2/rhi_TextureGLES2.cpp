@@ -127,6 +127,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 };
                 ExecGL(d24s8cmd, countof(d24s8cmd), force_immediate);
             }
+#if defined(__DAVAENGINE_ANDROID__)
             else if (_GLES2_IsGlDepthNvNonLinearSupported)
             {
                 GLCommand d16s8nvcmd[] =
@@ -140,6 +141,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 };
                 ExecGL(d16s8nvcmd, countof(d16s8nvcmd), force_immediate);
             }
+#endif
             else
             {
                 GLCommand d16s8cmd[] =
