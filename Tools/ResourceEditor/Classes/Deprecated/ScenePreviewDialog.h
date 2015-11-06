@@ -55,7 +55,6 @@ protected:
 
     ScenePreviewControl* preview = nullptr;
     UIStaticText* errorMessage = nullptr;
-    ;
     UIControl* clickableBackgound = nullptr;
 };
 
