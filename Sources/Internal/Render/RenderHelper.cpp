@@ -625,6 +625,8 @@ RenderHelper::RenderHelper()
         clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
         clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
         clearPassConfig.viewport = viewport;
+        clearPassConfig.PerfQueryIndex0 = PERFQUERY__CLEAR_PASS_T0;
+        clearPassConfig.PerfQueryIndex1 = PERFQUERY__CLEAR_PASS_T1;
 
         rhi::HPacketList emptyPacketList;
         rhi::HRenderPass clearPass = rhi::AllocateRenderPass(clearPassConfig, 1, &emptyPacketList);

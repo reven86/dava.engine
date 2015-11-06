@@ -278,6 +278,20 @@ uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
 
 rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr);
 rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr);
+
+enum eBasePerfQuery
+{
+    PERFQUERY__2D_PASS_T0 = 0,
+    PERFQUERY__2D_PASS_T1,
+
+    PERFQUERY__CLEAR_PASS_T0,
+    PERFQUERY__CLEAR_PASS_T1,
+
+    PERFQUERY__MAIN_PASS_T0,
+    PERFQUERY__MAIN_PASS_T1,
+
+    PERFQUERY__USER
+};
 };
 
 #endif // __DAVAENGINE_RENDER_BASE_H__

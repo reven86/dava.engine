@@ -45,9 +45,11 @@ using DAVA::Logger;
 
     #include "_gl.h"
 
+    #define RHI__GLES2_USE_CMDBUF_PACKING 1
+
 namespace rhi
 {
-enum CommandGLES2
+enum CommandGLES2Type
 {
     GLES2__BEGIN = 1,
     GLES2__END = 2,
@@ -85,6 +87,182 @@ RenderPassGLES2_t
     int priority;
 };
 
+#if defined(__DAVAENGINE_WIN32__)
+#pragma pack(push, 1)
+#endif
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#define DV_ATTR_PACKED __attribute__((packed))
+#else
+#define DV_ATTR_PACKED 
+#endif
+
+struct
+CommandGLES2
+{
+    uint8 type;
+    uint8 size;
+
+    CommandGLES2(uint8 t, uint8 sz)
+        : type(t)
+        , size(sz)
+    {
+    }
+} DV_ATTR_PACKED;
+
+template <class T, CommandGLES2Type t>
+struct
+CommandGLES2Impl
+: public CommandGLES2
+{
+    CommandGLES2Impl()
+        : CommandGLES2(t, sizeof(T))
+    {
+    }
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_Begin : public CommandGLES2Impl<CommandGLES2_Begin, GLES2__BEGIN>
+{
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_End : public CommandGLES2Impl<CommandGLES2_End, GLES2__END>
+{
+    Handle syncObject;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetVertexData : public CommandGLES2Impl<CommandGLES2_SetVertexData, GLES2__SET_VERTEX_DATA>
+{
+    uint16 streamIndex;
+    Handle vb;
+} /*DV_ATTR_PACKED*/;
+
+struct
+CommandGLES2_SetIndices : public CommandGLES2Impl<CommandGLES2_SetIndices, GLES2__SET_INDICES>
+{
+    Handle ib;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetQueryBuffer : public CommandGLES2Impl<CommandGLES2_SetQueryBuffer, GLES2__SET_QUERY_BUFFER>
+{
+    Handle queryBuf;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetQueryIndex : public CommandGLES2Impl<CommandGLES2_SetQueryIndex, GLES2__SET_QUERY_INDEX>
+{
+    uint32 objectIndex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetPipelineState : public CommandGLES2Impl<CommandGLES2_SetPipelineState, GLES2__SET_PIPELINE_STATE>
+{
+    uint32 vdecl;
+    uint32 ps;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetDepthStencilState : public CommandGLES2Impl<CommandGLES2_SetDepthStencilState, GLES2__SET_DEPTHSTENCIL_STATE>
+{
+    Handle depthStencilState;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetSamplerState : public CommandGLES2Impl<CommandGLES2_SetSamplerState, GLES2__SET_SAMPLER_STATE>
+{
+    Handle samplerState;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetCullMode : public CommandGLES2Impl<CommandGLES2_SetCullMode, GLES2__SET_CULL_MODE>
+{
+    uint8 mode;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetScissorRect : public CommandGLES2Impl<CommandGLES2_SetScissorRect, GLES2__SET_SCISSOR_RECT>
+{
+    uint16 x;
+    uint16 y;
+    uint16 width;
+    uint16 height;
+} /*DV_ATTR_PACKED*/;
+
+struct
+CommandGLES2_SetViewport : public CommandGLES2Impl<CommandGLES2_SetViewport, GLES2__SET_VIEWPORT>
+{
+    uint16 x;
+    uint16 y;
+    uint16 width;
+    uint16 height;
+} /*DV_ATTR_PACKED*/;
+
+struct
+CommandGLES2_SetFillMode : public CommandGLES2Impl<CommandGLES2_SetFillMode, GLES2__SET_FILLMODE>
+{
+    uint8 mode;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetVertexProgConstBuffer : public CommandGLES2Impl<CommandGLES2_SetVertexProgConstBuffer, GLES2__SET_VERTEX_PROG_CONST_BUFFER>
+{
+    uint8 bufIndex;
+    Handle buffer;
+    const void* inst;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetFragmentProgConstBuffer : public CommandGLES2Impl<CommandGLES2_SetFragmentProgConstBuffer, GLES2__SET_FRAGMENT_PROG_CONST_BUFFER>
+{
+    uint8 bufIndex;
+    Handle buffer;
+    const void* inst;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetVertexTexture : public CommandGLES2Impl<CommandGLES2_SetVertexTexture, GLES2__SET_VERTEX_TEXTURE>
+{
+    uint8 unitIndex;
+    Handle tex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetFragmentTexture : public CommandGLES2Impl<CommandGLES2_SetFragmentTexture, GLES2__SET_FRAGMENT_TEXTURE>
+{
+    uint8 unitIndex;
+    Handle tex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_DrawPrimitive : public CommandGLES2Impl<CommandGLES2_DrawPrimitive, GLES2__DRAW_PRIMITIVE>
+{
+    uint8 mode;
+    uint32 vertexCount;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_DrawIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawIndexedPrimitive, GLES2__DRAW_INDEXED_PRIMITIVE>
+{
+    uint8 mode;
+    uint32 vertexCount;
+    uint32 firstVertex;
+    uint32 startIndex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetMarker : public CommandGLES2Impl<CommandGLES2_SetMarker, GLES2__SET_MARKER>
+{
+    const char* text;
+};
+
+
+#ifdef __DAVAENGINE_WIN32__
+#pragma pack(pop)
+#endif
+
 struct
 CommandBufferGLES2_t
 {
@@ -96,6 +274,28 @@ public:
     void End();
     void Execute();
 
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    template <class T>
+    T* allocCmd()
+    {
+        if (curUsedSize + sizeof(T) >= cmdDataSize)
+        {
+            cmdDataSize += 4 * 1024; // CRAP: hardcoded grow-size
+            cmdData = (uint8*)::realloc(cmdData, cmdDataSize);
+        }
+
+        uint8* p = cmdData + curUsedSize;
+        curUsedSize += sizeof(T);
+
+        return new ((T*)p) T();
+    }
+
+    uint8* cmdData;
+    uint32 cmdDataSize;
+    uint32 curUsedSize;
+
+#else
+
     void Command(uint64 cmd);
     void Command(uint64 cmd, uint64 arg1);
     void Command(uint64 cmd, uint64 arg1, uint64 arg2);
@@ -104,16 +304,18 @@ public:
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5);
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6);
 
-    static const uint64 EndCmd /* = 0xFFFFFFFF*/;
-
     std::vector<uint64> _cmd;
+
+#endif
+
+    static const uint64 EndCmd /* = 0xFFFFFFFF*/;
 
     RenderPassConfig passCfg;
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
 
-    uint32 dbgCommandCount;
+    //    uint32              dbgCommandCount;
     RingBuffer* text;
 
     Handle sync;
@@ -174,7 +376,6 @@ static void _ExecGL(GLCommand* command, uint32 cmdCount);
 static Handle
 gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
-    Trace("gl.alloc-rpass\n");
     DVASSERT(cmdBufCount);
 
     Handle handle = RenderPassPool::Alloc();
@@ -188,7 +389,9 @@ gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         Handle h = CommandBufferPool::Alloc();
         CommandBufferGLES2_t* cb = CommandBufferPool::Get(h);
 
+#if !RHI__GLES2_USE_CMDBUF_PACKING
         cb->_cmd.clear();
+#endif
         cb->passCfg = passConf;
         cb->isFirstInPass = i == 0;
         cb->isLastInPass = i == cmdBufCount - 1;
@@ -213,7 +416,7 @@ gles2_RenderPass_Begin(Handle pass)
         _Frame.back().sync = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
 
-        Trace("\n\n-------------------------------\nframe %u started\n", _FrameNumber);
+        //Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
         _FrameStarted = true;
         ++_FrameNumber;
         ProgGLES2::InvalidateAllConstBufferInstances();
@@ -235,6 +438,7 @@ void Init(uint32 maxCount)
 {
     RenderPassPool::Reserve(maxCount);
 }
+
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_Renderpass_Allocate = &gles2_RenderPass_Allocate;
@@ -248,8 +452,14 @@ void SetupDispatch(Dispatch* dispatch)
 static void
 gles2_CommandBuffer_Begin(Handle cmdBuf)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    cb->Begin();
+    CommandGLES2_Begin* cmd = cb->allocCmd<CommandGLES2_Begin>();
+#else
     CommandBufferPool::Get(cmdBuf)->Begin();
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__BEGIN);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -257,7 +467,14 @@ gles2_CommandBuffer_Begin(Handle cmdBuf)
 static void
 gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_End* cmd = cb->allocCmd<CommandGLES2_End>();
+    cmd->syncObject = syncObject;
+    cb->End();
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__END, syncObject);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -265,7 +482,14 @@ gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 static void
 gles2_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetPipelineState* cmd = cb->allocCmd<CommandGLES2_SetPipelineState>();
+    cmd->vdecl = (uint16)vdecl;
+    cmd->ps = ps;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_PIPELINE_STATE, ps, vdecl);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -273,14 +497,29 @@ gles2_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
 static void
 gles2_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetCullMode* cmd = cb->allocCmd<CommandGLES2_SetCullMode>();
+    cmd->mode = mode;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_CULL_MODE, mode);
+#endif
 }
 
 //------------------------------------------------------------------------------
 
 void gles2_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetScissorRect* cmd = cb->allocCmd<CommandGLES2_SetScissorRect>();
+    cmd->x = rect.x;
+    cmd->y = rect.y;
+    cmd->width = rect.width;
+    cmd->height = rect.height;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -288,7 +527,16 @@ void gles2_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 static void
 gles2_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetViewport* cmd = cb->allocCmd<CommandGLES2_SetViewport>();
+    cmd->x = uint16(vp.x);
+    cmd->y = uint16(vp.y);
+    cmd->width = uint16(vp.width);
+    cmd->height = uint16(vp.height);
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -296,7 +544,13 @@ gles2_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 static void
 gles2_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetFillMode* cmd = cb->allocCmd<CommandGLES2_SetFillMode>();
+    cmd->mode = mode;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_FILLMODE, mode);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -304,7 +558,14 @@ gles2_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 static void
 gles2_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetVertexData* cmd = cb->allocCmd<CommandGLES2_SetVertexData>();
+    cmd->vb = vb;
+    cmd->streamIndex = uint16(streamIndex);
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_VERTEX_DATA, vb, streamIndex);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -312,11 +573,20 @@ gles2_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 static void
 gles2_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
 {
-    //    L_ASSERT(buffer);
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
     if (buffer != InvalidHandle)
+    {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+        CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+        CommandGLES2_SetVertexProgConstBuffer* cmd = cb->allocCmd<CommandGLES2_SetVertexProgConstBuffer>();
+        cmd->buffer = buffer;
+        cmd->bufIndex = bufIndex;
+        cmd->inst = ConstBufferGLES2::Instance(buffer);
+#else
         CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)));
+#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -325,7 +595,16 @@ static void
 gles2_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
     if (tex != InvalidHandle)
+    {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+        CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+        CommandGLES2_SetVertexTexture* cmd = cb->allocCmd<CommandGLES2_SetVertexTexture>();
+        cmd->unitIndex = unitIndex;
+        cmd->tex = tex;
+#else
         CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_VERTEX_TEXTURE, unitIndex, tex);
+#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -333,7 +612,13 @@ gles2_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex
 static void
 gles2_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetIndices* cmd = cb->allocCmd<CommandGLES2_SetIndices>();
+    cmd->ib = ib;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_INDICES, ib);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -341,7 +626,13 @@ gles2_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 static void
 gles2_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetQueryIndex* cmd = cb->allocCmd<CommandGLES2_SetQueryIndex>();
+    cmd->objectIndex = objectIndex;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_QUERY_INDEX, objectIndex);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -349,7 +640,13 @@ gles2_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 static void
 gles2_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetQueryBuffer* cmd = cb->allocCmd<CommandGLES2_SetQueryBuffer>();
+    cmd->queryBuf = queryBuf;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_QUERY_BUFFER, queryBuf);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -361,7 +658,17 @@ gles2_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handl
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
     if (buffer != InvalidHandle)
+    {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+        CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+        CommandGLES2_SetFragmentProgConstBuffer* cmd = cb->allocCmd<CommandGLES2_SetFragmentProgConstBuffer>();
+        cmd->bufIndex = bufIndex;
+        cmd->buffer = buffer;
+        cmd->inst = ConstBufferGLES2::Instance(buffer);
+#else
         CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)));
+#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -372,7 +679,16 @@ gles2_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle t
     //    L_ASSERT(tex);
 
     if (tex != InvalidHandle)
+    {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+        CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+        CommandGLES2_SetFragmentTexture* cmd = cb->allocCmd<CommandGLES2_SetFragmentTexture>();
+        cmd->unitIndex = unitIndex;
+        cmd->tex = tex;
+#else
         CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_FRAGMENT_TEXTURE, unitIndex, tex);
+#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -380,7 +696,13 @@ gles2_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle t
 static void
 gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetDepthStencilState* cmd = cb->allocCmd<CommandGLES2_SetDepthStencilState>();
+    cmd->depthStencilState = depthStencilState;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_DEPTHSTENCIL_STATE, depthStencilState);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -389,7 +711,13 @@ static void
 gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
     // NOTE: expected to be called BEFORE SetFragmentTexture
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_SetSamplerState* cmd = cb->allocCmd<CommandGLES2_SetSamplerState>();
+    cmd->samplerState = samplerState;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_SAMPLER_STATE, samplerState);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -422,7 +750,14 @@ gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
     }
     }
 
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_DrawPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawPrimitive>();
+    cmd->mode = mode;
+    cmd->vertexCount = v_cnt;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__DRAW_PRIMITIVE, uint32(mode), v_cnt);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -455,7 +790,16 @@ gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
     }
     }
 
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandGLES2_DrawIndexedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawIndexedPrimitive>();
+    cmd->mode = mode;
+    cmd->vertexCount = v_cnt;
+    cmd->firstVertex = firstVertex;
+    cmd->startIndex = startIndex;
+#else
     CommandBufferPool::Get(cmdBuf)->Command(GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt, firstVertex, startIndex);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -463,6 +807,7 @@ gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
 static void
 gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
+#ifdef __DAVAENGINE_DEBUG__
     CommandBufferGLES2_t* cb = CommandBufferPool::Get(cmdBuf);
 
     if (!cb->text)
@@ -478,7 +823,14 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
     txt[len] = '\n';
     txt[len + 1] = '\0';
 
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    CommandGLES2_SetMarker* cmd = cb->allocCmd<CommandGLES2_SetMarker>();
+    cmd->text = text;
+#else
     cb->Command(GLES2__SET_MARKER, (uint64)(txt));
+#endif
+
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -521,7 +873,14 @@ CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
     , text(nullptr)
-    , sync(InvalidHandle)
+    ,
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    cmdData(nullptr)
+    , cmdDataSize(0)
+    , curUsedSize(0)
+    ,
+#endif
+    sync(InvalidHandle)
 {
 }
 
@@ -535,23 +894,32 @@ CommandBufferGLES2_t::~CommandBufferGLES2_t()
 
 void CommandBufferGLES2_t::Begin()
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    curUsedSize = 0;
+#else
     _cmd.clear();
-    dbgCommandCount = 0;
+#endif
+    //dbgCommandCount = 0;
 }
 
 //------------------------------------------------------------------------------
 
 void CommandBufferGLES2_t::End()
 {
+#if RHI__GLES2_USE_CMDBUF_PACKING    
+#else
     _cmd.push_back(EndCmd);
+#endif
 }
 
+
+#if !RHI__GLES2_USE_CMDBUF_PACKING
 //------------------------------------------------------------------------------
 
 void CommandBufferGLES2_t::Command(uint64 cmd)
 {
     _cmd.push_back(cmd);
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -564,7 +932,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1)
 
     b[0] = cmd;
     b[1] = arg1;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -578,7 +946,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2)
     b[0] = cmd;
     b[1] = arg1;
     b[2] = arg2;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -593,7 +961,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 
     b[1] = arg1;
     b[2] = arg2;
     b[3] = arg3;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -609,7 +977,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 
     b[2] = arg2;
     b[3] = arg3;
     b[4] = arg4;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -626,7 +994,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 
     b[3] = arg3;
     b[4] = arg4;
     b[5] = arg5;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -645,8 +1013,9 @@ CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3,
     b[4] = arg4;
     b[5] = arg5;
     b[6] = arg6;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -683,8 +1052,16 @@ void CommandBufferGLES2_t::Execute()
 
     sync = InvalidHandle;
 
-    Trace("cmd-count= %i\n", int(dbgCommandCount));
-    unsigned cmd_n = 0;
+//unsigned    cmd_cnt=0;
+//unsigned    dip_cnt=0;
+//unsigned    stcb_cnt=0;
+//unsigned    sttx_cnt=0;
+
+#if RHI__GLES2_USE_CMDBUF_PACKING
+    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
+    {
+        const CommandGLES2* cmd = (const CommandGLES2*)c;
+#else
     for (std::vector<uint64>::const_iterator c = _cmd.begin(), c_end = _cmd.end(); c != c_end; ++c)
     {
         const uint64 cmd = *c;
@@ -692,9 +1069,15 @@ void CommandBufferGLES2_t::Execute()
 
         if (cmd == EndCmd)
             break;
+#endif
+//++cmd_cnt;
 
-        Trace("cmd[%u] %i\n", cmd_n, int(cmd));
+
+#if RHI__GLES2_USE_CMDBUF_PACKING
+        switch (cmd->type)
+#else
         switch (cmd)
+#endif
         {
         case GLES2__BEGIN:
         {
@@ -791,7 +1174,12 @@ void CommandBufferGLES2_t::Execute()
 
         case GLES2__END:
         {
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            sync = ((const CommandGLES2_End*)cmd)->syncObject;
+            #else
             sync = Handle(arg[0]);
+            c += 1;
+            #endif
 
             if (isLastInPass)
             {
@@ -803,15 +1191,17 @@ void CommandBufferGLES2_t::Execute()
                     _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                 }
             }
-
-            c += 1;
         }
         break;
 
         case GLES2__SET_VERTEX_DATA:
         {
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            Handle vb = ((const CommandGLES2_SetVertexData*)cmd)->vb;
+            #else
             Handle vb = (Handle)(arg[0]);
-
+            c += 2;
+            #endif
             if (cur_vb != vb)
             {
                 VertexBufferGLES2::SetToRHI(vb);
@@ -823,14 +1213,17 @@ void CommandBufferGLES2_t::Execute()
 
                 cur_vb = vb;
             }
-
-            c += 2;
         }
         break;
 
         case GLES2__SET_INDICES:
         {
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            Handle ib = ((const CommandGLES2_SetIndices*)cmd)->ib;
+            #else
             Handle ib = (Handle)(arg[0]);
+            c += 1;
+            #endif
 
             if (ib != cur_ib)
             {
@@ -838,30 +1231,42 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_SET_IB, 1);
                 cur_ib = ib;
             }
-
-            c += 1;
         }
         break;
 
         case GLES2__SET_QUERY_BUFFER:
         {
             DVASSERT(cur_query_buf == InvalidHandle);
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            cur_query_buf = ((const CommandGLES2_SetQueryBuffer*)cmd)->queryBuf;
+            #else
             cur_query_buf = (Handle)(arg[0]);
             c += 1;
+            #endif
         }
         break;
 
         case GLES2__SET_QUERY_INDEX:
         {
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            cur_query_i = ((const CommandGLES2_SetQueryIndex*)cmd)->objectIndex;
+            #else
             cur_query_i = uint32(arg[0]);
             c += 1;
+            #endif
         }
         break;
 
         case GLES2__SET_PIPELINE_STATE:
         {
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            Handle ps = ((const CommandGLES2_SetPipelineState*)cmd)->ps;
+            uint32 vdecl = ((const CommandGLES2_SetPipelineState*)cmd)->vdecl;
+            #else
             Handle ps = (Handle)arg[0];
             uint32 vdecl = (uint32)(arg[1]);
+            c += 2;
+            #endif
 
             if (cur_ps != ps || cur_vdecl != vdecl)
             {
@@ -882,14 +1287,19 @@ void CommandBufferGLES2_t::Execute()
             }
 
             tex_unit_0 = PipelineStateGLES2::VertexSamplerCount(ps);
-
-            c += 2;
         }
         break;
 
         case GLES2__SET_CULL_MODE:
         {
-            switch (CullMode(arg[0]))
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            CullMode mode = CullMode(((const CommandGLES2_SetCullMode*)cmd)->mode);
+            #else
+            CullMode mode = CullMode(arg[0]);
+            c += 1;
+            #endif
+
+            switch (mode)
             {
             case CULL_NONE:
                 glDisable(GL_CULL_FACE);
@@ -907,17 +1317,23 @@ void CommandBufferGLES2_t::Execute()
                 glCullFace(GL_FRONT);
                 break;
             }
-
-            c += 1;
         }
         break;
 
         case GLES2__SET_SCISSOR_RECT:
         {
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            GLint x = ((const CommandGLES2_SetScissorRect*)cmd)->x;
+            GLint y = ((const CommandGLES2_SetScissorRect*)cmd)->y;
+            GLsizei w = ((const CommandGLES2_SetScissorRect*)cmd)->width;
+            GLsizei h = ((const CommandGLES2_SetScissorRect*)cmd)->height;
+            #else
             GLint x = GLint(arg[0]);
             GLint y = GLint(arg[1]);
             GLsizei w = GLsizei(arg[2]);
             GLsizei h = GLsizei(arg[3]);
+            c += 4;
+            #endif
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -931,17 +1347,23 @@ void CommandBufferGLES2_t::Execute()
             {
                 glDisable(GL_SCISSOR_TEST);
             }
-
-            c += 4;
         }
         break;
 
         case GLES2__SET_VIEWPORT:
         {
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            GLint x = ((const CommandGLES2_SetViewport*)cmd)->x;
+            GLint y = ((const CommandGLES2_SetViewport*)cmd)->y;
+            GLsizei w = ((const CommandGLES2_SetViewport*)cmd)->width;
+            GLsizei h = ((const CommandGLES2_SetViewport*)cmd)->height;
+            #else
             GLint x = GLint(arg[0]);
             GLint y = GLint(arg[1]);
             GLsizei w = GLsizei(arg[2]);
             GLsizei h = GLsizei(arg[3]);
+            c += 4;
+            #endif
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -954,81 +1376,135 @@ void CommandBufferGLES2_t::Execute()
             {
                 glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
             }
-
-            c += 4;
         }
         break;
 
         case GLES2__SET_FILLMODE:
         {
-                #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-            glPolygonMode(GL_FRONT_AND_BACK, (FillMode(arg[0]) == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL);
-                #endif
-
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            FillMode mode = FillMode(((const CommandGLES2_SetFillMode*)cmd)->mode);
+            #else
+            FillMode mode = FillMode(arg[0]);
             c += 1;
+            #endif
+
+                #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+            glPolygonMode(GL_FRONT_AND_BACK, (mode == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL);
+                #endif
         }
         break;
 
         case GLES2__SET_DEPTHSTENCIL_STATE:
         {
-            DepthStencilStateGLES2::SetToRHI((Handle)(arg[0]));
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            Handle state = ((const CommandGLES2_SetDepthStencilState*)cmd)->depthStencilState;
+            #else
+            Handle state = (Handle)(arg[0]);
             c += 1;
+            #endif
+
+            DepthStencilStateGLES2::SetToRHI(state);
         }
         break;
 
         case GLES2__SET_SAMPLER_STATE:
         {
-            SamplerStateGLES2::SetToRHI((Handle)(arg[0]));
-            StatSet::IncStat(stat_SET_SS, 1);
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            Handle state = ((const CommandGLES2_SetSamplerState*)cmd)->samplerState;
+            #else
+            Handle state = (Handle)(arg[0]);
             c += 1;
+            #endif
+
+            SamplerStateGLES2::SetToRHI(state);
+            StatSet::IncStat(stat_SET_SS, 1);
         }
         break;
 
         case GLES2__SET_VERTEX_PROG_CONST_BUFFER:
         {
+//++stcb_cnt;
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            unsigned buf_i = ((const CommandGLES2_SetVertexProgConstBuffer*)cmd)->bufIndex;
+            const void* inst = ((const CommandGLES2_SetVertexProgConstBuffer*)cmd)->inst;
+            Handle buf = ((const CommandGLES2_SetVertexProgConstBuffer*)cmd)->buffer;
+            #else
             unsigned buf_i = (unsigned)(arg[0]);
             const void* inst = (const void*)arg[2];
-
-            vp_const[buf_i] = (Handle)(arg[1]);
-            vp_const_data[buf_i] = inst;
-
+            Handle buf = (Handle)(arg[1]);
             c += 3;
+            #endif
+
+            vp_const[buf_i] = buf;
+            vp_const_data[buf_i] = inst;
         }
         break;
 
         case GLES2__SET_FRAGMENT_PROG_CONST_BUFFER:
         {
+//++stcb_cnt;
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            unsigned buf_i = ((const CommandGLES2_SetVertexProgConstBuffer*)cmd)->bufIndex;
+            const void* inst = ((const CommandGLES2_SetVertexProgConstBuffer*)cmd)->inst;
+            Handle buf = ((const CommandGLES2_SetVertexProgConstBuffer*)cmd)->buffer;
+            #else
             unsigned buf_i = (unsigned)(arg[0]);
             const void* inst = (const void*)arg[2];
-
-            fp_const[buf_i] = (Handle)(arg[1]);
-            fp_const_data[buf_i] = inst;
-
+            Handle buf = (Handle)(arg[1]);
             c += 3;
+            #endif
+
+            fp_const[buf_i] = buf;
+            fp_const_data[buf_i] = inst;
         }
         break;
 
         case GLES2__SET_FRAGMENT_TEXTURE:
         {
-            TextureGLES2::SetToRHI((Handle)(arg[1]), unsigned(arg[0]), tex_unit_0);
-            StatSet::IncStat(stat_SET_TEX, 1);
+//++sttx_cnt;
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            Handle tex = ((const CommandGLES2_SetFragmentTexture*)cmd)->tex;
+            unsigned unit_i = ((const CommandGLES2_SetFragmentTexture*)cmd)->unitIndex;
+            #else
+            Handle tex = (Handle)(arg[1]);
+            unsigned unit_i = unsigned(arg[0]);
             c += 2;
+            #endif
+
+            TextureGLES2::SetToRHI(tex, unit_i, tex_unit_0);
+            StatSet::IncStat(stat_SET_TEX, 1);
         }
         break;
 
         case GLES2__SET_VERTEX_TEXTURE:
         {
-            TextureGLES2::SetToRHI((Handle)(arg[1]), unsigned(arg[0]), InvalidIndex);
-            StatSet::IncStat(stat_SET_TEX, 1);
+//++sttx_cnt;
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            Handle tex = ((const CommandGLES2_SetVertexTexture*)cmd)->tex;
+            unsigned unit_i = ((const CommandGLES2_SetVertexTexture*)cmd)->unitIndex;
+            #else
+            Handle tex = (Handle)(arg[1]);
+            unsigned unit_i = unsigned(arg[0]);
             c += 2;
+            #endif
+
+            TextureGLES2::SetToRHI(tex, unit_i, InvalidIndex);
+            StatSet::IncStat(stat_SET_TEX, 1);
         }
         break;
 
         case GLES2__DRAW_PRIMITIVE:
         {
-            //{SCOPED_NAMED_TIMING("gl.DP")}
+//++dip_cnt;
+//{SCOPED_NAMED_TIMING("gl.DP")}
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            unsigned v_cnt = ((const CommandGLES2_DrawPrimitive*)cmd)->vertexCount;
+            int mode = ((const CommandGLES2_DrawPrimitive*)cmd)->mode;
+            #else
             unsigned v_cnt = unsigned(arg[1]);
             int mode = int(arg[0]);
+            c += 2;
+            #endif
 
             if (last_ps != cur_ps)
             {
@@ -1074,22 +1550,27 @@ void CommandBufferGLES2_t::Execute()
                 break;
             }
 
-            //Logger::Info( "  dp" );
-
             if (cur_query_i != InvalidIndex)
                 QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
-
-            c += 2;
         }
         break;
 
         case GLES2__DRAW_INDEXED_PRIMITIVE:
         {
-            //{SCOPED_NAMED_TIMING("gl.DIP")}
+//++dip_cnt;
+//{SCOPED_NAMED_TIMING("gl.DIP")}
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            unsigned v_cnt = ((const CommandGLES2_DrawIndexedPrimitive*)cmd)->vertexCount;
+            int mode = ((const CommandGLES2_DrawIndexedPrimitive*)cmd)->mode;
+            uint32 firstVertex = ((const CommandGLES2_DrawIndexedPrimitive*)cmd)->firstVertex;
+            uint32 startIndex = ((const CommandGLES2_DrawIndexedPrimitive*)cmd)->startIndex;
+            #else
             unsigned v_cnt = unsigned(arg[1]);
             int mode = int(arg[0]);
             uint32 firstVertex = uint32(arg[2]);
             uint32 startIndex = uint32(arg[3]);
+            c += 4;
+            #endif
 
             if (last_ps != cur_ps)
             {
@@ -1097,7 +1578,6 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_SET_PS, 1);
                 last_ps = cur_ps;
             }
-            //LCP;
 
             for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
             {
@@ -1130,7 +1610,6 @@ void CommandBufferGLES2_t::Execute()
             }
 
             GL_CALL(glDrawElements(mode, v_cnt, i_sz, (void*)((uint64)i_off)));
-            //LCP;
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
             {
@@ -1146,20 +1625,22 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
-            //LCP;
 
             if (cur_query_i != InvalidIndex)
                 QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
-
-            //LCP;
-            c += 4;
         }
         break;
 
         case GLES2__SET_MARKER:
         {
-            Trace((const char*)(arg[0]));
+            #if RHI__GLES2_USE_CMDBUF_PACKING
+            const char* text = ((const CommandGLES2_SetMarker*)cmd)->text;
+            #else
+            const char* text = (const char*)(arg[0]);
             c += 1;
+            #endif
+
+            Trace(text);
         }
         break;
         }
@@ -1181,10 +1662,21 @@ void CommandBufferGLES2_t::Execute()
 
             immediate_cmd_ttw = 10;
         }
-        ++cmd_n;
+        
+        #if RHI__GLES2_USE_CMDBUF_PACKING
+        if (cmd->type == GLES2__END)
+            break;
+
+        c += cmd->size;
+        #endif
     }
 
+#if RHI__GLES2_USE_CMDBUF_PACKING
+//Logger::Info("exec cb  = %.2f Kb  in %u cmds (DIP=%u  STCB=%u  STTX=%u)",float(curUsedSize)/1024.0f,cmd_cnt,dip_cnt,stcb_cnt,sttx_cnt);
+#else
+    //Logger::Info("exec cb  = %.2f Kb  in %u cmds (%u DIPs)",float(_cmd.size()*sizeof(uint64))/1024.0f,cmd_cnt,dip_cnt);
     _cmd.clear();
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1217,7 +1709,11 @@ _RejectAllFrames()
                         s->is_signaled = true;
                         s->is_used = true;
                     }
+                    #if RHI__GLES2_USE_CMDBUF_PACKING
+                    cc->curUsedSize = 0;
+                    #else
                     cc->_cmd.clear();
+                    #endif
                     CommandBufferPool::Free(*c);
                 }
 
@@ -1241,7 +1737,6 @@ static void
 _ExecuteQueuedCommands()
 {
     Trace("rhi-gl.exec-queued-cmd\n");
-
     std::vector<RenderPassGLES2_t*> pass;
     std::vector<Handle> pass_h;
     unsigned frame_n = 0;
@@ -1289,6 +1784,7 @@ _ExecuteQueuedCommands()
     if (do_exit)
         return;
 
+    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
     for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
         RenderPassGLES2_t* pp = *p;
@@ -1464,7 +1960,7 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                 _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                 _GLES2_PendingImmediateCmd = nullptr;
                 _GLES2_PendingImmediateCmdCount = 0;
-
+                //Trace("exec-imm-cmd done\n");
                 TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
             }
             _GLES2_PendingImmediateCmdSync.Unlock();

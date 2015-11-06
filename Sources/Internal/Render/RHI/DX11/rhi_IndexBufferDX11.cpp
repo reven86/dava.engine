@@ -51,6 +51,10 @@ public:
     unsigned size;
     Usage usage;
     ID3D11Buffer* buffer;
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    void* mappedData;
+    uint32 updatePending : 1;
+#endif
     unsigned isMapped : 1;
     unsigned is32bit : 1;
 };
@@ -63,6 +67,10 @@ IndexBufferDX11_t::IndexBufferDX11_t()
     : size(0)
     , buffer(nullptr)
     , is32bit(false)
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    , mappedData(nullptr)
+    , updatePending(false)
+#endif
     , isMapped(false)
 {
 }
@@ -155,6 +163,14 @@ dx11_IndexBuffer_Delete(Handle ib)
             self->buffer = nullptr;
         }
 
+        #if !RHI_DX11__USE_DEFERRED_CONTEXTS
+        if (self->mappedData)
+        {
+            ::free(self->mappedData);
+            self->mappedData = nullptr;
+        }
+        #endif
+
         self->size = 0;
 
         IndexBufferDX11Pool::Free(ib);
@@ -212,6 +228,7 @@ dx11_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
         D3D11_MAPPED_SUBRESOURCE rc = { 0 };
         HRESULT hr;
 
+        #if RHI_DX11__USE_DEFERRED_CONTEXTS
         _D3D11_SecondaryContextSync.Lock();
         hr = _D3D11_SecondaryContext->Map(self->buffer, NULL, D3D11_MAP_WRITE_DISCARD, 0, &rc);
         _D3D11_SecondaryContextSync.Unlock();
@@ -221,6 +238,13 @@ dx11_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
             self->isMapped = true;
             ptr = rc.pData;
         }
+        #else
+        if (!self->mappedData)
+            self->mappedData = ::malloc(self->size);
+
+        self->isMapped = true;
+        ptr = ((uint8*)self->mappedData) + offset;
+        #endif
     }
     else
     {
@@ -251,9 +275,13 @@ dx11_IndexBuffer_Unmap(Handle ib)
 
     if (self->usage == USAGE_DYNAMICDRAW)
     {
+        #if RHI_DX11__USE_DEFERRED_CONTEXTS
         _D3D11_SecondaryContextSync.Lock();
         _D3D11_SecondaryContext->Unmap(self->buffer, 0);
         _D3D11_SecondaryContextSync.Unlock();
+        #else
+        self->updatePending = true;
+        #endif
         self->isMapped = false;
     }
     else
@@ -287,6 +315,21 @@ void SetToRHI(Handle ibh, unsigned offset, ID3D11DeviceContext* context)
 {
     IndexBufferDX11_t* self = IndexBufferDX11Pool::Get(ibh);
 
+    #if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    if (self->updatePending)
+    {
+        D3D11_MAPPED_SUBRESOURCE rc = { 0 };
+        HRESULT hr;
+
+        hr = context->Map(self->buffer, NULL, D3D11_MAP_WRITE_DISCARD, 0, &rc);
+        if (SUCCEEDED(hr) && rc.pData)
+        {
+            memcpy(rc.pData, self->mappedData, self->size);
+            context->Unmap(self->buffer, 0);
+        }
+        self->updatePending = true;
+    }
+    #endif
     ///    DVASSERT(!self->isMapped);
     context->IASetIndexBuffer(self->buffer, (self->is32bit) ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT, offset);
 }

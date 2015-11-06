@@ -262,6 +262,43 @@ int Value(Handle buf, uint32 objectIndex)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace PerfQuerySet
+{
+Handle Create(uint32 maxTimestampCount)
+{
+    return (*_Impl.impl_PerfQuerySet_Create)(maxTimestampCount);
+}
+void Reset(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_Reset)(set);
+}
+void SetCurrent(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_SetCurrent)(set);
+}
+void Delete(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_Delete)(set);
+}
+
+void GetStatus(Handle set, bool* isReady, bool* isValid)
+{
+    (*_Impl.impl_PerfQuerySet_GetStatus)(set, isReady, isValid);
+}
+bool GetFreq(Handle set, uint64* freq)
+{
+    return (*_Impl.impl_PerfQuerySet_GetFreq)(set, freq);
+}
+bool GetTimestamp(Handle set, uint32 timestampIndex, uint64* timestamp)
+{
+    return (*_Impl.impl_PerfQuerySet_GetTimestamp)(set, timestampIndex, timestamp);
+}
+bool GetFrameTimestamps(Handle set, uint64* t0, uint64* t1)
+{
+    return (*_Impl.impl_PerfQuerySet_GetFrameTimestamps)(set, t0, t1);
+}
+}
+////////////////////////////////////////////////////////////////////////////////
 
 namespace Texture
 {
@@ -528,6 +565,10 @@ void SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 void SetQueryIndex(Handle cmdBuf, uint32 index)
 {
     (*_Impl.impl_CommandBuffer_SetQueryIndex)(cmdBuf, index);
+}
+void IssueTimestampQuery(Handle cmdBuf, Handle pqset, uint32 timestampIndex)
+{
+    (*_Impl.impl_CommandBuffer_IssueTimestampQuery)(cmdBuf, pqset, timestampIndex);
 }
 
 void SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buf)

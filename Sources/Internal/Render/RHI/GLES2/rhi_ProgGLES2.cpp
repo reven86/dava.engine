@@ -184,7 +184,7 @@ void ProgGLES2::Destroy()
 
 void ProgGLES2::GetProgParams(unsigned progUid)
 {
-#if DV_USE_UNIFORMBUFFER_OBJECT
+#if RHI_GL__USE_UNIFORMBUFFER_OBJECT
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
     {
         char name[32];
@@ -252,7 +252,7 @@ void ProgGLES2::GetProgParams(unsigned progUid)
             }
         }
     }
-#endif // DV_USE_UNIFORMBUFFER_OBJECT
+#endif // RHI_GL__USE_UNIFORMBUFFER_OBJECT
 
     // get texture location
     {
@@ -336,23 +336,14 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
 
 void ProgGLES2::SetupTextureUnits(unsigned baseUnit) const
 {
-    //    GLCommand   cmd[countof(texunitLoc)];
-    //    uint32      cnt = 0;
-
     for (unsigned i = 0; i != countof(texunitLoc); ++i)
     {
         if (texunitLoc[i] != -1)
         {
             //{SCOPED_NAMED_TIMING("gl-Uniform1i")}
             glUniform1i(texunitLoc[i], baseUnit + i);
-            //            cmd[cnt].func   = GLCommand::SET_UNIFORM_1I;
-            //            cmd[cnt].arg[0] = texunitLoc[i];
-            //            cmd[cnt].arg[1] = baseUnit + i;
-            //
-            //            ++cnt;
         }
     }
-    //    ExecGL( cmd, cnt );
 }
 
 //------------------------------------------------------------------------------
@@ -370,6 +361,17 @@ bool ProgGLES2::ConstBuf::Construct(uint32 prog, void** lastBoundData, unsigned 
     *lastInst = nullptr;
     frame = 0;
 
+    #if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+    isStatic = true;
+    isUsedInDrawCall = false;
+    lastmodifiedFrame = 0;
+    altData.reserve(4);
+    #if RHI_GL__DEBUG_CONST_BUFFERS
+    isTrueStatic = true;
+    instCount = 0;
+    #endif
+    #endif
+
     return success;
 }
 
@@ -380,6 +382,11 @@ void ProgGLES2::ConstBuf::Destroy()
     if (data)
     {
         ::free(data);
+        #if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+        for (std::vector<float *>::iterator d = altData.begin(), d_end = altData.end(); d != d_end; ++d)
+            ::free(*d);
+        altData.clear();
+        #endif
 
         data = nullptr;
         inst = nullptr;
@@ -397,6 +404,32 @@ ProgGLES2::ConstBuf::ConstCount() const
     return count;
 }
 
+void ProgGLES2::ConstBuf::ReallocIfneeded()
+{   
+#if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+    lastmodifiedFrame = CurFrame;
+    #if RHI_GL__DEBUG_CONST_BUFFERS
+    if (isUsedInDrawCall)
+        isTrueStatic = false;
+    #endif
+#endif
+
+#if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+    if (isStatic && isUsedInDrawCall)
+    {
+        float* old_data = data;
+
+        altData.push_back(data);
+        altDataAllocationFrame.push_back(CurFrame);
+        data = (float*)(::malloc(count * 4 * sizeof(float)));
+        memcpy(data, old_data, count * 4 * sizeof(float));
+        isStatic = false;
+    }
+#endif
+
+    inst = nullptr;
+}
+
 //------------------------------------------------------------------------------
 
 bool ProgGLES2::ConstBuf::SetConst(unsigned const_i, unsigned const_count, const float* cdata)
@@ -406,7 +439,7 @@ bool ProgGLES2::ConstBuf::SetConst(unsigned const_i, unsigned const_count, const
     if (const_i + const_count <= count)
     {
         memcpy(data + const_i * 4, cdata, const_count * 4 * sizeof(float));
-        inst = nullptr;
+        ReallocIfneeded();
         success = true;
     }
 
@@ -422,7 +455,7 @@ bool ProgGLES2::ConstBuf::SetConst(unsigned const_i, unsigned const_sub_i, const
     if (const_i <= count && const_sub_i < 4)
     {
         memcpy(data + const_i * 4 + const_sub_i, cdata, data_count * sizeof(float));
-        inst = nullptr;
+        ReallocIfneeded();
         success = true;
     }
 
@@ -442,11 +475,48 @@ ProgGLES2::ConstBuf::Instance() const
 
     if (!inst)
     {
+#if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+        // try to make 'static'
+        if (ProgGLES2::ConstBuf::CurFrame - lastmodifiedFrame > 3 && altData.size() < altData.capacity() - 1)
+        {
+            isStatic = true;
+        }
+
+        if (isStatic)
+        {
+            inst = data;
+
+            // try to release some alt-data
+            for (unsigned i = 0; i != altData.size(); ++i)
+            {
+                if (CurFrame - altDataAllocationFrame[i] > 5)
+                {
+                    ::free(altData[i]);
+                    altData.erase(altData.begin() + i);
+                    altDataAllocationFrame.erase(altDataAllocationFrame.begin() + i);
+                    break;
+                }
+            }
+        }
+        else
+        {
+#endif
         //SCOPED_NAMED_TIMING("gl.cb-inst");
         inst = DefaultConstRingBuffer.Alloc(count * 4);
         memcpy(inst, data, 4 * count * sizeof(float));
+#if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+        }
+#endif
+
         frame = CurFrame;
+        #if RHI_GL__DEBUG_CONST_BUFFERS
+        ++instCount;
+        #endif
     }
+
+    #if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+    isUsedInDrawCall = true;
+    #endif
 
     return inst;
 }
@@ -464,14 +534,6 @@ void ProgGLES2::ConstBuf::SetToRHI(uint32 progUid, const void* instData) const
     }
 
     StatSet::IncStat(stat_SET_CB, 1);
-}
-
-//------------------------------------------------------------------------------
-
-void ProgGLES2::ConstBuf::InvalidateInstance()
-{
-    inst = nullptr;
-    *lastInst = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -495,12 +557,70 @@ void ProgGLES2::InvalidateAllConstBufferInstances()
 {
     ConstBuf::AdvanceFrame();
     DefaultConstRingBuffer.Reset();
-    /*
+
+#if RHI_GL__DEBUG_CONST_BUFFERS
+    unsigned staticCnt = 0;
+    unsigned totalCnt = 0;
+    unsigned trueStaticCnt = 0;
+
+    unsigned dynCnt = 0;
+    unsigned dynInstCnt = 0;
+    unsigned dynInstSz = 0;
+    unsigned staticInstCnt = 0;
+    unsigned staticInstSz = 0;
+
+    unsigned staticSz = 0;
+    unsigned totalSz = 0;
+
+    unsigned altDataCnt = 0;
+    unsigned altDataSz = 0;
+
     for( ConstBufGLES2Pool::Iterator b=ConstBufGLES2Pool::Begin(),b_end=ConstBufGLES2Pool::End(); b!=b_end; ++b )
     {
-        b->InvalidateInstance();
+        ++totalCnt;
+        if (ProgGLES2::ConstBuf::CurFrame - b->lastmodifiedFrame > 3)
+        {
+            //            ++staticCnt;
+            staticSz += b->count * 4 * sizeof(float);
+        }
+        if (b->isTrueStatic)
+            ++trueStaticCnt;
+        
+#if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+        if (b->altData.size())
+        {
+            altDataCnt += b->altData.size();
+            altDataSz += b->altData.size() * b->count * 4 * sizeof(float);
+        }
+#endif
+
+#if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
+        if (b->isStatic)
+        {
+            ++staticCnt;
+            staticInstCnt += b->instCount;
+            if (b->instCount)
+                staticInstSz += b->count * 4 * sizeof(float);
     }
-*/
+    else
+#endif
+    {
+        ++dynCnt;
+        dynInstCnt += b->instCount;
+        dynInstSz += b->instCount * b->count * 4 * sizeof(float);
+    }
+
+    totalSz += b->count * 4 * sizeof(float);
+
+    b->instCount = 0;
+    }
+
+    Logger::Info("'static' const-buffers: %u ( %.2fKb in %u instances )", staticCnt, float(staticInstSz) / 1024.0f, staticInstCnt);
+    Logger::Info("'dynamic' const-buffers: %u ( %.2fKb in %u instances )", dynCnt, float(dynInstSz) / 1024.0f, dynInstCnt);
+    //    Logger::Info("'static' const-buffers: %u / %u  (%.2fKb / %.2fKb)",staticCnt,totalCnt,float(staticSz)/1024.0f,float(totalSz)/1024.0f);
+    //    Logger::Info("'true-static' const-buffers: %u / %u",trueStaticCnt,totalCnt);
+    Logger::Info("static-buf-overhead : %.2fKb in %u blocks", float(altDataSz) / 1024.0f, altDataCnt);
+#endif
 }
 
 //------------------------------------------------------------------------------

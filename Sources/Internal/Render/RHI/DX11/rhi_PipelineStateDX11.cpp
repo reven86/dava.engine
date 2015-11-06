@@ -334,6 +334,10 @@ public:
     bool SetConst(unsigned const_i, unsigned count, const float* data);
     bool SetConst(unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount);
     void SetToRHI(ID3D11DeviceContext* context) const;
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    void SetToRHI(const void* instData) const;
+    const void* Instance() const;
+#endif
 
 private:
     void _EnsureMapped();
@@ -341,17 +345,25 @@ private:
     ProgType progType;
     ID3D11Buffer* buf;
     mutable float* value;
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    mutable float* inst;
+    mutable unsigned frame;
+#endif
     unsigned buf_i;
     unsigned regCount;
 };
 
 static RingBuffer _DefConstRingBuf;
+static uint32 _CurFrame = 0;
 
 //------------------------------------------------------------------------------
 
 ConstBufDX11::ConstBufDX11()
     : buf(nullptr)
     , value(nullptr)
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    , inst(nullptr)
+#endif
     , buf_i(InvalidIndex)
     , regCount(0)
 {
@@ -464,6 +476,9 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_count, const float*
     if (const_i + const_count <= regCount)
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+        inst = nullptr;
+#endif
         success = true;
     }
 
@@ -479,6 +494,9 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
     if (const_i <= regCount && const_sub_i < 4)
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+        inst = nullptr;
+#endif
         success = true;
     }
 
@@ -498,6 +516,37 @@ void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context) const
     else
         context->PSSetConstantBuffers(buf_i, 1, &buf);
 }
+
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+void ConstBufDX11::SetToRHI(const void* instData) const
+{
+    _D3D11_ImmediateContext->UpdateSubresource(buf, 0, NULL, instData, regCount * 4 * sizeof(float), 0);
+
+    ID3D11Buffer* cb[1] = { buf };
+
+    if (progType == PROG_VERTEX)
+        _D3D11_ImmediateContext->VSSetConstantBuffers(buf_i, 1, &buf);
+    else
+        _D3D11_ImmediateContext->PSSetConstantBuffers(buf_i, 1, &buf);
+}
+const void* ConstBufDX11::Instance() const
+{
+    if (frame != _CurFrame)
+    {
+        inst = nullptr;
+    }
+
+    if (!inst)
+    {
+        //SCOPED_NAMED_TIMING("gl.cb-inst");
+        inst = _DefConstRingBuf.Alloc(regCount * 4 * sizeof(float));
+        memcpy(inst, value, 4 * regCount * sizeof(float));
+        frame = _CurFrame;
+    }
+
+    return inst;
+}
+#endif
 
 //==============================================================================
 
@@ -626,10 +675,10 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     ID3D10Blob* fp_code = nullptr;
     ID3D10Blob* fp_err = nullptr;
 
-    Logger::Info("create PS");
-    Logger::Info("  vprog= %s", desc.vprogUid.c_str());
-    Logger::Info("  fprog= %s", desc.vprogUid.c_str());
-    desc.vertexLayout.Dump();
+    //Logger::Info("create PS");
+    //Logger::Info("  vprog= %s",desc.vprogUid.c_str());
+    //Logger::Info("  fprog= %s",desc.vprogUid.c_str());
+    //desc.vertexLayout.Dump();
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
@@ -647,7 +696,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     "vs_4_0",
         #endif
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
-    0, // no effect compile flags
+    0, // no effect-compile flags
     &vp_code,
     &vp_err);
 
@@ -975,11 +1024,29 @@ void SetToRHI(Handle cb, ID3D11DeviceContext* context)
 
     cb11->SetToRHI(context);
 }
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+void SetToRHI(Handle cb, const void* instData)
+{
+    ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
+
+    cb11->SetToRHI(instData);
+}
+const void* Instance(Handle cb)
+{
+    ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
+
+    return cb11->Instance();
+}
+void InvalidateAllInstances()
+{
+    ++_CurFrame;
+}
 
 void InitializeRingBuffer(uint32 size)
 {
-    _DefConstRingBuf.Initialize(size);
+    _DefConstRingBuf.Initialize((size) ? size : 4 * 1024 * 1024);
 }
+#endif
 }
 
 } // namespace rhi

@@ -38,6 +38,8 @@ namespace DAVA
 class File;
 }
 
+const unsigned InvalidIndex = (unsigned)(-1);
+
 namespace rhi
 {
 using DAVA::uint8;
@@ -57,6 +59,7 @@ enum ResourceType
     RESOURCE_VERTEX_BUFFER = 11,
     RESOURCE_INDEX_BUFFER = 12,
     RESOURCE_QUERY_BUFFER = 13,
+    RESOURCE_PERFQUERY_SET = 14,
     RESOURCE_CONST_BUFFER = 22,
     RESOURCE_TEXTURE = 31,
 
@@ -773,6 +776,8 @@ RenderPassConfig
     DepthStencilBuffer depthStencilBuffer;
 
     Handle queryBuffer;
+    uint32 PerfQueryIndex0;
+    uint32 PerfQueryIndex1;
     Viewport viewport;
 
     int priority;
@@ -782,6 +787,8 @@ RenderPassConfig
         : queryBuffer(InvalidHandle)
         , priority(0)
         , invertCulling(0)
+        , PerfQueryIndex0(InvalidIndex)
+        , PerfQueryIndex1(InvalidIndex)
     {
     }
 };
@@ -868,7 +875,6 @@ nonaliased_cast(src x)
     return tmp.d;
 }
 
-const unsigned InvalidIndex = (unsigned)(-1);
 
 #define countof(array) (sizeof(array) / sizeof(array[0]))
 #define L_ALIGNED_SIZE(size, align) (((size) + ((align)-1)) & (~((align)-1)))

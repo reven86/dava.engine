@@ -242,6 +242,10 @@ void _InitDX11()
     }
 
 #endif
+
+    #if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -254,6 +258,7 @@ void dx11_Initialize(const InitParam& param)
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);
     QueryBufferDX11::SetupDispatch(&DispatchDX11);
+    PerfQuerySetDX11::SetupDispatch(&DispatchDX11);
     TextureDX11::SetupDispatch(&DispatchDX11);
     PipelineStateDX11::SetupDispatch(&DispatchDX11);
     ConstBufferDX11::SetupDispatch(&DispatchDX11);

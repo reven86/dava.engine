@@ -46,6 +46,7 @@
     #include "../rhi_Type.h"
 
     #define RHI__FORCE_DX11_91 1
+    #define RHI_DX11__USE_DEFERRED_CONTEXTS 0
 
 const char* D3D11ErrorText(HRESULT hr);
 

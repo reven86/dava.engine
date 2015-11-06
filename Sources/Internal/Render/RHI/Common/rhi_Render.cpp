@@ -99,6 +99,8 @@ static std::array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
 static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
 DAVA::Mutex sheduledDeleteMutex;
 
+static Handle CurFramePerfQuerySet = InvalidHandle;
+
 inline void AddSheduletDeleteResource(Handle handle, ResourceType resourceType)
 {
     sheduledDeleteMutex.Lock();
@@ -276,6 +278,37 @@ bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex)
 int QueryValue(HQueryBuffer buf, uint32 objectIndex)
 {
     return QueryBuffer::Value(buf, objectIndex);
+}
+HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount)
+{
+    return HPerfQuerySet(PerfQuerySet::Create(maxTimestampCount));
+}
+void ResetPerfQuerySet(HPerfQuerySet set)
+{
+    PerfQuerySet::Reset(set);
+}
+void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid)
+{
+    PerfQuerySet::GetStatus(hset, isReady, isValid);
+}
+void DeletePerfQuerySet(HPerfQuerySet set, bool forceImmediate)
+{
+    if (forceImmediate)
+        PerfQuerySet::Delete(set);
+    else
+        AddSheduletDeleteResource(set, RESOURCE_PERFQUERY_SET);
+}
+bool GetPerfQuerySetFreq(HPerfQuerySet set, uint64* freq)
+{
+    return PerfQuerySet::GetFreq(set, freq);
+}
+bool GetPerfQuerySetTimestamp(HPerfQuerySet set, uint32 timestampIndex, uint64* timestamp)
+{
+    return PerfQuerySet::GetTimestamp(set, timestampIndex, timestamp);
+}
+bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1)
+{
+    return PerfQuerySet::GetFrameTimestamps(hset, t0, t1);
 }
 
 //------------------------------------------------------------------------------
@@ -702,6 +735,11 @@ bool SyncObjectSignaled(HSyncObject obj)
 {
     return SyncObject::IsSygnaled(obj);
 }
+void SetFramePerfQuerySet(HPerfQuerySet hset)
+{
+    CurFramePerfQuerySet = hset;
+    PerfQuerySet::SetCurrent(hset);
+}
 
 //------------------------------------------------------------------------------
 
@@ -830,7 +868,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
 
         if (p->debugMarker)
         {
-            rhi::CommandBuffer::SetMarker(cmdBuf, p->debugMarker);
+            ///            rhi::CommandBuffer::SetMarker( cmdBuf, p->debugMarker );
         }
 
         if (p->renderPipelineState != pl->curPipelineState || p->vertexLayoutUID != pl->curVertexLayout)

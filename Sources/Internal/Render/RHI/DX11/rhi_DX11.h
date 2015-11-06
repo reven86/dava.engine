@@ -62,6 +62,18 @@ void BeginQuery(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
 void EndQuery(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
 }
 
+namespace PerfQuerySetDX11
+{
+void SetupDispatch(Dispatch* dispatch);
+void BeginFreqMeasurment(Handle handle, ID3D11DeviceContext* context);
+void EndFreqMeasurment(Handle handle, ID3D11DeviceContext* context);
+void IssueTimestampQuery(Handle handle, uint32 timestampIndex, ID3D11DeviceContext* context);
+void IssueFrameBeginQuery(Handle handle, ID3D11DeviceContext* context);
+void IssueFrameEndQuery(Handle handle, ID3D11DeviceContext* context);
+Handle Current();
+void ObtainResults(Handle handle);
+}
+
 namespace PipelineStateDX11
 {
 void SetupDispatch(Dispatch* dispatch);
@@ -75,6 +87,11 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
 void SetToRHI(Handle cb, ID3D11DeviceContext* context);
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+void SetToRHI(Handle cb, const void* instData);
+const void* Instance(Handle cb);
+void InvalidateAllInstances();
+#endif
 }
 
 namespace TextureDX11

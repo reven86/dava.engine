@@ -79,8 +79,8 @@ void GameCore::OnAppStarted()
 
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
     //    SetScenePath("~doc:/effect.sc2");
-    // SetScenePath("~doc:/karelia/karelia.sc2");
-    SetScenePath("~res:/3d/Maps/amigosville/amigosville.sc2");
+    SetScenePath("~doc:/karelia/karelia.sc2");
+    //    SetScenePath("~res:/3d/Maps/amigosville/amigosville.sc2");
     //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
     //      SetScenePath("~doc:/amigosville/amigosville.sc2");
     //      SetScenePath("~doc:/fort/fort.sc2");
@@ -96,6 +96,9 @@ void GameCore::OnAppStarted()
     //UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());
 
     DbgDraw::EnsureInited();
+
+    perfQuerySet = rhi::CreatePerfQuerySet(16);
+    perfQuerySetFired = false;
 }
 
 void GameCore::OnAppFinished()
@@ -140,7 +143,51 @@ void GameCore::OnForeground()
 
 void GameCore::BeginFrame()
 {
-	ApplicationCore::BeginFrame();
+    if (perfQuerySetFired)
+    {
+        bool ready = false;
+        bool valid = false;
+        rhi::GetPerfQuerySetStatus(perfQuerySet, &ready, &valid);
+
+        if (ready && valid)
+        {
+            uint64 freq = 0;
+            uint64 frame_t0, frame_t1;
+            uint64 clear_t0, clear_t1;
+            uint64 p2d_t0, p2d_t1;
+            uint64 main_t0, main_t1;
+
+            rhi::GetPerfQuerySetFreq(perfQuerySet, &freq);
+            //            Logger::Info("perf-query:  freq= %u",uint32(freq));
+
+            rhi::GetPerfQuerySetFrameTimestamps(perfQuerySet, &frame_t0, &frame_t1);
+
+            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__CLEAR_PASS_T0, &clear_t0);
+            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__CLEAR_PASS_T1, &clear_t1);
+
+            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__2D_PASS_T0, &p2d_t0);
+            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__2D_PASS_T1, &p2d_t1);
+
+            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__MAIN_PASS_T0, &main_t0);
+            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__MAIN_PASS_T1, &main_t1);
+
+            Logger::Info("  GPU frame = %.3f ms", float(frame_t1 - frame_t0) / float(freq / 1000));
+            Logger::Info("    clear : %.3f ms", float(clear_t1 - clear_t0) / float(freq / 1000));
+            Logger::Info("    main  : %.3f ms", float(main_t1 - main_t0) / float(freq / 1000));
+            Logger::Info("    2d    : %.3f ms", float(p2d_t1 - p2d_t0) / float(freq / 1000));
+
+            perfQuerySetFired = false;
+        }
+    }
+
+    if (!perfQuerySetFired)
+    {
+        rhi::ResetPerfQuerySet(perfQuerySet);
+        rhi::SetFramePerfQuerySet(perfQuerySet);
+        perfQuerySetFired = true;
+    }
+
+    ApplicationCore::BeginFrame();
 }
 
 void GameCore::EndFrame()

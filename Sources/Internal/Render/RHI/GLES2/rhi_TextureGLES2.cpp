@@ -107,7 +107,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     bool success = false;
     GLuint uid[2] = { 0, 0 };
     bool is_depth = desc.format == TEXTURE_FORMAT_D16 || desc.format == TEXTURE_FORMAT_D24S8;
-    //    bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
 
     if (is_depth)
     {
@@ -122,23 +121,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
               { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
               { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
               { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
-              /*
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, (need_stencil)?GL_DEPTH_COMPONENT24:GL_DEPTH_COMPONENT16, desc.width, desc.height } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-*/
             };
-            /*
-            if( !need_stencil )
-            {
-                cmd2[3].func = GLCommand::NOP;
-                cmd2[4].func = GLCommand::NOP;
-                cmd2[5].func = GLCommand::NOP;
-            }
-*/
             ExecGL(cmd2, countof(cmd2), force_immediate);
 
             uid[1] = uid[0];
@@ -156,8 +139,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             uint32 cmd2_cnt = 2;
             GLCommand cmd2[4 + countof(desc.initialData)] =
             {
-              { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } } //,
-              //                { GLCommand::BIND_TEXTURE, { target, uid[0] } }
+              { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } }
             };
 
             if (desc.autoGenMipmaps && !desc.isRenderTarget)
@@ -167,7 +149,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             }
 
             // process initial-data, if any
-            //            if( desc.type == TEXTURE_TYPE_CUBE )
             {
                 uint32 array_sz = (desc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
                 GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
@@ -228,10 +209,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 cmd2[cmd2_cnt].func = GLCommand::RESTORE_TEXTURE0;
                 ++cmd2_cnt;
             }
-            //            else
-            //            {
-            //                DVASSERT(desc.initialData[0]==nullptr);
-            //            }
 
             ExecGL(cmd2, cmd2_cnt, force_immediate);
         }

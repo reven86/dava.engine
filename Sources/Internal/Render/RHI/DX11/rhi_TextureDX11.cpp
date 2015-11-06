@@ -110,11 +110,6 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
     desc2d.CPUAccessFlags = 0; //D3D11_CPU_ACCESS_WRITE;
     desc2d.MiscFlags = 0;
 
-    // CRAP: just to make it work somehow
-    //{
-    //if( desc.format == TEXTURE_FORMAT_R5G6B5 || desc.format == TEXTURE_FORMAT_R4G4B4A4 )
-    //    desc2d.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    //}
     DVASSERT(desc2d.Format != DXGI_FORMAT_UNKNOWN);
 
     if (desc.type == TEXTURE_TYPE_CUBE)
