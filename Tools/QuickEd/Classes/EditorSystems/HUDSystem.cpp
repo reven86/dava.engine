@@ -193,7 +193,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     case UIEvent::Phase::BEGAN:
     {
         ProcessCursor(currentInput->point, searchOrder);
-        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA)
+        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->tid != UIEvent::BUTTON_1)
         {
             return true;
         }

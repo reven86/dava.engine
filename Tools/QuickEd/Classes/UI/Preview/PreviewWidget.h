@@ -95,8 +95,10 @@ protected:
 private:
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
+    void OnMoveEvent(QMouseEvent* event);
     void SetDPR(qreal dpr);
 
+    QPoint lastMousePos;
     qreal dpr = 1.0f;
     Document* document = nullptr;
     DavaGLWidget* davaGLWidget = nullptr;

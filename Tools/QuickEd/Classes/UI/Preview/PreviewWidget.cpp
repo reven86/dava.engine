@@ -302,6 +302,12 @@ bool PreviewWidget::eventFilter(QObject *obj, QEvent *event)
                 DVASSERT(nullptr != dynamic_cast<QNativeGestureEvent*>(event));
                 OnNativeGuestureEvent(static_cast<QNativeGestureEvent*>(event));
                 break;
+            case QEvent::MouseMove:
+                DVASSERT(nullptr != dynamic_cast<QMouseEvent*>(event));
+                OnMoveEvent(static_cast<QMouseEvent*>(event));
+            case QEvent::MouseButtonPress:
+                DVASSERT(nullptr != dynamic_cast<QMouseEvent*>(event));
+                lastMousePos = static_cast<QMouseEvent*>(event)->pos(); 
             default:
                 break;
         }
@@ -311,8 +317,8 @@ bool PreviewWidget::eventFilter(QObject *obj, QEvent *event)
 
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 {
-#if defined Q_OS_MAC
     static const qreal wheelDelta = 0.002;
+#if defined Q_OS_MAC
     int horizontalScrollBarValue = horizontalScrollBar->value();
     horizontalScrollBarValue -= event->pixelDelta().x() * horizontalScrollBar->pageStep() * wheelDelta;
     horizontalScrollBar->setValue(horizontalScrollBarValue);
@@ -321,7 +327,11 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     verticalScrollBarValue -= event->pixelDelta().y() * verticalScrollBar->pageStep() * wheelDelta;
     verticalScrollBar->setValue(verticalScrollBarValue);
 #elif defined Q_OS_WIN
-    
+    qreal scale = scrollAreaController->GetScale();
+    qreal eventValue = event->angleDelta().y() * wheelDelta;
+    scale *= 1.0f + eventValue / 2.0f; //so funny divide random parameters with the random values
+    QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
+    scrollAreaController->AdjustScale(scale, pos);
 #endif //Q_OS_MAC Q_OS_WIN
 }
 
@@ -339,7 +349,24 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
             break;
         default:
             break;
+    }
+}
 
+void PreviewWidget::OnMoveEvent(QMouseEvent* event)
+{
+    if (event->buttons() & Qt::MiddleButton) 
+    {
+        QPoint delta(event->pos() - lastMousePos);
+        delta *= davaGLWidget->devicePixelRatio();
+        lastMousePos = event->pos();
+
+        int horizontalScrollBarValue = horizontalScrollBar->value();
+        horizontalScrollBarValue -= delta.x();
+        horizontalScrollBar->setValue(horizontalScrollBarValue);
+
+        int verticalScrollBarValue = verticalScrollBar->value();
+        verticalScrollBarValue -= delta.y();
+        verticalScrollBar->setValue(verticalScrollBarValue);
     }
 }
 
