@@ -32,7 +32,6 @@ LogWidget::LogWidget(QWidget* parent)
     ui->log->setModel(logFilterModel);
     ui->log->installEventFilter(this);
     ui->log->setUniformItemSizes(true);
-
     LogDelegate *logDelegate = new LogDelegate(ui->log);
     FillFiltersCombo();
     connect(logDelegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);

@@ -46,7 +46,7 @@ LogModel::LogModel(QObject* parent)
     , syncTimer(new QTimer(this))
 {
     DVASSERT_MSG(thread() == qApp->thread(), "don't create this model in the separate thread!");
-    createIcons();
+    CreateIcons();
     func = [](const DAVA::String &str)
     {
         return str;
@@ -54,6 +54,10 @@ LogModel::LogModel(QObject* parent)
     syncTimer->setSingleShot(true);
     syncTimer->setInterval(50);
     connect(syncTimer, &QTimer::timeout, this, &LogModel::Sync);
+
+    QFontMetrics fm(QApplication::font());
+    const int margin = 5;
+    rowSize.setHeight(fm.height() + margin);
 }
 
 void LogModel::SetConvertFunction(ConvertFunc func_)
@@ -73,6 +77,8 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     case Qt::ToolTipRole:
     case Qt::DisplayRole:
         return item.text;
+    case Qt::SizeHintRole:
+        return rowSize;
 
     case Qt::DecorationRole:
         return GetIcon(item.ll);
@@ -99,6 +105,7 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& text)
     items.append(LogItem(ll,
         QString::fromStdString(func(text.toStdString())),
         text));
+    RecalculateRowWidth(text);
     endInsertRows();
 }
 
@@ -130,6 +137,10 @@ void LogModel::Sync()
 
     int count = rowCount();
     beginInsertRows(QModelIndex(), count, count + itemsToAddCopy.size() - 1);
+    for (auto& item : itemsToAddCopy)
+    {
+        RecalculateRowWidth(item.text);
+    }
     items += itemsToAddCopy;
     endInsertRows();
 }
@@ -146,7 +157,7 @@ void LogModel::Clear()
     endRemoveRows();
 }
 
-void LogModel::createIcons()
+void LogModel::CreateIcons()
 {
     const auto &logMap = GlobalEnumMap<DAVA::Logger::eLogLevel>::Instance();
     for (size_t i = 0; i < logMap->GetCount(); ++i)
@@ -197,6 +208,12 @@ void LogModel::createIcons()
     }
 }
 
+void LogModel::RecalculateRowWidth(const QString& text)
+{
+    QFontMetrics fm(QApplication::font());
+    const int margin = 10;
+    rowSize.setWidth(qMax(rowSize.width(), fm.width(text) + margin));
+}
 const QPixmap &LogModel::GetIcon(int ll) const
 {
     return icons.at(ll);
