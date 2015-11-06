@@ -32,7 +32,7 @@ VPROG_OUT_BEGIN
         VPROG_OUT_TEXCOORD1(uv1,2)
     #endif
     #if SHADING == SHADING_PERPIXEL
-        VPROG_OUT_TEXCOORD2(cameraToPointInTangentSpace, 3)
+        VPROG_OUT_TEXCOORD2_HALF(cameraToPointInTangentSpace, 3)
         #if REAL_REFLECTION
             VPROG_OUT_TEXCOORD3(eyeDist, 3)
             VPROG_OUT_TEXCOORD4(normalizedFragPos, 4)
@@ -40,15 +40,15 @@ VPROG_OUT_BEGIN
                 VPROG_OUT_TEXCOORD5(varLightVec, 3)
             #endif
         #else
-            VPROG_OUT_TEXCOORD3(tbnToWorld0, 3)
-            VPROG_OUT_TEXCOORD4(tbnToWorld1, 3)
-            VPROG_OUT_TEXCOORD5(tbnToWorld2, 3)
+            VPROG_OUT_TEXCOORD3_HALF(tbnToWorld0, 3)
+            VPROG_OUT_TEXCOORD4_HALF(tbnToWorld1, 3)
+            VPROG_OUT_TEXCOORD5_HALF(tbnToWorld2, 3)
         #endif
     #endif
 
     #if SHADING == SHADING_PERVERTEX 
         VPROG_OUT_TEXCOORD2(varTexCoordDecal, 2)
-        VPROG_OUT_TEXCOORD3(reflectionDirectionInWorldSpace, 3)
+        VPROG_OUT_TEXCOORD3_HALF(reflectionDirectionInWorldSpace, 3)
     #endif
     
     #if VERTEX_FOG
