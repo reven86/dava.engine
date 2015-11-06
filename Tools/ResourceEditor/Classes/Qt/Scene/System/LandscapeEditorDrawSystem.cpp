@@ -164,7 +164,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     }
 
     if (notPassableTerrainProxy->IsEnabled())
-	{
+    {
 		return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 	}
 
@@ -241,7 +241,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
         }
 
         if (customDrawRequestCount == 0)
-		{
+        {
 			UpdateBaseLandscapeHeightmap();
 		}
 		
@@ -272,7 +272,7 @@ float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
     Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
     if (texture)
     {
-		size = (float32)texture->GetWidth();
+        size = (float32)texture->GetWidth();
 	}
 	return size;
 }
@@ -433,11 +433,11 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
     if (!visibilityToolProxy)
-	{
+    {
         visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
     if (!rulerToolProxy)
-	{
+    {
         rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
 
@@ -608,7 +608,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
     Texture* tileMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK);
     if (tileMask == NULL || tileMask->IsPinkPlaceholder())
     {
-		return LANDSCAPE_EDITOR_SYSTEM_TILE_MASK_TEXTURE_ABSENT;
+        return LANDSCAPE_EDITOR_SYSTEM_TILE_MASK_TEXTURE_ABSENT;
 	}
 	
 //	Texture* fullTiled = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_FULL);
@@ -621,7 +621,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
 
     if ((texTile0 == NULL || texTile0->IsPinkPlaceholder()))
     {
-		return LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE0_TEXTURE_ABSENT;
+        return LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE0_TEXTURE_ABSENT;
     }
 
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;

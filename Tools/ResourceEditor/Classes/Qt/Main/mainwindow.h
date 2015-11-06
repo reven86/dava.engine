@@ -171,9 +171,9 @@ public slots:
 
     void OnConvertModifiedTextures();
 
-    void OnCloseTabRequest(int tabIndex, Request *closeRequest);
+    void OnCloseTabRequest(int tabIndex, Request* closeRequest);
 
-	void OnBeastAndSave();
+    void OnBeastAndSave();
     
     void OnBuildStaticOcclusion();
     void OnInavalidateStaticOcclusion();

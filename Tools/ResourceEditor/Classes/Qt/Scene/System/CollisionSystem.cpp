@@ -74,7 +74,7 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
     objectsDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
     objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
-	objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
+    objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
 
 	landCollConf = new btDefaultCollisionConfiguration();
 	landCollDisp = new btCollisionDispatcher(landCollConf);
@@ -329,7 +329,7 @@ void SceneCollisionSystem::Input(DAVA::UIEvent *event)
     if (UIEvent::Device::MOUSE == event->device)
     {
         lastMousePos = event->point;
-	}
+    }
 }
 
 void SceneCollisionSystem::Draw()
@@ -338,7 +338,7 @@ void SceneCollisionSystem::Draw()
 
     if (drawMode & CS_DRAW_LAND)
     {
-		landCollWorld->debugDrawWorld();
+        landCollWorld->debugDrawWorld();
 	}
 
 	if(drawMode & CS_DRAW_LAND_RAYTEST)
@@ -346,13 +346,13 @@ void SceneCollisionSystem::Draw()
         drawer->DrawLine(lastLandRayFrom, lastLandRayTo, DAVA::Color(0, 1.0f, 0, 1.0f));
     }
 
-    if(drawMode & CS_DRAW_LAND_COLLISION)
-	{
+    if (drawMode & CS_DRAW_LAND_COLLISION)
+    {
         drawer->DrawIcosahedron(lastLandCollision, 0.5f, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
     }
 
-    if(drawMode & CS_DRAW_OBJECTS)
-	{
+    if (drawMode & CS_DRAW_OBJECTS)
+    {
 		objectsCollWorld->debugDrawWorld();
 	}
 
@@ -361,8 +361,8 @@ void SceneCollisionSystem::Draw()
         drawer->DrawLine(lastRayFrom, lastRayTo, DAVA::Color(1.0f, 0, 0, 1.0f));
     }
 
-    if(drawMode & CS_DRAW_OBJECTS_SELECTED)
-	{
+    if (drawMode & CS_DRAW_OBJECTS_SELECTED)
+    {
 		// current selected entities
 		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
 		if(NULL != selectionSystem)

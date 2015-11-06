@@ -687,8 +687,8 @@ QtPropertyData* PropertyEditor::CreateClone(QtPropertyData *original)
         return CreateInspMember(memberDymanic->ddata.object, memberDymanic->dynamicInfo->GetMember());
     }
 
-    QtPropertyDataMetaObject *metaData  = dynamic_cast<QtPropertyDataMetaObject *>(original);
-	if(NULL != metaData)
+    QtPropertyDataMetaObject* metaData = dynamic_cast<QtPropertyDataMetaObject*>(original);
+    if(NULL != metaData)
 	{
 		return new QtPropertyDataMetaObject(metaData->object, metaData->meta);
 	}
@@ -1543,7 +1543,7 @@ QString PropertyEditor::GetDefaultFilePath()
     FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
     if (dataSourcePath.Exists())
     {
-		defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
+        defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
 	}
 	SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
 	if (NULL != editor && editor->GetScenePath().Exists())

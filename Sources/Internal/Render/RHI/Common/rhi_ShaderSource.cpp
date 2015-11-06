@@ -106,13 +106,12 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     // pre-process source text with #defines, if any
 
     DVASSERT(defines.size() % 2 == 0);
-    def.resize(defines.size() / 2);
-    for (unsigned i = 0; i != def.size(); ++i)
+    def.reserve(defines.size() / 2);
+    for (size_t i = 0, n = defines.size() / 2; i != n; ++i)
     {
-        char d[256];
-
-        sprintf(d, "-D %s=%s", defines[i * 2 + 0].c_str(), defines[i * 2 + 1].c_str());
-        def[i] = d;
+        const char* s1 = defines[i * 2 + 0].c_str();
+        const char* s2 = defines[i * 2 + 1].c_str();
+        def.push_back(DAVA::Format("-D %s=%s", s1, s2));
     }
     for (unsigned i = 0; i != def.size(); ++i)
         argv[argc++] = def[i].c_str();

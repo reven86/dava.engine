@@ -78,7 +78,7 @@ void GameCore::RegisterTests()
     new UIBackgroundTest();
     new ClipTest();
     new UIBackgroundTest();
-//$UNITTEST_CTOR
+    //$UNITTEST_CTOR
 }
 
 #include <fstream>

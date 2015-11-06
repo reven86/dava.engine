@@ -210,8 +210,8 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
     }
 
     DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
-    if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
-	{
+    if (DAVA::SceneFileV2::ERROR_NO_ERROR == err)
+    {
 		curScenePath = path;
 		isLoaded = true;
 
@@ -411,7 +411,7 @@ void SceneEditor2::Draw()
         if (collisionSystem)
             collisionSystem->Draw();
 
-		modifSystem->Draw();
+        modifSystem->Draw();
 
 		if(structureSystem)
 			structureSystem->Draw();

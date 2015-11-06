@@ -126,8 +126,8 @@ void GameCore::UnpackHelp()
         {
             FileSystem::Instance()->DeleteDirectory(docsPath);
             FileSystem::Instance()->CreateDirectory(docsPath, true);
-		
-			helpRA->UnpackToFolder(docsPath);
+
+            helpRA->UnpackToFolder(docsPath);
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
 

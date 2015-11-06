@@ -119,8 +119,9 @@ DAVA::Rect HoodObject::DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObje
 
     if (pos2d.x > maxX)
         maxX = pos2d.x;
-    if(pos2d.x < minX) minX = pos2d.x;
-	if(pos2d.y > maxY) maxY = pos2d.y;
+    if (pos2d.x < minX)
+        minX = pos2d.x;
+    if(pos2d.y > maxY) maxY = pos2d.y;
 	if(pos2d.y < minY) minY = pos2d.y;
 
 	// y
@@ -129,8 +130,9 @@ DAVA::Rect HoodObject::DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObje
 
     if (pos2d.x > maxX)
         maxX = pos2d.x;
-    if(pos2d.x < minX) minX = pos2d.x;
-	if(pos2d.y > maxY) maxY = pos2d.y;
+    if (pos2d.x < minX)
+        minX = pos2d.x;
+    if(pos2d.y > maxY) maxY = pos2d.y;
 	if(pos2d.y < minY) minY = pos2d.y;
 
 	// z
@@ -139,8 +141,9 @@ DAVA::Rect HoodObject::DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObje
 
     if (pos2d.x > maxX)
         maxX = pos2d.x;
-    if(pos2d.x < minX) minX = pos2d.x;
-	if(pos2d.y > maxY) maxY = pos2d.y;
+    if (pos2d.x < minX)
+        minX = pos2d.x;
+    if(pos2d.y > maxY) maxY = pos2d.y;
 	if(pos2d.y < minY) minY = pos2d.y;
 
 	return DAVA::Rect(minX, minY, maxX, maxY);

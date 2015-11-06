@@ -108,8 +108,8 @@ public:
     void ClampToTexture(const FastName& level, Rect& rect);
     void ClampToHeightmap(Rect& rect);
 
-    void AddEntity(DAVA::Entity * entity) override;
-	void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
 
     Rect GetTextureRect(const FastName& level);
     Rect GetHeightmapRect();

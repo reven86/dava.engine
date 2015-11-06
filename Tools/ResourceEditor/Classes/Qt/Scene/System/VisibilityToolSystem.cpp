@@ -97,7 +97,7 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 
     PrepareConfig();
 
-	enabled = true;
+    enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
@@ -155,7 +155,7 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
     if (UIEvent::Phase::KEY_DOWN == event->phase)
     {
         if (event->tid == DVKEY_ESCAPE)
-		{
+        {
 			SetState(VT_STATE_NORMAL);
 		}
 	}
@@ -165,8 +165,8 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 		{
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape)
-                {
-					editingIsEnabled = true;
+            {
+                    editingIsEnabled = true;
 				}
 				break;
 
@@ -175,8 +175,8 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 
         case UIEvent::Phase::ENDED:
             if (editingIsEnabled)
-                {
-					if (state == VT_STATE_SET_POINT)
+            {
+                    if (state == VT_STATE_SET_POINT)
 					{
 						SetVisibilityPointInternal();
 					}
@@ -201,7 +201,7 @@ void VisibilityToolSystem::SetBrushSize(int32 brushSize)
         if (state == VT_STATE_SET_AREA)
         {
             drawSystem->SetCursorSize(cursorSize);
-		}
+        }
 	}
 }
 
@@ -256,7 +256,7 @@ void VisibilityToolSystem::SetState(eVisibilityToolState newState)
             break;
 
         default:
-			if (IsLandscapeEditingEnabled())
+            if (IsLandscapeEditingEnabled())
 			{
 				drawSystem->SetCursorSize(0);
 			}
@@ -302,7 +302,7 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
     }
     else
     {
-		// show "could not check visibility without visibility point" error message
+        // show "could not check visibility without visibility point" error message
 	}
 }
 
@@ -485,7 +485,7 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityAreaTexture, false);
     for (uint32 i = 0; i < points.size(); ++i)
     {
-		uint32 colorIndex = (uint32)points[i].z;
+        uint32 colorIndex = (uint32)points[i].z;
         Rect rect(points[i].x - pointSize / 2.f, points[i].y - pointSize / 2.f, pointSize, pointSize);
         RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
     }

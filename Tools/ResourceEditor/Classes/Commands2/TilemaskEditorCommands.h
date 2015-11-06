@@ -95,14 +95,14 @@ public:
     ~SetTileColorCommand();
 
     virtual void Undo();
-	virtual void Redo();
+    virtual void Redo();
 	virtual Entity* GetEntity() const;
 
 protected:
     const FastName& level;
     Color redoColor;
     Color undoColor;
-	LandscapeProxy* landscapeProxy;
+    LandscapeProxy* landscapeProxy;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__) */
