@@ -236,6 +236,8 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
 
 void SceneExporter::RemoveEditorNodes(DAVA::Entity *rootNode)
 {
+    DVASSERT(rootNode != nullptr);
+
     //Remove scene nodes
     Vector<Entity *> scenenodes;
     rootNode->GetChildNodes(scenenodes);
