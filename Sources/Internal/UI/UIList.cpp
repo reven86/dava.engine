@@ -494,23 +494,15 @@ void UIList::Input(UIEvent *currentInput)
         return;
     }
 
-    if(orientation == ORIENTATION_HORIZONTAL)
+    if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-        
-        if (UIEvent::Phase::WHEEL == currentInput->phase)
-        {
-            newScroll += currentInput->scrollDelta.x;
-        }
-        else
-        {
-            newPos = currentInput->point.x;
-        }
+        newScroll += currentInput->scrollDelta.y;
     }
     else
     {
-        if (UIEvent::Phase::WHEEL == currentInput->phase)
+        if (orientation == ORIENTATION_HORIZONTAL)
         {
-            newScroll += currentInput->scrollDelta.y;
+            newPos = currentInput->point.x;
         }
         else
         {
