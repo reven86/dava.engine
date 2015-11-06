@@ -69,38 +69,34 @@ VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
 
     #if MATERIAL_SKYBOX
-    VPROG_OUT_TEXCOORD0(varTexCoord0,3)
+    VPROG_OUT_TEXCOORD0_HALF(varTexCoord0,3)
     #elif MATERIAL_TEXTURE || TILED_DECAL_MASK
-    VPROG_OUT_TEXCOORD0(varTexCoord0,2)
+    VPROG_OUT_TEXCOORD0_HALF(varTexCoord0,2)
     #endif
 
     #if MATERIAL_DECAL || ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) || FRAME_BLEND || ALPHA_MASK
-    VPROG_OUT_TEXCOORD1(varTexCoord1,2)
+    VPROG_OUT_TEXCOORD1_HALF(varTexCoord1,2)
     #endif
 
     #if MATERIAL_DETAIL
-    VPROG_OUT_TEXCOORD2(varDetailTexCoord,2)
+    VPROG_OUT_TEXCOORD2_HALF(varDetailTexCoord,2)
     #endif
 
     #if TILED_DECAL_MASK
-    VPROG_OUT_TEXCOORD2(varDecalTileTexCoord,2)
+    VPROG_OUT_TEXCOORD2_HALF(varDecalTileTexCoord,2)
     #endif
     
     
     #if VERTEX_LIT
         VPROG_OUT_COLOR0(varDiffuseColor,1)
         #if BLINN_PHONG
-            VPROG_OUT_TEXCOORD4(varSpecularColor,1)
-            //varying lowp float varSpecularColor;
+            VPROG_OUT_TEXCOORD4_LOW(varSpecularColor,1)
         #elif NORMALIZED_BLINN_PHONG
-            VPROG_OUT_TEXCOORD4(varSpecularColor,4)
-            //varying lowp vec3 varSpecularColor;
-            //varying lowp float varNdotH;
+            VPROG_OUT_TEXCOORD4_LOW(varSpecularColor,4)
         #endif
     #endif
 
     #if PIXEL_LIT
-//        VPROG_OUT_TEXCOORD4(varLightPosition,3)
         #if FAST_NORMALIZATION
         VPROG_OUT_COLOR0(varHalfVec,3)
         #endif
@@ -116,12 +112,12 @@ VPROG_OUT_BEGIN
     #endif
     
     #if VERTEX_FOG
-        VPROG_OUT_TEXCOORD5(varFog,4)
+        VPROG_OUT_TEXCOORD5_LOW(varFog,4)
     #endif
 
 
     #if FRAME_BLEND
-        VPROG_OUT_TEXCOORD3(varTime,1)        
+        VPROG_OUT_TEXCOORD3_LOW(varTime,1)        
     #endif
 
 

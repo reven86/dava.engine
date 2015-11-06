@@ -33,7 +33,7 @@ FPROG_IN_BEGIN
          FPROG_IN_TEXCOORD2(varDecalTileTexCoord,2)
     #endif
     #if MATERIAL_DETAIL
-        FPROG_IN_TEXCOORD2(varDetailTexCoord,2)
+        FPROG_IN_TEXCOORD2_HALF(varDetailTexCoord,2)
     #endif
 
     #if VERTEX_LIT
@@ -64,11 +64,11 @@ FPROG_IN_BEGIN
     #endif
 
     #if VERTEX_FOG
-        FPROG_IN_TEXCOORD5(varFog,4)
+        FPROG_IN_TEXCOORD5_LOW(varFog,4)
     #endif           
 
     #if FRAME_BLEND
-        FPROG_IN_TEXCOORD3(varTime, 1)
+        FPROG_IN_TEXCOORD3_LOW(varTime, 1)
     #endif
 
 
@@ -190,7 +190,7 @@ FPROG_BEGIN
             
         #if FRAME_BLEND
             min10float4 blendFrameColor = FP_TEXTURE2D( albedo, FP_IN(varTexCoord1) );
-            float varTime = FP_IN(varTime);
+            min10float varTime = FP_IN(varTime);
             textureColor0 = lerp( textureColor0, blendFrameColor, varTime );
         #endif
     
@@ -325,8 +325,8 @@ FPROG_BEGIN
             #endif
     
             #if VIEW_SPECULAR
-                min10float glossiness = pow(5000.0, inGlossiness * textureColor0.a);
-                min10float specularNorm = (glossiness + 2.0) / 8.0;
+                float glossiness = pow(5000.0, inGlossiness * textureColor0.a);
+                float specularNorm = (glossiness + 2.0) / 8.0;
                 float3 spec = FP_IN(varSpecularColor).xyz * pow(/*varNdotH*/FP_IN(varSpecularColor).w, glossiness) * specularNorm;
                                                      
                 #if MATERIAL_LIGHTMAP
