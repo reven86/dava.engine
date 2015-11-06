@@ -327,19 +327,15 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 {
-    static int counter;
     qreal scale = scrollAreaController->GetScale();
     QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
     switch(event->gestureType())
     {
         case Qt::ZoomNativeGesture:
-            scrollAreaController->AdjustScale(scale + event->value(), pos);
+            scrollAreaController->AdjustScale(scale + event->value() * davaGLWidget->devicePixelRatio(), pos);
                         break;
         case Qt::SmartZoomNativeGesture:
-            scrollAreaController->AdjustScale((event->value() == 0 ? 1.2f : 2.0f) * davaGLWidget->devicePixelRatio(), pos);
-            break;
-        case Qt::RotateNativeGesture:
-            DAVA::Logger::FrameworkDebug("%d rotate at point %d %d value %f", ++counter, event->pos().x(), event->pos().y(), event->value());
+            scrollAreaController->AdjustScale((event->value() == 0 ? 1.0f : 1.4f) * davaGLWidget->devicePixelRatio(), pos);
             break;
         default:
             break;
