@@ -285,22 +285,67 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 if (stricmp(type.c_str(), "float") == 0)
                 {
                     p.type = ShaderProp::TYPE_FLOAT1;
+                    p.precision = ShaderProp::PRECISION_NORMAL;
                 }
                 else if (stricmp(type.c_str(), "float2") == 0)
                 {
                     p.type = ShaderProp::TYPE_FLOAT2;
+                    p.precision = ShaderProp::PRECISION_NORMAL;
                 }
                 else if (stricmp(type.c_str(), "float3") == 0)
                 {
                     p.type = ShaderProp::TYPE_FLOAT3;
+                    p.precision = ShaderProp::PRECISION_NORMAL;
                 }
                 else if (stricmp(type.c_str(), "float4") == 0)
                 {
                     p.type = ShaderProp::TYPE_FLOAT4;
+                    p.precision = ShaderProp::PRECISION_NORMAL;
                 }
                 else if (stricmp(type.c_str(), "float4x4") == 0)
                 {
                     p.type = ShaderProp::TYPE_FLOAT4X4;
+                    p.precision = ShaderProp::PRECISION_NORMAL;
+                }
+                else if (stricmp(type.c_str(), "half") == 0)
+                {
+                    p.type = ShaderProp::TYPE_FLOAT1;
+                    p.precision = ShaderProp::PRECISION_HALF;
+                }
+                else if (stricmp(type.c_str(), "half2") == 0)
+                {
+                    p.type = ShaderProp::TYPE_FLOAT2;
+                    p.precision = ShaderProp::PRECISION_HALF;
+                }
+                else if (stricmp(type.c_str(), "half3") == 0)
+                {
+                    p.type = ShaderProp::TYPE_FLOAT3;
+                    p.precision = ShaderProp::PRECISION_HALF;
+                }
+                else if (stricmp(type.c_str(), "half4") == 0)
+                {
+                    p.type = ShaderProp::TYPE_FLOAT4;
+                    p.precision = ShaderProp::PRECISION_HALF;
+                }
+                else if (stricmp(type.c_str(), "min10float") == 0)
+                {
+                    p.type = ShaderProp::TYPE_FLOAT1;
+                    p.precision = ShaderProp::PRECISION_LOW;
+                }
+                else if (stricmp(type.c_str(), "min10float2") == 0)
+                {
+                    p.type = ShaderProp::TYPE_FLOAT2;
+                    p.precision = ShaderProp::PRECISION_LOW;
+                }
+                else if (stricmp(type.c_str(), "min10float3") == 0)
+                {
+                    p.type = ShaderProp::TYPE_FLOAT3;
+                    p.precision = ShaderProp::PRECISION_LOW;
+                }
+                else if (stricmp(type.c_str(), "min10float4") == 0)
+                {
+                    p.type = ShaderProp::TYPE_FLOAT4;
+                    p.precision = ShaderProp::PRECISION_LOW;
                 }
                 else
                 {
@@ -857,7 +902,10 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 {
                     const char* xyzw = "xyzw";
                     //                        var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
-                    var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    float %s = float4(%cP_Buffer%u[%u]).%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount]);
+                    var_len += Snprintf(
+                    var_def + var_len, sizeof(var_def) - var_len,
+                    "    #define %s  float4(%cP_Buffer%u[%u]).%c\n",
+                    p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount]);
                 }
                 break;
 
