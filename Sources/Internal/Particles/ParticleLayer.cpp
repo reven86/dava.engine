@@ -246,7 +246,7 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->enableFrameBlend = enableFrameBlend;
     dstLayer->inheritPosition = inheritPosition;
     dstLayer->startTime = startTime;
-    dstLayer->endTime = endTime;
+	dstLayer->endTime = endTime;
 	
 	
 	dstLayer->isLooped = isLooped;
@@ -607,7 +607,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (blend)
     {
         if (blend->AsString() == "alpha")
-        {
+		{
             blending = BLENDING_ALPHABLEND;
         }
         if (blend->AsString() == "add")
@@ -645,7 +645,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (fogNode)
     {
         enableFog = fogNode->AsBool();
-    }
+	}
 
 	const YamlNode * frameBlendNode = node->Get("enableFrameBlend");	
 	if (frameBlendNode)
@@ -655,8 +655,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
     startTime = 0.0f;
     endTime = 100000000.0f;
-    const YamlNode* startTimeNode = node->Get("startTime");
-    if (startTimeNode)
+    const YamlNode * startTimeNode = node->Get("startTime");
+	if (startTimeNode)
 		startTime = startTimeNode->AsFloat();
 
 	const YamlNode * endTimeNode = node->Get("endTime");

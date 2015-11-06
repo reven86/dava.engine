@@ -264,7 +264,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     }
 
     QHBoxLayout* blendLayout = new QHBoxLayout();
-    QVBoxLayout* presetLayout = new QVBoxLayout();
+    QVBoxLayout *presetLayout = new QVBoxLayout();
 
     presetLayout->addWidget(presetLabel);
     presetLayout->addWidget(presetComboBox);
@@ -276,7 +276,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
     fogCheckBox = new QCheckBox("Enable fog");
     connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-    mainBox->addWidget(fogCheckBox);
+	mainBox->addWidget(fogCheckBox);
 
 
 	lifeTimeLine = new TimeLineWidget(this);
@@ -536,11 +536,11 @@ EmitterLayerWidget::~EmitterLayerWidget()
 	disconnect(yFacingCheckBox,
 		SIGNAL(stateChanged(int)),
 		this,
+		SLOT(OnLodsChanged()));		
+	disconnect(zFacingCheckBox,
+		SIGNAL(stateChanged(int)),
+		this,
 		SLOT(OnLodsChanged()));
-    disconnect(zFacingCheckBox,
-               SIGNAL(stateChanged(int)),
-               this,
-               SLOT(OnLodsChanged()));
     disconnect(worldAlignCheckBox,
                SIGNAL(stateChanged(int)),
                this,
@@ -550,7 +550,7 @@ EmitterLayerWidget::~EmitterLayerWidget()
     disconnect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
     disconnect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
-    disconnect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+	disconnect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 	disconnect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 }
 
@@ -658,7 +658,7 @@ void EmitterLayerWidget::OnSpriteBtn()
     projectPath += "Data/Gfx/Particles/";
 
     QString filePath = FileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
-    if (filePath.isEmpty())
+	if (filePath.isEmpty())
 		return;
 	
 	// Yuri Coder. Verify that the path of the file opened is correct (i.e. inside the Project Path),
@@ -751,7 +751,7 @@ void EmitterLayerWidget::OnValueChanged()
 
     int32 particleOrientation = 0;
     if (cameraFacingCheckBox->isChecked())
-        particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
+		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
 	if (xFacingCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
 	if (yFacingCheckBox->isChecked())
@@ -816,7 +816,7 @@ void EmitterLayerWidget::OnValueChanged()
 
     DVASSERT(activeScene);
     activeScene->Exec(updateLayerCmd);
-    activeScene->MarkAsChanged();
+	activeScene->MarkAsChanged();
 
     Update(false);
     if (superemitterStatusChanged)
@@ -1172,7 +1172,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     fogCheckBox->setVisible(!isSuperemitter);
     frameBlendingCheckBox->setVisible(!isSuperemitter);
 
-    // Some controls are however specific for this mode only - display and update them.
+	// Some controls are however specific for this mode only - display and update them.
 	innerEmitterLabel->setVisible(isSuperemitter);
 	innerEmitterPathLabel->setVisible(isSuperemitter);
 	

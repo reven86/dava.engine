@@ -112,7 +112,7 @@ bool FMODSoundEvent::Trigger()
         else if (startResult != FMOD_ERR_EVENT_FAILED) //'just fail' max playbacks behavior
         {
             Logger::Error("[FMODSoundEvent::Trigger()] Failed to start event by %d on eventID: %s", startResult, eventName.c_str());
-        }
+		}
     }
     else if(result != FMOD_ERR_EVENT_FAILED) //'just fail' max playbacks behavior
     {

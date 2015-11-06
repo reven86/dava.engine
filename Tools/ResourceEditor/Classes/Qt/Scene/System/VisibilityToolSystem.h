@@ -75,7 +75,7 @@ protected:
 
     bool editingIsEnabled;
 
-    eVisibilityToolState state;
+	eVisibilityToolState state;
 
 	float32 pointsDensity;
 	float32 visibilityPointHeight;
@@ -89,7 +89,7 @@ protected:
     void PrepareConfig();
     void SetState(eVisibilityToolState newState);
 
-    void SetVisibilityPointInternal();
+	void SetVisibilityPointInternal();
 	void SetVisibilityAreaInternal();
 
     void PerformHeightTest(const Vector3& spectatorCoords,

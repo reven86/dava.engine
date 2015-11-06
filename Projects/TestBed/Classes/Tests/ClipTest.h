@@ -43,15 +43,14 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
-
 private:
-    void MoveDown(BaseObject* obj, void* data, void* callerData);
-    void MoveUp(BaseObject* obj, void* data, void* callerData);
-    void MoveRight(BaseObject* obj, void* data, void* callerData);
-    void MoveLeft(BaseObject* obj, void* data, void* callerData);
-    void StartPos(BaseObject* obj, void* data, void* callerData);
-    void DebugDrawPressed(BaseObject* obj, void* data, void* callerData);
-    void ClipPressed(BaseObject* obj, void* data, void* callerData);
+    void MoveDown(BaseObject *obj, void *data, void *callerData);
+    void MoveUp(BaseObject *obj, void *data, void *callerData);
+    void MoveRight(BaseObject *obj, void *data, void *callerData);
+    void MoveLeft(BaseObject *obj, void *data, void *callerData);
+    void StartPos(BaseObject *obj, void *data, void *callerData);
+    void DebugDrawPressed(BaseObject *obj, void *data, void *callerData);
+    void ClipPressed(BaseObject *obj, void *data, void *callerData);
 
     bool enableClip = true;
     bool enableDebugDraw = true;

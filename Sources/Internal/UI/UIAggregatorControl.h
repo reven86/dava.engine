@@ -53,7 +53,7 @@ namespace DAVA
     private:
         List<UIControl*> aggregatorControls;
         FilePath aggregatorPath;
-    };
+	};
 };
 
 #endif

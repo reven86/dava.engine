@@ -280,7 +280,7 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
     const int32 CHANNELS_COUNT = 4;
 
     uint32 width = image->GetWidth();
-    uint32 height = image->GetHeight();
+	uint32 height = image->GetHeight();
 	int32 size = width * height;
 
 	Image* images[CHANNELS_COUNT];

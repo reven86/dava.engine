@@ -65,7 +65,7 @@ bool EventDispatcher::RemoveEvent(int32 eventType, const Message &msg)
             return true;
         }
     }
-    return false;
+	return false;
 }
 	
 bool EventDispatcher::RemoveAllEvents()

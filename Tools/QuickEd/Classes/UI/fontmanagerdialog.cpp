@@ -281,7 +281,7 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
                 returnFont = GraphicFont::Create(fontDefinition.toStdString(), fontSprite.toStdString());
             }
             else
-            {
+			{
 				ResourcesManageHelper::ShowErrorMessage(fontName);
 				return returnFont;
 			}
@@ -298,7 +298,7 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
 
     if (!returnFont)
     {
-        //If font was not created - show error message
+    	//If font was not created - show error message
         //No dialog result will be set in this case
          QString message;
          QMessageBox messageBox;

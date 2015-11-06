@@ -297,7 +297,7 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
     YamlParser* parser = YamlParser::Create(filename);
     if (!parser)
     {
-        Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetAbsolutePathname().c_str());
+		Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -307,7 +307,7 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
 
     const YamlNode* emitterNode = rootNode->Get("emitter");
     if (emitterNode)
-    {
+	{
 	
 		const YamlNode * lifeTimeNode = emitterNode->Get("life");
 		if (lifeTimeNode)

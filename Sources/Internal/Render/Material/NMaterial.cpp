@@ -903,8 +903,8 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
 
     if (archive->IsKeyExists("properties"))
     {
-        const auto& propsMap = archive->GetArchive("properties")->GetArchieveData();
-        for (auto it = propsMap.begin(); it != propsMap.end(); ++it)
+        const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
         {
             const VariantType* propVariant = it->second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
@@ -927,22 +927,22 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
 
     if (archive->IsKeyExists("textures"))
     {
-        const auto& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (const auto& it : texturesMap)
+        const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
         {
-            String relativePathname = it.second->AsString();
-            MaterialTextureInfo *texInfo = new MaterialTextureInfo();            
+            String relativePathname = it->second->AsString();
+            MaterialTextureInfo* texInfo = new MaterialTextureInfo();
             texInfo->path = serializationContext->GetScenePath() + relativePathname;
-            localTextures[FastName(it.first)] = texInfo;
+            localTextures[FastName(it->first)] = texInfo;
         }
     }
 
     if (archive->IsKeyExists("flags"))
     {
-        const auto& flagsMap = archive->GetArchive("flags")->GetArchieveData();
-        for (const auto& it : flagsMap)
+        const Map<String, VariantType*>& flagsMap = archive->GetArchive("flags")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
-            AddFlag(FastName(it.first), it.second->AsInt32());
+            AddFlag(FastName(it->first), it->second->AsInt32());
         }
     }
 }
@@ -989,22 +989,24 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
 
     if (archive->IsKeyExists("textures"))
     {
-        const auto& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (const auto& it : texturesMap)
+        const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = texturesMap.begin();
+             it != texturesMap.end();
+             ++it)
         {
-            String relativePathname = it.second->AsString();
-            MaterialTextureInfo *texInfo = new MaterialTextureInfo();
+            String relativePathname = it->second->AsString();
+            MaterialTextureInfo* texInfo = new MaterialTextureInfo();
             texInfo->path = serializationContext->GetScenePath() + relativePathname;
-            localTextures[FastName(it.first)] = texInfo;
+            localTextures[FastName(it->first)] = texInfo;
         }
     }
 
     if (archive->IsKeyExists("setFlags"))
     {
-        const auto& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
-        for (const auto& it : flagsMap)
+        const Map<String, VariantType*>& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
-            AddFlag(FastName(it.first), it.second->AsInt32());
+            AddFlag(FastName(it->first), it->second->AsInt32());
         }
     }
     //NMaterial hell - for some reason property types were saved as GL_XXX defines O_o
@@ -1044,20 +1046,21 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
 
     if (archive->IsKeyExists("properties"))
     {
-        const auto& propsMap = archive->GetArchive("properties")->GetArchieveData();
-        for (const auto& it : propsMap)
+        const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
         {
-            const VariantType* propVariant = it.second;
+            const VariantType* propVariant = it->second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
             DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) + sizeof(uint32)));
 
             const uint8* ptr = propVariant->AsByteArray();
-            FastName propName = FastName(it.first);
+
+            FastName propName = FastName(it->first);
             uint32 propType = *(uint32*)ptr;
             ptr += sizeof(uint32);
             uint8 propSize = *(uint8*)ptr;
             ptr += sizeof(uint8);
-            float32 *data = (float32*)ptr;            
+            float32* data = (float32*)ptr;
             for (uint32 i = 0; i < originalTypesCount; i++)
             {
                 if (propType == propertyTypeRemapping[i].originalType)

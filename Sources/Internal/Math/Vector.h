@@ -98,8 +98,8 @@ public:
     inline const Vector2& operator+=(const Vector2& _v);
     inline const Vector2& operator-=(const Vector2& _v);
     inline const Vector2& operator*=(const Vector2& _v);
-    inline const Vector2& operator/=(const Vector2& _v);
-    inline const Vector2 & operator *= (float32 f);
+    inline const Vector2 & operator /= (const Vector2 & _v);
+	inline const Vector2 & operator *= (float32 f);
 	inline const Vector2 & operator /= (float32 f);
 	inline Vector2 operator -() const;
 
@@ -183,8 +183,8 @@ public:
     inline void Set(float32 _x, float32 _y, float32 _z);
 
     //! Additional functions
-    inline Vector3 CrossProduct(const Vector3& _v) const;
-    inline void     CrossProduct(const Vector3& v1, const Vector3& v2);
+    inline Vector3	CrossProduct(const Vector3 & _v) const;
+	inline void     CrossProduct(const Vector3& v1, const Vector3& v2);
 	inline float32	DotProduct(const Vector3 & _v) const;
 	inline void		Lerp(const Vector3 & _v1, const Vector3 & _v2, float32 t);
 
@@ -269,7 +269,7 @@ public:
         struct
         {
             float32 x, y, z, w;
-        };
+		};
         float32 data[AXIS_COUNT];
 	};
 
@@ -288,8 +288,8 @@ public:
     inline void Set(float32 _x, float32 _y, float32 _z, float32 _w);
 
     //! Additional functions
-    inline Vector4 CrossProduct(const Vector4& _v) const;
-    inline float32	DotProduct(const Vector4 & _v) const;
+    inline Vector4	CrossProduct(const Vector4 & _v) const;
+	inline float32	DotProduct(const Vector4 & _v) const;
 	inline void		Lerp(const Vector4 & _v1, const Vector4 & _v2, float32 t);
 
 	//! On functions

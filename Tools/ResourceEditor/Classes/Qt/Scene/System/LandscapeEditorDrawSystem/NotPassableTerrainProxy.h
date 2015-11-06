@@ -41,7 +41,7 @@ public:
     virtual ~NotPassableTerrainProxy();
 
     bool Enable();
-    bool Disable();
+	bool Disable();
 	bool IsEnabled() const;
 	
 	Texture* GetTexture();

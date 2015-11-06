@@ -102,7 +102,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
         scene->SaveScene(sc2Filename, false);
     }
     else
-    {
+	{
 		errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
 	}
 

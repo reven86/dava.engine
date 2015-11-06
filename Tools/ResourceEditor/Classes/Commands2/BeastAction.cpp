@@ -98,8 +98,8 @@ void BeastAction::Redo()
         Sleep(15);
     }
 
-    if (NULL != waitDialog)
-    {
+    if(NULL != waitDialog)
+	{
 		waitDialog->EnableCancel(false);
 	}
 
@@ -108,7 +108,7 @@ void BeastAction::Redo()
     if (waitDialog != nullptr)
     {
         waitDialog->Reset();
-    }
+	}
 }
 
 void BeastAction::Start()

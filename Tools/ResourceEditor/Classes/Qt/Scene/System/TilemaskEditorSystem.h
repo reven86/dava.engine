@@ -75,7 +75,7 @@ public:
     Color GetTileColor(int32 index);
     void SetTileColor(int32 index, const Color& color);
 
-    void SetDrawingType(eTilemaskDrawType type);
+	void SetDrawingType(eTilemaskDrawType type);
 	eTilemaskDrawType GetDrawingType();
 
 protected:
@@ -90,7 +90,7 @@ protected:
 
     eTilemaskDrawType drawingType;
     eTilemaskDrawType activeDrawingType;
-    float32 strength;
+	float32 strength;
 	FilePath toolImagePath;
 	int32 toolImageIndex;
 
@@ -104,8 +104,8 @@ protected:
     Rect updatedRectAccumulator;
 
     bool editingIsEnabled;
-
-    Texture * toolTexture;
+	
+	Texture * toolTexture;
 	bool toolSpriteUpdated;
     
 	bool needCreateUndo;
@@ -117,7 +117,7 @@ protected:
 
     void AddRectToAccumulator(const Rect& rect);
     void ResetAccumulatorRect();
-    Rect GetUpdatedRect();
+	Rect GetUpdatedRect();
 	
 	void CreateMaskTexture();
 	void CreateMaskFromTexture(Texture* texture);
