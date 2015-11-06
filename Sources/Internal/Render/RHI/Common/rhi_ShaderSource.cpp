@@ -283,15 +283,30 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 p.type = ShaderProp::TYPE_FLOAT4;
 
                 if (stricmp(type.c_str(), "float") == 0)
+                {
                     p.type = ShaderProp::TYPE_FLOAT1;
+                }
                 else if (stricmp(type.c_str(), "float2") == 0)
+                {
                     p.type = ShaderProp::TYPE_FLOAT2;
+                }
                 else if (stricmp(type.c_str(), "float3") == 0)
+                {
                     p.type = ShaderProp::TYPE_FLOAT3;
+                }
                 else if (stricmp(type.c_str(), "float4") == 0)
+                {
                     p.type = ShaderProp::TYPE_FLOAT4;
+                }
                 else if (stricmp(type.c_str(), "float4x4") == 0)
+                {
                     p.type = ShaderProp::TYPE_FLOAT4X4;
+                }
+                else
+                {
+                    Logger::Error("unknown property type (%s)", type.c_str());
+                    return false;
+                }
 
                 {
                     char storage[128] = "";
@@ -852,7 +867,8 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                     var_len += Snprintf(
                     var_def + var_len, sizeof(var_def) - var_len,
                     //                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n",      k
-                    "    float2 %s = float2( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n",
+                    //                    "    float2 %s = float2( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n",
+                    "    #define %s  float2( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c )\n",
                     p->uid.c_str(),
                     pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0],
                     pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 1]);
@@ -865,7 +881,8 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                     var_len += Snprintf(
                     var_def + var_len, sizeof(var_def) - var_len,
                     //                            "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n",
-                    "    float3 %s = float3( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n",
+                    //                    "    float3 %s = float3( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n",
+                    "    #define %s  float3( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c )\n",
                     p->uid.c_str(),
                     pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0],
                     pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 1],
@@ -877,7 +894,10 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                 {
                     if (p->arraySize == 1)
                     {
-                        var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg);
+                        var_len += Snprintf(
+                        var_def + var_len, sizeof(var_def) - var_len,
+                        "    #define %s  %cP_Buffer%u[%u]\n",
+                        p->uid.c_str(), pt, p->bufferindex, p->bufferReg);
                     }
                     else
                     {
