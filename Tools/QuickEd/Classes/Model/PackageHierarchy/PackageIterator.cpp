@@ -89,7 +89,7 @@ PackageIterator& PackageIterator::operator=(const PackageIterator& it)
 
 PackageIterator& PackageIterator::operator++()
 {
-    if (impl->currentNode != nullptr)
+    if (IsValid())
     {
         do
         {
