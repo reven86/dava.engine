@@ -40,10 +40,10 @@ namespace DAVA
 class DefinitionFile 
 {
 public:
-	bool Load(const FilePath & filename, bool useTwoSideMargin, uint32 marginInPixels);
-	bool LoadPNGDef(const FilePath & filename, const FilePath & pathToProcess, bool useTwoSideMargin, uint32 marginInPixels);
-	
-	DefinitionFile();
+    bool Load(const FilePath& filename);
+    bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
+
+    DefinitionFile();
 	~DefinitionFile();
 	
 	void ClearPackedFrames();

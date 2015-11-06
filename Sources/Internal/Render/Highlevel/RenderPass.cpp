@@ -174,7 +174,7 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, C
     }
 }
 
-void RenderPass::DrawLayers(Camera *camera)
+void RenderPass::DrawLayers(Camera* camera)
 {
     ShaderDescriptorCache::ClearDynamicBindigs();
 
@@ -189,7 +189,7 @@ void RenderPass::DrawLayers(Camera *camera)
     size_t size = renderLayers.size();
     for (size_t k = 0; k < size; ++k)
     {
-        RenderLayer * layer = renderLayers[k];
+        RenderLayer* layer = renderLayers[k];
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
         layer->Draw(camera, batchArray, packetList);

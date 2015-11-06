@@ -510,8 +510,8 @@ namespace DAVA
     static bool mouseCursorShown = true;
     static USHORT mouseButtonsDownMask = 0;
 
-	void HandleMouseButtonsPressed(USHORT buttsFlags)
-	{
+    void HandleMouseButtonsPressed(USHORT buttsFlags)
+    {
 		if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
 		{
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
@@ -814,9 +814,9 @@ namespace DAVA
             break;
         case WM_DESTROY:
             PostQuitMessage(0);
-			return 0;
+            return 0;
 
-		case WM_ACTIVATE:
+        case WM_ACTIVATE:
 			{
 				ApplicationCore * core = Core::Instance()->GetApplicationCore();
                 WORD loWord = LOWORD(wParam);

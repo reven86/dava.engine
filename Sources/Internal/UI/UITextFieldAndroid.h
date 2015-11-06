@@ -110,8 +110,8 @@ public:
 
     void OpenKeyboard();
     void CloseKeyboard();
-    void GetText(WideString & string) const;
-	void SetText(const WideString & string);
+    void GetText(WideString& string) const;
+    void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect);
 
 	void SetTextColor(const DAVA::Color &color);
@@ -177,7 +177,7 @@ private:
     Rect rect;
     WideString text;
     int32_t align;
-	bool useRtlAlign;
+    bool useRtlAlign;
 };
 
 };
