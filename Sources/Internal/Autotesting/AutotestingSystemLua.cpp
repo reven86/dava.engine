@@ -531,9 +531,9 @@ namespace DAVA
         keyPress.tapCount = 1;
         keyPress.keyChar = keyChar;
 
-		Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
-			keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
-		switch (keyPress.tid)
+        Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
+                               keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
+        switch (keyPress.tid)
 		{
 		case DVKEY_BACKSPACE:
 		{
@@ -712,8 +712,8 @@ namespace DAVA
         touchDown.phase = UIEvent::Phase::BEGAN;
         touchDown.tid = touchId;
         touchDown.tapCount = tapCount;
-		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
-		touchDown.point = point;
+        touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+        touchDown.point = point;
 		ProcessInput(touchDown);
 	}
 
@@ -730,8 +730,8 @@ namespace DAVA
             touchMove.phase = UIEvent::Phase::DRAG;
             ProcessInput(touchMove);
         }
-		else
-		{
+        else
+        {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 			Logger::Warning("AutotestingSystemLua::TouchMove point=(%f, %f) ignored no touch down found", point.x, point.y);
 #else
@@ -752,9 +752,9 @@ namespace DAVA
         touchUp.tid = touchId;
 
         ProcessInput(touchUp);
-	}
+    }
 
-	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
+    void AutotestingSystemLua::ProcessInput(const UIEvent &input)
 	{
         UIEvent ev = input;
         UIControlSystem::Instance()->OnInput(&ev);
@@ -769,8 +769,8 @@ namespace DAVA
 
     bool AutotestingSystemLua::LoadWrappedLuaObjects()
     {
-		if (!luaState)
-		{
+        if (!luaState)
+        {
 			return false; //TODO: report error?
 		}
 

@@ -117,8 +117,8 @@ void KeyboardDevice::PrepareKeyTranslator()
 
     keyTranslator[VK_LEFT] = DVKEY_LEFT;
     keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
-	keyTranslator[VK_UP] = DVKEY_UP;
-	keyTranslator[VK_DOWN] = DVKEY_DOWN;
+    keyTranslator[VK_UP] = DVKEY_UP;
+    keyTranslator[VK_DOWN] = DVKEY_DOWN;
 	keyTranslator[VK_ESCAPE] = DVKEY_ESCAPE;
 	keyTranslator[VK_DELETE] = DVKEY_DELETE;
 	keyTranslator[VK_BACK] = DVKEY_BACKSPACE;
