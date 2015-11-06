@@ -57,8 +57,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private static volatile boolean isPaused = false;
 	
 	MOGAListener mogaListener = null;
-	
-	boolean[] pressedKeys = new boolean[MAX_KEYS]; // Use MAX_KEYS for mapping keycodes to native
 
 	public int lastDoubleActionIdx = -1;
 	
@@ -395,8 +393,11 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	
     class KeyInputRunnable implements Runnable {
     	int keyCode;
-    	public KeyInputRunnable(int keyCode) {
+    	boolean isDown;
+    	
+    	public KeyInputRunnable(int keyCode, boolean isDown) {
     		this.keyCode = keyCode;
+    		this.isDown = isDown;
     	}
     	
     	@Override
@@ -407,21 +408,25 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     		}
     		else
     		{
-    			nativeOnKeyDown(keyCode);
+    			if (isDown)
+    			{
+    				nativeOnKeyDown(keyCode);
+    			} else
+    			{
+    				nativeOnKeyUp(keyCode);
+    			}
     		}
     	}
     }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+    	if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
     	{
     		return super.onKeyDown(keyCode, event);
     	}
     	
-    	if(pressedKeys[keyCode] == false)
-    		queueEvent(new KeyInputRunnable(keyCode));
-    	pressedKeys[keyCode] = true;
+    	queueEvent(new KeyInputRunnable(keyCode, true));
     	
     	if (event.isSystem())
     		return super.onKeyDown(keyCode, event);
@@ -436,16 +441,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     		return super.onKeyUp(keyCode, event);
     	}
     	
-    	pressedKeys[keyCode] = false;
-    	
-    	if(IsGamepadButton(keyCode))
-    	{
-    		nativeOnGamepadElement(keyCode, 0.f, true);
-    	}
-    	else
-    	{
-    		nativeOnKeyUp(keyCode);
-    	}
+    	queueEvent(new KeyInputRunnable(keyCode, false));
     	
     	return super.onKeyUp(keyCode, event);
     }
@@ -546,37 +542,34 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     
     class MOGAListener implements ControllerListener
     {
-    	JNISurfaceView parent = null;
+    	JNISurfaceView surface = null;
     	
     	MOGAListener(JNISurfaceView parent)
     	{
-    		this.parent = parent;
+    		this.surface = parent;
     	}
     	
 		@Override
 		public void onKeyEvent(com.bda.controller.KeyEvent event)
 		{
 			int keyCode = event.getKeyCode();
-            if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+            if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
             {
                 return;
             }
 			if(event.getAction() == com.bda.controller.KeyEvent.ACTION_DOWN)
 			{
-		    	if(pressedKeys[keyCode] == false)
-		    		parent.queueEvent(new KeyInputRunnable(keyCode));
-		    	pressedKeys[keyCode] = true;
+		    	surface.queueEvent(new KeyInputRunnable(keyCode, true));	
 			}
 			else if(event.getAction() == com.bda.controller.KeyEvent.ACTION_UP)
 			{
-		    	pressedKeys[keyCode] = false;
-		        nativeOnGamepadElement(keyCode, 0.f, true);
+				surface.queueEvent(new KeyInputRunnable(keyCode, false));
 			}
 		}
 		@Override
 		public void onMotionEvent(com.bda.controller.MotionEvent event)
 		{
-			parent.queueEvent(new InputRunnable(event));
+			surface.queueEvent(new InputRunnable(event));
 		}
 		@Override
 		public void onStateEvent(StateEvent event)
