@@ -621,6 +621,11 @@ static const char* _ShaderDefine_GLES2 =
 static const char* _ShaderHeader_DX9 =
 "#define float1                 float\n"
 "#define half1                  half\n"
+"#define min10float             half\n"
+"#define min10float1            half\n"
+"#define min10float2            half2\n"
+"#define min10float3            half3\n"
+"#define min10float4            half4\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.a\n"
