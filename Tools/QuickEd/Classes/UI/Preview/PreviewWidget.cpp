@@ -1,4 +1,3 @@
-
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
@@ -345,7 +344,7 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
             scrollAreaController->AdjustScale(scale + event->value() * davaGLWidget->devicePixelRatio(), pos);
                         break;
         case Qt::SmartZoomNativeGesture:
-            scrollAreaController->AdjustScale((event->value() == 0 ? 1.0f : 1.4f) * davaGLWidget->devicePixelRatio(), pos);
+            scrollAreaController->AdjustScale((event->value() == 0 ? 1.0f : 1.401f) * davaGLWidget->devicePixelRatio(), pos);
             break;
         default:
             break;

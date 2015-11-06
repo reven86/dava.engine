@@ -117,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent)
     toolBarPlugins->setEnabled(false);
 
     connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
+    OnCurrentIndexChanged(-1);
 }
 
 MainWindow::~MainWindow()
