@@ -39,7 +39,6 @@ using namespace DAVA;
 class ScenePreviewControl;
 class ScenePreviewDialog: public ExtendedDialog
 {
-    
 public:
     ScenePreviewDialog();
     virtual ~ScenePreviewDialog();
@@ -54,8 +53,10 @@ protected:
     
     void OnClose(BaseObject *, void *, void *);
 
-    ScenePreviewControl *preview;
-    UIStaticText *errorMessage;
+    ScenePreviewControl* preview = nullptr;
+    UIStaticText* errorMessage = nullptr;
+    ;
+    UIControl* clickableBackgound = nullptr;
 };
 
 

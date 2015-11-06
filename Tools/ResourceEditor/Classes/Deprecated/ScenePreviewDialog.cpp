@@ -37,10 +37,11 @@ ScenePreviewDialog::ScenePreviewDialog()
     :   ExtendedDialog()
 {
     UpdateSize();
-    
-    //fontLight = ControlsFactory::GetFontLight();
-    //fontDark = ControlsFactory::GetFontDark();
-    
+
+    clickableBackgound = new UIControl();
+    clickableBackgound->SetInputEnabled(true, true);
+    clickableBackgound->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
+
     preview = new ScenePreviewControl(Rect(0, 0, ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::PREVIEW_PANEL_HEIGHT));
     preview->SetDebugDraw(true);
     
@@ -49,17 +50,17 @@ ScenePreviewDialog::ScenePreviewDialog()
     errorMessage->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 	errorMessage->SetTextColor(ControlsFactory::GetColorError());
     errorMessage->SetFont(ControlsFactory::GetFont20());
-    
-    UIButton *b = ControlsFactory::CreateButton(Rect(0, ControlsFactory::PREVIEW_PANEL_HEIGHT,
-                                                     ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::BUTTON_HEIGHT),
-                                                LocalizedString(L"dialog.close"));
+
+    ScopedPtr<UIButton> b(ControlsFactory::CreateButton(Rect(0, ControlsFactory::PREVIEW_PANEL_HEIGHT,
+                                                             ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::BUTTON_HEIGHT),
+                                                        LocalizedString(L"dialog.close")));
     b->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
     draggableDialog->AddControl(b);
-    SafeRelease(b);
 }
     
 ScenePreviewDialog::~ScenePreviewDialog()
 {
+    SafeRelease(clickableBackgound);
     SafeRelease(errorMessage);
     SafeRelease(preview);
 }
@@ -74,7 +75,12 @@ void ScenePreviewDialog::Show(const FilePath &scenePathname)
     if(!GetParent())
     {
         UIScreen *screen = UIScreenManager::Instance()->GetScreen();
+        clickableBackgound->SetRect(screen->GetRect());
+        clickableBackgound->SetPosition(Vector2());
+        screen->AddControl(clickableBackgound);
         screen->AddControl(this);
+
+        screen->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ScenePreviewDialog::OnClose));
     }
     
     //show preview
@@ -143,6 +149,11 @@ void ScenePreviewDialog::OnClose(BaseObject *, void *, void *)
 
 void ScenePreviewDialog::Close()
 {
+    if (clickableBackgound->GetParent())
+    {
+        clickableBackgound->GetParent()->RemoveControl(clickableBackgound);
+    }
+
     preview->ReleaseScene();
     preview->RecreateScene();
 
