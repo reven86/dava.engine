@@ -89,12 +89,12 @@ public:
     inline rhi::PrimitiveType GetPrimitiveType();
 
     //! Setters
-    inline void	SetCoord(int32 i, const Vector3 & v);
-	inline void	SetNormal(int32 i, const Vector3 & v);
-	inline void	SetTangent(int32 i, const Vector3 & v);
-	inline void	SetBinormal(int32 i, const Vector3 & v);
-	
-	inline void	SetColor(int32 i, const uint32 & c);
+    inline void SetCoord(int32 i, const Vector3& v);
+    inline void SetNormal(int32 i, const Vector3& v);
+    inline void SetTangent(int32 i, const Vector3& v);
+    inline void SetBinormal(int32 i, const Vector3& v);
+
+    inline void	SetColor(int32 i, const uint32 & c);
 	inline void	SetTexcoord(int32 ti, int32 i, const Vector2 & v);
 	inline void	SetCubeTexcoord(int32 ti, int32 i, const Vector3 & v);
 	inline void	SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue);
@@ -115,19 +115,19 @@ public:
     inline void SetPrimitiveType(rhi::PrimitiveType type);
 
     int32 vertexCount;
-    int32	indexCount;
-	int32	textureCoordCount;
-	int32	vertexStride;
-	int32	vertexFormat;
+    int32 indexCount;
+    int32 textureCoordCount;
+    int32 vertexStride;
+    int32 vertexFormat;
     int32 indexFormat;
     rhi::PrimitiveType primitiveType;
     int32 cubeTextureCoordCount;
 
-    Vector3		*vertexArray;
-	Vector2		**textureCoordArray;
-	Vector3		*normalArray;
-	Vector3		*tangentArray;
-	Vector3		*binormalArray;
+    Vector3* vertexArray;
+    Vector2** textureCoordArray;
+    Vector3* normalArray;
+    Vector3* tangentArray;
+    Vector3		*binormalArray;
     float32* jointIdxArray;
     float32* jointWeightArray;
     Vector3** cubeTextureCoordArray;

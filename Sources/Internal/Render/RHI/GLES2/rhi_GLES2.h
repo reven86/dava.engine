@@ -79,12 +79,14 @@ unsigned NeedRestoreCount();
 
 namespace SamplerStateGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle hstate);
 }
 
 namespace PipelineStateGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle ps, uint32 vdeclUID);
 void SetVertexDeclToRHI(Handle ps, uint32 vdeclUID, uint32 firstVertex = 0);
@@ -96,6 +98,7 @@ void InvalidateVattrCache();
 
 namespace DepthStencilStateGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle hstate);
 }
@@ -111,11 +114,13 @@ const void* Instance(Handle cb);
 
 namespace RenderPassGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 
 namespace CommandBufferGLES2
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 

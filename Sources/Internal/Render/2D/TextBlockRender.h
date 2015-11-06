@@ -47,9 +47,12 @@ public:
     virtual void Prepare();
     virtual void PreDraw(){};
     virtual void Draw(const Color& /*textColor*/, const Vector2* /*offset*/){};
-	
-	Sprite* GetSprite() const {return sprite;};
-	
+
+    Sprite* GetSprite() const
+    {
+        return sprite;
+    };
+
 protected:
 	void DrawText();
 	virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w) = 0;

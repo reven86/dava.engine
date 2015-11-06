@@ -40,7 +40,8 @@ namespace DAVA
 {
 const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;
 
-StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
+StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName& name)
+    : RenderPass(name)
 {
     meshBatchesWithDepthWriteOption.reserve(1024);
     terrainBatches.reserve(256);
@@ -48,7 +49,12 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     uint32 sortingFlags = RenderBatchArray::SORT_THIS_FRAME | RenderBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK;
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, sortingFlags));
+
+    sortingFlags = RenderBatchArray::SORT_THIS_FRAME | RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 
     rhi::Texture::Descriptor descriptor;
 
@@ -108,7 +114,7 @@ void OnOcclusionRenderPassCompleted(rhi::HSyncObject syncObj)
 
     void* data = rhi::MapTexture(sharedColorBuffer, 0);
 
-    Image* img = Image::CreateFromData(OCCLUSION_RENDER_TARGET_SIZE_X, OCCLUSION_RENDER_TARGET_SIZE_Y,
+    Image* img = Image::CreateFromData(OCCLUSION_RENDER_TARGET_SIZE, OCCLUSION_RENDER_TARGET_SIZE,
                                        PixelFormat::FORMAT_RGBA8888, reinterpret_cast<uint8*>(data));
     img->Save(renderPassFileNames.at(syncObj));
     SafeRelease(img);
@@ -160,12 +166,12 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
-        const RenderBatchArray & renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
-    
+        const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+
         uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch * batch = renderBatchArray.Get(batchIndex);
+            RenderBatch* batch = renderBatchArray.Get(batchIndex);
             auto renderObject = batch->GetRenderObject();
             auto objectType = renderObject->GetType();
 
@@ -192,7 +198,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
             }
         }
     }
-        
+
     if (invisibleObjects.empty())
         return;
 

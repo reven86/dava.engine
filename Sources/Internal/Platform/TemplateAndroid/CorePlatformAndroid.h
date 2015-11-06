@@ -72,12 +72,12 @@ public:
 
     // called from Activity and manage a visible lifetime
     void StartVisible();
-	void StopVisible();
+    void StopVisible();
 
-	void StartForeground();
-	void StopForeground(bool isLock);
+    void StartForeground();
+    void StopForeground(bool isLock);
 
-	void OnCreateActivity();
+    void OnCreateActivity();
 	void OnDestroyActivity();
 
 	void KeyUp(int32 keyCode);

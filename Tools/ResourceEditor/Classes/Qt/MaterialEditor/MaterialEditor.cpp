@@ -623,8 +623,8 @@ void MaterialEditor::FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspI
 
 void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
 {
-    QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
-    FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+    QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+    FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
 
     // calculate appropriate default path
     if (dataSourcePath.Exists())
@@ -1045,7 +1045,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
 
             DAVA::SerializationContext materialContext;
             materialContext.SetScene(curScene);
-            materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
+            materialContext.SetScenePath(ProjectManager::Instance()->GetProjectPath());
             materialContext.SetVersion(VersionInfo::Instance()->GetCurrentVersion().version);
 
             ScopedPtr<DAVA::KeyedArchive> materialArchive(new DAVA::KeyedArchive());
@@ -1087,7 +1087,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                 DAVA::uint32 userChoiseWhatToLoad = ExecMaterialLoadingDialog(lastCheckState, inputFile);
                 DAVA::SerializationContext materialContext;
                 materialContext.SetScene(curScene);
-                materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
+                materialContext.SetScenePath(ProjectManager::Instance()->GetProjectPath());
                 materialContext.SetVersion(VersionInfo::Instance()->GetCurrentVersion().version);
                 UpdateMaterialFromPresetWithOptions(curMaterials.front(), materialArchive, &materialContext, userChoiseWhatToLoad);
                 materialContext.ResolveMaterialBindings();

@@ -190,33 +190,74 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     resName += "  defines: ";
     for (auto& it : defines)
     {
-        progDefines.push_back(String(it.first.c_str()));
-        progDefines.push_back(DAVA::Format("%d", it.second));
-        resName += Format("%s = %d, ", it.first.c_str(), it.second);
+        bool doAdd = true;
+
+        for (size_t i = 0; i != progDefines.size(); i += 2)
+        {
+            if (strcmp(it.first.c_str(), progDefines[i].c_str()) < 0)
+            {
+                progDefines.insert(progDefines.begin() + i, String(it.first.c_str()));
+                progDefines.insert(progDefines.begin() + i + 1, DAVA::Format("%d", it.second));
+                doAdd = false;
+                break;
+            }
+        }
+
+        if (doAdd)
+        {
+            progDefines.push_back(String(it.first.c_str()));
+            progDefines.push_back(DAVA::Format("%d", it.second));
+        }
     }
 
-    /*Sources*/
-    ShaderSourceCode sourceCode = GetSourceCode(name);
-    rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
-    rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
-    vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
-    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
-    //vSource.Dump();
-    //fSource.Dump();
+    for (size_t i = 0; i != progDefines.size(); i += 2)
+        resName += Format("%s = %s, ", progDefines[i + 0].c_str(), progDefines[i + 1].c_str());
 
     FastName vProgUid, fProgUid;
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
 
-    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource.SourceCode());
-    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource.SourceCode());
+    ShaderSourceCode sourceCode = GetSourceCode(name);
+    const uint32 vSrcHash = HashValue_N(sourceCode.vertexProgText, static_cast<uint32>(strlen(sourceCode.vertexProgText)));
+    const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText, static_cast<uint32>(strlen(sourceCode.fragmentProgText)));
+    const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, vSrcHash);
+    const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, fSrcHash);
+    rhi::ShaderSource vSource2(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
+    rhi::ShaderSource fSource2(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
+
+    if (vSource)
+    {
+        Logger::Info("using cached \"%s\"", vProgUid.c_str());
+    }
+    else
+    {
+        Logger::Info("building \"%s\"", vProgUid.c_str());
+        vSource2.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
+        rhi::ShaderSourceCache::Update(vProgUid, vSrcHash, vSource2);
+        vSource = &vSource2;
+    }
+
+    if (fSource)
+    {
+        Logger::Info("using cached \"%s\"", fProgUid.c_str());
+    }
+    else
+    {
+        Logger::Info("building \"%s\"", fProgUid.c_str());
+        fSource2.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
+        rhi::ShaderSourceCache::Update(fProgUid, fSrcHash, fSource2);
+        fSource = &fSource2;
+    }
+
+    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
+    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
 
     //ShaderDescr
     rhi::PipelineState::Descriptor psDesc;
     psDesc.vprogUid = vProgUid;
     psDesc.fprogUid = fProgUid;
-    psDesc.vertexLayout = vSource.ShaderVertexLayout();
-    psDesc.blending = fSource.Blending();
+    psDesc.vertexLayout = vSource->ShaderVertexLayout();
+    psDesc.blending = fSource->Blending();
     rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
     ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
     res->sourceName = name;
@@ -224,7 +265,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     res->valid = piplineState.IsValid(); //later add another conditions
     if (res->valid)
     {
-        res->UpdateConfigFromSource(&vSource, &fSource);
+        res->UpdateConfigFromSource(const_cast<rhi::ShaderSource*>(vSource), const_cast<rhi::ShaderSource*>(fSource));
         res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
     }
 

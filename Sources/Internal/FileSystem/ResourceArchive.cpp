@@ -363,13 +363,13 @@ int32 ResourceArchive::LoadResource(const uint32 resourceIndex, void * data)
 int32	ResourceArchive::LoadResource(const FilePath & pathName, void * data)
 {	
 	if (!withPaths)return -1;
-	
-	uint32 resourceIndex;
-	if (lastResourceIndex != -1)
-	{
-		if (pathName == lastResourceName)
-		{
-			resourceIndex = lastResourceIndex;
+
+    uint32 resourceIndex = static_cast<uint32>(-1);
+    if (lastResourceIndex != -1)
+    {
+        if (pathName == lastResourceName)
+        {
+            resourceIndex = lastResourceIndex;
 		}
 	}
 	
@@ -406,6 +406,10 @@ void    ResourceArchive::UnpackToFolder(const FilePath & dirPath)
                 if(file)
                     file->Write(fileData, fileSize);
                 SafeRelease(file);
+            }
+            else
+            {
+                DVASSERT_MSG(false, Format("Failed to load resource at index %d", i).c_str());
             }
             SafeDeleteArray(fileData);
         }

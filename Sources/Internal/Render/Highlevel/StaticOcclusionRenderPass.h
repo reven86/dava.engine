@@ -49,7 +49,7 @@ class StaticOcclusionData;
 class StaticOcclusionRenderPass : public RenderPass
 {
 public:
-    StaticOcclusionRenderPass(const FastName & name);
+    StaticOcclusionRenderPass(const FastName& name);
     ~StaticOcclusionRenderPass();
 
     void DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
@@ -73,7 +73,6 @@ private:
     UnorderedMap<RenderObject*, bool> switchRenderObjects;
     Vector<RenderBatchWithDepthOption> meshBatchesWithDepthWriteOption;
 };
-
 };
 
 #endif //__DAVAENGINE_STATIC_OCCLUSION_RENDER_PASS__
