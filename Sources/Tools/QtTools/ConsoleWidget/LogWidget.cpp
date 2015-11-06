@@ -19,7 +19,10 @@ LogWidget::LogWidget(QWidget* parent)
 {
     ui->setupUi(this);
     ui->toolButton_clearFilter->setIcon(QIcon(":/QtTools/Icons/reset.png"));
+    ui->toolButton_clearFilter->setToolTip(tr("Clear filter string"));
+
     ui->toolButton_clearConsole->setIcon(QIcon(":/QtTools/Icons/clear.png"));
+    ui->toolButton_clearConsole->setToolTip(tr("Clear console window"));
 
     logModel = new LogModel(this);
     logFilterModel = new LogFilterModel(this);
@@ -27,6 +30,8 @@ LogWidget::LogWidget(QWidget* parent)
     logFilterModel->setSourceModel(logModel);
     ui->log->setModel(logFilterModel);
     ui->log->installEventFilter(this);
+    ui->log->setUniformItemSizes(true);
+
     LogDelegate *logDelegate = new LogDelegate(ui->log);
     FillFiltersCombo();
     connect(logDelegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);
@@ -85,27 +90,6 @@ void LogWidget::Deserialize(const QByteArray& data)
 void LogWidget::AddMessage(DAVA::Logger::eLogLevel ll, const char* msg)
 {
     logModel->AddMessage(ll, msg);
-}
-
-void LogWidget::AddResultList(const DAVA::ResultList &resultList)
-{
-    for(const auto &result : resultList.GetResults())
-    {
-        DAVA::Logger::eLogLevel level;
-        switch(result.type)
-        {
-            case DAVA::Result::RESULT_SUCCESS:
-                level = DAVA::Logger::LEVEL_INFO;
-            break;
-            case DAVA::Result::RESULT_FAILURE:
-                level = DAVA::Logger::LEVEL_WARNING;
-            break;
-            case DAVA::Result::RESULT_ERROR:
-                level = DAVA::Logger::LEVEL_ERROR;
-            break;
-        }
-        logModel->AddMessage(level, QString::fromStdString(result.message));
-    }
 }
 
 void LogWidget::FillFiltersCombo()
