@@ -553,11 +553,12 @@ bool UIList::SystemInput(UIEvent *currentInput)
 
     if(currentInput->touchLocker != this)
     {
-        if (UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase)
+        if (UIEvent::Phase::WHEEL == currentInput->phase)
         {
             if(IsPointInside(currentInput->point))
             {
                 Input(currentInput);
+                return true;
             }
         }
         else if (currentInput->phase == UIEvent::Phase::BEGAN)
