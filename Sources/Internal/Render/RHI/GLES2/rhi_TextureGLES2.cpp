@@ -126,6 +126,9 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
                 };
                 ExecGL(d24s8cmd, countof(d24s8cmd), force_immediate);
+
+                // Store depth/stencil buffer index as secondary stencil index for iOS/Android
+                uid[1] = uid[0];
             }
 #if defined(__DAVAENGINE_ANDROID__)
             else if (_GLES2_IsGlDepthNvNonLinearSupported)
@@ -164,8 +167,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 cmd2[5].func = GLCommand::NOP;
             }
 */
-
-            uid[1] = uid[0];
         }
     }
     else
@@ -874,11 +875,11 @@ void SetAsRenderTarget(Handle tex, Handle depth)
 #endif
             }
 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
-            #else
+#else
             GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
 
             glDrawBuffers(1, b);
-            #endif
+#endif
 
             int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
