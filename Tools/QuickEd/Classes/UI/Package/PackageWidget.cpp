@@ -561,8 +561,8 @@ void PackageWidget::MoveNodeUpDown(bool up)
     });
     PackageBaseNode* nextNode = up ? *(--iter) : *(++iter);
     DVASSERT(nullptr != nextNode);
-    DVASSERT(!(dynamic_cast<ControlNode*>(node) != nullptr ^ dynamic_cast<const ControlNode*>(nextNode) != nullptr)
-             && !(dynamic_cast<StyleSheetsNode*>(node) != nullptr ^ dynamic_cast<const StyleSheetsNode*>(nextNode) != nullptr));
+    DVASSERT((dynamic_cast<ControlNode*>(node) != nullptr && dynamic_cast<const ControlNode*>(nextNode) != nullptr)
+             || (dynamic_cast<StyleSheetsNode*>(node) != nullptr && dynamic_cast<const StyleSheetsNode*>(nextNode) != nullptr));
     PackageBaseNode* nextNodeParent = nextNode->GetParent();
     DVASSERT(nextNodeParent != nullptr);
     int destIndex = nextNodeParent->GetIndex(nextNode);
