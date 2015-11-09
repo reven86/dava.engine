@@ -208,12 +208,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
 {
     NSPoint p = [curEvent locationInWindow];
 
-    if (phase == UIEvent::Phase::WHEEL)
-    {
-        event.physPoint.x = [curEvent scrollingDeltaX];
-        event.physPoint.y = [curEvent scrollingDeltaY];
-    }
-    else if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
@@ -338,7 +333,13 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
 
     ev.phase = DAVA::UIEvent::Phase::WHEEL;
     ev.device = DAVA::UIEvent::Device::MOUSE;
-    ev.physPoint.y = [theEvent scrollingDeltaY];
+
+    DAVA::Vector2 scrollDelta([theEvent scrollingDeltaX], [theEvent scrollingDeltaY]);
+    ev.scrollDelta = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(scrollDelta);
+
+    NSPoint posInWindow = [theEvent locationInWindow];
+    ev.physPoint.x = posInWindow.x;
+    ev.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - posInWindow.y;
 
     UIControlSystem::Instance()->OnInput(&ev);
 }

@@ -50,11 +50,11 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
     FilePath defaultPath(ProjectManager::Instance()->GetDataSourcePath());
 
     SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    if(scene)
-	{
+    if (scene)
+    {
 		FilePath scenePath = scene->GetScenePath();
-		if(scenePath.Exists())
-		{
+        if (FileSystem::Instance()->Exists(scenePath))
+        {
 			defaultPath = scenePath.GetDirectory();
 		}
 	}

@@ -263,7 +263,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
     float32 shortEffectTime = timeElapsed * speedMult;
 
     size_t componentsCount = activeComponents.size();
-	for(size_t i=0; i<componentsCount; i++)
+    for(size_t i=0; i<componentsCount; i++)
 	{
 		ParticleEffectComponent * effect = activeComponents[i];
         if (effect->activeLodLevel!=effect->desiredLodLevel)

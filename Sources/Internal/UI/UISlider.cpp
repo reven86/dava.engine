@@ -217,6 +217,12 @@ void UISlider::RemoveControl(UIControl *control)
 
 void UISlider::Input(UIEvent *currentInput)
 {
+    // not supported for now.
+    if (UIEvent::Phase::WHEEL == currentInput->phase)
+    {
+        return;
+    }
+
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
     if (currentInput->phase == UIEvent::Phase::MOVE || currentInput->phase == UIEvent::Phase::CHAR)
         return;

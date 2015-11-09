@@ -263,7 +263,7 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
 DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName)
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
-    
+
     uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
@@ -405,7 +405,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     Vector<String> currentFlags;
 
     const auto flagsPathname = inputPath + "flags.txt";
-    if (flagsPathname.Exists())
+    if (FileSystem::Instance()->Exists(flagsPathname))
     {
         currentFlags = FetchFlags(flagsPathname);
     }

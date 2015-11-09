@@ -174,7 +174,7 @@ namespace DAVA
         {
             windowedMode.width = options->GetInt32("width");
             windowedMode.height = options->GetInt32("height");
-			windowedMode.bpp = options->GetInt32("bpp");
+            windowedMode.bpp = options->GetInt32("bpp");
 			
 			// get values from config in case if they are available
 			fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
@@ -211,7 +211,7 @@ namespace DAVA
         realHeight = clientSize.bottom - clientSize.top;
 
         windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
-		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
+        windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
         RAWINPUTDEVICE Rid;
@@ -305,7 +305,7 @@ namespace DAVA
         FrameworkWillTerminate();
     }
 
-	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
+    RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
 	{
 		RECT clientSize;
 		clientSize.top = 0;
@@ -386,8 +386,8 @@ namespace DAVA
         ZeroMemory(&dmi, sizeof(dmi));
         dmi.dmSize = sizeof(dmi);
 
-        while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
-		{
+        while (EnumDisplaySettings(NULL, iModeNum++, &dmi))
+        {
 			DisplayMode mode;
 			mode.width = dmi.dmPelsWidth;
 			mode.height = dmi.dmPelsHeight;
@@ -514,7 +514,7 @@ namespace DAVA
     {
         if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
         {
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
 		}
 		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
 		{
@@ -818,7 +818,7 @@ namespace DAVA
 
         case WM_ACTIVATE:
         {
-                ApplicationCore * core = Core::Instance()->GetApplicationCore();
+            ApplicationCore* core = Core::Instance()->GetApplicationCore();
                 WORD loWord = LOWORD(wParam);
                 WORD hiWord = HIWORD(wParam);
                 if(!loWord || hiWord)

@@ -275,7 +275,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
     }
 
     DAVA::FilePath saveAsPath = scene->GetScenePath();
-    if (!saveAsPath.Exists())
+    if (!DAVA::FileSystem::Instance()->Exists(saveAsPath))
     {
         DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
         saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
@@ -1313,10 +1313,9 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
 	if (toolsFlags)
 	{
 		FilePath colorSystemTexturePath = scene->customColorsSystem->GetCurrentSaveFileName();
-		if( (toolsFlags & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR) &&
-		    (colorSystemTexturePath.IsEmpty() || !colorSystemTexturePath.Exists()) &&
-		    !SelectCustomColorsTexturePath())
-		{
+        if ((toolsFlags & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR) &&
+            !FileSystem::Instance()->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
+        {
 			closeRequest->Cancel();
 			return;
 		}
@@ -2329,9 +2328,8 @@ void QtMainWindow::OnCustomColorsEditor()
     if (sceneEditor->customColorsSystem->ChangesPresent())
     {
         FilePath currentTexturePath = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
-	
-        if ((currentTexturePath.IsEmpty() || !currentTexturePath.Exists()) &&
-            !SelectCustomColorsTexturePath())
+
+        if (!FileSystem::Instance()->Exists(currentTexturePath) && !SelectCustomColorsTexturePath())
         {
             ui->actionCustomColorsEditor->setChecked(true);
             return;
@@ -2661,8 +2659,8 @@ bool QtMainWindow::OpenScene( const QString & path )
         FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
         FilePath argumentPath(path.toStdString());
 
-        if(!FilePath::ContainPath(argumentPath, projectPath))
-		{
+        if (!FilePath::ContainPath(argumentPath, projectPath))
+        {
 			QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
 				projectPath.GetAbsolutePathname().c_str(),
 				argumentPath.GetAbsolutePathname().c_str()));

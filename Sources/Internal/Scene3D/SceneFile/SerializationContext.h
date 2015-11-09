@@ -151,8 +151,8 @@ namespace DAVA
         {
             return lastError;
         }
-		
-		inline void SetDefaultMaterialQuality(const FastName& quality)
+
+        inline void SetDefaultMaterialQuality(const FastName& quality)
 		{
 			defaultMaterialQuality = quality;
 		}

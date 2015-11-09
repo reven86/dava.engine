@@ -6,6 +6,7 @@
 #include "_gl.h"
 
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GLES/gl.h>
 #include <android/native_window.h>
 
@@ -27,7 +28,7 @@ void android_gl_init(void* _window)
 {
     _nativeWindow = static_cast<ANativeWindow*>(_window);
 
-    const EGLint configAttribs[] = {
+    const EGLint d24s8ConfigAttribs[] = {
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
         EGL_BLUE_SIZE, 8,
@@ -38,12 +39,52 @@ void android_gl_init(void* _window)
         EGL_NONE
     };
 
+    const EGLint d16s8NvidiaConfigAttribs[] = {
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_BLUE_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_RED_SIZE, 8,
+        EGL_DEPTH_SIZE, 16,
+        EGL_STENCIL_SIZE, 8,
+        EGL_DEPTH_ENCODING_NV, EGL_DEPTH_ENCODING_NONLINEAR_NV,
+        EGL_NONE
+    };
+
+    const EGLint d16s8ConfigAttribs[] = {
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_BLUE_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_RED_SIZE, 8,
+        EGL_DEPTH_SIZE, 16,
+        EGL_STENCIL_SIZE, 8,
+        EGL_NONE
+    };
+
     EGLint numConfigs;
 
     _display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-
     eglInitialize(_display, nullptr, nullptr);
-    eglChooseConfig(_display, configAttribs, &_config, 1, &numConfigs);
+
+    //try initialize 24 bit depth buffer
+    _GLES2_IsGlDepth24Stencil8Supported = true;
+    eglChooseConfig(_display, d24s8ConfigAttribs, &_config, 1, &numConfigs);
+    if (_config == nullptr)
+    {
+        _GLES2_IsGlDepth24Stencil8Supported = false;
+        //try initialize 16 bit depth buffer with NVidia extension
+        _GLES2_IsGlDepthNvNonLinearSupported = true;
+        eglChooseConfig(_display, d16s8NvidiaConfigAttribs, &_config, 1, &numConfigs);
+    }
+    if (_config == nullptr)
+    {
+        _GLES2_IsGlDepthNvNonLinearSupported = false;
+        //worst case only 16 bit depth buffer
+        eglChooseConfig(_display, d16s8ConfigAttribs, &_config, 1, &numConfigs);
+    }
+    DVASSERT_MSG(_config != nullptr, "Can't set GL configuration");
+
     eglGetConfigAttrib(_display, _config, EGL_NATIVE_VISUAL_ID, &_format);
 
     ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
