@@ -96,10 +96,13 @@ WinUAPXamlApp::WinUAPXamlApp()
     deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY) {
         MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
     });
+    displayRequest = ref new Windows::System::Display::DisplayRequest;
+    AllowDisplaySleep(false);
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
 {
+    AllowDisplaySleep(true);
     delete deferredSizeScaleEvents;
 }
 
@@ -387,6 +390,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
     bool visible = args->Visible;
+    AllowDisplaySleep(!visible);
     core->RunOnMainThread([this, visible]() {
         if (visible)
         {
@@ -961,6 +965,18 @@ void WinUAPXamlApp::EmitPushNotification(::Windows::ApplicationModel::Activation
     dispatcher->RunAsync([=]() {
         pushNotificationSignal.Emit(args);
     });
+}
+
+void WinUAPXamlApp::AllowDisplaySleep(bool sleep)
+{
+    if (sleep)
+    {
+        displayRequest->RequestRelease();
+    }
+    else
+    {
+        displayRequest->RequestActive();
+    }
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(

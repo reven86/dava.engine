@@ -164,6 +164,7 @@ private:
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
+    void AllowDisplaySleep(bool sleep);
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -217,6 +218,7 @@ private:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
+    Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
 };
 
 //////////////////////////////////////////////////////////////////////////
