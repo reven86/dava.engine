@@ -67,6 +67,9 @@
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+
 #include "Sound/SoundSystem.h"
 
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
@@ -373,9 +376,9 @@ Scene::~Scene()
         AnimatedMesh* obj = *t;
         obj->Release();
     }
-	animatedMeshes.clear();
-	
-	for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
+    animatedMeshes.clear();
+
+    for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
 	{
 		Camera * obj = *t;
 		obj->Release();
@@ -676,6 +679,8 @@ void Scene::Update(float timeElapsed)
 {
     TIME_PROFILE("Scene::Update");
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
+
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
     uint32 size = (uint32)systemsToProcess.size();
@@ -721,11 +726,15 @@ void Scene::Update(float timeElapsed)
     // 	}
 
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
+
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
 }
 
 void Scene::Draw()
 {
 	TIME_PROFILE("Scene::Draw");
+
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
 
     //TODO: remove this crap with shadow color
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
@@ -746,6 +755,8 @@ void Scene::Draw()
     //foliageSystem->DebugDrawVegetation();
     
 	drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
+
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
 }
     
 void Scene::SceneDidLoaded()

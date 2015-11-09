@@ -60,7 +60,7 @@ RenderSystem2D::RenderSystem2D()
     , currentIndexBuffer(nullptr)
     , indexIndex(0)
     , vertexIndex(0)
-    , spriteClipping(false)
+    , spriteClipping(true)
     , spriteIndexCount(0)
     , spriteVertexCount(0)
     , prevFrameErrorsFlags(NO_ERRORS)
@@ -304,16 +304,6 @@ void RenderSystem2D::IntersectClipRect(const Rect &rect)
                     IsRenderTargetPass() ? (float32)renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
                     IsRenderTargetPass() ? (float32)renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
         Rect res = screen.Intersection(rect);
-        if (res.dx == 0)
-        {
-            res.x = 0;
-            res.dx = 1;
-        }
-        if (res.dy == 0)
-        {
-            res.y = 0;
-            res.dy = 1;
-        }
         SetClip(res);
     }
     else

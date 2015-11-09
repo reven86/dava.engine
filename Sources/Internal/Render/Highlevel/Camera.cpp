@@ -191,10 +191,36 @@ void Camera::Setup(float32 _xmin, float32 _xmax, float32 _ymin, float32 _ymax, f
     ymax = _ymax;
     znear = _znear;
     zfar = _zfar;
+    ValidateProperties();
+}
+
+void Camera::ValidateProperties()
+{
+    const float minZFarZNearDifference = 0.01f;
+    const float minZNear = 0.01f;
+    const float minFOV = 0.01f; // in degrees
+    const float maxFOV = 179.99f; // in degrees
+    const float minAspect = 0.0001f;
+    const float maxAspect = 10000.0f;
+
+    if (znear < minZNear)
+    {
+        znear = minZNear;
+    }
+
+    if (zfar < znear + minZFarZNearDifference)
+    {
+        zfar = znear + minZFarZNearDifference;
+    }
+
+    fovX = (fovX < minFOV) ? minFOV : (fovX > maxFOV ? maxFOV : fovX);
+    aspect = (aspect < minAspect) ? minAspect : (aspect > maxAspect ? maxAspect : aspect);
 }
 
 void Camera::Recalc()
 {
+    ValidateProperties();
+
     flags |= REQUIRE_REBUILD_PROJECTION;
 
     if (ortho)
@@ -227,8 +253,6 @@ Vector3 Camera::GetOnScreenPositionAndDepth(const Vector3& forPoint, const Rect&
 {
     Vector4 pv(forPoint);
     pv = pv * GetViewProjMatrix();
-    //    return Vector2((viewport.dx * 0.5f) * (1.f + pv.x/pv.w) + viewport.x
-    //                   , (viewport.dy * 0.5f) * (1.f + pv.y/pv.w) + viewport.y);
 
     return Vector3(((pv.x / pv.w) * 0.5f + 0.5f) * viewport.dx + viewport.x,
                    (1.0f - ((pv.y / pv.w) * 0.5f + 0.5f)) * viewport.dy + viewport.y, pv.w + pv.z);
@@ -287,17 +311,7 @@ void Camera::RebuildViewMatrix()
 {
     flags &= ~REQUIRE_REBUILD_MODEL;
     flags |= REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
-
-    //	if (RenderManager::Instance()->GetRenderOrientation()==Core::SCREEN_ORIENTATION_TEXTURE)
-    //	{
-    //        viewMatrix = Matrix4::IDENTITY;
-    //        viewMatrix.CreateScale(Vector3(1.0f, -1.0f, 1.0f));
-    //        viewMatrix = viewMatrix * cameraTransform;
-    //    }
-    //    else
-    //    {
     viewMatrix = cameraTransform;
-    //    }
 }
 
 void Camera::SetPosition(const Vector3& _position)
@@ -369,9 +383,6 @@ const Matrix4& Camera::GetProjectionMatrix() const
 
 void Camera::RebuildCameraFromValues()
 {
-    //    Logger::FrameworkDebug("camera rebuild: pos(%0.2f %0.2f %0.2f) target(%0.2f %0.2f %0.2f) up(%0.2f %0.2f %0.2f)",
-    //                  position.x, position.y, position.z, target.x, target.y, target.z, up.x, up.y, up.z);
-
     flags &= ~REQUIRE_REBUILD;
     flags |= REQUIRE_REBUILD_MODEL;
     cameraTransform.BuildLookAtMatrixRH(position, target, up);

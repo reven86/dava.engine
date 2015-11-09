@@ -642,8 +642,6 @@ void PrivateTextFieldWinUAP::OnKeyUp(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
-    core->XamlApplication()->NativeControlGotFocus(nativeControl);
-
     SetNativeCaretPosition(GetNativeText()->Length());
 
     Windows::Foundation::Rect nativeKeyboardRect = InputPane::GetForCurrentView()->OccludedRect;
@@ -683,7 +681,6 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
-    core->XamlApplication()->NativeControlLostFocus(nativeControl);
     if (!IsMultiline())
     {
         waitRenderToTextureComplete = true;

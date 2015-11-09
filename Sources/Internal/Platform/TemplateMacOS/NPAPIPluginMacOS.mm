@@ -243,8 +243,8 @@ extern void FrameworkWillTerminate();
             }
 
             it->tapCount = DAVA::Max(curEvent->data.mouse.clickCount, 1);
-			it->timestamp = timestamp;
-			it->phase = touchPhase;
+            it->timestamp = timestamp;
+            it->phase = touchPhase;
 		}
 	}
 
@@ -269,8 +269,8 @@ extern void FrameworkWillTerminate();
             }
 
             it->tapCount = curEvent->data.mouse.clickCount;
-			it->timestamp = timestamp;
-			it->phase = touchPhase;
+            it->timestamp = timestamp;
+            it->phase = touchPhase;
 
 			break;
 		}
@@ -294,8 +294,8 @@ extern void FrameworkWillTerminate();
         }
 
         newTouch.tapCount = curEvent->data.mouse.clickCount;
-		newTouch.timestamp = timestamp;
-		newTouch.phase = touchPhase;
+        newTouch.timestamp = timestamp;
+        newTouch.phase = touchPhase;
 		allTouches.push_back(newTouch);
 	}
 

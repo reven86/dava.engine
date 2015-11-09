@@ -160,8 +160,8 @@ void TextureDescriptor::TextureDataSettings::EnableFlag( bool enable, int8 flag 
     }
     else
     {
-		textureFlags &= ~flag;
-	}
+        textureFlags &= ~flag;
+    }
 }
 
 bool TextureDescriptor::TextureDataSettings::IsFlagEnabled( int8 flag ) const
@@ -1078,7 +1078,7 @@ bool TextureDescriptor::Reload()
         return Load(descriptorPathname);
     }
 
-	return false;
+    return false;
 }
 
 uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const
