@@ -105,11 +105,11 @@ void FullscreenTest::LoadResources()
     currentScaleText->SetText(Format(L"%f", Core::Instance()->GetScreenScaleMultiplier()));
     AddControl(currentScaleText);
 
-    // UI3DView test   
+    // UI3DView test
 
     ui3dview = new UI3DView(Rect(10, 200, 320, 240));
     ui3dview->SetDebugDraw(true);
-    
+
     ScopedPtr<Scene> scene(new Scene());
     scene->LoadScene("~res:/3d/Objects/monkey.sc2");
 
@@ -121,16 +121,16 @@ void FullscreenTest::LoadResources()
     camera->SetUp(Vector3(0, 0, 1.f));
     camera->SetTarget(Vector3(0, 0, 0));
     camera->SetPosition(Vector3(0, -10, 1));
-    
+
     ScopedPtr<Entity> cameraEntity(new Entity());
     cameraEntity->AddComponent(new CameraComponent(camera));
     cameraEntity->AddComponent(new RotationControllerComponent());
     scene->AddNode(cameraEntity);
-    
+
     rotationControllerSystem = new RotationControllerSystem(scene);
-    scene->AddSystem(rotationControllerSystem, 
-        MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
-        Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+    scene->AddSystem(rotationControllerSystem,
+                     MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
+                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
     scene->AddCamera(camera);
     scene->SetCurrentCamera(camera);
@@ -233,7 +233,7 @@ void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
     }
 
     Core::Instance()->SetScreenScaleMultiplier(mul);
-    
+
     currentScaleText->SetText(Format(L"%f", mul));
 }
 

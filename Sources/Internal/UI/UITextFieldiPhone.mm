@@ -629,8 +629,8 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
             {
                 // set backgroud image into davaTextField control
                 WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
-        }
-        isNeedToUpdateTexture = false;
+            }
+            isNeedToUpdateTexture = false;
         }
         else
         {

@@ -31,12 +31,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-ClipTest::ClipTest ()
+ClipTest::ClipTest()
     : BaseScreen("ClipTest")
 {
 }
 
-void ClipTest::ClipPressed(BaseObject *obj, void *data, void *callerData)
+void ClipTest::ClipPressed(BaseObject* obj, void* data, void* callerData)
 {
     enableClip = !enableClip;
     clip->SetDebugDraw(enableClip);
@@ -48,7 +48,7 @@ void ClipTest::ClipPressed(BaseObject *obj, void *data, void *callerData)
     child2->SetClipContents(enableClip);
 }
 
-void ClipTest::DebugDrawPressed(BaseObject *obj, void *data, void *callerData)
+void ClipTest::DebugDrawPressed(BaseObject* obj, void* data, void* callerData)
 {
     enableDebugDraw = !enableDebugDraw;
     debugDraw->SetDebugDraw(enableDebugDraw);
@@ -67,14 +67,14 @@ WideString ConvertToWString(const Rect& rect)
     return str.str();
 }
 
-void ClipTest::StartPos(BaseObject *obj, void *data, void *callerData)
+void ClipTest::StartPos(BaseObject* obj, void* data, void* callerData)
 {
     fullSizeWgt->SetRect(defaultRect);
     fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(defaultRect));
 }
 
-void ClipTest::MoveDown(BaseObject *obj, void *data, void *callerData)
+void ClipTest::MoveDown(BaseObject* obj, void* data, void* callerData)
 {
     Rect rect = fullSizeWgt->GetRect();
     rect.y++;
@@ -83,7 +83,7 @@ void ClipTest::MoveDown(BaseObject *obj, void *data, void *callerData)
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
-void ClipTest::MoveUp(BaseObject *obj, void *data, void *callerData)
+void ClipTest::MoveUp(BaseObject* obj, void* data, void* callerData)
 {
     Rect rect = fullSizeWgt->GetRect();
     rect.y--;
@@ -92,7 +92,7 @@ void ClipTest::MoveUp(BaseObject *obj, void *data, void *callerData)
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
-void ClipTest::MoveRight(BaseObject *obj, void *data, void *callerData)
+void ClipTest::MoveRight(BaseObject* obj, void* data, void* callerData)
 {
     Rect rect = fullSizeWgt->GetRect();
     rect.x++;
@@ -101,7 +101,7 @@ void ClipTest::MoveRight(BaseObject *obj, void *data, void *callerData)
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
-void ClipTest::MoveLeft(BaseObject *obj, void *data, void *callerData)
+void ClipTest::MoveLeft(BaseObject* obj, void* data, void* callerData)
 {
     Rect rect = fullSizeWgt->GetRect();
     rect.x--;
@@ -112,7 +112,7 @@ void ClipTest::MoveLeft(BaseObject *obj, void *data, void *callerData)
 
 void ClipTest::LoadResources()
 {
-    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
     font->SetSize(13);
     //start points
@@ -250,4 +250,3 @@ void ClipTest::UnloadResources()
     SafeRelease(moveDown);
     SafeRelease(fullSizeWgt);
 }
-

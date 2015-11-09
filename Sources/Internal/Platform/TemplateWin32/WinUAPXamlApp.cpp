@@ -585,13 +585,15 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     int32 wheelDelta = pointerPoint->Properties->MouseWheelDelta;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
+    Vector2 physPoint(pointerPoint->Position.X, pointerPoint->Position.Y);
 
-    core->RunOnMainThread([this, wheelDelta, type]() {
+    core->RunOnMainThread([this, wheelDelta, physPoint, type]() {
         UIEvent ev;
 
-        ev.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
+        ev.scrollDelta.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
+        ev.physPoint = physPoint;
 
         UIControlSystem::Instance()->OnInput(&ev);
     });
