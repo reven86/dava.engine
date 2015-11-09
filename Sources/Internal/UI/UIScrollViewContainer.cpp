@@ -181,8 +181,8 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 
     if (currentTouch->phase == UIEvent::Phase::BEGAN && mainTouch == -1)
     {
-        if(IsPointInside(currentTouch->point))
-		{
+        if (IsPointInside(currentTouch->point))
+        {
             currentScroll = NULL;
 			mainTouch = currentTouch->tid;
 			PerformEvent(EVENT_TOUCH_DOWN);
@@ -192,9 +192,9 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
     else if (currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::Phase::DRAG)
     {
         // Don't scroll if touchTreshold is not exceeded
-		if ((Abs(currentTouch->point.x - scrollStartInitialPosition.x) > touchTreshold) ||
-			(Abs(currentTouch->point.y - scrollStartInitialPosition.y) > touchTreshold))
-		{
+        if ((Abs(currentTouch->point.x - scrollStartInitialPosition.x) > touchTreshold) ||
+            (Abs(currentTouch->point.y - scrollStartInitialPosition.y) > touchTreshold))
+        {
             UIScrollView *scrollView = DynamicTypeCheck<UIScrollView*>(this->GetParent());
             DVASSERT(scrollView);
             if(enableHorizontalScroll
@@ -219,8 +219,8 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
     else if (currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::Phase::ENDED)
     {
         Input(currentTouch);
-		mainTouch = -1;
-	}
+        mainTouch = -1;
+    }
 
 	if (scrollStartMovement && currentTouch->tid == mainTouch)
 	{

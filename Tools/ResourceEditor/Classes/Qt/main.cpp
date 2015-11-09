@@ -204,8 +204,8 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
         
         mainWindow->EnableGlobalTimeout( true );
         glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
-        
-        ProjectManager::Instance()->ProjectOpenLast();
+
+        ProjectManager::Instance()->OpenLastProject();
         QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
         QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
         QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
@@ -239,7 +239,7 @@ void UnpackHelpDoc()
 {
     DAVA::String editorVer = SettingsManager::GetValue( Settings::Internal_EditorVersion ).AsString();
     DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
-    if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
+    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
         DAVA::Logger::FrameworkDebug( "Unpacking Help..." );
         DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();

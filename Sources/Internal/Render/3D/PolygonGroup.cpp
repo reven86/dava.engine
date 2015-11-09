@@ -483,8 +483,7 @@ void PolygonGroup::RecalcAABBox()
     }
 }
 
-
-void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
+void PolygonGroup::CopyData(const uint8** meshData, uint8** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 

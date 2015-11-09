@@ -130,7 +130,7 @@ void DetachFromConsole(IOHandle& handle)
 WinConsoleIOLocker::WinConsoleIOLocker()
     : ioHandle(new WinConsoleIO::IOHandle())
 {
-    bool attached = WinConsoleIO::AttachToConsole(*ioHandle.get());
+    bool attached = WinConsoleIO::AttachToConsole(*ioHandle);
     if (!attached)
     {
         ioHandle.reset();
@@ -141,7 +141,7 @@ WinConsoleIOLocker::~WinConsoleIOLocker()
 {
     if (ioHandle)
     {
-        WinConsoleIO::DetachFromConsole(*ioHandle.get());
+        WinConsoleIO::DetachFromConsole(*ioHandle);
     }
 }
 

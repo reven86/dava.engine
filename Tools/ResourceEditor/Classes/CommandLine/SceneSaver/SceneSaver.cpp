@@ -269,8 +269,8 @@ void SceneSaver::CopyEffects(Entity *node)
     for (auto it = effectFolders.begin(), endIt = effectFolders.end(); it != endIt; ++it)
     {
         FilePath flagsTXT = *it + "flags.txt";
-        
-        if(flagsTXT.Exists())
+
+        if (FileSystem::Instance()->Exists(flagsTXT))
         {
             sceneUtils.AddFile(flagsTXT);
         }

@@ -58,14 +58,14 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
 	ui->listTextures->setItemDelegate(&cubeListItemDelegate);
 	
 	ConnectSignals();
-	
-	FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
-															ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
-		
-	ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
-	ReloadTextures(projectPath.GetAbsolutePathname());
-	
-	UpdateCheckedState();
+
+    FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
+                                                            ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
+
+    ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
+    ReloadTextures(projectPath.GetAbsolutePathname());
+
+    UpdateCheckedState();
 }
 
 CubeMapTextureBrowser::~CubeMapTextureBrowser()
@@ -307,9 +307,9 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
 			if(checkedState)
 			{
 				FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
-				if(fp.Exists())
-				{
-					DAVA::Vector<DAVA::FilePath> faceNames;
+                if (FileSystem::Instance()->Exists(fp))
+                {
+                    DAVA::Vector<DAVA::FilePath> faceNames;
 					CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
 					for(size_t faceIndex = 0; faceIndex < faceNames.size(); ++faceIndex)
 					{
