@@ -267,19 +267,6 @@ void WinUAPXamlApp::UnfocusUIElement()
     controlThatTakesFocus->Focus(FocusState::Pointer);
 }
 
-void WinUAPXamlApp::NativeControlGotFocus(Control ^ control)
-{
-    currentFocusedControl = control;
-}
-
-void WinUAPXamlApp::NativeControlLostFocus(Control ^ control)
-{
-    if (currentFocusedControl == control)
-    {
-        currentFocusedControl = nullptr;
-    }
-}
-
 void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
@@ -624,61 +611,46 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, B
     args->Handled = true;
 }
 
-void WinUAPXamlApp::OnKeyDown(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
+void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs)
 {
-    // Check whether native control has focus, if so ignore key events
-    // Explanation:
-    //   For now key event handlers are invoked both for focused native control (e.g. TextBox) and for WinUAPXamlApp
-    //   This check prevents handling key events considered for native control but native control must call
-    //   NativeControlGotFocus() and NativeControlLostFocus() methods on getting and losing its focus respectively
-    if (currentFocusedControl != nullptr && currentFocusedControl->FocusState != FocusState::Unfocused)
-        return;
-
-    CoreWindow^ window = CoreWindow::GetForCurrentThread();
-    CoreVirtualKeyStates menuStatus = window->GetKeyState(VirtualKey::Menu);
-    CoreVirtualKeyStates tabStatus = window->GetKeyState(VirtualKey::Tab);
-    bool isPressOrLock = static_cast<bool>((menuStatus & CoreVirtualKeyStates::Down) & (tabStatus & CoreVirtualKeyStates::Down));
-    if (isPressOrLock)
+    int32 key = static_cast<uint32>(keyEventArgs->VirtualKey);
+    UIEvent::Phase phase;
+    switch (keyEventArgs->EventType)
     {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    case CoreAcceleratorKeyEventType::KeyDown:
+    case CoreAcceleratorKeyEventType::SystemKeyDown:
+        phase = keyEventArgs->KeyStatus.WasKeyDown ? UIEvent::Phase::KEY_DOWN_REPEAT : UIEvent::Phase::KEY_DOWN;
+        break;
+
+    case CoreAcceleratorKeyEventType::KeyUp:
+    case CoreAcceleratorKeyEventType::SystemKeyUp:
+        phase = UIEvent::Phase::KEY_UP;
+        break;
+
+    default:
+        return;
     }
 
-    int32 key = static_cast<int32>(args->VirtualKey);
-    bool isRepeat = args->KeyStatus.WasKeyDown;
-
-    core->RunOnMainThread([this, key, isRepeat]() {
+    core->RunOnMainThread([key, phase]() {
         auto& keyboard = InputSystem::Instance()->GetKeyboard();
 
-        UIEvent ev;
-        ev.device = UIEvent::Device::KEYBOARD;
-        if (isRepeat)
+        UIEvent uiEvent;
+        uiEvent.device = UIEvent::Device::KEYBOARD;
+        uiEvent.phase = phase;
+        uiEvent.tid = keyboard.GetDavaKeyForSystemKey(key);
+
+        UIControlSystem::Instance()->OnInput(&uiEvent);
+        switch (uiEvent.phase)
         {
-            ev.phase = UIEvent::Phase::KEY_DOWN_REPEAT;
+        case UIEvent::Phase::KEY_DOWN:
+        case UIEvent::Phase::KEY_DOWN_REPEAT:
+            keyboard.OnSystemKeyPressed(key);
+            break;
+
+        case UIEvent::Phase::KEY_UP:
+            keyboard.OnSystemKeyUnpressed(key);
+            break;
         }
-        else
-        {
-            ev.phase = UIEvent::Phase::KEY_DOWN;
-        }
-        ev.tid = keyboard.GetDavaKeyForSystemKey(static_cast<int32>(key));
-
-        UIControlSystem::Instance()->OnInput(&ev);
-        keyboard.OnSystemKeyPressed(static_cast<int32>(key));
-    });
-}
-
-void WinUAPXamlApp::OnKeyUp(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
-{
-    int32 key = static_cast<int32>(args->VirtualKey);
-    core->RunOnMainThread([this, key]() {
-        auto& keyboard = InputSystem::Instance()->GetKeyboard();
-
-        UIEvent ev;
-        ev.device = UIEvent::Device::KEYBOARD;
-        ev.phase = UIEvent::Phase::KEY_UP;
-        ev.tid = keyboard.GetDavaKeyForSystemKey((key));
-
-        UIControlSystem::Instance()->OnInput(&ev);
-        keyboard.OnSystemKeyUnpressed(static_cast<int32>(key));
     });
 }
 
@@ -765,8 +737,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     swapChainPanel->PointerExited += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerExited);
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
 
-    coreWindow->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyDown);
-    coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);
+    coreWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WinUAPXamlApp::OnAcceleratorKeyActivated);
 
     coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WinUAPXamlApp::OnChar);
     MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
