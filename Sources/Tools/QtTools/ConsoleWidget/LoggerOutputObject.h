@@ -40,13 +40,12 @@ class LoggerOutputObject final
 public:
     LoggerOutputObject(QObject* parent = nullptr); //WARNING ! Can be removed at any time by logger
     ~LoggerOutputObject() = default;
-private:
-    class LoggerOutputContainer;
 
 signals:
     void OutputReady(DAVA::Logger::eLogLevel ll, QByteArray text);
 
 private:
+    class LoggerOutputContainer;
     LoggerOutputContainer* outputContainer = nullptr;
 };
 
