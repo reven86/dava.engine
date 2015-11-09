@@ -64,8 +64,8 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
 
     ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
     ReloadTextures(projectPath.GetAbsolutePathname());
-	
-	UpdateCheckedState();
+
+    UpdateCheckedState();
 }
 
 CubeMapTextureBrowser::~CubeMapTextureBrowser()
