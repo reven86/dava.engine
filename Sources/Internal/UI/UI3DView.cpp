@@ -119,7 +119,7 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     }
 
     bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
-	if (uiDrawQueryWasOpen)
+    if (uiDrawQueryWasOpen)
         FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     PrepareFrameBufferIfNeed();

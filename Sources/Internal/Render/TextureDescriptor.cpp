@@ -161,7 +161,7 @@ void TextureDescriptor::TextureDataSettings::EnableFlag( bool enable, int8 flag 
     else
     {
         textureFlags &= ~flag;
-	}
+    }
 }
 
 bool TextureDescriptor::TextureDataSettings::IsFlagEnabled( int8 flag ) const

@@ -735,7 +735,7 @@ void SceneTree::ReloadModelAs()
                 }
             }
 
-			QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
+            QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
 			if(!filePath.isEmpty())
 			{
 				sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
@@ -759,7 +759,7 @@ void SceneTree::SaveEntityAs()
             }
 
             QString filePath = FileDialog::getSaveFileName(NULL, QString("Save scene file"), QString(scenePath.GetDirectory().GetAbsolutePathname().c_str()), QString("DAVA SceneV2 (*.sc2)"));
-			if(!filePath.isEmpty())
+            if(!filePath.isEmpty())
 			{
 				sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
 			}
@@ -1176,7 +1176,7 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
                                                        projectPath, QString("YAML File (*.yaml)"));
 
         if (filePath.isEmpty())
-		{
+        {
 			return;
 		}
 
