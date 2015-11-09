@@ -282,9 +282,8 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 	DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
 	exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
 
-
-	SceneEditor2 *clonedScene = CreateCopyForExport();
-    if (clonedScene != nullptr)
+    ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
+    if (clonedScene)
     {
         Set<String> errorLog;
         exporter.ExportScene(clonedScene, GetScenePath(), errorLog);
@@ -293,8 +292,7 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
             Logger::Error("Export error: %s", error.c_str());
         }
 
-        clonedScene->Release();
-        return (errorLog.size() == 0);
+        return errorLog.empty();
     }
     return false;
 }
