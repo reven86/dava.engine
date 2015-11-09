@@ -179,7 +179,10 @@ generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST "Internal/Autotes
                                                                "TemplateMacOS/CoreMacOSPlatformBase.cpp"
                                                                "Render/Texture.cpp"
                                                                "Concurrency/ThreadPosix.cpp" 
-                                                               "RHI/GLES2")
+                                                               "RHI/GLES2"
+                                                               "iOS/ICloudKeyValue.cpp"
+                                                               "Notification/LocalNotificationIOS.cpp"
+                                                               )
 
 
 include_directories      (.)

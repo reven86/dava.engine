@@ -45,7 +45,7 @@ set_project_files_properties( "${CPP_FILES}" )
 
 generate_source_groups_project ( )
 
-generated_unified_sources   ( CPP_FILES )
+generated_unified_sources   ( CPP_FILES IGNORE_LIST "TeamcityOutput/TeamcityOutput.cpp" )
 add_library                 ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 
 if( MACOS AND NOT ANDROID )
