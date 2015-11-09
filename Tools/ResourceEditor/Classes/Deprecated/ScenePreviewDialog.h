@@ -32,11 +32,11 @@
 
 #include "DAVAEngine.h"
 #include "Deprecated/ExtendedDialog.h"
+#include "Deprecated/ScenePreviewControl.h"
 
 using namespace DAVA;
 
 
-class ScenePreviewControl;
 class ScenePreviewDialog: public ExtendedDialog
 {
 public:
@@ -44,18 +44,17 @@ public:
     virtual ~ScenePreviewDialog();
     
     void Show(const FilePath &scenePathname);
-    virtual void Close();
-    
-protected:
+    void Close() override;
 
-    virtual const Rect GetDialogRect() const;
-    virtual void UpdateSize();
-    
+protected:
+    const Rect GetDialogRect() const override;
+    void UpdateSize() override;
+
     void OnClose(BaseObject *, void *, void *);
 
-    ScenePreviewControl* preview = nullptr;
-    UIStaticText* errorMessage = nullptr;
-    UIControl* clickableBackgound = nullptr;
+    ScopedPtr<ScenePreviewControl> preview;
+    ScopedPtr<UIStaticText> errorMessage;
+    ScopedPtr<UIControl> clickableBackgound;
 };
 
 
