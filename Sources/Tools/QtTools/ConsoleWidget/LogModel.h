@@ -35,8 +35,8 @@
 
 #include <QObject>
 #include <QAbstractListModel>
-#include <QPointer>
 #include <QSize>
+#include <QPixmap>
 
 class QMutex;
 class QTimer;

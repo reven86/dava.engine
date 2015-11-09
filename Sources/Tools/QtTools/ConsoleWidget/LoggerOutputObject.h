@@ -34,25 +34,20 @@
 #include <QObject>
 
 class LoggerOutputObject final
-: public QObject,
-  public DAVA::LoggerOutput
+    : public QObject
 {
     Q_OBJECT
 public:
-    LoggerOutputObject(QObject* parent = nullptr);
-    void Destroy();
-    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
+    LoggerOutputObject(QObject* parent = nullptr); //WARNING ! Can be removed at any time by logger
+    ~LoggerOutputObject() = default;
+private:
+    class LoggerOutputContainer;
+
 signals:
     void OutputReady(DAVA::Logger::eLogLevel ll, QByteArray text);
 
 private:
-    using QObject::deleteLater;
-    ~LoggerOutputObject() override = default; //will be removed by logger
+    LoggerOutputContainer* outputContainer = nullptr;
 };
-
-void DestroyerFunction(LoggerOutputObject* obj) //to use it in smart pointers
-{
-    obj->Destroy();
-}
 
 #endif // __LOGGER_OUTPUT_OBJECT_H__
