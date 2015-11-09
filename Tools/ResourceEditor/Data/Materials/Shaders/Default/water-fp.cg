@@ -38,7 +38,7 @@ FPROG_IN_BEGIN
 
     #if SHADING == SHADING_PERVERTEX 
         FPROG_IN_TEXCOORD2(varTexCoordDecal, 2)
-        FPROG_IN_TEXCOORD3_HALF(reflectionDirectionInWorldSpace, 3)
+        FPROG_IN_TEXCOORD3(reflectionDirectionInWorldSpace, 3)
     #endif
     
     #if VERTEX_FOG

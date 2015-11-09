@@ -10,14 +10,14 @@ FPROG_IN_BEGIN
     #if MATERIAL_TEXTURE
         
         #if TEXTURE0_ANIMATION_SHIFT
-        FPROG_IN_TEXCOORD0(varTexCoord0,2) // highp
+        FPROG_IN_TEXCOORD0(varTexCoord0,2)
         #else
-        FPROG_IN_TEXCOORD0_HALF(varTexCoord0,2) // mediump
+        FPROG_IN_TEXCOORD0(varTexCoord0,2)
         #endif
 
     #elif MATERIAL_SKYBOX
         
-        FPROG_IN_TEXCOORD0_HALF(varTexCoord0,3) // mediump
+        FPROG_IN_TEXCOORD0(varTexCoord0,3)
 
     #endif
 
@@ -26,7 +26,7 @@ FPROG_IN_BEGIN
     #endif
 
     #if MATERIAL_DETAIL
-        FPROG_IN_TEXCOORD1_HALF(varTexCoord1,2) // mediump
+        FPROG_IN_TEXCOORD1(varTexCoord1,2)
     #endif
 
     #if TILED_DECAL_MASK

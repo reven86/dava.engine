@@ -48,7 +48,7 @@ VPROG_OUT_BEGIN
 
     #if SHADING == SHADING_PERVERTEX 
         VPROG_OUT_TEXCOORD2(varTexCoordDecal, 2)
-        VPROG_OUT_TEXCOORD3_HALF(reflectionDirectionInWorldSpace, 3)
+        VPROG_OUT_TEXCOORD3(reflectionDirectionInWorldSpace, 3)
     #endif
     
     #if VERTEX_FOG
