@@ -211,7 +211,7 @@ bool TransformSystem::ProcessKey(const int32 key)
 {
     if (!selectedControlNodes.empty())
     {
-        float step = expandedMoveStepByKeyboard;
+        float32 step = expandedMoveStepByKeyboard;
         if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
         {
             step = moveStepByKeyboard;

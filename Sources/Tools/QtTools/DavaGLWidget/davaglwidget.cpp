@@ -174,7 +174,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
     connect(qApp, &QApplication::focusWindowChanged, [this](QWindow* now) //fix bug with actions focus scope
             {
-                bool isActive = now == davaGLView;
+                bool isActive = (now == davaGLView);
                 for (auto& action : actions())
                 {
                     action->setEnabled(isActive);
