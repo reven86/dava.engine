@@ -405,7 +405,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     Vector<String> currentFlags;
 
     const auto flagsPathname = inputPath + "flags.txt";
-    if (flagsPathname.Exists())
+    if (FileSystem::Instance()->Exists(flagsPathname))
     {
         currentFlags = FetchFlags(flagsPathname);
     }

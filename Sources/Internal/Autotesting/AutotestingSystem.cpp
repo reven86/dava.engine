@@ -106,7 +106,7 @@ namespace DAVA
     String AutotestingSystem::ResolvePathToAutomation(const String &automationPath)
     {
         String automationResolvedStrPath = "~res:" + automationPath;
-        if (FilePath(automationResolvedStrPath).Exists())
+        if (FileSystem::Instance()->Exists(FilePath(automationResolvedStrPath)))
         {
             return automationResolvedStrPath;
         }
@@ -115,7 +115,7 @@ namespace DAVA
 #else
         FilePath automationResolvedPath = "~doc:" + automationPath;
 #endif //#if defined(__DAVAENGINE_ANDROID__)
-        if (automationResolvedPath.Exists())
+        if (FileSystem::Instance()->Exists(automationResolvedPath))
         {
             return automationResolvedPath.GetStringValue();
         }
