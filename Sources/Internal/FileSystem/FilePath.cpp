@@ -98,8 +98,8 @@ void FilePath::RemoveResourcesFolder(const FilePath & folder)
         }
     }
 }
-    
-const List<FilePath> FilePath::GetResourcesFolders()
+
+const List<FilePath>& FilePath::GetResourcesFolders()
 {
     return resourceFolders;
 }
@@ -307,8 +307,8 @@ FilePath::~FilePath()
 {
     
 }
-    
-const String FilePath::GetAbsolutePathname() const
+
+String FilePath::GetAbsolutePathname() const
 {
     if(pathType == PATH_IN_RESOURCES)
     {
@@ -881,7 +881,7 @@ int32 FilePath::Compare( const FilePath &right ) const
 	return 0;
 }
 
-const String FilePath::AsURL() const
+String FilePath::AsURL() const
 {
     String path = GetAbsolutePathname();
     
