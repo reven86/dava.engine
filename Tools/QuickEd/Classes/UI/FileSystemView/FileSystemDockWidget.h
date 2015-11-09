@@ -33,6 +33,7 @@
 #include <QDockWidget>
 #include <QFileSystemModel>
 #include <QSortFilterProxyModel>
+#include <memory>
 
 namespace Ui {
     class FileSystemDockWidget;
@@ -45,13 +46,9 @@ class FileSystemDockWidget : public QDockWidget
     Q_OBJECT
     
 public:
-    explicit FileSystemDockWidget(QWidget *parent = 0);
-    virtual ~FileSystemDockWidget();
-
+    explicit FileSystemDockWidget(QWidget *parent = nullptr);
+    ~FileSystemDockWidget();
     void SetProjectDir(const QString &path);
-private:
-    void RefreshActions(const QModelIndexList &indexList);
-    void RefreshAction(QAction *action, bool enabled, bool visible);
 
 signals:
     void OpenPackageFile(const QString &path);
@@ -60,19 +57,18 @@ private slots:
     void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void onDoubleClicked(const QModelIndex &index);
     void setFilterFixedString(const QString &filterStr);
-    void onDataChanged( const QModelIndex & topLeft, const QModelIndex & bottomRight );
-    void customContextMenuRequested(const QPoint &pos);
     void onNewFolder();
-    void onNewFile(bool checked);
-    void onDeleteFile(bool checked);
-    void onReloadFile(bool checked);
+    void onNewFile();
+    void onDeleteFile();
 
 private:
-    Ui::FileSystemDockWidget *ui;
-    QFileSystemModel *model;
-    QAction *newFolderAction;
-    QAction *newFileAction;
-    QAction *delFileAction;
+    void RefreshActions(const QModelIndexList &indexList);
+    bool CanRemove(const QModelIndex &index) const;
+    std::unique_ptr<Ui::FileSystemDockWidget> ui = nullptr;
+    QFileSystemModel *model = nullptr;
+    QAction *newFolderAction = nullptr;
+    QAction *newFileAction = nullptr;
+    QAction *deleteAction = nullptr;
 };
 
 #endif // __UI_EDITOR_FILE_SYSTEM_TREE_WIDGET_H__

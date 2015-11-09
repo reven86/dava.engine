@@ -41,46 +41,38 @@
 FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
-    , model(NULL)
+    , model(new QFileSystemModel(this))
 {
-    model = new QFileSystemModel(this);
     ui->setupUi(this);
-    
+    ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
+
     model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
     QStringList filters;
     filters << "*.yaml";
     model->setNameFilters(filters);
     model->setNameFilterDisables(false);
 
-    connect(ui->treeView, SIGNAL(doubleClicked (const QModelIndex &)), this, SLOT(onDoubleClicked(const QModelIndex &)));
-    connect(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(onDataChanged(const QModelIndex &, const QModelIndex &)));
-    
-    connect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(setFilterFixedString(const QString &)));
+    connect(ui->treeView, &QTreeView::doubleClicked, this, &FileSystemDockWidget::onDoubleClicked);
+    connect(ui->filterLine, &QLineEdit::textChanged, this, &FileSystemDockWidget::setFilterFixedString);
 
-    ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
 
     newFolderAction = new QAction(tr("Create folder"), this);
-    connect(newFolderAction, SIGNAL(triggered()), this, SLOT(onNewFolder()));
+    connect(newFolderAction, &QAction::triggered, this, &FileSystemDockWidget::onNewFolder);
 
     newFileAction = new QAction(tr("Create file"), this);
-    connect(newFileAction, SIGNAL(triggered(bool)), this, SLOT(onNewFile(bool)));
+    connect(newFileAction, &QAction::triggered, this, &FileSystemDockWidget::onNewFile);
 
-    delFileAction = new QAction(tr("Delete"), this);
-    delFileAction->setShortcut(QKeySequence(QKeySequence::Delete));
-    delFileAction->setShortcutContext(Qt::WidgetShortcut);
-    connect(delFileAction, SIGNAL(triggered(bool)), this, SLOT(onDeleteFile(bool)));
+    deleteAction = new QAction(tr("Delete"), this);
+    deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
+    deleteAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(deleteAction, &QAction::triggered, this, &FileSystemDockWidget::onDeleteFile);
 
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
-    ui->treeView->addAction(delFileAction);
+    ui->treeView->addAction(deleteAction);
 }
 
-FileSystemDockWidget::~FileSystemDockWidget()
-{
-    disconnect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
-    delete ui;
-    ui = NULL;
-}
+FileSystemDockWidget::~FileSystemDockWidget() = default;
 
 void FileSystemDockWidget::SetProjectDir(const QString &path)
 {
@@ -104,24 +96,43 @@ void FileSystemDockWidget::SetProjectDir(const QString &path)
 
 void FileSystemDockWidget::RefreshActions( const QModelIndexList &indexList )
 {
-    bool isFolder = true;
-    bool isFile = true;
-
-    foreach(QModelIndex index, indexList)
+    bool canCreateFile = true;
+    bool canCreateDir = true;
+    bool canRemove = !indexList.empty();
+    if (indexList.size() == 1)
     {
-        isFolder &= model->isDir(index);
-        isFile &= !model->isDir(index);
+        QModelIndex selectedIndex = indexList.front();
+        bool isDir = model->isDir(selectedIndex);
+        canCreateFile = true;
+        canCreateDir = isDir;
+        canRemove = CanRemove(selectedIndex);
+        deleteAction->setText(isDir ? "Remove folder" : "Remove file");
     }
-
-    RefreshAction(newFolderAction, isFolder, isFolder);
-    RefreshAction(newFileAction  , isFolder, isFolder);
-    RefreshAction(delFileAction  , isFolder || isFile, isFolder || isFile);
+    else
+    {
+        deleteAction->setText("Remove selected items");
+        for (const auto &index : indexList)
+        {
+            canRemove &= CanRemove(index);
+        }
+    }
+    newFolderAction->setEnabled(canCreateDir);
+    newFileAction->setEnabled(canCreateFile);
+    deleteAction->setEnabled(canRemove);
 }
 
-void FileSystemDockWidget::RefreshAction( QAction *action, bool enabled, bool visible )
+bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
 {
-    action->setDisabled(!enabled);
-    action->setVisible(visible);
+    if (!model->isDir(index))
+    {
+        return true;
+    }
+    else
+    {
+        QDir dir(model->filePath(index));
+        int count = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries).count();
+        return count == 0;
+    }
 }
 
 void FileSystemDockWidget::OnSelectionChanged( const QItemSelection &selected, const QItemSelection &deselected )
@@ -144,51 +155,31 @@ void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
     model->setNameFilters(filters);
 }
 
-void FileSystemDockWidget::onDataChanged( const QModelIndex & topLeft, const QModelIndex & bottomRight )
-{
-    DAVA::Logger::Debug("model::dataChanged file name %s", model->fileName(topLeft).toStdString().c_str());
-}
-
-void FileSystemDockWidget::customContextMenuRequested(const QPoint &pos)
-{
-    QModelIndex index = ui->treeView->indexAt(pos);
-    QModelIndex currIndex = ui->treeView->currentIndex();
-    DVASSERT(index == currIndex);
-
-    QMenu *menu = new QMenu(this);
-
-    if (model->isDir(index))
-    {
-        menu->addAction(newFolderAction);
-        menu->addAction(newFileAction);
-    }
-    else
-    {
-        menu->addAction(delFileAction);
-    }
-    
-
-    menu->exec(QCursor::pos());
-}
-
 void FileSystemDockWidget::onNewFolder()
 {
     bool ok = false;
     QString folderName = QInputDialog::getText(this, tr("New folder"), tr("Folder name:"), QLineEdit::Normal, tr("New folder"), &ok);
     if (ok && !folderName.isEmpty())
     {
-        QModelIndex currIndex = ui->treeView->currentIndex();
+        auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
+        DVASSERT(selectedIndexes.empty() || selectedIndexes.size() == 1);
+        QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
         model->mkdir(currIndex, folderName);
     }
 }
 
-void FileSystemDockWidget::onNewFile(bool checked)
+void FileSystemDockWidget::onNewFile()
 {
-    QModelIndex currIndex = ui->treeView->currentIndex();
+    auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
+    DVASSERT(selectedIndexes.empty() || selectedIndexes.size() == 1);
+    QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
+
     QString folderPath = model->filePath(currIndex);
-
     QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*.yaml");
-
+    if (strFile.isEmpty())
+    {
+        return;
+    }
     QFileInfo fileInfo(strFile);
     if (fileInfo.suffix().toLower() != "yaml")
     {
@@ -200,29 +191,37 @@ void FileSystemDockWidget::onNewFile(bool checked)
     file.close();
 }
 
-void FileSystemDockWidget::onDeleteFile(bool checked)
+void FileSystemDockWidget::onDeleteFile()
 {
-    QModelIndex currIndex = ui->treeView->currentIndex();
-    if (model->isDir(currIndex))
+    bool hasFiles = false;
+    bool hasFolders = false;
+    const QModelIndexList &indexes = ui->treeView->selectionModel()->selectedIndexes();
+    for (const auto &index : indexes)
     {
-        if (QMessageBox::Yes == QMessageBox::question(this, tr("Delete folder"), tr("Delete folder?"), QMessageBox::Yes | QMessageBox::No))
+        bool isDir = model->isDir(index);
+        hasFiles |= !isDir;
+        hasFolders |= isDir;
+    }
+    DVASSERT(hasFiles || hasFolders);
+    QString text = tr("Delete ") + (hasFiles ? tr("files") : "") + (hasFiles && hasFolders ? tr("and") : "") + (hasFolders ? tr("folders") : "");
+    if (QMessageBox::Yes == QMessageBox::question(this, text, text + "?", QMessageBox::Yes | QMessageBox::No))
+    {
+        for (const auto &index : indexes)
         {
-            model->rmdir(currIndex);
+            if (model->isDir(index))
+            {
+                if (!model->rmdir(index))
+                {
+                    DAVA::Logger::Warning("can not remove folder %s", model->fileName(index).toUtf8().data());
+                }
+            }
+            else
+            {
+                if (!model->remove(index))
+                {
+                    DAVA::Logger::Warning("can not remove file %s", model->fileName(index).toUtf8().data());
+                }
+            }
         }
     }
-    else
-    {
-        if (QMessageBox::Yes == QMessageBox::question(this, tr("Delete file"), tr("Delete file?"), QMessageBox::Yes | QMessageBox::No))
-        {
-            model->remove(currIndex);
-        }
-    }
-    
-
-    
-}
-
-void FileSystemDockWidget::onReloadFile(bool checked)
-{
-
 }
