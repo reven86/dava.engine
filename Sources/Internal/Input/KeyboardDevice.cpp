@@ -118,7 +118,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_NEXT] = DVKEY_PGDN;
     keyTranslator[VK_INSERT] = DVKEY_INSERT;
 
-    keyTranslator[VK_OEM_PLUS] = DVKEY_ADD;
+    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
     keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
     keyTranslator[VK_OEM_PERIOD] = DVKEY_PERIOD;
     keyTranslator[VK_OEM_COMMA] = DVKEY_COMMA;
