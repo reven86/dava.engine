@@ -99,6 +99,9 @@ macro (define_source_files)
         set (ARG_GLOB_H_PATTERNS *.h *.hpp)
     endif ()
 
+    set( CPP_FILES )
+    set( H_FILES )
+
     file (GLOB CPP_FILES ${ARG_GLOB_CPP_PATTERNS} )
     file (GLOB H_FILES ${ARG_GLOB_H_PATTERNS} )
 
@@ -106,7 +109,7 @@ macro (define_source_files)
     list (APPEND H_FILES ${ARG_EXTRA_H_FILES})
     set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
     
-    # Optionally enable PCH                                                           	                                                                                   	
+    # Optionally enable PCH                                                                                                                                                 
     if (ARG_PCH)
         enable_pch ()
     endif ()
@@ -170,6 +173,7 @@ macro (define_source_folders )
     IF( ARG_SRC_ROOT )
     
         FOREACH( FOLDER_ITEM ${ARG_SRC_ROOT} )
+            get_filename_component ( FOLDER_ITEM ${FOLDER_ITEM} REALPATH ) 
 
             set ( CPP_PATTERNS ${FOLDER_ITEM}/*.c ${FOLDER_ITEM}/*.cpp )    
             if( APPLE )  
@@ -482,6 +486,69 @@ macro ( add_dynamic_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
     add_dynamic_config_lib_win_uap ( "DEBUG"   ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
     add_dynamic_config_lib_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
 
+endmacro ()
+
+macro( generated_unified_sources SOURCE_FILES )  
+
+    if( UNIFIED_BUILD )
+    
+        cmake_parse_arguments (ARG "" "" "IGNORE_LIST" ${ARGN})
+
+        list( REMOVE_DUPLICATES ${SOURCE_FILES} )
+
+        set( CPP_PACK_SIZE     0 )
+        set( CPP_PACK_LIST   )    
+        set( CPP_LIST_SIZE 0 )
+        set( CPP_LIST        )
+
+        foreach( ITEM ${${SOURCE_FILES}} )
+
+            set( IGNORE_FLAG )
+            foreach( IGNORE_MASK ${ARG_IGNORE_LIST} )
+                if( ${ITEM} MATCHES ${IGNORE_MASK} )
+                    set( IGNORE_FLAG true )
+                    break()
+                endif()
+            endforeach()
+
+            get_filename_component( ITEM_EXT ${ITEM} EXT )
+            if( NOT IGNORE_FLAG AND ${ITEM_EXT} STREQUAL ".cpp" )
+                list( APPEND CPP_LIST  ${ITEM} )
+                math( EXPR CPP_LIST_SIZE "${CPP_LIST_SIZE} + 1" )
+                if( ${CPP_LIST_SIZE} GREATER 50 )
+                    math( EXPR CPP_PACK_SIZE "${CPP_PACK_SIZE} + 1" )
+                    set( PACK_${CPP_PACK_SIZE} ${CPP_LIST} )
+                    set( CPP_LIST )
+                    set( CPP_LIST_SIZE 0 )                
+                endif()
+            endif()
+            
+        endforeach()  
+
+        if( CPP_LIST_SIZE )
+            math( EXPR CPP_PACK_SIZE "${CPP_PACK_SIZE} + 1" )
+            set( PACK_${CPP_PACK_SIZE} ${CPP_LIST} )
+
+        endif()
+
+        foreach( index RANGE 1 ${CPP_PACK_SIZE}  )
+            set( HEADERS_LIST "#include \"DAVAEngine.h\"")
+            foreach( PACH ${PACK_${index}} )
+                get_filename_component( PACH ${PACH} ABSOLUTE )
+                list( APPEND HEADERS_LIST "#include\"${PACH}\"" ) 
+                set_source_files_properties( ${PACH} PROPERTIES HEADER_FILE_ONLY TRUE )
+            endforeach()
+
+            string(REPLACE ";" "\n" HEADERS_LIST "${HEADERS_LIST}" )
+            set ( CPP_NAME ${CMAKE_BINARY_DIR}/src_pack/${PROJECT_NAME}_${index}.cpp )
+            
+            list( APPEND CPP_PACK_LIST ${CPP_NAME} )
+
+            file( WRITE ${CPP_NAME} ${HEADERS_LIST})
+        endforeach()
+        set( ${SOURCE_FILES}  ${${SOURCE_FILES}}  ${CPP_PACK_LIST} )
+
+    endif()
 endmacro ()
 
 function (ASSERT VAR_NAME MESSAGE)

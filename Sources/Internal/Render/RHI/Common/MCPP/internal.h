@@ -34,6 +34,9 @@
  * In general, definitions in this file should not be changed by implementor.
  */
 
+#ifndef _MCPP_INTERNAL_H
+#define _MCPP_INTERNAL_H
+
 #ifndef SYSTEM_H
     #error "system.h" must be included prior to "internal.h"
 #endif
@@ -557,3 +560,5 @@ extern void init_system(void);
 #if HOST_HAVE_STPCPY
 extern char* stpcpy(char* dest, const char* src);
 #endif
+
+#endif /* _MCPP_INTERNAL_H  */

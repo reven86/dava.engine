@@ -173,16 +173,24 @@ define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}"
 generate_source_groups_project ()
 
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST "Internal/Autotesting" 
+                                                               "UI/UISpinner.cpp" 
+                                                               "UI/UISwitch.cpp"
+                                                               "TemplateMacOS/CoreMacOSPlatformBase.cpp"
+                                                               "Render/Texture.cpp"
+                                                               "Concurrency/ThreadPosix.cpp" 
+                                                               "RHI/GLES2")
 
-include_directories    (.)
-include_directories    ( ${DAVA_INCLUDE_DIR} )
-include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} ) 
-include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
 
-set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
+include_directories      (.)
+include_directories      ( ${DAVA_INCLUDE_DIR} )
+include_directories      ( ${ADD_ENGINE_INCLUDES_DIR} ) 
+include_directories      ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
 
-add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
-add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
+set                      ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
+
+add_definitions          ( ${FRAMEWORK_DEFINITIONS} )
+add_library              ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
 
 if( LINK_THIRD_PARTY )                 
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} ALL     "${LIST_SHARED_LIBRARIES}" )

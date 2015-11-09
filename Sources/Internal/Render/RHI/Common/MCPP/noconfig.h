@@ -6,6 +6,9 @@
  *      must edit this file here and there.
  */
 
+#ifndef _MCPP_NOCONFIG_H
+#define _MCPP_NOCONFIG_H
+
 #define TRUE 1
 #define FALSE 0
 
@@ -608,3 +611,5 @@
 #if KMMALLOC && _MEM_DEBUG
 #include "xalloc.h"
 #endif
+
+#endif /* _MCPP_NOCONFIG_H */

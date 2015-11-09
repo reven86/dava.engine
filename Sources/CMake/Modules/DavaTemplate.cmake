@@ -242,6 +242,9 @@ endif()
 
 ###
 
+generated_unified_sources   ( PROJECT_SOURCE_FILES )
+    
+
 if( ANDROID )
     set( POSTFIX 0  )
     set( COUNTER 0 )

@@ -33,12 +33,12 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_MACOS__)
-
+/*
 #include <Carbon/Carbon.h>
 #include <AGL/agl.h>
 #include <OpenGL/glext.h>
 //#include <ppc_intrinsics.h>
-/*
+
 namespace DAVA 
 {
 

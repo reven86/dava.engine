@@ -30,6 +30,7 @@
 #include "UI/UIScreenManager.h"
 #include "Base/BaseObject.h"
 
+#if defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA 
 {
@@ -140,3 +141,4 @@ void ScreenManager::StartGLAnimation()
 	
 };
 
+#endif

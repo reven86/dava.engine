@@ -868,8 +868,6 @@ nonaliased_cast(src x)
     return tmp.d;
 }
 
-const unsigned InvalidIndex = (unsigned)(-1);
-
 #define countof(array) (sizeof(array) / sizeof(array[0]))
 #define L_ALIGNED_SIZE(size, align) (((size) + ((align)-1)) & (~((align)-1)))
 

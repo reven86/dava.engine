@@ -31,6 +31,9 @@
 #include "Render/Texture.h"
 #include "Render/PixelFormatDescriptor.h"
 
+#ifndef __DAVAENGINE_IMAGE_CONVERTER_H__
+#define __DAVAENGINE_IMAGE_CONVERTER_H__
+
 namespace DAVA
 {
 
@@ -865,3 +868,5 @@ public:
 };
 
 };
+
+#endif // __DAVAENGINE_IMAGE_CONVERTER_H__

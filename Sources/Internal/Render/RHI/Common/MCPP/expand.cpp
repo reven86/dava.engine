@@ -62,7 +62,7 @@ typedef struct magic_seq
     int space; /* Space succeeds or not    */
 } MAGIC_SEQ;
 
-static int compat_mode;
+static int expand_compat_mode;
 /* Expand recursive macro more than Standard (for compatibility with GNUC)  */
 #if COMPILER == GNUC
 static int ansi; /* __STRICT_ANSI__ flag     */
@@ -100,7 +100,7 @@ int strict_ansi /* __STRICT_ANSI__ flag for GNUC    */
 /* Set expand_macro() function  */
 {
     expand_macro = standard ? expand_std : expand_prestd;
-    compat_mode = compat;
+    expand_compat_mode = compat;
 #if COMPILER == GNUC
     ansi = strict_ansi;
 #endif
@@ -168,8 +168,8 @@ MAGIC_SEQ* mgc_seq /* Infs on MAC_INF sequences and space      */
 #define DEBUG_MACRO_ANN FALSE
 
 /* Return value of is_able_repl()   */
-#define NO 0 /* "Blue-painted"               */
-#define YES 1 /* Not blue-painted             */
+#define EXPAND_NO 0 /* "Blue-painted"               */
+#define EXPAND_YES 1 /* Not blue-painted             */
 #define READ_OVER 2
 /* Still "blue-painted", yet has read over repl-list    */
 
@@ -221,7 +221,7 @@ static struct
 {
     const DEFBUF* def; /* Macro definition             */
     int read_over; /* Has read over repl-list      */
-    /* 'read_over' is never used in POST_STD mode and in compat_mode*/
+    /* 'read_over' is never used in POST_STD mode and in expand_compat_mode*/
 } replacing[RESCAN_LIMIT]; /* Macros currently replacing   */
 static int has_pragma = FALSE; /* Flag of _Pragma() operator       */
 
@@ -785,7 +785,7 @@ int in_src_n /* Index into in_src[]  */
         if (mcpp_mode == STD && outer && rt_file != infile)
         {
             /* Has read over replacement-text  */
-            if (compat_mode)
+            if (expand_compat_mode)
             {
                 enable_repl(outer, FALSE); /* Enable re-expansion  */
                 if (mcpp_debug & EXPAND)
@@ -1988,7 +1988,7 @@ char* out_end /* End of output buffer */
  * Checking of those are unnecessary overhead for POST_STD mode.  To integrate
  * the code for POST_STD with STD mode, however, we use these checkings
  * commonly.
- * Also compat_mode does not use IN_SRC unless in trace_macro mode.
+ * Also expand_compat_mode does not use IN_SRC unless in trace_macro mode.
  * STD mode has macro notification mode (trace_macro mode), too.  Its routines
  * are complicated and not easy to understand.
  */
@@ -2104,7 +2104,7 @@ char* out_end /* End of output buffer */
 
             if (trace_macro)
                 memset(&mgc_seq, 0, sizeof(MAGIC_SEQ));
-            if (is_macro_call(inner, &out_p, &endf, trace_macro ? &mgc_seq : NULL) && ((mcpp_mode == POST_STD && is_able_repl(inner)) || (mcpp_mode == STD && (((is_able = is_able_repl(inner)) == YES) || (is_able == READ_OVER && (c == IN_SRC || compat_mode))))))
+            if (is_macro_call(inner, &out_p, &endf, trace_macro ? &mgc_seq : NULL) && ((mcpp_mode == POST_STD && is_able_repl(inner)) || (mcpp_mode == STD && (((is_able = is_able_repl(inner)) == EXPAND_YES) || (is_able == READ_OVER && (c == IN_SRC || expand_compat_mode))))))
             {
                 /* Really a macro call  */
                 LINE_COL in_src_line_col = { 0L, 0 };
@@ -2164,7 +2164,7 @@ char* out_end /* End of output buffer */
                     out_p = endf;
                     *out_p = EOS;
                 }
-                if ((is_able = is_able_repl(inner)) == NO || (mcpp_mode == STD && is_able == READ_OVER && c != IN_SRC && !compat_mode))
+                if ((is_able = is_able_repl(inner)) == EXPAND_NO || (mcpp_mode == STD && is_able == READ_OVER && c != IN_SRC && !expand_compat_mode))
                 {
                     if (mcpp_mode == POST_STD || c != IN_SRC)
                         memmove(tp + 1, tp, (size_t)(out_p++ - tp));
@@ -2195,7 +2195,7 @@ char* out_end /* End of output buffer */
                         /* Have overrun replacement list*/
                         && !(tp && *tp == DEF_MAGIC)
                         /* Macro is enabled */
-                        && ((!compat_mode && (warn_level & 1)) || (compat_mode && (warn_level & 8))))
+                        && ((!expand_compat_mode && (warn_level & 1)) || (expand_compat_mode && (warn_level & 8))))
                     {
                         diag_macro(CWARN,
                                    "Replacement text \"%s\" of macro %.0ld\"%s\" involved subsequent text" /* _W1_ */
@@ -2236,7 +2236,7 @@ const DEFBUF* defp)
         return FALSE;
     }
     replacing[rescan_level].def = defp;
-    replacing[rescan_level++].read_over = NO;
+    replacing[rescan_level++].read_over = EXPAND_NO;
     return TRUE;
 }
 
@@ -2263,13 +2263,13 @@ const DEFBUF* defp)
     int i;
 
     if (defp == NULL)
-        return YES;
+        return EXPAND_YES;
     for (i = rescan_level - 1; i >= 0; i--)
     {
         if (defp == replacing[i].def)
             return replacing[i].read_over;
     }
-    return YES;
+    return EXPAND_YES;
 }
 
 static char* insert_to_bptr(

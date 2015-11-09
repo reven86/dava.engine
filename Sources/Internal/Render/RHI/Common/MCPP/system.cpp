@@ -111,7 +111,7 @@
 #endif
 #endif
 
-static void version(void);
+static void sys_version(void);
 /* Print version message            */
 static void usage(int opt);
 /* Putout usage of MCPP             */
@@ -307,7 +307,7 @@ static char* mkdep_mt; /* Argument of -MT option   */
 static char* sharp_filename = NULL;
 static char* argv0; /* argv[ 0] for usage() and version()   */
 static int ansi; /* __STRICT_ANSI__ flag for GNUC    */
-static int compat_mode;
+static int system_compat_mode;
 /* "Compatible" mode of recursive macro expansion   */
 #define MAX_ARCH_LEN 16
 static char arch[MAX_ARCH_LEN]; /* -arch or -m64, -m32 options      */
@@ -376,7 +376,7 @@ void init_system(void)
     incend = incdir = NULL;
     fnamelist = once_list = NULL;
     search_rule = SEARCH_INIT;
-    mb_changed = nflag = ansi = compat_mode = FALSE;
+    mb_changed = nflag = ansi = system_compat_mode = FALSE;
     mkdep_fp = NULL;
     mkdep_target = mkdep_mf = mkdep_md = mkdep_mq = mkdep_mt = NULL;
     std_val = -1L;
@@ -539,7 +539,7 @@ opt_search:;
                 mcpp_mode = STD; /* 'Standard' mode (default)*/
             else if (str_eq(mcpp_optarg, "compat"))
             {
-                compat_mode = TRUE; /* 'compatible' mode        */
+                system_compat_mode = TRUE; /* 'compatible' mode        */
                 mcpp_mode = STD;
             }
             else
@@ -1530,7 +1530,7 @@ opt_search:;
     {
         /* -K option alters behavior of -v option   */
         if (option_flags.v)
-            version();
+            sys_version();
         if (show_path)
         {
             fp_debug = stderr;
@@ -1540,7 +1540,7 @@ opt_search:;
     }
 }
 
-static void version(void)
+static void sys_version(void)
 /*
  * Print version message.
  */
@@ -1791,7 +1791,7 @@ int opt)
 
     if (opt != '?')
         mcpp_fprintf(MCPP_ERR, illegopt, opt, mcpp_optarg ? mcpp_optarg : null);
-    version();
+    sys_version();
 #if MCPP_LIB
     mes[1] = argv0;
 #endif
@@ -1978,7 +1978,7 @@ int trad /* -traditional (GCC only)      */
         break;
     }
 
-    if (mcpp_mode == POST_STD && (option_flags.lang_asm || compat_mode || option_flags.k))
+    if (mcpp_mode == POST_STD && (option_flags.lang_asm || system_compat_mode || option_flags.k))
         incompat = TRUE;
     if (mcpp_mode != STD && option_flags.trig)
     {
@@ -2012,7 +2012,7 @@ int trad /* -traditional (GCC only)      */
     if (mcpp_mode != STD)
         char_type[MAC_INF] = 0;
 
-    expand_init(compat_mode, ansi);
+    expand_init(system_compat_mode, ansi);
     /* Set function pointer to macro expansion routine  */
 }
 
@@ -4352,7 +4352,7 @@ char* filename)
 
 static const char* const unknown_arg =
 "Unknown argument \"%s\""; /*_W1_*/
-static const char* const not_ident =
+static const char* const system_not_ident =
 "Not an identifier \"%s\""; /*_W1_*/
 
 static int is_junk(void)
@@ -4459,7 +4459,7 @@ void do_pragma(void)
     if (token_type != NAM)
     {
         if (warn_level & 1)
-            cwarn(not_ident, work_buf, 0L, NULL);
+            cwarn(system_not_ident, work_buf, 0L, NULL);
         goto skip_nl;
     }
     else if (str_eq(identifier, "once"))
@@ -4478,7 +4478,7 @@ void do_pragma(void)
         if (scan_token(skip_ws(), (tp = work_buf, &tp), work_end) != NAM)
         {
             if (warn_level & 1)
-                cwarn(not_ident, work_buf, 0L, NULL);
+                cwarn(system_not_ident, work_buf, 0L, NULL);
         }
         if (str_eq(identifier, "put_defines"))
         {
@@ -5193,7 +5193,7 @@ int set /* TRUE to set debugging    */
         {
             if (c != '\n')
             {
-                cwarn(not_ident, work_buf, 0L, NULL);
+                cwarn(system_not_ident, work_buf, 0L, NULL);
             }
             else
             {

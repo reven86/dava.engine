@@ -39,6 +39,9 @@
  * If this is not the case, you will have to do some editing here and there.
  */
 
+#ifndef _MCPP_SYSTEM_H
+#define _MCPP_SYSTEM_H
+
 #define SYSTEM_H
 
 #if HAVE_CONFIG_H
@@ -389,3 +392,5 @@ typedef long expr_t;
  * The value can be changed by -V<n> option.
  */
 #define CPLUS 1 /* 199711L for C++ Standard     */
+
+#endif /* _MCPP_SYSTEM_H  */
