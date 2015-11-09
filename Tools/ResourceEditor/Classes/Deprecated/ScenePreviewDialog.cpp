@@ -76,7 +76,7 @@ void ScenePreviewDialog::Show(const FilePath &scenePathname)
     {
         UIScreen *screen = UIScreenManager::Instance()->GetScreen();
         clickableBackgound->SetSize(screen->GetSize());
-        clickableBackgound->SetPosition(Vector2());
+        clickableBackgound->SetPosition(Vector2(0, 0));
         screen->AddControl(clickableBackgound);
         screen->AddControl(this);
 
