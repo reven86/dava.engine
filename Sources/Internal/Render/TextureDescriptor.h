@@ -66,10 +66,10 @@ class TextureDescriptor
 public:
     static const int8 CURRENT_VERSION = 11;
 
-    struct TextureDrawSettings: public InspBase
-	{
-	public:
-		TextureDrawSettings() { SetDefaultValues(); }
+    struct TextureDrawSettings : public InspBase
+    {
+    public:
+        TextureDrawSettings() { SetDefaultValues(); }
 		void SetDefaultValues();
 
 		int8 wrapModeS;
@@ -87,9 +87,9 @@ public:
                       MEMBER(mipFilter, InspDesc("mipFilter", GlobalEnumMap<rhi::TextureMipFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE))
     };
 
-    struct TextureDataSettings: public InspBase
-	{
-	public:
+    struct TextureDataSettings : public InspBase
+    {
+    public:
         enum eOptionsFlag
         {
             FLAG_GENERATE_MIPMAPS = 1 << 0,
@@ -99,11 +99,14 @@ public:
             FLAG_DEFAULT = FLAG_GENERATE_MIPMAPS
         };
 
-        TextureDataSettings() { SetDefaultValues(); }
-		void SetDefaultValues();
+        TextureDataSettings()
+        {
+            SetDefaultValues();
+        }
+        void SetDefaultValues();
 
-		void SetGenerateMipmaps(const bool & generateMipmaps);
-		bool GetGenerateMipMaps() const;
+        void SetGenerateMipmaps(const bool& generateMipmaps);
+        bool GetGenerateMipMaps() const;
 
         void SetIsNormalMap(const bool & isNormalMap);
         bool GetIsNormalMap() const;

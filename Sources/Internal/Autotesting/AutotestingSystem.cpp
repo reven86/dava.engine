@@ -106,7 +106,7 @@ namespace DAVA
     String AutotestingSystem::ResolvePathToAutomation(const String &automationPath)
     {
         String automationResolvedStrPath = "~res:" + automationPath;
-        if (FilePath(automationResolvedStrPath).Exists())
+        if (FileSystem::Instance()->Exists(FilePath(automationResolvedStrPath)))
         {
             return automationResolvedStrPath;
         }
@@ -115,7 +115,7 @@ namespace DAVA
 #else
         FilePath automationResolvedPath = "~doc:" + automationPath;
 #endif //#if defined(__DAVAENGINE_ANDROID__)
-        if (automationResolvedPath.Exists())
+        if (FileSystem::Instance()->Exists(automationResolvedPath))
         {
             return automationResolvedPath.GetStringValue();
         }
@@ -350,7 +350,7 @@ namespace DAVA
     void AutotestingSystem::OnTestStarted()
     {
         Logger::Info("AutotestingSystem::OnTestsStarted");
-		startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
+        startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
 		luaSystem->StartTest();
 	}
 
@@ -390,7 +390,7 @@ namespace DAVA
     const String& AutotestingSystem::GetScreenShotName()
     {
         Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
-		return screenShotName;
+        return screenShotName;
 	}
 
 	void AutotestingSystem::OnScreenShot(Image *image)
@@ -445,7 +445,7 @@ namespace DAVA
         {
             mouseMove = input;
             if (!IsTouchDown(id))
-			{
+            {
 				touches[id] = input;
 			}
 			else
@@ -459,7 +459,7 @@ namespace DAVA
         {
             mouseMove = input;
             if (IsTouchDown(id))
-			{
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_MOVE id=%d must be PHASE_DRAG", id);
             }
         }
@@ -469,7 +469,7 @@ namespace DAVA
         {
             mouseMove = input;
             Map<int32, UIEvent>::iterator findIt = touches.find(id);
-			if (findIt != touches.end())
+            if (findIt != touches.end())
 			{
 				findIt->second = input;
 			}
@@ -483,7 +483,7 @@ namespace DAVA
         {
             mouseMove = input;
             Map<int32, UIEvent>::iterator findIt = touches.find(id);
-			if (findIt != touches.end())
+            if (findIt != touches.end())
 			{
 				touches.erase(findIt);
 			}
@@ -493,7 +493,7 @@ namespace DAVA
             }
         }
         break;
-		default:
+        default:
 			//TODO: keyboard input
 			break;
 		}

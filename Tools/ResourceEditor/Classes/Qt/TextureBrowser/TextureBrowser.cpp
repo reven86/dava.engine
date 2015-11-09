@@ -78,8 +78,8 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     QObject::connect(textureListImagesDelegate, &TextureListDelegate::textureDescriptorChanged, this, &TextureBrowser::textureDescriptorChanged);
 
     textureListSortModes["File size"] = TextureListModel::SortByFileSize;
-	textureListSortModes["Data size"] = TextureListModel::SortByDataSize;
-	textureListSortModes["Image size"] = TextureListModel::SortByImageSize;
+    textureListSortModes["Data size"] = TextureListModel::SortByDataSize;
+    textureListSortModes["Image size"] = TextureListModel::SortByImageSize;
 	textureListSortModes["Name"] = TextureListModel::SortByName;
 
 	// global scene manager signals
@@ -88,10 +88,10 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
 
     // convector signals
-    QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor *, const TextureInfo &)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor *, const TextureInfo &)));
-	QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor *, const DAVA::eGPUFamily, const TextureInfo &)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor *, const DAVA::eGPUFamily, const TextureInfo &)));
+    QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
+    QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)));
 
-	setupStatusBar();
+    setupStatusBar();
 	setupTexturesList();
 	setupImagesScrollAreas();
 	setupTextureListToolbar();
@@ -114,7 +114,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     // ui->splitter->setSizes(QList<int>() << 60 << 0 << 40);
 
-	posSaver.Attach(this);
+    posSaver.Attach(this);
     new QtPosSaver( ui->splitterMain );
 }
 
@@ -270,8 +270,8 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
 		{
             // Start convert. Signal will be emitted when conversion done
             TextureConvertor::Instance()->GetConverted(curDescriptor, view, convertMode);
-		}
-	}
+        }
+    }
 
 	if(infoConvertedIsUpToDate)
 	{
@@ -705,8 +705,8 @@ void TextureBrowser::texturePropertyChanged(int type)
         // new texture will be applied to scene after conversion (by signal)
         setTextureView(curTextureView, getConvertMode(CONVERT_FORCE));
     }
-	// other settings don't need texture to reconvert
-	else
+    // other settings don't need texture to reconvert
+    else
 	{
         const DAVA::TextureDescriptor* descriptor = ui->textureProperties->getTextureDescriptor();
         descriptor->Save();

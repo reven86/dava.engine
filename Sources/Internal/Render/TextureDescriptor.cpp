@@ -160,8 +160,8 @@ void TextureDescriptor::TextureDataSettings::EnableFlag( bool enable, int8 flag 
     }
     else
     {
-		textureFlags &= ~flag;
-	}
+        textureFlags &= ~flag;
+    }
 }
 
 bool TextureDescriptor::TextureDataSettings::IsFlagEnabled( int8 flag ) const
@@ -1071,14 +1071,14 @@ void TextureDescriptor::SetGenerateMipmaps( bool generateMipmaps )
 
 bool TextureDescriptor::Reload()
 {
-    if ((pathname.IsEmpty() == false) && pathname.Exists())
+    if (FileSystem::Instance()->Exists(pathname))
     {
         FilePath descriptorPathname = pathname;
         SetDefaultValues();
         return Load(descriptorPathname);
     }
 
-	return false;
+    return false;
 }
 
 uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const

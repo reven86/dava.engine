@@ -104,7 +104,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
     /*prepare effect basises*/
     const Matrix4& mv = camera->GetMatrix();
     basisVectors[0] = Vector3(mv._00, mv._10, mv._20);
-	basisVectors[1] = Vector3(mv._01, mv._11, mv._21);
+    basisVectors[1] = Vector3(mv._01, mv._11, mv._21);
 	basisVectors[0].Normalize();
 	basisVectors[1].Normalize();	
 	Vector3 ex(worldTransform->_00, worldTransform->_01, worldTransform->_02);
@@ -343,7 +343,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
     }
 }
 
-void ParticleRenderObject::BindDynamicParameters(Camera * camera)
+void ParticleRenderObject::BindDynamicParameters(Camera* camera)
 {
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
 }

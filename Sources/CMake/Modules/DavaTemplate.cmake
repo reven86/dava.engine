@@ -129,6 +129,13 @@ elseif ( WINDOWS_UAP )
     else ()
         string ( REPLACE "|" ";" WINDOWS_UAP_PACKAGE_LANGUAGES ${WINDOWS_UAP_PACKAGE_LANGUAGES} )
     endif ()
+    
+    #build xml tags list
+    set ( WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS "\n" )
+    foreach ( LANGUAGE ${WINDOWS_UAP_PACKAGE_LANGUAGES} )
+        set ( WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS 
+              "${WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS}  <qualifier name=\"Language\" value=\"${LANGUAGE}\" />\n" )
+    endforeach ()
 
     set ( APP_MANIFEST_NAME "Package.appxmanifest" )
     set ( APP_CERT_NAME "${PROJECT_NAME}_Key.pfx" )

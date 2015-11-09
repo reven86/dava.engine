@@ -115,7 +115,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
     drawData.size = size;
     drawData.pivotPoint = GetPivotPoint();
     drawData.scale = scale;
-	drawData.angle = angle;
+    drawData.angle = angle;
     drawData.AddGeometricData(geometricData);
 
 	Rect drawRect = drawData.GetUnrotatedRect();

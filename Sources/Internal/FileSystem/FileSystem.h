@@ -164,15 +164,14 @@ public:
 	/**
 		\brief Function check if specified path is a regular file
 	*/
-	virtual bool IsFile(const FilePath & pathToCheck);
+    bool IsFile(const FilePath& pathToCheck) const;
 
-		
-	/**
+    /**
 		\brief Function check if specified path is a directory
 	 */
-	virtual bool IsDirectory(const FilePath & pathToCheck);
-	
-	/**
+    bool IsDirectory(const FilePath& pathToCheck) const;
+
+    /**
      \brief Function sets/removes exclusive lock to/from file.
      \param[in] filePath The name of the file to be locked/unlocked.
      \param[in] isLock true to lock file, false to unlock.
@@ -271,6 +270,11 @@ public:
     bool CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2);
 
     bool GetFileSize(const FilePath& path, uint32& size);
+
+    /**
+     \brief Function check if specified path exists on file system
+     */
+    bool Exists(const FilePath& filePath) const;
 
 private:
     bool HasLineEnding(File *f);

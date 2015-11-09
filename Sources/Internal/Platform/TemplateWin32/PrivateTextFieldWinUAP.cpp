@@ -264,9 +264,18 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
     if (properties.visible != isVisible)
     {
         properties.visible = isVisible;
-        properties.visibleChanged = true;
-        properties.visibleAssigned = true;
-        properties.anyPropertyChanged = true;
+        if (isVisible)
+        { // Defer control showing till Update call
+            properties.visibleChanged = true;
+            properties.visibleAssigned = true;
+            properties.anyPropertyChanged = true;
+        }
+        else
+        { // Immediatly hide native control
+            core->RunOnUIThreadBlocked([this]() {
+                SetNativeVisible(false);
+            });
+        }
     }
 }
 
@@ -633,8 +642,6 @@ void PrivateTextFieldWinUAP::OnKeyUp(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
-    core->XamlApplication()->NativeControlGotFocus(nativeControl);
-
     SetNativeCaretPosition(GetNativeText()->Length());
 
     bool multiline = IsMultiline();
@@ -663,7 +670,6 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
-    core->XamlApplication()->NativeControlLostFocus(nativeControl);
     if (!IsMultiline())
     {
         waitRenderToTextureComplete = true;

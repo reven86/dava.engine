@@ -65,9 +65,9 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
     FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
     FilePath inputDir = projectPath + "DataSource/Gfx/Particles/";
-	FilePath outputDir = projectPath + "Data/Gfx/Particles/";
+    FilePath outputDir = projectPath + "Data/Gfx/Particles/";
 
-	if(!FileSystem::Instance()->IsDirectory(inputDir))
+    if(!FileSystem::Instance()->IsDirectory(inputDir))
 	{
 		Logger::Error("[SpritePackerHelper::Pack] inputDir is not directory (%s)", inputDir.GetAbsolutePathname().c_str());
         DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);

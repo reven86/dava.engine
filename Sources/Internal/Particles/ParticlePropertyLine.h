@@ -116,8 +116,8 @@ public:
             {
                 float ti = (t - PropertyLine<T>::keys[0].t) / (PropertyLine<T>::keys[1].t - PropertyLine<T>::keys[0].t);
                 resultValue = PropertyLine<T>::keys[0].value + (PropertyLine<T>::keys[1].value - PropertyLine<T>::keys[0].value) * ti;
-				return resultValue;
-			}
+                return resultValue;
+            }
             else 
 			{
                 return PropertyLine<T>::keys[1].value;

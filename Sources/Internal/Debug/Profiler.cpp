@@ -672,9 +672,28 @@ Event
 
 static std::vector<Event> _Event;
 static DAVA::Mutex _EventSync;
+static bool traceEventsStarted = false;
+
+void StartTraceEvents()
+{
+#if defined TRACER_ENABLED
+    traceEventsStarted = true;
+    _Event.reserve(2 * 1024 * 1024);
+#endif
+}
+
+void StopTraceEvents()
+{
+#if defined TRACER_ENABLED
+    traceEventsStarted = false;
+#endif
+}
 
 void BeginEvent(unsigned tid, const char* category, const char* name)
 {
+    if (!traceEventsStarted)
+        return;
+
     Event evt;
 
     evt.pid = 1;
@@ -693,6 +712,9 @@ void BeginEvent(unsigned tid, const char* category, const char* name)
 
 void EndEvent(unsigned tid, const char* category, const char* name)
 {
+    if (!traceEventsStarted)
+        return;
+
     Event evt;
 
     evt.pid = 1;
@@ -711,6 +733,9 @@ void EndEvent(unsigned tid, const char* category, const char* name)
 
 void InstantEvent(unsigned tid, const char* category, const char* name)
 {
+    if (!traceEventsStarted)
+        return;
+
     Event evt;
 
     evt.pid = 1;
@@ -759,8 +784,9 @@ void DumpEvents()
 void SaveEvents(const char* fileName)
 {
     File* json = File::Create(fileName, File::CREATE | File::WRITE);
-
     json->WriteLine("{ \"traceEvents\": [ ");
+
+    _EventSync.Lock();
     for (std::vector<Event>::const_iterator e = _Event.begin(), e_end = _Event.end(); e != e_end; ++e)
     {
         char buf[1024];
@@ -785,8 +811,9 @@ void SaveEvents(const char* fileName)
         (e != _Event.end() - 1) ? ", " : "");
         json->WriteLine(buf);
     }
-    json->WriteLine("] }");
+    _EventSync.Unlock();
 
+    json->WriteLine("] }");
     json->Release();
 }
 
