@@ -450,9 +450,10 @@ static const char* _ShaderHeader_GLES2 =
 "#define min10float3            lowp vec3\n"
 "#define min10float4            lowp vec4\n"
 
-"vec4 mul( vec4 v, mat4 m ) { return m*v; }\n"
-"vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
-"vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
+//"vec4 mul( vec4 v, mat4 m ) { return m*v; }\n"
+//"vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
+//"vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
+"#define mul( v, m ) ((m)*(v))\n"
 
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 
