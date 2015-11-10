@@ -47,7 +47,6 @@ class FileSystemDockWidget : public QDockWidget
     
 public:
     explicit FileSystemDockWidget(QWidget *parent = nullptr);
-    ~FileSystemDockWidget();
     void SetProjectDir(const QString &path);
 
 signals:

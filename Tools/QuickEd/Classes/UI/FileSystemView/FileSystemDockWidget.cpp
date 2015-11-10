@@ -72,8 +72,6 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     ui->treeView->addAction(deleteAction);
 }
 
-FileSystemDockWidget::~FileSystemDockWidget() = default;
-
 void FileSystemDockWidget::SetProjectDir(const QString &path)
 {
     if (ui->treeView->selectionModel())
