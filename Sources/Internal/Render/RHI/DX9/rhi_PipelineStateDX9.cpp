@@ -356,7 +356,7 @@ RHI_IMPL_POOL_SIZE(PipelineStateDX9_t::ConstBuf, RESOURCE_CONST_BUFFER, Pipeline
 PipelineStateDX9_t::ConstBuf::ConstBuf()
     : value(nullptr)
     , inst(nullptr)
-    , reg(InvalidIndex)
+    , reg(DAVA::InvalidIndex)
     , regCount(0)
 {
 }
@@ -377,7 +377,7 @@ PipelineStateDX9_t::ConstBuf::~ConstBuf()
 void PipelineStateDX9_t::ConstBuf::Construct(ProgType ptype, unsigned reg_i, unsigned reg_count)
 {
     DVASSERT(!value);
-    DVASSERT(reg_i != InvalidIndex);
+    DVASSERT(reg_i != DAVA::InvalidIndex);
     DVASSERT(reg_count);
 
     progType = ptype;
@@ -512,7 +512,7 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
                 sprintf(name, "VP_Buffer%u", i);
                 D3DXHANDLE c = const_tab->GetConstantByName(NULL, name);
 
-                cbufReg[i] = InvalidIndex;
+                cbufReg[i] = DAVA::InvalidIndex;
                 cbufCount[i] = 0;
 
                 if (c)
@@ -541,9 +541,9 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
             // do some additional sanity checks
             for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
             {
-                if (cbufReg[i] == InvalidIndex)
+                if (cbufReg[i] == DAVA::InvalidIndex)
                 {
-                    if (i == 0 && cbufReg[i + 1] != InvalidIndex)
+                    if (i == 0 && cbufReg[i + 1] != DAVA::InvalidIndex)
                     {
                         Logger::Warning("WARNING: vertex-const-buf [%u] is unused (all uniform/variables are unused)", i);
                     }
@@ -704,7 +704,7 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
                 sprintf(name, "FP_Buffer%u", i);
                 D3DXHANDLE c = const_tab->GetConstantByName(NULL, name);
 
-                cbufReg[i] = InvalidIndex;
+                cbufReg[i] = DAVA::InvalidIndex;
                 cbufCount[i] = 0;
 
                 if (c)
@@ -733,9 +733,9 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
             // do some additional sanity checks
             for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
             {
-                if (cbufReg[i] == InvalidIndex)
+                if (cbufReg[i] == DAVA::InvalidIndex)
                 {
-                    if (i == 0 && cbufReg[i + 1] != InvalidIndex)
+                    if (i == 0 && cbufReg[i + 1] != DAVA::InvalidIndex)
                     {
                         Logger::Warning("WARNING: fragment-const-buf [%u] is unused (all uniform/variables are unused)", i);
                     }

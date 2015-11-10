@@ -203,7 +203,7 @@ void ProgGLES2::GetProgParams(unsigned progUid)
         }
         else
         {
-            cbuf[i].location = InvalidIndex;
+            cbuf[i].location = DAVA::InvalidIndex;
             cbuf[i].count = 0;
         }
     }
@@ -314,7 +314,7 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
 
     DVASSERT(bufIndex < countof(cbuf));
     DVASSERT(prog != 0)
-    //    DVASSERT(cbuf[bufIndex].location != InvalidIndex);
+    //    DVASSERT(cbuf[bufIndex].location != DAVA::InvalidIndex);
 
     if (bufIndex < countof(cbuf) && cbuf[bufIndex].location != DAVA::InvalidIndex)
     {

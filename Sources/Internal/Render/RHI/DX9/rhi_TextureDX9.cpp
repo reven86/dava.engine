@@ -82,7 +82,7 @@ TextureDX9_t::TextureDX9_t()
     , surf9(nullptr)
     , rt_tex9(nullptr)
     , rt_surf9(nullptr)
-    , lastUnit(InvalidIndex)
+    , lastUnit(DAVA::InvalidIndex)
     , mappedData(nullptr)
     , isRenderTarget(false)
     , isMapped(false)
@@ -626,10 +626,10 @@ void SetAsRenderTarget(Handle tex)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
 
-    if (self->lastUnit != InvalidIndex)
+    if (self->lastUnit != DAVA::InvalidIndex)
     {
         _D3D9_Device->SetTexture(self->lastUnit, NULL);
-        self->lastUnit = InvalidIndex;
+        self->lastUnit = DAVA::InvalidIndex;
     }
 
     DX9_CALL(_D3D9_Device->SetRenderTarget(0, self->surf9), "SetRenderTarget");

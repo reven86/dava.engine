@@ -321,13 +321,13 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
     ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetView };
 
     cb->cur_topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    cb->cur_ib = InvalidIndex;
-    cb->cur_vb = InvalidIndex;
+    cb->cur_ib = DAVA::InvalidIndex;
+    cb->cur_vb = DAVA::InvalidIndex;
     cb->cur_vb_stride = 0;
     cb->cur_pipelinestate = InvalidHandle;
     cb->cur_stride = 0;
     cb->cur_query_buf = InvalidHandle;
-    cb->cur_query_i = InvalidIndex;
+    cb->cur_query_i = DAVA::InvalidIndex;
     cb->cur_rs = nullptr;
 
     cb->rs_param.cullMode = CULL_NONE;
@@ -658,12 +658,12 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
 
     StatSet::IncStat(stat_SET_VB, 1);
 
-    if (cb->cur_query_i != InvalidIndex)
+    if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     ctx->Draw(vertexCount, baseVertex);
 
-    if (cb->cur_query_i != InvalidIndex)
+    if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
@@ -729,12 +729,12 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     VertexBufferDX11::SetToRHI(cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx);
     StatSet::IncStat(stat_SET_VB, 1);
 
-    if (cb->cur_query_i != InvalidIndex)
+    if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     ctx->DrawIndexed(indexCount, startIndex, firstVertex);
 
-    if (cb->cur_query_i != InvalidIndex)
+    if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
