@@ -135,6 +135,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
         }
     }
     RenderSystem2D::Instance()->BeginRenderTargetPass(waiter.texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D);
+    control->Update(0.0f);
     control->SystemUpdate(0.0f);
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
     RenderSystem2D::Instance()->EndRenderTargetPass();
