@@ -875,8 +875,8 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
     if (offScreen)
     {
         // Move control very far offscreen as on phone control with disabled input remains visible
-        xOffset = (rect.x + rect.dx) * 4.0f;
-        yOffset = (rect.y + rect.dy) * 4.0f;
+        xOffset = rect.x + rect.dx + 1000.0f;
+        yOffset = rect.y + rect.dy + 1000.0f;
     }
     nativeControlHolder->Width = rect.dx;
     nativeControlHolder->Height = rect.dy;
