@@ -590,7 +590,19 @@ void UITextField::Input(UIEvent *currentInput)
     else if (currentInput->phase == UIEvent::Phase::CHAR ||
              currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
     {
-        if (currentInput->keyChar != 0 && currentInput->keyChar != '\b')
+        if ('\r' == currentInput->keyChar)
+        {
+            if (IsMultiline())
+            {
+                currentInput->keyChar = '\n';
+            }
+            else
+            {
+                currentInput->keyChar = '\0';
+            }
+        }
+        if (currentInput->keyChar != 0 && currentInput->keyChar != '\b' && currentInput->keyChar != 0x7f // 0x7f del key (on mac backspace)
+            && currentInput->keyChar != 0xf728) // on mac fn+backspace
         {
             WideString str;
             str += currentInput->keyChar;
