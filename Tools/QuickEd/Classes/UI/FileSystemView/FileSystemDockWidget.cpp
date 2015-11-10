@@ -212,14 +212,14 @@ void FileSystemDockWidget::onDeleteFile()
             {
                 if (!model->rmdir(index))
                 {
-                    DAVA::Logger::Warning("can not remove folder %s", model->fileName(index).toUtf8().data());
+                    DAVA::Logger::Error("can not remove folder %s", model->fileName(index).toUtf8().data());
                 }
             }
             else
             {
                 if (!model->remove(index))
                 {
-                    DAVA::Logger::Warning("can not remove file %s", model->fileName(index).toUtf8().data());
+                    DAVA::Logger::Error("can not remove file %s", model->fileName(index).toUtf8().data());
                 }
             }
         }
