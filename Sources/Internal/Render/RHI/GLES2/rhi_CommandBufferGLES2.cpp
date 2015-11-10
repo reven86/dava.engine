@@ -668,7 +668,7 @@ void CommandBufferGLES2_t::Execute()
     IndexSize idx_size = INDEX_SIZE_16BIT;
     unsigned tex_unit_0 = 0;
     Handle cur_query_buf = InvalidHandle;
-    uint32 cur_query_i = InvalidIndex;
+    uint32 cur_query_i = DAVA::InvalidIndex;
     GLint def_viewport[4] = { 0, 0, 0, 0 };
 
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
@@ -1018,7 +1018,7 @@ void CommandBufferGLES2_t::Execute()
 
         case GLES2__SET_VERTEX_TEXTURE:
         {
-            TextureGLES2::SetToRHI((Handle)(arg[1]), unsigned(arg[0]), InvalidIndex);
+            TextureGLES2::SetToRHI((Handle)(arg[1]), unsigned(arg[0]), DAVA::InvalidIndex);
             StatSet::IncStat(stat_SET_TEX, 1);
             c += 2;
         }
@@ -1048,7 +1048,7 @@ void CommandBufferGLES2_t::Execute()
                     ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
             }
 
-            if (cur_query_i != InvalidIndex)
+            if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
 
             if (vdecl_pending)
@@ -1076,7 +1076,7 @@ void CommandBufferGLES2_t::Execute()
 
             //Logger::Info( "  dp" );
 
-            if (cur_query_i != InvalidIndex)
+            if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
 
             c += 2;
@@ -1117,7 +1117,7 @@ void CommandBufferGLES2_t::Execute()
                 cur_base_vert = firstVertex;
             }
 
-            if (cur_query_i != InvalidIndex)
+            if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
 
             int i_sz = GL_UNSIGNED_SHORT;
@@ -1148,7 +1148,7 @@ void CommandBufferGLES2_t::Execute()
             }
             //LCP;
 
-            if (cur_query_i != InvalidIndex)
+            if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
 
             //LCP;

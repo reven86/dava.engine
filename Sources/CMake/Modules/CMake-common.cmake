@@ -496,7 +496,7 @@ macro( generated_unified_sources SOURCE_FILES )
 
         list( REMOVE_DUPLICATES ${SOURCE_FILES} )
 
-        set( CPP_PACK_SIZE     0 )
+        set( CPP_PACK_SIZE 0 )
         set( CPP_PACK_LIST   )    
         set( CPP_LIST_SIZE 0 )
         set( CPP_LIST        )

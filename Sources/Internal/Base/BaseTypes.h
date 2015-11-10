@@ -92,8 +92,7 @@ static_assert(sizeof(char8)  == 1, "Invalid type size!");
 static_assert(sizeof(float32) == 4, "Invalid type size!");
 static_assert(sizeof(float64) == 8, "Invalid type size!");
 
-//const unsigned InvalidIndex = (unsigned)(-1);
-#define InvalidIndex (unsigned)(-1)
+const uint32 InvalidIndex = static_cast<uint32>(-1);
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 // FIX: replace DefaultSTLAllocator with TrackingAllocator after fixing framework and game codebases

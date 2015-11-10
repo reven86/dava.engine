@@ -26,13 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_IMAGE_CONVERTER_H__
+#define __DAVAENGINE_IMAGE_CONVERTER_H__
 
 #include "Image.h"
 #include "Render/Texture.h"
 #include "Render/PixelFormatDescriptor.h"
-
-#ifndef __DAVAENGINE_IMAGE_CONVERTER_H__
-#define __DAVAENGINE_IMAGE_CONVERTER_H__
 
 namespace DAVA
 {

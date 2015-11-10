@@ -118,7 +118,7 @@ ProgGLES2::ProgGLES2(ProgType t)
 {
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
     {
-        cbuf[i].location = InvalidIndex;
+        cbuf[i].location = DAVA::InvalidIndex;
         cbuf[i].count = 0;
     }
 
@@ -211,7 +211,7 @@ void ProgGLES2::GetProgParams(unsigned progUid)
 
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
     {
-        cbuf[i].location = InvalidIndex;
+        cbuf[i].location = DAVA::InvalidIndex;
         cbuf[i].count = 0;
     }
 
@@ -278,7 +278,7 @@ void ProgGLES2::GetProgParams(unsigned progUid)
         {
             int loc = cmd[i].retval;
 
-            texunitLoc[i] = (loc != -1) ? loc : InvalidIndex;
+            texunitLoc[i] = (loc != -1) ? loc : DAVA::InvalidIndex;
 
             if (loc != -1)
                 ++texunitCount;
@@ -316,7 +316,7 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
     DVASSERT(prog != 0)
     //    DVASSERT(cbuf[bufIndex].location != InvalidIndex);
 
-    if (bufIndex < countof(cbuf) && cbuf[bufIndex].location != InvalidIndex)
+    if (bufIndex < countof(cbuf) && cbuf[bufIndex].location != DAVA::InvalidIndex)
     {
         handle = ConstBufGLES2Pool::Alloc();
 

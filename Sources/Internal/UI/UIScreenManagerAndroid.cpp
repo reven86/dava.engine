@@ -26,11 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if defined(__DAVAENGINE_ANDROID__)
 
 #include "UI/UIScreenManager.h"
 #include "Base/BaseObject.h"
-
-#if defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA 
 {

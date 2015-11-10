@@ -149,7 +149,7 @@ VertexDeclGLES2
 
             elem[elemCount].count = layout.ElementDataCount(i);
             elem[elemCount].offset = (void*)(uint64(layout.ElementOffset(i)));
-            elem[elemCount].index = InvalidIndex;
+            elem[elemCount].index = DAVA::InvalidIndex;
 
             ++elemCount;
         }
@@ -217,7 +217,7 @@ VertexDeclGLES2
         {
             unsigned idx = elem[i].index;
 
-            if (idx != InvalidIndex)
+            if (idx != DAVA::InvalidIndex)
                 attr_used[idx] = 1;
         }
 
@@ -238,7 +238,7 @@ VertexDeclGLES2
         {
             unsigned idx = elem[i].index;
 
-            if (idx != InvalidIndex)
+            if (idx != DAVA::InvalidIndex)
             {
                 //Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
                 if (!vattr[idx].enabled)

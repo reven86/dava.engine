@@ -367,7 +367,7 @@ Packet
         , vertexConstCount(0)
         , fragmentConstCount(0)
         , primitiveCount(0)
-        , queryIndex(InvalidIndex)
+        , queryIndex(DAVA::InvalidIndex)
         , options(0)
         , debugMarker(nullptr)
     {

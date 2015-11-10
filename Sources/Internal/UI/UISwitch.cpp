@@ -40,7 +40,7 @@ static const String UISWITCH_BUTTON_RIGHT_NAME = "buttonRight";
 static const String UISWITCH_BUTTON_TOGGLE_NAME = "buttonToggle";
 static const float32 SWITCH_ANIMATION_TIME = 0.1f;
 static const int32 MOVE_ANIMATION_TRACK = 10;
-static const float32 ANCHOR_UNDEFINED = 10000;
+static const float32 ANCHOR_UNDEFINED = 10000.f;
 static float32 dragAnchorX = ANCHOR_UNDEFINED;
 
 class TogglePositionAnimation : public LinearAnimation<float32>

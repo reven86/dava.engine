@@ -794,8 +794,8 @@ void SetupDispatch(Dispatch* dispatch)
 void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-    bool fragment = base_i != InvalidIndex;
-    uint32 sampler_i = (base_i == InvalidIndex) ? unit_i : base_i + unit_i;
+    bool fragment = base_i != DAVA::InvalidIndex;
+    uint32 sampler_i = (base_i == DAVA::InvalidIndex) ? unit_i : base_i + unit_i;
     GLenum target = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
     const SamplerState::Descriptor::Sampler* sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
