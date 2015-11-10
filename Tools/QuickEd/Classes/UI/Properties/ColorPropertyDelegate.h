@@ -45,9 +45,13 @@ public:
     virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const override;
     virtual void setEditorData(QWidget * editor, const QModelIndex & index) const override;
     virtual bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+
 private slots:
     void OnChooseColorClicked();
     void OnEditingFinished();
+
+private:
+    static QPixmap CreateIcon(const QColor &color);
 };
 
 

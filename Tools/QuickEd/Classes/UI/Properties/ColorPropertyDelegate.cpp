@@ -54,9 +54,9 @@ QWidget *ColorPropertyDelegate::createEditor( QWidget * parent, const QStyleOpti
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    //QRegExpValidator *validator = new QRegExpValidator();
-    //validator->setRegExp(QRegExp("#{0,1}[A-F0-9]{8}", Qt::CaseInsensitive));
-    //lineEdit->setValidator(validator);
+    QRegExpValidator *validator = new QRegExpValidator();
+    validator->setRegExp(QRegExp("#{0,1}[A-F0-9]{8}", Qt::CaseInsensitive));
+    lineEdit->setValidator(validator);
 
     connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
     return lineEdit;
@@ -66,8 +66,17 @@ void ColorPropertyDelegate::enumEditorActions( QWidget *parent, const QModelInde
 {
     BasePropertyDelegate::enumEditorActions(parent, index, actions);
 
-    QAction *chooseColor = new QAction(tr("..."), parent);
+    QAction *chooseColor = new QAction(parent);
     connect(chooseColor, SIGNAL(triggered(bool)), this, SLOT(OnChooseColorClicked()));
+    QLineEdit *lineEdit = parent->findChild<QLineEdit *>("lineEdit");
+    if (nullptr != lineEdit)
+    {
+        connect(lineEdit, &QLineEdit::textChanged, [chooseColor](QString text)
+        {
+            QColor color(HexToQColor(text));
+            chooseColor->setIcon(CreateIcon(color));
+        });
+    }
     actions.push_front(chooseColor);
 }
 
@@ -87,7 +96,6 @@ bool ColorPropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel *
     QLineEdit *lineEdit = editor->findChild<QLineEdit *>("lineEdit");
 
     QColor newColor = HexToQColor(lineEdit->text());
-    //DAVA::VariantType color( QColorToColor(lineEdit->property("color").value<QColor>()) );
     DAVA::VariantType color( QColorToColor(newColor) );
     QVariant colorVariant;
     colorVariant.setValue<DAVA::VariantType>(color);
@@ -133,3 +141,25 @@ void ColorPropertyDelegate::OnEditingFinished()
     BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
 }
+
+QPixmap ColorPropertyDelegate::CreateIcon(const QColor &color)
+{
+    QPixmap pix(16, 16);
+    QPainter p(&pix);
+    p.setPen(QColor(0, 0, 0, 0));
+
+    if (color.alpha() < 255)
+    {
+        p.setBrush(QColor(250, 250, 250));
+        p.drawRect(QRect(0, 0, 15, 15));
+        p.setPen(QColor(200, 200, 200));
+        p.setBrush(QColor(150, 150, 150));
+        p.drawRect(QRect(0, 0, 7, 7));
+        p.drawRect(QRect(8, 8, 15, 15));
+    }
+
+    p.setBrush(QBrush(color));
+    p.drawRect(QRect(0, 0, 15, 15));
+    return pix;
+}
+
