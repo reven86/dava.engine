@@ -1,4 +1,7 @@
 color_mask : a
+
+FPROG_IN_BEGIN
+FPROG_IN_END
     
 FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
