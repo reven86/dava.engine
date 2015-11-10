@@ -55,7 +55,7 @@ QWidget *ColorPropertyDelegate::createEditor( QWidget * parent, const QStyleOpti
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     QRegExpValidator *validator = new QRegExpValidator();
-    validator->setRegExp(QRegExp("#{0,1}[A-F0-9]{8}", Qt::CaseInsensitive));
+    validator->setRegExp(QRegExp("#?([A-F0-9]{8}|[A-F0-9]{6})", Qt::CaseInsensitive));
     lineEdit->setValidator(validator);
 
     connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
