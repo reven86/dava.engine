@@ -88,6 +88,7 @@ public:
     virtual IAsyncOperation<IInputStream^>^ UriToStreamAsync(Uri^ uri);
 
 private:
+    IAsyncOperation<IInputStream^>^ GetStreamFromFilePathAsync(const FilePath& filePath);
     IAsyncOperation<IInputStream^>^ GetStreamFromUriAsync(Uri^ uri);
     IAsyncOperation<IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
 
@@ -123,21 +124,51 @@ IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
     }
     else
     {   // Create stream for resource files
-        Platform::String^ resPath = relativeResPath + uri->Path;
-        Uri^ appDataUri = nullptr;
-        switch (location)
+        if (location == PATH_IN_BIN || location == PATH_UNKNOWN)
         {
-        case PATH_IN_BIN:
-            appDataUri = ref new Uri(L"ms-appx:///" + resPath);
-            break;
-        case PATH_IN_DOC:
-            appDataUri = ref new Uri(L"ms-appdata:///local/" + resPath);
-            break;
-        default:
-            return nullptr;
+            String filePath = "~res:";
+            String path = RTStringToString(uri->Path);
+            if (path.front() != '/')
+            {
+                filePath += '/';
+            }
+            filePath += path;
+
+            return GetStreamFromFilePathAsync(filePath);
         }
-        return GetStreamFromUriAsync(appDataUri);
+        else if (location == PATH_IN_DOC)
+        {
+            Platform::String^ resPath = relativeResPath + uri->Path;
+            Uri^ appDataUri = ref new Uri(L"ms-appdata:///local/" + resPath);
+            return GetStreamFromUriAsync(appDataUri);
+        }
     }
+
+    return nullptr;
+}
+
+IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
+{
+    String fileNameStr = filePath.GetAbsolutePathname();
+    std::replace(fileNameStr.begin(), fileNameStr.end(), '/', '\\');
+    Platform::String^ fileName = StringToRTString(fileNameStr);
+
+    return create_async([this, fileName]() -> IInputStream^
+    {
+        try
+        {
+            StorageFile^ storageFile = WaitAsync(StorageFile::GetFileFromPathAsync(fileName));
+            IRandomAccessStream^ stream = WaitAsync(storageFile->OpenAsync(FileAccessMode::Read));
+            return static_cast<IInputStream^>(stream);
+        }
+        catch (Platform::COMException^ e)
+        {
+            Logger::Error("[WebView] failed to load file '%s': %s", 
+                          RTStringToString(fileName).c_str(),
+                          RTStringToString(e->Message).c_str());
+            return ref new InMemoryRandomAccessStream();
+        }
+    });
 }
 
 IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromUriAsync(Uri^ uri)
