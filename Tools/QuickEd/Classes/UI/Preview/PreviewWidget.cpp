@@ -336,6 +336,8 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 {
+    const int normalScale = 1.0f;
+    const int expandedScale = 1.4f;
     qreal scale = scrollAreaController->GetScale();
     QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
     switch(event->gestureType())
@@ -344,7 +346,8 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
             scrollAreaController->AdjustScale(scale + event->value() * davaGLWidget->devicePixelRatio(), pos);
                         break;
         case Qt::SmartZoomNativeGesture:
-            scrollAreaController->AdjustScale((event->value() == 0 ? 1.0f : 1.4f) * davaGLWidget->devicePixelRatio(), pos);
+            scrollAreaController->AdjustScale((event->value() == 0 ? normalScale : expandedScale) * davaGLWidget->devicePixelRatio(), pos);
+            //event->value() returns 1 or 0
             break;
         default:
             break;
