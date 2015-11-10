@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_TEXT_LAYOT_H__
-#define __DAVAENGINE_TEXT_LAYOT_H__
+#ifndef __DAVAENGINE_TEXT_LAYOUT_H__
+#define __DAVAENGINE_TEXT_LAYOUT_H__
 
 #include "Base/BaseTypes.h"
 #include "Render/2D/Font.h"
@@ -215,4 +215,4 @@ inline const uint32 TextLayout::Tell() const
 }
 }
 
-#endif // __DAVAENGINE_TEXT_LAYOT_H__
+#endif // __DAVAENGINE_TEXT_LAYOUT_H__
