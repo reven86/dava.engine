@@ -124,7 +124,7 @@ void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 
     if (dataSource)
     {
-		InsertDataNode(dataSource, dataNodes);
+        InsertDataNode(dataSource, dataNodes);
 	}
 }
 

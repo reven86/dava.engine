@@ -35,6 +35,9 @@
 #include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/ShaderCache.h"
 
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+
 #include "Render/Renderer.h"
 #include "Render/Texture.h"
 
@@ -87,7 +90,7 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
         DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
     }
     else
-	{
+    {
         renderLayers.push_back(layer);
         layersBatchArrays[layer->GetRenderLayerID()].SetSortingFlags(layer->GetSortingFlags());
     }
@@ -301,11 +304,15 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     Vector4 clip(0, 0, 1, -1);*/
     SetupCameraParams(mainCamera, drawCamera);
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
     PrepareVisibilityArrays(mainCamera, renderSystem);
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
     BeginRenderPass();
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
     DrawLayers(mainCamera);
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
 
     if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
         PrepareReflectionRefractionTextures(renderSystem);

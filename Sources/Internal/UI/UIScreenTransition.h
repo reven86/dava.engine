@@ -64,8 +64,8 @@ protected:
     float32 currentTime;
     float32 duration;
     float32 normalizedTime;
-	
-	UIScreen * prevScreen;
+
+    UIScreen * prevScreen;
 	UIScreen * nextScreen;
     UIScreenshoter* shooter;
 

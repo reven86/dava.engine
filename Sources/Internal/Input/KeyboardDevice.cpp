@@ -45,25 +45,6 @@ KeyboardDevice::~KeyboardDevice()
 bool KeyboardDevice::IsKeyPressed(int32 keyCode) const
 {
     DVASSERT( keyCode < DVKEY_COUNT );
-
-#if defined (__DAVAENGINE_WIN_UAP__)
-	if (DVKEY_ALT == keyCode)
-	{
-		auto current_frame =  Windows::UI::Core::CoreWindow::GetForCurrentThread();
-        if (current_frame)
-        {
-            // dragon: or else it crashes on win10-device
-            auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
-            return Windows::UI::Core::CoreVirtualKeyStates::Down == isAlt;
-        }
-    }
-#elif defined (__DAVAENGINE_WIN32__)
-	if(DVKEY_ALT == keyCode)
-	{
-        return ::GetKeyState(VK_MENU) < 0;
-    }
-#endif //  __DAVAENGINE_WIN_UAP__ | __DAVAENGINE_WIN32__
-
     return keyStatus[keyCode];
 }
 
@@ -137,7 +118,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_NEXT] = DVKEY_PGDN;
     keyTranslator[VK_INSERT] = DVKEY_INSERT;
 
-    keyTranslator[VK_OEM_PLUS] = DVKEY_ADD;
+    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
     keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
     keyTranslator[VK_OEM_PERIOD] = DVKEY_PERIOD;
     keyTranslator[VK_OEM_COMMA] = DVKEY_COMMA;

@@ -59,7 +59,7 @@ void TestListScreen::LoadResources()
     UIScreen::LoadResources();
     
     Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    
+
     testsGrid = new UIList(Rect(0.0, 0.0, static_cast<DAVA::float32>(screenSize.dx), static_cast<DAVA::float32>(screenSize.dy)), UIList::ORIENTATION_VERTICAL);
     testsGrid->SetDelegate(this);
     AddControl(testsGrid);

@@ -82,6 +82,9 @@ protected:
 	Vector2 	oldPos;
 	Vector2		newPos;
 
+    float32 oldScroll = 0.f;
+    float32 newScroll = 0.f;
+
     ScrollHelper *currentScroll;
 
 	// All boolean variables are grouped together because of DF-2149.

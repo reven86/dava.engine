@@ -36,9 +36,6 @@
 
 namespace DAVA
 {
-static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 11;
-static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 10;
-
 UIScreenshoter::UIScreenshoter()
 {
 }
@@ -129,7 +126,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
             rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
             info.scenePassConfig = config;
 
-            config.priority = PRIORITY_SCREENSHOT_3D_PASS;
+            config.priority = PRIORITY_SCREENSHOT_3D;
             config.colorBuffer[0].texture = waiter.texture->handle;
             config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
             Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
@@ -137,7 +134,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
                 config.depthStencilBuffer.texture = waiter.texture->handleDepthStencil;
         }
     }
-    RenderSystem2D::Instance()->BeginRenderTargetPass(waiter.texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D_PASS);
+    RenderSystem2D::Instance()->BeginRenderTargetPass(waiter.texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D);
     control->Update(0.f);
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
     RenderSystem2D::Instance()->EndRenderTargetPass();
