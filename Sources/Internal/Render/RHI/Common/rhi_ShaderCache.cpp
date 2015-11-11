@@ -228,10 +228,6 @@ static const char* _ShaderHeader_Metal =
 
 static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_BEGIN          struct VP_Input {\n"
-//"#define VPROG_IN_POSITION       packed_float3 position; \n"
-//"#define VPROG_IN_NORMAL         packed_float3 normal; \n"
-//"#define VPROG_IN_TEXCOORD       packed_float2 texcoord; \n"
-//"#define VPROG_IN_COLOR          packed_uchar4 color; \n"
 "#define VPROG_IN_POSITION       float3 position [[ attribute(VATTR_POSITION) ]]; \n"
 "#define VPROG_IN_NORMAL         float3 normal [[ attribute(VATTR_NORMAL) ]] ; \n"
 "#define VPROG_IN_TEXCOORD       float2 texcoord0 [[ attribute(VATTR_TEXCOORD_0) ]] ; \n"
@@ -243,9 +239,6 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_TEXCOORD5(sz)  float##sz texcoord5 [[ attribute(VATTR_TEXCOORD_5) ]] ; \n"
 "#define VPROG_IN_TEXCOORD6(sz)  float##sz texcoord6 [[ attribute(VATTR_TEXCOORD_6) ]] ; \n"
 "#define VPROG_IN_TEXCOORD7(sz)  float##sz texcoord7 [[ attribute(VATTR_TEXCOORD_7) ]] ; \n"
-//"#define VPROG_IN_COLOR          uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
-//"#define VPROG_IN_COLOR0         uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
-//"#define VPROG_IN_COLOR1         uchar4 color1 [[ attribute(VATTR_COLOR_1) ]] ; \n"
 "#define VPROG_IN_COLOR          float4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
 "#define VPROG_IN_COLOR0         float4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
 "#define VPROG_IN_COLOR1         float4 color1 [[ attribute(VATTR_COLOR_1) ]] ; \n"
@@ -283,6 +276,10 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_OUT_TEXCOORD7_LOW(name,size)    half##size name [[ user(texcoord7) ]];\n"
 "#define VPROG_OUT_COLOR0(name,size)           float##size name [[ user(color0) ]];\n"
 "#define VPROG_OUT_COLOR1(name,size)           float##size name [[ user(color1) ]];\n"
+"#define VPROG_OUT_COLOR0_HALF(name,size)      half##size name [[ user(color0) ]];\n"
+"#define VPROG_OUT_COLOR1_HALF(name,size)      half##size name [[ user(color1) ]];\n"
+"#define VPROG_OUT_COLOR0_LOW(name,size)       half##size name [[ user(color0) ]];\n"
+"#define VPROG_OUT_COLOR1_LOW(name,size)       half##size name [[ user(color1) ]];\n"
 "#define VPROG_OUT_END           };\n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) struct __VP_Buffer##idx { packed_float4 data[sz]; };\n"
@@ -366,6 +363,10 @@ static const char* _ShaderDefine_Metal =
 "#define FPROG_IN_TEXCOORD7_LOW(name,size)     half##size name [[ user(texcoord7) ]];\n"
 "#define FPROG_IN_COLOR0(name,size)            float##size name [[ user(color0) ]];\n"
 "#define FPROG_IN_COLOR1(name,size)            float##size name [[ user(color1) ]];\n"
+"#define FPROG_IN_COLOR0_HALF(name,size)       half##size name [[ user(color0) ]];\n"
+"#define FPROG_IN_COLOR1_HALF(name,size)       half##size name [[ user(color1) ]];\n"
+"#define FPROG_IN_COLOR0_LOW(name,size)        half##size name [[ user(color0) ]];\n"
+"#define FPROG_IN_COLOR1_LOW(name,size)        half##size name [[ user(color1) ]];\n"
 "#define FPROG_IN_END                          };\n"
 
 "#define FPROG_OUT_BEGIN         struct FP_Output {\n"
@@ -437,19 +438,29 @@ static const char* _ShaderHeader_GLES2 =
 "#define float4x4               mat4\n"
 "#define float3x3               mat3\n"
 "#define vec1                   float\n"
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 "#define half                   mediump float\n"
-"#define min10float             lowp float\n"
-
 "#define half1                  mediump float\n"
 "#define half2                  mediump vec2\n"
 "#define half3                  mediump vec3\n"
 "#define half4                  mediump vec4\n"
-
+"#define min10float             lowp float\n"
 "#define min10float1            lowp float\n"
 "#define min10float2            lowp vec2\n"
 "#define min10float3            lowp vec3\n"
 "#define min10float4            lowp vec4\n"
-
+#else
+"#define half                   float\n"
+"#define half1                  float\n"
+"#define half2                  vec2\n"
+"#define half3                  vec3\n"
+"#define half4                  vec4\n"
+"#define min10float             float\n"
+"#define min10float1            float\n"
+"#define min10float2            vec2\n"
+"#define min10float3            vec3\n"
+"#define min10float4            vec4\n"
+#endif
 //"vec4 mul( vec4 v, mat4 m ) { return m*v; }\n"
 //"vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
 //"vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
@@ -512,6 +523,10 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_OUT_TEXCOORD7_LOW(name,size)     varying min10float##size var_##name;\n"
 "#define VPROG_OUT_COLOR0(name,size)            varying vec##size var_##name;\n"
 "#define VPROG_OUT_COLOR1(name,size)            varying vec##size var_##name;\n"
+"#define VPROG_OUT_COLOR0_HALF(name,size)       varying half##size var_##name;\n"
+"#define VPROG_OUT_COLOR1_HALF(name,size)       varying half##size var_##name;\n"
+"#define VPROG_OUT_COLOR0_LOW(name,size)        varying min10float##size var_##name;\n"
+"#define VPROG_OUT_COLOR1_LOW(name,size)        varying min10float##size var_##name;\n"
 "#define VPROG_OUT_END           \n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform vec4 VP_Buffer##idx[sz];\n"
@@ -569,17 +584,27 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_IN_TEXCOORD5_LOW(name,size)     varying min10float##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD6_LOW(name,size)     varying min10float##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD7_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_COLOR0(name,size)            varying vec##size var_##name;\n"
-"#define FPROG_IN_COLOR1(name,size)            varying vec##size var_##name;\n"
+"#define FPROG_IN_COLOR0(name,size)            varying float##size var_##name;\n"
+"#define FPROG_IN_COLOR1(name,size)            varying float##size var_##name;\n"
+"#define FPROG_IN_COLOR0_HALF(name,size)       varying half##size var_##name;\n"
+"#define FPROG_IN_COLOR1_HALF(name,size)       varying half##size var_##name;\n"
+"#define FPROG_IN_COLOR0_LOW(name,size)        varying min10float##size var_##name;\n"
+"#define FPROG_IN_COLOR1_LOW(name,size)        varying min10float##size var_##name;\n"
 "#define FPROG_IN_END            \n"
 
 "#define FPROG_OUT_BEGIN         \n"
 "#define FPROG_OUT_COLOR         \n"
 "#define FPROG_OUT_END           \n"
 
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+"#define DECL_FP_SAMPLER2D(unit)    uniform lowp sampler2D FragmentTexture##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform lowp samplerCube FragmentTexture##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform lowp sampler2D VertexTexture##unit;\n"
+#else
 "#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit;\n"
 "#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit;\n"
 "#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
+#endif
 
 "#define FP_TEXTURE2D(unit,uv)   texture2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) textureCube( FragmentTexture##unit, uv )\n"
@@ -597,6 +622,11 @@ static const char* _ShaderDefine_GLES2 =
 static const char* _ShaderHeader_DX9 =
 "#define float1                 float\n"
 "#define half1                  half\n"
+"#define min10float             half\n"
+"#define min10float1            half\n"
+"#define min10float2            half2\n"
+"#define min10float3            half3\n"
+"#define min10float4            half4\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.a\n"
@@ -653,6 +683,10 @@ static const char* _ShaderDefine_DX9 =
 "#define VPROG_OUT_TEXCOORD7_LOW(name,size)     half##size name : TEXCOORD7;\n"
 "#define VPROG_OUT_COLOR0(name,size)            float##size name : COLOR0;\n"
 "#define VPROG_OUT_COLOR1(name,size)            float##size name : COLOR1;\n"
+"#define VPROG_OUT_COLOR0_HALF(name,size)       half##size name : COLOR0;\n"
+"#define VPROG_OUT_COLOR1_HALF(name,size)       half##size name : COLOR1;\n"
+"#define VPROG_OUT_COLOR0_LOW(name,size)        half##size name : COLOR0;\n"
+"#define VPROG_OUT_COLOR1_LOW(name,size)        half##size name : COLOR1;\n"
 "#define VPROG_OUT_END                          };\n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"
@@ -712,15 +746,25 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_IN_TEXCOORD7_LOW(name,size)     half##size name : TEXCOORD7;\n"
 "#define FPROG_IN_COLOR0(name,size)            float##size name : COLOR0;\n"
 "#define FPROG_IN_COLOR1(name,size)            float##size name : COLOR1;\n"
+"#define FPROG_IN_COLOR0_HALF(name,size)       half##size name : COLOR0;\n"
+"#define FPROG_IN_COLOR1_HALF(name,size)       half##size name : COLOR1;\n"
+"#define FPROG_IN_COLOR0_LOW(name,size)        half##size name : COLOR0;\n"
+"#define FPROG_IN_COLOR1_LOW(name,size)        half##size name : COLOR1;\n"
 "#define FPROG_IN_END                          };\n"
 
 "#define FPROG_OUT_BEGIN         struct FP_Output {\n"
 "#define FPROG_OUT_COLOR         float4 color : COLOR0;\n"
 "#define FPROG_OUT_END           };\n"
 
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+"#define DECL_FP_SAMPLER2D(unit)    uniform lowp sampler2D FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform lowp samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform lowp sampler2D VertexTexture##unit : TEXUNIT##unit;\n"
+#else
 "#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit : TEXUNIT##unit;\n"
 "#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
 "#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit : TEXUNIT##unit;\n"
+#endif
 
 "#define FP_TEXTURE2D(unit,uv)   tex2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) texCUBE( FragmentTexture##unit, uv )\n"
@@ -794,6 +838,10 @@ static const char* _ShaderDefine_DX11 =
 "#define VPROG_OUT_TEXCOORD7_LOW(name,size)     half##size name : TEXCOORD7;\n"
 "#define VPROG_OUT_COLOR0(name,size)            float##size name : COLOR0;\n"
 "#define VPROG_OUT_COLOR1(name,size)            float##size name : COLOR1;\n"
+"#define VPROG_OUT_COLOR0_HALF(name,size)       half##size name : COLOR0;\n"
+"#define VPROG_OUT_COLOR1_HALF(name,size)       half##size name : COLOR1;\n"
+"#define VPROG_OUT_COLOR0_LOW(name,size)        half##size name : COLOR0;\n"
+"#define VPROG_OUT_COLOR1_LOW(name,size)        half##size name : COLOR1;\n"
 "#define VPROG_OUT_END                          };\n"
 
 //"#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"
@@ -855,6 +903,10 @@ static const char* _ShaderDefine_DX11 =
 "#define FPROG_IN_TEXCOORD7_LOW(name,size)     half##size name : TEXCOORD7;\n"
 "#define FPROG_IN_COLOR0(name,size)            float##size name : COLOR0;\n"
 "#define FPROG_IN_COLOR1(name,size)            float##size name : COLOR1;\n"
+"#define FPROG_IN_COLOR0_HALF(name,size)       half##size name : COLOR0;\n"
+"#define FPROG_IN_COLOR1_HALF(name,size)       half##size name : COLOR1;\n"
+"#define FPROG_IN_COLOR0_LOW(name,size)        half##size name : COLOR0;\n"
+"#define FPROG_IN_COLOR1_LOW(name,size)        half##size name : COLOR1;\n"
 "#define FPROG_IN_END                          };\n"
 
 "#define FPROG_OUT_BEGIN         struct FP_Output {\n"
