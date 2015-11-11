@@ -71,10 +71,16 @@ void ColorPropertyDelegate::enumEditorActions( QWidget *parent, const QModelInde
     QLineEdit *lineEdit = parent->findChild<QLineEdit *>("lineEdit");
     if (nullptr != lineEdit)
     {
-        connect(lineEdit, &QLineEdit::textChanged, [chooseColor](QString text)
+        connect(lineEdit, &QLineEdit::textChanged, [lineEdit, chooseColor](QString text)
         {
             QColor color(HexToQColor(text));
             chooseColor->setIcon(CreateIcon(color));
+            QPalette palette(lineEdit->palette());
+            int pos = -1;
+            bool valid = lineEdit->validator()->validate(text, pos) == QValidator::Acceptable;
+            palette.setColor(QPalette::Text, valid ? Qt::black : Qt::red);
+            lineEdit->setPalette(palette);
+
         });
     }
     actions.push_front(chooseColor);
