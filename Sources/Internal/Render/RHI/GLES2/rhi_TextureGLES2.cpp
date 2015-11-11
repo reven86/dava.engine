@@ -117,20 +117,44 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
         if (cmd1.status == GL_NO_ERROR)
         {
-            GLCommand cmd2[] =
+            if (_GLES2_IsGlDepth24Stencil8Supported)
             {
-              { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-              { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
-              { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
-              /*
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, (need_stencil)?GL_DEPTH_COMPONENT24:GL_DEPTH_COMPONENT16, desc.width, desc.height } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
-                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-*/
-            };
+                GLCommand d24s8cmd[] =
+                {
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+                };
+                ExecGL(d24s8cmd, countof(d24s8cmd), force_immediate);
+
+                // Store depth/stencil buffer index as secondary stencil index for iOS/Android
+                uid[1] = uid[0];
+            }
+            else
+            {
+                GLCommand depthCmd;
+#if defined(__DAVAENGINE_ANDROID__)
+                if (_GLES2_IsGlDepthNvNonLinearSupported)
+                {
+                    depthCmd = { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, desc.width, desc.height } };
+                }
+                else
+#endif
+                {
+                    depthCmd = { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } };
+                }
+                GLCommand d16s8cmd[] =
+                {
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                  depthCmd,
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+                };
+                ExecGL(d16s8cmd, countof(d16s8cmd), force_immediate);
+            }
+
             /*
             if( !need_stencil )
             {
@@ -139,9 +163,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 cmd2[5].func = GLCommand::NOP;
             }
 */
-            ExecGL(cmd2, countof(cmd2), force_immediate);
-
-            uid[1] = uid[0];
         }
     }
     else
@@ -850,11 +871,11 @@ void SetAsRenderTarget(Handle tex, Handle depth)
 #endif
             }
 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
-            #else
+#else
             GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
 
             glDrawBuffers(1, b);
-            #endif
+#endif
 
             int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);

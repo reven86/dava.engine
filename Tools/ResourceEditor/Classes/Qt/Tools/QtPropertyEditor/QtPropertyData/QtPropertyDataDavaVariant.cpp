@@ -1149,7 +1149,7 @@ void QtPropertyDataDavaVariant::FilePathOWPressed()
 {
     DAVA::FilePath currPath = curVariantValue.AsFilePath();
     QString openFilePath = currPath.GetAbsolutePathname().c_str();
-    if(currPath.IsEmpty() || !currPath.Exists())
+    if (!DAVA::FileSystem::Instance()->Exists(currPath))
     {
         openFilePath = defaultOpenDialogPath;
     }

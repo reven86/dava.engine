@@ -163,6 +163,9 @@ void InstantEvent(unsigned tid, const char* category, const char* name);
 
 void DumpEvents();
 void SaveEvents(const char* fileName);
+
+void StartTraceEvents();
+void StopTraceEvents();
 }
 
 #if TRACER_ENABLED

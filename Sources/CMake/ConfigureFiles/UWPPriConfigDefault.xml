@@ -1,3 +1,1 @@
-<default>
-  <qualifier name="Language" value="${WINDOWS_UAP_PACKAGE_LANGUAGES}" />
-</default>
+<default>${WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS}</default>

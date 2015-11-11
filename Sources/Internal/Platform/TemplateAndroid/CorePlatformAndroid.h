@@ -77,8 +77,8 @@ public:
     void StartForeground();
     void StopForeground(bool isLock);
 
-	void OnCreateActivity();
-	void OnDestroyActivity();
+    void OnCreateActivity();
+    void OnDestroyActivity();
 
 	void KeyUp(int32 keyCode);
 	void KeyDown(int32 keyCode);
