@@ -271,20 +271,21 @@ namespace DAVA
 		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, new KeyedArchive());
 		result = deviceArchive->GetString(param, DB_ERROR_STR_VALUE);
 		
-		Logger::Info("AutotestingDB::ReadState device=%s: '%s'", device.c_str(), result.c_str());
+		Logger::Info("AutotestingDB::ReadState device=%s: %s='%s'", device.c_str(), param.c_str(), result.c_str());
 		SafeRelease(dbUpdateObject);
 		return result;
 	}
 
 	void AutotestingDB::WriteState(const String &device, const String &param, const String &state)
 	{
-		Logger::Info("AutotestingDB::WriteState device=%s state=%s", device.c_str(), state.c_str());
+		Logger::Info("AutotestingDB::WriteState device=%s %s=%s", device.c_str(), param.c_str(), state.c_str());
 		FailOnLocalBuild();
 
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
 		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, new KeyedArchive());
 		deviceArchive->SetString(param, state);
+		multiplayerArchive->SetArchive(device, deviceArchive);
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
 	}

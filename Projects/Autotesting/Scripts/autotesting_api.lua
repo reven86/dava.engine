@@ -5,7 +5,6 @@ TIMECLICK = 0.5 -- time for simple action
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
-DEVICE = "not_initialized"
 
 EPSILON = 1
 
@@ -258,7 +257,7 @@ function WaitForDevice(name)
 		currentStatus = ReadState(name)
         if currentStatus == MP_STATE['READY'] then
 			Log("Device " .. name .. " is ready")
-            return
+            return true
         elseif currentStatus == MP_STATE['NO_DEVICE'] then
 			OnError("Could not find device " .. name)
 		end
@@ -286,8 +285,9 @@ end
 
 function WaitJob(name)
     Log("Wait for job on slave " .. name)
+	local state
     for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
-        local state = ReadState(name)
+        state = ReadState(name)
         if state == "execution_completed" then
             WriteState(name, "ready")
             Log("Device " .. name .. " finish his job")
@@ -572,9 +572,7 @@ function SelectItemInList(listName, item)
     end
     local listControl = GetControl(listName)
     local startPoint, __scroll = listControl:GetPivotPoint(), nil
-    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
     local finalPoint = autotestingSystem:GetMaxListOffsetSize(listControl)
-    print(string.format('Final point: ' .. finalPoint))
     if autotestingSystem:IsListHorisontal(listControl) then
         __scroll, startPoint = HorizontalScroll, startPoint.y
     else
@@ -750,6 +748,7 @@ function KeyPress(key, control)
         ClickControl(control)
     end
     autotestingSystem:KeyPress(key)
+    Wait(TIMECLICK)
 end
 
 function ClickControl(name, waitTime, touchId)
