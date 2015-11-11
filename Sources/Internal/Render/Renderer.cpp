@@ -95,6 +95,11 @@ void Uninitialize()
     ininialized = false;
 }
 
+bool IsInitialized()
+{
+    return ininialized;
+}
+
 void Reset(const rhi::ResetParam& params)
 {
     framebufferWidth = static_cast<int32>(params.width * params.scaleX);
