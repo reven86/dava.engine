@@ -42,7 +42,7 @@
 using namespace DAVA;
 using namespace std::chrono;
 
-const TransformSystem::CornersDirections TransformSystem::cornersDirections =
+const EditorTransformSystem::CornersDirections EditorTransformSystem::cornersDirections =
 { {
 { { NEGATIVE_DIRECTION, NEGATIVE_DIRECTION } }, // TOP_LEFT_AREA
 { { NO_DIRECTION, NEGATIVE_DIRECTION } }, // TOP_CENTER_AREA
@@ -54,7 +54,7 @@ const TransformSystem::CornersDirections TransformSystem::cornersDirections =
 { { POSITIVE_DIRECTION, POSITIVE_DIRECTION } } //BOTTOM_RIGHT_AREA
 } };
 
-struct TransformSystem::MoveInfo
+struct EditorTransformSystem::MoveInfo
 {
     MoveInfo(ControlNode* node_, AbstractProperty* positionProperty_, const UIGeometricData* parentGD_)
         : node(node_)
@@ -115,18 +115,18 @@ struct MagnetLine
 const float32 TRANSFORM_EPSILON = 0.0005f;
 } //namespace
 
-TransformSystem::TransformSystem(EditorSystemsManager* parent)
+EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
-    systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::OnActiveAreaChanged);
-    systemManager->SelectionChanged.Connect(this, &TransformSystem::OnSelectionChanged);
+    systemManager->ActiveAreaChanged.Connect(this, &EditorTransformSystem::OnActiveAreaChanged);
+    systemManager->SelectionChanged.Connect(this, &EditorTransformSystem::OnSelectionChanged);
 }
 
-TransformSystem::~TransformSystem()
+EditorTransformSystem::~EditorTransformSystem()
 {
 }
 
-void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
+void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
     activeArea = areaInfo.area;
     activeControlNode = areaInfo.owner;
@@ -157,7 +157,7 @@ void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
     UpdateNeighboursToMove();
 }
 
-bool TransformSystem::OnInput(UIEvent* currentInput)
+bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 {
     switch (currentInput->phase)
     {
@@ -191,7 +191,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     }
 }
 
-void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
     nodesToMove.clear();
@@ -203,7 +203,7 @@ void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const Se
     UpdateNeighboursToMove();
 }
 
-bool TransformSystem::ProcessKey(const int32 key)
+bool EditorTransformSystem::ProcessKey(const int32 key)
 {
     if (!selectedControlNodes.empty())
     {
@@ -239,7 +239,7 @@ bool TransformSystem::ProcessKey(const int32 key)
     return false;
 }
 
-bool TransformSystem::ProcessDrag(Vector2 pos)
+bool EditorTransformSystem::ProcessDrag(Vector2 pos)
 {
     if (activeArea == HUDAreaInfo::NO_AREA)
     {
@@ -279,7 +279,7 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     }
 }
 
-void TransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
+void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
 {
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
@@ -404,7 +404,7 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>
 }
 } //unnamed namespace
 
-Vector2 TransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<MagnetLineInfo>& magnets, const UIGeometricData* parentGD, const UIControl* control)
+Vector2 EditorTransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<MagnetLineInfo>& magnets, const UIGeometricData* parentGD, const UIControl* control)
 {
     const UIGeometricData controlGD = control->GetLocalGeometricData();
     Rect box = controlGD.GetAABBox();
@@ -439,7 +439,7 @@ Vector2 TransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<MagnetL
     return delta;
 }
 
-void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably)
+void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably)
 {
     UIControl* control = activeControlNode->GetControl();
 
@@ -548,7 +548,7 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
 }
 
-Vector2 TransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
+Vector2 EditorTransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
 {
     const Vector2 scaledMinimum(minimumSize / controlGeometricData.scale);
     Vector2 origSize = sizeProperty->GetValue().AsVector2();
@@ -582,7 +582,7 @@ Vector2 TransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
     return deltaSize;
 }
 
-Vector2 TransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
+Vector2 EditorTransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
 {
     Vector<MagnetLineInfo> magnets;
 
@@ -602,7 +602,7 @@ Vector2 TransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSize, Vec
     return adjustedSize;
 }
 
-DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 transformPoint, Directions directions, Vector<MagnetLineInfo>& magnets)
+DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 transformPoint, Directions directions, Vector<MagnetLineInfo>& magnets)
 {
     UIControl* control = activeControlNode->GetControl();
 
@@ -675,7 +675,7 @@ DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
     return deltaSize;
 }
 
-void TransformSystem::MovePivot(Vector2 delta)
+void EditorTransformSystem::MovePivot(Vector2 delta)
 {
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     Vector2 pivot = AdjustPivotToNearestArea(delta);
@@ -714,7 +714,7 @@ void CreateMagnetLinesForPivot(Vector<MagnetLineInfo>& magnetLines, Vector2 targ
 }
 }; //unnamed namespace
 
-DAVA::Vector2 TransformSystem::AdjustPivotToNearestArea(Vector2& delta)
+DAVA::Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
 {
     Vector<MagnetLineInfo> magnetLines;
 
@@ -779,7 +779,7 @@ DAVA::Vector2 TransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     return finalPivot;
 }
 
-bool TransformSystem::Rotate(Vector2 pos)
+bool EditorTransformSystem::Rotate(Vector2 pos)
 {
     Vector2 rotatePoint(controlGeometricData.GetUnrotatedRect().GetPosition());
     rotatePoint += controlGeometricData.pivotPoint * controlGeometricData.scale;
@@ -806,7 +806,7 @@ bool TransformSystem::Rotate(Vector2 pos)
     return true;
 }
 
-float32 TransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
+float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
 {
     float32 finalAngle = originalAngle + deltaAngle;
     if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
@@ -829,7 +829,7 @@ float32 TransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 or
     return finalAngle;
 }
 
-void TransformSystem::CorrectNodesToMove()
+void EditorTransformSystem::CorrectNodesToMove()
 {
     nodesToMove.remove_if([](std::unique_ptr<MoveInfo>& item) {
         const PackageBaseNode* parent = item->node->GetParent();
@@ -894,7 +894,7 @@ void CollectNeighbours(Vector<UIControl*>& neighbours, const SelectedControls& s
     std::set_difference(sortedChildren.begin(), sortedChildren.end(), ignoredNeighbours.begin(), ignoredNeighbours.end(), std::back_inserter(neighbours));
 }
 
-void TransformSystem::UpdateNeighboursToMove()
+void EditorTransformSystem::UpdateNeighboursToMove()
 {
     neighbours.clear();
     if (nullptr != activeControlNode)

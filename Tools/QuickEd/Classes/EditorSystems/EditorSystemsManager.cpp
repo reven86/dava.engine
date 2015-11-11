@@ -150,7 +150,7 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     systems.emplace_back(new SelectionSystem(this));
     systems.emplace_back(new HUDSystem(this));
     systems.emplace_back(new CursorSystem(this));
-    systems.emplace_back(new ::TransformSystem(this));
+    systems.emplace_back(new ::EditorTransformSystem(this));
 
     package->AddListener(this);
 }
