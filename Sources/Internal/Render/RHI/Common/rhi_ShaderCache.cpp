@@ -432,6 +432,7 @@ static const char* _ShaderDefine_Metal =
 ;
 
 static const char* _ShaderHeader_GLES2 =
+"#define float1                 float\n"
 "#define float2                 vec2\n"
 "#define float3                 vec3\n"
 "#define float4                 vec4\n"
