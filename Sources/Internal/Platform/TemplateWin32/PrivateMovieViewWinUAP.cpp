@@ -120,15 +120,6 @@ void PrivateMovieViewWinUAP::OpenMovie(const FilePath& moviePath, const OpenMovi
     }
 }
 
-void PrivateMovieViewWinUAP::OpenMovie(const WideString& uri, const OpenMovieParams& params)
-{
-    IRandomAccessStream^ stream = CreateStreamFromUri(uri);
-    if (stream)
-    {
-        OpenMovieFromStream(stream, params);
-    }
-}
-
 void PrivateMovieViewWinUAP::OpenMovieFromStream(IRandomAccessStream^ stream, const OpenMovieParams& params)
 {
     movieLoaded = false;
@@ -276,31 +267,7 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
 }
 
-Windows::Storage::Streams::IRandomAccessStream^ 
-PrivateMovieViewWinUAP::CreateStreamFromUri(const WideString& uriString) const
-{
-    Uri^ uri = ref new Uri(ref new Platform::String(uriString.c_str()));
-
-    try
-    {
-        StorageFile^ file = WaitAsync(StorageFile::GetFileFromApplicationUriAsync(uri));
-        if (file != nullptr)
-        {
-            return WaitAsync(file->OpenAsync(FileAccessMode::Read));
-        }
-        return nullptr;
-    }
-    catch (Platform::COMException^ e)
-    {
-        Logger::Error("[MovieView] failed to load URI %s: %s",
-                      WStringToString(uriString).c_str(),
-                      RTStringToString(e->Message).c_str());
-        return nullptr;
-    }
-}
-
-Windows::Storage::Streams::IRandomAccessStream^ 
-PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
+Windows::Storage::Streams::IRandomAccessStream^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
 {
     String pathName = path.GetAbsolutePathname();
     std::replace(pathName.begin(), pathName.end(), '/', '\\');
@@ -317,9 +284,10 @@ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
     }
     catch (Platform::COMException^ e)
     {
-        Logger::Error("[MovieView] failed to load file %s: %s", 
-                      pathName.c_str(),
-                      RTStringToString(e->Message).c_str());
+        Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)", 
+                      RTStringToString(filePath).c_str(),
+                      RTStringToString(e->Message).c_str(),
+                      e->HResult);
         return nullptr;
     }
 }

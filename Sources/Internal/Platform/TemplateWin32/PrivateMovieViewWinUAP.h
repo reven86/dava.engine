@@ -55,7 +55,6 @@ public:
     void SetVisible(bool isVisible);
 
     void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
-    void OpenMovie(const WideString& uri, const OpenMovieParams& params);
 
     void Play();
     void Stop();
@@ -69,7 +68,6 @@ private:
     void InstallEventHandlers();
     void PositionMovieView(const Rect& rectInVirtualCoordinates);
 
-    Windows::Storage::Streams::IRandomAccessStream^ CreateStreamFromUri(const WideString& uriString) const;
     Windows::Storage::Streams::IRandomAccessStream^ CreateStreamFromFilePath(const FilePath& path) const;
     void OpenMovieFromStream(Windows::Storage::Streams::IRandomAccessStream^ stream, const OpenMovieParams& params);
 
