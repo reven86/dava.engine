@@ -121,7 +121,6 @@ QWidget *PropertiesTreeItemDelegate::createEditor( QWidget * parent, const QStyl
         else
         {
             editorWidget->editWidget = editor;
-            editor->setFocusProxy(editorWidget);
             editorWidget->setFocusPolicy(Qt::WheelFocus);
 
             QHBoxLayout *horizontalLayout = new QHBoxLayout(editorWidget);
