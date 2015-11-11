@@ -531,6 +531,12 @@ macro( generated_unified_sources SOURCE_FILES )
 
         endif()
 
+        get_property( CPP_PACK_IDX GLOBAL PROPERTY  ${PROJECT_NAME}_CPP_PACK_IDX  )
+
+        if( NOT CPP_PACK_IDX )
+            set( CPP_PACK_IDX 0 )
+        endif()
+    
         foreach( index RANGE 1 ${CPP_PACK_SIZE}  )
             set( HEADERS_LIST "#include \"DAVAEngine.h\"")
             foreach( PACH ${PACK_${index}} )
@@ -538,15 +544,19 @@ macro( generated_unified_sources SOURCE_FILES )
                 list( APPEND HEADERS_LIST "#include\"${PACH}\"" ) 
                 set_source_files_properties( ${PACH} PROPERTIES HEADER_FILE_ONLY TRUE )
             endforeach()
-
-            string(REPLACE ";" "\n" HEADERS_LIST "${HEADERS_LIST}" )
-            set ( CPP_NAME ${CMAKE_BINARY_DIR}/src_pack/${PROJECT_NAME}_${index}.cpp )
+            string(REPLACE ";" "\n" HEADERS_LIST "${HEADERS_LIST}" )            
+            math( EXPR index_pack "${index} + ${CPP_PACK_IDX}" )
+            set ( CPP_NAME ${CMAKE_BINARY_DIR}/src_pack/${PROJECT_NAME}_${index_pack}.cpp )
             
             list( APPEND CPP_PACK_LIST ${CPP_NAME} )
 
             file( WRITE ${CPP_NAME} ${HEADERS_LIST})
         endforeach()
         set( ${SOURCE_FILES}  ${${SOURCE_FILES}}  ${CPP_PACK_LIST} )
+        
+        math( EXPR CPP_PACK_IDX "${CPP_PACK_IDX} + ${CPP_PACK_SIZE}" )
+        set_property( GLOBAL PROPERTY ${PROJECT_NAME}_CPP_PACK_IDX "${CPP_PACK_IDX}" )
+
 
     endif()
 endmacro ()

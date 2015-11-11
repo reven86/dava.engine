@@ -249,7 +249,7 @@ endif()
 
 ###
 
-generated_unified_sources   ( PROJECT_SOURCE_FILES )
+generated_unified_sources   ( PROJECT_SOURCE_FILES  IGNORE_LIST ${UNIFIED_IGNORE_LIST} )
     
 
 if( ANDROID )

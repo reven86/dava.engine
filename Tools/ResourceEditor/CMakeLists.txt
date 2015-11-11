@@ -84,6 +84,8 @@ set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
 set( LIBRARIES            ${BEAST_LIB} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
+set( UNIFIED_IGNORE_LIST  "Classes/bullet" "Classes/Collada" )
+
 DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
                            COPY_WIN32  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll
                            COPY_DIR    ${DEPLOY_DIR}
