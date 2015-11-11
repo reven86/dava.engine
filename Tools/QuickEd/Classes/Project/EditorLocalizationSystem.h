@@ -31,29 +31,43 @@
 #define __EDITOR_LOCALIZATION_SYSTEM_H__
 
 #include <QObject>
+#include <QMap>
 #include <QStringList>
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
+
+class QDir;
 
 class EditorLocalizationSystem: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString currentLocale READ GetCurrentLocale WRITE SetCurrentLocale NOTIFY CurrentLocaleChanged)
+     
 public:
     explicit EditorLocalizationSystem(QObject *parent = nullptr);
-    ~EditorLocalizationSystem() = default;
-    const QStringList& GetAvailableLocales() const;
-    void InitLanguageWithDirectory(const DAVA::FilePath &directoryPath, const DAVA::String &locale);
-    void Cleanup();
-signals:
-    void LocaleChanged(const DAVA::String &locale);
-private:
 
-    QStringList availableLocales;
+    QStringList GetAvailableLocaleNames() const;
+    QStringList GetAvailableLocaleValues() const;
+
+    void SetDirectory(const QDir &dir);
+    void SetCurrentLocaleValue(const QString &localeStr);
+    void Cleanup();
+
+private:
+    static QString GetLocaleNameFromStr(QString localeStr);
+    QMap<QString, QString> availableLocales;
+
+//properties section
+public:
+    QString GetCurrentLocale() const;
+
+public slots:
+    void SetCurrentLocale(const QString &locale);
+
+signals:
+    void CurrentLocaleChanged(const QString &locale);
+
+private:
+    QString currentLocale;
 };
 
-inline const QStringList& EditorLocalizationSystem::GetAvailableLocales() const
-{
-    return availableLocales;
-}
 
 #endif //__EDITOR_LOCALIZATION_SYSTEM_H__

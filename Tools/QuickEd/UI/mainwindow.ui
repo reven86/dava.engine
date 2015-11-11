@@ -106,8 +106,6 @@
      <addaction name="actionDump_Sprites"/>
      <addaction name="actionDump_Textures"/>
     </widget>
-    <addaction name="actionFontManager"/>
-    <addaction name="actionLocalizationManager"/>
     <addaction name="separator"/>
     <addaction name="menuDebug"/>
    </widget>
@@ -316,11 +314,6 @@
     <string>Properties</string>
    </property>
   </action>
-  <action name="actionFontManager">
-   <property name="text">
-    <string>Font Manager</string>
-   </property>
-  </action>
   <action name="actionClose_project">
    <property name="icon">
     <iconset resource="../DataQt/icons.qrc">
@@ -337,11 +330,6 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionLocalizationManager">
-   <property name="text">
-    <string>Localization Manager</string>
    </property>
   </action>
   <action name="actionSaveDocument">
