@@ -532,7 +532,7 @@ macro( generated_unified_sources SOURCE_FILES )
         endif()
 
         foreach( index RANGE 1 ${CPP_PACK_SIZE}  )
-            set( HEADERS_LIST "#include \"DAVAEngine.h\"")
+            set( HEADERS_LIST )
             foreach( PACH ${PACK_${index}} )
                 get_filename_component( PACH ${PACH} ABSOLUTE )
                 list( APPEND HEADERS_LIST "#include\"${PACH}\"" ) 
