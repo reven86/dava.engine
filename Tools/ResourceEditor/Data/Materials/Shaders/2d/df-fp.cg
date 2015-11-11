@@ -2,7 +2,7 @@
 
 FPROG_IN_BEGIN
     FPROG_IN_TEXCOORD0(uv,2)
-    FPROG_IN_COLOR0(color,4)
+    FPROG_IN_COLOR0_LOW(color,4)
 FPROG_OUT_END
 
 FPROG_OUT_BEGIN
@@ -15,11 +15,11 @@ property float smoothing : static,instance : ;
 
 FPROG_BEGIN
 
-    float4 in_color = FP_IN(color);
+    min10float4 in_color = FP_IN(color);
     float2 in_uv = FP_IN(uv);
 
-    float distance = FP_A8(FP_TEXTURE2D( tex, in_uv ));
-    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+    min10float distance = FP_A8(FP_TEXTURE2D( tex, in_uv ));
+    min10float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
     alpha = min(alpha, in_color.a);
 
     FP_OUT_COLOR = float4(in_color.rgb, alpha);
