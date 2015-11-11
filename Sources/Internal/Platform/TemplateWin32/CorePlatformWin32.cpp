@@ -169,6 +169,7 @@ namespace DAVA
         FrameworkDidLaunched();
         KeyedArchive* options = Core::GetOptions();
 
+        bool shouldEnableFullscreen = false;
         fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
         if (options)
         {
@@ -182,42 +183,37 @@ namespace DAVA
 			fullscreenMode.bpp = windowedMode.bpp;
 
 			fullscreenMode = FindBestMode(fullscreenMode);
-
-			String title = options->GetString("title", "[set application title using core options property 'title']");
+            shouldEnableFullscreen = options->GetInt32("fullscreen", 0) == 1;
+            String title = options->GetString("title", "[set application title using core options property 'title']");
 			WideString titleW = StringToWString(title);
 			SetWindowText(hWindow, titleW.c_str());
 		}
 
-		Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
+        Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
 
-        if (options && options->GetInt32("fullscreen", 0) == 0)
+        // Init application with positioned window
         {
             currentMode = windowedMode;
+            rendererParams.width = currentMode.width;
+            rendererParams.height = currentMode.height;
+
+            clientSize.top = 0;
+            clientSize.left = 0;
+            clientSize.right = currentMode.width;
+            clientSize.bottom = currentMode.height;
+
+            AdjustWindowRect(&clientSize, style, FALSE);
+
+            realWidth = clientSize.right - clientSize.left;
+            realHeight = clientSize.bottom - clientSize.top;
+
+            windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
+            windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
+
+            MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
         }
-        else
-        {
-            currentMode = fullscreenMode;
-        }
 
-        rendererParams.width = currentMode.width;
-        rendererParams.height = currentMode.height;
-
-        clientSize.top = 0;
-        clientSize.left = 0;
-        clientSize.right = currentMode.width;
-        clientSize.bottom = currentMode.height;
-
-        AdjustWindowRect(&clientSize, style, FALSE);
-
-        realWidth = clientSize.right - clientSize.left;
-        realHeight = clientSize.bottom - clientSize.top;
-
-        windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
-        windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
-
-        MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
-
-        if (options && 1 == options->GetInt32("fullscreen", 0))
+        if (shouldEnableFullscreen)
         {
             SetScreenMode(eScreenMode::FULLSCREEN);
         }
