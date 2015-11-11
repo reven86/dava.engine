@@ -38,7 +38,7 @@
 #include "EditorSystems/CanvasSystem.h"
 #include "EditorSystems/CursorSystem.h"
 #include "EditorSystems/HUDSystem.h"
-#include "EditorSystems/TransformSystem.h"
+#include "EditorSystems/EditorTransformSystem.h"
 
 #include "UI/UIControl.h"
 

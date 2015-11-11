@@ -30,7 +30,7 @@
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
-#include "EditorSystems/TransformSystem.h"
+#include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
 #include "UI/UIEvent.h"
