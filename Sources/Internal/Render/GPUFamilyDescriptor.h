@@ -38,45 +38,22 @@ namespace DAVA
 
 class FilePath;
 class TextureDescriptor;
-class GPUFamilyDescriptor
+
+namespace GPUFamilyDescriptor
 {
-    
-public:
-    
-    struct GPUData
-    {
-        String name;
-        String prefix;
-        
-        Map<PixelFormat, ImageFormat> availableFormats;
-    };
-    
-public:
+const Map<PixelFormat, ImageFormat>& GetAvailableFormatsForGpu(eGPUFamily gpuFamily);
 
-    static void SetupGPUParameters();
-    static const Map<PixelFormat, ImageFormat> & GetAvailableFormatsForGpu(eGPUFamily gpuFamily);
+const String& GetGPUName(const eGPUFamily gpuFamily);
+const String& GetGPUPrefix(const eGPUFamily gpuFamily);
+ImageFormat GetCompressedFileFormat(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
 
-    static const String & GetGPUName(const eGPUFamily gpuFamily);
-    static const String& GetGPUPrefix(const eGPUFamily gpuFamily);
-    static ImageFormat GetCompressedFileFormat(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
+eGPUFamily GetGPUForPathname(const FilePath& pathname);
+eGPUFamily GetGPUByName(const String& name);
+DAVA_DEPRECATED(eGPUFamily ConvertValueToGPU(const int32 value));
 
-    static eGPUFamily GetGPUForPathname(const FilePath &pathname);
-    static eGPUFamily GetGPUByName(const String & name);
-    DAVA_DEPRECATED(static eGPUFamily ConvertValueToGPU(const int32 value));
-
-    static bool IsGPUForDevice(const eGPUFamily gpu);
-    static bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);
-
-protected:
-
-    static void SetupGPUFormats();
-    static void SetupGPUPostfixes();
-
-protected:
-    
-    static GPUData gpuData[GPU_FAMILY_COUNT];
-};
-    
-};
+bool IsGPUForDevice(const eGPUFamily gpu);
+bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);
+}
+}
 
 #endif // __GPU_FAMILY_H__

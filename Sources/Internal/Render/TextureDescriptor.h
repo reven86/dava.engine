@@ -215,6 +215,9 @@ public:
 
 	bool Reload();
 
+    bool ApplyTexturePreset(const KeyedArchive* presetArchive);
+    void ExtractTexturePreset(KeyedArchive* presetArchive) const;
+
 protected:
 
     const Compression * GetCompressionParams(eGPUFamily forGPU) const;

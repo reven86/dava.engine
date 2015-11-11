@@ -176,7 +176,7 @@ void ProgramOptions::PrintUsage() const
     }
 }
 
-DAVA::uint32 ProgramOptions::GetOptionsCount(const DAVA::String& optionName) const
+DAVA::uint32 ProgramOptions::GetOptionVaulesCount(const DAVA::String& optionName) const
 {
     for (auto& opt : options)
     {

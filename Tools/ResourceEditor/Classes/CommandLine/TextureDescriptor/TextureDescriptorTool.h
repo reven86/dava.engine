@@ -42,10 +42,9 @@ class TextureDescriptorTool: public CommandLineTool
         ACTION_NONE = -1,
 
         ACTION_RESAVE_DESCRIPTORS,
-        ACTION_COPY_COMPRESSION,
         ACTION_CREATE_DESCRIPTORS,
-        ACTION_SET_COMPRESSION_FOR_FOLDER,
-        ACTION_SET_COMPRESSION_FOR_DESCRIPTOR
+        ACTION_SET_COMPRESSION,
+        ACTION_SET_PRESET
     };
 
 public:
@@ -67,6 +66,8 @@ private:
 
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
     DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
+
+    DAVA::FilePath presetPath;
 };
 
 

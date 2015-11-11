@@ -32,17 +32,22 @@
 
 namespace DAVA
 {
-class TextureDescriptor;
-class NMaterial;
+    class TextureDescriptor;
+    class NMaterial;
+    class KeyedArchive;
+    class FilePath;
 }
 
-namespace Preset
-{
-bool SavePresetForTexture(const DAVA::TextureDescriptor* descriptor);
-bool LoadPresetForTexture(DAVA::TextureDescriptor* descriptor);
+namespace Preset {
 
-bool SavePresetForMaterial(DAVA::NMaterial* material);
-bool LoadPresetForMaterial(DAVA::NMaterial* material);
-};
+bool SaveTexturePreset(const DAVA::KeyedArchive* presetArchive, const DAVA::FilePath& path);
+bool LoadTexturePreset(DAVA::KeyedArchive* archieve, const DAVA::FilePath& path);
 
+bool DialogSavePresetForTexture(const DAVA::TextureDescriptor* descriptor);
+bool DialogLoadPresetForTexture(DAVA::TextureDescriptor* descriptor);
+
+bool DialogSavePresetForMaterial(DAVA::NMaterial* material);
+bool DialgoLoadPresetForMaterial(DAVA::NMaterial* material);
+
+}
 #endif // __PRESET_MANAGER_H__

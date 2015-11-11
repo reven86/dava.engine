@@ -454,7 +454,7 @@ void TextureListDelegate::onLoadPreset()
         return;
     }
 
-    bool loaded = Preset::LoadPresetForTexture(lastSelectedTextureDescriptor);
+    bool loaded = Preset::DialogLoadPresetForTexture(lastSelectedTextureDescriptor);
     if (loaded)
     {
         emit textureDescriptorChanged(lastSelectedTextureDescriptor);
@@ -470,7 +470,7 @@ void TextureListDelegate::onSavePreset()
         return;
     }
 
-    Preset::SavePresetForTexture(lastSelectedTextureDescriptor);
+    Preset::DialogSavePresetForTexture(lastSelectedTextureDescriptor);
 
     lastSelectedTextureDescriptor = nullptr;
 }

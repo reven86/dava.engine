@@ -40,121 +40,36 @@
 
 namespace DAVA
 {
-    
-GPUFamilyDescriptor::GPUData GPUFamilyDescriptor::gpuData[GPU_FAMILY_COUNT];
-
-void GPUFamilyDescriptor::SetupGPUParameters()
+namespace GPUFamilyDescriptor
 {
-    SetupGPUFormats();
-    SetupGPUPostfixes();
-}
-
-void GPUFamilyDescriptor::SetupGPUFormats()
+struct GPUData
 {
-    //pvr ios
-    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_RGBA4444] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_RGB565] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_A8] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR4] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR2] = IMAGE_FORMAT_PVR;
+    String name;
+    String prefix;
 
-    //es30
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR2_2] = IMAGE_FORMAT_PVR;
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR4_2] = IMAGE_FORMAT_PVR;
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_EAC_R11_UNSIGNED] = IMAGE_FORMAT_PVR;
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_EAC_R11_SIGNED] = IMAGE_FORMAT_PVR;
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_EAC_RG11_SIGNED] = IMAGE_FORMAT_PVR;
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_EAC_RG11_UNSIGNED] = IMAGE_FORMAT_PVR;
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_ETC2_RGB] = IMAGE_FORMAT_PVR;
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_ETC2_RGBA] = IMAGE_FORMAT_PVR;
-    //     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_ETC2_RGB_A1] = IMAGE_FORMAT_PVR;
+    Map<PixelFormat, ImageFormat> availableFormats;
+};
 
-    //pvr android
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_RGBA4444] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_RGB565] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_A8] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_PVR4] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_PVR2] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_ETC1] = IMAGE_FORMAT_PVR;
-
-    //tegra
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_RGBA4444] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_RGB565] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_A8] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT1] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT1A] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT3] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT5] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT5NM] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_ETC1] = IMAGE_FORMAT_PVR;
-
-    //mali
-    gpuData[GPU_MALI].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_MALI].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_MALI].availableFormats[FORMAT_RGBA4444] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_MALI].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_MALI].availableFormats[FORMAT_RGB565] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_MALI].availableFormats[FORMAT_A8] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_MALI].availableFormats[FORMAT_ETC1] = IMAGE_FORMAT_PVR;
-    
-    //adreno
-    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGBA4444] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGB565] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_ADRENO].availableFormats[FORMAT_A8] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_ADRENO].availableFormats[FORMAT_ETC1] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGB] = IMAGE_FORMAT_DDS;
-	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_EXPLICIT_ALPHA] = IMAGE_FORMAT_DDS;
-	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_INTERPOLATED_ALPHA] = IMAGE_FORMAT_DDS;
-
-    //DX11
-    gpuData[GPU_DX11].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_DX11].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_DX11].availableFormats[FORMAT_RGBA4444] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_DX11].availableFormats[FORMAT_RGB565] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_DX11].availableFormats[FORMAT_A8] = IMAGE_FORMAT_PVR;
-    gpuData[GPU_DX11].availableFormats[FORMAT_DXT1] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_DX11].availableFormats[FORMAT_DXT1A] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_DX11].availableFormats[FORMAT_DXT3] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_DX11].availableFormats[FORMAT_DXT5] = IMAGE_FORMAT_DDS;
-    gpuData[GPU_DX11].availableFormats[FORMAT_DXT5NM] = IMAGE_FORMAT_DDS;
-
-    //ORIGIN
-    gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_UNKNOWN;
-    gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_UNKNOWN;
-    gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_UNKNOWN;
-    gpuData[GPU_ORIGIN].availableFormats[FORMAT_A8] = IMAGE_FORMAT_UNKNOWN;
-    gpuData[GPU_ORIGIN].availableFormats[FORMAT_A16] = IMAGE_FORMAT_UNKNOWN;
-}
-
-void GPUFamilyDescriptor::SetupGPUPostfixes()
-{
-    gpuData[GPU_POWERVR_IOS].name = "PowerVR_iOS";
-    gpuData[GPU_POWERVR_IOS].prefix = ".PowerVR_iOS";
-    gpuData[GPU_POWERVR_ANDROID].name = "PowerVR_Android";
-    gpuData[GPU_POWERVR_ANDROID].prefix = ".PowerVR_Android";
-    gpuData[GPU_TEGRA].name = "tegra";
-    gpuData[GPU_TEGRA].prefix = ".tegra";
-    gpuData[GPU_MALI].name = "mali";
-    gpuData[GPU_MALI].prefix = ".mali";
-    gpuData[GPU_ADRENO].name = "adreno";
-    gpuData[GPU_ADRENO].prefix = ".adreno";
-    gpuData[GPU_DX11].name = "dx11";
-    gpuData[GPU_DX11].prefix = ".dx11";
-    gpuData[GPU_ORIGIN].name = "origin";
-    gpuData[GPU_ORIGIN].prefix = "";
-}
+UnorderedMap<eGPUFamily, GPUData, std::hash<uint8>> gpuData = {
+    { GPU_POWERVR_IOS, { "PowerVR_iOS", ".PowerVR_iOS", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_PVR4, IMAGE_FORMAT_PVR }, { FORMAT_PVR2, IMAGE_FORMAT_PVR } } } },
+    { GPU_POWERVR_ANDROID, { "PowerVR_Android", ".PowerVR_Android", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_PVR4, IMAGE_FORMAT_PVR }, { FORMAT_PVR2, IMAGE_FORMAT_PVR }, { FORMAT_ETC1, IMAGE_FORMAT_PVR } } } },
+    { GPU_TEGRA, { "tegra", ".tegra", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_DXT1, IMAGE_FORMAT_DDS }, { FORMAT_DXT1A, IMAGE_FORMAT_DDS }, { FORMAT_DXT3, IMAGE_FORMAT_DDS }, { FORMAT_DXT5, IMAGE_FORMAT_DDS }, { FORMAT_DXT5NM, IMAGE_FORMAT_DDS }, { FORMAT_ETC1, IMAGE_FORMAT_PVR } } } },
+    { GPU_MALI, { "mali", ".mali", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_ETC1, IMAGE_FORMAT_PVR } } } },
+    { GPU_ADRENO, { "adreno", ".adreno", { { FORMAT_RGBA8888, IMAGE_FORMAT_PVR }, { FORMAT_RGBA5551, IMAGE_FORMAT_PVR }, { FORMAT_RGBA4444, IMAGE_FORMAT_PVR }, { FORMAT_RGB888, IMAGE_FORMAT_PVR }, { FORMAT_RGB565, IMAGE_FORMAT_PVR }, { FORMAT_A8, IMAGE_FORMAT_PVR }, { FORMAT_ETC1, IMAGE_FORMAT_PVR }, { FORMAT_ATC_RGB, IMAGE_FORMAT_DDS }, { FORMAT_ATC_RGBA_EXPLICIT_ALPHA, IMAGE_FORMAT_DDS }, { FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, IMAGE_FORMAT_DDS } } } },
+    { GPU_DX11, { "dx11", ".dx11", {
+                                   { FORMAT_RGBA8888, IMAGE_FORMAT_PVR },
+                                   { FORMAT_RGBA5551, IMAGE_FORMAT_PVR },
+                                   { FORMAT_RGBA4444, IMAGE_FORMAT_PVR },
+                                   { FORMAT_RGB565, IMAGE_FORMAT_PVR },
+                                   { FORMAT_A8, IMAGE_FORMAT_PVR },
+                                   { FORMAT_DXT1, IMAGE_FORMAT_DDS },
+                                   { FORMAT_DXT1A, IMAGE_FORMAT_DDS },
+                                   { FORMAT_DXT3, IMAGE_FORMAT_DDS },
+                                   { FORMAT_DXT5, IMAGE_FORMAT_DDS },
+                                   { FORMAT_DXT5NM, IMAGE_FORMAT_DDS },
+                                   } } },
+    { GPU_ORIGIN, { "origin", "", { { FORMAT_RGBA8888, IMAGE_FORMAT_UNKNOWN }, { FORMAT_RGBA5551, IMAGE_FORMAT_UNKNOWN }, { FORMAT_RGB888, IMAGE_FORMAT_UNKNOWN }, { FORMAT_A8, IMAGE_FORMAT_UNKNOWN }, { FORMAT_A16, IMAGE_FORMAT_UNKNOWN } } } }
+};
 
 const Map<PixelFormat, ImageFormat> & GPUFamilyDescriptor::GetAvailableFormatsForGpu(eGPUFamily gpuFamily)
 {
@@ -166,12 +81,12 @@ const Map<PixelFormat, ImageFormat> & GPUFamilyDescriptor::GetAvailableFormatsFo
 eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
 {
     const String filename = pathname.GetFilename();
-    
-    for(int32 i = 0; i < GPU_DEVICE_COUNT; ++i)
+
+    for (const auto& it : gpuData)
     {
-        if (String::npos != filename.rfind(gpuData[i].prefix))
+        if (String::npos != filename.rfind(it.second.prefix))
         {
-            return static_cast<eGPUFamily>(i);
+            return it.first;
         }
     }
 
@@ -253,5 +168,5 @@ bool GPUFamilyDescriptor::IsGPUForDevice(const eGPUFamily gpu)
 {
     return (gpu >= 0 && gpu < GPU_DEVICE_COUNT);
 }
-
-};
+}
+}

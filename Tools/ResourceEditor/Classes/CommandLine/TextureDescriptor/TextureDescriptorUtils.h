@@ -33,24 +33,21 @@
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
 
-class TextureDescriptorUtils
+namespace TextureDescriptorUtils
 {
-public:
-    static void ResaveDescriptorsForFolder(const DAVA::FilePath &folderPathname);
-	static void CopyCompressionParamsForFolder(const DAVA::FilePath &folderPathname);
-    static void CreateDescriptorsForFolder(const DAVA::FilePath &folderPathname);
-	static void SetCompressionParamsForFolder(const DAVA::FilePath &folderPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
+    using namespace DAVA;
 
-	static void SetCompressionParams(const DAVA::FilePath &descriptorPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
-    static bool CreateDescriptorIfNeed(const DAVA::FilePath &originalPathname);
-    
-private:
-    
-	static void ResaveDescriptor(const DAVA::FilePath & descriptorPathname);
-    static void CopyCompressionParams(const DAVA::FilePath &descriptorPathname);
+    void ResaveDescriptorsForFolder(const FilePath &folder);
+    void ResaveDescriptor(const FilePath & descriptorPath);
 
-	static bool IsCorrectDirectory(DAVA::FileList *fileList, const DAVA::int32 fileIndex);
-	static bool IsDescriptorPathname(const DAVA::FilePath &pathname);
+    void CreateDescriptorsForFolder(const FilePath &folder, const FilePath& presetPath);
+    bool CreateDescriptorIfNeed(const FilePath &texturePath, const FilePath& presetPath=FilePath());
+
+    void SetCompressionParamsForFolder(const FilePath &folder, const Map<eGPUFamily, TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, TextureConverter::eConvertQuality quality, bool generateMipMaps);
+    void SetCompressionParams(const FilePath &descriptorPath, const Map<eGPUFamily, TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, TextureConverter::eConvertQuality quality, bool generateMipMaps);
+
+    void SetPresetForFolder(const FilePath& folder, const FilePath& presetPath, bool toConvert, TextureConverter::eConvertQuality quality);
+    void SetPreset(const FilePath& descriptorPath, const FilePath& presetPath, bool toConvert, TextureConverter::eConvertQuality quality);
 };
 
 

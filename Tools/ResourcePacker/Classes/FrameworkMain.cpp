@@ -119,9 +119,6 @@ void ProcessRecourcePacker()
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker.rootDirectory.GetAbsolutePathname().c_str());
 
-    GPUFamilyDescriptor::SetupGPUParameters();
-    
-    
     eGPUFamily exportForGPU = GPU_ORIGIN;
     if(CommandLineParser::CommandIsFound(String("-gpu")))
     {

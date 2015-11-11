@@ -38,13 +38,14 @@ namespace OptionName
 static const String Folder = "-folder";
 static const String File = "-file";
 static const String Resave = "-resave";
-static const String CopyCompression = "-copycompression";
 static const String Create = "-create";
 static const String SetCompression = "-setcompression";
+static const String SetPreset = "-setpreset";
 static const String Force = "-f";
 static const String Quality = "-quality";
 static const String Mipmaps = "-m";
 static const String Convert = "-convert";
+static const String PresetOpt = "-preset";
 
 const String MakeNameForGPU(eGPUFamily gpuFamily)
 {
@@ -59,14 +60,15 @@ TextureDescriptorTool::TextureDescriptorTool()
     options.AddOption(OptionName::File, VariantType(String("")), "Pathname of descriptor");
 
     options.AddOption(OptionName::Resave, VariantType(false), "Resave descriptor files in target folder");
-    options.AddOption(OptionName::CopyCompression, VariantType(false), "Copy compression parameters from PowerVR_iOS to other gpus");
     options.AddOption(OptionName::Create, VariantType(false), "Create descriptors for image files");
     options.AddOption(OptionName::SetCompression, VariantType(false), "Set compression parameters for descriptor or for all descriptors in folder");
+    options.AddOption(OptionName::SetPreset, VariantType(false), "Update descriptor(s) with given preset data");
 
     options.AddOption(OptionName::Force, VariantType(false), "Enables force running of selected operation");
     options.AddOption(OptionName::Mipmaps, VariantType(false), "Enables generation of mipmaps");
-    options.AddOption(OptionName::Convert, VariantType(false), "Run compression of texture after setting of compression parameters");
+    options.AddOption(OptionName::Convert, VariantType(false), "Runs compression of texture after setting of compression parameters");
     options.AddOption(OptionName::Quality, VariantType(static_cast<uint32>(TextureConverter::ECQ_DEFAULT)), "Quality of pvr/etc compression. Default is 4 - the best quality. Available values [0-4]");
+    options.AddOption(OptionName::PresetOpt, VariantType(String("")), "Uses preset for an operation");
 
     //GPU
     for (uint8 gpu = GPU_POWERVR_IOS; gpu < GPU_DEVICE_COUNT; ++gpu)
@@ -80,6 +82,7 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
 {
     folderPathname = options.GetOption(OptionName::Folder).AsString();
     filePathname = options.GetOption(OptionName::File).AsString();
+    presetPath = options.GetOption(OptionName::PresetOpt).AsString();
 
     const uint32 qualityValue = options.GetOption(OptionName::Quality).AsUInt32();
     quality = Clamp(static_cast<TextureConverter::eConvertQuality>(qualityValue), TextureConverter::ECQ_FASTEST, TextureConverter::ECQ_VERY_HIGH);
@@ -88,24 +91,17 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
     {
         commandAction = ACTION_RESAVE_DESCRIPTORS;
     }
-    else if (options.GetOption(OptionName::CopyCompression).AsBool())
-    {
-        commandAction = ACTION_COPY_COMPRESSION;
-    }
     else if (options.GetOption(OptionName::Create).AsBool())
     {
         commandAction = ACTION_CREATE_DESCRIPTORS;
     }
     else if (options.GetOption(OptionName::SetCompression).AsBool())
     {
-        if (!folderPathname.IsEmpty())
-        {
-            commandAction = ACTION_SET_COMPRESSION_FOR_FOLDER;
-        }
-        else if (!filePathname.IsEmpty())
-        {
-            commandAction = ACTION_SET_COMPRESSION_FOR_DESCRIPTOR;
-        }
+        commandAction = ACTION_SET_COMPRESSION;
+    }
+    else if (options.GetOption(OptionName::SetPreset).AsBool())
+    {
+        commandAction = ACTION_SET_PRESET;
     }
 
     forceModeEnabled = options.GetOption(OptionName::Force).AsBool();
@@ -116,6 +112,8 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
         const eGPUFamily gpuFamily = static_cast<eGPUFamily>(gpu);
         const String optionName = OptionName::MakeNameForGPU(gpuFamily);
 
+        DAVA::VariantType gpuOption = options.GetOption(optionName);
+
         const FastName formatName(options.GetOption(optionName).AsString().c_str());
         const PixelFormat pixelFormat = PixelFormatDescriptor::GetPixelFormatByName(formatName);
 
@@ -124,7 +122,7 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
             TextureDescriptor::Compression compression;
             compression.format = pixelFormat;
             compression.compressToWidth = compression.compressToHeight = 0;
-            if (options.GetOptionsCount(optionName) > 2)
+            if (options.GetOptionVaulesCount(optionName) > 2)
             {
                 const String widthStr = options.GetOption(optionName, 1).AsString();
                 const String heightStr = options.GetOption(optionName, 2).AsString();
@@ -150,26 +148,41 @@ bool TextureDescriptorTool::InitializeInternal()
 {
     if (commandAction == ACTION_NONE)
     {
-        AddError("Wrong action was selected");
+        AddError("Action was specified");
         return false;
     }
 
-    if (commandAction == ACTION_SET_COMPRESSION_FOR_DESCRIPTOR)
+    if (filePathname.IsEmpty() && folderPathname.IsEmpty())
     {
-        if (filePathname.IsEmpty())
-        {
-            AddError("Descriptor pathname was not selected");
-            return false;
-        }
-    }
-    else if (folderPathname.IsEmpty())
-    {
-        AddError("Folder pathname was not selected");
+        AddError("File or folder parameter was not specified");
         return false;
     }
-    else
+
+    if (!folderPathname.IsEmpty())
     {
         folderPathname.MakeDirectoryPathname();
+    }
+
+    switch (commandAction)
+    {
+    case TextureDescriptorTool::ACTION_SET_COMPRESSION:
+    {
+        if (compressionParams.empty())
+        {
+            AddError("GPU params were not specified");
+            return false;
+        }
+        break;
+    }
+    case TextureDescriptorTool::ACTION_SET_PRESET:
+    {
+        if (presetPath.IsEmpty())
+        {
+            AddError("Preset was not specified");
+            return false;
+        }
+        break;
+    }
     }
 
     return true;
@@ -179,28 +192,57 @@ void TextureDescriptorTool::ProcessInternal()
 {
     switch(commandAction)
     {
-        case ACTION_RESAVE_DESCRIPTORS:
+    case ACTION_RESAVE_DESCRIPTORS:
+    {
+        if (!folderPathname.IsEmpty())
+        {
             TextureDescriptorUtils::ResaveDescriptorsForFolder(folderPathname);
-            break;
-            
-        case ACTION_COPY_COMPRESSION:
-            TextureDescriptorUtils::CopyCompressionParamsForFolder(folderPathname);
-            break;
-            
-        case ACTION_CREATE_DESCRIPTORS:
-            TextureDescriptorUtils::CreateDescriptorsForFolder(folderPathname);
-			break;
-
-		case ACTION_SET_COMPRESSION_FOR_FOLDER:
-			TextureDescriptorUtils::SetCompressionParamsForFolder(folderPathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
-			break;
-
-		case ACTION_SET_COMPRESSION_FOR_DESCRIPTOR:
-			TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
-			break;
-
-        default:
-            Logger::Error("[TextureDescriptorTool::Process] Unhandled action!");
-			break;
+        }
+        else
+        {
+            TextureDescriptorUtils::ResaveDescriptor(filePathname);
+        }
+        break;
+    }
+    case ACTION_CREATE_DESCRIPTORS:
+    {
+        if (!folderPathname.IsEmpty())
+        {
+            TextureDescriptorUtils::CreateDescriptorsForFolder(folderPathname, presetPath);
+        }
+        else
+        {
+            TextureDescriptorUtils::CreateDescriptorIfNeed(filePathname, presetPath);
+        }
+        break;
+    }
+    case ACTION_SET_COMPRESSION:
+    {
+        if (!folderPathname.IsEmpty())
+        {
+            TextureDescriptorUtils::SetCompressionParamsForFolder(folderPathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
+        }
+        else
+        {
+            TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
+        }
+        break;
+    }
+    case ACTION_SET_PRESET:
+    {
+        if (!folderPathname.IsEmpty())
+        {
+            TextureDescriptorUtils::SetPresetForFolder(folderPathname, presetPath, convertEnabled, quality);
+        }
+        else
+        {
+            TextureDescriptorUtils::SetPreset(filePathname, presetPath, convertEnabled, quality);
+        }
+    }
+    default:
+    {
+        Logger::Error("[TextureDescriptorTool::Process] Unhandled action!");
+        break;
+    }
     }
 }

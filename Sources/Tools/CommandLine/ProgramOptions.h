@@ -42,7 +42,7 @@ public:
     void AddOption(const DAVA::String& optionName, const DAVA::VariantType& defaultValue, const DAVA::String& description = nullptr, bool canBeMultiple = false);
     void AddArgument(const DAVA::String& argumentName, bool required = true);
 
-    DAVA::uint32 GetOptionsCount(const DAVA::String& optionName) const;
+    DAVA::uint32 GetOptionVaulesCount(const DAVA::String& optionName) const;
     DAVA::VariantType GetOption(const DAVA::String& optionName, size_t pos = 0) const;
 
     DAVA::String GetArgument(const DAVA::String& argumentName) const;
