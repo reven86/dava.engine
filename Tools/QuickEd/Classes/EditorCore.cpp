@@ -477,6 +477,7 @@ void EditorCore::ApplyFileChanges()
                     }
                 }
             }
+            changedFiles.remove(path);
         }
     }
 }
