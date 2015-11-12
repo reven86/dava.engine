@@ -68,9 +68,8 @@ private:
     void InstallEventHandlers();
     void PositionMovieView(const Rect& rectInVirtualCoordinates);
 
-    Windows::Storage::Streams::IRandomAccessStream^ CreateStreamFromUri(Windows::Foundation::Uri^ uri) const;
-    Windows::Foundation::Uri^ UriFromPath(const FilePath& path) const;
-    bool CheckIfPathReachableFrom(const String& pathToCheck, const String& pathToReach, String& pathTail) const;
+    Windows::Storage::Streams::IRandomAccessStream^ CreateStreamFromFilePath(const FilePath& path) const;
+    void OpenMovieFromStream(Windows::Storage::Streams::IRandomAccessStream^ stream, const OpenMovieParams& params);
 
 private:    // MediaElement event handlers
     void OnMediaOpened();

@@ -616,6 +616,7 @@ PipelineStateDX11_t::CreateConstBuffer(ProgType type, unsigned buf_i)
 static Handle
 dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
 {
+    bool success = false;
     Handle handle = PipelineStateDX11Pool::Alloc();
     PipelineStateDX11_t* ps = PipelineStateDX11Pool::Get(handle);
     HRESULT hr;
@@ -691,6 +692,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         else
         {
             Logger::Error("FAILED to create vertex-shader:\n%s\n", D3D11ErrorText(hr));
+            ps->vertexShader = nullptr;
         }
     }
     else
@@ -703,6 +705,8 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         Logger::Error("shader-uid : %s", desc.vprogUid.c_str());
         Logger::Error("vertex-shader text:\n");
         DumpShaderText((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
+        ps->vertexShader = nullptr;
+        DVASSERT_MSG(ps->vertexShader, desc.vprogUid.c_str());
     }
 
     // create fragment-shader
@@ -763,6 +767,8 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         else
         {
             Logger::Error("FAILED to create pixel-shader:\n%s\n", D3D11ErrorText(hr));
+            ps->pixelShader = nullptr;
+            DVASSERT_MSG(ps->pixelShader, desc.fprogUid.c_str());
         }
     }
     else
@@ -775,45 +781,62 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         Logger::Error("shader-uid : %s", desc.fprogUid.c_str());
         Logger::Error("vertex-shader text:\n");
         DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
+        ps->pixelShader = nullptr;
     }
 
-    // create input-layout
-    ps->vpCode = vp_code;
-    ps->inputLayout = _CreateInputLayout(desc.vertexLayout, vp_code->GetBufferPointer(), static_cast<unsigned>(vp_code->GetBufferSize()));
-    ps->vertexLayout = desc.vertexLayout;
-    DVASSERT(ps->inputLayout);
+    if (ps->vertexShader && ps->pixelShader)
+    {
+        // create input-layout
+        ps->vpCode = vp_code;
+        ps->inputLayout = _CreateInputLayout(desc.vertexLayout, vp_code->GetBufferPointer(), static_cast<unsigned>(vp_code->GetBufferSize()));
+        ps->vertexLayout = desc.vertexLayout;
+        DVASSERT(ps->inputLayout);
 
-    ps->dbgVertexSrc = vprog_bin;
-    ps->dbgPixelSrc = fprog_bin;
+        if (ps->inputLayout)
+        {
+            ps->dbgVertexSrc = vprog_bin;
+            ps->dbgPixelSrc = fprog_bin;
 
-    // create blend-state
+            // create blend-state
 
-    D3D11_BLEND_DESC bs_desc;
-    UINT8 mask = 0;
+            D3D11_BLEND_DESC bs_desc;
+            UINT8 mask = 0;
 
-    if (desc.blending.rtBlend[0].writeMask & COLORMASK_R)
-        mask |= D3D11_COLOR_WRITE_ENABLE_RED;
-    if (desc.blending.rtBlend[0].writeMask & COLORMASK_G)
-        mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
-    if (desc.blending.rtBlend[0].writeMask & COLORMASK_B)
-        mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
-    if (desc.blending.rtBlend[0].writeMask & COLORMASK_A)
-        mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
+            if (desc.blending.rtBlend[0].writeMask & COLORMASK_R)
+                mask |= D3D11_COLOR_WRITE_ENABLE_RED;
+            if (desc.blending.rtBlend[0].writeMask & COLORMASK_G)
+                mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
+            if (desc.blending.rtBlend[0].writeMask & COLORMASK_B)
+                mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
+            if (desc.blending.rtBlend[0].writeMask & COLORMASK_A)
+                mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
-    bs_desc.AlphaToCoverageEnable = FALSE;
-    bs_desc.IndependentBlendEnable = FALSE;
-    bs_desc.RenderTarget[0].BlendEnable = desc.blending.rtBlend[0].blendEnabled;
-    bs_desc.RenderTarget[0].RenderTargetWriteMask = mask;
-    bs_desc.RenderTarget[0].SrcBlend = _BlendOpDX11(BlendOp(desc.blending.rtBlend[0].colorSrc));
-    bs_desc.RenderTarget[0].DestBlend = _BlendOpDX11(BlendOp(desc.blending.rtBlend[0].colorDst));
-    bs_desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    bs_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    bs_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-    bs_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+            bs_desc.AlphaToCoverageEnable = FALSE;
+            bs_desc.IndependentBlendEnable = FALSE;
+            bs_desc.RenderTarget[0].BlendEnable = desc.blending.rtBlend[0].blendEnabled;
+            bs_desc.RenderTarget[0].RenderTargetWriteMask = mask;
+            bs_desc.RenderTarget[0].SrcBlend = _BlendOpDX11(BlendOp(desc.blending.rtBlend[0].colorSrc));
+            bs_desc.RenderTarget[0].DestBlend = _BlendOpDX11(BlendOp(desc.blending.rtBlend[0].colorDst));
+            bs_desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+            bs_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+            bs_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+            bs_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
-    hr = _D3D11_Device->CreateBlendState(&bs_desc, &(ps->blendState));
+            hr = _D3D11_Device->CreateBlendState(&bs_desc, &(ps->blendState));
 
-    ps->desc = desc;
+            if (SUCCEEDED(hr))
+            {
+                ps->desc = desc;
+                success = true;
+            }
+        }
+    }
+
+    if (!success)
+    {
+        PipelineStateDX11Pool::Free(handle);
+        handle = InvalidHandle;
+    }
 
     return handle;
 }
