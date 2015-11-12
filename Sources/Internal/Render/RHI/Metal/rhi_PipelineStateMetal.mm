@@ -39,7 +39,7 @@ using DAVA::Logger;
 
     #include "_metal.h"
 
-#if !(defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR==1)
+#if !(TARGET_IPHONE_SIMULATOR==1)
 
 namespace rhi
 {
@@ -1019,4 +1019,4 @@ void InvalidateAllInstances()
 
 } // namespace rhi
 
-#endif //#if !(defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR==1)
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)
