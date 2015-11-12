@@ -2986,8 +2986,6 @@
 		5C97965A14E3F09F00FFFA14 /* libyaml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97965914E3F09F00FFFA14 /* libyaml_macos.a */; };
 		620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
 		6246724A18EEA50E00046586 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
-		6E0637421BF4F19B00DF6AE1 /* BlockAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6E0637401BF4F19B00DF6AE1 /* BlockAllocator.cpp */; };
-		6E0637431BF4F19B00DF6AE1 /* BlockAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E0637411BF4F19B00DF6AE1 /* BlockAllocator.h */; };
 		72C84EB31B29C220003A52E0 /* libwebp_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB21B29C220003A52E0 /* libwebp_macos.a */; };
 		B77953CC1A07D528001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CD1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
@@ -4056,8 +4054,6 @@
 		5C77AB7C14C7509D00E92D28 /* libpng_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_macos.a; path = ../../Libs/libs/libpng_macos.a; sourceTree = "<group>"; };
 		5C97965914E3F09F00FFFA14 /* libyaml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_macos.a; path = ../../Libs/libs/libyaml_macos.a; sourceTree = "<group>"; };
 		627AFA6C18E964E300F2A52A /* libjpeg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_macos.a; path = ../../Libs/libs/libjpeg_macos.a; sourceTree = "<group>"; };
-		6E0637401BF4F19B00DF6AE1 /* BlockAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BlockAllocator.cpp; sourceTree = "<group>"; };
-		6E0637411BF4F19B00DF6AE1 /* BlockAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockAllocator.h; sourceTree = "<group>"; };
 		72C84EB21B29C220003A52E0 /* libwebp_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_macos.a; path = ../../Libs/libs/libwebp_macos.a; sourceTree = "<group>"; };
 		B77953CB1A07D528001FB673 /* libunibreak_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_macos.a; path = ../../Libs/libs/libunibreak_macos.a; sourceTree = "<group>"; };
 		B7D6C98319CAC6980095250A /* libfribidi_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_macos.a; path = ../../Libs/libs/libfribidi_macos.a; sourceTree = "<group>"; };
@@ -4230,8 +4226,6 @@
 				028C08521BD66A5D00B2266F /* BaseObjectChecker.cpp */,
 				028C08531BD66A5D00B2266F /* BaseObjectChecker.h */,
 				028C08541BD66A5D00B2266F /* BaseTypes.h */,
-				6E0637401BF4F19B00DF6AE1 /* BlockAllocator.cpp */,
-				6E0637411BF4F19B00DF6AE1 /* BlockAllocator.h */,
 				028C08551BD66A5D00B2266F /* Data.cpp */,
 				028C08561BD66A5D00B2266F /* Data.h */,
 				028C08571BD66A5D00B2266F /* DynamicObjectCache.cpp */,
@@ -6397,7 +6391,6 @@
 				028C12611BD66A6000B2266F /* Process.h in Headers */,
 				028C1A111BD66A6000B2266F /* UI3DView.h in Headers */,
 				028C18461BD66A6000B2266F /* MeshInstanceNode.h in Headers */,
-				6E0637431BF4F19B00DF6AE1 /* BlockAllocator.h in Headers */,
 				028C14681BD66A6000B2266F /* TextBlock.h in Headers */,
 				028C1AA71BD66A6100B2266F /* UIPopup.h in Headers */,
 				028C0E531BD66A6000B2266F /* Observer.h in Headers */,
@@ -8233,7 +8226,6 @@
 				028C12221BD66A6000B2266F /* ParticleForce.cpp in Sources */,
 				028C16661BD66A6000B2266F /* rhi_VertexLayout.cpp in Sources */,
 				028C1B311BD66A6100B2266F /* TestCore.cpp in Sources */,
-				6E0637421BF4F19B00DF6AE1 /* BlockAllocator.cpp in Sources */,
 				028C116E1BD66A6000B2266F /* NetCore.cpp in Sources */,
 				028C12311BD66A6000B2266F /* ParticlePropertyLine.cpp in Sources */,
 				028C148F1BD66A6000B2266F /* MeshUtils.cpp in Sources */,
