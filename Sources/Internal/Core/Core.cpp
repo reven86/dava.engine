@@ -82,8 +82,10 @@
 #include "Autotesting/AutotestingSystem.h"
 #endif
 
-
+#include "Concurrency/Thread.h"
 #include "Debug/Profiler.h"
+
+#include "Core.h"
 #define PROF__FRAME 0
 #define PROF__FRAME_UPDATE 1
 #define PROF__FRAME_DRAW 2
@@ -438,7 +440,7 @@ void Core::SystemAppStarted()
 
     if (core != nullptr)
     {
-        //rhi::ShaderSourceCache::Load( "~doc:/ShaderSource.bin" );
+        rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
         Core::Instance()->CreateRenderer();
         RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
@@ -449,7 +451,6 @@ void Core::SystemAppFinished()
 {
     if (core != nullptr)
     {
-//rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
         #if TRACER_ENABLED
         //        profiler::DumpEvents();
         profiler::SaveEvents("trace.json");
@@ -467,7 +468,11 @@ void Core::SystemProcessFrame()
     START_TIMING(PROF__FRAME);
     #endif
 
-    TRACE_BEGIN_EVENT(11, "core", "SystemProcessFrame")
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::SystemProcessFrame");
+    SCOPE_EXIT
+    {
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::SystemProcessFrame");
+    };
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;
@@ -531,7 +536,11 @@ void Core::SystemProcessFrame()
         //      }
         // #else
         InputSystem::Instance()->OnBeforeUpdate();
+
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
         core->BeginFrame();
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
+
         //#endif
 
         // recalc frame inside begin / end frame
@@ -563,22 +572,30 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        JobManager::Instance()->Update();
 
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
+        JobManager::Instance()->Update();
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
+
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
         core->Update(frameDelta);
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
+
         InputSystem::Instance()->OnAfterUpdate();
         STOP_TIMING(PROF__FRAME_UPDATE);
 
         START_TIMING(PROF__FRAME_DRAW);
-        TRACE_BEGIN_EVENT(11, "core", "Draw")
+
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Draw")
         core->Draw();
-        TRACE_END_EVENT(11, "core", "Draw")
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Draw")
         STOP_TIMING(PROF__FRAME_DRAW);
 
         START_TIMING(PROF__FRAME_ENDFRAME);
-        TRACE_BEGIN_EVENT(11, "core", "EndFrame")
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::EndFrame")
         core->EndFrame();
-        TRACE_END_EVENT(11, "core", "EndFrame")
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::EndFrame")
+
         STOP_TIMING(PROF__FRAME_ENDFRAME);
     }
     Stats::Instance()->EndFrame();
@@ -588,8 +605,6 @@ void Core::SystemProcessFrame()
     EGLuint64NV end = eglGetSystemTimeNV() / frequency;
     EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
-
-    TRACE_END_EVENT(11, "core", "SystemProcessFrame")
 
     #if PROFILER_ENABLED
     STOP_TIMING(PROF__FRAME);
@@ -603,6 +618,7 @@ void Core::GoBackground(bool isLock)
 {
     if (core)
     {
+        rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         if (isLock)
         {
             core->OnDeviceLocked();
@@ -729,12 +745,25 @@ uint32 Core::GetScreenDPI()
 
 void Core::SetIcon(int32 /*iconId*/){};
 
-float32 Core::GetScreenScaleFactor() const
+float32 Core::GetScreenScaleMultiplier() const
 {
+    float32 ret = 1.0f;
+
     if (options)
     {
-        return DeviceInfo::GetScreenInfo().scale * options->GetFloat("userScreenScaleFactor", 1.f);
+        ret = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
-    return DeviceInfo::GetScreenInfo().scale;
+
+    return ret;
+}
+
+void Core::SetScreenScaleMultiplier(float32 multiplier)
+{
+    options->SetFloat("userScreenScaleFactor", multiplier);
+}
+
+float32 Core::GetScreenScaleFactor() const
+{
+    return (DeviceInfo::GetScreenInfo().scale * GetScreenScaleMultiplier());
 }
 };

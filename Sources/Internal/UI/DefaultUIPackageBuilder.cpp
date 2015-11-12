@@ -239,7 +239,9 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &pack
     {
         control.Set(prototype->Clone());
     }
-    
+
+    control->SetPackageContext(nullptr);
+
     controlsStack.push_back(new ControlDescr(control.Get(), true));
     return control.Get();
 }

@@ -931,7 +931,7 @@ void Sprite::ReloadExistingTextures()
     {
         if(textures[i] && !textures[i]->GetPathname().IsEmpty())
         {
-            if(textures[i]->GetPathname().Exists())
+            if (FileSystem::Instance()->Exists(textures[i]->GetPathname()))
             {
                 textures[i]->Reload();
             }

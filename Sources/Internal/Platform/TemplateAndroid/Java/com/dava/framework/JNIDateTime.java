@@ -10,9 +10,10 @@ public class JNIDateTime {
 
 	public static String GetTimeAsString(final String format,final String countryCode, long timeStamp, int timeZoneOffset)
 	{
-        TimeZone tz = TimeZone.getTimeZone("");
+        TimeZone tz = TimeZone.getTimeZone("UTC");
         tz.setRawOffset(timeZoneOffset*1000);
-        Locale loc = new Locale(countryCode);      
+        String[] lang_country = countryCode.split("_");
+        Locale loc = new Locale(lang_country[0], lang_country[1]);    
         Date dt = new Date();
         dt.setTime(timeStamp*1000);
         

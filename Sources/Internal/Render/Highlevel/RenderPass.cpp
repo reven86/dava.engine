@@ -35,6 +35,9 @@
 #include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/ShaderCache.h"
 
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+
 #include "Render/Renderer.h"
 #include "Render/Texture.h"
 
@@ -74,8 +77,8 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
     if (RenderLayer::RENDER_LAYER_INVALID_ID != afterLayer)
     {
         uint32 size = static_cast<uint32>(renderLayers.size());
-        for(uint32 i = 0; i < size; ++i)
-		{
+        for (uint32 i = 0; i < size; ++i)
+        {
             RenderLayer::eRenderLayerID layerID = renderLayers[i]->GetRenderLayerID();
             if (afterLayer == layerID)
             {
@@ -84,10 +87,10 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
                 return;
             }
         }
-		DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
-	}
-	else
-	{
+        DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
+    }
+    else
+    {
         renderLayers.push_back(layer);
         layersBatchArrays[layer->GetRenderLayerID()].SetSortingFlags(layer->GetSortingFlags());
     }
@@ -171,7 +174,7 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, C
     }
 }
 
-void RenderPass::DrawLayers(Camera *camera)
+void RenderPass::DrawLayers(Camera* camera)
 {
     ShaderDescriptorCache::ClearDynamicBindigs();
 
@@ -186,7 +189,7 @@ void RenderPass::DrawLayers(Camera *camera)
     size_t size = renderLayers.size();
     for (size_t k = 0; k < size; ++k)
     {
-        RenderLayer * layer = renderLayers[k];
+        RenderLayer* layer = renderLayers[k];
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
         layer->Draw(camera, batchArray, packetList);
@@ -301,11 +304,15 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     Vector4 clip(0, 0, 1, -1);*/
     SetupCameraParams(mainCamera, drawCamera);
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
     PrepareVisibilityArrays(mainCamera, renderSystem);
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
     BeginRenderPass();
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
     DrawLayers(mainCamera);
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
 
     if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
         PrepareReflectionRefractionTextures(renderSystem);

@@ -49,10 +49,10 @@ namespace DAVA
 
         //detecting physical screen size and initing core system with this size
         float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
-        const DeviceInfo::ScreenInfo & screenInfo = DeviceInfo::GetScreenInfo();
+        const DeviceInfo::ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(screenInfo.width, screenInfo.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(screenInfo.width * scale, screenInfo.height * scale);
-        
+
         int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
@@ -67,8 +67,8 @@ namespace DAVA
     {
         NSAutoreleasePool* globalPool = 0;
         globalPool = [[NSAutoreleasePool alloc] init];
-		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
-		core->SetCommandLine(argc, argv);
+        DAVA::CoreMacOSPlatform* core = new DAVA::CoreMacOSPlatform();
+        core->SetCommandLine(argc, argv);
 		core->EnableConsoleMode();
 		core->CreateSingletons();
 		
@@ -375,7 +375,7 @@ namespace DAVA
         currFPS = RenderManager::Instance()->GetFPS();
         [self stopAnimationTimer];
         [self startAnimationTimer];
-	}
+    }
 #endif
 }
 
@@ -406,7 +406,7 @@ namespace DAVA
     macCore->rendererParams.window = mainWindowController->openGLView;
     macCore->rendererParams.width = [mainWindowController->openGLView frame].size.width;
     macCore->rendererParams.height = [mainWindowController->openGLView frame].size.height;
-    
+
     Core::Instance()->SystemAppStarted();
 }
 

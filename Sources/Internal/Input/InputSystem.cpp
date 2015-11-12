@@ -61,9 +61,9 @@ void InputSystem::ProcessInputEvent(UIEvent * event)
             (*it)(event);
         else if (event->phase == UIEvent::Phase::JOYSTICK && ((*it).devices & INPUT_DEVICE_JOYSTICK))
             (*it)(event);
-        else if(((*it).devices & INPUT_DEVICE_TOUCH))
-			(*it)(event);
-	}
+        else if (((*it).devices & INPUT_DEVICE_TOUCH))
+            (*it)(event);
+    }
 }
 
 void InputSystem::AddInputCallback(const InputCallback& inputCallback)

@@ -200,7 +200,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
                 for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
                 {
-                    const auto & compression = descriptor->compression[gpu];
+                    const auto& compression = descriptor->compression[gpu];
                     if (compression.format != FORMAT_INVALID)
                     {
                         links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
@@ -229,8 +229,8 @@ void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links)
 	for (auto & folder : gfxFolders)
 	{
 		FilePath flagsTXT = folder + "flags.txt";
-		if (flagsTXT.Exists())
-		{
+        if (FileSystem::Instance()->Exists(flagsTXT))
+        {
 			links.insert(flagsTXT);
 		}
 	}
