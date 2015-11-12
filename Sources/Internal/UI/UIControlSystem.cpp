@@ -405,6 +405,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     inputCounter = 0;
 
     newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
+    newEvent->scrollDelta.y = newEvent->scrollLines.y * SCROLL_PIXELS_FOR_LINE;
 
     if (Replay::IsPlayback())
     {
