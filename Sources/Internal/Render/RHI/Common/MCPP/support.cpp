@@ -3228,7 +3228,7 @@ char*(xmalloc)(size_t size)
     }
     else
     {
-        return AllocateTracked(size);
+        return AllocateTracked(static_cast<uint32_t>(size));
     }
 }
 
