@@ -72,7 +72,7 @@
 
 #include "_mcpp.h"
 #include <atomic>
-#include "Base/BlockAllocator.h"
+#include "Base/FixedSizePoolAllocator.h"
 #if PREPROCESSED
 #include "mcpp.h"
 #else
@@ -3137,6 +3137,8 @@ const char* cp /* Token        */
 
 static const char* const out_of_memory = "Out of memory (required size is %.0s0x%lx bytes)"; /* _F_  */
 
+namespace
+{
 enum
 {
     SmallBlockSize = 256,
@@ -3146,20 +3148,53 @@ enum
     NumLargeBlocks = Megabyte / LargeBlockSize,
 };
 
-using SmallBlockAllocator = DAVA::BlockAllocator<SmallBlockSize, NumSmallBlocks>;
-static SmallBlockAllocator* smallBlockAllocator = nullptr;
-
-using LargeBlockAllocator = DAVA::BlockAllocator<LargeBlockSize, NumLargeBlocks>;
-static LargeBlockAllocator* largeBlockAllocator = nullptr;
-
+static DAVA::FixedSizePoolAllocator* smallBlockAllocator = nullptr;
+static DAVA::FixedSizePoolAllocator* largeBlockAllocator = nullptr;
 static std::atomic<bool> allocatorsInitialized(false);
+static std::unordered_map<char*, DAVA::uint32> customAllocations;
+
+char* AllocateTracked(DAVA::uint32 size)
+{
+    char* ptr = reinterpret_cast<char*>(malloc(size));
+    customAllocations[ptr] = size;
+    return ptr;
+}
+
+void FreeTracked(void* ptr)
+{
+    char* cptr = reinterpret_cast<char*>(ptr);
+    DVASSERT(customAllocations.count(cptr) > 0);
+    customAllocations.erase(cptr);
+    free(ptr);
+}
+
+bool ContainsPointer(void* ptr)
+{
+    return customAllocations.count(reinterpret_cast<char*>(ptr)) > 0;
+}
+
+DAVA::uint32 AllocationSizeForPointer(void* ptr)
+{
+    DVASSERT(ContainsPointer(ptr));
+    return customAllocations[reinterpret_cast<char*>(ptr)];
+}
+
+void ReleaseTrackedMemory()
+{
+    for (auto& data : customAllocations)
+    {
+        free(data.first);
+    }
+    customAllocations.clear();
+}
+}
 
 void xbegin_allocations()
 {
     DVASSERT(allocatorsInitialized.load() == false);
 
-    smallBlockAllocator = new SmallBlockAllocator();
-    largeBlockAllocator = new LargeBlockAllocator();
+    smallBlockAllocator = new DAVA::FixedSizePoolAllocator(SmallBlockSize, NumSmallBlocks);
+    largeBlockAllocator = new DAVA::FixedSizePoolAllocator(LargeBlockSize, NumLargeBlocks);
 
     allocatorsInitialized = true;
 }
@@ -3168,7 +3203,7 @@ void xend_allocations()
 {
     DVASSERT(allocatorsInitialized.load());
 
-    DAVA::BlockAllocatorBase::ReleaseTrackedMemory();
+    ReleaseTrackedMemory();
 
     delete smallBlockAllocator;
     delete largeBlockAllocator;
@@ -3185,15 +3220,15 @@ char*(xmalloc)(size_t size)
 
     if (size <= SmallBlockSize)
     {
-        return smallBlockAllocator->Alloc(size);
+        return reinterpret_cast<char*>(smallBlockAllocator->New());
     }
     else if (size <= LargeBlockSize)
     {
-        return largeBlockAllocator->Alloc(size);
+        return reinterpret_cast<char*>(largeBlockAllocator->New());
     }
     else
     {
-        return DAVA::BlockAllocatorBase::AllocateTracked(size);
+        return AllocateTracked(size);
     }
 }
 
@@ -3204,17 +3239,17 @@ void(xfree)(void* ptr)
     if (ptr == nullptr)
         return;
 
-    if (smallBlockAllocator->ContainsAddress(ptr))
+    if (smallBlockAllocator->CheckIsPointerValid(ptr))
     {
-        smallBlockAllocator->Free(ptr);
+        smallBlockAllocator->Delete(ptr);
     }
-    else if (largeBlockAllocator->ContainsAddress(ptr))
+    else if (largeBlockAllocator->CheckIsPointerValid(ptr))
     {
-        largeBlockAllocator->Free(ptr);
+        largeBlockAllocator->Delete(ptr);
     }
     else
     {
-        DAVA::BlockAllocatorBase::FreeTracked(ptr);
+        FreeTracked(ptr);
     }
 }
 
@@ -3225,21 +3260,21 @@ char*(xrealloc)(void* ptr, size_t size)
 
     char* newData = xmalloc(size);
 
-    if (smallBlockAllocator->ContainsAddress(ptr))
+    if (smallBlockAllocator->CheckIsPointerValid(ptr))
     {
         memcpy(newData, ptr, (size < SmallBlockSize) ? size : SmallBlockSize);
-        smallBlockAllocator->Free(ptr);
+        smallBlockAllocator->Delete(ptr);
     }
-    else if (largeBlockAllocator->ContainsAddress(ptr))
+    else if (largeBlockAllocator->CheckIsPointerValid(ptr))
     {
         memcpy(newData, ptr, (size < LargeBlockSize) ? size : LargeBlockSize);
-        largeBlockAllocator->Free(ptr);
+        largeBlockAllocator->Delete(ptr);
     }
     else if (ptr != nullptr)
     {
-        auto exisingSize = DAVA::BlockAllocatorBase::AllocationSizeForPointer(ptr);
+        auto exisingSize = AllocationSizeForPointer(ptr);
         memcpy(newData, ptr, (size < exisingSize) ? size : exisingSize);
-        DAVA::BlockAllocatorBase::FreeTracked(ptr);
+        FreeTracked(ptr);
     }
 
     return newData;
