@@ -41,6 +41,7 @@ class Document;
 class DocumentGroup;
 class Project;
 class PackageNode;
+class QFileSystemWatcher;
 
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
@@ -53,7 +54,8 @@ public:
     MainWindow* GetMainWindow();
     Project *GetProject() const;
 
-protected slots:
+private slots:
+    void OnFileChanged(const QString & path);
     void OnCleanChanged(bool clean);
     void OnOpenPackageFile(const QString &path);
     void OnProjectPathChanged(const QString &path);
@@ -89,6 +91,7 @@ private:
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow = nullptr;
     DAVA::UIControl* rootControl = nullptr;
+    QFileSystemWatcher *fileSystemWatcher = nullptr;
 };
 
 inline MainWindow* EditorCore::GetMainWindow()

@@ -40,6 +40,7 @@
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
+#include <QFileSystemWatcher>
 
 
 #include "UI/Layouts/UILayoutSystem.h"
@@ -55,7 +56,10 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
+    , fileSystemWatcher(new QFileSystemWatcher(this))
 {
+    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &EditorCore::OnFileChanged, Qt::DirectConnection);
+
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
 
@@ -116,6 +120,39 @@ void EditorCore::OnGLWidgedInitialized()
         OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
     }
 }
+
+void EditorCore::OnFileChanged(const QString & path)
+{
+    QFileInfo fileInfo(path);
+    bool yesToAll = false;
+    bool noToAll = false;
+    for (Document *document : documents)
+    {
+        FilePath docFilePath = document->GetPackageFilePath().GetAbsolutePathname();
+        QString docPath = QString::fromStdString(docFilePath.GetStringValue());
+        if (path == docPath)
+        {
+            QMessageBox::StandardButton button = QMessageBox::No;
+            if (!yesToAll && !noToAll)
+            {
+                button = QMessageBox::warning(
+                    mainWindow.get()
+                    , tr("File %1 changed").arg(fileInfo.fileName())
+                    , tr("%1\n This file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath())
+                    , QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll
+                    , QMessageBox::Yes);
+                yesToAll = button == QMessageBox::YesToAll;
+                noToAll = button == QMessageBox::NoToAll;
+            }
+            if (yesToAll || button == QMessageBox::Yes)
+            {
+                //
+            }
+            
+        }
+    }
+}
+
 
 void EditorCore::OnCleanChanged(bool clean)
 {
@@ -339,6 +376,10 @@ bool EditorCore::CloseProject()
     {
         CloseDocument(0);
     }
+    if (project->IsOpen())
+    {
+        fileSystemWatcher->removePath(project->GetProjectPath());
+    }
     return true;
 }
 
@@ -363,6 +404,11 @@ int EditorCore::CreateDocument(PackageNode *package)
     documentGroup->AddDocument(document);
     int index = mainWindow->AddTab(document->GetPackageFilePath());
     OnCurrentTabChanged(index);
+    DAVA::String filePath = document->GetPackageFilePath().GetAbsolutePathname();
+    if (!fileSystemWatcher->addPath(QString::fromStdString(filePath)))
+    {
+        DAVA::Logger::Error("can not watch path %s", document->GetPackageFilePath());
+    }
     return index;
 }
 
