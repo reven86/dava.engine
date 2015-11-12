@@ -71,7 +71,8 @@
  */
 
 #include "_mcpp.h"
-
+#include <cassert>
+#include <unordered_map>
 #if PREPROCESSED
 #include "mcpp.h"
 #else
@@ -2647,50 +2648,6 @@ int include_opt /* Specified by -include opt (for GCC)  */
     return file; /* All done.            */
 }
 
-static const char* const out_of_memory = "Out of memory (required size is %.0s0x%lx bytes)"; /* _F_  */
-
-char*(xmalloc)(
-size_t size)
-/*
- * Get a block of free memory.
- */
-{
-    char* result;
-
-    if ((result = (char*)malloc(size)) == NULL)
-    {
-        if (mcpp_debug & MEMORY)
-            print_heap();
-        cfatal(out_of_memory, NULL, (long)size, NULL);
-    }
-    return result;
-}
-
-char*(xrealloc)(
-void* ptr,
-size_t size)
-/*
- * Reallocate malloc()ed memory.
- */
-{
-    char* result;
-
-    if ((result = (char*)realloc(ptr, size)) == NULL && size != 0)
-    {
-        /* 'size != 0' is necessary to cope with some               */
-        /*   implementation of realloc( ptr, 0) which returns NULL. */
-        if (mcpp_debug & MEMORY)
-            print_heap();
-        cfatal(out_of_memory, NULL, (long)size, NULL);
-    }
-    return result;
-}
-
-void(xfree)(void* ptr)
-{
-    ::free(ptr);
-}
-
 LINE_COL* get_src_location(
 LINE_COL* p_line_col /* Line and column on phase 4   */
 )
@@ -2790,8 +2747,8 @@ const char* arg3 /* Second string argument       */
             slen = strlen(sp) + 1;
         else
             slen = 1;
-        tp = arg_t[i] = (char*)malloc(slen);
-        /* Don't use xmalloc() so as not to cause infinite recursion    */
+        tp = arg_t[i] = xmalloc(slen);
+
         if (sp == NULL || *sp == EOS)
         {
             *tp = EOS;
@@ -3172,4 +3129,193 @@ const char* cp /* Token        */
 
     mcpp_fputs("token", MCPP_DBG);
     dump_string(t_type[token_type - NAM], cp);
+}
+
+/*
+ * Memory management
+ */
+
+static const char* const out_of_memory = "Out of memory (required size is %.0s0x%lx bytes)"; /* _F_  */
+
+static std::unordered_map<char*, size_t> customAllocations;
+
+char* customAlloc(size_t size)
+{
+    char* ptr = reinterpret_cast<char*>(malloc(size));
+    customAllocations[ptr] = size;
+    return ptr;
+}
+
+void customFree(void* ptr)
+{
+    char* cptr = reinterpret_cast<char*>(ptr);
+    assert(customAllocations.count(cptr) > 0);
+    customAllocations.erase(cptr);
+    free(ptr);
+}
+
+template <int blockSize, int numBlocks>
+class BlockAllocator
+{
+public:
+    BlockAllocator()
+    {
+        lastBlock = blocks + numBlocks - 1;
+        firstPossibleAddress = reinterpret_cast<char*>(blocks) + sizeof(int);
+        lastPossibleAddress = reinterpret_cast<char*>(lastBlock) + sizeof(int);
+        lastAvailableBlock = blocks;
+        memset(blocks, 0, sizeof(blocks));
+    }
+
+    char* alloc(size_t sz)
+    {
+        assert(sz <= blockSize);
+
+        Block* startSearchBlock = lastAvailableBlock;
+        while (lastAvailableBlock->allocated)
+        {
+            ++lastAvailableBlock;
+
+            if (lastAvailableBlock == startSearchBlock)
+            {
+                // no free blocks available
+                return customAlloc(sz);
+            }
+
+            if (lastAvailableBlock > lastBlock)
+            {
+                lastAvailableBlock = blocks;
+            };
+        }
+
+        lastAvailableBlock->allocated = 1;
+        char* result = lastAvailableBlock->data;
+
+        Block* nextBlock = lastAvailableBlock + 1;
+        lastAvailableBlock = (nextBlock > lastBlock) ? blocks : nextBlock;
+
+        return result;
+    }
+
+    bool containsAddress(void* ptr)
+    {
+        char* cptr = reinterpret_cast<char*>(ptr);
+        return (cptr >= firstPossibleAddress) && (cptr <= lastPossibleAddress);
+    }
+
+    char* realloc(void* ptr, size_t size)
+    {
+        assert(containsAddress(ptr));
+        free(ptr);
+        return alloc(size);
+    }
+
+    void free(void* ptr)
+    {
+        assert(containsAddress(ptr));
+        char* cptr = reinterpret_cast<char*>(ptr);
+        Block* block = reinterpret_cast<Block*>(cptr - sizeof(int));
+        block->allocated = 0;
+    }
+
+private:
+    struct Block
+    {
+        int allocated = 0;
+        char data[blockSize];
+    };
+
+    Block blocks[numBlocks];
+    Block* lastAvailableBlock = nullptr;
+    Block* lastBlock = nullptr;
+    char* firstPossibleAddress = nullptr;
+    char* lastPossibleAddress = nullptr;
+};
+
+enum
+{
+    TinyBlockSize = 256,
+    MediumBlockSize = 4096,
+    LargeBlockSize = 65536,
+
+    Megabyte = 1024 * 1024,
+
+    NumTinyBlocks = Megabyte / TinyBlockSize,
+    NumMediumBlocks = Megabyte / MediumBlockSize,
+    NumLargeBlocks = Megabyte / LargeBlockSize,
+};
+
+static BlockAllocator<TinyBlockSize, NumTinyBlocks> tinyBlockAllocator;
+static BlockAllocator<MediumBlockSize, NumMediumBlocks> mediumBlockAllocator;
+static BlockAllocator<LargeBlockSize, NumLargeBlocks> largeBlockAllocator;
+
+char*(xmalloc)(size_t size)
+{
+    assert(size > 0);
+
+    if (size <= TinyBlockSize)
+        return tinyBlockAllocator.alloc(size);
+
+    if (size <= MediumBlockSize)
+        return mediumBlockAllocator.alloc(size);
+
+    if (size <= LargeBlockSize)
+        return largeBlockAllocator.alloc(size);
+
+    return customAlloc(size);
+}
+
+void(xfree)(void* ptr)
+{
+    if (ptr == nullptr)
+        return;
+
+    if (tinyBlockAllocator.containsAddress(ptr))
+    {
+        tinyBlockAllocator.free(ptr);
+    }
+    else if (mediumBlockAllocator.containsAddress(ptr))
+    {
+        mediumBlockAllocator.free(ptr);
+    }
+    else if (largeBlockAllocator.containsAddress(ptr))
+    {
+        largeBlockAllocator.free(ptr);
+    }
+    else
+    {
+        customFree(ptr);
+    }
+}
+
+char*(xrealloc)(void* ptr, size_t size)
+{
+    assert(size > 0);
+    char* newData = xmalloc(size);
+
+    if (tinyBlockAllocator.containsAddress(ptr))
+    {
+        memcpy(newData, ptr, (size < TinyBlockSize) ? size : TinyBlockSize);
+        tinyBlockAllocator.free(ptr);
+    }
+    else if (mediumBlockAllocator.containsAddress(ptr))
+    {
+        memcpy(newData, ptr, (size < MediumBlockSize) ? size : MediumBlockSize);
+        mediumBlockAllocator.free(ptr);
+    }
+    else if (largeBlockAllocator.containsAddress(ptr))
+    {
+        memcpy(newData, ptr, (size < LargeBlockSize) ? size : LargeBlockSize);
+        largeBlockAllocator.free(ptr);
+    }
+    else
+    {
+        char* cptr = reinterpret_cast<char*>(ptr);
+        assert(customAllocations.count(cptr) > 0);
+        auto exisingSize = customAllocations[cptr];
+        memcpy(newData, ptr, (size < exisingSize) ? size : exisingSize);
+        customFree(ptr);
+    }
+
+    return newData;
 }
