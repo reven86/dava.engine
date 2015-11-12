@@ -71,7 +71,6 @@ extern const FastName FRAME_QUERY_UI_DRAW;
 
 class UIControlSystem : public Singleton<UIControlSystem>
 {
-    const uint16 SCROLL_PIXELS_FOR_LINE = 20;
     friend void Core::CreateSingletons();
 	
 	int frameSkip;

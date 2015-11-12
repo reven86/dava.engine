@@ -1217,7 +1217,18 @@ public:
     void DumpInputs(int32 depthLevel);
 
     static void DumpControls(bool onlyOrphans);
+
+    float32 GetWheelSensitivity() const
+    {
+        return wheelSensitivity;
+    }
+    void SetWheelSensitivity(float32 newSens)
+    {
+        wheelSensitivity = newSens;
+    }
+
 private:
+    float32 wheelSensitivity = 20;
     String name;
     FastName fastName;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
