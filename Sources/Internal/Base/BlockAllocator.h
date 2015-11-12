@@ -82,7 +82,7 @@ BlockAllocator<blockSize, numBlocks>::BlockAllocator()
 }
 
 template <uint32 blockSize, uint32 numBlocks>
-char* BlockAllocator<blockSize, numBlocks>::Alloc(size_t sz)
+char* BlockAllocator<blockSize, numBlocks>::Alloc(uint32 sz)
 {
     DVASSERT(sz <= blockSize);
 

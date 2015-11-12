@@ -2102,6 +2102,8 @@
 		5C97964714E3E75000FFFA14 /* libxml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964514E3E75000FFFA14 /* libxml_ios.a */; };
 		5C97964814E3E75000FFFA14 /* libyaml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964614E3E75000FFFA14 /* libyaml_ios.a */; };
 		6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6252BF2518ED506E00058754 /* libjpeg_ios.a */; };
+		6E06373E1BF4F12700DF6AE1 /* BlockAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6E06373C1BF4F12700DF6AE1 /* BlockAllocator.cpp */; };
+		6E06373F1BF4F12700DF6AE1 /* BlockAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E06373D1BF4F12700DF6AE1 /* BlockAllocator.h */; };
 		72C84EB61B29C98B003A52E0 /* libwebp_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB51B29C98B003A52E0 /* libwebp_ios.a */; };
 		8402AB9E19B9FFB000111F35 /* libmongodb_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C0105D11577993400E0B939 /* libmongodb_ios.a */; };
 		87A0C45B18EACBEE00A7402D /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */; };
@@ -3172,6 +3174,8 @@
 		5C97964514E3E75000FFFA14 /* libxml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_ios.a; path = ../../Libs/libs/libxml_ios.a; sourceTree = "<group>"; };
 		5C97964614E3E75000FFFA14 /* libyaml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_ios.a; path = ../../Libs/libs/libyaml_ios.a; sourceTree = "<group>"; };
 		6252BF2518ED506E00058754 /* libjpeg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_ios.a; path = ../../Libs/libs/libjpeg_ios.a; sourceTree = "<group>"; };
+		6E06373C1BF4F12700DF6AE1 /* BlockAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BlockAllocator.cpp; sourceTree = "<group>"; };
+		6E06373D1BF4F12700DF6AE1 /* BlockAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockAllocator.h; sourceTree = "<group>"; };
 		72C84EB51B29C98B003A52E0 /* libwebp_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_ios.a; path = ../../Libs/libs/libwebp_ios.a; sourceTree = "<group>"; };
 		87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		9A0118E18AC6866222998E4C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
@@ -3351,6 +3355,8 @@
 				02E7C1561BD624A4002F026D /* BaseObjectChecker.cpp */,
 				02E7C1571BD624A4002F026D /* BaseObjectChecker.h */,
 				02E7C1581BD624A4002F026D /* BaseTypes.h */,
+				6E06373C1BF4F12700DF6AE1 /* BlockAllocator.cpp */,
+				6E06373D1BF4F12700DF6AE1 /* BlockAllocator.h */,
 				02E7C1591BD624A4002F026D /* Data.cpp */,
 				02E7C15A1BD624A4002F026D /* Data.h */,
 				02E7C15B1BD624A4002F026D /* DynamicObjectCache.cpp */,
@@ -5966,6 +5972,7 @@
 				02E7C7211BD624A7002F026D /* MongodbObject.h in Headers */,
 				02E7C7EB1BD624A7002F026D /* Math2D.h in Headers */,
 				02E7CF8D1BD639E1002F026D /* PatchFile.h in Headers */,
+				6E06373F1BF4F12700DF6AE1 /* BlockAllocator.h in Headers */,
 				02E7CAF31BD624A7002F026D /* SkinnedMesh.h in Headers */,
 				02E7C8891BD624A7002F026D /* Discoverer.h in Headers */,
 				02E7C7271BD624A7002F026D /* SharedPreferences.h in Headers */,
@@ -7030,6 +7037,7 @@
 				02E7C5F71BD624A6002F026D /* Animation.cpp in Sources */,
 				02E7CCB71BD624A7002F026D /* SoundComponent.cpp in Sources */,
 				02E7CACF1BD624A7002F026D /* RenderBatchArray.cpp in Sources */,
+				6E06373E1BF4F12700DF6AE1 /* BlockAllocator.cpp in Sources */,
 				02E7CD491BD624A7002F026D /* AnimationSystem.cpp in Sources */,
 				02E7CB091BD624A7002F026D /* VegetationGeometry.cpp in Sources */,
 				02E7C8A71BD624A7002F026D /* LogConsumer.cpp in Sources */,

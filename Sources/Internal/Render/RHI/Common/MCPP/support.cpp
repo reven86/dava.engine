@@ -3152,7 +3152,7 @@ static SmallBlockAllocator* smallBlockAllocator = nullptr;
 using LargeBlockAllocator = DAVA::BlockAllocator<LargeBlockSize, NumLargeBlocks>;
 static LargeBlockAllocator* largeBlockAllocator = nullptr;
 
-static std::atomic<bool> allocatorsInitialized = false;
+static std::atomic<bool> allocatorsInitialized(false);
 
 void xbegin_allocations()
 {
