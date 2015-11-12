@@ -71,8 +71,8 @@
  */
 
 #include "_mcpp.h"
-#include <cassert>
-#include <unordered_map>
+#include <atomic>
+#include "Base/BlockAllocator.h"
 #if PREPROCESSED
 #include "mcpp.h"
 #else
@@ -3137,184 +3137,109 @@ const char* cp /* Token        */
 
 static const char* const out_of_memory = "Out of memory (required size is %.0s0x%lx bytes)"; /* _F_  */
 
-static std::unordered_map<char*, size_t> customAllocations;
-
-char* customAlloc(size_t size)
-{
-    char* ptr = reinterpret_cast<char*>(malloc(size));
-    customAllocations[ptr] = size;
-    return ptr;
-}
-
-void customFree(void* ptr)
-{
-    char* cptr = reinterpret_cast<char*>(ptr);
-    assert(customAllocations.count(cptr) > 0);
-    customAllocations.erase(cptr);
-    free(ptr);
-}
-
-template <int blockSize, int numBlocks>
-class BlockAllocator
-{
-public:
-    BlockAllocator()
-    {
-        lastBlock = blocks + numBlocks - 1;
-        firstPossibleAddress = reinterpret_cast<char*>(blocks) + sizeof(int);
-        lastPossibleAddress = reinterpret_cast<char*>(lastBlock) + sizeof(int);
-        lastAvailableBlock = blocks;
-        memset(blocks, 0, sizeof(blocks));
-    }
-
-    char* alloc(size_t sz)
-    {
-        assert(sz <= blockSize);
-
-        Block* startSearchBlock = lastAvailableBlock;
-        while (lastAvailableBlock->allocated)
-        {
-            ++lastAvailableBlock;
-
-            if (lastAvailableBlock == startSearchBlock)
-            {
-                // no free blocks available
-                return customAlloc(sz);
-            }
-
-            if (lastAvailableBlock > lastBlock)
-            {
-                lastAvailableBlock = blocks;
-            };
-        }
-
-        lastAvailableBlock->allocated = 1;
-        char* result = lastAvailableBlock->data;
-
-        Block* nextBlock = lastAvailableBlock + 1;
-        lastAvailableBlock = (nextBlock > lastBlock) ? blocks : nextBlock;
-
-        return result;
-    }
-
-    bool containsAddress(void* ptr)
-    {
-        char* cptr = reinterpret_cast<char*>(ptr);
-        return (cptr >= firstPossibleAddress) && (cptr <= lastPossibleAddress);
-    }
-
-    char* realloc(void* ptr, size_t size)
-    {
-        assert(containsAddress(ptr));
-        free(ptr);
-        return alloc(size);
-    }
-
-    void free(void* ptr)
-    {
-        assert(containsAddress(ptr));
-        char* cptr = reinterpret_cast<char*>(ptr);
-        Block* block = reinterpret_cast<Block*>(cptr - sizeof(int));
-        block->allocated = 0;
-    }
-
-private:
-    struct Block
-    {
-        int allocated = 0;
-        char data[blockSize];
-    };
-
-    Block blocks[numBlocks];
-    Block* lastAvailableBlock = nullptr;
-    Block* lastBlock = nullptr;
-    char* firstPossibleAddress = nullptr;
-    char* lastPossibleAddress = nullptr;
-};
-
 enum
 {
-    TinyBlockSize = 256,
-    MediumBlockSize = 4096,
+    SmallBlockSize = 256,
     LargeBlockSize = 65536,
-
     Megabyte = 1024 * 1024,
-
-    NumTinyBlocks = Megabyte / TinyBlockSize,
-    NumMediumBlocks = Megabyte / MediumBlockSize,
+    NumSmallBlocks = Megabyte / SmallBlockSize,
     NumLargeBlocks = Megabyte / LargeBlockSize,
 };
 
-static BlockAllocator<TinyBlockSize, NumTinyBlocks> tinyBlockAllocator;
-static BlockAllocator<MediumBlockSize, NumMediumBlocks> mediumBlockAllocator;
-static BlockAllocator<LargeBlockSize, NumLargeBlocks> largeBlockAllocator;
+using SmallBlockAllocator = DAVA::BlockAllocator<SmallBlockSize, NumSmallBlocks>;
+static SmallBlockAllocator* smallBlockAllocator = nullptr;
+
+using LargeBlockAllocator = DAVA::BlockAllocator<LargeBlockSize, NumLargeBlocks>;
+static LargeBlockAllocator* largeBlockAllocator = nullptr;
+
+static std::atomic<bool> allocatorsInitialized = false;
+
+void xbegin_allocations()
+{
+    DVASSERT(allocatorsInitialized.load() == false);
+
+    smallBlockAllocator = new SmallBlockAllocator();
+    largeBlockAllocator = new LargeBlockAllocator();
+
+    allocatorsInitialized = true;
+}
+
+void xend_allocations()
+{
+    DVASSERT(allocatorsInitialized.load());
+
+    DAVA::BlockAllocatorBase::ReleaseTrackedMemory();
+
+    delete smallBlockAllocator;
+    delete largeBlockAllocator;
+    smallBlockAllocator = nullptr;
+    largeBlockAllocator = nullptr;
+
+    allocatorsInitialized = false;
+}
 
 char*(xmalloc)(size_t size)
 {
-    assert(size > 0);
+    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(size > 0);
 
-    if (size <= TinyBlockSize)
-        return tinyBlockAllocator.alloc(size);
-
-    if (size <= MediumBlockSize)
-        return mediumBlockAllocator.alloc(size);
-
-    if (size <= LargeBlockSize)
-        return largeBlockAllocator.alloc(size);
-
-    return customAlloc(size);
+    if (size <= SmallBlockSize)
+    {
+        return smallBlockAllocator->Alloc(size);
+    }
+    else if (size <= LargeBlockSize)
+    {
+        return largeBlockAllocator->Alloc(size);
+    }
+    else
+    {
+        return DAVA::BlockAllocatorBase::AllocateTracked(size);
+    }
 }
 
 void(xfree)(void* ptr)
 {
+    DVASSERT(allocatorsInitialized.load());
+
     if (ptr == nullptr)
         return;
 
-    if (tinyBlockAllocator.containsAddress(ptr))
+    if (smallBlockAllocator->ContainsAddress(ptr))
     {
-        tinyBlockAllocator.free(ptr);
+        smallBlockAllocator->Free(ptr);
     }
-    else if (mediumBlockAllocator.containsAddress(ptr))
+    else if (largeBlockAllocator->ContainsAddress(ptr))
     {
-        mediumBlockAllocator.free(ptr);
-    }
-    else if (largeBlockAllocator.containsAddress(ptr))
-    {
-        largeBlockAllocator.free(ptr);
+        largeBlockAllocator->Free(ptr);
     }
     else
     {
-        customFree(ptr);
+        DAVA::BlockAllocatorBase::FreeTracked(ptr);
     }
 }
 
 char*(xrealloc)(void* ptr, size_t size)
 {
-    assert(size > 0);
+    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(size > 0);
+
     char* newData = xmalloc(size);
 
-    if (tinyBlockAllocator.containsAddress(ptr))
+    if (smallBlockAllocator->ContainsAddress(ptr))
     {
-        memcpy(newData, ptr, (size < TinyBlockSize) ? size : TinyBlockSize);
-        tinyBlockAllocator.free(ptr);
+        memcpy(newData, ptr, (size < SmallBlockSize) ? size : SmallBlockSize);
+        smallBlockAllocator->Free(ptr);
     }
-    else if (mediumBlockAllocator.containsAddress(ptr))
-    {
-        memcpy(newData, ptr, (size < MediumBlockSize) ? size : MediumBlockSize);
-        mediumBlockAllocator.free(ptr);
-    }
-    else if (largeBlockAllocator.containsAddress(ptr))
+    else if (largeBlockAllocator->ContainsAddress(ptr))
     {
         memcpy(newData, ptr, (size < LargeBlockSize) ? size : LargeBlockSize);
-        largeBlockAllocator.free(ptr);
+        largeBlockAllocator->Free(ptr);
     }
-    else
+    else if (ptr != nullptr)
     {
-        char* cptr = reinterpret_cast<char*>(ptr);
-        assert(customAllocations.count(cptr) > 0);
-        auto exisingSize = customAllocations[cptr];
+        auto exisingSize = DAVA::BlockAllocatorBase::AllocationSizeForPointer(ptr);
         memcpy(newData, ptr, (size < exisingSize) ? size : exisingSize);
-        customFree(ptr);
+        DAVA::BlockAllocatorBase::FreeTracked(ptr);
     }
 
     return newData;
