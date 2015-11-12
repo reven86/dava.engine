@@ -54,6 +54,8 @@ QStringList EditorLocalizationSystem::GetAvailableLocaleValues() const
 
 void EditorLocalizationSystem::SetDirectory(const QDir &directoryPath)
 {
+    Cleanup();
+
     LocalizationSystem *localizationSystem = LocalizationSystem::Instance();
     DVASSERT(nullptr != localizationSystem);
 
