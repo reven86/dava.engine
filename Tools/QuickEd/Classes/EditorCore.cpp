@@ -395,7 +395,7 @@ int EditorCore::CreateDocument(int index, PackageNode *package)
     DVASSERT(!fileSystemWatcher->files().contains(path));
     if (!fileSystemWatcher->addPath(path))
     {
-        DAVA::Logger::Error("can not watch path %s", document->GetPackageFilePath().GetStringValue().c_str());
+        DAVA::Logger::Error("can not add to file watcher path %s", document->GetPackageFilePath().GetStringValue().c_str());
     }
     return index;
 }
@@ -418,11 +418,20 @@ void EditorCore::ApplyFileChanges()
 {
     bool yesToAll = false;
     bool noToAll = false;
+    int changedAndExistsCount = std::count_if(changedFiles.begin(), changedFiles.end(), [this](const QString &path)
+                                       {
+                                           return QFileInfo::exists(path)
+                                            && std::find_if(documents.begin(), documents.end(), [path](const Document *doc)
+                                                        {
+                                                            return doc->GetPackageAbsolutePath() == path;
+                                                        }) != documents.end();
+                                       });
     for (Document *document : documents)
     {
         QString path = document->GetPackageAbsolutePath();
         if (changedFiles.contains(path))
         {
+            changedFiles.remove(path);
             QFileInfo fileInfo(path);
             QMessageBox::StandardButton button = QMessageBox::No;
             if (document->GetUndoStack()->isClean())
@@ -432,7 +441,7 @@ void EditorCore::ApplyFileChanges()
             else if (!fileInfo.exists())
             {
                 button = QMessageBox::warning(
-                    mainWindow.get()
+                    qApp->activeWindow()
                     , tr("File %1 is renamed or deleted").arg(fileInfo.fileName())
                     , tr("%1\n This file has been renamed or deleted outside of the editor. Do you want to close it?").arg(fileInfo.absoluteFilePath())
                     , QMessageBox::Yes | QMessageBox::No
@@ -441,29 +450,27 @@ void EditorCore::ApplyFileChanges()
             }
             else
             {
-                if (yesToAll)
-                {
-                    button = QMessageBox::Yes;
-                }
-                else if (noToAll)
-                {
-                    button = QMessageBox::No;
-                }
-                else
+                if(!yesToAll && !noToAll)
                 {
                     button = QMessageBox::warning(
-                        mainWindow.get()
+                        qApp->activeWindow()
                         , tr("File %1 changed").arg(fileInfo.fileName())
                         , tr("%1\n This file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath())
-                        , QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll
+                        , changedAndExistsCount > 1 ?
+                            QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll
+                                                  : QMessageBox::Yes | QMessageBox::No
                         , QMessageBox::Yes
                         );
                     yesToAll = button == QMessageBox::YesToAll;
                     noToAll = button == QMessageBox::NoToAll;
                 }
+                if(yesToAll || noToAll)
+                {
+                    button = yesToAll ? QMessageBox::Yes : QMessageBox::No;
+                }
             }
             int index = documents.indexOf(document);
-            if (yesToAll || button == QMessageBox::Yes)
+            if (button == QMessageBox::Yes)
             {
                 DAVA::FilePath davaPath = document->GetPackageFilePath();
                 CloseDocument(index);
@@ -477,7 +484,6 @@ void EditorCore::ApplyFileChanges()
                     }
                 }
             }
-            changedFiles.remove(path);
         }
     }
 }
