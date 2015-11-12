@@ -136,7 +136,7 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
     String actualLangId;
     
     FilePath localeFilePath(directoryPath + (requestedLangId + ".yaml"));
-    if(localeFilePath.Exists())
+    if (FileSystem::Instance()->Exists(localeFilePath))
     {
         actualLangId = requestedLangId;
     }
@@ -172,7 +172,7 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
         
         Logger::FrameworkDebug("LocalizationSystem requested locale %s is not supported, trying to check part %s", requestedLangId.c_str(), langPart.c_str());
         localeFilePath = directoryPath + (langPart + ".yaml");
-        if(localeFilePath.Exists())
+        if (FileSystem::Instance()->Exists(localeFilePath))
         {
             actualLangId = langPart;
         }
@@ -193,7 +193,7 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
     if(actualLangId.empty())
     {
         localeFilePath = directoryPath + (String(DEFAULT_LOCALE) + ".yaml");
-        if(localeFilePath.Exists())
+        if (FileSystem::Instance()->Exists(localeFilePath))
         {
             actualLangId = DEFAULT_LOCALE;
         }

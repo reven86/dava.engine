@@ -76,7 +76,7 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
     { FORMAT_ETC2_RGBA, { FORMAT_ETC2_RGBA, FastName("ETC2_RGBA"), 4, rhi::TEXTURE_FORMAT_ETC2_R8G8B8A8, false } },
     { FORMAT_ETC2_RGB_A1, { FORMAT_ETC2_RGB_A1, FastName("ETC2_RGB_A1"), 4, rhi::TEXTURE_FORMAT_ETC2_R8G8B8A1, false } }
 
-#if defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
     ,
     { FORMAT_BGR888, { FORMAT_BGR888, FastName("BGR888"), 24, TEXTURE_FORMAT_INVALID, false } }
 #endif

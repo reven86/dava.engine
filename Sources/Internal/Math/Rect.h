@@ -64,9 +64,9 @@ struct Rect
     inline Vector2 GetPosition() const;
     inline Vector2 GetSize() const;
 
-    inline void SetCenter(const Vector2 & center);
-	inline void SetPosition(const Vector2 & position);
-	inline void SetSize(const Vector2 & size);
+    inline void SetCenter(const Vector2& center);
+    inline void SetPosition(const Vector2& position);
+    inline void SetSize(const Vector2 & size);
 
 	inline bool operator == (const Rect  & _s)const;
 	inline bool operator != (const Rect  & _s)const;

@@ -172,8 +172,8 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
         else
         {
             LOGE("[InitApplication] Can't allocate space for CoreAndroidPlatform");
-		}
-	}
+        }
+    }
 	else
 	{
 		DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
@@ -335,20 +335,20 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
 {
     DAVA::UIEvent::Phase phase = DAVA::UIEvent::Phase::DRAG;
     switch (action)
-        {
-			case 5: //ACTION_POINTER_DOWN
-			case 0://ACTION_DOWN
+    {
+    case 5: //ACTION_POINTER_DOWN
+            case 0://ACTION_DOWN
                 phase = DAVA::UIEvent::Phase::BEGAN;
                 break;
 
-            case 6://ACTION_POINTER_UP
-			case 1://ACTION_UP
+            case 6: //ACTION_POINTER_UP
+            case 1: //ACTION_UP
                 phase = DAVA::UIEvent::Phase::ENDED;
                 break;
 
-            case 2://ACTION_MOVE
-			{
-				if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
+            case 2: //ACTION_MOVE
+            {
+                if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
 				{
                     phase = DAVA::UIEvent::Phase::JOYSTICK;
                 }
@@ -359,13 +359,13 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
             }
             break;
 
-			case 3://ACTION_CANCEL
+            case 3: //ACTION_CANCEL
                 phase = DAVA::UIEvent::Phase::CANCELLED;
                 break;
 
-            case 4://ACTION_OUTSIDE
-			break;
-		}
+            case 4: //ACTION_OUTSIDE
+                break;
+        }
 
 		return phase;
 	}

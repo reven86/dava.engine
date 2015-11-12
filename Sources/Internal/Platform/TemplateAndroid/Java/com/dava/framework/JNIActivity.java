@@ -56,7 +56,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
     private static String commandLineParams = null;
 	
-    private boolean mainThreadExit = false;
+    private volatile boolean mainThreadExit = false;
     
     public abstract JNISurfaceView FindSurfaceView();
 	
@@ -170,7 +170,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			@Override
 			public void run() 
 			{
-	        	Log.e(JNIConst.LOG_TAG, "main thread stopped!");
+	        	Log.i(JNIConst.LOG_TAG, "C++ main thread started!");
 	        	
 		        // Initialize native framework core         
 		        JNIApplication.GetApplication().InitFramework(commandLineParams);
@@ -181,7 +181,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		        
 		        startTime = System.currentTimeMillis();
 		        
-				while(true)
+				while(!mainThreadExit)
 				{
 					{
 			            long elapsedTime = System.currentTimeMillis() - startTime;
@@ -204,21 +204,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 					
 					surfaceView.ProcessQueueEvents();
 					surfaceView.ProcessFrame();
-					
-					boolean needExit = false;
-			        synchronized (JNIActivity.this) 
-			        {
-			        	needExit = mainThreadExit;
-					}
-			        
-			        if(needExit) 
-			        {
-			        	Log.e(JNIConst.LOG_TAG, "main thread stopped!");
-			        	break;
-			        }
 				}
+				nativeOnDestroy();
+				Log.i(JNIConst.LOG_TAG, "C++ main thread finished!");
 			}
-		});
+		}, "c++_main_thread");
 		mainLoopThreadID = mainThread.getId();
 		mainThread.start();
 
@@ -403,17 +393,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     {
         Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] start");
 
-        synchronized (this) 
-        {
-        	mainThreadExit = true;
-		}
+       	mainThreadExit = true;
         
         if(mController != null)
         {
             mController.exit();
         }
-        //call native method
-        nativeOnDestroy();
 
         super.onDestroy();
         Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] finish");
@@ -654,7 +639,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     // return to GLThread back
     public static void finishActivity()
     {
+    	Log.i(JNIConst.LOG_TAG, "finishActivity start");
+    	
         final JNIActivity activity = JNIActivity.GetActivity();
+        activity.mainThreadExit = true; // prevent next iteration in C++ main thread we currently in
         
         activity.runOnUiThread(new Runnable(){
             @Override
@@ -665,6 +653,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         });
         // try NOT to block this GLThread because sometime Main thread
         // can block and waiting for GLThread
+        Log.i(JNIConst.LOG_TAG, "finishActivity end");
     }
 }
 

@@ -787,7 +787,7 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad>* currentNode, uint8 clip
         {
             for (int32 index = 0; index < 4; ++index)
             {
-                LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
+                LandQuadTreeNode<LandscapeQuad>* child = &currentNode->children[index];
                 GenLods(child, clippingFlags, camera);
             }
         }

@@ -247,7 +247,7 @@ void UnpackHelpDoc()
 {
     DAVA::String editorVer = SettingsManager::GetValue( Settings::Internal_EditorVersion ).AsString();
     DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
-    if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
+    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
         DAVA::Logger::FrameworkDebug( "Unpacking Help..." );
         DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
