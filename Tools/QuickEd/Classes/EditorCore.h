@@ -55,6 +55,7 @@ public:
     Project *GetProject() const;
 
 private slots:
+    void OnApplicationStateChagned(Qt::ApplicationState state);
     void OnFileChanged(const QString & path);
     void OnCleanChanged(bool clean);
     void OnOpenPackageFile(const QString &path);
@@ -75,13 +76,13 @@ private slots:
     void OnRtlChanged(bool isRtl);
     void OnGlobalStyleClassesChanged(const QString &classesStr);
 
-protected:
+private:
     void OpenProject(const QString &path);
     bool CloseProject();
     int CreateDocument(int index, PackageNode *package);
     void SaveDocument(Document *document);
+    void ApplyFileChanges();
 
-private:
     bool eventFilter( QObject *obj, QEvent *event ) override;
     void CloseDocument(int index);
     int GetIndexByPackagePath(const DAVA::FilePath &davaPath) const;
@@ -92,6 +93,7 @@ private:
     std::unique_ptr<MainWindow> mainWindow = nullptr;
     DAVA::UIControl* rootControl = nullptr;
     QFileSystemWatcher *fileSystemWatcher = nullptr;
+    QSet<QString> changedFiles;
 };
 
 inline MainWindow* EditorCore::GetMainWindow()

@@ -85,6 +85,11 @@ const FilePath& Document::GetPackageFilePath() const
     return package->GetPath();
 }
 
+QString Document::GetPackageAbsolutePath() const
+{
+    return QString::fromStdString(GetPackageFilePath().GetAbsolutePathname());
+}
+
 QUndoStack* Document::GetUndoStack()
 {
     return undoStack;
