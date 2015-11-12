@@ -90,7 +90,7 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
         DVASSERT(0 && "RenderPass::AddRenderLayer afterLayer not found");
     }
     else
-	{
+    {
         renderLayers.push_back(layer);
         layersBatchArrays[layer->GetRenderLayerID()].SetSortingFlags(layer->GetSortingFlags());
     }

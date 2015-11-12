@@ -102,9 +102,9 @@ public:
         \brief Function to retrieve pathname
         \returns pathname value
 	 */
-    const String GetAbsolutePathname() const;
+    String GetAbsolutePathname() const;
 
-	/**
+    /**
         \brief Function to retrieve filename from pathname. Filename for path "/Users/Folder/image.png" is "image.png".
         \returns filename value
 	 */
@@ -154,10 +154,9 @@ public:
         \brief Function to retrieve string path value as URL for Web Browser
         \returns path as URL
      */
-    const String AsURL() const;
-    
-    
-	/**
+    String AsURL() const;
+
+    /**
         \brief Function for replacement of original filename
         \param[in] filename is new filename
 	 */
@@ -263,9 +262,8 @@ public:
 	static void AddResourcesFolder(const FilePath & folder);
 	static void AddTopResourcesFolder(const FilePath & folder);
     static void RemoveResourcesFolder(const FilePath & folder);
-    static const List<FilePath> GetResourcesFolders();
-    
-    
+    static const List<FilePath>& GetResourcesFolders();
+
     bool Exists() const;
     
 	int32 Compare(const FilePath &right) const;

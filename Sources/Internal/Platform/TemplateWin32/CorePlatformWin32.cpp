@@ -172,8 +172,8 @@ namespace DAVA
         fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
         if (options)
         {
-			windowedMode.width = options->GetInt32("width");
-			windowedMode.height = options->GetInt32("height");
+            windowedMode.width = options->GetInt32("width");
+            windowedMode.height = options->GetInt32("height");
 			windowedMode.bpp = options->GetInt32("bpp");
 			
 			// get values from config in case if they are available
@@ -208,9 +208,9 @@ namespace DAVA
         AdjustWindowRect(&clientSize, style, FALSE);
 
         realWidth = clientSize.right - clientSize.left;
-		realHeight = clientSize.bottom - clientSize.top;
+        realHeight = clientSize.bottom - clientSize.top;
 
-		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
+        windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
@@ -302,8 +302,8 @@ namespace DAVA
         }
 
         Core::Instance()->SystemAppFinished();
-		FrameworkWillTerminate();
-	}
+        FrameworkWillTerminate();
+    }
 
 	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
 	{
@@ -383,10 +383,10 @@ namespace DAVA
 
         DWORD iModeNum = 0;
         DEVMODE dmi;
-        ZeroMemory (&dmi, sizeof(dmi)) ;
-		dmi.dmSize = sizeof(dmi) ;
+        ZeroMemory(&dmi, sizeof(dmi));
+        dmi.dmSize = sizeof(dmi);
 
-		while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
+        while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
 		{
 			DisplayMode mode;
 			mode.width = dmi.dmPelsWidth;

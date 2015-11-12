@@ -35,7 +35,6 @@ property float4x4 worldViewMatrix              : dynamic,a : ;
 property float3   cameraPosition               : dynamic,a : ;
 #endif
 #if VERTEX_FOG && FOG_ATMOSPHERE
-property float4x4 worldViewInvTransposeMatrix  : dynamic,a : ;
 property float4   lightPosition0               : dynamic,a : ;
 #endif
 

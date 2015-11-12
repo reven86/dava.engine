@@ -158,16 +158,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			Log.d("", "no singalStrengthListner");
 		}
         
-        JNINotificationProvider.AttachToActivity(this);
-        
-		Intent intent = getIntent();
-		if (null != intent) {
-			String uid = intent.getStringExtra("uid");
-			if (uid != null) {
-				JNINotificationProvider.NotificationPressed(uid);
-			}
-		}
-		
 		if (splashView != null)
 		{
 		    splashView.setVisibility(View.GONE);
@@ -186,7 +176,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		        JNIApplication.GetApplication().InitFramework(commandLineParams);
 
 		        nativeOnCreate();
-		        
+
 		        UpdateGamepadAxises();
 		        
 		        startTime = System.currentTimeMillis();
@@ -231,7 +221,26 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		});
 		mainLoopThreadID = mainThread.getId();
 		mainThread.start();
-		
+
+        // check if we are starting from android notification popup
+        // and execute appropriate runnable
+        {
+            JNINotificationProvider.AttachToActivity(this);
+            final Intent intent = getIntent();
+
+            RunOnMainLoopThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (null != intent) {
+                        String uid = intent.getStringExtra("uid");
+                        if (uid != null) {
+                            JNINotificationProvider.NotificationPressed(uid);
+                        }
+                    }
+                }
+            });
+        }
+
         // The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] finish");
     }

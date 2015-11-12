@@ -244,8 +244,8 @@ extern void FrameworkWillTerminate();
 
             it->tapCount = DAVA::Max(curEvent->data.mouse.clickCount, 1);
             it->timestamp = timestamp;
-			it->phase = touchPhase;
-		}
+            it->phase = touchPhase;
+        }
 	}
 
 	bool isFind = false;
@@ -270,9 +270,9 @@ extern void FrameworkWillTerminate();
 
             it->tapCount = curEvent->data.mouse.clickCount;
             it->timestamp = timestamp;
-			it->phase = touchPhase;
+            it->phase = touchPhase;
 
-			break;
+            break;
 		}
 	}
 
@@ -295,8 +295,8 @@ extern void FrameworkWillTerminate();
 
         newTouch.tapCount = curEvent->data.mouse.clickCount;
         newTouch.timestamp = timestamp;
-		newTouch.phase = touchPhase;
-		allTouches.push_back(newTouch);
+        newTouch.phase = touchPhase;
+        allTouches.push_back(newTouch);
 	}
 
 	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)

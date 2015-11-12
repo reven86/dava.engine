@@ -79,8 +79,8 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     textureListSortModes["File size"] = TextureListModel::SortByFileSize;
     textureListSortModes["Data size"] = TextureListModel::SortByDataSize;
-	textureListSortModes["Image size"] = TextureListModel::SortByImageSize;
-	textureListSortModes["Name"] = TextureListModel::SortByName;
+    textureListSortModes["Image size"] = TextureListModel::SortByImageSize;
+    textureListSortModes["Name"] = TextureListModel::SortByName;
 
 	// global scene manager signals
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
@@ -89,10 +89,10 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     // convector signals
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
-    QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor *, const DAVA::eGPUFamily, const TextureInfo &)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor *, const DAVA::eGPUFamily, const TextureInfo &)));
+    QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)));
 
-	setupStatusBar();
-	setupTexturesList();
+    setupStatusBar();
+    setupTexturesList();
 	setupImagesScrollAreas();
 	setupTextureListToolbar();
 	setupTextureToolbar();
@@ -271,9 +271,9 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
             // Start convert. Signal will be emitted when conversion done
             TextureConvertor::Instance()->GetConverted(curDescriptor, view, convertMode);
         }
-	}
+    }
 
-	if(infoConvertedIsUpToDate)
+    if(infoConvertedIsUpToDate)
 	{
 		updateInfoConverted();
 	}
@@ -706,8 +706,8 @@ void TextureBrowser::texturePropertyChanged(int type)
         setTextureView(curTextureView, getConvertMode(CONVERT_FORCE));
     }
     // other settings don't need texture to reconvert
-	else
-	{
+    else
+    {
         const DAVA::TextureDescriptor* descriptor = ui->textureProperties->getTextureDescriptor();
         descriptor->Save();
         // new texture can be applied to scene immediately
