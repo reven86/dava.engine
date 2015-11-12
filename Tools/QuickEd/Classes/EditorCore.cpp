@@ -146,7 +146,15 @@ void EditorCore::OnFileChanged(const QString & path)
             }
             if (yesToAll || button == QMessageBox::Yes)
             {
-                //
+                FilePath path = document->GetPackageFilePath();
+                int index = documents.indexOf(document);
+                CloseDocument(index);
+                RefPtr<PackageNode> package = project->OpenPackage(path);
+                if (nullptr != package)
+                {
+                    index = CreateDocument(index, package.Get());
+                    mainWindow->SetCurrentTab(index);
+                }
             }
             
         }
@@ -170,13 +178,15 @@ void EditorCore::OnOpenPackageFile(const QString &path)
 {
     if (!path.isEmpty())
     {
-        int index = GetIndexByPackagePath(path);
+        QString canonicalFilePath = QFileInfo(path).canonicalFilePath();
+        FilePath davaPath(canonicalFilePath.toStdString());
+        int index = GetIndexByPackagePath(davaPath);
         if (index == -1)
         {
-            RefPtr<PackageNode> package = project->OpenPackage(path);
+            RefPtr<PackageNode> package = project->OpenPackage(davaPath);
             if (nullptr != package)
             {
-                index = CreateDocument(package.Get());
+                index = CreateDocument(documents.size(), package.Get());
             }
         }
         mainWindow->SetCurrentTab(index);
@@ -396,15 +406,16 @@ void EditorCore::CloseDocument(int index)
     delete detached; //some widgets hold this document inside :(
 }
 
-int EditorCore::CreateDocument(PackageNode *package)
+int EditorCore::CreateDocument(int index, PackageNode *package)
 {
     Document *document = new Document(package, this);
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &EditorCore::OnCleanChanged);
-    documents.push_back(document);
-    documentGroup->AddDocument(document);
-    int index = mainWindow->AddTab(document->GetPackageFilePath());
-    OnCurrentTabChanged(index);
+    documents.insert(index, document);
+    documentGroup->InsertDocument(index, document);
+    int insertedIndex = mainWindow->AddTab(index, document->GetPackageFilePath());
+    OnCurrentTabChanged(insertedIndex);
     DAVA::String filePath = document->GetPackageFilePath().GetAbsolutePathname();
+    fileSystemWatcher->files().contains()
     if (!fileSystemWatcher->addPath(QString::fromStdString(filePath)))
     {
         DAVA::Logger::Error("can not watch path %s", document->GetPackageFilePath());
@@ -423,11 +434,8 @@ void EditorCore::SaveDocument(Document *document)
     document->GetUndoStack()->setClean();
 }
 
-int EditorCore::GetIndexByPackagePath(const QString &fileName) const
+int EditorCore::GetIndexByPackagePath(const FilePath &davaPath) const
 {
-    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
-    FilePath davaPath(canonicalFilePath.toStdString());
-
     for (int index = 0; index < documents.size(); ++index)
     {
         if (documents.at(index)->GetPackageFilePath() == davaPath)

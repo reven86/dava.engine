@@ -433,15 +433,15 @@ void MainWindow::RebuildRecentMenu()
     menuRecent->setEnabled(projectCount > 0);
 }
 
-int MainWindow::AddTab(const FilePath &scenePath)
+int MainWindow::AddTab(int index, const FilePath &scenePath)
 {
     QString tabText(scenePath.GetFilename().c_str());
-    int index = tabBar->addTab(tabText);
-    tabBar->setTabToolTip(index, scenePath.GetAbsolutePathname().c_str());
+    int insertedIndex = tabBar->insertTab(index, tabText);
+    tabBar->setTabToolTip(insertedIndex, scenePath.GetAbsolutePathname().c_str());
     TabState* tabState = new TabState(tabText);
-    tabBar->setTabData(index, QVariant::fromValue<TabState*>(tabState));
+    tabBar->setTabData(insertedIndex, QVariant::fromValue<TabState*>(tabState));
     OnCountChanged(tabBar->count());
-    return index;
+    return insertedIndex;
 }
 
 void MainWindow::closeEvent(QCloseEvent *ev)

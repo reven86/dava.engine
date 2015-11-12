@@ -198,21 +198,15 @@ bool Project::CheckAndUnlockProject(const QString& projectPath)
     return true;
 }
 
-DAVA::RefPtr<PackageNode> Project::NewPackage(const QString &path)
+RefPtr<PackageNode> Project::OpenPackage(const FilePath &packagePath)
 {
-    return DAVA::RefPtr<PackageNode>();
-}
-
-RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
-{
-    FilePath path(packagePath.toStdString());
-    String fwPath = path.GetFrameworkPath();
+    String fwPath = packagePath.GetFrameworkPath();
 
     EditorUIPackageBuilder builder;
     
-    bool packageLoaded = UIPackageLoader().LoadPackage(path, &builder);
+    bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
     if (!packageLoaded)
-        packageLoaded = LegacyEditorUIPackageLoader(legacyData).LoadPackage(path, &builder);
+        packageLoaded = LegacyEditorUIPackageLoader(legacyData).LoadPackage(packagePath, &builder);
 
     if (packageLoaded)
         return builder.BuildPackage();

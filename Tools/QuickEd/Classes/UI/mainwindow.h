@@ -69,7 +69,7 @@ public:
     int CloseTab(int index);
     void SetCurrentTab(int index);
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
-    int AddTab(const DAVA::FilePath &scenePath);
+    int AddTab(int index, const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
 
     DialogReloadSprites* GetDialogReloadSprites() const;

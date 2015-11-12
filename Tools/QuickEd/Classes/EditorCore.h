@@ -78,14 +78,14 @@ private slots:
 protected:
     void OpenProject(const QString &path);
     bool CloseProject();
-    int CreateDocument(PackageNode *package);
+    int CreateDocument(int index, PackageNode *package);
     void SaveDocument(Document *document);
 
 private:
     bool eventFilter( QObject *obj, QEvent *event ) override;
     void CloseDocument(int index);
-    int GetIndexByPackagePath(const QString &fileName) const;
-    ///Return: pointer to currentDocument if exists, nullptr if not
+    int GetIndexByPackagePath(const DAVA::FilePath &davaPath) const;
+
     Project* project = nullptr;
     QList<Document*> documents;
     DocumentGroup* documentGroup = nullptr;

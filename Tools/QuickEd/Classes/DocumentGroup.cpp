@@ -43,7 +43,7 @@ DocumentGroup::~DocumentGroup()
 {
 }
 
-void DocumentGroup::AddDocument(Document* document)
+void DocumentGroup::InsertDocument(int index, Document* document)
 {
     DVASSERT(nullptr != document);
     undoGroup->addStack(document->GetUndoStack());
@@ -51,7 +51,7 @@ void DocumentGroup::AddDocument(Document* document)
     {
         return;
     }
-    documentList.append(document);
+    documentList.insert(index, document);
 }
 
 void DocumentGroup::RemoveDocument(Document* document)
