@@ -54,13 +54,14 @@ NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL = nullptr;
 
 RenderSystem2D::RenderSystem2D()
     : currentVertexBuffer(nullptr)
     , currentIndexBuffer(nullptr)
     , indexIndex(0)
     , vertexIndex(0)
-    , spriteClipping(false)
+    , spriteClipping(true)
     , spriteIndexCount(0)
     , spriteVertexCount(0)
     , prevFrameErrorsFlags(NO_ERRORS)
@@ -95,6 +96,10 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Grayscale.material"));
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
+
+    DEFAULT_2D_FILL_ALPHA_MATERIAL = new NMaterial();
+    DEFAULT_2D_FILL_ALPHA_MATERIAL->SetFXName(FastName("~res:/Materials/2d.AlphaFill.material"));
+    DEFAULT_2D_FILL_ALPHA_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
@@ -304,16 +309,6 @@ void RenderSystem2D::IntersectClipRect(const Rect &rect)
                     IsRenderTargetPass() ? (float32)renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
                     IsRenderTargetPass() ? (float32)renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
         Rect res = screen.Intersection(rect);
-        if (res.dx == 0)
-        {
-            res.x = 0;
-            res.dx = 1;
-        }
-        if (res.dy == 0)
-        {
-            res.y = 0;
-            res.dy = 1;
-        }
         SetClip(res);
     }
     else
@@ -447,8 +442,8 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 {
-    DVASSERT_MSG(batchDesc.vertexCount > 0 && batchDesc.vertexStride > 0 && batchDesc.vertexPointer != nullptr, "Incorrect vertex position data");
-    DVASSERT_MSG(batchDesc.indexCount > 0 && batchDesc.indexPointer != nullptr, "Incorrect index data");
+    DVASSERT_MSG(batchDesc.vertexPointer != nullptr && batchDesc.vertexStride > 0 && batchDesc.vertexCount > 0, "Incorrect vertex position data");
+    DVASSERT_MSG(batchDesc.indexPointer != nullptr && batchDesc.indexCount > 0, "Incorrect index data");
     DVASSERT_MSG(batchDesc.material != nullptr, "Incorrect material");
     DVASSERT_MSG((batchDesc.samplerStateHandle != rhi::InvalidHandle && batchDesc.textureSetHandle != rhi::InvalidHandle) ||
                  (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
@@ -456,6 +451,12 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 
     DVASSERT_MSG(batchDesc.texCoordPointer == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
     DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
+
+    if (batchDesc.vertexCount == 0 && batchDesc.indexCount == 0)
+    {
+        // Ignore draw for empty geometry
+        return;
+    }
 
     if (currentClip.dx == 0.f || currentClip.dy == 0.f)
     {
@@ -532,46 +533,40 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         static Color magenta = Color(1.f, 0.f, 1.f, 1.f);
         useColor = magenta;
     }
+    uint32 useColorRGBA = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
     // End define draw color
 
-    uint32 useColorRGBA = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
-
-    uint32 colorStride = batchDesc.colorStride;
+    // Prepare vertex color ptr (batchDesc.singleColor or batchDesc.colorPointer)
     const uint32* colorPtr = batchDesc.colorPointer;
+    uint32 colorStride = batchDesc.colorStride;
     if (colorPtr == nullptr)
     {
         colorPtr = &useColorRGBA;
         colorStride = 0;
     }
 
+    // Prepare texture coordinates ptr (batchDesc.texCoordPointer or zero vector)
+    const float32* texPtr = batchDesc.texCoordPointer;
+    uint32 texStride = batchDesc.texCoordStride;
+    if (texPtr == nullptr)
+    {
+        static float32 TEX_ZERO[2] = { 0.f, 0.f };
+        texPtr = TEX_ZERO;
+        texStride = 0;
+    }
+
     // Begin fill vertex and index buffers
     uint32 vi = vertexIndex;
     uint32 ii = indexIndex;
-    if (batchDesc.texCoordPointer)
+    for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
     {
-        for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
-        {
-            BatchVertex& v = currentVertexBuffer[vi++];
-            v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
-            v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
-            v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
-            v.uv.x = batchDesc.texCoordPointer[i * batchDesc.texCoordStride];
-            v.uv.y = batchDesc.texCoordPointer[i * batchDesc.texCoordStride + 1];
-            v.color = colorPtr[i * batchDesc.colorStride];
-        }
-    }
-    else
-    {
-        for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
-        {
-            BatchVertex& v = currentVertexBuffer[vi++];
-            v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
-            v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
-            v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
-            v.uv.x = 0.f;
-            v.uv.y = 0.f;
-            v.color = colorPtr[i * batchDesc.colorStride];
-        }
+        BatchVertex& v = currentVertexBuffer[vi++];
+        v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
+        v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
+        v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
+        v.uv.x = texPtr[i * texStride];
+        v.uv.y = texPtr[i * texStride + 1];
+        v.color = colorPtr[i * colorStride];
     }
     for (uint32 i = 0; i < batchDesc.indexCount; ++i)
     {
@@ -1233,7 +1228,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
 
 /* RenderSyste2D Draw Helper Functions */
 
-void RenderSystem2D::FillRect(const Rect& rect, const Color& color)
+void RenderSystem2D::FillRect(const Rect& rect, const Color& color, NMaterial* material)
 {
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
@@ -1252,7 +1247,7 @@ void RenderSystem2D::FillRect(const Rect& rect, const Color& color)
 
     BatchDescriptor batch;
     batch.singleColor = color;
-    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.material = material;
     batch.vertexCount = 4;
     batch.indexCount = 6;
     batch.vertexStride = 2;
@@ -1416,7 +1411,12 @@ void RenderSystem2D::DrawLine(const Vector2& start, const Vector2& end, float32 
 
 void RenderSystem2D::DrawLines(const Vector<float32>& linePoints, const Color& color)
 {
-    auto ptCount = linePoints.size() / 2;
+    auto ptCount = linePoints.size() / 2; // linePoints are pairs of XY
+    if (ptCount < 2)
+    {
+        return;
+    }
+
     Vector<uint16> indices;
     indices.reserve(ptCount);
     for (auto i = 0U; i < ptCount; ++i)
@@ -1709,6 +1709,8 @@ void TiledDrawData::GenerateTransformData()
         transformedVertices[index] = vertices[index] * transformMatr;
     }
 }
+
+/* StretchDrawData Implementation */
 
 const uint16 StretchDrawData::indeces[18 * 3] = {
     0, 1, 4,

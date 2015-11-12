@@ -29,52 +29,42 @@
 
 #include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/EditorConfig.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "SpritesPacker/SpritePackerHelper.h"
 
+#include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlParser.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
-#include <QDebug>
-
-
-ProjectManager::ProjectManager()
-	: curProjectPath()
-	, curProjectPathDataSource()
-    , curProjectPathParticles()
-    , useDelayInitialization(true)
-    , isParticleSpritesUpdated(false)
-{
-}
-
-ProjectManager::~ProjectManager()
-{
-}
-
 bool ProjectManager::IsOpened() const
 {
-	return (!curProjectPath.IsEmpty());
+    return (!projectPath.IsEmpty());
 }
 
-const FilePath & ProjectManager::CurProjectPath() const
+const FilePath& ProjectManager::GetProjectPath() const
 {
-	return curProjectPath;
+    return projectPath;
 }
 
-const FilePath & ProjectManager::CurProjectDataSourcePath() const
+const FilePath& ProjectManager::GetDataSourcePath() const
 {
-	return curProjectPathDataSource;
+    return dataSourcePath;
 }
 
-const FilePath & ProjectManager::CurProjectDataParticles() const
+const FilePath& ProjectManager::GetParticlesPath() const
 {
-    return curProjectPathParticles;
+    return particlesPath;
+}
+
+const FilePath& ProjectManager::GetWorkspacePath() const
+{
+    return workspacePath;
 }
 
 const QVector<ProjectManager::AvailableMaterialTemplate>* ProjectManager::GetAvailableMaterialTemplates() const
@@ -87,60 +77,55 @@ const QVector<ProjectManager::AvailableMaterialQuality>* ProjectManager::GetAvai
     return &qualities;
 }
 
-FilePath ProjectManager::ProjectOpenDialog()
+FilePath ProjectManager::ProjectOpenDialog() const
 {
-    FilePath ret;
-
     QString newPathStr = FileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
     if(!newPathStr.isEmpty())
     {
-        ret = FilePath(PathnameToDAVAStyle(newPathStr));
-        ret.MakeDirectoryPathname();
+        FilePath path = FilePath(PathnameToDAVAStyle(newPathStr));
+        path.MakeDirectoryPathname();
+        return path;
     }
-    
-	return ret;
+
+    return FilePath();
 }
 
-void ProjectManager::ProjectOpen(const QString &path)
+void ProjectManager::OpenProject(const QString& path)
 {
-    FilePath incomePath(PathnameToDAVAStyle(path));
-    ProjectOpen(incomePath);
+    OpenProject(PathnameToDAVAStyle(path));
 }
 
-void ProjectManager::ProjectOpen(const FilePath & incomePath)
+void ProjectManager::OpenProject(const FilePath& incomePath)
 {
-    if(incomePath.IsDirectoryPathname() && incomePath != curProjectPath)
-	{
-		ProjectClose();
-        
-        curProjectPath = incomePath;
-        
-		if(incomePath.Exists())
-		{
-			DAVA::FilePath dataSource3Dpathname = curProjectPath + "DataSource/3d/";
-			curProjectPathDataSource = dataSource3Dpathname.GetAbsolutePathname().c_str();
+    if (incomePath.IsDirectoryPathname() && incomePath != projectPath)
+    {
+        CloseProject();
 
-            DAVA::FilePath particlesPathname = curProjectPath + "Data/Configs/Particles/";
-			curProjectPathParticles = particlesPathname.GetAbsolutePathname().c_str();
+        projectPath = incomePath;
 
-			SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(curProjectPath));
+        if (incomePath.Exists())
+        {
+            DAVA::FilePath::AddTopResourcesFolder(projectPath);
 
-			EditorConfig::Instance()->ParseConfig(curProjectPath + "EditorConfig.yaml");
+            SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(projectPath));
 
-			SceneValidator::Instance()->SetPathForChecking(curProjectPath);
+            UpdateInternalValues();
+            LoadProjectSettings();
+            LoadMaterialsSettings();
+
+            DAVA::FileSystem::Instance()->CreateDirectory(workspacePath, true);
+
+            SceneValidator::Instance()->SetPathForChecking(projectPath);
             if (!useDelayInitialization)
             {
                 UpdateParticleSprites();
             }
 
-            DAVA::FilePath::AddTopResourcesFolder(curProjectPath);
 
-            LoadProjectSettings();
-            LoadMaterialsSettings();
             DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
             DAVA::SoundSystem::Instance()->InitFromQualitySettings();
 
-            emit ProjectOpened(curProjectPath.GetAbsolutePathname().c_str());
+            emit ProjectOpened(projectPath.GetAbsolutePathname().c_str());
         }
 	}
 }
@@ -155,26 +140,26 @@ void ProjectManager::UpdateParticleSprites()
     }
 }
 
-void ProjectManager::ProjectOpenLast()
+void ProjectManager::OpenLastProject()
 {
-    DAVA::FilePath projectPath = SettingsManager::GetValue(Settings::Internal_LastProjectPath).AsFilePath();
-	if(!projectPath.IsEmpty())
-	{
-		ProjectOpen(QString(projectPath.GetAbsolutePathname().c_str()));
-	}
+    DAVA::FilePath path = SettingsManager::GetValue(Settings::Internal_LastProjectPath).AsFilePath();
+    if (!path.IsEmpty())
+    {
+        OpenProject(path);
+    }
 }
 
-void ProjectManager::ProjectClose()
+void ProjectManager::CloseProject()
 {
-	if(!curProjectPath.IsEmpty())
-	{
+    if (!projectPath.IsEmpty())
+    {
         isParticleSpritesUpdated = false;
-		DAVA::FilePath::RemoveResourcesFolder(curProjectPath);
-        curProjectPath = "";
-        curProjectPathDataSource = "";
-        curProjectPathParticles = "";
+        DAVA::FilePath::RemoveResourcesFolder(projectPath);
+
+        projectPath = "";
+        UpdateInternalValues();
+
         SettingsManager::ResetPerProjectSettings();
-        
         SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(DAVA::FilePath())); // reset last project path
         
         emit ProjectClosed();
@@ -188,9 +173,7 @@ void ProjectManager::OnSceneViewInitialized()
 
 void ProjectManager::LoadProjectSettings()
 {
-	DAVA::FilePath prjPath = curProjectPath;
-	prjPath.MakeDirectoryPathname();
-	EditorConfig::Instance()->ParseConfig(prjPath + "EditorConfig.yaml");
+    EditorConfig::Instance()->ParseConfig(projectPath + "EditorConfig.yaml");
 }
 
 void ProjectManager::LoadMaterialsSettings()
@@ -199,29 +182,29 @@ void ProjectManager::LoadMaterialsSettings()
     qualities.clear();
 
     // parse available material templates
-    DAVA::FilePath materialsListPath = DAVA::FilePath("~res:/Materials/assignable.yaml");
+    const DAVA::FilePath materialsListPath = DAVA::FilePath("~res:/Materials/assignable.yaml");
     if(materialsListPath.Exists())
     {
-        DAVA::YamlParser *parser = DAVA::YamlParser::Create(materialsListPath);
+        ScopedPtr<DAVA::YamlParser> parser(DAVA::YamlParser::Create(materialsListPath));
         DAVA::YamlNode *rootNode = parser->GetRootNode();
 
-        if(NULL != rootNode)
+        if (nullptr != rootNode)
         {
             DAVA::FilePath materialsListDir = materialsListPath.GetDirectory();
 
             for(uint32 i = 0; i < rootNode->GetCount(); ++i)
             {
                 const DAVA::YamlNode *templateNode = rootNode->Get(i);
-                if(NULL != templateNode)
+                if (nullptr != templateNode)
                 {
                     const DAVA::YamlNode *name = templateNode->Get("name");
                     const DAVA::YamlNode *path = templateNode->Get("path");
 
-                    if(NULL != name && NULL != path &&
+                    if (nullptr != name && nullptr != path &&
                         name->GetType() == DAVA::YamlNode::TYPE_STRING &&
                         path->GetType() == DAVA::YamlNode::TYPE_STRING)
                     {
-                        DAVA::FilePath templatePath = DAVA::FilePath(materialsListDir, path->AsString());
+                        const DAVA::FilePath templatePath = materialsListDir + path->AsString();
                         if(templatePath.Exists())
                         {
                             AvailableMaterialTemplate amt;
@@ -234,7 +217,21 @@ void ProjectManager::LoadMaterialsSettings()
                 }
             }
         }
+    }
+}
 
-        parser->Release();
+void ProjectManager::UpdateInternalValues()
+{
+    if (projectPath.IsEmpty())
+    {
+        dataSourcePath = "";
+        particlesPath = "";
+        workspacePath = "";
+    }
+    else
+    {
+        dataSourcePath = projectPath + "DataSource/3d/";
+        particlesPath = projectPath + "Data/Configs/Particles/";
+        workspacePath = "~doc:/ResourceEditor/" + projectPath.GetLastDirectoryName() + "/";
     }
 }

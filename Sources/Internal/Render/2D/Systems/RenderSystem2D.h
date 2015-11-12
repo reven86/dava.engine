@@ -120,6 +120,7 @@ public:
     static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
+    static NMaterial* DEFAULT_2D_FILL_ALPHA_MATERIAL;
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
@@ -211,7 +212,7 @@ public:
     \param pt2 ending point
     \param color draw color
     */
-    void FillRect(const Rect& rect, const Color& color);
+    void FillRect(const Rect& rect, const Color& color, NMaterial* material = DEFAULT_2D_COLOR_MATERIAL);
 
     /**
     \brief Fills given rect in 2D space using four colors in corners

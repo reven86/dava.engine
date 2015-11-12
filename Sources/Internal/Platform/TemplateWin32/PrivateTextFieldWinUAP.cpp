@@ -230,6 +230,7 @@ PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
     , uiTextField(uiTextField_)
     , properties()
 {
+    uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     properties.createNew = true;
 }
 
@@ -266,6 +267,15 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
         properties.visibleChanged = true;
         properties.visibleAssigned = true;
         properties.anyPropertyChanged = true;
+        if (!isVisible)
+        { // Immediately hide native control if it has been already created
+            core->RunOnUIThreadBlocked([this]() {
+                if (nativeControl != nullptr)
+                {
+                    SetNativeVisible(false);
+                }
+            });
+        }
     }
 }
 
@@ -632,9 +642,10 @@ void PrivateTextFieldWinUAP::OnKeyUp(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
-    core->XamlApplication()->NativeControlGotFocus(nativeControl);
-
     SetNativeCaretPosition(GetNativeText()->Length());
+
+    Windows::Foundation::Rect nativeKeyboardRect = InputPane::GetForCurrentView()->OccludedRect;
+    DAVA::Rect keyboardRect(nativeKeyboardRect.X, nativeKeyboardRect.Y, nativeKeyboardRect.Width, nativeKeyboardRect.Height);
 
     bool multiline = IsMultiline();
     if (!multiline)
@@ -642,7 +653,7 @@ void PrivateTextFieldWinUAP::OnGotFocus()
         SetNativePositionAndSize(rectInWindowSpace, false);
     }
     auto self{ shared_from_this() };
-    core->RunOnMainThread([this, self, multiline]() {
+    core->RunOnMainThread([this, self, multiline, keyboardRect]() {
         if (uiTextField != nullptr)
         {
             if (!multiline)
@@ -656,13 +667,20 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
             if (curFocused != uiTextField)
                 uiTextField->SetFocused();
+
+            // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
+            // If keyboard rect is not empty so manually notify delegate about keyboard size and position
+            if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
+            {
+                Rect rect = WindowToVirtual(keyboardRect);
+                textFieldDelegate->OnKeyboardShown(rect);
+            }
         }
     });
 }
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
-    core->XamlApplication()->NativeControlLostFocus(nativeControl);
     if (!IsMultiline())
     {
         waitRenderToTextureComplete = true;
@@ -867,8 +885,9 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
     float32 yOffset = 0.0f;
     if (offScreen)
     {
-        xOffset = rect.x + rect.dx;
-        yOffset = rect.y + rect.dy;
+        // Move control very far offscreen as on phone control with disabled input remains visible
+        xOffset = rect.x + rect.dx + 1000.0f;
+        yOffset = rect.y + rect.dy + 1000.0f;
     }
     nativeControlHolder->Width = rect.dx;
     nativeControlHolder->Height = rect.dy;
@@ -1118,7 +1137,11 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
         core->RunOnMainThread([this, self, sprite, moveOffScreenOnCompletion]() {
             if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
-                uiTextField->SetSprite(sprite.Get(), 0);
+                UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
+                if (curFocused != uiTextField)
+                { // Do not set rendered texture if control has focus
+                    uiTextField->SetSprite(sprite.Get(), 0);
+                }
             }
             if (moveOffScreenOnCompletion)
             {

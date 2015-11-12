@@ -1539,11 +1539,11 @@ void PropertyEditor::OnTriggerWaveComponent()
 
 QString PropertyEditor::GetDefaultFilePath()
 {
-	QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
-	FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-	if (dataSourcePath.Exists())
-	{
-		defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
+    QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+    FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
+    if (dataSourcePath.Exists())
+    {
+        defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
 	}
 	SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
 	if (NULL != editor && editor->GetScenePath().Exists())
