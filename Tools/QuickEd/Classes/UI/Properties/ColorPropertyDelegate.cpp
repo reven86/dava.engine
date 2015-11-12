@@ -40,6 +40,30 @@
 #include "Utils/QtDavaConvertion.h"
 
 
+namespace
+{
+    QPixmap CreateIcon(const QColor &color)
+    {
+        QPixmap pix(16, 16);
+        QPainter p(&pix);
+        p.setPen(QColor(0, 0, 0, 0));
+
+        if (color.alpha() < 255)
+        {
+            p.setBrush(QColor(250, 250, 250));
+            p.drawRect(QRect(0, 0, 15, 15));
+            p.setPen(QColor(200, 200, 200));
+            p.setBrush(QColor(150, 150, 150));
+            p.drawRect(QRect(0, 0, 7, 7));
+            p.drawRect(QRect(8, 8, 15, 15));
+        }
+
+        p.setBrush(QBrush(color));
+        p.drawRect(QRect(0, 0, 15, 15));
+        return pix;
+    }
+}
+
 ColorPropertyDelegate::ColorPropertyDelegate(PropertiesTreeItemDelegate *delegate)
     : BasePropertyDelegate(delegate)
 {
@@ -135,25 +159,3 @@ void ColorPropertyDelegate::OnTextChanged(const QString& text)
     palette.setColor(QPalette::Text, valid ? Qt::black : Qt::red);
     lineEdit->setPalette(palette);
 }
-
-QPixmap ColorPropertyDelegate::CreateIcon(const QColor &color)
-{
-    QPixmap pix(16, 16);
-    QPainter p(&pix);
-    p.setPen(QColor(0, 0, 0, 0));
-
-    if (color.alpha() < 255)
-    {
-        p.setBrush(QColor(250, 250, 250));
-        p.drawRect(QRect(0, 0, 15, 15));
-        p.setPen(QColor(200, 200, 200));
-        p.setBrush(QColor(150, 150, 150));
-        p.drawRect(QRect(0, 0, 7, 7));
-        p.drawRect(QRect(8, 8, 15, 15));
-    }
-
-    p.setBrush(QBrush(color));
-    p.drawRect(QRect(0, 0, 15, 15));
-    return pix;
-}
-

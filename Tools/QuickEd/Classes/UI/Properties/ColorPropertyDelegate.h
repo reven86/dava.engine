@@ -52,7 +52,6 @@ private slots:
     void OnTextChanged(const QString &text);
 
 private:
-    static QPixmap CreateIcon(const QColor &color);
     QPointer<QLineEdit> lineEdit = nullptr;
     QPointer<QAction> chooseColorAction = nullptr;
 };
