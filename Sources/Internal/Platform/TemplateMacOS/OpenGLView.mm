@@ -336,7 +336,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     
     DAVA::Vector2 scrollDelta([theEvent scrollingDeltaX], [theEvent scrollingDeltaY]);
     ev.scrollDelta = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(scrollDelta);
-    
+    ev.scrollLines = scrollDelta;
     NSPoint posInWindow = [theEvent locationInWindow];
     ev.physPoint.x = posInWindow.x;
     ev.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - posInWindow.y;

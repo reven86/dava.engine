@@ -133,7 +133,7 @@ public:
     uint32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 scrollDelta; // scroll delta in pixels
-    Vector2 scrollLines; // scroll dleta in lines
+    Vector2 scrollLines; // scroll delta in lines
     Vector2 physPoint; // point of pressure in physical coordinates
     float64 timestamp = 0.0; //(TODO not all platforms) time stemp of the event occurrence
     Phase phase = Phase::BEGAN; // began, ended, moved. See Phase
