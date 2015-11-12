@@ -416,15 +416,15 @@ void EditorCore::SaveDocument(Document *document)
 
 void EditorCore::ApplyFileChanges()
 {
+    DVASSERT(std::find_if(changedFiles.begin(), changedFiles.end(), [this](const QString &path) {
+        return std::find_if(documents.begin(), documents.end(), [path](const Document* document) {
+            return document->GetPackageAbsolutePath() == path;
+        }) == documents.end();
+    }) == changedFiles.end());
     bool yesToAll = false;
     bool noToAll = false;
-    int changedAndExistsCount = std::count_if(changedFiles.begin(), changedFiles.end(), [this](const QString &path)
-                                       {
-                                           return QFileInfo::exists(path)
-                                            && std::find_if(documents.begin(), documents.end(), [path](const Document *doc)
-                                                        {
-                                                            return doc->GetPackageAbsolutePath() == path;
-                                                        }) != documents.end();
+    int changedAndExistsCount = std::count_if(changedFiles.begin(), changedFiles.end(), [this](const QString &path) {
+                                           return QFileInfo::exists(path);
                                        });
     for (Document *document : documents)
     {
