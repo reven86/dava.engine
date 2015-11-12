@@ -1218,14 +1218,8 @@ public:
 
     static void DumpControls(bool onlyOrphans);
 
-    float32 GetWheelSensitivity() const
-    {
-        return wheelSensitivity;
-    }
-    void SetWheelSensitivity(float32 newSens)
-    {
-        wheelSensitivity = newSens;
-    }
+    float32 GetWheelSensitivity() const;
+    void SetWheelSensitivity(float32 newSens);
 
 private:
     float32 wheelSensitivity = 20;
@@ -1557,6 +1551,14 @@ void UIControl::SetDebugDrawNotHierarchic(bool val)
     SetDebugDraw(val, false);
 }
 
+float32 UIControl::GetWheelSensitivity() const
+{
+    return wheelSensitivity;
+}
+void UIControl::SetWheelSensitivity(float32 newSens)
+{
+    wheelSensitivity = newSens;
+}
 
 };
 
