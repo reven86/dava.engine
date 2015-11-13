@@ -146,7 +146,7 @@ void Document::SetPixelization(bool hasPixelization)
 
 void Document::SetDPR(qreal arg)
 {
-    double dpr = static_cast<double>(arg);
+    float32 dpr = static_cast<float32>(arg);
     systemManager.DPRChanged.Emit(dpr);
 }
 
