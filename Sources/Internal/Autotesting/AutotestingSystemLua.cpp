@@ -535,7 +535,7 @@ namespace DAVA
                                keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
         switch (keyPress.tid)
         {
-		case DVKEY_BACKSPACE:
+        case DVKEY_BACKSPACE:
 		{
 			//TODO: act the same way on iPhone
 			WideString str = L"";
@@ -715,7 +715,7 @@ namespace DAVA
         touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchDown.point = point;
         ProcessInput(touchDown);
-	}
+    }
 
 	void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
 	{
@@ -772,7 +772,7 @@ namespace DAVA
         if (!luaState)
         {
             return false; //TODO: report error?
-		}
+        }
 
 		luaopen_AutotestingSystem(luaState);	// load the wrappered module
 		luaopen_UIControl(luaState);	// load the wrappered module

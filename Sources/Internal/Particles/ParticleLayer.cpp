@@ -251,7 +251,7 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->isLooped = isLooped;
     dstLayer->deltaTime = deltaTime;
     dstLayer->deltaVariation = deltaVariation;
-	dstLayer->loopVariation = loopVariation;
+    dstLayer->loopVariation = loopVariation;
 	dstLayer->loopEndTime = loopEndTime;
 	
 	dstLayer->isDisabled = isDisabled;
@@ -660,7 +660,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
     const YamlNode* endTimeNode = node->Get("endTime");
     if (endTimeNode)
-		endTime = endTimeNode->AsFloat();
+        endTime = endTimeNode->AsFloat();
 		
 	isLooped = false;	
 	deltaTime = 0.0f;

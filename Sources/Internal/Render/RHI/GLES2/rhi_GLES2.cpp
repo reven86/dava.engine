@@ -73,6 +73,7 @@ static bool PVRTC2_Supported = false;
 static bool ETC1_Supported = false;
 static bool ETC2_Supported = false;
 static bool EAC_Supported = false;
+static bool DXT_Supported = false;
 static bool Float_Supported = false;
 static bool Half_Supported = false;
 
@@ -109,10 +110,13 @@ gles2_TextureFormatSupported(TextureFormat format)
     case TEXTURE_FORMAT_R4G4B4A4:
     case TEXTURE_FORMAT_R8:
     case TEXTURE_FORMAT_R16:
+        supported = true;
+        break;
+
     case TEXTURE_FORMAT_DXT1:
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
-        supported = true;
+        supported = DXT_Supported;
         break;
 
     case TEXTURE_FORMAT_A16R16G16B16:
@@ -178,6 +182,7 @@ gles_check_GL_extensions()
         ETC1_Supported = strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture") != nullptr;
         ETC2_Supported = strstr(ext, "GL_OES_compressed_ETC2_RGB8_texture") != nullptr;
         EAC_Supported = ETC2_Supported;
+        DXT_Supported = (strstr(ext, "GL_EXT_texture_compression_s3tc") != nullptr) || (strstr(ext, "GL_NV_texture_compression_s3tc") != nullptr);
         Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
         Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
 

@@ -69,9 +69,9 @@ struct Rect
     inline void SetSize(const Vector2& size);
 
     inline bool operator==(const Rect& _s) const;
-    inline bool operator != (const Rect  & _s)const;
+    inline bool operator!=(const Rect& _s) const;
 
-	inline Rect &	operator += (const Vector2 & point);
+    inline Rect &	operator += (const Vector2 & point);
 	inline Rect &	operator -= (const Vector2 & point);
 
 	inline Rect 	operator + (const Vector2 & Point) const;

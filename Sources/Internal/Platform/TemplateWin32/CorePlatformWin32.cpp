@@ -175,8 +175,8 @@ namespace DAVA
             windowedMode.width = options->GetInt32("width");
             windowedMode.height = options->GetInt32("height");
             windowedMode.bpp = options->GetInt32("bpp");
-			
-			// get values from config in case if they are available
+
+            // get values from config in case if they are available
 			fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
 			fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
 			fullscreenMode.bpp = windowedMode.bpp;
@@ -212,7 +212,7 @@ namespace DAVA
 
         windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
         windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
-		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
+        MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
         RAWINPUTDEVICE Rid;
 
@@ -305,8 +305,8 @@ namespace DAVA
         FrameworkWillTerminate();
     }
 
-    RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
-	{
+    RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode& dm)
+    {
 		RECT clientSize;
 		clientSize.top = 0;
 		clientSize.left = 0;
@@ -388,7 +388,7 @@ namespace DAVA
 
         while (EnumDisplaySettings(NULL, iModeNum++, &dmi))
         {
-			DisplayMode mode;
+            DisplayMode mode;
 			mode.width = dmi.dmPelsWidth;
 			mode.height = dmi.dmPelsHeight;
 			mode.bpp = dmi.dmBitsPerPel;
@@ -515,7 +515,7 @@ namespace DAVA
         if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
         {
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
-		}
+        }
 		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
 		{
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;

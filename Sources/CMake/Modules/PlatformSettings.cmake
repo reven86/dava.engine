@@ -94,8 +94,17 @@ endif  ()
 
 
 ##
+if( WARNING_DISABLE)
 
-if( WARNINGS_AS_ERRORS )
+    if( WIN32 )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0" )
+    elseif( APPLE )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w" )
+    endif()
+
+
+elseif( WARNINGS_AS_ERRORS )
+
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
 -Werror \

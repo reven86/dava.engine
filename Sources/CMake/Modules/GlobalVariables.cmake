@@ -76,7 +76,8 @@ if ( WINDOWS_UAP )
     
     #root deployment location for resources
     set ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION "DXFL-DX11" )
-    add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}" )
+    add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}"
+                      -DDAVA_WIN_UAP_RESOURCES_PREFIX="_neutral_split.dxfeaturelevel-dx11" )
     
     #check the newest version of Win10 SDK
     if ( WINDOWS_UAP_TARGET_PLATFORM_VERSION AND 

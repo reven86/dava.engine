@@ -91,7 +91,6 @@ private:
     Function<jstring()> getHTTPProxyHost;
     Function<jstring()> getHTTPNonProxyHosts;
     Function<jint()> getHTTPProxyPort;
-    Function<jint()> getGPUFamily;
     Function<jint()> getNetworkType;
     Function<jint(jint)> getSignalStrength;
     Function<jboolean()> isPrimaryExternalStoragePresent;
