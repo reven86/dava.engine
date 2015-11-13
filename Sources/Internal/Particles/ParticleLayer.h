@@ -105,8 +105,8 @@ struct ParticleLayer : public BaseObject
 	bool IsLodActive(int32 lod);	
 	void SetLodActive(int32 lod, bool active);
 	
-	Sprite 			* sprite;
-	void SetSprite(Sprite * sprite);
+	ScopedPtr<Sprite> sprite;
+	void SetSprite(const FilePath& spritePath);
 	Vector2		layerPivotPoint;
 	Vector2		layerPivotSizeOffsets; //precached for faster bbox computation
 	void SetPivotPoint(Vector2 pivot);
