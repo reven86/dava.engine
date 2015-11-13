@@ -581,7 +581,7 @@ namespace DAVA
             newTouch.tid = 0;
             newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
             newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
-            newTouch.scrollDelta.y = scrollLines = static_cast<int8>(buttonData) / static_cast<float32>(WHEEL_DELTA);
+            newTouch.scrollDelta.y = static_cast<int16>(buttonData) / static_cast<float32>(WHEEL_DELTA);
             newTouch.phase = UIEvent::Phase::WHEEL;
             newTouch.device = deviceId;
         }
