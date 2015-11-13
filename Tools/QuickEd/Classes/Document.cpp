@@ -146,7 +146,8 @@ void Document::SetPixelization(bool hasPixelization)
 
 void Document::SetDPR(double arg)
 {
-    systemManager.DPRChanged.Emit(std::move(arg));
+    double dpr = static_cast<double>(arg);
+    systemManager.DPRChanged.Emit(dpr);
 }
 
 void Document::RefreshAllControlProperties()
