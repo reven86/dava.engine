@@ -113,7 +113,7 @@ void GameCore::UnpackHelp()
 	//Unpack Help to Documents.
     String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
 	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
-    if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
+    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
         ResourceArchive* helpRA = new ResourceArchive();
         if (helpRA->Open("~res:/Help.docs"))

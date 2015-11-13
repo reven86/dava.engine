@@ -170,9 +170,9 @@ public:
     /**
 		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor
 	*/
-	virtual DisplayMode GetCurrentDisplayMode();
+    virtual DisplayMode GetCurrentDisplayMode();
 
-	/**
+    /**
 		\brief Quit from application & release all subsystems
 	*/
 	virtual void Quit();

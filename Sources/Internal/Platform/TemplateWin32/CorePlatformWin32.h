@@ -53,8 +53,8 @@ public:
     void SetIcon(int32 iconId) override;
 
     DisplayMode currentMode;
-	DisplayMode fullscreenMode;
-	DisplayMode windowedMode;
+    DisplayMode fullscreenMode;
+    DisplayMode windowedMode;
 	bool isFullscreen;
 	RECT		windowPositionBeforeFullscreen;
 

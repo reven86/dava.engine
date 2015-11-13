@@ -260,10 +260,10 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
     return isChanged;
 }
 
-DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)
+DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName)
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
-    
+
     uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
@@ -357,12 +357,6 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
         {
             defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
         }
-    	// add borders
-    	if (!twoSideMargin )
-    	{
-    		defFile->frameRects[k - 1].dx += texturesMargin;
-    		defFile->frameRects[k - 1].dy += texturesMargin;
-    	}
     }
     	
     return defFile;
@@ -411,7 +405,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     Vector<String> currentFlags;
 
     const auto flagsPathname = inputPath + "flags.txt";
-    if (flagsPathname.Exists())
+    if (FileSystem::Instance()->Exists(flagsPathname))
     {
         currentFlags = FetchFlags(flagsPathname);
     }
@@ -472,18 +466,15 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
                 // read textures margins settings
                 bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
-                uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
-                if (!useTwoSideMargin)
-                {
-                    if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-                        marginInPixels = 0;
-                    else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-                        marginInPixels = 1;
-                    else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-                        marginInPixels = 2;
-                    else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-                        marginInPixels = 4;
-                }
+                uint32 marginInPixels = useTwoSideMargin ? 0 : 1;
+                if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+                    marginInPixels = 0;
+                else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+                    marginInPixels = 1;
+                else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+                    marginInPixels = 2;
+                else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+                    marginInPixels = 4;
 
                 if (clearOutputDirectory)
                 {
@@ -498,7 +489,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                         if (fullname.IsEqualToExtension(".psd"))
                         {
                             //TODO: check if we need filename or pathname
-                            DefinitionFile* defFile = ProcessPSD(processDir, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
+                            DefinitionFile* defFile = ProcessPSD(processDir, fullname, fullname.GetFilename());
                             if (!defFile)
                             {
                                 // An error occured while converting this PSD file - cancel converting in this directory.
@@ -516,7 +507,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                         else if (fullname.IsEqualToExtension(".pngdef"))
                         {
                             DefinitionFile* defFile = new DefinitionFile();
-                            if (defFile->LoadPNGDef(fullname, processDir, useTwoSideMargin, marginInPixels))
+                            if (defFile->LoadPNGDef(fullname, processDir))
                             {
                                 definitionFileList.push_back(defFile);
                             }

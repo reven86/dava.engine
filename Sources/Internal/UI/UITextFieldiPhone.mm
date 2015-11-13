@@ -83,18 +83,18 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
         if (!isSingleLine)
-    {
-        textFieldHolder->textField.userInteractionEnabled = NO;
-        // destroy UITextView and restore textFild back
-        [textFieldHolder->textCtrl removeFromSuperview];
+        {
+            textFieldHolder->textField.userInteractionEnabled = NO;
+            // destroy UITextView and restore textFild back
+            [textFieldHolder->textCtrl removeFromSuperview];
 
-        textFieldHolder->textCtrl = textFieldHolder->textField;
-        [backgroundView PrepareView:textFieldHolder->textCtrl];
-        [textFieldHolder addSubview:textFieldHolder->textCtrl];
-    }
+            textFieldHolder->textCtrl = textFieldHolder->textField;
+            [backgroundView PrepareView:textFieldHolder->textCtrl];
+            [textFieldHolder addSubview:textFieldHolder->textCtrl];
+        }
 
-    [backgroundView ReleaseTextField:textFieldHolder];
-    objcClassPtr = 0;
+        [backgroundView ReleaseTextField:textFieldHolder];
+        objcClassPtr = 0;
     }
 
     void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
@@ -165,9 +165,9 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         isNeedToUpdateTexture = true;
         }
         else
-    {
-        DAVA::Logger::Error("UITextField::SetTextAlign not supported in multiline");
-    }
+        {
+            DAVA::Logger::Error("UITextField::SetTextAlign not supported in multiline");
+        }
     }
 
     DAVA::int32 TextFieldPlatformImpl::GetTextAlign()
@@ -213,9 +213,9 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
             default:
                 break;
             }
-    }
+        }
 
-    return retValue;
+        return retValue;
     }
 
     void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
@@ -289,8 +289,8 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         if (isSingleLine)
         {
             textFieldHolder->textCtrl.userInteractionEnabled = NO;
-    }
-    [textFieldHolder->textCtrl resignFirstResponder];
+        }
+        [textFieldHolder->textCtrl resignFirstResponder];
     }
 
     void TextFieldPlatformImpl::ShowField()
@@ -369,9 +369,9 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         [textFieldHolder->textCtrl.undoManager removeAllActions];
 
         if (textChanged || string.empty())
-    {
-        isNeedToUpdateTexture = true;
-    }
+        {
+            isNeedToUpdateTexture = true;
+        }
     }
 
     void TextFieldPlatformImpl::GetText(WideString& string) const
@@ -534,61 +534,61 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     {
         UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (!textFieldHolder)
-    {
-        return 0;
-    }
+        {
+            return 0;
+        }
 
-    UIView* view = textFieldHolder->textCtrl;
-    int32 pos = 0;
-    if (isSingleLine)
-    {
-        ::UITextField* textField = (::UITextField*)view;
-        pos = static_cast<int32>([textField offsetFromPosition:textField.beginningOfDocument
-                                                    toPosition:textField.selectedTextRange.start]);
-    }
-    else
-    {
-        ::UITextView* textView = (::UITextView*)view;
-        pos = static_cast<int32>([textView offsetFromPosition:textView.beginningOfDocument
-                                                   toPosition:textView.selectedTextRange.start]);
-    }
-    return pos;
+        UIView* view = textFieldHolder->textCtrl;
+        int32 pos = 0;
+        if (isSingleLine)
+        {
+            ::UITextField* textField = (::UITextField*)view;
+            pos = static_cast<int32>([textField offsetFromPosition:textField.beginningOfDocument
+                                                        toPosition:textField.selectedTextRange.start]);
+        }
+        else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            pos = static_cast<int32>([textView offsetFromPosition:textView.beginningOfDocument
+                                                       toPosition:textView.selectedTextRange.start]);
+        }
+        return pos;
     }
 
     void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
     {
         UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (!textFieldHolder)
-    {
-        return;
-    }
+        {
+            return;
+        }
 
-    UIView* view = textFieldHolder->textCtrl;
-    NSString* text = [view valueForKey:@"text"];
-    NSUInteger textLength = [text length];
-    if (textLength == 0)
-    {
-        return;
-    }
-    if (pos > textLength)
-    {
-        pos = static_cast<uint32>(textLength - 1);
-    }
+        UIView* view = textFieldHolder->textCtrl;
+        NSString* text = [view valueForKey:@"text"];
+        NSUInteger textLength = [text length];
+        if (textLength == 0)
+        {
+            return;
+        }
+        if (pos > textLength)
+        {
+            pos = static_cast<uint32>(textLength - 1);
+        }
 
-    if (isSingleLine)
-    {
-        ::UITextField* textField = (::UITextField*)view;
-        UITextPosition* start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];
-        UITextPosition* end = [textField positionFromPosition:start offset:0];
-        [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
-    }
-    else
-    {
-        ::UITextView* textView = (::UITextView*)view;
-        UITextPosition* start = [textView positionFromPosition:[textView beginningOfDocument] offset:pos];
-        UITextPosition* end = [textView positionFromPosition:start offset:0];
-        [textView setSelectedTextRange:[textView textRangeFromPosition:start toPosition:end]];
-    }
+        if (isSingleLine)
+        {
+            ::UITextField* textField = (::UITextField*)view;
+            UITextPosition* start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];
+            UITextPosition* end = [textField positionFromPosition:start offset:0];
+            [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
+        }
+        else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            UITextPosition* start = [textView positionFromPosition:[textView beginningOfDocument] offset:pos];
+            UITextPosition* end = [textView positionFromPosition:start offset:0];
+            [textView setSelectedTextRange:[textView textRangeFromPosition:start toPosition:end]];
+        }
     }
 
     void TextFieldPlatformImpl::SetVisible(bool value)
@@ -602,14 +602,14 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     {
         UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (textFieldHolder)
-    {
-        UIView* view = textFieldHolder->textCtrl;
-        NSString* currentText = [view valueForKey:@"text"];
-        DVASSERT(currentText);
-        NSString* newText = (NSString*)TruncateText(currentText, maxLength);
-        DVASSERT(newText);
-        [view setValue:newText forKey:@"text"];
-    }
+        {
+            UIView* view = textFieldHolder->textCtrl;
+            NSString* currentText = [view valueForKey:@"text"];
+            DVASSERT(currentText);
+            NSString* newText = (NSString*)TruncateText(currentText, maxLength);
+            DVASSERT(newText);
+            [view setValue:newText forKey:@"text"];
+        }
     }
 
     void TextFieldPlatformImpl::UpdateStaticTexture()
@@ -629,14 +629,14 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
             {
                 // set backgroud image into davaTextField control
                 WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
+            }
+            isNeedToUpdateTexture = false;
         }
-        isNeedToUpdateTexture = false;
-    }
-    else
-    {
-        // set null background
-        davaTextField.GetBackground()->SetSprite(nullptr, 0);
-    }
+        else
+        {
+            // set null background
+            davaTextField.GetBackground()->SetSprite(nullptr, 0);
+        }
     }
 
     void TextFieldPlatformImpl::SetMultiline(bool multiline)
@@ -645,107 +645,107 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         DVASSERT(textFieldHolder);
 
         if (isSingleLine && multiline)
-    {
-        // store current properties, font, size, text etc.
+        {
+            // store current properties, font, size, text etc.
 
-        DAVA::int32 cursorPos = GetCursorPos();
-        DAVA::WideString wstring;
-        GetText(wstring);
-        // font, textColor, frameRect
-        ::UITextField* textField = (::UITextField*)textFieldHolder->textCtrl;
-        UIFont* font = textField.font;
-        UIColor* color = textField.textColor;
-        CGRect rect = textField.frame;
-        BOOL isHidden = textField.isHidden;
+            DAVA::int32 cursorPos = GetCursorPos();
+            DAVA::WideString wstring;
+            GetText(wstring);
+            // font, textColor, frameRect
+            ::UITextField* textField = (::UITextField*)textFieldHolder->textCtrl;
+            UIFont* font = textField.font;
+            UIColor* color = textField.textColor;
+            CGRect rect = textField.frame;
+            BOOL isHidden = textField.isHidden;
 
-        // now hide textField and store it for future restore
-        [textFieldHolder->textCtrl removeFromSuperview];
-        [textFieldHolder->textCtrl setHidden:YES];
-        textFieldHolder->textField = (::UITextField*)textFieldHolder->textCtrl;
+            // now hide textField and store it for future restore
+            [textFieldHolder->textCtrl removeFromSuperview];
+            [textFieldHolder->textCtrl setHidden:YES];
+            textFieldHolder->textField = (::UITextField*)textFieldHolder->textCtrl;
 
-        // replace textField with new textView and apply current properties
-        ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
+            // replace textField with new textView and apply current properties
+            ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
 
-        //Workaround: fix OS built-in padding on UITextView
-        //See http://foobarpig.com/iphone/get-rid-of-uitextview-padding.html
-        //See http://stackoverflow.com/questions/746670/how-to-lose-margin-padding-in-uitextview
-        textView.contentInset = UIEdgeInsetsMake(-10, -5, 0, 0);
+            //Workaround: fix OS built-in padding on UITextView
+            //See http://foobarpig.com/iphone/get-rid-of-uitextview-padding.html
+            //See http://stackoverflow.com/questions/746670/how-to-lose-margin-padding-in-uitextview
+            textView.contentInset = UIEdgeInsetsMake(-10, -5, 0, 0);
 
-        HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [[appDelegate renderViewController] backgroundView];
-        [backgroundView PrepareView:textFieldHolder->textCtrl];
+            HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+            BackgroundView* backgroundView = [[appDelegate renderViewController] backgroundView];
+            [backgroundView PrepareView:textFieldHolder->textCtrl];
 
-        [textFieldHolder addSubview:textView];
+            [textFieldHolder addSubview:textView];
 
-        textFieldHolder->textCtrl = textView;
+            textFieldHolder->textCtrl = textView;
 
-        textView.textColor = color;
-        textView.font = font;
-        // Workaround! in multiline mode use need ability to scroll
-        // text without open keyboard
-        textView.userInteractionEnabled = YES;
-        [textView setHidden:isHidden];
-        textView.delegate = textFieldHolder;
+            textView.textColor = color;
+            textView.font = font;
+            // Workaround! in multiline mode use need ability to scroll
+            // text without open keyboard
+            textView.userInteractionEnabled = YES;
+            [textView setHidden:isHidden];
+            textView.delegate = textFieldHolder;
 
-        isSingleLine = false;
+            isSingleLine = false;
 
-        SetText(wstring);
-        SetCursorPos(cursorPos);
+            SetText(wstring);
+            SetCursorPos(cursorPos);
 
-        [textFieldHolder setupTraits];
+            [textFieldHolder setupTraits];
 
-        [textView setBackgroundColor:[UIColor clearColor]];
+            [textView setBackgroundColor:[UIColor clearColor]];
 
-        textView.scrollEnabled = YES;
+            textView.scrollEnabled = YES;
 
-        [textView release];
-        // Workaround! in multiline mode always listen for user
-        // touches
-        SetRenderToTexture(false);
-    }
-    else if (!isSingleLine && !multiline)
-    {
-        // revert back single line native control
-        // TODO in future completely remove UITextField native control
-        //
-        // store current properties, font, size, text etc.
-        DAVA::int32 cursorPos = GetCursorPos();
-        DAVA::WideString wstring;
-        GetText(wstring);
-        // font, textColor, frameRect
-        ::UITextView* textView = (::UITextView*)textFieldHolder->textCtrl;
-        UIFont* font = textView.font;
-        UIColor* color = textView.textColor;
-        BOOL isHidden = textView.isHidden;
+            [textView release];
+            // Workaround! in multiline mode always listen for user
+            // touches
+            SetRenderToTexture(false);
+        }
+        else if (!isSingleLine && !multiline)
+        {
+            // revert back single line native control
+            // TODO in future completely remove UITextField native control
+            //
+            // store current properties, font, size, text etc.
+            DAVA::int32 cursorPos = GetCursorPos();
+            DAVA::WideString wstring;
+            GetText(wstring);
+            // font, textColor, frameRect
+            ::UITextView* textView = (::UITextView*)textFieldHolder->textCtrl;
+            UIFont* font = textView.font;
+            UIColor* color = textView.textColor;
+            BOOL isHidden = textView.isHidden;
 
-        // now hide textField and store it for future restore
-        [textView removeFromSuperview];
-        [textView setHidden:YES];
+            // now hide textField and store it for future restore
+            [textView removeFromSuperview];
+            [textView setHidden:YES];
 
-        // replace textField with old textField and apply current properties
-        ::UITextField* textField = textFieldHolder->textField;
-        textFieldHolder->textField = nullptr;
-        [textFieldHolder addSubview:textField];
-        [textView setHidden:isHidden];
+            // replace textField with old textField and apply current properties
+            ::UITextField* textField = textFieldHolder->textField;
+            textFieldHolder->textField = nullptr;
+            [textFieldHolder addSubview:textField];
+            [textView setHidden:isHidden];
 
-        textView = nullptr;
+            textView = nullptr;
 
-        textFieldHolder->textCtrl = textField;
+            textFieldHolder->textCtrl = textField;
 
-        textField.textColor = color;
-        textField.font = font;
-        textField.userInteractionEnabled = YES;
-        [textField setHidden:isHidden];
+            textField.textColor = color;
+            textField.font = font;
+            textField.userInteractionEnabled = YES;
+            [textField setHidden:isHidden];
 
-        isSingleLine = true;
+            isSingleLine = true;
 
-        SetText(wstring);
-        SetCursorPos(cursorPos);
+            SetText(wstring);
+            SetCursorPos(cursorPos);
 
-        [textFieldHolder setupTraits];
+            [textFieldHolder setupTraits];
 
-        [textField setBackgroundColor:[UIColor clearColor]];
-    }
+            [textField setBackgroundColor:[UIColor clearColor]];
+        }
     }
 
     void TextFieldPlatformImpl::SetRenderToTexture(bool value)
@@ -756,15 +756,15 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
         renderToTexture = value;
 
         if (renderToTexture)
-    {
-        deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
-    }
-    else
-    {
-        deltaMoveControl = 0;
-    }
+        {
+            deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
+        }
+        else
+        {
+            deltaMoveControl = 0;
+        }
 
-    isNeedToUpdateTexture = true;
+        isNeedToUpdateTexture = true;
     }
 
     bool TextFieldPlatformImpl::IsRenderToTexture() const
@@ -776,22 +776,22 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     {
         UpdateNativeRect(nextRect, deltaMoveControl);
         if (nextRect.dx != prevRect.dx || nextRect.dy != prevRect.dy || isNeedToUpdateTexture)
-    {
-        UpdateStaticTexture();
-    }
-    prevRect = nextRect;
+        {
+            UpdateStaticTexture();
+        }
+        prevRect = nextRect;
     }
 
     void* TextFieldPlatformImpl::TruncateText(void* text, int maxLength)
     {
         if (maxLength >= 0)
-    {
-        NSString* textString = (NSString*)text;
-        NSUInteger textLimit = MIN([textString length], (NSUInteger)maxLength);
-        return [textString substringToIndex:textLimit];
-    }
+        {
+            NSString* textString = (NSString*)text;
+            NSUInteger textLimit = MIN([textString length], (NSUInteger)maxLength);
+            return [textString substringToIndex:textLimit];
+        }
 
-    return text;
+        return text;
     }
 }
 

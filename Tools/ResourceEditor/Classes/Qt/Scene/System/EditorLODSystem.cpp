@@ -408,7 +408,7 @@ FilePath EditorLODSystem::GetDefaultTexturePathForPlaneEntity() const
     String texturePostfix = "_planes.png";
     FilePath texturePath = textureFolder + entityName + texturePostfix;
     int32 i = 0;
-    while(texturePath.Exists())
+    while (FileSystem::Instance()->Exists(texturePath))
     {
         i++;
         texturePath = textureFolder + Format("%s_%d%s", entityName.c_str(), i, texturePostfix.c_str());

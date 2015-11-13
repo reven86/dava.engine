@@ -54,7 +54,7 @@ public:
     RenderBatchArray();
 
     inline void Clear();
-    inline void AddRenderBatch(RenderBatch * batch);
+    inline void AddRenderBatch(RenderBatch* batch);
     inline uint32 GetRenderBatchCount() const;
     inline RenderBatch* Get(uint32 index) const;
 

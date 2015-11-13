@@ -74,13 +74,6 @@ namespace DAVA
 */
 private ref class UriResolver sealed : public IUriToStreamResolver
 {
-    enum eResLocation
-    {
-        PATH_IN_BIN,        // Resources are relative to app install dir
-        PATH_IN_DOC,        // Resources are relative to user documents dir
-        PATH_UNKNOWN        // Resource location is unknown
-    };
-
 internal:
     UriResolver(const String& htmlData, const FilePath& basePath);
 
@@ -88,28 +81,17 @@ public:
     virtual IAsyncOperation<IInputStream^>^ UriToStreamAsync(Uri^ uri);
 
 private:
-    IAsyncOperation<IInputStream^>^ GetStreamFromUriAsync(Uri^ uri);
+    IAsyncOperation<IInputStream^>^ GetStreamFromFilePathAsync(const FilePath& filePath);
     IAsyncOperation<IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
 
-    void DetermineResourcesLocation(const FilePath& basePath);
-    bool CheckIfPathReachableFrom(const String& pathToCheck, const String& pathToReach, String& pathTail) const;
-
-private:
     Platform::String^ htmlData;
-    Platform::String^ relativeResPath;
-    eResLocation location;
+    FilePath basePath;
 };
 
-UriResolver::UriResolver(const String& htmlData_, const FilePath& basePath)
+UriResolver::UriResolver(const String& htmlData_, const FilePath& basePath_)
     : htmlData(ref new Platform::String(UTF8Utils::EncodeToWideString(htmlData_).c_str()))
+    , basePath(basePath_)
 {
-    // WinUAP app have access only to isolated storage which includes:
-    //  - executable directory
-    //  - local app data store
-    //  - roaming app data store
-    // Absolute paths are not allowed, so DetermineResourcesLocation method determines
-    // to which type of storage basePath belongs to
-    DetermineResourcesLocation(basePath);
 }
 
 IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
@@ -121,50 +103,32 @@ IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
     {   // Create stream from HTML data
         return GetStreamFromStringAsync(htmlData);
     }
-    else
-    {   // Create stream for resource files
-        Platform::String^ resPath = relativeResPath + uri->Path;
-        Uri^ appDataUri = nullptr;
-        switch (location)
-        {
-        case PATH_IN_BIN:
-            appDataUri = ref new Uri(L"ms-appx:///" + resPath);
-            break;
-        case PATH_IN_DOC:
-            appDataUri = ref new Uri(L"ms-appdata:///local/" + resPath);
-            break;
-        default:
-            return nullptr;
-        }
-        return GetStreamFromUriAsync(appDataUri);
-    }
+
+    FilePath path = basePath + RTStringToString(uri->Path);
+    return GetStreamFromFilePathAsync(path);
 }
 
-IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromUriAsync(Uri^ uri)
+IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
 {
-    return create_async([this, uri]() -> IInputStream^
-    {
-        task<StorageFile^> getFileTask(StorageFile::GetFileFromApplicationUriAsync(uri));
-        task<IInputStream^> getInputStreamTask = getFileTask.then([](StorageFile^ storageFile)
-        {
-            return storageFile->OpenAsync(FileAccessMode::Read);
-        }).then([](IRandomAccessStream^ stream)
-        {
-            return static_cast<IInputStream^>(stream);
-        });
+    String fileNameStr = filePath.GetAbsolutePathname();
+    std::replace(fileNameStr.begin(), fileNameStr.end(), '/', '\\');
+    Platform::String^ fileName = StringToRTString(fileNameStr);
 
-        try {
-            return getInputStreamTask.get();
-        } catch (Platform::COMException^ e) {
-            // Ignore errors when resource file is not found or access is denied
-            HRESULT hr = e->HResult;
-            if (HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) == hr || HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED) == hr)
-            {
-                Logger::Error("[WebView] failed to load URI='%s': %s", WStringToString(uri->Path->Data()).c_str(),
-                              HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) == hr ? "file not found" : "access denied");
-                return ref new InMemoryRandomAccessStream();
-            }
-            throw;  // Rethrow other exceptions
+    return create_async([this, fileName]() -> IInputStream^
+    {
+        try
+        {
+            StorageFile^ storageFile = WaitAsync(StorageFile::GetFileFromPathAsync(fileName));
+            IRandomAccessStream^ stream = WaitAsync(storageFile->OpenAsync(FileAccessMode::Read));
+            return static_cast<IInputStream^>(stream);
+        }
+        catch (Platform::COMException^ e)
+        {
+            Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)",
+                RTStringToString(fileName).c_str(),
+                RTStringToString(e->Message).c_str(),
+                e->HResult);
+            return ref new InMemoryRandomAccessStream();
         }
     });
 }
@@ -175,47 +139,9 @@ IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromStringAsync(Platform::
     DataWriter^ writer = ref new DataWriter(stream->GetOutputStreamAt(0));
 
     writer->WriteString(s);
-    create_task(writer->StoreAsync()).get();
+    WaitAsync(writer->StoreAsync());
 
     return create_async([stream]() -> IInputStream^ { return stream; });
-}
-
-void UriResolver::DetermineResourcesLocation(const FilePath& basePath)
-{
-    FileSystem* fs = FileSystem::Instance();
-
-    String pathTail;
-    String absPath = basePath.GetAbsolutePathname();
-    if (CheckIfPathReachableFrom(absPath, fs->GetCurrentExecutableDirectory().GetAbsolutePathname(), pathTail))
-    {
-        location = PATH_IN_BIN;
-    }
-    else if (CheckIfPathReachableFrom(absPath, fs->GetUserDocumentsPath().GetAbsolutePathname(), pathTail))
-    {
-        location = PATH_IN_DOC;
-    }
-    else
-    {
-        location = PATH_UNKNOWN;
-    }
-    relativeResPath = ref new Platform::String(StringToWString(pathTail).c_str());
-}
-
-bool UriResolver::CheckIfPathReachableFrom(const String& pathToCheck, const String& pathToReach, String& pathTail) const
-{
-    if (pathToCheck.length() >= pathToReach.length())
-    {
-        if (0 == pathToCheck.compare(0, pathToReach.length(), pathToReach))
-        {
-            pathTail = pathToCheck.substr(pathToReach.length());
-            if (!pathTail.empty() && '/' == pathTail.back())
-            {
-                pathTail.pop_back();
-            }
-            return true;
-        }
-    }
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
