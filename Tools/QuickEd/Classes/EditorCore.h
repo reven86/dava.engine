@@ -41,22 +41,22 @@ class Document;
 class DocumentGroup;
 class Project;
 class PackageNode;
-class QFileSystemWatcher;
+class ProjectFilesWatcher;
 
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
 public:
     explicit EditorCore(QObject *parent = nullptr);
-    ~EditorCore() = default;
     void Start();
 
     MainWindow* GetMainWindow();
     Project *GetProject() const;
 
 private slots:
-    void OnApplicationStateChagned(Qt::ApplicationState state);
-    void OnFileChanged(const QString & path);
+    void OnFilesChanged(const QStringList &changedFiles);
+    void OnFilesRemoved(const QStringList &removedFiles);
+    
     void OnCleanChanged(bool clean);
     void OnOpenPackageFile(const QString &path);
     void OnProjectPathChanged(const QString &path);
@@ -81,7 +81,6 @@ private:
     bool CloseProject();
     int CreateDocument(int index, PackageNode *package);
     void SaveDocument(Document *document);
-    void ApplyFileChanges();
 
     bool eventFilter( QObject *obj, QEvent *event ) override;
     void CloseDocument(int index);
@@ -92,8 +91,7 @@ private:
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow = nullptr;
     DAVA::UIControl* rootControl = nullptr;
-    QFileSystemWatcher *fileSystemWatcher = nullptr;
-    QSet<QString> changedFiles;
+    ProjectFilesWatcher *projectFilesWatcher = nullptr;
 };
 
 inline MainWindow* EditorCore::GetMainWindow()

@@ -36,11 +36,11 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/ProjectFilesWatcher/ProjectFilesWatcher.h"
 
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
-#include <QFileSystemWatcher>
 
 
 #include "UI/Layouts/UILayoutSystem.h"
@@ -56,11 +56,10 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
-    , fileSystemWatcher(new QFileSystemWatcher(this))
+    , projectFilesWatcher(new ProjectFilesWatcher(this))
 {
-    connect(qApp, &QApplication::applicationStateChanged, this, &EditorCore::OnApplicationStateChagned);
-
-    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &EditorCore::OnFileChanged);
+    connect(projectFilesWatcher, &ProjectFilesWatcher::FilesChanged, this, &EditorCore::OnFilesChanged);
+    connect(projectFilesWatcher, &ProjectFilesWatcher::FilesRemoved, this, &EditorCore::OnFilesRemoved);
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
@@ -113,6 +112,106 @@ void EditorCore::Start()
     mainWindow->show();
 }
 
+void EditorCore::OnFilesChanged(const QStringList& changedFiles)
+{
+    DVASSERT(std::find_if(changedFiles.begin(), changedFiles.end(), [this](const QString &path) {
+        return std::find_if(documents.begin(), documents.end(), [path](const Document* document) {
+            return document->GetPackageAbsolutePath() == path;
+        }) == documents.end();
+    }) == changedFiles.end());
+    bool yesToAll = false;
+    bool noToAll = false;
+    int changedCount = std::count_if(documents.begin(), documents.end(), [changedFiles](Document *document)
+    {
+        return !document->GetUndoStack()->isClean() && changedFiles.contains(document->GetPackageAbsolutePath());
+    });
+    for (Document *document : documents)
+    {
+        QString path = document->GetPackageAbsolutePath();
+        if (changedFiles.contains(path))
+        {
+            DVASSERT(QFileInfo::exists(path));
+            QMessageBox::StandardButton button = QMessageBox::No;
+            if (document->GetUndoStack()->isClean())
+            {
+                button = QMessageBox::Yes;
+            }
+            else
+            {
+                if (!yesToAll && !noToAll)
+                {
+                    QFileInfo fileInfo(path);
+                    button = QMessageBox::warning(
+                        qApp->activeWindow()
+                        , tr("File %1 changed").arg(fileInfo.fileName())
+                        , tr("%1\n\n This file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath())
+                        , changedCount > 1 ?
+                        QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll
+                        : QMessageBox::Yes | QMessageBox::No
+                        , QMessageBox::Yes
+                        );
+                    yesToAll = button == QMessageBox::YesToAll;
+                    noToAll = button == QMessageBox::NoToAll;
+                }
+                if (yesToAll || noToAll)
+                {
+                    button = yesToAll ? QMessageBox::Yes : QMessageBox::No;
+                }
+            }
+            int index = documents.indexOf(document);
+            if (button == QMessageBox::Yes)
+            {
+                DAVA::FilePath davaPath = document->GetPackageFilePath();
+                CloseDocument(index);
+                RefPtr<PackageNode> package = project->OpenPackage(davaPath);
+                DVASSERT(nullptr != package);
+                if (nullptr != package)
+                {
+                    index = CreateDocument(index, package.Get());
+                    mainWindow->SetCurrentTab(index);
+                }
+            }
+        }
+    }
+}
+
+void EditorCore::OnFilesRemoved(const QStringList& removedFiles)
+{
+    DVASSERT(std::find_if(removedFiles.begin(), removedFiles.end(), [this](const QString &path) {
+        return std::find_if(documents.begin(), documents.end(), [path](const Document* document) {
+            return document->GetPackageAbsolutePath() == path;
+        }) == documents.end();
+    }) == removedFiles.end());
+
+    for (Document *document : documents)
+    {
+        QString path = document->GetPackageAbsolutePath();
+        if (removedFiles.contains(path))
+        {
+            QMessageBox::StandardButton button = QMessageBox::No;
+            if (document->GetUndoStack()->isClean())
+            {
+                button = QMessageBox::Yes;
+            }
+            else
+            {
+                QFileInfo fileInfo(path);
+                button = QMessageBox::warning(
+                    qApp->activeWindow()
+                    , tr("File %1 is renamed or deleted").arg(fileInfo.fileName())
+                    , tr("%1\n\n This file has been renamed or deleted outside of the editor. Do you want to close it?").arg(fileInfo.absoluteFilePath())
+                    , QMessageBox::Yes | QMessageBox::No
+                    , QMessageBox::No
+                    );
+            }
+            if (button == QMessageBox::Yes)
+            {
+                CloseDocument(documents.indexOf(document));
+            }
+        }
+    }
+}
+
 void EditorCore::OnGLWidgedInitialized()
 {
     int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
@@ -121,20 +220,6 @@ void EditorCore::OnGLWidgedInitialized()
     {
         OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
     }
-}
-
-void EditorCore::OnApplicationStateChagned(Qt::ApplicationState state)
-{
-    if (state == Qt::ApplicationActive)
-    {
-        ApplyFileChanges();
-    }
-}
-
-
-void EditorCore::OnFileChanged(const QString & path)
-{
-    changedFiles.insert(path);
 }
 
 void EditorCore::OnCleanChanged(bool clean)
@@ -372,10 +457,7 @@ void EditorCore::CloseDocument(int index)
 
     //sync document list with tab list
     Document *detached = documents.takeAt(index);
-
-    DAVA::String filePath = detached->GetPackageFilePath().GetAbsolutePathname();
-    QString path = QString::fromStdString(filePath);
-    fileSystemWatcher->removePath(path);
+    projectFilesWatcher->UnwatchPath(detached->GetPackageFilePath());
 
     documentGroup->SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
     documentGroup->RemoveDocument(detached);
@@ -391,12 +473,7 @@ int EditorCore::CreateDocument(int index, PackageNode *package)
     documentGroup->InsertDocument(index, document);
     int insertedIndex = mainWindow->AddTab(index, document->GetPackageFilePath());
     OnCurrentTabChanged(insertedIndex);
-    QString path = document->GetPackageAbsolutePath();
-    DVASSERT(!fileSystemWatcher->files().contains(path));
-    if (!fileSystemWatcher->addPath(path))
-    {
-        DAVA::Logger::Error("can not add to file watcher path %s", document->GetPackageFilePath().GetStringValue().c_str());
-    }
+    projectFilesWatcher->WatchPath(document->GetPackageFilePath());
     return index;
 }
 
@@ -408,84 +485,10 @@ void EditorCore::SaveDocument(Document *document)
         return;
     }
     QString path = document->GetPackageAbsolutePath();
-    fileSystemWatcher->removePath(path);
+    projectFilesWatcher->UnwatchPath(path);
     DVVERIFY(project->SavePackage(document->GetPackage())); //TODO:log here
     document->GetUndoStack()->setClean();
-    fileSystemWatcher->addPath(path);
-}
-
-void EditorCore::ApplyFileChanges()
-{
-    DVASSERT(std::find_if(changedFiles.begin(), changedFiles.end(), [this](const QString &path) {
-        return std::find_if(documents.begin(), documents.end(), [path](const Document* document) {
-            return document->GetPackageAbsolutePath() == path;
-        }) == documents.end();
-    }) == changedFiles.end());
-    bool yesToAll = false;
-    bool noToAll = false;
-    int changedAndExistsCount = std::count_if(changedFiles.begin(), changedFiles.end(), [this](const QString &path) {
-                                           return QFileInfo::exists(path);
-                                       });
-    for (Document *document : documents)
-    {
-        QString path = document->GetPackageAbsolutePath();
-        if (changedFiles.contains(path))
-        {
-            changedFiles.remove(path);
-            QFileInfo fileInfo(path);
-            QMessageBox::StandardButton button = QMessageBox::No;
-            if (document->GetUndoStack()->isClean())
-            {
-                button = QMessageBox::Yes;
-            }
-            else if (!fileInfo.exists())
-            {
-                button = QMessageBox::warning(
-                    qApp->activeWindow()
-                    , tr("File %1 is renamed or deleted").arg(fileInfo.fileName())
-                    , tr("%1\n This file has been renamed or deleted outside of the editor. Do you want to close it?").arg(fileInfo.absoluteFilePath())
-                    , QMessageBox::Yes | QMessageBox::No
-                    , QMessageBox::No
-                    );
-            }
-            else
-            {
-                if(!yesToAll && !noToAll)
-                {
-                    button = QMessageBox::warning(
-                        qApp->activeWindow()
-                        , tr("File %1 changed").arg(fileInfo.fileName())
-                        , tr("%1\n This file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath())
-                        , changedAndExistsCount > 1 ?
-                            QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll
-                                                  : QMessageBox::Yes | QMessageBox::No
-                        , QMessageBox::Yes
-                        );
-                    yesToAll = button == QMessageBox::YesToAll;
-                    noToAll = button == QMessageBox::NoToAll;
-                }
-                if(yesToAll || noToAll)
-                {
-                    button = yesToAll ? QMessageBox::Yes : QMessageBox::No;
-                }
-            }
-            int index = documents.indexOf(document);
-            if (button == QMessageBox::Yes)
-            {
-                DAVA::FilePath davaPath = document->GetPackageFilePath();
-                CloseDocument(index);
-                if (fileInfo.exists())
-                {
-                    RefPtr<PackageNode> package = project->OpenPackage(davaPath);
-                    if (nullptr != package)
-                    {
-                        index = CreateDocument(index, package.Get());
-                        mainWindow->SetCurrentTab(index);
-                    }
-                }
-            }
-        }
-    }
+    projectFilesWatcher->WatchPath(document->GetPackageFilePath());
 }
 
 int EditorCore::GetIndexByPackagePath(const FilePath &davaPath) const
