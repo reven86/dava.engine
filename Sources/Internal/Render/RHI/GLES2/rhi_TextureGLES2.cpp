@@ -111,7 +111,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
     if (is_depth)
     {
-        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(uid) } };
+        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), (uint64)(uid) } };
 
         ExecGL(&cmd1, 1);
 
