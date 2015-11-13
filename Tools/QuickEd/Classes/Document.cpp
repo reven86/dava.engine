@@ -42,6 +42,8 @@
 #include <QObject>
 
 using namespace DAVA;
+using namespace std;
+using namespace placeholders;
 
 Document::Document(PackageNode* _package, QObject* parent)
     : QObject(parent)
@@ -53,10 +55,8 @@ Document::Document(PackageNode* _package, QObject* parent)
     systemManager.SelectionChanged.Connect(this, &Document::OnSelectedControlNodesChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
     systemManager.RootControlPositionChanged.Connect(this, &Document::RootControlPositionChanged);
-    systemManager.PropertiesChanged.Connect([this](const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties, size_t hash)
-                                            {
-        commandExecutor->ChangeProperty(properties, hash);
-                                            });
+    systemManager.PropertiesChanged.Connect(this, &Document::OnPropertiesChanged);
+    systemManager.PropertiesChanged.Connect(MakeFunction(this, &Document::OnPropertiesChanged));
 
     EditorCore* editorCore = qobject_cast<EditorCore*>(this->parent());
     DVASSERT(nullptr != editorCore);
@@ -170,4 +170,9 @@ void Document::OnSelectedControlNodesChanged(const SelectedNodes& selected, cons
 {
     selectionContainer.MergeSelection(selected, deselected);
     SelectedNodesChanged(selected, deselected);
+}
+
+void Document::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
+{
+    commandExecutor->ChangeProperty(properties, hash);
 }

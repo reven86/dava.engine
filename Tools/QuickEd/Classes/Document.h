@@ -93,6 +93,7 @@ public slots:
 
 private:
     void OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
     DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
 
     PackageNode* package = nullptr;
