@@ -1239,7 +1239,7 @@ protected:
     int32 controlState;
     int32 prevControlState;
 
-    float32 wheelSensitivity = 20.f;
+    float32 wheelSensitivity = 10.f;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
