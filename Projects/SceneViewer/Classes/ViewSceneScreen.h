@@ -41,7 +41,9 @@ class WASDControllerSystem;
 class ViewSceneScreen: public BaseScreen
 {
 protected:
-    virtual ~ViewSceneScreen();
+    virtual ~ViewSceneScreen()
+    {
+    }
 
 public:
 	ViewSceneScreen();
@@ -58,24 +60,23 @@ public:
 
 protected:
     void OnBack(BaseObject *caller, void *param, void *callerData);
-    void OnReloadShaders(BaseObject* caller, void* param, void* callerData);
     void UpdateInfo(float32 timeElapsed);
 
-    DAVA::UIStaticText* info = nullptr;
-    DAVA::UIJoypad* moveJoyPAD = nullptr;
+    DAVA::UIStaticText* info;
+    DAVA::UIJoypad* moveJoyPAD;
 
-    DAVA::float32 framesTime = 0.0f;
-    DAVA::uint32 frameCounter = 0;
+    DAVA::float32 framesTime;
+    DAVA::uint32 frameCounter;
 
-    DAVA::uint64 drawTime = 0;
-    DAVA::uint64 updateTime = 0;
+    DAVA::uint64 drawTime;
+    DAVA::uint64 updateTime;
 
     DAVA::Scene* scene = nullptr;
     DAVA::RotationControllerSystem* rotationControllerSystem = nullptr;
     DAVA::WASDControllerSystem* wasdSystem = nullptr;
 
     Vector2 cursorPosition;
-    float32 cursorSize = 0.1f;
+    float32 cursorSize;
 };
 
 #endif //__VIEW_SCENE_SCREEN_H__
