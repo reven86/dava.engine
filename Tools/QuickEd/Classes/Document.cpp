@@ -56,7 +56,6 @@ Document::Document(PackageNode* _package, QObject* parent)
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
     systemManager.RootControlPositionChanged.Connect(this, &Document::RootControlPositionChanged);
     systemManager.PropertiesChanged.Connect(this, &Document::OnPropertiesChanged);
-    systemManager.PropertiesChanged.Connect(MakeFunction(this, &Document::OnPropertiesChanged));
 
     EditorCore* editorCore = qobject_cast<EditorCore*>(this->parent());
     DVASSERT(nullptr != editorCore);
