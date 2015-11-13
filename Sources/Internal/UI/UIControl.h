@@ -1218,11 +1218,7 @@ public:
 
     static void DumpControls(bool onlyOrphans);
 
-    float32 GetWheelSensitivity() const;
-    void SetWheelSensitivity(float32 newSens);
-
 private:
-    float32 wheelSensitivity = 20;
     String name;
     FastName fastName;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
@@ -1242,6 +1238,8 @@ protected:
     UIControlBackground *background;
     int32 controlState;
     int32 prevControlState;
+
+    float32 wheelSensitivity = 20.f;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
@@ -1389,6 +1387,9 @@ public:
     virtual String GetInternalControlName(int32 index) const;
     virtual String GetInternalControlDescriptions() const;
 
+    inline float32 GetWheelSensitivity() const;
+    inline void SetWheelSensitivity(float32 newSens);
+
     // for introspection
     inline bool GetEnabled() const;
     inline void SetEnabledNotHierarchic(bool enabled);
@@ -1409,6 +1410,7 @@ public:
                          PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("wheelSensitivity", "Wheel Sensitivity", GetWheelSensitivity, SetWheelSensitivity, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
 
