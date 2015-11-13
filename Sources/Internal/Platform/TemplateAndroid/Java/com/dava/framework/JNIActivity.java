@@ -170,7 +170,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			@Override
 			public void run() 
 			{
-	        	Log.e(JNIConst.LOG_TAG, "main thread stopped!");
+	        	Log.w(JNIConst.LOG_TAG, "Android main thread started!");
 	        	
 		        // Initialize native framework core         
 		        JNIApplication.GetApplication().InitFramework(commandLineParams);
@@ -213,10 +213,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			        
 			        if(needExit) 
 			        {
-			        	Log.e(JNIConst.LOG_TAG, "main thread stopped!");
+			        	Log.w(JNIConst.LOG_TAG, "main thread going to be stopped!");
 			        	break;
 			        }
 				}
+
+                Log.w(JNIConst.LOG_TAG, "Android main thread finished!");
 			}
 		});
 		mainLoopThreadID = mainThread.getId();
@@ -271,7 +273,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onStart] start");
     	super.onStart();
     	fmodDevice.start();
-        nativeOnStart();
+
+        RunOnMainLoopThread(new Runnable() {
+            public void run()
+            {
+                nativeOnStart();
+            }
+        });
+        
         Log.i(JNIConst.LOG_TAG, "[Activity::onStart] finish");
     }
     
@@ -317,7 +326,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         if(isActivityFinishing)
         {
-        	nativeFinishing();
+            RunOnMainLoopThread(new Runnable() {
+                public void run()
+                {
+                    nativeFinishing();
+                }
+            });
         }
         
         super.onPause();
@@ -383,10 +397,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     @Override
     protected void onStop()
     {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onStop] start");
+        Log.i(JNIConst.LOG_TAG, "[Activity::onStop] in");
         
         //call native method
-        nativeOnStop();
+        RunOnMainLoopThread(new Runnable() {
+            public void run()
+            {
+                nativeOnStop();
+            }
+        });
         
         fmodDevice.stop();
         
@@ -394,7 +413,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         ShowSplashScreenView();
     	// The activity is no longer visible (it is now "stopped")
-        Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
+        Log.i(JNIConst.LOG_TAG, "[Activity::onStop] out");
     }
     
     
@@ -412,8 +431,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         {
             mController.exit();
         }
+
         //call native method
-        nativeOnDestroy();
+        RunOnMainLoopThread(new Runnable() {
+            public void run()
+            {
+                nativeOnDestroy();
+            }
+        });
 
         super.onDestroy();
         Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] finish");

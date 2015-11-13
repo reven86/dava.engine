@@ -190,12 +190,14 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void onPause() 
     {
         isPaused = true;
-        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onPause");
+        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onPause in");
         queueEvent(new Runnable() {
         	
             @SuppressWarnings("deprecation")
 			public void run()
             {
+                Log.d(JNIConst.LOG_TAG, "[SurfaceView.onPause Runnable] in");
+
                 PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
                 boolean isScreenLocked = false;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
@@ -204,8 +206,12 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 	isScreenLocked = !pm.isScreenOn();
                 
                 nativeOnPause(isScreenLocked);
+
+                Log.d(JNIConst.LOG_TAG, "[SurfaceView.onPause Runnable] out");
             }
         });
+
+        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onPause out");
     }
 
     public void onResume() 
