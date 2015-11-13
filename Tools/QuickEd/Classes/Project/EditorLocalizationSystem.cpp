@@ -91,7 +91,7 @@ void EditorLocalizationSystem::Cleanup()
     LocalizationSystem::Instance()->Cleanup();
 }
 
-QString EditorLocalizationSystem::GetLocaleNameFromStr(QString localeStr)
+QString EditorLocalizationSystem::GetLocaleNameFromStr(const QString &localeStr)
 {
     QLocale locale(localeStr);
     switch (locale.script())

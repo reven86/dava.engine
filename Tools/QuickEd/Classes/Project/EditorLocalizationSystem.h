@@ -52,7 +52,7 @@ public:
     void Cleanup();
 
 private:
-    static QString GetLocaleNameFromStr(QString localeStr);
+    static QString GetLocaleNameFromStr(const QString &localeStr);
     QMap<QString, QString> availableLocales;
 
 //properties section
