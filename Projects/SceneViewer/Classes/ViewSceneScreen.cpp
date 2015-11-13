@@ -34,17 +34,6 @@
 
 using namespace DAVA;
 
-ViewSceneScreen::ViewSceneScreen()
-    : BaseScreen()
-    , info(NULL)
-    , frameCounter(0)
-    , framesTime(0.f)
-    , drawTime(0)
-    , updateTime(0)
-    , cursorSize(.1f)
-{
-}
-
 void ViewSceneScreen::LoadResources()
 {
     if (!loaded)
@@ -143,12 +132,16 @@ void ViewSceneScreen::LoadResources()
         backButton->SetDebugDraw(true);
         AddControl(backButton);
 
+        ScopedPtr<UIButton> reloadShadersButton(CreateButton(Rect(100, 0, 190, 30), L"Reload Shaders"));
+        reloadShadersButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ViewSceneScreen::OnReloadShaders));
+        reloadShadersButton->SetDebugDraw(true);
+        AddControl(reloadShadersButton);
+
         DVASSERT(info == NULL);
         info = new UIStaticText(Rect(0, 0, 35, 30.f));
         info->SetFont(font);
         info->SetTextColor(Color::White);
         info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
-
         AddControl(info);
 
         moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
@@ -177,6 +170,47 @@ void ViewSceneScreen::UnloadResources()
 void ViewSceneScreen::OnBack(BaseObject *caller, void *param, void *callerData)
 {
     SetPreviousScreen();
+}
+
+void ViewSceneScreen::OnReloadShaders(DAVA::BaseObject* caller, void* param, void* callerData)
+{
+    ShaderDescriptorCache::RelaoadShaders();
+
+    List<NMaterial*> materials;
+    scene->GetDataNodes(materials);
+    for (auto material : materials)
+    {
+        material->InvalidateRenderVariants();
+    }
+
+    const Map<uint64, NMaterial*>& particleInstances = scene->particleEffectSystem->GetMaterialInstances();
+    for (auto material : particleInstances)
+    {
+        material.second->InvalidateRenderVariants();
+    }
+
+    DAVA::Set<DAVA::NMaterial*> materialList;
+    scene->foliageSystem->CollectFoliageMaterials(materialList);
+    for (auto material : materialList)
+    {
+        if (material)
+            material->InvalidateRenderVariants();
+    }
+
+    scene->renderSystem->GetDebugDrawer()->InvalidateMaterials();
+    scene->renderSystem->SetForceUpdateLights();
+    
+#define INVALIDATE_2D_MATERIAL(material) \
+if (RenderSystem2D::material)        \
+RenderSystem2D::material->InvalidateRenderVariants();
+
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL)
+    
+#undef INVALIDATE_2D_MATERIAL
 }
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData &geometricData)
