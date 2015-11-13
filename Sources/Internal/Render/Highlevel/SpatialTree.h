@@ -100,7 +100,7 @@ class QuadTree : public RenderHierarchy
     void MarkObjectDirty(RenderObject* object);
 
     bool worldInitialized;
-	List<RenderObject *> worldInitObjects;	
+    List<RenderObject *> worldInitObjects;	
 
 
 	void DebugDrawNode(uint16 nodeId);
