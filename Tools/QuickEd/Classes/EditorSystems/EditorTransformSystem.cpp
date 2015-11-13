@@ -912,7 +912,7 @@ void EditorTransformSystem::UpdateNeighboursToMove()
     }
 }
 
-void TransformSystem::ClampAngle()
+void EditorTransformSystem::ClampAngle()
 {
     float32 angle = angleProperty->GetValue().AsFloat();
     if (fabs(angle) > 360)
