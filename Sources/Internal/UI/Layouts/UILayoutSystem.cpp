@@ -41,6 +41,8 @@
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
+#include "Concurrency/Thread.h"
+
 namespace DAVA
 {
 UILayoutSystem::UILayoutSystem()
@@ -73,6 +75,8 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
 
 void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnChildren)
 {
+    DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
+
     UIControl* container = control;
     if (considerDenendenceOnChildren)
     {
