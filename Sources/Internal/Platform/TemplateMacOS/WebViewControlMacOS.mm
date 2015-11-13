@@ -37,7 +37,7 @@ using namespace DAVA;
 
 // A delegate is needed to block the context menu. Note - this delegate
 // is informal, so no inheritance from WebUIDelegate needed.
-@interface WebViewControlUIDelegate : NSObject
+@interface WebViewControlUIDelegate : NSObject<WebUIDelegate>
 {
 }
 
@@ -56,8 +56,7 @@ using namespace DAVA;
 
 @end
 
-
-@interface WebViewPolicyDelegate : NSObject
+@interface WebViewPolicyDelegate : NSObject<WebPolicyDelegate, WebFrameLoadDelegate>
 {
 	IUIWebViewDelegate* delegate;
     DAVA::UIWebView* webView;
