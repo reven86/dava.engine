@@ -114,11 +114,8 @@ void EditorCore::Start()
 
 void EditorCore::OnFilesChanged(const QStringList& changedFiles)
 {
-    DVASSERT(std::find_if(changedFiles.begin(), changedFiles.end(), [this](const QString &path) {
-        return std::find_if(documents.begin(), documents.end(), [path](const Document* document) {
-            return document->GetPackageAbsolutePath() == path;
-        }) == documents.end();
-    }) == changedFiles.end());
+    DVASSERT(std::find_if(changedFiles.begin(), changedFiles.end(), std::bind(&EditorCore::HasNoDocumentWithPath, this, std::placeholders::_1))
+        == changedFiles.end());
     bool yesToAll = false;
     bool noToAll = false;
     int changedCount = std::count_if(documents.begin(), documents.end(), [changedFiles](Document *document)
@@ -177,11 +174,8 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
 
 void EditorCore::OnFilesRemoved(const QStringList& removedFiles)
 {
-    DVASSERT(std::find_if(removedFiles.begin(), removedFiles.end(), [this](const QString &path) {
-        return std::find_if(documents.begin(), documents.end(), [path](const Document* document) {
-            return document->GetPackageAbsolutePath() == path;
-        }) == documents.end();
-    }) == removedFiles.end());
+    DVASSERT(std::find_if(removedFiles.begin(), removedFiles.end(), std::bind(&EditorCore::HasNoDocumentWithPath, this, std::placeholders::_1))
+        == removedFiles.end());
 
     for (Document *document : documents)
     {
@@ -391,6 +385,18 @@ void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
         document->RefreshAllControlProperties();
         document->RefreshLayout();
     }
+}
+
+bool EditorCore::HasNoDocumentWithPath(const QString &path) const
+{
+    for (const Document* document : documents)
+    {
+        if (document->GetPackageAbsolutePath() == path)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void EditorCore::OpenProject(const QString &path)

@@ -42,7 +42,7 @@ ProjectFilesWatcher::ProjectFilesWatcher(QObject *parent)
     : QObject(parent)
     , fileSystemWatcher(new QFileSystemWatcher(this))
 {
-    connect(qApp, &QApplication::applicationStateChanged, this, &ProjectFilesWatcher::OnApplicationStateChagned);
+    connect(qApp, &QApplication::applicationStateChanged, this, &ProjectFilesWatcher::OnApplicationStateChanged);
 
     connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &ProjectFilesWatcher::OnFileChanged);
 }
@@ -53,7 +53,7 @@ void ProjectFilesWatcher::WatchPath(const QString& path)
     DVASSERT(QFileInfo::exists(path));
     if(!fileSystemWatcher->addPath(path))
     {
-        DAVA::Logger::Error("can not add to file watcher path %s", path.toUtf8().data());
+        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
     }
 }
 
@@ -68,7 +68,7 @@ void ProjectFilesWatcher::UnwatchPath(const QString& path)
 {
     if(!fileSystemWatcher->removePath(path))
     {
-        //qt bug https://bugreports.qt.io/browse/QTBUG-49307 DAVA::Logger::Error("can not remove from file watcher path %s", path.toUtf8().data());
+        //qt bug https://bugreports.qt.io/browse/QTBUG-49307 DAVA::Logger::Error("can not remove path from the file watcher %s", path.toUtf8().data());
     }
 }
 
@@ -79,7 +79,7 @@ void ProjectFilesWatcher::UnwatchPath(const DAVA::FilePath& davaPath)
     UnwatchPath(path);
 }
 
-void ProjectFilesWatcher::OnApplicationStateChagned(Qt::ApplicationState state)
+void ProjectFilesWatcher::OnApplicationStateChanged(Qt::ApplicationState state)
 {
     if (state == Qt::ApplicationActive)
     {

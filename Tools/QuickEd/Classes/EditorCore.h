@@ -77,6 +77,7 @@ private slots:
     void OnGlobalStyleClassesChanged(const QString &classesStr);
 
 private:
+    bool HasNoDocumentWithPath(const QString &path) const;
     void OpenProject(const QString &path);
     bool CloseProject();
     int CreateDocument(int index, PackageNode *package);

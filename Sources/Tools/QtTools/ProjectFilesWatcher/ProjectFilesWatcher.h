@@ -56,7 +56,7 @@ signals:
     void FilesRemoved(const QStringList &files);
 
 private slots:
-    void OnApplicationStateChagned(Qt::ApplicationState state);
+    void OnApplicationStateChanged(Qt::ApplicationState state);
     void OnFileChanged(const QString & path);
 
 private:
