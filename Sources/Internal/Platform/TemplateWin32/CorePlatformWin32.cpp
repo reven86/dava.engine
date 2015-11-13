@@ -157,7 +157,7 @@ namespace DAVA
                                     realWidth, realHeight, NULL, NULL, hInstance, NULL);
 
         SetNativeView(hWindow);
-
+        SetMenu(hWindow, NULL);
         rendererParams.window = hWindow;
 
         ShowWindow(hWindow, SW_SHOW);
@@ -169,6 +169,7 @@ namespace DAVA
         FrameworkDidLaunched();
         KeyedArchive* options = Core::GetOptions();
 
+        bool shouldEnableFullscreen = false;
         fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
         if (options)
         {
@@ -182,37 +183,40 @@ namespace DAVA
 			fullscreenMode.bpp = windowedMode.bpp;
 
 			fullscreenMode = FindBestMode(fullscreenMode);
-
-			isFullscreen = (0 != options->GetInt32("fullscreen"));	
-			String title = options->GetString("title", "[set application title using core options property 'title']");
+            shouldEnableFullscreen = options->GetInt32("fullscreen", 0) == 1;
+            String title = options->GetString("title", "[set application title using core options property 'title']");
 			WideString titleW = StringToWString(title);
 			SetWindowText(hWindow, titleW.c_str());
 		}
 
-		Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
+        Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
 
-		currentMode = windowedMode;
-		if (isFullscreen)
-		{
-			currentMode = fullscreenMode;
-		}
+        // Init application with positioned window
+        {
+            currentMode = windowedMode;
+            rendererParams.width = currentMode.width;
+            rendererParams.height = currentMode.height;
 
-        rendererParams.width = currentMode.width;
-        rendererParams.height = currentMode.height;
+            clientSize.top = 0;
+            clientSize.left = 0;
+            clientSize.right = currentMode.width;
+            clientSize.bottom = currentMode.height;
 
-        clientSize.top = 0;
-        clientSize.left = 0;
-        clientSize.right = currentMode.width;
-        clientSize.bottom = currentMode.height;
+            AdjustWindowRect(&clientSize, style, FALSE);
 
-        AdjustWindowRect(&clientSize, style, FALSE);
+            realWidth = clientSize.right - clientSize.left;
+            realHeight = clientSize.bottom - clientSize.top;
 
-        realWidth = clientSize.right - clientSize.left;
-        realHeight = clientSize.bottom - clientSize.top;
+            windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
+            windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 
-		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
-		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
-		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
+            MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
+        }
+
+        if (shouldEnableFullscreen)
+        {
+            SetScreenMode(eScreenMode::FULLSCREEN);
+        }
 
         RAWINPUTDEVICE Rid;
 
@@ -343,7 +347,6 @@ namespace DAVA
                 isFullscreen = true;
                 currentMode = fullscreenMode;
                 GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
-                SetMenu(hWindow, NULL);
                 SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
                 SetWindowPos(hWindow, NULL, 0, 0, currentMode.width, currentMode.height, SWP_NOZORDER);
                 break;
