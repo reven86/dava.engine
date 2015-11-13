@@ -41,7 +41,10 @@ class WASDControllerSystem;
 class ViewSceneScreen: public BaseScreen
 {
 protected:
-    virtual ~ViewSceneScreen(){}
+    virtual ~ViewSceneScreen()
+    {
+    }
+
 public:
 	ViewSceneScreen();
 
