@@ -78,7 +78,26 @@ namespace DAVA
         position = Max(position, -elementSize);
         scrollToTopSpeed = 0.f;
 	}
-	void ScrollHelper::SetElementSize(float32 newSize)
+
+    void ScrollHelper::ScrollWithoutAnimation(float32 scrollDelta, float32& pos, float32& size)
+    {
+        if (elementSize > size)
+        {
+            pos += scrollDelta;
+            if (size - pos >= elementSize)
+            {
+                pos = size - elementSize;
+            }
+            else if (pos + scrollDelta > 0)
+            {
+                pos = 0;
+            }
+
+            SetPosition(pos);
+        }
+    }
+
+    void ScrollHelper::SetElementSize(float32 newSize)
 	{
 		elementSize = newSize;
 		virtualViewSize = viewSize;

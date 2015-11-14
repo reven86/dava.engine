@@ -324,37 +324,11 @@ void UIList::Update(float32 timeElapsed)
         // this code works for mouse or touchpad scrolls
         if(orientation == ORIENTATION_HORIZONTAL)
         {
-            r.x += deltaScroll;
-            
-            float32 elementSize = scroll->GetElementSize();
-            
-            if (r.dx - r.x >= elementSize)
-            {
-                r.x = r.dx - elementSize;
-            }
-            else if (r.x + deltaScroll > 0)
-            {
-                r.x = 0;
-            }
-            
-            scroll->SetPosition(r.x);
+            scroll->ScrollWithoutAnimation(deltaScroll, r.x, r.dx);
         }
         else
         {
-            r.y += deltaScroll;
-         
-            float32 elementSize = scroll->GetElementSize();
-            
-            if (r.dy - r.y >= elementSize)
-            {
-                r.y = r.dy - elementSize;
-            }
-            else if (r.y + deltaScroll > 0)
-            {
-                r.y = 0;
-            }
-            
-            scroll->SetPosition(r.y);
+            scroll->ScrollWithoutAnimation(deltaScroll, r.y, r.dy);
         }
 
     }
