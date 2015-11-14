@@ -55,7 +55,7 @@ uint32 ProgGLES2::ConstBuf::CurFrame = 0;
 //==============================================================================
 
 static void
-DumpShaderText(const char* code, unsigned code_sz)
+DumpShaderTextGLES2(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -165,7 +165,7 @@ bool ProgGLES2::Construct(const char* srcCode)
         {
             Logger::Error("%sprog-compile failed:", (type == PROG_VERTEX) ? "v" : "f");
             Logger::Info(info);
-            DumpShaderText(srcCode, strlen(srcCode));
+            DumpShaderTextGLES2(srcCode, strlen(srcCode));
         }
 
         memset(cbufLastBoundData, 0, sizeof(cbufLastBoundData));

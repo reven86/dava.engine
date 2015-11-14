@@ -160,4 +160,5 @@ private:
 };
 
 } // namespace rhi
+
 #endif // __RHI_SHADERSOURCE_H__

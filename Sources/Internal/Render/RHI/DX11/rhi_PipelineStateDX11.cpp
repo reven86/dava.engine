@@ -345,7 +345,7 @@ private:
     unsigned regCount;
 };
 
-static RingBuffer _DefConstRingBuf;
+static RingBuffer _DX11_DefConstRingBuf;
 
 //------------------------------------------------------------------------------
 
@@ -502,7 +502,7 @@ void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context) const
 //==============================================================================
 
 static void
-DumpShaderText(const char* code, unsigned code_sz)
+DumpShaderTextDX11(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -702,7 +702,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         Logger::Error("shader-uid : %s", desc.vprogUid.c_str());
         Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
+        DumpShaderTextDX11((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
     }
 
     // create fragment-shader
@@ -774,7 +774,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         }
         Logger::Error("shader-uid : %s", desc.fprogUid.c_str());
         Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
+        DumpShaderTextDX11((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
     }
 
     // create input-layout
@@ -978,7 +978,7 @@ void SetToRHI(Handle cb, ID3D11DeviceContext* context)
 
 void InitializeRingBuffer(uint32 size)
 {
-    _DefConstRingBuf.Initialize(size);
+    _DX11_DefConstRingBuf.Initialize(size);
 }
 }
 

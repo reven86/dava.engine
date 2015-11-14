@@ -380,4 +380,5 @@ void AddPacket(HPacketList packetList, const Packet& packet);
 void EndPacketList(HPacketList packetList, HSyncObject syncObject = HSyncObject(InvalidHandle)); // 'packetList' handle invalid after this, no explicit "release" needed
 
 } // namespace rhi
+
 #endif // __RHI_PUBLIC_H__

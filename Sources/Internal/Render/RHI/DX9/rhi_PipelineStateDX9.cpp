@@ -59,10 +59,10 @@ private:
 };
 std::vector<VDeclDX9> VDeclDX9::_VDecl;
 
-static RingBuffer _DefConstRingBuf;
+static RingBuffer _DX9_DefConstRingBuf;
 
 static void
-DumpShaderText(const char* code, unsigned code_sz)
+DumpShaderTextDX9(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -417,7 +417,7 @@ PipelineStateDX9_t::ConstBuf::InstData() const
 {
     if (!inst)
     {
-        inst = _DefConstRingBuf.Alloc(4 * regCount);
+        inst = _DX9_DefConstRingBuf.Alloc(4 * regCount);
         memcpy(inst, value, regCount * 4 * sizeof(float));
     }
 
@@ -533,7 +533,7 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
                     if (strstr((const char*)bin, name))
                     {
                         Logger::Warning("shader has \"%s\", but no variables actually use it in code:\n", name);
-                        DumpShaderText((const char*)bin, bin_sz);
+                        DumpShaderTextDX9((const char*)bin, bin_sz);
                     }
                 }
             }
@@ -575,7 +575,7 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
         }
         Logger::Error("shader-uid : %s", uid.c_str());
         Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)bin, bin_sz);
+        DumpShaderTextDX9((const char*)bin, bin_sz);
     }
 
     return success;
@@ -725,7 +725,7 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
                     if (strstr((const char*)bin, name))
                     {
                         Logger::Warning("shader has \"%s\", but no variables actually use it in code:\n", name);
-                        DumpShaderText((const char*)bin, bin_sz);
+                        DumpShaderTextDX9((const char*)bin, bin_sz);
                     }
                 }
             }
@@ -762,7 +762,7 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
             Logger::Info((const char*)(err->GetBufferPointer()));
         }
         Logger::Error("fragment-shader text:\n");
-        DumpShaderText((const char*)bin, bin_sz);
+        DumpShaderTextDX9((const char*)bin, bin_sz);
     }
 
     return success;
@@ -1010,7 +1010,7 @@ void SetupDispatch(Dispatch* dispatch)
 
 void InitializeRingBuffer(uint32 size)
 {
-    _DefConstRingBuf.Initialize(size);
+    _DX9_DefConstRingBuf.Initialize(size);
 }
 
 const void*
@@ -1030,7 +1030,7 @@ void SetToRHI(Handle cb, const void* instData)
 
 void InvalidateAllConstBufferInstances()
 {
-    _DefConstRingBuf.Reset();
+    _DX9_DefConstRingBuf.Reset();
 
     for (ConstBufDX9Pool::Iterator b = ConstBufDX9Pool::Begin(), b_end = ConstBufDX9Pool::End(); b != b_end; ++b)
     {
