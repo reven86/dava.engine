@@ -42,6 +42,7 @@
 #include "Debug/Stats.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -156,7 +157,12 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 }
 
 void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
-{	
+{
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
     Scene *scene = GetScene();
     
     if (scene)
@@ -178,6 +184,11 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
 {
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
     if (effect->state==ParticleEffectComponent::STATE_STOPPED)
     {
         //add to active effects and to render
@@ -199,7 +210,12 @@ void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
 {
-	Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
+    Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
 	DVASSERT(it!=activeComponents.end());
 	activeComponents.erase(it);	
 	effect->state = ParticleEffectComponent::STATE_STOPPED;	
