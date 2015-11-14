@@ -71,10 +71,10 @@ public:
     /**
     \brief Sets new scrolling position whithout any animations.
     \param[in] scrollDelta.
+    \param[in] zise scroll area size
     \param[in\out] pos scroll area position
-    \param[in\out] zise scroll area size
     */
-    void ScrollWithoutAnimation(float32 scrollDelta, float32& pos, float32& size);
+    void ScrollWithoutAnimation(float32 scrollDelta, float32 size, float32& pos);
 
     void ScrollToPosition(float32 newPos, float32 scrollTimeSec = 0.3f);
 	/**

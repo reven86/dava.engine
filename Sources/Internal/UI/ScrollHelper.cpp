@@ -79,7 +79,7 @@ namespace DAVA
         scrollToTopSpeed = 0.f;
 	}
 
-    void ScrollHelper::ScrollWithoutAnimation(float32 scrollDelta, float32& pos, float32& size)
+    void ScrollHelper::ScrollWithoutAnimation(float32 scrollDelta, float32 size, float32& pos)
     {
         if (elementSize > size)
         {

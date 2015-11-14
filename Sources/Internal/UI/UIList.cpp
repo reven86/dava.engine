@@ -324,11 +324,11 @@ void UIList::Update(float32 timeElapsed)
         // this code works for mouse or touchpad scrolls
         if(orientation == ORIENTATION_HORIZONTAL)
         {
-            scroll->ScrollWithoutAnimation(deltaScroll, r.x, r.dx);
+            scroll->ScrollWithoutAnimation(deltaScroll, r.dx, r.x);
         }
         else
         {
-            scroll->ScrollWithoutAnimation(deltaScroll, r.y, r.dy);
+            scroll->ScrollWithoutAnimation(deltaScroll, r.dy, r.y);
         }
 
     }

@@ -283,23 +283,19 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
 
             if (accuracyDelta <= Abs(deltaScroll))
             {
-                // this code works for mouse or touchpad scrolls
-                if (scrollView->GetVerticalScroll() == currentScroll)
-                {
-                    currentScroll->ScrollWithoutAnimation(deltaScroll, relativePosition.y, relativePosition.dy);
-                }
-                else
-                {
-                    currentScroll->ScrollWithoutAnimation(deltaScroll, relativePosition.x, relativePosition.dx);
-                }
-            }
-            else if (scrollView->GetVerticalScroll() == currentScroll)
-            {
-                relativePosition.y = currentScroll->GetPosition(posDelta.y, timeElapsed, lockTouch);
+                float32 dy = scrollView->GetRect().dy;
+                scrollView->GetVerticalScroll()->ScrollWithoutAnimation(deltaScroll, dy, relativePosition.y);
             }
             else
             {
-                relativePosition.y = scrollView->GetVerticalScroll()->GetPosition(0, timeElapsed, false);
+                if (scrollView->GetVerticalScroll() == currentScroll)
+                {
+                    relativePosition.y = currentScroll->GetPosition(posDelta.y, timeElapsed, lockTouch);
+                }
+                else
+                {
+                    relativePosition.y = scrollView->GetVerticalScroll()->GetPosition(0, timeElapsed, false);
+                }
             }
         }
         else if (scrollView->IsAutoUpdate())
