@@ -308,7 +308,7 @@ void UIList::Update(float32 timeElapsed)
     {
         FullRefresh();
     }
-
+    
     float32 d = newPos - oldPos;
     oldPos = newPos;
     
@@ -318,22 +318,52 @@ void UIList::Update(float32 timeElapsed)
     const float32 accuracyDelta = 0.1f;
     
     Rect r = scrollContainer->GetRect();
-    if(orientation == ORIENTATION_HORIZONTAL)
+    
+    if (accuracyDelta <= Abs(deltaScroll))
     {
-        if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
+        // this code works for mouse or touchpad scrolls
+        if(orientation == ORIENTATION_HORIZONTAL)
         {
-            r.x = scroll->GetPosition(deltaScroll, SystemTimer::FrameDelta(), true);
+            r.x += deltaScroll;
+            
+            float32 elementSize = scroll->GetElementSize();
+            
+            if (r.dx - r.x >= elementSize)
+            {
+                r.x = r.dx - elementSize;
+            }
+            else if (r.x + deltaScroll > 0)
+            {
+                r.x = 0;
+            }
+            
+            scroll->SetPosition(r.x);
         }
         else
         {
-            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.y += deltaScroll;
+         
+            float32 elementSize = scroll->GetElementSize();
+            
+            if (r.dy - r.y >= elementSize)
+            {
+                r.y = r.dy - elementSize;
+            }
+            else if (r.y + deltaScroll > 0)
+            {
+                r.y = 0;
+            }
+            
+            scroll->SetPosition(r.y);
         }
+
     }
     else
     {
-        if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
+        // this code works for scroll through touch screen.
+        if(orientation == ORIENTATION_HORIZONTAL)
         {
-            r.y = scroll->GetPosition(deltaScroll, SystemTimer::FrameDelta(), true);
+            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
         }
         else
         {
@@ -347,14 +377,14 @@ void UIList::Update(float32 timeElapsed)
     }
 
     List<UIControl*>::const_iterator it;
-    Rect viewRect = GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+    Rect viewRect = GetGeometricData().GetUnrotatedRect();
     const List<UIControl*> &scrollList = scrollContainer->GetChildren();
     List<UIControl*> removeList;
 
     //removing invisible elements
     for(it = scrollList.begin(); it != scrollList.end(); it++)
     {
-        Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+        Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();
         if(orientation == ORIENTATION_HORIZONTAL)
         {
             if(crect.x + crect.dx < viewRect.x - viewRect.dx || crect.x > viewRect.x + viewRect.dx*2)
