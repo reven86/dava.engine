@@ -379,7 +379,7 @@ Scene::~Scene()
     animatedMeshes.clear();
 
     for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
-	{
+    {
 		Camera * obj = *t;
 		obj->Release();
 	}
@@ -1056,6 +1056,13 @@ void Scene::ImportShadowColor(Entity * rootNode)
 void Scene::OnSceneReady(Entity * rootNode)
 {
     ImportShadowColor(rootNode);
+
+#ifdef __DAVAENGINE_ANDROID__
+    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+    {
+        sceneGlobalMaterial->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE); //RHI_COMPLETE: performance issue
+    }
+#endif
 }
 
     

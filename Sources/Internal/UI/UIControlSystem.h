@@ -328,7 +328,7 @@ private:
 
     bool removeCurrentScreen;
 
-    UIControl *exclusiveInputLocker;
+    UIControl* exclusiveInputLocker;
     UIControl *hovered;
     
     UIControl *focusedControl;

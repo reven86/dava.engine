@@ -353,7 +353,6 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     ev.physPoint.x = posInWindow.x;
     ev.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - posInWindow.y;
 
-    
     UIControlSystem::Instance()->OnInput(&ev);
 }
 
