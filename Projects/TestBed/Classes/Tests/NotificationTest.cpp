@@ -58,7 +58,7 @@ void NotificationScreen::LoadResources()
     AddControl(slide);
 
     showNotificationText = new UIButton(Rect(10, 10, 450, 60));
-	showNotificationText->SetStateFont(0xFF, font);
+    showNotificationText->SetStateFont(0xFF, font);
 	showNotificationText->SetStateFontColor(0xFF, Color::White);
 	showNotificationText->SetStateText(0xFF, L"Notify text");
 

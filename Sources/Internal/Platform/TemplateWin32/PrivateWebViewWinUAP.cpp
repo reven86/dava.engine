@@ -81,7 +81,7 @@ public:
     virtual IAsyncOperation<IInputStream^>^ UriToStreamAsync(Uri^ uri);
 
 private:
-    IAsyncOperation<IInputStream^>^ GetStreamFromFilePathAsync(const FilePath& filePath);
+    IAsyncOperation<IInputStream ^> ^ GetStreamFromFilePathAsync(const FilePath& filePath);
     IAsyncOperation<IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
 
     Platform::String^ htmlData;
@@ -108,29 +108,29 @@ IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
     return GetStreamFromFilePathAsync(path);
 }
 
-IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
+IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
 {
     String fileNameStr = filePath.GetAbsolutePathname();
     std::replace(fileNameStr.begin(), fileNameStr.end(), '/', '\\');
-    Platform::String^ fileName = StringToRTString(fileNameStr);
+    Platform::String ^ fileName = StringToRTString(fileNameStr);
 
-    return create_async([this, fileName]() -> IInputStream^
-    {
-        try
-        {
-            StorageFile^ storageFile = WaitAsync(StorageFile::GetFileFromPathAsync(fileName));
-            IRandomAccessStream^ stream = WaitAsync(storageFile->OpenAsync(FileAccessMode::Read));
-            return static_cast<IInputStream^>(stream);
-        }
-        catch (Platform::COMException^ e)
-        {
-            Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)",
-                RTStringToString(fileName).c_str(),
-                RTStringToString(e->Message).c_str(),
-                e->HResult);
-            return ref new InMemoryRandomAccessStream();
-        }
-    });
+    return create_async([ this, fileName ]() -> IInputStream ^
+                        {
+                            try
+                            {
+                                StorageFile ^ storageFile = WaitAsync(StorageFile::GetFileFromPathAsync(fileName));
+                                IRandomAccessStream ^ stream = WaitAsync(storageFile->OpenAsync(FileAccessMode::Read));
+                                return static_cast<IInputStream ^>(stream);
+                            }
+                            catch (Platform::COMException ^ e)
+                            {
+                                Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)",
+                                              RTStringToString(fileName).c_str(),
+                                              RTStringToString(e->Message).c_str(),
+                                              e->HResult);
+                                return ref new InMemoryRandomAccessStream();
+                            }
+                        });
 }
 
 IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromStringAsync(Platform::String^ s)

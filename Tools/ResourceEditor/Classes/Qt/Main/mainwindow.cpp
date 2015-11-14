@@ -2663,7 +2663,7 @@ bool QtMainWindow::OpenScene( const QString & path )
 
         if (!FilePath::ContainPath(argumentPath, projectPath))
         {
-			QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
+            QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
 				projectPath.GetAbsolutePathname().c_str(),
 				argumentPath.GetAbsolutePathname().c_str()));
 		}
