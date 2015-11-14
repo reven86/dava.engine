@@ -1,0 +1,28 @@
+cmake_minimum_required (VERSION 3.0)
+project( ThirdParty )
+
+#add_definitions       ( -D_LIB)
+
+find_package          ( QT5           REQUIRED )
+
+include_directories( ${Qt5Core_INCLUDE_DIRS} )
+include_directories( ${Qt5Gui_INCLUDE_DIRS} )
+include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
+include_directories( ${Qt5Qml_INCLUDE_DIRS} )
+include_directories( ${Qt5Quick_INCLUDE_DIRS} )   
+
+include_directories   ( "bullet" )
+include_directories   ( "Collada" )
+include_directories   ( ${DAVA_INCLUDE_DIR} )
+include_directories   ( ${DAVA_TOOLS_DIR} )
+include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
+include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/FCollada )
+include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/External/Cg/include )
+
+
+define_source_folders          ( SRC_ROOT "." )
+generate_source_groups_project ( )
+
+#generated_unified_sources      ( PROJECT_SOURCE_FILES )
+add_library                    ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} )
+	

@@ -48,7 +48,10 @@ GameCore::GameCore()
 {
     new GridVisualizer();
     new RulerController();
-    new AutotestingSystem();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	new AutotestingSystem();
+#endif
 
 	// Unpack the help data, if needed.
 	UnpackHelp();
@@ -64,8 +67,11 @@ GameCore::~GameCore()
     GridVisualizer::Instance()->Release();
 
     EditorSettings::Instance()->Release();
-        
-    AutotestingSystem::Instance()->Release();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	AutotestingSystem::Instance()->Release();
+#endif
+
 }
 
 void GameCore::OnAppStarted()

@@ -174,15 +174,9 @@ generate_source_groups_project ()
 
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST "Internal/Autotesting" 
-                                                               "UI/UISpinner.cpp" 
-                                                               "UI/UISwitch.cpp"
                                                                "TemplateMacOS/CoreMacOSPlatformBase.cpp"
-                                                               "Render/Texture.cpp"
-                                                               "Concurrency/ThreadPosix.cpp" 
                                                                "iOS/ICloudKeyValue.cpp"
                                                                "Notification/LocalNotificationIOS.cpp"
-                                                               "MCPP/system.cpp"
-                                                               "Common/RegExp.cpp"
                                                                )
 
 

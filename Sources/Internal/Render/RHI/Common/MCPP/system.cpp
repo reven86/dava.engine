@@ -78,9 +78,9 @@
 #define str_case_eq(str1, str2) (strcasecmp(str1, str2) == 0)
 #else /* MSC, BORLANDC, LCC   */
 #if HOST_COMPILER == MSC
-#define stricmp(str1, str2) _stricmp(str1, str2)
+#define sys_stricmp(str1, str2) _stricmp(str1, str2)
 #endif
-#define str_case_eq(str1, str2) (stricmp(str1, str2) == 0)
+#define str_case_eq(str1, str2) (sys_stricmp(str1, str2) == 0)
 #endif
 #else /* ! FNAME_FOLD */
 #define str_case_eq(str1, str2) (strcmp(str1, str2) == 0)

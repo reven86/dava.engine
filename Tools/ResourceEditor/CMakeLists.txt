@@ -28,13 +28,13 @@ include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
 include_directories   (.)
 include_directories   ( "../TextureTools" )
 include_directories   ( "Classes" )
-include_directories   ( "Classes/bullet" )
 include_directories   ( "Classes/Qt" )
 include_directories   ( "Classes/Qt/CubemapEditor" )
 include_directories   ( "Classes/Qt/TextureBrowser" )
 
-include_directories   ( "Classes/Collada" )
-
+include_directories   ( "ThirdParty" )
+include_directories   ( "ThirdParty/Collada" )
+include_directories   ( "ThirdParty/bullet" )
 
 add_definitions       (
 -D__DAVAENGINE_SPEEDTREE__
@@ -73,6 +73,8 @@ set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
 set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
+add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty" ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty )
+
 define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
 
@@ -84,7 +86,7 @@ set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
 set( LIBRARIES            ${BEAST_LIB} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
-set( UNIFIED_IGNORE_LIST  "Classes/bullet" "Classes/Collada" )
+set( UNIFIED_IGNORE_LIST  )
 
 DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
                            COPY_WIN32  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll

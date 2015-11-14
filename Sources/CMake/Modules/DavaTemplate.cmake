@@ -249,8 +249,8 @@ endif()
 
 ###
 
-generated_unified_sources   ( PROJECT_SOURCE_FILES  IGNORE_LIST ${UNIFIED_IGNORE_LIST} )
-    
+list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
+generated_unified_sources( PROJECT_SOURCE_FILES  IGNORE_LIST ${UNIFIED_IGNORE_LIST} )
 
 if( ANDROID )
     set( POSTFIX 0  )
@@ -296,7 +296,7 @@ if( ANDROID )
 
     endif()
 
-    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${ADDED_SRC} ${REMAINING_LIST} )
+    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${REMAINING_LIST} )
 
 else()
     if( NOT MAC_DISABLE_BUNDLE )
@@ -304,8 +304,6 @@ else()
     endif()
 
     add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
-        ${ADDED_SRC}
-        ${PLATFORM_ADDED_SRC}
         ${PROJECT_SOURCE_FILES}
         ${RESOURCES_LIST}
     )
