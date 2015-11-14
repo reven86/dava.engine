@@ -567,6 +567,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		nativeOnAccelerometer(x, y, z);
 	}
 	
+    // execute on c++ main thread (GL, Game) not Java UI main thread
 	public void RunOnMainLoopThread(Runnable event) {
 		surfaceView.queueEvent(event);
 	}

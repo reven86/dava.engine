@@ -120,6 +120,7 @@ void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
         {
             material->AddFlag(FLAG_WIND_ANIMATION, flagValue);
         }
+        material->PreBuildMaterial(PASS_FORWARD);
     }
 }
 
