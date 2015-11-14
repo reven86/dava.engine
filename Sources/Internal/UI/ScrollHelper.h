@@ -74,7 +74,7 @@ public:
     \param[in] zise scroll area size
     \param[in\out] pos scroll area position
     */
-    void ScrollWithoutAnimation(float32 scrollDelta, float32 size, float32& pos);
+    void ScrollWithoutAnimation(float32 scrollDelta, float32 size, float32* pos);
 
     void ScrollToPosition(float32 newPos, float32 scrollTimeSec = 0.3f);
 	/**

@@ -284,7 +284,7 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
             if (accuracyDelta <= Abs(deltaScroll))
             {
                 float32 dy = scrollView->GetRect().dy;
-                scrollView->GetVerticalScroll()->ScrollWithoutAnimation(deltaScroll, dy, relativePosition.y);
+                scrollView->GetVerticalScroll()->ScrollWithoutAnimation(deltaScroll, dy, &relativePosition.y);
             }
             else
             {
