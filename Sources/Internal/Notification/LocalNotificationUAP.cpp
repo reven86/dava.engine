@@ -27,48 +27,49 @@
 =====================================================================================*/
 
 
-#include "Notification/LocalNotificationNotImplemented.h"
+#include "Notification/LocalNotificationUAP.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 namespace DAVA
 {
 
-LocalNotificationNotImplemented::LocalNotificationNotImplemented(const String &_id)
+LocalNotificationUAP::LocalNotificationUAP(const String &_id)
 {
 	notificationId = _id;
 }
     
-LocalNotificationNotImplemented::~LocalNotificationNotImplemented()
+LocalNotificationUAP::~LocalNotificationUAP()
 {
 }
 
-void LocalNotificationNotImplemented::SetAction(const WideString &action)
+void LocalNotificationUAP::SetAction(const WideString &action)
 {
 }
 
-void LocalNotificationNotImplemented::Hide()
+void LocalNotificationUAP::Hide()
 {
 }
-void LocalNotificationNotImplemented::ShowText(const WideString &title, const WideString &text, bool useSound)
+void LocalNotificationUAP::ShowText(const WideString &title, const WideString &text, bool useSound)
 {
 }
-void LocalNotificationNotImplemented::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
+void LocalNotificationUAP::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
 {
 }
     
 LocalNotificationImpl *LocalNotificationImpl::Create(const String &_id)
 {
-    return new LocalNotificationNotImplemented(_id);
+    return new LocalNotificationUAP(_id);
 }
 
-void LocalNotificationNotImplemented::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
+void LocalNotificationUAP::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
 {
 }
 
-void LocalNotificationNotImplemented::RemoveAllDelayedNotifications()
+void LocalNotificationUAP::RemoveAllDelayedNotifications()
 {
 }
 
-}
+}  // namespace DAVA
+
 #endif

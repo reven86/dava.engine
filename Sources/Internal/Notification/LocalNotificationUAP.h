@@ -27,48 +27,35 @@
 =====================================================================================*/
 
 
-#include "Notification/LocalNotificationNotImplemented.h"
+#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__
+#define __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+#include "Notification/LocalNotificationImpl.h"
+#include "Base/Message.h"
 
 namespace DAVA
 {
-
-LocalNotificationNotImplemented::LocalNotificationNotImplemented(const String &_id)
-{
-	notificationId = _id;
-}
     
-LocalNotificationNotImplemented::~LocalNotificationNotImplemented()
+class LocalNotificationUAP : public LocalNotificationImpl
 {
-}
+public:
+    LocalNotificationUAP(const String &_id);
+    virtual ~LocalNotificationUAP();
 
-void LocalNotificationNotImplemented::SetAction(const WideString &action)
-{
-}
-
-void LocalNotificationNotImplemented::Hide()
-{
-}
-void LocalNotificationNotImplemented::ShowText(const WideString &title, const WideString &text, bool useSound)
-{
-}
-void LocalNotificationNotImplemented::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
-{
-}
-    
-LocalNotificationImpl *LocalNotificationImpl::Create(const String &_id)
-{
-    return new LocalNotificationNotImplemented(_id);
-}
-
-void LocalNotificationNotImplemented::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
-{
-}
-
-void LocalNotificationNotImplemented::RemoveAllDelayedNotifications()
-{
-}
+    virtual void SetAction(const WideString &action);
+    virtual void Hide();
+    virtual void ShowText(const WideString &title, const WideString &text, bool useSound);
+    virtual void ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound);
+    virtual void PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound);
+    virtual void RemoveAllDelayedNotifications();
+};
 
 }
+
 #endif
+
+#endif /* defined __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__ */
