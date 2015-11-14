@@ -644,17 +644,27 @@ void init_device_and_swapchain_uap(void* panel)
 
 void resize_swapchain(int width, int height, float32 sx, float32 sy)
 {
-    SetCompositionScale(sx, sy);
-    SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
+    // Do not actually resize swapchain if sizes and scales are the same
+    const float32 MAGNITUDE = 1000.0f; // Compare up to 3 digits after point
+    bool doResize = int(m_logicalSize.Width) != width ||
+                    int(m_logicalSize.Height) != height ||
+                    int((m_compositionScaleX - sx) * MAGNITUDE) != 0 ||
+                    int((m_compositionScaleY - sy) * MAGNITUDE) != 0;
 
-    rhi::CommandBufferDX11::DiscardAll();
-    CreateWindowSizeDependentResources();
+    if (doResize)
+    {
+        SetCompositionScale(sx, sy);
+        SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
 
-    _D3D11_SwapChain = m_swapChain.Get();
-    _D3D11_SwapChainBuffer = m_swapChainBuffer.Get();
-    _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
-    _D3D11_DepthStencilBuffer = m_d3dDepthStencilBuffer.Get();
-    _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
+        rhi::CommandBufferDX11::DiscardAll();
+        CreateWindowSizeDependentResources();
+
+        _D3D11_SwapChain = m_swapChain.Get();
+        _D3D11_SwapChainBuffer = m_swapChainBuffer.Get();
+        _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
+        _D3D11_DepthStencilBuffer = m_d3dDepthStencilBuffer.Get();
+        _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
+    }
 }
 
 #endif
