@@ -1,8 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 project( ThirdParty )
 
-#add_definitions       ( -D_LIB)
-
 find_package          ( QT5           REQUIRED )
 
 include_directories( ${Qt5Core_INCLUDE_DIRS} )
