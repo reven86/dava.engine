@@ -44,8 +44,8 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 set_project_files_properties( "${CPP_FILES}" )
 
 generate_source_groups_project ( )
+generated_unified_sources   ( CPP_FILES ARG_IGNORE_LIST_APPLE "TeamcityOutput/TeamcityOutput.cpp" )
 
-generated_unified_sources   ( CPP_FILES )
 add_library                 ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 
 if( MACOS AND NOT ANDROID )
