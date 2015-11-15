@@ -491,8 +491,15 @@ endmacro ()
 macro( generated_unified_sources SOURCE_FILES )  
 
     if( UNIFIED_BUILD )
-    
-        cmake_parse_arguments (ARG "" "" "IGNORE_LIST" ${ARGN})
+        cmake_parse_arguments (ARG "" "" "IGNORE_LIST;IGNORE_LIST_APPLE;IGNORE_LIST_WIN32" ${ARGN})
+        
+        if( APPLE )
+            list( APPEND ARG_IGNORE_LIST ${ARG_IGNORE_LIST_APPLE} )
+        endif()
+
+        if( WIN32 )
+            list( APPEND ARG_IGNORE_LIST ${ARG_IGNORE_LIST_WIN32} )
+        endif()
 
         list( REMOVE_DUPLICATES ${SOURCE_FILES} )
 
@@ -521,7 +528,7 @@ macro( generated_unified_sources SOURCE_FILES )
         endforeach()  
 
         list( LENGTH ALL_CPP_LIST ALL_CPP_LIST_SIZE )
-        math( EXPR NUMBER_GEN_PACK "${ALL_CPP_LIST_SIZE} / 4" ) 
+        math( EXPR NUMBER_GEN_PACK "${ALL_CPP_LIST_SIZE} / 6" ) 
 
         foreach( ITEM ${ALL_CPP_LIST} )
             list( APPEND CPP_LIST  ${ITEM} )
@@ -565,7 +572,6 @@ macro( generated_unified_sources SOURCE_FILES )
         
         math( EXPR CPP_PACK_IDX "${CPP_PACK_IDX} + ${CPP_PACK_SIZE}" )
         set_property( GLOBAL PROPERTY ${PROJECT_NAME}_CPP_PACK_IDX "${CPP_PACK_IDX}" )
-
 
     endif()
 endmacro ()

@@ -373,10 +373,10 @@ typedef long expr_t;
  */
 #if IDMAX < IDLEN90MIN || NBUFF < SLEN90MIN + 3
 || NWORK < SLEN90MIN + 2 || NMACPARS < NMACPARS90MIN || NEXP < EXP_NEST90MIN || BLK_NEST < BLK_NEST90MIN
-#define STDC 0
+#define SYS_STDC 0
 #endif
-#ifndef STDC
-#define STDC 1 /* 1 : for ISO 9899:1990 or later   */
+#ifndef SYS_STDC
+#define SYS_STDC 1 /* 1 : for ISO 9899:1990 or later   */
 #endif
 
 #ifndef STDC_VERSION

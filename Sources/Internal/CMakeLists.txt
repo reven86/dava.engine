@@ -173,11 +173,13 @@ define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}"
 generate_source_groups_project ()
 
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
-generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST "Internal/Autotesting" 
-                                                               "TemplateMacOS/CoreMacOSPlatformBase.cpp"
-                                                               "iOS/ICloudKeyValue.cpp"
-                                                               "Notification/LocalNotificationIOS.cpp"
-                                                               )
+generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST        
+                                                        "Internal/Autotesting" 
+                                                   IGNORE_LIST_APPLE  
+                                                        "TemplateMacOS/CoreMacOSPlatformBase.cpp"
+                                                        "iOS/ICloudKeyValue.cpp"
+                                                        "Notification/LocalNotificationIOS.cpp"
+                                                   )
 
 
 include_directories      (.)

@@ -1958,7 +1958,7 @@ int trad /* -traditional (GCC only)      */
         if (trad)
             incompat = TRUE;
         if (!stdc_val)
-            stdc_val = STDC;
+            stdc_val = SYS_STDC;
         break;
     case KR:
     case OLD_PREP:

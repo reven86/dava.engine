@@ -81,7 +81,7 @@ bool SpinnerAdapter::Previous()
 
 void SpinnerAdapter::DisplaySelectedData(UISpinner * spinner)
 {
-    FillScrollableContent(spinner->GetContent(), CURRENT);
+    FillScrollableContent(spinner->GetContent(), EIO_CURRENT);
 }
 
 UISpinner::UISpinner(const Rect& rect)
@@ -185,7 +185,7 @@ void UISpinner::Input(UIEvent *currentInput)
                         Vector2 newPivotPoint = nextContent->GetPivotPoint();
                         newPivotPoint.x = contentNewX > 0 ? content->size.dx : -content->size.dx;
                         nextContent->SetPivotPoint(newPivotPoint);
-                        adapter->FillScrollableContent(nextContent.Get(), contentNewX > 0 ? SpinnerAdapter::PREVIOUS : SpinnerAdapter::NEXT);
+                        adapter->FillScrollableContent(nextContent.Get(), contentNewX > 0 ? SpinnerAdapter::EIO_PREVIOUS : SpinnerAdapter::EIO_NEXT);
                     }
                 }
                 content->relativePosition.x = contentNewX;
