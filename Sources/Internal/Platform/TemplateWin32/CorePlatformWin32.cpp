@@ -512,8 +512,8 @@ namespace DAVA
 
     void HandleMouseButtonsPressed(USHORT buttsFlags)
     {
-		if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
-		{
+        if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
+        {
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
 		}
 		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
@@ -817,8 +817,8 @@ namespace DAVA
             return 0;
 
         case WM_ACTIVATE:
-			{
-				ApplicationCore * core = Core::Instance()->GetApplicationCore();
+        {
+                ApplicationCore * core = Core::Instance()->GetApplicationCore();
                 WORD loWord = LOWORD(wParam);
                 WORD hiWord = HIWORD(wParam);
                 if(!loWord || hiWord)

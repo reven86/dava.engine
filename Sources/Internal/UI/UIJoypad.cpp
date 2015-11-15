@@ -271,9 +271,9 @@ void UIJoypad::Input(UIEvent *currentInput)
     {
         mainTouch = currentInput->tid;
     }
-	
-	if(mainTouch != currentInput->tid)
-	{
+
+    if (mainTouch != currentInput->tid)
+    {
 		return;
 	}
 

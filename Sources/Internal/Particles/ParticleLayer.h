@@ -121,11 +121,11 @@ struct ParticleLayer : public BaseObject
 
     bool isDisabled;
 
-    Vector<bool> activeLODS;		
+    Vector<bool> activeLODS;
 
-	String			layerName;
+    String layerName;
 
-	/*
+    /*
 	 Properties of particle layer that describe particle system logic
 	 */
 	RefPtr< PropertyLine<float32> > life;				// in seconds

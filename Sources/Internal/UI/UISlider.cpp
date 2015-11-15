@@ -258,9 +258,9 @@ void UISlider::Input(UIEvent *currentInput)
     {
         /* if not continuos always perform event because last move position almost always the same as end pos */
         PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
-	}
+    }
 
-	RecalcButtonPos();
+    RecalcButtonPos();
 	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 

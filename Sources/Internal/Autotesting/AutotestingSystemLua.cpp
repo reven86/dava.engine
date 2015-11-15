@@ -194,9 +194,9 @@ namespace DAVA
 			filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
 			lua_remove(L, -2);  /* remove path template */
             if (FileSystem::Instance()->Exists(filename)) /* does file exist and is readable? */
-                return filename;  /* return that file name */
-			lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
-			lua_remove(L, -2);  /* remove file name */
+                return filename; /* return that file name */
+            lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
+            lua_remove(L, -2);  /* remove file name */
 			lua_concat(L, 2);  /* add entry to possible error message */
 		}
 		return name;  /* not found */
@@ -532,9 +532,9 @@ namespace DAVA
         keyPress.keyChar = keyChar;
 
         Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
-			keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
-		switch (keyPress.tid)
-		{
+                               keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
+        switch (keyPress.tid)
+        {
 		case DVKEY_BACKSPACE:
 		{
 			//TODO: act the same way on iPhone
@@ -713,8 +713,8 @@ namespace DAVA
         touchDown.tid = touchId;
         touchDown.tapCount = tapCount;
         touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
-		touchDown.point = point;
-		ProcessInput(touchDown);
+        touchDown.point = point;
+        ProcessInput(touchDown);
 	}
 
 	void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
@@ -731,7 +731,7 @@ namespace DAVA
             ProcessInput(touchMove);
         }
         else
-		{
+        {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 			Logger::Warning("AutotestingSystemLua::TouchMove point=(%f, %f) ignored no touch down found", point.x, point.y);
 #else
@@ -754,8 +754,8 @@ namespace DAVA
         ProcessInput(touchUp);
     }
 
-	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
-	{
+    void AutotestingSystemLua::ProcessInput(const UIEvent& input)
+    {
         UIEvent ev = input;
         UIControlSystem::Instance()->OnInput(&ev);
 
@@ -770,8 +770,8 @@ namespace DAVA
     bool AutotestingSystemLua::LoadWrappedLuaObjects()
     {
         if (!luaState)
-		{
-			return false; //TODO: report error?
+        {
+            return false; //TODO: report error?
 		}
 
 		luaopen_AutotestingSystem(luaState);	// load the wrappered module

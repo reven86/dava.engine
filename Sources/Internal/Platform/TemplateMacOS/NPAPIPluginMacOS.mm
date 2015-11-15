@@ -189,8 +189,8 @@ extern void FrameworkWillTerminate();
         case NPCocoaEventMouseEntered:
             break;
 
-		case NPCocoaEventMouseExited:
-			break;
+        case NPCocoaEventMouseExited:
+            break;
 
 		case NPCocoaEventMouseDragged:
             [self processEvent:DAVA::UIEvent::Phase::DRAG touch:event];
@@ -198,9 +198,9 @@ extern void FrameworkWillTerminate();
 
         case NPCocoaEventKeyDown:
             [self keyDown:event];
-			break;
+            break;
 
-		case NPCocoaEventKeyUp:
+        case NPCocoaEventKeyUp:
 			[self keyUp:event];
 			break;
 
@@ -229,8 +229,8 @@ extern void FrameworkWillTerminate();
     {
         for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-			NSPoint p;
-			p.x = curEvent->data.mouse.pluginX;
+            NSPoint p;
+            p.x = curEvent->data.mouse.pluginX;
 			p.y = curEvent->data.mouse.pluginY;
 
 			it->physPoint.x = p.x;
@@ -308,8 +308,8 @@ extern void FrameworkWillTerminate();
     {
         for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-			if(it->tid == button)
-			{
+            if (it->tid == button)
+            {
 				allTouches.erase(it);
 				break;
 			}
@@ -414,8 +414,8 @@ extern void FrameworkWillTerminate();
     for (int i = 0; i < 5; i++)
     {
         if ((oldModifiersFlags & masks[i]) != (newModifiers & masks[i]))
-		{
-			if (newModifiers & masks[i])
+        {
+            if (newModifiers & masks[i])
 			{
 				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
 			}
