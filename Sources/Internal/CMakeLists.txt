@@ -180,6 +180,7 @@ generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "iOS/ICloudKeyValue.cpp"
                                                         "Notification/LocalNotificationIOS.cpp"
                                                         "Concurrency/ThreadPosix.cpp"
+                                                        "Render/Texture.cpp" 
                                                    )
 
 
