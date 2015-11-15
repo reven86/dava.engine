@@ -177,6 +177,7 @@ generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "Internal/Autotesting" 
                                                    IGNORE_LIST_APPLE  
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"
+                                                        "MacOS/CoreMacOSPlatformQt.cpp"
                                                         "iOS/ICloudKeyValue.cpp"
                                                         "Notification/LocalNotificationIOS.cpp"
                                                         "Concurrency/ThreadPosix.cpp"
