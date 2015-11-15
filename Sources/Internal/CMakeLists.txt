@@ -181,6 +181,7 @@ generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "Notification/LocalNotificationIOS.cpp"
                                                         "Concurrency/ThreadPosix.cpp"
                                                         "Render/Texture.cpp" 
+                                                        "Render/RHI/GLES2"
                                                    )
 
 
