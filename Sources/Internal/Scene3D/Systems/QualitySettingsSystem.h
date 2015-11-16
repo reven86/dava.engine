@@ -60,6 +60,7 @@ public:
     static const FastName QUALITY_OPTION_WATER_DECORATIONS;
     static const FastName QUALITY_OPTION_DISABLE_FOG;
     static const FastName QUALITY_OPTION_DISABLE_EFFECTS;
+    static const FastName QUALITY_OPTION_LOD0_EFFECTS;
 
     QualitySettingsSystem();
 
