@@ -65,8 +65,8 @@ ParticleEffectComponent::ParticleEffectComponent()
     }
     else
     {
-        desiredLodLevel = 0;
-        activeLodLevel = 0;
+        desiredLodLevel = 1;
+        activeLodLevel = 1;
     }
 }
 
