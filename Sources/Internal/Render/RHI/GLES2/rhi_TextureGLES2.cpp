@@ -335,11 +335,13 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         cmd[0].arg[0] = 1;
         cmd[0].arg[1] = uint64(&(uid));
 
-        if (uid2)
+        if (uid2 && uid2 != uid)
         {
             cmd[1].func = GLCommand::DELETE_RENDERBUFFERS;
             cmd[1].arg[0] = 1;
             cmd[1].arg[1] = uint64(&(uid2));
+
+            ++cmd_cnt;
         }
     }
     else
