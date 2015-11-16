@@ -64,9 +64,15 @@ ParticleEffectComponent::ParticleEffectComponent()
 ParticleEffectComponent::~ParticleEffectComponent()
 {
 	ClearCurrentGroups();
-	if (state!=STATE_STOPPED)
-		GetEntity()->GetScene()->particleEffectSystem->RemoveFromActive(this);
-	SafeRelease(effectRenderObject);
+    if (state != STATE_STOPPED)
+    {
+        Entity* e = GetEntity();
+        if (e && e->GetScene())
+        {
+            e->GetScene()->particleEffectSystem->RemoveFromActive(this);
+        }
+    }
+    SafeRelease(effectRenderObject);
     for(auto& emitter : emitters)
     {
         SafeRelease(emitter);
