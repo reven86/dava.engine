@@ -4,8 +4,9 @@ set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo"
 
 project               ( ResourceEditor )
 
-set                   ( DAVA_USE_RENDERSTATS true )
-set                   ( DAVA_USE_QT_WIDGETS true )
+set                   ( DAVA_DISABLE_AUTOTESTS true )
+set                   ( DAVA_USE_RENDERSTATS   true )
+set                   ( DAVA_USE_QT_WIDGETS    true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include               ( CMake-common )
 
@@ -25,16 +26,16 @@ include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/FColla
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/External/Cg/include )
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
 
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet  )
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada )
+
 include_directories   (.)
 include_directories   ( "../TextureTools" )
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Qt" )
 include_directories   ( "Classes/Qt/CubemapEditor" )
 include_directories   ( "Classes/Qt/TextureBrowser" )
-
-include_directories   ( "ThirdParty" )
-include_directories   ( "ThirdParty/Collada" )
-include_directories   ( "ThirdParty/bullet" )
 
 add_definitions       (
 -D__DAVAENGINE_SPEEDTREE__
@@ -64,16 +65,21 @@ qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 if( WIN32 )
     add_definitions( -D__DAVAENGINE_BEAST__ )
-    set( BEAST_WRAPPER "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
-    set( BEAST_LIB     "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
+    set( BEAST_WRAPPER   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
+    set( BEAST_LIB       "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
+
+    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_release_bullet.lib 
+                                  ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/WIN32_release_collada.lib  )    
+    set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_debug_bullet.lib 
+                                  ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/WIN32_debug_collada.lib  )    
+
+elseif( MACOS )
 
 endif()
 
 set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
 set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-
-add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty" ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty )
 
 define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
@@ -82,8 +88,12 @@ set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
-set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
-set( LIBRARIES            ${BEAST_LIB} ThirdParty )
+set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set( LIBRARIES            ${BEAST_LIB} )
+set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
+set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
+                                                       
+
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
 set( UNIFIED_IGNORE_LIST  )

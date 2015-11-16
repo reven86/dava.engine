@@ -14,6 +14,10 @@ set ( FRAMEWORK_DEFINITIONS
 -DCURL_STATICLIB
 )
 
+if( DAVA_DISABLE_AUTOTESTS  )
+    list( APPEND FRAMEWORK_DEFINITIONS -DDISABLE_AUTOTESTS )
+endif()
+
 if( NOT DISABLE_SOUNDS )
     list( APPEND FRAMEWORK_DEFINITIONS -DDAVA_FMOD )
 
@@ -172,9 +176,11 @@ define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}"
 
 generate_source_groups_project ()
 
+
+
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST        
-                                                        "Internal/Autotesting" 
+                                                        "Internal/Autotesting"
                                                    IGNORE_LIST_APPLE  
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"
                                                         "iOS/ICloudKeyValue.cpp"
