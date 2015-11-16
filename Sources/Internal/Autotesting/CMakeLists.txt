@@ -7,6 +7,6 @@ if( NOT DAVA_DISABLE_AUTOTESTS )
       GLOB_H_PATTERNS      ${ADDED_H_PATTERNS}
       GLOB_ERASE_FILES     ${ERASE_FILES} 
     )
-message( "!!!!!!!!!!!!!!!!!" )
+
 endif()
 
