@@ -74,6 +74,10 @@ if( WIN32 )
                                   ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/WIN32_debug_collada.lib  )    
 
 elseif( MACOS )
+    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/MACOS_release_bullet.a 
+                                  ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/MACOS_release_collada.a  )    
+    set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/MACOS_debug_bullet.a 
+                                  ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/MACOS_debug_collada.a  )    
 
 endif()
 
