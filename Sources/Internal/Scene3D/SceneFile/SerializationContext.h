@@ -149,7 +149,7 @@ namespace DAVA
 
         inline uint32 GetLastError()
         {
-			return lastError;
+            return lastError;
 		}
 		
 		inline void SetDefaultMaterialQuality(const FastName& quality)

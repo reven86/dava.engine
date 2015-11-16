@@ -63,7 +63,7 @@ void InputSystem::ProcessInputEvent(UIEvent * event)
             (*it)(event);
         else if (((*it).devices & INPUT_DEVICE_TOUCH))
             (*it)(event);
-	}
+    }
 }
 
 void InputSystem::AddInputCallback(const InputCallback& inputCallback)

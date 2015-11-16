@@ -102,7 +102,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
         scene->SaveScene(sc2Filename, false);
     }
     else
-    {
+	{
 		errorLog.insert(Format("[SceneSaver::ResaveFile] Can't open file %s", fileName.c_str()));
 	}
 
@@ -272,8 +272,8 @@ void SceneSaver::CopyEffects(Entity *node)
     for (auto it = effectFolders.begin(), endIt = effectFolders.end(); it != endIt; ++it)
     {
         FilePath flagsTXT = *it + "flags.txt";
-        
-        if(flagsTXT.Exists())
+
+        if (FileSystem::Instance()->Exists(flagsTXT))
         {
             sceneUtils.AddFile(flagsTXT);
         }

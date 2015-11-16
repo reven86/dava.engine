@@ -55,7 +55,6 @@ class KeyedArchive : public BaseObject
 {
 protected:
 	virtual ~KeyedArchive();
-
 public:
 	KeyedArchive();
 	KeyedArchive(const KeyedArchive &arc);
@@ -471,7 +470,7 @@ public:
      \brief Function to get all data of archive.
      \returns map of VariantType class with names
 	 */
-    const UnorderedMap<String, VariantType*>& GetArchieveData() const;
+    const Map<String, VariantType*> & GetArchieveData() const;
 
     /**
      \brief Function loads data from given yaml Node.
@@ -495,7 +494,7 @@ public:
     static const char* GenKeyFromIndex(uint32 index);
 
 private:
-    UnorderedMap<String, VariantType*> objectMap;
+	Map<String, VariantType*> objectMap;
 
 public:
 	INTROSPECTION_EXTEND(KeyedArchive, BaseObject, NULL);

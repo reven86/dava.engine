@@ -98,8 +98,6 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
 void CorePlatformAndroid::Quit()
 {
     Logger::Debug("[CorePlatformAndroid::Quit]");
-    QuitAction();
-
     renderIsActive = false;
     // finish java activity
     JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
@@ -203,14 +201,13 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 void CorePlatformAndroid::OnCreateActivity()
 {
     DAVA::Thread::InitMainThread();
-    //		Logger::Debug("[CorePlatformAndroid::OnCreateActivity]");
 }
 
 void CorePlatformAndroid::OnDestroyActivity()
 {
-    //		Logger::Debug("[CorePlatformAndroid::OnDestroyActivity]");
-
+    Logger::Info("[CorePlatformAndroid::OnDestroyActivity]");
     renderIsActive = false;
+    QuitAction();
 }
 
 void CorePlatformAndroid::StartVisible()

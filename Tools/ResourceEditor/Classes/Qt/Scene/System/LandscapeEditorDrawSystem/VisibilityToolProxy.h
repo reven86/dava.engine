@@ -56,7 +56,7 @@ protected:
 
     int32 size;
     Vector2 visibilityPoint;
-    bool isVisibilityPointSet;
+	bool isVisibilityPointSet;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPROXY__) */

@@ -217,6 +217,12 @@ void UISlider::RemoveControl(UIControl *control)
 
 void UISlider::Input(UIEvent *currentInput)
 {
+    // not supported for now.
+    if (UIEvent::Phase::WHEEL == currentInput->phase)
+    {
+        return;
+    }
+
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
     if (currentInput->phase == UIEvent::Phase::MOVE || currentInput->phase == UIEvent::Phase::CHAR)
         return;
@@ -252,7 +258,7 @@ void UISlider::Input(UIEvent *currentInput)
     {
         /* if not continuos always perform event because last move position almost always the same as end pos */
         PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
-	}
+    }
 
 	RecalcButtonPos();
 	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.

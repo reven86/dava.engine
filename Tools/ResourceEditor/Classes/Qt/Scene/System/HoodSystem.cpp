@@ -56,7 +56,7 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
     collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
     collWorld = new btCollisionWorld(collDispatcher, collBroadphase, collConfiguration);
-    collWorld->setDebugDrawer(collDebugDraw);
+	collWorld->setDebugDrawer(collDebugDraw);
 
 	SetModifAxis(ST_AXIS_X);
 	SetModifMode(ST_MODIF_MOVE);
@@ -342,7 +342,7 @@ void HoodSystem::Draw()
 {
     if (NULL != curHood && IsVisible())
     {
-        TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
+		TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
 
 		// modification isn't locked and whole system isn't locked
 		if(!IsLocked() && !lockedModif)
@@ -365,7 +365,7 @@ void HoodSystem::Draw()
             // debug draw axis collision word
             //collWorld->debugDrawWorld();
         }
-        else
+		else
 		{
             normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
         }

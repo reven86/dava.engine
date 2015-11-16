@@ -45,7 +45,7 @@ public:
 
     int InspFlags() const;
 
-    virtual const DAVA::MetaInfo * MetaInfo() const;
+	virtual const DAVA::MetaInfo * MetaInfo() const;
 	virtual void* CreateLastCommand() const;
 
 	DAVA::InspInfoDynamic* GetDynamicInfo() const 
@@ -64,7 +64,7 @@ public:
     }
 
     DAVA::FastName name;
-    DAVA::InspInfoDynamic *dynamicInfo;
+	DAVA::InspInfoDynamic *dynamicInfo;
     DAVA::InspInfoDynamic::DynamicData ddata;
 
 protected:

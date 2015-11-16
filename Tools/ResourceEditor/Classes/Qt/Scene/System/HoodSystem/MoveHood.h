@@ -41,8 +41,8 @@ struct MoveHood : public HoodObject
 
     DAVA::Vector3 modifOffset;
 
-    HoodCollObject* axisX;
-    HoodCollObject *axisY;
+    HoodCollObject *axisX;
+	HoodCollObject *axisY;
 	HoodCollObject *axisZ;
 
 	HoodCollObject *axisXY1;

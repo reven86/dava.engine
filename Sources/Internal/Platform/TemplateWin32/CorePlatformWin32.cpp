@@ -172,7 +172,7 @@ namespace DAVA
         fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
         if (options)
         {
-			windowedMode.width = options->GetInt32("width");
+            windowedMode.width = options->GetInt32("width");
 			windowedMode.height = options->GetInt32("height");
 			windowedMode.bpp = options->GetInt32("bpp");
 			
@@ -208,7 +208,7 @@ namespace DAVA
         AdjustWindowRect(&clientSize, style, FALSE);
 
         realWidth = clientSize.right - clientSize.left;
-		realHeight = clientSize.bottom - clientSize.top;
+        realHeight = clientSize.bottom - clientSize.top;
 
 		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
@@ -302,7 +302,7 @@ namespace DAVA
         }
 
         Core::Instance()->SystemAppFinished();
-		FrameworkWillTerminate();
+        FrameworkWillTerminate();
 	}
 
 	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
@@ -383,8 +383,8 @@ namespace DAVA
 
         DWORD iModeNum = 0;
         DEVMODE dmi;
-        ZeroMemory (&dmi, sizeof(dmi)) ;
-		dmi.dmSize = sizeof(dmi) ;
+        ZeroMemory(&dmi, sizeof(dmi));
+        dmi.dmSize = sizeof(dmi) ;
 
 		while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
 		{
@@ -511,8 +511,8 @@ namespace DAVA
     static USHORT mouseButtonsDownMask = 0;
 
     void HandleMouseButtonsPressed(USHORT buttsFlags)
-	{
-		if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
+    {
+        if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
 		{
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
 		}
@@ -816,8 +816,8 @@ namespace DAVA
             PostQuitMessage(0);
             return 0;
 
-		case WM_ACTIVATE:
-			{
+        case WM_ACTIVATE:
+            {
 				ApplicationCore * core = Core::Instance()->GetApplicationCore();
                 WORD loWord = LOWORD(wParam);
                 WORD hiWord = HIWORD(wParam);

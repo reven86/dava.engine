@@ -57,7 +57,7 @@ public:
     const DAVA::Set<DAVA::NMaterial*>& GetTopParents() const;
 
     DAVA::Entity* GetEntity(DAVA::NMaterial*) const;
-    const DAVA::RenderBatch* GetRenderBatch(DAVA::NMaterial*) const;
+    const DAVA::RenderBatch *GetRenderBatch(DAVA::NMaterial*) const;
 
     void SetLightViewMode(EditorMaterialSystem::MaterialLightViewMode viewMode, bool set);
     bool GetLightViewMode(EditorMaterialSystem::MaterialLightViewMode viewMode) const;

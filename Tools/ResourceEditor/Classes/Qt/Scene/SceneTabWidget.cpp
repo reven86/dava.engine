@@ -196,8 +196,8 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
 {
     SceneEditor2 *scene = new SceneEditor2();
     scene->SetScenePath(scenePathname);
-    
-    if(scenePathname.Exists())
+
+    if (FileSystem::Instance()->Exists(scenePathname))
     {
         bool sceneWasLoaded = scene->Load(scenePathname);
         if(!sceneWasLoaded)
@@ -407,7 +407,7 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
         }
     }
     else
-    {
+	{
 		TabBarDataDropped(data);
 	}
 }
@@ -422,8 +422,8 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
 
     if (GetCurrentScene() == scene && nullptr != entities)
     {
-        switch (scene->modifSystem->GetModifMode())
-        {
+        switch(scene->modifSystem->GetModifMode())
+		{
 		case ST_MODIF_MOVE:
             view->setCursor(cursorMove);
             break;
@@ -439,7 +439,7 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
             break;
         }
     }
-    else
+	else
 	{
         view->unsetCursor();
     }

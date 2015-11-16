@@ -94,8 +94,8 @@ public:
     inline void SetTangent(int32 i, const Vector3& v);
     inline void SetBinormal(int32 i, const Vector3& v);
 
-    inline void	SetColor(int32 i, const uint32 & c);
-	inline void	SetTexcoord(int32 ti, int32 i, const Vector2 & v);
+    inline void SetColor(int32 i, const uint32& c);
+    inline void	SetTexcoord(int32 ti, int32 i, const Vector2 & v);
 	inline void	SetCubeTexcoord(int32 ti, int32 i, const Vector3 & v);
 	inline void	SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue);
 	inline void SetJointCount(int32 vIndex, int32 jointCount);
@@ -127,7 +127,7 @@ public:
     Vector2** textureCoordArray;
     Vector3* normalArray;
     Vector3* tangentArray;
-    Vector3		*binormalArray;
+    Vector3* binormalArray;
     float32* jointIdxArray;
     float32* jointWeightArray;
     Vector3** cubeTextureCoordArray;

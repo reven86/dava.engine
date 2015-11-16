@@ -285,15 +285,14 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
         KeyedArchive *props = GetCustomPropertiesArchieve(node);
         if(props)
         {
-            const auto& propsMap = props->GetArchieveData();
-
-            auto it = propsMap.begin();
-            while (it != propsMap.end())
+            const Map<String, VariantType*> propsMap = props->GetArchieveData();
+            
+            auto endIt = propsMap.end();
+            for(auto it = propsMap.begin(); it != endIt; ++it)
             {
                 String key = it->first;
-                ++it;
-
-                if (key.find(ResourceEditor::EDITOR_BASE) == 0)
+                
+                if(key.find(ResourceEditor::EDITOR_BASE) == 0)
                 {
                     if((key != ResourceEditor::EDITOR_DO_NOT_REMOVE) && (key != ResourceEditor::EDITOR_DYNAMIC_LIGHT_ENABLE))
                     {
@@ -301,8 +300,8 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
                     }
                 }
             }
-
-            if(props->Count() == 0)
+            
+			if(props->Count() == 0)
             {
                 node->RemoveComponent(DAVA::Component::CUSTOM_PROPERTIES_COMPONENT);
             }

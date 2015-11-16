@@ -259,8 +259,8 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
     float32 currFps = 1.0f / timeElapsed;
     float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS()) / (PerformanceSettings::Instance()->GetPsPerformanceMaxFPS() - PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
     currPSValue = Clamp(currPSValue, 0.0f, 1.0f);
-    float32 speedMult = 1.0f+(PerformanceSettings::Instance()->GetPsPerformanceSpeedMult()-1.0f)*(1-currPSValue);
-	float32 shortEffectTime = timeElapsed*speedMult;
+    float32 speedMult = 1.0f + (PerformanceSettings::Instance()->GetPsPerformanceSpeedMult() - 1.0f) * (1 - currPSValue);
+    float32 shortEffectTime = timeElapsed*speedMult;
 	
 	size_t componentsCount = activeComponents.size();
 	for(size_t i=0; i<componentsCount; i++)

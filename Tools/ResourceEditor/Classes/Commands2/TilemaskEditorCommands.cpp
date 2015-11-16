@@ -145,7 +145,7 @@ void ModifyTilemaskCommand::Undo()
     landscapeProxy->DecreaseTilemaskChanges();
 
     Rect r = Rect(Vector2(0, 0), Vector2(undoImageMask->GetWidth(), undoImageMask->GetHeight()));
-    Image* mask = landscapeProxy->GetTilemaskImageCopy();
+	Image* mask = landscapeProxy->GetTilemaskImageCopy();
 	mask->InsertImage(undoImageMask, updatedRect.GetPosition(), r);
 }
 
@@ -157,7 +157,7 @@ void ModifyTilemaskCommand::Redo()
     landscapeProxy->IncreaseTilemaskChanges();
 
     Rect r = Rect(Vector2(0, 0), Vector2(redoImageMask->GetWidth(), redoImageMask->GetHeight()));
-    Image* mask = landscapeProxy->GetTilemaskImageCopy();
+	Image* mask = landscapeProxy->GetTilemaskImageCopy();
 	mask->InsertImage(redoImageMask, updatedRect.GetPosition(), r);
 }
 
