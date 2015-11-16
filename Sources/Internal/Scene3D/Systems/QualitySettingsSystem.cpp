@@ -43,6 +43,7 @@ const FastName QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW("Stencil Sha
 const FastName QualitySettingsSystem::QUALITY_OPTION_WATER_DECORATIONS("Water Decorations");
 const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG("Disable fog");
 const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS("Disable effects");
+const FastName QualitySettingsSystem::QUALITY_OPTION_LOD0_EFFECTS("Lod0 effects");
 
 QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)

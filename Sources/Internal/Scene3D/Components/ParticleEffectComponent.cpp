@@ -36,7 +36,7 @@
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
-
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -57,8 +57,17 @@ ParticleEffectComponent::ParticleEffectComponent()
 	effectRenderObject = new ParticleRenderObject(&effectData);
     effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY); //world transform doesn't effect particle render object drawing - instead particles are generated in corresponding world position
 	time = 0;
-	desiredLodLevel = 1;
-    activeLodLevel = 1;
+
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_LOD0_EFFECTS))
+    {
+        desiredLodLevel = 0;
+        activeLodLevel = 0;
+    }
+    else
+    {
+        desiredLodLevel = 0;
+        activeLodLevel = 0;
+    }
 }
 
 ParticleEffectComponent::~ParticleEffectComponent()
@@ -222,7 +231,14 @@ void ParticleEffectComponent::SetPlaybackSpeed(float32 value)
 
 void ParticleEffectComponent::SetDesiredLodLevel(int32 level)
 {
-	desiredLodLevel = level;	
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_LOD0_EFFECTS))
+    {
+        desiredLodLevel = 0;
+    }
+    else
+    {
+        desiredLodLevel = level;
+    }
 }
 
 
