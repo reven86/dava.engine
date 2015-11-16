@@ -496,6 +496,13 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
                     }
                 }
 
+#ifdef __DAVAENGINE_ANDROID__
+                if (globalMaterial && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+                {
+                    globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE); //RHI_COMPLETE: performance issue
+                }
+#endif
+
                 scene->SetGlobalMaterial(globalMaterial);
                 serializationContext.SetGlobalMaterialKey(globalMaterialId);
 
