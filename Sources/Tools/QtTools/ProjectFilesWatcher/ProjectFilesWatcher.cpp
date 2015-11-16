@@ -90,6 +90,10 @@ void ProjectFilesWatcher::OnApplicationStateChanged(Qt::ApplicationState state)
 void ProjectFilesWatcher::OnFileChanged(const QString& path)
 {
     changedFiles.insert(path);
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        ApplyFileChanges();
+    }
 }
 
 void ProjectFilesWatcher::ApplyFileChanges()
