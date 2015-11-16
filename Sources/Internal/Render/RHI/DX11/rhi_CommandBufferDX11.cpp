@@ -83,14 +83,17 @@ public:
 
     void Execute();
 
+    void _ApplyTopology(PrimitiveType primType, uint32 primCount, unsigned* indexCount);
+    void _ApplyVertexData();
+    void _ApplyRasterizerState();
+
     RenderPassConfig passCfg;
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
 
     D3D11_PRIMITIVE_TOPOLOGY cur_topo;
-    Handle cur_ib;
     Handle cur_vb;
-    Handle cur_vb_stride;
+    uint32 cur_vb_stride;
     Handle cur_pipelinestate;
     uint32 cur_stride;
     Handle cur_query_buf;
@@ -98,6 +101,12 @@ public:
     D3D11_VIEWPORT def_viewport;
     RasterizerParamDX11 rs_param;
     ID3D11RasterizerState* cur_rs;
+
+    ID3D11RasterizerState* last_rs;
+    Handle last_vb;
+    uint32 last_vb_stride;
+    Handle last_ps;
+    uint32 last_vdecl;
 
     ID3D11DeviceContext* context;
     ID3DUserDefinedAnnotation* contextAnnotation;
@@ -321,7 +330,6 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
     ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetView };
 
     cb->cur_topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    cb->cur_ib = InvalidIndex;
     cb->cur_vb = InvalidIndex;
     cb->cur_vb_stride = 0;
     cb->cur_pipelinestate = InvalidHandle;
@@ -329,6 +337,12 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
     cb->cur_query_buf = InvalidHandle;
     cb->cur_query_i = InvalidIndex;
     cb->cur_rs = nullptr;
+
+    cb->last_rs = nullptr;
+    cb->last_vb = InvalidHandle;
+    cb->last_vb_stride = 0;
+    cb->last_ps = InvalidHandle;
+    cb->last_vdecl = VertexLayout::InvalidUID;
 
     cb->rs_param.cullMode = CULL_NONE;
     cb->rs_param.scissorEnabled = false;
@@ -420,8 +434,13 @@ dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
     cb->cur_pipelinestate = ps;
     cb->cur_vb_stride = (vdecl) ? vdecl->Stride() : 0;
 
-    PipelineStateDX11::SetToRHI(ps, vdeclUID, cb->context);
-    StatSet::IncStat(stat_SET_PS, 1);
+    if (ps != cb->last_ps || vdeclUID != cb->last_vdecl)
+    {
+        PipelineStateDX11::SetToRHI(ps, vdeclUID, cb->context);
+        cb->last_ps = ps;
+        cb->last_vdecl = vdeclUID;
+        StatSet::IncStat(stat_SET_PS, 1);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -543,7 +562,8 @@ dx11_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 {
     CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
 
-    cb->cur_ib = ib;
+    IndexBufferDX11::SetToRHI(ib, 0, cb->context);
+    StatSet::IncStat(stat_SET_IB, 1);
 }
 
 //------------------------------------------------------------------------------
@@ -621,42 +641,11 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
     CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
     ID3D11DeviceContext* ctx = cb->context;
     unsigned vertexCount = 0;
-    D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     INT baseVertex = 0;
 
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        vertexCount = count * 3;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-        break;
-
-    case PRIMITIVE_TRIANGLESTRIP:
-        vertexCount = 2 + count;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        vertexCount = count * 2;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-        break;
-    }
-
-    if (topo != cb->cur_topo)
-    {
-        ctx->IASetPrimitiveTopology(topo);
-        cb->cur_topo = topo;
-    }
-
-    if (!cb->cur_rs)
-    {
-        cb->cur_rs = _GetRasterizerState(cb->rs_param);
-        ctx->RSSetState(cb->cur_rs);
-    }
-
-    VertexBufferDX11::SetToRHI(cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx);
-
-    StatSet::IncStat(stat_SET_VB, 1);
+    cb->_ApplyTopology(type, count, &vertexCount);
+    cb->_ApplyVertexData();
+    cb->_ApplyRasterizerState();
 
     if (cb->cur_query_i != InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
@@ -667,6 +656,7 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
         QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
+    /*
     switch (topo)
     {
     case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
@@ -681,6 +671,7 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
     default:
         break;
     }
+*/
 }
 
 //------------------------------------------------------------------------------
@@ -691,43 +682,10 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
     ID3D11DeviceContext* ctx = cb->context;
     unsigned indexCount = 0;
-    D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        indexCount = count * 3;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-        break;
-
-    case PRIMITIVE_TRIANGLESTRIP:
-        indexCount = 2 + count;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        indexCount = count * 2;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-        break;
-    }
-
-    if (topo != cb->cur_topo)
-    {
-        ctx->IASetPrimitiveTopology(topo);
-        cb->cur_topo = topo;
-    }
-
-    if (!cb->cur_rs)
-    {
-        cb->cur_rs = _GetRasterizerState(cb->rs_param);
-        ctx->RSSetState(cb->cur_rs);
-    }
-
-    IndexBufferDX11::SetToRHI(cb->cur_ib, 0, ctx);
-    StatSet::IncStat(stat_SET_IB, 1);
-
-    VertexBufferDX11::SetToRHI(cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx);
-    StatSet::IncStat(stat_SET_VB, 1);
+    cb->_ApplyTopology(type, count, &indexCount);
+    cb->_ApplyVertexData();
+    cb->_ApplyRasterizerState();
 
     if (cb->cur_query_i != InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
@@ -738,6 +696,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
+    /*
     switch (topo)
     {
     case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
@@ -752,6 +711,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     default:
         break;
     }
+*/
 }
 
 //------------------------------------------------------------------------------
@@ -1171,6 +1131,66 @@ CommandBufferDX11_t::CommandBufferDX11_t()
 
 CommandBufferDX11_t::~CommandBufferDX11_t()
 {
+}
+
+//------------------------------------------------------------------------------
+
+void CommandBufferDX11_t::_ApplyTopology(PrimitiveType primType, uint32 primCount, unsigned* indexCount)
+{
+    D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+    switch (primType)
+    {
+    case PRIMITIVE_TRIANGLELIST:
+        *indexCount = primCount * 3;
+        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        break;
+
+    case PRIMITIVE_TRIANGLESTRIP:
+        *indexCount = 2 + primCount;
+        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+        break;
+
+    case PRIMITIVE_LINELIST:
+        *indexCount = primCount * 2;
+        topo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+        break;
+    }
+
+    if (topo != cur_topo)
+    {
+        context->IASetPrimitiveTopology(topo);
+        cur_topo = topo;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void CommandBufferDX11_t::_ApplyVertexData()
+{
+    if (cur_vb != last_vb || cur_vb_stride != last_vb_stride)
+    {
+        VertexBufferDX11::SetToRHI(cur_vb, 0, 0, cur_vb_stride, context);
+        StatSet::IncStat(stat_SET_VB, 1);
+        last_vb = cur_vb;
+        last_vb_stride = cur_vb_stride;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void CommandBufferDX11_t::_ApplyRasterizerState()
+{
+    if (!cur_rs)
+    {
+        cur_rs = _GetRasterizerState(rs_param);
+    }
+
+    if (cur_rs != last_rs)
+    {
+        context->RSSetState(cur_rs);
+        last_rs = cur_rs;
+    }
 }
 
 //------------------------------------------------------------------------------
