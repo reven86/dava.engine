@@ -311,12 +311,12 @@ void UIList::Update(float32 timeElapsed)
 
     float32 d = newPos - oldPos;
     oldPos = newPos;
-    
+
     float32 deltaScroll = newScroll - oldScroll;
     oldScroll = newScroll;
-    
+
     const float32 accuracyDelta = 0.1f;
-    
+
     Rect r = scrollContainer->GetRect();
     if(orientation == ORIENTATION_HORIZONTAL)
     {
@@ -547,7 +547,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
     {
         if (UIEvent::Phase::WHEEL == currentInput->phase)
         {
-            if(IsPointInside(currentInput->point))
+            if (IsPointInside(currentInput->point))
             {
                 Input(currentInput);
                 return true;

@@ -616,7 +616,7 @@
     }
 
     // convert own frame to window coordinates, frame is in superview's coordinates
-	CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
+    CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
 
 	// calculate the area of own frame that is covered by keyboard
 	CGRect keyboardFrame = CGRectIntersection(ownFrame, lastKeyboardFrame);

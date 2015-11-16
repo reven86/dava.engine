@@ -41,6 +41,8 @@ namespace DAVA
 namespace //for private members
 {
 Map<Vector<int32>, FXDescriptor> fxDescriptors;
+Map<std::pair<FastName, FastName>, FXDescriptor> oldTemplateMap;
+
 FXDescriptor defaultFX;
 bool initialized = false;
 }
@@ -80,6 +82,12 @@ void Clear()
 const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, int32>& defines, const FastName& quality)
 {
     DVASSERT(initialized);
+
+    if (!fxName.IsValid())
+    {
+        return defaultFX;
+    }
+
     Vector<int32> key;
     ShaderDescriptorCache::BuildFlagsKey(fxName, defines, key);
 
@@ -89,16 +97,18 @@ const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, in
     auto it = fxDescriptors.find(key);
     if (it != fxDescriptors.end())
         return it->second;
+
     //not found - load new
+    //for
     return LoadFXFromOldTemplate(fxName, defines, key, quality);
 }
 
-const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality)
+const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& quality)
 {
-    //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
-    if (!fxName.IsValid())
+    auto oldTemplate = oldTemplateMap.find(std::make_pair(fxName, quality));
+    if (oldTemplate != oldTemplateMap.end())
     {
-        return defaultFX;
+        return oldTemplate->second;
     }
 
     FilePath fxPath(fxName.c_str());
@@ -122,7 +132,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
         /*int32 quality = 0;
         auto it = defines.find(NMaterialQualityName::QUALITY_FLAG_NAME);
         if (it != defines.end())
-            quality = it->second;*/
+        quality = it->second;*/
 
         const YamlNode* qualityNode = nullptr;
         if (quality.IsValid())
@@ -173,7 +183,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
 
     FXDescriptor target;
     target.fxName = fxName;
-    target.defines = defines;
+
     RenderLayer::eRenderLayerID renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
 
     const YamlNode* layersNode = stateNode->Get("Layers");
@@ -207,8 +217,8 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
                 Logger::Error("RenderPass:%s does not have shader", passDescriptor.passName.c_str());
                 break;
             }
-            FastName shaderName = shaderNode->AsFastName();
-            HashMap<FastName, int32> shaderDefines = defines;
+            passDescriptor.shaderFileName = shaderNode->AsFastName();
+
             const YamlNode* definesNode = renderPassNode->Get("UniqueDefines");
             if (definesNode)
             {
@@ -216,7 +226,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
                 for (int32 k = 0; k < count; ++k)
                 {
                     const YamlNode* singleDefineNode = definesNode->Get(k);
-                    shaderDefines[FastName(singleDefineNode->AsString().c_str())] = 1;
+                    passDescriptor.templateDefines.insert(FastName(singleDefineNode->AsString().c_str()));
                 }
             }
 
@@ -243,9 +253,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
                     {
                         if (state == "STATE_BLEND")
                         {
-                            hasBlend = true;
-                            if (shaderDefines.find(NMaterialFlagName::FLAG_BLENDING) == shaderDefines.end())
-                                shaderDefines[NMaterialFlagName::FLAG_BLENDING] = BLENDING_ALPHABLEND;
+                            passDescriptor.hasBlend = true;
                         }
                         else if (state == "STATE_CULL")
                         {
@@ -346,19 +354,41 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
                             }
                         }
                     }
-                    //it's temporary solution to allow runtime blend-mode configuration and still prevent blending for materials without corresponding state
-                    if (!hasBlend)
-                        shaderDefines.erase(NMaterialFlagName::FLAG_BLENDING);
                 }
             }
-
-            passDescriptor.shader = ShaderDescriptorCache::GetShaderDescriptor(shaderName, shaderDefines);
 
             target.renderPassDescriptors.push_back(passDescriptor);
         }
     }
-
     SafeRelease(parser);
+
+    return oldTemplateMap[std::make_pair(fxName, quality)] = target;
+}
+
+const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality)
+{
+    //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
+
+    FXDescriptor target = LoadOldTempalte(fxName, quality); //we copy it to new fxdescr as single template can be compiled to many descriptors
+    target.defines = defines; //combine
+    for (auto& pass : target.renderPassDescriptors)
+    {
+        HashMap<FastName, int32> shaderDefines = defines;
+        for (auto& templateDefine : pass.templateDefines)
+            shaderDefines[templateDefine] = 1;
+        if (pass.hasBlend)
+        {
+            if (shaderDefines.find(NMaterialFlagName::FLAG_BLENDING) == shaderDefines.end())
+                shaderDefines[NMaterialFlagName::FLAG_BLENDING] = BLENDING_ALPHABLEND;
+        }
+        else
+        {
+            shaderDefines.erase(NMaterialFlagName::FLAG_BLENDING);
+        }
+
+        pass.shader = ShaderDescriptorCache::GetShaderDescriptor(pass.shaderFileName, shaderDefines);
+    }
+
     return fxDescriptors[key] = target;
 }
 }
