@@ -107,7 +107,7 @@ void CorePlatformAndroid::Quit()
 
 void CorePlatformAndroid::QuitAction()
 {
-    Logger::Debug("[CorePlatformAndroid::QuitAction]");
+    Logger::Debug("[CorePlatformAndroid::QuitAction] in");
 
     if (Core::Instance())
     {
@@ -117,7 +117,7 @@ void CorePlatformAndroid::QuitAction()
 
     FrameworkWillTerminate();
 
-    Logger::Debug("[CorePlatformAndroid::QuitAction] done");
+    Logger::Debug("[CorePlatformAndroid::QuitAction] out");
 }
 
 void CorePlatformAndroid::ProcessFrame()
@@ -206,8 +206,17 @@ void CorePlatformAndroid::OnCreateActivity()
 void CorePlatformAndroid::OnDestroyActivity()
 {
     Logger::Info("[CorePlatformAndroid::OnDestroyActivity]");
+
+    rhi::ResetParam params;
+    params.width = 0;
+    params.height = 0;
+    params.window = nullptr;
+    rhi::Reset(params);
+
     renderIsActive = false;
     QuitAction();
+
+    wasCreated = false;
 }
 
 void CorePlatformAndroid::StartVisible()

@@ -93,7 +93,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     public void onCreate(Bundle savedInstanceState) 
     {
         // The activity is being created.
-        Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] start");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onCreate] in");
         
     	activity = this;
         super.onCreate(savedInstanceState);
@@ -163,14 +163,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		    splashView.setVisibility(View.GONE);
 		}
 
-		Thread mainThread = new Thread(new Runnable() 
+		JNIApplication.app.mainCPPThread = new Thread(new Runnable() 
 		{
 			long startTime;
 			
 			@Override
 			public void run() 
 			{
-	        	Log.i(JNIConst.LOG_TAG, "C++ main thread started!");
+	        	Log.d(JNIConst.LOG_TAG, "C++ main thread started!");
 	        	
 		        // Initialize native framework core         
 		        JNIApplication.GetApplication().InitFramework(commandLineParams);
@@ -205,12 +205,13 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 					surfaceView.ProcessQueueEvents();
 					surfaceView.ProcessFrame();
 				}
+                Log.d(JNIConst.LOG_TAG, "C++ thread: destroying native...");
 				nativeOnDestroy();
-				Log.i(JNIConst.LOG_TAG, "C++ main thread finished!");
+				Log.d(JNIConst.LOG_TAG, "C++ main thread finished!");
 			}
 		}, "cpp_main_thread");
-		mainLoopThreadID = mainThread.getId();
-		mainThread.start();
+		mainLoopThreadID = JNIApplication.app.mainCPPThread.getId();
+		JNIApplication.app.mainCPPThread.start();
 
         // check if we are starting from android notification popup
         // and execute appropriate runnable
@@ -232,7 +233,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
 
         // The activity is being created.
-        Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] finish");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onCreate] out");
     }
     
 	private String initCommandLineParams() {
@@ -258,7 +259,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     @Override
     protected void onStart()
     {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onStart] start");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onStart] in");
     	super.onStart();
     	fmodDevice.start();
 
@@ -269,15 +270,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             }
         });
         
-        Log.i(JNIConst.LOG_TAG, "[Activity::onStart] finish");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onStart] out");
     }
     
     @Override
     protected void onRestart()
     {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onRestart] start");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onRestart] in");
         super.onRestart();
-        Log.i(JNIConst.LOG_TAG, "[Activity::onRestart] start");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onRestart] out");
     }
     
     @Override
@@ -285,7 +286,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     {
         // reverse order of onResume
         // Another activity is taking focus (this activity is about to be "paused").
-        Log.i(JNIConst.LOG_TAG, "[Activity::onPause] start");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onPause] in");
         isPausing = true;
 
         if(mController != null)
@@ -304,33 +305,19 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             }
         }
         
-        boolean isActivityFinishing = isFinishing();
-        Log.i(JNIConst.LOG_TAG, "[Activity::onPause] isActivityFinishing is " + isActivityFinishing);
-        
         // can destroy eglContext
         // we need to stop rendering before quit application because some objects could became invalid after
         // "nativeFinishing" call.
         surfaceView.onPause();
-        
-        if(isActivityFinishing)
-        {
-            RunOnMainLoopThread(new Runnable() {
-                public void run()
-                {
-                    nativeFinishing();
-                }
-            });
-        }
-        
-        super.onPause();
 
-        Log.i(JNIConst.LOG_TAG, "[Activity::onPause] finish");
+        super.onPause();
+        Log.d(JNIConst.LOG_TAG, "[Activity::onPause] out");
     }
     
     @Override
     protected void onResume() 
     {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onResume] in");
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
          
@@ -379,13 +366,13 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // end of workaround
         
         isPausing = false;
-        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onResume] out");
     }
 
     @Override
     protected void onStop()
     {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onStop] in");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onStop] in");
         
         //call native method
         RunOnMainLoopThread(new Runnable() {
@@ -401,25 +388,42 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         ShowSplashScreenView();
     	// The activity is no longer visible (it is now "stopped")
-        Log.i(JNIConst.LOG_TAG, "[Activity::onStop] out");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onStop] out");
     }
     
     
     @Override
     protected void onDestroy()
     {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] start");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] in");
 
+        // set flag to notify C++ thread to finish
        	mainThreadExit = true;
         
+        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] c++ main thread join start");
+
+        // Now wait for the CPP thread to quit
+        if (JNIApplication.app.mainCPPThread != null) {
+            try {
+                JNIApplication.app.mainCPPThread.join();
+            } catch(Exception e) {
+                Log.v(JNIConst.LOG_TAG, "Problem stopping mainCPPThread: " + e);
+            }
+            JNIApplication.app.mainCPPThread = null;
+        }
+
+        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] c++ main thread join end");
+
+        // exit joystik controller
         if(mController != null)
         {
             mController.exit();
         }
 
         super.onDestroy();
-        Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] finish");
-    	// The activity is about to be destroyed.
+
+        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] out and finish application...");
+        finishActivity();
     }
     
     @Override
@@ -428,7 +432,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] start");
+        Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] in");
         // clear key tracking state, so should always be called
         // now we definitely shown on screen
         // http://developer.android.com/reference/android/app/Activity.html#onWindowFocusChanged(boolean)
@@ -454,7 +458,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     		
     		HideNavigationBar(getWindow().getDecorView());
     	}
-    	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
+    	Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] out");
     }
     
     // we have to call next function after initialization of glView
@@ -622,7 +626,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			@Override
 			public void run() {
 				if (splashView != null) {
-				    Log.i(JNIConst.LOG_TAG, "splashView set visible");
+				    Log.d(JNIConst.LOG_TAG, "splashView set visible");
 				    splashView.setVisibility(View.VISIBLE);
 				    //splashView.bringToFront();
 				    JNITextField.HideAllTextFields();
@@ -638,7 +642,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			@Override
 			public void run() {
 				if (splashView != null) {
-				    Log.i(JNIConst.LOG_TAG, "splashView hide");
+				    Log.d(JNIConst.LOG_TAG, "splashView hide");
 					splashView.setVisibility(View.GONE);
 					// next two calls can render views into textures
 					// we can call it only after GLSurfaceView.onResume
@@ -657,7 +661,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     // return to GLThread back
     public static void finishActivity()
     {
-    	Log.i(JNIConst.LOG_TAG, "[Activity::finishActivity] in");
+    	Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] in");
     	
         final JNIActivity activity = JNIActivity.GetActivity();
         activity.mainThreadExit = true; // prevent next iteration in C++ main thread we currently in
@@ -666,12 +670,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             @Override
             public void run() {
                 activity.finish();
+
+                Log.d(JNIConst.LOG_TAG, "Calling System.exit(0)...");
                 System.exit(0);
             }
         });
         // try NOT to block this GLThread because sometime Main thread
         // can block and waiting for GLThread
-        Log.i(JNIConst.LOG_TAG, "[Activity::finishActivity] out");
+        Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] out");
     }
 }
 
