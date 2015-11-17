@@ -303,20 +303,27 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
 {
     GamepadDevice& gamepadDevice = InputSystem::Instance()->GetGamepadDevice();
 
-    int32 davaKey = GamepadDevice::INVALID_DAVAKEY;
+    uint32 davaKey = GamepadDevice::INVALID_DAVAKEY;
     if (isKeycode)
+    {
         davaKey = gamepadDevice.GetDavaEventIdForSystemKeycode(elementKey);
+    }
     else
+    {
         davaKey = gamepadDevice.GetDavaEventIdForSystemAxis(elementKey);
+    }
 
     if (davaKey == GamepadDevice::INVALID_DAVAKEY)
+    {
         return;
+    }
 
     UIEvent newEvent;
     newEvent.tid = davaKey;
     newEvent.physPoint.x = value;
     newEvent.point.x = value;
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
+    newEvent.device = DAVA::UIEvent::Device::GAMEPAD;
 
     gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
     InputSystem::Instance()->ProcessInputEvent(&newEvent);
