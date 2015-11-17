@@ -44,8 +44,8 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
-class DialogReloadSprites;
 class Document;
+class SpritesPacker;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -71,8 +71,7 @@ public:
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
-
-    DialogReloadSprites* GetDialogReloadSprites() const;
+    void ExecDialogReloadSprites(SpritesPacker* packer);
     QCheckBox* GetCheckboxEmulation();
 
 protected:
@@ -95,7 +94,6 @@ signals:
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
-    void OnSetupCacheSettingsForPacker();
     void OnDocumentChanged(Document* doc);
 
 private slots:
@@ -135,7 +133,6 @@ private:
     QAction* backgroundFrameUseCustomColorAction = nullptr;
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
     LocalizationEditorDialog* localizationEditorDialog = nullptr;
-    DialogReloadSprites* dialogReloadSprites = nullptr;
     QCheckBox* emulationBox = nullptr;
 };
 

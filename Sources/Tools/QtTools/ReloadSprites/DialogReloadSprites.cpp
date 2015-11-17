@@ -42,28 +42,28 @@ namespace
     const QString CLEAR_ON_START = "clear on start";
 }
 
-DialogReloadSprites::DialogReloadSprites(QWidget* parent)
+DialogReloadSprites::DialogReloadSprites(SpritesPacker *packer, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::DialogReloadSprites)
-    , actionReloadSprites(new QAction(QIcon(":/QtTools/Icons/reload.png"), tr("Reload Sprites"), this))
+    , spritesPacker(packer)
 {
+    DVASSERT(nullptr != spritesPacker);
     qRegisterMetaType<DAVA::eGPUFamily>("DAVA::eGPUFamily");
     qRegisterMetaType<DAVA::TextureConverter::eConvertQuality>("DAVA::TextureConverter::eConvertQuality");
     
-    connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
-
-    spritesPacker = new SpritesPacker();
     workerThread.setStackSize(16 * 1024 * 1024);
-    spritesPacker->moveToThread(&workerThread);
+    
     ui->setupUi(this);
-    OnRunningChanged(spritesPacker->IsRunning());
+    
     ui->pushButton_start->setDisabled(spritesPacker->IsRunning());
     ui->comboBox_targetGPU->setDisabled(spritesPacker->IsRunning());
     ui->comboBox_quality->setDisabled(spritesPacker->IsRunning());
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->pushButton_start, &QPushButton::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_targetGPU, &QComboBox::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_quality, &QComboBox::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChanged);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->pushButton_start, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_targetGPU, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_quality, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->checkBox_clean, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChangedQueued, Qt::QueuedConnection);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChangedDirect, Qt::DirectConnection);
     connect(ui->pushButton_cancel, &QPushButton::clicked, this, &DialogReloadSprites::OnStopClicked);
     connect(ui->pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
 
@@ -101,24 +101,19 @@ DialogReloadSprites::~DialogReloadSprites()
     SaveSettings();
     if(spritesPacker->IsRunning())
     {
-        OnStopClicked();
+        BlockingStop();
     }
-    delete spritesPacker;
-    delete ui;
 }
 
 void DialogReloadSprites::OnStartClicked()
 {
-    if (!StarPackProcess())
-    {
-        return;
-    }
     const auto gpuData = ui->comboBox_targetGPU->currentData();
     const auto qualityData = ui->comboBox_quality->currentData();
     if (!gpuData.isValid() || !qualityData.isValid())
     {
         return;
     }
+    spritesPacker->moveToThread(&workerThread);
     workerThread.start();
     auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
     auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
@@ -137,9 +132,19 @@ void DialogReloadSprites::OnStopClicked()
     }
 }
 
-void DialogReloadSprites::OnRunningChanged(bool running)
+void DialogReloadSprites::OnRunningChangedQueued(bool running)
 {
     ui->pushButton_cancel->setText(running ? "Cancel" : "Close");
+    if(!running)
+    {
+        workerThread.quit();
+        workerThread.wait();
+    }
+}
+
+void DialogReloadSprites::OnRunningChangedDirect(bool running)
+{
+    spritesPacker->moveToThread(qApp->thread());
 }
 
 void DialogReloadSprites::closeEvent(QCloseEvent *event)
@@ -190,6 +195,5 @@ void DialogReloadSprites::BlockingStop()
         loop.exec();
     }
     QApplication::restoreOverrideCursor();
-    workerThread.quit();
     this->setEnabled(true);
 }

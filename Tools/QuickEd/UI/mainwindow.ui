@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -226,12 +226,19 @@
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionReloadSprites"/>
   </widget>
   <widget class="QDockWidget" name="consoleDockWidget">
    <property name="windowTitle">
@@ -492,6 +499,18 @@
   <action name="actionDump_Textures">
    <property name="text">
     <string>Dump Textures</string>
+   </property>
+  </action>
+  <action name="actionReloadSprites">
+   <property name="icon">
+    <iconset resource="../DataQt/icons.qrc">
+     <normaloff>:/Icons/reload.png</normaloff>:/Icons/reload.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reload Sprites</string>
+   </property>
+   <property name="toolTip">
+    <string>reload sprites</string>
    </property>
   </action>
  </widget>

@@ -58,15 +58,12 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
-    , dialogReloadSprites(new DialogReloadSprites(this))
 {
     setupUi(this);
 
     DebugTools::ConnectToUI(this);
 
     // Reload Sprites
-    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
-    connect(actionReloadSprites, &QAction::triggered, this, &MainWindow::OnSetupCacheSettingsForPacker);
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
 
@@ -177,11 +174,6 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
-{
-    return dialogReloadSprites;
-}
-
 QCheckBox* MainWindow::GetCheckboxEmulation()
 {
     return emulationBox;
@@ -215,6 +207,13 @@ void MainWindow::OnCleanChanged(int index, bool val)
     {
         actionSaveDocument->setEnabled(tabState->isModified);
     }
+}
+
+void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
+{
+    DVASSERT(nullptr != packer);
+    DialogReloadSprites dialogReloadSprites(packer, this);
+    dialogReloadSprites.exec();
 }
 
 void MainWindow::OnOpenFontManager()
@@ -572,24 +571,6 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
-}
-
-void MainWindow::OnSetupCacheSettingsForPacker()
-{
-    auto spritesPacker = dialogReloadSprites->GetSpritesPacker();
-    DVASSERT(nullptr != spritesPacker);
-
-    if (EditorSettings::Instance()->IsUsingAssetCache())
-    {
-        spritesPacker->SetCacheTool(
-        EditorSettings::Instance()->GetAssetCacheIp(),
-        EditorSettings::Instance()->GetAssetCachePort(),
-        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
-    }
-    else
-    {
-        spritesPacker->ClearCacheTool();
-    }
 }
 
 void MainWindow::OnDocumentChanged(Document* doc)
