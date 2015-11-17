@@ -488,6 +488,21 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
                 uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
                 NMaterial* globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
 
+                if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG))
+                {
+                    if (globalMaterial && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
+                    {
+                        globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG); //RHI_COMPLETE: performance issue
+                    }
+                }
+
+#ifdef __DAVAENGINE_ANDROID__
+                if (globalMaterial && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+                {
+                    globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE); //RHI_COMPLETE: performance issue
+                }
+#endif
+
                 scene->SetGlobalMaterial(globalMaterial);
                 serializationContext.SetGlobalMaterialKey(globalMaterialId);
 
