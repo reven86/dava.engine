@@ -385,7 +385,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
         {
             screenInfo.scale = [[ ::UIScreen mainScreen] nativeScale];
         }
-        else if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
+        else if ([ ::UIScreen instancesRespondToSelector:@selector(scale)])
         {
             screenInfo.scale = [[ ::UIScreen mainScreen] scale];
         }
