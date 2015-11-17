@@ -10,7 +10,7 @@ VPROG_IN_END
 VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
     VPROG_OUT_TEXCOORD0(texCoord,2)
-    VPROG_OUT_COLOR0(vegetationColor,3)
+    VPROG_OUT_COLOR0_LOW(vegetationColor,3)
     #if VERTEX_FOG
         VPROG_OUT_TEXCOORD5(varFog,4)
     #endif

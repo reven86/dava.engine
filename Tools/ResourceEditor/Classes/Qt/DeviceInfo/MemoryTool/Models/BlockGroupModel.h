@@ -26,56 +26,39 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __MEMORYTOOL_BLOCKGROUPMODEL_H__
+#define __MEMORYTOOL_BLOCKGROUPMODEL_H__
 
-#ifndef __VIEW_SCENE_SCREEN_H__
-#define __VIEW_SCENE_SCREEN_H__
+#include "Base/BaseTypes.h"
 
-#include "BaseScreen.h"
+#include "Qt/DeviceInfo/MemoryTool/BlockGroup.h"
 
-namespace DAVA
+#include <QAbstractTableModel>
+
+class BlockGroupModel : public QAbstractTableModel
 {
-class RotationControllerSystem;
-class WASDControllerSystem;
-};
-
-class ViewSceneScreen: public BaseScreen
-{
-protected:
-    virtual ~ViewSceneScreen()
-    {
-    }
+    Q_OBJECT
 
 public:
-	virtual void LoadResources();
-	virtual void UnloadResources();
+    enum
+    {
+        ROLE_GROUP_POINTER = Qt::UserRole + 1
+    };
 
-    virtual void Draw(const UIGeometricData &geometricData);
-    virtual void Update(float32 timeElapsed);
+public:
+    BlockGroupModel(QObject* parent = nullptr);
+    virtual ~BlockGroupModel();
 
-    virtual void DidAppear();
+    void SetBlockGroups(const DAVA::Vector<BlockGroup>* groups);
 
-    virtual void Input(UIEvent* currentInput);
+    // reimplemented QAbstractTableModel methods
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-protected:
-    void OnBack(BaseObject *caller, void *param, void *callerData);
-    void OnReloadShaders(BaseObject* caller, void* param, void* callerData);
-    void UpdateInfo(float32 timeElapsed);
-
-    DAVA::UIStaticText* info = nullptr;
-    DAVA::UIJoypad* moveJoyPAD = nullptr;
-
-    DAVA::float32 framesTime = 0.0f;
-    DAVA::uint32 frameCounter = 0;
-
-    DAVA::uint64 drawTime = 0;
-    DAVA::uint64 updateTime = 0;
-
-    DAVA::Scene* scene = nullptr;
-    DAVA::RotationControllerSystem* rotationControllerSystem = nullptr;
-    DAVA::WASDControllerSystem* wasdSystem = nullptr;
-
-    Vector2 cursorPosition;
-    float32 cursorSize = 0.1f;
+private:
+    const DAVA::Vector<BlockGroup>* groups = nullptr;
 };
 
-#endif //__VIEW_SCENE_SCREEN_H__
+#endif // __MEMORYTOOL_BLOCKGROUPMODEL_H__

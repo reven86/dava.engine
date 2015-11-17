@@ -54,6 +54,7 @@ NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL = nullptr;
 
 RenderSystem2D::RenderSystem2D()
     : currentVertexBuffer(nullptr)
@@ -95,6 +96,10 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Grayscale.material"));
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
+
+    DEFAULT_2D_FILL_ALPHA_MATERIAL = new NMaterial();
+    DEFAULT_2D_FILL_ALPHA_MATERIAL->SetFXName(FastName("~res:/Materials/2d.AlphaFill.material"));
+    DEFAULT_2D_FILL_ALPHA_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
@@ -1223,7 +1228,7 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
 
 /* RenderSyste2D Draw Helper Functions */
 
-void RenderSystem2D::FillRect(const Rect& rect, const Color& color)
+void RenderSystem2D::FillRect(const Rect& rect, const Color& color, NMaterial* material)
 {
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
@@ -1242,7 +1247,7 @@ void RenderSystem2D::FillRect(const Rect& rect, const Color& color)
 
     BatchDescriptor batch;
     batch.singleColor = color;
-    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.material = material;
     batch.vertexCount = 4;
     batch.indexCount = 6;
     batch.vertexStride = 2;

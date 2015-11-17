@@ -207,7 +207,7 @@ void UIScrollBar::Input(UIEvent *currentInput)
         {
             startPoint = currentInput->point;
             CalculateStartOffset(currentInput->point);
-		}
+        }
 
         float32 newPos;
 		if(orientation == ORIENTATION_HORIZONTAL)

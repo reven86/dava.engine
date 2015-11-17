@@ -235,8 +235,6 @@ void PolygonGroup::CreateBaseVertexArray()
     
 void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
     aabbox = AABBox3(); // reset bbox
     
     Matrix4 normalMatrix4;
@@ -313,6 +311,8 @@ uint32 PolygonGroup::ReleaseGeometryData()
 
 void PolygonGroup::BuildBuffers()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (vertexBuffer.IsValid())
         rhi::DeleteVertexBuffer(vertexBuffer);
 

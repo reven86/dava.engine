@@ -84,8 +84,9 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     
-#endif 
-    
+#endif
+
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
     appOptions->SetInt32("width", screenWidth);
     appOptions->SetInt32("height", screenHeight);
     
