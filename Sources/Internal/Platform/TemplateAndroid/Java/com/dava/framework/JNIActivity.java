@@ -56,7 +56,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
     private static String commandLineParams = null;
 	
-    private boolean mainThreadExit = false;
+    private volatile boolean mainThreadExit = false;
     
     public abstract JNISurfaceView FindSurfaceView();
 	
