@@ -40,6 +40,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
 #include "DebugTools/DebugTools.h"
 
@@ -60,6 +61,9 @@ MainWindow::MainWindow(QWidget *parent)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
 {
     setupUi(this);
+
+    LoggerOutputObject *loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
+    connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
 
     DebugTools::ConnectToUI(this);
 

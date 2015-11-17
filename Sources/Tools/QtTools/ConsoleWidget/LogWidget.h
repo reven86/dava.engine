@@ -26,7 +26,9 @@ public:
     void SetConvertFunction(LogModel::ConvertFunc func); //provide mechanism to convert data string to string to be displayed
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
-    void AddMessage(DAVA::Logger::eLogLevel ll, const char* msg);
+
+public slots:
+    void AddMessage(DAVA::Logger::eLogLevel ll, QByteArray msg);
 
 signals:
     void ItemClicked(const QString &data);
