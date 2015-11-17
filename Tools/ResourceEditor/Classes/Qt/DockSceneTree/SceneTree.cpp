@@ -232,10 +232,12 @@ void SceneTree::SceneDeactivated(SceneEditor2 *scene)
 
 void SceneTree::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	if(scene == treeModel->GetScene())
-	{
-		SyncSelectionToTree();
-	}
+    if (scene == treeModel->GetScene())
+    {
+        bool blocked = selectionModel()->blockSignals(true);
+        SyncSelectionToTree();
+        selectionModel()->blockSignals(blocked);
+    }
 }
 
 void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
@@ -794,7 +796,9 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
 	bool needSync = false;
 
-	// if selected items were inside collapsed item, remove them from selection
+    bool blocked = selectionModel()->blockSignals(true);
+
+    // if selected items were inside collapsed item, remove them from selection
 	QModelIndexList indexList = selectionModel()->selection().indexes();
 	for (int i = 0; i < indexList.size(); ++i)
 	{
@@ -813,10 +817,12 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 		}
 	}
 
-	if(needSync)
+    selectionModel()->blockSignals(blocked);
+
+    if(needSync)
 	{
-		SyncSelectionFromTree();
-	}
+        TreeSelectionChanged(selectionModel()->selection(), QItemSelection());
+    }
 }
 
 void SceneTree::TreeItemExpanded(const QModelIndex &index)
