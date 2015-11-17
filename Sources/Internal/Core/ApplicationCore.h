@@ -271,7 +271,7 @@ protected:
 		\brief Called before draw to let you prepare to the rendering
 	 */
     virtual void BeginFrame();
-	/**
+    /**
 		\brief Called after draw is finished.
 	 */
 	virtual void EndFrame();

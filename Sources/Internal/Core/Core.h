@@ -172,7 +172,7 @@ public:
 	*/
     virtual DisplayMode GetCurrentDisplayMode();
 
-	/**
+    /**
 		\brief Quit from application & release all subsystems
 	*/
 	virtual void Quit();

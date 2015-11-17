@@ -98,12 +98,27 @@ void FilePath::RemoveResourcesFolder(const FilePath & folder)
         }
     }
 }
-    
-const List<FilePath> FilePath::GetResourcesFolders()
+
+const List<FilePath>& FilePath::GetResourcesFolders()
 {
     return resourceFolders;
 }
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+String GetResourceDirName(const String& arch, const String& dirName, const String& resPrefix)
+{
+    String result;
+
+    size_t idx = dirName.find(arch);
+    if (idx != String::npos)
+    {
+        result = dirName;
+        result.replace(idx, arch.size(), resPrefix);
+    }
+
+    return result;
+}
+#endif
     
 #if defined(__DAVAENGINE_WINDOWS__)
 void FilePath::InitializeBundleName()
@@ -116,9 +131,31 @@ void FilePath::InitializeBundleName()
         AddResourcesFolder(workingDirectory);
     }
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION)
+    String additionalResourcePath;
+
+    //get the directory basename
+    String dirBaseName = execDirectory.GetLastDirectoryName();
+    std::transform(dirBaseName.begin(), dirBaseName.end(), dirBaseName.begin(), ::tolower);
+
+    //find resource dir name
+#if defined(_M_IX86)
+    String arch = "_x86_";
+#elif defined(_M_X64)
+    String arch = "_x64_";
+#elif defined(_M_ARM)
+    String arch = "_arm_";
+#endif
+    String resourceDir = GetResourceDirName(arch, dirBaseName, DAVA_WIN_UAP_RESOURCES_PREFIX);
+
+    //resource dir found, use it
+    if (!resourceDir.empty())
+    {
+        additionalResourcePath = "../" + resourceDir + '/';
+    }
+
     //additional resource path for resources
-    String additionalResourcePath = DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION;
+    additionalResourcePath += DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION;
     additionalResourcePath += '/';
 
     AddResourcesFolder(execDirectory + additionalResourcePath);
@@ -307,8 +344,8 @@ FilePath::~FilePath()
 {
     
 }
-    
-const String FilePath::GetAbsolutePathname() const
+
+String FilePath::GetAbsolutePathname() const
 {
     if(pathType == PATH_IN_RESOURCES)
     {
@@ -570,7 +607,7 @@ String FilePath::GetLastDirectoryName() const
     DVASSERT(!IsEmpty() && IsDirectoryPathname());
     
     String path = absolutePathname;
-    path = path.substr(0, path.length() - 1);
+    path.pop_back();
     
     return FilePath(path).GetFilename();
 }
@@ -871,7 +908,7 @@ int32 FilePath::Compare( const FilePath &right ) const
 	return 0;
 }
 
-const String FilePath::AsURL() const
+String FilePath::AsURL() const
 {
     String path = GetAbsolutePathname();
     

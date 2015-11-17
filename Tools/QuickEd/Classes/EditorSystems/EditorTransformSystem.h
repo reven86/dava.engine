@@ -41,11 +41,11 @@ namespace DAVA
 class UIGeometricData;
 class UIControl;
 }
-class TransformSystem final : public BaseEditorSystem
+class EditorTransformSystem final : public BaseEditorSystem
 {
 public:
-    explicit TransformSystem(EditorSystemsManager* parent);
-    ~TransformSystem();
+    explicit EditorTransformSystem(EditorSystemsManager* parent);
+    ~EditorTransformSystem();
 
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
