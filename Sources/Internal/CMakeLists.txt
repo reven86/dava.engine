@@ -188,6 +188,12 @@ generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "Concurrency/ThreadPosix.cpp"
                                                         "Render/Texture.cpp" 
                                                         "Render/RHI/GLES2"
+                                                    IGNORE_LIST_IOS
+                                                        "TemplateiOS/BackgroundView.mm"
+                                                        "TemplateiOS/HelperAppDelegate.mm"
+                                                        "TemplateiOS/DPIHelperiOS.mm"
+                                                        "TemplateiOS"
+                                                        "UI/UITextFieldiPhone.mm"
                                                    )
 
 
