@@ -227,11 +227,11 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 
     if (vSource)
     {
-        Logger::Info("using cached \"%s\"", vProgUid.c_str());
+        //Logger::Info("using cached \"%s\"", vProgUid.c_str());
     }
     else
     {
-        Logger::Info("building \"%s\"", vProgUid.c_str());
+        //Logger::Info("building \"%s\"", vProgUid.c_str());
         vSource2.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
         rhi::ShaderSourceCache::Update(vProgUid, vSrcHash, vSource2);
         vSource = &vSource2;
@@ -239,11 +239,11 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 
     if (fSource)
     {
-        Logger::Info("using cached \"%s\"", fProgUid.c_str());
+        //Logger::Info("using cached \"%s\"", fProgUid.c_str());
     }
     else
     {
-        Logger::Info("building \"%s\"", fProgUid.c_str());
+        //Logger::Info("building \"%s\"", fProgUid.c_str());
         fSource2.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
         rhi::ShaderSourceCache::Update(fProgUid, fSrcHash, fSource2);
         fSource = &fSource2;
