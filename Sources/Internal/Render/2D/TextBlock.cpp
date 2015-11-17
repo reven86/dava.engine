@@ -910,7 +910,7 @@ void TextBlock::PreDraw()
     }
 
     if (textBlockRender)
-	{
+    {
         font->SetSize(renderSize);
         textBlockRender->PreDraw();
         font->SetSize(originalFontSize);

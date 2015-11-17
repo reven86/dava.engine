@@ -233,7 +233,7 @@ FogParam
     float3  tolight_dir;
     
     
-    float3  color;
+    min10float3  color;
     float   limit;
     // linear
     float   start;
@@ -247,15 +247,15 @@ FogParam
     float   halfspace_limit; 
 
     float   atmosphere_distance;
-    float3  atmosphere_sun_color;
-    float3  atmosphere_sky_color;
+    min10float3  atmosphere_sun_color;
+    min10float3  atmosphere_sky_color;
     float   atmosphere_scattering;
 };
 
-float4 CalculateVertexFog( FogParam param ); // to shut up Metal shader-compiler
+min10float4 CalculateVertexFog( FogParam param ); // to shut up Metal shader-compiler
 
 
-float4
+min10float4
 CalculateVertexFog( FogParam param )
 {
     float4  fog;
@@ -333,7 +333,7 @@ CalculateVertexFog( FogParam param )
             float atmospheteAngleFactor = dot(normalize(eyeCoordsPosition), normalize(toLightDir)) * 0.5 + 0.5;
             atmosphereColor = lerp(fogAtmosphereColorSky, fogAtmosphereColorSun, pow(atmospheteAngleFactor, fogAtmosphereScattering));
         #endif
-        float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
+        min10float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
         fog.xyz = lerp(param.color, atmosphereColor, fogAtmosphereAttenuation);
     #else
         fog.xyz = param.color;

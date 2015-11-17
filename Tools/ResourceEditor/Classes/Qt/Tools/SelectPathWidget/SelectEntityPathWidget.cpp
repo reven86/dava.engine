@@ -127,8 +127,8 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
 	Q_FOREACH(QUrl url, droppedUrls)
 	{
 		DAVA::FilePath filePath( url.toLocalFile().toStdString());
-		if(!(filePath.Exists() && filePath.GetExtension() == ".sc2"))
-		{
+        if (!(FileSystem::Instance()->Exists(filePath) && filePath.GetExtension() == ".sc2"))
+        {
 			continue;
 		}
 		

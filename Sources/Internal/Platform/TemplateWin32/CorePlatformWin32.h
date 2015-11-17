@@ -54,7 +54,7 @@ public:
 
     DisplayMode currentMode;
     DisplayMode fullscreenMode;
-	DisplayMode windowedMode;
+    DisplayMode windowedMode;
 	bool isFullscreen;
 	RECT		windowPositionBeforeFullscreen;
 

@@ -67,7 +67,7 @@ namespace DAVA
         {
             RenderObject* node = renderObjectArray[pos];
             if ((node->GetFlags() & visibilityCriteria) != visibilityCriteria)
-				continue;					
+                continue;					
 			//still need to add flags for particles to dicede if to use DefferedUpdate
             if ((RenderObject::ALWAYS_CLIPPING_VISIBLE & node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))
                 visibilityArray.push_back(node);

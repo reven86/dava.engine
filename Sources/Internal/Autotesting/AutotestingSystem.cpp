@@ -106,7 +106,7 @@ namespace DAVA
     String AutotestingSystem::ResolvePathToAutomation(const String &automationPath)
     {
         String automationResolvedStrPath = "~res:" + automationPath;
-        if (FilePath(automationResolvedStrPath).Exists())
+        if (FileSystem::Instance()->Exists(FilePath(automationResolvedStrPath)))
         {
             return automationResolvedStrPath;
         }
@@ -115,7 +115,7 @@ namespace DAVA
 #else
         FilePath automationResolvedPath = "~doc:" + automationPath;
 #endif //#if defined(__DAVAENGINE_ANDROID__)
-        if (automationResolvedPath.Exists())
+        if (FileSystem::Instance()->Exists(automationResolvedPath))
         {
             return automationResolvedPath.GetStringValue();
         }
@@ -351,7 +351,7 @@ namespace DAVA
     {
         Logger::Info("AutotestingSystem::OnTestsStarted");
         startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
-		luaSystem->StartTest();
+        luaSystem->StartTest();
 	}
 
 	void AutotestingSystem::OnError(const String &errorMessage)
@@ -391,7 +391,7 @@ namespace DAVA
     {
         Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
         return screenShotName;
-	}
+    }
 
 	void AutotestingSystem::OnScreenShot(Image *image)
 	{
@@ -446,7 +446,7 @@ namespace DAVA
             mouseMove = input;
             if (!IsTouchDown(id))
             {
-				touches[id] = input;
+                touches[id] = input;
 			}
 			else
 			{
@@ -470,7 +470,7 @@ namespace DAVA
             mouseMove = input;
             Map<int32, UIEvent>::iterator findIt = touches.find(id);
             if (findIt != touches.end())
-			{
+            {
 				findIt->second = input;
 			}
 			else
@@ -484,7 +484,7 @@ namespace DAVA
             mouseMove = input;
             Map<int32, UIEvent>::iterator findIt = touches.find(id);
             if (findIt != touches.end())
-			{
+            {
 				touches.erase(findIt);
 			}
 			else
@@ -494,7 +494,7 @@ namespace DAVA
         }
         break;
         default:
-			//TODO: keyboard input
+            //TODO: keyboard input
 			break;
 		}
 	}
