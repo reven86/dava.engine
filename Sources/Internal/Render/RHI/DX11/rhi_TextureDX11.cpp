@@ -358,6 +358,8 @@ dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
         ExecDX11(cmd, countof(cmd));
 
         self->mappedData = res.pData;
+        self->mappedLevel = level;
+        self->isMapped = true;
     }
     else
     {
