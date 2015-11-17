@@ -465,9 +465,6 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effe
 	this->emitter = emitter;
 	this->layer = layer;
 
-    projectPath = ProjectManager::Instance()->GetProjectPath();
-    projectPath += "Data/Gfx/Particles/";
-
     SetActiveScene(scene);
     Update(updateMinimized);
 }
@@ -553,7 +550,7 @@ void EmitterLayerWidget::OnSpriteBtn()
     QString startPath;
     if (layer->spritePath.IsEmpty())
     {
-        startPath = QString::fromStdString(projectPath.GetAbsolutePathname());
+        startPath = QString::fromStdString(ProjectManager::Instance()->GetParticlesDataPath().GetAbsolutePathname());
     }
     else
     {
@@ -566,7 +563,7 @@ void EmitterLayerWidget::OnSpriteBtn()
         return;
     }
 
-    selectedPath.remove(selectedPath.size() - 4, 4); // remove extension
+    selectedPath.truncate(selectedPath.lastIndexOf('.'));
     if (selectedPath == spritePathLabel->text())
     {
         return;
@@ -1016,15 +1013,15 @@ void EmitterLayerWidget::OnSpritePathChanged(const QString& text)
 
 void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
 {
-    FilePath spritePath = text.toStdString();
+    const FilePath& particlesDataPath = ProjectManager::Instance()->GetParticlesDataPath();
+    const FilePath spritePath = text.toStdString();
+    const String relativePathForParticlesPath = spritePath.GetRelativePathname(particlesDataPath);
 
-    String relativePathForProjectPath = spritePath.GetRelativePathname(projectPath);
-
-    if (relativePathForProjectPath.find("../") != String::npos)
+    if (relativePathForParticlesPath.find("../") != String::npos)
     {
-        QString message = QString("You've opened Particle Sprite from incorrect path (%1).\n Correct one is %2.").
+        QString message = QString("You've opened particle sprite from incorrect path (%1).\n Correct one is %2.").
             arg(QString::fromStdString(spritePath.GetDirectory().GetAbsolutePathname())).
-            arg(QString::fromStdString(projectPath.GetDirectory().GetAbsolutePathname()));
+            arg(QString::fromStdString(particlesDataPath.GetAbsolutePathname()));
 
         QMessageBox msgBox(QMessageBox::Warning, "Warning", message);
         msgBox.exec();

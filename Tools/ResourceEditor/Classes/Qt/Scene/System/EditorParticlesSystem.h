@@ -45,8 +45,12 @@ public:
 	~EditorParticlesSystem();
 
     void SetEmitterSelected(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter);
-    
-protected:
+
+    List<ParticleEffectComponent*> StopParticleEffects();
+    void StartParticleEffects(const List<ParticleEffectComponent*>& stoppedParticleEffects);
+    void RestartParticleEffects();
+
+private:
 	void Draw();
 	
 	virtual void AddEntity(DAVA::Entity * entity);

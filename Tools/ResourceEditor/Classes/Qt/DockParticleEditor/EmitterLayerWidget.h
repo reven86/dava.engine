@@ -191,8 +191,6 @@ private:
     GradientPickerWidget* colorOverLifeGradient = nullptr;
 
     bool blockSignals = false;
-
-    FilePath projectPath;
 };
 
 #endif /* defined(__ResourceEditorQt__EmitterLayerWidget__) */

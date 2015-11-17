@@ -1171,9 +1171,9 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
 	FilePath yamlPath = selectedEmitter->configPath;
 	if (forceAskFileName)
 	{
-        QString projectPath = ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str();
+        QString particlesConfigPath = ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str();
         QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter YAML file"),
-                                                       projectPath, QString("YAML File (*.yaml)"));
+                                                       particlesConfigPath, QString("YAML File (*.yaml)"));
 
         if (filePath.isEmpty())
         {
@@ -1293,7 +1293,7 @@ void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileNa
     if (forceAskFileName)
     {
         FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-        QString particlesPath = defaultPath.IsEmpty() ? ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str() : defaultPath.GetAbsolutePathname().c_str();
+        QString particlesPath = defaultPath.IsEmpty() ? ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str() : defaultPath.GetAbsolutePathname().c_str();
 
         FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
         
@@ -1341,7 +1341,7 @@ void SceneTree::PerformSaveEffectEmitters(bool forceAskFileName)
 
 QString SceneTree::GetParticlesConfigPath()
 {
-    return ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str();
+    return ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str();
 }
 
 void SceneTree::CleanupParticleEditorSelectedItems()

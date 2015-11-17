@@ -436,7 +436,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	if (spriteNode && !spriteNode->AsString().empty())
 	{
 		// Store the absolute path to sprite.
-		FilePath spritePath = FilePath(configPath.GetDirectory(), spriteNode->AsString());
+		FilePath spritePath = configPath.GetDirectory() + spriteNode->AsString();
         SetSprite(spritePath);
 	}	
 	if(pivotPointNode)
