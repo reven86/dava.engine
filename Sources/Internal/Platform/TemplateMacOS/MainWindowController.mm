@@ -232,7 +232,7 @@ namespace DAVA
 
 - (bool)setFullScreen:(bool)_fullScreen
 {
-    if(fullScreen != _fullScreen)
+    if (fullScreen != _fullScreen)
     {
         double macOSVer = floor(NSAppKitVersionNumber);
         // fullscreen for new 10.7+ MacOS
