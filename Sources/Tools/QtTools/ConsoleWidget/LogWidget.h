@@ -27,15 +27,16 @@ public:
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
     void AddMessage(DAVA::Logger::eLogLevel ll, const char* msg);
+
 signals:
     void ItemClicked(const QString &data);
-public slots:
-    void AddResultList(const DAVA::ResultList &resultList);
+
 private slots:
     void OnCopy();
     void OnBeforeAdded();
     void UpdateScroll();
     void OnItemClicked(const QModelIndex &index);
+
 private:
     void FillFiltersCombo();
     bool eventFilter( QObject* watched, QEvent* event ) override;
