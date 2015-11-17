@@ -34,27 +34,68 @@
 namespace DAVA
 {
 
-LocalNotificationUAP::LocalNotificationUAP(const String &_id)
+using namespace Windows::Data::Xml::Dom;
+using namespace Windows::UI::Notifications;
+
+ToastNotifier^ GetToastNotifier()
 {
-	notificationId = _id;
-}
-    
-LocalNotificationUAP::~LocalNotificationUAP()
-{
+    return ToastNotificationManager::CreateToastNotifier();
 }
 
+XmlDocument^ GenerateToastDeclaration(const WideString& title, const WideString& text, bool useSound)
+{
+    Platform::String^ toastTitle = ref new Platform::String(title.c_str());
+    Platform::String^ toastText = ref new Platform::String(text.c_str());
+    XmlDocument^ toastXml =
+        ToastNotificationManager::GetTemplateContent(ToastTemplateType::ToastText02);
+
+    //Set the title and the text
+    XmlNodeList^ toastTextElements = toastXml->GetElementsByTagName("text");
+    toastTextElements->GetAt(0)->AppendChild(toastXml->CreateTextNode(toastTitle));
+    toastTextElements->GetAt(1)->AppendChild(toastXml->CreateTextNode(toastText));
+
+    //Set silence
+    if (!useSound)
+    {
+        IXmlNode^ toastNode = toastXml->SelectSingleNode("/toast");
+        XmlElement^ audioNode = toastXml->CreateElement("audio");
+        audioNode->SetAttribute("silent", "true");
+
+        toastNode->AppendChild(audioNode);
+    }
+
+    return toastXml;
+}
+
+LocalNotificationUAP::LocalNotificationUAP(const String& _id)
+{
+    notificationId = _id;
+}
+    
 void LocalNotificationUAP::SetAction(const WideString &action)
 {
 }
 
 void LocalNotificationUAP::Hide()
 {
+    if (!notification)
+    {
+        return;
+    }
+
+    GetToastNotifier()->Hide(notification);
+    notification = nullptr;
 }
+
 void LocalNotificationUAP::ShowText(const WideString &title, const WideString &text, bool useSound)
 {
+    XmlDocument^ toastDoc = GenerateToastDeclaration(title, text, useSound);
+    CreateOrUpdateNotification(toastDoc);
 }
+
 void LocalNotificationUAP::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
 {
+    //not implemented :)
 }
     
 LocalNotificationImpl *LocalNotificationImpl::Create(const String &_id)
@@ -64,10 +105,44 @@ LocalNotificationImpl *LocalNotificationImpl::Create(const String &_id)
 
 void LocalNotificationUAP::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
 {
+    XmlDocument^ toastDoc = GenerateToastDeclaration(title, text, useSound);
+    
+    Windows::Globalization::Calendar^ huindar = ref new Windows::Globalization::Calendar;
+    huindar->AddSeconds(delaySeconds);
+    Windows::Foundation::DateTime huita = huindar->GetDateTime();
+
+    CreateOrUpdateNotification(toastDoc, &huita);
 }
 
 void LocalNotificationUAP::RemoveAllDelayedNotifications()
 {
+    auto scheduledNotifications = GetToastNotifier()->GetScheduledToastNotifications();
+
+    for (unsigned i = 0; i < scheduledNotifications->Size; ++i)
+    {
+        GetToastNotifier()->RemoveFromSchedule(scheduledNotifications->GetAt(i));
+    }
+}
+
+void LocalNotificationUAP::CreateOrUpdateNotification(
+    Windows::Data::Xml::Dom::XmlDocument^ notificationDeclaration,
+    const Windows::Foundation::DateTime* startTime)
+{
+    if (startTime == nullptr)
+    {
+        if (notification != nullptr)
+        {
+            Hide();
+        }
+        notification = ref new ToastNotification(notificationDeclaration);
+        GetToastNotifier()->Show(notification);
+    }
+    else
+    {
+        ScheduledToastNotification^ notif = 
+            ref new ScheduledToastNotification(notificationDeclaration, *startTime);
+        GetToastNotifier()->AddToSchedule(notif);
+    }
 }
 
 }  // namespace DAVA
