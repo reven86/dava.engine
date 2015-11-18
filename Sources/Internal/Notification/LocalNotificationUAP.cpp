@@ -32,7 +32,6 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Notification/LocalNotificationUAP.h"
-#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -98,11 +97,8 @@ void LocalNotificationUAP::ShowProgress(const WideString& title,
                                         uint32 progress, 
                                         bool useSound)
 {
-    Array<char, 16> percentStr {};
     float32 percentage = (static_cast<float32>(progress) / total) * 100.0f;
-    sprintf_s(percentStr.data(), percentStr.size(), " %.02f%%", percentage);
-
-    WideString titleText = title + StringToWString(percentStr.data());
+    WideString titleText = title + Format(L" %.02f%%", percentage);
     XmlDocument^ toastDoc = GenerateToastDeclaration(titleText, text, useSound);
 
     CreateOrUpdateNotification(toastDoc, nullptr, true);
