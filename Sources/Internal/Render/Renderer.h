@@ -47,6 +47,7 @@ namespace Renderer
 //init
 void Initialize(rhi::Api api, rhi::InitParam& params);
 void Uninitialize();
+bool IsInitialized();
 
 void Reset(const rhi::ResetParam& params);
 

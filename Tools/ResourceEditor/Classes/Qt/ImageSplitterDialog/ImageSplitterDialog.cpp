@@ -190,8 +190,9 @@ void ImageSplitterDialog::OnRestoreClicked()
 
 void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
 {
-    DAVA::FilePath retPath = FileDialog::getSaveFileName(this, "Select image", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),
-                                                          PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter).toStdString();
+    DAVA::FilePath retPath = FileDialog::getSaveFileName(this, "Select image", ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str(),
+                                                         PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter)
+                             .toStdString();
     if(!retPath.IsEmpty())
     {
         Save(retPath, saveSplittedImages);
@@ -201,7 +202,7 @@ void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
 void ImageSplitterDialog::OnSaveClicked()
 {
     DAVA::FilePath presentPath = ui->path->text().toStdString();
-    if(!presentPath.Exists())
+    if (!DAVA::FileSystem::Instance()->Exists(presentPath))
     {
         OnSaveAsClicked();
         return;
@@ -213,10 +214,10 @@ void ImageSplitterDialog::OnSaveClicked()
 void ImageSplitterDialog::OnSaveChannelsClicked()
 {
     DAVA::FilePath savePath = ui->path->text().toStdString();
-    if(!savePath.Exists())
+    if (!DAVA::FileSystem::Instance()->Exists(savePath))
     {
-        auto folder = FileDialog::getExistingDirectory(this, "Select folder to save images", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(), FileDialog::ShowDirsOnly);
-        
+        auto folder = FileDialog::getExistingDirectory(this, "Select folder to save images", ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str(), FileDialog::ShowDirsOnly);
+
         if(folder.isEmpty() || folder.isNull())
         {
             return;
@@ -356,5 +357,5 @@ void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplitted
 
 DAVA::String ImageSplitterDialog::GetDefaultPath() const
 {
-    return ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+    return ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
 }

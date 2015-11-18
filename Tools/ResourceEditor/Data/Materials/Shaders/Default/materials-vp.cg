@@ -88,23 +88,19 @@ VPROG_OUT_BEGIN
     
     
     #if VERTEX_LIT
-        VPROG_OUT_COLOR0(varDiffuseColor,1)
+        VPROG_OUT_COLOR0_LOW(varDiffuseColor,1)
         #if BLINN_PHONG
-            VPROG_OUT_TEXCOORD4(varSpecularColor,1)
-            //varying lowp float varSpecularColor;
+            VPROG_OUT_TEXCOORD4_LOW(varSpecularColor,1)
         #elif NORMALIZED_BLINN_PHONG
-            VPROG_OUT_TEXCOORD4(varSpecularColor,4)
-            //varying lowp vec3 varSpecularColor;
-            //varying lowp float varNdotH;
+            VPROG_OUT_TEXCOORD4_LOW(varSpecularColor,4)
         #endif
     #endif
 
     #if PIXEL_LIT
-//        VPROG_OUT_TEXCOORD4(varLightPosition,3)
         #if FAST_NORMALIZATION
-        VPROG_OUT_COLOR0(varHalfVec,3)
+        VPROG_OUT_COLOR0_LOW(varHalfVec,3)
         #endif
-        VPROG_OUT_COLOR1(varToLightVec,3)
+        VPROG_OUT_COLOR1_LOW(varToLightVec,3)
         #if DISTANCE_ATTENUATION
         VPROG_OUT_TEXCOORD6(varPerPixelAttenuation,1)
         #endif
@@ -112,16 +108,16 @@ VPROG_OUT_BEGIN
     #endif    
     
     #if VERTEX_COLOR || SPHERICAL_LIT
-        VPROG_OUT_COLOR1(varVertexColor,4)
+        VPROG_OUT_COLOR1_LOW(varVertexColor,4)
     #endif
     
     #if VERTEX_FOG
-        VPROG_OUT_TEXCOORD5(varFog,4)
+        VPROG_OUT_TEXCOORD5_LOW(varFog,4)
     #endif
 
 
     #if FRAME_BLEND
-        VPROG_OUT_TEXCOORD3(varTime,1)        
+        VPROG_OUT_TEXCOORD3_LOW(varTime,1)        
     #endif
 
 

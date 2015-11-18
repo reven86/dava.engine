@@ -377,15 +377,18 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     ::UIScreen* mainScreen = [::UIScreen mainScreen];
     screenInfo.width = [mainScreen bounds].size.width;
     screenInfo.height = [mainScreen bounds].size.height;
+    screenInfo.scale = 1;
 
-    if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-        && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+    if ([ ::UIView instancesRespondToSelector:@selector(contentScaleFactor)])
     {
-        screenInfo.scale = (unsigned int)[[::UIScreen mainScreen] scale];
-    }
-    else
-    {
-        screenInfo.scale = 1;
+        if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
+        {
+            screenInfo.scale = [[ ::UIScreen mainScreen] nativeScale];
+        }
+        else if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
+        {
+            screenInfo.scale = [[ ::UIScreen mainScreen] scale];
+        }
     }
 }
 

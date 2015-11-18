@@ -62,12 +62,12 @@ protected:
 
     struct
     {
-		uint32		groupId: 27;
-		uint8		visible : 1;
-		uint8		dead : 1;
-		uint8		priorityChanged : 1;
-		uint8		addedObject: 1;		// can be used for delayed adding of anything to hierarchy
-		uint8		isDebugDraw;
+        uint32 groupId : 27;
+        uint8 visible : 1;
+        uint8 dead : 1;
+        uint8 priorityChanged : 1;
+        uint8 addedObject : 1; // can be used for delayed adding of anything to hierarchy
+        uint8		isDebugDraw;
 	};
 
 public:

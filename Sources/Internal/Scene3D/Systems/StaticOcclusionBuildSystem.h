@@ -28,7 +28,7 @@
 
 
 #ifndef __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_BUILD_SYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_STATIC_OCCLUSION_BUILD_SYSTEM_H__
+#define __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_BUILD_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
@@ -50,15 +50,15 @@ class NMaterial;
 class StaticOcclusionBuildSystem : public SceneSystem
 {
 public:
-    StaticOcclusionBuildSystem(Scene * scene);
+    StaticOcclusionBuildSystem(Scene* scene);
     virtual ~StaticOcclusionBuildSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
+
+    virtual void AddEntity(Entity* entity);
+    virtual void RemoveEntity(Entity* entity);
     virtual void Process(float32 timeElapsed);
-    void ImmediateEvent(Component * component, uint32 event) override;
-    
-    inline void SetCamera(Camera * camera);
+    void ImmediateEvent(Component* component, uint32 event) override;
+
+    inline void SetCamera(Camera* camera);
 
     void Build();
     void Cancel();
@@ -69,15 +69,14 @@ public:
 
 private:
     void PrepareRenderObjects();
-    void StartBuildOcclusion();    
+    void StartBuildOcclusion();
     void FinishBuildOcclusion();
 
     void StartOcclusionComponent();
     void FinishOcclusionComponent();
 
-    
     void SceneForceLod(int32 layerIndex);
-    void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity);
+    void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity* entity);
 
     Camera* camera = nullptr;
     Landscape* landscape = nullptr;
@@ -87,14 +86,12 @@ private:
     uint32 activeIndex = -1;
     uint32 objectsCount = 0;
 };
-   
-    
-inline void StaticOcclusionBuildSystem::SetCamera(Camera * _camera)
+
+inline void StaticOcclusionBuildSystem::SetCamera(Camera* _camera)
 {
     camera = _camera;
 }
 
 } // ns
 
-#endif	/* __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__ */
-
+#endif /* __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__ */

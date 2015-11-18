@@ -40,6 +40,7 @@
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {
@@ -334,6 +335,8 @@ void UIControlSystem::Draw()
 {
     TIME_PROFILE("UIControlSystem::Draw");
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
+
     FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
@@ -360,6 +363,8 @@ void UIControlSystem::Draw()
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     GetScreenshoter()->OnFrame();
+
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 }
 
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl* targetControl)
@@ -420,7 +425,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
 
         UIEvent* eventToHandle = nullptr;
 
-        if (newEvent->phase >= UIEvent::Phase::BEGAN && newEvent->phase <= UIEvent::Phase::ENDED)
+        if (newEvent->phase == UIEvent::Phase::BEGAN || newEvent->phase == UIEvent::Phase::DRAG || newEvent->phase == UIEvent::Phase::ENDED || newEvent->phase == UIEvent::Phase::CANCELLED)
         {
             auto it = std::find_if(begin(touchEvents), end(touchEvents), [newEvent](const UIEvent& ev) {
                 return ev.tid == newEvent->tid;
@@ -455,17 +460,15 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             }
         }
 
-        auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), [](const UIEvent& ev) {
-            return ev.phase == UIEvent::Phase::ENDED || ev.phase == UIEvent::Phase::CANCELLED;
-        });
-
-        if (startRemoveIt != end(touchEvents))
-        {
-            std::for_each(startRemoveIt, end(touchEvents), [this](UIEvent& ev) {
+        auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), [this](UIEvent& ev) {
+            bool shouldRemove = (ev.phase == UIEvent::Phase::ENDED || ev.phase == UIEvent::Phase::CANCELLED);
+            if (shouldRemove)
+            {
                 CancelInput(&ev);
-            });
-            touchEvents.erase(startRemoveIt, end(touchEvents));
-        }
+            }
+            return shouldRemove;
+        });
+        touchEvents.erase(startRemoveIt, end(touchEvents));
     } // end if frameSkip <= 0
 }
 

@@ -547,10 +547,6 @@ Font* UIYamlLoader::CreateFontFromYamlNode(const YamlNode* node)
             return nullptr;
 
         font = FTFont::Create(fontNameNode->AsString());
-        if (!font)
-        {
-            return nullptr;
-        }
     }
     else if (type == "GraphicFont")
     {
@@ -567,10 +563,11 @@ Font* UIYamlLoader::CreateFontFromYamlNode(const YamlNode* node)
         }
 
         font = GraphicFont::Create(fontNameNode->AsString(), texNameNode->AsString());
-        if (!font)
-        {
-            return nullptr;
-        }
+    }
+
+    if (font == nullptr)
+    {
+        return nullptr;
     }
 
     float32 fontSize = 10.0f;
