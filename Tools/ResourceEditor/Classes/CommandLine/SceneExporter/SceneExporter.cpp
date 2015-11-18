@@ -230,19 +230,20 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
 
 void SceneExporter::RemoveEditorNodes(DAVA::Entity *rootNode)
 {
+    DVASSERT(rootNode != nullptr);
+
     //Remove scene nodes
     Vector<Entity *> scenenodes;
     rootNode->GetChildNodes(scenenodes);
         
     //remove nodes from hierarhy
-    Vector<Entity *>::reverse_iterator endItDeletion = scenenodes.rend();
-    for (Vector<Entity *>::reverse_iterator it = scenenodes.rbegin(); it != endItDeletion; ++it)
+    for (auto& entity : scenenodes)
     {
-        Entity * node = *it;
-		String::size_type pos = node->GetName().find(ResourceEditor::EDITOR_BASE);
+        String::size_type pos = entity->GetName().find(ResourceEditor::EDITOR_BASE);
         if(String::npos != pos)
         {
-            node->GetParent()->RemoveNode(node);
+            DVASSERT(entity->GetParent() != nullptr);
+            entity->GetParent()->RemoveNode(entity);
         }
     }
 }

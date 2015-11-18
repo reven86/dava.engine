@@ -26,87 +26,39 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DEVICELOGWIDGET_H__
-#define __DEVICELOGWIDGET_H__
+#ifndef __MEMORYTOOL_BLOCKGROUPMODEL_H__
+#define __MEMORYTOOL_BLOCKGROUPMODEL_H__
 
 #include "Base/BaseTypes.h"
 
-#include <QWidget>
-#include <QColor>
-#include <QPointer>
-#include <QScopedPointer>
+#include "Qt/DeviceInfo/MemoryTool/BlockGroup.h"
 
-namespace Ui {
-    class MemProfWidget;
-} // namespace Ui
+#include <QAbstractTableModel>
 
-class QLabel;
-class QCustomPlot;
-class QFrame;
-class QToolBar;
-
-class QCustomPlot;
-
-namespace DAVA
-{
-    struct MMStatConfig;
-    struct MMCurStat;
-}   // namespace DAVA
-
-class AllocPoolModel;
-class TagModel;
-class GeneralStatModel;
-class SnapshotListModel;
-class MemoryStatItem;
-class ProfilingSession;
-
-class QCPItemTracer;
-
-class MemProfWidget : public QWidget
+class BlockGroupModel : public QAbstractTableModel
 {
     Q_OBJECT
 
-signals:
-    void OnSnapshotButton();
-    
 public:
-    MemProfWidget(ProfilingSession* profSession, QWidget *parent = nullptr);
-    virtual ~MemProfWidget();
+    enum
+    {
+        ROLE_GROUP_POINTER = Qt::UserRole + 1
+    };
 
-public slots:
-    void ConnectionEstablished(bool newConnection);
-    void ConnectionLost(const DAVA::char8* message);
-    void StatArrived(DAVA::uint32 itemCount);
-    void SnapshotProgress(DAVA::uint32 totalSize, DAVA::uint32 recvSize);
+public:
+    BlockGroupModel(QObject* parent = nullptr);
+    virtual ~BlockGroupModel();
 
-    void RealtimeToggled(bool checked);
-    void ScatterPointsToggled(bool checked);
-    void DiffClicked();
-    void PlotClicked(QMouseEvent* ev);
+    void SetBlockGroups(const DAVA::Vector<BlockGroup>* groups);
 
-    void SnapshotList_OnDoubleClicked(const QModelIndex& index);
-
-private:
-    void InitUI();
-    void ReinitPlot();
-    void UpdatePlot(const MemoryStatItem& stat);
-    void SetPlotData();
+    // reimplemented QAbstractTableModel methods
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 private:
-    QScopedPointer<Ui::MemProfWidget> ui;
-
-    ProfilingSession* profileSession = nullptr;
-    QPointer<AllocPoolModel> allocPoolModel;
-    QPointer<TagModel> tagModel;
-    QPointer<GeneralStatModel> generalStatModel;
-    QPointer<SnapshotListModel> snapshotModel;
-
-    DAVA::Vector<QColor> poolColors;
-    bool realtimeMode;
-    bool showScatterPoints = false;
-
-    QCPItemTracer* plotItemTracer = nullptr;
+    const DAVA::Vector<BlockGroup>* groups = nullptr;
 };
 
-#endif // __DEVICELOGWIDGET_H__
+#endif // __MEMORYTOOL_BLOCKGROUPMODEL_H__

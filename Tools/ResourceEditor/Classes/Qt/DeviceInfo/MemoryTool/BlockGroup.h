@@ -26,52 +26,42 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GENERALSTATMODEL_H__
-#define __GENERALSTATMODEL_H__
-
-#include <QAbstractTableModel>
+#ifndef __MEMORYTOOL_BLOCKGROUP_H__
+#define __MEMORYTOOL_BLOCKGROUP_H__
 
 #include "Base/BaseTypes.h"
-#include "MemoryManager/MemoryManagerTypes.h"
 
-class ProfilingSession;
-class MemoryStatItem;
+#include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
 
-class GeneralStatModel : public QAbstractTableModel
+struct BlockGroup
 {
-public:
-    enum {
-        CLM_VALUE = 0,
-        NCOLUMNS = 1
-    };
-    enum
+    template <typename T>
+    BlockGroup(const DAVA::String& title_, DAVA::uint32 key_, T&& blockLink_)
+        : title(title_)
+        , key(key_)
+        , blockLink(std::move(blockLink_))
     {
-        ROW_ALLOC_INTERNAL = 0,
-        ROW_ALLOC_INTERNAL_TOTAL,
-        ROW_NBLOCKS_INTERNAL,
-        ROW_ALLOC_GHOST,
-        ROW_NBLOCKS_GHOST,
-        ROW_TOTAL_ALLOC_COUNT,
-        NROWS
-    };
+    }
+    BlockGroup(BlockGroup&& other)
+        : title(std::move(other.title))
+        , key(std::move(other.key))
+        , blockLink(std::move(other.blockLink))
+    {
+    }
+    BlockGroup& operator=(BlockGroup&& other)
+    {
+        if (this != &other)
+        {
+            title = std::move(other.title);
+            key = std::move(other.key);
+            blockLink = std::move(other.blockLink);
+        }
+        return *this;
+    }
 
-public:
-    GeneralStatModel(QObject* parent = nullptr);
-    virtual ~GeneralStatModel();
-
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-
-    void BeginNewProfileSession(ProfilingSession* profSession);
-    void SetCurrentValues(const MemoryStatItem& item);
-
-private:
-    ProfilingSession* profileSession;
-
-    DAVA::uint64 timestamp;
-    DAVA::GeneralAllocStat curValues;
+    DAVA::String title;
+    DAVA::uint32 key;
+    BlockLink blockLink;
 };
 
-#endif  // __GENERALSTATMODEL_H__
+#endif // __MEMORYTOOL_BLOCKGROUP_H__

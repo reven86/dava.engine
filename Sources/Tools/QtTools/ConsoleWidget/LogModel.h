@@ -6,7 +6,11 @@
 #include <QAbstractListModel>
 #include <functional>
 #include <QPointer>
+#include <QSize>
 #include "FileSystem/Logger.h"
+
+class QMutex;
+class QTimer;
 
 class LoggerOutputObject
 : public QObject,
@@ -40,11 +44,18 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+
 public slots:
-    void AddMessage(DAVA::Logger::eLogLevel ll, const QString &text);
+    void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& text);
+    void AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray& msg);
     void Clear();
+
+private slots:
+    void Sync();
+
 private:
-    void createIcons();
+    void CreateIcons();
+    void RecalculateRowWidth(const QString& text);
     struct LogItem
     {
         LogItem(DAVA::Logger::eLogLevel ll_ = DAVA::Logger::LEVEL_FRAMEWORK, const QString &text_ = QString(), const QString &data_ = QString());
@@ -57,6 +68,11 @@ private:
     QVector<QPixmap> icons;
     ConvertFunc func;
     QPointer<LoggerOutputObject> loggerOutputObject = nullptr;
+
+    QVector<LogItem> itemsToAdd;
+    std::unique_ptr<QMutex> mutex = nullptr;
+    QTimer* syncTimer = nullptr;
+    QSize rowSize;
 };
 
 #endif // __LOGMODEL_H__
