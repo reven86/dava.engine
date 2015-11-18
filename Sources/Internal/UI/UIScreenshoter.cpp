@@ -85,7 +85,14 @@ Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat fo
 void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
+    Texture::FBODescriptor desc;
+
+    desc.width = uint32(size.dx);
+    desc.height = uint32(size.dy);
+    desc.format = format;
+    desc.needDepth = true;
+    desc.needPixelReadback = true;
+    Texture* screenshot(Texture::CreateFBO(desc));
 
     MakeScreenshotInternal(control, screenshot, callback);
 
