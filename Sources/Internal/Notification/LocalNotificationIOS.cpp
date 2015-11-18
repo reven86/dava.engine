@@ -36,6 +36,7 @@
 #import <UIKit/UILocalNotification.h>
 #import "Utils/NSStringUtils.h"
 #import "Platform/DateTime.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -111,6 +112,12 @@ void LocalNotificationIOS::ShowText(const WideString &title, const WideString &t
 
 void LocalNotificationIOS::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
 {
+    Array<char, 16> percentStr{};
+    float32 percentage = (static_cast<float32>(progress) / total) * 100.0f;
+    sprintf_s(percentStr.data(), percentStr.size(), " %.02f%%", percentage);
+
+    WideString titleText = title + StringToWString(percentStr.data());
+    ShowText(titleText, text);
 }
 
 void LocalNotificationIOS::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)

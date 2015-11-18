@@ -55,8 +55,10 @@ public:
 
 private:
     void CreateOrUpdateNotification(Windows::Data::Xml::Dom::XmlDocument^ notificationDeclaration,
-                                    const Windows::Foundation::DateTime* startTime = nullptr);
+                                    const Windows::Foundation::DateTime* startTime = nullptr,
+                                    bool ghostNotification = false);
 
+    Windows::UI::Notifications::ToastNotifier^ toastNotifier;
     Windows::UI::Notifications::ToastNotification^ notification;
 };
 

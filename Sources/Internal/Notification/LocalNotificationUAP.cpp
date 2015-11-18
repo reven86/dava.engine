@@ -27,20 +27,18 @@
 =====================================================================================*/
 
 
-#include "Notification/LocalNotificationUAP.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+
+#include "Notification/LocalNotificationUAP.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
 
 using namespace Windows::Data::Xml::Dom;
 using namespace Windows::UI::Notifications;
-
-ToastNotifier^ GetToastNotifier()
-{
-    return ToastNotificationManager::CreateToastNotifier();
-}
 
 XmlDocument^ GenerateToastDeclaration(const WideString& title, const WideString& text, bool useSound)
 {
@@ -70,6 +68,7 @@ XmlDocument^ GenerateToastDeclaration(const WideString& title, const WideString&
 LocalNotificationUAP::LocalNotificationUAP(const String& _id)
 {
     notificationId = _id;
+    toastNotifier = ToastNotificationManager::CreateToastNotifier();
 }
     
 void LocalNotificationUAP::SetAction(const WideString &action)
@@ -83,66 +82,85 @@ void LocalNotificationUAP::Hide()
         return;
     }
 
-    GetToastNotifier()->Hide(notification);
+    toastNotifier->Hide(notification);
     notification = nullptr;
 }
 
-void LocalNotificationUAP::ShowText(const WideString &title, const WideString &text, bool useSound)
+void LocalNotificationUAP::ShowText(const WideString& title, const WideString& text, bool useSound)
 {
     XmlDocument^ toastDoc = GenerateToastDeclaration(title, text, useSound);
     CreateOrUpdateNotification(toastDoc);
 }
 
-void LocalNotificationUAP::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
+void LocalNotificationUAP::ShowProgress(const WideString& title, 
+                                        const WideString& text, 
+                                        uint32 total, 
+                                        uint32 progress, 
+                                        bool useSound)
 {
-    //not implemented :)
+    Array<char, 16> percentStr {};
+    float32 percentage = (static_cast<float32>(progress) / total) * 100.0f;
+    sprintf_s(percentStr.data(), percentStr.size(), " %.02f%%", percentage);
+
+    WideString titleText = title + StringToWString(percentStr.data());
+    XmlDocument^ toastDoc = GenerateToastDeclaration(titleText, text, useSound);
+
+    CreateOrUpdateNotification(toastDoc, nullptr, true);
 }
     
-LocalNotificationImpl *LocalNotificationImpl::Create(const String &_id)
-{
-    return new LocalNotificationUAP(_id);
-}
-
-void LocalNotificationUAP::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
+void LocalNotificationUAP::PostDelayedNotification(const WideString& title, 
+                                                   const WideString& text, 
+                                                   int delaySeconds, 
+                                                   bool useSound)
 {
     XmlDocument^ toastDoc = GenerateToastDeclaration(title, text, useSound);
     
-    Windows::Globalization::Calendar^ huindar = ref new Windows::Globalization::Calendar;
-    huindar->AddSeconds(delaySeconds);
-    Windows::Foundation::DateTime huita = huindar->GetDateTime();
+    Windows::Globalization::Calendar^ calendar = ref new Windows::Globalization::Calendar;
+    calendar->AddSeconds(delaySeconds);
+    Windows::Foundation::DateTime dateTime = calendar->GetDateTime();
 
-    CreateOrUpdateNotification(toastDoc, &huita);
+    CreateOrUpdateNotification(toastDoc, &dateTime);
 }
 
 void LocalNotificationUAP::RemoveAllDelayedNotifications()
 {
-    auto scheduledNotifications = GetToastNotifier()->GetScheduledToastNotifications();
+    auto scheduledNotifications = toastNotifier->GetScheduledToastNotifications();
 
     for (unsigned i = 0; i < scheduledNotifications->Size; ++i)
     {
-        GetToastNotifier()->RemoveFromSchedule(scheduledNotifications->GetAt(i));
+        toastNotifier->RemoveFromSchedule(scheduledNotifications->GetAt(i));
     }
 }
 
 void LocalNotificationUAP::CreateOrUpdateNotification(
-    Windows::Data::Xml::Dom::XmlDocument^ notificationDeclaration,
-    const Windows::Foundation::DateTime* startTime)
+    XmlDocument^ notificationDeclaration,
+    const Windows::Foundation::DateTime* startTime,
+    bool ghostNotification)
 {
     if (startTime == nullptr)
     {
-        if (notification != nullptr)
+        ToastNotification^ notif = ref new ToastNotification(notificationDeclaration);
+        notif->SuppressPopup = ghostNotification;
+        toastNotifier->Show(notif);
+
+        if (notification)
         {
-            Hide();
+            toastNotifier->Hide(notification);
         }
-        notification = ref new ToastNotification(notificationDeclaration);
-        GetToastNotifier()->Show(notification);
+        notification = notif;
     }
     else
     {
         ScheduledToastNotification^ notif = 
             ref new ScheduledToastNotification(notificationDeclaration, *startTime);
-        GetToastNotifier()->AddToSchedule(notif);
+        notif->SuppressPopup = ghostNotification;
+        toastNotifier->AddToSchedule(notif);
     }
+}
+
+LocalNotificationImpl *LocalNotificationImpl::Create(const String& _id)
+{
+    return new LocalNotificationUAP(_id);
 }
 
 }  // namespace DAVA
