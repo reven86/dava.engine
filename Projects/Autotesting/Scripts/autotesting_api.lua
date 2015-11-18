@@ -242,10 +242,9 @@ function WriteCommand(name, command)
 end
 
 function InitializeDevice()
-    DEVICE = GetDeviceName()
-    Log("Mark " .. DEVICE .. " device as Ready")
+    Log("Mark " .. DEVICE_NAME .. " device as Ready")
     autotestingSystem:InitializeDevice()
-    WriteState(DEVICE, MP_STATE['READY'])
+    WriteState(DEVICE_NAME, MP_STATE['READY'])
     Yield()
 end
 
