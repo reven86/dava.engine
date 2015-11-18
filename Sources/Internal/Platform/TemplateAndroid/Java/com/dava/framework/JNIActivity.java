@@ -203,7 +203,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			        }
 					
 					surfaceView.ProcessQueueEvents();
-					surfaceView.ProcessFrame();
+                    
+                    if(hasWindowFocus()) {
+    					surfaceView.ProcessFrame();
+                    }
 				}
                 Log.d(JNIConst.LOG_TAG, "C++ thread: destroying native...");
 				nativeOnDestroy();
@@ -438,6 +441,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // http://developer.android.com/reference/android/app/Activity.html#onWindowFocusChanged(boolean)
         super.onWindowFocusChanged(hasFocus);
         
+        Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] hasFocus = " + hasFocus);
     	if(hasFocus) {
     		// we have to wait for window to get focus and only then
     		// resume game
@@ -455,7 +459,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     			RunOnMainLoopThread(action);
     		    setResumeGLActionOnWindowReady(null);
     		}
-    		
+
     		HideNavigationBar(getWindow().getDecorView());
     	}
     	Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] out");

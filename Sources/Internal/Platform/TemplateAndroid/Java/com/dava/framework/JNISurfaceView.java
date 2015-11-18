@@ -188,13 +188,13 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void onPause() 
     {
         isPaused = true;
-        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onPause in");
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onPause in");
         queueEvent(new Runnable() {
         	
             @SuppressWarnings("deprecation")
 			public void run()
             {
-                Log.d(JNIConst.LOG_TAG, "[SurfaceView.onPause Runnable] in");
+                Log.d(JNIConst.LOG_TAG, "SurfaceView onPause runnable in");
 
                 PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
                 boolean isScreenLocked = false;
@@ -205,28 +205,36 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 
                 nativeOnPause(isScreenLocked);
 
-                Log.d(JNIConst.LOG_TAG, "[SurfaceView.onPause Runnable] out");
+                Log.d(JNIConst.LOG_TAG, "SurfaceView onPause runnable out");
             }
         });
 
-        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onPause out");
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onPause out");
     }
 
     public void onResume() 
     {
-        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onResume");
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onResume in");
         
+        isPaused = false;
+        frameCounter = 0;
+
         JNIActivity activity = JNIActivity.GetActivity();
 
         Runnable action = new Runnable()
         {
         	@Override
             public void run() {
+                Log.d(JNIConst.LOG_TAG, "SurfaceView onResume runnable in");
                 nativeOnResume();
+                Log.d(JNIConst.LOG_TAG, "SurfaceView onResume runnable out");
             }
         };
         
-        if (activity.hasWindowFocus())
+        boolean hasFocus = activity.hasWindowFocus();
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView hasWindowFocus = " + hasFocus);
+        if (hasFocus)
         {
             queueEvent(action);
         } 
@@ -236,9 +244,8 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             // to resolve deadlock
             activity.setResumeGLActionOnWindowReady(action);
         }
-        isPaused = false;
 
-        frameCounter = 0;
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onResume out");
     }
 	
 	public class InputRunnable implements Runnable
@@ -485,18 +492,25 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void surfaceCreated(SurfaceHolder holder)
     {
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated in");
     	surface = holder.getSurface();
     	surfaceWidth = surfaceHeight = 0;
     	
     	queueEvent(new Runnable() {
 			public void run() {
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable in");
 		    	nativeSurfaceCreated(surface);
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable out");
 			}
 		});
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated out");
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged in");
+
         // while we always in landscape mode, but some devices
         // call this method on lock screen with portrait w and h
         // then call this method second time with correct portrait w and h
@@ -519,7 +533,9 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
             	queueEvent(new Runnable() {
         			public void run() {
+                        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable in");
         		    	nativeSurfaceChanged(surfaceWidth, surfaceHeight);
+                        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable out");
         			}
         		});
                 
@@ -535,15 +551,22 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 });
             }
         }
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged out");
     }
     
     public void surfaceDestroyed(SurfaceHolder holder)
     {
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed in");
     	queueEvent(new Runnable() {
 			public void run() {
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable in");
 		    	nativeSurfaceDestroyed();
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable out");
 			}
 		});
+        surface = null;
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");
     }
     
     class MOGAListener implements ControllerListener

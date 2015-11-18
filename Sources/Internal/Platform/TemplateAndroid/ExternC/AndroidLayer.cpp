@@ -498,6 +498,7 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
         if (core)
         {
             core->SetNativeWindow(nativeWindow);
+            core->RenderReset(0, 0);
         }
     }
 }
