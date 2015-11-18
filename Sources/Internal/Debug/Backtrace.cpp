@@ -26,4 +26,152 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+// clang-format off
 #include "Debug/Backtrace.h"
+#include "Concurrency/Atomic.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+#include "Utils/StringFormat.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+#   include <dbghelp.h>
+#elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#endif
+
+namespace DAVA
+{
+namespace Debug
+{
+
+namespace
+{
+
+void InitSymbols()
+{
+#if defined(__DAVAENGINE_WIN32__)
+    static Atomic<bool> symbolsInited = false;
+    if (!symbolsInited)
+    {
+        // All DbgHelp functions are single threaded
+        static Mutex initMutex;
+        LockGuard<Mutex> lock(initMutex);
+        if (!symbolsInited)
+        {
+            SymInitialize(GetCurrentProcess(), nullptr, TRUE);
+            // Do not regard return value of SymInitialize: if this call failed then next call will likely fail too
+            symbolsInited = true;
+        }
+    }
+#endif
+}
+
+} // anonymous namespace
+
+DAVA_NOINLINE size_t GetStackFrames(void* frames[], size_t framesToCapture)
+{
+    size_t nframes = 0;
+#if defined(__DAVAENGINE_WIN32__)
+    nframes = CaptureStackBackTrace(0, static_cast<DWORD>(framesToCapture), frames, nullptr);
+#elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#endif
+    return nframes;
+}
+
+String DemangleSymbol(const char8* symbol)
+{
+#if defined(__DAVAENGINE_WIN32__)
+    // On Win32 SymFromAddr returns already undecorated name
+    return String(symbol);
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    return String(symbol);
+#elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#endif
+}
+
+String GetSymbolFromAddr(void* addr, bool demangle)
+{
+    String result;
+#if defined(__DAVAENGINE_WIN32__)
+    const size_t NAME_BUFFER_SIZE = MAX_SYM_NAME + sizeof(SYMBOL_INFO);
+    char8 nameBuffer[NAME_BUFFER_SIZE];
+
+    SYMBOL_INFO* symInfo = reinterpret_cast<SYMBOL_INFO*>(nameBuffer);
+    symInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
+    symInfo->MaxNameLen = NAME_BUFFER_SIZE - sizeof(SYMBOL_INFO);
+
+    {
+        InitSymbols();
+
+        // All DbgHelp functions are single threaded
+        static Mutex mutex;
+        LockGuard<Mutex> lock(mutex);
+        if (SymFromAddr(GetCurrentProcess(), reinterpret_cast<DWORD64>(addr), nullptr, symInfo))
+            result = symInfo->Name;
+    }
+
+#elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#endif
+    return result;
+}
+
+Vector<StackFrame> GetBacktrace(size_t framesToCapture)
+{
+    const size_t DEFAULT_SKIP_COUNT = 2;    // skip this function and GetStackFrames
+    const size_t MAX_BACKTRACE_COUNT = 64;
+
+    framesToCapture = std::min(framesToCapture, MAX_BACKTRACE_COUNT);
+
+    void* frames[MAX_BACKTRACE_COUNT + DEFAULT_SKIP_COUNT];
+    size_t nframes = GetStackFrames(frames, framesToCapture + DEFAULT_SKIP_COUNT);
+
+    Vector<StackFrame> backtrace;
+    if (nframes > DEFAULT_SKIP_COUNT)
+    {
+        backtrace.reserve(nframes);
+        for (size_t i = DEFAULT_SKIP_COUNT;i < nframes;++i)
+        {
+            backtrace.emplace_back(frames[i], GetSymbolFromAddr(frames[i]));
+        }
+    }
+    return backtrace;
+}
+
+String BacktraceToString(const Vector<StackFrame>& backtrace, size_t nframes)
+{
+    String result;
+    size_t n = std::min(nframes, backtrace.size());
+    for (size_t i = 0;i != n;++i)
+    {
+        result += Format("    %s [%p]\n", backtrace[i].function.c_str(), backtrace[i].addr);
+    }
+    return result;
+}
+
+String BacktraceToString(size_t framesToCapture)
+{
+    return BacktraceToString(GetBacktrace(framesToCapture));
+}
+
+void BacktraceToLog(const Vector<StackFrame>& backtrace, Logger::eLogLevel ll)
+{
+    Logger* logger = Logger::Instance();
+    if (logger != nullptr)
+    {
+        for (size_t i = 0, n = backtrace.size();i != n;++i)
+        {
+            logger->Log(ll, "    %s [%p]", backtrace[i].function.c_str(), backtrace[i].addr);
+        }
+    }
+}
+
+void BacktraceToLog(size_t framesToCapture, Logger::eLogLevel ll)
+{
+    BacktraceToLog(GetBacktrace(framesToCapture), ll);
+}
+
+} // namespace Debug
+} // namespace DAVA
