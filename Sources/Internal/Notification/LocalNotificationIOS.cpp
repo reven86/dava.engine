@@ -117,7 +117,7 @@ void LocalNotificationIOS::ShowProgress(const WideString &title, const WideStrin
     sprintf_s(percentStr.data(), percentStr.size(), " %.02f%%", percentage);
 
     WideString titleText = title + StringToWString(percentStr.data());
-    ShowText(titleText, text);
+    ShowText(titleText, text, useSound);
 }
 
 void LocalNotificationIOS::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
