@@ -49,6 +49,7 @@
 
 #include "Base/Hash.h"
 #include "Debug/DVAssert.h"
+#include "Debug/Backtrace.h"
 #include "Concurrency/Thread.h"
 #include "Math/MathHelpers.h"
 
@@ -743,6 +744,10 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
     const size_t FRAMES_COUNT = BACKTRACE_DEPTH + EXTRA_FRAMES;
     void* frames[FRAMES_COUNT] = {nullptr};
     Memset(backtrace, 0, sizeof(Backtrace));
+
+    Debug::GetStackFrames(frames, FRAMES_COUNT);
+
+#if 0
 #if defined(__DAVAENGINE_WIN32__)
     CaptureStackBackTrace(0, FRAMES_COUNT, frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
@@ -752,6 +757,7 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
     _Unwind_Backtrace(&UnwindCallback, &state);
 #else
 #error "Unknown platform"
+#endif
 #endif
 
     auto PointerToString = [](void* ptr, char* buf) -> size_t {
@@ -794,10 +800,19 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 {
     if (nullptr == symbolMap)
     {
-        static uint8 bufferFoMap[sizeof(SymbolMap)];
-        symbolMap = new (bufferFoMap) SymbolMap;
+        static uint8 bufferForMap[sizeof(SymbolMap)];
+        symbolMap = new (bufferForMap) SymbolMap;
     }
 
+    for (size_t i = 0; i < backtrace->frames.size(); ++i)
+    {
+        if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
+        {
+            String symbol = Debug::GetSymbolFromAddr(backtrace->frames[i], true);
+            symbolMap->emplace(backtrace->frames[i], InternalString(symbol.c_str()));
+        }
+    }
+#if 0
     const size_t NAME_BUFFER_SIZE = 4 * 1024;
     static Array<char8, NAME_BUFFER_SIZE> nameBuffer;
     
@@ -847,6 +862,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     }
 #else
 #error "Unknown platform"
+#endif
 #endif
 }
 
