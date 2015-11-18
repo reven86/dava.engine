@@ -480,7 +480,7 @@ void SceneTabWidget::OnDavaGLWidgetResized(int width, int height, int dpr)
     int scaledHeight = height * dpr;
     
     davaUIScreen->SetSize(DAVA::Vector2(scaledWidth, scaledHeight));
-    dava3DView->SetSize(DAVA::Vector2(scaledWidth - 2 * dava3DViewMargin, scaledHeight - 2 * dava3DViewMargin));
+    dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
 
     SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
     if(NULL != scene)
