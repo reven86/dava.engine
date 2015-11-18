@@ -179,7 +179,7 @@ generate_source_groups_project ()
 
 
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
-generated_unified_sources   ( PROJECT_SOURCE_FILES IGNORE_LIST        
+generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
                                                         "Internal/Autotesting"
                                                    IGNORE_LIST_APPLE  
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"

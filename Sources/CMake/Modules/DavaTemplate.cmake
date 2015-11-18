@@ -250,10 +250,10 @@ endif()
 ###
 
 list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
-generated_unified_sources( PROJECT_SOURCE_FILES  IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
-                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
-                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
-                                                )
+generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
+                                                IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
+                                                IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
+                                               )
 
 if( ANDROID )
     set( POSTFIX 0  )

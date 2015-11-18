@@ -99,16 +99,18 @@ macro (define_source_files)
         set (ARG_GLOB_H_PATTERNS *.h *.hpp)
     endif ()
 
-    set( CPP_FILES )
-    set( H_FILES )
+    set ( CPP_FILES )
+    set ( H_FILES )
 
-    file (GLOB CPP_FILES ${ARG_GLOB_CPP_PATTERNS} )
-    file (GLOB H_FILES ${ARG_GLOB_H_PATTERNS} )
+    file( GLOB CPP_FILES ${ARG_GLOB_CPP_PATTERNS} )
+    file( GLOB H_FILES ${ARG_GLOB_H_PATTERNS} )
 
-    list (APPEND CPP_FILES ${ARG_EXTRA_CPP_FILES})
-    list (APPEND H_FILES ${ARG_EXTRA_H_FILES})
-    set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+    list( APPEND CPP_FILES ${ARG_EXTRA_CPP_FILES} )
+    list( APPEND H_FILES ${ARG_EXTRA_H_FILES} )
+    set ( SOURCE_FILES ${CPP_FILES} ${H_FILES} )
     
+    source_group( "" FILES ${SOURCE_FILES} )
+
     # Optionally enable PCH                                                                                                                                                 
     if (ARG_PCH)
         enable_pch ()
@@ -487,9 +489,9 @@ macro ( add_dynamic_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
 
 endmacro ()
 
-macro( generated_unified_sources SOURCE_FILES )  
+macro( generated_unity_sources SOURCE_FILES )  
 
-    if( UNIFIED_BUILD )
+    if( UNITY_BUILD )
         cmake_parse_arguments (ARG "" "" "IGNORE_LIST;IGNORE_LIST_APPLE;IGNORE_LIST_WIN32" ${ARGN})
         
         foreach( TYPE_OS  APPLE IOS MACOS WIN32 ANDROID )
@@ -539,6 +541,11 @@ macro( generated_unified_sources SOURCE_FILES )
 
         foreach( PTYPE CPP OBJCPP )
             list( LENGTH ${PTYPE}_ALL_LIST ${PTYPE}_ALL_LIST_SIZE )
+
+            if( ${${PTYPE}_ALL_LIST_SIZE} EQUAL 0 )
+                continue()
+            endif()
+
             math( EXPR NUMBER_GEN_PACK "${${PTYPE}_ALL_LIST_SIZE} / 6" ) 
 
             if( ${PTYPE} STREQUAL "OBJCPP" )
@@ -562,10 +569,10 @@ macro( generated_unified_sources SOURCE_FILES )
 
             endif()
 
-            get_property( ${PTYPE}_PACK_IDX GLOBAL PROPERTY  ${PROJECT_NAME}_${PTYPE}_PACK_IDX  )
+            get_property( PACK_IDX GLOBAL PROPERTY  ${PROJECT_NAME}_PACK_IDX  )
 
-            if( NOT ${PTYPE}_PACK_IDX )
-                set( ${PTYPE}_PACK_IDX 0 )
+            if( NOT PACK_IDX )
+                set( PACK_IDX 0 )
             endif()
         
             foreach( index RANGE 1 ${${PTYPE}_PACK_SIZE}  )
@@ -576,7 +583,7 @@ macro( generated_unified_sources SOURCE_FILES )
                     set_source_files_properties( ${PACH} PROPERTIES HEADER_FILE_ONLY TRUE )
                 endforeach()
                 string(REPLACE ";" "\n" HEADERS_LIST "${HEADERS_LIST}" )            
-                math( EXPR index_pack "${index} + ${${PTYPE}_PACK_IDX}" )
+                math( EXPR index_pack "${index} + ${PACK_IDX}" )
                 set ( ${PTYPE}_NAME ${CMAKE_BINARY_DIR}/src_pack/${PROJECT_NAME}_${index_pack}.${${PTYPE}_PACK_EXP} )
                 
                 list( APPEND ${PTYPE}_PACK_LIST ${${PTYPE}_NAME} )
@@ -584,8 +591,8 @@ macro( generated_unified_sources SOURCE_FILES )
                 file( WRITE ${${PTYPE}_NAME} ${HEADERS_LIST})
             endforeach()
 
-            math( EXPR ${PTYPE}_PACK_IDX "${${PTYPE}_PACK_IDX} + ${${PTYPE}_PACK_SIZE}" )
-            set_property( GLOBAL PROPERTY ${PROJECT_NAME}_${PTYPE}_PACK_IDX "${${PTYPE}_PACK_IDX}" )
+            math( EXPR PACK_IDX "${PACK_IDX} + ${${PTYPE}_PACK_SIZE}" )
+            set_property( GLOBAL PROPERTY ${PROJECT_NAME}_PACK_IDX "${PACK_IDX}" )
         endforeach() 
 
         set( ${SOURCE_FILES}  ${${SOURCE_FILES}} ${CPP_PACK_LIST} ${OBJCPP_PACK_LIST} )
