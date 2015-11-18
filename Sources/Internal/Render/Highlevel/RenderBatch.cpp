@@ -122,10 +122,10 @@ void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
         curNode = curNode->GetParent();
     }
 
-    if(dataSource)
-	{
-		InsertDataNode(dataSource, dataNodes);
-	}
+    if (dataSource)
+    {
+        InsertDataNode(dataSource, dataNodes);
+    }
 }
 
 void RenderBatch::InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes)
@@ -152,7 +152,7 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
         NMaterial* mat = material->Clone();
         rb->SetMaterial(mat);
         mat->Release();
-	}
+    }
 
     rb->vertexBuffer = vertexBuffer;
     rb->vertexCount = vertexCount;

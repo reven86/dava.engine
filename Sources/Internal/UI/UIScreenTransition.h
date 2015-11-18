@@ -63,10 +63,10 @@ protected:
     Interpolation::Func interpolationFunc;
     float32 currentTime;
     float32 duration;
-	float32 normalizedTime;
-	
-	UIScreen * prevScreen;
-	UIScreen * nextScreen;
+    float32 normalizedTime;
+
+    UIScreen* prevScreen;
+    UIScreen * nextScreen;
     UIScreenshoter* shooter;
 
 };

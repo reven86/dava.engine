@@ -53,12 +53,12 @@ public:
     ~HashMap();
 
     size_t size() const;
-    size_t count(const K &key) const;
+    size_t count(const K& key) const;
 
-	bool empty() const;
+    bool empty() const;
 
-	iterator insert(const K &key, const V &value);
-	void erase(const K &key);
+    iterator insert(const K& key, const V& value);
+    void erase(const K &key);
 	void clear();
     
 	inline V & at(const K &key);
@@ -82,7 +82,7 @@ public:
 
     const K& keyByIndex(size_t index);
     const K& keyByIndex(size_t index) const;
-    
+
 public:
 	struct HashMapItem
 	{

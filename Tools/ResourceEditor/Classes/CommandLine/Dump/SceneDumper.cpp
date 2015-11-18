@@ -229,8 +229,8 @@ void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links)
 	for (auto & folder : gfxFolders)
 	{
 		FilePath flagsTXT = folder + "flags.txt";
-		if (flagsTXT.Exists())
-		{
+        if (FileSystem::Instance()->Exists(flagsTXT))
+        {
 			links.insert(flagsTXT);
 		}
 	}

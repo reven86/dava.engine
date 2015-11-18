@@ -396,6 +396,7 @@ public:
 	void ExtractValuesFromMatrix();
 	void ConstructMatrixFromValues();
     void Recalc();
+    void ValidateProperties();
 
     void CalculateZoomFactor();
     

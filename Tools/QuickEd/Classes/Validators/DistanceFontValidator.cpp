@@ -46,13 +46,13 @@ bool DistanceFontValidator::ValidateInternal(QVariant& v)
         FilePath texPath = FilePath(v.toString().toStdString());
         FilePath pngPath = FilePath::CreateWithNewExtension(texPath, ".png");
 
-        if (pngPath.IsEmpty() || !pngPath.Exists())
+        if (!FileSystem::Instance()->Exists(pngPath))
         {
             notifyMessage = ".png file for Distance Field Font was not found. Font will not be displayed correctly.";
             return false;
         }
 
-        if (texPath.IsEmpty() || !texPath.Exists())
+        if (!FileSystem::Instance()->Exists(texPath))
         {
             notifyMessage = ".tex file for Distance Field Font was not found and could not be created. Font will not be displayed correctly.";
             return false;
@@ -71,7 +71,7 @@ void DistanceFontValidator::FixupInternal(QVariant& v) const
         FilePath texPath = FilePath(v.toString().toStdString());
         FilePath pngPath = FilePath::CreateWithNewExtension(texPath, ".png");
 
-        if (!pngPath.IsEmpty() && pngPath.Exists())
+        if (FileSystem::Instance()->Exists(pngPath))
         {
             if (TextureDescriptorUtils::CreateDescriptorIfNeed(pngPath))
             {

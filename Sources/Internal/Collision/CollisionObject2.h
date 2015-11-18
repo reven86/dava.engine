@@ -69,10 +69,10 @@ public:
 
     eType type;
 
-    Vector2 position;		//	Position of the collision object pivot
-	Vector2 pivot;			//	Shift of the object inside the sprite
-	Vector2 scale;			//  Current scale
-	float32 angle;			//  Current angle
+    Vector2 position; //	Position of the collision object pivot
+    Vector2 pivot; //	Shift of the object inside the sprite
+    Vector2 scale; //  Current scale
+    float32 angle;			//  Current angle
 
 	Circle circle;			// circle in case if it's circle collision object
 	//float32 basePolygonRadius;	//	Square radius of the rotated object

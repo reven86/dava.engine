@@ -369,9 +369,9 @@ int32	ResourceArchive::LoadResource(const FilePath & pathName, void * data)
     {
         if (pathName == lastResourceName)
         {
-			resourceIndex = lastResourceIndex;
-		}
-	}
+            resourceIndex = lastResourceIndex;
+        }
+    }
 	
 	if (pathName != lastResourceName)
 	{

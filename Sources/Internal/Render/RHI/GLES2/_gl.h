@@ -220,4 +220,7 @@ extern int _GLES2_LastActiveTexture;
 extern HDC _GLES2_WindowDC;
 #endif
 
+extern bool _GLES2_IsGlDepth24Stencil8Supported;
+extern bool _GLES2_IsGlDepthNvNonLinearSupported;
+
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);

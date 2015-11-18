@@ -128,8 +128,8 @@ void SceneUtils::CopyFiles(Set<String> &errorLog)
     {
 		bool retCopy = false;
 
-		if(it->first.Exists())
-		{
+        if (FileSystem::Instance()->Exists(it->first))
+        {
 			FileSystem::Instance()->DeleteFile(it->second);
 			retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
 		}
@@ -156,7 +156,7 @@ void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
     DAVA::Set<DAVA::FilePath>::const_iterator endSetIt = folders.end();
     for(DAVA::Set<DAVA::FilePath>::const_iterator it = folders.begin(); it != endSetIt; ++it)
     {
-        if(!(*it).Exists())
+        if (!FileSystem::Instance()->Exists(*it))
         {
             FileSystem::eCreateDirectoryResult retCreate = FileSystem::Instance()->CreateDirectory((*it), true);
             if(FileSystem::DIRECTORY_CANT_CREATE == retCreate)
