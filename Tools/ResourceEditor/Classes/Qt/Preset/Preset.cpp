@@ -67,13 +67,13 @@ const QString GetOpenPathname(const QString& caption, const DAVA::String& folder
     return FileDialog::getOpenFileName(nullptr, caption, folderPath.GetAbsolutePathname().c_str(), presetFilter);
 }
 
-bool SaveTexturePreset(const DAVA::KeyedArchive* presetArchive, const DAVA::FilePath& path)
+bool SaveArchive(const DAVA::KeyedArchive* presetArchive, const DAVA::FilePath& path)
 { // We can change the way of saving: as text, as binary, etc..
     DVASSERT(presetArchive != nullptr);
     return presetArchive->SaveToYamlFile(path);
 }
 
-bool LoadTexturePreset(DAVA::KeyedArchive* archieve, const DAVA::FilePath& path)
+bool LoadArchive(DAVA::KeyedArchive* archieve, const DAVA::FilePath& path)
 { // We can change the way of loading: as text, as binary, etc..
     DVASSERT(archieve != nullptr);
     return archieve->LoadFromYamlFile(path);
@@ -91,7 +91,7 @@ bool DialogSavePresetForTexture(const DAVA::TextureDescriptor* descriptor)
 
     DAVA::ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());
     descriptor->ExtractTexturePreset(presetArchive);
-    return SaveTexturePreset(presetArchive, outputFile.toStdString());
+    return SaveArchive(presetArchive, outputFile.toStdString());
 }
 
 bool DialogLoadPresetForTexture(DAVA::TextureDescriptor* descriptor)
@@ -105,7 +105,7 @@ bool DialogLoadPresetForTexture(DAVA::TextureDescriptor* descriptor)
     }
 
     DAVA::ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());
-    bool loaded = LoadTexturePreset(presetArchive, inputFile.toStdString());
+    bool loaded = LoadArchive(presetArchive, inputFile.toStdString());
     if (!loaded)
     {
         return false;

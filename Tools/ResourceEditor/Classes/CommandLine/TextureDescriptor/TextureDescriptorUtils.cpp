@@ -34,8 +34,10 @@
 
 using namespace DAVA;
 
-namespace TextureDescriptorUtils {
+namespace TextureDescriptorUtils 
+{
 
+namespace {
 bool IsCorrectDirectory(FileList *fileList, const int32 fileIndex)
 {
     if (fileList->IsDirectory(fileIndex))
@@ -53,6 +55,7 @@ bool IsCorrectDirectory(FileList *fileList, const int32 fileIndex)
 bool IsDescriptorPathname(const FilePath &pathname)
 {
     return pathname.IsEqualToExtension(TextureDescriptor::GetDescriptorExtension());
+}
 }
 
 void ResaveDescriptorsForFolder(const FilePath &folderPathname)
@@ -75,6 +78,7 @@ void ResaveDescriptorsForFolder(const FilePath &folderPathname)
 void ResaveDescriptor(const FilePath & descriptorPathname)
 {
     std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPathname));
+    DVASSERT(descriptor);
     descriptor->Save();
 }
 
@@ -112,7 +116,7 @@ bool CreateDescriptorIfNeed(const FilePath &texturePath, const FilePath& presetP
         }
 
         ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive);
-        if (!presetPath.IsEmpty() && Preset::LoadTexturePreset(presetArchive, presetPath))
+        if (!presetPath.IsEmpty() && Preset::LoadArchive(presetArchive, presetPath))
         {
             descriptor->ApplyTexturePreset(presetArchive);
         }
@@ -161,13 +165,15 @@ void SetCompressionParams(const FilePath &descriptorPathname, const DAVA::Map<DA
 
             if (convertionEnabled)
             {
-                ImageTools::ConvertImage(descriptor.get(), gpu, (PixelFormat)descriptor->compression[gpu].format, quality);
+                ImageTools::ConvertImage(descriptor.get(), gpu, quality);
             }
         }
     }
 
     descriptor->Save();
 }
+
+namespace {
 
 void SetPreset(const FilePath& descriptorPath, const KeyedArchive* preset, bool toConvert, TextureConverter::eConvertQuality quality)
 {
@@ -178,16 +184,17 @@ void SetPreset(const FilePath& descriptorPath, const KeyedArchive* preset, bool 
     }
 
     descriptor->ApplyTexturePreset(preset);
-    descriptor->Save();
 
     if (toConvert)
     {
         for (uint8 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
         {
             DAVA::eGPUFamily eGPU = static_cast<eGPUFamily>(gpu);
-            ImageTools::ConvertImage(descriptor.get(), eGPU, static_cast<PixelFormat>(descriptor->compression[eGPU].format), quality);
+            ImageTools::ConvertImage(descriptor.get(), eGPU, quality);
         }
     }
+
+    descriptor->Save();
 }
 
 void SetPresetForFolder(const FilePath& folder, const KeyedArchive* preset, bool toConvert, TextureConverter::eConvertQuality quality)
@@ -207,10 +214,12 @@ void SetPresetForFolder(const FilePath& folder, const KeyedArchive* preset, bool
     }
 }
 
+}
+
 void SetPresetForFolder(const FilePath& folder, const FilePath& presetPath, bool toConvert, TextureConverter::eConvertQuality quality)
 {
     ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive);
-    if (Preset::LoadTexturePreset(presetArchive, presetPath))
+    if (Preset::LoadArchive(presetArchive, presetPath))
     {
         SetPresetForFolder(folder, presetArchive, toConvert, quality);
     }
@@ -219,7 +228,7 @@ void SetPresetForFolder(const FilePath& folder, const FilePath& presetPath, bool
 void SetPreset(const FilePath& descriptorPath, const FilePath& presetPath, bool toConvert, TextureConverter::eConvertQuality quality)
 {
     ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive);
-    if (Preset::LoadTexturePreset(presetArchive, presetPath))
+    if (Preset::LoadArchive(presetArchive, presetPath))
     {
         SetPreset(descriptorPath, presetArchive, toConvert, quality);
     }

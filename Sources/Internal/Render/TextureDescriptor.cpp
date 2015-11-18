@@ -1149,10 +1149,6 @@ bool TextureDescriptor::ApplyTexturePreset(const KeyedArchive* presetArchive)
     drawSettings.mipFilter = static_cast<int8>(presetArchive->GetInt32("mipFilter", rhi::TEXMIPFILTER_LINEAR));
 
     dataSettings.textureFlags = static_cast<int8>(presetArchive->GetInt32("textureFlags", TextureDescriptor::TextureDataSettings::FLAG_DEFAULT));
-    dataSettings.cubefaceFlags = cubefaceFlags;
-
-    const FilePath sourceImagePath = GetSourceTexturePathname();
-    const ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(sourceImagePath);
 
     for (uint32 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
     {
@@ -1162,47 +1158,18 @@ bool TextureDescriptor::ApplyTexturePreset(const KeyedArchive* presetArchive)
         TextureDescriptor::Compression& compressionGPU = compression[gpu];
         if (compressionArchieve != nullptr)
         {
-            const int32 format = compressionArchieve->GetInt32("format", FORMAT_INVALID);
-            uint32 compressToWidth = static_cast<uint32>(compressionArchieve->GetInt32("width"));
-            uint32 compressToHeight = static_cast<uint32>(compressionArchieve->GetInt32("height"));
+            auto format = compressionArchieve->GetInt32("format", FORMAT_INVALID);
+            auto compressToWidth = static_cast<uint32>(compressionArchieve->GetInt32("width"));
+            auto compressToHeight = static_cast<uint32>(compressionArchieve->GetInt32("height"));
 
-            bool needResetCRC = false;
-            if ((format != FORMAT_INVALID) && (compressionGPU.format != format))
-            { // apply format changes
-                compressionGPU.format = format;
-                needResetCRC = true;
-            }
-
-            bool canApplySizes = true;
-            if (!imageInfo.isEmpty())
-            { // correct compression sizes to image size
-
-                if (compressToHeight != 0 && compressToWidth != 0)
-                {
-                    if (((imageInfo.width == imageInfo.height) && (compressToWidth == compressToHeight)) || ((imageInfo.width != imageInfo.height) && (compressToWidth != compressToHeight)))
-                    {
-                        compressToWidth = (compressToWidth >= imageInfo.width) ? 0 : compressToWidth;
-                        compressToHeight = (compressToHeight >= imageInfo.height) ? 0 : compressToHeight;
-                    }
-                    else
-                    {
-                        Logger::Warning("Trying to apply preset with wrong sizes for GPU %s", gpuName.c_str());
-                        canApplySizes = false;
-                    }
-                }
-            }
-
-            if (canApplySizes && ((compressionGPU.compressToWidth != compressToWidth) || (compressionGPU.compressToHeight != compressToHeight)))
-            { // apply size changes
-                compressionGPU.compressToWidth = compressToWidth;
-                compressionGPU.compressToHeight = compressToHeight;
-                needResetCRC = true;
-            }
-
-            if (needResetCRC)
+            if (format != compressionGPU.format || 
+                compressToWidth != compressionGPU.compressToWidth || 
+                compressToHeight != compressionGPU.compressToHeight)
             {
+                compressionGPU.format = format;
+                compressionGPU.compressToHeight = compressToHeight;
+                compressionGPU.compressToWidth = compressToWidth;
                 compressionGPU.convertedFileCrc = 0;
-                compressionGPU.sourceFileCrc = 0;
             }
         }
     }

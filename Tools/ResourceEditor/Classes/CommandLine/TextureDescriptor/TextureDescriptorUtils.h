@@ -35,19 +35,17 @@
 
 namespace TextureDescriptorUtils
 {
-    using namespace DAVA;
+    void ResaveDescriptorsForFolder(const DAVA::FilePath &folder);
+    void ResaveDescriptor(const DAVA::FilePath & descriptorPath);
 
-    void ResaveDescriptorsForFolder(const FilePath &folder);
-    void ResaveDescriptor(const FilePath & descriptorPath);
+    void CreateDescriptorsForFolder(const DAVA::FilePath &folder, const DAVA::FilePath& presetPath);
+    bool CreateDescriptorIfNeed(const DAVA::FilePath &texturePath, const DAVA::FilePath& presetPath=DAVA::FilePath());
 
-    void CreateDescriptorsForFolder(const FilePath &folder, const FilePath& presetPath);
-    bool CreateDescriptorIfNeed(const FilePath &texturePath, const FilePath& presetPath=FilePath());
+    void SetCompressionParamsForFolder(const DAVA::FilePath &folder, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
+    void SetCompressionParams(const DAVA::FilePath &descriptorPath, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
 
-    void SetCompressionParamsForFolder(const FilePath &folder, const Map<eGPUFamily, TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, TextureConverter::eConvertQuality quality, bool generateMipMaps);
-    void SetCompressionParams(const FilePath &descriptorPath, const Map<eGPUFamily, TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, TextureConverter::eConvertQuality quality, bool generateMipMaps);
-
-    void SetPresetForFolder(const FilePath& folder, const FilePath& presetPath, bool toConvert, TextureConverter::eConvertQuality quality);
-    void SetPreset(const FilePath& descriptorPath, const FilePath& presetPath, bool toConvert, TextureConverter::eConvertQuality quality);
+    void SetPresetForFolder(const DAVA::FilePath& folder, const DAVA::FilePath& presetPath, bool toConvert, DAVA::TextureConverter::eConvertQuality quality);
+    void SetPreset(const DAVA::FilePath& descriptorPath, const DAVA::FilePath& presetPath, bool toConvert, DAVA::TextureConverter::eConvertQuality quality);
 };
 
 
