@@ -108,11 +108,6 @@ MainWindow::MainWindow(QWidget *parent)
     toolBarPlugins->setEnabled(false);
 }
 
-MainWindow::~MainWindow()
-{
-    SaveMainWindowState();
-}
-
 void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
 {
     Q_ASSERT(undoGroup);
@@ -450,6 +445,7 @@ int MainWindow::AddTab(const FilePath &scenePath)
 
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
+    SaveMainWindowState();
     emit CloseRequested();
     ev->ignore();
 }
