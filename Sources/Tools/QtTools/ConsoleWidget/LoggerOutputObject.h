@@ -32,7 +32,7 @@
 
 #include "FileSystem/Logger.h"
 #include <QObject>
-
+ 
 class LoggerOutputObject final
     : public QObject
 {

@@ -247,7 +247,13 @@
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
-   <widget class="LogWidget" name="logWidget"/>
+   <widget class="QWidget" name="logWidgetContainer">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="LogWidget" name="logWidget"/>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <action name="actionOpen_project">
    <property name="enabled">

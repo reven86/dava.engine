@@ -46,6 +46,7 @@ class PreviewWidget;
 class LocalizationEditorDialog;
 class Document;
 class SpritesPacker;
+class LoggerOutputObject;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -134,6 +135,7 @@ private:
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
     LocalizationEditorDialog* localizationEditorDialog = nullptr;
     QCheckBox* emulationBox = nullptr;
+    LoggerOutputObject *loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

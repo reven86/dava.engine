@@ -51,6 +51,7 @@ private slots:
     void OnStopClicked();
     void OnRunningChangedQueued(bool running); //we can work with widgets only in application thread
     void OnRunningChangedDirect(bool running); //we can move to thead only from current thread
+    void OnCheckboxShowConsoleToggled(bool checked);
     
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -62,7 +63,7 @@ private:
 
     std::unique_ptr<Ui::DialogReloadSprites> ui;
     SpritesPacker *spritesPacker;
-    QThread workerThread;
+    QThread workerThread; //we need this thread only for "cancel" button
 };
 
 #endif // __DIALOG_RELOAD_SPRITES_H__

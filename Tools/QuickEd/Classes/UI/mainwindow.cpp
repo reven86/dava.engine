@@ -59,10 +59,10 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
+    , loggerOutput(new LoggerOutputObject)
 {
     setupUi(this);
 
-    LoggerOutputObject *loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
     connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
 
     DebugTools::ConnectToUI(this);
@@ -216,8 +216,10 @@ void MainWindow::OnCleanChanged(int index, bool val)
 void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
 {
     DVASSERT(nullptr != packer);
+    bool wasBlocked = loggerOutput->blockSignals(true);
     DialogReloadSprites dialogReloadSprites(packer, this);
     dialogReloadSprites.exec();
+    loggerOutput->blockSignals(wasBlocked);
 }
 
 void MainWindow::OnOpenFontManager()
