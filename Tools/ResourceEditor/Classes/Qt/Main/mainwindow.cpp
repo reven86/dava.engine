@@ -207,8 +207,6 @@ QtMainWindow::~QtMainWindow()
 {
     const auto &logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
-    LoggerOutputObject *loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
-    connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
     
     VariantType var(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size());
     SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, var);
@@ -702,6 +700,10 @@ void QtMainWindow::SetupDocks()
 	{
         LogWidget *logWidget = new LogWidget();
         logWidget->SetConvertFunction(&PointerSerializer::CleanUpString);
+
+        LoggerOutputObject *loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
+        connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
+
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
