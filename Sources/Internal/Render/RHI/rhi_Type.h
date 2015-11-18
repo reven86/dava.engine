@@ -783,11 +783,13 @@ RenderPassConfig
 
     int priority;
     uint32 invertCulling : 1;
+    uint32 shouldFlush : 1;
 
     RenderPassConfig()
         : queryBuffer(InvalidHandle)
         , priority(0)
         , invertCulling(0)
+        , shouldFlush(0)
     {
     }
 };

@@ -1194,7 +1194,10 @@ void CommandBufferDX11_t::Execute()
     }
 
     _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
-    _D3D11_ImmediateContext->Flush();
+    if (passCfg.shouldFlush)
+    {
+        _D3D11_ImmediateContext->Flush();
+    }
     commandList->Release();
     commandList = nullptr;
     TRACE_END_EVENT(22, "rhi", "CommandBufferDX11_t::Execute");
