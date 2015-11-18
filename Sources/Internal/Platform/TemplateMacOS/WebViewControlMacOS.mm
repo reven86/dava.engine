@@ -296,7 +296,7 @@ void WebViewControl::SetRect(const Rect& rect)
     
     VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
 
-    Rect convertedRect = VCS.ConvertVirtualToPhysical(rect);
+    Rect convertedRect = rect; //TODO: check when release platform MAC OS: Rect convertedRct = VCS.ConvertVirtualToPhysical(rect);
     
 	webViewRect.size.width = convertedRect.dx;
 	webViewRect.size.height = convertedRect.dy;

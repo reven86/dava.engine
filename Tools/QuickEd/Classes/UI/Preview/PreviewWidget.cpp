@@ -170,7 +170,6 @@ void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
     float scale = static_cast<float>(percentages.at(index));
-    scale *= davaGLWidget->devicePixelRatio();
     emit ScaleChanged(scale);
 }
 
@@ -190,7 +189,6 @@ void PreviewWidget::OnScaleByComboText()
 		// Try to parse the value.
 		scaleValue = curTextValue.toFloat();
 	}
-    scaleValue *= davaGLWidget->devicePixelRatio();
     emit ScaleChanged(scaleValue);
 }
 
@@ -206,7 +204,7 @@ void PreviewWidget::OnZoomOutRequested()
 
 void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 {
-    scrollAreaController->SetViewSize(QSize(width * dpr, height * dpr));
+    scrollAreaController->SetViewSize(QSize(width, height));
     UpdateScrollArea();
 }
 
