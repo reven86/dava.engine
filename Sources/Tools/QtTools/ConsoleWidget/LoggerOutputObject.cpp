@@ -27,70 +27,49 @@
  =====================================================================================*/
 
 
-#ifndef __LOGMODEL_H__
-#define __LOGMODEL_H__
+#include "LoggerOutputObject.h"
+#include "Debug/DVAssert.h"
 
-#include "FileSystem/Logger.h"
-#include <functional>
-
-#include <QObject>
-#include <QAbstractListModel>
-#include <QSize>
-#include <QPixmap>
-
-class QMutex;
-class QTimer;
-
-class LogModel
-    : public QAbstractListModel
+class LoggerOutputObject::LoggerOutputContainer : private DAVA::LoggerOutput, public QObject
 {
-    Q_OBJECT
-
 public:
-    enum Roles
-    {
-        LEVEL_ROLE = Qt::UserRole,
-        INTERNAL_DATA_ROLE
-    };
-    using ConvertFunc = std::function < DAVA::String(const DAVA::String &) >;
-
-    explicit LogModel(QObject* parent = nullptr);
-    ~LogModel() = default;
-    void SetConvertFunction(ConvertFunc func); //provide mechanism to convert data string to string to be displayed
-
-    const QPixmap &GetIcon(int ll) const;
-
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
-    void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray &text);
-    void AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray &msg);
-
-public slots:
-    void Clear();
+    LoggerOutputContainer(LoggerOutputObject *parent);
 
 private slots:
-    void Sync();
+    void AboutToBeDestroyed();
 
 private:
-    void CreateIcons();
-    void RecalculateRowWidth(const QString& text);
-    struct LogItem
-    {
-        LogItem(DAVA::Logger::eLogLevel ll_ = DAVA::Logger::LEVEL_FRAMEWORK, const QString &text_ = QString(), const QString &data_ = QString());
-        DAVA::Logger::eLogLevel ll;
-        QString text;
-        QString data;
-    };
-    QVector<LogItem> items;
-
-    QVector<QPixmap> icons;
-    ConvertFunc func;
-
-    QVector<LogItem> itemsToAdd;
-    std::unique_ptr<QMutex> mutex = nullptr;
-    QTimer *syncTimer = nullptr;
-    QSize rowSize;
+    ~LoggerOutputContainer() override;
+    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
+    LoggerOutputObject *parent = nullptr;
 };
 
-#endif // __LOGMODEL_H__
+LoggerOutputObject::LoggerOutputContainer::LoggerOutputContainer(LoggerOutputObject* parent_)
+    : parent(parent_)
+{
+    DAVA::Logger::AddCustomOutput(this);
+    DVASSERT(nullptr != parent);
+    connect(parent, &QObject::destroyed, this, &LoggerOutputContainer::AboutToBeDestroyed);
+}
+
+void LoggerOutputObject::LoggerOutputContainer::AboutToBeDestroyed()
+{
+    DAVA::Logger::RemoveCustomOutput(this); //as a static method, must be safe for Logger::Instance() == nullptr
+}
+
+LoggerOutputObject::LoggerOutputContainer::~LoggerOutputContainer()
+{
+    parent->outputContainer = nullptr;
+}
+
+void LoggerOutputObject::LoggerOutputContainer::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
+{
+    parent->OutputReady(ll, text);
+}
+
+LoggerOutputObject::LoggerOutputObject(QObject* parent)
+    : QObject(parent)
+    , outputContainer(new LoggerOutputContainer(this))
+{
+    qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
+}

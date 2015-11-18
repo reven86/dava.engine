@@ -61,7 +61,7 @@ protected:
     Font *font;
     
     int32 screenID;
-    
+    bool loaded;
 };
 
 #endif //__BASE_SCREEN_H__

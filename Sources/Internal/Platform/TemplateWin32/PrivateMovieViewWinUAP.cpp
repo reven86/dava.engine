@@ -113,44 +113,45 @@ void PrivateMovieViewWinUAP::SetVisible(bool isVisible)
 
 void PrivateMovieViewWinUAP::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
+    IRandomAccessStream^ stream = CreateStreamFromFilePath(moviePath);
+    if (stream)
+    {
+        OpenMovieFromStream(stream, params);
+    }
+}
+
+void PrivateMovieViewWinUAP::OpenMovieFromStream(IRandomAccessStream^ stream, const OpenMovieParams& params)
+{
     movieLoaded = false;
     playRequest = false;
     moviePlaying = false;
 
-    Uri^ uri = UriFromPath(moviePath);
-    if (uri != nullptr)
+    Stretch scaling = Stretch::None;
+    switch (params.scalingMode)
     {
-        IRandomAccessStream^ stream = CreateStreamFromUri(uri);
-        if (stream != nullptr)
-        {
-            Stretch scaling = Stretch::None;
-            switch (params.scalingMode)
-            {
-            case scalingModeNone:
-                scaling = Stretch::None;
-                break;
-            case scalingModeAspectFit:
-                scaling = Stretch::Uniform;
-                break;
-            case scalingModeAspectFill:
-                scaling = Stretch::UniformToFill;
-                break;
-            case scalingModeFill:
-                scaling = Stretch::Fill;
-                break;
-            default:
-                scaling = Stretch::None;
-                break;
-            }
-
-            auto self{shared_from_this()};
-            core->RunOnUIThread([this, self, stream, scaling]()
-            {
-                nativeMovieView->Stretch = scaling;
-                nativeMovieView->SetSource(stream, L"");
-            });
-        }
+    case scalingModeNone:
+        scaling = Stretch::None;
+        break;
+    case scalingModeAspectFit:
+        scaling = Stretch::Uniform;
+        break;
+    case scalingModeAspectFill:
+        scaling = Stretch::UniformToFill;
+        break;
+    case scalingModeFill:
+        scaling = Stretch::Fill;
+        break;
+    default:
+        scaling = Stretch::None;
+        break;
     }
+
+    auto self{shared_from_this()};
+    core->RunOnUIThread([this, self, stream, scaling]()
+    {
+        nativeMovieView->Stretch = scaling;
+        nativeMovieView->SetSource(stream, L"");
+    });
 }
 
 void PrivateMovieViewWinUAP::Play()
@@ -266,73 +267,29 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
 }
 
-IRandomAccessStream^ PrivateMovieViewWinUAP::CreateStreamFromUri(Windows::Foundation::Uri^ uri) const
+Windows::Storage::Streams::IRandomAccessStream^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
 {
-    auto self{shared_from_this()};
-    task<StorageFile^> getFileTask(StorageFile::GetFileFromApplicationUriAsync(uri));
-    task<IRandomAccessStream^> getInputStreamTask = getFileTask.then([self](StorageFile^ storageFile)
-    {
-        return storageFile->OpenAsync(FileAccessMode::Read);
-    }).then([self](IRandomAccessStream^ stream)
-    {
-        return stream;
-    });
+    String pathName = path.GetAbsolutePathname();
+    std::replace(pathName.begin(), pathName.end(), '/', '\\');
+    Platform::String^ filePath = StringToRTString(pathName);
 
-    try {
-        return getInputStreamTask.get();
-    }
-    catch (Platform::COMException^ e) {
-        // Ignore errors when file is not found or access is denied
-        HRESULT hr = e->HResult;
-        if (HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) == hr || HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED) == hr)
+    try
+    {
+        StorageFile^ file = WaitAsync(StorageFile::GetFileFromPathAsync(filePath));
+        if (file != nullptr)
         {
-            Logger::Error("[MovieView] failed to load file='%s': %s", WStringToString(uri->Path->Data()).c_str(),
-                          HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) == hr ? "file not found" : "access denied");
-            return nullptr;
+            return WaitAsync(file->OpenAsync(FileAccessMode::Read));
         }
-        throw;  // Rethrow other exceptions
-    }
-}
-
-Uri^ PrivateMovieViewWinUAP::UriFromPath(const FilePath& path) const
-{
-    String pathTail;
-    Platform::String^ prefix = nullptr;
-    String absPath = path.GetAbsolutePathname();
-    FileSystem* fs = FileSystem::Instance();
-    if (CheckIfPathReachableFrom(absPath, fs->GetCurrentExecutableDirectory().GetAbsolutePathname(), pathTail))
-    {
-        prefix = ref new Platform::String(L"ms-appx:///");
-    }
-    else if (CheckIfPathReachableFrom(absPath, fs->GetUserDocumentsPath().GetAbsolutePathname(), pathTail))
-    {
-        prefix = ref new Platform::String(L"ms-appdata:///local/");
-    }
-    else
-    {
-        DVASSERT(0 && "For now MovieView supports file loading only from GetCurrentExecutableDirectory() and GetUserDocumentsPath() folders");
         return nullptr;
     }
-
-    Platform::String^ tail = ref new Platform::String(StringToWString(pathTail).c_str());
-    return ref new Uri(prefix + tail);
-}
-
-bool PrivateMovieViewWinUAP::CheckIfPathReachableFrom(const String& pathToCheck, const String& pathToReach, String& pathTail) const
-{
-    if (pathToCheck.length() >= pathToReach.length())
+    catch (Platform::COMException^ e)
     {
-        if (0 == pathToCheck.compare(0, pathToReach.length(), pathToReach))
-        {
-            pathTail = pathToCheck.substr(pathToReach.length());
-            if (!pathTail.empty() && '/' == pathTail.back())
-            {
-                pathTail.pop_back();
-            }
-            return true;
-        }
+        Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)", 
+                      RTStringToString(filePath).c_str(),
+                      RTStringToString(e->Message).c_str(),
+                      e->HResult);
+        return nullptr;
     }
-    return false;
 }
 
 void PrivateMovieViewWinUAP::OnMediaOpened()
