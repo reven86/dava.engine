@@ -47,6 +47,7 @@ static const String QualityConfig = "-qualitycfgpath";
 static const String GPU = "-gpu";
 static const String Quality = "-quality";
 static const String SaveNormals = "-saveNormals";
+static const String deprecated_Export = "-export";
 }
 
 SceneExporterTool::SceneExporterTool()
@@ -66,6 +67,7 @@ SceneExporterTool::SceneExporterTool()
     options.AddOption(OptionName::Quality, VariantType(static_cast<uint32>(TextureConverter::ECQ_DEFAULT)), "Quality of pvr/etc compression. Default is 4 - the best quality. Available values [0-4]");
 
     options.AddOption(OptionName::SaveNormals, VariantType(false), "Disable removing of normals from vertexes");
+    options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
 }
 
 void SceneExporterTool::ConvertOptionsToParamsInternal()
@@ -77,13 +79,13 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
     fileListPath = options.GetOption(OptionName::ProcessFileList).AsString();
     qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
 
-    if (options.GetOption(OptionName::Scene).AsBool())
-    {
-        commandObject = OBJECT_SCENE;
-    }
-    else if (options.GetOption(OptionName::Texture).AsBool())
+    if (options.GetOption(OptionName::Texture).AsBool())
     {
         commandObject = OBJECT_TEXTURE;
+    }
+    else if (options.GetOption(OptionName::Scene).AsBool() || options.GetOption(OptionName::deprecated_Export).AsBool())
+    {
+        commandObject = OBJECT_SCENE;
     }
 
     const String gpuName = options.GetOption(OptionName::GPU).AsString();
