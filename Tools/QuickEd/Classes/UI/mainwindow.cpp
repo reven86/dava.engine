@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
-    connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
+    connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
 
     DebugTools::ConnectToUI(this);
 
@@ -216,10 +216,11 @@ void MainWindow::OnCleanChanged(int index, bool val)
 void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
 {
     DVASSERT(nullptr != packer);
-    bool wasBlocked = loggerOutput->blockSignals(true);
+    auto lastFlags = accaptableLoggerFlags;
+    accaptableLoggerFlags = 1 << Logger::LEVEL_ERROR | 1 << Logger::LEVEL_WARNING;
     DialogReloadSprites dialogReloadSprites(packer, this);
     dialogReloadSprites.exec();
-    loggerOutput->blockSignals(wasBlocked);
+    accaptableLoggerFlags = lastFlags;
 }
 
 void MainWindow::OnOpenFontManager()
@@ -527,6 +528,14 @@ void MainWindow::OnRtlChanged(int arg)
 void MainWindow::OnGlobalClassesChanged(const QString &str)
 {
     emit GlobalStyleClassesChanged(str);
+}
+
+void MainWindow::OnLogOutput(Logger::eLogLevel ll, const QByteArray &output)
+{
+    if(1 << ll & accaptableLoggerFlags)
+    {
+        logWidget->AddMessage(ll, output);
+    }
 }
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)

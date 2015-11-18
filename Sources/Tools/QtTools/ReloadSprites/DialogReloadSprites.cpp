@@ -183,14 +183,24 @@ void DialogReloadSprites::LoadSettings()
     const auto &targetGPU = settings.value(GPU);
     if (targetGPU.isValid())
     {
-        const auto &string = GlobalEnumMap<eGPUFamily>::Instance()->ToString(targetGPU.toInt());
-        ui->comboBox_targetGPU->setCurrentText(string);
+        for(int i = 0, k = ui->comboBox_targetGPU->count(); i < k; i++)
+        {
+            if(ui->comboBox_targetGPU->itemData(i) == targetGPU)
+            {
+                ui->comboBox_targetGPU->setCurrentIndex(i);
+            }
+        }
     }
     const auto &quality = settings.value(QUALITY);
     if (quality.isValid())
     {
-        const auto &string = GlobalEnumMap<TextureConverter::eConvertQuality>::Instance()->ToString(quality.toInt());
-        ui->comboBox_quality->setCurrentText(string);
+        for(int i = 0, k = ui->comboBox_quality->count(); i < k; i++)
+        {
+            if(ui->comboBox_quality->itemData(i) == quality)
+            {
+                ui->comboBox_quality->setCurrentIndex(i);
+            }
+        }
     }
     const auto &clear = settings.value(CLEAR_ON_START);
     if (clear.isValid())
@@ -215,8 +225,8 @@ void DialogReloadSprites::SaveSettings() const
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.beginGroup("DialogReloadSprites");
-    settings.setValue(GPU, ui->comboBox_targetGPU->currentData().toInt());
-    settings.setValue(QUALITY, ui->comboBox_quality->currentData().toInt());
+    settings.setValue(GPU, ui->comboBox_targetGPU->currentData());
+    settings.setValue(QUALITY, ui->comboBox_quality->currentData());
     settings.setValue(CLEAR_ON_START, ui->checkBox_clean->isChecked());
     settings.setValue(CONSOLE_STATE, ui->logWidget->Serialize());
     settings.setValue(SHOW_CONSOLE, ui->checkBox_showConsole->isChecked());

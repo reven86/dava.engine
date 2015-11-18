@@ -30,7 +30,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "Base/Result.h"
+
+#include "FileSystem/Logger.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
@@ -47,6 +48,7 @@ class LocalizationEditorDialog;
 class Document;
 class SpritesPacker;
 class LoggerOutputObject;
+
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -114,6 +116,7 @@ private slots:
     
     void OnRtlChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
+    void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray &output);
 
 private:
     void InitLanguageBox();
@@ -128,7 +131,7 @@ private:
     // Save/restore positions of DockWidgets and main window geometry
     void SaveMainWindowState();
     void RestoreMainWindowState();
-private:
+
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction = nullptr;
@@ -136,6 +139,7 @@ private:
     LocalizationEditorDialog* localizationEditorDialog = nullptr;
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject *loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
+    qint64 accaptableLoggerFlags = ~0; //all flags accepted
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);
