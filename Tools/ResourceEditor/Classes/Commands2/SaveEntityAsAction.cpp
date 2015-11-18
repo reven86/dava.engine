@@ -63,6 +63,12 @@ void SaveEntityAsAction::Redo()
 			}
         };
 
+        //reset global material because of global material :)
+        Scene* sourceScene = entities->GetEntity(0)->GetScene();
+        NMaterial* sourceGlobalMaterial = (sourceScene != nullptr) ? sourceScene->GetGlobalMaterial() : nullptr;
+        SafeRetain(sourceGlobalMaterial);
+        sourceScene->SetGlobalMaterial(nullptr);
+
         ScopedPtr<Scene> scene(new Scene());
         ScopedPtr<Entity> container(nullptr);
 
@@ -94,37 +100,14 @@ void SaveEntityAsAction::Redo()
 		}
         DVASSERT(container);
 
-        //Remove global material from parent materials
-        Scene* sourceScene = entities->GetEntity(0)->GetScene();
-        Set<NMaterial*> parentsMaterials;
-        NMaterial* sourceGlobalMaterial = (sourceScene != nullptr) ? sourceScene->GetGlobalMaterial() : nullptr;
-        if (sourceGlobalMaterial)
-        {
-            List<NMaterial*> newMaterials;
-            container->GetDataNodes(newMaterials);
-
-            for (auto& mat : newMaterials)
-            {
-                if (mat->GetParent() == sourceGlobalMaterial)
-                {
-                    //reset global material inheritance
-                    mat->SetParent(nullptr);
-                    parentsMaterials.insert(mat);
-                }
-            }
-        }
-
         scene->AddNode(container); //1. Added new items in zero position with identity matrix
         scene->staticOcclusionSystem->InvalidateOcclusion(); //2. invalidate static occlusion indeces
         RemoveLightmapsRecursive(container);					//3. Reset lightmaps
 				
 		scene->SaveScene(sc2Path);
 
-        //restore global material inheritance
-        for (auto& mat : parentsMaterials)
-        {
-            mat->SetParent(sourceGlobalMaterial);
-        }
+        sourceScene->SetGlobalMaterial(sourceGlobalMaterial);
+        SafeRelease(sourceGlobalMaterial);
     }
 }
 
