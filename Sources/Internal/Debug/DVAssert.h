@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_ASSERT_H__
 #define __DAVAENGINE_ASSERT_H__
 
@@ -67,10 +66,9 @@
 	\endcode
 */
 
-
 // Runtime assert
 #include "Debug/DVAssertMessage.h"
-
+#include "Debug/Backtrace.h"
 
 #if defined(ENABLE_ASSERT_BREAK)
 
@@ -92,88 +90,128 @@ inline void DavaDebugBreak()
     raise(SIGTRAP);
 
 #else //PLATFORMS
-#   error "DavaDebugBreak: undefined platform"
+#error "DavaDebugBreak: undefined platform"
 #endif //PLATFORMS
 }
 
 #else
 
-#define DavaDebugBreak() 
+#define DavaDebugBreak()
 
-#endif  //__DAVAENGINE_DEBUG__
-
+#endif //__DAVAENGINE_DEBUG__
 
 #if defined(ENABLE_ASSERT_LOGGING)
-	// end=assert=msg - used as marker on teamcity to fail build
-    #define LogErrorFunction(assertType, expr, msg, file, line) { DAVA::Logger::Error    ("========================================\n%s\n%s\n%s\nFile: %s\nLine: %d\n======================end=assert=msg====", assertType, expr, msg, file, line); }
-    #define LogWarningFunction(assertType, expr, msg, file, line) { DAVA::Logger::Warning("========================================\n%s\n%s\n%s\nFile: %s\nLine: %d\n========================================", assertType, expr, msg, file, line); }
+// end=assert=msg - used as marker on teamcity to fail build
+#define LogErrorFunction(assertType, expr, msg, file, line, backtrace)                         \
+    {                                                                                          \
+        DAVA::Logger::Error(                          \
+        "========================================\n"  \
+        "%s\n"                                        \
+        "%s\n"                                        \
+        "%s\n"                                        \
+        "File: %s\n"                                  \
+        "Line: %d\n"                                  \
+        "Callstack:\n"                                \
+        "%s"                                          \
+        "======================end=assert=msg====",   \
+        assertType, expr, msg, file, line, DAVA::Debug::BacktraceToString(backtrace).c_str()); \
+    }
+#define LogWarningFunction(assertType, expr, msg, file, line, backtrace)                       \
+    {                                                                                          \
+        DAVA::Logger::Warning(                        \
+        "========================================\n"  \
+        "%s\n"                                        \
+        "%s\n"                                        \
+        "%s\n"                                        \
+        "File: %s\n"                                  \
+        "Line: %d\n"                                  \
+        "Callstack:\n"                                \
+        "%s"                                          \
+        "======================end=assert=msg====",   \
+        assertType, expr, msg, file, line, DAVA::Debug::BacktraceToString(backtrace).c_str()); \
+    }
 #else //ENABLE_ASSERT_LOGGING
-    #define LogErrorFunction(assertType, expr, msg, file, line)
-    #define LogWarningFunction(assertType, expr, msg, file, line)
+#define LogErrorFunction(assertType, expr, msg, file, line)
+#define LogWarningFunction(assertType, expr, msg, file, line)
 #endif //ENABLE_ASSERT_LOGGING
 
 #if defined(ENABLE_ASSERT_MESSAGE)
-    #define MessageFunction(messagetype, assertType, expr, msg, file, line) \
-        DAVA::DVAssertMessage::ShowMessage(messagetype, \
-            "%s\n\n%s\n%s\n\nFile: %s\nLine: %d", assertType, expr, msg, file, \
-            line)
+#define MessageFunction(messagetype, assertType, expr, msg, file, line, backtrace) \
+    DAVA::DVAssertMessage::ShowMessage(messagetype,   \
+                                       "%s\n\n"       \
+                                       "%s\n"         \
+                                       "%s\n\n"       \
+                                       "File: %s\n"   \
+                                       "Line: %d\n"   \
+                                       "Callstack:\n" \
+                                       "%s",          \
+                                       assertType, expr, msg, file, line, DAVA::Debug::BacktraceToString(backtrace, 8).c_str())
 #else //ENABLE_ASSERT_MESSAGE
-    #define MessageFunction(messagetype, assertType, expr, msg, file, line) \
-        false
+#define MessageFunction(messagetype, assertType, expr, msg, file, line) \
+    false
 #endif //ENABLE_ASSERT_MESSAGE
-
-
-
 
 #if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
 
-	// no assert functions in release builds
-	#define DVASSERT(expr) {}
-	#define DVASSERT_MSG(expr, msg) {}
-	#define DVWARNING(expr, msg) {}
+// no assert functions in release builds
+#define DVASSERT(expr) \
+    {                  \
+    }
+#define DVASSERT_MSG(expr, msg) \
+    {                           \
+    }
+#define DVWARNING(expr, msg) \
+    {                        \
+    }
 
-	#define DVVERIFY(expr) do {(void)(expr);} while(false);
+#define DVVERIFY(expr) \
+    do                 \
+    {                  \
+        (void)(expr);  \
+    } while (false);
 
 #else
 
 // uncomment exit(-1) to shut up static analyzer (null pointers usage)
 #define DV_EXIT_ON_ASSERT // exit(-1);
 
-#define DVASSERT(expr)\
-    if (!(expr))\
-    {\
-        LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
+#define DVASSERT(expr)                                                                 \
+    if (!(expr))                                                                       \
+    {                                                                                  \
+        DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
+        LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__, backtrace);       \
         if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
-                            #expr, "", __FILE__, __LINE__))\
-        { \
-            DavaDebugBreak();\
-        } \
-		DV_EXIT_ON_ASSERT \
-	}\
+                            #expr, "", __FILE__, __LINE__, backtrace))                 \
+        {                                                                              \
+            DavaDebugBreak();                                                          \
+        }                                                                              \
+        DV_EXIT_ON_ASSERT                                                              \
+    }
 
-#define DVASSERT_MSG(expr, msg)\
-    if (!(expr))\
-    {\
-        LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
+#define DVASSERT_MSG(expr, msg)                                                        \
+    if (!(expr))                                                                       \
+    {                                                                                  \
+        DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
+        LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__, backtrace);      \
         if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
-                            #expr, msg, __FILE__, __LINE__))\
-        { \
-            DavaDebugBreak();\
-        } \
-		DV_EXIT_ON_ASSERT \
-    }\
+                            #expr, msg, __FILE__, __LINE__, backtrace))                \
+        {                                                                              \
+            DavaDebugBreak();                                                          \
+        }                                                                              \
+        DV_EXIT_ON_ASSERT                                                              \
+    }
 
-#define DVWARNING(expr, msg)\
-    if (!(expr))\
-    {\
-        LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__);\
-		MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", \
-		        #expr, msg, __FILE__, __LINE__);\
-    }\
+#define DVWARNING(expr, msg)                                                           \
+    if (!(expr))                                                                       \
+    {                                                                                  \
+        DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
+        LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__, backtrace);   \
+        MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING",    \
+                        #expr, msg, __FILE__, __LINE__, backtrace);                    \
+    }
 
 #define DVVERIFY(expr) DVASSERT(expr)
 
-#endif// ndef __DAVAENGINE_DEBUG__ && ndef ENABLE_ASSERT_MESSAGE
+#endif // ndef __DAVAENGINE_DEBUG__ && ndef ENABLE_ASSERT_MESSAGE
 
-#endif// __LOGENGINE_ASSERT_H__
-
+#endif // __LOGENGINE_ASSERT_H__
