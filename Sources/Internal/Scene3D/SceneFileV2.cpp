@@ -552,9 +552,9 @@ void SceneFileV2::ApplyFogQuality()
             globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 1);
 
         bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
-        bool remvoeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
+        bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
 
-        if (removeVertexFog || remvoeHalfSpaceFog)
+        if (removeVertexFog || removeHalfSpaceFog)
         {
             Vector<NMaterial*> materials;
             serializationContext.GetDataNodes(materials);
@@ -564,7 +564,7 @@ void SceneFileV2::ApplyFogQuality()
                 if (removeVertexFog && material->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
                     material->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
 
-                if (remvoeHalfSpaceFog && material->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+                if (removeHalfSpaceFog && material->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
                     material->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
             }
         }
