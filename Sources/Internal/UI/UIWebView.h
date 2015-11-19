@@ -129,7 +129,9 @@ private:
     int32 dataDetectorTypes;
 public:
     INTROSPECTION_EXTEND(UIWebView, UIControl,
-                         PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT));
+                         PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("renderToTexture", "Render To Texture", IsRenderToTexture, SetRenderToTexture, I_SAVE | I_VIEW | I_EDIT)
+                         )
 };
 };
 

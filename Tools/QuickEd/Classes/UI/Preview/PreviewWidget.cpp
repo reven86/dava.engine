@@ -95,7 +95,7 @@ ScrollAreaController* PreviewWidget::GetScrollAreaController()
 void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point, ControlNode*& selectedNode)
 {
     selectedNode = nullptr;
-    QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y) / davaGLWidget->devicePixelRatio());
+    QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y));
     QMenu menu;
     for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
     {
