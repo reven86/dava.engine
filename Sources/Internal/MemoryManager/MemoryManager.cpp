@@ -437,6 +437,10 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
         return static_cast<uint32>(info.resident_size);
     }
 #elif defined(__DAVAENGINE_ANDROID__)
+    // http://stackoverflow.com/questions/17109284/how-to-find-memory-usage-of-my-android-application-written-c-using-ndk
+    // http://androidxref.com/source/xref/frameworks/base/core/jni/android_os_Debug.cpp (Jelly Bean 4.2)
+    struct mallinfo info = mallinfo();
+    return static_cast<uint32>(info.uordblks);
 #endif
     return 0;
 }
