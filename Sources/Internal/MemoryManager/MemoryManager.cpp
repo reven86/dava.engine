@@ -230,8 +230,9 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             InsertBlock(block);
         }
         {
+            uint32 systemMemoryUsage = GetSystemMemoryUsage();
             LockType lock(statMutex);
-            UpdateStatAfterAlloc(block);
+            UpdateStatAfterAlloc(block, systemMemoryUsage);
         }
         if (!lightWeightMode)
         {
@@ -296,8 +297,9 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
             InsertBlock(block);
         }
         {
+            uint32 systemMemoryUsage = GetSystemMemoryUsage();
             LockType lock(statMutex);
-            UpdateStatAfterAlloc(block);
+            UpdateStatAfterAlloc(block, systemMemoryUsage);
         }
         if (!lightWeightMode)
         {
@@ -353,8 +355,9 @@ void MemoryManager::Deallocate(void* ptr)
                 RemoveBlock(block);
             }
             {
+                uint32 systemMemoryUsage = GetSystemMemoryUsage();
                 LockType lock(statMutex);
-                UpdateStatAfterDealloc(block);
+                UpdateStatAfterDealloc(block, systemMemoryUsage);
             }
             if (!lightWeightMode)
             {
@@ -571,11 +574,11 @@ void MemoryManager::RemoveBlock(MemoryBlock* block)
         head = head->next;
 }
 
-void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block)
+void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
     {   // Update memory usage reported by system 
-        statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = GetSystemMemoryUsage();
-        statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = statAllocPool[ALLOC_POOL_SYSTEM].allocByApp;
+        statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
+        statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
     {   // Update total statistics
         statAllocPool[ALLOC_POOL_TOTAL].allocByApp += block->allocByApp;
@@ -608,11 +611,11 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block)
     }
 }
 
-void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block)
+void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
     {   // Update memory usage reported by system 
-        statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = GetSystemMemoryUsage();
-        statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = statAllocPool[ALLOC_POOL_SYSTEM].allocByApp;
+        statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
+        statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
     {   // Update total statistics
         statAllocPool[ALLOC_POOL_TOTAL].allocByApp -= block->allocByApp;
