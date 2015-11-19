@@ -44,14 +44,13 @@ class LocalNotificationUAP : public LocalNotificationImpl
 {
 public:
     LocalNotificationUAP(const String &_id);
-    virtual ~LocalNotificationUAP() = default;
 
-    virtual void SetAction(const WideString &action);
-    virtual void Hide();
-    virtual void ShowText(const WideString &title, const WideString &text, bool useSound);
-    virtual void ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound);
-    virtual void PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound);
-    virtual void RemoveAllDelayedNotifications();
+    void SetAction(const WideString& action) override;
+    void Hide() override;
+    void ShowText(const WideString& title, const WideString& text, bool useSound) override;
+    void ShowProgress(const WideString& title, const WideString& text, uint32 total, uint32 progress, bool useSound) override;
+    void PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound) override;
+    void RemoveAllDelayedNotifications();
 
 private:
     void CreateOrUpdateNotification(Windows::Data::Xml::Dom::XmlDocument^ notificationDeclaration,
