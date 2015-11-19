@@ -173,7 +173,8 @@ void SetCompressionParams(const FilePath &descriptorPathname, const DAVA::Map<DA
     descriptor->Save();
 }
 
-namespace {
+namespace
+{
 
 void SetPreset(const FilePath& descriptorPath, const KeyedArchive* preset, bool toConvert, TextureConverter::eConvertQuality quality)
 {

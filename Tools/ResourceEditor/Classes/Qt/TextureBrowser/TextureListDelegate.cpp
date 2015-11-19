@@ -447,7 +447,7 @@ void TextureListDelegate::onOpenTexturePath()
     lastSelectedTextureDescriptor = nullptr;
 }
 
-void ResetIncorrectCompressionParams(const TextureDescriptor* descriptor)
+void ResetIncorrectCompressionParams(TextureDescriptor* descriptor)
 {
     if (descriptor->IsCompressedFile())
     {
@@ -468,10 +468,10 @@ void ResetIncorrectCompressionParams(const TextureDescriptor* descriptor)
     {
         bool canApplySizes = true;
 
-        auto convertedCrc = descriptor->compression[gpu].convertedFileCrc;
-        auto compressToHeight = descriptor->compression[gpu].compressToHeight;
-        auto compressToWidth = descriptor->compression[gpu].compressToWidth;
-        bool compressIsSquare = compressToHeight = compressToWidth;
+        auto& convertedCrc = descriptor->compression[gpu].convertedFileCrc;
+        auto& compressToHeight = descriptor->compression[gpu].compressToHeight;
+        auto& compressToWidth = descriptor->compression[gpu].compressToWidth;
+        bool compressIsSquare = (compressToHeight == compressToWidth);
 
         if (compressToHeight != 0 && compressToWidth != 0)
         {
