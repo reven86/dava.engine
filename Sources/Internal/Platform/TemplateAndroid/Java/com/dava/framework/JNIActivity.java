@@ -62,7 +62,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
     private static JNIActivity activity = null;
     protected static SingalStrengthListner singalStrengthListner = null;
-    private boolean isPausing = false;
+    private volatile boolean isPausing = false;
     
     private Runnable onResumeGLThread = null;
     
@@ -203,8 +203,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			        }
 					
 					surfaceView.ProcessQueueEvents();
-                    
-                    if(hasWindowFocus()) {
+
+                    if(!isPausing && hasWindowFocus()) {
     					surfaceView.ProcessFrame();
                     }
 				}
@@ -272,6 +272,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 nativeOnStart();
             }
         });
+
+        ShowSplashScreenView();
         
         Log.d(JNIConst.LOG_TAG, "[Activity::onStart] out");
     }
