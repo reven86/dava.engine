@@ -44,9 +44,9 @@ DAEConvertAction::DAEConvertAction(const DAVA::FilePath &path)
 
 void DAEConvertAction::Redo()
 {
-	if(daePath.Exists() && daePath.IsEqualToExtension(".dae"))
-	{
-		eColladaErrorCodes code = ConvertDaeToSc2(daePath);
+    if (FileSystem::Instance()->Exists(daePath) && daePath.IsEqualToExtension(".dae"))
+    {
+        eColladaErrorCodes code = ConvertDaeToSc2(daePath);
 		if(code == COLLADA_OK)
 		{
             return;
@@ -61,5 +61,3 @@ void DAEConvertAction::Redo()
 		}
 	}
 }
-
-

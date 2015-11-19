@@ -106,7 +106,7 @@ bool Project::OpenInternal(const QString &path)
         if (nullptr != defaultFontPath)
         {
             FilePath localizationFontsPath(defaultFontPath->AsString());
-            if (localizationFontsPath.Exists())
+            if (FileSystem::Instance()->Exists(localizationFontsPath))
             {
                 editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
             }

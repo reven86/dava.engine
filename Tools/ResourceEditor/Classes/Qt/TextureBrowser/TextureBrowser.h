@@ -122,9 +122,9 @@ private:
     eTextureConvertMode getConvertMode(eTextureConvertMode convertMode = CONVERT_NOT_EXISTENT) const;
 
     void updateConvertedImageAndInfo(const QList<QImage>& images, DAVA::TextureDescriptor& descriptor);
-    void updateInfoColor(QLabel *label, const QColor &color = QColor());
-	void updateInfoPos(QLabel *label, const QPoint &pos = QPoint());
-	void updateInfoOriginal(const QList<QImage> &images);
+    void updateInfoColor(QLabel* label, const QColor& color = QColor());
+    void updateInfoPos(QLabel* label, const QPoint& pos = QPoint());
+    void updateInfoOriginal(const QList<QImage> &images);
 	void updateInfoConverted();
 	void updatePropertiesWarning();
 

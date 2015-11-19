@@ -28,7 +28,6 @@
 
 
 #include "DAVAEngine.h"
-#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -111,6 +110,8 @@
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
+#include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
@@ -206,6 +207,7 @@ QtMainWindow::~QtMainWindow()
 {
     const auto &logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
+
     VariantType var(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size());
     SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, var);
 
@@ -275,7 +277,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
     }
 
     DAVA::FilePath saveAsPath = scene->GetScenePath();
-    if (!saveAsPath.Exists())
+    if (!DAVA::FileSystem::Instance()->Exists(saveAsPath))
     {
         DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
         saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
@@ -698,6 +700,10 @@ void QtMainWindow::SetupDocks()
 	{
         LogWidget *logWidget = new LogWidget();
         logWidget->SetConvertFunction(&PointerSerializer::CleanUpString);
+
+        LoggerOutputObject* loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
+        connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
+
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
@@ -1313,11 +1319,10 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
 	if (toolsFlags)
 	{
 		FilePath colorSystemTexturePath = scene->customColorsSystem->GetCurrentSaveFileName();
-		if( (toolsFlags & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR) &&
-		    (colorSystemTexturePath.IsEmpty() || !colorSystemTexturePath.Exists()) &&
-		    !SelectCustomColorsTexturePath())
-		{
-			closeRequest->Cancel();
+        if ((toolsFlags & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR) &&
+            !FileSystem::Instance()->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
+        {
+            closeRequest->Cancel();
 			return;
 		}
 		
@@ -2329,9 +2334,8 @@ void QtMainWindow::OnCustomColorsEditor()
     if (sceneEditor->customColorsSystem->ChangesPresent())
     {
         FilePath currentTexturePath = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
-	
-        if ((currentTexturePath.IsEmpty() || !currentTexturePath.Exists()) &&
-            !SelectCustomColorsTexturePath())
+
+        if (!FileSystem::Instance()->Exists(currentTexturePath) && !SelectCustomColorsTexturePath())
         {
             ui->actionCustomColorsEditor->setChecked(true);
             return;
@@ -2661,9 +2665,9 @@ bool QtMainWindow::OpenScene( const QString & path )
         FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
         FilePath argumentPath(path.toStdString());
 
-        if(!FilePath::ContainPath(argumentPath, projectPath))
-		{
-			QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
+        if (!FilePath::ContainPath(argumentPath, projectPath))
+        {
+            QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
 				projectPath.GetAbsolutePathname().c_str(),
 				argumentPath.GetAbsolutePathname().c_str()));
 		}

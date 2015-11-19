@@ -144,9 +144,12 @@ class LoggerOutput
 {
 public:
     LoggerOutput() = default;
-    virtual ~LoggerOutput() = default;
 
     virtual void Output(Logger::eLogLevel ll, const char8* text) = 0;
+
+protected:
+    friend class DAVA::Logger;
+    virtual ~LoggerOutput() = default;
 };
 
 } // end namespace DAVA
