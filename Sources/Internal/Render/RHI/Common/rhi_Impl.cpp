@@ -95,9 +95,11 @@ void Initialize(Api api, const InitParam& param)
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
+#if !(TARGET_IPHONE_SIMULATOR==1)
     case RHI_METAL:
         metal_Initialize(param);
         break;
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)
 #endif
 
     default:

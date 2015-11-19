@@ -51,7 +51,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
-	#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR == 1
+	#if TARGET_IPHONE_SIMULATOR == 1
 		return 	DeviceInfo::PLATFORM_IOS_SIMULATOR;
 	#else
 		return 	DeviceInfo::PLATFORM_IOS;
