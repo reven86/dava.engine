@@ -71,7 +71,7 @@ extern const FastName FRAME_QUERY_UI_DRAW;
 
 class UIControlSystem : public Singleton<UIControlSystem>
 {
-	friend void Core::CreateSingletons();
+    friend void Core::CreateSingletons();
 	
 	int frameSkip;
 	int transitionType;
@@ -328,7 +328,7 @@ private:
 
     bool removeCurrentScreen;
 
-    UIControl *exclusiveInputLocker;
+    UIControl* exclusiveInputLocker;
     UIControl *hovered;
     
     UIControl *focusedControl;

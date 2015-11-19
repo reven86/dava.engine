@@ -85,7 +85,7 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         float32 xPrevPosition = endXPos[type] * normalizedTime;
         float32 yPrevPosition = endYPos[type] * normalizedTime;
         float32 xNextPosition = xPrevPosition - endXPos[type];
-		float32 yNextPosition = yPrevPosition - endYPos[type];
+        float32 yNextPosition = yPrevPosition - endYPos[type];
 		
 		if(!isOver)
 		{
@@ -106,7 +106,7 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         float32 endYPos[4] = { 0.0f, 0.0f, VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy };
         float32 xPrevPosition = endXPos[type - 4] * normalizedTime;
         float32 yPrevPosition = endYPos[type - 4] * normalizedTime;
-		float32 xNextPosition = xPrevPosition - endXPos[type - 4];
+        float32 xNextPosition = xPrevPosition - endXPos[type - 4];
 		float32 yNextPosition = yPrevPosition - endYPos[type - 4];
 		
 		if(!isOver)

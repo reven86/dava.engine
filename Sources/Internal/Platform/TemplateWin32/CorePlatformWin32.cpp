@@ -174,8 +174,8 @@ namespace DAVA
         if (options)
         {
             windowedMode.width = options->GetInt32("width");
-			windowedMode.height = options->GetInt32("height");
-			windowedMode.bpp = options->GetInt32("bpp");
+            windowedMode.height = options->GetInt32("height");
+            windowedMode.bpp = options->GetInt32("bpp");
 			
 			// get values from config in case if they are available
 			fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
@@ -185,7 +185,7 @@ namespace DAVA
 			fullscreenMode = FindBestMode(fullscreenMode);
             shouldEnableFullscreen = options->GetInt32("fullscreen", 0) == 1;
             String title = options->GetString("title", "[set application title using core options property 'title']");
-			WideString titleW = StringToWString(title);
+            WideString titleW = StringToWString(title);
 			SetWindowText(hWindow, titleW.c_str());
 		}
 
@@ -307,9 +307,9 @@ namespace DAVA
 
         Core::Instance()->SystemAppFinished();
         FrameworkWillTerminate();
-	}
+    }
 
-	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
+    RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
 	{
 		RECT clientSize;
 		clientSize.top = 0;
@@ -387,10 +387,10 @@ namespace DAVA
         DWORD iModeNum = 0;
         DEVMODE dmi;
         ZeroMemory(&dmi, sizeof(dmi));
-        dmi.dmSize = sizeof(dmi) ;
+        dmi.dmSize = sizeof(dmi);
 
-		while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
-		{
+        while (EnumDisplaySettings(NULL, iModeNum++, &dmi))
+        {
 			DisplayMode mode;
 			mode.width = dmi.dmPelsWidth;
 			mode.height = dmi.dmPelsHeight;
@@ -582,8 +582,9 @@ namespace DAVA
             touchPhase = UIEvent::Phase::WHEEL;
 
             newTouch.tid = 0;
-            newTouch.physPoint.x = 0;
-            newTouch.physPoint.y = static_cast<SHORT>(buttonData) / static_cast<float32>(WHEEL_DELTA);
+            newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
+            newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
+            newTouch.scrollDelta.y = static_cast<int16>(buttonData) / static_cast<float32>(WHEEL_DELTA);
             newTouch.phase = UIEvent::Phase::WHEEL;
             newTouch.device = deviceId;
         }
