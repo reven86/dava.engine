@@ -28,6 +28,7 @@
 
 #include "CommandLine/CommandLineTool.h"
 #include "CommandLine/CommandLineParser.h"
+#include "CommandLine/OptionName.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "TeamcityOutput/TeamcityOutput.h"
@@ -42,6 +43,7 @@ CommandLineTool::CommandLineTool(const String& toolName)
     options.AddOption("-v", VariantType(false), "Verbose output");
     options.AddOption("-h", VariantType(false), "Help for command");
     options.AddOption("-teamcity", VariantType(false), "Extra output in teamcity format");
+    options.AddOption(OptionName::deprecated_forceClose, VariantType(false), "Deprecated. Need until unification of command line in RE.");
 }
 
 DAVA::String CommandLineTool::GetToolKey() const
