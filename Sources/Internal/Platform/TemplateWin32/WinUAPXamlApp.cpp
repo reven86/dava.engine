@@ -279,6 +279,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         PrepareScreenSize();
         SetTitleName();
         SetDisplayOrientations();
+        SetWindowMinimumSize();
 
         float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
         float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
@@ -820,6 +821,23 @@ void WinUAPXamlApp::SetDisplayOrientations()
         break;
     }
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
+}
+
+void WinUAPXamlApp::SetWindowMinimumSize()
+{
+    if (!isPhoneApiDetected)
+    {
+        const KeyedArchive* options = core->GetOptions();
+        int32 minWidth = options->GetInt32("min-width", 0);
+        int32 minHeight = options->GetInt32("min-height", 0);
+        if (minWidth > 0 && minHeight > 0)
+        {
+            // Note: the largest allowed minimum size is 500 x 500 effective pixels
+            // https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.viewmanagement.applicationview.setpreferredminsize.aspx
+            Size size(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
+            ApplicationView::GetForCurrentView()->SetPreferredMinSize(size);
+        }
+    }
 }
 
 void WinUAPXamlApp::ResetScreen()

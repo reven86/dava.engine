@@ -149,6 +149,7 @@ private:
 
     void SetTitleName();
     void SetDisplayOrientations();
+    void SetWindowMinimumSize();
 
     void ResetRender();
 
