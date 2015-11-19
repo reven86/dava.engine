@@ -581,7 +581,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     core->RunOnMainThread([this, wheelDelta, physPoint, type]() {
         UIEvent ev;
 
-        ev.scrollDelta.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
+        ev.scrollDelta.y = wheelDelta / static_cast<float32>(WHEEL_DELTA);
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;

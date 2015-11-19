@@ -69,8 +69,11 @@ public:
     struct TextureDrawSettings : public InspBase
     {
     public:
-        TextureDrawSettings() { SetDefaultValues(); }
-		void SetDefaultValues();
+        TextureDrawSettings()
+        {
+            SetDefaultValues();
+        }
+        void SetDefaultValues();
 
 		int8 wrapModeS;
 		int8 wrapModeT;

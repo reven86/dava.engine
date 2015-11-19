@@ -124,7 +124,7 @@ enum MoviePlayerHelperPlaybackState
 -(void) loadMovie:(NSURL *)movieURL
 {
     videoPlayer = [[AVPlayer alloc] init];
-    videoAsset = [[AVAsset assetWithURL:movieURL] retain];
+    videoAsset = (AVURLAsset*)[[AVAsset assetWithURL:movieURL] retain];
 
     playerState = eStateInitializing;
     NSArray *assetKeysToLoadAndTest = [NSArray arrayWithObjects:@"playable", @"tracks", @"duration", nil];

@@ -218,15 +218,10 @@ void UISlider::RemoveControl(UIControl *control)
 void UISlider::Input(UIEvent *currentInput)
 {
     // not supported for now.
-    if (UIEvent::Phase::WHEEL == currentInput->phase)
+    if (UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase || UIEvent::Phase::CHAR == currentInput->phase || UIEvent::Phase::KEY_DOWN == currentInput->phase || UIEvent::Phase::KEY_UP == currentInput->phase || UIEvent::Phase::KEY_DOWN_REPEAT == currentInput->phase || UIEvent::Phase::CHAR_REPEAT == currentInput->phase || UIEvent::Phase::ERROR == currentInput->phase || UIEvent::Phase::JOYSTICK == currentInput->phase)
     {
         return;
     }
-
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-    if (currentInput->phase == UIEvent::Phase::MOVE || currentInput->phase == UIEvent::Phase::CHAR)
-        return;
-#endif
 	
 	const Rect & absRect = GetGeometricData().GetUnrotatedRect();
 	//absTouchPoint = currentInput->point;
