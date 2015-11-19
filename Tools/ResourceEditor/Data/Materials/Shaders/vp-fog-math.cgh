@@ -13,8 +13,8 @@
     
     // calculating view direction in world space, point of view in world space
     #if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
-        float3 viewPointInWorldSpace = FOG_world_position;
-        float3 viewDirectionInWorldSpace = viewPointInWorldSpace - FOG_eye_position;
+        float3 viewPointWorldSpace = FOG_world_position;
+        float3 viewDirectionWorldSpace = viewPointWorldSpace - FOG_eye_position;
     #endif
     
     // calculating halfSpaceFog amoung
@@ -23,17 +23,17 @@
             // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
             // to get more clear understanding about this calculations
             float fogK = STEP( FOG_eye_position.z, fogHalfspaceHeight );
-            float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
+            float fogFdotP = viewPointWorldSpace.z - fogHalfspaceHeight;
             float fogFdotC = FOG_eye_position.z - fogHalfspaceHeight;
             
             float fogC1 = fogK * (fogFdotP + fogFdotC);
             float fogC2 = (1.0 - 2.0 * fogK) * fogFdotP;
             float fogG = min(fogC2, 0.0);
-            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / abs(viewDirectionInWorldSpace.z));
+            fogG = -length(viewDirectionWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / abs(viewDirectionWorldSpace.z));
             
             float halfSpaceFogAmoung = 1.0 - exp2(-fogG);
         #else
-            float fogK = viewDirectionInWorldSpace.z / fogDistance;
+            float fogK = viewDirectionWorldSpace.z / fogDistance;
             float fogB = FOG_eye_position.z - fogHalfspaceHeight;
             
             float halfSpaceFogAmoung = fogHalfspaceDensity * exp(-fogHalfspaceFalloff * fogB) * (1.0 - exp(-fogHalfspaceFalloff * fogK * fogDistance)) / fogK;
@@ -51,12 +51,20 @@
             float3 viewDirection = normalize(float3(mul(VP_IN_POSITION,worldMatrix)) - FOG_eye_position);
             viewDirection.z = clamp(viewDirection.z, 0.01, 1.0);
             atmosphereColor = textureCube(atmospheremap, viewDirection).xyz;
+        #elif FOG_ATMOSPHERE_NO_SCATTERING
+            atmosphereColor = fogAtmosphereColorSky;
         #else
             float atmospheteAngleFactor = dot(normalize(FOG_view_position), normalize(FOG_to_light_dir)) * 0.5 + 0.5;
             atmosphereColor = lerp(fogAtmosphereColorSky, fogAtmosphereColorSun, pow(atmospheteAngleFactor, fogAtmosphereScattering));
         #endif
-        min10float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
-        FOG_result.xyz = lerp(fogColor, atmosphereColor, fogAtmosphereAttenuation);
+
+        #if FOG_ATMOSPHERE_NO_ATTENUATION
+            FOG_result.xyz = atmosphereColor;
+        #else
+            min10float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
+            FOG_result.xyz = lerp(fogColor, atmosphereColor, fogAtmosphereAttenuation);
+        #endif
+
     #else
         FOG_result.xyz = fogColor;
     #endif

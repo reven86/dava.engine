@@ -488,21 +488,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
                 uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
                 NMaterial* globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
 
-                if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG))
-                {
-                    if (globalMaterial && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
-                    {
-                        globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG); //RHI_COMPLETE: performance issue
-                    }
-                }
-
-#ifdef __DAVAENGINE_ANDROID__
-                if (globalMaterial && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
-                {
-                    globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE); //RHI_COMPLETE: performance issue
-                }
-#endif
-
                 scene->SetGlobalMaterial(globalMaterial);
                 serializationContext.SetGlobalMaterialKey(globalMaterialId);
 
@@ -518,7 +503,9 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
 
         serializationContext.ResolveMaterialBindings();
     }
-    
+
+    ApplyFogQuality();
+
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
 
@@ -544,6 +531,44 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
     
     SafeRelease(file);
     return GetError();
+}
+
+void SceneFileV2::ApplyFogQuality()
+{
+    //RHI_COMPLETE: performance issues with fog
+
+    if (!serializationContext.GetScene())
+        return;
+
+    NMaterial* globalMaterial = serializationContext.GetScene()->GetGlobalMaterial();
+    if (globalMaterial)
+    {
+        QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
+
+        if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION))
+            globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION, 1);
+
+        if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING))
+            globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 1);
+
+        bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
+        bool remvoeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
+
+        if (removeVertexFog || remvoeHalfSpaceFog)
+        {
+            Vector<NMaterial*> materials;
+            serializationContext.GetDataNodes(materials);
+
+            for (NMaterial* material : materials)
+            {
+                if (removeVertexFog && material->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
+                    material->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
+
+                if (remvoeHalfSpaceFog && material->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+                    material->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
+            }
+        }
+    }
 }
 
 SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
