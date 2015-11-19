@@ -58,11 +58,8 @@ protected:
 public:
     // Open the URL.
     void OpenFile(const FilePath &path);
-    
-    const String& GetURL() const;
 	void OpenURL(const String& urlToOpen);
 	// Load html page
-    const WideString& GetHtmlString() const;
 	void LoadHtmlString(const WideString& htmlString);
 	// Delete all cookies for target URL
 	void DeleteCookies(const String& targetUrl);
@@ -127,19 +124,12 @@ protected:
 	// Platform-specific implementation of the Web View Control.
 	IWebViewControl* webViewControl;
     
-    String url;
-    WideString htmlString;
-    
 private:
     bool isNativeControlVisible;
     int32 dataDetectorTypes;
 public:
     INTROSPECTION_EXTEND(UIWebView, UIControl,
-                          PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("url", "Url", GetURL, OpenURL, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("htmlString", "HTML String", GetHtmlString, LoadHtmlString, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("renderToTexture", "Render To Texture", IsRenderToTexture, SetRenderToTexture, I_SAVE | I_VIEW | I_EDIT)
-                         )
+                         PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT));
 };
 };
 

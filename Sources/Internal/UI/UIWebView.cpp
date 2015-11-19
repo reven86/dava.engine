@@ -88,26 +88,14 @@ void UIWebView::OpenFile(const FilePath &path)
         Logger::Error("[UIWebView] Failed to read content from %s", path.GetStringValue().c_str());
     }
 }
-    
-const String& UIWebView::GetURL() const
-{
-    return url;
-}
 
 void UIWebView::OpenURL(const String& urlToOpen)
 {
-    url = urlToOpen;
 	webViewControl->OpenURL(urlToOpen);
 }
-    
-const WideString& UIWebView::GetHtmlString() const
-{
-    return htmlString;
-}
 
-void UIWebView::LoadHtmlString(const WideString& arg)
+void UIWebView::LoadHtmlString(const WideString& htmlString)
 {
-    htmlString = arg;
 	webViewControl->LoadHtmlString(htmlString);
 }
 
@@ -203,7 +191,7 @@ void UIWebView::UpdateControlRect()
 void UIWebView::SetRenderToTexture(bool value)
 {
     // for now disable this functionality
-    //value = false;
+    value = false;
     webViewControl->SetRenderToTexture(value);
 }
 
