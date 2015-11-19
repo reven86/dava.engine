@@ -52,10 +52,6 @@ bool IsCorrectDirectory(FileList *fileList, const int32 fileIndex)
     return false;
 }
 
-bool IsDescriptorPathname(const FilePath &pathname)
-{
-    return pathname.IsEqualToExtension(TextureDescriptor::GetDescriptorExtension());
-}
 }
 
 void ResaveDescriptorsForFolder(const FilePath &folderPathname)
@@ -68,7 +64,7 @@ void ResaveDescriptorsForFolder(const FilePath &folderPathname)
         {
             ResaveDescriptorsForFolder(pathname);
         }
-        else if (IsDescriptorPathname(pathname))
+        else if (TextureDescriptor::IsDescriptorExtension(pathname.GetExtension()))
         {
             ResaveDescriptor(pathname);
         }
@@ -92,7 +88,7 @@ void CreateDescriptorsForFolder(const FilePath &folder, const FilePath& presetPa
         {
             CreateDescriptorsForFolder(pathname, presetPath);
         }
-        else if (DAVA::TextureDescriptor::IsDescriptorExtension(pathname.GetExtension()))
+        else if (TextureDescriptor::IsDescriptorExtension(pathname.GetExtension()))
         {
             CreateDescriptorIfNeed(pathname, presetPath);
         }
@@ -139,7 +135,7 @@ void SetCompressionParamsForFolder(const FilePath &folderPathname, const DAVA::M
         {
             SetCompressionParamsForFolder(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
         }
-        else if (IsDescriptorPathname(pathname))
+        else if (TextureDescriptor::IsDescriptorExtension(pathname.GetExtension()))
         {
             SetCompressionParams(pathname, compressionParams, convertionEnabled, force, quality, generateMipMaps);
         }
