@@ -43,7 +43,7 @@ namespace DAVA
 class LocalNotificationNotImplemented : public LocalNotificationImpl
 {
 public:
-    LocalNotificationNotImplemented(const String& _id) override;
+    LocalNotificationNotImplemented(const String& _id);
     ~LocalNotificationNotImplemented() override;
 
     void SetAction(const WideString& action) override;
