@@ -90,10 +90,8 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 
 void SpritePackerHelper::Reload()
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    auto stoppedEffects = scene->particlesSystem->StopParticleEffects();
     Sprite::ReloadSprites();
-    scene->particlesSystem->StartParticleEffects(stoppedEffects);
+    QtMainWindow::Instance()->RestartParticleEffects();
 }
 
 void SpritePackerHelper::EnumerateSpritesForParticleEmitter(ParticleEmitter* emitter, Map<String, Sprite *> &sprites)

@@ -3182,3 +3182,14 @@ void QtMainWindow::SetActionCheckedSilently( QAction *action, bool checked )
 	action->setChecked(checked);
 	action->blockSignals(b);
 }
+
+void QtMainWindow::RestartParticleEffects()
+{
+    const SceneTabWidget *widget = GetSceneWidget();
+    for (int tab = 0; tab < widget->GetTabCount(); ++tab)
+    {
+        SceneEditor2* scene = widget->GetTabScene(tab);
+        DVASSERT(scene);
+        scene->particlesSystem->RestartParticleEffects();
+    }
+}

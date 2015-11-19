@@ -234,48 +234,17 @@ void EditorParticlesSystem::RemoveEntity(DAVA::Entity * entity)
 	}
 }
 
-void StopParticleEffectsRecursive(Entity *entity, List<ParticleEffectComponent*>& stoppedEffects)
-{
-    ParticleEffectComponent * effectComponent = cast_if_equal<ParticleEffectComponent*>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
-    if (effectComponent && !effectComponent->IsStopped())
-    {
-        stoppedEffects.push_back(effectComponent);
-        effectComponent->Stop();
-    }
-
-    uint32 childCount = entity->GetChildrenCount();
-    for (uint32 i = 0; i < childCount; ++i)
-    {
-        StopParticleEffectsRecursive(entity->GetChild(i), stoppedEffects);
-    }
-}
-
-List<ParticleEffectComponent*> EditorParticlesSystem::StopParticleEffects()
-{
-    List<ParticleEffectComponent*> stoppedEffects;
-
-    const SceneTabWidget *widget = QtMainWindow::Instance()->GetSceneWidget();
-    for (int tab = 0; tab < widget->GetTabCount(); ++tab)
-    {
-        Scene *scene = widget->GetTabScene(tab);
-        StopParticleEffectsRecursive(scene, stoppedEffects);
-    }
-
-    return stoppedEffects;
-}
-
-void EditorParticlesSystem::StartParticleEffects(const List<ParticleEffectComponent*>& stoppedParticleEffects)
-{
-    for (auto stoppedEffect : stoppedParticleEffects)
-    {
-        stoppedEffect->Start();
-    }
-}
-
 void EditorParticlesSystem::RestartParticleEffects()
 {
-    auto stoppedEffects = StopParticleEffects();
-    StartParticleEffects(stoppedEffects);
+    for (Entity* entity : entities)
+    {
+        ParticleEffectComponent* effectComponent = GetEffectComponent(entity);
+        DVASSERT(effectComponent);
+        if (!effectComponent->IsStopped())
+        {
+            effectComponent->Restart();
+        }
+    }
 }
 
 void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -299,7 +268,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 
 		case CMDID_PARTICLE_LAYER_UPDATE:
         {
-            RestartParticleEffects();
+            QtMainWindow::Instance()->RestartParticleEffects();
 
             const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
             SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
