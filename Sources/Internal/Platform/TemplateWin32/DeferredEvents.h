@@ -51,7 +51,7 @@ const int32 DEFERRED_INTERVAL_MSEC = 100;
 class DeferredScreenMetricEvents
 {
 public:
-    using UpdateMetricCallback = std::function<void(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)>;
+    using UpdateMetricCallback = std::function<void(bool isSizeUpdate, float32 width, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)>;
     DeferredScreenMetricEvents(int32 interval, UpdateMetricCallback update);
     ~DeferredScreenMetricEvents();
     void UpdateSize(Object ^ sizeSender, SizeChangedEventArgs ^ sizeArgs);
@@ -64,7 +64,7 @@ private:
 
     bool isSizeUpdate = false;
     bool isScaleUpdate = false;
-    float32 widht = 0.0f;
+    float32 width = 0.0f;
     float32 height = 0.0f;
     float32 scaleX = 0.0f;
     float32 scaleY = 0.0f;
@@ -102,7 +102,7 @@ void DeferredScreenMetricEvents::UpdateSize(Object ^ sizeSender, SizeChangedEven
     {
         timer->Start();
     }
-    widht = sizeArgs->NewSize.Width;
+    width = sizeArgs->NewSize.Width;
     height = sizeArgs->NewSize.Height;
 }
 
@@ -125,10 +125,10 @@ void DeferredScreenMetricEvents::UpdateScale(SwapChainPanel ^ scalePanel, Object
 void DeferredScreenMetricEvents::DeferredTick()
 {
     timer->Stop();
-    updateCallback(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
+    updateCallback(isSizeUpdate, width, height, isScaleUpdate, scaleX, scaleY);
     isSizeUpdate = false;
     isScaleUpdate = false;
-    widht = height = scaleX = scaleY = 0.0f;
+    width = height = scaleX = scaleY = 0.0f;
 }
 
 } // namespace DAVA
