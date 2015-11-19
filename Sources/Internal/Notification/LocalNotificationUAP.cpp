@@ -97,7 +97,7 @@ void LocalNotificationUAP::ShowProgress(const WideString& title,
                                         uint32 progress, 
                                         bool useSound)
 {
-    float32 percentage = (static_cast<float32>(progress) / total) * 100.0f;
+    double percentage = (static_cast<double>(progress) / total) * 100.0;
     WideString titleText = title + Format(L" %.02f%%", percentage);
     XmlDocument^ toastDoc = GenerateToastDeclaration(titleText, text, useSound);
 

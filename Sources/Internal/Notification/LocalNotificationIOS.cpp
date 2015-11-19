@@ -111,7 +111,7 @@ void LocalNotificationIOS::ShowText(const WideString &title, const WideString &t
 
 void LocalNotificationIOS::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
 {
-    float32 percentage = (static_cast<float32>(progress) / total) * 100.0f;
+    double percentage = (static_cast<double>(progress) / total) * 100.0;
     WideString titleText = title + Format(L" %.02f%%", percentage);
 
     ShowText(titleText, text, useSound);
