@@ -41,6 +41,48 @@
 
 using namespace DAVA;
 
+class ElegantSceneGuard final
+{
+public:
+    ElegantSceneGuard(Scene* scene_)
+        : scene(scene_)
+    {
+        if (scene)
+        {
+            Set<DataNode*> nodes;
+            scene->GetDataNodes(nodes);
+            for (auto& node : nodes)
+            {
+                dataNodeIDs[node] = node->GetNodeID();
+            }
+
+            globalMaterial = SafeRetain(scene->GetGlobalMaterial());
+            scene->SetGlobalMaterial(nullptr);
+        }
+    }
+
+    ~ElegantSceneGuard()
+    {
+        for (auto& id : dataNodeIDs)
+        {
+            id.first->SetNodeID(id.second);
+        }
+
+        if (scene)
+        {
+            scene->SetGlobalMaterial(globalMaterial);
+            scene = nullptr;
+        }
+
+        SafeRetain(globalMaterial);
+    }
+
+private:
+    Scene* scene = nullptr;
+    NMaterial* globalMaterial = nullptr;
+    Map<DataNode*, uint64> dataNodeIDs;
+};
+
 SaveEntityAsAction::SaveEntityAsAction(const EntityGroup *_entities, const FilePath &_path)
 	: CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
 	, entities(_entities)
@@ -64,10 +106,7 @@ void SaveEntityAsAction::Redo()
         };
 
         //reset global material because of global material :)
-        Scene* sourceScene = entities->GetEntity(0)->GetScene();
-        NMaterial* sourceGlobalMaterial = (sourceScene != nullptr) ? sourceScene->GetGlobalMaterial() : nullptr;
-        SafeRetain(sourceGlobalMaterial);
-        sourceScene->SetGlobalMaterial(nullptr);
+        ElegantSceneGuard guard(entities->GetEntity(0)->GetScene());
 
         ScopedPtr<Scene> scene(new Scene());
         ScopedPtr<Entity> container(nullptr);
@@ -105,9 +144,6 @@ void SaveEntityAsAction::Redo()
         RemoveLightmapsRecursive(container);					//3. Reset lightmaps
 				
 		scene->SaveScene(sc2Path);
-
-        sourceScene->SetGlobalMaterial(sourceGlobalMaterial);
-        SafeRelease(sourceGlobalMaterial);
     }
 }
 
