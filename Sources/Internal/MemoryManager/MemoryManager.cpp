@@ -213,6 +213,8 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         block->bktraceHash = 0;
+        if (0 == block->allocTotal)
+            block->allocTotal = totalSize;
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -280,6 +282,8 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         block->bktraceHash = 0;
+        if (0 == block->allocTotal)
+            block->allocTotal = totalSize;
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -392,6 +396,8 @@ void* MemoryManager::InternalAllocate(size_t size)
         block->mark = INTERNAL_BLOCK_MARK;
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block));
+        if (0 == block->allocTotal)
+            block->allocTotal = totalSize;
 
         // Update stat
         {
@@ -714,37 +720,6 @@ void MemoryManager::RemoveBacktrace(uint32 hash)
     }
 }
 
-#if defined(__DAVAENGINE_ANDROID__)
-namespace
-{
-
-struct BacktraceState
-{
-    void** current;
-    void** end;
-};
-
-_Unwind_Reason_Code UnwindCallback(struct _Unwind_Context* context, void* arg)
-{
-    BacktraceState* state = static_cast<BacktraceState*>(arg);
-    uintptr_t pc = _Unwind_GetIP(context);
-    if (pc != 0)
-    {
-        if (state->current == state->end)
-        {
-            return _URC_END_OF_STACK;
-        }
-        else
-        {
-            *state->current++ = reinterpret_cast<void*>(pc);
-        }
-    }
-    return _URC_NO_REASON;
-}
-
-}   // unnamed namespace
-#endif
-
 DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t nskip)
 {
     const size_t EXTRA_FRAMES = 5;
@@ -753,19 +728,6 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
     Memset(backtrace, 0, sizeof(Backtrace));
 
     Debug::GetStackFrames(frames, FRAMES_COUNT);
-
-#if 0
-#if defined(__DAVAENGINE_WIN32__)
-    CaptureStackBackTrace(0, FRAMES_COUNT, frames, nullptr);
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    ::backtrace(frames, FRAMES_COUNT);
-#elif defined(__DAVAENGINE_ANDROID__)
-    BacktraceState state = {frames, frames + FRAMES_COUNT};
-    _Unwind_Backtrace(&UnwindCallback, &state);
-#else
-#error "Unknown platform"
-#endif
-#endif
 
     auto PointerToString = [](void* ptr, char* buf) -> size_t {
         auto hex = [](uint8 n) -> char { return n < 10 ? n + '0' : n - 10 + 'A'; };
@@ -816,61 +778,10 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
         if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
         {
             String symbol = Debug::GetSymbolFromAddr(backtrace->frames[i], true);
-            symbolMap->emplace(backtrace->frames[i], InternalString(symbol.c_str()));
+            if (!symbol.empty())
+                symbolMap->emplace(backtrace->frames[i], InternalString(symbol.c_str()));
         }
     }
-#if 0
-    const size_t NAME_BUFFER_SIZE = 4 * 1024;
-    static Array<char8, NAME_BUFFER_SIZE> nameBuffer;
-    
-#if defined(__DAVAENGINE_WIN32__)
-    HANDLE hprocess = GetCurrentProcess();
-
-    static bool symInited = false;
-    if (!symInited)
-    {
-        SymInitialize(hprocess, nullptr, TRUE);
-        symInited = true;
-    }
-
-    SYMBOL_INFO* symInfo = reinterpret_cast<SYMBOL_INFO*>(nameBuffer.data());
-    symInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
-    symInfo->MaxNameLen = NAME_BUFFER_SIZE - sizeof(SYMBOL_INFO);
-
-    for (size_t i = 0;i < backtrace->frames.size();++i)
-    {
-        if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
-        {
-            if (SymFromAddr(hprocess, reinterpret_cast<DWORD64>(backtrace->frames[i]), 0, symInfo))
-            {
-                symbolMap->emplace(backtrace->frames[i], InternalString(symInfo->Name));
-            }
-        }
-    }
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    for (size_t i = 0;i < backtrace->frames.size();++i)
-    {
-        if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
-        {
-            /*
-             https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/dladdr.3.html#//apple_ref/doc/man/3/dladdr
-             If an image containing addr cannot be found, dladdr() returns 0.  On success, a non-zero value is returned.
-             If the image containing addr is found, but no nearest symbol was found, the dli_sname and dli_saddr fields are set to NULL.
-            */
-            Dl_info dlinfo;
-            if (dladdr(backtrace->frames[i], &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
-            {
-                int status = 0;
-                size_t n = nameBuffer.size();
-                abi::__cxa_demangle(dlinfo.dli_sname, nameBuffer.data(), &n, &status);
-                symbolMap->emplace(backtrace->frames[i], 0 == status ? InternalString(nameBuffer.data()) : InternalString(dlinfo.dli_sname));
-            }
-        }
-    }
-#else
-#error "Unknown platform"
-#endif
-#endif
 }
 
 uint32 MemoryManager::CalcStatConfigSize() const
