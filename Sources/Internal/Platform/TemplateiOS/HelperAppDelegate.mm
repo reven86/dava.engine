@@ -69,7 +69,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
 		
-	int retVal = UIApplicationMain(argc, argv, nil, nil);
+	int retVal = UIApplicationMain(argc, argv, nil, @"iPhoneProjectDelegate");
 	
 	[pool release];
 	return retVal;
@@ -96,8 +96,8 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-	UIWindow *wnd = application.keyWindow;
-	wnd.frame = [::UIScreen mainScreen].bounds;
+	//UIWindow *wnd = application.keyWindow;
+	//wnd.frame = [::UIScreen mainScreen].bounds;
 
     renderViewController = [[RenderViewController alloc] init];
 
