@@ -35,8 +35,6 @@
 #include "Scene/SceneHelper.h"
 #include "Commands2/ConvertToShadowCommand.h"
 
-#include "Qt/Main/QtUtils.h"
-
 using namespace DAVA;
 
 DAEConvertAction::DAEConvertAction(const DAVA::FilePath &path)
@@ -59,7 +57,6 @@ void DAEConvertAction::Redo()
 		}
 		else
 		{
-            ShowErrorDialog("Conversion DAE to SC2 failed. Investigate error logs with [DAE to SC2] tag to determine the reason", "Can't convert from DAE to SC2");
             Logger::Error("[DAE to SC2] Can't convert from DAE.");
         }
 	}

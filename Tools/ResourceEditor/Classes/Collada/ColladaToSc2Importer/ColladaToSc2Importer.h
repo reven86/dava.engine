@@ -56,6 +56,9 @@ private:
 
 
     ImportLibrary library;
+
+    void ReportError(const String& errMessage);
+    Set<String> errorLogs;
 };
 
 };
