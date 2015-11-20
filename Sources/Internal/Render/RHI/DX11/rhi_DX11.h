@@ -119,7 +119,8 @@ DX11Command
 
         MAP = 1,
         UNMAP = 2,
-        UPDATE_SUBRESOURCE = 3
+        UPDATE_SUBRESOURCE = 3,
+        COPY_RESOURCE = 4
     };
 
     Func func;

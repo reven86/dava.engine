@@ -57,9 +57,9 @@ void SaveEntityAsAction::Redo()
     {
         const auto RemoveReferenceToOwner = [](Entity* entity) {
             KeyedArchive* props = GetCustomPropertiesArchieve(entity);
-            if(nullptr != props)
-			{
-				props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+            if (nullptr != props)
+            {
+                props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
 			}
         };
 
@@ -82,8 +82,8 @@ void SaveEntityAsAction::Redo()
                 ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
 
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
-				Matrix4 newLocalTransform = clone->GetLocalTransform();
-				newLocalTransform.SetTranslationVector(offset);
+                Matrix4 newLocalTransform = clone->GetLocalTransform();
+                newLocalTransform.SetTranslationVector(offset);
 				clone->SetLocalTransform(newLocalTransform);
 
 				container->AddNode(clone);

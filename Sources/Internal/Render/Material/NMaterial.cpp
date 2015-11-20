@@ -542,11 +542,40 @@ void NMaterial::InvalidateRenderVariants()
         child->InvalidateRenderVariants();
 }
 
+void NMaterial::PreCacheFX()
+{
+    HashMap<FastName, int32> flags(16, 0);
+    CollectMaterialFlags(flags);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+    FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+}
+
+void NMaterial::PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName)
+{
+    HashMap<FastName, int32> flags(16, 0);
+    CollectMaterialFlags(flags);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+    for (auto& it : extraFlags)
+    {
+        if (it.second == 0)
+            flags.erase(it.first);
+        else
+            flags[it.first] = it.second;
+    }
+    FXCache::GetFXDescriptor(extraFxName.IsValid() ? extraFxName : GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+}
+
 void NMaterial::RebuildRenderVariants()
 {
     HashMap<FastName, int32> flags(16, 0);
     CollectMaterialFlags(flags);
-
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
 
     if (fxDescr.renderPassDescriptors.size() == 0)
@@ -588,7 +617,12 @@ void NMaterial::CollectMaterialFlags(HashMap<FastName, int32>& target)
     if (parent)
         parent->CollectMaterialFlags(target);
     for (auto& it : localFlags)
-        target[it.first] = it.second;
+    {
+        if (it.second == 0) //ZERO is a special value that means flag is off - at least all shaders are consider it to be this right now
+            target.erase(it.first);
+        else
+            target[it.first] = it.second;
+    }
 }
 
 void NMaterial::RebuildBindings()
@@ -721,7 +755,7 @@ void NMaterial::RebuildTextureBindings()
                     textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(fragmentSamplerList[i].type);
                     samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(fragmentSamplerList[i].type);
 
-                    Logger::Debug(" no texture for slot : %s", fragmentSamplerList[i].uid.c_str());
+                    Logger::FrameworkDebug(" no texture for slot : %s", fragmentSamplerList[i].uid.c_str());
                 }
             }
             else

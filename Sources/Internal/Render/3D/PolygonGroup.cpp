@@ -418,7 +418,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
         if (vertexFormat != resFormat) //not all streams in data are required or present - smart copy
         {
             if ((~vertexFormat) & resFormat)
-                Logger::Debug("expanding polygon group vertex format for %d vertices!", vertexCount);
+                Logger::FrameworkDebug("expanding polygon group vertex format for %d vertices!", vertexCount);
             int32 newVertexStride = GetVertexSize(resFormat);
             SafeDeleteArray(meshData);
             meshData = new uint8[vertexCount * newVertexStride];

@@ -99,9 +99,16 @@ void android_gl_init(void* _window)
 void android_gl_reset(void* _window)
 {
     _nativeWindow = static_cast<ANativeWindow*>(_window);
-    ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
 
-    needRecreateSurface = true;
+    if (nullptr != _nativeWindow)
+    {
+        ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
+        needRecreateSurface = true;
+    }
+    else
+    {
+        needRecreateSurface = false;
+    }
 }
 
 void android_gl_checkSurface()
