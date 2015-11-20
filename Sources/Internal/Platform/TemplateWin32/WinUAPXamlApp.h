@@ -149,7 +149,7 @@ private:
 
     void SetTitleName();
     void SetDisplayOrientations();
-    void SetWindowMinimumSize();
+    void TrackWindowMinimumSize();
 
     void ResetRender();
 
@@ -210,7 +210,7 @@ private:
     int32 physicalHeight = static_cast<int32>(viewHeight * viewScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
-    DeferredScreenMetricEvents* deferredSizeScaleEvents;
+    std::unique_ptr<DeferredScreenMetricEvents> deferredSizeScaleEvents;
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button

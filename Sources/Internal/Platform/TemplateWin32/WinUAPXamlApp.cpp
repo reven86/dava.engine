@@ -93,9 +93,9 @@ WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {
-    deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY) {
+    deferredSizeScaleEvents.reset(new DeferredScreenMetricEvents([this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY) {
         MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
-    });
+    }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
 }
@@ -103,7 +103,6 @@ WinUAPXamlApp::WinUAPXamlApp()
 WinUAPXamlApp::~WinUAPXamlApp()
 {
     AllowDisplaySleep(true);
-    delete deferredSizeScaleEvents;
 }
 
 DisplayOrientations WinUAPXamlApp::GetDisplayOrientation()
@@ -279,7 +278,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         PrepareScreenSize();
         SetTitleName();
         SetDisplayOrientations();
-        SetWindowMinimumSize();
+        TrackWindowMinimumSize();
 
         float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
         float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
@@ -721,14 +720,19 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->Activated += ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
-    auto slowSize = ref new SizeChangedEventHandler([this](Object ^ sender, SizeChangedEventArgs ^ e) {
-        deferredSizeScaleEvents->UpdateSize(sender, e);
+    auto coreWindowSizeChanged = ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>([this](CoreWindow ^ coreWindow, WindowSizeChangedEventArgs ^ arg) {
+        deferredSizeScaleEvents->CoreWindowSizeChanged(coreWindow, arg);
     });
-    auto slowScale = ref new TypedEventHandler<SwapChainPanel ^, Object ^>([this](SwapChainPanel ^ panel, Object ^ args) {
-        deferredSizeScaleEvents->UpdateScale(panel, args);
+    coreWindow->SizeChanged += coreWindowSizeChanged;
+
+    auto swapChainPanelSizeChanged = ref new SizeChangedEventHandler([this](Object ^ sender, SizeChangedEventArgs ^ e) {
+        deferredSizeScaleEvents->SwapChainPanelSizeChanged(sender, e);
     });
-    swapChainPanel->SizeChanged += slowSize;
-    swapChainPanel->CompositionScaleChanged += slowScale;
+    auto swapChainCompositionScaleChanged = ref new TypedEventHandler<SwapChainPanel ^, Object ^>([this](SwapChainPanel ^ panel, Object ^ args) {
+        deferredSizeScaleEvents->SwapChainPanelCompositionScaleChanged(panel, args);
+    });
+    swapChainPanel->SizeChanged += swapChainPanelSizeChanged;
+    swapChainPanel->CompositionScaleChanged += swapChainCompositionScaleChanged;
 
     // Receive mouse events from SwapChainPanel, not CoreWindow, to not handle native controls' events
     swapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerPressed);
@@ -823,7 +827,7 @@ void WinUAPXamlApp::SetDisplayOrientations()
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
 }
 
-void WinUAPXamlApp::SetWindowMinimumSize()
+void WinUAPXamlApp::TrackWindowMinimumSize()
 {
     if (!isPhoneApiDetected)
     {
@@ -836,6 +840,8 @@ void WinUAPXamlApp::SetWindowMinimumSize()
             // https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.viewmanagement.applicationview.setpreferredminsize.aspx
             Size size(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
             ApplicationView::GetForCurrentView()->SetPreferredMinSize(size);
+
+            deferredSizeScaleEvents->TrackWindowMinimumSize(minWidth, minHeight);
         }
     }
 }
