@@ -2,7 +2,6 @@ cmake_minimum_required (VERSION 3.0)
 project( GraphEditor )
 
 find_package(NGT REQUIRED)
-set(QT5_FOUND)
 
 list(APPEND TARGET_LIBRARIES core_generic_plugin core_qt_common core_ui_framework)
 

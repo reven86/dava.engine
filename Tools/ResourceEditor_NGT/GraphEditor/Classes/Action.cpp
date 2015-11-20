@@ -26,61 +26,22 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TypeRegistration.h"
-#include "GraphEditor.h"
+#include "Action.h"
+#include "Metadata/Action.mpp"
 
-#include <core_generic_plugin/interfaces/i_component_context.hpp>
-#include <core_generic_plugin/generic_plugin.hpp>
-
-#include <core_ui_framework/i_ui_framework.hpp>
-#include <core_ui_framework/i_ui_application.hpp>
-#include <core_ui_framework/i_view.hpp>
-
-class GraphEditorPlugin : public PluginMain
+void Action::SetParams(std::string const& title_, TOnTrigger const& callback_)
 {
-public:
-    GraphEditorPlugin(IComponentContext& context)
-    {
-    }
+    title = title_;
+    callback = callback_;
+}
 
-    bool PostLoad(IComponentContext& context) override
-    {
-        return true;
-    }
+std::string const& Action::GetTitle() const
+{
+    return title;
+}
 
-    void Initialise(IComponentContext& context) override
-    {
-        IUIFramework* uiFramework = context.queryInterface<IUIFramework>();
-        IUIApplication* uiapplication = context.queryInterface<IUIApplication>();
-        IDefinitionManager* defMng = context.queryInterface<IDefinitionManager>();
-
-        assert(uiFramework != nullptr);
-        assert(uiapplication != nullptr);
-        assert(defMng != nullptr);
-
-        Variant::setMetaTypeManager(context.queryInterface<IMetaTypeManager>());
-
-        RegisterGrapEditorTypes(*defMng);
-
-        editor = ObjectHandle(defMng->create<GraphEditor>(false));
-
-        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, editor);
-        uiapplication->addView(*view);
-    }
-
-    bool Finalise(IComponentContext& context) override
-    {
-        view.reset();
-        return true;
-    }
-
-    void Unload(IComponentContext& context) override
-    {
-    }
-
-private:
-    std::unique_ptr<IView> view;
-    ObjectHandle editor;
-};
-
-PLG_CALLBACK_FUNC(GraphEditorPlugin)
+void Action::Trigger()
+{
+    if (callback)
+        callback();
+}

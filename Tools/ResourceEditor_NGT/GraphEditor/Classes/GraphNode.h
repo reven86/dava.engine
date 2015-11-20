@@ -26,61 +26,40 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TypeRegistration.h"
-#include "GraphEditor.h"
+#ifndef __GRAPHEDITOR_GRAPHNODE_H__
+#define __GRAPHEDITOR_GRAPHNODE_H__
 
-#include <core_generic_plugin/interfaces/i_component_context.hpp>
-#include <core_generic_plugin/generic_plugin.hpp>
+#include <core_reflection/reflected_object.hpp>
+#include <string>
 
-#include <core_ui_framework/i_ui_framework.hpp>
-#include <core_ui_framework/i_ui_application.hpp>
-#include <core_ui_framework/i_view.hpp>
-
-class GraphEditorPlugin : public PluginMain
+class GraphNode
 {
+    DECLARE_REFLECTED
 public:
-    GraphEditorPlugin(IComponentContext& context)
-    {
-    }
+    GraphNode() = default;
 
-    bool PostLoad(IComponentContext& context) override
-    {
-        return true;
-    }
+    std::string const& GetTitle() const;
+    void SetTitle(std::string const& title);
 
-    void Initialise(IComponentContext& context) override
-    {
-        IUIFramework* uiFramework = context.queryInterface<IUIFramework>();
-        IUIApplication* uiapplication = context.queryInterface<IUIApplication>();
-        IDefinitionManager* defMng = context.queryInterface<IDefinitionManager>();
+    float GetPosX() const;
+    void SetPosX(const float& x);
+    float GetPosY() const;
+    void SetPosY(const float& y);
+    float GetScale() const;
+    void SetScale(const float& scale);
 
-        assert(uiFramework != nullptr);
-        assert(uiapplication != nullptr);
-        assert(defMng != nullptr);
-
-        Variant::setMetaTypeManager(context.queryInterface<IMetaTypeManager>());
-
-        RegisterGrapEditorTypes(*defMng);
-
-        editor = ObjectHandle(defMng->create<GraphEditor>(false));
-
-        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, editor);
-        uiapplication->addView(*view);
-    }
-
-    bool Finalise(IComponentContext& context) override
-    {
-        view.reset();
-        return true;
-    }
-
-    void Unload(IComponentContext& context) override
-    {
-    }
+    void ApplyTransform();
 
 private:
-    std::unique_ptr<IView> view;
-    ObjectHandle editor;
+    void SetPosXImpl(const float& x);
+    void SetPosYImpl(const float& y);
+    void SetScaleImpl(const float& scale);
+
+private:
+    std::string title;
+    float modelX = 0.0f, modelY = 0.0f;
+    float pixelX = 0.0f, pixelY = 0.0f;
+    float scale = 1.0f;
 };
 
-PLG_CALLBACK_FUNC(GraphEditorPlugin)
+#endif // __GRAPHEDITOR_GRAPHNODE_H__

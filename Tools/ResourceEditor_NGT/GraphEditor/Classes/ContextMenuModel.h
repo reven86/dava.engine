@@ -26,61 +26,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TypeRegistration.h"
-#include "GraphEditor.h"
+#ifndef __GRAPHEDITOR_CONTEXTMENUMODEL_H__
+#define __GRAPHEDITOR_CONTEXTMENUMODEL_H__
 
-#include <core_generic_plugin/interfaces/i_component_context.hpp>
-#include <core_generic_plugin/generic_plugin.hpp>
+#include <core_data_model/i_list_model.hpp>
+#include <core_reflection/object_handle.hpp>
 
-#include <core_ui_framework/i_ui_framework.hpp>
-#include <core_ui_framework/i_ui_application.hpp>
-#include <core_ui_framework/i_view.hpp>
+#include <vector>
 
-class GraphEditorPlugin : public PluginMain
+class ContextMenuModel : public IListModel
 {
 public:
-    GraphEditorPlugin(IComponentContext& context)
-    {
-    }
+    ContextMenuModel(std::vector<ObjectHandle>&& actions);
+    ~ContextMenuModel();
 
-    bool PostLoad(IComponentContext& context) override
-    {
-        return true;
-    }
-
-    void Initialise(IComponentContext& context) override
-    {
-        IUIFramework* uiFramework = context.queryInterface<IUIFramework>();
-        IUIApplication* uiapplication = context.queryInterface<IUIApplication>();
-        IDefinitionManager* defMng = context.queryInterface<IDefinitionManager>();
-
-        assert(uiFramework != nullptr);
-        assert(uiapplication != nullptr);
-        assert(defMng != nullptr);
-
-        Variant::setMetaTypeManager(context.queryInterface<IMetaTypeManager>());
-
-        RegisterGrapEditorTypes(*defMng);
-
-        editor = ObjectHandle(defMng->create<GraphEditor>(false));
-
-        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, editor);
-        uiapplication->addView(*view);
-    }
-
-    bool Finalise(IComponentContext& context) override
-    {
-        view.reset();
-        return true;
-    }
-
-    void Unload(IComponentContext& context) override
-    {
-    }
+    IItem* item(size_t index) const override;
+    size_t index(const IItem* item) const override;
+    bool empty() const override;
+    size_t size() const override;
 
 private:
-    std::unique_ptr<IView> view;
-    ObjectHandle editor;
+    std::vector<IItem*> items;
 };
 
-PLG_CALLBACK_FUNC(GraphEditorPlugin)
+#endif // __GRAPHEDITOR_CONTEXTMENUMODEL_H__

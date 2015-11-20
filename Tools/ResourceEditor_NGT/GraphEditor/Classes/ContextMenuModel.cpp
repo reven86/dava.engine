@@ -26,61 +26,89 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TypeRegistration.h"
-#include "GraphEditor.h"
+#include "ContextMenuModel.h"
 
-#include <core_generic_plugin/interfaces/i_component_context.hpp>
-#include <core_generic_plugin/generic_plugin.hpp>
+#include <core_data_model/i_item_role.hpp>
+#include <core_data_model/i_item.hpp>
+#include <core_qt_common/helpers/qt_helpers.hpp>
 
-#include <core_ui_framework/i_ui_framework.hpp>
-#include <core_ui_framework/i_ui_application.hpp>
-#include <core_ui_framework/i_view.hpp>
+#include <memory>
+#include <algorithm>
 
-class GraphEditorPlugin : public PluginMain
+namespace
+{
+class ActionItem : public IItem
 {
 public:
-    GraphEditorPlugin(IComponentContext& context)
+    ActionItem(ObjectHandle action_)
+        : action(std::move(action_))
     {
     }
 
-    bool PostLoad(IComponentContext& context) override
+    int columnCount() const override
     {
-        return true;
+        return 1;
+    }
+    const char* getDisplayText(int column) const override
+    {
+        return nullptr;
+    }
+    ThumbnailData getThumbnail(int column) const override
+    {
+        return nullptr;
     }
 
-    void Initialise(IComponentContext& context) override
+    Variant getData(int column, size_t roleId) const override
     {
-        IUIFramework* uiFramework = context.queryInterface<IUIFramework>();
-        IUIApplication* uiapplication = context.queryInterface<IUIApplication>();
-        IDefinitionManager* defMng = context.queryInterface<IDefinitionManager>();
+        if (ValueRole::roleId_ == roleId)
+            return action;
 
-        assert(uiFramework != nullptr);
-        assert(uiapplication != nullptr);
-        assert(defMng != nullptr);
-
-        Variant::setMetaTypeManager(context.queryInterface<IMetaTypeManager>());
-
-        RegisterGrapEditorTypes(*defMng);
-
-        editor = ObjectHandle(defMng->create<GraphEditor>(false));
-
-        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, editor);
-        uiapplication->addView(*view);
+        return Variant();
     }
 
-    bool Finalise(IComponentContext& context) override
+    bool setData(int column, size_t roleId, const Variant& data) override
     {
-        view.reset();
-        return true;
-    }
-
-    void Unload(IComponentContext& context) override
-    {
+        return false;
     }
 
 private:
-    std::unique_ptr<IView> view;
-    ObjectHandle editor;
+    ObjectHandle action;
 };
+} // namespace
 
-PLG_CALLBACK_FUNC(GraphEditorPlugin)
+ContextMenuModel::ContextMenuModel(std::vector<ObjectHandle>&& actions)
+{
+    items.reserve(actions.size());
+    for (size_t i = 0; i < actions.size(); ++i)
+        items.push_back(new ActionItem(actions[i]));
+
+    actions.clear();
+}
+
+ContextMenuModel::~ContextMenuModel()
+{
+    for_each(items.begin(), items.end(), [](IItem* item) { delete item; });
+    items.clear();
+}
+
+IItem* ContextMenuModel::item(size_t index) const
+{
+    return items[index];
+}
+
+size_t ContextMenuModel::index(const IItem* item) const
+{
+    auto iter = std::find(items.begin(), items.end(), item);
+    assert(iter != items.end());
+    return std::distance(items.begin(), iter);
+}
+
+bool ContextMenuModel::empty() const
+{
+    return items.empty();
+}
+
+size_t ContextMenuModel::size() const
+{
+    return items.size();
+}

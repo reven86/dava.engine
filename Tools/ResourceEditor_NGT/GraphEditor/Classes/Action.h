@@ -26,61 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TypeRegistration.h"
-#include "GraphEditor.h"
+#ifndef __GRAPHEDITOR_ACTION_H__
+#define __GRAPHEDITOR_ACTION_H__
 
-#include <core_generic_plugin/interfaces/i_component_context.hpp>
-#include <core_generic_plugin/generic_plugin.hpp>
+#include <string>
+#include <functional>
 
-#include <core_ui_framework/i_ui_framework.hpp>
-#include <core_ui_framework/i_ui_application.hpp>
-#include <core_ui_framework/i_view.hpp>
-
-class GraphEditorPlugin : public PluginMain
+class Action
 {
 public:
-    GraphEditorPlugin(IComponentContext& context)
-    {
-    }
+    Action() = default;
 
-    bool PostLoad(IComponentContext& context) override
-    {
-        return true;
-    }
+    using TOnTrigger = std::function<void()>;
+    void SetParams(std::string const& title, TOnTrigger const& callback);
 
-    void Initialise(IComponentContext& context) override
-    {
-        IUIFramework* uiFramework = context.queryInterface<IUIFramework>();
-        IUIApplication* uiapplication = context.queryInterface<IUIApplication>();
-        IDefinitionManager* defMng = context.queryInterface<IDefinitionManager>();
-
-        assert(uiFramework != nullptr);
-        assert(uiapplication != nullptr);
-        assert(defMng != nullptr);
-
-        Variant::setMetaTypeManager(context.queryInterface<IMetaTypeManager>());
-
-        RegisterGrapEditorTypes(*defMng);
-
-        editor = ObjectHandle(defMng->create<GraphEditor>(false));
-
-        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, editor);
-        uiapplication->addView(*view);
-    }
-
-    bool Finalise(IComponentContext& context) override
-    {
-        view.reset();
-        return true;
-    }
-
-    void Unload(IComponentContext& context) override
-    {
-    }
+    std::string const& GetTitle() const;
+    void Trigger();
 
 private:
-    std::unique_ptr<IView> view;
-    ObjectHandle editor;
+    std::string title;
+    TOnTrigger callback;
 };
 
-PLG_CALLBACK_FUNC(GraphEditorPlugin)
+#endif // __GRAPHEDITOR_ACTION_H__

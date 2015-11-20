@@ -1,6 +1,7 @@
 import QtQuick 2.1
 import QtQuick.Layouts 1.0
 import QtQuick.Controls 1.2
+import WGControls 1.0
 
 Rectangle
 {
@@ -13,6 +14,9 @@ Rectangle
 
     property var title: "Graph Editor"
     property var layoutHints: { 'left': 0.5 }
+
+    onWidthChanged : { sizeChanged(width, height) }
+    onHeightChanged : { sizeChanged(width, height) }
 
     ColumnLayout
     {
@@ -105,74 +109,76 @@ Rectangle
                     }
                 }
                 ctx.stroke();
-
-                // -- Text
-                ctx.font = '12px Courier New';
-                ctx.strokeStyle = majorLineColor;
-                for (var i=startY;i<endY;i+=lineHeight)
-                {
-                    if(isMajor(i, lineHeight))
-                    {
-                        var y = (viewTransform.transformY(i) - 1);
-                        ctx.strokeText((i * yScale).toPrecision(3), 20, y);
-                    }
-                }
             }
-        }
-
-        Rectangle
-        {
-                id: mouseLine;
-                height: parent.height
-                width: 1
-                color: majorLineColor
-        }
-
-        MouseArea
-        {
-            anchors.fill: parent;
-            acceptedButtons: Qt.AllButtons
-
-            property var mouseDragStart;
-
-            onWheel:
+            
+            MouseArea
             {
-                var delta = 1 + wheel.angleDelta.y/120.0 * .1;
-                // Zoom into the current mouse location
-                var screenPos = Qt.point(wheel.x, wheel.y)
-                var oldPos = graphCanvas.viewTransform.inverseTransform(screenPos);
-                graphCanvas.viewTransform.xScale *= delta;
-                graphCanvas.viewTransform.yScale *= delta;
-                var newScreenPos = graphCanvas.viewTransform.transform(Qt.point(oldPos.x, oldPos.y));
-                var shift = Qt.point(screenPos.x - newScreenPos.x, screenPos.y - newScreenPos.y)
-                graphCanvas.viewTransform.shift(shift);
-                graphCanvas.requestPaint()
-            }
-
-            hoverEnabled: true
-            onPositionChanged:
-            {
-                mouseLine.x = mouse.x
-                if(mouseDragStart && (mouse.buttons & Qt.MiddleButton))
+                anchors.fill: parent;
+                acceptedButtons: Qt.AllButtons
+                
+                property var mouseDragStart;
+                
+                onWheel:
                 {
-                    var pos = Qt.point(mouse.x, mouse.y)
-                    var delta = Qt.point(pos.x - mouseDragStart.x, pos.y - mouseDragStart.y)
-                    graphCanvas.viewTransform.origin.x += delta.x
-                    graphCanvas.viewTransform.origin.y += delta.y
-                    mouseDragStart = pos
+                    var delta = 1 + wheel.angleDelta.y/120.0 * .1;
+                    // Zoom into the current mouse location
+                    var screenPos = Qt.point(wheel.x, wheel.y)
+                    var oldPos = graphCanvas.viewTransform.inverseTransform(screenPos);
+                    graphCanvas.viewTransform.xScale *= delta;
+                    graphCanvas.viewTransform.yScale *= delta;
+                    var newScreenPos = graphCanvas.viewTransform.transform(Qt.point(oldPos.x, oldPos.y));
+                    var shift = Qt.point(screenPos.x - newScreenPos.x, screenPos.y - newScreenPos.y)
+                    graphCanvas.viewTransform.shift(shift);
+                    scaleCanvas(delta, wheel.x, wheel.y);
                     graphCanvas.requestPaint()
                 }
+                
+                hoverEnabled: true
+                onPositionChanged:
+                {
+                    if(mouseDragStart && (mouse.buttons & Qt.MiddleButton))
+                    {
+                        var pos = Qt.point(mouse.x, mouse.y)
+                        var delta = Qt.point(pos.x - mouseDragStart.x, pos.y - mouseDragStart.y)
+                        shiftCanvas(delta.x, delta.y)
+                        mouseDragStart = pos
+                        graphCanvas.requestPaint()
+                    }
+                }
+                
+                onPressed:
+                {
+                    mouseDragStart = Qt.point(mouse.x, mouse.y)
+                }
+                
+                onReleased:
+                {
+                    mouseDragStart = null;
+                }
             }
+        }
 
-            onPressed:
-            {
-                mouseDragStart = Qt.point(mouse.x, mouse.y)
-            }
+        WGListModel
+        {
+            id : nodesModel
+            source : nodes
 
-            onReleased:
+            ValueExtension {}
+        }
+        
+        Repeater
+        {
+            id: itemRepeater
+            model: nodesModel
+            delegate: SimpleComponent
             {
-                mouseDragStart = null;
+                node : Value
             }
+        }
+        
+        ContextMenu
+        {
+            menuModel : contextMenuModel
         }
     }
 }

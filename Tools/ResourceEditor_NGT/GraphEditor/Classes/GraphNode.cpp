@@ -26,61 +26,86 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TypeRegistration.h"
-#include "GraphEditor.h"
+#include "GraphNode.h"
+#include "ScreenTransform.h"
 
-#include <core_generic_plugin/interfaces/i_component_context.hpp>
-#include <core_generic_plugin/generic_plugin.hpp>
+#include "Metadata/GraphNode.mpp"
 
-#include <core_ui_framework/i_ui_framework.hpp>
-#include <core_ui_framework/i_ui_application.hpp>
-#include <core_ui_framework/i_view.hpp>
+#include <core_dependency_system/i_interface.hpp>
+#include <core_reflection/i_definition_manager.hpp>
+#include <core_reflection/property_accessor.hpp>
 
-class GraphEditorPlugin : public PluginMain
+PropertyAccessor bindProperty(GraphNode* node, const char* propertyName)
 {
-public:
-    GraphEditorPlugin(IComponentContext& context)
-    {
-    }
+    IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
+    assert(defMng != nullptr);
 
-    bool PostLoad(IComponentContext& context) override
-    {
-        return true;
-    }
+    IClassDefinition* definition = defMng->getDefinition<GraphNode>();
+    assert(definition != nullptr);
 
-    void Initialise(IComponentContext& context) override
-    {
-        IUIFramework* uiFramework = context.queryInterface<IUIFramework>();
-        IUIApplication* uiapplication = context.queryInterface<IUIApplication>();
-        IDefinitionManager* defMng = context.queryInterface<IDefinitionManager>();
+    return definition->bindProperty(propertyName, node);
+}
 
-        assert(uiFramework != nullptr);
-        assert(uiapplication != nullptr);
-        assert(defMng != nullptr);
+std::string const& GraphNode::GetTitle() const
+{
+    return title;
+}
 
-        Variant::setMetaTypeManager(context.queryInterface<IMetaTypeManager>());
+void GraphNode::SetTitle(std::string const& title_)
+{
+    title = title_;
+}
 
-        RegisterGrapEditorTypes(*defMng);
+float GraphNode::GetPosX() const
+{
+    return pixelX;
+}
 
-        editor = ObjectHandle(defMng->create<GraphEditor>(false));
+void GraphNode::SetPosX(const float& x)
+{
+    bindProperty(this, "nodePosX").setValue(x);
+}
 
-        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, editor);
-        uiapplication->addView(*view);
-    }
+float GraphNode::GetPosY() const
+{
+    return pixelY;
+}
 
-    bool Finalise(IComponentContext& context) override
-    {
-        view.reset();
-        return true;
-    }
+void GraphNode::SetPosY(const float& y)
+{
+    bindProperty(this, "nodePosY").setValue(y);
+}
 
-    void Unload(IComponentContext& context) override
-    {
-    }
+float GraphNode::GetScale() const
+{
+    return scale;
+}
 
-private:
-    std::unique_ptr<IView> view;
-    ObjectHandle editor;
-};
+void GraphNode::SetScale(const float& scale)
+{
+    bindProperty(this, "nodeScale").setValue(scale);
+}
 
-PLG_CALLBACK_FUNC(GraphEditorPlugin)
+void GraphNode::ApplyTransform()
+{
+    ScreenTransform& transform = ScreenTransform::Instance();
+    QPointF pt = transform.GtoP(QPointF(modelX, modelY));
+    SetPosX(pt.x());
+    SetPosY(pt.y());
+    SetScale(transform.GetScale());
+}
+
+void GraphNode::SetPosXImpl(const float& x)
+{
+    pixelX = x;
+}
+
+void GraphNode::SetPosYImpl(const float& y)
+{
+    pixelY = y;
+}
+
+void GraphNode::SetScaleImpl(const float& scale_)
+{
+    scale = scale_;
+}
