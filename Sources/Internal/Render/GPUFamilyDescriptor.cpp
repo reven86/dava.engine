@@ -71,14 +71,14 @@ UnorderedMap<eGPUFamily, GPUData, std::hash<uint8>> gpuData = {
     { GPU_ORIGIN, { "origin", "", { { FORMAT_RGBA8888, IMAGE_FORMAT_UNKNOWN }, { FORMAT_RGBA5551, IMAGE_FORMAT_UNKNOWN }, { FORMAT_RGB888, IMAGE_FORMAT_UNKNOWN }, { FORMAT_A8, IMAGE_FORMAT_UNKNOWN }, { FORMAT_A16, IMAGE_FORMAT_UNKNOWN } } } }
 };
 
-const Map<PixelFormat, ImageFormat> & GPUFamilyDescriptor::GetAvailableFormatsForGpu(eGPUFamily gpuFamily)
+const Map<PixelFormat, ImageFormat>& GetAvailableFormatsForGpu(eGPUFamily gpuFamily)
 {
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
     
     return gpuData[gpuFamily].availableFormats;
 }
 
-eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
+eGPUFamily GetGPUForPathname(const FilePath& pathname)
 {
     const String filename = pathname.GetFilename();
 
@@ -95,21 +95,21 @@ eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
     return isUncompressed ? GPU_ORIGIN : GPU_INVALID;
 }
 
-const String & GPUFamilyDescriptor::GetGPUName(const eGPUFamily gpuFamily)
+const String& GetGPUName(const eGPUFamily gpuFamily)
 {
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
 
     return gpuData[gpuFamily].name;
 }
 
-const String& GPUFamilyDescriptor::GetGPUPrefix(const eGPUFamily gpuFamily)
+const String& GetGPUPrefix(const eGPUFamily gpuFamily)
 {
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
 
     return gpuData[gpuFamily].prefix;
 }
 
-eGPUFamily GPUFamilyDescriptor::GetGPUByName(const String & name)
+eGPUFamily GetGPUByName(const String& name)
 {
     for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
     {
@@ -123,7 +123,7 @@ eGPUFamily GPUFamilyDescriptor::GetGPUByName(const String & name)
     return GPU_INVALID;
 }
 
-bool GPUFamilyDescriptor::IsFormatSupported(const eGPUFamily gpu, const PixelFormat format)
+bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format)
 {
     if (gpu < 0 || gpu >= GPU_FAMILY_COUNT || format == FORMAT_INVALID)
     {
@@ -132,7 +132,7 @@ bool GPUFamilyDescriptor::IsFormatSupported(const eGPUFamily gpu, const PixelFor
     return gpuData[gpu].availableFormats.find(format) != gpuData[gpu].availableFormats.end();
 }
 
-ImageFormat GPUFamilyDescriptor::GetCompressedFileFormat(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
+ImageFormat GetCompressedFileFormat(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
     if (!IsGPUForDevice(gpuFamily) || pixelFormat == FORMAT_INVALID)
         return IMAGE_FORMAT_UNKNOWN;
@@ -148,7 +148,7 @@ ImageFormat GPUFamilyDescriptor::GetCompressedFileFormat(const eGPUFamily gpuFam
     return formatFound->second;
 }
 
-eGPUFamily GPUFamilyDescriptor::ConvertValueToGPU(const int32 value)
+eGPUFamily ConvertValueToGPU(const int32 value)
 {
     if (value >= 0 && value < GPU_FAMILY_COUNT)
     {
@@ -164,7 +164,7 @@ eGPUFamily GPUFamilyDescriptor::ConvertValueToGPU(const int32 value)
     }
 }
 
-bool GPUFamilyDescriptor::IsGPUForDevice(const eGPUFamily gpu)
+bool IsGPUForDevice(const eGPUFamily gpu)
 {
     return (gpu >= 0 && gpu < GPU_DEVICE_COUNT);
 }
