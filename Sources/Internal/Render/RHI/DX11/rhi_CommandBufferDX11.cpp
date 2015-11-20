@@ -963,6 +963,10 @@ _ExecDX11(DX11Command* command, uint32 cmdCount)
             _D3D11_ImmediateContext->UpdateSubresource((ID3D11Resource*)(arg[0]), UINT(arg[1]), (const D3D11_BOX*)(arg[2]), (const void*)(arg[3]), UINT(arg[4]), UINT(arg[5]));
             break;
 
+        case DX11Command::COPY_RESOURCE:
+            _D3D11_ImmediateContext->CopyResource((ID3D11Resource*)(arg[0]), (ID3D11Resource*)(arg[1]));
+            break;
+
         default:
             DVASSERT(!"unknown DX11-cmd");
         }
