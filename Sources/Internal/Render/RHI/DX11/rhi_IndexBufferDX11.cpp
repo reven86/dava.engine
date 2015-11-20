@@ -91,7 +91,7 @@ dx11_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 
         desc11.ByteWidth = desc.size;
         desc11.Usage = D3D11_USAGE_DYNAMIC;
-        desc11.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        desc11.CPUAccessFlags = 0;
         desc11.BindFlags = D3D11_BIND_INDEX_BUFFER;
         desc11.MiscFlags = 0;
 
@@ -99,6 +99,7 @@ dx11_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
         {
         case USAGE_DEFAULT:
             desc11.Usage = D3D11_USAGE_DYNAMIC;
+            desc11.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
             break;
 
         case USAGE_STATICDRAW:

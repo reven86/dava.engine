@@ -118,7 +118,9 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
             batch->BindGeometryData(packet);
             DVASSERT(packet.primitiveCount);
             mat->BindParams(packet);
+            #if 0
             packet.debugMarker = mat->GetEffectiveFXName().c_str();
+            #endif
             rhi::AddPacket(packetList, packet);
         }
     }
