@@ -138,7 +138,7 @@ void FilePath::InitializeBundleName()
     String dirBaseName = execDirectory.GetLastDirectoryName();
     std::transform(dirBaseName.begin(), dirBaseName.end(), dirBaseName.begin(), ::tolower);
 
-    //find resource dir name
+//find resource dir name
 #if defined(_M_IX86)
     String arch = "_x86_";
 #elif defined(_M_X64)
@@ -608,7 +608,7 @@ String FilePath::GetLastDirectoryName() const
     
     String path = absolutePathname;
     path.pop_back();
-    
+
     return FilePath(path).GetFilename();
 }
     

@@ -352,7 +352,7 @@ namespace DAVA
         Logger::Info("AutotestingSystem::OnTestsStarted");
         startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
         luaSystem->StartTest();
-	}
+    }
 
 	void AutotestingSystem::OnError(const String &errorMessage)
 	{
@@ -393,7 +393,7 @@ namespace DAVA
         return screenShotName;
     }
 
-	void AutotestingSystem::OnScreenShot(Image *image)
+    void AutotestingSystem::OnScreenShot(Image *image)
 	{
         Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
 		JobManager::Instance()->CreateWorkerJob(fn);
@@ -447,7 +447,7 @@ namespace DAVA
             if (!IsTouchDown(id))
             {
                 touches[id] = input;
-			}
+            }
 			else
 			{
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d", id);
@@ -471,7 +471,7 @@ namespace DAVA
             Map<int32, UIEvent>::iterator findIt = touches.find(id);
             if (findIt != touches.end())
             {
-				findIt->second = input;
+                findIt->second = input;
 			}
 			else
 			{
@@ -485,7 +485,7 @@ namespace DAVA
             Map<int32, UIEvent>::iterator findIt = touches.find(id);
             if (findIt != touches.end())
             {
-				touches.erase(findIt);
+                touches.erase(findIt);
 			}
 			else
 			{
@@ -495,7 +495,7 @@ namespace DAVA
         break;
         default:
             //TODO: keyboard input
-			break;
+            break;
 		}
 	}
 

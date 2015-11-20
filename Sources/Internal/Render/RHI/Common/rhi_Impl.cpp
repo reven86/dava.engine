@@ -182,7 +182,7 @@ Create(const Descriptor& desc)
 void Delete(Handle vb)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_VertexBuffer_Delete)( vb );
+    return (*_Impl.impl_VertexBuffer_Delete)(vb);
 #else
     if (vb != rhi::InvalidHandle)
     {

@@ -260,7 +260,7 @@ void UISlider::Input(UIEvent *currentInput)
         PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
     }
 
-	RecalcButtonPos();
+    RecalcButtonPos();
 	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 

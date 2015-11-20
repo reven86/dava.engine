@@ -274,7 +274,7 @@ protected:
     /**
 		\brief Called after draw is finished.
 	 */
-	virtual void EndFrame();
+    virtual void EndFrame();
 	
 #if defined(__DAVAENGINE_ANDROID__)
 protected:

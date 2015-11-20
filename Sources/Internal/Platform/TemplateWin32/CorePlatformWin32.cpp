@@ -173,7 +173,7 @@ namespace DAVA
         if (options)
         {
             windowedMode.width = options->GetInt32("width");
-			windowedMode.height = options->GetInt32("height");
+            windowedMode.height = options->GetInt32("height");
 			windowedMode.bpp = options->GetInt32("bpp");
 			
 			// get values from config in case if they are available
@@ -210,7 +210,7 @@ namespace DAVA
         realWidth = clientSize.right - clientSize.left;
         realHeight = clientSize.bottom - clientSize.top;
 
-		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
+        windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
@@ -303,7 +303,7 @@ namespace DAVA
 
         Core::Instance()->SystemAppFinished();
         FrameworkWillTerminate();
-	}
+    }
 
 	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
 	{
@@ -384,9 +384,9 @@ namespace DAVA
         DWORD iModeNum = 0;
         DEVMODE dmi;
         ZeroMemory(&dmi, sizeof(dmi));
-        dmi.dmSize = sizeof(dmi) ;
+        dmi.dmSize = sizeof(dmi);
 
-		while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
+        while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
 		{
 			DisplayMode mode;
 			mode.width = dmi.dmPelsWidth;
@@ -513,7 +513,7 @@ namespace DAVA
     void HandleMouseButtonsPressed(USHORT buttsFlags)
     {
         if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
-		{
+        {
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
 		}
 		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
@@ -817,8 +817,8 @@ namespace DAVA
             return 0;
 
         case WM_ACTIVATE:
-            {
-				ApplicationCore * core = Core::Instance()->GetApplicationCore();
+        {
+                ApplicationCore * core = Core::Instance()->GetApplicationCore();
                 WORD loWord = LOWORD(wParam);
                 WORD hiWord = HIWORD(wParam);
                 if(!loWord || hiWord)
