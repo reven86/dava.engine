@@ -31,11 +31,14 @@
 
 #include <QObject>
 
+class QSurface;
+class QOpenGLContext;
+
 class DavaRenderer : public QObject
 {
     Q_OBJECT
 public:
-    DavaRenderer();
+    DavaRenderer(QSurface * surface, QOpenGLContext * context);
     ~DavaRenderer() override;
 public slots:
     void paint();

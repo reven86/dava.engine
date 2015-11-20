@@ -31,20 +31,80 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "DavaRenderer.h"
 
-DavaRenderer::DavaRenderer()
+#include "Base/Singleton.h"
+
+#include <QOpenGLContext>
+
+namespace
 {
-    DAVA::Core::Instance()->rendererParams.acquireContextFunc = []() {
-    };
-    DAVA::Core::Instance()->rendererParams.releaseContextFunc = []() {
-    };
+
+class OGLContextBinder: public DAVA::Singleton<OGLContextBinder>
+{
+public:
+    OGLContextBinder(QSurface * surface, QOpenGLContext * context)
+        : renderSurface(surface)
+        , renderContext(context)
+    {
+    }
+
+    ~OGLContextBinder()
+    {
+    }
+
+    void AcquireContex()
+    {
+        prevContext = QOpenGLContext::currentContext();
+        if (prevContext != nullptr)
+            prevSurface = prevContext->surface();
+        else
+            prevSurface = nullptr;
+
+        renderContext->makeCurrent(renderSurface);
+    }
+
+    void ReleaseContext()
+    {
+        renderContext->doneCurrent();
+
+        if (prevContext != nullptr && prevSurface != nullptr)
+            prevContext->makeCurrent(prevSurface);
+    }
+
+private:
+    QSurface * renderSurface = nullptr;
+    QOpenGLContext * renderContext = nullptr;
+
+    QSurface * prevSurface = nullptr;
+    QOpenGLContext * prevContext = nullptr;
+};
+
+void AcqureContext()
+{
+    OGLContextBinder::Instance()->AcquireContex();
+}
+
+void ReleaseContext()
+{
+    OGLContextBinder::Instance()->ReleaseContext();
+}
+
+}
+
+DavaRenderer::DavaRenderer(QSurface * surface, QOpenGLContext * context)
+{
+    DVASSERT(OGLContextBinder::Instance() == nullptr);
+    new OGLContextBinder(surface, context);
+
+    DAVA::Core::Instance()->rendererParams.acquireContextFunc = &AcqureContext;
+    DAVA::Core::Instance()->rendererParams.releaseContextFunc = &ReleaseContext;
+
     DAVA::QtLayer::Instance()->AppStarted();
     DAVA::QtLayer::Instance()->OnResume();
 }
 
 DavaRenderer::~DavaRenderer()
 {
-    DAVA::QtLayer::Instance()->Release();
-}
+    DAVA::QtLayer::Instance()->Release();}
 
 void DavaRenderer::paint()
 {

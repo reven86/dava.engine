@@ -228,8 +228,8 @@ private:
         DVASSERT(application != nullptr);
 
         mainWindow_ = new QtWindow(*qtFramework, std::unique_ptr<QMainWindow>(mainWindow));
-        application->addWindow(*mainWindow_);
         mainWindow_->show();
+        application->addWindow(*mainWindow_);
 
         DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
     }

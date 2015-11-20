@@ -287,6 +287,7 @@ gles2_InvalidateCache()
 {
     PipelineStateGLES2::InvalidateCache();
     DepthStencilStateGLES2::InvalidateCache();
+    TextureGLES2::InvalidateCache();
 }
 
 //------------------------------------------------------------------------------

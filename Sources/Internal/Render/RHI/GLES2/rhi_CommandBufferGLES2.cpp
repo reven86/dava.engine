@@ -1532,6 +1532,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     } 
     while ( err != GL_NO_ERROR );
 */
+    _GLES2_AcquireContext();
 
 #if 0
 
@@ -1862,6 +1863,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         break;
         }
     }
+    _GLES2_ReleaseContext();
 #undef EXEC_GL
 }
 

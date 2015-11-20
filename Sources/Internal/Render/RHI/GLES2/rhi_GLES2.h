@@ -75,6 +75,7 @@ void SetAsRenderTarget(Handle tex, Handle depth);
 Size2i Size(Handle tex);
 void ReCreateAll();
 unsigned NeedRestoreCount();
+void InvalidateCache();
 }
 
 namespace SamplerStateGLES2

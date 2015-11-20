@@ -188,8 +188,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     
 #if defined(Q_OS_MAC)
     DAVA::Core::Instance()->SetNativeView((void*)davaGLView->winId());
-#elif defined(Q_OS_WIN)
-    DAVA::Core::Instance()->SetNativeView((void*)container->winId());
 #endif //Q_OS_MAC / Q_OS_WIN
 }
 
@@ -228,12 +226,13 @@ void DavaGLWidget::OnPaint()
 {
     if (renderer == nullptr)
     {
-        renderer = new DavaRenderer();
+        renderer = new DavaRenderer(davaGLView, davaGLView->openglContext());
         emit Initialized();
         OnResize();
     }
 
     renderer->paint();
+    davaGLView->resetOpenGLState();
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent*)
