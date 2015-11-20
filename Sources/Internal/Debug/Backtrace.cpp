@@ -28,18 +28,22 @@
 
 // clang-format off
 #include "Debug/Backtrace.h"
-#include "Concurrency/Atomic.h"
-#include "Concurrency/Mutex.h"
-#include "Concurrency/LockGuard.h"
 #include "Utils/StringFormat.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+#   include "Concurrency/Atomic.h"
+#   include "Concurrency/Mutex.h"
+#   include "Concurrency/LockGuard.h"
 #   include <dbghelp.h>
 #elif defined(__DAVAENGINE_APPLE__)
 #   include <execinfo.h>
 #   include <dlfcn.h>
 #   include <cxxabi.h>
 #elif defined(__DAVAENGINE_ANDROID__)
+#   include <dlfcn.h>
+#   include <cxxabi.h>
+#   include <unwind.h>
+#include <android/log.h>
 #endif
 
 namespace DAVA
@@ -69,6 +73,31 @@ void InitSymbols()
 }
 #endif
 
+#if defined(__DAVAENGINE_ANDROID__)
+
+struct StackCrawlState
+{
+    size_t count;
+    void** frames;
+};
+
+_Unwind_Reason_Code TraceFunction(struct _Unwind_Context* context, void* arg)
+{
+    StackCrawlState* state = static_cast<StackCrawlState*>(arg);
+    if (state->count > 0)
+    {
+        uintptr_t pc = _Unwind_GetIP(context);
+        if (pc != 0)
+        {
+            *state->frames = reinterpret_cast<void*>(pc);
+            state->frames += 1;
+            state->count -= 1;
+            return _URC_NO_REASON;
+        }
+    }
+    return _URC_END_OF_STACK;
+}
+#endif
 } // anonymous namespace
 
 DAVA_NOINLINE size_t GetStackFrames(void* frames[], size_t framesToCapture)
@@ -79,6 +108,11 @@ DAVA_NOINLINE size_t GetStackFrames(void* frames[], size_t framesToCapture)
 #elif defined(__DAVAENGINE_APPLE__)
     nframes = backtrace(frames, static_cast<int>(framesToCapture));
 #elif defined(__DAVAENGINE_ANDROID__)
+    StackCrawlState state;
+    state.count = framesToCapture;
+    state.frames = frames;
+    _Unwind_Backtrace(&TraceFunction, &state);
+    nframes = framesToCapture - state.count;
 #endif
     return nframes;
 }
@@ -90,7 +124,7 @@ String DemangleSymbol(const char8* symbol)
     return String(symbol);
 #elif defined(__DAVAENGINE_WIN_UAP__)
     return String(symbol);
-#elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
     String result;
     char* demangled = abi::__cxa_demangle(symbol, nullptr, nullptr, nullptr);
     if (demangled != nullptr)
@@ -99,7 +133,6 @@ String DemangleSymbol(const char8* symbol)
         free(demangled);
     }
     return result;
-#elif defined(__DAVAENGINE_ANDROID__)
 #endif
 }
 
@@ -124,7 +157,7 @@ String GetSymbolFromAddr(void* addr, bool demangle)
             result = symInfo->Name;
     }
 
-#elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
     Dl_info dlinfo;
     if (dladdr(addr, &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
     {
@@ -133,7 +166,6 @@ String GetSymbolFromAddr(void* addr, bool demangle)
         if (result.empty())
             result = dlinfo.dli_sname;
     }
-#elif defined(__DAVAENGINE_ANDROID__)
 #endif
     return result;
 }
