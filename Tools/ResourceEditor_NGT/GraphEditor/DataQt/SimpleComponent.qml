@@ -6,11 +6,13 @@ import WGControls 1.0
 Item
 {
     id : root
+    property var canvasContainer
     property var node
     property real margin : 4.0
 
     x : node.nodePosX + width / 2.0
     y : node.nodePosY + height / 2.0
+    z : 1
     transform : Scale
     {
         origin.x : 0
@@ -32,6 +34,37 @@ Item
             id : contentRect
             width : mainLayout.width
             height : mainLayout.height
+
+            MouseArea
+            {
+                id: dragHandle
+                anchors.fill : parent
+                acceptedButtons : Qt.LeftButton | Qt.RightButton
+                hoverEnabled : true
+
+                property var mouseDragStart
+
+                onPositionChanged:
+                {
+                    if(mouseDragStart && (mouse.buttons & Qt.LeftButton))
+                    {
+                        var pos = mapToItem(canvasContainer, mouse.x, mouse.y)
+                        var delta = Qt.point(pos.x - mouseDragStart.x, pos.y - mouseDragStart.y)
+                        node.shiftNode(delta.x, delta.y)
+                        mouseDragStart = pos
+                    }
+                }
+
+                onPressed : 
+                {
+                    mouseDragStart = mapToItem(canvasContainer, mouse.x, mouse.y)
+                }
+
+                onReleased : 
+                {
+                    mouseDragStart = null
+                }
+            }
         
             LinearGradient 
             {

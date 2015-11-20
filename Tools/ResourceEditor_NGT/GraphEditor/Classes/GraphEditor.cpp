@@ -42,10 +42,21 @@ GraphEditor::GraphEditor()
     assert(defMng != nullptr);
 
     std::vector<ObjectHandle> nodes;
-    ObjectHandleT<GraphNode> node = defMng->create<GraphNode>();
-    node->SetTitle("Real node from C++");
-    nodes.push_back(ObjectHandle(node));
-    nodeModel.reset(new NodeModel(std::move(nodes)));
+    {
+        ObjectHandleT<GraphNode> node = defMng->create<GraphNode>();
+        node->SetTitle("Real node from C++");
+        nodes.push_back(ObjectHandle(node));
+        nodeModel.reset(new NodeModel(std::move(nodes)));
+    }
+
+    {
+        ObjectHandleT<GraphNode> node = defMng->create<GraphNode>();
+        node->SetTitle("Second node");
+        node->SetPosX(30.0);
+        node->SetPosY(0.0);
+        nodes.push_back(ObjectHandle(node));
+        nodeModel.reset(new NodeModel(std::move(nodes)));
+    }
 
     std::vector<ObjectHandle> actions;
     for (size_t i = 0; i < 3; ++i)

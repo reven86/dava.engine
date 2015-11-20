@@ -17,6 +17,7 @@ Rectangle
 
     onWidthChanged : { sizeChanged(width, height) }
     onHeightChanged : { sizeChanged(width, height) }
+    z : 0
 
     ColumnLayout
     {
@@ -172,6 +173,7 @@ Rectangle
             model: nodesModel
             delegate: SimpleComponent
             {
+                canvasContainer : graphCanvas
                 node : Value
             }
         }

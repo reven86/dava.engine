@@ -48,6 +48,8 @@ public:
     float GetScale() const;
     void SetScale(const float& scale);
 
+    void Shift(float pixelShiftX, float pixelShiftY);
+
     void ApplyTransform();
 
 private:

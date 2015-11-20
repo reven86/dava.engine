@@ -35,6 +35,8 @@
 #include <core_reflection/i_definition_manager.hpp>
 #include <core_reflection/property_accessor.hpp>
 
+#include <QDebug>
+
 PropertyAccessor bindProperty(GraphNode* node, const char* propertyName)
 {
     IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
@@ -84,6 +86,19 @@ float GraphNode::GetScale() const
 void GraphNode::SetScale(const float& scale)
 {
     bindProperty(this, "nodeScale").setValue(scale);
+}
+
+void GraphNode::Shift(float pixelShiftX, float pixelShiftY)
+{
+    ScreenTransform& transform = ScreenTransform::Instance();
+    QPointF zeroPoint = transform.PtoG(QPointF(0.0f, 0.0f));
+    QPointF shiftPoint = transform.PtoG(QPointF(pixelShiftX, pixelShiftY));
+    QPointF globalShift = shiftPoint - zeroPoint;
+
+    modelX += globalShift.x();
+    modelY += globalShift.y();
+
+    ApplyTransform();
 }
 
 void GraphNode::ApplyTransform()
