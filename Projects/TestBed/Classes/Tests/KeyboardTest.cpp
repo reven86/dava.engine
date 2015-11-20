@@ -47,7 +47,10 @@ auto gamepadButtonsNames =
         "shift_left", "shift_right", "triger_left", "triger_right",
         "stick_left", "stick_right" };
 
-Map<std::string, UIControl*> gamepadButtons;
+Map<String, UIControl*> gamepadButtons;
+
+Rect gamepadPos(500, 000, 800, 450);
+float32 gamepadStickDeltaMove = 20.f; // 20 pixels
 
 class CustomText : public UIStaticText
 {
@@ -106,6 +109,40 @@ public:
     }
 
 private:
+    void UpdateGamepadElement(String name, bool isVisible)
+    {
+        gamepadButtons[name]->SetVisible(isVisible);
+    }
+    void UpdateGamepadStickX(String name, float axisValue)
+    {
+        UIControl* ctrl = gamepadButtons[name];
+        Vector2 pos = ctrl->GetPosition();
+        if (std::abs(axisValue) >= 0.05f)
+        {
+            pos.x = gamepadPos.GetPosition().x + (-1 * (axisValue * gamepadStickDeltaMove)); // -1 gamepad fliped on image
+        }
+        else
+        {
+            pos.x = gamepadPos.GetPosition().x;
+        }
+        ctrl->SetPosition(pos);
+        UpdateGamepadElement(name, pos != gamepadPos.GetPosition());
+    }
+    void UpdateGamepadStickY(String name, float axisValue)
+    {
+        UIControl* ctrl = gamepadButtons[name];
+        Vector2 pos = ctrl->GetPosition();
+        if (std::abs(axisValue) >= 0.05f)
+        {
+            pos.y = gamepadPos.GetPosition().y + (axisValue * gamepadStickDeltaMove);
+        }
+        else
+        {
+            pos.y = gamepadPos.GetPosition().y;
+        }
+        ctrl->SetPosition(pos);
+        UpdateGamepadElement(name, pos != gamepadPos.GetPosition());
+    }
     void OnGamepadEvent(UIEvent* event)
     {
     	Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
@@ -116,37 +153,48 @@ private:
         switch (event->tid)
         {
         case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_A:
-            gamepadButtons["button_a"]->SetVisible(true);
+            UpdateGamepadElement("button_a", event->point.x == 1);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_B:
-            gamepadButtons["button_b"]->SetVisible(true);
+            UpdateGamepadElement("button_b", event->point.x == 1);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_X:
-            gamepadButtons["button_x"]->SetVisible(true);
+            UpdateGamepadElement("button_x", event->point.x == 1);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_Y:
-            gamepadButtons["button_y"]->SetVisible(true);
+            UpdateGamepadElement("button_y", event->point.x == 1);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_LS:
-            gamepadButtons["shift_left"]->SetVisible(true);
+            UpdateGamepadElement("shift_left", event->point.x == 1);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_RS:
+            UpdateGamepadElement("shift_right", event->point.x == 1);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_LT:
+            UpdateGamepadElement("triger_left", event->point.x > 0);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_RT:
-            break;
-        case GamepadDevice::GAMEPAD_ELEMENT_DPAD_X:
-            break;
-        case GamepadDevice::GAMEPAD_ELEMENT_DPAD_Y:
+            UpdateGamepadElement("triger_right", event->point.x > 0);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_AXIS_LX:
+            UpdateGamepadStickX("stick_left", event->point.x);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_AXIS_LY:
+            UpdateGamepadStickY("stick_left", event->point.x);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_AXIS_RX:
+            UpdateGamepadStickX("stick_right", event->point.x);
             break;
         case GamepadDevice::GAMEPAD_ELEMENT_AXIS_RY:
+            UpdateGamepadStickY("stick_right", event->point.x);
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_DPAD_X:
+            UpdateGamepadElement("button_left", event->point.x < 0);
+            UpdateGamepadElement("button_right", event->point.x > 0);
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_DPAD_Y:
+            UpdateGamepadElement("button_up", event->point.x > 0);
+            UpdateGamepadElement("button_down", event->point.x < 0);
             break;
         }
     }
@@ -400,18 +448,19 @@ void KeyboardTest::LoadResources()
         AddControl(touch.img);
     }
 
-	UIControl* gamepad = new UIControl(Rect(500, 0, 800, 450));
+	UIControl* gamepad = new UIControl(gamepadPos);
 	auto pathToBack = FilePath("~res:/Gfx/GamepadTest/gamepad");
 	gamepad->SetSprite(pathToBack, 0);
 	AddControl(gamepad);
 
     for (auto& buttonOrAxisName : gamepadButtonsNames)
     {
-    	UIControl* img = new UIControl(Rect(500, 000, 800, 450));
+    	UIControl* img = new UIControl(gamepadPos);
     	auto path = FilePath("~res:/Gfx/GamepadTest/") + buttonOrAxisName;
     	img->SetSprite(path, 0);
     	gamepadButtons[buttonOrAxisName] = img;
     	AddControl(img);
+    	img->SetVisible(false);
     }
 }
 
@@ -424,6 +473,11 @@ void KeyboardTest::UnloadResources()
     for (auto& touch : touches)
     {
         SafeRelease(touch.img);
+    }
+
+    for (auto& gamepadButton : gamepadButtons)
+    {
+        SafeRelease(gamepadButton.second);
     }
 
     BaseScreen::UnloadResources();

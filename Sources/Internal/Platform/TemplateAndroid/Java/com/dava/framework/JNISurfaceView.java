@@ -367,7 +367,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 					{
 						nativeOnGamepadElement(event.tid, -event.x, false);
 					} 
-					else 
+					else
 					{
 						nativeOnGamepadElement(event.tid, event.x, false);
 					}
@@ -404,7 +404,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     	public void run() {
     		if(IsGamepadButton(keyCode))
     		{
-    			nativeOnGamepadElement(keyCode, 1.f, true);
+    			nativeOnGamepadElement(keyCode, isDown ? 1 : 0, true);
     		}
     		else
     		{
