@@ -76,8 +76,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("bpp", 32);
 
     // For testing purpose limit minimum window size to 400x300
-    appOptions->SetInt32("min-width", 400);
-    appOptions->SetInt32("min-height", 300);
+    appOptions->SetInt32("min-width", 960);
+    appOptions->SetInt32("min-height", 640);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
 #else
