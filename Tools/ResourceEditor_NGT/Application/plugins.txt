@@ -11,5 +11,6 @@ plugins/plg_history_ui
 plugins/plg_macros_ui
 plugins/plg_panel_manager
 plugins/plg_editor_interaction
+plugins/GraphEditor
 plugins/ResourceEditorDLL
 plugins/SceneTree

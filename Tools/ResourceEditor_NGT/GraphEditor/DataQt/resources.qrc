@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="GE">
+    <file>GraphEditorView.qml</file>
+    <file>ViewTransform.qml</file>
+  </qresource>
+</RCC>

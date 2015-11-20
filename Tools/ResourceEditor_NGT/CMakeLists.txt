@@ -56,3 +56,4 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ResourceEditorDLL ResourceEditorDLL)
 
 set(ADDITIONAL_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/ResourceEditorDLL")
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SceneTree SceneTree)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/GraphEditor GraphEditor)
