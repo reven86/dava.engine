@@ -233,9 +233,9 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                             cmd->arg[10] = compressed;
 
                             if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                                _FlipRGBA4_ABGR4(desc.initialData[m], data_sz);
+                                _FlipRGBA4_ABGR4(data, data_sz);
                             else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                                _RGBA5551toABGR1555(desc.initialData[m], data_sz);
+                                _RGBA5551toABGR1555(data, data_sz);
 
                             ++cmd2_cnt;
                         }
