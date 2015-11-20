@@ -74,7 +74,7 @@ public:
             scene = nullptr;
         }
 
-        SafeRetain(globalMaterial);
+        SafeRelease(globalMaterial);
     }
 
 private:
