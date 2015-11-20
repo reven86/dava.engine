@@ -215,8 +215,9 @@ private:
     Entity * LoadLandscape(Scene * scene, KeyedArchive * archive);
     Entity * LoadCamera(Scene * scene, KeyedArchive * archive);
     Entity * LoadLight(Scene * scene, KeyedArchive * archive);
-    
-    
+
+    void ApplyFogQuality();
+
     bool ReplaceNodeAfterLoad(Entity * node);
 
 	void ReplaceOldNodes(Entity * currentNode);
