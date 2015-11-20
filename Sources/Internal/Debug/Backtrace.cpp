@@ -170,9 +170,10 @@ String GetSymbolFromAddr(void* addr, bool demangle)
     return result;
 }
 
-Vector<StackFrame> GetBacktrace(size_t framesToCapture)
+DAVA_NOINLINE Vector<StackFrame> GetBacktrace(size_t framesToCapture)
 {
-    const size_t DEFAULT_SKIP_COUNT = 2;    // skip this function and GetStackFrames
+    // TODO: find the way to tell ios compiler not inlining GetStackFrames function
+    const size_t DEFAULT_SKIP_COUNT = 1;    // skip only this function as GetStackFrames inlined in IOS despite of DAVA_NOINLINE
     const size_t MAX_BACKTRACE_COUNT = 64;
 
     framesToCapture = std::min(framesToCapture, MAX_BACKTRACE_COUNT);
@@ -184,7 +185,7 @@ Vector<StackFrame> GetBacktrace(size_t framesToCapture)
     if (nframes > DEFAULT_SKIP_COUNT)
     {
         backtrace.reserve(nframes);
-        for (size_t i = DEFAULT_SKIP_COUNT;i < nframes;++i)
+        for (size_t i = 0;i < nframes;++i)
         {
             backtrace.emplace_back(frames[i], GetSymbolFromAddr(frames[i]));
         }
@@ -198,7 +199,7 @@ String BacktraceToString(const Vector<StackFrame>& backtrace, size_t nframes)
     size_t n = std::min(nframes, backtrace.size());
     for (size_t i = 0;i != n;++i)
     {
-        result += Format("    %s [%p]\n", backtrace[i].function.c_str(), backtrace[i].addr);
+        result += Format("    #%u: %s [%p]\n", static_cast<uint32>(i), backtrace[i].function.c_str(), backtrace[i].addr);
     }
     return result;
 }
@@ -213,10 +214,12 @@ void BacktraceToLog(const Vector<StackFrame>& backtrace, Logger::eLogLevel ll)
     Logger* logger = Logger::Instance();
     if (logger != nullptr)
     {
+        logger->Log(ll, "==== callstack ====");
         for (size_t i = 0, n = backtrace.size();i != n;++i)
         {
-            logger->Log(ll, "    %s [%p]", backtrace[i].function.c_str(), backtrace[i].addr);
+            logger->Log(ll, "    #%u: %s [%p]", static_cast<uint32>(i), backtrace[i].function.c_str(), backtrace[i].addr);
         }
+        logger->Log(ll, "==== callstack end ====");
     }
 }
 

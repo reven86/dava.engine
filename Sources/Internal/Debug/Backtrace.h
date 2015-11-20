@@ -54,7 +54,7 @@ struct StackFrame
     String function;
 };
 
-Vector<StackFrame> GetBacktrace(size_t framesToCapture = -1);
+DAVA_NOINLINE Vector<StackFrame> GetBacktrace(size_t framesToCapture = -1);
 
 // Convert backtrace to string
 //  1st version uses already obtained backtrace and formats up to nframes items

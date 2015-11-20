@@ -109,12 +109,10 @@ inline void DavaDebugBreak()
         "%s\n"                                        \
         "%s\n"                                        \
         "%s\n"                                        \
-        "File: %s\n"                                  \
-        "Line: %d\n"                                  \
-        "Callstack:\n"                                \
-        "%s"                                          \
+        "at %s:%d\n"                                  \
         "======================end=assert=msg====",   \
-        assertType, expr, msg, file, line, DAVA::Debug::BacktraceToString(backtrace).c_str()); \
+        assertType, expr, msg, file, line); \
+        DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_ERROR); \
     }
 #define LogWarningFunction(assertType, expr, msg, file, line, backtrace)                       \
     {                                                                                          \
@@ -123,12 +121,10 @@ inline void DavaDebugBreak()
         "%s\n"                                        \
         "%s\n"                                        \
         "%s\n"                                        \
-        "File: %s\n"                                  \
-        "Line: %d\n"                                  \
-        "Callstack:\n"                                \
-        "%s"                                          \
+        "at %s:%d\n"                                  \
         "======================end=assert=msg====",   \
-        assertType, expr, msg, file, line, DAVA::Debug::BacktraceToString(backtrace).c_str()); \
+        assertType, expr, msg, file, line); \
+        DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_WARNING); \
     }
 #else //ENABLE_ASSERT_LOGGING
 #define LogErrorFunction(assertType, expr, msg, file, line)
@@ -136,16 +132,28 @@ inline void DavaDebugBreak()
 #endif //ENABLE_ASSERT_LOGGING
 
 #if defined(ENABLE_ASSERT_MESSAGE)
+
+// DAVA_BACKTRACE_DEPTH_UI tells how many stack frames show in assert dialog
+// Android and ios both allow content scrolling in assert dialog, so show full backtrace
+// On desktops dialogs are not scrollable so limit frames to 8
+#ifndef DVASSERT_UI_BACKTRACE_DEPTH
+#   if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#       define DVASSERT_UI_BACKTRACE_DEPTH  8
+#   else
+#       define DVASSERT_UI_BACKTRACE_DEPTH  -1
+#   endif
+#endif
+
 #define MessageFunction(messagetype, assertType, expr, msg, file, line, backtrace) \
     DAVA::DVAssertMessage::ShowMessage(messagetype,   \
-                                       "%s\n\n"       \
                                        "%s\n"         \
-                                       "%s\n\n"       \
-                                       "File: %s\n"   \
-                                       "Line: %d\n"   \
+                                       "%s\n"         \
+                                       "%s\n"         \
+                                       "at %s:%d\n"   \
                                        "Callstack:\n" \
                                        "%s",          \
-                                       assertType, expr, msg, file, line, DAVA::Debug::BacktraceToString(backtrace, 8).c_str())
+                                       assertType, expr, msg, file, line, \
+                                       DAVA::Debug::BacktraceToString(backtrace, DVASSERT_UI_BACKTRACE_DEPTH).c_str())
 #else //ENABLE_ASSERT_MESSAGE
 #define MessageFunction(messagetype, assertType, expr, msg, file, line) \
     false
