@@ -55,9 +55,9 @@ public:
 	void	LoadTextures();
 	
 	bool	IsEmptyNode(ColladaSceneNode * node);
-	
-    SceneFileV2::eError SaveSC2( const FilePath & scenePath, const String & sceneName );
-	void	SaveScene(const FilePath & scenePath, const String & sceneName);
+
+    eColladaErrorCodes SaveSC2(const FilePath& scenePath, const String& sceneName);
+    void	SaveScene(const FilePath & scenePath, const String & sceneName);
     String  GetTextureName(const FilePath & scenePath, ColladaTexture * texture);
 
 	void	WriteTexture(SceneFile::TextureDef * texture);

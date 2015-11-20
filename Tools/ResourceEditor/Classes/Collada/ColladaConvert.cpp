@@ -29,6 +29,7 @@
 
 #include "ColladaConvert.h"
 #include "ColladaDocument.h"
+#include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
 
 eColladaErrorCodes ConvertDaeToSc2(const DAVA::FilePath & pathToFile)
 {
@@ -45,17 +46,10 @@ eColladaErrorCodes ConvertDaeToSc2(const DAVA::FilePath & pathToFile)
     
     DAVA::FilePath pathSc2 = DAVA::FilePath::CreateWithNewExtension(pathToFile, ".sc2");
 
-    DAVA::SceneFileV2::eError ret = colladaDocument.SaveSC2(pathSc2.GetDirectory(), pathSc2.GetFilename());
+    eColladaErrorCodes ret = colladaDocument.SaveSC2(pathSc2.GetDirectory(), pathSc2.GetFilename());
     colladaDocument.Close();
     
     FCollada::Release();
-    
-    if (DAVA::SceneFileV2::eError::ERROR_NO_ERROR == ret)
-    {
-        return COLLADA_OK;
-    }
-    else
-    {
-        return COLLADA_ERROR;
-    }
+
+    return ret;
 }

@@ -252,7 +252,7 @@ String ColladaDocument::GetTextureName(const FilePath & scenePath, ColladaTextur
     return texPathname.GetRelativePathname(scenePath);
 }
 
-SceneFileV2::eError ColladaDocument::SaveSC2(const FilePath & scenePath, const String & sceneName)
+eColladaErrorCodes ColladaDocument::SaveSC2(const FilePath& scenePath, const String& sceneName)
 {
     ColladaToSc2Importer importer;
     return importer.SaveSC2(colladaScene, scenePath, sceneName);

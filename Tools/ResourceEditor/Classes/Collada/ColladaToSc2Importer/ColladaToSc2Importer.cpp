@@ -69,8 +69,49 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
     return davaMesh;
 }
 
-void ColladaToSc2Importer::ImportMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node)
+eColladaErrorCodes ColladaToSc2Importer::VerifyDavaMesh(RenderObject* mesh, const FastName name)
 {
+    eColladaErrorCodes retValue = eColladaErrorCodes::COLLADA_OK;
+    ;
+    uint32 batchesCount = mesh->GetRenderBatchCount();
+    if (0 == batchesCount)
+    {
+        Logger::Error("[DAE to SC2] %s has no render batches.", name.c_str());
+        retValue = eColladaErrorCodes::COLLADA_ERROR;
+    }
+    else
+    {
+        for (uint32 i = 0; i < batchesCount; ++i)
+        {
+            auto batch = mesh->GetRenderBatch(i);
+            if (nullptr == batch)
+            {
+                Logger::Error("[DAE to SC2] Node %s has no %i render batch", i);
+                retValue = eColladaErrorCodes::COLLADA_ERROR;
+            }
+
+            auto polygon = batch->GetPolygonGroup();
+            if (nullptr == polygon)
+            {
+                Logger::Error("[DAE to SC2] Node %s has no polygon in render batch %i ", i);
+                retValue = eColladaErrorCodes::COLLADA_ERROR;
+            }
+
+            if (0 >= polygon->GetVertexCount())
+            {
+                Logger::Error("[DAE to SC2] Node %s has no geometric data", name.c_str());
+                retValue = eColladaErrorCodes::COLLADA_ERROR;
+            }
+        }
+    }
+
+    return retValue;
+}
+
+eColladaErrorCodes ColladaToSc2Importer::ImportMeshes(const Vector<ColladaMeshInstance*>& meshInstances, Entity* node)
+{
+    eColladaErrorCodes retValue = eColladaErrorCodes::COLLADA_OK;
+
     DVASSERT(1 >= meshInstances.size() && "Should be only one meshInstance in one collada node");
     for (auto meshInstance : meshInstances)
     {
@@ -84,7 +125,13 @@ void ColladaToSc2Importer::ImportMeshes(const Vector<ColladaMeshInstance *> & me
             node->AddComponent(davaRenderComponent);
         }
         davaRenderComponent->SetRenderObject(davaMesh);
+
+        // Verification!
+        eColladaErrorCodes iterationRet = VerifyDavaMesh(davaMesh.get(), node->GetName());
+        retValue = Max(iterationRet, retValue);
     }
+
+    return retValue;
 }
 
 void ColladaToSc2Importer::ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity)
@@ -104,33 +151,50 @@ void ColladaToSc2Importer::ImportAnimation(ColladaSceneNode * colladaNode, Entit
     }
 }
 
-void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode * colladaNode)
+eColladaErrorCodes ColladaToSc2Importer::BuildSceneAsCollada(Entity* root, ColladaSceneNode* colladaNode)
 {
+    eColladaErrorCodes res = eColladaErrorCodes::COLLADA_OK;
+
+    ScopedPtr<Entity> nodeEntity(new Entity());
+
     String name(colladaNode->originalNode->GetName());
     if (name.empty())
     {
-        static uint32 num = 0;
-        name = Format("Node-%d", num++);
+        name = Format("UNNAMED");
+
+        res = eColladaErrorCodes::COLLADA_ERROR;
+        Logger::Error("[DAE to SC2] Unnamed node found as a child of %s", root->GetName().c_str());
+        if (0 < colladaNode->childs.size())
+        {
+            Logger::Error("[DAE to SC2] It's childs:");
+            for (auto child : colladaNode->childs)
+            {
+                Logger::Error("[DAE to SC2] %s", child->originalNode->GetName().c_str());
+            }
+        }
     }
-    
-    ScopedPtr<Entity> nodeEntity(new Entity());
+
     nodeEntity->SetName(FastName(name));
-    
+
     // take mesh from node and put it into entity's render component
-    ImportMeshes(colladaNode->meshInstances, nodeEntity);
+    const eColladaErrorCodes importMeshesResult = ImportMeshes(colladaNode->meshInstances, nodeEntity);
+    res = Max(importMeshesResult, res);
 
     // Import animation
     ImportAnimation(colladaNode, nodeEntity);
     
     auto * transformComponent = GetTransformComponent(nodeEntity);
     transformComponent->SetLocalTransform(&colladaNode->localTransform);
-    
+
     root->AddNode(nodeEntity);
 
     for (auto childNode : colladaNode->childs)
     {
-        BuildSceneAsCollada(nodeEntity, childNode);
+        const eColladaErrorCodes childRes = BuildSceneAsCollada(nodeEntity, childNode);
+        res = Max(res, childRes);
     }
+
+    return res;
 }
 
 void ColladaToSc2Importer::LoadMaterialParents(ColladaScene * colladaScene)
@@ -154,9 +218,8 @@ void ColladaToSc2Importer::LoadAnimations(ColladaScene * colladaScene)
         }
     }
 }
-    
-    
-SceneFileV2::eError ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName)
+
+eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath, const String& sceneName)
 {
     ScopedPtr<Scene> scene(new Scene());
 
@@ -167,15 +230,27 @@ SceneFileV2::eError ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, c
     LoadAnimations(colladaScene);
     
     // Iterate recursive over collada scene and build Dava Scene with same ierarchy
-    BuildSceneAsCollada(scene, colladaScene->rootNode);
-    
+    const eColladaErrorCodes buildRes = BuildSceneAsCollada(scene, colladaScene->rootNode);
+
+    if (eColladaErrorCodes::COLLADA_ERROR == buildRes)
+    {
+        return eColladaErrorCodes::COLLADA_ERROR;
+    }
+
     // Apply transforms to render batches and use identity local transforms
     SceneUtils::BakeTransformsUpToFarParent(scene, scene);
     
     // post process Entities and create Lod nodes.
     SceneUtils::CombineLods(scene);
-    
-    return scene->SaveScene(scenePath + sceneName);
+
+    SceneFileV2::eError saveRes = scene->SaveScene(scenePath + sceneName);
+
+    if (saveRes > SceneFileV2::eError::ERROR_NO_ERROR)
+    {
+        return eColladaErrorCodes::COLLADA_ERROR;
+    }
+
+    return buildRes;
 }
 
 };
