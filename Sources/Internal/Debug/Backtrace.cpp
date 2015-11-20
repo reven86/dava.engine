@@ -172,8 +172,7 @@ String GetSymbolFromAddr(void* addr, bool demangle)
 
 DAVA_NOINLINE Vector<StackFrame> GetBacktrace(size_t framesToCapture)
 {
-    // TODO: find the way to tell ios compiler not inlining GetStackFrames function
-    const size_t DEFAULT_SKIP_COUNT = 1;    // skip only this function as GetStackFrames inlined in IOS despite of DAVA_NOINLINE
+    const size_t DEFAULT_SKIP_COUNT = 2;    // skip this function and GetStackFrames function
     const size_t MAX_BACKTRACE_COUNT = 64;
 
     framesToCapture = std::min(framesToCapture, MAX_BACKTRACE_COUNT);
@@ -185,7 +184,23 @@ DAVA_NOINLINE Vector<StackFrame> GetBacktrace(size_t framesToCapture)
     if (nframes > DEFAULT_SKIP_COUNT)
     {
         backtrace.reserve(nframes);
-        for (size_t i = 0;i < nframes;++i)
+        
+        // Skip irrelevant GetStackFrames and GetBacktrace functions by name as different compilers
+        // can include or exclude GetStackFrames function depending on compiler wish
+        // TODO: find the way to tell ios compiler not inlining GetStackFrames function (DAVA_NOINLINE does not help)
+        size_t usefulFramesStart = 0;
+        for (;usefulFramesStart < DEFAULT_SKIP_COUNT;++usefulFramesStart)
+        {
+            String s = GetSymbolFromAddr(frames[usefulFramesStart]);
+            if (s.find("DAVA::Debug::GetStackFrames") == String::npos && s.find("DAVA::Debug::GetBacktrace") == String::npos)
+            {
+                backtrace.emplace_back(frames[usefulFramesStart], std::move(s));
+                usefulFramesStart += 1;
+                break;
+            }
+        }
+        
+        for (size_t i = usefulFramesStart;i < nframes;++i)
         {
             backtrace.emplace_back(frames[i], GetSymbolFromAddr(frames[i]));
         }
