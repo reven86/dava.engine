@@ -92,19 +92,20 @@ public:
         BUTTON_3
     };
 
-    enum eJoystickAxisID : int32
-    {
-        JOYSTICK_AXIS_X = 0,
-        JOYSTICK_AXIS_Y,
-        JOYSTICK_AXIS_Z,
-        JOYSTICK_AXIS_RX,
-        JOYSTICK_AXIS_RY,
-        JOYSTICK_AXIS_RZ,
-        JOYSTICK_AXIS_LTRIGGER,
-        JOYSTICK_AXIS_RTRIGGER,
-        JOYSTICK_AXIS_HAT_X,
-        JOYSTICK_AXIS_HAT_Y
-    };
+    //    old unused code
+    //    enum eJoystickAxisID : int32
+    //    {
+    //        JOYSTICK_AXIS_X = 0,
+    //        JOYSTICK_AXIS_Y,
+    //        JOYSTICK_AXIS_Z,
+    //        JOYSTICK_AXIS_RX,
+    //        JOYSTICK_AXIS_RY,
+    //        JOYSTICK_AXIS_RZ,
+    //        JOYSTICK_AXIS_LTRIGGER,
+    //        JOYSTICK_AXIS_RTRIGGER,
+    //        JOYSTICK_AXIS_HAT_X,
+    //        JOYSTICK_AXIS_HAT_Y
+    //    };
 
     enum class Device : uint32
     {

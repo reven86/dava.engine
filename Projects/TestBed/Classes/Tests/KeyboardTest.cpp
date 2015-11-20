@@ -27,18 +27,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "Tests/KeyboardTest.h"
+#include <Input/InputCallback.h>
 
 using namespace DAVA;
 
 struct Finger
 {
     int32 index = 0;
-    DAVA::UIControl* img = nullptr;
+    UIControl* img = nullptr;
     bool isActive = false;
 };
 
-DAVA::Array<Finger, 10> touches;
-DAVA::Vector2 hiddenPos(-100, -100);
+Array<Finger, 10> touches;
+Vector2 hiddenPos(-100, -100);
+
+auto gamepadButtonsNames =
+{ "button_a", "button_b", "button_x", "button_y", "button_left", "button_right",
+        "button_up", "button_down", "button_select", "button_start",
+        "shift_left", "shift_right", "triger_left", "triger_right",
+        "stick_left", "stick_right" };
+
+Map<std::string, UIControl*> gamepadButtons;
 
 class CustomText : public UIStaticText
 {
@@ -47,19 +56,108 @@ public:
         : UIStaticText(rect)
     {
         UIStaticText::SetInputEnabled(true);
+
+        InputCallback gamepadCallback(this, &CustomText::OnGamepadEvent, InputSystem::INPUT_DEVICE_JOYSTICK);
+        InputSystem::Instance()->AddInputCallback(gamepadCallback);
+    }
+    ~CustomText()
+    {
+    	InputCallback gamepadCallback(this, &CustomText::OnGamepadEvent, InputSystem::INPUT_DEVICE_JOYSTICK);
+    	InputSystem::Instance()->RemoveInputCallback(gamepadCallback);
     }
 
     bool SystemInput(UIEvent* currentInput) override
     {
-        if (currentInput->phase >= UIEvent::Phase::CHAR &&
-            currentInput->phase <= UIEvent::Phase::KEY_UP &&
-            currentInput->device == UIEvent::Device::KEYBOARD)
+    	bool result = false;
+    	if (currentInput->device == UIEvent::Device::GAMEPAD)
+    	{
+    		// this code never happen
+    		DVASSERT(false);
+    		OnGamepadEvent(currentInput);
+    	} else
+    	{
+    		result = OnMouseTouchOrKeyboardEvent(currentInput);
+    	}
+    	return result;
+    }
+
+    void ResetCounters()
+    {
+        numKeyboardEvents = 0;
+        numKeyDown = 0;
+        numKeyUp = 0;
+        numKeyDownRepeat = 0;
+        numChar = 0;
+        numCharRepeat = 0;
+        lastChar = L'\0';
+        lastKey = 0;
+
+        numMouseEvents = 0;
+        numDrag = 0;
+        numMouseMove = 0;
+        numMouseDown = 0;
+        numMouseUp = 0;
+        numMouseWheel = 0;
+        numMouseCancel = 0;
+        lastMouseKey = L'\0';
+        lastMouseX = 0;
+        lastMouseY = 0;
+        lastWheel = 0.f;
+    }
+
+private:
+    void OnGamepadEvent(UIEvent* event)
+    {
+    	Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
+
+    	DVASSERT(event->device == UIEvent::Device::GAMEPAD);
+    	DVASSERT(event->phase == UIEvent::Phase::JOYSTICK);
+
+        switch (event->tid)
+        {
+        case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_A:
+            gamepadButtons["button_a"]->SetVisible(true);
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_B:
+            gamepadButtons["button_b"]->SetVisible(true);
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_X:
+            gamepadButtons["button_x"]->SetVisible(true);
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_Y:
+            gamepadButtons["button_y"]->SetVisible(true);
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_LS:
+            gamepadButtons["shift_left"]->SetVisible(true);
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_RS:
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_LT:
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_RT:
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_DPAD_X:
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_DPAD_Y:
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_AXIS_LX:
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_AXIS_LY:
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_AXIS_RX:
+            break;
+        case GamepadDevice::GAMEPAD_ELEMENT_AXIS_RY:
+            break;
+        }
+    }
+
+    bool OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
+    {
+        if (currentInput->device == UIEvent::Device::KEYBOARD)
         {
             ++numKeyboardEvents;
         }
-        else if ((currentInput->phase >= UIEvent::Phase::BEGAN ||
-                  currentInput->phase <= UIEvent::Phase::CANCELLED) &&
-                 currentInput->device == UIEvent::Device::MOUSE)
+        else if (currentInput->device == UIEvent::Device::MOUSE)
         {
             ++numMouseEvents;
         }
@@ -216,31 +314,7 @@ public:
         return false; // let pass event to other controls
     }
 
-    void ResetCounters()
-    {
-        numKeyboardEvents = 0;
-        numKeyDown = 0;
-        numKeyUp = 0;
-        numKeyDownRepeat = 0;
-        numChar = 0;
-        numCharRepeat = 0;
-        lastChar = L'\0';
-        lastKey = 0;
 
-        numMouseEvents = 0;
-        numDrag = 0;
-        numMouseMove = 0;
-        numMouseDown = 0;
-        numMouseUp = 0;
-        numMouseWheel = 0;
-        numMouseCancel = 0;
-        lastMouseKey = L'\0';
-        lastMouseX = 0;
-        lastMouseY = 0;
-        lastWheel = 0.f;
-    }
-
-private:
     uint32 numKeyboardEvents = 0;
     uint32 numKeyDown = 0;
     uint32 numKeyUp = 0;
@@ -261,6 +335,9 @@ private:
     int32 lastMouseX = 0;
     int32 lastMouseY = 0;
     float32 lastWheel = 0.f;
+
+    //gamepad state
+
 };
 
 CustomText* customText = nullptr;
@@ -322,6 +399,20 @@ void KeyboardTest::LoadResources()
 
         AddControl(touch.img);
     }
+
+	UIControl* gamepad = new UIControl(Rect(500, 0, 800, 450));
+	auto pathToBack = FilePath("~res:/Gfx/GamepadTest/gamepad");
+	gamepad->SetSprite(pathToBack, 0);
+	AddControl(gamepad);
+
+    for (auto& buttonOrAxisName : gamepadButtonsNames)
+    {
+    	UIControl* img = new UIControl(Rect(500, 000, 800, 450));
+    	auto path = FilePath("~res:/Gfx/GamepadTest/") + buttonOrAxisName;
+    	img->SetSprite(path, 0);
+    	gamepadButtons[buttonOrAxisName] = img;
+    	AddControl(img);
+    }
 }
 
 void KeyboardTest::UnloadResources()
@@ -338,7 +429,7 @@ void KeyboardTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void KeyboardTest::OnResetClick(DAVA::BaseObject* sender, void* data, void* callerData)
+void KeyboardTest::OnResetClick(BaseObject* sender, void* data, void* callerData)
 {
     if (customText)
     {
