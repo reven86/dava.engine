@@ -507,8 +507,8 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
     for (int32 i = 0; i < QuadTreeNode::NODE_NONE; ++i)
     {
         uint16 childNodeId = currNode.children[i];
-        if (childNodeId!=INVALID_TREE_NODE_INDEX)
-		{
+        if (childNodeId != INVALID_TREE_NODE_INDEX)
+        {
             ProcessNodeClipping(childNodeId, clippingFlags, visibilityArray);
         }
     }

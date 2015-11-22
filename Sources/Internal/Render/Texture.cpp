@@ -781,9 +781,16 @@ int32 Texture::Release()
 	return BaseObject::Release();
 }
 
-Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDepth, rhi::TextureType requestedType)
+Texture*
+Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    uint32 w = fboDesc.width;
+    uint32 h = fboDesc.height;
+    PixelFormat format = fboDesc.format;
+    bool needDepth = fboDesc.needDepth;
+    rhi::TextureType requestedType = fboDesc.textureType;
 
     int32 dx = Max((int32)w, 8);
 
@@ -809,6 +816,11 @@ Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDep
     descriptor.needRestore = false;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
+    if (fboDesc.needPixelReadback)
+    {
+        descriptor.cpuAccessRead = true;
+        descriptor.cpuAccessWrite = false;
+    }
 
     DVASSERT(descriptor.format != ((rhi::TextureFormat)-1)); //unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
@@ -833,7 +845,21 @@ Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDep
 
     return tx;
 }
-	
+
+Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDepth, rhi::TextureType requestedType)
+{
+    FBODescriptor fboDesc;
+
+    fboDesc.width = w;
+    fboDesc.height = h;
+    fboDesc.format = format;
+    fboDesc.needDepth = needDepth;
+    fboDesc.needPixelReadback = false;
+    fboDesc.textureType = requestedType;
+
+    return CreateFBO(fboDesc);
+}
+
 void Texture::DumpTextures()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
