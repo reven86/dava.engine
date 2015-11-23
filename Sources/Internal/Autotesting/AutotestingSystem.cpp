@@ -156,9 +156,10 @@ namespace DAVA
 
 	void AutotestingSystem::OnAppFinished()
 	{
-		Logger::Info("AutotestingSystem::OnAppFinished ");
-		ExitApp();
-	}
+        Logger::Info("AutotestingSystem::OnAppFinished in");
+        ExitApp();
+        Logger::Info("AutotestingSystem::OnAppFinished out");
+    }
 
 	void AutotestingSystem::RunTests()
 	{
