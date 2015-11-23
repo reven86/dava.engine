@@ -267,13 +267,6 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
     options = SafeRetain(archiveOfOptions);
     
 #if defined(__DAVAENGINE_WIN_UAP__)
-    /*
-	 * Workaround for Nokia 909 (Lumia 1020) with graphics driver bug
-	 */
-    const String Nokia909DeviceId = "NOKIA RM-875";
-    bool isNokia909 = DeviceInfo::GetModel().find(Nokia909DeviceId) == 0;
-    options->SetBool("should_flush_after_main_forward_pass", isNokia909);
-
     screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
     //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view

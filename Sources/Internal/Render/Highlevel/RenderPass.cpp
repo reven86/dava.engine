@@ -242,7 +242,6 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName& name)
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_DEBUG_DRAW_ID, RenderLayer::LAYER_SORTING_FLAGS_DEBUG_DRAW));
 
     passConfig.priority = PRIORITY_MAIN_3D;
-    passConfig.shouldFlush = Core::Instance()->GetOptions()->GetBool("should_flush_after_main_forward_pass", false);
 }
 
 void MainForwardRenderPass::InitReflectionRefraction()

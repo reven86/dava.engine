@@ -29,7 +29,7 @@
     #include "../Common/rhi_Pool.h"
     #include "rhi_DX11.h"
 
-    #include "../rhi_Type.h"
+	#include "Render/RenderBase.h"
     #include "../Common/rhi_RingBuffer.h"
     #include "../Common/dbg_StatSet.h"
 
@@ -40,7 +40,7 @@ using DAVA::Logger;
     #include "Debug/Profiler.h"
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
-
+	#include "Platform/DeviceInfo.h"
     #include "_dx11.h"
 namespace rhi
 {
@@ -1179,6 +1179,20 @@ CommandBufferDX11_t::~CommandBufferDX11_t()
 
 //------------------------------------------------------------------------------
 
+/*
+ * Workaround for Nokia 909 (Lumia 1020) with graphics driver bug
+ */
+bool shouldFlushAfterRenderPass(const RenderPassConfig& cfg)
+{
+    static int isLumia1020 = -1;
+    if (isLumia1020 == -1)
+    {
+        const DAVA::String Nokia909DeviceId = "NOKIA RM-875";
+        isLumia1020 = DAVA::DeviceInfo::GetModel().find(Nokia909DeviceId) == 0 ? 1 : 0;
+    }
+    return (cfg.priority == DAVA::PRIORITY_MAIN_3D) && (isLumia1020 > 0);
+}
+
 void CommandBufferDX11_t::Execute()
 {
     SCOPED_FUNCTION_TIMING();
@@ -1194,7 +1208,7 @@ void CommandBufferDX11_t::Execute()
     }
 
     _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
-    if (passCfg.shouldFlush)
+    if (shouldFlushAfterRenderPass(passCfg))
     {
         _D3D11_ImmediateContext->Flush();
     }
