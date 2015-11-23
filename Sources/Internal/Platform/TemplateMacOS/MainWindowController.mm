@@ -47,6 +47,12 @@ namespace DAVA
 
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
+        //detecting physical screen size and initing core system with this size
+        float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
+        const DeviceInfo::ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(screenInfo.width, screenInfo.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(screenInfo.width * scale, screenInfo.height * scale);
+
         int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
@@ -61,11 +67,11 @@ namespace DAVA
     {
         NSAutoreleasePool* globalPool = 0;
         globalPool = [[NSAutoreleasePool alloc] init];
-		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
-		core->SetCommandLine(argc, argv);
-		core->EnableConsoleMode();
-		core->CreateSingletons();
-		
+        DAVA::CoreMacOSPlatform* core = new DAVA::CoreMacOSPlatform();
+        core->SetCommandLine(argc, argv);
+        core->EnableConsoleMode();
+        core->CreateSingletons();
+
         Logger::Instance()->EnableConsoleMode();
         
 		FrameworkDidLaunched();
@@ -226,7 +232,7 @@ namespace DAVA
 
 - (bool)setFullScreen:(bool)_fullScreen
 {
-    if(fullScreen != _fullScreen)
+    if (fullScreen != _fullScreen)
     {
         double macOSVer = floor(NSAppKitVersionNumber);
         // fullscreen for new 10.7+ MacOS
@@ -368,8 +374,8 @@ namespace DAVA
     {
         currFPS = RenderManager::Instance()->GetFPS();
         [self stopAnimationTimer];
-		[self startAnimationTimer];
-	}
+        [self startAnimationTimer];
+    }
 #endif
 }
 

@@ -3,6 +3,10 @@
 exec_clang_format() 
 {
 	files="${1}"
+	if [ -z "${files}" ]; then
+        return
+    fi
+
 	python codeformat/git-clang-format.py --binary codeformat/clang-format --style file ${files}
 	error_code=$?
 

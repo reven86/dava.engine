@@ -78,7 +78,7 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     rhi::ShaderCache::Initialize();
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
-    PixelFormatDescriptor::InitializePixelFormatDescriptors();
+    PixelFormatDescriptor::SetHardwareSupportedFormats();
     GPUFamilyDescriptor::SetupGPUParameters();
 
     ininialized = true;
@@ -93,6 +93,11 @@ void Uninitialize()
     rhi::ShaderCache::Unitialize();
     rhi::Uninitialize();
     ininialized = false;
+}
+
+bool IsInitialized()
+{
+    return ininialized;
 }
 
 void Reset(const rhi::ResetParam& params)

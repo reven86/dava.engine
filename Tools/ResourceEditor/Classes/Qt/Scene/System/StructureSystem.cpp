@@ -544,8 +544,8 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 	DAVA::Entity* loadedEntity = nullptr;
 
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-    if(nullptr != sceneEditor && sc2path.IsEqualToExtension(".sc2") && sc2path.Exists())
-	{
+    if (nullptr != sceneEditor && sc2path.IsEqualToExtension(".sc2") && FileSystem::Instance()->Exists(sc2path))
+    {
         if(clearCache)
         {
             // if there is already entity for such file, we should release it

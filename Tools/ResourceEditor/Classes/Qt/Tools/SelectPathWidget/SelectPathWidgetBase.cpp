@@ -126,9 +126,9 @@ void SelectPathWidgetBase::OpenClicked()
 {
 	DAVA::FilePath presentPath(text().toStdString());
 	DAVA::FilePath dialogString(openDialogDefaultPath);
-	if(presentPath.GetDirectory().Exists())//check if file text box clean
-	{
-		dialogString = presentPath.GetDirectory();
+    if (DAVA::FileSystem::Instance()->Exists(presentPath.GetDirectory())) //check if file text box clean
+    {
+        dialogString = presentPath.GetDirectory();
 	}
 	this->blockSignals(true);
 	DAVA::String retString = FileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
@@ -138,8 +138,8 @@ void SelectPathWidgetBase::OpenClicked()
     {
         return;
     }
-    
-    DAVA::String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+
+    DAVA::String projectPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
 
     if(checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
     {
@@ -153,12 +153,12 @@ void SelectPathWidgetBase::OpenClicked()
 void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
 {
 	DAVA::FilePath fullPath(name);
-	
-	DVASSERT(fullPath.Exists());
-	
-	setText(name);
 
-	DAVA::List<DAVA::FilePath> urls;
+    DVASSERT(DAVA::FileSystem::Instance()->Exists(fullPath));
+
+    setText(name);
+
+    DAVA::List<DAVA::FilePath> urls;
 	urls.push_back(fullPath);
 	DAVA::MimeDataHelper::ConvertToMimeData(urls, &mimeData);
 }
@@ -184,9 +184,9 @@ DAVA::String SelectPathWidgetBase::getText()
 DAVA::String SelectPathWidgetBase::ConvertToRelativPath(const DAVA::String& path)
 {
 	DAVA::FilePath fullPath(path);
-	if(fullPath.Exists())
-	{
-		return fullPath.GetRelativePathname(relativePath);
+    if (DAVA::FileSystem::Instance()->Exists(fullPath))
+    {
+        return fullPath.GetRelativePathname(relativePath);
 	}
 	else
 	{
@@ -218,9 +218,9 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
 	
 	DAVA::String itemName = *nameList.begin();
 	DAVA::FilePath filePath(itemName);
-	if(filePath.Exists())// check is it item form scene tree or file system
-	{
-		setText(filePath.GetAbsolutePathname());
+    if (DAVA::FileSystem::Instance()->Exists(filePath)) // check is it item form scene tree or file system
+    {
+        setText(filePath.GetAbsolutePathname());
 	}
 	else
 	{

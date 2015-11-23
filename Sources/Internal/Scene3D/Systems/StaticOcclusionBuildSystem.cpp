@@ -51,17 +51,14 @@
 
 namespace DAVA
 {
-
-    
-    
-StaticOcclusionBuildSystem::StaticOcclusionBuildSystem(Scene * scene)
-:	SceneSystem(scene)
+StaticOcclusionBuildSystem::StaticOcclusionBuildSystem(Scene* scene)
+    : SceneSystem(scene)
 {
     staticOcclusion = 0;
     activeIndex = -1;
     componentInProgress = 0;
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED); 
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
 StaticOcclusionBuildSystem::~StaticOcclusionBuildSystem()
@@ -71,28 +68,28 @@ StaticOcclusionBuildSystem::~StaticOcclusionBuildSystem()
     SafeDelete(staticOcclusion);
 }
 
-void StaticOcclusionBuildSystem::AddEntity(Entity * entity)
+void StaticOcclusionBuildSystem::AddEntity(Entity* entity)
 {
     occlusionEntities.push_back(entity);
 }
-    
-void StaticOcclusionBuildSystem::RemoveEntity(Entity * entity)
+
+void StaticOcclusionBuildSystem::RemoveEntity(Entity* entity)
 {
     occlusionEntities.erase(std::remove(occlusionEntities.begin(), occlusionEntities.end(), entity), occlusionEntities.end());
 }
 
-void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 event)
+void StaticOcclusionBuildSystem::ImmediateEvent(Component* _component, uint32 event)
 {
-    Entity * entity = _component->GetEntity();
-    StaticOcclusionComponent *component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
-    if (component->GetPlaceOnLandscape()&&((event == EventSystem::WORLD_TRANSFORM_CHANGED)||(event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED)))
+    Entity* entity = _component->GetEntity();
+    StaticOcclusionComponent* component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    if (component->GetPlaceOnLandscape() && ((event == EventSystem::WORLD_TRANSFORM_CHANGED) || (event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED)))
     {
         component->cellHeightOffset.clear();
-        component->cellHeightOffset.resize(component->GetSubdivisionsX()*component->GetSubdivisionsY(), 0);
+        component->cellHeightOffset.resize(component->GetSubdivisionsX() * component->GetSubdivisionsY(), 0);
         /*place on landscape*/
-        Landscape *landscape = FindLandscape(GetScene());
+        Landscape* landscape = FindLandscape(GetScene());
         AABBox3 localBox = component->GetBoundingBox();
-        Vector3 boxSize = localBox.GetSize();        
+        Vector3 boxSize = localBox.GetSize();
         AABBox3 bbox;
         localBox.GetTransformedBox(GetTransformComponent(entity)->GetWorldTransform(), bbox);
         uint32 xSubdivisions = component->GetSubdivisionsX();
@@ -103,16 +100,15 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 e
         if (landscape)
         {
             //place on landscape
-            for (uint32 xs = 0; xs<xSubdivisions; ++xs)
-                for (uint32 ys = 0; ys<ySubdivisions; ++ys)
-                {                    
+            for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+                for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+                {
                     Vector3 v = bbox.min + Vector3(boxSize.x * (xs + 0.5f), boxSize.y * (ys + 0.5f), 0);
                     if (landscape->PlacePoint(v, v))
-                       component->cellHeightOffset[xs+ys*xSubdivisions] = v.z - bbox.min.z;
+                        component->cellHeightOffset[xs + ys * xSubdivisions] = v.z - bbox.min.z;
                 }
         }
-    }    
-
+    }
 }
 
 void StaticOcclusionBuildSystem::PrepareRenderObjects()
@@ -155,7 +151,7 @@ void StaticOcclusionBuildSystem::Build()
     PrepareRenderObjects();
     StartBuildOcclusion();
 }
-    
+
 void StaticOcclusionBuildSystem::Cancel()
 {
     activeIndex = -1;
@@ -165,7 +161,7 @@ void StaticOcclusionBuildSystem::Cancel()
     SceneForceLod(LodComponent::INVALID_LOD_LAYER);
 }
 
-void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity)
+void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity* entity)
 {
     if (GetAnimationComponent(entity)) //skip animated hierarchies
         return;
@@ -176,7 +172,7 @@ void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<E
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
         CollectEntitiesForOcclusionRecursively(dest, entity->GetChild(i));
 }
-    
+
 void StaticOcclusionBuildSystem::StartBuildOcclusion()
 {
     if (activeIndex == static_cast<uint32>(-1))
@@ -201,7 +197,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     {
         componentInProgress = new StaticOcclusionDataComponent();
     }
-    StaticOcclusionData & data = componentInProgress->GetData();
+    StaticOcclusionData& data = componentInProgress->GetData();
 
     StaticOcclusionComponent* occlusionComponent = (StaticOcclusionComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT);
     TransformComponent* transformComponent = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
@@ -215,9 +211,9 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     if (nullptr == staticOcclusion)
         staticOcclusion = new StaticOcclusion();
 
-    staticOcclusion->StartBuildOcclusion(&data, GetScene()->GetRenderSystem(), landscape);       
+    staticOcclusion->StartBuildOcclusion(&data, GetScene()->GetRenderSystem(), landscape);
 }
-    
+
 void StaticOcclusionBuildSystem::FinishBuildOcclusion()
 {
     Component* prevComponent = occlusionEntities[activeIndex]->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
@@ -227,7 +223,7 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion()
 
     occlusionEntities[activeIndex]->AddComponent(componentInProgress);
     componentInProgress = 0;
-    
+
     activeIndex++;
     if (activeIndex == occlusionEntities.size())
     {
@@ -239,13 +235,13 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion()
         StartBuildOcclusion();
         return;
     }
- 
+
     SceneForceLod(LodComponent::INVALID_LOD_LAYER);
 
     Scene* scene = GetScene();
     scene->staticOcclusionSystem->CollectOcclusionObjectsRecursively(scene);
 }
-    
+
 bool StaticOcclusionBuildSystem::IsInBuild() const
 {
     return (static_cast<uint32>(-1) != activeIndex);
@@ -260,7 +256,7 @@ uint32 StaticOcclusionBuildSystem::GetBuildStatus() const
         uint32 currentStepsCount = staticOcclusion->GetCurrentStepsCount();
         uint32 totalStepsCount = staticOcclusion->GetTotalStepsCount();
         ret = (currentStepsCount * 100) / totalStepsCount;
-    }                        
+    }
     return ret;
 }
 
@@ -280,9 +276,9 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
     Vector<Entity*> lodEntities;
     GetScene()->GetChildEntitiesWithComponent(lodEntities, Component::LOD_COMPONENT);
     uint32 size = (uint32)lodEntities.size();
-    for(uint32 k = 0; k < size; ++k)
+    for (uint32 k = 0; k < size; ++k)
     {
-        LodComponent * lodComponent = (LodComponent*)lodEntities[k]->GetComponent(Component::LOD_COMPONENT);
+        LodComponent* lodComponent = (LodComponent*)lodEntities[k]->GetComponent(Component::LOD_COMPONENT);
         lodComponent->SetForceLodLayer(forceLodIndex);
     }
     GetScene()->lodSystem->SetForceUpdateAll();
@@ -299,7 +295,5 @@ void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
     {
         FinishBuildOcclusion();
     }
-}   
-
-    
+}
 };

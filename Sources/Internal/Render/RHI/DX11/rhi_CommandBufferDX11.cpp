@@ -447,7 +447,7 @@ void dx11_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 
     if (!(x == 0 && y == 0 && w == 0 && h == 0))
     {
-        D3D11_RECT rect = { x, y, x + w - 1, y + h - 1 };
+        D3D11_RECT rect = { x, y, x + w, y + h };
 
         cb->rs_param.scissorEnabled = true;
         cb->cur_rs = nullptr;
@@ -963,6 +963,10 @@ _ExecDX11(DX11Command* command, uint32 cmdCount)
 
         case DX11Command::UPDATE_SUBRESOURCE:
             _D3D11_ImmediateContext->UpdateSubresource((ID3D11Resource*)(arg[0]), UINT(arg[1]), (const D3D11_BOX*)(arg[2]), (const void*)(arg[3]), UINT(arg[4]), UINT(arg[5]));
+            break;
+
+        case DX11Command::COPY_RESOURCE:
+            _D3D11_ImmediateContext->CopyResource((ID3D11Resource*)(arg[0]), (ID3D11Resource*)(arg[1]));
             break;
 
         default:

@@ -98,8 +98,6 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
 void CorePlatformAndroid::Quit()
 {
     Logger::Debug("[CorePlatformAndroid::Quit]");
-    QuitAction();
-
     renderIsActive = false;
     // finish java activity
     JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
@@ -109,7 +107,7 @@ void CorePlatformAndroid::Quit()
 
 void CorePlatformAndroid::QuitAction()
 {
-    Logger::Debug("[CorePlatformAndroid::QuitAction]");
+    Logger::Debug("[CorePlatformAndroid::QuitAction] in");
 
     if (Core::Instance())
     {
@@ -119,34 +117,13 @@ void CorePlatformAndroid::QuitAction()
 
     FrameworkWillTerminate();
 
-    Logger::Debug("[CorePlatformAndroid::QuitAction] done");
+    Logger::Debug("[CorePlatformAndroid::QuitAction] out");
 }
 
 void CorePlatformAndroid::ProcessFrame()
 {
     if (renderIsActive)
     {
-        auto sysTimer = SystemTimer::Instance();
-        //  Control FPS
-        {
-            // we count full frame time once per cycle
-            // C++->Java->C++(frame ended)
-            static uint64 startTime = sysTimer->AbsoluteMS();
-
-            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
-            int32 fpsLimit = Renderer::GetDesiredFPS();
-            if (fpsLimit > 0)
-            {
-                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fpsLimit);
-                if (averageFrameTime > elapsedTime)
-                {
-                    uint64 sleepMs = averageFrameTime - elapsedTime;
-                    Thread::Sleep(static_cast<uint32>(sleepMs));
-                }
-            }
-            startTime = sysTimer->AbsoluteMS();
-        }
-
         Core::SystemProcessFrame();
     }
 }
@@ -156,7 +133,6 @@ void CorePlatformAndroid::ResizeView(int32 w, int32 h)
     width = w;
     height = h;
     DeviceInfo::InitializeScreenInfo();
-
     UpdateScreenMode();
 }
 
@@ -225,14 +201,22 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 void CorePlatformAndroid::OnCreateActivity()
 {
     DAVA::Thread::InitMainThread();
-    //		Logger::Debug("[CorePlatformAndroid::OnCreateActivity]");
 }
 
 void CorePlatformAndroid::OnDestroyActivity()
 {
-    //		Logger::Debug("[CorePlatformAndroid::OnDestroyActivity]");
+    Logger::Info("[CorePlatformAndroid::OnDestroyActivity]");
+
+    rhi::ResetParam params;
+    params.width = 0;
+    params.height = 0;
+    params.window = nullptr;
+    rhi::Reset(params);
 
     renderIsActive = false;
+    QuitAction();
+
+    wasCreated = false;
 }
 
 void CorePlatformAndroid::StartVisible()
@@ -247,7 +231,7 @@ void CorePlatformAndroid::StopVisible()
 
 void CorePlatformAndroid::StartForeground()
 {
-    Logger::Debug("[CorePlatformAndroid::StartForeground] start");
+    Logger::Debug("[CorePlatformAndroid::StartForeground] in");
 
     if (wasCreated)
     {
@@ -267,12 +251,12 @@ void CorePlatformAndroid::StartForeground()
 
         foreground = true;
     }
-    Logger::Debug("[CorePlatformAndroid::StartForeground] end");
+    Logger::Debug("[CorePlatformAndroid::StartForeground] out");
 }
 
 void CorePlatformAndroid::StopForeground(bool isLock)
 {
-    Logger::Debug("[CorePlatformAndroid::StopForeground]");
+    Logger::Debug("[CorePlatformAndroid::StopForeground] in");
 
     DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
     if (core)
@@ -289,6 +273,8 @@ void CorePlatformAndroid::StopForeground(bool isLock)
         rhi::SuspendRendering();
 
     foreground = false;
+
+    Logger::Debug("[CorePlatformAndroid::StopForeground] out");
 }
 
 void CorePlatformAndroid::KeyUp(int32 keyCode)

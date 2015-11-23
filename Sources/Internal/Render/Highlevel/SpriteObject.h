@@ -109,7 +109,7 @@ private:
     Sprite* sprite = nullptr;
     Matrix4 worldMatrix;
     Vector2 sprScale;
-	Vector2 sprPivot;
+    Vector2 sprPivot;
     int32 frame = 0;
     eSpriteType spriteType = SPRITE_OBJECT;
 

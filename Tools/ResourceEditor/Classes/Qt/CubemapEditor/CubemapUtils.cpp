@@ -54,12 +54,12 @@ DAVA::FilePath CubemapUtils::GetDialogSavedPath(const DAVA::String& key, const D
     DAVA::FilePath path = settinsValue.GetType() == DAVA::VariantType::TYPE_STRING ? settinsValue.AsString() : settinsValue.AsFilePath();
 
     DAVA::FilePath defaultPath(defaultValue);
-    DAVA::FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
+    DAVA::FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
     bool isInProject = DAVA::FilePath::ContainPath(path, projectPath);
 
-    if (!path.Exists() || !isInProject)
+    if (!DAVA::FileSystem::Instance()->Exists(path) || !isInProject)
     {
-        path = defaultPath.Exists() ? defaultPath : projectPath;
+        path = DAVA::FileSystem::Instance()->Exists(defaultPath) ? defaultPath : projectPath;
         SettingsManager::SetValue(key, DAVA::VariantType(path));
     }
 

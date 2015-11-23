@@ -54,7 +54,7 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
     if (v.type() == QVariant::String)
     {
         auto filePath = DAVA::FilePath(v.toString().toStdString());
-        if (!filePath.IsEmpty() && filePath.Exists())
+        if (DAVA::FileSystem::Instance()->Exists(filePath))
         {
             auto extension = filePath.GetExtension();
             auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);

@@ -79,7 +79,7 @@ void DefinitionFile::LoadPNG(const FilePath & _filename, const FilePath & pathTo
 	FileSystem::Instance()->CopyFile(_filename, fileWrite);
 }
 
-bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pathToProcess, bool twoSideMargin, uint32 texturesMargin)
+bool DefinitionFile::LoadPNGDef(const FilePath& _filename, const FilePath& pathToProcess)
 {
     DVASSERT(pathToProcess.IsDirectoryPathname());
 
@@ -98,10 +98,7 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 	spriteWidth = image.GetWidth() / frameCount;
 	spriteHeight = image.GetHeight();
 	
-//	String dirWrite = path + String("/$process/"); 
-//	mkdir(dirWrite.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	Logger::FrameworkDebug("* frameCount: %d spriteWidth: %d spriteHeight: %d", frameCount, spriteWidth, spriteHeight);
-
 
 	frameRects = new Rect2i[frameCount];
     frameNames.resize(frameCount);
@@ -127,13 +124,6 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 		frameRects[k].y = reducedRect.y;
 		frameRects[k].dx = reducedRect.dx;
 		frameRects[k].dy = reducedRect.dy;
-
-        // add borders
-		if (!twoSideMargin)
-		{
-			frameRects[k].dx += texturesMargin;
-			frameRects[k].dy += texturesMargin;
-		}
 	}
 	
 
@@ -141,7 +131,7 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 	return true;
 }
 
-bool DefinitionFile::Load(const FilePath & _filename, bool twoSideMargin, uint32 texturesMargin)
+bool DefinitionFile::Load(const FilePath& _filename)
 {
 	filename = _filename;
 	FILE * fp = fopen(filename.GetAbsolutePathname().c_str(), "rt");
@@ -161,13 +151,6 @@ bool DefinitionFile::Load(const FilePath & _filename, bool twoSideMargin, uint32
 		fscanf(fp, "%d %d %d %d %s\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy, frameName);
 		Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
         frameNames[i] = String(frameName);
-		
-		// add borders
-		if (!twoSideMargin)
-		{
-			frameRects[i].dx += texturesMargin;
-			frameRects[i].dy += texturesMargin;
-		}
 	}
 	
 	while(1)

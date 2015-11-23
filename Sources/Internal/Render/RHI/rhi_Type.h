@@ -470,6 +470,8 @@ Descriptor
     uint32 isRenderTarget : 1;
     uint32 autoGenMipmaps : 1;
     uint32 needRestore : 1;
+    uint32 cpuAccessRead : 1;
+    uint32 cpuAccessWrite : 1;
 
     Descriptor(uint32 w, uint32 h, TextureFormat fmt)
         : type(TEXTURE_TYPE_2D)
@@ -480,6 +482,8 @@ Descriptor
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
+        , cpuAccessRead(false)
+        , cpuAccessWrite(true)
     {
         memset(initialData, 0, sizeof(initialData));
     }
@@ -492,6 +496,8 @@ Descriptor
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
+        , cpuAccessRead(false)
+        , cpuAccessWrite(true)
     {
         memset(initialData, 0, sizeof(initialData));
     }
@@ -629,8 +635,7 @@ enum CmpFunc
 
 namespace DepthStencilState
 {
-struct
-Descriptor
+struct Descriptor
 {
     uint32 depthTestEnabled : 1;
     uint32 depthWriteEnabled : 1;
@@ -638,15 +643,19 @@ Descriptor
 
     uint32 stencilEnabled : 1;
     uint32 stencilTwoSided : 1;
+    uint32 pad : 25;
+
     struct
     {
         uint8 readMask;
         uint8 writeMask;
         uint8 refValue;
+        uint8 pad8;
         uint32 func : 3;
         uint32 failOperation : 3;
         uint32 depthFailOperation : 3;
         uint32 depthStencilPassOperation : 3;
+        uint32 pad32 : 20;
     } stencilFront, stencilBack;
 
     Descriptor()
@@ -655,6 +664,7 @@ Descriptor
         , depthFunc(CMP_LESSEQUAL)
         , stencilEnabled(false)
         , stencilTwoSided(false)
+        , pad(0)
     {
         stencilFront.readMask = 0xFF;
         stencilFront.writeMask = 0xFF;
@@ -663,6 +673,8 @@ Descriptor
         stencilFront.failOperation = STENCILOP_KEEP;
         stencilFront.depthFailOperation = STENCILOP_KEEP;
         stencilFront.depthStencilPassOperation = STENCILOP_KEEP;
+        stencilFront.pad8 = 0;
+        stencilFront.pad32 = 0;
 
         stencilBack.readMask = 0xFF;
         stencilBack.writeMask = 0xFF;
@@ -671,6 +683,8 @@ Descriptor
         stencilBack.failOperation = STENCILOP_KEEP;
         stencilBack.depthFailOperation = STENCILOP_KEEP;
         stencilBack.depthStencilPassOperation = STENCILOP_KEEP;
+        stencilBack.pad8 = 0;
+        stencilBack.pad32 = 0;
     }
 };
 }
