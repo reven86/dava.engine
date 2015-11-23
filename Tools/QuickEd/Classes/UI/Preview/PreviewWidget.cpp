@@ -311,30 +311,39 @@ bool PreviewWidget::eventFilter(QObject *obj, QEvent *event)
 
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 {
-#if defined Q_OS_MAC
-    static const qreal wheelDelta = 0.002;
-    int horizontalScrollBarValue = horizontalScrollBar->value();
-    horizontalScrollBarValue -= event->pixelDelta().x() * horizontalScrollBar->pageStep() * wheelDelta;
-    horizontalScrollBar->setValue(horizontalScrollBarValue);
-    
-    int verticalScrollBarValue = verticalScrollBar->value();
-    verticalScrollBarValue -= event->pixelDelta().y() * verticalScrollBar->pageStep() * wheelDelta;
-    verticalScrollBar->setValue(verticalScrollBarValue);
-#elif defined Q_OS_WIN
-    if (document == nullptr)
+#ifdef Q_OS_WIN //under MAC OS we get this event when scrolling by two fingers on MAC touchpad
+    if(!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+#endif //Q_OS_WIN
     {
-        return;
+        //scroll view up and down
+        static const qreal wheelDelta = 0.002;
+        int horizontalScrollBarValue = horizontalScrollBar->value();
+        horizontalScrollBarValue -= event->pixelDelta().x() * horizontalScrollBar->pageStep() * wheelDelta;
+        horizontalScrollBar->setValue(horizontalScrollBarValue);
+        
+        int verticalScrollBarValue = verticalScrollBar->value();
+        verticalScrollBarValue -= event->pixelDelta().y() * verticalScrollBar->pageStep() * wheelDelta;
+        verticalScrollBar->setValue(verticalScrollBarValue);
     }
-    int tickSize = 120;
-    int ticksCount = event->angleDelta().y() / tickSize;
-    if (ticksCount == 0)
+#ifdef Q_OS_WIN
+    else
     {
-        return;
+        //resize view
+        if (document == nullptr)
+        {
+            return;
+        }
+        int tickSize = 120;
+        int ticksCount = event->angleDelta().y() / tickSize;
+        if (ticksCount == 0)
+        {
+            return;
+        }
+        qreal scale = GetScaleFromWheelEvent(ticksCount) / 100.0f;
+        QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
+        scrollAreaController->AdjustScale(scale, pos);
     }
-    qreal scale = GetScaleFromWheelEvent(ticksCount) / 100.0f;
-    QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
-    scrollAreaController->AdjustScale(scale, pos);
-#endif //Q_OS_MAC Q_OS_WIN
+#endif //Q_OS_WIN
 }
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)

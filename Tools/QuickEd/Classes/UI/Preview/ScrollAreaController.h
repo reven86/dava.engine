@@ -83,8 +83,8 @@ private:
     QSize viewSize = QSize(0, 0);
     QPoint position = QPoint(0, 0);
     qreal scale = 0.0f;
-    const qreal minScale = 0.0f;
-    const qreal maxScale = 800.0f;
+    const qreal minScale = 0.25f;
+    const qreal maxScale = 8.0f;
     const int Margin = 50;
 };
 

@@ -62,7 +62,7 @@ void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
 
 void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
 {
-    DVASSERT(newScale >= minScale);
+    newScale = fmax(minScale, newScale);
     newScale = fmin(maxScale, newScale); //crop scale to 800
     if(scale == newScale)
     {
