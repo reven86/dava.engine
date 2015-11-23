@@ -288,7 +288,6 @@ void CreateWindowSizeDependentResources()
         m_d3dContext->OMSetRenderTargets(1, view, nullptr);
         m_d3dRenderTargetView.Reset();
         m_swapChainBuffer.Reset();
-        DAVA::Logger::Info("***   ref.cnt= %u", unsigned(m_swapChainBuffer.Reset()));
 
         m_d3dDepthStencilBuffer.Reset();
         m_d3dDepthStencilView.Reset();
