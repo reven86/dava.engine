@@ -312,6 +312,7 @@ bool PreviewWidget::eventFilter(QObject *obj, QEvent *event)
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 {
 #if defined Q_OS_MAC
+    static const qreal wheelDelta = 0.002;
     int horizontalScrollBarValue = horizontalScrollBar->value();
     horizontalScrollBarValue -= event->pixelDelta().x() * horizontalScrollBar->pageStep() * wheelDelta;
     horizontalScrollBar->setValue(horizontalScrollBarValue);
