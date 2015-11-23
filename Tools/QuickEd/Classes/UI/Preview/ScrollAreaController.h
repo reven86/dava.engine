@@ -60,6 +60,8 @@ public:
     QSize GetViewSize() const;
     QPoint GetPosition() const;
     qreal GetScale() const;
+    qreal GetMinScale() const;
+    qreal GetMaxScale() const;
 
 public slots:
     void SetViewSize(QSize size);
@@ -81,6 +83,8 @@ private:
     QSize viewSize = QSize(0, 0);
     QPoint position = QPoint(0, 0);
     qreal scale = 0.0f;
+    const qreal minScale = 0.0f;
+    const qreal maxScale = 800.0f;
     const int Margin = 50;
 };
 

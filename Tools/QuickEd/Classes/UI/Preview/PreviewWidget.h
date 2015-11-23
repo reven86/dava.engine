@@ -97,6 +97,7 @@ private:
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
     void SetDPR(qreal dpr);
+    qreal GetScaleFromWheelEvent(int ticksCount);
 
     QPoint lastMousePos;
     qreal dpr = 1.0f;

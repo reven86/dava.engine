@@ -92,7 +92,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(davaGLWidget, &DavaGLWidget::ScreenChanged, this, &PreviewWidget::OnMonitorChanged);
 
     scaleCombo->setCurrentIndex(percentages.indexOf(100)); //100%
-    scaleCombo->lineEdit()->setMaxLength(6); //3 digits + whitespace + % ?
+    QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
+    scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
 
@@ -326,9 +327,17 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     verticalScrollBarValue -= event->pixelDelta().y() * verticalScrollBar->pageStep() * wheelDelta;
     verticalScrollBar->setValue(verticalScrollBarValue);
 #elif defined Q_OS_WIN
-    qreal scale = scrollAreaController->GetScale();
-    qreal eventValue = event->angleDelta().y() * wheelDelta;
-    scale *= 1.0f + eventValue / 2.0f; //so funny divide random parameters with the random values
+    if (document == nullptr)
+    {
+        return;
+    }
+    int tickSize = 120;
+    int ticksCount = event->angleDelta().y() / tickSize;
+    if (ticksCount == 0)
+    {
+        return;
+    }
+    qreal scale = GetScaleFromWheelEvent(ticksCount) / 100.0f;
     QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
     scrollAreaController->AdjustScale(scale, pos);
 #endif //Q_OS_MAC Q_OS_WIN
@@ -370,6 +379,39 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
         verticalScrollBarValue -= delta.y();
         verticalScrollBar->setValue(verticalScrollBarValue);
     }
+}
+
+qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount)
+{
+    qreal scale = scrollAreaController->GetScale() * 100.0f;
+    if (ticksCount > 0)
+    {
+        auto iter = std::upper_bound(percentages.begin(), percentages.end(), static_cast<int>(scale));
+        if (iter == percentages.end())
+        {
+            return scale;
+        }
+        while (--ticksCount)
+        {
+            ++iter;
+        }
+        scale = iter != percentages.end() ? *iter : percentages.last();
+    }
+    if (ticksCount < 0)
+    {
+        int curScale = static_cast<int>(scale);
+        auto iter = std::lower_bound(percentages.begin(), percentages.end(), curScale);
+        if (iter == percentages.end())
+        {
+            return scale;
+        }
+        while (ticksCount++ && iter != percentages.begin())
+        {
+            --iter;
+        }
+        scale = *iter;
+    }
+    return scale;
 }
 
 void PreviewWidget::SetDPR(qreal arg)
