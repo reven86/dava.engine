@@ -149,11 +149,21 @@ BlockLink CreateBlockLinkT(const Vector<T>& blocks1, const MemorySnapshot* snaps
 
 }   // unnamed namespace
 
+BlockLink::BlockLink()
+{
+    allocSize[0] = 0;
+    allocSize[1] = 0;
+    blockCount[0] = 0;
+    blockCount[1] = 0;
+    sourceSnapshots[0] = nullptr;
+    sourceSnapshots[1] = nullptr;
+}
+
 BlockLink::BlockLink(BlockLink&& other)
     : items(std::move(other.items))
     , linkCount(other.linkCount)
 {
-    for (uint32 i = 0;i < linkCount;++i)
+    for (uint32 i = 0; i < 2; ++i)
     {
         allocSize[i] = other.allocSize[i];
         blockCount[i] = other.blockCount[i];
@@ -169,7 +179,7 @@ BlockLink& BlockLink::operator = (BlockLink&& other)
         items = std::move(other.items);
         linkCount = other.linkCount;
 
-        for (uint32 i = 0;i < linkCount;++i)
+        for (uint32 i = 0; i < 2; ++i)
         {
             allocSize[i] = other.allocSize[i];
             blockCount[i] = other.blockCount[i];

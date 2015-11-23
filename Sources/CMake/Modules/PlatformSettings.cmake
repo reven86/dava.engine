@@ -59,6 +59,7 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
 elseif ( WIN32 )
     #dynamic runtime on windows store
@@ -94,8 +95,17 @@ endif  ()
 
 
 ##
+if( WARNING_DISABLE)
 
-if( WARNINGS_AS_ERRORS )
+    if( WIN32 )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0" )
+    elseif( APPLE )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w" )
+    endif()
+
+
+elseif( WARNINGS_AS_ERRORS )
+
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
 -Werror \

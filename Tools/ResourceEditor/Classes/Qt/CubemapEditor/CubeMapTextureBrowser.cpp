@@ -64,8 +64,8 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
 
     ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
     ReloadTextures(projectPath.GetAbsolutePathname());
-	
-	UpdateCheckedState();
+
+    UpdateCheckedState();
 }
 
 CubeMapTextureBrowser::~CubeMapTextureBrowser()
@@ -307,8 +307,8 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
 			if(checkedState)
 			{
 				FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
-				if(fp.Exists())
-				{
+                if (FileSystem::Instance()->Exists(fp))
+                {
 					DAVA::Vector<DAVA::FilePath> faceNames;
 					CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
 					for(size_t faceIndex = 0; faceIndex < faceNames.size(); ++faceIndex)

@@ -360,7 +360,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 
     std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
     bool descriptorReady = false;
-    if (filePath.Exists())
+    if (FileSystem::Instance()->Exists(filePath))
     {
         descriptorReady = descriptor->Load(filePath);
     }

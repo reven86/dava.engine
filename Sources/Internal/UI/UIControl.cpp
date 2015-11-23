@@ -1486,7 +1486,11 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         break;
         case UIEvent::Phase::WHEEL:
         {
-            Input(currentInput);
+            if (IsPointInside(currentInput->point))
+            {
+                Input(currentInput);
+                return true;
+            }
         }
         break;
         case UIEvent::Phase::BEGAN:
@@ -1535,8 +1539,8 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 if (multiInput || currentInputID == currentInput->tid)
                 {
                     if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
-                {
-                    if (IsPointInside(currentInput->point, true))
+                    {
+                        if (IsPointInside(currentInput->point, true))
                     {
                         if (currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
                         {
@@ -1664,23 +1668,21 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         //if(currentInput->touchLocker != this)
         {
-            if (clipContents && (currentInput->phase != UIEvent::Phase::DRAG && currentInput->phase != UIEvent::Phase::ENDED && currentInput->phase != UIEvent::Phase::CHAR && currentInput->phase != UIEvent::Phase::JOYSTICK))
+            if (clipContents &&
+                (UIEvent::Phase::BEGAN == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase || UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::CANCELLED == currentInput->phase))
             {
-                if(!IsPointInside(currentInput->point))
+                if (!IsPointInside(currentInput->point))
                 {
                     return false;
                 }
             }
 
+            std::for_each(begin(childs), end(childs), [](UIControl* c) {
+                c->isUpdated = false;
+            });
+
             List<UIControl*>::reverse_iterator it = childs.rbegin();
             List<UIControl*>::reverse_iterator itEnd = childs.rend();
-            for(; it != itEnd; ++it)
-            {
-                (*it)->isUpdated = false;
-            }
-
-            it = childs.rbegin();
-            itEnd = childs.rend();
             while(it != itEnd)
             {
                 isIteratorCorrupted = false;

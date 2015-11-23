@@ -71,7 +71,8 @@ QVariant GeneralStatModel::headerData(int section, Qt::Orientation orientation, 
                 "Total internal allocation size",
                 "Internal block count",
                 "Ghost allocation size",
-                "Ghost block count"
+                "Ghost block count",
+                "Total allocation count"
             };
             return QVariant(headers[section]);
         }
@@ -99,6 +100,8 @@ QVariant GeneralStatModel::data(const QModelIndex& index, int role) const
                 return FormatNumberWithDigitGroups(curValues.ghostSize).c_str();
             case ROW_NBLOCKS_GHOST:
                 return FormatNumberWithDigitGroups(curValues.ghostBlockCount).c_str();
+            case ROW_TOTAL_ALLOC_COUNT:
+                return FormatNumberWithDigitGroups(curValues.nextBlockNo).c_str();
             default:
                 break;
             }

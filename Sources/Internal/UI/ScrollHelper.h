@@ -67,7 +67,15 @@ public:
 	 \param[in] pos new scrolling position.
 	 */
 	void SetPosition(float32 pos);
-    
+
+    /**
+    \brief Sets new scrolling position whithout any animations.
+    \param[in] scrollDelta.
+    \param[in] zise scroll area size
+    \param[in\out] pos scroll area position
+    */
+    void ScrollWithoutAnimation(float32 scrollDelta, float32 size, float32* pos);
+
     void ScrollToPosition(float32 newPos, float32 scrollTimeSec = 0.3f);
 	/**
 	 \brief Sets scrollable element size.
