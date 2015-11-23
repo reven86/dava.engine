@@ -57,8 +57,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private static volatile boolean isPaused = false;
 	
 	MOGAListener mogaListener = null;
-	
-	boolean[] pressedKeys = new boolean[MAX_KEYS]; // Use MAX_KEYS for mapping keycodes to native
 
 	public int lastDoubleActionIdx = -1;
 	
@@ -190,12 +188,14 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public void onPause() 
     {
         isPaused = true;
-        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onPause");
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onPause in");
         queueEvent(new Runnable() {
         	
             @SuppressWarnings("deprecation")
 			public void run()
             {
+                Log.d(JNIConst.LOG_TAG, "SurfaceView onPause runnable in");
+
                 PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
                 boolean isScreenLocked = false;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
@@ -204,25 +204,37 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 	isScreenLocked = !pm.isScreenOn();
                 
                 nativeOnPause(isScreenLocked);
+
+                Log.d(JNIConst.LOG_TAG, "SurfaceView onPause runnable out");
             }
         });
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onPause out");
     }
 
     public void onResume() 
     {
-        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onResume");
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onResume in");
         
+        isPaused = false;
+        frameCounter = 0;
+
         JNIActivity activity = JNIActivity.GetActivity();
 
         Runnable action = new Runnable()
         {
         	@Override
             public void run() {
+                Log.d(JNIConst.LOG_TAG, "SurfaceView onResume runnable in");
                 nativeOnResume();
+                Log.d(JNIConst.LOG_TAG, "SurfaceView onResume runnable out");
             }
         };
         
-        if (activity.hasWindowFocus())
+        boolean hasFocus = activity.hasWindowFocus();
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView hasWindowFocus = " + hasFocus);
+        if (hasFocus)
         {
             queueEvent(action);
         } 
@@ -232,9 +244,8 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             // to resolve deadlock
             activity.setResumeGLActionOnWindowReady(action);
         }
-        isPaused = false;
 
-        frameCounter = 0;
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onResume out");
     }
 	
 	public class InputRunnable implements Runnable
@@ -395,8 +406,11 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	
     class KeyInputRunnable implements Runnable {
     	int keyCode;
-    	public KeyInputRunnable(int keyCode) {
+    	boolean isDown;
+    	
+    	public KeyInputRunnable(int keyCode, boolean isDown) {
     		this.keyCode = keyCode;
+    		this.isDown = isDown;
     	}
     	
     	@Override
@@ -407,21 +421,25 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     		}
     		else
     		{
-    			nativeOnKeyDown(keyCode);
+    			if (isDown)
+    			{
+    				nativeOnKeyDown(keyCode);
+    			} else
+    			{
+    				nativeOnKeyUp(keyCode);
+    			}
     		}
     	}
     }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+    	if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
     	{
     		return super.onKeyDown(keyCode, event);
     	}
     	
-    	if(pressedKeys[keyCode] == false)
-    		queueEvent(new KeyInputRunnable(keyCode));
-    	pressedKeys[keyCode] = true;
+    	queueEvent(new KeyInputRunnable(keyCode, true));
     	
     	if (event.isSystem())
     		return super.onKeyDown(keyCode, event);
@@ -436,16 +454,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     		return super.onKeyUp(keyCode, event);
     	}
     	
-    	pressedKeys[keyCode] = false;
-    	
-    	if(IsGamepadButton(keyCode))
-    	{
-    		nativeOnGamepadElement(keyCode, 0.f, true);
-    	}
-    	else
-    	{
-    		nativeOnKeyUp(keyCode);
-    	}
+    	queueEvent(new KeyInputRunnable(keyCode, false));
     	
     	return super.onKeyUp(keyCode, event);
     }
@@ -483,18 +492,25 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void surfaceCreated(SurfaceHolder holder)
     {
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated in");
     	surface = holder.getSurface();
     	surfaceWidth = surfaceHeight = 0;
     	
     	queueEvent(new Runnable() {
 			public void run() {
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable in");
 		    	nativeSurfaceCreated(surface);
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable out");
 			}
 		});
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated out");
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged in");
+
         // while we always in landscape mode, but some devices
         // call this method on lock screen with portrait w and h
         // then call this method second time with correct portrait w and h
@@ -517,7 +533,9 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
             	queueEvent(new Runnable() {
         			public void run() {
+                        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable in");
         		    	nativeSurfaceChanged(surfaceWidth, surfaceHeight);
+                        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable out");
         			}
         		});
                 
@@ -533,50 +551,54 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 });
             }
         }
+
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged out");
     }
     
     public void surfaceDestroyed(SurfaceHolder holder)
     {
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed in");
     	queueEvent(new Runnable() {
 			public void run() {
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable in");
 		    	nativeSurfaceDestroyed();
+                Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable out");
 			}
 		});
+        surface = null;
+        Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");
     }
     
     class MOGAListener implements ControllerListener
     {
-    	JNISurfaceView parent = null;
+    	JNISurfaceView surface = null;
     	
     	MOGAListener(JNISurfaceView parent)
     	{
-    		this.parent = parent;
+    		this.surface = parent;
     	}
     	
 		@Override
 		public void onKeyEvent(com.bda.controller.KeyEvent event)
 		{
 			int keyCode = event.getKeyCode();
-            if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+            if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
             {
                 return;
             }
 			if(event.getAction() == com.bda.controller.KeyEvent.ACTION_DOWN)
 			{
-		    	if(pressedKeys[keyCode] == false)
-		    		parent.queueEvent(new KeyInputRunnable(keyCode));
-		    	pressedKeys[keyCode] = true;
+		    	surface.queueEvent(new KeyInputRunnable(keyCode, true));	
 			}
 			else if(event.getAction() == com.bda.controller.KeyEvent.ACTION_UP)
 			{
-		    	pressedKeys[keyCode] = false;
-		        nativeOnGamepadElement(keyCode, 0.f, true);
+				surface.queueEvent(new KeyInputRunnable(keyCode, false));
 			}
 		}
 		@Override
 		public void onMotionEvent(com.bda.controller.MotionEvent event)
 		{
-			parent.queueEvent(new InputRunnable(event));
+			surface.queueEvent(new InputRunnable(event));
 		}
 		@Override
 		public void onStateEvent(StateEvent event)

@@ -91,8 +91,8 @@ public:
     //Sets how fast scroll speed will be reduced
     void SetScrollSpeed(float32 speedInSeconds);
 
-	// UIScrollBarDelegate implementation.
-	virtual float32 VisibleAreaSize(UIScrollBar *forScrollBar);
+    // UIScrollBarDelegate implementation.
+    virtual float32 VisibleAreaSize(UIScrollBar *forScrollBar);
     virtual float32 TotalAreaSize(UIScrollBar *forScrollBar);
     virtual float32 ViewPosition(UIScrollBar *forScrollBar);
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);

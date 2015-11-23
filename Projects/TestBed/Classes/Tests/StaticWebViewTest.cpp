@@ -109,7 +109,7 @@ void StaticWebViewTest::LoadResources()
     webView2 = new UIWebView(Rect(410, 50, 400, 300));
     webView2->SetVisible(true);
     webView2->SetDebugDraw(true);
-    webView2->OpenFromBuffer(htmlCuteCats, FileSystem::Instance()->GetCurrentExecutableDirectory() + "Data/TestData/TransparentWebViewTest/");
+    webView2->OpenFromBuffer(htmlCuteCats, "~res:/TestData/TransparentWebViewTest/");
     AddControl(webView2);
 
     webView3 = new UIWebView(Rect(820, 70, 400, 300));
