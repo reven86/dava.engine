@@ -279,8 +279,9 @@ void QuadTree::AddRenderObject(RenderObject * renderObject)
 		//object is somehow outside the world - just add to root
 		nodes[0].objects.push_back(renderObject);
 		renderObject->SetTreeNodeIndex(0);
-		return;
-	}
+        renderObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
+        return;
+    }
 	uint16 nodeToAdd = FindObjectAddNode(0, renderObject->GetWorldBoundingBox());			
 	nodes[nodeToAdd].objects.push_back(renderObject);
 	renderObject->SetTreeNodeIndex(nodeToAdd);
