@@ -103,7 +103,8 @@ _Unwind_Reason_Code TraceFunction(struct _Unwind_Context* context, void* arg)
 DAVA_NOINLINE size_t GetStackFrames(void* frames[], size_t framesToCapture)
 {
     size_t nframes = 0;
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
+    // CaptureStackBackTrace is supported either on Win32 and WinUAP
     nframes = CaptureStackBackTrace(0, static_cast<DWORD>(framesToCapture), frames, nullptr);
 #elif defined(__DAVAENGINE_APPLE__)
     nframes = backtrace(frames, static_cast<int>(framesToCapture));
@@ -119,10 +120,8 @@ DAVA_NOINLINE size_t GetStackFrames(void* frames[], size_t framesToCapture)
 
 String DemangleSymbol(const char8* symbol)
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     // On Win32 SymFromAddr returns already undecorated name
-    return String(symbol);
-#elif defined(__DAVAENGINE_WIN_UAP__)
     return String(symbol);
 #elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
     String result;
