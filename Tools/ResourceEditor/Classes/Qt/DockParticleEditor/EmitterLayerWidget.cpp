@@ -659,9 +659,9 @@ void EmitterLayerWidget::OnSpriteBtn()
 
     QString filePath = FileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
     if (filePath.isEmpty())
-		return;
-	
-	// Yuri Coder. Verify that the path of the file opened is correct (i.e. inside the Project Path),
+        return;
+
+    // Yuri Coder. Verify that the path of the file opened is correct (i.e. inside the Project Path),
 	// this is according to the DF-551 issue.
     FilePath filePathToBeOpened(filePath.toStdString());
 	String relativePathForProjectPath = filePathToBeOpened.GetRelativePathname(projectPath);

@@ -80,7 +80,7 @@ public:
     void OnCreateActivity();
     void OnDestroyActivity();
 
-	void KeyUp(int32 keyCode);
+    void KeyUp(int32 keyCode);
 	void KeyDown(int32 keyCode);
 
 	void OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs);

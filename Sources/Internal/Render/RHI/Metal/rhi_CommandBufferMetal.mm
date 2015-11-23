@@ -41,6 +41,7 @@ using DAVA::Logger;
 
 #include "_metal.h"
 
+#if !(TARGET_IPHONE_SIMULATOR==1)
 namespace rhi
 {
 struct
@@ -723,3 +724,5 @@ void SetupDispatch(Dispatch* dispatch)
 }
 
 } // namespace rhi
+
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)

@@ -249,7 +249,7 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->endTime = endTime;
 
     dstLayer->isLooped = isLooped;
-	dstLayer->deltaTime = deltaTime;
+    dstLayer->deltaTime = deltaTime;
 	dstLayer->deltaVariation = deltaVariation;
 	dstLayer->loopVariation = loopVariation;
 	dstLayer->loopEndTime = loopEndTime;
@@ -646,8 +646,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         enableFog = fogNode->AsBool();
     }
 
-    const YamlNode * frameBlendNode = node->Get("enableFrameBlend");	
-	if (frameBlendNode)
+    const YamlNode* frameBlendNode = node->Get("enableFrameBlend");
+    if (frameBlendNode)
 	{
         enableFrameBlend = frameBlendNode->AsBool();
     }
@@ -658,7 +658,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (startTimeNode)
         startTime = startTimeNode->AsFloat();
 
-	const YamlNode * endTimeNode = node->Get("endTime");
+    const YamlNode * endTimeNode = node->Get("endTime");
 	if (endTimeNode)
 		endTime = endTimeNode->AsFloat();
 		
