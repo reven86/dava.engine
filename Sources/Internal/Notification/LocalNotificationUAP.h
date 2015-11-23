@@ -27,75 +27,42 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_H__
+#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__
+#define __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
-#include "Base/Message.h"
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
 #include "Notification/LocalNotificationImpl.h"
+#include "Base/Message.h"
 
 namespace DAVA
 {
-
-class LocalNotification : public BaseObject
+    
+class LocalNotificationUAP : public LocalNotificationImpl
 {
-protected:
-	LocalNotification();
-    virtual ~LocalNotification();
-
 public:
-    void SetAction(const Message& msg);
-    inline void RunAction();
+    LocalNotificationUAP(const String &_id);
 
-	void SetTitle(const WideString &_title);
-	void SetText(const WideString &_text);
-    void SetUseSound(const bool value);
-    
-	void Show();
-    void Hide();
-    void Update();
+    void SetAction(const WideString& action) override;
+    void Hide() override;
+    void ShowText(const WideString& title, const WideString& text, bool useSound) override;
+    void ShowProgress(const WideString& title, const WideString& text, uint32 total, uint32 progress, bool useSound) override;
+    void PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound) override;
+    void RemoveAllDelayedNotifications();
 
-    inline bool IsChanged() const;
-	inline bool IsVisible() const;
-    const DAVA::String& GetId() const;
 private:
-    virtual void ImplShow() = 0;
+    void CreateOrUpdateNotification(Windows::Data::Xml::Dom::XmlDocument^ notificationDeclaration,
+                                    const Windows::Foundation::DateTime* startTime = nullptr,
+                                    bool ghostNotification = false);
 
-protected:
-    LocalNotificationImpl *impl = nullptr;
-
-    bool isChanged = false;
-    bool isVisible = true;
-
-    Message action;
-
-    WideString title = L"";
-    WideString text = L"";
-    bool useSound = false;
+    Windows::UI::Notifications::ToastNotifier^ toastNotifier;
+    Windows::UI::Notifications::ToastNotification^ notification;
 };
-    
-    
-inline void LocalNotification::RunAction()
-{
-    action(this);
-}
-    
-inline bool LocalNotification::IsChanged() const
-{
-    return isChanged;
-}
-
-inline bool LocalNotification::IsVisible() const
-{
-    return isVisible;
-}
-
-inline const DAVA::String& LocalNotification::GetId() const
-{
-    return impl->GetId();
-}
 
 }
 
 #endif
+
+#endif /* defined __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__ */
