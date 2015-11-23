@@ -37,8 +37,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     private native void nativeReset(int w, int h);
     private native void nativeProcessFrame();
-    private native void nativeOnPause(boolean isLocked);
-    private native void nativeOnResume();
 	
 	private Surface surface = null;
 	private int surfaceWidth = 0, surfaceHeight = 0;
@@ -126,15 +124,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         if (!JNIAssert.waitUserInputOnAssertDialog)
         {
             nativeProcessFrame();
-            
-            ++frameCounter;
-            // Workaround wait 5 frames for render static text field to textures
-            // and transition from one screen to another during lock/unlock
-            // skip bad print screen texture
-            if (5 == frameCounter)
-            {
-                JNIActivity.GetActivity().HideSplashScreenView();
-            }
         }
 	}
 	
@@ -177,69 +166,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 		params.width = w;
 		super.onSizeChanged(w, h, oldw, oldh);
 	}
-
-    public void onPause() 
-    {
-        isPaused = true;
-        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onPause in");
-        queueEvent(new Runnable() {
-        	
-            @SuppressWarnings("deprecation")
-			public void run()
-            {
-                Log.d(JNIConst.LOG_TAG, "SurfaceView onPause runnable in");
-
-                PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
-                boolean isScreenLocked = false;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
-                	isScreenLocked = !pm.isInteractive();
-                else
-                	isScreenLocked = !pm.isScreenOn();
-                
-                nativeOnPause(isScreenLocked);
-
-                Log.d(JNIConst.LOG_TAG, "SurfaceView onPause runnable out");
-            }
-        });
-
-        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onPause out");
-    }
-
-    public void onResume() 
-    {
-        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onResume in");
-        
-        isPaused = false;
-        frameCounter = 0;
-
-        JNIActivity activity = JNIActivity.GetActivity();
-
-        Runnable action = new Runnable()
-        {
-        	@Override
-            public void run() {
-                Log.d(JNIConst.LOG_TAG, "SurfaceView onResume runnable in");
-                nativeOnResume();
-                Log.d(JNIConst.LOG_TAG, "SurfaceView onResume runnable out");
-            }
-        };
-        
-        boolean hasFocus = activity.hasWindowFocus();
-
-        Log.d(JNIConst.LOG_TAG, "JNISurfaceView hasWindowFocus = " + hasFocus);
-        if (hasFocus)
-        {
-            queueEvent(action);
-        } 
-        else 
-        {
-            // we have to resume game later on some devices
-            // to resolve deadlock
-            activity.setResumeGLActionOnWindowReady(action);
-        }
-
-        Log.d(JNIConst.LOG_TAG, "JNISurfaceView onResume out");
-    }
 	
 	public class InputRunnable implements Runnable
 	{
