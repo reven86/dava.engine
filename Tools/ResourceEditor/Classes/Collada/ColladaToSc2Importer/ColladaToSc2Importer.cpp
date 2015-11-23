@@ -74,7 +74,7 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
 eColladaErrorCodes ColladaToSc2Importer::VerifyDavaMesh(RenderObject* mesh, const FastName name)
 {
     eColladaErrorCodes retValue = eColladaErrorCodes::COLLADA_OK;
-    ;
+
     uint32 batchesCount = mesh->GetRenderBatchCount();
     if (0 == batchesCount)
     {
@@ -221,7 +221,7 @@ void ColladaToSc2Importer::LoadAnimations(ColladaScene * colladaScene)
     }
 }
 
-eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath, const String& sceneName)
+eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath)
 {
     ScopedPtr<Scene> scene(new Scene());
 
@@ -242,7 +242,7 @@ eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, con
         // post process Entities and create Lod nodes.
         SceneUtils::CombineLods(scene);
 
-        SceneFileV2::eError saveRes = scene->SaveScene(scenePath + sceneName);
+        SceneFileV2::eError saveRes = scene->SaveScene(scenePath);
 
         if (saveRes > SceneFileV2::eError::ERROR_NO_ERROR)
         {

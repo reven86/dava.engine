@@ -43,7 +43,7 @@ class ImportLibrary;
 class ColladaToSc2Importer
 {
 public:
-    eColladaErrorCodes SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath, const String& sceneName);
+    eColladaErrorCodes SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath);
 
 private:
     void ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity);

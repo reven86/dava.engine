@@ -395,8 +395,8 @@ FMMatrix44 ColladaSceneNode::CalculateTransformForTime(FCDSceneNode * originalNo
 	}
 	return colladaLocalMatrix;
 }
-    
-Matrix4 ColladaSceneNode::AccumulateTransformUptoFarParent(ColladaSceneNode * farParent)
+
+Matrix4 ColladaSceneNode::AccumulateTransformUptoFarParent(ColladaSceneNode* farParent) const
 {
     if (farParent == this)
     {

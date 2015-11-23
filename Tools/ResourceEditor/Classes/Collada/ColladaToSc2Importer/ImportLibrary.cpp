@@ -46,6 +46,7 @@
 #include "Collada/ColladaSceneNode.h"
 #include "Collada/ColladaScene.h"
 #include "FileSystem/FileSystem.h"
+#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "Collada/ColladaToSc2Importer/ImportSettings.h"
 #include "Collada/ColladaToSc2Importer/ImportLibrary.h"
@@ -90,10 +91,10 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
         ColladaPolygonGroup *colladaPolygon = colladaPGI->polyGroup;
         DVASSERT(nullptr != colladaPolygon && "Empty collada polyton group instance.");
 
-        auto vertices = colladaPolygon->GetVertices();
+        auto& vertices = colladaPolygon->GetVertices();
         uint32 vertexCount = static_cast<uint32>(vertices.size());
         auto vertexFormat = colladaPolygon->GetVertexFormat();
-        auto indecies = colladaPolygon->GetIndices();
+        auto& indecies = colladaPolygon->GetIndices();
         uint32 indexCount = static_cast<uint32>(indecies.size());
 
         // Allocate data buffers before fill them
@@ -108,12 +109,8 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
         // Take collada vertices and set to polygon group
         InitPolygon(davaPolygon, vertexFormat, vertices);
 
-        bool rebuildTangentSpace = false;
-#ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
-        rebuildTangentSpace = true;
-#endif
         const int32 prerequiredFormat = EVF_TANGENT | EVF_BINORMAL | EVF_NORMAL;
-        if (rebuildTangentSpace && (davaPolygon->GetFormat() & prerequiredFormat) == prerequiredFormat)
+        if ((davaPolygon->GetFormat() & prerequiredFormat) == prerequiredFormat)
         {
             MeshUtils::RebuildMeshTangentSpace(davaPolygon, true);
         }
@@ -131,7 +128,7 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
     return davaPolygon;
 }
 
-void ImportLibrary::InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<ColladaVertex> & vertices)
+void ImportLibrary::InitPolygon(PolygonGroup* davaPolygon, uint32 vertexFormat, Vector<ColladaVertex>& vertices) const
 {
     uint32 vertexCount = static_cast<uint32>(vertices.size());
     for (uint32 vertexNo = 0; vertexNo < vertexCount; ++vertexNo)
@@ -192,7 +189,7 @@ AnimationData * ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * collada
         animation->SetDuration(colladaAnimation->duration);
         if (nullptr != colladaAnimation->keys)
         {
-            for (uint32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
+            for (int32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
             {
                 SceneNodeAnimationKey key = colladaAnimation->keys[keyNo];
                 animation->AddKey(key);
@@ -203,6 +200,19 @@ AnimationData * ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * collada
     }
     
     return animation;
+}
+
+Texture* ImportLibrary::GetTextureForPath(const FilePath& imagePath) const
+{
+    FilePath texturePath(imagePath);
+    auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
+    if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+    {
+        texturePath = TextureDescriptor::GetDescriptorPathname(texturePath);
+    }
+    TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
+
+    return Texture::CreateFromFile(texturePath);
 }
 
 NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow)
@@ -235,22 +245,13 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
         bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
         if (!isShadow && hasTexture)
         {
-            FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texturePath);
-            
-            TextureDescriptor * descr = TextureDescriptor::CreateFromFile(descriptorPathname);
-            if (nullptr != descr)
-            {
-                descr->Save();
-                texturePath = descr->pathname;
-                SafeDelete(descr);
-            }
-            ScopedPtr<Texture> texture (Texture::CreateFromFile(descriptorPathname));
+            ScopedPtr<Texture> texture(GetTextureForPath(texturePath));
             davaMaterialParent->AddTexture(textureType, texture);
-         
-            FilePath normalMap = GetNormalMapTexturePath(descriptorPathname);
+
+            FilePath normalMap = GetNormalMapTexturePath(texturePath);
             if (FileSystem::Instance()->IsFile(normalMap))
             {
-                ScopedPtr<Texture> nmTexture (Texture::CreateFromFile(normalMap));
+                ScopedPtr<Texture> nmTexture(GetTextureForPath(normalMap));
                 davaMaterialParent->AddTexture(NMaterialTextureName::TEXTURE_NORMAL, nmTexture);
             }
         }
@@ -274,11 +275,11 @@ NMaterial* ImportLibrary::CreateMaterialInstance(ColladaPolygonGroupInstance* co
 
     return material;
 }
-    
-bool ImportLibrary::GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & type, FilePath & path)
+
+bool ImportLibrary::GetTextureTypeAndPathFromCollada(ColladaMaterial* material, FastName& type, FilePath& path) const
 {
     ColladaTexture * diffuse = material->diffuseTexture;
-    bool useDiffuseTexture = nullptr != diffuse && material->hasDiffuseTexture;
+    bool useDiffuseTexture = (nullptr != diffuse && material->hasDiffuseTexture);
     if (useDiffuseTexture)
     {
         type = NMaterialTextureName::TEXTURE_ALBEDO;
@@ -288,7 +289,7 @@ bool ImportLibrary::GetTextureTypeAndPathFromCollada(ColladaMaterial * material,
     return false;
 }
 
-FilePath ImportLibrary::GetNormalMapTexturePath(const FilePath & originalTexturePath)
+FilePath ImportLibrary::GetNormalMapTexturePath(const FilePath& originalTexturePath) const
 {
     FilePath path = originalTexturePath;
     path.ReplaceBasename(path.GetBasename() + ImportSettings::normalMapPattern);

@@ -46,7 +46,7 @@ eColladaErrorCodes ConvertDaeToSc2(const DAVA::FilePath & pathToFile)
     
     DAVA::FilePath pathSc2 = DAVA::FilePath::CreateWithNewExtension(pathToFile, ".sc2");
 
-    eColladaErrorCodes ret = colladaDocument.SaveSC2(pathSc2.GetDirectory(), pathSc2.GetFilename());
+    eColladaErrorCodes ret = colladaDocument.SaveSC2(pathSc2);
     colladaDocument.Close();
     
     FCollada::Release();
