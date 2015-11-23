@@ -37,7 +37,11 @@ using namespace DAVA;
 
 // A delegate is needed to block the context menu. Note - this delegate
 // is informal, so no inheritance from WebUIDelegate needed.
+#if defined(__MAC_10_11)
+@interface WebViewControlUIDelegate : NSObject<WebUIDelegate>
+#else
 @interface WebViewControlUIDelegate : NSObject
+#endif
 {
 }
 
@@ -56,8 +60,11 @@ using namespace DAVA;
 
 @end
 
-
+#if defined(__MAC_10_11)
+@interface WebViewPolicyDelegate : NSObject<WebPolicyDelegate, WebFrameLoadDelegate>
+#else
 @interface WebViewPolicyDelegate : NSObject
+#endif
 {
 	IUIWebViewDelegate* delegate;
     DAVA::UIWebView* webView;
@@ -300,22 +307,21 @@ void WebViewControl::SetRect(const Rect& rect)
     
 	webViewRect.size.width = convertedRect.dx;
 	webViewRect.size.height = convertedRect.dy;
-	
-	webViewRect.origin.x = convertedRect.x;
-	webViewRect.origin.y = VCS.GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
-	
-	webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
-	webViewRect.origin.y += VCS.GetPhysicalDrawOffset().y;
-	
-	[(WebView*)webViewPtr setFrame: webViewRect];
+
+    NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+    DVASSERT(openGLView);
+    webViewRect.origin.x = convertedRect.x;
+    webViewRect.origin.y = [openGLView isFlipped] ? convertedRect.y : VCS.GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
+
+    webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
+    webViewRect.origin.y += VCS.GetPhysicalDrawOffset().y;
+
+    [(WebView*)webViewPtr setFrame: webViewRect];
     
     // release previous image if any
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
-   [imageRep release];
+    [imageRep release];
 
-   NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-    DVASSERT(openGLView);
-    
     imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:webViewRect];
     if (nullptr == imageRep)
     {

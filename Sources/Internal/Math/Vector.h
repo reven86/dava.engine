@@ -101,11 +101,11 @@ public:
     inline const Vector2& operator/=(const Vector2& _v);
     inline const Vector2& operator*=(float32 f);
     inline const Vector2& operator/=(float32 f);
-    inline Vector2 operator -() const;
+    inline Vector2 operator-() const;
 
-	//! Comparison operators
-	inline bool operator == (const Vector2 & _v) const;
-	inline bool operator != (const Vector2 & _v) const;
+    //! Comparison operators
+    inline bool operator==(const Vector2& _v) const;
+    inline bool operator != (const Vector2 & _v) const;
 	
 };
 //! operators
@@ -186,7 +186,7 @@ public:
     inline Vector3 CrossProduct(const Vector3& _v) const;
     inline void CrossProduct(const Vector3& v1, const Vector3& v2);
     inline float32 DotProduct(const Vector3& _v) const;
-    inline void		Lerp(const Vector3 & _v1, const Vector3 & _v2, float32 t);
+    inline void Lerp(const Vector3& _v1, const Vector3& _v2, float32 t);
 
     inline float32 Yaw() const { return atan2f(x, y); }
     inline float32 Pitch() const { return -atan2f(z, sqrtf(x*x + y*y)); }
@@ -293,9 +293,9 @@ public:
     inline void Lerp(const Vector4& _v1, const Vector4& _v2, float32 t);
 
     //! On functions
-	inline float32 SquareLength();
-	inline float32 Length();
-	inline void Normalize();
+    inline float32 SquareLength();
+    inline float32 Length();
+    inline void Normalize();
 	inline void Clamp(float32 min, float32 max);
 
 	//! On operations

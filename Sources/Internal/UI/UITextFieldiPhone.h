@@ -50,7 +50,7 @@ public:
 
     void SetTextColor(const DAVA::Color& color);
     void SetFontSize(float size);
-    
+
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
 	void SetTextUseRtlAlign(bool useRtlAlign);

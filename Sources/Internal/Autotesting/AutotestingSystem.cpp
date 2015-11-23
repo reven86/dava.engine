@@ -156,14 +156,15 @@ namespace DAVA
 
 	void AutotestingSystem::OnAppFinished()
 	{
-		Logger::Info("AutotestingSystem::OnAppFinished ");
-		ExitApp();
-	}
+        Logger::Info("AutotestingSystem::OnAppFinished in");
+        ExitApp();
+        Logger::Info("AutotestingSystem::OnAppFinished out");
+    }
 
-	void AutotestingSystem::RunTests()
-	{
-		if (!isInit || isRunning)
-		{
+    void AutotestingSystem::RunTests()
+    {
+        if (!isInit || isRunning)
+        {
 			return;
 		}
 		isRunning = true;
@@ -354,9 +355,9 @@ namespace DAVA
         luaSystem->StartTest();
     }
 
-	void AutotestingSystem::OnError(const String &errorMessage)
-	{
-		Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
+    void AutotestingSystem::OnError(const String& errorMessage)
+    {
+        Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
 
 		AutotestingDB::Instance()->Log("ERROR", errorMessage);
 
@@ -393,8 +394,8 @@ namespace DAVA
         return screenShotName;
     }
 
-    void AutotestingSystem::OnScreenShot(Image *image)
-	{
+    void AutotestingSystem::OnScreenShot(Image* image)
+    {
         Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
 		JobManager::Instance()->CreateWorkerJob(fn);
 	}
@@ -448,8 +449,8 @@ namespace DAVA
             {
                 touches[id] = input;
             }
-			else
-			{
+            else
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d", id);
             }
         }
@@ -472,9 +473,9 @@ namespace DAVA
             if (findIt != touches.end())
             {
                 findIt->second = input;
-			}
-			else
-			{
+            }
+            else
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE", id);
             }
         }
@@ -486,9 +487,9 @@ namespace DAVA
             if (findIt != touches.end())
             {
                 touches.erase(findIt);
-			}
-			else
-			{
+            }
+            else
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found", id);
             }
         }
@@ -496,10 +497,10 @@ namespace DAVA
         default:
             //TODO: keyboard input
             break;
-		}
-	}
+        }
+    }
 
-	bool AutotestingSystem::FindTouch(int32 id, UIEvent &touch)
+    bool AutotestingSystem::FindTouch(int32 id, UIEvent &touch)
 	{
 		bool isFound = false;
 		Map<int32, UIEvent>::iterator findIt = touches.find(id);

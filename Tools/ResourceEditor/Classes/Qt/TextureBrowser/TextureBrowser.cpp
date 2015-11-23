@@ -82,9 +82,9 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     textureListSortModes["Image size"] = TextureListModel::SortByImageSize;
     textureListSortModes["Name"] = TextureListModel::SortByName;
 
-	// global scene manager signals
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
+    // global scene manager signals
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
 
     // convector signals
@@ -93,9 +93,9 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     setupStatusBar();
     setupTexturesList();
-	setupImagesScrollAreas();
-	setupTextureListToolbar();
-	setupTextureToolbar();
+    setupImagesScrollAreas();
+    setupTextureListToolbar();
+    setupTextureToolbar();
 	setupTextureListFilter();
 	setupTextureProperties();
 	setupTextureViewTabBar();
@@ -273,10 +273,10 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
         }
     }
 
-    if(infoConvertedIsUpToDate)
-	{
-		updateInfoConverted();
-	}
+    if (infoConvertedIsUpToDate)
+    {
+        updateInfoConverted();
+    }
 }
 
 eTextureConvertMode TextureBrowser::getConvertMode(eTextureConvertMode convertMode /*= CONVERT_NOT_EXISTENT*/) const

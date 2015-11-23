@@ -42,6 +42,7 @@
 #include "Debug/Stats.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -113,6 +114,27 @@ ParticleEffectSystem::~ParticleEffectSystem()
 void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 {
     particleBaseMaterial->SetParent(material);
+
+    //RHI_COMPLETE pre-cache all configs for regularly used blending modes
+    const static uint32 FRAME_BLEND_MASK = 1;
+    const static uint32 FOG_MASK = 2;
+    const static uint32 BLEND_SHIFT = 2;
+    for (uint32 i = 0; i < 12; i++)
+    {
+        bool enableFrameBlend = (i & FRAME_BLEND_MASK) == FRAME_BLEND_MASK;
+        bool enableFog = (i & FOG_MASK) == FOG_MASK;
+        uint32 blending = (i >> BLEND_SHIFT) + 1;
+
+        ScopedPtr<NMaterial> material(new NMaterial());
+        material->SetParent(particleBaseMaterial);
+
+        if (enableFrameBlend)
+            material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);
+        if (!enableFog) //inverse logic to suspend vertex fog inherited from global material
+            material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);
+        material->AddFlag(NMaterialFlagName::FLAG_BLENDING, blending);
+        material->PreCacheFX();
+    }
 }
 
 void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
@@ -156,7 +178,12 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 }
 
 void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
-{	
+{
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
     Scene *scene = GetScene();
     
     if (scene)
@@ -178,6 +205,11 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
 {
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
     if (effect->state==ParticleEffectComponent::STATE_STOPPED)
     {
         //add to active effects and to render
@@ -199,10 +231,15 @@ void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
 {
-	Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
-	DVASSERT(it!=activeComponents.end());
-	activeComponents.erase(it);	
-	effect->state = ParticleEffectComponent::STATE_STOPPED;	
+    if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
+    {
+        return;
+    }
+
+    Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
+    DVASSERT(it != activeComponents.end());
+    activeComponents.erase(it);
+    effect->state = ParticleEffectComponent::STATE_STOPPED;
     Scene *scene = GetScene();
     if (scene)
         scene->GetRenderSystem()->RemoveFromRender(effect->effectRenderObject);
@@ -263,9 +300,9 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
     float32 shortEffectTime = timeElapsed * speedMult;
 
     size_t componentsCount = activeComponents.size();
-	for(size_t i=0; i<componentsCount; i++)
-	{
-		ParticleEffectComponent * effect = activeComponents[i];
+    for (size_t i = 0; i < componentsCount; i++)
+    {
+        ParticleEffectComponent * effect = activeComponents[i];
         if (effect->activeLodLevel!=effect->desiredLodLevel)
             UpdateActiveLod(effect);
         if (effect->state == ParticleEffectComponent::STATE_STARTING)  

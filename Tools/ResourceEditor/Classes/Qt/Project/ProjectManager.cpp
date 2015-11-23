@@ -57,9 +57,14 @@ const FilePath& ProjectManager::GetDataSourcePath() const
     return dataSourcePath;
 }
 
-const FilePath& ProjectManager::GetParticlesPath() const
+const FilePath& ProjectManager::GetParticlesConfigPath() const
 {
-    return particlesPath;
+    return particlesConfigPath;
+}
+
+const FilePath& ProjectManager::GetParticlesDataPath() const
+{
+    return particlesDataPath;
 }
 
 const FilePath& ProjectManager::GetWorkspacePath() const
@@ -225,13 +230,15 @@ void ProjectManager::UpdateInternalValues()
     if (projectPath.IsEmpty())
     {
         dataSourcePath = "";
-        particlesPath = "";
+        particlesConfigPath = "";
+        particlesDataPath = "";
         workspacePath = "";
     }
     else
     {
         dataSourcePath = projectPath + "DataSource/3d/";
-        particlesPath = projectPath + "Data/Configs/Particles/";
+        particlesConfigPath = projectPath + "Data/Configs/Particles/";
+        particlesDataPath = projectPath + "Data/Gfx/Particles/";
         workspacePath = "~doc:/ResourceEditor/" + projectPath.GetLastDirectoryName() + "/";
     }
 }

@@ -1545,7 +1545,7 @@ QString PropertyEditor::GetDefaultFilePath()
     {
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
     }
-	SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
     if (NULL != editor && FileSystem::Instance()->Exists(editor->GetScenePath()))
     {
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();

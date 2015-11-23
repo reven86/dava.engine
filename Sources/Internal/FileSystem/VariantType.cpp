@@ -428,9 +428,9 @@ void VariantType::SetVariant(const VariantType& var)
             Vector<uint8>* ar = (Vector<uint8>*)var.pointerValue;
             SetByteArray(ar->data(), static_cast<int32>(ar->size()));
         }
-		break;
-	case TYPE_KEYED_ARCHIVE:
-		{
+        break;
+        case TYPE_KEYED_ARCHIVE:
+        {
 			SetKeyedArchive(var.AsKeyedArchive());
 		}
 		break;
@@ -1484,9 +1484,9 @@ void* VariantType::MetaObject()
     case TYPE_MATRIX4:
     case TYPE_COLOR:
     case TYPE_FASTNAME:
-	case TYPE_AABBOX3:
-	case TYPE_FILEPATH:
-		ret = pointerValue;
+    case TYPE_AABBOX3:
+    case TYPE_FILEPATH:
+        ret = pointerValue;
 		break;
 	case TYPE_KEYED_ARCHIVE:
 		ret = &pointerValue;
@@ -1547,10 +1547,10 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetKeyedArchive(*((DAVA::KeyedArchive**)src));
         break;
     case TYPE_INT64:
-        v.SetInt64(*((DAVA::int64 *) src));
-		break;
-	case TYPE_UINT64:
-		v.SetUInt64(*((DAVA::uint64 *) src));
+        v.SetInt64(*((DAVA::int64*)src));
+        break;
+    case TYPE_UINT64:
+        v.SetUInt64(*((DAVA::uint64 *) src));
 		break;
 	case TYPE_VECTOR2:
 		v.SetVector2(*((DAVA::Vector2 *) src));
@@ -1670,17 +1670,17 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
         {
             DAVA::KeyedArchive* dstArchive = *((DAVA::KeyedArchive**)dst);
             if (nullptr != dstArchive)
+            {
+                dstArchive->DeleteAllKeys();
+                for (const auto& obj : val.AsKeyedArchive()->GetArchieveData())
                 {
-					dstArchive->DeleteAllKeys();
-                    for(const auto &obj : val.AsKeyedArchive()->GetArchieveData())
-                    {
-                        dstArchive->SetVariant(obj.first, *obj.second);
-                    }
-				}
-			}
-			break;
-		case TYPE_INT64:
-			*((DAVA::int64 *) dst) = val.AsInt64();
+                    dstArchive->SetVariant(obj.first, *obj.second);
+                }
+            }
+            break;
+        }
+        case TYPE_INT64:
+            *((DAVA::int64 *) dst) = val.AsInt64();
 			break;
 		case TYPE_UINT64:
 			*((DAVA::uint64 *) dst) = val.AsUInt64();
@@ -1766,13 +1766,13 @@ VariantType VariantType::FromType(int type)
         break;
     case TYPE_KEYED_ARCHIVE:
     {
-            KeyedArchive *ka = new KeyedArchive();
-			v.SetKeyedArchive(ka);
-			ka->Release();
-		}
-		break;
-	case TYPE_INT64:
-		v.SetInt64(0);
+        KeyedArchive* ka = new KeyedArchive();
+        v.SetKeyedArchive(ka);
+        ka->Release();
+    }
+    break;
+    case TYPE_INT64:
+        v.SetInt64(0);
 		break;
 	case TYPE_UINT64:
 		v.SetUInt64(0);

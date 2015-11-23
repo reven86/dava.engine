@@ -58,11 +58,11 @@ public:
     bool empty() const;
 
     iterator insert(const K& key, const V& value);
-    void erase(const K &key);
-	void clear();
-    
-	inline V & at(const K &key);
-	inline const V & at(const K &key) const;
+    void erase(const K& key);
+    void clear();
+
+    inline V& at(const K& key);
+    inline const V & at(const K &key) const;
     
 	V & operator[](const K &key);
     const V & operator[] (const K & key) const;
