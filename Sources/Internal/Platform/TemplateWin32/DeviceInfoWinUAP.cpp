@@ -69,14 +69,12 @@ namespace DAVA
 const wchar_t* GUID_DEVINTERFACE_MOUSE = L"System.Devices.InterfaceClassGuid:=\"{378DE44C-56EF-11D1-BC8C-00A0C91405DD}\"";
 const wchar_t* GUID_DEVINTERFACE_KEYBOARD = L"System.Devices.InterfaceClassGuid:=\"{884b96c3-56ef-11d1-bc8c-00a0c91405dd}\"";
 const wchar_t* GUID_DEVINTERFACE_TOUCH = L"System.Devices.InterfaceClassGuid:=\"{4D1E55B2-F16F-11CF-88CB-001111000030}\"";
-const wchar_t* GUID_DEVINTERFACE_ALL = L"System.Devices.InterfaceClassGuid:=\"{4D1E55B2-F16F-11CF-88CB-001111000030}\" OR System.Devices.InterfaceClassGuid:=\"{884b96c3-56ef-11d1-bc8c-00a0c91405dd}\" OR System.Devices.InterfaceClassGuid:=\"{378DE44C-56EF-11D1-BC8C-00A0C91405DD}\"";
 
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     hids[TOUCH] = isTouchPresent ? 1 : 0;
-
     isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
 
