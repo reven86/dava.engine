@@ -41,11 +41,11 @@ class WASDControllerSystem;
 class ViewSceneScreen: public BaseScreen
 {
 protected:
-    virtual ~ViewSceneScreen();
+    virtual ~ViewSceneScreen()
+    {
+    }
 
 public:
-	ViewSceneScreen();
-
 	virtual void LoadResources();
 	virtual void UnloadResources();
 

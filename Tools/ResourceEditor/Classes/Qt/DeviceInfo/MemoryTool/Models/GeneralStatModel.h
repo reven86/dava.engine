@@ -44,13 +44,15 @@ public:
         CLM_VALUE = 0,
         NCOLUMNS = 1
     };
-    enum {
+    enum
+    {
         ROW_ALLOC_INTERNAL = 0,
         ROW_ALLOC_INTERNAL_TOTAL,
         ROW_NBLOCKS_INTERNAL,
         ROW_ALLOC_GHOST,
         ROW_NBLOCKS_GHOST,
-        NROWS = 5
+        ROW_TOTAL_ALLOC_COUNT,
+        NROWS
     };
 
 public:

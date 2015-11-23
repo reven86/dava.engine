@@ -34,7 +34,7 @@
 #include <cstdlib>
 #include <cassert>
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
 #include <detours/detours.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include <malloc.h>
@@ -93,7 +93,7 @@ void HookedFree(void* ptr)
 {
     DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
-}	// unnamed namespace
+} // unnamed namespace
 
 namespace DAVA
 {
@@ -127,7 +127,7 @@ void MallocHook::Free(void* ptr)
 
 size_t MallocHook::MallocSize(void* ptr)
 {
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
     return _msize(ptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     return malloc_size(ptr);
@@ -154,7 +154,7 @@ void MallocHook::Install()
      malloc is a weak symbol which means that it can be overriden by an application. Additionally I get original
      address of malloc using dlsym function.
     */
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
     void* (*realCalloc)(size_t, size_t) = &calloc;
     char* (*realStrdup)(const char*) = &_strdup;
 
