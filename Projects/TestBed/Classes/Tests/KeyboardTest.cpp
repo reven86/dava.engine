@@ -119,7 +119,7 @@ private:
         Vector2 pos = ctrl->GetPosition();
         if (std::abs(axisValue) >= 0.05f)
         {
-            pos.x = gamepadPos.GetPosition().x + (-1 * (axisValue * gamepadStickDeltaMove)); // -1 gamepad fliped on image
+            pos.x = gamepadPos.GetPosition().x + (axisValue * gamepadStickDeltaMove);
         }
         else
         {
@@ -134,7 +134,7 @@ private:
         Vector2 pos = ctrl->GetPosition();
         if (std::abs(axisValue) >= 0.05f)
         {
-            pos.y = gamepadPos.GetPosition().y + (axisValue * gamepadStickDeltaMove);
+            pos.y = gamepadPos.GetPosition().y + (axisValue * gamepadStickDeltaMove * -1); // -1 y axis from up to down
         }
         else
         {
@@ -145,7 +145,7 @@ private:
     }
     void OnGamepadEvent(UIEvent* event)
     {
-    	Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
+    	//Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
 
     	DVASSERT(event->device == UIEvent::Device::GAMEPAD);
     	DVASSERT(event->phase == UIEvent::Phase::JOYSTICK);
@@ -448,19 +448,21 @@ void KeyboardTest::LoadResources()
         AddControl(touch.img);
     }
 
-	UIControl* gamepad = new UIControl(gamepadPos);
-	auto pathToBack = FilePath("~res:/Gfx/GamepadTest/gamepad");
+    UIControl* gamepad = new UIControl(gamepadPos);
+    auto pathToBack = FilePath("~res:/Gfx/GamepadTest/gamepad");
+    gamepad->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
 	gamepad->SetSprite(pathToBack, 0);
 	AddControl(gamepad);
 
     for (auto& buttonOrAxisName : gamepadButtonsNames)
     {
-    	UIControl* img = new UIControl(gamepadPos);
-    	auto path = FilePath("~res:/Gfx/GamepadTest/") + buttonOrAxisName;
+        UIControl* img = new UIControl(gamepadPos);
+        auto path = FilePath("~res:/Gfx/GamepadTest/") + buttonOrAxisName;
+        img->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
     	img->SetSprite(path, 0);
     	gamepadButtons[buttonOrAxisName] = img;
     	AddControl(img);
-    	img->SetVisible(false);
+        img->SetVisible(false);
     }
 }
 

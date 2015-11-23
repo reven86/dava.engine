@@ -315,6 +315,7 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
 
     if (davaKey == GamepadDevice::INVALID_DAVAKEY)
     {
+        Logger::Debug("unknown gamepad element code: 0x%H", elementKey);
         return;
     }
 

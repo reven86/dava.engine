@@ -24,7 +24,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.bda.controller.Controller;
 import com.dava.framework.InputManagerCompat.InputDeviceListener;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener, InputDeviceListener
@@ -36,8 +35,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private View splashView = null;
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
-	
-	private Controller mController = null;
 	
 	private InputManagerCompat inputManager = null;
 	
@@ -136,19 +133,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         inputManager = InputManagerCompat.Factory.getInputManager(this);
         
         splashView = GetSplashView();
-        
-        if(mController != null)
-        {
-            if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
-            {		
-        	    MogaFixForLollipop.init(mController, this);
-			}
-            else
-            {
-                mController.init();
-            }
-        	mController.setListener(surfaceView.mogaListener, new Handler());
-        }
 
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
         if (tm != null) {
@@ -290,11 +274,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // Another activity is taking focus (this activity is about to be "paused").
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] start");
         isPausing = true;
-
-        if(mController != null)
-        {
-            mController.onPause();
-        }
         
         inputManager.unregisterInputDeviceListener(this);
         
@@ -340,15 +319,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 accelerometer.Start();
             }
         }
-        
-        if(mController != null)
-        {
-            mController.onResume();
-        }
 
         inputManager.registerInputDeviceListener(this, null);
-
-        //UpdateGamepadAxises();
         
         JNIUtils.keepScreenOnOnResume();
         
@@ -408,10 +380,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         	mainThreadExit = true;
 		}
         
-        if(mController != null)
-        {
-            mController.exit();
-        }
         //call native method
         nativeOnDestroy();
 
