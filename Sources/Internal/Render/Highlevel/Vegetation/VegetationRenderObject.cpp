@@ -44,6 +44,8 @@
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Render/RenderCallbacks.h"
 
+#include "FileSystem/FileSystem.h"
+
 namespace DAVA
 {
 
@@ -376,7 +378,7 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
         }
         else
         {
-            if(lightmapTexturePath.Exists())
+            if (FileSystem::Instance()->Exists(lightmapTexturePath))
             {
                 GenerateDensityMapFromTransparencyMask(lightmapTexturePath, densityBits);
             }
@@ -1044,7 +1046,7 @@ void VegetationRenderObject::ClearRenderBatches()
 
 void VegetationRenderObject::SetCustomGeometryPath(const FilePath& path)
 {
-    if (!path.IsEmpty() && path.Exists())
+    if (FileSystem::Instance()->Exists(path))
     {
         VegetationGeometryDataPtr fetchedData =
         VegetationGeometryDataReader::ReadScene(path);
@@ -1307,8 +1309,8 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
 void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(FilePath lightmapPath, Vector<bool>& densityMapBits)
 {
     lightmapPath.ReplaceExtension(".png");
-    
-    if(lightmapPath.Exists())
+
+    if (FileSystem::Instance()->Exists(lightmapPath))
     {
         ScopedPtr<Image> lightmapImage(LoadSingleImage(lightmapPath));
         if (lightmapImage)

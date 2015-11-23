@@ -82,7 +82,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     textureListSortModes["Image size"] = TextureListModel::SortByImageSize;
     textureListSortModes["Name"] = TextureListModel::SortByName;
 
-	// global scene manager signals
+    // global scene manager signals
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
@@ -93,7 +93,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     setupStatusBar();
     setupTexturesList();
-	setupImagesScrollAreas();
+    setupImagesScrollAreas();
 	setupTextureListToolbar();
 	setupTextureToolbar();
 	setupTextureListFilter();
@@ -273,8 +273,8 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode c
         }
     }
 
-    if(infoConvertedIsUpToDate)
-	{
+    if (infoConvertedIsUpToDate)
+    {
 		updateInfoConverted();
 	}
 }

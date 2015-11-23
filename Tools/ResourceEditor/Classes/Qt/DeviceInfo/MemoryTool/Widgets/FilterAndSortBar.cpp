@@ -35,7 +35,10 @@
 
 #include <QComboBox>
 #include <QCheckBox>
+#include <QLineEdit>
+#include <QPushButton>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QStandardItemModel>
 #include <QStandardItem>
 
@@ -54,6 +57,10 @@ FilterAndSortBar::~FilterAndSortBar() = default;
 void FilterAndSortBar::Init(int32 flags)
 {
     QHBoxLayout* layout = new QHBoxLayout;
+    if (flags & FLAG_ENABLE_GROUPING)
+    {
+        layout->addWidget(CreateGroupCombo());
+    }
     if (flags & FLAG_ENABLE_SORTING)
     {
         layout->addWidget(CreateSortCombo());
@@ -70,7 +77,42 @@ void FilterAndSortBar::Init(int32 flags)
     {
         layout->addWidget(CreateHideTheSameCheck());
     }
+    if (flags & FLAG_ENABLE_HIDE_DIFFERENT)
+    {
+        layout->addWidget(CreateHideDifferentCheck());
+    }
+    if (flags & FLAG_ENABLE_BLOCK_ORDER)
+    {
+        layout->addWidget(CreateBlockOrderWidgets());
+    }
     setLayout(layout);
+
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
+}
+
+QComboBox* FilterAndSortBar::CreateGroupCombo()
+{
+    std::pair<QString, int> items[] = {
+        { "Group by backtrace", GROUP_BY_BACKTRACE },
+        { "Group by size", GROUP_BY_SIZE }
+    };
+
+    int nrows = static_cast<int>(COUNT_OF(items));
+    groupComboModel.reset(new QStandardItemModel(nrows, 1));
+    for (int i = 0; i < nrows; ++i)
+    {
+        QStandardItem* item = new QStandardItem(QString(items[i].first));
+        item->setData(items[i].second, Qt::UserRole + 1);
+
+        groupComboModel->setItem(i, 0, item);
+    }
+
+    QComboBox* widget = new QComboBox;
+    connect(widget, SIGNAL(currentIndexChanged(int)), this, SLOT(GroupOrderCombo_CurrentIndexChanged(int)));
+
+    widget->setModel(groupComboModel.get());
+    widget->setCurrentIndex(0);
+    return widget;
 }
 
 QComboBox* FilterAndSortBar::CreateSortCombo()
@@ -82,7 +124,7 @@ QComboBox* FilterAndSortBar::CreateSortCombo()
         {"Sort by backtrace", SORT_BY_BACKTRACE}
     };
 
-    int nrows = static_cast<int>(sizeof(items) / sizeof(items[0]));
+    int nrows = static_cast<int>(COUNT_OF(items));
     sortComboModel.reset(new QStandardItemModel(nrows, 1));
     for (int i = 0;i < nrows;++i)
     {
@@ -149,9 +191,45 @@ QCheckBox* FilterAndSortBar::CreateHideTheSameCheck()
     QCheckBox* widget = new QCheckBox("Hide same blocks");
     widget->setTristate(false);
 
-    connect(widget, &QCheckBox::stateChanged, this, &FilterAndSortBar::HideTheSameCheck_StateChanges);
+    connect(widget, &QCheckBox::stateChanged, this, &FilterAndSortBar::HideTheSameCheck_StateChanged);
 
     return widget;
+}
+
+QCheckBox* FilterAndSortBar::CreateHideDifferentCheck()
+{
+    QCheckBox* widget = new QCheckBox("Hide different blocks");
+    widget->setTristate(false);
+
+    connect(widget, &QCheckBox::stateChanged, this, &FilterAndSortBar::HideDifferentCheck_StateChanged);
+
+    return widget;
+}
+
+QWidget* FilterAndSortBar::CreateBlockOrderWidgets()
+{
+    QPushButton* apply = new QPushButton("Apply");
+    connect(apply, &QPushButton::clicked, this, &FilterAndSortBar::BlockOrderButton_Clicked);
+
+    minBlockOrderWidget = new QLineEdit;
+
+    QHBoxLayout* layout = new QHBoxLayout;
+    layout->addWidget(apply);
+    layout->addWidget(minBlockOrderWidget);
+
+    QWidget* widget = new QWidget;
+    widget->setLayout(layout);
+    return widget;
+}
+
+void FilterAndSortBar::GroupOrderCombo_CurrentIndexChanged(int index)
+{
+    QModelIndex modelIndex = groupComboModel->index(index, 0);
+    if (modelIndex.isValid())
+    {
+        int v = groupComboModel->data(modelIndex, Qt::UserRole + 1).toInt();
+        emit GroupOrderChanged(v);
+    }
 }
 
 void FilterAndSortBar::SortOrderCombo_CurrentIndexChanged(int index)
@@ -184,8 +262,28 @@ void FilterAndSortBar::FilterTagCombo_DataChanged(const QVariantList& data)
     emit FilterChanged(filterPoolMask, filterTagMask);
 }
 
-void FilterAndSortBar::HideTheSameCheck_StateChanges(int state)
+void FilterAndSortBar::HideTheSameCheck_StateChanged(int state)
 {
     hideTheSame = state == Qt::Checked;
     emit HideTheSameChanged(hideTheSame);
+}
+
+void FilterAndSortBar::HideDifferentCheck_StateChanged(int state)
+{
+    hideDifferent = state == Qt::Checked;
+    emit HideDifferentChanged(hideDifferent);
+}
+
+void FilterAndSortBar::BlockOrderButton_Clicked()
+{
+    uint32 value = 0;
+    QString text = minBlockOrderWidget->text();
+    if (!text.isEmpty())
+    {
+        bool valueIsValid = false;
+        value = text.toUInt(&valueIsValid, 10);
+        if (!valueIsValid)
+            value = 0;
+    }
+    emit BlockOrderChanged(value);
 }

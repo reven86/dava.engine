@@ -308,7 +308,7 @@ void UIList::Update(float32 timeElapsed)
     {
         FullRefresh();
     }
-    
+
     float32 d = newPos - oldPos;
     oldPos = newPos;
 
@@ -318,11 +318,11 @@ void UIList::Update(float32 timeElapsed)
     const float32 accuracyDelta = 0.1f;
 
     Rect r = scrollContainer->GetRect();
-    
+
     if (accuracyDelta <= Abs(deltaScroll))
     {
         // this code works for mouse or touchpad scrolls
-        if(orientation == ORIENTATION_HORIZONTAL)
+        if (orientation == ORIENTATION_HORIZONTAL)
         {
             scroll->ScrollWithoutAnimation(deltaScroll, r.dx, &r.x);
         }
@@ -330,12 +330,11 @@ void UIList::Update(float32 timeElapsed)
         {
             scroll->ScrollWithoutAnimation(deltaScroll, r.dy, &r.y);
         }
-
     }
     else
     {
         // this code works for scroll through touch screen.
-        if(orientation == ORIENTATION_HORIZONTAL)
+        if (orientation == ORIENTATION_HORIZONTAL)
         {
             r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
         }

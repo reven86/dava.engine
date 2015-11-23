@@ -124,8 +124,8 @@ namespace DAVA
 		}
 
         inline void AddBinding(uint64 parentKey, NMaterial* material)
-		{
-			MaterialBinding binding;
+        {
+            MaterialBinding binding;
             binding.childMaterial = material;
             binding.parentKey = parentKey;
 
@@ -151,8 +151,8 @@ namespace DAVA
         {
             return lastError;
         }
-		
-		inline void SetDefaultMaterialQuality(const FastName& quality)
+
+        inline void SetDefaultMaterialQuality(const FastName& quality)
 		{
 			defaultMaterialQuality = quality;
 		}

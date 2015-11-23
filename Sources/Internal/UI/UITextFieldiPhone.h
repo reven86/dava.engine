@@ -45,12 +45,12 @@ public:
     void OpenKeyboard();
     void CloseKeyboard();
     void GetText(WideString& string) const;
-    void SetText(const WideString & string);
-	void UpdateRect(const Rect & rect);
+    void SetText(const WideString& string);
+    void UpdateRect(const Rect& rect);
 
-	void SetTextColor(const DAVA::Color &color);
-	void SetFontSize(float size);
-    
+    void SetTextColor(const DAVA::Color& color);
+    void SetFontSize(float size);
+
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
 	void SetTextUseRtlAlign(bool useRtlAlign);

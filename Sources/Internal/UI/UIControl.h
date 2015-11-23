@@ -1561,7 +1561,6 @@ void UIControl::SetWheelSensitivity(float32 newSens)
 {
     wheelSensitivity = newSens;
 }
-
 };
 
 

@@ -100,8 +100,8 @@ namespace DAVA
     }
 
     void ScrollHelper::SetElementSize(float32 newSize)
-	{
-		elementSize = newSize;
+    {
+        elementSize = newSize;
 		virtualViewSize = viewSize;
 		if(viewSize > elementSize)
 		{

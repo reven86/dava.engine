@@ -32,6 +32,7 @@
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi
 {
@@ -162,6 +163,7 @@ ResourcePool<T, RT, DT, nr>::Alloc()
 
     if (!Object)
     {
+        DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_RESOURCE_POOL);
         Object = new Entry[ObjectCount];
 
         uint32 nextObjectIndex = 0;
@@ -329,8 +331,7 @@ private:
 };
 
 #define RHI_IMPL_RESOURCE(T, DT) \
-template <> \
-    unsigned rhi::ResourceImpl<T, DT>::needRestoreCount = 0;
+template<> unsigned rhi::ResourceImpl<T, DT>::needRestoreCount = 0;
 
 } // namespace rhi
 #endif // __RHI_POOL_H__

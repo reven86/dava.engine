@@ -307,22 +307,21 @@ void WebViewControl::SetRect(const Rect& rect)
     
 	webViewRect.size.width = convertedRect.dx;
 	webViewRect.size.height = convertedRect.dy;
-	
-	webViewRect.origin.x = convertedRect.x;
-	webViewRect.origin.y = VCS.GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
-	
-	webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
+
+    NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+    DVASSERT(openGLView);
+    webViewRect.origin.x = convertedRect.x;
+    webViewRect.origin.y = [openGLView isFlipped] ? convertedRect.y : VCS.GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
+
+    webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
 	webViewRect.origin.y += VCS.GetPhysicalDrawOffset().y;
 	
 	[(WebView*)webViewPtr setFrame: webViewRect];
     
     // release previous image if any
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
-   [imageRep release];
+    [imageRep release];
 
-   NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-    DVASSERT(openGLView);
-    
     imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:webViewRect];
     if (nullptr == imageRep)
     {
