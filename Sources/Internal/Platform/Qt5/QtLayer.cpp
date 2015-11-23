@@ -109,8 +109,8 @@ void QtLayer::ProcessFrame()
 void QtLayer::Resize(int32 width, int32 height)
 {
     float64 screenScale = DPIHelper::GetDpiScaleFactor(0);
-    int32 realWidth = width * screenScale;
-    int32 realHeight = height * screenScale;
+    int32 realWidth = static_cast<int32>(width * screenScale);
+    int32 realHeight = static_cast<int32>(height * screenScale);
     rhi::ResetParam resetParams;
     resetParams.width = realWidth;
     resetParams.height = realHeight;
