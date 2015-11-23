@@ -49,7 +49,7 @@ public:
 
     static LocalNotificationImpl *Create(const String &_id);
     
-    DAVA::String& GetId()
+    const DAVA::String& GetId()
     {
         return notificationId;
     }
