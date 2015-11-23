@@ -33,7 +33,7 @@
 
 #include <cassert>
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
 #include <dbghelp.h>
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
@@ -43,6 +43,8 @@
 #include <unwind.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#else
+#error "Unknown platform"
 #endif
 
 #include "Base/Hash.h"
@@ -144,12 +146,18 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_BULLET, "bullet");
     RegisterAllocPoolName(ALLOC_POOL_BASEOBJECT, "base object");
     RegisterAllocPoolName(ALLOC_POOL_POLYGONGROUP, "polygon group");
-    RegisterAllocPoolName(ALLOC_POOL_RENDERDATAOBJECT, "render dataobj");
     RegisterAllocPoolName(ALLOC_POOL_COMPONENT, "component");
     RegisterAllocPoolName(ALLOC_POOL_ENTITY, "entity");
     RegisterAllocPoolName(ALLOC_POOL_LANDSCAPE, "landscape");
     RegisterAllocPoolName(ALLOC_POOL_IMAGE, "image");
     RegisterAllocPoolName(ALLOC_POOL_TEXTURE, "texture");
+    RegisterAllocPoolName(ALLOC_POOL_NMATERIAL, "nmaterial");
+
+    RegisterAllocPoolName(ALLOC_POOL_RHI_BUFFER, "rhi buffer");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_VERTEX_MAP, "rhi vertex map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_INDEX_MAP, "rhi index map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_TEXTURE_MAP, "rhi texture map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_RESOURCE_POOL, "rhi res pool");
 }
 
 MemoryManager* MemoryManager::Instance()
@@ -425,6 +433,10 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
         return static_cast<uint32>(info.resident_size);
     }
 #elif defined(__DAVAENGINE_ANDROID__)
+    // http://stackoverflow.com/questions/17109284/how-to-find-memory-usage-of-my-android-application-written-c-using-ndk
+    // http://androidxref.com/source/xref/frameworks/base/core/jni/android_os_Debug.cpp (Jelly Bean 4.2)
+    struct mallinfo info = mallinfo();
+    return static_cast<uint32>(info.uordblks);
 #endif
     return 0;
 }
@@ -735,19 +747,49 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
     const size_t FRAMES_COUNT = BACKTRACE_DEPTH + EXTRA_FRAMES;
     void* frames[FRAMES_COUNT] = {nullptr};
     Memset(backtrace, 0, sizeof(Backtrace));
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
     CaptureStackBackTrace(0, FRAMES_COUNT, frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     ::backtrace(frames, FRAMES_COUNT);
 #elif defined(__DAVAENGINE_ANDROID__)
     BacktraceState state = {frames, frames + FRAMES_COUNT};
     _Unwind_Backtrace(&UnwindCallback, &state);
+#else
+#error "Unknown platform"
 #endif
+
+    auto PointerToString = [](void* ptr, char* buf) -> size_t {
+        auto hex = [](uint8 n) -> char { return n < 10 ? n + '0' : n - 10 + 'A'; };
+
+        uintptr_t v = reinterpret_cast<uintptr_t>(ptr);
+        for (size_t i = 0; i < sizeof(uintptr_t); ++i)
+        {
+            uint8 byte = static_cast<uint8>(v);
+            *buf = hex(byte & 0x0F);
+            buf += 1;
+            *buf = hex(byte >> 4);
+            buf += 1;
+            v >>= 8;
+        }
+        return sizeof(uintptr_t) * 2;
+    };
+
+    // Convert backtrace to string and compute that string's hash to greatly decrease hash collision
+    // TODO: think about another method of backtrace identification
+    const size_t MAX_BACKTRACE_STRING_LENGTH = sizeof(void*) * 2 * BACKTRACE_DEPTH;
+    char8 bktraceString[MAX_BACKTRACE_STRING_LENGTH];
+    char8* strPtr = bktraceString;
+    size_t bktraceStringLength = 0;
+
     for (size_t idst = 0, isrc = nskip + 1;idst < BACKTRACE_DEPTH;++idst, ++isrc)
     {
         backtrace->frames[idst] = frames[isrc];
+
+        size_t n = PointerToString(frames[isrc], strPtr);
+        strPtr += n;
+        bktraceStringLength += n;
     }
-    backtrace->hash = HashValue_N(reinterpret_cast<const char*>(backtrace->frames.data()), static_cast<uint32>(backtrace->frames.size()));
+    backtrace->hash = HashValue_N(bktraceString, static_cast<uint32>(bktraceStringLength));
     backtrace->nref = 1;
     backtrace->symbolsCollected = false;
 }
@@ -763,7 +805,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     const size_t NAME_BUFFER_SIZE = 4 * 1024;
     static Array<char8, NAME_BUFFER_SIZE> nameBuffer;
     
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
     HANDLE hprocess = GetCurrentProcess();
 
     static bool symInited = false;
@@ -807,6 +849,8 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
             }
         }
     }
+#else
+#error "Unknown platform"
 #endif
 }
 
