@@ -41,6 +41,48 @@
 
 using namespace DAVA;
 
+class ElegantSceneGuard final
+{
+public:
+    ElegantSceneGuard(Scene* scene_)
+        : scene(scene_)
+    {
+        if (scene)
+        {
+            Set<DataNode*> nodes;
+            scene->GetDataNodes(nodes);
+            for (auto& node : nodes)
+            {
+                dataNodeIDs[node] = node->GetNodeID();
+            }
+
+            globalMaterial = SafeRetain(scene->GetGlobalMaterial());
+            scene->SetGlobalMaterial(nullptr);
+        }
+    }
+
+    ~ElegantSceneGuard()
+    {
+        for (auto& id : dataNodeIDs)
+        {
+            id.first->SetNodeID(id.second);
+        }
+
+        if (scene)
+        {
+            scene->SetGlobalMaterial(globalMaterial);
+            scene = nullptr;
+        }
+
+        SafeRelease(globalMaterial);
+    }
+
+private:
+    Scene* scene = nullptr;
+    NMaterial* globalMaterial = nullptr;
+    Map<DataNode*, uint64> dataNodeIDs;
+};
+
 SaveEntityAsAction::SaveEntityAsAction(const EntityGroup *_entities, const FilePath &_path)
 	: CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
 	, entities(_entities)
@@ -62,6 +104,9 @@ void SaveEntityAsAction::Redo()
                 props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
 			}
         };
+
+        //reset global material because of global material :)
+        ElegantSceneGuard guard(entities->GetEntity(0)->GetScene());
 
         ScopedPtr<Scene> scene(new Scene());
         ScopedPtr<Entity> container(nullptr);
@@ -94,37 +139,11 @@ void SaveEntityAsAction::Redo()
 		}
         DVASSERT(container);
 
-        //Remove global material from parent materials
-        Scene* sourceScene = entities->GetEntity(0)->GetScene();
-        Set<NMaterial*> parentsMaterials;
-        NMaterial* sourceGlobalMaterial = (sourceScene != nullptr) ? sourceScene->GetGlobalMaterial() : nullptr;
-        if (sourceGlobalMaterial)
-        {
-            List<NMaterial*> newMaterials;
-            container->GetDataNodes(newMaterials);
-
-            for (auto& mat : newMaterials)
-            {
-                if (mat->GetParent() == sourceGlobalMaterial)
-                {
-                    //reset global material inheritance
-                    mat->SetParent(nullptr);
-                    parentsMaterials.insert(mat);
-                }
-            }
-        }
-
         scene->AddNode(container); //1. Added new items in zero position with identity matrix
         scene->staticOcclusionSystem->InvalidateOcclusion(); //2. invalidate static occlusion indeces
         RemoveLightmapsRecursive(container);					//3. Reset lightmaps
 				
 		scene->SaveScene(sc2Path);
-
-        //restore global material inheritance
-        for (auto& mat : parentsMaterials)
-        {
-            mat->SetParent(sourceGlobalMaterial);
-        }
     }
 }
 
