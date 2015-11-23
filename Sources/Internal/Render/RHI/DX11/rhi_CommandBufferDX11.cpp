@@ -1206,7 +1206,7 @@ void CommandBufferDX11_t::Reset()
 /*
  * Workaround for Nokia 909 (Lumia 1020) with graphics driver bug
  */
-bool shouldFlushAfterRenderPass(const RenderPassConfig& cfg)
+bool ShouldFlushAfterRenderPass(const RenderPassConfig& cfg)
 {
     static int isLumia1020 = -1;
     if (isLumia1020 == -1)
@@ -1233,7 +1233,7 @@ void CommandBufferDX11_t::Execute()
     }
 
     _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
-    if (shouldFlushAfterRenderPass(passCfg))
+    if (ShouldFlushAfterRenderPass(passCfg))
     {
         _D3D11_ImmediateContext->Flush();
     }
