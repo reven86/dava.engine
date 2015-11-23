@@ -157,7 +157,7 @@ namespace DAVA
                                     realWidth, realHeight, NULL, NULL, hInstance, NULL);
 
         SetNativeView(hWindow);
-
+        SetMenu(hWindow, NULL);
         rendererParams.window = hWindow;
 
         ShowWindow(hWindow, SW_SHOW);
@@ -169,50 +169,54 @@ namespace DAVA
         FrameworkDidLaunched();
         KeyedArchive* options = Core::GetOptions();
 
+        bool shouldEnableFullscreen = false;
         fullscreenMode = GetCurrentDisplayMode(); //FindBestMode(fullscreenMode);
         if (options)
         {
             windowedMode.width = options->GetInt32("width");
-			windowedMode.height = options->GetInt32("height");
-			windowedMode.bpp = options->GetInt32("bpp");
-			
-			// get values from config in case if they are available
-			fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
-			fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
-			fullscreenMode.bpp = windowedMode.bpp;
+            windowedMode.height = options->GetInt32("height");
+            windowedMode.bpp = options->GetInt32("bpp");
+
+            // get values from config in case if they are available
+            fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
+            fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
+            fullscreenMode.bpp = windowedMode.bpp;
 
 			fullscreenMode = FindBestMode(fullscreenMode);
+            shouldEnableFullscreen = options->GetInt32("fullscreen", 0) == 1;
+            String title = options->GetString("title", "[set application title using core options property 'title']");
+            WideString titleW = StringToWString(title);
+            SetWindowText(hWindow, titleW.c_str());
+        }
 
-			isFullscreen = (0 != options->GetInt32("fullscreen"));	
-			String title = options->GetString("title", "[set application title using core options property 'title']");
-			WideString titleW = StringToWString(title);
-			SetWindowText(hWindow, titleW.c_str());
-		}
+        Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
 
-		Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
+        // Init application with positioned window
+        {
+            currentMode = windowedMode;
+            rendererParams.width = currentMode.width;
+            rendererParams.height = currentMode.height;
 
-		currentMode = windowedMode;
-		if (isFullscreen)
-		{
-			currentMode = fullscreenMode;
-		}
+            clientSize.top = 0;
+            clientSize.left = 0;
+            clientSize.right = currentMode.width;
+            clientSize.bottom = currentMode.height;
 
-        rendererParams.width = currentMode.width;
-        rendererParams.height = currentMode.height;
+            AdjustWindowRect(&clientSize, style, FALSE);
 
-        clientSize.top = 0;
-        clientSize.left = 0;
-        clientSize.right = currentMode.width;
-        clientSize.bottom = currentMode.height;
+            realWidth = clientSize.right - clientSize.left;
+            realHeight = clientSize.bottom - clientSize.top;
 
-        AdjustWindowRect(&clientSize, style, FALSE);
+            windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
+            windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 
-        realWidth = clientSize.right - clientSize.left;
-        realHeight = clientSize.bottom - clientSize.top;
+            MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
+        }
 
-		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
-		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
-		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
+        if (shouldEnableFullscreen)
+        {
+            SetScreenMode(eScreenMode::FULLSCREEN);
+        }
 
         RAWINPUTDEVICE Rid;
 
@@ -303,13 +307,13 @@ namespace DAVA
 
         Core::Instance()->SystemAppFinished();
         FrameworkWillTerminate();
-	}
+    }
 
-	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
-	{
-		RECT clientSize;
-		clientSize.top = 0;
-		clientSize.left = 0;
+    RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode& dm)
+    {
+        RECT clientSize;
+        clientSize.top = 0;
+        clientSize.left = 0;
 		clientSize.right = dm.width;
 		clientSize.bottom = dm.height;
         HWND hWindow = static_cast<HWND>(GetNativeView());
@@ -343,7 +347,6 @@ namespace DAVA
                 isFullscreen = true;
                 currentMode = fullscreenMode;
                 GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
-                SetMenu(hWindow, NULL);
                 SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
                 SetWindowPos(hWindow, NULL, 0, 0, currentMode.width, currentMode.height, SWP_NOZORDER);
                 break;
@@ -384,14 +387,14 @@ namespace DAVA
         DWORD iModeNum = 0;
         DEVMODE dmi;
         ZeroMemory(&dmi, sizeof(dmi));
-        dmi.dmSize = sizeof(dmi) ;
+        dmi.dmSize = sizeof(dmi);
 
-		while(EnumDisplaySettings(NULL, iModeNum++, &dmi))
-		{
-			DisplayMode mode;
-			mode.width = dmi.dmPelsWidth;
-			mode.height = dmi.dmPelsHeight;
-			mode.bpp = dmi.dmBitsPerPel;
+        while (EnumDisplaySettings(NULL, iModeNum++, &dmi))
+        {
+            DisplayMode mode;
+            mode.width = dmi.dmPelsWidth;
+            mode.height = dmi.dmPelsHeight;
+            mode.bpp = dmi.dmBitsPerPel;
 			mode.refreshRate = dmi.dmDisplayFrequency;
 			ZeroMemory (&dmi, sizeof(dmi)) ;
 			availableDisplayModes.push_back(mode);
@@ -512,12 +515,12 @@ namespace DAVA
 
     void HandleMouseButtonsPressed(USHORT buttsFlags)
     {
-		if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
-		{
+        if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
+        {
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
+        }
+        if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
+        {
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
 		}
 		if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
@@ -579,8 +582,9 @@ namespace DAVA
             touchPhase = UIEvent::Phase::WHEEL;
 
             newTouch.tid = 0;
-            newTouch.physPoint.x = 0;
-            newTouch.physPoint.y = static_cast<SHORT>(buttonData) / static_cast<float32>(WHEEL_DELTA);
+            newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
+            newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
+            newTouch.scrollDelta.y = static_cast<int16>(buttonData) / static_cast<float32>(WHEEL_DELTA);
             newTouch.phase = UIEvent::Phase::WHEEL;
             newTouch.device = deviceId;
         }
@@ -817,8 +821,8 @@ namespace DAVA
             return 0;
 
         case WM_ACTIVATE:
-			{
-				ApplicationCore * core = Core::Instance()->GetApplicationCore();
+        {
+            ApplicationCore* core = Core::Instance()->GetApplicationCore();
                 WORD loWord = LOWORD(wParam);
                 WORD hiWord = HIWORD(wParam);
                 if(!loWord || hiWord)

@@ -231,7 +231,7 @@ void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links)
 		FilePath flagsTXT = folder + "flags.txt";
         if (FileSystem::Instance()->Exists(flagsTXT))
         {
-			links.insert(flagsTXT);
+            links.insert(flagsTXT);
 		}
 	}
 }

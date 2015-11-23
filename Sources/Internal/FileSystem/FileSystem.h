@@ -177,7 +177,7 @@ public:
      \param[in] isLock true to lock file, false to unlock.
      \returns true if file was successfully locked/unlocked, false otherwise
 	 */
-	virtual bool LockFile(const FilePath & filePath, bool isLock);
+    virtual bool LockFile(const FilePath& filePath, bool isLock);
 
     /**
      \brief Function checks whether the file is locked.

@@ -99,11 +99,11 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_LEFT] = DVKEY_LEFT;
     keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
     keyTranslator[VK_UP] = DVKEY_UP;
-	keyTranslator[VK_DOWN] = DVKEY_DOWN;
-	keyTranslator[VK_ESCAPE] = DVKEY_ESCAPE;
-	keyTranslator[VK_DELETE] = DVKEY_DELETE;
-	keyTranslator[VK_BACK] = DVKEY_BACKSPACE;
-	keyTranslator[VK_RETURN] = DVKEY_ENTER;
+    keyTranslator[VK_DOWN] = DVKEY_DOWN;
+    keyTranslator[VK_ESCAPE] = DVKEY_ESCAPE;
+    keyTranslator[VK_DELETE] = DVKEY_DELETE;
+    keyTranslator[VK_BACK] = DVKEY_BACKSPACE;
+    keyTranslator[VK_RETURN] = DVKEY_ENTER;
 	keyTranslator[VK_CONTROL] = DVKEY_CTRL;
 	keyTranslator[VK_MENU] = DVKEY_ALT;
 	keyTranslator[VK_SHIFT] = DVKEY_SHIFT;
@@ -118,7 +118,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_NEXT] = DVKEY_PGDN;
     keyTranslator[VK_INSERT] = DVKEY_INSERT;
 
-    keyTranslator[VK_OEM_PLUS] = DVKEY_ADD;
+    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
     keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
     keyTranslator[VK_OEM_PERIOD] = DVKEY_PERIOD;
     keyTranslator[VK_OEM_COMMA] = DVKEY_COMMA;

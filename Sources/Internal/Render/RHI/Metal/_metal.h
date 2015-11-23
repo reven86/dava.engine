@@ -29,6 +29,7 @@
 #if !defined __METAL_H__
 #define __METAL_H__
 
+#if !(TARGET_IPHONE_SIMULATOR == 1)
 #include <Metal/Metal.h>
 #include <QuartzCore/CAMetalLayer.h>
 
@@ -41,5 +42,6 @@ extern id<MTLTexture> _Metal_DefStencilBuf;
 extern id<MTLDepthStencilState> _Metal_DefDepthState;
 extern CAMetalLayer* _Metal_Layer;
 
+#endif
 
 #endif // __METAL_H__

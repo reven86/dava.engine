@@ -62,8 +62,7 @@ public:
         QString tabText;
         bool isModified;
     };
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    explicit MainWindow(QWidget* parent = nullptr);
 
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
@@ -132,7 +131,7 @@ private:
     // Save/restore positions of DockWidgets and main window geometry
     void SaveMainWindowState();
     void RestoreMainWindowState();
-private:
+
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction = nullptr;
