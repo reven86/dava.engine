@@ -197,8 +197,8 @@ namespace DAVA
                 return filename; /* return that file name */
             lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
             lua_remove(L, -2); /* remove file name */
-            lua_concat(L, 2);  /* add entry to possible error message */
-		}
+            lua_concat(L, 2); /* add entry to possible error message */
+        }
 		return name;  /* not found */
 	}
 
@@ -536,7 +536,7 @@ namespace DAVA
         switch (keyPress.tid)
         {
         case DVKEY_BACKSPACE:
-		{
+        {
 			//TODO: act the same way on iPhone
 			WideString str = L"";
 			if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), -1, str))
@@ -717,7 +717,7 @@ namespace DAVA
         ProcessInput(touchDown);
     }
 
-	void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
+    void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
 	{
 		UIEvent touchMove;
 		touchMove.tid = touchId;
@@ -774,7 +774,7 @@ namespace DAVA
             return false; //TODO: report error?
         }
 
-		luaopen_AutotestingSystem(luaState);	// load the wrappered module
+        luaopen_AutotestingSystem(luaState);	// load the wrappered module
 		luaopen_UIControl(luaState);	// load the wrappered module
 		luaopen_Rect(luaState);	// load the wrappered module
 		luaopen_Vector(luaState);	// load the wrappered module

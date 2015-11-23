@@ -55,8 +55,8 @@ private:
 	void Pack(DAVA::eGPUFamily gpu);
 	void Reload();
 
-    QFuture<void> *future;
-	QFutureWatcher<void> watcher;
+    QFuture<void>* future;
+    QFutureWatcher<void> watcher;
 
 private slots:
     void threadRepackAllFinished();

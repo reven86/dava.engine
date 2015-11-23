@@ -234,7 +234,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
     if (scrollStartMovement && currentTouch->tid == mainTouch)
     {
         return true;
-	}
+    }
 	
 	return systemInput;
 }

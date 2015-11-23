@@ -48,7 +48,7 @@ public:
     void RestartParticleEffects();
 
 private:
-	void Draw();
+    void Draw();
 	
 	virtual void AddEntity(DAVA::Entity * entity);
 	virtual void RemoveEntity(DAVA::Entity * entity);

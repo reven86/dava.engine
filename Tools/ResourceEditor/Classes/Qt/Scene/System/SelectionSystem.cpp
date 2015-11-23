@@ -268,7 +268,7 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
 {
     if (!IsLocked())
     {
-		Clear();
+        Clear();
 
         uint32 count = newSelection.Size();
         for (uint32 i = 0; i < count; ++i)

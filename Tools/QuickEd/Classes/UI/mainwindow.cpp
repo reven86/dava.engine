@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
-    LoggerOutputObject *loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
+    LoggerOutputObject* loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
     connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
 
     DebugTools::ConnectToUI(this);

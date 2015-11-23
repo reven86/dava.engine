@@ -61,7 +61,7 @@ public:
         QString tabText;
         bool isModified;
     };
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget* parent = nullptr);
 
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
