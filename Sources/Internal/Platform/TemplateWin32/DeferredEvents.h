@@ -46,7 +46,7 @@ class DeferredScreenMetricEvents
 public:
     using UpdateMetricCallback = std::function<void(bool isSizeUpdate, float32 width, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)>;
 
-    DeferredScreenMetricEvents(UpdateMetricCallback callback, int32 intervalMs = DEFERRED_INTERVAL_MSEC);
+    DeferredScreenMetricEvents(bool isPhoneApi, UpdateMetricCallback callback, int32 intervalMs = DEFERRED_INTERVAL_MSEC);
 
     void TrackWindowMinimumSize(int32 minWidth, int32 minHeight);
 
@@ -58,6 +58,7 @@ private:
     void DeferredTick();
 
     Windows::UI::Xaml::DispatcherTimer^ timer = nullptr;
+    bool isPhoneApiDetected = false;
 
     bool isSizeUpdate = false;
     bool isScaleUpdate = false;
@@ -73,8 +74,9 @@ private:
     UpdateMetricCallback updateCallback;
 };
 
-DeferredScreenMetricEvents::DeferredScreenMetricEvents(UpdateMetricCallback callback, int32 intervalMs)
+DeferredScreenMetricEvents::DeferredScreenMetricEvents(bool isPhoneApi, UpdateMetricCallback callback, int32 intervalMs)
     : timer(ref new Windows::UI::Xaml::DispatcherTimer)
+    , isPhoneApiDetected(isPhoneApi)
     , updateCallback(callback)
 {
     Windows::Foundation::TimeSpan span;
@@ -95,8 +97,11 @@ void DeferredScreenMetricEvents::TrackWindowMinimumSize(int32 minWidth, int32 mi
 
 void DeferredScreenMetricEvents::CoreWindowSizeChanged(Windows::UI::Core::CoreWindow^ coreWindow, Windows::UI::Core::WindowSizeChangedEventArgs^ args)
 {
-    lockUpdate = true;
-    timer->Start();
+    if (!isPhoneApiDetected)
+    {
+        lockUpdate = true;
+        timer->Start();
+    }
 }
 
 void DeferredScreenMetricEvents::SwapChainPanelSizeChanged(Platform::Object^, Windows::UI::Xaml::SizeChangedEventArgs^ args)
@@ -122,7 +127,7 @@ void DeferredScreenMetricEvents::DeferredTick()
     float32 h = windowRect.Height;
 
     bool trackMinSize = minWindowWidth > 0.0f && minWindowHeight > 0.0f;
-    if (trackMinSize && (w < minWindowWidth || h < minWindowHeight))
+    if (!isPhoneApiDetected && trackMinSize && (w < minWindowWidth || h < minWindowHeight))
     {
         w = std::max(w, minWindowWidth);
         h = std::max(h, minWindowHeight);
