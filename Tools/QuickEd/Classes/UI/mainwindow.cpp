@@ -532,7 +532,7 @@ void MainWindow::OnGlobalClassesChanged(const QString &str)
 
 void MainWindow::OnLogOutput(Logger::eLogLevel ll, const QByteArray &output)
 {
-    if(1 << ll & accaptableLoggerFlags)
+    if((1 << ll) & accaptableLoggerFlags)
     {
         logWidget->AddMessage(ll, output);
     }
