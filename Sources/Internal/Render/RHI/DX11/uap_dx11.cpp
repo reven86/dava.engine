@@ -264,13 +264,6 @@ void CreateWindowSizeDependentResources()
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
-    m_swapChainBuffer.Reset();
-    m_d3dRenderTargetView.Reset();
-    m_d3dDepthStencilBuffer.Reset();
-    m_d3dDepthStencilView.Reset();
-
-    m_d3dContext->Flush();
-    m_d3dContext->ClearState();
 
     // Calculate the necessary swap chain and render target size in pixels.
     m_outputSize.Width = m_logicalSize.Width * m_compositionScaleX;
@@ -291,6 +284,17 @@ void CreateWindowSizeDependentResources()
 
     if (m_swapChain != nullptr)
     {
+        ID3D11RenderTargetView* view[] = { nullptr };
+        m_d3dContext->OMSetRenderTargets(1, view, nullptr);
+        m_d3dRenderTargetView.Reset();
+        m_swapChainBuffer.Reset();
+
+        m_d3dDepthStencilBuffer.Reset();
+        m_d3dDepthStencilView.Reset();
+
+        m_d3dContext->ClearState();
+        m_d3dContext->Flush();
+
         // If the swap chain already exists, resize it.
         HRESULT hr = m_swapChain->ResizeBuffers(
         2, // Double-buffered swap chain.

@@ -81,11 +81,13 @@ public:
     CommandBufferDX11_t();
     ~CommandBufferDX11_t();
 
+    void Reset();
     void Execute();
 
     RenderPassConfig passCfg;
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
+    uint32 isComplete : 1;
 
     D3D11_PRIMITIVE_TOPOLOGY cur_topo;
     Handle cur_ib;
@@ -137,6 +139,7 @@ FrameDX11
     Handle sync;
     std::vector<Handle> pass;
     uint32 readyToExecute : 1;
+    uint32 toBeDiscarded : 1;
 
     ID3D11CommandList* cmdList;
 };
@@ -144,6 +147,7 @@ FrameDX11
 static std::vector<FrameDX11> _Frame;
 static bool _FrameStarted = false;
 static unsigned _FrameNumber = 1;
+static bool _ResetPending = false;
 //static DAVA::Spinlock       _FrameSync;
 static DAVA::Mutex _FrameSync;
 
@@ -277,6 +281,7 @@ dx11_RenderPass_Begin(Handle pass)
         _Frame.back().number = _FrameNumber;
         _Frame.back().sync = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
+        _Frame.back().toBeDiscarded = false;
         _Frame.back().cmdList = nullptr;
 
         Trace("\n\n-------------------------------\nframe %u started\n", _FrameNumber);
@@ -284,10 +289,10 @@ dx11_RenderPass_Begin(Handle pass)
         ++_FrameNumber;
     }
 
-    _Frame.back().pass.push_back(pass);
+    if (_Frame.size())
+        _Frame.back().pass.push_back(pass);
 
     _FrameSync.Unlock();
-    //-    _CmdQueue.push_back( pass );
 }
 
 //------------------------------------------------------------------------------
@@ -318,21 +323,10 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
     ID3D11DeviceContext* context = cb->context;
     bool clear_color = cb->isFirstInPass && cb->passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
     bool clear_depth = cb->isFirstInPass && cb->passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
+    //-    ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetViewPtr() };
     ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetView };
 
-    cb->cur_topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    cb->cur_ib = InvalidIndex;
-    cb->cur_vb = InvalidIndex;
-    cb->cur_vb_stride = 0;
-    cb->cur_pipelinestate = InvalidHandle;
-    cb->cur_stride = 0;
-    cb->cur_query_buf = InvalidHandle;
-    cb->cur_query_i = InvalidIndex;
-    cb->cur_rs = nullptr;
-
-    cb->rs_param.cullMode = CULL_NONE;
-    cb->rs_param.scissorEnabled = false;
-    cb->rs_param.wireframe = false;
+    cb->Reset();
 
     cb->sync = InvalidHandle;
 
@@ -393,8 +387,6 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
 
         ds_view->Release();
     }
-
-    context->IASetPrimitiveTopology(cb->cur_topo);
 }
 
 //------------------------------------------------------------------------------
@@ -404,9 +396,9 @@ dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
     CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
 
-    cb->context->OMSetRenderTargets(0, NULL, NULL);
     cb->context->FinishCommandList(TRUE, &(cb->commandList));
     cb->sync = syncObject;
+    cb->isComplete = true;
 }
 
 //------------------------------------------------------------------------------
@@ -827,6 +819,7 @@ _ExecuteQueuedCommandsDX11()
     ID3D11CommandList* cmdList = nullptr;
     unsigned frame_n = 0;
     bool do_exec = true;
+    bool do_discard = false;
 
     _FrameSync.Lock();
     if (_Frame.size())
@@ -853,6 +846,7 @@ _ExecuteQueuedCommandsDX11()
         pass_h = _Frame.begin()->pass;
         frame_n = _Frame.begin()->number;
         cmdList = _Frame.begin()->cmdList;
+        do_discard = _Frame.begin()->toBeDiscarded;
     }
     else
     {
@@ -874,9 +868,12 @@ _ExecuteQueuedCommandsDX11()
     {
         Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
 
-        _D3D11_ImmediateContext->ExecuteCommandList(cmdList, FALSE);
-        cmdList->Release();
-        cmdList = nullptr;
+        if (cmdList)
+        {
+            _D3D11_ImmediateContext->ExecuteCommandList(cmdList, FALSE);
+            cmdList->Release();
+            cmdList = nullptr;
+        }
 
         for (std::vector<RenderPassDX11_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
         {
@@ -887,7 +884,8 @@ _ExecuteQueuedCommandsDX11()
                 Handle cb_h = pp->cmdBuf[b];
                 CommandBufferDX11_t* cb = CommandBufferPool::Get(cb_h);
 
-                cb->Execute();
+                if (!do_discard)
+                    cb->Execute();
 
                 if (cb->sync != InvalidHandle)
                 {
@@ -1117,7 +1115,8 @@ dx11_Present(Handle sync)
         {
             if (_Frame.size())
             {
-                _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_Frame.back().cmdList));
+                if (!_Frame.back().toBeDiscarded)
+                    _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_Frame.back().cmdList));
 
                 _Frame.back().readyToExecute = true;
                 _Frame.back().sync = sync;
@@ -1128,14 +1127,16 @@ dx11_Present(Handle sync)
         _FrameSync.Unlock();
 
         unsigned frame_cnt = 0;
+        bool reset_pending = false;
 
         do
         {
             _FrameSync.Lock();
             frame_cnt = static_cast<unsigned>(_Frame.size());
+            reset_pending = _ResetPending;
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _FrameSync.Unlock();
-        } while (frame_cnt >= _DX11_RenderThreadFrameCount);
+        } while (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending);
         TRACE_END_EVENT(11, "rhi", "dx11_Present");
     }
     else
@@ -1179,11 +1180,35 @@ CommandBufferDX11_t::~CommandBufferDX11_t()
 
 //------------------------------------------------------------------------------
 
+void CommandBufferDX11_t::Reset()
+{
+    cur_topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    cur_ib = InvalidIndex;
+    cur_vb = InvalidIndex;
+    cur_vb_stride = 0;
+    cur_pipelinestate = InvalidHandle;
+    cur_stride = 0;
+    cur_query_buf = InvalidHandle;
+    cur_query_i = InvalidIndex;
+    cur_rs = nullptr;
+
+    rs_param.cullMode = CULL_NONE;
+    rs_param.scissorEnabled = false;
+    rs_param.wireframe = false;
+
+    context->IASetPrimitiveTopology(cur_topo);
+
+    isComplete = false;
+}
+
+//------------------------------------------------------------------------------
+
 void CommandBufferDX11_t::Execute()
 {
     SCOPED_FUNCTION_TIMING();
 
     TRACE_BEGIN_EVENT(22, "rhi", "CommandBufferDX11_t::Execute");
+    DVASSERT(isComplete);
     context->Release();
     context = nullptr;
 
@@ -1239,17 +1264,75 @@ void DiscardAll()
         _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
     _FrameSync.Lock();
-    for (std::vector<FrameDX11>::iterator f = _Frame.begin(), f_end = _Frame.end(); f != f_end; ++f)
+    _ResetPending = true;
+    _FrameSync.Unlock();
+
+    _FrameSync.Lock();
+    for (std::vector<FrameDX11>::iterator f = _Frame.begin(); f != _Frame.end();)
     {
-        if (f->readyToExecute)
+        if (f->readyToExecute && f->sync != InvalidHandle)
         {
-            if (f->sync != InvalidHandle)
+            SyncObjectDX11_t* s = SyncObjectPool::Get(f->sync);
+            s->is_signaled = true;
+            s->is_used = true;
+        }
+
+        for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
+        {
+            RenderPassDX11_t* pp = RenderPassPool::Get(*p);
+
+            for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
             {
-                SyncObjectDX11_t* s = SyncObjectPool::Get(f->sync);
-                s->is_signaled = true;
-                s->is_used = true;
+                CommandBufferDX11_t* cb = CommandBufferPool::Get(*b);
+
+                if (cb->sync != InvalidHandle)
+                {
+                    SyncObjectDX11_t* s = SyncObjectPool::Get(cb->sync);
+                    s->is_signaled = true;
+                    s->is_used = true;
+                }
+
+                if (cb->context)
+                {
+                    if (!cb->isComplete)
+                    {
+                        cb->context->ClearState();
+                        cb->context->FinishCommandList(FALSE, &(cb->commandList));
+                    }
+
+                    cb->contextAnnotation->Release();
+                    cb->contextAnnotation = nullptr;
+
+                    cb->context->Release();
+                    cb->context = nullptr;
+                }
+
+                if (cb->commandList)
+                {
+                    cb->commandList->Release();
+                    cb->commandList = nullptr;
+                }
+
+                if (f->readyToExecute)
+                    CommandBufferPool::Free(*b);
             }
 
+            if (f->readyToExecute)
+                RenderPassPool::Free(*p);
+        }
+
+        if (f->readyToExecute)
+        {
+            if (f->cmdList)
+            {
+                f->cmdList->Release();
+                f->cmdList = nullptr;
+            }
+
+            _Frame.erase(f);
+        }
+        else
+        {
             for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
             {
                 RenderPassDX11_t* pp = RenderPassPool::Get(*p);
@@ -1258,27 +1341,34 @@ void DiscardAll()
                 {
                     CommandBufferDX11_t* cb = CommandBufferPool::Get(*b);
 
-                    if (cb->sync != InvalidHandle)
-                    {
-                        SyncObjectDX11_t* s = SyncObjectPool::Get(cb->sync);
-                        s->is_signaled = true;
-                        s->is_used = true;
-                    }
+                    HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
 
-                    if (cb->commandList)
-                        cb->commandList->Release();
-
-                    CommandBufferPool::Free(*b);
+                    DVASSERT(cb->context);
+                    cb->Reset();
                 }
-
-                RenderPassPool::Free(*p);
             }
+
+            f->toBeDiscarded = true;
+            ++f;
         }
     }
-    _Frame.clear();
+
+    {
+        ID3D11CommandList* cl = nullptr;
+
+        _D3D11_SecondaryContext->ClearState();
+        _D3D11_SecondaryContext->FinishCommandList(FALSE, &cl);
+        cl->Release();
+        _D3D11_SecondaryContext->Release();
+
+        _D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext);
+    }
+
+    _ResetPending = false;
     _FrameSync.Unlock();
 
-    _D3D11_ImmediateContext->OMSetRenderTargets(0, NULL, NULL);
+    ID3D11RenderTargetView* view[] = { nullptr };
+    _D3D11_ImmediateContext->OMSetRenderTargets(1, view, nullptr);
 
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Unlock();
