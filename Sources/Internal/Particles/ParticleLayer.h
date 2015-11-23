@@ -104,10 +104,10 @@ struct ParticleLayer : public BaseObject
 
 	bool IsLodActive(int32 lod);	
 	void SetLodActive(int32 lod, bool active);
-	
-	Sprite 			* sprite;
-	void SetSprite(Sprite * sprite);
-	Vector2		layerPivotPoint;
+
+    ScopedPtr<Sprite> sprite;
+    void SetSprite(const FilePath& spritePath);
+    Vector2		layerPivotPoint;
 	Vector2		layerPivotSizeOffsets; //precached for faster bbox computation
 	void SetPivotPoint(Vector2 pivot);
 
@@ -119,18 +119,17 @@ struct ParticleLayer : public BaseObject
     bool enableFrameBlend;
     bool inheritPosition; //for super emitter - if true the whole emitter would be moved, otherwise just emission point
 
-    bool isDisabled;	
+    bool isDisabled;
 
-	
-	Vector<bool> activeLODS;		
+    Vector<bool> activeLODS;
 
-	String			layerName;
+    String layerName;
 
-	/*
+    /*
 	 Properties of particle layer that describe particle system logic
 	 */
-	RefPtr< PropertyLine<float32> > life;				// in seconds
-	RefPtr< PropertyLine<float32> > lifeVariation;		// variation part of life that added to particle life during generation of the particle
+    RefPtr<PropertyLine<float32>> life; // in seconds
+    RefPtr< PropertyLine<float32> > lifeVariation;		// variation part of life that added to particle life during generation of the particle
 	
 	RefPtr< PropertyLine<float32> > number;				// number of particles per second
 	RefPtr< PropertyLine<float32> > numberVariation;	// variation part of number that added to particle count during generation of the particle

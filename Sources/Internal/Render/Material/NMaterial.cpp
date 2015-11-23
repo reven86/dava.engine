@@ -93,6 +93,8 @@ NMaterial::NMaterial()
 
 NMaterial::~NMaterial()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     SetParent(nullptr);
     DVASSERT(children.size() == 0); //as children refernce parent in our material scheme, this should not be released while it has children
     for (auto& prop : localProperties)
@@ -114,6 +116,8 @@ NMaterial::~NMaterial()
 
 void NMaterial::BindParams(rhi::Packet& target)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     //Logger::Info( "bind-params" );
     DVASSERT(activeVariantInstance); //trying to bind material that was not staged to render
     DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
@@ -160,8 +164,8 @@ void NMaterial::BindParams(rhi::Packet& target)
         materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
     }
 
-    target.vertexConstCount = activeVariantInstance->vertexConstBuffers.size();
-    target.fragmentConstCount = activeVariantInstance->fragmentConstBuffers.size();
+    target.vertexConstCount = static_cast<uint32>(activeVariantInstance->vertexConstBuffers.size());
+    target.fragmentConstCount = static_cast<uint32>(activeVariantInstance->fragmentConstBuffers.size());
     /*bind material const buffers*/
     for (size_t i = 0, sz = activeVariantInstance->vertexConstBuffers.size(); i < sz; ++i)
         target.vertexConst[i] = activeVariantInstance->vertexConstBuffers[i];
@@ -285,6 +289,8 @@ void NMaterial::SetQualityGroup(const FastName& quality)
 
 void NMaterial::AddProperty(const FastName& propName, const float32* propData, rhi::ShaderProp::Type type, uint32 arraySize)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localProperties.at(propName) == nullptr);
     NMaterialProperty* prop = new NMaterialProperty();
     prop->name = propName;
@@ -352,6 +358,8 @@ const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
 
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localTextures.at(slotName) == nullptr);
     MaterialTextureInfo* texInfo = new MaterialTextureInfo();
     texInfo->texture = SafeRetain(texture);
@@ -399,6 +407,8 @@ Texture* NMaterial::GetLocalTexture(const FastName& slotName)
 
 void NMaterial::AddFlag(const FastName& flagName, int32 value)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localFlags.find(flagName) == localFlags.end());
     localFlags[flagName] = value;
     InvalidateRenderVariants();
@@ -449,6 +459,8 @@ bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
 
 void NMaterial::SetParent(NMaterial* _parent)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(_parent != this);
 
     if (parent == _parent)
@@ -541,11 +553,40 @@ void NMaterial::InvalidateRenderVariants()
         child->InvalidateRenderVariants();
 }
 
+void NMaterial::PreCacheFX()
+{
+    HashMap<FastName, int32> flags(16, 0);
+    CollectMaterialFlags(flags);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+    FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+}
+
+void NMaterial::PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName)
+{
+    HashMap<FastName, int32> flags(16, 0);
+    CollectMaterialFlags(flags);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+    for (auto& it : extraFlags)
+    {
+        if (it.second == 0)
+            flags.erase(it.first);
+        else
+            flags[it.first] = it.second;
+    }
+    FXCache::GetFXDescriptor(extraFxName.IsValid() ? extraFxName : GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+}
+
 void NMaterial::RebuildRenderVariants()
 {
     HashMap<FastName, int32> flags(16, 0);
     CollectMaterialFlags(flags);
-
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+    flags.erase(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
 
     if (fxDescr.renderPassDescriptors.size() == 0)
@@ -587,7 +628,12 @@ void NMaterial::CollectMaterialFlags(HashMap<FastName, int32>& target)
     if (parent)
         parent->CollectMaterialFlags(target);
     for (auto& it : localFlags)
-        target[it.first] = it.second;
+    {
+        if (it.second == 0) //ZERO is a special value that means flag is off - at least all shaders are consider it to be this right now
+            target.erase(it.first);
+        else
+            target[it.first] = it.second;
+    }
 }
 
 void NMaterial::RebuildBindings()
@@ -702,8 +748,8 @@ void NMaterial::RebuildTextureBindings()
         const rhi::ShaderSamplerList& fragmentSamplerList = currShader->GetFragmentSamplerList();
         const rhi::ShaderSamplerList& vertexSamplerList = currShader->GetVertexSamplerList();
 
-        textureDescr.fragmentTextureCount = fragmentSamplerList.size();
-        samplerDescr.fragmentSamplerCount = fragmentSamplerList.size();
+        textureDescr.fragmentTextureCount = static_cast<uint32>(fragmentSamplerList.size());
+        samplerDescr.fragmentSamplerCount = static_cast<uint32>(fragmentSamplerList.size());
         for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
         {
             RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->GetFragmentSamplerList()[i].uid);
@@ -720,7 +766,7 @@ void NMaterial::RebuildTextureBindings()
                     textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(fragmentSamplerList[i].type);
                     samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(fragmentSamplerList[i].type);
 
-                    Logger::Debug(" no texture for slot : %s", fragmentSamplerList[i].uid.c_str());
+                    Logger::FrameworkDebug(" no texture for slot : %s", fragmentSamplerList[i].uid.c_str());
                 }
             }
             else
@@ -731,8 +777,8 @@ void NMaterial::RebuildTextureBindings()
             DVASSERT(textureDescr.fragmentTexture[i].IsValid());
         }
 
-        textureDescr.vertexTextureCount = vertexSamplerList.size();
-        samplerDescr.vertexSamplerCount = vertexSamplerList.size();
+        textureDescr.vertexTextureCount = static_cast<uint32>(vertexSamplerList.size());
+        samplerDescr.vertexSamplerCount = static_cast<uint32>(vertexSamplerList.size());
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
             Texture* tex = GetEffectiveTexture(vertexSamplerList[i].uid);
@@ -758,6 +804,7 @@ void NMaterial::RebuildTextureBindings()
 
 bool NMaterial::PreBuildMaterial(const FastName& passName)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
     //shader rebuild first - as it sets needRebuildBindings and needRebuildTextures
     if (needRebuildVariants)
         RebuildRenderVariants();
@@ -788,6 +835,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
 
 NMaterial* NMaterial::Clone()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     NMaterial* clonedMaterial = new NMaterial();
     clonedMaterial->materialName = materialName;
     clonedMaterial->fxName = fxName;
@@ -818,6 +867,8 @@ NMaterial* NMaterial::Clone()
 
 void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DataNode::Save(archive, serializationContext);
 
     if (parent)
@@ -876,6 +927,8 @@ void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationC
 
 void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DataNode::Load(archive, serializationContext);
 
     if (serializationContext->GetVersion() < RHI_SCENE_VERSION)
@@ -960,6 +1013,8 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
 
 void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     /*the following stuff is for importing old NMaterial stuff*/
 
     if (archive->IsKeyExists(NMaterialSerializationKey::MaterialName))

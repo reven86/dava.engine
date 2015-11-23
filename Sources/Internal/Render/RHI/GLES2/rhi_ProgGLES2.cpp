@@ -403,9 +403,18 @@ bool ProgGLES2::ConstBuf::SetConst(unsigned const_i, unsigned const_count, const
 {
     bool success = false;
 
-    if (const_i + const_count <= count)
+    float* d = data + const_i * 4;
+    float* d_end = (data + const_i * 4 + const_count * 4);
+    float* end = data + count * 4;
+
+    // this is workaround against too clever GLSL-compilers (Tegra),
+    // when actual cbuf-array size is smaller that declared due to unused last elements
+    if (d_end >= end)
+        d_end = end;
+
+    if (d < d_end)
     {
-        memcpy(data + const_i * 4, cdata, const_count * 4 * sizeof(float));
+        memcpy(d, cdata, (d_end - d) * sizeof(float));
         inst = nullptr;
         success = true;
     }
@@ -419,7 +428,7 @@ bool ProgGLES2::ConstBuf::SetConst(unsigned const_i, unsigned const_sub_i, const
 {
     bool success = false;
 
-    if (const_i <= count && const_sub_i < 4)
+    if (const_i < count && const_sub_i < 4)
     {
         memcpy(data + const_i * 4 + const_sub_i, cdata, data_count * sizeof(float));
         inst = nullptr;
@@ -443,7 +452,7 @@ ProgGLES2::ConstBuf::Instance() const
     if (!inst)
     {
         //SCOPED_NAMED_TIMING("gl.cb-inst");
-        inst = DefaultConstRingBuffer.Alloc(count * 4 * sizeof(float));
+        inst = DefaultConstRingBuffer.Alloc(count * 4);
         memcpy(inst, data, 4 * count * sizeof(float));
         frame = CurFrame;
     }

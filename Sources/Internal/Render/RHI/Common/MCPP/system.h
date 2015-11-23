@@ -42,9 +42,9 @@
 #define SYSTEM_H
 
 #if HAVE_CONFIG_H
-#include "configed.H"
+#include "configed.h"
 #else
-#include "noconfig.H"
+#include "noconfig.h"
 #endif
 
 /* Some system has a wrong definition of UCHAR_MAX.  See cpp-test.html#5.1.3 */
@@ -377,13 +377,10 @@ typedef long expr_t;
 #endif
 
 #ifndef STDC_VERSION
-#define STDC_VERSION 0L /* 199409L  : For conforming    \
-implementation to ISO 9899:1990 / Amendment 1:1995      \
-199901L : For C99   */
+#define STDC_VERSION 0L /* 199409L  : For conforming implementation to ISO 9899:1990 | Amendment 1:1995199901L : For C99 */
 #endif
 #ifndef STDC_HOSTED
-#define STDC_HOSTED 1 /* 1 : for hosted implementation, \
-0 : for free-standing implementation (C99 specification)    */
+#define STDC_HOSTED 1 /* 1 : for hosted implementation, 0 : for free-standing implementation (C99 specification) */
 #endif
 
 /*

@@ -112,6 +112,11 @@ bool WebViewControl::IsRenderToTexture() const
     return privateImpl->IsRenderToTexture();
 }
 
+void WebViewControl::Update()
+{
+    privateImpl->Update();
+}
+
 void WebViewControl::DeleteCookies(const String& url)
 {
     Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));

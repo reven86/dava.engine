@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_CORE_PLATFORM_WIN32_QT_H__
 #define __DAVAENGINE_CORE_PLATFORM_WIN32_QT_H__
 
-#include "DAVAEngine.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/TemplateWin32/CoreWin32PlatformBase.h"

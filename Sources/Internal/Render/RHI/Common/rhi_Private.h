@@ -189,6 +189,9 @@ void SetMarker(Handle cmdBuf, const char* text);
 
 } // namespace CommandBuffer
 
+void InitPacketListPool(uint32 maxCount);
+void InitTextreSetPool(uint32 maxCount);
+
 void PresentImpl(Handle sync);
 
 // debug

@@ -71,12 +71,13 @@
  */
 
 #include "_mcpp.h"
-
+#include <atomic>
+#include "Base/FixedSizePoolAllocator.h"
 #if PREPROCESSED
-#include "mcpp.H"
+#include "mcpp.h"
 #else
-#include "system.H"
-#include "internal.H"
+#include "system.h"
+#include "internal.h"
 #endif
 
 static void scan_id(int c);
@@ -2227,7 +2228,7 @@ int in_comment)
             mcpp_fprintf(MCPP_DBG, "\n#line %ld (%s)", src_line, cur_fullname);
             dump_string(NULL, ptr);
         }
-        len = strlen(ptr);
+        len = static_cast<int>(strlen(ptr));
         if (NBUFF - 1 <= ptr - infile->buffer + len && *(ptr + len - 1) != '\n')
         {
             /* The line does not yet end, though the buffer is full.    */
@@ -2261,7 +2262,7 @@ int in_comment)
             if (mcpp_mode == POST_STD && option_flags.dig)
                 converted += cnv_digraph(ptr);
             if (converted)
-                len = strlen(ptr);
+                len = static_cast<int>(strlen(ptr));
             /* Translation phase 2  */
             len -= 2;
             if (len >= 0)
@@ -2363,7 +2364,7 @@ char* in)
  */
 {
     int count = 0;
-    int i;
+    size_t i;
     int c1, c2;
 
     while ((i = strcspn(in, "%:<")), (c1 = *(in + i)) != '\0')
@@ -2647,50 +2648,6 @@ int include_opt /* Specified by -include opt (for GCC)  */
     return file; /* All done.            */
 }
 
-static const char* const out_of_memory = "Out of memory (required size is %.0s0x%lx bytes)"; /* _F_  */
-
-char*(xmalloc)(
-size_t size)
-/*
- * Get a block of free memory.
- */
-{
-    char* result;
-
-    if ((result = (char*)malloc(size)) == NULL)
-    {
-        if (mcpp_debug & MEMORY)
-            print_heap();
-        cfatal(out_of_memory, NULL, (long)size, NULL);
-    }
-    return result;
-}
-
-char*(xrealloc)(
-void* ptr,
-size_t size)
-/*
- * Reallocate malloc()ed memory.
- */
-{
-    char* result;
-
-    if ((result = (char*)realloc(ptr, size)) == NULL && size != 0)
-    {
-        /* 'size != 0' is necessary to cope with some               */
-        /*   implementation of realloc( ptr, 0) which returns NULL. */
-        if (mcpp_debug & MEMORY)
-            print_heap();
-        cfatal(out_of_memory, NULL, (long)size, NULL);
-    }
-    return result;
-}
-
-void(xfree)(void* ptr)
-{
-    ::free(ptr);
-}
-
 LINE_COL* get_src_location(
 LINE_COL* p_line_col /* Line and column on phase 4   */
 )
@@ -2729,7 +2686,7 @@ LINE_COL* p_line_col /* Line and column on phase 4   */
             cols--;
             col -= *cols;
         }
-        line = l_col_p->start_line + (cols - l_col_p->len);
+        line = static_cast<long>(l_col_p->start_line + (cols - l_col_p->len));
     }
 
     p_line_col->line = line;
@@ -2790,8 +2747,8 @@ const char* arg3 /* Second string argument       */
             slen = strlen(sp) + 1;
         else
             slen = 1;
-        tp = arg_t[i] = (char*)malloc(slen);
-        /* Don't use xmalloc() so as not to cause infinite recursion    */
+        tp = arg_t[i] = xmalloc(slen);
+
         if (sp == NULL || *sp == EOS)
         {
             *tp = EOS;
@@ -3172,4 +3129,153 @@ const char* cp /* Token        */
 
     mcpp_fputs("token", MCPP_DBG);
     dump_string(t_type[token_type - NAM], cp);
+}
+
+/*
+ * Memory management
+ */
+
+static const char* const out_of_memory = "Out of memory (required size is %.0s0x%lx bytes)"; /* _F_  */
+
+namespace
+{
+enum
+{
+    SmallBlockSize = 256,
+    LargeBlockSize = 65536,
+    Megabyte = 1024 * 1024,
+    NumSmallBlocks = Megabyte / SmallBlockSize,
+    NumLargeBlocks = Megabyte / LargeBlockSize,
+};
+
+static DAVA::FixedSizePoolAllocator* smallBlockAllocator = nullptr;
+static DAVA::FixedSizePoolAllocator* largeBlockAllocator = nullptr;
+static std::atomic<bool> allocatorsInitialized(false);
+static std::unordered_map<char*, DAVA::uint32> customAllocations;
+
+char* AllocateTracked(DAVA::uint32 size)
+{
+    char* ptr = reinterpret_cast<char*>(malloc(size));
+    customAllocations[ptr] = size;
+    return ptr;
+}
+
+void FreeTracked(void* ptr)
+{
+    char* cptr = reinterpret_cast<char*>(ptr);
+    DVASSERT(customAllocations.count(cptr) > 0);
+    customAllocations.erase(cptr);
+    free(ptr);
+}
+
+bool ContainsPointer(void* ptr)
+{
+    return customAllocations.count(reinterpret_cast<char*>(ptr)) > 0;
+}
+
+DAVA::uint32 AllocationSizeForPointer(void* ptr)
+{
+    DVASSERT(ContainsPointer(ptr));
+    return customAllocations[reinterpret_cast<char*>(ptr)];
+}
+
+void ReleaseTrackedMemory()
+{
+    for (auto& data : customAllocations)
+    {
+        free(data.first);
+    }
+    customAllocations.clear();
+}
+}
+
+void xbegin_allocations()
+{
+    DVASSERT(allocatorsInitialized.load() == false);
+
+    smallBlockAllocator = new DAVA::FixedSizePoolAllocator(SmallBlockSize, NumSmallBlocks);
+    largeBlockAllocator = new DAVA::FixedSizePoolAllocator(LargeBlockSize, NumLargeBlocks);
+
+    allocatorsInitialized = true;
+}
+
+void xend_allocations()
+{
+    DVASSERT(allocatorsInitialized.load());
+
+    ReleaseTrackedMemory();
+
+    delete smallBlockAllocator;
+    delete largeBlockAllocator;
+    smallBlockAllocator = nullptr;
+    largeBlockAllocator = nullptr;
+
+    allocatorsInitialized = false;
+}
+
+char*(xmalloc)(size_t size)
+{
+    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(size > 0);
+
+    if (size <= SmallBlockSize)
+    {
+        return reinterpret_cast<char*>(smallBlockAllocator->New());
+    }
+    else if (size <= LargeBlockSize)
+    {
+        return reinterpret_cast<char*>(largeBlockAllocator->New());
+    }
+    else
+    {
+        return AllocateTracked(static_cast<uint32_t>(size));
+    }
+}
+
+void(xfree)(void* ptr)
+{
+    DVASSERT(allocatorsInitialized.load());
+
+    if (ptr == nullptr)
+        return;
+
+    if (smallBlockAllocator->CheckIsPointerValid(ptr))
+    {
+        smallBlockAllocator->Delete(ptr);
+    }
+    else if (largeBlockAllocator->CheckIsPointerValid(ptr))
+    {
+        largeBlockAllocator->Delete(ptr);
+    }
+    else
+    {
+        FreeTracked(ptr);
+    }
+}
+
+char*(xrealloc)(void* ptr, size_t size)
+{
+    DVASSERT(allocatorsInitialized.load());
+    DVASSERT(size > 0);
+
+    char* newData = xmalloc(size);
+
+    if (smallBlockAllocator->CheckIsPointerValid(ptr))
+    {
+        memcpy(newData, ptr, (size < SmallBlockSize) ? size : SmallBlockSize);
+        smallBlockAllocator->Delete(ptr);
+    }
+    else if (largeBlockAllocator->CheckIsPointerValid(ptr))
+    {
+        memcpy(newData, ptr, (size < LargeBlockSize) ? size : LargeBlockSize);
+        largeBlockAllocator->Delete(ptr);
+    }
+    else if (ptr != nullptr)
+    {
+        auto exisingSize = AllocationSizeForPointer(ptr);
+        memcpy(newData, ptr, (size < exisingSize) ? size : exisingSize);
+        FreeTracked(ptr);
+    }
+
+    return newData;
 }

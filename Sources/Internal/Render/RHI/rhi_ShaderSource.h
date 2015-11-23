@@ -54,6 +54,13 @@ ShaderProp
         TYPE_FLOAT4,
         TYPE_FLOAT4X4
     };
+
+    enum Precision
+    {
+        PRECISION_NORMAL,
+        PRECISION_HALF,
+        PRECISION_LOW
+    };
     //    enum Scope  { SCOPE_UNIQUE, SCOPE_SHARED };
     enum Storage
     {
@@ -63,6 +70,7 @@ ShaderProp
 
     FastName uid;
     Type type;
+    Precision precision;
     uint32 arraySize;
     //    Scope       scope;
     Storage storage;
@@ -111,7 +119,7 @@ public:
 
 private:
     void _Reset();
-    void _AppendLine(const char* line, uint32 lineLen);
+    void _AppendLine(const char* line, size_t lineLen);
 
     struct
     buf_t

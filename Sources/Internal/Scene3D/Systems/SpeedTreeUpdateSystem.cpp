@@ -181,5 +181,20 @@ void SpeedTreeUpdateSystem::HandleEvent(Observable * observable)
         }
     }
 }
-    
+
+void SpeedTreeUpdateSystem::SceneDidLoaded()
+{
+    for (auto tree : allTrees)
+    {
+        auto renderComponent = GetRenderComponent(tree->entity);
+        if (renderComponent != nullptr)
+        {
+            auto ro = renderComponent->GetRenderObject();
+            if (ro != nullptr)
+            {
+                ro->RecalcBoundingBox();
+            }
+        }
+    }
+}
 };

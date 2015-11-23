@@ -94,7 +94,9 @@ public:
 	bool BeastWaitCanceled();
 
 	void EnableGlobalTimeout(bool enable);
-    
+
+    void RestartParticleEffects();
+
 // qt actions slots
 public slots:
 	void OnProjectOpen();
@@ -176,7 +178,6 @@ public slots:
 	void OnBeastAndSave();
     
     void OnBuildStaticOcclusion();
-    void OnRebuildCurrentOcclusionCell();
     void OnInavalidateStaticOcclusion();
 
 	void OnLandscapeEditorToggled(SceneEditor2* scene);

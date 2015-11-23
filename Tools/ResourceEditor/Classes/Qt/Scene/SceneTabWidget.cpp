@@ -196,8 +196,8 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
 {
     SceneEditor2 *scene = new SceneEditor2();
     scene->SetScenePath(scenePathname);
-    
-    if(scenePathname.Exists())
+
+    if (FileSystem::Instance()->Exists(scenePathname))
     {
         bool sceneWasLoaded = scene->Load(scenePathname);
         if(!sceneWasLoaded)

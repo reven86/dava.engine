@@ -96,12 +96,15 @@ inline char _tcsnextc(const char* str)
 struct
 RegExp::RegBuffer
 {
-    unsigned char* data;
-    unsigned offset;
-    unsigned size;
+    unsigned char* data = nullptr;
+    unsigned offset = 0;
+    unsigned size = 0;
 
-    RegBuffer();
+    RegBuffer() = default;
     ~RegBuffer();
+
+    RegBuffer(const RegBuffer&) = delete;
+    RegBuffer& operator=(const RegBuffer&) = delete;
 
     void reserve(unsigned nbytes);
     void write(const void* data, unsigned nbytes);
@@ -182,7 +185,7 @@ RegExp::~RegExp()
     if (pmatch != &_match)
         free(pmatch); //lint !e424 Inappropriate deallocation
 
-    memset(this, 0, sizeof(RegExp));
+    free(_program);
 }
 
 //------------------------------------------------------------------------------
@@ -239,8 +242,9 @@ bool RegExp::compile(const char* pattern, const char* attributes)
     re_nsub = 0;
     _error_count = 0;
 
-    _buf = new RegBuffer();
-    _buf->reserve(_tcslen(pattern) * 8);
+    RegBuffer regBuffer;
+    _buf = &regBuffer;
+    _buf->reserve((unsigned)_tcslen(pattern) * 8);
     _parser_pos = this->_pattern;
     _parse_regexp();
     if (*_parser_pos)
@@ -249,8 +253,8 @@ bool RegExp::compile(const char* pattern, const char* attributes)
     }
     _optimize();
     _program = (char*)_buf->data;
-    _buf->data = NULL;
-    delete _buf;
+    _buf->data = nullptr;
+    _buf = nullptr;
 
     if (re_nsub > oldre_nsub)
     {
@@ -316,8 +320,8 @@ bool RegExp::test(const char* string, int startindex)
         _src_start = _src = s;
         if (_try_match(_program, NULL))
         {
-            pmatch[0].begin = _src_start - _input;
-            pmatch[0].end = _src - _input;
+            pmatch[0].begin = static_cast<int>(_src_start - _input);
+            pmatch[0].end = static_cast<int>(_src - _input);
             return true;
         }
         // If possible _match must start at beginning, we are done
@@ -866,8 +870,8 @@ int RegExp::_try_match(char* prog, char* progend)
             ss = _src;
             if (!_try_match(pop, pop + len))
                 goto Lnomatch;
-            pmatch[n + 1].begin = ss - _input;
-            pmatch[n + 1].end = _src - _input;
+            pmatch[n + 1].begin = static_cast<int>(ss - _input);
+            pmatch[n + 1].end = static_cast<int>(_src - _input);
             prog = pop + len;
             break;
 
@@ -1104,9 +1108,11 @@ int RegExp::_parse_piece()
         len = _buf->offset - offset;
         _buf->spread(offset, 1 + sizeof(unsigned) * 3);
         _buf->data[offset] = op;
-        ((unsigned*)(_buf->data + offset + 1))[0] = len;
-        ((unsigned*)(_buf->data + offset + 1))[1] = n;
-        ((unsigned*)(_buf->data + offset + 1))[2] = m;
+
+        // we are using temporary buffer + memcpy to prevent
+        // unaligned memory access on ARM devices
+        unsigned localBuffer[3] = { len, n, m };
+        memcpy(_buf->data + offset + 1, localBuffer, sizeof(localBuffer));
         break;
     }
     return 1;
@@ -1308,7 +1314,7 @@ int RegExp::_parse_atom()
                 }
                 break;
             }
-            len = q - _parser_pos;
+            len = static_cast<int>(q - _parser_pos);
             if (len > 0)
             {
                 _buf->reserve(5 + (1 + len) * sizeof(char));
@@ -1369,7 +1375,7 @@ RegExp::Range
             {
                 unsigned uu;
 
-                uu = base - buf->data;
+                uu = static_cast<unsigned>(base - buf->data);
                 buf->fill0(b - maxb + 1);
                 base = buf->data + uu;
                 maxb = b + 1;
@@ -1772,7 +1778,7 @@ void RegExp::_optimize()
             unsigned offset;
             Range r(&bitbuf);
 
-            offset = prog - (char*)_buf->data;
+            offset = static_cast<unsigned>(prog - (char*)_buf->data);
             if (_start_chars(&r, prog, NULL))
             {
                 _buf->spread(offset, 1 + 4 + r.maxb);
@@ -1979,7 +1985,7 @@ char* RegExp::replace(char* format)
     char* result;
     unsigned c;
 
-    buf.reserve((_tcslen(format) + 1) * sizeof(char));
+    buf.reserve(static_cast<unsigned>((_tcslen(format) + 1) * sizeof(char)));
     for (;; format = _tcsinc(format))
     {
         c = _tcsnextc(format);
@@ -2057,7 +2063,7 @@ char* RegExp::replace3(char* format, char* input, unsigned re_nsub, Match* pmatc
     int rm_eo;
     int i;
 
-    buf.reserve((_tcslen(format) + 1) * sizeof(char));
+    buf.reserve(static_cast<unsigned>((_tcslen(format) + 1) * sizeof(char)));
     for (;; format = _tcsinc(format))
     {
         c = _tcsnextc(format);
@@ -2089,7 +2095,7 @@ char* RegExp::replace3(char* format, char* input, unsigned re_nsub, Match* pmatc
 
         case '\'':
             rm_so = pmatch[0].end;
-            rm_eo = _tcslen(input);
+            rm_eo = static_cast<int>(_tcslen(input));
             goto Lstring;
 
         Lstring:
@@ -2154,8 +2160,8 @@ char* RegExp::replace4(char* input, Match* match, char* replacement)
     int result_len;
     char* result;
 
-    input_len = _tcslen(input);
-    replacement_len = _tcslen(replacement);
+    input_len = static_cast<int>(_tcslen(input));
+    replacement_len = static_cast<int>(_tcslen(replacement));
     result_len = input_len - (match->end - match->begin) + replacement_len;
     result = (char*)malloc((result_len + 1) * sizeof(char));
     memcpy(result, input, match->begin * sizeof(char));
@@ -2165,15 +2171,6 @@ char* RegExp::replace4(char* input, Match* match, char* replacement)
            (input_len - match->end) * sizeof(char));
     result[result_len] = 0;
     return result;
-}
-
-//------------------------------------------------------------------------------
-
-RegExp::RegBuffer::RegBuffer()
-{
-    data = NULL;
-    offset = 0;
-    size = 0;
 }
 
 //------------------------------------------------------------------------------

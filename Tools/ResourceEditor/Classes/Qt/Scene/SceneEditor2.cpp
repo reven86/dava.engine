@@ -272,27 +272,29 @@ SceneFileV2::eError SceneEditor2::Save()
 bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
 	SceneExporter exporter;
-	
-	FilePath projectPath(ProjectManager::Instance()->CurProjectPath());
-	
-	exporter.SetInFolder(projectPath + String("DataSource/3d/"));
+
+    FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
+
+    exporter.SetInFolder(projectPath + String("DataSource/3d/"));
     exporter.SetOutFolder(projectPath + String("Data/3d/"));
 	exporter.SetGPUForExporting(newGPU);
 
 	DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
 	exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
 
-	Set<String> errorLog;
+    ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
+    if (clonedScene)
+    {
+        Set<String> errorLog;
+        exporter.ExportScene(clonedScene, GetScenePath(), errorLog);
+        for (auto& error : errorLog)
+        {
+            Logger::Error("Export error: %s", error.c_str());
+        }
 
-	SceneEditor2 *clonedScene = CreateCopyForExport();
-	exporter.ExportScene(clonedScene, GetScenePath(), errorLog);
-	for (Set<String>::iterator iter = errorLog.begin(); iter != errorLog.end(); ++iter)
-	{
-		Logger::Error("Export error: %s", iter->c_str());
-	}
-
-	clonedScene->Release();
-	return (errorLog.size() == 0);
+        return errorLog.empty();
+    }
+    return false;
 }
 
 const DAVA::FilePath & SceneEditor2::GetScenePath()
@@ -634,6 +636,10 @@ SceneEditor2 * SceneEditor2::CreateCopyForExport()
         {
             sceneCopy->RemoveSystems();
             ret = sceneCopy;
+        }
+        else
+        {
+            SafeRelease(sceneCopy);
         }
 
         FileSystem::Instance()->DeleteFile(tmpScenePath);
