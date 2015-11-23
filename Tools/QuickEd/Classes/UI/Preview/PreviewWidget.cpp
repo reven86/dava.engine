@@ -62,8 +62,9 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
     , scrollAreaController(new ScrollAreaController(this))
 {
-    percentages << 10 << 25 << 50 << 75 << 100 << 125
-                << 150 << 175 << 200 << 250 << 400 << 800;
+    percentages << 25 << 33 << 50 << 67 << 75 << 90
+                << 100 << 110 << 125 << 150 << 175 << 200 
+                << 250 << 300 << 400 << 500 << 600 << 700 << 800;
     setupUi(this);
     davaGLWidget = new DavaGLWidget();
     frame->layout()->addWidget(davaGLWidget);
