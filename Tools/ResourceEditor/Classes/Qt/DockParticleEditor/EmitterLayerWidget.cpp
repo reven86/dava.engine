@@ -158,25 +158,33 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 	connect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 	connect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 	mainBox->addLayout(longLayout);	
-	
-	QHBoxLayout* spriteHBox = new QHBoxLayout;
-	spriteLabel = new QLabel(this);
-	spriteLabel->setMinimumSize(SPRITE_SIZE, SPRITE_SIZE);
-	spriteHBox->addWidget(spriteLabel);
-	mainBox->addLayout(spriteHBox);
-	QVBoxLayout* spriteVBox = new QVBoxLayout;
-	spriteHBox->addLayout(spriteVBox);
-	spriteBtn = new QPushButton("Set sprite", this);
-	spriteBtn->setMinimumHeight(30);
-	spritePathLabel = new QLineEdit(this);
-	spritePathLabel->setReadOnly(true);
-	spriteVBox->addWidget(spriteBtn);
-	spriteVBox->addWidget(spritePathLabel);
-	connect(spriteBtn,
-			SIGNAL(clicked(bool)),
-			this,
-			SLOT(OnSpriteBtn()));
-	connect(spritePathLabel, SIGNAL(textChanged(const QString&)), this, SLOT(OnSpritePathChanged(const QString&)));
+
+    QHBoxLayout* spriteHBox2 = new QHBoxLayout;
+    spriteBtn = new QPushButton("Set sprite", this);
+    spriteBtn->setMinimumHeight(30);
+    spriteFolderBtn = new QPushButton("Change sprite folder", this);
+    spriteFolderBtn->setMinimumHeight(30);
+    spriteHBox2->addWidget(spriteBtn);
+    spriteHBox2->addWidget(spriteFolderBtn);
+
+    QVBoxLayout* spriteVBox = new QVBoxLayout;
+    spritePathLabel = new QLineEdit(this);
+    spritePathLabel->setReadOnly(false);
+    spriteVBox->addLayout(spriteHBox2);
+    spriteVBox->addWidget(spritePathLabel);
+
+    QHBoxLayout* spriteHBox = new QHBoxLayout;
+    spriteLabel = new QLabel(this);
+    spriteLabel->setMinimumSize(SPRITE_SIZE, SPRITE_SIZE);
+    spriteHBox->addWidget(spriteLabel);
+    spriteHBox->addLayout(spriteVBox);
+
+    mainBox->addLayout(spriteHBox);
+
+    connect(spriteBtn, SIGNAL(clicked(bool)), this, SLOT(OnSpriteBtn()));
+    connect(spriteFolderBtn, SIGNAL(clicked(bool)), this, SLOT(OnSpriteFolderBtn()));
+    connect(spritePathLabel, SIGNAL(textChanged(const QString&)), this, SLOT(OnSpritePathChanged(const QString&)));
+    connect(spritePathLabel, SIGNAL(textEdited(const QString&)), this, SLOT(OnSpritePathEdited(const QString&)));
 
 	QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
 	innerEmitterLabel = new QLabel("Inner Emitter", this);
@@ -439,121 +447,6 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     connect(spriteUpdateTimer, SIGNAL(timeout()), this, SLOT(OnSpriteUpdateTimerExpired()));
 }
 
-EmitterLayerWidget::~EmitterLayerWidget()
-{
-	disconnect(layerNameLineEdit,
-			SIGNAL(editingFinished()),
-			this,
-			SLOT(OnValueChanged()));
-	disconnect(layerTypeComboBox,
-			SIGNAL(currentIndexChanged(int)),
-			this,
-			SLOT(OnValueChanged()));
-	disconnect(enableCheckBox,
-			SIGNAL(stateChanged(int)),
-			this,
-			SLOT(OnValueChanged()));	
-	disconnect(inheritPostionCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnValueChanged()));
-	disconnect(isLongCheckBox,
-			SIGNAL(stateChanged(int)),
-			this,
-			SLOT(OnValueChanged()));
-	disconnect(spriteBtn,
-			SIGNAL(clicked(bool)),
-			this,
-			SLOT(OnSpriteBtn()));
-	disconnect(spritePathLabel,
-			SIGNAL(textChanged(const QString&)),
-			this,
-			SLOT(OnSpritePathChanged(const QString&)));
-	disconnect(isLoopedCheckBox,
-			SIGNAL(stateChanged(int)),
-			this,
-			SLOT(OnValueChanged()));
-	disconnect(deltaSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-	disconnect(loopEndSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-	disconnect(startTimeSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-	disconnect(endTimeSpin,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-	disconnect(frameOverlifeCheckBox,
-		   SIGNAL(stateChanged(int)),
-		   this,
-		   SLOT(OnValueChanged()));
-	disconnect(frameOverlifeFPSSpin,
-		   SIGNAL(valueChanged(int)),
-		   this,
-		   SLOT(OnValueChanged()));
-	disconnect(randomFrameOnStartCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnValueChanged()));
-	disconnect(loopSpriteAnimationCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnValueChanged()));
-	disconnect(randomSpinDirectionCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnValueChanged()));	
-	disconnect(pivotPointXSpinBox,
-			   SIGNAL(valueChanged(double)),
-			   this,
-			   SLOT(OnValueChanged()));
-	disconnect(pivotPointYSpinBox,
-			SIGNAL(valueChanged(double)),
-			this,
-			SLOT(OnValueChanged()));
-	for (int32 i=0; i<LodComponent::MAX_LOD_LAYERS; ++i)
-	{	
-		disconnect(layerLodsCheckBox[i],
-			SIGNAL(stateChanged(int)),
-			this,
-			SLOT(OnLodsChanged()));		
-	}
-	
-	disconnect(cameraFacingCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnLodsChanged()));		
-	disconnect(xFacingCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnLodsChanged()));		
-	disconnect(yFacingCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnLodsChanged()));		
-	disconnect(zFacingCheckBox,
-		SIGNAL(stateChanged(int)),
-		this,
-		SLOT(OnLodsChanged()));
-    disconnect(worldAlignCheckBox,
-               SIGNAL(stateChanged(int)),
-               this,
-               SLOT(OnLodsChanged()));
-
-    disconnect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
-    disconnect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-    disconnect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-
-	disconnect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
-	disconnect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
-}
-
 void EmitterLayerWidget::InitWidget(QWidget* widget)
 {
 	mainBox->addWidget(widget);
@@ -654,38 +547,54 @@ void EmitterLayerWidget::StoreVisualState(KeyedArchive* visualStateProps)
 
 void EmitterLayerWidget::OnSpriteBtn()
 {
-    FilePath projectPath(ProjectManager::Instance()->GetProjectPath());
-    projectPath += "Data/Gfx/Particles/";
+    QString startPath;
+    if (layer->spritePath.IsEmpty())
+    {
+        startPath = QString::fromStdString(ProjectManager::Instance()->GetParticlesDataPath().GetAbsolutePathname());
+    }
+    else
+    {
+        startPath = QString::fromStdString(layer->spritePath.GetDirectory().GetStringValue());
+    }
 
-    QString filePath = FileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
-    if (filePath.isEmpty())
+    QString selectedPath = FileDialog::getOpenFileName(nullptr, QString("Open particle sprite"), startPath, QString("Effect File (*.txt)"));
+    if (selectedPath.isEmpty())
+    {
         return;
+    }
 
-    // Yuri Coder. Verify that the path of the file opened is correct (i.e. inside the Project Path),
-	// this is according to the DF-551 issue.
-    FilePath filePathToBeOpened(filePath.toStdString());
-	String relativePathForProjectPath = filePathToBeOpened.GetRelativePathname(projectPath);
+    selectedPath.truncate(selectedPath.lastIndexOf('.'));
+    if (selectedPath == spritePathLabel->text())
+    {
+        return;
+    }
 
-// 	if (filePathToBeOpened.GetDirectory() != projectPath)
-	if (relativePathForProjectPath.find("../") != String::npos)
-	{
-		QString message = QString("You've opened Particle Sprite from incorrect path (%1).\n Correct one is %2.").
-			arg(QString::fromStdString(filePathToBeOpened.GetDirectory().GetAbsolutePathname())).
-			arg(QString::fromStdString(projectPath.GetDirectory().GetAbsolutePathname()));
+    spritePathLabel->setText(selectedPath);
 
-		QMessageBox msgBox(QMessageBox::Warning, "Warning", message);
-		msgBox.exec();
+    OnSpritePathEdited(selectedPath);
+}
 
-		// TODO: return here in case we'll decide to not allow opening sprite from incorrect path.
-	}
-	
-	filePath.remove(filePath.size() - 4, 4);
-	Sprite* sprite = Sprite::Create(filePath.toStdString());
-	if (!sprite)
-		return;
-	
-	this->sprite = sprite;
-	OnValueChanged();
+void EmitterLayerWidget::OnSpriteFolderBtn()
+{
+    if (layer->spritePath.IsEmpty())
+    {
+        return;
+    }
+
+    QString startPath = QString::fromStdString(layer->spritePath.GetDirectory().GetStringValue());
+    QString spriteName = QString::fromStdString(layer->spritePath.GetBasename());
+
+    QString selectedPath = FileDialog::getExistingDirectory(nullptr, QString("Select particle sprites directory"), startPath);
+    if (selectedPath.isEmpty())
+    {
+        return;
+    }
+    selectedPath += "/";
+    selectedPath += spriteName;
+
+    spritePathLabel->setText(selectedPath);
+
+    OnSpritePathEdited(selectedPath);
 }
 
 void EmitterLayerWidget::OnValueChanged()
@@ -762,8 +671,10 @@ void EmitterLayerWidget::OnValueChanged()
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
 
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
-
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
+
+    FilePath spritePath(spritePathLabel->text().toStdString());
+
 	CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
@@ -774,7 +685,7 @@ void EmitterLayerWidget::OnValueChanged()
                          scaleVelocityBaseSpinBox->value(),
                          scaleVelocityFactorSpinBox->value(),
                          isLoopedCheckBox->isChecked(),
-                         sprite,
+                         spritePath,
                          blending,
                          fogCheckBox->isChecked(),
                          frameBlendingCheckBox->isChecked(),
@@ -891,33 +802,26 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     }
 
     degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
-    //LAYER_SPRITE = 0,
-    sprite = layer->sprite;
 
-    if (sprite)
+    if (layer->sprite)
     {
         Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
         RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
         {
             Sprite::DrawState drawState = {};
-            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
-            RenderSystem2D::Instance()->Draw(sprite, &drawState, Color::White);
+            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
+            RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
         }
         RenderSystem2D::Instance()->EndRenderTargetPass();
         spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
         spriteUpdateTimer->start(0);
+        spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
     }
     else
     {
         spriteLabel->setPixmap( QPixmap() );
+        spritePathLabel->setText("<none>");
     }
-
-    QString spriteName = "<none>";
-    if (sprite)
-    {
-        spriteName = QString::fromStdString(sprite->GetRelativePathname().GetAbsolutePathname());
-    }
-    spritePathLabel->setText(spriteName);
 
     //particle orientation
     cameraFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
@@ -1107,6 +1011,25 @@ void EmitterLayerWidget::OnSpritePathChanged(const QString& text)
 	UpdateTooltip();
 }
 
+void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
+{
+    const FilePath& particlesDataPath = ProjectManager::Instance()->GetParticlesDataPath();
+    const FilePath spritePath = text.toStdString();
+    const String relativePathForParticlesPath = spritePath.GetRelativePathname(particlesDataPath);
+
+    if (relativePathForParticlesPath.find("../") != String::npos)
+    {
+        QString message = QString("You've opened particle sprite from incorrect path (%1).\n Correct one is %2.").
+            arg(QString::fromStdString(spritePath.GetDirectory().GetAbsolutePathname())).
+            arg(QString::fromStdString(particlesDataPath.GetAbsolutePathname()));
+
+        QMessageBox msgBox(QMessageBox::Warning, "Warning", message);
+        msgBox.exec();
+    }
+
+    OnValueChanged();
+}
+
 void EmitterLayerWidget::FillLayerTypes()
 {
 	int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
@@ -1134,6 +1057,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 {
 	// Sprite has no sense for Superemitter.
 	spriteBtn->setVisible(!isSuperemitter);
+    spriteFolderBtn->setVisible(!isSuperemitter);
 	spriteLabel->setVisible(!isSuperemitter);
 	spritePathLabel->setVisible(!isSuperemitter);
 	

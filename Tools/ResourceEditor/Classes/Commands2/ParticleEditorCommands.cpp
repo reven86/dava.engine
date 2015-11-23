@@ -142,7 +142,7 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
                                       float32 scaleVelocityBase,
                                       float32 scaleVelocityFactor,
                                       bool isLooped,
-                                      Sprite* sprite,
+                                      const FilePath& spritePath,
                                       eBlending blending,
                                       bool enableFog,
                                       bool enableFrameBlending,
@@ -192,7 +192,7 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
     this->isLong = isLong;
     this->scaleVelocityBase = scaleVelocityBase;
     this->scaleVelocityFactor = scaleVelocityFactor;
-    this->sprite = sprite;
+    this->spritePath = spritePath;
     this->blending = blending;
     this->enableFog = enableFog;
     this->enableFrameBlending = enableFrameBlending;
@@ -286,9 +286,9 @@ void CommandUpdateParticleLayer::Redo()
 
     // This code must be after layer->frameOverlife set call, since setSprite
     // may change the frames.
-    if (layer->sprite != sprite)
+    if (layer->spritePath != spritePath)
     {
-        layer->SetSprite(sprite);
+        layer->SetSprite(spritePath);
         //TODO: restart effect
     }
 

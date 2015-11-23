@@ -178,7 +178,7 @@ namespace DAVA
             windowedMode.bpp = options->GetInt32("bpp");
 
             // get values from config in case if they are available
-			fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
+            fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
 			fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
 			fullscreenMode.bpp = windowedMode.bpp;
 
@@ -187,7 +187,7 @@ namespace DAVA
             String title = options->GetString("title", "[set application title using core options property 'title']");
             WideString titleW = StringToWString(title);
             SetWindowText(hWindow, titleW.c_str());
-		}
+        }
 
         Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
 
@@ -311,7 +311,7 @@ namespace DAVA
 
     RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode& dm)
     {
-		RECT clientSize;
+        RECT clientSize;
 		clientSize.top = 0;
 		clientSize.left = 0;
 		clientSize.right = dm.width;
@@ -392,7 +392,7 @@ namespace DAVA
         while (EnumDisplaySettings(NULL, iModeNum++, &dmi))
         {
             DisplayMode mode;
-			mode.width = dmi.dmPelsWidth;
+            mode.width = dmi.dmPelsWidth;
 			mode.height = dmi.dmPelsHeight;
 			mode.bpp = dmi.dmBitsPerPel;
 			mode.refreshRate = dmi.dmDisplayFrequency;
@@ -518,7 +518,7 @@ namespace DAVA
         if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
         {
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
-		}
+        }
 		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
 		{
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;

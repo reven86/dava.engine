@@ -307,15 +307,13 @@ void WebViewControl::SetRect(const Rect& rect)
     
 	webViewRect.size.width = convertedRect.dx;
 	webViewRect.size.height = convertedRect.dy;
-	
+
     NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
     DVASSERT(openGLView);
-	webViewRect.origin.x = convertedRect.x;
-    webViewRect.origin.y = [openGLView isFlipped]
-        ? convertedRect.y
-        : VCS.GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
-	
-	webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
+    webViewRect.origin.x = convertedRect.x;
+    webViewRect.origin.y = [openGLView isFlipped] ? convertedRect.y : VCS.GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
+
+    webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
 	webViewRect.origin.y += VCS.GetPhysicalDrawOffset().y;
 	
 	[(WebView*)webViewPtr setFrame: webViewRect];

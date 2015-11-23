@@ -256,7 +256,7 @@ void UISlider::Input(UIEvent *currentInput)
     }
 
     RecalcButtonPos();
-	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
+    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
 void UISlider::Draw(const UIGeometricData &geometricData)

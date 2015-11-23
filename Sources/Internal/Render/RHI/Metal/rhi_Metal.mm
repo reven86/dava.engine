@@ -34,7 +34,7 @@
 
     #include "_metal.h"
 
-#if !(TARGET_IPHONE_SIMULATOR==1)
+#if !(TARGET_IPHONE_SIMULATOR == 1)
 
 id<MTLDevice> _Metal_Device = nil;
 id<MTLCommandQueue> _Metal_DefCmdQueue = nil;

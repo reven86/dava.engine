@@ -70,7 +70,7 @@ namespace DAVA
         DAVA::CoreMacOSPlatform* core = new DAVA::CoreMacOSPlatform();
         core->SetCommandLine(argc, argv);
         core->EnableConsoleMode();
-		core->CreateSingletons();
+        core->CreateSingletons();
 		
         Logger::Instance()->EnableConsoleMode();
         

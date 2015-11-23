@@ -67,8 +67,8 @@ protected:
         uint8 dead : 1;
         uint8 priorityChanged : 1;
         uint8 addedObject : 1; // can be used for delayed adding of anything to hierarchy
-        uint8		isDebugDraw;
-	};
+        uint8 isDebugDraw;
+    };
 
 public:
 	static GameObject* Create(const FilePath & _pathToSprite, int32 frame = 0);

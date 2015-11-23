@@ -192,7 +192,7 @@ extern void FrameworkWillTerminate();
         case NPCocoaEventMouseExited:
             break;
 
-		case NPCocoaEventMouseDragged:
+        case NPCocoaEventMouseDragged:
             [self processEvent:DAVA::UIEvent::Phase::DRAG touch:event];
             break;
 
@@ -201,7 +201,7 @@ extern void FrameworkWillTerminate();
             break;
 
         case NPCocoaEventKeyUp:
-			[self keyUp:event];
+            [self keyUp:event];
 			break;
 
 		case NPCocoaEventFlagsChanged:
@@ -231,7 +231,7 @@ extern void FrameworkWillTerminate();
         {
             NSPoint p;
             p.x = curEvent->data.mouse.pluginX;
-			p.y = curEvent->data.mouse.pluginY;
+            p.y = curEvent->data.mouse.pluginY;
 
 			it->physPoint.x = p.x;
 			it->physPoint.y = p.y;
@@ -246,7 +246,7 @@ extern void FrameworkWillTerminate();
             it->timestamp = timestamp;
             it->phase = touchPhase;
         }
-	}
+    }
 
 	bool isFind = false;
 	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
@@ -273,7 +273,7 @@ extern void FrameworkWillTerminate();
             it->phase = touchPhase;
 
             break;
-		}
+        }
 	}
 
 	if(!isFind)
@@ -297,7 +297,7 @@ extern void FrameworkWillTerminate();
         newTouch.timestamp = timestamp;
         newTouch.phase = touchPhase;
         allTouches.push_back(newTouch);
-	}
+    }
 
 	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
@@ -310,7 +310,7 @@ extern void FrameworkWillTerminate();
         {
             if (it->tid == button)
             {
-				allTouches.erase(it);
+                allTouches.erase(it);
 				break;
 			}
 		}
@@ -416,7 +416,7 @@ extern void FrameworkWillTerminate();
         if ((oldModifiersFlags & masks[i]) != (newModifiers & masks[i]))
         {
             if (newModifiers & masks[i])
-			{
+            {
 				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
 			}
 			else

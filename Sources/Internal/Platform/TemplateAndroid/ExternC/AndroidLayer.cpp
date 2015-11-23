@@ -175,7 +175,7 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
         }
     }
     else
-	{
+    {
 		DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
 	}
    
@@ -349,7 +349,7 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
     case 2: //ACTION_MOVE
     {
         if ((source & 0x10) > 0) //SOURCE_CLASS_JOYSTICK
-                {
+        {
                     phase = DAVA::UIEvent::Phase::JOYSTICK;
                 }
                 else //Touches
@@ -367,8 +367,8 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
                 break;
             }
 
-        return phase;
-	}
+            return phase;
+    }
 
 	DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv * env, jobject input, jint action, jint source)
 	{
