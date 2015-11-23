@@ -1676,9 +1676,10 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
                 {
                     dstArchive->SetVariant(obj.first, *obj.second);
                 }
-			}
-			break;
-		case TYPE_INT64:
+            }
+            break;
+        }
+        case TYPE_INT64:
 			*((DAVA::int64 *) dst) = val.AsInt64();
 			break;
 		case TYPE_UINT64:
