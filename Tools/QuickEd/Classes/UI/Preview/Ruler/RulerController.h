@@ -54,6 +54,7 @@ public slots:
     // Update the ruler markers with the mouse position.
     void UpdateRulerMarkers(QPoint curMousePos);
     void SetViewPos(QPoint startPos);
+    void SetAdditionalPos(QPoint pos);
 
 signals:
     // Horizontal/Vertical ruler settings are changed.
@@ -65,6 +66,7 @@ signals:
     void VerticalRulerMarkPositionChanged(int position);
 
 protected:
+    void ApplyPosChanged();
     void SetupInitialRulerSettings(RulerSettings& settings);
 
     // Recalculate the ruler settings depending on position/zoom level and emit signals.
@@ -73,6 +75,7 @@ protected:
 private:
     // Screen view pos and scale.
     QPoint screenViewPos;
+    QPoint additionalViewPos;
     float screenScale;
 
     // Ruler settings.

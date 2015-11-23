@@ -38,7 +38,6 @@ RulerController::RulerController(QObject* parent)
     SetupInitialRulerSettings(verticalRulerSettings);
 }
 
-
 void RulerController::SetupInitialRulerSettings(RulerSettings& settings)
 {
     static const int defaultSmallTicksDelta = 10;
@@ -50,22 +49,31 @@ void RulerController::SetupInitialRulerSettings(RulerSettings& settings)
     settings.zoomLevel = 1.0f;
 }
 
-void RulerController::SetViewPos(QPoint viewPos)
+void RulerController::SetViewPos(QPoint pos)
 {
-    viewPos *= -1;
-    if (viewPos.x() != screenViewPos.x())
-    {
-        screenViewPos.setX(viewPos.x());
-        horisontalRulerSettings.startPos = screenViewPos.x();
-        emit HorisontalRulerSettingsChanged(horisontalRulerSettings);
-    }
+    pos *= -1;
+    screenViewPos = pos;
+    ApplyPosChanged();
+}
 
-    if (viewPos.y() != screenViewPos.y())
-    {
-        screenViewPos.setY(viewPos.y());
-        verticalRulerSettings.startPos = screenViewPos.y();
-        emit VerticalRulerSettingsChanged(verticalRulerSettings);
-    }
+void RulerController::SetAdditionalPos(QPoint pos)
+{
+    pos *= -1;
+    additionalViewPos = pos;
+    ApplyPosChanged();
+}
+
+void RulerController::ApplyPosChanged()
+{
+    QPoint viewPos = screenViewPos + additionalViewPos;
+
+    screenViewPos.setX(viewPos.x());
+    horisontalRulerSettings.startPos = viewPos.x();
+    emit HorisontalRulerSettingsChanged(horisontalRulerSettings);
+
+    screenViewPos.setY(viewPos.y());
+    verticalRulerSettings.startPos = viewPos.y();
+    emit VerticalRulerSettingsChanged(verticalRulerSettings);
 }
 
 void RulerController::SetScale(float scale)

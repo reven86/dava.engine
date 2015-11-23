@@ -97,9 +97,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
-    connect(documentGroup, &DocumentGroup::RootControlPositionChanged, [previewWidget](DAVA::Vector2 pos) {
-        previewWidget->GetRulerController()->SetViewPos(QPoint(pos.x, pos.y));
-    });
+    connect(documentGroup, &DocumentGroup::RootControlPositionChanged, previewWidget, &PreviewWidget::OnRootControlPositionChanged);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);

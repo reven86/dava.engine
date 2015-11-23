@@ -63,6 +63,7 @@ signals:
 public slots:
     void OnDocumentChanged(Document* document);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void RootControlPositionChanged(const DAVA::Vector2 &pos);
 
 private slots:
     // Zoom.
