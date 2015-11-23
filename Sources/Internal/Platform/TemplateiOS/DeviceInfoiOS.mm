@@ -51,8 +51,8 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
-	#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR == 1
-		return 	DeviceInfo::PLATFORM_IOS_SIMULATOR;
+	#if TARGET_IPHONE_SIMULATOR == 1
+    return DeviceInfo::PLATFORM_IOS_SIMULATOR;
 	#else
 		return 	DeviceInfo::PLATFORM_IOS;
 	#endif
@@ -385,7 +385,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
         {
             screenInfo.scale = [[ ::UIScreen mainScreen] nativeScale];
         }
-        else if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
+        else if ([ ::UIScreen instancesRespondToSelector:@selector(scale)])
         {
             screenInfo.scale = [[ ::UIScreen mainScreen] scale];
         }

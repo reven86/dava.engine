@@ -112,6 +112,10 @@ public:
     // Draw events
     virtual void WillDraw() {}
     virtual void DidDraw() {}
+
+    virtual void Update()
+    {
+    }
 };
 
 inline void IWebViewControl::SetScalesPageToFit(bool isScalesToFit)

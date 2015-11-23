@@ -204,7 +204,7 @@ extern void FrameworkWillTerminate();
             [self keyUp:event];
             break;
 
-		case NPCocoaEventFlagsChanged:
+        case NPCocoaEventFlagsChanged:
 			[self flagsChanged:event];
 			break;
 
@@ -234,7 +234,7 @@ extern void FrameworkWillTerminate();
             p.y = curEvent->data.mouse.pluginY;
 
             it->physPoint.x = p.x;
-			it->physPoint.y = p.y;
+            it->physPoint.y = p.y;
 
             if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
             {
@@ -249,7 +249,7 @@ extern void FrameworkWillTerminate();
     }
 
     bool isFind = false;
-	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		if(it->tid == button)
 		{
@@ -276,7 +276,7 @@ extern void FrameworkWillTerminate();
         }
     }
 
-	if(!isFind)
+    if(!isFind)
 	{
 		DAVA::UIEvent newTouch;
 		newTouch.tid = button;
@@ -299,8 +299,8 @@ extern void FrameworkWillTerminate();
         allTouches.push_back(newTouch);
     }
 
-    for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-	{
+    for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    {
 		outTouches->push_back(*it);
 	}
 
@@ -312,7 +312,7 @@ extern void FrameworkWillTerminate();
             {
                 allTouches.erase(it);
                 break;
-			}
+            }
 		}
 	}
 }
@@ -418,7 +418,7 @@ extern void FrameworkWillTerminate();
             if (newModifiers & masks[i])
             {
                 DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
-			}
+            }
 			else
 			{
 				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);

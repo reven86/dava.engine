@@ -40,6 +40,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
 #include "DebugTools/DebugTools.h"
 
@@ -74,6 +75,9 @@ MainWindow::MainWindow(QWidget *parent)
     , dialogReloadSprites(new DialogReloadSprites(this))
 {
     setupUi(this);
+
+    LoggerOutputObject *loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
+    connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
 
     DebugTools::ConnectToUI(this);
 
@@ -118,11 +122,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
     OnCurrentIndexChanged(-1);
-}
-
-MainWindow::~MainWindow()
-{
-    SaveMainWindowState();
 }
 
 void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
@@ -467,6 +466,7 @@ int MainWindow::AddTab(const FilePath &scenePath)
 
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
+    SaveMainWindowState();
     emit CloseRequested();
     ev->ignore();
 }

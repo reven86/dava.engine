@@ -156,13 +156,14 @@ namespace DAVA
 
 	void AutotestingSystem::OnAppFinished()
 	{
-		Logger::Info("AutotestingSystem::OnAppFinished ");
-		ExitApp();
-	}
+        Logger::Info("AutotestingSystem::OnAppFinished in");
+        ExitApp();
+        Logger::Info("AutotestingSystem::OnAppFinished out");
+    }
 
-	void AutotestingSystem::RunTests()
-	{
-		if (!isInit || isRunning)
+    void AutotestingSystem::RunTests()
+    {
+        if (!isInit || isRunning)
 		{
 			return;
 		}
@@ -356,7 +357,7 @@ namespace DAVA
 
     void AutotestingSystem::OnError(const String& errorMessage)
     {
-		Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
+        Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
 
 		AutotestingDB::Instance()->Log("ERROR", errorMessage);
 

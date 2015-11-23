@@ -46,7 +46,10 @@ void BacktraceSymbolTable::AddBacktrace(uint32 hash, const uint64* stackFrames, 
     {   // TODO: remove, for debug purpose
         const Vector<const String*> y = iter->second;
         Vector<const String*> x = ResolveFrameNames(stackFrames, stackDepth);
-        DVASSERT(y == x);
+        if (x != y)
+        {
+            Logger::Error("[BacktraceSymbolTable] backtrace hash collision: %u", hash);
+        }
     }
 }
 

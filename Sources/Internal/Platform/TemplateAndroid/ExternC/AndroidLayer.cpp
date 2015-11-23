@@ -341,15 +341,15 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
                 phase = DAVA::UIEvent::Phase::BEGAN;
                 break;
 
-            case 6: //ACTION_POINTER_UP
-            case 1: //ACTION_UP
+    case 6: //ACTION_POINTER_UP
+    case 1: //ACTION_UP
                 phase = DAVA::UIEvent::Phase::ENDED;
                 break;
 
-            case 2: //ACTION_MOVE
-            {
-                if ((source & 0x10) > 0) //SOURCE_CLASS_JOYSTICK
-                {
+    case 2: //ACTION_MOVE
+    {
+        if ((source & 0x10) > 0) //SOURCE_CLASS_JOYSTICK
+        {
                     phase = DAVA::UIEvent::Phase::JOYSTICK;
                 }
                 else //Touches
@@ -497,7 +497,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
 
         if (core)
         {
-            core->SetNativeWindow(nativeWindow);
+            core->SetNativeWindow(nullptr);
+            core->RenderReset(0, 0);
         }
     }
 }

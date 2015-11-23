@@ -196,9 +196,9 @@ namespace DAVA
             if (FileSystem::Instance()->Exists(filename)) /* does file exist and is readable? */
                 return filename; /* return that file name */
             lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
-			lua_remove(L, -2);  /* remove file name */
-			lua_concat(L, 2);  /* add entry to possible error message */
-		}
+            lua_remove(L, -2); /* remove file name */
+            lua_concat(L, 2); /* add entry to possible error message */
+        }
 		return name;  /* not found */
 	}
 

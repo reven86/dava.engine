@@ -581,10 +581,11 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     core->RunOnMainThread([this, wheelDelta, physPoint, type]() {
         UIEvent ev;
 
-        ev.scrollDelta.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
+        ev.scrollDelta.y = wheelDelta / static_cast<float32>(WHEEL_DELTA);
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;
+        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
     });
@@ -599,6 +600,7 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, B
         ev.phase = UIEvent::Phase::KEY_DOWN;
         ev.tid = DVKEY_BACK;
         ev.device = UIEvent::Device::KEYBOARD;
+        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyPressed(static_cast<uint32>(DVKEY_BACK));
@@ -638,6 +640,7 @@ void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher 
         uiEvent.device = UIEvent::Device::KEYBOARD;
         uiEvent.phase = phase;
         uiEvent.tid = keyboard.GetDavaKeyForSystemKey(key);
+        uiEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&uiEvent);
         switch (uiEvent.phase)
@@ -663,6 +666,8 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
         DVASSERT(unicodeChar < 0xFFFF); // wchar_t is 16 bit, so keyChar dosnt fit
         ev.keyChar = unicodeChar;
         ev.device = UIEvent::Device::KEYBOARD;
+        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+
         if (isRepeat)
         {
             ev.phase = UIEvent::Phase::CHAR_REPEAT;
@@ -707,6 +712,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.phase = phase;
     newTouch.device = device;
     newTouch.tapCount = 1;
+    newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
