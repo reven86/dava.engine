@@ -717,15 +717,21 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	}
 	
 	protected void ShowSplashScreenView() {
-	    Log.d(JNIConst.LOG_TAG, "splashView set visible");
-	    splashView.setVisibility(View.VISIBLE);
-	    JNITextField.HideAllTextFields();
-	    JNIWebView.HideAllWebViews();
+        if(null != splashView) {
+	        Log.d(JNIConst.LOG_TAG, "splashView set visible");
+	        splashView.setVisibility(View.VISIBLE);
+        }
+
+        JNITextField.HideAllTextFields();
+        JNIWebView.HideAllWebViews();
 	}
 	
 	protected void HideSplashScreenView() {
-	    Log.d(JNIConst.LOG_TAG, "splashView hide");
-		splashView.setVisibility(View.GONE);
+        if(null != splashView) {
+    	    Log.d(JNIConst.LOG_TAG, "splashView hide");
+	   	    splashView.setVisibility(View.GONE);
+        }
+
 		JNITextField.ShowVisibleTextFields();
 		JNIWebView.ShowVisibleWebViews();
 		surfaceView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
