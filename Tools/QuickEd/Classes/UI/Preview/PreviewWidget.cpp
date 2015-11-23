@@ -134,19 +134,12 @@ ScrollAreaController* PreviewWidget::GetScrollAreaController()
 float PreviewWidget::GetScale() const
 {
     // Firstly verify whether the value is already set.
-    QString curTextValue = scaleCombo->currentText().trimmed();
-    int scaleValue = 0;
-    if (curTextValue.endsWith(" %"))
-    {
-        int endCharPos = curTextValue.lastIndexOf(" %");
-        QString remainderNumber = curTextValue.left(endCharPos);
-        scaleValue = remainderNumber.toInt();
-    }
-    else
-    {
-        // Try to parse the value.
-        scaleValue = curTextValue.toFloat();
-    }
+    QString curTextValue = scaleCombo->currentText();
+    curTextValue.remove('%');
+    curTextValue.remove(' ');
+    bool ok;
+    float scaleValue = curTextValue.toFloat(&ok);
+    DVASSERT_MSG(ok, "can not parse text to float");
     return scaleValue;
 }
 
@@ -317,7 +310,6 @@ bool PreviewWidget::eventFilter(QObject *obj, QEvent *event)
 
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 {
-    static const qreal wheelDelta = 0.002;
 #if defined Q_OS_MAC
     int horizontalScrollBarValue = horizontalScrollBar->value();
     horizontalScrollBarValue -= event->pixelDelta().x() * horizontalScrollBar->pageStep() * wheelDelta;
