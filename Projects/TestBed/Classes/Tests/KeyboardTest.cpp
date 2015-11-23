@@ -448,7 +448,7 @@ void KeyboardTest::LoadResources()
         AddControl(touch.img);
     }
 
-    UIControl* gamepad = new UIControl(gamepadPos);
+    gamepad = new UIControl(gamepadPos);
     auto pathToBack = FilePath("~res:/Gfx/GamepadTest/gamepad");
     gamepad->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
 	gamepad->SetSprite(pathToBack, 0);
@@ -476,6 +476,8 @@ void KeyboardTest::UnloadResources()
     {
         SafeRelease(touch.img);
     }
+
+    SafeRelease(gamepad);
 
     for (auto& gamepadButton : gamepadButtons)
     {
