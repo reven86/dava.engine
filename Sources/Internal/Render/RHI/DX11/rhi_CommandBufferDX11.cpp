@@ -86,6 +86,7 @@ public:
     void _ApplyTopology(PrimitiveType primType, uint32 primCount, unsigned* indexCount);
     void _ApplyVertexData();
     void _ApplyRasterizerState();
+    void _ApplyConstBuffers();
 
     RenderPassConfig passCfg;
     uint32 isFirstInPass : 1;
@@ -111,6 +112,9 @@ public:
     ID3D11DeviceContext* context;
     ID3DUserDefinedAnnotation* contextAnnotation;
     ID3D11CommandList* commandList;
+
+    ID3D11Buffer* vertexConstBuffer[MAX_CONST_BUFFER_COUNT];
+    ID3D11Buffer* fragmentConstBuffer[MAX_CONST_BUFFER_COUNT];
 
     Handle sync;
 };
@@ -348,6 +352,9 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
     cb->rs_param.scissorEnabled = false;
     cb->rs_param.wireframe = false;
 
+    memset(cb->vertexConstBuffer, 0, sizeof(cb->vertexConstBuffer));
+    memset(cb->fragmentConstBuffer, 0, sizeof(cb->fragmentConstBuffer));
+
     cb->sync = InvalidHandle;
 
     cb->def_viewport.TopLeftX = 0;
@@ -538,9 +545,7 @@ dx11_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle b
 {
     CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
 
-    ConstBufferDX11::SetToRHI(buffer, cb->context);
-
-    StatSet::IncStat(stat_SET_CB, 1);
+    ConstBufferDX11::SetToRHI(buffer, cb->context, cb->vertexConstBuffer);
 }
 
 //------------------------------------------------------------------------------
@@ -594,9 +599,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle
 {
     CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
 
-    ConstBufferDX11::SetToRHI(buffer, cb->context);
-
-    StatSet::IncStat(stat_SET_CB, 1);
+    ConstBufferDX11::SetToRHI(buffer, cb->context, cb->fragmentConstBuffer);
 }
 
 //------------------------------------------------------------------------------
@@ -646,6 +649,7 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
     cb->_ApplyTopology(type, count, &vertexCount);
     cb->_ApplyVertexData();
     cb->_ApplyRasterizerState();
+    cb->_ApplyConstBuffers();
 
     if (cb->cur_query_i != InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
@@ -686,6 +690,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     cb->_ApplyTopology(type, count, &indexCount);
     cb->_ApplyVertexData();
     cb->_ApplyRasterizerState();
+    cb->_ApplyConstBuffers();
 
     if (cb->cur_query_i != InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
@@ -1195,6 +1200,20 @@ void CommandBufferDX11_t::_ApplyRasterizerState()
         context->RSSetState(cur_rs);
         last_rs = cur_rs;
     }
+}
+
+//------------------------------------------------------------------------------
+
+void CommandBufferDX11_t::_ApplyConstBuffers()
+{
+    unsigned vertexBufCount = 0;
+    unsigned fragmentBufCount = 0;
+
+    PipelineStateDX11::GetConstBufferCount(last_ps, &vertexBufCount, &fragmentBufCount);
+
+    context->VSSetConstantBuffers(0, vertexBufCount, vertexConstBuffer);
+    context->PSSetConstantBuffers(0, fragmentBufCount, fragmentConstBuffer);
+    StatSet::IncStat(stat_SET_CB, 2);
 }
 
 //------------------------------------------------------------------------------
