@@ -141,7 +141,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			Log.d("", "no singalStrengthListner");
 		}
 
-		JNIApplication.app.mainCPPThread = new Thread(new Runnable() 
+		JNIApplication.mainCPPThread = new Thread(new Runnable() 
 		{
 			long startTime;
 			
@@ -202,12 +202,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                     {
                         Log.d(JNIConst.LOG_TAG, "[C++ main thread] suspend native in");
 
-                        PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
-                        boolean isScreenLocked = false;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
-                            isScreenLocked = !pm.isInteractive();
-                        else
-                            isScreenLocked = !pm.isScreenOn();
+                        boolean isScreenLocked = isScreenLocked();
                 
                         nativeOnPause(isScreenLocked);
 
@@ -232,8 +227,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			}
 		}, "cpp_main_thread");
 
-		mainLoopThreadID = JNIApplication.app.mainCPPThread.getId();
-		JNIApplication.app.mainCPPThread.start();
+		mainLoopThreadID = JNIApplication.mainCPPThread.getId();
+		JNIApplication.mainCPPThread.start();
 
         // check if we are starting from android notification popup
         // and execute appropriate runnable
@@ -474,22 +469,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] c++ main thread join start");
 
         // Now wait for the CPP thread to quit
-        if (JNIApplication.app.mainCPPThread != null) {
+        if (JNIApplication.mainCPPThread != null) {
             try {
-                JNIApplication.app.mainCPPThread.join();
+                JNIApplication.mainCPPThread.join();
             } catch(Exception e) {
                 Log.v(JNIConst.LOG_TAG, "Problem stopping mainCPPThread: " + e);
             }
-            JNIApplication.app.mainCPPThread = null;
+            JNIApplication.mainCPPThread = null;
         }
 
         Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] c++ main thread join end");
-
-        // exit joystik controller
-        if(mController != null)
-        {
-            mController.exit();
-        }
 
         super.onDestroy();
 
@@ -710,6 +699,17 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		surfaceView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
 	}
 	
+	@SuppressWarnings("deprecation")
+	private boolean isScreenLocked() {
+		PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
+		boolean isScreenLocked = false;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+			isScreenLocked = !pm.isInteractive();
+		} else {
+			isScreenLocked = !pm.isScreenOn();
+		}
+		return isScreenLocked;
+	}
 	// Workaround! this function called from c++ when game wish to 
     // Quit it block GLThread because we already destroy singletons and can't 
     // return to GLThread back

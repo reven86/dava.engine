@@ -6,8 +6,6 @@ import java.util.Set;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.os.Build;
-import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
