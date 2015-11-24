@@ -216,12 +216,6 @@ void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
     accaptableLoggerFlags = lastFlags;
 }
 
-void MainWindow::OnOpenFontManager()
-{
-    FontManagerDialog fontManagerDialog(false, QString(), this);
-    fontManagerDialog.exec();
-}
-
 void MainWindow::OnShowHelp()
 {
     FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";

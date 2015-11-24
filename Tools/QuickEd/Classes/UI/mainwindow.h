@@ -138,7 +138,6 @@ private:
     QAction* backgroundFrameUseCustomColorAction = nullptr;
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
 
-    LocalizationEditorDialog* localizationEditorDialog = nullptr;
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject *loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     qint64 accaptableLoggerFlags = ~0; //all flags accepted
