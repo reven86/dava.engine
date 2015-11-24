@@ -48,6 +48,8 @@
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 
+#include "Tools/LazyUpdater/LazyUpdater.h"
+
 using namespace DAVA;
 
 namespace LODEditorInternal
@@ -95,6 +97,12 @@ bool NeedUpdateLodInfo(const Command2* command)
             break;
         }
 
+        case CMDID_LOD_DISTANCE_CHANGE:
+        case CMDID_LOD_COPY_LAST_LOD:
+        case CMDID_LOD_DELETE:
+        case CMDID_LOD_CREATE_PLANE:
+            return true;
+
         default:
             break;
         }
@@ -111,6 +119,9 @@ LODEditor::LODEditor(QWidget* parent)
     , frameEditVisible(true)
 {
     ui->setupUi(this);
+
+    DAVA::Function<void()> fn(this, &LODEditor::UpdateUI);
+    uiUpdater = new LazyUpdater(fn, this);
 
     bool allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
     ui->checkBoxLodEditorMode->setChecked(allSceneModeEnabled);
@@ -180,33 +191,21 @@ void LODEditor::SetupSceneSignals()
 
 void LODEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
-    if (command->GetId() == CMDID_BATCH)
-    {
-        CommandBatch *batch = (CommandBatch *)command;
-        Command2 *firstCommand = batch->GetCommand(0);
-        if (nullptr != firstCommand)
-        {
-            switch (firstCommand->GetId())
-            {
-            case CMDID_LOD_DISTANCE_CHANGE:
-            case CMDID_LOD_COPY_LAST_LOD:
-            case CMDID_LOD_DELETE:
-            case CMDID_LOD_CREATE_PLANE:
-                scene->editorLODSystem->CollectLODDataFromScene();
-                LODDataChanged(scene);
-                return;
-            default:
-                break;
-            }
-        }
-    }
-
     bool needUpdate = LODEditorInternal::NeedUpdateLodInfo(command);
     if (needUpdate)
     {
-        scene->editorLODSystem->CollectLODDataFromScene();
-        LODDataChanged(scene);
+        uiUpdater->Update();
     }
+}
+
+void LODEditor::UpdateUI()
+{
+    DVASSERT(QtMainWindow::Instance());
+    DVASSERT(QtMainWindow::Instance()->GetCurrentScene());
+
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    scene->editorLODSystem->CollectLODDataFromScene();
+    LODDataChanged(scene);
 }
 
 void LODEditor::ForceDistanceStateChanged(bool checked)

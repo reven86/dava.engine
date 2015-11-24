@@ -49,7 +49,7 @@ class Command2;
 class QPushButton;
 class QFrame;
 
-
+class LazyUpdater;
 class LODEditor: public QWidget
 {
     Q_OBJECT
@@ -58,7 +58,7 @@ public:
     explicit LODEditor(QWidget* parent = nullptr);
     ~LODEditor();
 
-protected slots:
+private slots:
     void LODEditorSettingsButtonReleased();
     void ViewLODButtonReleased();
     void EditLODButtonReleased();
@@ -86,7 +86,7 @@ protected slots:
     void DeleteFirstLOD();
     void DeleteLastLOD();
 
-protected:
+private:
     void SetupInternalUI();
     void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
     void UpdateSpinboxesBorders();
@@ -106,6 +106,8 @@ protected:
 
     EditorLODSystem *GetCurrentEditorLODSystem();
 
+    void UpdateUI();
+
 private:
     Ui::LODEditor *ui;
 
@@ -119,6 +121,8 @@ private:
         void SetVisible(bool visible);
     };
     DAVA::Map<DAVA::uint32, DistanceWidget> distanceWidgets;
+
+    LazyUpdater* uiUpdater = nullptr;
 };
 
 #endif //#ifndef __LOD_EDITOR_H__
