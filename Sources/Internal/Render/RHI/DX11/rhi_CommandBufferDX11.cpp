@@ -40,8 +40,14 @@ using DAVA::Logger;
     #include "Debug/Profiler.h"
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
-	#include "Platform/DeviceInfo.h"
     #include "_dx11.h"
+
+#define LUMIA_1020_FLUSH_CRUTCH_FIX
+
+#if defined(LUMIA_1020_FLUSH_CRUTCH_FIX)
+#include "Platform/DeviceInfo.h"
+#endif
+
 namespace rhi
 {
 extern void _InitDX11();
@@ -1206,7 +1212,8 @@ void CommandBufferDX11_t::Reset()
 /*
  * Workaround for Nokia 909 (Lumia 1020) with graphics driver bug
  */
-bool ShouldFlushAfterRenderPass(const RenderPassConfig& cfg)
+#if defined(LUMIA_1020_FLUSH_CRUTCH_FIX)
+bool ShouldFlushAfterRenderPass()
 {
     static int isLumia1020 = -1;
     if (isLumia1020 == -1)
@@ -1216,6 +1223,7 @@ bool ShouldFlushAfterRenderPass(const RenderPassConfig& cfg)
     }
     return (isLumia1020 > 0);
 }
+#endif
 
 void CommandBufferDX11_t::Execute()
 {
@@ -1233,10 +1241,14 @@ void CommandBufferDX11_t::Execute()
     }
 
     _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
-    if (ShouldFlushAfterRenderPass(passCfg))
+	
+#if defined(LUMIA_1020_FLUSH_CRUTCH_FIX)
+    if (ShouldFlushAfterRenderPass())
     {
         _D3D11_ImmediateContext->Flush();
     }
+#endif
+
     commandList->Release();
     commandList = nullptr;
     TRACE_END_EVENT(22, "rhi", "CommandBufferDX11_t::Execute");
