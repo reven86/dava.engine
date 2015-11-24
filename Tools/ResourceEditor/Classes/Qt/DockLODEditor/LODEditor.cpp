@@ -45,6 +45,64 @@
 #include <QFrame>
 #include <QPushButton>
 
+#include "Commands2/AddComponentCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
+
+using namespace DAVA;
+
+namespace LODEditorInternal
+{
+bool NeedUpdateLodInfo(const Command2* command)
+{
+    const int32 commandID = static_cast<int32>(command->GetId());
+    if (commandID == CMDID_BATCH)
+    {
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        Command2* firstCommand = batch->GetCommand(0);
+
+        return NeedUpdateLodInfo(firstCommand);
+    }
+    else
+    {
+        switch (commandID)
+        {
+        case CMDID_COMPONENT_ADD:
+        {
+            const AddComponentCommand* cmd = static_cast<const AddComponentCommand*>(command);
+            const Component* component = cmd->GetComponent();
+            const auto componentType = component->GetType();
+            return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
+        }
+        case CMDID_COMPONENT_REMOVE:
+        {
+            const RemoveComponentCommand* cmd = static_cast<const RemoveComponentCommand*>(command);
+            const Component* component = cmd->GetComponent();
+            const auto componentType = component->GetType();
+            return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
+        }
+
+        case CMDID_ENTITY_ADD:
+        case CMDID_ENTITY_REMOVE:
+        case CMDID_ENTITY_CHANGE_PARENT: //may be
+        {
+            const DAVA::Entity* entity = command->GetEntity();
+            if (entity != nullptr)
+            {
+                LodComponent* lc = GetLodComponent(entity);
+                ParticleEffectComponent* effect = GetEffectComponent(entity);
+                return (lc != nullptr) || (effect != nullptr);
+            }
+            break;
+        }
+
+        default:
+            break;
+        }
+    }
+
+    return false;
+}
+}
 
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)
@@ -136,11 +194,18 @@ void LODEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bo
             case CMDID_LOD_CREATE_PLANE:
                 scene->editorLODSystem->CollectLODDataFromScene();
                 LODDataChanged(scene);
-                break;
+                return;
             default:
                 break;
             }
         }
+    }
+
+    bool needUpdate = LODEditorInternal::NeedUpdateLodInfo(command);
+    if (needUpdate)
+    {
+        scene->editorLODSystem->CollectLODDataFromScene();
+        LODDataChanged(scene);
     }
 }
 
