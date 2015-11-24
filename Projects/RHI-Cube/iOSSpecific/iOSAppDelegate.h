@@ -40,8 +40,6 @@
     UIWindow* window;
 }
 
-@property(nonatomic, retain) IBOutlet UIWindow* window;
-
 @end
 
 #endif // #if defined(__DAVAENGINE_IPHONE__)
