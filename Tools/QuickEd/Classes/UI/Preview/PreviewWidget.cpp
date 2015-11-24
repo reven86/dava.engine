@@ -70,7 +70,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
 
-    connnect(scrollAreaController, &ScrollAreaController::PositionChanged, &rulerController, &RulerController::SetViewPos);
+    connect(scrollAreaController, &ScrollAreaController::PositionChanged, rulerController, &RulerController::SetViewPos);
 
     percentages << 10 << 25 << 50 << 75 << 100 << 125
                 << 150 << 175 << 200 << 250 << 400 << 800;
@@ -167,7 +167,7 @@ void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     selectionContainer.MergeSelection(selected, deselected);
 }
 
-void PreviewWidget::RootControlPositionChanged(const DAVA::Vector2& pos)
+void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
 {
     QPoint additionalPos(static_cast<int>(pos.x), static_cast<int>(pos.y));
     rulerController->SetAdditionalPos(additionalPos);
