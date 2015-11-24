@@ -29,6 +29,7 @@
     #include "../Common/rhi_Pool.h"
     #include "rhi_DX11.h"
 
+	#include "../rhi_Type.h"
     #include "../Common/rhi_RingBuffer.h"
     #include "../Common/dbg_StatSet.h"
 
