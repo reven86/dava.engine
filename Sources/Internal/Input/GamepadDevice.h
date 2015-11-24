@@ -130,7 +130,7 @@ inline void GamepadDevice::SystemProcessElement(GamepadDevice::eDavaGamepadEleme
     }
     else
     {
-        DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
+        DVASSERT(false && "unknown element");
     }
 }
 
@@ -142,7 +142,7 @@ inline float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement
     }
     else
     {
-        DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
+        DVASSERT(false && "unknown element");
         return 0.f;
     }
 }
@@ -156,7 +156,7 @@ inline uint8 GamepadDevice::GetDavaEventIdForSystemKeycode(int32 systemKey) cons
     }
     else
     {
-        DVASSERT(systemKey < MAX_TRANSLATOR_KEYS && systemKey >= 0);
+        DVASSERT(false && "unknown systemKey");
         return INVALID_DAVAKEY;
     }
 }
@@ -169,7 +169,7 @@ inline uint8 GamepadDevice::GetDavaEventIdForSystemAxis(int32 systemKey) const
     }
     else
     {
-        DVASSERT(systemKey < MAX_TRANSLATOR_KEYS && systemKey >= 0);
+        DVASSERT(false && "unknown systemKey");
         return INVALID_DAVAKEY;
     }
 }
