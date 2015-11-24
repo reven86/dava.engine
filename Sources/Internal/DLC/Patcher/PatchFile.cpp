@@ -241,7 +241,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
     DVASSERT(!origBase.IsEmpty());
     DVASSERT(!newBase.IsEmpty());
 
-    if(origPath.Exists() || newPath.Exists())
+    if (FileSystem::Instance()->Exists(origPath) || FileSystem::Instance()->Exists(newPath))
     {
         String origRelativePath = origPath.GetRelativePathname(origBase);
         String newRelativePath = newPath.GetRelativePathname(newBase);
@@ -350,7 +350,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                 // write diff, if needed
                 if(ret && needWriteDiff)
                 {
-                    if(!newPath.IsDirectoryPathname() && newPath.Exists())
+                    if (!newPath.IsDirectoryPathname() && FileSystem::Instance()->Exists(newPath))
                     {
                         ret = BSDiff::Diff(origData, patchInfo.origSize, newData, patchInfo.newSize, patchFile, diffType);
                     }
@@ -710,7 +710,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
         {
             // if there is already exist some
             // we should check if it is already patched
-            if(newPath.Exists())
+            if (FileSystem::Instance()->Exists(newPath))
             {
                 File* checkFile = File::Create(newPath, File::OPEN | File::READ);
                 if(nullptr != checkFile)

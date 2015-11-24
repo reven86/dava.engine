@@ -155,6 +155,20 @@ void MemProfWidget::RealtimeToggled(bool checked)
     }
 }
 
+void MemProfWidget::ScatterPointsToggled(bool checked)
+{
+    showScatterPoints = checked;
+    QCPScatterStyle::ScatterShape shape = showScatterPoints ? QCPScatterStyle::ssDisc : QCPScatterStyle::ssNone;
+
+    QCustomPlot* plot = ui->plot;
+    for (int i = 0, n = plot->graphCount(); i < n; ++i)
+    {
+        QCPGraph* graph = plot->graph(i);
+        graph->setScatterStyle(shape);
+    }
+    plot->replot();
+}
+
 void MemProfWidget::PlotClicked(QMouseEvent* ev)
 {
     QCustomPlot* plot = ui->plot;
@@ -172,6 +186,8 @@ void MemProfWidget::PlotClicked(QMouseEvent* ev)
             allocPoolModel->SetCurrentValues(stat);
             tagModel->SetCurrentValues(stat);
             generalStatModel->SetCurrentValues(stat);
+
+            plotItemTracer->setGraphKey(value);
         }
     }
 }
@@ -299,6 +315,8 @@ void MemProfWidget::ReinitPlot()
 
     connect(plot->xAxis, SIGNAL(rangeChanged(QCPRange)), plot->xAxis2, SLOT(setRange(QCPRange)));
     connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
+
+    plotItemTracer->setGraph(plot->graph(0));
 }
 
 void MemProfWidget::InitUI()
@@ -320,6 +338,10 @@ void MemProfWidget::InitUI()
 
         QAction* actionDiff = toolbar->addAction("Diff");
         connect(actionDiff, &QAction::triggered, this, &MemProfWidget::DiffClicked);
+
+        QAction* actionToggleScatterPoints = toolbar->addAction("Scatter points");
+        actionToggleScatterPoints->setCheckable(true);
+        connect(actionToggleScatterPoints, &QAction::toggled, this, &MemProfWidget::ScatterPointsToggled);
     }
     ui->vertLayout->insertWidget(0, toolbar);
 
@@ -354,4 +376,8 @@ void MemProfWidget::InitUI()
 
     QCustomPlot* plot = ui->plot;
     connect(plot, &QCustomPlot::mousePress, this, &MemProfWidget::PlotClicked);
+
+    plotItemTracer = new QCPItemTracer(plot);
+    plotItemTracer->setStyle(QCPItemTracer::tsCrosshair);
+    plot->addItem(plotItemTracer); // QCustomPlot will delete plotItemTracer in its destructor
 }

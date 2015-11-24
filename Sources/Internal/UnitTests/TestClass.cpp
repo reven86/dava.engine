@@ -27,10 +27,7 @@
 =====================================================================================*/
 
 #include "TestClass.h"
-
-#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
-#   include <cxxabi.h>
-#endif
+#include "Debug/Backtrace.h"
 
 namespace DAVA
 {
@@ -39,17 +36,11 @@ namespace UnitTests
 
 String TestClass::PrettifyTypeName(const String& name) const
 {
-    String result = name;
 #if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
-    // abi::__cxa_demangle reference
-    // https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/a01696.html
-    int status = 0;
-    char* demangledName = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status);
-    if (demangledName != nullptr)
-    {
-        result = demangledName;
-        free(demangledName);
-    }
+    String result = Debug::DemangleSymbol(name.c_str());
+#else
+    // On Windows names are already demangled
+    String result = name;
 #endif
 
     size_t spacePos = result.find_last_of(": ");

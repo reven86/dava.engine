@@ -648,9 +648,9 @@ void resize_swapchain(int32 width, int32 height, float32 sx, float32 sy)
     // Do not actually resize swapchain if sizes and scales are the same
     const float32 MAGNITUDE = 1000.0f; // Compare up to 3 digits after point
     bool doResize = int32(m_logicalSize.Width) != width ||
-                    int32(m_logicalSize.Height) != height ||
-                    int32((m_compositionScaleX - sx) * MAGNITUDE) != 0 ||
-                    int32((m_compositionScaleY - sy) * MAGNITUDE) != 0;
+    int32(m_logicalSize.Height) != height ||
+    int32((m_compositionScaleX - sx) * MAGNITUDE) != 0 ||
+    int32((m_compositionScaleY - sy) * MAGNITUDE) != 0;
 
     if (doResize)
     {
