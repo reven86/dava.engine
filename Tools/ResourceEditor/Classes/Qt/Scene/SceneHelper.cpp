@@ -125,7 +125,7 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 				FilePath texPath = descriptor->GetSourceTexturePathname();
                 if (FileSystem::Instance()->Exists(texPath) && !descriptor->IsCompressedTextureActual(gpu))
                 {
-					markedGPUs.push_back(gpu);
+                    markedGPUs.push_back(gpu);
 					retValue++;
 				}
 			}

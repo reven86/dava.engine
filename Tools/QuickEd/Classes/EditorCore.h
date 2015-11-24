@@ -94,11 +94,6 @@ private:
     DAVA::UIControl* rootControl = nullptr;
 };
 
-inline EditorLocalizationSystem *GetEditorLocalizationSystem()
-{
-    return EditorCore::Instance()->GetProject()->GetEditorLocalizationSystem();
-}
-
 inline EditorFontSystem *GetEditorFontSystem()
 {
     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();

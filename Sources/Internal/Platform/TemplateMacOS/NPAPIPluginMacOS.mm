@@ -190,9 +190,9 @@ extern void FrameworkWillTerminate();
             break;
 
         case NPCocoaEventMouseExited:
-			break;
+            break;
 
-		case NPCocoaEventMouseDragged:
+        case NPCocoaEventMouseDragged:
             [self processEvent:DAVA::UIEvent::Phase::DRAG touch:event];
             break;
 
@@ -200,12 +200,12 @@ extern void FrameworkWillTerminate();
             [self keyDown:event];
             break;
 
-		case NPCocoaEventKeyUp:
-			[self keyUp:event];
-			break;
+        case NPCocoaEventKeyUp:
+            [self keyUp:event];
+            break;
 
-		case NPCocoaEventFlagsChanged:
-			[self flagsChanged:event];
+        case NPCocoaEventFlagsChanged:
+            [self flagsChanged:event];
 			break;
 
 		case NPCocoaEventScrollWheel:
@@ -230,11 +230,11 @@ extern void FrameworkWillTerminate();
         for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
             NSPoint p;
-			p.x = curEvent->data.mouse.pluginX;
-			p.y = curEvent->data.mouse.pluginY;
+            p.x = curEvent->data.mouse.pluginX;
+            p.y = curEvent->data.mouse.pluginY;
 
-			it->physPoint.x = p.x;
-			it->physPoint.y = p.y;
+            it->physPoint.x = p.x;
+            it->physPoint.y = p.y;
 
             if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
             {
@@ -245,12 +245,12 @@ extern void FrameworkWillTerminate();
             it->tapCount = DAVA::Max(curEvent->data.mouse.clickCount, 1);
             it->timestamp = timestamp;
             it->phase = touchPhase;
-		}
-	}
+        }
+    }
 
-	bool isFind = false;
-	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-	{
+    bool isFind = false;
+    for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    {
 		if(it->tid == button)
 		{
 			isFind = true;
@@ -272,12 +272,12 @@ extern void FrameworkWillTerminate();
             it->timestamp = timestamp;
             it->phase = touchPhase;
 
-			break;
-		}
-	}
+            break;
+        }
+    }
 
-	if(!isFind)
-	{
+    if (!isFind)
+    {
 		DAVA::UIEvent newTouch;
 		newTouch.tid = button;
 		NSPoint p;
@@ -296,24 +296,24 @@ extern void FrameworkWillTerminate();
         newTouch.tapCount = curEvent->data.mouse.clickCount;
         newTouch.timestamp = timestamp;
         newTouch.phase = touchPhase;
-		allTouches.push_back(newTouch);
-	}
+        allTouches.push_back(newTouch);
+    }
 
-	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-	{
-		outTouches->push_back(*it);
+    for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    {
+        outTouches->push_back(*it);
 	}
 
     if (touchPhase == DAVA::UIEvent::Phase::ENDED || touchPhase == DAVA::UIEvent::Phase::MOVE)
     {
         for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-            if(it->tid == button)
-			{
-				allTouches.erase(it);
-				break;
-			}
-		}
+            if (it->tid == button)
+            {
+                allTouches.erase(it);
+                break;
+            }
+        }
 	}
 }
 
@@ -415,11 +415,11 @@ extern void FrameworkWillTerminate();
     {
         if ((oldModifiersFlags & masks[i]) != (newModifiers & masks[i]))
         {
-			if (newModifiers & masks[i])
-			{
-				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
-			}
-			else
+            if (newModifiers & masks[i])
+            {
+                DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
+            }
+            else
 			{
 				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
 			}

@@ -48,7 +48,7 @@ class LocalizationEditorDialog;
 class Document;
 class SpritesPacker;
 class LoggerOutputObject;
-
+class Project;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -64,21 +64,22 @@ public:
         QString tabText;
         bool isModified;
     };
-    explicit MainWindow(QWidget *parent = 0);
-
-    ~MainWindow();
+    explicit MainWindow(QWidget* parent = nullptr);
 
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
+    void OnProjectOpened(const DAVA::ResultList &resultList, const Project *project);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     QCheckBox* GetCheckboxEmulation();
+    QComboBox *GetComboBoxLanguage();
 
 protected:
+
     void closeEvent(QCloseEvent *event) override;
+
 signals:
     void TabClosed(int tab);
     void CloseProject();
@@ -102,7 +103,6 @@ public slots:
 private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
-    void OnOpenFontManager();
     void OnShowHelp();
     
     void OnOpenProject();
@@ -120,10 +120,11 @@ private slots:
 
 private:
     void InitLanguageBox();
+    void FillComboboxLanguages(const Project* core);
     void InitRtlBox();
     void InitGlobalClasses();
     void InitEmulationMode();
-	void InitMenu();
+    void InitMenu();
     void SetupViewMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);
@@ -136,10 +137,13 @@ private:
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction = nullptr;
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
+
     LocalizationEditorDialog* localizationEditorDialog = nullptr;
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject *loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     qint64 accaptableLoggerFlags = ~0; //all flags accepted
+
+    QComboBox *comboboxLanguage = nullptr;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

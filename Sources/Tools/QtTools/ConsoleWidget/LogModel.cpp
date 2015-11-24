@@ -115,8 +115,8 @@ void LogModel::AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray& tex
     {
         QMutexLocker lock(mutex.get());
         itemsToAdd.append(LogItem(ll,
-            QString::fromStdString(func(text.toStdString())),
-            text));
+                                  QString::fromStdString(func(text.toStdString())),
+                                  text));
     }
     QMetaObject::invokeMethod(syncTimer, "start", Qt::QueuedConnection);
 }

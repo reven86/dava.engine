@@ -278,5 +278,11 @@ void UIWebView::SystemDraw(const DAVA::UIGeometricData &geometricData)
     webViewControl->DidDraw();
 }
 
-
+#if defined(__DAVAENGINE_WIN_UAP__)
+void UIWebView::Update(float32 timeElapsed)
+{
+    webViewControl->Update();
+    UIControl::Update(timeElapsed);
+}
+#endif
 };

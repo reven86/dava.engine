@@ -28,12 +28,10 @@
 
 
 #include "mainwindow.h"
+#include "Project/Project.h"
 #include "Document.h"
-//////////////////////////////////////////////////////////////////////////
-#include "fontmanagerdialog.h"
+
 #include "Helpers/ResourcesManageHelper.h"
-#include "Dialogs/LocalizationEditorDialog.h"
-//////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
@@ -58,7 +56,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
-    , localizationEditorDialog(new LocalizationEditorDialog(this))
     , loggerOutput(new LoggerOutputObject)
 {
     setupUi(this);
@@ -71,7 +68,6 @@ MainWindow::MainWindow(QWidget *parent)
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
 
-    actionLocalizationManager->setEnabled(false);
     toolBarPlugins->addSeparator();
     InitLanguageBox();
     toolBarPlugins->addSeparator();
@@ -91,9 +87,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
 
-    connect(actionFontManager, &QAction::triggered, this, &MainWindow::OnOpenFontManager);
-    connect(actionLocalizationManager, &QAction::triggered, localizationEditorDialog, &LocalizationEditorDialog::exec);
-
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
     RestoreMainWindowState();
@@ -103,11 +96,6 @@ MainWindow::MainWindow(QWidget *parent)
     RebuildRecentMenu();
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
-}
-
-MainWindow::~MainWindow()
-{
-    SaveMainWindowState();
 }
 
 void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
@@ -183,6 +171,11 @@ QCheckBox* MainWindow::GetCheckboxEmulation()
     return emulationBox;
 }
 
+QComboBox* MainWindow::GetComboBoxLanguage()
+{
+    return comboboxLanguage;
+}
+
 void MainWindow::OnCurrentIndexChanged(int arg)
 {
     bool enabled = arg >= 0;
@@ -238,7 +231,7 @@ void MainWindow::OnShowHelp()
 
 void MainWindow::InitLanguageBox()
 {
-    QComboBox *comboboxLanguage = new QComboBox();
+    comboboxLanguage = new QComboBox();
     comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     QLabel *label = new QLabel(tr("language"));
     label->setBuddy(comboboxLanguage);
@@ -249,10 +242,16 @@ void MainWindow::InitLanguageBox()
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
-    comboboxLanguage->setModel(localizationEditorDialog->currentLocaleComboBox->model());
-    connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
-    connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
-    comboboxLanguage->setCurrentIndex(localizationEditorDialog->currentLocaleComboBox->currentIndex());
+}
+
+void MainWindow::FillComboboxLanguages(const Project* project)
+{
+    QString currentText = project->GetEditorLocalizationSystem()->GetCurrentLocale();
+    bool wasBlocked = comboboxLanguage->blockSignals(true); //performace fix
+    comboboxLanguage->clear();
+    comboboxLanguage->addItems(project->GetEditorLocalizationSystem()->GetAvailableLocaleNames());
+    comboboxLanguage->setCurrentText(currentText);
+    comboboxLanguage->blockSignals(wasBlocked);
 }
 
 void MainWindow::InitRtlBox()
@@ -415,7 +414,6 @@ void MainWindow::DisableActions()
     actionSaveDocument->setEnabled(false);
 
     actionClose_project->setEnabled(false);
-    actionFontManager->setEnabled(false);
 }
 
 void MainWindow::RebuildRecentMenu()
@@ -452,23 +450,24 @@ int MainWindow::AddTab(const FilePath &scenePath)
 
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
+    SaveMainWindowState();
     emit CloseRequested();
     ev->ignore();
 }
 
-void MainWindow::OnProjectOpened(const ResultList &resultList, QString projectPath)
+void MainWindow::OnProjectOpened(const ResultList &resultList, const Project *project)
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
-    actionLocalizationManager->setEnabled(resultList);
     fileSystemDockWidget->setEnabled(resultList);
+    QString projectPath = project->GetProjectPath() + project->GetProjectName();
     if (resultList)
     {
         UpdateProjectSettings(projectPath);
 
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
-        localizationEditorDialog->FillLocaleComboBox();
+        FillComboboxLanguages(project);
     }
     else
     {

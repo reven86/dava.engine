@@ -41,14 +41,14 @@ class LocalNotificationProgress : public LocalNotification
 
 protected:
 	LocalNotificationProgress();
-	virtual ~LocalNotificationProgress();
+    ~LocalNotificationProgress() override;
 
 public:
 	void SetProgressCurrent(const uint32 _currentProgress);
 	void SetProgressTotal(const uint32 _total);
 
 private:
-	virtual void ImplShow();
+    void ImplShow() override;
 
 private:
 	uint32 total;

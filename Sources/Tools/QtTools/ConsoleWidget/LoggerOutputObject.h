@@ -34,7 +34,7 @@
 #include <QObject>
  
 class LoggerOutputObject final
-    : public QObject
+: public QObject
 {
     Q_OBJECT
 public:
