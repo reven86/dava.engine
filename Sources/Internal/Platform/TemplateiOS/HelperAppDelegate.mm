@@ -96,8 +96,8 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-	//UIWindow *wnd = application.keyWindow;
-	//wnd.frame = [::UIScreen mainScreen].bounds;
+	UIWindow *wnd = application.keyWindow;
+	wnd.frame = [::UIScreen mainScreen].bounds;
 
     renderViewController = [[RenderViewController alloc] init];
 
