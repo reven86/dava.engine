@@ -340,9 +340,7 @@ FPROG_BEGIN
         // lookup normal from normal map, move from [0, 1] to  [-1, 1] range, normalize
         float3 normal = 2.0 * FP_TEXTURE2D( normalmap, FP_IN(varTexCoord0) ).rgb - 1.0;
         normal.xy *= normalScale;
-        normal = normalize (normal);
-        //normal.z = sqrt(1.0 - (normal.x * normal.x + normal.y * normal.y));
-        //normal = vec3(0.0, 0.0, 1.0);            
+        normal = normalize (normal);        
     
         #if !FAST_NORMALIZATION
             float3 toLightNormalized = normalize(FP_IN(varToLightVec).xyz);
