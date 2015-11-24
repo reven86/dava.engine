@@ -315,14 +315,19 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     if(!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
 #endif //Q_OS_WIN
     {
+#ifdef Q_OS_WIN
+        QPoint delta = event->angleDelta();
+#else //Q_OS_MAC
+        QPoint delta = event->pixelDelta();
+#endif //Q_OS_WIN
         //scroll view up and down
-        static const qreal wheelDelta = 0.002;
+        static const qreal wheelDelta = 0.002f;
         int horizontalScrollBarValue = horizontalScrollBar->value();
-        horizontalScrollBarValue -= event->pixelDelta().x() * horizontalScrollBar->pageStep() * wheelDelta;
+        horizontalScrollBarValue -= delta.x() * horizontalScrollBar->pageStep() * wheelDelta;
         horizontalScrollBar->setValue(horizontalScrollBarValue);
         
         int verticalScrollBarValue = verticalScrollBar->value();
-        verticalScrollBarValue -= event->pixelDelta().y() * verticalScrollBar->pageStep() * wheelDelta;
+        verticalScrollBarValue -= delta.y() * verticalScrollBar->pageStep() * wheelDelta;
         verticalScrollBar->setValue(verticalScrollBarValue);
     }
 #ifdef Q_OS_WIN
