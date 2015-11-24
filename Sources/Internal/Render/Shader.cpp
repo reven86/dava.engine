@@ -114,6 +114,8 @@ void ShaderDescriptor::UpdateDynamicParams()
     //Logger::Info( " upd-dyn-params" );
     for (auto& dynamicBinding : dynamicPropertyBindings)
     {
+        if (dynamicBinding.buffer == rhi::InvalidHandle) //buffer is cut by compiler/linker!
+            continue;
         float32* data = (float32*)(Renderer::GetDynamicBindings().GetDynamicParam(dynamicBinding.dynamicPropertySemantic));
         pointer_size updateSemantic = Renderer::GetDynamicBindings().GetDynamicParamUpdateSemantic(dynamicBinding.dynamicPropertySemantic);
         if (dynamicBinding.updateSemantic != updateSemantic)
