@@ -39,9 +39,9 @@
 #include <QLabel>
 
 RulerToolPanel::RulerToolPanel(QWidget* parent)
-:	LandscapeEditorBasePanel(parent)
-,	labelLength(nullptr)
-,	labelPreview(nullptr)
+    : LandscapeEditorBasePanel(parent)
+    , labelLength(nullptr)
+    , labelPreview(nullptr)
 {
 	InitUI();
 	ConnectToSignals();

@@ -75,6 +75,11 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
 
+    QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
+    EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
+    connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
+    connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
+
     QCheckBox* emulationBox = mainWindow->GetCheckboxEmulation();
     connect(emulationBox, &QCheckBox::clicked, documentGroup, &DocumentGroup::SetEmulationMode);
 
@@ -92,10 +97,12 @@ EditorCore::EditorCore(QObject *parent)
     auto previewWidget = mainWindow->previewWidget;
     auto scrollAreaController = previewWidget->GetScrollAreaController();
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, previewWidget, &PreviewWidget::SetSelectedNodes);
+
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
-    connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
+    connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
 }
@@ -272,8 +279,8 @@ void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
 {
     Vector<String> tokens;
     Split(classesStr.toStdString(), " ", tokens);
-    
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalFlags();
+
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
     for (String &token : tokens)
         UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
 
@@ -300,7 +307,7 @@ void EditorCore::OpenProject(const QString &path)
     {
         resultList.AddResult(Result::RESULT_ERROR, "Error while loading project");
     }
-    mainWindow->OnProjectOpened(resultList, path);
+    mainWindow->OnProjectOpened(resultList, project);
 }
 
 bool EditorCore::CloseProject()

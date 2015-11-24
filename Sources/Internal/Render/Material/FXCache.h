@@ -38,7 +38,10 @@ namespace DAVA
 struct RenderPassDescriptor
 {
     FastName passName;
+    FastName shaderFileName;
+    Set<FastName> templateDefines;
     ShaderDescriptor* shader = nullptr;
+    bool hasBlend = false;
     rhi::DepthStencilState::Descriptor depthStateDescriptor;
     RenderLayer::eRenderLayerID renderLayer = RenderLayer::RENDER_LAYER_INVALID_ID;
     rhi::CullMode cullMode = rhi::CULL_NONE;
@@ -49,17 +52,17 @@ struct FXDescriptor
 {
     Vector<RenderPassDescriptor> renderPassDescriptors;
 
-//for storing and further debug simplification    
+    //for storing and further debug simplification
     FastName fxName;
-    HashMap<FastName, int32> defines;
+    HashMap<FastName, int32> defines = HashMap<FastName, int32>(16);
 };
 
 namespace FXCache
 {
-    void Initialize();
-    void Uninitialize();
-    void Clear();
-    const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, int32>& defines, const FastName& quality = NMaterialQualityName::DEFAULT_QUALITY_NAME);
+void Initialize();
+void Uninitialize();
+void Clear();
+const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, int32>& defines, const FastName& quality = NMaterialQualityName::DEFAULT_QUALITY_NAME);
 }
 }
 

@@ -71,15 +71,13 @@ extern const FastName FRAME_QUERY_UI_DRAW;
 
 class UIControlSystem : public Singleton<UIControlSystem>
 {
-	friend void Core::CreateSingletons();
-	
-	int frameSkip;
-	int transitionType;
+    friend void Core::CreateSingletons();
 
-	
-	Vector<UIEvent> totalInputs;
+    int frameSkip;
+    int transitionType;
 
-	
+    Vector<UIEvent> touchEvents;
+
 protected:
 	~UIControlSystem();
 	/**
@@ -185,9 +183,7 @@ public:
 	/**
 	 \brief Calls by the system for input processing.
 	 */
-    void OnInput(const Vector<UIEvent>& activeInputs, const Vector<UIEvent>& allInputs);
-
-    void OnInput(UIEvent* event);
+    void OnInput(UIEvent* newEvent);
 
     /**
 	 \brief Callse very frame by the system for update.
@@ -301,8 +297,9 @@ public:
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
-    void SetClearColor(const Color & clearColor);
-    
+    void SetClearColor(const Color& clearColor);
+    void SetUseClearPass(bool use);
+
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -318,23 +315,21 @@ private:
     void NotifyListenersWillSwitch( UIScreen* screen );
     void NotifyListenersDidSwitch( UIScreen* screen );
 
-    void CopyTouchData(UIEvent* dst, const UIEvent* src);
-
     UILayoutSystem *layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;
     UIScreenshoter* screenshoter;
 
-	Vector<ScreenSwitchListener*> screenSwitchListeners;
+    Vector<ScreenSwitchListener*> screenSwitchListeners;
 
-	UIScreen * currentScreen;
-	UIScreen * nextScreen;
-	UIScreen * prevScreen;
+    UIScreen* currentScreen;
+    UIScreen* nextScreen;
+    UIScreen* prevScreen;
 
-	int32 screenLockCount;
+    int32 screenLockCount;
 
-	bool removeCurrentScreen;
-	
-	UIControl *exclusiveInputLocker;
+    bool removeCurrentScreen;
+
+    UIControl* exclusiveInputLocker;
     UIControl *hovered;
     
     UIControl *focusedControl;
@@ -348,12 +343,12 @@ private:
 	
 	UIGeometricData baseGeometricData;
 
+    bool useClearPass = true;
     Color clearColor;
 
-	friend class UIScreenTransition;
-	friend class UIScreenManager;
+    friend class UIScreenTransition;
+    friend class UIScreenManager;
 };
-
 };
 
 #endif

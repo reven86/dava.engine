@@ -27,12 +27,13 @@
 =====================================================================================*/
 
 
-#ifndef DAVAGLWIDGET_H
-#define DAVAGLWIDGET_H
+#ifndef __DAVAGLWIDGET_H__
+#define __DAVAGLWIDGET_H__
 
-#include <QOpenGLWidget>
-#include <QMimeData>
+#include "Render/RenderBase.h" // need to include glew.h in right order
+
 #include <QWidget>
+#include <QMimeData>
 #include <QScopedPointer>
 #include <QQuickWindow>
 
@@ -92,12 +93,14 @@ signals:
     void Resized(int width, int height, int dpr);
     void Initialized();
     void OnDrop(const QMimeData* mimeData);
+
 public slots:
     void OnSync();
 
 private slots:
     void OnResize();
     void OnCleanup();
+    void UpdateView();
 
 protected:
     void resizeEvent(QResizeEvent*) override;
@@ -107,4 +110,4 @@ private:
     DavaRenderer* renderer = nullptr;
 };
 
-#endif // DAVAGLWIDGET_H
+#endif // __DAVAGLWIDGET_H__

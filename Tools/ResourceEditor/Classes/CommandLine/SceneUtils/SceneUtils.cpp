@@ -128,10 +128,10 @@ void SceneUtils::CopyFiles(Set<String> &errorLog)
     {
 		bool retCopy = false;
 
-		if(it->first.Exists())
-		{
-			FileSystem::Instance()->DeleteFile(it->second);
-			retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
+        if (FileSystem::Instance()->Exists(it->first))
+        {
+            FileSystem::Instance()->DeleteFile(it->second);
+            retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
 		}
 
 		if(!retCopy)
@@ -156,7 +156,7 @@ void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
     DAVA::Set<DAVA::FilePath>::const_iterator endSetIt = folders.end();
     for(DAVA::Set<DAVA::FilePath>::const_iterator it = folders.begin(); it != endSetIt; ++it)
     {
-        if(!(*it).Exists())
+        if (!FileSystem::Instance()->Exists(*it))
         {
             FileSystem::eCreateDirectoryResult retCreate = FileSystem::Instance()->CreateDirectory((*it), true);
             if(FileSystem::DIRECTORY_CANT_CREATE == retCreate)
@@ -175,12 +175,12 @@ void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
 
 DAVA_DEPRECATED(void RenderObjectsFlusher::Flush())
 {
-	static const rhi::HTexture nullTexture;
-	static const rhi::Viewport nullViewport(0, 0, 1, 1);
+    static const rhi::HTexture nullTexture;
+    static const rhi::Viewport nullViewport(0, 0, 1, 1);
 
-	auto currentFrame = rhi::GetCurrentFrameSyncObject();
-	while (!rhi::SyncObjectSignaled(currentFrame))
-	{
+    auto currentFrame = rhi::GetCurrentFrameSyncObject();
+    while (!rhi::SyncObjectSignaled(currentFrame))
+    {
         Renderer::BeginFrame();
         RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
         Renderer::EndFrame();

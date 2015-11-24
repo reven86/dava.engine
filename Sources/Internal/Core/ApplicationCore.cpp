@@ -37,7 +37,8 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "Notification/LocalNotificationController.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
@@ -67,9 +68,17 @@ void ApplicationCore::Update(float32 timeElapsed)
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Update(timeElapsed);
 #endif
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "SoundSystem::Update")
     SoundSystem::Instance()->Update(timeElapsed);
-	AnimationManager::Instance()->Update(timeElapsed);    
-	UIControlSystem::Instance()->Update();
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "SoundSystem::Update")
+
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "AnimationManager::Update")
+    AnimationManager::Instance()->Update(timeElapsed);
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "AnimationManager::Update")
+
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
+    UIControlSystem::Instance()->Update();
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
 }
     
 void ApplicationCore::OnEnterFullscreen()
@@ -93,14 +102,13 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
-
-	Renderer::BeginFrame();
+    Renderer::BeginFrame();
     RenderSystem2D::Instance()->BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-    RenderSystem2D::Instance()->EndFrame();    
+    RenderSystem2D::Instance()->EndFrame();
     Renderer::EndFrame();
     //RenderManager::Instance()->ProcessStats();
 }

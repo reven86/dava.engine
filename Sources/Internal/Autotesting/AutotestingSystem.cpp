@@ -43,7 +43,6 @@
 
 #include "Job/JobManager.h"
 
-
 namespace DAVA
 {
 
@@ -107,7 +106,7 @@ namespace DAVA
     String AutotestingSystem::ResolvePathToAutomation(const String &automationPath)
     {
         String automationResolvedStrPath = "~res:" + automationPath;
-        if (FilePath(automationResolvedStrPath).Exists())
+        if (FileSystem::Instance()->Exists(FilePath(automationResolvedStrPath)))
         {
             return automationResolvedStrPath;
         }
@@ -116,7 +115,7 @@ namespace DAVA
 #else
         FilePath automationResolvedPath = "~doc:" + automationPath;
 #endif //#if defined(__DAVAENGINE_ANDROID__)
-        if (automationResolvedPath.Exists())
+        if (FileSystem::Instance()->Exists(automationResolvedPath))
         {
             return automationResolvedPath.GetStringValue();
         }
@@ -157,15 +156,16 @@ namespace DAVA
 
 	void AutotestingSystem::OnAppFinished()
 	{
-		Logger::Info("AutotestingSystem::OnAppFinished ");
-		ExitApp();
-	}
+        Logger::Info("AutotestingSystem::OnAppFinished in");
+        ExitApp();
+        Logger::Info("AutotestingSystem::OnAppFinished out");
+    }
 
-	void AutotestingSystem::RunTests()
-	{
-		if (!isInit || isRunning)
-		{
-			return;
+    void AutotestingSystem::RunTests()
+    {
+        if (!isInit || isRunning)
+        {
+            return;
 		}
 		isRunning = true;
 		OnTestStarted();
@@ -342,24 +342,24 @@ namespace DAVA
 			for (Map<int32, UIEvent>::iterator it = touches.begin(); it != touches.end(); ++it)
 			{
 				Vector2 point = it->second.point;
-				RenderSystem2D::Instance()->DrawCircle(point, 25.0f, Color::White);
-			}
-		}
+                RenderSystem2D::Instance()->DrawCircle(point, 25.0f, Color::White);
+            }
+        }
         RenderSystem2D::Instance()->DrawCircle(GetMousePosition(), 15.0f, Color::White);
-	}
+    }
 
-	void AutotestingSystem::OnTestStarted()
-	{
-		Logger::Info("AutotestingSystem::OnTestsStarted");
-		startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
-		luaSystem->StartTest();
-	}
+    void AutotestingSystem::OnTestStarted()
+    {
+        Logger::Info("AutotestingSystem::OnTestsStarted");
+        startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
+        luaSystem->StartTest();
+    }
 
-	void AutotestingSystem::OnError(const String &errorMessage)
-	{
-		Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
+    void AutotestingSystem::OnError(const String& errorMessage)
+    {
+        Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
 
-		AutotestingDB::Instance()->Log("ERROR", errorMessage);
+        AutotestingDB::Instance()->Log("ERROR", errorMessage);
 
 		MakeScreenShot();
         
@@ -385,17 +385,17 @@ namespace DAVA
 		String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
 		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
-		Renderer::RequestGLScreenShot(this);
-	}
+        Renderer::RequestGLScreenShot(this);
+    }
 
-	const String &AutotestingSystem::GetScreenShotName()
-	{
-		Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
-		return screenShotName;
-	}
+    const String& AutotestingSystem::GetScreenShotName()
+    {
+        Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
+        return screenShotName;
+    }
 
-	void AutotestingSystem::OnScreenShot(Image *image)
-	{
+    void AutotestingSystem::OnScreenShot(Image* image)
+    {
         Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
 		JobManager::Instance()->CreateWorkerJob(fn);
 	}
@@ -442,66 +442,66 @@ namespace DAVA
 		int32 id = input.tid;
 		switch (input.phase)
 		{
-		case UIEvent::PHASE_BEGAN:
-		{
-			mouseMove = input;
-			if (!IsTouchDown(id))
-			{
-				touches[id] = input;
-			}
-			else
-			{
-				Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d", id);
-			}
-		}
-		break;
+        case UIEvent::Phase::BEGAN:
+        {
+            mouseMove = input;
+            if (!IsTouchDown(id))
+            {
+                touches[id] = input;
+            }
+            else
+            {
+                Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d", id);
+            }
+        }
+        break;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-		case UIEvent::PHASE_MOVE:
-		{
-			mouseMove = input;
-			if (IsTouchDown(id))
-			{
-				Logger::Error("AutotestingSystemYaml::OnInput PHASE_MOVE id=%d must be PHASE_DRAG", id);
-			}
-		}
-		break;
+        case UIEvent::Phase::MOVE:
+        {
+            mouseMove = input;
+            if (IsTouchDown(id))
+            {
+                Logger::Error("AutotestingSystemYaml::OnInput PHASE_MOVE id=%d must be PHASE_DRAG", id);
+            }
+        }
+        break;
 #endif
-		case UIEvent::PHASE_DRAG:
-		{
-			mouseMove = input;
-			Map<int32, UIEvent>::iterator findIt = touches.find(id);
-			if (findIt != touches.end())
-			{
-				findIt->second = input;
-			}
-			else
-			{
-				Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE", id);
-			}
-		}
-		break;
-		case UIEvent::PHASE_ENDED:
-		{
-			mouseMove = input;
-			Map<int32, UIEvent>::iterator findIt = touches.find(id);
-			if (findIt != touches.end())
-			{
-				touches.erase(findIt);
-			}
-			else
-			{
-				Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found", id);
-			}
-		}
-		break;
-		default:
-			//TODO: keyboard input
-			break;
-		}
-	}
+        case UIEvent::Phase::DRAG:
+        {
+            mouseMove = input;
+            Map<int32, UIEvent>::iterator findIt = touches.find(id);
+            if (findIt != touches.end())
+            {
+                findIt->second = input;
+            }
+            else
+            {
+                Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE", id);
+            }
+        }
+        break;
+        case UIEvent::Phase::ENDED:
+        {
+            mouseMove = input;
+            Map<int32, UIEvent>::iterator findIt = touches.find(id);
+            if (findIt != touches.end())
+            {
+                touches.erase(findIt);
+            }
+            else
+            {
+                Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found", id);
+            }
+        }
+        break;
+        default:
+            //TODO: keyboard input
+            break;
+        }
+    }
 
-	bool AutotestingSystem::FindTouch(int32 id, UIEvent &touch)
-	{
+    bool AutotestingSystem::FindTouch(int32 id, UIEvent& touch)
+    {
 		bool isFound = false;
 		Map<int32, UIEvent>::iterator findIt = touches.find(id);
 		if (findIt != touches.end())

@@ -46,14 +46,14 @@ namespace DAVA
         virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
 
         void AddAggregatorChild(UIControl* uiControl);
-		
-		void SetAggregatorPath(const FilePath& path);
-		const FilePath & GetAggregatorPath() const;
-			
-	private:
-		List<UIControl* > aggregatorControls;
-		FilePath aggregatorPath;
-	};
+
+        void SetAggregatorPath(const FilePath& path);
+        const FilePath& GetAggregatorPath() const;
+
+    private:
+        List<UIControl*> aggregatorControls;
+        FilePath aggregatorPath;
+    };
 };
 
 #endif

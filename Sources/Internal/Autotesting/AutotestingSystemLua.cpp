@@ -193,14 +193,14 @@ namespace DAVA
 		while ((path = Pushnexttemplate(L, path)) != nullptr) {
 			filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
 			lua_remove(L, -2);  /* remove path template */
-			if (filename.Exists())  /* does file exist and is readable? */
-				return filename;  /* return that file name */
-			lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
-			lua_remove(L, -2);  /* remove file name */
-			lua_concat(L, 2);  /* add entry to possible error message */
-		}
-		return name;  /* not found */
-	}
+            if (FileSystem::Instance()->Exists(filename)) /* does file exist and is readable? */
+                return filename; /* return that file name */
+            lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
+            lua_remove(L, -2); /* remove file name */
+            lua_concat(L, 2); /* add entry to possible error message */
+        }
+        return name; /* not found */
+    }
 
 	int AutotestingSystemLua::RequireModule(lua_State* L)
 	{
@@ -527,18 +527,18 @@ namespace DAVA
 
 		UIEvent keyPress;
 		keyPress.tid = keyChar;
-		keyPress.phase = UIEvent::PHASE_KEYCHAR;
-		keyPress.tapCount = 1;
-		keyPress.keyChar = keyChar;
+        keyPress.phase = UIEvent::Phase::CHAR;
+        keyPress.tapCount = 1;
+        keyPress.keyChar = keyChar;
 
-		Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
-			keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
-		switch (keyPress.tid)
-		{
-		case DVKEY_BACKSPACE:
-		{
-			//TODO: act the same way on iPhone
-			WideString str = L"";
+        Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
+                               keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
+        switch (keyPress.tid)
+        {
+        case DVKEY_BACKSPACE:
+        {
+            //TODO: act the same way on iPhone
+            WideString str = L"";
 			if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), -1, str))
 			{
 				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), -1, str));
@@ -709,17 +709,17 @@ namespace DAVA
 	void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId, int32 tapCount)
 	{
 		UIEvent touchDown;
-		touchDown.phase = UIEvent::PHASE_BEGAN;
-		touchDown.tid = touchId;
-		touchDown.tapCount = tapCount;
-		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
-		touchDown.point = point;
-		ProcessInput(touchDown);
-	}
+        touchDown.phase = UIEvent::Phase::BEGAN;
+        touchDown.tid = touchId;
+        touchDown.tapCount = tapCount;
+        touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+        touchDown.point = point;
+        ProcessInput(touchDown);
+    }
 
-	void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
-	{
-		UIEvent touchMove;
+    void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
+    {
+        UIEvent touchMove;
 		touchMove.tid = touchId;
 		touchMove.tapCount = 1;
 		touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
@@ -727,16 +727,16 @@ namespace DAVA
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{
-			touchMove.phase = UIEvent::PHASE_DRAG;
-			ProcessInput(touchMove);
-		}
-		else
-		{
+            touchMove.phase = UIEvent::Phase::DRAG;
+            ProcessInput(touchMove);
+        }
+        else
+        {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 			Logger::Warning("AutotestingSystemLua::TouchMove point=(%f, %f) ignored no touch down found", point.x, point.y);
 #else
-			touchMove.phase = UIEvent::PHASE_MOVE;
-			ProcessInput(touchMove);
+            touchMove.phase = UIEvent::Phase::MOVE;
+            ProcessInput(touchMove);
 #endif
 		}
 	}
@@ -748,17 +748,16 @@ namespace DAVA
 		{
 			AutotestingSystem::Instance()->OnError("TouchAction::TouchUp touch down not found");
 		}
-		touchUp.phase = UIEvent::PHASE_ENDED;
-		touchUp.tid = touchId;
+        touchUp.phase = UIEvent::Phase::ENDED;
+        touchUp.tid = touchId;
 
-		ProcessInput(touchUp);
-	}
+        ProcessInput(touchUp);
+    }
 
-	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
-	{
-		Vector<UIEvent> touches;
-		touches.push_back(input);
-        UIControlSystem::Instance()->OnInput(touches, touches);
+    void AutotestingSystemLua::ProcessInput(const UIEvent& input)
+    {
+        UIEvent ev = input;
+        UIControlSystem::Instance()->OnInput(&ev);
 
         AutotestingSystem::Instance()->OnInput(input);
     }
@@ -768,16 +767,16 @@ namespace DAVA
         Split(path, "/", parsedPath);
     }
 
-	bool AutotestingSystemLua::LoadWrappedLuaObjects()
-	{
-		if (!luaState)
-		{
-			return false; //TODO: report error?
-		}
+    bool AutotestingSystemLua::LoadWrappedLuaObjects()
+    {
+        if (!luaState)
+        {
+            return false; //TODO: report error?
+        }
 
-		luaopen_AutotestingSystem(luaState);	// load the wrappered module
-		luaopen_UIControl(luaState);	// load the wrappered module
-		luaopen_Rect(luaState);	// load the wrappered module
+        luaopen_AutotestingSystem(luaState); // load the wrappered module
+        luaopen_UIControl(luaState); // load the wrappered module
+        luaopen_Rect(luaState);	// load the wrappered module
 		luaopen_Vector(luaState);	// load the wrappered module
 		luaopen_KeyedArchive(luaState);	// load the wrappered module
 		luaopen_Polygon2(luaState);	// load the wrappered module

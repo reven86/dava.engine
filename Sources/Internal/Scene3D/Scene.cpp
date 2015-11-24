@@ -67,6 +67,9 @@
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+
 #include "Sound/SoundSystem.h"
 
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
@@ -85,7 +88,6 @@
 
 namespace DAVA 
 {
-
 //TODO: remove this crap with shadow color
 EntityCache::~EntityCache()
 {
@@ -190,7 +192,7 @@ void EntityCache::ClearAll()
 }
 
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
-	: Entity()
+    : Entity()
     , transformSystem(0)
     , renderUpdateSystem(0)
     , lodSystem(0)
@@ -205,7 +207,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , foliageSystem(0)
     , windSystem(0)
     , animationSystem(0)
-    , staticOcclusionDebugDrawSystem(0)    
+    , staticOcclusionDebugDrawSystem(0)
     , systemsMask(_systemsMask)
     , maxEntityIDCounter(0)
     , sceneGlobalMaterial(0)
@@ -220,8 +222,8 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 
     // this will force scene to create hidden global material
     SetGlobalMaterial(nullptr);
-    
-    RenderOptions * options = Renderer::GetOptions();
+
+    RenderOptions* options = Renderer::GetOptions();
     options->AddObserver(this);
 }
 
@@ -327,7 +329,6 @@ void Scene::CreateSystems()
         actionSystem = new ActionUpdateSystem(this);
         AddSystem(actionSystem, MAKE_COMPONENT_MASK(Component::ACTION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
-    
 
     if(SCENE_SYSTEM_DEBUG_RENDER_FLAG & systemsMask)
     {
@@ -370,25 +371,25 @@ Scene::~Scene()
 {
     Renderer::GetOptions()->RemoveObserver(this);
 
-	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
-	{
-		AnimatedMesh * obj = *t;
-		obj->Release();
-	}
-	animatedMeshes.clear();
-	
-	for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
-	{
-		Camera * obj = *t;
-		obj->Release();
-	}
-	cameras.clear();
+    for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
+    {
+        AnimatedMesh* obj = *t;
+        obj->Release();
+    }
+    animatedMeshes.clear();
+
+    for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
+    {
+        Camera* obj = *t;
+        obj->Release();
+    }
+    cameras.clear();
     
     SafeRelease(mainCamera);
     SafeRelease(drawCamera);
 
     // Children should be removed first because they should unregister themselves in managers
-	RemoveAllChildren();	
+    RemoveAllChildren();
 
     SafeRelease(sceneGlobalMaterial);
 
@@ -678,6 +679,8 @@ void Scene::Update(float timeElapsed)
 {
     TIME_PROFILE("Scene::Update");
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
+
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
     uint32 size = (uint32)systemsToProcess.size();
@@ -692,7 +695,7 @@ void Scene::Update(float timeElapsed)
         }
         else if(system == lodSystem)
         {
-            if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LODS))
+            if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LODS))
             {
                 lodSystem->Process(timeElapsed);
             }
@@ -711,43 +714,49 @@ void Scene::Update(float timeElapsed)
 // 		SceneNodeAnimationList * anim = animations[animationIndex];
 // 		anim->Update(timeElapsed);
 // 	}
-// 
-// 	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATED_MESHES))
-// 	{
-// 		size = (int32)animatedMeshes.size();
-// 		for (int32 animatedMeshIndex = 0; animatedMeshIndex < size; ++animatedMeshIndex)
-// 		{
-// 			AnimatedMesh * mesh = animatedMeshes[animatedMeshIndex];
-// 			mesh->Update(timeElapsed);
-// 		}
-// 	}	
+    //
+    // 	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATED_MESHES))
+    // 	{
+    // 		size = (int32)animatedMeshes.size();
+    // 		for (int32 animatedMeshIndex = 0; animatedMeshIndex < size; ++animatedMeshIndex)
+    // 		{
+    // 			AnimatedMesh * mesh = animatedMeshes[animatedMeshIndex];
+    // 			mesh->Update(timeElapsed);
+    // 		}
+    // 	}
 
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
+
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
 }
 
 void Scene::Draw()
 {
 	TIME_PROFILE("Scene::Draw");
 
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
+
     //TODO: remove this crap with shadow color
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
     {
-        const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
+        const float32* propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)propDataPtr);
     }
     else
     {
         static Color defShadowColor(1.f, 0.f, 0.f, 1.f);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, defShadowColor.color, (pointer_size)this);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, defShadowColor.color, (pointer_size) this);
     }
-    
-    uint64 time = SystemTimer::Instance()->AbsoluteMS();        
-    
+
+    uint64 time = SystemTimer::Instance()->AbsoluteMS();
+
     renderSystem->Render();
-    
+
     //foliageSystem->DebugDrawVegetation();
     
 	drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
+
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
 }
     
 void Scene::SceneDidLoaded()
@@ -874,8 +883,7 @@ Camera * Scene::GetDrawCamera() const
 
     
 void Scene::UpdateLights()
-{            
-    
+{
 }
     
 Light * Scene::GetNearestDynamicLight(Light::eType type, Vector3 position)
@@ -998,15 +1006,14 @@ void Scene::OptimizeBeforeExport()
     List<NMaterial*> materials;
     GetDataNodes(materials);
 
-    const auto RemoveMaterialFlag = [](NMaterial* material, const FastName& flagName)
-    {
+    const auto RemoveMaterialFlag = [](NMaterial* material, const FastName& flagName) {
         if (material->HasLocalFlag(flagName))
         {
             material->RemoveFlag(flagName);
         }
     };
 
-    for(auto & mat: materials)
+    for (auto& mat : materials)
     {
         RemoveMaterialFlag(mat, NMaterialFlagName::FLAG_ILLUMINATION_USED);
         RemoveMaterialFlag(mat, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
@@ -1038,11 +1045,11 @@ void Scene::ImportShadowColor(Entity * rootNode)
                 if (sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
                     sceneGlobalMaterial->RemoveProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
 
-				Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
+                Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
                 sceneGlobalMaterial->AddProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
-				props->DeleteKey("ShadowColor");
-			}
-		}
+                props->DeleteKey("ShadowColor");
+            }
+        }
     }
 }
 
@@ -1064,14 +1071,12 @@ void Scene::Input(DAVA::UIEvent *event)
 
 void Scene::HandleEvent(Observable * observable)
 {
-
     RenderOptions * options = dynamic_cast<RenderOptions *>(observable);
 
     if (options->IsOptionEnabled(RenderOptions::REPLACE_LIGHTMAP_MIPMAPS))
         MipMapReplacer::ReplaceMipMaps(this, NMaterialTextureName::TEXTURE_LIGHTMAP);
     if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
         MipMapReplacer::ReplaceMipMaps(this, NMaterialTextureName::TEXTURE_ALBEDO);
-
 
     if (options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
     {

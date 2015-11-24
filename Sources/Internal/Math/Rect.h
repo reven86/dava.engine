@@ -60,21 +60,21 @@ struct Rect
     inline void ClampToRect(Rect& rect) const;
     inline Rect Combine(const Rect& rect) const;
 
-	inline Vector2 GetCenter() const;
-	inline Vector2 GetPosition() const;
-	inline Vector2 GetSize() const;
-	
-	inline void SetCenter(const Vector2 & center);
-	inline void SetPosition(const Vector2 & position);
-	inline void SetSize(const Vector2 & size);
+    inline Vector2 GetCenter() const;
+    inline Vector2 GetPosition() const;
+    inline Vector2 GetSize() const;
 
-	inline bool operator == (const Rect  & _s)const;
-	inline bool operator != (const Rect  & _s)const;
+    inline void SetCenter(const Vector2& center);
+    inline void SetPosition(const Vector2& position);
+    inline void SetSize(const Vector2& size);
 
-	inline Rect &	operator += (const Vector2 & point);
-	inline Rect &	operator -= (const Vector2 & point);
+    inline bool operator==(const Rect& _s) const;
+    inline bool operator!=(const Rect& _s) const;
 
-	inline Rect 	operator + (const Vector2 & Point) const;
+    inline Rect& operator+=(const Vector2& point);
+    inline Rect& operator-=(const Vector2& point);
+
+    inline Rect 	operator + (const Vector2 & Point) const;
 	inline Rect 	operator - (const Vector2 & Point) const;
 };
 

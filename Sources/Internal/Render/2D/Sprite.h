@@ -52,7 +52,6 @@ enum eSpriteModification
 	ESM_VFLIP = 1<<1
 };
 
-
 class Texture;
 class RenderSystem2D;
 
@@ -97,33 +96,30 @@ public:
 		inline void SetFlags(uint32 flags);
 		inline void SetPerPixelAccuracyUsage(bool needToUse);
 		void BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState);
-        
-        
-        inline void SetMaterial(NMaterial* material);        
-        inline NMaterial* GetMaterial() const;        
-        
+
+        inline void SetMaterial(NMaterial* material);
+        inline NMaterial* GetMaterial() const;
+
     private:
-    
-        NMaterial *material;
+        NMaterial* material;
+    };
 
-	};
+    enum eSpriteType
+    {
+        SPRITE_FROM_FILE = 0,
+        SPRITE_FROM_TEXTURE
+    };
 
-	enum eSpriteType
-	{
-			SPRITE_FROM_FILE = 0
-		,	SPRITE_FROM_TEXTURE
-	};
+    enum eRectsAndOffsets
+    {
+        X_POSITION_IN_TEXTURE = 0,
+        Y_POSITION_IN_TEXTURE,
+        ACTIVE_WIDTH,
+        ACTIVE_HEIGHT,
+        X_OFFSET_TO_ACTIVE,
+        Y_OFFSET_TO_ACTIVE
+    };
 
-	enum eRectsAndOffsets
-	{
-			X_POSITION_IN_TEXTURE = 0
-		,	Y_POSITION_IN_TEXTURE
-		,	ACTIVE_WIDTH
-		,	ACTIVE_HEIGHT
-		,	X_OFFSET_TO_ACTIVE
-		,	Y_OFFSET_TO_ACTIVE
-	};
-    
     const static int32 INVALID_FRAME_INDEX = -1; //Use it when we try to get sprite frame using invalid frameName
 
 	/**
@@ -400,7 +396,6 @@ inline NMaterial* Sprite::DrawState::GetMaterial() const
 {
     return material;
 }
-
 
 void Sprite::DrawState::SetMaterial(NMaterial* _material)
 {

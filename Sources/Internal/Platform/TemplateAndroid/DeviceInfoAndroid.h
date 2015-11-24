@@ -65,6 +65,7 @@ public:
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
+    bool IsTouchPresented();
 
 protected:
     DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
@@ -90,7 +91,6 @@ private:
     Function<jstring()> getHTTPProxyHost;
     Function<jstring()> getHTTPNonProxyHosts;
     Function<jint()> getHTTPProxyPort;
-    Function<jint()> getGPUFamily;
     Function<jint()> getNetworkType;
     Function<jint(jint)> getSignalStrength;
     Function<jboolean()> isPrimaryExternalStoragePresent;

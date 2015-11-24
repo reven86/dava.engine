@@ -19,6 +19,8 @@ elseif ( IOS     )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
     set( CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 7.0 )
+    set( CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE No )
+    set( CMAKE_EXE_LINKER_FLAGS "-ObjC" )
 
     set( CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" )
 
@@ -58,6 +60,7 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
 elseif ( WIN32 )
     #dynamic runtime on windows store
@@ -93,8 +96,17 @@ endif  ()
 
 
 ##
+if( WARNING_DISABLE)
 
-if( WARNINGS_AS_ERRORS )
+    if( WIN32 )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0" )
+    elseif( APPLE )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w" )
+    endif()
+
+
+elseif( WARNINGS_AS_ERRORS )
+
 
     set(LOCAL_DISABLED_WARNINGS "-Weverything \
 -Werror \
@@ -151,7 +163,14 @@ if( WARNINGS_AS_ERRORS )
 -Wno-old-style-cast \
 -Wno-unknown-warning-option \
 -Wno-unreachable-code-return \
--Wno-unreachable-code-break")
+-Wno-unreachable-code-break \
+-Wno-reserved-id-macro \
+-Wno-documentation-pedantic \
+-Wno-inconsistent-missing-override \
+-Wno-unused-local-typedef \
+-Wno-nullable-to-nonnull-conversion \
+-Wno-super-class-method-mismatch \
+-Wno-nonnull")
 
 
     if( ANDROID )

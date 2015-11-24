@@ -81,11 +81,11 @@ void TileTexturePreviewWidget::Clear()
 void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& color /*  = Color::White */)
 {
     DVASSERT(previewTexture->GetPixelFormat() == FORMAT_RGBA8888);
-    
-	bool blocked = signalsBlocked();
-	blockSignals(true);
 
-	images.push_back(SafeRetain(previewTexture));
+    bool blocked = signalsBlocked();
+    blockSignals(true);
+
+    images.push_back(SafeRetain(previewTexture));
 
 	QTreeWidgetItem* item = new QTreeWidgetItem();
 	item->setCheckState(0, Qt::Unchecked);
@@ -223,9 +223,9 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
 	QColor color = ColorToQColor(colors[number]);
     color.setAlpha(255);
 
-	QPalette palette = labels[number]->palette();
-	palette.setColor(labels[number]->backgroundRole(), color);
-	labels[number]->setPalette(palette);
+    QPalette palette = labels[number]->palette();
+    palette.setColor(labels[number]->backgroundRole(), color);
+    labels[number]->setPalette(palette);
 
 	QString str;
 	str.sprintf("#%02x%02x%02x", color.red(), color.green(), color.blue());
@@ -354,29 +354,29 @@ void TileTexturePreviewWidget::SetMode(TileTexturePreviewWidget::eWidgetModes mo
 Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, const DAVA::Color &color)
 {
     DVASSERT(image->GetPixelFormat() == FORMAT_RGBA8888);
-    
-    Image * newImage = Image::Create(image->GetWidth(), image->GetHeight(), image->GetPixelFormat());
-    
-    uint32 * imageData = (uint32 *)image->GetData();
-    uint32 * newImageData = (uint32 *)newImage->GetData();
-    
+
+    Image* newImage = Image::Create(image->GetWidth(), image->GetHeight(), image->GetPixelFormat());
+
+    uint32* imageData = (uint32*)image->GetData();
+    uint32* newImageData = (uint32*)newImage->GetData();
+
     int32 pixelsCount = image->dataSize / sizeof(uint32);
-    
-    for(int32 i = 0; i < pixelsCount; ++i)
+
+    for (int32 i = 0; i < pixelsCount; ++i)
     {
-        uint8 * pixelData = (uint8*)imageData;
-        uint8 * newPixelData = (uint8*)newImageData;
-        
+        uint8* pixelData = (uint8*)imageData;
+        uint8* newPixelData = (uint8*)newImageData;
+
         newPixelData[0] = (uint8)floorf(pixelData[0] * color.r);
         newPixelData[1] = (uint8)floorf(pixelData[1] * color.g);
         newPixelData[2] = (uint8)floorf(pixelData[2] * color.b);
         newPixelData[3] = 255;
-        
+
         ++imageData;
         ++newImageData;
     }
-    
-	return newImage;
+
+    return newImage;
 }
 
 void TileTexturePreviewWidget::UpdateColor(int32 index, const Color& color)

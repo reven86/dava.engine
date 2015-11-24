@@ -54,7 +54,6 @@ DeviceInfoPrivate::DeviceInfoPrivate() : jniDeviceInfo("com/dava/framework/JNIDe
 	getHTTPProxyHost = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPProxyHost");
 	getHTTPNonProxyHosts = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPNonProxyHosts");
 	getHTTPProxyPort = jniDeviceInfo.GetStaticMethod<jint>("GetHTTPProxyPort");
-	getGPUFamily = jniDeviceInfo.GetStaticMethod<jint>("GetGPUFamily");
 	getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
 	getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
 	isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
@@ -138,7 +137,28 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-	return static_cast<eGPUFamily>(getGPUFamily());
+    eGPUFamily gpuFamily = GPU_INVALID;
+    if (Renderer::IsInitialized())
+    {
+        if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_PVRTC_4BPP_RGBA))
+        {
+            gpuFamily = GPU_POWERVR_ANDROID;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_DXT1))
+        {
+            gpuFamily = GPU_TEGRA;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_ATC_RGB))
+        {
+            gpuFamily = GPU_ADRENO;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_ETC1))
+        {
+            gpuFamily = GPU_MALI;
+        }
+    }
+
+    return gpuFamily;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
@@ -182,7 +202,13 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
     //TODO: remove this empty realization and implement detection of HID connection
-    return type == DeviceInfo::HID_POINTER_TYPE;
+    return false;
+}
+
+bool DeviceInfoPrivate::IsTouchPresented()
+{
+    //TODO: remove this empty realization and implement detection touch
+    return true;
 }
 
 DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)

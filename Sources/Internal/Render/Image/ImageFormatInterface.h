@@ -43,7 +43,7 @@ class Image;
 
 struct ImageInfo
 {
-    bool isEmpty()
+    bool isEmpty() const
     {
         return (0 == width || 0 == height);
     }
@@ -53,7 +53,7 @@ struct ImageInfo
         return Size2i(width, height);
     }
 
-    bool operator==(const ImageInfo& another)
+    bool operator==(const ImageInfo& another) const
     {
         return (
             width == another.width && 
@@ -75,7 +75,7 @@ public:
     virtual ~ImageFormatInterface() = default;
 
     virtual ImageFormat GetImageFormat() const = 0;
-    virtual bool IsMyImage(File *file) const = 0;
+    virtual bool CanProcessFile(File* file) const = 0;
 
     virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
 

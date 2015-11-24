@@ -41,6 +41,48 @@
 
 using namespace DAVA;
 
+class ElegantSceneGuard final
+{
+public:
+    ElegantSceneGuard(Scene* scene_)
+        : scene(scene_)
+    {
+        if (scene)
+        {
+            Set<DataNode*> nodes;
+            scene->GetDataNodes(nodes);
+            for (auto& node : nodes)
+            {
+                dataNodeIDs[node] = node->GetNodeID();
+            }
+
+            globalMaterial = SafeRetain(scene->GetGlobalMaterial());
+            scene->SetGlobalMaterial(nullptr);
+        }
+    }
+
+    ~ElegantSceneGuard()
+    {
+        for (auto& id : dataNodeIDs)
+        {
+            id.first->SetNodeID(id.second);
+        }
+
+        if (scene)
+        {
+            scene->SetGlobalMaterial(globalMaterial);
+            scene = nullptr;
+        }
+
+        SafeRelease(globalMaterial);
+    }
+
+private:
+    Scene* scene = nullptr;
+    NMaterial* globalMaterial = nullptr;
+    Map<DataNode*, uint64> dataNodeIDs;
+};
+
 SaveEntityAsAction::SaveEntityAsAction(const EntityGroup *_entities, const FilePath &_path)
 	: CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
 	, entities(_entities)
@@ -53,76 +95,56 @@ SaveEntityAsAction::~SaveEntityAsAction()
 void SaveEntityAsAction::Redo()
 {
 	uint32 count = static_cast<uint32>(entities->Size());
-	if (	!sc2Path.IsEmpty()
-		&&	sc2Path.IsEqualToExtension(".sc2") 
-		&&	nullptr != entities && count > 0)
-	{
-		const auto RemoveReferenceToOwner = [](Entity *entity) 
-		{
-			KeyedArchive *props = GetCustomPropertiesArchieve(entity);
-			if(nullptr != props)
-			{
-				props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-			}
-		};
+    if (!sc2Path.IsEmpty() && sc2Path.IsEqualToExtension(".sc2") && (nullptr != entities) && (count > 0))
+    {
+        const auto RemoveReferenceToOwner = [](Entity* entity) {
+            KeyedArchive* props = GetCustomPropertiesArchieve(entity);
+            if (nullptr != props)
+            {
+                props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+            }
+        };
 
-		Scene *scene = new Scene();
-		Entity *container = nullptr;
+        //reset global material because of global material :)
+        ElegantSceneGuard guard(entities->GetEntity(0)->GetScene());
 
-		if (count == 1)	// saving of single object
-		{
-			container = entities->GetEntity(0)->Clone();
-			RemoveReferenceToOwner(container);
-			container->SetLocalTransform(Matrix4::IDENTITY);
-		}
-		else // saving of group of objects
-		{
-			container = new Entity();
-			
-			const Vector3 oldZero = entities->GetCommonZeroPos();
-			for (uint32 i = 0; i < count; ++i)
-			{
-				ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
+        ScopedPtr<Scene> scene(new Scene());
+        ScopedPtr<Entity> container(nullptr);
 
-				const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
-				Matrix4 newLocalTransform = clone->GetLocalTransform();
-				newLocalTransform.SetTranslationVector(offset);
-				clone->SetLocalTransform(newLocalTransform);
+        if (count == 1) // saving of single object
+        {
+            container.reset(entities->GetEntity(0)->Clone());
+            RemoveReferenceToOwner(container);
+            container->SetLocalTransform(Matrix4::IDENTITY);
+        }
+        else // saving of group of objects
+        {
+            container.reset(new Entity());
 
-				container->AddNode(clone);
+            const Vector3 oldZero = entities->GetCommonZeroPos();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
+
+                const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
+                Matrix4 newLocalTransform = clone->GetLocalTransform();
+                newLocalTransform.SetTranslationVector(offset);
+                clone->SetLocalTransform(newLocalTransform);
+
+                container->AddNode(clone);
 				RemoveReferenceToOwner(clone);
 			}
 
 			container->SetName(sc2Path.GetFilename().c_str());
 		}
-		DVASSERT(nullptr != container);
+        DVASSERT(container);
 
-        //Remove global material from cloned object
-        Scene* sourceScene = entities->GetEntity(0)->GetScene();
-        NMaterial* sourceGlobalMaterial = (sourceScene != nullptr) ? sourceScene->GetGlobalMaterial() : nullptr;
-        if (sourceGlobalMaterial)
-        {
-            List<NMaterial*> newMaterials;
-            container->GetDataNodes(newMaterials);
+        scene->AddNode(container); //1. Added new items in zero position with identity matrix
+        scene->staticOcclusionSystem->InvalidateOcclusion(); //2. invalidate static occlusion indeces
+        RemoveLightmapsRecursive(container); //3. Reset lightmaps
 
-            for (auto& mat : newMaterials)
-            {
-                if (mat->GetParent() == sourceGlobalMaterial)
-                {
-                    mat->SetParent(nullptr);
-                }
-            }
-        }
-
-        scene->AddNode(container);								//1. Added new items in zero position with identity matrix
-		scene->staticOcclusionSystem->InvalidateOcclusion();	//2. invalidate static occlusion indeces
-		RemoveLightmapsRecursive(container);					//3. Reset lightmaps
-				
-		scene->SaveScene(sc2Path);
-
-		container->Release();
-		scene->Release();
-	}
+        scene->SaveScene(sc2Path);
+    }
 }
 
 void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
@@ -133,13 +155,13 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 		const uint32 batchCount = renderObject->GetRenderBatchCount();
 		for (uint32 b = 0; b < batchCount; ++b)
 		{
-			NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
-			if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
-			{
-				material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
-			}
-		}
-	}
+            NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
+            if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
+            {
+                material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
+            }
+        }
+    }
 
 	const int32 count = entity->GetChildrenCount();
 	for (int32 ch = 0; ch < count; ++ch)

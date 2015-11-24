@@ -71,7 +71,7 @@ protected:
     void Draw();
     void DrawInEditableMode();
     void DrawInViewOnlyMode();
-    void DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish, const DAVA::Color & color);
+    void DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const DAVA::Color& color);
 
     void ProcessCommand(const Command2 *command, bool redo);
 

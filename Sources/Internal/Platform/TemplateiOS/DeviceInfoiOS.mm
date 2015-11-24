@@ -51,8 +51,8 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
-	#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR == 1
-		return 	DeviceInfo::PLATFORM_IOS_SIMULATOR;
+	#if TARGET_IPHONE_SIMULATOR == 1
+    return DeviceInfo::PLATFORM_IOS_SIMULATOR;
 	#else
 		return 	DeviceInfo::PLATFORM_IOS;
 	#endif
@@ -377,22 +377,31 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     ::UIScreen* mainScreen = [::UIScreen mainScreen];
     screenInfo.width = [mainScreen bounds].size.width;
     screenInfo.height = [mainScreen bounds].size.height;
+    screenInfo.scale = 1;
 
-    if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-        && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+    if ([ ::UIView instancesRespondToSelector:@selector(contentScaleFactor)])
     {
-        screenInfo.scale = (unsigned int)[[::UIScreen mainScreen] scale];
-    }
-    else
-    {
-        screenInfo.scale = 1;
+        if ([ ::UIScreen instancesRespondToSelector:@selector(nativeScale)])
+        {
+            screenInfo.scale = [[ ::UIScreen mainScreen] nativeScale];
+        }
+        else if ([ ::UIScreen instancesRespondToSelector:@selector(scale)])
+        {
+            screenInfo.scale = [[ ::UIScreen mainScreen] scale];
+        }
     }
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
     //TODO: remove this empty realization and implement detection of HID connection
-    return type == DeviceInfo::HID_POINTER_TYPE;
+    return false;
+}
+
+bool DeviceInfoPrivate::IsTouchPresented()
+{
+    //TODO: remove this empty realization and implement detection touch
+    return true;
 }
 
 }

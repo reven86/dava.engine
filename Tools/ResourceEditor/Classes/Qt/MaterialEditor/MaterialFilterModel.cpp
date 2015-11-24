@@ -110,8 +110,8 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &
     bool isSelected = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
     bool isMaterial = false;
 
-    DAVA::NMaterial *material = item->GetMaterial();
-    if( nullptr == material->GetParent() ||
+    DAVA::NMaterial* material = item->GetMaterial();
+    if (nullptr == material->GetParent() ||
         materialModel->GetGlobalMaterial() == material->GetParent())
     {
         isMaterial = true;

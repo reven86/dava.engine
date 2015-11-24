@@ -362,7 +362,7 @@ VariantType YamlNode::AsVariantType() const
         {
             retValue.SetString(it->second->AsString());
         }
-        if(innerTypeName == DAVA::VariantType::TYPENAME_FASTNAME)
+        if (innerTypeName == DAVA::VariantType::TYPENAME_FASTNAME)
         {
             retValue.SetFastName(it->second->AsFastName());
         }
@@ -801,11 +801,11 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
             InternalSetString(Format("%llu", varType.AsUInt64()), SR_PLAIN_REPRESENTATION);
         }
         break;
-	case VariantType::TYPE_FASTNAME:
-		{
-			InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
-		}
-		break;
+        case VariantType::TYPE_FASTNAME:
+        {
+            InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
+        break;
 
     default:
         result = false;

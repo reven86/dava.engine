@@ -31,31 +31,27 @@
 
     #include "../Common/rhi_RingBuffer.h"
     #include "_metal.h"
-
+#if !(TARGET_IPHONE_SIMULATOR == 1)
 namespace rhi
 {
-
 class
 RingBufferMetal
 {
 public:
+    void Initialize(unsigned sz);
+    void Uninitialize();
 
-    void            Initialize( unsigned sz );
-    void            Uninitialize();
+    float* Alloc(unsigned cnt, unsigned* offset = 0);
 
-    float*          Alloc( unsigned cnt, unsigned* offset=0 );
-
-    id<MTLBuffer>   BufferUID() const;
-    unsigned        Offset( void* ptr ) const;  
-
+    id<MTLBuffer> BufferUID() const;
+    unsigned Offset(void* ptr) const;
 
 private:
-
-    RingBuffer      buf;
-    __unsafe_unretained id<MTLBuffer>   uid;
+    RingBuffer buf;
+    __unsafe_unretained id<MTLBuffer> uid;
 };
 
-
 } // namespace rhi
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)
 
 #endif // __RHI_RINGBUFFERMETAL_H__

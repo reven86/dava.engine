@@ -96,19 +96,19 @@ void BeastAction::Redo()
             RenderObjectsFlusher::Flush();
         }
         Sleep(15);
-	}
+    }
 
-	if(NULL != waitDialog)
-	{
+    if (NULL != waitDialog)
+    {
 		waitDialog->EnableCancel(false);
 	}
 
     Finish(canceled);
 
-	if (waitDialog != nullptr)
-	{
-		waitDialog->Reset();
-	}
+    if (waitDialog != nullptr)
+    {
+        waitDialog->Reset();
+    }
 }
 
 void BeastAction::Start()
@@ -142,7 +142,7 @@ void BeastAction::Finish(bool canceled)
 	Landscape *land = FindLandscape(workingScene);
 	if(land)
 	{
-		FilePath textureName = land->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
+        FilePath textureName = land->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
         if (textureName.Exists())
         {
             textureName.ReplaceFilename("temp_beast.png");

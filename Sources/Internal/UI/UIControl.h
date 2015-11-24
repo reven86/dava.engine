@@ -1217,6 +1217,7 @@ public:
     void DumpInputs(int32 depthLevel);
 
     static void DumpControls(bool onlyOrphans);
+
 private:
     String name;
     FastName fastName;
@@ -1237,6 +1238,8 @@ protected:
     UIControlBackground *background;
     int32 controlState;
     int32 prevControlState;
+
+    float32 wheelSensitivity = 30.f;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
@@ -1331,9 +1334,11 @@ private:
 public:
     void AddClass(const FastName& clazz);
     void RemoveClass(const FastName& clazz);
-    bool HasClass(const FastName& clazz);
-    
-    String GetClassesAsString();
+    bool HasClass(const FastName& clazz) const;
+    void SetTaggedClass(const FastName& tag, const FastName& clazz);
+    void ResetTaggedClass(const FastName& tag);
+
+    String GetClassesAsString() const;
     void SetClassesFromString(const String &classes);
     
     const UIStyleSheetPropertySet& GetLocalPropertySet() const;
@@ -1356,7 +1361,7 @@ public:
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
 private:
-    Vector<FastName> classes;
+    UIStyleSheetClassSet classes;
     UIStyleSheetPropertySet localProperties;
     UIStyleSheetPropertySet styledProperties;
     RefPtr< UIControlPackageContext > packageContext;
@@ -1382,6 +1387,9 @@ public:
     virtual String GetInternalControlName(int32 index) const;
     virtual String GetInternalControlDescriptions() const;
 
+    inline float32 GetWheelSensitivity() const;
+    inline void SetWheelSensitivity(float32 newSens);
+
     // for introspection
     inline bool GetEnabled() const;
     inline void SetEnabledNotHierarchic(bool enabled);
@@ -1402,6 +1410,7 @@ public:
                          PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("wheelSensitivity", "Wheel Sensitivity", GetWheelSensitivity, SetWheelSensitivity, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
 
@@ -1544,7 +1553,14 @@ void UIControl::SetDebugDrawNotHierarchic(bool val)
     SetDebugDraw(val, false);
 }
 
-
+float32 UIControl::GetWheelSensitivity() const
+{
+    return wheelSensitivity;
+}
+void UIControl::SetWheelSensitivity(float32 newSens)
+{
+    wheelSensitivity = newSens;
+}
 };
 
 

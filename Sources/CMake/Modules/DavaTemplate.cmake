@@ -121,6 +121,21 @@ elseif ( WINDOWS_UAP )
     endif ()
     configure_file( ${WINDOWS_UAP_CONFIG_FILE} ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
     load_config ( ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
+    
+    #package languages settings
+    #TODO: remove default value setting for this variable after supporting of this feature by client
+    if ( NOT WINDOWS_UAP_PACKAGE_LANGUAGES )
+        set ( WINDOWS_UAP_PACKAGE_LANGUAGES "x-generate" )
+    else ()
+        string ( REPLACE "|" ";" WINDOWS_UAP_PACKAGE_LANGUAGES ${WINDOWS_UAP_PACKAGE_LANGUAGES} )
+    endif ()
+    
+    #build xml tags list
+    set ( WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS "\n" )
+    foreach ( LANGUAGE ${WINDOWS_UAP_PACKAGE_LANGUAGES} )
+        set ( WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS 
+              "${WINDOWS_UAP_PACKAGE_LANGUAGES_XML_TAGS}  <qualifier name=\"Language\" value=\"${LANGUAGE}\" />\n" )
+    endforeach ()
 
     set ( APP_MANIFEST_NAME "Package.appxmanifest" )
     set ( APP_CERT_NAME "${PROJECT_NAME}_Key.pfx" )
@@ -140,7 +155,7 @@ elseif ( WINDOWS_UAP )
     file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/${CERT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
 
     #copy priconfig files
-    file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigDefault.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+    configure_file ( "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigDefault.xml" "${CMAKE_CURRENT_BINARY_DIR}/UWPPriConfigDefault.xml" )
     file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigPackaging.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
     set(CONTENT_FILES ${CONTENT_FILES}
@@ -294,6 +309,10 @@ else()
 
 endif()
 
+if (QT5_FOUND)
+    link_with_qt5(${PROJECT_NAME})
+endif()
+
 if ( QT5_FOUND )
     if ( WIN32 )
         set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
@@ -416,6 +435,11 @@ elseif( MACOS )
 
     if( DAVA_FOUND )
         set(LD_RUNPATHES "@executable_path @executable_path/../Resources @executable_path/../Frameworks")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
+    endif()
+
+    if (QT5_FOUND AND NOT DEPLOY AND NOT TEAMCITY_DEPLOY)
+        set(LD_RUNPATHES "${LD_RUNPATHES} ${QT5_LIB_PATH}")
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 

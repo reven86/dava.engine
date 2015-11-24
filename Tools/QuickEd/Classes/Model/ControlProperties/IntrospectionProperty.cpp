@@ -55,9 +55,9 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     , member(aMember)
     , flags(EF_CAN_RESET)
 {
-    if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(member->Name()))
-        SetStylePropertyIndex(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->Name()));
-    
+    int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetPropertyByMember(aMember);
+    SetStylePropertyIndex(propertyIndex);
+
     if (sourceProperty)
     {
         if (copyType == CT_COPY)

@@ -141,17 +141,17 @@ QString ResourcesManageHelper::GetGraphicsFontPath(Font* font)
 {
     if (font && (font->GetFontType() == Font::TYPE_GRAPHIC))
     {
-		GraphicFont *gFont = dynamic_cast<GraphicFont*>(font);
-		// Get graphics font sprite if it's available
-        Texture *fontTexture = gFont->GetTexture();
+        GraphicFont* gFont = dynamic_cast<GraphicFont*>(font);
+        // Get graphics font sprite if it's available
+        Texture* fontTexture = gFont->GetTexture();
         if (fontTexture)
         {
 			// Save graphics font sprite path
             return QString::fromStdString(fontTexture->GetPathname().GetAbsolutePathname());
-    	}
-	}
+        }
+    }
 
-	return QString();
+    return QString();
 }
 
 QString ResourcesManageHelper::GetDefaultSpritesPath(const QString& currentSpritePath)

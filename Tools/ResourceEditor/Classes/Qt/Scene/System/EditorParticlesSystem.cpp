@@ -33,6 +33,8 @@
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/SceneTabWidget.h"
+#include "Main/mainwindow.h"
 
 // framework
 #include "Base/BaseTypes.h"
@@ -45,7 +47,7 @@
 
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
-{	
+{
     selectedEffectEntity = NULL;
     selectedEmitter = NULL;
 }
@@ -64,19 +66,19 @@ EditorParticlesSystem::~EditorParticlesSystem()
 void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
 	SceneCollisionSystem *collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	
+
     if (collisionSystem)
     {
-		if(NULL != effectEntity)
-		{
-			DAVA::AABBox3 wordBox;
+        if (NULL != effectEntity)
+        {
+            DAVA::AABBox3 wordBox;
 			DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
 			collBox.GetTransformedBox(effectEntity->GetWorldTransform(), wordBox);	
 			// Get sphere radius (size) of debug effect
 			DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
             GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(wordBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), RenderHelper::DRAW_SOLID_DEPTH);
-		}
-	}
+        }
+    }
 }
 
 void EditorParticlesSystem::Draw()
@@ -98,12 +100,12 @@ void EditorParticlesSystem::Draw()
         DAVA::Vector3 center =effect->GetSpawnPosition(effect->GetEmitterId(selectedEmitter));
         TransformPerserveLength(center, effectMatrix);
         center+=selectedEffectEntity->GetWorldTransform().GetTranslationVector();
-        
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, 0.1f, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
-		DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
 
-		switch (selectedEmitter->emitterType)
-		{
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, 0.1f, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
+        DrawVectorArrow(selectedEffectEntity, selectedEmitter, center);
+
+        switch (selectedEmitter->emitterType)
+        {
 		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
 		case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
 			{
@@ -124,7 +126,7 @@ void EditorParticlesSystem::Draw()
                 
         default: break;
 		}
-	}	
+    }
 }
 
 void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -178,7 +180,7 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity *effectEntity, DAVA::Partic
 	DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
 	wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
 
-    RenderHelper * drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
     drawer->DrawAABoxTransformed(AABBox3(center - emitterSize / 2, center + emitterSize / 2), wMat, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
@@ -232,6 +234,19 @@ void EditorParticlesSystem::RemoveEntity(DAVA::Entity * entity)
 	}
 }
 
+void EditorParticlesSystem::RestartParticleEffects()
+{
+    for (Entity* entity : entities)
+    {
+        ParticleEffectComponent* effectComponent = GetEffectComponent(entity);
+        DVASSERT(effectComponent);
+        if (!effectComponent->IsStopped())
+        {
+            effectComponent->Restart();
+        }
+    }
+}
+
 void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if (!command)
@@ -252,8 +267,17 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 		}
 
 		case CMDID_PARTICLE_LAYER_UPDATE:
-		case CMDID_PARTILCE_LAYER_UPDATE_TIME:
-		case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
+        {
+            QtMainWindow::Instance()->RestartParticleEffects();
+
+            const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
+                                                                    castedCmd->GetLayer());
+            break;
+        }
+
+        case CMDID_PARTILCE_LAYER_UPDATE_TIME:
+        case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
 		{
 			const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
 			SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,

@@ -114,7 +114,7 @@ uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
 
 void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true*/)
 {
-    DVASSERT(group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST); //only triangle lists for now    
+    DVASSERT(group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST); //only triangle lists for now
     DVASSERT(group->GetFormat()&EVF_TEXCOORD0);
     DVASSERT(group->GetFormat()&EVF_NORMAL);
 
@@ -324,7 +324,7 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
 
 SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::JointConfig> & outJoints)
 {
-    SkinnedMesh * newRenderObject = new SkinnedMesh();
+    SkinnedMesh* newRenderObject = new SkinnedMesh();
 
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> > collapseDataMap;
 
@@ -383,7 +383,7 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
                 }
             }
         }
-    }    
+    }
 
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator it = collapseDataMap.begin();
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator itEnd = collapseDataMap.end();
@@ -433,7 +433,7 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
             indexOffset += currentBatchIndexCount;
         }
 
-        NMaterial * material = new NMaterial();
+        NMaterial* material = new NMaterial();
         material->SetParent(key.materialParent);
         material->AddFlag(NMaterialFlagName::FLAG_SKINNING, 1);
 
@@ -450,8 +450,6 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
         newBatch->Release();
     }
 
-
-    
     return newRenderObject;
 }
 

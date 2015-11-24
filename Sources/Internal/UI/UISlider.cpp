@@ -217,12 +217,13 @@ void UISlider::RemoveControl(UIControl *control)
 
 void UISlider::Input(UIEvent *currentInput)
 {
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)                                        
-	if (currentInput->phase == UIEvent::PHASE_MOVE || currentInput->phase == UIEvent::PHASE_KEYCHAR)
-		return;
-#endif
-	
-	const Rect & absRect = GetGeometricData().GetUnrotatedRect();
+    // not supported for now.
+    if (UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase || UIEvent::Phase::CHAR == currentInput->phase || UIEvent::Phase::KEY_DOWN == currentInput->phase || UIEvent::Phase::KEY_UP == currentInput->phase || UIEvent::Phase::KEY_DOWN_REPEAT == currentInput->phase || UIEvent::Phase::CHAR_REPEAT == currentInput->phase || UIEvent::Phase::ERROR == currentInput->phase || UIEvent::Phase::JOYSTICK == currentInput->phase)
+    {
+        return;
+    }
+
+    const Rect & absRect = GetGeometricData().GetUnrotatedRect();
 	//absTouchPoint = currentInput->point;
 	
 	relTouchPoint = currentInput->point;
@@ -247,14 +248,15 @@ void UISlider::Input(UIEvent *currentInput)
 		{
 			PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 		}
-	}else if (currentInput->phase == UIEvent::PHASE_ENDED) 
-	{
-		/* if not continuos always perform event because last move position almost always the same as end pos */
-		PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
-	}
+    }
+    else if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        /* if not continuos always perform event because last move position almost always the same as end pos */
+        PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
+    }
 
-	RecalcButtonPos();
-	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
+    RecalcButtonPos();
+    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
 void UISlider::Draw(const UIGeometricData &geometricData)

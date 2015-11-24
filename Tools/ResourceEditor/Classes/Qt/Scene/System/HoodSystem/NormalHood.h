@@ -37,11 +37,11 @@ struct NormalHood : public HoodObject
 	NormalHood();
 	~NormalHood();
 
-    virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper * drawer, TextDrawSystem *textDrawSystem);
+    virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper* drawer, TextDrawSystem* textDrawSystem);
 
-	HoodCollObject *axisX;
-	HoodCollObject *axisY;
-	HoodCollObject *axisZ;
+    HoodCollObject* axisX;
+    HoodCollObject* axisY;
+    HoodCollObject *axisZ;
 };
 
 #endif // __NORMAL_HOOD_H__

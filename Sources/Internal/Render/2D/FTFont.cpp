@@ -418,15 +418,16 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     
 	int32 layoutWidth = 0; // width in FT points
 
-	bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
-		
-	for(uint32 i = 0; i < strLen; ++i)
-	{
-		Glyph		& glyph = glyphs[i];
-		FT_Glyph	image = nullptr;;
-		FT_BBox		bbox;
+    bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
 
-		bool skipGlyph = true;
+    for (uint32 i = 0; i < strLen; ++i)
+    {
+        Glyph& glyph = glyphs[i];
+        FT_Glyph image = nullptr;
+        ;
+        FT_BBox bbox;
+
+        bool skipGlyph = true;
         if(glyph.image && (glyph.index != 0 || drawNondefGlyph))
         {
             error = FT_Glyph_Copy(glyph.image, &image);

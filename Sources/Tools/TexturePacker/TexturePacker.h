@@ -56,7 +56,6 @@ class TexturePacker
 public:
 
 	static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
-	static const uint32 TSIZE_4096 = 4096;
 	static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
 	static const uint32 DEFAULT_MARGIN = 1;
 
@@ -65,14 +64,14 @@ public:
 		int8 minFilter;
 		int8 magFilter;
         int8 mipFilter;
-		
+
         FilterItem(int8 minF, int8 magF, int8 mipF)
-		{
-			minFilter = minF;
-			magFilter = magF;
+        {
+            minFilter = minF;
+            magFilter = magF;
             mipFilter = mipF;
-		}
-	};
+        }
+    };
 
 public:
 	TexturePacker();
@@ -89,8 +88,6 @@ public:
     bool WriteMultipleDefinition(const Vector<TextureAtlasPtr>& usedAtlases, const FilePath& outputPath, const String& _textureName, DefinitionFile* defFile);
 
     float TryToPackFromSortVectorWeight(const TextureAtlasPtr& atlas, Vector<SizeSortItem>& tempSortVector);
-
-    Rect2i GetOriginalSizeRect(const PackedInfo& _input);
 
 	void UseOnlySquareTextures();
 
@@ -122,17 +119,17 @@ private:
     void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
 
     rhi::TextureAddrMode GetDescriptorWrapMode();
-	FilterItem GetDescriptorFilter(bool generateMipMaps = false);
-    
+    FilterItem GetDescriptorFilter(bool generateMipMaps = false);
+
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
 	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
-    void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const PackedInfo& drawRect, const Rect2i& frameRect);
+    void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const ImageCell& drawRect, const Rect2i& frameRect);
 
     Vector<SizeSortItem> sortVector;
-	uint32 maxTextureSize;
+    uint32 maxTextureSize;
 
-	bool onlySquareTextures;
+    bool onlySquareTextures;
     bool NeedSquareTextureForCompression(ImageExportKeys keys);
 	
     TextureConverter::eConvertQuality quality;

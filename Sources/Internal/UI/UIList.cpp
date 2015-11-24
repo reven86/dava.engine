@@ -309,16 +309,39 @@ void UIList::Update(float32 timeElapsed)
         FullRefresh();
     }
 
-    float d = newPos - oldPos;
+    float32 d = newPos - oldPos;
     oldPos = newPos;
+
+    float32 deltaScroll = newScroll - oldScroll;
+    oldScroll = newScroll;
+
+    const float32 accuracyDelta = 0.1f;
+
     Rect r = scrollContainer->GetRect();
-    if(orientation == ORIENTATION_HORIZONTAL)
+
+    if (accuracyDelta <= Abs(deltaScroll))
     {
-        r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+        // this code works for mouse or touchpad scrolls
+        if (orientation == ORIENTATION_HORIZONTAL)
+        {
+            scroll->ScrollWithoutAnimation(deltaScroll, r.dx, &r.x);
+        }
+        else
+        {
+            scroll->ScrollWithoutAnimation(deltaScroll, r.dy, &r.y);
+        }
     }
     else
     {
-        r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+        // this code works for scroll through touch screen.
+        if (orientation == ORIENTATION_HORIZONTAL)
+        {
+            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+        }
+        else
+        {
+            r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+        }
     }
 
     if (r != scrollContainer->GetRect())
@@ -327,14 +350,14 @@ void UIList::Update(float32 timeElapsed)
     }
 
     List<UIControl*>::const_iterator it;
-    Rect viewRect = GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+    Rect viewRect = GetGeometricData().GetUnrotatedRect();
     const List<UIControl*> &scrollList = scrollContainer->GetChildren();
     List<UIControl*> removeList;
 
     //removing invisible elements
     for(it = scrollList.begin(); it != scrollList.end(); it++)
     {
-        Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+        Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();
         if(orientation == ORIENTATION_HORIZONTAL)
         {
             if(crect.x + crect.dx < viewRect.x - viewRect.dx || crect.x > viewRect.x + viewRect.dx*2)
@@ -474,34 +497,43 @@ void UIList::Input(UIEvent *currentInput)
         return;
     }
 
-    if(orientation == ORIENTATION_HORIZONTAL)
+    if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-        newPos = currentInput->point.x;
+        newScroll += currentInput->scrollDelta.y * GetWheelSensitivity();
     }
     else
     {
-        newPos = currentInput->point.y;
+        if (orientation == ORIENTATION_HORIZONTAL)
+        {
+            newPos = currentInput->point.x;
+        }
+        else
+        {
+            newPos = currentInput->point.y;
+        }
     }
 
     switch (currentInput->phase)
     {
-        case UIEvent::PHASE_BEGAN:
-        {
-            lockTouch = true;
-            oldPos = newPos;
-            mainTouch = currentInput->tid;
-        }
-            break;
-        case UIEvent::PHASE_DRAG:
-        {
-        }
-            break;
-        case UIEvent::PHASE_ENDED:
-        {
-            lockTouch = false;
-            mainTouch = -1;
-        }
-            break;
+    case UIEvent::Phase::BEGAN:
+    {
+        lockTouch = true;
+        oldPos = newPos;
+        mainTouch = currentInput->tid;
+    }
+    break;
+    case UIEvent::Phase::DRAG:
+    {
+    }
+    break;
+    case UIEvent::Phase::ENDED:
+    {
+        lockTouch = false;
+        mainTouch = -1;
+    }
+    break;
+    default:
+        break;
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
@@ -516,7 +548,15 @@ bool UIList::SystemInput(UIEvent *currentInput)
 
     if(currentInput->touchLocker != this)
     {
-        if(currentInput->phase == UIEvent::PHASE_BEGAN)
+        if (UIEvent::Phase::WHEEL == currentInput->phase)
+        {
+            if (IsPointInside(currentInput->point))
+            {
+                Input(currentInput);
+                return true;
+            }
+        }
+        else if (currentInput->phase == UIEvent::Phase::BEGAN)
         {
             if(IsPointInside(currentInput->point))
             {
@@ -524,7 +564,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
                 Input(currentInput);
             }
         }
-        else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_DRAG)
+        else if (currentInput->tid == mainTouch && currentInput->phase == UIEvent::Phase::DRAG)
         {
             if(orientation == ORIENTATION_HORIZONTAL)
             {
@@ -545,7 +585,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
                 }
             }
         }
-        else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_ENDED)
+        else if (currentInput->tid == mainTouch && currentInput->phase == UIEvent::Phase::ENDED)
         {
             mainTouch = -1;
             lockTouch = false;

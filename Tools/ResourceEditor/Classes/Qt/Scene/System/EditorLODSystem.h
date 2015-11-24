@@ -112,9 +112,9 @@ protected:
     void ResetForceState(DAVA::Entity *entity);
     void ResetForceState(DAVA::LodComponent *lodComponent);
 
-	void Process(DAVA::float32 elapsedTime) override;
+    void Process(DAVA::float32 elapsedTime) override;
 
-    inline const DAVA::List<DAVA::LodComponent *> GetCurrentLODs() const;
+    inline const DAVA::List<DAVA::LodComponent*> GetCurrentLODs() const;
 
     DAVA::int32 CalculateForceLayer() const;
     DAVA::float32 CalculateForceDistance() const;
@@ -133,7 +133,7 @@ private:
     DAVA::UnorderedMap<DAVA::LodComponent*, ForceData> sceneLODs;
     DAVA::List<DAVA::LodComponent*> selectedLODs;
 
-	std::vector<CreatePlaneLODCommandHelper::RequestPointer> planeLODRequests;
+    std::vector<CreatePlaneLODCommandHelper::RequestPointer> planeLODRequests;
 
     bool forceDistanceEnabled = false;
     bool allSceneModeEnabled = false;

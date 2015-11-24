@@ -26,8 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Core/Core.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Render/RHI/rhi_Type.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "DAVAEngine.h"
 #include "GameCore.h"
 #include "Version.h"
 
@@ -48,11 +51,11 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("max_const_buffer_count", 32767);
     appOptions->SetInt32("max_texture_count", 2048);
 
-    appOptions->SetInt32("shader_const_buffer_size", 100 * 1024 * 1024);
+    appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
 
-    GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
+    GameCore* core = new GameCore();
+    DAVA::Core::SetApplicationCore(core);
+    DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
 //    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");

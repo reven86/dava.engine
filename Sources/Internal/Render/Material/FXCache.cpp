@@ -41,16 +41,16 @@ namespace DAVA
 namespace //for private members
 {
 Map<Vector<int32>, FXDescriptor> fxDescriptors;
+Map<std::pair<FastName, FastName>, FXDescriptor> oldTemplateMap;
+
 FXDescriptor defaultFX;
 bool initialized = false;
 }
 
-
-
 namespace FXCache
 {
 rhi::DepthStencilState::Descriptor LoadDepthStencilState(const YamlNode* stateNode);
-const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality);
+const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality);
 
 void Initialize()
 {
@@ -79,9 +79,15 @@ void Clear()
     //RHI_COMPLETE
 }
 
-const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, int32>& defines, const FastName& quality)
+const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, int32>& defines, const FastName& quality)
 {
     DVASSERT(initialized);
+
+    if (!fxName.IsValid())
+    {
+        return defaultFX;
+    }
+
     Vector<int32> key;
     ShaderDescriptorCache::BuildFlagsKey(fxName, defines, key);
 
@@ -91,17 +97,18 @@ const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, in
     auto it = fxDescriptors.find(key);
     if (it != fxDescriptors.end())
         return it->second;
-    //not found - load new        
-    return LoadFXFromOldTemplate(fxName, defines, key, quality);        
-}
-    
 
-const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality)
+    //not found - load new
+    //for
+    return LoadFXFromOldTemplate(fxName, defines, key, quality);
+}
+
+const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& quality)
 {
-    //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
-    if (!fxName.IsValid())
+    auto oldTemplate = oldTemplateMap.find(std::make_pair(fxName, quality));
+    if (oldTemplate != oldTemplateMap.end())
     {
-        return defaultFX;
+        return oldTemplate->second;
     }
 
     FilePath fxPath(fxName.c_str());
@@ -125,10 +132,10 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
         /*int32 quality = 0;
         auto it = defines.find(NMaterialQualityName::QUALITY_FLAG_NAME);
         if (it != defines.end())
-            quality = it->second;*/
+        quality = it->second;*/
 
-        const YamlNode *qualityNode = nullptr;
-        if(quality.IsValid())
+        const YamlNode* qualityNode = nullptr;
+        if (quality.IsValid())
         {
             qualityNode = materialTemplateNode->Get(quality.c_str());
         }
@@ -144,7 +151,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                 Logger::Error("Template: %s do not support quality %s - loading first one.",
                               fxPath.GetAbsolutePathname().c_str(), quality.c_str());
             }
-            qualityNode = materialTemplateNode->Get(materialTemplateNode->GetCount()-1);
+            qualityNode = materialTemplateNode->Get(materialTemplateNode->GetCount() - 1);
         }
         YamlParser* parserTechnique = YamlParser::Create(qualityNode->AsString());
         if (parserTechnique)
@@ -160,7 +167,6 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
 
         SafeRelease(parser);
         parser = parserTechnique;
-
     }
     else //technique
     {
@@ -168,7 +174,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
     }
 
     //now load render technique
-    const YamlNode * stateNode = renderTechniqueNode->Get("RenderTechnique");
+    const YamlNode* stateNode = renderTechniqueNode->Get("RenderTechnique");
     if (!stateNode)
     {
         SafeRelease(parser);
@@ -177,10 +183,10 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
 
     FXDescriptor target;
     target.fxName = fxName;
-    target.defines = defines;
+
     RenderLayer::eRenderLayerID renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
 
-    const YamlNode * layersNode = stateNode->Get("Layers");
+    const YamlNode* layersNode = stateNode->Get("Layers");
     if (layersNode)
     {
         int32 count = layersNode->GetCount();
@@ -195,44 +201,44 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
             RenderPassDescriptor passDescriptor;
             passDescriptor.renderLayer = renderLayer;
 
-            const YamlNode * renderPassNode = stateNode->Get(k);
+            const YamlNode* renderPassNode = stateNode->Get(k);
 
-            //name            
-            const YamlNode * renderPassNameNode = renderPassNode->Get("Name");
+            //name
+            const YamlNode* renderPassNameNode = renderPassNode->Get("Name");
             if (renderPassNameNode)
             {
                 passDescriptor.passName = renderPassNameNode->AsFastName();
             }
-            
+
             //shader
-            const YamlNode * shaderNode = renderPassNode->Get("Shader");
+            const YamlNode* shaderNode = renderPassNode->Get("Shader");
             if (!shaderNode)
             {
                 Logger::Error("RenderPass:%s does not have shader", passDescriptor.passName.c_str());
                 break;
             }
-            FastName shaderName = shaderNode->AsFastName();
-            HashMap<FastName, int32> shaderDefines = defines;
-            const YamlNode * definesNode = renderPassNode->Get("UniqueDefines");
+            passDescriptor.shaderFileName = shaderNode->AsFastName();
+
+            const YamlNode* definesNode = renderPassNode->Get("UniqueDefines");
             if (definesNode)
             {
                 int32 count = definesNode->GetCount();
                 for (int32 k = 0; k < count; ++k)
                 {
-                    const YamlNode * singleDefineNode = definesNode->Get(k);
-                    shaderDefines[FastName(singleDefineNode->AsString().c_str())] = 1;
+                    const YamlNode* singleDefineNode = definesNode->Get(k);
+                    passDescriptor.templateDefines.insert(FastName(singleDefineNode->AsString().c_str()));
                 }
             }
 
             //state
-            const YamlNode * renderStateNode = renderPassNode->Get("RenderState");
+            const YamlNode* renderStateNode = renderPassNode->Get("RenderState");
             if (renderStateNode)
-            {                
-                const YamlNode * stateNode = renderStateNode->Get("state");
+            {
+                const YamlNode* stateNode = renderStateNode->Get("state");
                 if (stateNode)
                 {
                     Vector<String> states;
-                    Split(stateNode->AsString(), "| ", states);                    
+                    Split(stateNode->AsString(), "| ", states);
                     passDescriptor.depthStateDescriptor.depthTestEnabled = false;
                     passDescriptor.depthStateDescriptor.depthWriteEnabled = false;
                     passDescriptor.cullMode = rhi::CULL_NONE;
@@ -247,14 +253,12 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     {
                         if (state == "STATE_BLEND")
                         {
-                            hasBlend = true;
-                            if (shaderDefines.find(NMaterialFlagName::FLAG_BLENDING) == shaderDefines.end())
-                                shaderDefines[NMaterialFlagName::FLAG_BLENDING] = BLENDING_ALPHABLEND;
+                            passDescriptor.hasBlend = true;
                         }
                         else if (state == "STATE_CULL")
                         {
                             passDescriptor.cullMode = rhi::CULL_CW; //default
-                            const YamlNode * cullModeNode = renderStateNode->Get("cullMode");
+                            const YamlNode* cullModeNode = renderStateNode->Get("cullMode");
                             if (cullModeNode)
                             {
                                 if (cullModeNode->AsString() == "FACE_FRONT")
@@ -268,39 +272,39 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                         else if (state == "STATE_DEPTH_TEST")
                         {
                             passDescriptor.depthStateDescriptor.depthTestEnabled = true;
-                            const YamlNode * depthFuncNode = renderStateNode->Get("depthFunc");
+                            const YamlNode* depthFuncNode = renderStateNode->Get("depthFunc");
                             if (depthFuncNode)
-                            {                                
-                                passDescriptor.depthStateDescriptor.depthFunc = GetCmpFuncByName(depthFuncNode->AsString()); 
+                            {
+                                passDescriptor.depthStateDescriptor.depthFunc = GetCmpFuncByName(depthFuncNode->AsString());
                             }
                         }
                         else if (state == "STATE_STENCIL_TEST")
-                        {                            
+                        {
                             passDescriptor.depthStateDescriptor.stencilEnabled = 1;
                             passDescriptor.depthStateDescriptor.stencilTwoSided = 1;
 
-                            const YamlNode * stencilNode = renderStateNode->Get("stencil");
+                            const YamlNode* stencilNode = renderStateNode->Get("stencil");
                             if (stencilNode)
                             {
-                                const YamlNode * stencilRefNode = stencilNode->Get("ref");
+                                const YamlNode* stencilRefNode = stencilNode->Get("ref");
                                 if (stencilRefNode)
                                 {
-                                    uint8 refValue = (uint8) stencilRefNode->AsInt32();
+                                    uint8 refValue = (uint8)stencilRefNode->AsInt32();
                                     passDescriptor.depthStateDescriptor.stencilBack.refValue = refValue;
                                     passDescriptor.depthStateDescriptor.stencilFront.refValue = refValue;
-                                }                                    
+                                }
 
-                                const YamlNode * stencilMaskNode = stencilNode->Get("mask");
+                                const YamlNode* stencilMaskNode = stencilNode->Get("mask");
                                 if (stencilMaskNode)
                                 {
                                     uint8 maskValue = (uint8)stencilMaskNode->AsInt32();
                                     passDescriptor.depthStateDescriptor.stencilBack.readMask = maskValue;
                                     passDescriptor.depthStateDescriptor.stencilBack.writeMask = maskValue;
                                     passDescriptor.depthStateDescriptor.stencilFront.readMask = maskValue;
-                                    passDescriptor.depthStateDescriptor.stencilFront.writeMask = maskValue;                                    
-                                }                                                                        
+                                    passDescriptor.depthStateDescriptor.stencilFront.writeMask = maskValue;
+                                }
 
-                                const YamlNode * stencilFuncNode = stencilNode->Get("funcFront");
+                                const YamlNode* stencilFuncNode = stencilNode->Get("funcFront");
                                 if (stencilFuncNode)
                                 {
                                     passDescriptor.depthStateDescriptor.stencilFront.func = GetCmpFuncByName(stencilFuncNode->AsString());
@@ -312,10 +316,10 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                                     passDescriptor.depthStateDescriptor.stencilBack.func = GetCmpFuncByName(stencilFuncNode->AsString());
                                 }
 
-                                const YamlNode * stencilPassNode = stencilNode->Get("passFront");
+                                const YamlNode* stencilPassNode = stencilNode->Get("passFront");
                                 if (stencilPassNode)
                                 {
-                                    passDescriptor.depthStateDescriptor.stencilFront.depthStencilPassOperation = GetStencilOpByName(stencilPassNode->AsString());                                    
+                                    passDescriptor.depthStateDescriptor.stencilFront.depthStencilPassOperation = GetStencilOpByName(stencilPassNode->AsString());
                                 }
 
                                 stencilPassNode = stencilNode->Get("passBack");
@@ -324,7 +328,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                                     passDescriptor.depthStateDescriptor.stencilBack.depthStencilPassOperation = GetStencilOpByName(stencilPassNode->AsString());
                                 }
 
-                                const YamlNode * stencilFailNode = stencilNode->Get("failFront");
+                                const YamlNode* stencilFailNode = stencilNode->Get("failFront");
                                 if (stencilFailNode)
                                 {
                                     passDescriptor.depthStateDescriptor.stencilFront.failOperation = GetStencilOpByName(stencilFailNode->AsString());
@@ -336,7 +340,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                                     passDescriptor.depthStateDescriptor.stencilBack.failOperation = GetStencilOpByName(stencilFailNode->AsString());
                                 }
 
-                                const YamlNode * stencilZFailNode = stencilNode->Get("zFailFront");
+                                const YamlNode* stencilZFailNode = stencilNode->Get("zFailFront");
                                 if (stencilZFailNode)
                                 {
                                     passDescriptor.depthStateDescriptor.stencilFront.depthFailOperation = GetStencilOpByName(stencilZFailNode->AsString());
@@ -349,26 +353,43 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                                 }
                             }
                         }
-
-                    }  
-                    //it's temporary solution to allow runtime blend-mode configuration and still prevent blending for materials without corresponding state
-                    if (!hasBlend)
-                        shaderDefines.erase(NMaterialFlagName::FLAG_BLENDING); 
-                }                
+                    }
+                }
             }
-
-            
-            passDescriptor.shader = ShaderDescriptorCache::GetShaderDescriptor(shaderName, shaderDefines);
 
             target.renderPassDescriptors.push_back(passDescriptor);
         }
     }
-
     SafeRelease(parser);
+
+    return oldTemplateMap[std::make_pair(fxName, quality)] = target;
+}
+
+const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality)
+{
+    //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
+
+    FXDescriptor target = LoadOldTempalte(fxName, quality); //we copy it to new fxdescr as single template can be compiled to many descriptors
+    target.defines = defines; //combine
+    for (auto& pass : target.renderPassDescriptors)
+    {
+        HashMap<FastName, int32> shaderDefines = defines;
+        for (auto& templateDefine : pass.templateDefines)
+            shaderDefines[templateDefine] = 1;
+        if (pass.hasBlend)
+        {
+            if (shaderDefines.find(NMaterialFlagName::FLAG_BLENDING) == shaderDefines.end())
+                shaderDefines[NMaterialFlagName::FLAG_BLENDING] = BLENDING_ALPHABLEND;
+        }
+        else
+        {
+            shaderDefines.erase(NMaterialFlagName::FLAG_BLENDING);
+        }
+
+        pass.shader = ShaderDescriptorCache::GetShaderDescriptor(pass.shaderFileName, shaderDefines);
+    }
+
     return fxDescriptors[key] = target;
 }
-
-
 }
 }
-

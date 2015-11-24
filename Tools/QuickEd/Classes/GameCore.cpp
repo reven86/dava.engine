@@ -71,7 +71,7 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     cursor = nullptr;
-	Renderer::SetDesiredFPS(60);
+    Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
@@ -119,15 +119,15 @@ void GameCore::UnpackHelp()
 	//Unpack Help to Documents.
     String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
 	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
-    if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
+    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
         ResourceArchive* helpRA = new ResourceArchive();
         if (helpRA->Open("~res:/Help.docs"))
         {
-			FileSystem::Instance()->DeleteDirectory(docsPath);
-			FileSystem::Instance()->CreateDirectory(docsPath, true);
-		
-			helpRA->UnpackToFolder(docsPath);
+            FileSystem::Instance()->DeleteDirectory(docsPath);
+            FileSystem::Instance()->CreateDirectory(docsPath, true);
+
+            helpRA->UnpackToFolder(docsPath);
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
 

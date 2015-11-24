@@ -60,7 +60,7 @@ HeightDeltaTool::HeightDeltaTool( QWidget* p )
     connect( ui->angle, SIGNAL(valueChanged(double)), SLOT(OnValueChanged()) );
     connect( ui->input, SIGNAL(textChanged( const QString& )), SLOT(OnValueChanged()) );
 
-    const DAVA::FilePath defaultPath = ProjectManager::Instance()->CurProjectPath();
+    const DAVA::FilePath defaultPath = ProjectManager::Instance()->GetProjectPath();
     SetDefaultDir(defaultPath.GetAbsolutePathname().c_str());
 
     OnValueChanged();

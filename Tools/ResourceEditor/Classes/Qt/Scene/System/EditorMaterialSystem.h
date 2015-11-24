@@ -54,10 +54,10 @@ public:
 	EditorMaterialSystem(DAVA::Scene * scene);
     ~EditorMaterialSystem();
 
-    const DAVA::Set<DAVA::NMaterial *>& GetTopParents() const;
+    const DAVA::Set<DAVA::NMaterial*>& GetTopParents() const;
 
-	DAVA::Entity* GetEntity(DAVA::NMaterial*) const;
-	const DAVA::RenderBatch *GetRenderBatch(DAVA::NMaterial*) const;
+    DAVA::Entity* GetEntity(DAVA::NMaterial*) const;
+    const DAVA::RenderBatch* GetRenderBatch(DAVA::NMaterial*) const;
 
     void SetLightViewMode(EditorMaterialSystem::MaterialLightViewMode viewMode, bool set);
     bool GetLightViewMode(EditorMaterialSystem::MaterialLightViewMode viewMode) const;
@@ -98,7 +98,7 @@ private:
     void RemoveMaterial(DAVA::NMaterial* material);
 
     void ApplyViewMode();
-    void ApplyViewMode(DAVA::NMaterial *material);
+    void ApplyViewMode(DAVA::NMaterial* material);
 
     bool IsEditable(DAVA::NMaterial *material) const;
 

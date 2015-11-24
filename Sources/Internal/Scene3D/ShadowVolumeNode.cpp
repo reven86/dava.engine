@@ -43,17 +43,15 @@ namespace DAVA
 ShadowVolumeNode::ShadowVolumeNode()
 : shadowPolygonGroup(0)
 {
-	
 }
 
 DAVA::ShadowVolumeNode::~ShadowVolumeNode()
 {
-	
 }
 
 void DAVA::ShadowVolumeNode::Draw()
 {
-	//scene->AddDrawTimeShadowVolume(this);
+    //scene->AddDrawTimeShadowVolume(this);
 }
 
 void DAVA::ShadowVolumeNode::DrawShadow()
@@ -443,6 +441,8 @@ void ShadowVolumeNode::CopyGeometryFrom(MeshInstanceNode * meshInstance)
 	Memcpy(shadowPolygonGroup->indexArray, newPolygonGroup->indexArray, nextIndex*sizeof(int16));
 
 	SafeRelease(newPolygonGroup);
+    SafeDeleteArray(mapping);
+    SafeDeleteArray(adjacency);
 }
 
 void ShadowVolumeNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)

@@ -53,26 +53,25 @@ public:
 	float32 GetPreviewLength();
 
 protected:
-    
-    Vector2 MirrorPoint(const Vector2 & point) const;
+    Vector2 MirrorPoint(const Vector2& point) const;
 
-	uint32 curToolSize;
-	Texture* toolImageTexture;
+    uint32 curToolSize;
+    Texture* toolImageTexture;
 
-	List<Vector2> linePoints;
-	List<float32> lengths;
-	Vector2 previewPoint;
-	float32 previewLength;
-	bool previewEnabled;
+    List<Vector2> linePoints;
+    List<float32> lengths;
+    Vector2 previewPoint;
+    float32 previewLength;
+    bool previewEnabled;
 
-	void SetStartPoint(const Vector2 &point);
-	void AddPoint(const Vector2 &point);
-	void RemoveLastPoint();
-	void CalcPreviewPoint(const Vector2& point, bool force = false);
-	float32 GetLength(const Vector2 &startPoint, const Vector2 &endPoint);
-	void DrawPoints();
-	void DisablePreview();
-	void SendUpdatedLength();
+    void SetStartPoint(const Vector2& point);
+    void AddPoint(const Vector2& point);
+    void RemoveLastPoint();
+    void CalcPreviewPoint(const Vector2& point, bool force = false);
+    float32 GetLength(const Vector2& startPoint, const Vector2& endPoint);
+    void DrawPoints();
+    void DisablePreview();
+    void SendUpdatedLength();
 
 	void Clear();
 };

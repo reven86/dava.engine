@@ -36,7 +36,6 @@
 #include <UIKit/UIDevice.h>
 
 #define NO_DPI_INFO_FOUND   0
-#define INFO_LIST_SIZE      10
 
 namespace DAVA
 {
@@ -54,38 +53,36 @@ namespace DAVA
         }
         
     };
-    
+
     enum eIOS_DPI
     {
-        IPHONE_3_IPAD_MINI              = 163,
-        IPHONE_4_5_6_IPAD_MINI2_MINI3   = 326,
-        IPAD_1_2                        = 132,
-        IPAD_3_4_AIR_AIR2               = 264,
-        IPHONE_6_PLUS                   = 460,
-        IPHONE_6_PLUS_7_1               = 307,
-        IPHONE_6_PLUS_ZOOM              = 416,
+        IPHONE_3_IPAD_MINI = 163,
+        IPHONE_4_5_6_IPAD_MINI2_MINI3 = 326,
+        IPAD_1_2 = 132,
+        IPAD_3_4_AIR_AIR2 = 264,
+        IPHONE_6_PLUS = 401,
+        IPHONE_6_PLUS_ZOOM = 461,
     };
-    
-        
-    const static DeviceScreenInfo devicesInfoList[INFO_LIST_SIZE] =
+
+    const static DeviceScreenInfo devicesInfoList[] =
     {
-        DeviceScreenInfo(320, IPHONE_3_IPAD_MINI,  ""),
-        DeviceScreenInfo(640, IPHONE_4_5_6_IPAD_MINI2_MINI3,""),
-        DeviceScreenInfo(750, IPHONE_4_5_6_IPAD_MINI2_MINI3, ""),
-        DeviceScreenInfo(768, IPAD_1_2, ""),
-        DeviceScreenInfo(768, IPHONE_3_IPAD_MINI, "mini"),
-        DeviceScreenInfo(828, IPHONE_6_PLUS_7_1, ""),
-        DeviceScreenInfo(1125, IPHONE_6_PLUS_ZOOM, ""),
-        DeviceScreenInfo(1242, IPHONE_6_PLUS, ""),
-        DeviceScreenInfo(1536, IPAD_3_4_AIR_AIR2, ""),
-        DeviceScreenInfo(1536, IPHONE_4_5_6_IPAD_MINI2_MINI3, "mini")
+      DeviceScreenInfo(320, IPHONE_3_IPAD_MINI, ""),
+      DeviceScreenInfo(640, IPHONE_4_5_6_IPAD_MINI2_MINI3, ""),
+      DeviceScreenInfo(750, IPHONE_4_5_6_IPAD_MINI2_MINI3, ""),
+      DeviceScreenInfo(768, IPAD_1_2, ""),
+      DeviceScreenInfo(768, IPHONE_3_IPAD_MINI, "mini"),
+      DeviceScreenInfo(1080, IPHONE_6_PLUS, ""),
+      DeviceScreenInfo(1242, IPHONE_6_PLUS_ZOOM, ""),
+      DeviceScreenInfo(1536, IPAD_3_4_AIR_AIR2, ""),
+      DeviceScreenInfo(1536, IPHONE_4_5_6_IPAD_MINI2_MINI3, "mini")
     };
-    
+
     uint32 GetDPIInfoListByDimension(uint32 minDimension,  List<const DeviceScreenInfo*> & outputList)
     {
         outputList.clear();
-        
-        for (uint32 i = 0; i < INFO_LIST_SIZE; ++i)
+
+        size_t numDeviceInfos = sizeof(devicesInfoList) / sizeof(devicesInfoList[0]);
+        for (size_t i = 0; i < numDeviceInfos; ++i)
         {
             if(devicesInfoList[i].minimumSideLength == minDimension)
             {

@@ -67,26 +67,26 @@ public:
 
 	void Quit() override;
 
-	void RenderReset(int32 w, int32 h);
-	void ProcessFrame();
+    void RenderReset(int32 w, int32 h);
+    void ProcessFrame();
 
-	// called from Activity and manage a visible lifetime
-	void StartVisible();
-	void StopVisible();
+    // called from Activity and manage a visible lifetime
+    void StartVisible();
+    void StopVisible();
 
-	void StartForeground();
-	void StopForeground(bool isLock);
+    void StartForeground();
+    void StopForeground(bool isLock);
 
-	void OnCreateActivity();
-	void OnDestroyActivity();
+    void OnCreateActivity();
+    void OnDestroyActivity();
 
-	void KeyUp(int32 keyCode);
-	void KeyDown(int32 keyCode);
+    void KeyUp(int32 keyCode);
+    void KeyDown(int32 keyCode);
 
-	void OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs);
-	void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
+    void OnInput(int32 action, int32 source, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs);
+    void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
 
-	void OnGamepadAvailable(bool isAvailable);
+    void OnGamepadAvailable(bool isAvailable);
 	void OnGamepadTriggersAvailable(bool isAvailable);
     
     bool IsMultitouchEnabled();
@@ -104,7 +104,7 @@ public:
     int32 GetViewWidth() const { return width; };
     int32 GetViewHeight() const { return height; };
 
-    void SetNativeWindow(void * nativeWindow);
+    void SetNativeWindow(void* nativeWindow);
 
 private:
 

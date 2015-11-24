@@ -44,8 +44,8 @@ EditorLODSystem::ForceData::ForceData(DAVA::int32 newForceLayer /* = -1 */, DAVA
 {
 }
 
-EditorLODSystem::EditorLODSystem(DAVA::Scene *scene) 
-	: DAVA::SceneSystem(scene)
+EditorLODSystem::EditorLODSystem(DAVA::Scene* scene)
+    : DAVA::SceneSystem(scene)
 {
 }
 
@@ -234,10 +234,9 @@ void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodCompone
         DAVA::int32 switchIndex = 0;
 
         RenderBatch *rb = ro->GetRenderBatch(i, lodIndex, switchIndex);
-        if (lodIndex < 0 || lodIndex >= DAVA::LodComponent::MAX_LOD_LAYERS)
+        DVASSERT(lodIndex < DAVA::LodComponent::MAX_LOD_LAYERS);
+        if (lodIndex < 0)
         {
-            Logger::Error("Unexpected lod index (%d) when collecting triangles on entity %s. Max lod index is %d%s", 
-				lodIndex, en->GetName().c_str(), DAVA::LodComponent::MAX_LOD_LAYERS, PointerSerializer::FromPointer(en).c_str());
             continue;
         }
     
@@ -335,41 +334,41 @@ bool EditorLODSystem::CanCreatePlaneLOD() const
 bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath)
 {
     if (GetCurrentLODs().empty())
-	{
+    {
         return false;
-	}
+    }
 
     SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
 
     auto lods = GetCurrentLODs();
     for (auto& lod : lods)
-	{
-		auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath);
-		planeLODRequests.push_back(request);
-	}
+    {
+        auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath);
+        planeLODRequests.push_back(request);
+    }
 
     return true;
 }
 
 void EditorLODSystem::Process(DAVA::float32 elapsedTime)
 {
-	bool allRequestsProcessed = !planeLODRequests.empty();
+    bool allRequestsProcessed = !planeLODRequests.empty();
 
-	for (const auto& req : planeLODRequests)
-		allRequestsProcessed = allRequestsProcessed && req->completed;
+    for (const auto& req : planeLODRequests)
+        allRequestsProcessed = allRequestsProcessed && req->completed;
 
-	if (allRequestsProcessed)
-	{
-		SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
-		sceneEditor2->BeginBatch("LOD Added");
-		for (const auto& req : planeLODRequests)
-		{
-			sceneEditor2->Exec(new CreatePlaneLODCommand(req));
-		}
-		sceneEditor2->EndBatch();
+    if (allRequestsProcessed)
+    {
+        SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
+        sceneEditor2->BeginBatch("LOD Added");
+        for (const auto& req : planeLODRequests)
+        {
+            sceneEditor2->Exec(new CreatePlaneLODCommand(req));
+        }
+        sceneEditor2->EndBatch();
 
-		planeLODRequests.clear();
-	}
+        planeLODRequests.clear();
+    }
 }
 
 bool EditorLODSystem::CopyLastLodToLod0()
@@ -408,7 +407,7 @@ FilePath EditorLODSystem::GetDefaultTexturePathForPlaneEntity() const
     String texturePostfix = "_planes.png";
     FilePath texturePath = textureFolder + entityName + texturePostfix;
     int32 i = 0;
-    while(texturePath.Exists())
+    while (FileSystem::Instance()->Exists(texturePath))
     {
         i++;
         texturePath = textureFolder + Format("%s_%d%s", entityName.c_str(), i, texturePostfix.c_str());

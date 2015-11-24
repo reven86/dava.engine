@@ -64,8 +64,8 @@ Mutex Sprite::spriteMapMutex;
 Sprite::DrawState::DrawState()
 {
     Reset();
-    
-    material = RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;    
+
+    material = RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;
 }
 
 Sprite::Sprite()
@@ -931,7 +931,7 @@ void Sprite::ReloadExistingTextures()
     {
         if(textures[i] && !textures[i]->GetPathname().IsEmpty())
         {
-            if(textures[i]->GetPathname().Exists())
+            if (FileSystem::Instance()->Exists(textures[i]->GetPathname()))
             {
                 textures[i]->Reload();
             }

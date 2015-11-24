@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "DAVAEngine.h"
 #include "Infrastructure/BaseScreen.h"
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
 using namespace DAVA;
 
@@ -43,13 +44,19 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
-    
+
 private:
     void UpdateMode();
-    void OnSelectModeClick(BaseObject* sender, void * data, void * callerData);
-    
+    void OnSelectModeClick(BaseObject* sender, void* data, void* callerData);
+    void OnMulUp(BaseObject* sender, void* data, void* callerData);
+    void OnMulDown(BaseObject* sender, void* data, void* callerData);
+    void On3DViewControllClick(BaseObject* sender, void* data, void* callerData);
+
     UIStaticText* currentModeText;
-    
+    UIStaticText* currentScaleText;
+    UI3DView* ui3dview = nullptr;
+    RotationControllerSystem* rotationControllerSystem = nullptr;
+    UIStaticText* currect3dScaleText = nullptr;
 };
 
 #endif //__FULLSCREENTEST_TEST_H__

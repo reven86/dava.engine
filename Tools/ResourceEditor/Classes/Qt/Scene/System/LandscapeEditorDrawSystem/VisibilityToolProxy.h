@@ -53,10 +53,10 @@ public:
 
 protected:
 	Texture* visibilityToolTexture;
-    
-	int32 size;
-	Vector2 visibilityPoint;
-	bool isVisibilityPointSet;
+
+    int32 size;
+    Vector2 visibilityPoint;
+    bool isVisibilityPointSet;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPROXY__) */

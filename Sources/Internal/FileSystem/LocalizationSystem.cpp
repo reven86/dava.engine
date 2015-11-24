@@ -41,6 +41,8 @@
 #include "FileSystem/LocalizationIPhone.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/LocalizationAndroid.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "FileSystem/LocalizationWinUAP.h"
 #else
 #include "Core/Core.h"
 #endif
@@ -93,6 +95,8 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 	LocalizationIPhone::SelectPreferedLocalizationForPath(directoryPath);
 #elif defined(__DAVAENGINE_ANDROID__)
     LocalizationAndroid::SelectPreferedLocalization();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    LocalizationWinUAP::SelectPreferedLocalization();
 #else
     String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
     SetCurrentLocale(loc);
@@ -110,6 +114,8 @@ String LocalizationSystem::GetDeviceLocale() const
 	return String(LocalizationIPhone::GetDeviceLang());
 #elif defined(__DAVAENGINE_ANDROID__)
     return LocalizationAndroid::GetDeviceLang();
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    return LocalizationWinUAP::GetDeviceLang();
 #else
     return DEFAULT_LOCALE;
 #endif
@@ -130,7 +136,7 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
     String actualLangId;
     
     FilePath localeFilePath(directoryPath + (requestedLangId + ".yaml"));
-    if(localeFilePath.Exists())
+    if (FileSystem::Instance()->Exists(localeFilePath))
     {
         actualLangId = requestedLangId;
     }
@@ -146,31 +152,30 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
             // ex. not zh-Hans-CN, but can be zh-Hans_CN
             posScriptEnd = requestedLangId.find('_', posPartStart);
         }
-        
+
+        String scriptPart = requestedLangId.substr(posPartStart);
         if(posScriptEnd != String::npos)
         {
             // ex. zh-Hans-CN or zh-Hans_CN try zh-Hans
-            String scriptPart = requestedLangId.substr(posPartStart, posScriptEnd - posPartStart);
-#if defined(__DAVAENGINE_ANDROID__)
-            if (scriptPart == "CN" || (langPart == "zh" && scriptPart == ""))
-            {
-                scriptPart = "Hans";
-            }
-            else if(scriptPart == "TW")
-            {
-                scriptPart = "Hant";
-            }
-#endif
-            langPart = Format("%s-%s", langPart.c_str(), scriptPart.c_str());
+            scriptPart = requestedLangId.substr(posPartStart, posScriptEnd - posPartStart);
         }
-        
+        // ex. zh_CN, zh-HK
+        if (scriptPart == "CN" || (langPart == "zh" && scriptPart == ""))
+        {
+            scriptPart = "Hans";
+        }
+        else if (scriptPart == "TW" || scriptPart == "HK")
+        {
+            scriptPart = "Hant";
+        }
+        langPart = Format("%s-%s", langPart.c_str(), scriptPart.c_str());
+
         Logger::FrameworkDebug("LocalizationSystem requested locale %s is not supported, trying to check part %s", requestedLangId.c_str(), langPart.c_str());
         localeFilePath = directoryPath + (langPart + ".yaml");
-        if(localeFilePath.Exists())
+        if (FileSystem::Instance()->Exists(localeFilePath))
         {
             actualLangId = langPart;
         }
-#if defined(__DAVAENGINE_ANDROID__)
         else if(langPart == "zh")
         {
             // in case zh is returned without country code and no zh.yaml is found - try zh-Hans
@@ -181,13 +186,12 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
                 actualLangId = langPart;
             }
         }
-#endif
     }
     
     if(actualLangId.empty())
     {
         localeFilePath = directoryPath + (String(DEFAULT_LOCALE) + ".yaml");
-        if(localeFilePath.Exists())
+        if (FileSystem::Instance()->Exists(localeFilePath))
         {
             actualLangId = DEFAULT_LOCALE;
         }

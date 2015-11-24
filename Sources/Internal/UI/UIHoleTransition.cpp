@@ -97,11 +97,11 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
-    
+
     auto rect = Rect(0.0f, 0.0f, (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
 
     RenderSystem2D::Instance()->FillRect(rect, Color::Black);
-	
+
     drawState.SetPosition(geometricData.position);
     
     if (normalizedTime < 0.5f)
