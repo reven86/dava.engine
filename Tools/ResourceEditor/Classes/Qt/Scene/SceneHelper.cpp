@@ -138,19 +138,48 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 	return retValue;
 }
 
-void SceneHelper::EnumerateMaterialInstances(DAVA::Entity *forNode, DAVA::Vector<DAVA::NMaterial *> &materials)
+void SceneHelper::EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials)
 {
     uint32 childrenCount = forNode->GetChildrenCount();
     for(uint32 i = 0; i < childrenCount; ++i)
+    {
+        EnumerateMaterials(forNode->GetChild(i), materials);
+    }
+
+    RenderObject* ro = GetRenderObject(forNode);
+    if (ro != nullptr)
+    {
+        uint32 batchCount = ro->GetRenderBatchCount();
+        for (uint32 i = 0; i < batchCount; ++i)
+        {
+            auto material = ro->GetRenderBatch(i)->GetMaterial();
+            do
+            {
+                if (material != nullptr)
+                {
+                    materials.insert(material);
+                }
+                material = material->GetParent();
+            } while (material != nullptr);
+        }
+    }
+}
+
+void SceneHelper::EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Vector<DAVA::NMaterial*>& materials)
+{
+    uint32 childrenCount = forNode->GetChildrenCount();
+    for (uint32 i = 0; i < childrenCount; ++i)
+    {
         EnumerateMaterialInstances(forNode->GetChild(i), materials);
+    }
 
     RenderObject * ro = GetRenderObject(forNode);
-    if(!ro) return;
-    
-    uint32 batchCount = ro->GetRenderBatchCount();
-    for(uint32 i = 0; i < batchCount; ++i)
-        materials.push_back(ro->GetRenderBatch(i)->GetMaterial());
-
+    if (ro != nullptr)
+    {
+        uint32 batchCount = ro->GetRenderBatchCount();
+        for (uint32 i = 0; i < batchCount; ++i)
+            materials.push_back(ro->GetRenderBatch(i)->GetMaterial());
+    }
 }
 
 DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)

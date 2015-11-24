@@ -632,8 +632,8 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture *texture, const DAVA::Te
 
 void TextureBrowser::UpdateSceneMaterialsWithTexture(DAVA::Texture* texture)
 {
-    Vector<NMaterial*> materials;
-    SceneHelper::EnumerateMaterialInstances(curScene, materials);
+    Set<NMaterial*> materials;
+    SceneHelper::EnumerateMaterials(curScene, materials);
     for (auto mat : materials)
     {
         if (mat->ContainsTexture(texture))
