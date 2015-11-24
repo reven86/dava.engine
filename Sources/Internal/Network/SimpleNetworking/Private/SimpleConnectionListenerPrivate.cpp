@@ -44,9 +44,7 @@ void Notify(const Container& container, const Arg&... args)
 }
 
 ConnectionListenerPrivate::ConnectionListenerPrivate(const ConnectionWaitFunction& connWaiter,
-                                                     const Endpoint& endPoint,
-                                                     bool dontReceive)
-    : dontReceiveData(dontReceive)
+                                                     const Endpoint& endPoint)
 {
     ConnectionWaitFunction connWaiterLocal = connWaiter;
     Endpoint endPointLocal = endPoint;
@@ -64,8 +62,7 @@ ConnectionListenerPrivate::~ConnectionListenerPrivate()
     thread->Join();
 }
 
-ConnectionListenerPrivate::ConnectionListenerPrivate(IConnectionPtr& conn, bool dontReceive)
-    : dontReceiveData(dontReceive)
+ConnectionListenerPrivate::ConnectionListenerPrivate(IConnectionPtr& conn)
 {
     auto threadFunc = [this](IConnectionPtr& connection) { Start(connection); };
     thread = RefPtr<Thread>(Thread::Create(std::bind(threadFunc, IConnectionPtr(conn))));
@@ -120,7 +117,7 @@ void ConnectionListenerPrivate::Start(const ConnectionWaitFunction& connectionWa
 
 void ConnectionListenerPrivate::Start(IConnectionPtr& conn) 
 {
-    Array<char, 4096> buffer;
+    Array<char, 8192> buffer;
 
     while (conn && 
            conn->GetChannelState() == IReadOnlyConnection::ChannelState::Connected &&

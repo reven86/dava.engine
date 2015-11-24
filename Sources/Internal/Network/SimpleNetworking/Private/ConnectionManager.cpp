@@ -40,14 +40,22 @@ namespace Net
     
 IConnectionPtr ConnectionManager::CreateConnection(ConnectionRole role, const Endpoint& endPoint)
 {
+    if (shutdowned)
+    {
+        return IConnectionPtr();
+    }
+
     if (role == ClientRole)
+    {
         return CreateClientConnection(endPoint);
+    }
     return CreateServerConnection(endPoint);
 }
 
 void ConnectionManager::Shutdown() 
 {
-return;
+    shutdowned = true;
+
     for (auto&& x : sockets)
     {
         ISimpleAbstractSocketPtr socket = x.lock();

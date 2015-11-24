@@ -49,6 +49,7 @@ private:
     std::shared_ptr<T> CreateSocket(const Endpoint& endPoint);
 
     std::vector<std::weak_ptr<ISimpleAbstractSocket>> sockets;
+    bool shutdowned = false;
 };
     
 }  // namespace Net

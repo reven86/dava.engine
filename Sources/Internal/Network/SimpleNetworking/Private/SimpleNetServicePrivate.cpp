@@ -71,18 +71,5 @@ bool SimpleNetServicePrivate::IsActive() const
     return !channelAdapter.IsSessionEnded();
 }
 
-void SimpleNetServicePrivate::SetShutdownHandler(const Function<void(NetService*)>& handler) const
-{
-    shutdownHandler = handler;
-}
-
-void SimpleNetServicePrivate::Shutdown()
-{
-    if (shutdownHandler)
-    {
-        shutdownHandler(netService.get());
-    }
-}
-
 }  // namespace Net
 }  // namespace DAVA

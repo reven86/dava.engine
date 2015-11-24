@@ -35,20 +35,25 @@ namespace DAVA
 {
 namespace Net
 {
+SimpleNetCorePrivate::SimpleNetCorePrivate()
+{
+    WSADATA data{};
+    ::WSAStartup(MAKEWORD(2, 2), &data);
+}
 
 SimpleNetCorePrivate::~SimpleNetCorePrivate()
 {
-    ShutdownAllServices();
     connectionManager.Shutdown();
     UnregisterAllServices();
+
+    ::WSACleanup();
 }
 
 const SimpleNetService* SimpleNetCorePrivate::RegisterService(
-    std::unique_ptr<NetService>&& service,
-    IConnectionManager::ConnectionRole role,
-    const Endpoint& endPoint,
-    const String& serviceName,
-    bool sendOnly)
+std::unique_ptr<NetService>&& service,
+IConnectionManager::ConnectionRole role,
+const Endpoint& endPoint,
+const String& serviceName)
 {
     if (serviceName.empty())
         return nullptr;
@@ -67,7 +72,7 @@ const SimpleNetService* SimpleNetCorePrivate::RegisterService(
     };
 
     //create net service
-    ConnectionListener connListener(connWaiter, endPoint, sendOnly);
+    ConnectionListener connListener(connWaiter, endPoint);
     SimpleNetService netService(serviceId, std::forward<std::unique_ptr<NetService>>(service), 
         endPoint, serviceName, std::move(connListener));
 
@@ -92,21 +97,7 @@ bool SimpleNetCorePrivate::IsServiceRegistered(const String& serviceName) const
 
 void SimpleNetCorePrivate::UnregisterAllServices()
 {
-    ShutdownAllServices();
     services.clear();
-}
-
-void SimpleNetCorePrivate::ShutdownAllServices()
-{
-    if (!servicesShutdowned)
-    {
-        for (auto& service : services)
-        {
-            service.second.Shutdown();
-        }
-
-        servicesShutdowned = true;
-    }
 }
 
 const SimpleNetService* SimpleNetCorePrivate::GetService(size_t serviceId) const

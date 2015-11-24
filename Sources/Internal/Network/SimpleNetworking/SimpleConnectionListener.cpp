@@ -34,17 +34,15 @@ namespace DAVA
 {
 namespace Net
 {
-
 ConnectionListener::ConnectionListener(const ConnectionWaitFunction& connWaiter,
-                                       const Endpoint& endPoint,
-                                       bool dontReceive)
+                                       const Endpoint& endPoint)
 {
-    pimpl = std::make_unique<ConnectionListenerPrivate>(connWaiter, endPoint, dontReceive);
+    pimpl = std::make_unique<ConnectionListenerPrivate>(connWaiter, endPoint);
 }
 
-ConnectionListener::ConnectionListener(IConnectionPtr& conn, bool dontReceive)
+ConnectionListener::ConnectionListener(IConnectionPtr& conn)
 {
-    pimpl = std::make_unique<ConnectionListenerPrivate>(conn, dontReceive);
+    pimpl = std::make_unique<ConnectionListenerPrivate>(conn);
 }
 
 ConnectionListener::ConnectionListener(ConnectionListener&& other) 

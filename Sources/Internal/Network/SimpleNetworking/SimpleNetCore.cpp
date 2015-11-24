@@ -54,14 +54,13 @@ bool SimpleNetCore::IsServiceRegistered(const String& serviceName) const
 }
 
 const SimpleNetService* SimpleNetCore::RegisterService(
-    std::unique_ptr<NetService>&& service,
-    IConnectionManager::ConnectionRole role,
-    const Endpoint& endPoint,
-    const String& serviceName,
-    bool sendOnly)
+std::unique_ptr<NetService>&& service,
+IConnectionManager::ConnectionRole role,
+const Endpoint& endPoint,
+const String& serviceName)
 {
-    return pimpl->RegisterService(std::forward<std::unique_ptr<NetService>>(service), 
-        role, endPoint, serviceName, sendOnly);
+    return pimpl->RegisterService(std::forward<std::unique_ptr<NetService>>(service),
+                                  role, endPoint, serviceName);
 }
 
 const SimpleNetService* SimpleNetCore::GetService(size_t serviceId) const

@@ -59,9 +59,6 @@ public:
     size_t GetServiceId() const { return servId; }
     Endpoint GetServiceEndpoint() const { return servEndPoint; }
 
-    void SetShutdownHandler(const Function<void(NetService*)>& handler) const;
-    void Shutdown();
-
 private:
     size_t servId;
     std::unique_ptr<NetService> netService;
@@ -69,7 +66,6 @@ private:
     String servName;
     ConnectionListener listener;
     ChannelAdapter channelAdapter;
-    mutable Function<void(NetService*)> shutdownHandler;
 };
 
 }  // namespace Net

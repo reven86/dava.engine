@@ -42,21 +42,19 @@ namespace Net
 class SimpleNetCorePrivate
 {
 public:
+    SimpleNetCorePrivate();
     ~SimpleNetCorePrivate();
 
     IConnectionManager* GetConnectionManager();
 
     bool IsServiceRegistered(size_t serviceId) const;
     bool IsServiceRegistered(const String& serviceName) const;
-    
-    const SimpleNetService* RegisterService(
-        std::unique_ptr<NetService>&& service,
-        IConnectionManager::ConnectionRole role,
-        const Endpoint& endPoint,
-        const String& serviceName,
-        bool sendOnly);
 
-    void ShutdownAllServices();
+    const SimpleNetService* RegisterService(
+    std::unique_ptr<NetService>&& service,
+    IConnectionManager::ConnectionRole role,
+    const Endpoint& endPoint,
+    const String& serviceName);
 
     const SimpleNetService* GetService(size_t serviceId) const;
     const SimpleNetService* GetService(const String& serviceName) const;

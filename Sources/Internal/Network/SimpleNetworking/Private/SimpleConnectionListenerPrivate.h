@@ -50,11 +50,9 @@ using ConcurrentRefPtr = ConcurrentObject<RefPtr<T>, Spinlock>;
 class ConnectionListenerPrivate
 {
 public:
-    ConnectionListenerPrivate(const ConnectionWaitFunction& connWaiter,
-                              const Endpoint& endPoint,
-                              bool dontReceive);
+    ConnectionListenerPrivate(const ConnectionWaitFunction& connWaiter, const Endpoint& endPoint);
 
-    ConnectionListenerPrivate(IConnectionPtr& conn, bool dontReceive);
+    ConnectionListenerPrivate(IConnectionPtr& conn);
     ~ConnectionListenerPrivate();
 
     IConnectionPtr GetConnection() const;
@@ -72,7 +70,6 @@ private:
     ConcurrentList<ConnectionCallback> onConnectCallbacks;
     ConcurrentList<DataReceiveCallback> onDataReceiveCallbacks;
     ConcurrentList<ConnectionCloseCallback> onConnectionCloseCallbacks;
-    bool dontReceiveData;
 };
 
 }  // namespace Net

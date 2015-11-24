@@ -60,9 +60,6 @@ public:
     size_t GetServiceId() const;
     Endpoint GetServiceEndpoint() const;
 
-    void SetShutdownHandler(const Function<void(NetService*)>& handler) const;
-    void Shutdown();
-
 private:
     std::unique_ptr<class SimpleNetServicePrivate> pimpl;
 };

@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include "Concurrency/LockGuard.h"
 #include "Network/SimpleNetworking/Private/LogNetworkError.h"
 #include "Network/SimpleNetworking/Private/SimpleTcpSocket.h"
 #include <libuv/uv.h>
@@ -75,6 +76,7 @@ size_t SimpleTcpSocket::Send(const char* buf, size_t bufSize)
     if (!IsConnectionEstablished())
         return 0;
 
+    LockGuard<Mutex> lock(sendMutex);
     int size = ::send(socketId, buf, static_cast<int>(bufSize), 0);
     
     if (!CheckSocketResult(size))

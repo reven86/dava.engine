@@ -54,10 +54,8 @@ public:
         ConnectionListening
     };
 
-    ConnectionListener(const ConnectionWaitFunction& connWaiter, 
-                       const Endpoint& endPoint, 
-                       bool dontReceive);
-    ConnectionListener(IConnectionPtr& conn, bool dontReceive);
+    ConnectionListener(const ConnectionWaitFunction& connWaiter, const Endpoint& endPoint);
+    ConnectionListener(IConnectionPtr& conn);
 
     ConnectionListener(const ConnectionListener&) = delete;
     ConnectionListener(ConnectionListener&& other);

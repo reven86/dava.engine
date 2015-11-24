@@ -30,6 +30,7 @@
 #ifndef __DAVAENGINE_SIMPLE_TCP_SOCKET_H__
 #define __DAVAENGINE_SIMPLE_TCP_SOCKET_H__
 
+#include "Concurrency/Mutex.h"
 #include "Network/Base/Endpoint.h"
 #include "Network/SimpleNetworking/Private/Common.h"
 #include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
@@ -56,7 +57,8 @@ public:
     
 protected:
     void Close();
-    
+
+    Mutex sendMutex;
     bool connectionEstablished = false;
     Endpoint socketEndPoint;
     socket_t socketId;

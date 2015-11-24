@@ -54,7 +54,6 @@
 using namespace DAVA;
 
 const Net::SimpleNetService* gNetLogger = nullptr;
-Atomic<bool> interrupt = false;
 Vector<Function<void(void)>> cleaningFunctors;
 
 using StringRecv = Function<void(const String&)>;
@@ -252,7 +251,7 @@ bool InitializeNetwork(bool isMobileDevice, const StringRecv& logReceiver)
 
     Net::SimpleNetCore* netcore = new Net::SimpleNetCore;
     gNetLogger = netcore->RegisterService(
-        std::move(logConsumer), role, endPoint, "RawLogConsumer", false);
+        std::move(logConsumer), role, endPoint, "RawLogConsumer");
 
     return gNetLogger != nullptr;
 }
@@ -261,17 +260,14 @@ void WaitApp()
 {
     Logger::Instance()->Info("Waiting app exit...");
 
-    /*while (true)
+    while (true)
     {
-        
         Thread::Sleep(1000);
         if (!gNetLogger->IsActive())
         {
             break;
         }
-    }*/
-
-    while (!interrupt) { Thread::Sleep(1000); }
+    }
 }
 
 void FrameworkWillTerminate()
@@ -480,6 +476,11 @@ void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString)
         }
     }
 
+    if (logLevel.empty())
+    {
+        return;
+    }
+
     //remove first space
     logLevel = logLevel.substr(1);
     message = message.substr(1);
@@ -493,13 +494,7 @@ void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString)
         {
             TeamcityTestsOutput testOutput;
             testOutput.Output(ll, message.c_str());
-
-            if (message.find("Finish all tests") != String::npos)
-            {
-                interrupt = true;
-            }
         }
-
     }
     else
     {
