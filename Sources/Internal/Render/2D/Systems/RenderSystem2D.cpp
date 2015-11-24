@@ -81,8 +81,7 @@ void RenderSystem2D::Init()
     DEFAULT_2D_COLOR_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
-    DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
-    DEFAULT_2D_TEXTURE_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ALPHABLEND);
+    DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alphablend.material"));
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = new NMaterial();
