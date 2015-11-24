@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
@@ -2040,4 +2039,3 @@ void InvalidateAllInstances()
 } // namespace rhi
 
 #endif //#if !(TARGET_IPHONE_SIMULATOR==1)
->>>>>>> development

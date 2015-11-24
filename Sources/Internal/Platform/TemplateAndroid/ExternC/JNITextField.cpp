@@ -60,11 +60,7 @@ extern "C"
             return NULL;
         env->SetByteArrayRegion(r, 0, returnStr.length(), (const jbyte*)returnStr.c_str());
         return r;
-<<<<<<< HEAD
     }
-    == == == =
-    }
->>>>>>> development
 
     void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
     {
