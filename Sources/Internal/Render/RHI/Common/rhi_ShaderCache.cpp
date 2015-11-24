@@ -432,6 +432,7 @@ static const char* _ShaderDefine_Metal =
 ;
 
 static const char* _ShaderHeader_GLES2 =
+"#define float1                 float\n"
 "#define float2                 vec2\n"
 "#define float3                 vec3\n"
 "#define float4                 vec4\n"
@@ -1097,10 +1098,14 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
 
     //DAVA::Logger::Info( "src=\n%s\n", src );
     _PreprocessedText = preprocessedText;
-    mcpp__set_input(src, static_cast<unsigned>(strlen(src)));
-
-    mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
-    mcpp_lib_main(countof(argv), (char**)argv);
+    {
+        mcpp__startup();
+        mcpp__set_input(src, static_cast<unsigned>(strlen(src)));
+        mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
+        mcpp_lib_main(countof(argv), (char**)argv);
+        mcpp__cleanup();
+        mcpp__shutdown();
+    }
     _PreprocessedText = 0;
     switch (targetApi)
     {

@@ -241,7 +241,7 @@ public:
               float32 scaleVelocityBase,
               float32 scaleVelocityFactor,
               bool isLooped,
-              Sprite* sprite,
+              const FilePath& spritePath,
               eBlending blending,
               bool enableFog,
               bool enableFrameBlending,
@@ -296,7 +296,7 @@ protected:
 	float32 scaleVelocityFactor;
 	bool inheritPosition;
 	bool isLooped;
-	Sprite* sprite;
+    FilePath spritePath;
     eBlending blending;
     bool enableFog;
     bool enableFrameBlending;

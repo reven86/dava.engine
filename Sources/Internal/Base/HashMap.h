@@ -58,13 +58,13 @@ public:
     bool empty() const;
 
     iterator insert(const K& key, const V& value);
-    void erase(const K &key);
-	void clear();
-    
-	inline V & at(const K &key);
-	inline const V & at(const K &key) const;
-    
-	V & operator[](const K &key);
+    void erase(const K& key);
+    void clear();
+
+    inline V& at(const K& key);
+    inline const V& at(const K& key) const;
+
+    V & operator[](const K &key);
     const V & operator[] (const K & key) const;
 
     HashMap<K, V>& operator=(const HashMap<K, V>& hm);

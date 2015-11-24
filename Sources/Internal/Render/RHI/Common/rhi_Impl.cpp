@@ -95,9 +95,11 @@ void Initialize(Api api, const InitParam& param)
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
+#if !(TARGET_IPHONE_SIMULATOR == 1)
     case RHI_METAL:
         metal_Initialize(param);
         break;
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)
 #endif
 
     default:
@@ -180,7 +182,7 @@ Create(const Descriptor& desc)
 void Delete(Handle vb)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_VertexBuffer_Delete)( vb );
+    return (*_Impl.impl_VertexBuffer_Delete)(vb);
 #else
     if (vb != rhi::InvalidHandle)
     {

@@ -55,7 +55,7 @@ LibTgaHelper::LibTgaHelper()
                             FORMAT_A16 } };
 }
 
-bool LibTgaHelper::IsMyImage(File *infile) const
+bool LibTgaHelper::CanProcessFile(File* infile) const
 {
     return !(GetImageInfo(infile).isEmpty());
 }

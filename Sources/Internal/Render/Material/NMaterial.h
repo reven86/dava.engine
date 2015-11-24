@@ -172,6 +172,10 @@ public:
     // later add engine flags here
     bool PreBuildMaterial(const FastName& passName);
 
+    // RHI_COMPLETE - it's temporary solution to avoid FX loading and shaders compilation after loading
+    void PreCacheFX();
+    void PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName = FastName());
+
 private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);
 

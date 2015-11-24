@@ -470,6 +470,8 @@ Descriptor
     uint32 isRenderTarget : 1;
     uint32 autoGenMipmaps : 1;
     uint32 needRestore : 1;
+    uint32 cpuAccessRead : 1;
+    uint32 cpuAccessWrite : 1;
 
     Descriptor(uint32 w, uint32 h, TextureFormat fmt)
         : type(TEXTURE_TYPE_2D)
@@ -480,6 +482,8 @@ Descriptor
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
+        , cpuAccessRead(false)
+        , cpuAccessWrite(true)
     {
         memset(initialData, 0, sizeof(initialData));
     }
@@ -492,6 +496,8 @@ Descriptor
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
+        , cpuAccessRead(false)
+        , cpuAccessWrite(true)
     {
         memset(initialData, 0, sizeof(initialData));
     }

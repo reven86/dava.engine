@@ -135,34 +135,34 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
                 field.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
             }
             else if (align & ALIGN_RIGHT)
-        {
-            field.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
-        }
+            {
+                field.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+            }
 
-        if (align & ALIGN_TOP)
-            field.contentVerticalAlignment = UIControlContentVerticalAlignmentTop;
-        else if (align & ALIGN_VCENTER)
-            field.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-        else if (align & ALIGN_BOTTOM)
-            field.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
+            if (align & ALIGN_TOP)
+                field.contentVerticalAlignment = UIControlContentVerticalAlignmentTop;
+            else if (align & ALIGN_VCENTER)
+                field.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+            else if (align & ALIGN_BOTTOM)
+                field.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
 
-        // Set natural alignment if need
-        switch (field.contentHorizontalAlignment)
-        {
-        case UIControlContentHorizontalAlignmentLeft:
-            field.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
-            break;
-        case UIControlContentVerticalAlignmentCenter:
-            field.textAlignment = NSTextAlignmentCenter;
-            break;
-        case UIControlContentHorizontalAlignmentRight:
-            field.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
-            break;
-        default:
-            break;
-        }
+            // Set natural alignment if need
+            switch (field.contentHorizontalAlignment)
+            {
+            case UIControlContentHorizontalAlignmentLeft:
+                field.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
+                break;
+            case UIControlContentVerticalAlignmentCenter:
+                field.textAlignment = NSTextAlignmentCenter;
+                break;
+            case UIControlContentHorizontalAlignmentRight:
+                field.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
+                break;
+            default:
+                break;
+            }
 
-        isNeedToUpdateTexture = true;
+            isNeedToUpdateTexture = true;
         }
         else
         {

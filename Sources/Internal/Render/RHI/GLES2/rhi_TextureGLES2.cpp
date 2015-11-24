@@ -111,7 +111,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
     if (is_depth)
     {
-        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(uid) } };
+        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), (uint64)(uid) } };
 
         ExecGL(&cmd1, 1);
 
@@ -233,9 +233,9 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                             cmd->arg[10] = compressed;
 
                             if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                                _FlipRGBA4_ABGR4(desc.initialData[m], data_sz);
+                                _FlipRGBA4_ABGR4(data, data_sz);
                             else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                                _RGBA5551toABGR1555(desc.initialData[m], data_sz);
+                                _RGBA5551toABGR1555(data, data_sz);
 
                             ++cmd2_cnt;
                         }
@@ -335,11 +335,13 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         cmd[0].arg[0] = 1;
         cmd[0].arg[1] = uint64(&(uid));
 
-        if (uid2)
+        if (uid2 && uid2 != uid)
         {
             cmd[1].func = GLCommand::DELETE_RENDERBUFFERS;
             cmd[1].arg[0] = 1;
             cmd[1].arg[1] = uint64(&(uid2));
+
+            ++cmd_cnt;
         }
     }
     else
