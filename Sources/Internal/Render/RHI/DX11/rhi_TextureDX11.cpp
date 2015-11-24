@@ -80,7 +80,7 @@ TextureDX11_t::TextureDX11_t()
     , tex2d_dsv(nullptr)
     , isMapped(false)
     , cpuAccessRead(false)
-    , lastUnit(InvalidIndex)
+    , lastUnit(DAVA::InvalidIndex)
 {
 }
 
