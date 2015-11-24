@@ -49,7 +49,7 @@ namespace rhi
 typedef ResourcePool<ProgGLES2::ConstBuf, RESOURCE_CONST_BUFFER, ProgGLES2::ConstBuf::Desc, false> ConstBufGLES2Pool;
 RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf, RESOURCE_CONST_BUFFER, ProgGLES2::ConstBuf::Desc, false, 12 * 1024);
 
-static RingBuffer DefaultConstRingBuffer;
+static RingBuffer _GLES2_DefaultConstRingBuffer;
 uint32 ProgGLES2::ConstBuf::CurFrame = 0;
 
 //==============================================================================
@@ -452,7 +452,7 @@ ProgGLES2::ConstBuf::Instance() const
     if (!inst)
     {
         //SCOPED_NAMED_TIMING("gl.cb-inst");
-        inst = DefaultConstRingBuffer.Alloc(count * 4);
+        inst = _GLES2_DefaultConstRingBuffer.Alloc(count * 4);
         memcpy(inst, data, 4 * count * sizeof(float));
         frame = CurFrame;
     }
@@ -503,7 +503,7 @@ ProgGLES2::ShaderUid() const
 void ProgGLES2::InvalidateAllConstBufferInstances()
 {
     ConstBuf::AdvanceFrame();
-    DefaultConstRingBuffer.Reset();
+    _GLES2_DefaultConstRingBuffer.Reset();
     /*
     for( ConstBufGLES2Pool::Iterator b=ConstBufGLES2Pool::Begin(),b_end=ConstBufGLES2Pool::End(); b!=b_end; ++b )
     {
@@ -574,7 +574,7 @@ void SetupDispatch(Dispatch* dispatch)
 
 void InitializeRingBuffer(uint32 size)
 {
-    DefaultConstRingBuffer.Initialize(size);
+    _GLES2_DefaultConstRingBuffer.Initialize(size);
 }
 
 void SetToRHI(const Handle cb, uint32 progUid, const void* instData)
