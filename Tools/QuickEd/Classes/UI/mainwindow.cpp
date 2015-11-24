@@ -209,11 +209,11 @@ void MainWindow::OnCleanChanged(int index, bool val)
 void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
 {
     DVASSERT(nullptr != packer);
-    auto lastFlags = accaptableLoggerFlags;
-    accaptableLoggerFlags = 1 << Logger::LEVEL_ERROR | 1 << Logger::LEVEL_WARNING;
+    auto lastFlags = acceptableLoggerFlags;
+    acceptableLoggerFlags = (1 << Logger::LEVEL_ERROR) | (1 << Logger::LEVEL_WARNING);
     DialogReloadSprites dialogReloadSprites(packer, this);
     dialogReloadSprites.exec();
-    accaptableLoggerFlags = lastFlags;
+    acceptableLoggerFlags = lastFlags;
 }
 
 void MainWindow::OnShowHelp()
@@ -523,11 +523,11 @@ void MainWindow::OnGlobalClassesChanged(const QString &str)
     emit GlobalStyleClassesChanged(str);
 }
 
-void MainWindow::OnLogOutput(Logger::eLogLevel ll, const QByteArray &output)
+void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray &output)
 {
-    if((1 << ll) & accaptableLoggerFlags)
+    if((1 << logLevel) & acceptableLoggerFlags)
     {
-        logWidget->AddMessage(ll, output);
+        logWidget->AddMessage(logLevel, output);
     }
 }
 
