@@ -140,7 +140,7 @@ private:
 
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject *loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
-    qint64 accaptableLoggerFlags = ~0; //all flags accepted
+    qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QComboBox *comboboxLanguage = nullptr;
 };

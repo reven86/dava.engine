@@ -525,7 +525,7 @@ void MainWindow::OnGlobalClassesChanged(const QString &str)
 
 void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray &output)
 {
-    if((1 << logLevel) & acceptableLoggerFlags)
+    if(static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
     {
         logWidget->AddMessage(logLevel, output);
     }
