@@ -38,7 +38,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private native void nativeSurfaceChanged(int width, int height);
 	private native void nativeSurfaceDestroyed();
 
-    private native void nativeReset(int w, int h);
     private native void nativeProcessFrame();
 	
 	private Surface surface = null;
