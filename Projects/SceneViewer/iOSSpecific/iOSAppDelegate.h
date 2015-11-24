@@ -35,7 +35,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface iPhoneProjectDelegate : HelperAppDelegate
+@interface iOSAppDelegate : HelperAppDelegate
 {
     UIWindow *window;
 }

@@ -27,35 +27,20 @@
 =====================================================================================*/
 
 
-#import "iPhoneProjectDelegate.h"
+#import "Platform/TemplateiOS/HelperAppDelegate.h"
+#import "DAVAEngine.h"
+#import "GameCore.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-@implementation iPhoneProjectDelegate
+#import <UIKit/UIKit.h>
 
-@synthesize window;
-
-- (void)applicationDidFinishLaunching:(UIApplication *)application 
-{    
-	[window makeKeyAndVisible];
-	window.backgroundColor = [UIColor redColor];
-	
-	[super applicationDidFinishLaunching:application];
-}
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+@interface iOSAppDelegate : HelperAppDelegate
 {
-	[window makeKeyAndVisible];
-	window.backgroundColor = [UIColor redColor];
-	
-	return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    UIWindow *window;
 }
 
-- (void)dealloc 
-{
-    [window release];
-    [super dealloc];
-}
+@property (nonatomic, retain) IBOutlet UIWindow *window;
 
 @end
 
