@@ -174,7 +174,8 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
     }
     case UIEvent::Phase::DRAG:
     {
-        if (currentInput->point != prevPos)
+        UIEvent::eButtonID button = static_cast<UIEvent::eButtonID>(currentInput->tid);
+        if (button == UIEvent::BUTTON_1 && currentInput->point != prevPos)
         {
             if (ProcessDrag(currentInput->point))
             {
