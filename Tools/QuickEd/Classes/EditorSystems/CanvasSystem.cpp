@@ -81,7 +81,7 @@ public:
     DAVA::Signal<DAVA::Vector2> RootControlPosChanged;
 
 private:
-    void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition, Vector2& globalRootControlPosition);
+    void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
     void FitGridIfParentIsNested(PackageBaseNode* node);
     RefPtr<UIControl> gridControl;
     RefPtr<UIControl> counterpoiseControl;
@@ -179,12 +179,11 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
     } //unnamed namespace
 
-void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition, Vector2& absoluteRootControlPosition)
+void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
 
-    absoluteRootControlPosition = gd.position;
     gd.position.SetZero();
     UIControl* scalableControl = gridControl->GetParent()->GetParent();
     DVASSERT_MSG(nullptr != scalableControl, "grid update without being attached to screen");
@@ -204,13 +203,12 @@ void BackgroundController::AdjustToNestedControl()
 {
     Rect rect;
     Vector2 pos;
-    Vector2 absolutePos;
-    CalculateTotalRect(rect, pos, absolutePos);
+    CalculateTotalRect(rect, pos);
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
     ContentSizeChanged.Emit();
-    RootControlPosChanged.Emit(absolutePos);
+    RootControlPosChanged.Emit(pos);
 }
 
 void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)

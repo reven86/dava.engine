@@ -125,5 +125,8 @@ void ScrollAreaController::UpdatePosition()
             position.y += (viewSize.height() - canvasSize.height()) / 2.0f;
         }
         nestedControl->SetPosition(position);
+
+        QPoint positionPoint(static_cast<int>(position.x), static_cast<int>(position.y));
+        NestedControlPositionChanged(positionPoint);
     }
 }

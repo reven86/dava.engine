@@ -52,28 +52,41 @@ void RulerController::SetupInitialRulerSettings(RulerSettings& settings)
 void RulerController::SetViewPos(QPoint pos)
 {
     pos *= -1;
-    screenViewPos = pos;
-    ApplyPosChanged();
+    if (screenViewPos != pos)
+    {
+        screenViewPos = pos;
+        ApplyPosChanged();
+    }
 }
 
-void RulerController::SetAdditionalPos(QPoint pos)
+void RulerController::SetCanvasPos(QPoint pos)
 {
     pos *= -1;
-    additionalViewPos = pos;
-    ApplyPosChanged();
+    if (canvasPos != pos)
+    {
+        canvasPos = pos;
+        ApplyPosChanged();
+    }
+}
+
+void RulerController::SetRootControlPos(QPoint pos)
+{
+    pos *= -1;
+    if (rootControlPos != pos)
+    {
+        rootControlPos = pos;
+        ApplyPosChanged();
+    }
 }
 
 void RulerController::ApplyPosChanged()
 {
-    QPoint viewPos = screenViewPos + additionalViewPos;
+    QPoint viewPos = screenViewPos + rootControlPos + canvasPos;
 
-    screenViewPos.setX(viewPos.x());
     horisontalRulerSettings.startPos = viewPos.x();
-    emit HorisontalRulerSettingsChanged(horisontalRulerSettings);
-
-    screenViewPos.setY(viewPos.y());
     verticalRulerSettings.startPos = viewPos.y();
-    emit VerticalRulerSettingsChanged(verticalRulerSettings);
+
+    UpdateRulers();
 }
 
 void RulerController::SetScale(float scale)

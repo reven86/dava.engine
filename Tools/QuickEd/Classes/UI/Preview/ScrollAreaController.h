@@ -68,6 +68,8 @@ signals:
     void CanvasSizeChanged(QSize canvasSize);
     void ViewSizeChanged(QSize size);
     void PositionChanged(QPoint position);
+    
+    void NestedControlPositionChanged(QPoint position);
 
 private:
     void UpdatePosition();
