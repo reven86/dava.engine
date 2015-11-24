@@ -29,7 +29,6 @@
     #include "../Common/rhi_Pool.h"
     #include "rhi_DX11.h"
 
-	#include "Render/RenderBase.h"
     #include "../Common/rhi_RingBuffer.h"
     #include "../Common/dbg_StatSet.h"
 
@@ -1214,7 +1213,7 @@ bool ShouldFlushAfterRenderPass(const RenderPassConfig& cfg)
         const DAVA::String Nokia909DeviceId = "NOKIA RM-875";
         isLumia1020 = DAVA::DeviceInfo::GetModel().find(Nokia909DeviceId) == 0 ? 1 : 0;
     }
-    return (cfg.priority == DAVA::PRIORITY_MAIN_3D) && (isLumia1020 > 0);
+    return (isLumia1020 > 0);
 }
 
 void CommandBufferDX11_t::Execute()
