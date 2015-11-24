@@ -75,6 +75,7 @@ private slots:
     void OnMoveDown();
     void OnMoveLeft();
     void OnMoveRight();
+    void SelectNodes(const QVector<PackageBaseNode*> &nodes);
 
 private:
     void MoveNodeUpDown(bool up);
@@ -86,6 +87,7 @@ private:
     void RefreshActions();
 
     void SelectNode(PackageBaseNode* node);
+    void SelectNodeImpl(PackageBaseNode* node);
 
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);

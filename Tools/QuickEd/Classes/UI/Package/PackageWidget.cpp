@@ -261,6 +261,7 @@ void PackageWidget::LoadContext()
         if (nullptr == context)
         {
             context = new PackageContext(document);
+            connect(context->packageModel, &PackageModel::NodesMoved, this, &PackageWidget::SelectNodes);
             document->SetContext(this, context);
         }
         //store model to work with indexes
@@ -654,6 +655,20 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 void PackageWidget::SelectNode(PackageBaseNode *node)
 {
     treeView->selectionModel()->clear();
+    SelectNodeImpl(node);
+}
+
+void PackageWidget::SelectNodes(const QVector<PackageBaseNode*> &nodes)
+{
+    treeView->selectionModel()->clear();
+    for (auto &node : nodes)
+    {
+        SelectNodeImpl(node);
+    }
+}
+
+void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
+{
     QModelIndex srcIndex = packageModel->indexByNode(node);
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
     treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);

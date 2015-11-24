@@ -355,16 +355,23 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
 bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     if (action == Qt::IgnoreAction)
+    {
         return true;
-    
+    }
+
     int rowIndex;
     if (row != -1)
+    {
         rowIndex = row;
+    }
     else if (parent.isValid())
+    {
         rowIndex = rowCount(parent);
+    }
     else
+    {
         rowIndex = rowCount(QModelIndex());
-
+    }
     
     PackageBaseNode *destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
     
@@ -375,40 +382,61 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     {
         const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
         if (!controlMimeData)
+        {
             return false;
+        }
 
         const Vector<ControlNode *> &srcControls = controlMimeData->GetControls();
         if (srcControls.empty())
+        {
             return false;
-        
+        }
         if (action == Qt::CopyAction)
+        {
             commandExecutor->CopyControls(srcControls, destControlContainer, rowIndex);
+        }
         else if (action == Qt::MoveAction)
+        {
             commandExecutor->MoveControls(srcControls, destControlContainer, rowIndex);
+            Vector<PackageBaseNode*> nodes(srcControls.begin(), srcControls.end());
+            emit NodesMoved(QVector<PackageBaseNode*>::fromStdVector(nodes));
+        }
         else if (action == Qt::LinkAction)
+        {
             commandExecutor->InsertInstances(srcControls, destControlContainer, rowIndex);
+        }
         else
+        {
             return false;
-
+        }
         return true;
     }
     else if (destStylesContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *mimeData = dynamic_cast<const PackageMimeData*>(data);
         if (!mimeData)
+        {
             return false;
-        
+        }
         const Vector<StyleSheetNode *> &srcStyles = mimeData->GetStyles();
         if (srcStyles.empty())
+        {
             return false;
-        
+        }
         if (action == Qt::CopyAction)
+        {
             commandExecutor->CopyStyles(srcStyles, destStylesContainer, rowIndex);
+        }
         else if (action == Qt::MoveAction)
+        {
             commandExecutor->MoveStyles(srcStyles, destStylesContainer, rowIndex);
+            Vector<PackageBaseNode*> nodes(srcStyles.begin(), srcStyles.end());
+            emit NodesMoved(QVector<PackageBaseNode*>::fromStdVector(nodes));
+        }
         else
+        {
             return false;
-        
+        }
         return true;
     }
     else if (data->hasFormat("text/uri-list") && data->hasText())
