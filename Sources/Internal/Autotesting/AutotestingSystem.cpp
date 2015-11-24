@@ -164,9 +164,9 @@ namespace DAVA
     void AutotestingSystem::RunTests()
     {
         if (!isInit || isRunning)
-		{
-			return;
-		}
+        {
+            return;
+        }
 		isRunning = true;
 		OnTestStarted();
 	}
@@ -450,7 +450,7 @@ namespace DAVA
                 touches[id] = input;
             }
             else
-			{
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d", id);
             }
         }
@@ -474,8 +474,8 @@ namespace DAVA
             {
                 findIt->second = input;
             }
-			else
-			{
+            else
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE", id);
             }
         }
@@ -488,8 +488,8 @@ namespace DAVA
             {
                 touches.erase(findIt);
             }
-			else
-			{
+            else
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found", id);
             }
         }
@@ -498,11 +498,11 @@ namespace DAVA
             //TODO: keyboard input
             break;
         }
-	}
+    }
 
-	bool AutotestingSystem::FindTouch(int32 id, UIEvent &touch)
-	{
-		bool isFound = false;
+    bool AutotestingSystem::FindTouch(int32 id, UIEvent& touch)
+    {
+        bool isFound = false;
 		Map<int32, UIEvent>::iterator findIt = touches.find(id);
 		if (findIt != touches.end())
 		{

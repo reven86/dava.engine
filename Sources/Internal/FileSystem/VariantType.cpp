@@ -1672,17 +1672,17 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
             if (nullptr != dstArchive)
             {
                 dstArchive->DeleteAllKeys();
-                    for(const auto &obj : val.AsKeyedArchive()->GetArchieveData())
-                    {
-                        dstArchive->SetVariant(obj.first, *obj.second);
-                    }
-				}
-			}
-			break;
-		case TYPE_INT64:
-			*((DAVA::int64 *) dst) = val.AsInt64();
-			break;
-		case TYPE_UINT64:
+                for (const auto& obj : val.AsKeyedArchive()->GetArchieveData())
+                {
+                    dstArchive->SetVariant(obj.first, *obj.second);
+                }
+            }
+            break;
+        }
+        case TYPE_INT64:
+            *((DAVA::int64*)dst) = val.AsInt64();
+            break;
+        case TYPE_UINT64:
 			*((DAVA::uint64 *) dst) = val.AsUInt64();
 			break;
 		case TYPE_VECTOR2:
@@ -1769,12 +1769,12 @@ VariantType VariantType::FromType(int type)
         KeyedArchive* ka = new KeyedArchive();
         v.SetKeyedArchive(ka);
         ka->Release();
-        }
-		break;
-	case TYPE_INT64:
-		v.SetInt64(0);
-		break;
-	case TYPE_UINT64:
+    }
+    break;
+    case TYPE_INT64:
+        v.SetInt64(0);
+        break;
+    case TYPE_UINT64:
 		v.SetUInt64(0);
 		break;
 	case TYPE_VECTOR2:

@@ -71,7 +71,7 @@ namespace DAVA
         core->SetCommandLine(argc, argv);
         core->EnableConsoleMode();
         core->CreateSingletons();
-		
+
         Logger::Instance()->EnableConsoleMode();
         
 		FrameworkDidLaunched();

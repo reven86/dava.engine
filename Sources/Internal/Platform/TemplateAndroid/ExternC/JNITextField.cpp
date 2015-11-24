@@ -50,7 +50,7 @@ extern "C"
 
         DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, string);
 
-		env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
+        env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
 
         bool res = DAVA::TextFieldPlatformImpl::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
         DAVA::String returnStr = res ? DAVA::UTF8Utils::EncodeToUTF8(string) : "";
@@ -62,11 +62,11 @@ extern "C"
         return r;
     }
 
-	void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
-	{
-		DAVA::WideString newString, oldString;
+    void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
+    {
+        DAVA::WideString newString, oldString;
 
-		jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);
+        jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);
 		jsize lengthOfArray = env->GetArrayLength(newText);
 		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, newString);
 		env->ReleaseByteArrayElements(newText, bufferPtr, 0);
@@ -86,7 +86,7 @@ extern "C"
         keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 
         DAVA::Vector2 keyboardSize(dx, dy);
-	    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
+        keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
         DAVA::TextFieldPlatformImpl::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
     }

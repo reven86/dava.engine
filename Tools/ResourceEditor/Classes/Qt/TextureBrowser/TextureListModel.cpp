@@ -166,7 +166,7 @@ void TextureListModel::setScene(DAVA::Scene *scene)
 		DAVA::TextureDescriptor * descriptor = t->second->texDescriptor;
         if (NULL != descriptor && DAVA::FileSystem::Instance()->Exists(descriptor->pathname))
         {
-			textureDescriptorsAll.push_back(descriptor);
+            textureDescriptorsAll.push_back(descriptor);
 			texturesAll[descriptor] = SafeRetain(t->second);
 		}
 	}

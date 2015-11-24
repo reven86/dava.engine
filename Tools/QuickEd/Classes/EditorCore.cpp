@@ -76,6 +76,11 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
     connect(mainWindow.get(), &MainWindow::EmulationModeChanbed, documentGroup, &DocumentGroup::SetEmulationMode);
     connect(mainWindow.get(), &MainWindow::PixelizationChanged, documentGroup, &DocumentGroup::SetPixelization);
+    QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
+    EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
+    connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
+    connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
+
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
@@ -102,7 +107,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(previewWidget, &PreviewWidget::SelectAllRequested, documentGroup, &DocumentGroup::OnSelectAllRequested);
     connect(previewWidget, &PreviewWidget::DeleteRequested, mainWindow->packageWidget, &PackageWidget::OnDelete);
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
-    connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
+    connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
     documentGroup->SetPixelization(mainWindow->isPixelized());
@@ -312,7 +317,7 @@ void EditorCore::OpenProject(const QString &path)
     {
         resultList.AddResult(Result::RESULT_ERROR, "Error while loading project");
     }
-    mainWindow->OnProjectOpened(resultList, path);
+    mainWindow->OnProjectOpened(resultList, project);
 }
 
 bool EditorCore::CloseProject()

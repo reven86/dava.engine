@@ -103,9 +103,9 @@ namespace DAVA
     {
         elementSize = newSize;
         virtualViewSize = viewSize;
-		if(viewSize > elementSize)
-		{
-			virtualViewSize = elementSize;
+        if (viewSize > elementSize)
+        {
+            virtualViewSize = elementSize;
 		}
 	}
 	

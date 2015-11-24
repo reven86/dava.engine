@@ -107,11 +107,11 @@ struct ParticleLayer : public BaseObject
 
     ScopedPtr<Sprite> sprite;
     void SetSprite(const FilePath& spritePath);
-    Vector2		layerPivotPoint;
-	Vector2		layerPivotSizeOffsets; //precached for faster bbox computation
-	void SetPivotPoint(Vector2 pivot);
+    Vector2 layerPivotPoint;
+    Vector2 layerPivotSizeOffsets; //precached for faster bbox computation
+    void SetPivotPoint(Vector2 pivot);
 
-	FilePath		spritePath;		
+    FilePath		spritePath;		
 	bool isLooped;
 	bool isLong;
     eBlending blending;

@@ -257,11 +257,11 @@ ParticleLayer * ParticleLayer::Clone()
 	dstLayer->type = type;
     dstLayer->degradeStrategy = degradeStrategy;
     dstLayer->sprite = sprite;
-    dstLayer->layerPivotPoint = layerPivotPoint;	
-	dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
+    dstLayer->layerPivotPoint = layerPivotPoint;
+    dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
 
-	dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
-	dstLayer->frameOverLifeFPS = frameOverLifeFPS;
+    dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
+    dstLayer->frameOverLifeFPS = frameOverLifeFPS;
 	dstLayer->randomFrameOnStart = randomFrameOnStart;
 	dstLayer->loopSpriteAnimation = loopSpriteAnimation;
 	dstLayer->particleOrientation = particleOrientation;
@@ -436,10 +436,10 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 		// Store the absolute path to sprite.
         FilePath spritePath = configPath.GetDirectory() + spriteNode->AsString();
         SetSprite(spritePath);
-    }	
-	if(pivotPointNode)
-	{
-		Vector2 _pivot = pivotPointNode->AsPoint();
+    }
+    if (pivotPointNode)
+    {
+        Vector2 _pivot = pivotPointNode->AsPoint();
 		if ((format == 0)&&sprite)
 		{
 			
