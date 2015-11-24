@@ -239,7 +239,7 @@ void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
     Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
     DVASSERT(it != activeComponents.end());
     activeComponents.erase(it);
-    effect->state = ParticleEffectComponent::STATE_STOPPED;	
+    effect->state = ParticleEffectComponent::STATE_STOPPED;
     Scene *scene = GetScene();
     if (scene)
         scene->GetRenderSystem()->RemoveFromRender(effect->effectRenderObject);
@@ -302,7 +302,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
     size_t componentsCount = activeComponents.size();
     for (size_t i = 0; i < componentsCount; i++)
     {
-		ParticleEffectComponent * effect = activeComponents[i];
+        ParticleEffectComponent * effect = activeComponents[i];
         if (effect->activeLodLevel!=effect->desiredLodLevel)
             UpdateActiveLod(effect);
         if (effect->state == ParticleEffectComponent::STATE_STARTING)  

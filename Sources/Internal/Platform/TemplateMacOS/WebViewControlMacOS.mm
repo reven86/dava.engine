@@ -315,8 +315,8 @@ void WebViewControl::SetRect(const Rect& rect)
 
     webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
     webViewRect.origin.y += VCS.GetPhysicalDrawOffset().y;
-	
-	[(WebView*)webViewPtr setFrame: webViewRect];
+
+    [(WebView*)webViewPtr setFrame: webViewRect];
     
     // release previous image if any
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;

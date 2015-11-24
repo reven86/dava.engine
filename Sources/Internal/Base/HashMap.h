@@ -61,8 +61,8 @@ public:
     void erase(const K& key);
     void clear();
 
-    inline V & at(const K &key);
-	inline const V & at(const K &key) const;
+    inline V& at(const K& key);
+    inline const V & at(const K &key) const;
     
 	V & operator[](const K &key);
     const V & operator[] (const K & key) const;

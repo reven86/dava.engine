@@ -177,7 +177,7 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
     else
     {
         DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
-	}
+    }
    
 }
 
@@ -359,7 +359,7 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
     }
     break;
 
-            case 3: //ACTION_CANCEL
+    case 3: //ACTION_CANCEL
                 phase = DAVA::UIEvent::Phase::CANCELLED;
                 break;
 
@@ -370,8 +370,8 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
             return phase;
 }
 
-    DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv * env, jobject input, jint action, jint source)
-	{
+DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input, jint action, jint source)
+    {
 		DAVA::UIEvent event;
 		event.tid = env->GetIntField(input, gInputEventTidField);
 		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);

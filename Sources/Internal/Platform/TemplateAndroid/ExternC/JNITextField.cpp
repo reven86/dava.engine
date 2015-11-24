@@ -63,7 +63,7 @@ extern "C"
     }
 
     void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
-	{
+    {
 		DAVA::WideString newString, oldString;
 
 		jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);

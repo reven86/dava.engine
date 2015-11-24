@@ -99,7 +99,7 @@ public:
     inline void SetCubeTexcoord(int32 ti, int32 i, const Vector3& v);
     inline void SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue);
     inline void SetJointCount(int32 vIndex, int32 jointCount);
-	inline void	SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue);
+    inline void	SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue);
 	
 	inline void	SetIndex(int32 i, int16 index);
 	
