@@ -298,6 +298,7 @@ public:
     UIScreenshoter* GetScreenshoter();
 
     void SetClearColor(const Color& clearColor);
+    void SetUseClearPass(bool use);
 
 private:
 	/**
@@ -342,6 +343,7 @@ private:
 	
 	UIGeometricData baseGeometricData;
 
+    bool useClearPass = true;
     Color clearColor;
 
     friend class UIScreenTransition;

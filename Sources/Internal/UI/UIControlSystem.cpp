@@ -341,11 +341,14 @@ void UIControlSystem::Draw()
 
     drawCounter = 0;
 
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = (uint32)Renderer::GetFramebufferWidth();
-    viewport.height = (uint32)Renderer::GetFramebufferHeight();
-    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
+    if (useClearPass)
+    {
+        rhi::Viewport viewport;
+        viewport.x = viewport.y = 0U;
+        viewport.width = (uint32)Renderer::GetFramebufferWidth();
+        viewport.height = (uint32)Renderer::GetFramebufferHeight();
+        RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
+    }
 
     if (currentScreen)
     {
@@ -717,5 +720,10 @@ UIScreenshoter* UIControlSystem::GetScreenshoter()
 void UIControlSystem::SetClearColor(const DAVA::Color& _clearColor)
 {
     clearColor = _clearColor;
+}
+
+void UIControlSystem::SetUseClearPass(bool use)
+{
+    useClearPass = use;
 }
 };
