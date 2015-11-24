@@ -33,6 +33,8 @@
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/SceneTabWidget.h"
+#include "Main/mainwindow.h"
 
 // framework
 #include "Base/BaseTypes.h"
@@ -232,6 +234,19 @@ void EditorParticlesSystem::RemoveEntity(DAVA::Entity * entity)
 	}
 }
 
+void EditorParticlesSystem::RestartParticleEffects()
+{
+    for (Entity* entity : entities)
+    {
+        ParticleEffectComponent* effectComponent = GetEffectComponent(entity);
+        DVASSERT(effectComponent);
+        if (!effectComponent->IsStopped())
+        {
+            effectComponent->Restart();
+        }
+    }
+}
+
 void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if (!command)
@@ -252,8 +267,17 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 		}
 
 		case CMDID_PARTICLE_LAYER_UPDATE:
-		case CMDID_PARTILCE_LAYER_UPDATE_TIME:
-		case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
+        {
+            QtMainWindow::Instance()->RestartParticleEffects();
+
+            const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
+                                                                    castedCmd->GetLayer());
+            break;
+        }
+
+        case CMDID_PARTILCE_LAYER_UPDATE_TIME:
+        case CMDID_PARTICLE_LAYER_UPDATE_ENABLED:
 		{
 			const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
 			SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,

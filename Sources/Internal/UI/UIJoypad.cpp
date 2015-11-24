@@ -272,10 +272,10 @@ void UIJoypad::Input(UIEvent *currentInput)
         mainTouch = currentInput->tid;
     }
 
-    if(mainTouch != currentInput->tid)
-	{
-		return;
-	}
+    if (mainTouch != currentInput->tid)
+    {
+        return;
+    }
 
     if (currentInput->phase == UIEvent::Phase::ENDED)
     {

@@ -61,7 +61,8 @@ public:
 
     const DAVA::FilePath& GetProjectPath() const;
     const DAVA::FilePath& GetDataSourcePath() const;
-    const DAVA::FilePath& GetParticlesPath() const;
+    const DAVA::FilePath& GetParticlesConfigPath() const;
+    const DAVA::FilePath& GetParticlesDataPath() const;
 
     const DAVA::FilePath& GetWorkspacePath() const;
 
@@ -91,7 +92,8 @@ private:
 
     DAVA::FilePath projectPath;
     DAVA::FilePath dataSourcePath;
-    DAVA::FilePath particlesPath;
+    DAVA::FilePath particlesConfigPath;
+    DAVA::FilePath particlesDataPath;
     DAVA::FilePath workspacePath;
 
     QVector<AvailableMaterialTemplate> templates;

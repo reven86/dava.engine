@@ -31,7 +31,7 @@
 
     #include "../Common/rhi_RingBuffer.h"
     #include "_metal.h"
-
+#if !(TARGET_IPHONE_SIMULATOR == 1)
 namespace rhi
 {
 class
@@ -52,5 +52,6 @@ private:
 };
 
 } // namespace rhi
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)
 
 #endif // __RHI_RINGBUFFERMETAL_H__

@@ -46,11 +46,11 @@ extern "C"
         DAVA::WideString string;
 
         jbyte* bufferPtr = env->GetByteArrayElements(replacementString, NULL);
-		jsize lengthOfArray = env->GetArrayLength(replacementString);
+        jsize lengthOfArray = env->GetArrayLength(replacementString);
 
-		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, string);
+        DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, string);
 
-		env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
+        env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
 
         bool res = DAVA::TextFieldPlatformImpl::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
         DAVA::String returnStr = res ? DAVA::UTF8Utils::EncodeToUTF8(string) : "";
@@ -59,11 +59,11 @@ extern "C"
         if (r == NULL)
             return NULL;
         env->SetByteArrayRegion(r, 0, returnStr.length(), (const jbyte*)returnStr.c_str());
-		return r;
-	}
+        return r;
+    }
 
-	void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
-	{
+    void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
+    {
 		DAVA::WideString newString, oldString;
 
 		jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);
@@ -83,10 +83,10 @@ extern "C"
     {
         // Recalculate to virtual coordinates.
         DAVA::Vector2 keyboardOrigin(x, y);
-	    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
+        keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 
-	    DAVA::Vector2 keyboardSize(dx, dy);
-	    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
+        DAVA::Vector2 keyboardSize(dx, dy);
+        keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
         DAVA::TextFieldPlatformImpl::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
     }

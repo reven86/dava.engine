@@ -77,6 +77,17 @@ public:
 
     static Array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
 
+    struct
+    FBODescriptor
+    {
+        uint32 width;
+        uint32 height;
+        PixelFormat format;
+        bool needDepth = false;
+        bool needPixelReadback = false;
+        rhi::TextureType textureType = rhi::TEXTURE_TYPE_2D;
+    };
+
     // Main constructors
     /**
         \brief Create texture from data arrray
@@ -128,6 +139,7 @@ public:
     static Texture* CreatePink(rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool checkers = true);
 
     static Texture* CreateFBO(uint32 width, uint32 height, PixelFormat format, bool needDepth = false, rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D);
+    static Texture* CreateFBO(const FBODescriptor& desc);
 
     /**
         \brief Get texture from cache.

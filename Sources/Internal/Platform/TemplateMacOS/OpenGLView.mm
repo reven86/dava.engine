@@ -334,8 +334,25 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     ev.phase = DAVA::UIEvent::Phase::WHEEL;
     ev.device = DAVA::UIEvent::Device::MOUSE;
 
+<<<<<<< HEAD
     DAVA::Vector2 scrollDelta([theEvent scrollingDeltaX], [theEvent scrollingDeltaY]);
     ev.scrollDelta = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(scrollDelta);
+    == == == =
+             const uint32 rawScrollCoefficient = 10;
+
+    DAVA::float32 rawScrollDelta([theEvent scrollingDeltaY]);
+    if (YES == [theEvent hasPreciseScrollingDeltas])
+    {
+        // touchpad or other precise device
+        // sends integer values (-3, -1, 0, 1, 40 etc)
+        ev.scrollDelta.y = rawScrollDelta / rawScrollCoefficient;
+    }
+    else
+    {
+        // simple mouse - sends float values from 0.1 for one wheel tick
+        ev.scrollDelta.y = rawScrollDelta * rawScrollCoefficient;
+    }
+>>>>>>> development
 
     NSPoint posInWindow = [theEvent locationInWindow];
     ev.physPoint.x = posInWindow.x;

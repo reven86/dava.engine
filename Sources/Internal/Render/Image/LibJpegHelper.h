@@ -45,7 +45,7 @@ public:
 
     ImageFormat GetImageFormat() const override;
 
-    bool IsMyImage(File *file) const override;
+    bool CanProcessFile(File* file) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 

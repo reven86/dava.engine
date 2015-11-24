@@ -77,6 +77,8 @@ public:
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
 
+    void Update() override;
+
 private:
     std::shared_ptr<PrivateWebViewWinUAP> privateImpl;
 };

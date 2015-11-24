@@ -28,7 +28,6 @@
 
 
 #include "DAVAEngine.h"
-#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -110,6 +109,8 @@
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
+#include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
@@ -205,6 +206,7 @@ QtMainWindow::~QtMainWindow()
 {
     const auto &logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
+
     VariantType var(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size());
     SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, var);
 
@@ -316,7 +318,7 @@ QString GetSaveFolderForEmitters()
     QString particlesPath;
     if (defaultPath.IsEmpty())
     {
-        particlesPath = QString::fromStdString(ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname());
+        particlesPath = QString::fromStdString(ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname());
     }
     else
     {
@@ -697,6 +699,10 @@ void QtMainWindow::SetupDocks()
 	{
         LogWidget *logWidget = new LogWidget();
         logWidget->SetConvertFunction(&PointerSerializer::CleanUpString);
+
+        LoggerOutputObject* loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
+        connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
+
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
@@ -2660,12 +2666,12 @@ bool QtMainWindow::OpenScene( const QString & path )
 
         if (!FilePath::ContainPath(argumentPath, projectPath))
         {
-			QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
-				projectPath.GetAbsolutePathname().c_str(),
-				argumentPath.GetAbsolutePathname().c_str()));
-		}
-		else
-		{
+            QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s",
+                                                                              projectPath.GetAbsolutePathname().c_str(),
+                                                                              argumentPath.GetAbsolutePathname().c_str()));
+        }
+        else
+        {
             int needCloseIndex = -1;
 			SceneEditor2 *scene = ui->sceneTabWidget->GetCurrentScene();
 			if(scene && (ui->sceneTabWidget->GetTabCount() == 1))
@@ -3180,4 +3186,15 @@ void QtMainWindow::SetActionCheckedSilently( QAction *action, bool checked )
 	bool b = action->blockSignals(true);
 	action->setChecked(checked);
 	action->blockSignals(b);
+}
+
+void QtMainWindow::RestartParticleEffects()
+{
+    const SceneTabWidget* widget = GetSceneWidget();
+    for (int tab = 0; tab < widget->GetTabCount(); ++tab)
+    {
+        SceneEditor2* scene = widget->GetTabScene(tab);
+        DVASSERT(scene);
+        scene->particlesSystem->RestartParticleEffects();
+    }
 }

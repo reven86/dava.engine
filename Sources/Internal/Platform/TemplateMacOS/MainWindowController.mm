@@ -69,9 +69,9 @@ namespace DAVA
         globalPool = [[NSAutoreleasePool alloc] init];
         DAVA::CoreMacOSPlatform* core = new DAVA::CoreMacOSPlatform();
         core->SetCommandLine(argc, argv);
-		core->EnableConsoleMode();
-		core->CreateSingletons();
-		
+        core->EnableConsoleMode();
+        core->CreateSingletons();
+
         Logger::Instance()->EnableConsoleMode();
         
 		FrameworkDidLaunched();
