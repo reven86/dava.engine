@@ -153,14 +153,11 @@ void SceneHelper::EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMat
         for (uint32 i = 0; i < batchCount; ++i)
         {
             auto material = ro->GetRenderBatch(i)->GetMaterial();
-            do
+            while (material != nullptr)
             {
-                if (material != nullptr)
-                {
-                    materials.insert(material);
-                }
+                materials.insert(material);
                 material = material->GetParent();
-            } while (material != nullptr);
+            }
         }
     }
 }
@@ -173,12 +170,18 @@ void SceneHelper::EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Vector
         EnumerateMaterialInstances(forNode->GetChild(i), materials);
     }
 
-    RenderObject * ro = GetRenderObject(forNode);
+    RenderObject* ro = GetRenderObject(forNode);
     if (ro != nullptr)
     {
         uint32 batchCount = ro->GetRenderBatchCount();
         for (uint32 i = 0; i < batchCount; ++i)
-            materials.push_back(ro->GetRenderBatch(i)->GetMaterial());
+        {
+            auto material = ro->GetRenderBatch(i)->GetMaterial();
+            if (material != nullptr)
+            {
+                materials.push_back(material);
+            }
+        }
     }
 }
 
