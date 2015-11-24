@@ -311,6 +311,10 @@ bool PreviewWidget::eventFilter(QObject *obj, QEvent *event)
 
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 {
+    if (document == nullptr)
+    {
+        return;
+    }
 #ifdef Q_OS_WIN //under MAC OS we get this event when scrolling by two fingers on MAC touchpad
     if(!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
 #endif //Q_OS_WIN
@@ -334,10 +338,6 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     else
     {
         //resize view
-        if (document == nullptr)
-        {
-            return;
-        }
         int tickSize = 120;
         int ticksCount = event->angleDelta().y() / tickSize;
         if (ticksCount == 0)
@@ -353,8 +353,12 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 {
-    const int normalScale = 1.0f;
-    const int expandedScale = 1.4f;
+    if (document == nullptr)
+    {
+        return;
+    }
+    const qreal normalScale = 1.0f;
+    const qreal expandedScale = 1.5f;
     qreal scale = scrollAreaController->GetScale();
     QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
     switch(event->gestureType())
@@ -363,7 +367,7 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
             scrollAreaController->AdjustScale(scale + event->value() * davaGLWidget->devicePixelRatio(), pos);
                         break;
         case Qt::SmartZoomNativeGesture:
-            scrollAreaController->AdjustScale((event->value() == 0 ? normalScale : expandedScale) * davaGLWidget->devicePixelRatio(), pos);
+            scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale) * davaGLWidget->devicePixelRatio(), pos);
             //event->value() returns 1 or 0
             break;
         default:
