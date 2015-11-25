@@ -393,6 +393,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
 
         inputManager.registerInputDeviceListener(this, null);
+        // if we connect gamepad after start game and do not 
+        // receive even onInputDeviceAdded double check gamepad axis
+        UpdateGamepadAxises();
         JNIUtils.keepScreenOnOnResume();
         
 
@@ -579,30 +582,35 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			{
 
 		    	boolean isGamepadAvailable = false;
-				int[] inputDevices = InputDevice.getDeviceIds();
-				Set<Integer> avalibleAxises = new HashSet<Integer>(); 
-				for(int id : inputDevices)
-				{
-					if((InputDevice.getDevice(id).getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
-					{
-						isGamepadAvailable = true;
-						
-						List<MotionRange> ranges = InputDevice.getDevice(id).getMotionRanges();
-						for(MotionRange r : ranges)
-						{
-							int axisId = r.getAxis();
-							if(supportedAxises.contains(axisId))
-								avalibleAxises.add(axisId);
-						}
-					}
-				}
-				
-				surfaceView.SetAvailableGamepadAxises(avalibleAxises.toArray(new Integer[0]));
-				
-				nativeOnGamepadAvailable(isGamepadAvailable);
-				nativeOnGamepadTriggersAvailable(avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) || avalibleAxises.contains(MotionEvent.AXIS_BRAKE));
-			}
-		});
+                int[] inputDevices = InputDevice.getDeviceIds();
+                Set<Integer> avalibleAxises = new HashSet<Integer>();
+                for (int id : inputDevices) {
+                    InputDevice device = InputDevice.getDevice(id);
+                    if ((device.getSources()
+                            & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
+                        isGamepadAvailable = true;
+
+                        List<MotionRange> ranges = device.getMotionRanges();
+                        for (MotionRange r : ranges) {
+                            int axisId = r.getAxis();
+                            if (supportedAxises.contains(axisId)) {
+                                avalibleAxises.add(axisId);
+                            }
+                        }
+                        break; // only first connected device
+                    }
+                }
+
+                Integer[] axisIds = new Integer[avalibleAxises.size()];
+                surfaceView.SetAvailableGamepadAxises(
+                        avalibleAxises.toArray(axisIds));
+
+                nativeOnGamepadAvailable(isGamepadAvailable);
+                nativeOnGamepadTriggersAvailable(avalibleAxises
+                        .contains(MotionEvent.AXIS_LTRIGGER)
+                        || avalibleAxises.contains(MotionEvent.AXIS_BRAKE));
+            }
+        });
     }
     
 	@Override
