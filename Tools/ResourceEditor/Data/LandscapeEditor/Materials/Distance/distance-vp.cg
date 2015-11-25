@@ -1,4 +1,5 @@
 #include "common.cgh"
+#include "blending.cgh"
 
 VPROG_IN_BEGIN
     VPROG_IN_POSITION        
@@ -7,16 +8,39 @@ VPROG_IN_END
 
 VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
+
+#if defined(ENCODE_DISTANCE)
     VPROG_OUT_TEXCOORD0(distanceToCamera,1)
+#endif
+
+#if defined(DECODE_DISTANCE)
+    VPROG_OUT_TEXCOORD1(directionFromPoint,3)
+#endif
+
 VPROG_OUT_END
 
 property float4x4 worldViewProjMatrix : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
+
+#if defined(ENCODE_DISTANCE)
 property float3 cameraPosition : dynamic,a : ;
+#endif
+
+#if defined(DECODE_DISTANCE)
+property float4 lightPosition0 : dynamic,a : ;
+#endif
 
 VPROG_BEGIN
 	float4 position = float4(VP_IN_POSITION, 1.0);    
 	float4 worldPosiion = mul(position, worldMatrix);
+
+#if defined(ENCODE_DISTANCE)
 	VP_OUT(distanceToCamera) = length(worldPosiion.xyz - cameraPosition);
+#endif
+
+#if defined(DECODE_DISTANCE)
+	VP_OUT(directionFromPoint) = worldPosiion.xyz - lightPosition0;
+#endif
+
 	VP_OUT_POSITION = mul(position, worldViewProjMatrix);
 VPROG_END

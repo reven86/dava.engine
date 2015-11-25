@@ -46,13 +46,17 @@ public:
 private:
     void SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex);
     void RenderWithCurrentSettings(RenderSystem* renderSystem);
+    void DrawOverrideWithCurrentSettings(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point);
     bool ShouldRenderObject(RenderObject*);
     bool ShouldRenderBatch(RenderBatch*);
 
 private:
     ScopedPtr<Camera> camera;
     ScopedPtr<NMaterial> distanceMaterial;
-    rhi::RenderPassConfig config;
+    ScopedPtr<NMaterial> overrideMaterial;
+    rhi::HDepthStencilState overrideDepthStencilState;
+    rhi::RenderPassConfig renderTargetConfig;
+    rhi::RenderPassConfig overrideConfig;
 };
 }
 

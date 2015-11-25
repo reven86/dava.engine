@@ -1,19 +1,70 @@
+#include "common.cgh"
+#include "blending.cgh"
+
 FPROG_IN_BEGIN
+
+#if defined(ENCODE_DISTANCE)
     FPROG_IN_TEXCOORD0(distanceToCamera,1)
+#endif
+
+#if defined(DECODE_DISTANCE)
+    FPROG_IN_TEXCOORD1(directionFromPoint,3)
+#endif
+
 FPROG_IN_END
 
 FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
+const float encX = 1.0;
+const float encY = 1.0 / 255.0;
+const float encZ = 1.0 / 65025.0;
+const float encW = 1.0 / 16581375.0;
+
+#if defined(ENCODE_DISTANCE)
 float4 EncodeFloatRGBA(float v) 
 {
-	float4 enc = float4(1.0, 255.0, 65025.0, 16581375.0) * v;
-	enc = frac(enc);
-	enc -= enc.yzww * float4(1.0/255.0, 1.0/255.0, 1.0/255.0, 1.0);
-	return enc;
+	float4 result;
+	result.x = fract(v);
+	v = (v - result.x) / 255.0;
+
+	result.y = fract(v);
+	v = (v - result.y) / 255.0;
+
+	result.z = fract(v);
+	v = (v - result.z) / 255.0;
+
+	result.w = fract(v);
+
+	return result;
 }
+#endif
+
+#if defined(DECODE_DISTANCE)
+DECL_FP_SAMPLERCUBE(cubemap)
+
+float DecodeFloatRGBA(float4 encoded)
+{
+	return  encoded.x + 
+		encoded.y * 255.0 + 
+		encoded.z * 255.0 * 255.0 +
+		encoded.w * 255.0 * 255.0 * 255.0;
+}
+#endif
 
 FPROG_BEGIN
+
+#if defined(ENCODE_DISTANCE)
 	FP_OUT_COLOR = EncodeFloatRGBA(FP_IN(distanceToCamera));
+#endif
+
+#if defined(DECODE_DISTANCE)
+	float actualDistance = length(FP_IN(directionFromPoint));
+	float4 sampledDistance = FP_TEXTURECUBE(cubemap, FP_IN(directionFromPoint));
+	float decodedDistance = DecodeFloatRGBA(sampledDistance);
+	float occluded = 0.5 * float(actualDistance / decodedDistance < 1.01);
+	FP_OUT_COLOR = float4(occluded, 0.25 * occluded, 0.0, 0.0);
+#endif
+
 FPROG_END

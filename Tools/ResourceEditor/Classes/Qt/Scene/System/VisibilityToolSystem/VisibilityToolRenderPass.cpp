@@ -37,6 +37,7 @@ VisibilityToolRenderPass::VisibilityToolRenderPass()
     : RenderPass(PASS_FORWARD)
     , camera(new Camera())
     , distanceMaterial(new NMaterial())
+    , overrideMaterial(new NMaterial())
 {
     camera->SetupPerspective(90.0f, 1.0f, 1.0f, 5000.0f);
 
@@ -45,14 +46,29 @@ VisibilityToolRenderPass::VisibilityToolRenderPass()
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
 
-    config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    config.priority = PRIORITY_SERVICE_3D;
-    config.viewport.x = 0;
-    config.viewport.y = 0;
+    renderTargetConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    renderTargetConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    renderTargetConfig.priority = PRIORITY_SERVICE_3D;
+    renderTargetConfig.viewport.x = 0;
+    renderTargetConfig.viewport.y = 0;
+    std::fill_n(renderTargetConfig.colorBuffer[0].clearColor, 4, 1.0f);
+
+    rhi::DepthStencilState::Descriptor dsDesc;
+    dsDesc.depthFunc = rhi::CMP_LESSEQUAL;
+    dsDesc.depthTestEnabled = 1;
+    dsDesc.depthWriteEnabled = 0;
+    overrideDepthStencilState = rhi::AcquireDepthStencilState(dsDesc);
+
+    overrideConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    overrideConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_LOAD;
+    overrideConfig.priority = PRIORITY_MAIN_3D - 5;
 
     distanceMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/Distance.Opaque.material"));
     distanceMaterial->PreBuildMaterial(PASS_FORWARD);
+
+    overrideMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CompareDistance.Opaque.material"));
+    overrideMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ADDITIVE);
+    overrideMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 VisibilityToolRenderPass::~VisibilityToolRenderPass()
@@ -61,10 +77,10 @@ VisibilityToolRenderPass::~VisibilityToolRenderPass()
 
 void VisibilityToolRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point)
 {
-    config.colorBuffer[0].texture = renderTarget->handle;
-    config.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
-    config.viewport.width = renderTarget->GetWidth();
-    config.viewport.height = renderTarget->GetHeight();
+    renderTargetConfig.colorBuffer[0].texture = renderTarget->handle;
+    renderTargetConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
+    renderTargetConfig.viewport.width = renderTarget->GetWidth();
+    renderTargetConfig.viewport.height = renderTarget->GetHeight();
 
     camera->SetPosition(point);
     for (uint32 i = 0; i < cubemapFaces; ++i)
@@ -72,6 +88,8 @@ void VisibilityToolRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSyst
         SetupCameraToRenderFromPointToFaceIndex(point, i);
         RenderWithCurrentSettings(renderSystem);
     }
+
+    DrawOverrideWithCurrentSettings(renderSystem, renderTarget, point);
 }
 
 void VisibilityToolRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex)
@@ -94,15 +112,6 @@ void VisibilityToolRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vec
       Vector3(0.0f, -1.0f, 0.0f),
       Vector3(0.0f, -1.0f, 0.0f),
     };
-    const Vector4 clearColors[cubemapFaces] =
-    {
-      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-    };
 
     const rhi::TextureFace targetFaces[cubemapFaces] =
     {
@@ -113,9 +122,7 @@ void VisibilityToolRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vec
       rhi::TEXTURE_FACE_POSITIVE_Z,
       rhi::TEXTURE_FACE_NEGATIVE_Z,
     };
-
-    memcpy(config.colorBuffer[0].clearColor, clearColors[faceIndex].data, sizeof(config.colorBuffer[0].clearColor));
-    config.colorBuffer[0].cubemapTextureFace = targetFaces[faceIndex];
+    renderTargetConfig.colorBuffer[0].cubemapTextureFace = targetFaces[faceIndex];
 
     camera->SetTarget(point + directions[faceIndex]);
     camera->SetUp(upVectors[faceIndex]);
@@ -141,14 +148,12 @@ void VisibilityToolRenderPass::RenderWithCurrentSettings(RenderSystem* renderSys
     PrepareVisibilityArrays(camera, renderSystem);
 
     rhi::HPacketList localPacketList;
-    auto renderPass = rhi::AllocateRenderPass(config, 1, &localPacketList);
-    rhi::BeginRenderPass(renderPass);
+    auto renderTargetPass = rhi::AllocateRenderPass(renderTargetConfig, 1, &localPacketList);
+    rhi::BeginRenderPass(renderTargetPass);
     rhi::BeginPacketList(localPacketList);
-    for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
+    for (auto layer : renderLayers)
     {
-        RenderLayer* layer = renderLayers[k];
         const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
-
         uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
@@ -157,7 +162,6 @@ void VisibilityToolRenderPass::RenderWithCurrentSettings(RenderSystem* renderSys
             if (ShouldRenderBatch(batch) && ShouldRenderObject(renderObject))
             {
                 renderObject->BindDynamicParameters(camera);
-
                 rhi::Packet packet;
                 batch->BindGeometryData(packet);
                 distanceMaterial->BindParams(packet);
@@ -167,5 +171,56 @@ void VisibilityToolRenderPass::RenderWithCurrentSettings(RenderSystem* renderSys
         }
     }
     rhi::EndPacketList(localPacketList);
-    rhi::EndRenderPass(renderPass);
+    rhi::EndRenderPass(renderTargetPass);
+}
+
+void VisibilityToolRenderPass::DrawOverrideWithCurrentSettings(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point)
+{
+    FastName fnCubemap("cubemap");
+    if (overrideMaterial->HasLocalTexture(fnCubemap))
+    {
+        overrideMaterial->SetTexture(fnCubemap, renderTarget);
+    }
+    else
+    {
+        overrideMaterial->AddTexture(fnCubemap, renderTarget);
+    }
+    overrideMaterial->PreBuildMaterial(PASS_FORWARD);
+
+    auto mainCamera = renderSystem->GetDrawCamera();
+
+    ShaderDescriptorCache::ClearDynamicBindigs();
+    SetupCameraParams(mainCamera, mainCamera);
+    PrepareVisibilityArrays(mainCamera, renderSystem);
+
+    auto overridePass = rhi::AllocateRenderPass(overrideConfig, 1, &packetList);
+    rhi::BeginRenderPass(overridePass);
+    rhi::BeginPacketList(packetList);
+
+    Vector4 lightPosition(point.x, point.y, point.z, 0.0f);
+
+    for (auto layer : renderLayers)
+    {
+        const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
+        for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
+        {
+            RenderBatch* batch = renderBatchArray.Get(batchIndex);
+            RenderObject* renderObject = batch->GetRenderObject();
+            if (ShouldRenderBatch(batch) && ShouldRenderObject(renderObject))
+            {
+                renderObject->BindDynamicParameters(mainCamera);
+                Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &lightPosition, (pointer_size)&lightPosition);
+
+                rhi::Packet packet;
+                batch->BindGeometryData(packet);
+                overrideMaterial->BindParams(packet);
+                packet.depthStencilState = overrideDepthStencilState;
+                rhi::AddPacket(packetList, packet);
+            }
+        }
+    }
+
+    rhi::EndPacketList(packetList);
+    rhi::EndRenderPass(overridePass);
 }
