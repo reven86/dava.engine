@@ -89,7 +89,6 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
 
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeReset(JNIEnv* env, jobject classthis, jint w, jint h);
 };
 
 namespace 
@@ -508,15 +507,6 @@ void Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobj
 	if(core)
 	{
         core->ProcessFrame();
-    }
-}
-
-void Java_com_dava_framework_JNISurfaceView_nativeReset(JNIEnv* env, jobject classthis, jint w, jint h)
-{
-	if(core)
-	{
-        LOGI("__ NATIVE RESET ___ %d, %d", w, h);
-        core->RenderReset(w, h);
     }
 }
 
