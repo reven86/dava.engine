@@ -44,9 +44,9 @@ using DAVA::Logger;
 namespace rhi
 {
 static inline unsigned
-_VertexAttribIndex(VertexSemantics s, uint32 i)
+_Metal_VertexAttribIndex(VertexSemantics s, uint32 i)
 {
-    unsigned attr_i = InvalidIndex;
+    unsigned attr_i = DAVA::InvalidIndex;
 
     switch (s)
     {
@@ -117,7 +117,7 @@ _VertexAttribIndex(VertexSemantics s, uint32 i)
         break;
     }
 
-    DVASSERT(attr_i != InvalidIndex);
+    DVASSERT(attr_i != DAVA::InvalidIndex);
     return attr_i;
 }
 
@@ -145,7 +145,7 @@ public:
         };
 
         ConstBuf()
-            : index(InvalidIndex)
+            : index(DAVA::InvalidIndex)
             , count(0)
             , data(nullptr)
             , inst(nullptr)
@@ -293,9 +293,9 @@ PipelineStateMetal_t::FragmentProg::InstanceConstBuffer(unsigned bufIndex)
     Handle handle = InvalidHandle;
 
     DVASSERT(bufIndex < countof(cbuf));
-    //    DVASSERT(cbuf[bufIndex].location != InvalidIndex);
+    //    DVASSERT(cbuf[bufIndex].location != DAVA::InvalidIndex);
 
-    if (bufIndex < countof(cbuf) && cbuf[bufIndex].index != InvalidIndex)
+    if (bufIndex < countof(cbuf) && cbuf[bufIndex].index != DAVA::InvalidIndex)
     {
         handle = ConstBufMetalPool::Alloc();
 
@@ -363,9 +363,9 @@ PipelineStateMetal_t::VertexProg::InstanceConstBuffer(unsigned bufIndex)
     Handle handle = InvalidHandle;
 
     DVASSERT(bufIndex < countof(cbuf));
-    //    DVASSERT(cbuf[bufIndex].location != InvalidIndex);
+    //    DVASSERT(cbuf[bufIndex].location != DAVA::InvalidIndex);
 
-    if (bufIndex < countof(cbuf) && cbuf[bufIndex].index != InvalidIndex)
+    if (bufIndex < countof(cbuf) && cbuf[bufIndex].index != DAVA::InvalidIndex)
     {
         handle = ConstBufMetalPool::Alloc();
 
@@ -405,7 +405,7 @@ void PipelineStateMetal_t::ConstBuf::Destroy()
         data = nullptr;
     }
 
-    index = InvalidIndex;
+    index = DAVA::InvalidIndex;
     count = 0;
     inst = 0;
     inst_offset = 0;
@@ -654,7 +654,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
 
         for (unsigned i = 0; i != desc.vertexLayout.ElementCount(); ++i)
         {
-            unsigned attr_i = _VertexAttribIndex(desc.vertexLayout.ElementSemantics(i), desc.vertexLayout.ElementSemanticsIndex(i));
+            unsigned attr_i = _Metal_VertexAttribIndex(desc.vertexLayout.ElementSemantics(i), desc.vertexLayout.ElementSemanticsIndex(i));
             MTLVertexFormat fmt = MTLVertexFormatInvalid;
 
             switch (desc.vertexLayout.ElementDataType(i))
@@ -853,7 +853,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
     else
     {
         bool do_add = true;
-        unsigned si = InvalidIndex;
+        unsigned si = DAVA::InvalidIndex;
 
         for (unsigned i = 0; i != psm->altState.size(); ++i)
         {
@@ -891,7 +891,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
 
             for (unsigned i = 0; i != psm->layout.ElementCount(); ++i)
             {
-                unsigned attr_i = _VertexAttribIndex(psm->layout.ElementSemantics(i), psm->layout.ElementSemanticsIndex(i));
+                unsigned attr_i = _Metal_VertexAttribIndex(psm->layout.ElementSemantics(i), psm->layout.ElementSemanticsIndex(i));
                 bool attr_set = false;
 
                 for (unsigned j = 0; j != layout->ElementCount(); ++j)
@@ -977,7 +977,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
             }
         }
 
-        DVASSERT(si != InvalidIndex);
+        DVASSERT(si != DAVA::InvalidIndex);
         [ce setRenderPipelineState:psm->altState[si].state];
         stride = psm->altState[si].stride;
     }

@@ -622,7 +622,7 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
                 AnimatedMesh* animatedMesh = scene->GetAnimatedMesh(meshIndex + animatedMeshIndexOffset);
                 meshNode->AddPolygonGroup(animatedMesh, polyGroupIndex, material);
             }
-		}
+        }
         if (parentNode != scene) 
         {
             parentNode->AddNode(node);

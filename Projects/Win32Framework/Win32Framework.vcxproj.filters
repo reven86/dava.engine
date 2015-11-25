@@ -279,9 +279,6 @@
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.h">
-      <Filter>Internal\Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
@@ -1789,9 +1786,6 @@
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp">
-      <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.cpp">
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp">

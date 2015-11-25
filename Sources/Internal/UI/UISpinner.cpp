@@ -38,12 +38,12 @@ namespace DAVA
 static const String UISPINNER_BUTTON_NEXT_NAME = "buttonNext";
 static const String UISPINNER_BUTTON_PREVIOUS_NAME = "buttonPrevious";
 static const String UISPINNER_CONTENT_NAME = "content";
-static const float32 ANIMATION_TIME = 0.1f;
-static const int32 MOVE_ANIMATION_TRACK = 10;
-static const float32 X_UNDEFINED = 10000;
-static const float32 SLIDE_GESTURE_SPEED = 20.f;
-static const float32 SLIDE_GESTURE_TIME = 0.1f;
-    
+static const float32 UISPINNER_ANIRMATION_TIME = 0.1f;
+static const int32 UISPINNER_MOVE_ANIMATION_TRACK = 10;
+static const float32 UISPINNER_X_UNDEFINED = 10000;
+static const float32 UISPINNER_SLIDE_GESTURE_SPEED = 20.f;
+static const float32 UISPINNER_SLIDE_GESTURE_TIME = 0.1f;
+
 void SpinnerAdapter::AddObserver(SelectionObserver* anObserver)
 {
     observers.insert(anObserver);
@@ -81,11 +81,10 @@ bool SpinnerAdapter::Previous()
 
 void SpinnerAdapter::DisplaySelectedData(UISpinner * spinner)
 {
-    FillScrollableContent(spinner->GetContent(), CURRENT);
+    FillScrollableContent(spinner->GetContent(), EIO_CURRENT);
 }
-    
-    
-UISpinner::UISpinner(const Rect &rect)
+
+UISpinner::UISpinner(const Rect& rect)
     : UIControl(rect)
     , adapter(nullptr)
     , buttonNext(new UIButton())
@@ -93,9 +92,9 @@ UISpinner::UISpinner(const Rect &rect)
     , content(new UIControl())
     , nextContent(new UIControl())
     , contentViewport(new UIControl())
-    , dragAnchorX(X_UNDEFINED)
-    , previousTouchX(X_UNDEFINED)
-    , currentTouchX(X_UNDEFINED)
+    , dragAnchorX(UISPINNER_X_UNDEFINED)
+    , previousTouchX(UISPINNER_X_UNDEFINED)
+    , currentTouchX(UISPINNER_X_UNDEFINED)
     , totalGestureTime(0)
     , totalGestureDx(0)
 {
@@ -119,7 +118,7 @@ UISpinner::~UISpinner()
 
 void UISpinner::Update(DAVA::float32 timeElapsed)
 {
-    if (currentTouchX < X_UNDEFINED)
+    if (currentTouchX < UISPINNER_X_UNDEFINED)
     {
         Move move;
         move.dx = currentTouchX - previousTouchX;
@@ -127,7 +126,7 @@ void UISpinner::Update(DAVA::float32 timeElapsed)
         moves.push_back(move);
         totalGestureDx += move.dx;
         totalGestureTime += move.time;
-        if (totalGestureTime > SLIDE_GESTURE_TIME)
+        if (totalGestureTime > UISPINNER_SLIDE_GESTURE_TIME)
         {
             List<Move>::iterator it = moves.begin();
             totalGestureTime -= it->time;
@@ -145,7 +144,7 @@ void UISpinner::Input(UIEvent *currentInput)
         return;
     }
 
-    if (content->IsAnimating(MOVE_ANIMATION_TRACK))
+    if (content->IsAnimating(UISPINNER_MOVE_ANIMATION_TRACK))
     {
         return;
     }
@@ -166,12 +165,12 @@ void UISpinner::Input(UIEvent *currentInput)
         }
         else
         {
-            dragAnchorX = X_UNDEFINED;
+            dragAnchorX = UISPINNER_X_UNDEFINED;
         }    
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
-        if (dragAnchorX < X_UNDEFINED)
+        if (dragAnchorX < UISPINNER_X_UNDEFINED)
         {
             currentTouchX = touchPos.x;
             float32 contentNewX = touchPos.x - dragAnchorX;
@@ -186,7 +185,7 @@ void UISpinner::Input(UIEvent *currentInput)
                         Vector2 newPivotPoint = nextContent->GetPivotPoint();
                         newPivotPoint.x = contentNewX > 0 ? content->size.dx : -content->size.dx;
                         nextContent->SetPivotPoint(newPivotPoint);
-                        adapter->FillScrollableContent(nextContent.Get(), contentNewX > 0 ? SpinnerAdapter::PREVIOUS : SpinnerAdapter::NEXT);
+                        adapter->FillScrollableContent(nextContent.Get(), contentNewX > 0 ? SpinnerAdapter::EIO_PREVIOUS : SpinnerAdapter::EIO_NEXT);
                     }
                 }
                 content->relativePosition.x = contentNewX;
@@ -202,7 +201,7 @@ void UISpinner::Input(UIEvent *currentInput)
     }
     else if (currentInput->phase == UIEvent::Phase::ENDED || currentInput->phase == UIEvent::Phase::CANCELLED)
     {
-        if (dragAnchorX < X_UNDEFINED)
+        if (dragAnchorX < UISPINNER_X_UNDEFINED)
         {
             if (totalGestureTime > 0)
             {
@@ -211,20 +210,20 @@ void UISpinner::Input(UIEvent *currentInput)
                 if (selectPrevious == content->relativePosition.x > 0) //switch only if selected item is already shifted in slide direction
                 {
                     bool isSelectedLast = selectPrevious ? adapter->IsSelectedFirst() : adapter->IsSelectedLast();
-                    if (Abs(averageSpeed) > SLIDE_GESTURE_SPEED && !isSelectedLast)
+                    if (Abs(averageSpeed) > UISPINNER_SLIDE_GESTURE_SPEED && !isSelectedLast)
                     {
                         OnSelectWithSlide(selectPrevious);
                     }
                 }
             }
-            
-            Animation* animation = content->PositionAnimation(Vector2(0, content->relativePosition.y), ANIMATION_TIME, Interpolation::EASY_IN, MOVE_ANIMATION_TRACK);
-            animation->AddEvent(Animation::EVENT_ANIMATION_END, Message(this, &UISpinner::OnScrollAnimationEnd));
-            nextContent->PositionAnimation(Vector2(0, content->relativePosition.y), ANIMATION_TIME, Interpolation::EASY_IN, MOVE_ANIMATION_TRACK);
 
-            currentTouchX = X_UNDEFINED;
-            previousTouchX = X_UNDEFINED;
-            dragAnchorX = X_UNDEFINED;
+            Animation* animation = content->PositionAnimation(Vector2(0, content->relativePosition.y), UISPINNER_ANIRMATION_TIME, Interpolation::EASY_IN, UISPINNER_MOVE_ANIMATION_TRACK);
+            animation->AddEvent(Animation::EVENT_ANIMATION_END, Message(this, &UISpinner::OnScrollAnimationEnd));
+            nextContent->PositionAnimation(Vector2(0, content->relativePosition.y), UISPINNER_ANIRMATION_TIME, Interpolation::EASY_IN, UISPINNER_MOVE_ANIMATION_TRACK);
+
+            currentTouchX = UISPINNER_X_UNDEFINED;
+            previousTouchX = UISPINNER_X_UNDEFINED;
+            dragAnchorX = UISPINNER_X_UNDEFINED;
             moves.clear();
             totalGestureTime = 0;
             totalGestureDx = 0;
@@ -361,7 +360,7 @@ void UISpinner::SetAdapter(SpinnerAdapter * anAdapter)
 
 void UISpinner::OnNextPressed(DAVA::BaseObject * caller, void * param, void *callerData)
 {
-    if (content->IsAnimating(MOVE_ANIMATION_TRACK))
+    if (content->IsAnimating(UISPINNER_MOVE_ANIMATION_TRACK))
     {
         return;
     }
@@ -371,7 +370,7 @@ void UISpinner::OnNextPressed(DAVA::BaseObject * caller, void * param, void *cal
 
 void UISpinner::OnPreviousPressed(DAVA::BaseObject * caller, void * param, void *callerData)
 {
-    if (content->IsAnimating(MOVE_ANIMATION_TRACK))
+    if (content->IsAnimating(UISPINNER_MOVE_ANIMATION_TRACK))
     {
         return;
     }

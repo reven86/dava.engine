@@ -36,6 +36,7 @@
 #include "Tools/MimeData/MimeDataHelper2.h"
 
 #include "Base/BaseTypes.h"
+#include "MaterialModel.h"
 
 //Qt
 #include <QMessageBox>
@@ -43,7 +44,6 @@
 #include <QAction>
 #include <QCursor>
 
-Q_DECLARE_METATYPE( DAVA::NMaterial * );
 
 void MaterialAssignSystem::AssignMaterial(SceneEditor2 *scene, DAVA::NMaterial *instance, DAVA::NMaterial *newMaterialParent)
 {
