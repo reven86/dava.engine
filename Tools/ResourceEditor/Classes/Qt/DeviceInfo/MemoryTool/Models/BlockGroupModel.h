@@ -26,55 +26,39 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __MEMORYTOOL_BLOCKGROUPMODEL_H__
+#define __MEMORYTOOL_BLOCKGROUPMODEL_H__
 
-#ifndef FONTMANAGERDIALOG_H
-#define FONTMANAGERDIALOG_H
+#include "Base/BaseTypes.h"
 
-#include <QDialog>
-#include "DAVAEngine.h"
+#include "Qt/DeviceInfo/MemoryTool/BlockGroup.h"
 
-class QStandardItemModel;
-class QStringList;
-class QItemSelectionModel;
-class QStandardItem;
+#include <QAbstractTableModel>
 
-namespace DAVA {
-    class Font;
-}
-
-namespace Ui {
-class FontManagerDialog;
-}
-
-class FontManagerDialog : public QDialog
+class BlockGroupModel : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    explicit FontManagerDialog(bool okButtonEnable = false, const QString& graphicsFontPath = QString(), QWidget *parent = 0);
-    ~FontManagerDialog();
-    //Return created font
-    DAVA::Font * ResultFont();
+    enum
+    {
+        ROLE_GROUP_POINTER = Qt::UserRole + 1
+    };
+
+public:
+    BlockGroupModel(QObject* parent = nullptr);
+    virtual ~BlockGroupModel();
+
+    void SetBlockGroups(const DAVA::Vector<BlockGroup>* groups);
+
+    // reimplemented QAbstractTableModel methods
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
 private:
-    Ui::FontManagerDialog *ui;
-    QStandardItemModel *tableModel;
-    DAVA::Font *dialogResultFont;
-	QString currentFontPath;
-    
-    void ConnectToSignals();
-    void InitializeTableView();
-    void UpdateTableViewContents();
-	void UpdateDialogInformation();
-    DAVA::Font* GetSelectedFont(QItemSelectionModel *selectionModel);
-	//void SetDefaultItemFont(QStandardItem *item, QString defaultFontName, QString fontName);
-	QStandardItem* CreateFontItem(QString itemText, QString fontName, QString defaultFontName);
-
-    void ValidateFont(const DAVA::Font* font) const;
-
-private slots:
-    void OkButtonClicked();
-    void SetDefaultButtonClicked();
-
+    const DAVA::Vector<BlockGroup>* groups = nullptr;
 };
 
-#endif // FONTMANAGERDIALOG_H
+#endif // __MEMORYTOOL_BLOCKGROUPMODEL_H__

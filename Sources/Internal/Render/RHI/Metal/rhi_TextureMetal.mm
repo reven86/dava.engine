@@ -37,6 +37,8 @@ using DAVA::Logger;
 
     #include "_metal.h"
 
+#if !(TARGET_IPHONE_SIMULATOR == 1)
+
 namespace rhi
 {
 //==============================================================================
@@ -468,3 +470,5 @@ void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc)
 
 //==============================================================================
 } // namespace rhi
+
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)

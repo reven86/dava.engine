@@ -421,7 +421,7 @@ ApplicationCore* Core::GetApplicationCore()
 
 void Core::SystemAppStarted()
 {
-    Logger::Info("Core::SystemAppStarted");
+    Logger::Info("Core::SystemAppStarted in");
     #if PROFILER_ENABLED
     profiler::EnsureInited();
     NAME_COUNTER(PROF__FRAME, "frame");
@@ -445,10 +445,14 @@ void Core::SystemAppStarted()
         RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
     }
+
+    Logger::Info("Core::SystemAppStarted out");
 }
 
 void Core::SystemAppFinished()
 {
+    Logger::Info("Core::SystemAppFinished in");
+
     if (core != nullptr)
     {
         #if TRACER_ENABLED
@@ -458,6 +462,8 @@ void Core::SystemAppFinished()
         core->OnAppFinished();
         Core::Instance()->ReleaseRenderer();
     }
+
+    Logger::Info("Core::SystemAppFinished out");
 }
 
 void Core::SystemProcessFrame()

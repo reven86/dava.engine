@@ -2,7 +2,7 @@
 
 FPROG_IN_BEGIN
     FPROG_IN_TEXCOORD0(texCoord,2)
-    FPROG_IN_COLOR0(vegetationColor,3)
+    FPROG_IN_COLOR0_LOW(vegetationColor,3)
     #if VERTEX_FOG
         FPROG_IN_TEXCOORD5(varFog,4)
     #endif

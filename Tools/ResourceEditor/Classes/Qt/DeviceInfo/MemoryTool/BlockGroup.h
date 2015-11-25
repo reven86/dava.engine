@@ -26,31 +26,42 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_DVASSERT_MESSAGE_ANDROID_H__
-#define __DAVAENGINE_DVASSERT_MESSAGE_ANDROID_H__
+#ifndef __MEMORYTOOL_BLOCKGROUP_H__
+#define __MEMORYTOOL_BLOCKGROUP_H__
 
 #include "Base/BaseTypes.h"
-#ifdef __DAVAENGINE_ANDROID__
-#include "JniExtensions.h"
 
-namespace DAVA {
+#include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
 
-class JniDVAssertMessage: public JniExtension
+struct BlockGroup
 {
-public:
-	bool ShowMessage(bool isModal, const char* message);
+    template <typename T>
+    BlockGroup(const DAVA::String& title_, DAVA::uint32 key_, T&& blockLink_)
+        : title(title_)
+        , key(key_)
+        , blockLink(std::move(blockLink_))
+    {
+    }
+    BlockGroup(BlockGroup&& other)
+        : title(std::move(other.title))
+        , key(std::move(other.key))
+        , blockLink(std::move(other.blockLink))
+    {
+    }
+    BlockGroup& operator=(BlockGroup&& other)
+    {
+        if (this != &other)
+        {
+            title = std::move(other.title);
+            key = std::move(other.key);
+            blockLink = std::move(other.blockLink);
+        }
+        return *this;
+    }
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+    DAVA::String title;
+    DAVA::uint32 key;
+    BlockLink blockLink;
 };
 
-};
-#endif //__DAVAENGINE_ANDROID__
-
-#endif // __DAVAENGINE_DVASSERT_MESSAGE_ANDROID_H__
+#endif // __MEMORYTOOL_BLOCKGROUP_H__

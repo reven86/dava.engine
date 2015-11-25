@@ -204,8 +204,8 @@ extern void FrameworkWillTerminate();
             [self keyUp:event];
             break;
 
-		case NPCocoaEventFlagsChanged:
-			[self flagsChanged:event];
+        case NPCocoaEventFlagsChanged:
+            [self flagsChanged:event];
 			break;
 
 		case NPCocoaEventScrollWheel:
@@ -234,7 +234,7 @@ extern void FrameworkWillTerminate();
             p.y = curEvent->data.mouse.pluginY;
 
             it->physPoint.x = p.x;
-			it->physPoint.y = p.y;
+            it->physPoint.y = p.y;
 
             if (DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
             {
@@ -249,8 +249,8 @@ extern void FrameworkWillTerminate();
     }
 
     bool isFind = false;
-	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-	{
+    for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    {
 		if(it->tid == button)
 		{
 			isFind = true;
@@ -276,8 +276,8 @@ extern void FrameworkWillTerminate();
         }
     }
 
-	if(!isFind)
-	{
+    if (!isFind)
+    {
 		DAVA::UIEvent newTouch;
 		newTouch.tid = button;
 		NSPoint p;
@@ -299,9 +299,9 @@ extern void FrameworkWillTerminate();
         allTouches.push_back(newTouch);
     }
 
-    for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-	{
-		outTouches->push_back(*it);
+    for (DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    {
+        outTouches->push_back(*it);
 	}
 
     if (touchPhase == DAVA::UIEvent::Phase::ENDED || touchPhase == DAVA::UIEvent::Phase::MOVE)
@@ -312,8 +312,8 @@ extern void FrameworkWillTerminate();
             {
                 allTouches.erase(it);
                 break;
-			}
-		}
+            }
+        }
 	}
 }
 
@@ -418,8 +418,8 @@ extern void FrameworkWillTerminate();
             if (newModifiers & masks[i])
             {
                 DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
-			}
-			else
+            }
+            else
 			{
 				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
 			}
