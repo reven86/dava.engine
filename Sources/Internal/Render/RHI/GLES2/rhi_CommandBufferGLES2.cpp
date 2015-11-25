@@ -721,7 +721,8 @@ void CommandBufferGLES2_t::Execute()
                 {
                     Size2i sz = TextureGLES2::Size(passCfg.colorBuffer[0].texture);
 
-                    TextureGLES2::SetAsRenderTarget(passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture);
+                    TextureGLES2::SetAsRenderTarget(passCfg.colorBuffer[0].texture,
+                                                    passCfg.depthStencilBuffer.texture, passCfg.colorBuffer[0].cubemapTextureFace);
                     def_viewport[2] = sz.dx;
                     def_viewport[3] = sz.dy;
                 }

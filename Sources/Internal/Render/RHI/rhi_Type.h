@@ -740,12 +740,14 @@ RenderPassConfig
     ColorBuffer
     {
         Handle texture;
+        TextureFace cubemapTextureFace;
         LoadAction loadAction;
         StoreAction storeAction;
         float clearColor[4];
 
         ColorBuffer()
             : texture(InvalidHandle)
+            , cubemapTextureFace(TEXTURE_FACE_POSITIVE_X)
             , loadAction(LOADACTION_CLEAR)
             , storeAction(STOREACTION_NONE)
         {

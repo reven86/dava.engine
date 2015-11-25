@@ -73,7 +73,7 @@ public:
     {
         Handle color;
         Handle depthStencil;
-
+        TextureFace colorFace;
         GLuint frameBuffer;
     };
     std::vector<fbo_t> fbo;
@@ -284,16 +284,35 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             GetGLTextureFormat(format, &int_fmt, &fmt, &type, &compressed);
             DVASSERT(!compressed);
 
-            GLCommand cmd3[] =
+            if (isCubeMap)
             {
-              { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&(this->uid)) } },
-              { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
-              { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
-              { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
-              { GLCommand::RESTORE_TEXTURE0, {} }
-            };
-
-            ExecGL(cmd3, countof(cmd3), force_immediate);
+                GLCommand cmd3[] =
+                {
+                  { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&(this->uid)) } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                  { GLCommand::RESTORE_TEXTURE0, {} }
+                };
+                ExecGL(cmd3, countof(cmd3), force_immediate);
+            }
+            else
+            {
+                GLCommand cmd3[] =
+                {
+                  { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&(this->uid)) } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                  { GLCommand::RESTORE_TEXTURE0, {} }
+                };
+                ExecGL(cmd3, countof(cmd3), force_immediate);
+            }
         }
         else
         {
@@ -838,61 +857,92 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
     }
 }
 
-void SetAsRenderTarget(Handle tex, Handle depth)
+void SetAsRenderTarget(Handle tex, Handle depth, TextureFace cubemapFace)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-    GLuint fb = 0;
     DVASSERT(self->isRenderTarget || self->isRenderBuffer);
+
+    GLuint fb = 0;
+    bool shouldUpdateBindinds = true;
+    int framebufferIndex = -1;
+
     for (unsigned i = 0; i != self->fbo.size(); ++i)
     {
         if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth)
         {
             fb = self->fbo[i].frameBuffer;
+            shouldUpdateBindinds = self->isCubeMap && (self->fbo[i].colorFace != cubemapFace);
+            framebufferIndex = static_cast<int>(i);
             break;
         }
     }
 
-    if (!fb)
+    if (fb == 0)
     {
         glGenFramebuffers(1, &fb);
+    }
 
-        if (fb)
+    if ((fb != 0) && shouldUpdateBindinds)
+    {
+        TextureGLES2_t* ds = (depth != InvalidHandle && depth != DefaultDepthBuffer) ? TextureGLES2Pool::Get(depth) : nullptr;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+        if (self->isCubeMap)
         {
-            TextureGLES2_t* ds = (depth != InvalidHandle && depth != DefaultDepthBuffer) ? TextureGLES2Pool::Get(depth) : nullptr;
-
-            glBindFramebuffer(GL_FRAMEBUFFER, fb);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0);
-            if (ds)
+            static const GLuint faces[6] =
             {
+              GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+              GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+              GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+              GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+              GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+              GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+            };
+            GLuint faceIndex = static_cast<GLuint>(cubemapFace);
+            DVASSERT(faceIndex < 6);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, faces[faceIndex], self->uid, 0);
+        }
+        else
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0);
+        }
+
+        if (ds)
+        {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid);
-                if (ds->uid2)
-                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid);
+            if (ds->uid2)
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2);
 #else
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid);
 #endif
-            }
+        }
+
 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
 #else
-            GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
-
-            glDrawBuffers(1, b);
+        GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, b);
 #endif
 
-            int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            if (status == GL_FRAMEBUFFER_COMPLETE)
+        if (status == GL_FRAMEBUFFER_COMPLETE)
+        {
+            if (framebufferIndex == -1)
             {
-                TextureGLES2_t::fbo_t fbo = { tex, depth, fb };
-
-                self->fbo.push_back(fbo);
+                self->fbo.push_back({ tex, depth, cubemapFace, fb });
             }
             else
             {
-                Logger::Error("glCheckFramebufferStatus= %08X", status);
-                DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
+                self->fbo[framebufferIndex].colorFace = cubemapFace;
             }
+        }
+        else
+        {
+            Logger::Error("glCheckFramebufferStatus= %08X", status);
+            DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
         }
     }
 

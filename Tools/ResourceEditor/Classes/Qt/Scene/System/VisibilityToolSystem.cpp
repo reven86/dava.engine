@@ -156,8 +156,8 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 		return;
 	}
 
-	if (UIEvent::PHASE_KEYCHAR == event->phase)
-	{
+    if (UIEvent::Phase::KEY_DOWN == event->phase)
+    {
 		if (event->tid == DVKEY_ESCAPE)
 		{
             CancelAddingCheckPoint();
@@ -167,7 +167,7 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 	{
 		switch(event->phase)
 		{
-			case UIEvent::PHASE_BEGAN:
+        case UIEvent::Phase::BEGAN:
             {
                 if (isIntersectsLandscape)
 				{
@@ -176,7 +176,7 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 				break;
             }
 
-            case UIEvent::PHASE_ENDED:
+            case UIEvent::Phase::ENDED:
             {
                 if (editingIsEnabled)
 				{
@@ -262,7 +262,7 @@ void VisibilityToolSystem::CommitLatestCheckPoint()
     CheckPoint& point = checkPoints.back();
     point.relativePosition = cursorPosition;
     point.worldPosition = Vector3(xy, z);
-    point.result.resize(pointsRowSize * totalRowsInPoints);
+    // point.result.resize(pointsRowSize * totalRowsInPoints);
     point.numPoints = 0;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), true);
@@ -386,11 +386,14 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 
 void VisibilityToolSystem::Draw()
 {
-    RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+    RenderSystem* renderSystem = GetScene()->GetRenderSystem();
+    RenderHelper* drawer = renderSystem->GetDebugDrawer();
     for (const auto& point : checkPoints)
     {
         drawer->DrawIcosahedron(point.worldPosition, 0.5f, Color::White,
                                 RenderHelper::eDrawType::DRAW_WIRE_DEPTH);
+
+        renderPass.RenderToCubemapFromPoint(renderSystem, point.worldPosition);
     }
 }
 

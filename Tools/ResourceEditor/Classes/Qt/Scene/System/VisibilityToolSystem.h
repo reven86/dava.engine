@@ -32,6 +32,7 @@
 
 #include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
+#include "VisibilityToolSystem/VisibilityToolRenderPass.h"
 
 using namespace DAVA;
 
@@ -103,6 +104,7 @@ private:
     Texture* crossTexture = nullptr;
     CheckPoints checkPoints;
     VisibilityTests remainingVisibilityTests;
+    VisibilityToolRenderPass renderPass;
     State state = State::NotActive;
     uint32 textureStepSizeX = 1;
     uint32 textureStepSizeY = 1;
