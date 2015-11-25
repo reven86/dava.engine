@@ -174,7 +174,7 @@ private:
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
-    Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
+    DAVA::Thread * mainLoopThread = nullptr;
 
     volatile bool quitFlag = false;
 

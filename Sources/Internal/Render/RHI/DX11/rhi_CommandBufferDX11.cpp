@@ -1097,6 +1097,7 @@ void InitializeRenderThreadDX11(uint32 frameCount)
         _DX11_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFuncDX11));
         _DX11_RenderThread->SetName("RHI.dx11-render");
         _DX11_RenderThread->Start();
+        _DX11_RenderThread->BindToProcessor(1);
         _DX11_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
         _DX11_RenderThreadStartedSync.Wait();
     }
@@ -1157,6 +1158,10 @@ dx11_Present(Handle sync)
             reset_pending = _ResetPending;
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _FrameSync.Unlock();
+
+            if (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending)
+                DAVA::Thread::Yield();
+
         } while (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending);
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
     }

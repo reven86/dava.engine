@@ -136,20 +136,27 @@ Thread::Id Thread::GetCurrentId()
 
 bool DAVA::Thread::BindToProcessor(unsigned proc_n)
 {
-    DVASSERT(proc_n < std::thread::hardware_concurrency());
-    if (proc_n >= std::thread::hardware_concurrency())
-        return false;
-
+    bool ret = false;
+    if (proc_n < std::thread::hardware_concurrency())
+    {
 #if defined(__DAVAENGINE_WIN_UAP__)
-    PROCESSOR_NUMBER proc_number {};
-    proc_number.Group = 0;
-    proc_number.Number = proc_n;
+        PROCESSOR_NUMBER proc_number{};
+        proc_number.Group = 0;
+        proc_number.Number = proc_n;
 
-    return ::SetThreadIdealProcessorEx(handle, &proc_number, nullptr) == TRUE;
+        ret = (::SetThreadIdealProcessorEx(handle, &proc_number, nullptr) == TRUE);
 #else
-    DWORD_PTR mask = 1 << proc_n;
-    return ::SetThreadAffinityMask(handle, mask) == 0;
+        DWORD_PTR mask = 1 << proc_n;
+        ret = (::SetThreadAffinityMask(handle, mask) == 0);
 #endif
+    }
+
+    if (!ret)
+    {
+        Logger::FrameworkDebug("Failed bind thread to processor");
+    }
+
+    return ret;
 }
     
 void Thread::SetPriority(eThreadPriority priority)
