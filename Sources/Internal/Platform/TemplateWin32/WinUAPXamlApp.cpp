@@ -139,16 +139,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 
     if (mouseCaptureMode != newMode)
     {
-        static Windows::Foundation::EventRegistrationToken token;
-
-        // Uninstall old capture mode
-        switch (mouseCaptureMode)
-        {
-        case DAVA::InputSystem::eMouseCaptureMode::PINING:
-            MouseDevice::GetForCurrentView()->MouseMoved -= token;
-            break;
-        }
-
         // Setup new capture mode
         switch (newMode)
         {
@@ -161,7 +151,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
             Logger::Error("Unsupported cursor capture mode");
             break;
         case DAVA::InputSystem::eMouseCaptureMode::PINING:
-            token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
             mouseCaptureMode = newMode;
             break;
         default:
@@ -184,6 +173,15 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
     if (isVisible != isMouseCursorShown)
     {
+        static Windows::Foundation::EventRegistrationToken token;
+        if (isVisible)
+        {
+            MouseDevice::GetForCurrentView()->MouseMoved -= token;
+        }
+        else
+        {
+            token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
+        }
         Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
         isMouseCursorShown = isVisible;
     }
