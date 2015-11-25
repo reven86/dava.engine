@@ -36,8 +36,11 @@
 #include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/ResourceArchive.h"
-#include "Autotesting/AutotestingSystem.h"
 #include "Version.h"
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
 
 #include "UI/Layouts/UILayoutSystem.h"
 

@@ -43,6 +43,10 @@ if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
+if( DAVA_DISABLE_AUTOTESTS )
+    add_definitions ( -DDISABLE_AUTOTESTS )
+endif()
+
 if( MACOS_DATA )
     set( APP_DATA ${MACOS_DATA} )
 
