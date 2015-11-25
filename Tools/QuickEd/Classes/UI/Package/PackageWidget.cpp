@@ -140,7 +140,7 @@ namespace
         int destIndex = dest->GetCount();
         return CanInsertControlOrStyle(dest, node, destIndex);
     }
-}
+} //unnamed namespace
 
 PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -329,8 +329,6 @@ void PackageWidget::RefreshActions()
             canMoveLeft = CanMoveLeft(node);
             canMoveRight = CanMoveRight(node);
         }
-        
-        
     }
     for (auto iter = nodes.cbegin(); iter != nodes.cend() && (!canCopy || !canRemove); ++iter)
     {
@@ -615,18 +613,19 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode *node, PackageBaseNode *dest, D
         DAVA::Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };
         ControlsContainerNode* nextControlNode = dynamic_cast<ControlsContainerNode*>(dest);
         commandExecutor->MoveControls(nodes, nextControlNode, destIndex);
+        SelectNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else if (dynamic_cast<StyleSheetNode*>(node) != nullptr)
     {
         DAVA::Vector<StyleSheetNode*> nodes = { static_cast<StyleSheetNode*>(node) };
         StyleSheetsNode* nextStyleSheetNode = dynamic_cast<StyleSheetsNode*>(dest);
         commandExecutor->MoveStyles(nodes, nextStyleSheetNode, destIndex);
+        SelectNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else
     {
         DVASSERT(0 && "invalid type of moved node");
     }
-    SelectNode(node);
 }
 
 void PackageWidget::filterTextChanged(const QString &filterText)
@@ -658,7 +657,7 @@ void PackageWidget::SelectNode(PackageBaseNode *node)
     SelectNodeImpl(node);
 }
 
-void PackageWidget::SelectNodes(const QVector<PackageBaseNode*> &nodes)
+void PackageWidget::SelectNodes(const SelectedNodes &nodes)
 {
     treeView->selectionModel()->clear();
     for (auto &node : nodes)
@@ -671,6 +670,7 @@ void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
 {
     QModelIndex srcIndex = packageModel->indexByNode(node);
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+    treeView->setCurrentIndex(dstIndex);
     treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
     treeView->scrollTo(dstIndex);
 }

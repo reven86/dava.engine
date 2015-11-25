@@ -75,7 +75,7 @@ private slots:
     void OnMoveDown();
     void OnMoveLeft();
     void OnMoveRight();
-    void SelectNodes(const QVector<PackageBaseNode*> &nodes);
+    void SelectNodes(const SelectedNodes &nodes);
 
 private:
     void MoveNodeUpDown(bool up);

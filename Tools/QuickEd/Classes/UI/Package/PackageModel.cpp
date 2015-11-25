@@ -352,6 +352,19 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
     return mimeData;
 }
 
+int PackageModel::GetRowIndex(int row, const QModelIndex& parent)
+{
+    if (row != -1)
+    {
+        return row;
+    }
+    if (parent.isValid())
+    {
+        return rowCount(parent);
+    }
+    return rowCount(QModelIndex());
+}
+
 bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     if (action == Qt::IgnoreAction)
@@ -359,19 +372,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         return true;
     }
 
-    int rowIndex;
-    if (row != -1)
-    {
-        rowIndex = row;
-    }
-    else if (parent.isValid())
-    {
-        rowIndex = rowCount(parent);
-    }
-    else
-    {
-        rowIndex = rowCount(QModelIndex());
-    }
+    int rowIndex = GetRowIndex(row, parent);
     
     PackageBaseNode *destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
     
@@ -398,8 +399,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         else if (action == Qt::MoveAction)
         {
             commandExecutor->MoveControls(srcControls, destControlContainer, rowIndex);
-            Vector<PackageBaseNode*> nodes(srcControls.begin(), srcControls.end());
-            emit NodesMoved(QVector<PackageBaseNode*>::fromStdVector(nodes));
+            emit NodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
         }
         else if (action == Qt::LinkAction)
         {
@@ -430,8 +430,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         else if (action == Qt::MoveAction)
         {
             commandExecutor->MoveStyles(srcStyles, destStylesContainer, rowIndex);
-            Vector<PackageBaseNode*> nodes(srcStyles.begin(), srcStyles.end());
-            emit NodesMoved(QVector<PackageBaseNode*>::fromStdVector(nodes));
+            emit NodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
         }
         else
         {
