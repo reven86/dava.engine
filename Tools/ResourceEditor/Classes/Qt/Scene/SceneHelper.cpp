@@ -140,29 +140,20 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 
 void SceneHelper::EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials)
 {
-    uint32 childrenCount = forNode->GetChildrenCount();
-    for(uint32 i = 0; i < childrenCount; ++i)
-    {
-        EnumerateMaterials(forNode->GetChild(i), materials);
-    }
+    EnumerateMaterialInstances(forNode, materials);
 
-    RenderObject* ro = GetRenderObject(forNode);
-    if (ro != nullptr)
+    // collect parent materials
+    for (auto material : materials)
     {
-        uint32 batchCount = ro->GetRenderBatchCount();
-        for (uint32 i = 0; i < batchCount; ++i)
+        while (material->GetParent() != nullptr)
         {
-            auto material = ro->GetRenderBatch(i)->GetMaterial();
-            while (material != nullptr)
-            {
-                materials.insert(material);
-                material = material->GetParent();
-            }
+            material = material->GetParent();
+            materials.insert(material);
         }
     }
 }
 
-void SceneHelper::EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Vector<DAVA::NMaterial*>& materials)
+void SceneHelper::EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials)
 {
     uint32 childrenCount = forNode->GetChildrenCount();
     for (uint32 i = 0; i < childrenCount; ++i)
@@ -179,7 +170,7 @@ void SceneHelper::EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Vector
             auto material = ro->GetRenderBatch(i)->GetMaterial();
             if (material != nullptr)
             {
-                materials.push_back(material);
+                materials.insert(material);
             }
         }
     }
@@ -192,14 +183,13 @@ DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)
 
     Entity * newEntity = fromNode->Clone();
 
-    Vector<NMaterial *> materialInstances;
+    Set<NMaterial*> materialInstances;
     EnumerateMaterialInstances(newEntity, materialInstances);
 
     Set<NMaterial*> materialParentsSet;
-    uint32 instancesCount = materialInstances.size();
-    for (uint32 i = 0; i < instancesCount; ++i)
+    for (auto material : materialInstances)
     {
-        materialParentsSet.insert(materialInstances[i]->GetParent());
+        materialParentsSet.insert(material->GetParent());
     }
     materialParentsSet.erase(globalMaterial);
 
@@ -209,14 +199,13 @@ DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)
         NMaterial* mat = mp ? mp->Clone() : nullptr;
         if (mat && mat->GetParent() == globalMaterial)
         {
-            mat->SetParent(nullptr); //exclude material from scene
+            mat->SetParent(nullptr); // exclude material from scene
         }
         clonedParents[mp] = mat;
     }
 
-    for(uint32 i = 0; i < instancesCount; ++i)
+    for (auto material : materialInstances)
     {
-        NMaterial* material = materialInstances[i];
         NMaterial* parent = material->GetParent();
         material->SetParent(clonedParents[parent]);
     }

@@ -50,7 +50,7 @@ namespace SceneHelper
     void EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials);
 
     // enumerates only materials from render batches
-    void EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Vector<DAVA::NMaterial*>& materials);
+    void EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials);
 
     DAVA::int32 EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>>& textures);
 
