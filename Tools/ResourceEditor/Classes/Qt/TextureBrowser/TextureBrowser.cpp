@@ -346,13 +346,18 @@ void TextureBrowser::updateInfoPos(QLabel *label, const QPoint &pos /* = QPoint(
 
 void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 {
-	if(NULL != curTexture && NULL != curDescriptor)
-	{
+    if (nullptr != curTexture && nullptr != curDescriptor)
+    {
 		char tmp[1024];
 
-		const char *formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(DAVA::FORMAT_RGBA8888);
+        const ImageInfo info = ImageSystem::Instance()->GetImageInfo(curDescriptor->GetSourceTexturePathname());
+        const char* formatStr = "Invalid";
+        if (info.format != FORMAT_INVALID)
+        {
+            formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
+        }
 
-		int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
+        int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
 		int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
 
 		sprintf(tmp, "Format: %s\nSize: %dx%d\nData size: %s\nFile size: %s", formatStr, images[0].width(), images[0].height(),
