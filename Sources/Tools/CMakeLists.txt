@@ -44,7 +44,9 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 set_project_files_properties( "${CPP_FILES}" )
 
 generate_source_groups_project ( )
-add_library                    ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
+generated_unity_sources     ( CPP_FILES IGNORE_LIST_APPLE "TeamcityOutput/TeamcityOutput.cpp" )
+
+add_library                 ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 
 if( MACOS AND NOT ANDROID )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )

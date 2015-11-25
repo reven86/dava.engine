@@ -862,7 +862,7 @@ void Texture::DumpTextures()
     uint32 allocSize = 0;
     int32 cnt = 0;
     Logger::FrameworkDebug("============================================================");
-	Logger::FrameworkDebug("--------------- Currently allocated textures ---------------");
+    Logger::FrameworkDebug("--------------- Currently allocated textures ---------------");
 
     textureMapMutex.Lock();
 	for(TexturesMap::iterator it = textureMap.begin(); it != textureMap.end(); ++it)

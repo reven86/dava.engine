@@ -72,9 +72,9 @@ struct Rect
     inline bool operator!=(const Rect& _s) const;
 
     inline Rect& operator+=(const Vector2& point);
-    inline Rect &	operator -= (const Vector2 & point);
+    inline Rect& operator-=(const Vector2& point);
 
-	inline Rect 	operator + (const Vector2 & Point) const;
+    inline Rect 	operator + (const Vector2 & Point) const;
 	inline Rect 	operator - (const Vector2 & Point) const;
 };
 

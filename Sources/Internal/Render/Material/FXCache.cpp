@@ -57,13 +57,16 @@ void Initialize()
     DVASSERT(!initialized);
     initialized = true;
 
+    HashMap<FastName, int32> defFlags;
+    defFlags[FastName("MATERIAL_TEXTURE")] = 1;
+
     RenderPassDescriptor defaultPass;
     defaultPass.passName = PASS_FORWARD;
     defaultPass.renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
-    FastName defShaderName = FastName("~res:/Materials/Shaders/Default/materials");
-    HashMap<FastName, int32> defFlags;
-    defFlags[FastName("MATERIAL_TEXTURE")] = 1;
-    defaultPass.shader = ShaderDescriptorCache::GetShaderDescriptor(defShaderName, defFlags);
+    defaultPass.shaderFileName = FastName("~res:/Materials/Shaders/Default/materials");
+    defaultPass.shader = ShaderDescriptorCache::GetShaderDescriptor(defaultPass.shaderFileName, defFlags);
+    defaultPass.templateDefines.insert(FastName("MATERIAL_TEXTURE"));
+
     defaultFX.renderPassDescriptors.clear();
     defaultFX.renderPassDescriptors.push_back(defaultPass);
 }
