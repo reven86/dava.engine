@@ -58,13 +58,13 @@ namespace
 {
     String GetPathFromIndex(QModelIndex index)
     {
-        String path = index.data().toString().toStdString();
+        QString path = index.data().toString();
         while (index.parent().isValid())
         {
             index = index.parent();
-            path += "/" + index.data().toString().toStdString();
+            path += "/" + index.data().toString();
         }
-        return path;
+        return path.toStdString();
     }
 }
 
@@ -281,12 +281,12 @@ void PropertiesWidget::OnModelChanged()
 
 void PropertiesWidget::OnExpanded(const QModelIndex& index)
 {
-    expandingMap.emplace(GetPathFromIndex(index), true);
+    expandedItems.insert(GetPathFromIndex(index));
 }
 
 void PropertiesWidget::OnCollapsed(const QModelIndex& index)
 {
-    expandingMap.emplace(GetPathFromIndex(index), false);
+    expandedItems.erase(GetPathFromIndex(index));
 }
 
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
@@ -393,10 +393,9 @@ void PropertiesWidget::ApplyExpanding(const QModelIndex &index)
         treeView->scrollTo(index, QTreeView::PositionAtTop);
     }
 
-    const auto &iter = expandingMap.find(path);
-    if (iter != expandingMap.end())
+    if (expandedItems.find(path) != expandedItems.end());
     {
-        treeView->setExpanded(index, iter->second);
+        treeView->setExpanded(index, true);
     }
     for (int r = 0, rowCount = model->rowCount(index); r < rowCount; ++r)
     {

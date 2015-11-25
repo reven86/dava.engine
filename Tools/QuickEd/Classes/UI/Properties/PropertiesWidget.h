@@ -84,7 +84,7 @@ private:
     QAction* addStyleSelectorAction = nullptr;
     QAction* removeAction = nullptr;
 
-    DAVA::UnorderedMap<DAVA::String, bool> expandingMap;
+    DAVA::Set<DAVA::String> expandedItems;
 
     SelectionContainer selectionContainer;
 
