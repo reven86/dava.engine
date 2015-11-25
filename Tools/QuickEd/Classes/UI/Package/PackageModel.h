@@ -95,8 +95,8 @@ private: // PackageListener
 
     int GetRowIndex(int row, const QModelIndex& parent);
 
-    PackageNode *root;
-    QtModelPackageCommandExecutor *commandExecutor;
+    PackageNode *root = nullptr;
+    QtModelPackageCommandExecutor *commandExecutor = nullptr;
 };
 
 #endif // __QUICKED_PACKAGE_MODEL_H__

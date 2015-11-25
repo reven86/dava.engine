@@ -358,11 +358,7 @@ int PackageModel::GetRowIndex(int row, const QModelIndex& parent)
     {
         return row;
     }
-    if (parent.isValid())
-    {
-        return rowCount(parent);
-    }
-    return rowCount(QModelIndex());
+    return rowCount(parent);
 }
 
 bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
