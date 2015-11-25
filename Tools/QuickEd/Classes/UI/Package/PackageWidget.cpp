@@ -653,17 +653,13 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 
 void PackageWidget::SelectNode(PackageBaseNode *node)
 {
-    treeView->selectionModel()->clear();
-    SelectNodeImpl(node);
+    SelectNodes({ node });
 }
 
 void PackageWidget::SelectNodes(const SelectedNodes &nodes)
 {
     treeView->selectionModel()->clear();
-    for (auto &node : nodes)
-    {
-        SelectNodeImpl(node);
-    }
+    SetSelectedNodes(nodes, SelectedNodes());
 }
 
 void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
@@ -726,10 +722,7 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
         }
         for (const auto& node : reallySelected)
         {
-            QModelIndex srcIndex = packageModel->indexByNode(node);
-            QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
-            treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
-            treeView->scrollTo(dstIndex);
+            SelectNodeImpl(node);
         }
 
         connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
