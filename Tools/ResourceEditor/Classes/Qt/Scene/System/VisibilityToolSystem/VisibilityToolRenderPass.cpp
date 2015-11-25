@@ -48,25 +48,8 @@ VisibilityToolRenderPass::VisibilityToolRenderPass()
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 
-    rhi::Texture::Descriptor textureDescriptor = {};
-    textureDescriptor.format = rhi::TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
-    textureDescriptor.width = renderTargetSize;
-    textureDescriptor.height = renderTargetSize;
-    textureDescriptor.isRenderTarget = 1;
-    textureDescriptor.type = rhi::TextureType::TEXTURE_TYPE_CUBE;
-    colorBuffer = rhi::CreateTexture(textureDescriptor);
-
-    textureDescriptor.isRenderTarget = 0;
-    textureDescriptor.format = rhi::TextureFormat::TEXTURE_FORMAT_D24S8;
-    textureDescriptor.type = rhi::TextureType::TEXTURE_TYPE_2D;
-    depthBuffer = rhi::CreateTexture(textureDescriptor);
-
     config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    config.colorBuffer[0].texture = colorBuffer;
-
     config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    config.depthStencilBuffer.texture = depthBuffer;
-
     config.priority = PRIORITY_SERVICE_3D;
     config.viewport.x = 0;
     config.viewport.y = 0;
@@ -76,16 +59,17 @@ VisibilityToolRenderPass::VisibilityToolRenderPass()
 
 VisibilityToolRenderPass::~VisibilityToolRenderPass()
 {
-    rhi::DeleteTexture(colorBuffer);
-    rhi::DeleteTexture(depthBuffer);
 }
 
-void VisibilityToolRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSystem, const Vector3& point)
+void VisibilityToolRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point)
 {
+    config.colorBuffer[0].texture = renderTarget->handle;
+    config.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
+
     camera->SetPosition(point);
-    for (currentCubemapFace = 0; currentCubemapFace < cubemapFaces; ++currentCubemapFace)
+    for (uint32 i = 0; i < cubemapFaces; ++i)
     {
-        SetupCameraToRenderFromPointToFaceIndex(point, currentCubemapFace);
+        SetupCameraToRenderFromPointToFaceIndex(point, i);
         RenderWithCurrentSettings(renderSystem);
     }
 }
@@ -103,12 +87,12 @@ void VisibilityToolRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vec
     };
     const Vector3 upVectors[cubemapFaces] =
     {
-      Vector3(0.0f, 1.0f, 0.0f),
-      Vector3(0.0f, 1.0f, 0.0f),
+      Vector3(0.0f, -1.0f, 0.0f),
+      Vector3(0.0f, -1.0f, 0.0f),
+      Vector3(0.0f, 0.0f, 1.0f),
       Vector3(0.0f, 0.0f, -1.0f),
-      Vector3(0.0f, 0.0f, +1.0f),
-      Vector3(0.0f, 1.0f, 0.0f),
-      Vector3(0.0f, 1.0f, 0.0f),
+      Vector3(0.0f, -1.0f, 0.0f),
+      Vector3(0.0f, -1.0f, 0.0f),
     };
     const Vector4 clearColors[cubemapFaces] =
     {

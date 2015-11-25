@@ -47,14 +47,18 @@ const Vector2 CROSS_TEXTURE_SIZE = Vector2(32.0f, 32.0f);
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
     , textureLevel(Landscape::TEXTURE_COLOR)
+    , crossTexture(Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursorWhite.png"))
+    , sphereScene(new Scene)
+    , debugMaterial(new NMaterial())
 {
-    crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursorWhite.png");
     crossTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+    sphereScene->LoadScene("~res:/LandscapeEditor/Tools/shpere.sc2");
+    debugMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/Cubemap.material"));
+    debugMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 VisibilityToolSystem::~VisibilityToolSystem()
 {
-	SafeRelease(crossTexture);
 }
 
 LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditing()
@@ -120,6 +124,11 @@ void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (!IsLandscapeEditingEnabled())
 		return;
+
+    for (const auto& p : checkPoints)
+    {
+        p.debugSphere->SetLocalTransform(Matrix4::MakeTranslation(p.worldPosition));
+    }
 
     if (state == State::ComputingVisibility)
     {
@@ -230,9 +239,23 @@ uint32 VisibilityToolSystem::StartAddingVisibilityPoint()
     SetState(State::AddingPoint);
     checkPoints.emplace_back();
 
+    auto renderTarget = Texture::CreateFBO(1024, 1024, PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
+    auto clonedSphere = sphereScene->children.front()->Clone();
+    auto ro = GetRenderObject(clonedSphere);
+    uint32 numBatcnes = ro->GetActiveRenderBatchCount();
+    for (uint32 i = 0; i < numBatcnes; ++i)
+    {
+        auto batch = ro->GetActiveRenderBatch(i);
+        batch->SetMaterial(debugMaterial->Clone());
+        batch->GetMaterial()->AddTexture(FastName("cubemap"), renderTarget);
+    }
+    GetScene()->AddNode(clonedSphere);
+
     Color newColor(0.125f + 0.125f * randf(), 0.125f + 0.125f * randf(), 0.125f + 0.125f * randf(), 1.0f);
     newColor.color[checkPoints.size() % 3] += 0.25f + 0.25f * randf();
     checkPoints.back().color = newColor;
+    checkPoints.back().debugSphere = clonedSphere;
+    checkPoints.back().cubemap = renderTarget;
 
     return static_cast<uint32>(checkPoints.size() - 1);
 }
@@ -241,6 +264,9 @@ void VisibilityToolSystem::CancelAddingCheckPoint()
 {
     DVASSERT(checkPoints.size() > 0);
 
+    GetScene()->RemoveNode(checkPoints.back().debugSphere);
+    SafeRelease(checkPoints.back().debugSphere);
+    SafeRelease(checkPoints.back().cubemap);
     checkPoints.pop_back();
     SetState(State::NotActive);
 }
@@ -390,10 +416,7 @@ void VisibilityToolSystem::Draw()
     RenderHelper* drawer = renderSystem->GetDebugDrawer();
     for (const auto& point : checkPoints)
     {
-        drawer->DrawIcosahedron(point.worldPosition, 0.5f, Color::White,
-                                RenderHelper::eDrawType::DRAW_WIRE_DEPTH);
-
-        renderPass.RenderToCubemapFromPoint(renderSystem, point.worldPosition);
+        renderPass.RenderToCubemapFromPoint(renderSystem, point.cubemap, point.worldPosition);
     }
 }
 

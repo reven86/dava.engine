@@ -74,13 +74,17 @@ private:
     struct CheckPoint
     {
         Vector2 relativePosition;
-        Vector3 worldPosition;
         Color color = Color(1.0f, 0.5f, 0.25f, 1.0f);
         float angleUp = PI / 6.0f;
         float angleDown = PI / 6.0f;
         float radius = 0.0f; // point for now
         Vector<std::pair<Point2i, Color>> result;
         uint32 numPoints = 0;
+
+        // GPU implementation
+        Vector3 worldPosition;
+        Entity* debugSphere = nullptr;
+        Texture* cubemap = nullptr;
     };
     using CheckPoints = Vector<CheckPoint>;
     using VisibilityTests = Vector<std::pair<uint32, Vector2>>;
@@ -101,7 +105,9 @@ private:
 
 private:
     FastName textureLevel;
-    Texture* crossTexture = nullptr;
+    ScopedPtr<NMaterial> debugMaterial;
+    ScopedPtr<Texture> crossTexture;
+    ScopedPtr<Scene> sphereScene;
     CheckPoints checkPoints;
     VisibilityTests remainingVisibilityTests;
     VisibilityToolRenderPass renderPass;

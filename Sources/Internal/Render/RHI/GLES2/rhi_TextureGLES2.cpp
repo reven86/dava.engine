@@ -288,15 +288,15 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             {
                 GLCommand cmd3[] =
                 {
-                  { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&(this->uid)) } },
+                  { GLCommand::BIND_TEXTURE, { GL_TEXTURE_CUBE_MAP, uint64(&(this->uid)) } },
                   { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
                   { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
                   { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
                   { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
                   { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
                   { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
-                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
-                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
                   { GLCommand::RESTORE_TEXTURE0, {} }
                 };
                 ExecGL(cmd3, countof(cmd3), force_immediate);

@@ -41,7 +41,7 @@ public:
     VisibilityToolRenderPass();
     ~VisibilityToolRenderPass();
 
-    void RenderToCubemapFromPoint(RenderSystem* renderSystem, const Vector3& point);
+    void RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point);
 
 private:
     void SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex);
@@ -50,9 +50,6 @@ private:
 private:
     ScopedPtr<Camera> camera;
     rhi::RenderPassConfig config;
-    rhi::HTexture colorBuffer;
-    rhi::HTexture depthBuffer;
-    uint32 currentCubemapFace = 0;
 };
 }
 
