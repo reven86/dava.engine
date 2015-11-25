@@ -39,7 +39,6 @@ class QualitySwitcher : public QDialog
 
 public:
     static void Show();
-    static void ShowModal();
 
 signals:
     void QualityChanged();
@@ -57,6 +56,9 @@ protected slots:
     void OnTxQualitySelect(int index);
     void OnMaQualitySelect(int index);
     void OnOptionClick(bool);
+
+private:
+    static QualitySwitcher* switcherDialog;
 };
 
 #endif // __QUALITY_SWITCHER_H__

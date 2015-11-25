@@ -40,9 +40,13 @@
 #include <QGroupBox>
 #include <QLabel>
 
+QualitySwitcher* QualitySwitcher::switcherDialog = nullptr;
+
 QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
     : QDialog(parent, Qt::Tool)
 {
+    QObject::connect(this, &QDialog::finished, [](int /*result*/) { switcherDialog = nullptr; });
+
     int mainRow = 0;
     int height = 10;
     const int spacing = 5;
@@ -191,19 +195,16 @@ void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity *e)
 
 void QualitySwitcher::Show()
 {
-    QualitySwitcher *sw = new QualitySwitcher(QtMainWindow::Instance());
-    sw->setAttribute(Qt::WA_DeleteOnClose, true);
-    connect(sw, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
-    connect(sw, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
-    sw->show();
-}
+    if (switcherDialog == nullptr)
+    {
+        //we don't need synchronization because of working in UI thread
 
-void QualitySwitcher::ShowModal()
-{
-    QualitySwitcher sw(QtMainWindow::Instance());
-    connect(&sw, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
-    connect(&sw, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
-    sw.exec();
+        switcherDialog = new QualitySwitcher(QtMainWindow::Instance());
+        switcherDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+        connect(switcherDialog, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
+        connect(switcherDialog, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
+        switcherDialog->show();
+    }
 }
 
 void QualitySwitcher::OnTxQualitySelect(int index)
