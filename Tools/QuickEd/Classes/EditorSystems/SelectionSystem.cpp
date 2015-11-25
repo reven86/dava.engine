@@ -177,10 +177,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
         return control->GetSystemVisible() && control->IsPointInside(point);
     };
     systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
-    {
-        deselected = selectionContainer.selectedNodes;
-    }
+
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
@@ -195,6 +192,10 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
             {
                 return true; //selection was required but cancelled
             }
+        }
+        if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
+        {
+            deselected = selectionContainer.selectedNodes;
         }
         if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && selectionContainer.IsSelected(node))
         {
