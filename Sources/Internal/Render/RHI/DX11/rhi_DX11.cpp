@@ -295,7 +295,7 @@ void dx11_Initialize(const InitParam& param)
 
     _DeviceCaps.is32BitIndicesSupported = true;
     _DeviceCaps.isFramebufferFetchSupported = true;
-    _DeviceCaps.isVertexTextureUnitsSupported = true;
+    _DeviceCaps.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0);
     _DeviceCaps.isUpperLeftRTOrigin = true;
     _DeviceCaps.isZeroBaseClipRange = true;
     _DeviceCaps.isCenterPixelMapping = false;
