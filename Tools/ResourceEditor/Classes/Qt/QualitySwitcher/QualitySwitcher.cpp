@@ -45,8 +45,6 @@ QualitySwitcher* QualitySwitcher::switcherDialog = nullptr;
 QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
     : QDialog(parent, Qt::Tool)
 {
-    QObject::connect(this, &QDialog::finished, [](int /*result*/) { switcherDialog = nullptr; });
-
     int mainRow = 0;
     int height = 10;
     const int spacing = 5;
@@ -161,6 +159,11 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
     adjustSize();
 }
 
+QualitySwitcher::~QualitySwitcher()
+{
+    switcherDialog = nullptr;
+}
+
 void QualitySwitcher::ApplyTx()
 {
     QtMainWindow::Instance()->OnReloadTextures();
@@ -193,18 +196,18 @@ void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity *e)
     }
 }
 
-void QualitySwitcher::Show()
+QDialog* QualitySwitcher::GetDialog()
 {
     if (switcherDialog == nullptr)
     {
         //we don't need synchronization because of working in UI thread
-
         switcherDialog = new QualitySwitcher(QtMainWindow::Instance());
         switcherDialog->setAttribute(Qt::WA_DeleteOnClose, true);
         connect(switcherDialog, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
         connect(switcherDialog, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
         switcherDialog->show();
     }
+    return switcherDialog;
 }
 
 void QualitySwitcher::OnTxQualitySelect(int index)

@@ -38,14 +38,14 @@ class QualitySwitcher : public QDialog
     Q_OBJECT
 
 public:
-    static void Show();
+    static QDialog* GetDialog();
 
 signals:
     void QualityChanged();
 
 protected:
     QualitySwitcher(QWidget *parent = nullptr);
-    ~QualitySwitcher() = default;
+    ~QualitySwitcher();
 
     void ApplyTx();
     void ApplyMa();
