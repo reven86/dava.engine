@@ -215,6 +215,8 @@ private:
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
     Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
+    Windows::Foundation::EventRegistrationToken token;
+
 };
 
 //////////////////////////////////////////////////////////////////////////

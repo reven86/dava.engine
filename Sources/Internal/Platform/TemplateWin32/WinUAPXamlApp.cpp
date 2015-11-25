@@ -173,16 +173,16 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
     if (isVisible != isMouseCursorShown)
     {
-        static Windows::Foundation::EventRegistrationToken token;
         if (isVisible)
         {
             MouseDevice::GetForCurrentView()->MouseMoved -= token;
+            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
         }
         else
         {
             token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
+            Window::Current->CoreWindow->PointerCursor = nullptr;
         }
-        Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
         isMouseCursorShown = isVisible;
     }
     return true;
@@ -765,9 +765,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
 
     coreWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WinUAPXamlApp::OnAcceleratorKeyActivated);
-
     coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WinUAPXamlApp::OnChar);
-    MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
 
     if (isPhoneApiDetected)
     {
