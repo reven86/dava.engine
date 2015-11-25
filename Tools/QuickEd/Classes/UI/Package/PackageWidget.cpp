@@ -261,7 +261,8 @@ void PackageWidget::LoadContext()
         if (nullptr == context)
         {
             context = new PackageContext(document);
-            connect(context->packageModel, &PackageModel::NodesMoved, this, &PackageWidget::SelectNodes);
+            connect(context->packageModel, &PackageModel::BeforeNodesMoved, this, &PackageWidget::OnBeforeNodesMoved);
+            connect(context->packageModel, &PackageModel::NodesMoved, this, &PackageWidget::OnNodesMoved);
             document->SetContext(this, context);
         }
         //store model to work with indexes
@@ -612,15 +613,17 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode *node, PackageBaseNode *dest, D
     {
         DAVA::Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };
         ControlsContainerNode* nextControlNode = dynamic_cast<ControlsContainerNode*>(dest);
+        OnBeforeNodesMoved(SelectedNodes(nodes.begin(), nodes.end()));
         commandExecutor->MoveControls(nodes, nextControlNode, destIndex);
-        SelectNodes(SelectedNodes(nodes.begin(), nodes.end()));
+        OnNodesMoved(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else if (dynamic_cast<StyleSheetNode*>(node) != nullptr)
     {
         DAVA::Vector<StyleSheetNode*> nodes = { static_cast<StyleSheetNode*>(node) };
         StyleSheetsNode* nextStyleSheetNode = dynamic_cast<StyleSheetsNode*>(dest);
+        OnBeforeNodesMoved(SelectedNodes(nodes.begin(), nodes.end()));
         commandExecutor->MoveStyles(nodes, nextStyleSheetNode, destIndex);
-        SelectNodes(SelectedNodes(nodes.begin(), nodes.end()));
+        OnNodesMoved(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else
     {
@@ -651,15 +654,40 @@ void PackageWidget::filterTextChanged(const QString &filterText)
     }
 }
 
-void PackageWidget::SelectNode(PackageBaseNode *node)
+void PackageWidget::CollectExpandedIndexes(PackageBaseNode* node)
 {
-    SelectNodes({ node });
+    QModelIndex srcIndex = packageModel->indexByNode(node);
+    QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+    if (treeView->isExpanded(dstIndex))
+    {
+        expandedNodes.insert(node);
+    }
+    for (int i = 0, count = node->GetCount(); i < count; ++i)
+    {
+        CollectExpandedIndexes(node->Get(i));
+    }
 }
 
-void PackageWidget::SelectNodes(const SelectedNodes &nodes)
+void PackageWidget::OnBeforeNodesMoved(const SelectedNodes& nodes)
+{
+    for (const auto &node : nodes)
+    {
+        CollectExpandedIndexes(node);
+    }
+}
+
+void PackageWidget::OnNodesMoved(const SelectedNodes &nodes)
 {
     treeView->selectionModel()->clear();
     SetSelectedNodes(nodes, SelectedNodes());
+
+    for (const auto &node : expandedNodes)
+    {
+        QModelIndex srcIndex = packageModel->indexByNode(node);
+        QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+        treeView->expand(dstIndex);
+    }
+    expandedNodes.clear();
 }
 
 void PackageWidget::SelectNodeImpl(PackageBaseNode* node)

@@ -68,7 +68,8 @@ public:
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
 
 signals:
-    void NodesMoved(const SelectedNodes& srcControls);
+    void BeforeNodesMoved(const SelectedNodes &nodes);
+    void NodesMoved(const SelectedNodes &nodes);
 
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;

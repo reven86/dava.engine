@@ -75,9 +75,11 @@ private slots:
     void OnMoveDown();
     void OnMoveLeft();
     void OnMoveRight();
-    void SelectNodes(const SelectedNodes &nodes);
+    void OnBeforeNodesMoved(const SelectedNodes &nodes);
+    void OnNodesMoved(const SelectedNodes &nodes);
 
 private:
+    void CollectExpandedIndexes(PackageBaseNode *node);
     void MoveNodeUpDown(bool up);
     void MoveNodeImpl(PackageBaseNode *node, PackageBaseNode *dest, DAVA::uint32 destIndex);
     void CreateActions();
@@ -86,7 +88,6 @@ private:
     void SaveContext();
     void RefreshActions();
 
-    void SelectNode(PackageBaseNode* node);
     void SelectNodeImpl(PackageBaseNode* node);
 
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
@@ -122,6 +123,7 @@ private:
     ExpandedIndexes expandedIndexes;
 
     SelectionContainer selectionContainer;
+    SelectedNodes expandedNodes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

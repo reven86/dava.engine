@@ -398,6 +398,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         }
         else if (action == Qt::MoveAction)
         {
+            emit BeforeNodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
             commandExecutor->MoveControls(srcControls, destControlContainer, rowIndex);
             emit NodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
         }
@@ -429,6 +430,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         }
         else if (action == Qt::MoveAction)
         {
+            emit BeforeNodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
             commandExecutor->MoveStyles(srcStyles, destStylesContainer, rowIndex);
             emit NodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
         }
