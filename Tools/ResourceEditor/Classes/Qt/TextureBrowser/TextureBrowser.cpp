@@ -351,11 +351,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 		char tmp[1024];
 
         const ImageInfo info = ImageSystem::Instance()->GetImageInfo(curDescriptor->GetSourceTexturePathname());
-        const char* formatStr = "Invalid";
-        if (info.format != FORMAT_INVALID)
-        {
-            formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
-        }
+        const char* formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
 
         int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
 		int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
