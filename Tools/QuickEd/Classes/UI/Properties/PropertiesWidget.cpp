@@ -380,27 +380,27 @@ void PropertiesWidget::UpdateActions()
     }
 }
 
-void PropertiesWidget::ApplyExpanding(const QModelIndex &index)
+void PropertiesWidget::ApplyExpanding()
 {
     const auto &model = treeView->model();
     if (nullptr == model)
     {
         return;
     }
-    const auto &path = GetPathFromIndex(index);
-    if (path == lastTopIndexPath)
+    QModelIndex index = treeView->model()->index(0, 0);
+    while (index.isValid())
     {
-        treeView->scrollTo(index, QTreeView::PositionAtTop);
-    }
+        const auto &path = GetPathFromIndex(index);
+        if (path == lastTopIndexPath)
+        {
+            treeView->scrollTo(index, QTreeView::PositionAtTop);
+        }
 
-    if (expandedItems.find(path) != expandedItems.end());
-    {
-        treeView->setExpanded(index, true);
+        if (expandedItems.find(path) != expandedItems.end())
+        {
+            treeView->setExpanded(index, true);
+        }
+
+        index = treeView->indexBelow(index);
     }
-    for (int r = 0, rowCount = model->rowCount(index); r < rowCount; ++r)
-    {
-        ApplyExpanding(model->index(r, 0, index));
-    }
-    
-    
 }

@@ -76,7 +76,7 @@ private:
     void UpdateSelection();
     void UpdateActions();
     
-    void ApplyExpanding(const QModelIndex &index = QModelIndex());
+    void ApplyExpanding();
 
     Document* document = nullptr;
     QAction* addComponentAction = nullptr;
