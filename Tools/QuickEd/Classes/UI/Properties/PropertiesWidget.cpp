@@ -54,6 +54,20 @@
 
 using namespace DAVA;
 
+namespace
+{
+    String GetPathFromIndex(QModelIndex index)
+    {
+        String path = index.data().toString().toStdString();
+        while (index.parent().isValid())
+        {
+            index = index.parent();
+            path += "/" + index.data().toString().toStdString();
+        }
+        return path;
+    }
+}
+
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
 {
@@ -73,6 +87,9 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     
     removeAction = CreateRemoveAction();
     treeView->addAction(removeAction);
+
+    connect(treeView, &QTreeView::expanded, this, &PropertiesWidget::OnExpanded);
+    connect(treeView, &QTreeView::collapsed, this, &PropertiesWidget::OnCollapsed);
 }
 
 void PropertiesWidget::OnDocumentChanged(Document* arg)
@@ -259,6 +276,17 @@ void PropertiesWidget::OnModelChanged()
 {
     treeView->expandToDepth(0);
     treeView->resizeColumnToContents(0);
+    ApplyExpanding();
+}
+
+void PropertiesWidget::OnExpanded(const QModelIndex& index)
+{
+    expandingMap.emplace(GetPathFromIndex(index), true);
+}
+
+void PropertiesWidget::OnCollapsed(const QModelIndex& index)
+{
+    expandingMap.emplace(GetPathFromIndex(index), false);
 }
 
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
@@ -292,6 +320,11 @@ void PropertiesWidget::UpdateSelection()
     QAbstractItemModel *prevModel = treeView->model();
     ControlNode *control = nullptr;
     StyleSheetNode *styleSheet = nullptr;
+    if (nullptr != treeView->model())
+    {
+        auto index = treeView->indexAt(QPoint(0, 0));
+        lastTopIndexPath = GetPathFromIndex(index);
+    }
     if (nullptr == document)
     {
         treeView->setModel(nullptr);
@@ -345,4 +378,30 @@ void PropertiesWidget::UpdateActions()
         AbstractProperty *property = static_cast<AbstractProperty*>(indices.first().internalPointer());
         removeAction->setEnabled((property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0);
     }
+}
+
+void PropertiesWidget::ApplyExpanding(const QModelIndex &index)
+{
+    const auto &model = treeView->model();
+    if (nullptr == model)
+    {
+        return;
+    }
+    const auto &path = GetPathFromIndex(index);
+    if (path == lastTopIndexPath)
+    {
+        treeView->scrollTo(index, QTreeView::PositionAtTop);
+    }
+
+    const auto &iter = expandingMap.find(path);
+    if (iter != expandingMap.end())
+    {
+        treeView->setExpanded(index, iter->second);
+    }
+    for (int r = 0, rowCount = model->rowCount(index); r < rowCount; ++r)
+    {
+        ApplyExpanding(model->index(r, 0, index));
+    }
+    
+    
 }
