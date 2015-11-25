@@ -1,0 +1,19 @@
+FPROG_IN_BEGIN
+    FPROG_IN_TEXCOORD0(distanceToCamera,1)
+FPROG_IN_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+float4 EncodeFloatRGBA(float v) 
+{
+	float4 enc = float4(1.0, 255.0, 65025.0, 16581375.0) * v;
+	enc = frac(enc);
+	enc -= enc.yzww * float4(1.0/255.0, 1.0/255.0, 1.0/255.0, 1.0);
+	return enc;
+}
+
+FPROG_BEGIN
+	FP_OUT_COLOR = EncodeFloatRGBA(FP_IN(distanceToCamera));
+FPROG_END

@@ -46,9 +46,12 @@ public:
 private:
     void SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex);
     void RenderWithCurrentSettings(RenderSystem* renderSystem);
+    bool ShouldRenderObject(RenderObject*);
+    bool ShouldRenderBatch(RenderBatch*);
 
 private:
     ScopedPtr<Camera> camera;
+    ScopedPtr<NMaterial> distanceMaterial;
     rhi::RenderPassConfig config;
 };
 }

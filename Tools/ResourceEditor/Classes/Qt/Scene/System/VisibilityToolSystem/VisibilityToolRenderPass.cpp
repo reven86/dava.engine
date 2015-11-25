@@ -31,12 +31,12 @@
 
 using namespace DAVA;
 
-const uint32 renderTargetSize = 1024;
 const uint32 cubemapFaces = 6;
 
 VisibilityToolRenderPass::VisibilityToolRenderPass()
     : RenderPass(PASS_FORWARD)
     , camera(new Camera())
+    , distanceMaterial(new NMaterial())
 {
     camera->SetupPerspective(90.0f, 1.0f, 1.0f, 5000.0f);
 
@@ -44,17 +44,15 @@ VisibilityToolRenderPass::VisibilityToolRenderPass()
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 
     config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     config.priority = PRIORITY_SERVICE_3D;
     config.viewport.x = 0;
     config.viewport.y = 0;
-    config.viewport.width = renderTargetSize;
-    config.viewport.height = renderTargetSize;
+
+    distanceMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/Distance.Opaque.material"));
+    distanceMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 VisibilityToolRenderPass::~VisibilityToolRenderPass()
@@ -65,6 +63,8 @@ void VisibilityToolRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSyst
 {
     config.colorBuffer[0].texture = renderTarget->handle;
     config.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
+    config.viewport.width = renderTarget->GetWidth();
+    config.viewport.height = renderTarget->GetHeight();
 
     camera->SetPosition(point);
     for (uint32 i = 0; i < cubemapFaces; ++i)
@@ -96,12 +96,12 @@ void VisibilityToolRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vec
     };
     const Vector4 clearColors[cubemapFaces] =
     {
-      Vector4(1.0f, 0.0f, 0.0f, 1.0f),
-      Vector4(0.5f, 0.0f, 0.0f, 1.0f),
-      Vector4(0.0f, 1.0f, 0.0f, 1.0f),
-      Vector4(0.0f, 0.5f, 0.0f, 1.0f),
-      Vector4(0.0f, 0.0f, 1.0f, 1.0f),
-      Vector4(0.0f, 0.0f, 0.5f, 1.0f),
+      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+      Vector4(1.0f, 1.0f, 1.0f, 1.0f),
     };
 
     const rhi::TextureFace targetFaces[cubemapFaces] =
@@ -121,16 +121,29 @@ void VisibilityToolRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vec
     camera->SetUp(upVectors[faceIndex]);
 }
 
+bool VisibilityToolRenderPass::ShouldRenderObject(RenderObject* object)
+{
+    auto type = object->GetType();
+
+    return (type != RenderObject::TYPE_SPEED_TREE) && (type != RenderObject::TYPE_SPRITE) &&
+    (type != RenderObject::TYPE_VEGETATION) && (type != RenderObject::TYPE_PARTICLE_EMTITTER);
+}
+
+bool VisibilityToolRenderPass::ShouldRenderBatch(RenderBatch* batch)
+{
+    return (batch->GetMaterial()->GetEffectiveFXName() != NMaterialName::SKYOBJECT);
+}
+
 void VisibilityToolRenderPass::RenderWithCurrentSettings(RenderSystem* renderSystem)
 {
     ShaderDescriptorCache::ClearDynamicBindigs();
     SetupCameraParams(camera, camera);
     PrepareVisibilityArrays(camera, renderSystem);
 
-    auto renderPass = rhi::AllocateRenderPass(config, 1, &packetList);
+    rhi::HPacketList localPacketList;
+    auto renderPass = rhi::AllocateRenderPass(config, 1, &localPacketList);
     rhi::BeginRenderPass(renderPass);
-    rhi::BeginPacketList(packetList);
-
+    rhi::BeginPacketList(localPacketList);
     for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
     {
         RenderLayer* layer = renderLayers[k];
@@ -140,23 +153,19 @@ void VisibilityToolRenderPass::RenderWithCurrentSettings(RenderSystem* renderSys
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
             RenderBatch* batch = renderBatchArray.Get(batchIndex);
-            auto renderObject = batch->GetRenderObject();
-            auto objectType = renderObject->GetType();
-            if (objectType != RenderObject::TYPE_PARTICLE_EMTITTER)
+            RenderObject* renderObject = batch->GetRenderObject();
+            if (ShouldRenderBatch(batch) && ShouldRenderObject(renderObject))
             {
-                rhi::Packet packet;
-                RenderObject* renderObject = batch->GetRenderObject();
                 renderObject->BindDynamicParameters(camera);
-                NMaterial* mat = batch->GetMaterial();
-                DVASSERT(mat);
+
+                rhi::Packet packet;
                 batch->BindGeometryData(packet);
-                DVASSERT(packet.primitiveCount);
-                mat->BindParams(packet);
+                distanceMaterial->BindParams(packet);
                 packet.cullMode = rhi::CULL_NONE;
-                rhi::AddPacket(packetList, packet);
+                rhi::AddPacket(localPacketList, packet);
             }
         }
     }
-    rhi::EndPacketList(packetList);
+    rhi::EndPacketList(localPacketList);
     rhi::EndRenderPass(renderPass);
 }

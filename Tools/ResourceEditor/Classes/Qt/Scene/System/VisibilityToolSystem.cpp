@@ -43,6 +43,7 @@
 #include "Render/Material/NMaterialNames.h"
 
 const Vector2 CROSS_TEXTURE_SIZE = Vector2(32.0f, 32.0f);
+const uint32 renderTargetSize = 2048;
 
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
@@ -239,8 +240,11 @@ uint32 VisibilityToolSystem::StartAddingVisibilityPoint()
     SetState(State::AddingPoint);
     checkPoints.emplace_back();
 
-    auto renderTarget = Texture::CreateFBO(1024, 1024, PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
+    auto renderTarget = Texture::CreateFBO(renderTargetSize, renderTargetSize,
+                                           PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
+
     auto clonedSphere = sphereScene->children.front()->Clone();
+
     auto ro = GetRenderObject(clonedSphere);
     uint32 numBatcnes = ro->GetActiveRenderBatchCount();
     for (uint32 i = 0; i < numBatcnes; ++i)

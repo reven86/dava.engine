@@ -488,6 +488,11 @@ void gles2_Initialize(const InitParam& param)
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
         glDebugMessageCallback(&_OGLErrorCallback, 0);
+
+#if defined(GL_TEXTURE_CUBE_MAP_SEAMLESS)
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+#endif
+
 #endif
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
