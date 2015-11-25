@@ -325,7 +325,10 @@ void LibraryModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode
 {
     Q_UNUSED(from);
     DVASSERT(nullptr != node);
-    DVASSERT(nullptr != controlsRootItem);
+    if (nullptr == controlsRootItem) //nodes can be removed in any order
+    {
+        return;
+    }
     QModelIndex index = indexByNode(node, controlsRootItem);
     if (index.isValid())
     {
@@ -361,7 +364,10 @@ void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPacka
 {
     Q_UNUSED(from);
     DVASSERT(nullptr != node);
-    DVASSERT(nullptr != importedPackageRootItem);
+    if (nullptr == importedPackageRootItem) //nodes can be removed in any order
+    {
+        return;
+    }
     QModelIndex parentIndex = indexByNode(node, importedPackageRootItem);
     if (parentIndex.isValid())
     {
