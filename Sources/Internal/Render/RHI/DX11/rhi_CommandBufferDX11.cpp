@@ -1206,6 +1206,7 @@ void CommandBufferDX11_t::_ApplyRasterizerState()
 
 void CommandBufferDX11_t::_ApplyConstBuffers()
 {
+#if 0
     unsigned vertexBufCount = 0;
     unsigned fragmentBufCount = 0;
 
@@ -1213,6 +1214,10 @@ void CommandBufferDX11_t::_ApplyConstBuffers()
 
     context->VSSetConstantBuffers(0, vertexBufCount, vertexConstBuffer);
     context->PSSetConstantBuffers(0, fragmentBufCount, fragmentConstBuffer);
+#else
+    context->VSSetConstantBuffers(0, MAX_CONST_BUFFER_COUNT, vertexConstBuffer);
+    context->PSSetConstantBuffers(0, MAX_CONST_BUFFER_COUNT, fragmentConstBuffer);
+#endif
     StatSet::IncStat(stat_SET_CB, 2);
 }
 
