@@ -82,6 +82,8 @@ void F_CALLBACK fmod_tracking_free(void* ptr, FMOD_MEMORY_TYPE /*type*/, const c
 
 }   // unnamed namespace
 
+static_assert(sizeof(FMOD_VECTOR) == sizeof(Vector3), "Sizes of FMOD_VECTOR and Vector3 are mismatch");
+
 static const FastName SEREALIZE_EVENTTYPE_EVENTFILE("eventFromFile");
 static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
 
@@ -89,7 +91,7 @@ Mutex SoundSystem::soundGroupsMutex;
     
 SoundSystem::SoundSystem()
 {
-    DVASSERT(sizeof(FMOD_VECTOR) == sizeof(Vector3));
+    SetDebugMode(false);
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     FMOD::Memory_Initialize(nullptr, 0, &fmod_tracking_alloc, &fmod_tracking_realloc, &fmod_tracking_free);
@@ -160,6 +162,18 @@ void SoundSystem::InitFromQualitySettings()
     {
         Logger::Warning("[SoundSystem] No default quality SFX config!");
     }
+}
+
+void SoundSystem::SetDebugMode(bool debug)
+{
+    FMOD::Debug_SetLevel(debug ? FMOD_DEBUG_LEVEL_ALL : FMOD_DEBUG_LEVEL_NONE);
+}
+
+bool SoundSystem::IsDebugModeOn() const
+{
+    FMOD_DEBUGLEVEL debugLevel = 0;
+    FMOD::Debug_GetLevel(&debugLevel);
+    return debugLevel == FMOD_DEBUG_LEVEL_ALL;
 }
 
 SoundEvent * SoundSystem::CreateSoundEventByID(const FastName & eventName, const FastName & groupName)
