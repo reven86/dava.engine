@@ -128,6 +128,6 @@ _SwapRB5551(void* data, uint32 size)
 
 //------------------------------------------------------------------------------
 
-#endif //__RHI_FORMAT_CONVERT_H__
-
 } //namespace rhi
+
+#endif //__RHI_FORMAT_CONVERT_H__

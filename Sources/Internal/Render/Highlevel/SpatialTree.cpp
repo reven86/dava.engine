@@ -279,11 +279,12 @@ void QuadTree::AddRenderObject(RenderObject * renderObject)
 		//object is somehow outside the world - just add to root
 		nodes[0].objects.push_back(renderObject);
 		renderObject->SetTreeNodeIndex(0);
-		return;
-	}
-	uint16 nodeToAdd = FindObjectAddNode(0, renderObject->GetWorldBoundingBox());			
-	nodes[nodeToAdd].objects.push_back(renderObject);
-	renderObject->SetTreeNodeIndex(nodeToAdd);
+        renderObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
+        return;
+    }
+    uint16 nodeToAdd = FindObjectAddNode(0, renderObject->GetWorldBoundingBox());
+    nodes[nodeToAdd].objects.push_back(renderObject);
+    renderObject->SetTreeNodeIndex(nodeToAdd);
 	renderObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
 }
 
@@ -507,8 +508,8 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
     for (int32 i = 0; i < QuadTreeNode::NODE_NONE; ++i)
     {
         uint16 childNodeId = currNode.children[i];
-		if (childNodeId!=INVALID_TREE_NODE_INDEX)
-		{
+        if (childNodeId != INVALID_TREE_NODE_INDEX)
+        {
             ProcessNodeClipping(childNodeId, clippingFlags, visibilityArray);
         }
     }

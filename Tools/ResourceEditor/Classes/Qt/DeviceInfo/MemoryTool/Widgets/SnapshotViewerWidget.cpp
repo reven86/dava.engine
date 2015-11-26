@@ -78,7 +78,7 @@ void SnapshotViewerWidget::InitBranchView()
     QItemSelectionModel* selModel = branchTree->selectionModel();
     connect(selModel, &QItemSelectionModel::currentChanged, this, &SnapshotViewerWidget::BranchView_SelectionChanged);
 
-    branchBlocksWidget = new MemoryBlocksWidget(session, &branchBlockLinked, false);
+    branchBlocksWidget = new MemoryBlocksWidget(session, &branchBlockLinked, false, false);
     connect(branchBlocksWidget, &MemoryBlocksWidget::MemoryBlockDoubleClicked, this, &SnapshotViewerWidget::MemoryBlockDoubleClicked);
 
     QSplitter* splitter = new QSplitter(Qt::Vertical);
@@ -90,7 +90,7 @@ void SnapshotViewerWidget::InitBranchView()
 
 void SnapshotViewerWidget::InitMemoryBlocksView()
 {
-    memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked);
+    memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked, true, true);
     tab->addTab(memoryBlocksWidget, "Memory blocks");
 }
 

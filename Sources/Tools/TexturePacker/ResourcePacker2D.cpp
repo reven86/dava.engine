@@ -263,7 +263,7 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
 DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName)
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
-    
+
     uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 
     bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
@@ -405,7 +405,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     Vector<String> currentFlags;
 
     const auto flagsPathname = inputPath + "flags.txt";
-    if (flagsPathname.Exists())
+    if (FileSystem::Instance()->Exists(flagsPathname))
     {
         currentFlags = FetchFlags(flagsPathname);
     }
@@ -586,10 +586,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         Logger::Info("[%s] - unchanged", inputPath.GetAbsolutePathname().c_str());
     }
 
-    if (false == CommandLineParser::Instance()->IsFlagSet("--recursive"))
-    {
-        currentFlags.clear();
-    }
+    const auto& flagsToPass = CommandLineParser::Instance()->IsFlagSet("--recursive") ? currentFlags : passedFlags;
 
     for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
@@ -606,7 +603,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
 
-                    RecursiveTreeWalk(input, output, currentFlags);
+                    RecursiveTreeWalk(input, output, flagsToPass);
                 }
     		}
     	}

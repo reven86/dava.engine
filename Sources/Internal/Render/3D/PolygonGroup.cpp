@@ -235,8 +235,6 @@ void PolygonGroup::CreateBaseVertexArray()
     
 void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
     aabbox = AABBox3(); // reset bbox
     
     Matrix4 normalMatrix4;
@@ -313,6 +311,8 @@ uint32 PolygonGroup::ReleaseGeometryData()
 
 void PolygonGroup::BuildBuffers()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (vertexBuffer.IsValid())
         rhi::DeleteVertexBuffer(vertexBuffer);
 
@@ -418,7 +418,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
         if (vertexFormat != resFormat) //not all streams in data are required or present - smart copy
         {
             if ((~vertexFormat) & resFormat)
-                Logger::Debug("expanding polygon group vertex format for %d vertices!", vertexCount);
+                Logger::FrameworkDebug("expanding polygon group vertex format for %d vertices!", vertexCount);
             int32 newVertexStride = GetVertexSize(resFormat);
             SafeDeleteArray(meshData);
             meshData = new uint8[vertexCount * newVertexStride];

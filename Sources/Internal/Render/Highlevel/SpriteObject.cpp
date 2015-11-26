@@ -223,14 +223,14 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
         newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
     }
 
-	SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
+    SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
 
-	spriteObject->flags = flags;
-	spriteObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
-	spriteObject->debugFlags = debugFlags;
-	spriteObject->ownerDebugInfo = ownerDebugInfo;
+    spriteObject->flags = flags;
+    spriteObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
+    spriteObject->debugFlags = debugFlags;
+    spriteObject->ownerDebugInfo = ownerDebugInfo;
 
-	return spriteObject;
+    return spriteObject;
 }
 
 

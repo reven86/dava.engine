@@ -649,7 +649,7 @@ void DownloadManager::MakeFullDownload()
 {
     currentTask->type = FULL;
 
-    if (currentTask->storePath.Exists())
+    if (FileSystem::Instance()->Exists(currentTask->storePath))
     {
         if (FileSystem::Instance()->DeleteFile(currentTask->storePath))
         {

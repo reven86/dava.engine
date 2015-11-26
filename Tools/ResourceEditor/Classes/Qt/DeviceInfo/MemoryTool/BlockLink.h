@@ -57,7 +57,7 @@ struct BlockLink
     static BlockLink CreateBlockLink(const DAVA::Vector<DAVA::MMBlock*>& blocks1, const MemorySnapshot* snapshot1,
                                      const DAVA::Vector<DAVA::MMBlock*>& blocks2, const MemorySnapshot* snapshot2);
 
-    BlockLink() = default;
+    BlockLink();
     BlockLink(BlockLink&& other);
     BlockLink& operator = (BlockLink&& other);
 

@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 3.0)
 project ( UnitTests )
 
+set( DAVA_DISABLE_AUTOTESTS true )
+
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
 if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )

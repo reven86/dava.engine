@@ -34,11 +34,13 @@
 #ifndef __DAVAENGINE_CONFIG_H__
 #define __DAVAENGINE_CONFIG_H__
 
+#ifndef DISABLE_AUTOTESTS
 #ifndef __DAVAENGINE_AUTOTESTING__
 #   define __DAVAENGINE_AUTOTESTING__
 #endif
 #ifndef AUTOTESTING_LUA
 #   define AUTOTESTING_LUA
+#endif
 #endif
 
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations 

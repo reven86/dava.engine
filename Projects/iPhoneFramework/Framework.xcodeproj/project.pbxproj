@@ -321,10 +321,6 @@
 		02E7C70A1BD624A7002F026D /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1AE1BD624A5002F026D /* Core.h */; };
 		02E7C70B1BD624A7002F026D /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */; };
 		02E7C70C1BD624A7002F026D /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */; };
-		02E7C70D1BD624A7002F026D /* CoreMacOS_CarbonWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B01BD624A5002F026D /* CoreMacOS_CarbonWindow.cpp */; };
-		02E7C70E1BD624A7002F026D /* CoreMacOS_CarbonWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B01BD624A5002F026D /* CoreMacOS_CarbonWindow.cpp */; };
-		02E7C70F1BD624A7002F026D /* CoreMacOS_CarbonWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B11BD624A5002F026D /* CoreMacOS_CarbonWindow.h */; };
-		02E7C7101BD624A7002F026D /* CoreMacOS_CarbonWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B11BD624A5002F026D /* CoreMacOS_CarbonWindow.h */; };
 		02E7C7111BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */; };
 		02E7C7121BD624A7002F026D /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */; };
 		02E7C7131BD624A7002F026D /* CoreMacOS_OpenGL.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */; };
@@ -2285,8 +2281,6 @@
 		02E7C1AD1BD624A5002F026D /* Core.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Core.cpp; sourceTree = "<group>"; };
 		02E7C1AE1BD624A5002F026D /* Core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Core.h; sourceTree = "<group>"; };
 		02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS.cpp; sourceTree = "<group>"; };
-		02E7C1B01BD624A5002F026D /* CoreMacOS_CarbonWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS_CarbonWindow.cpp; sourceTree = "<group>"; };
-		02E7C1B11BD624A5002F026D /* CoreMacOS_CarbonWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreMacOS_CarbonWindow.h; sourceTree = "<group>"; };
 		02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS_OpenGL.cpp; sourceTree = "<group>"; };
 		02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreMacOS_OpenGL.h; sourceTree = "<group>"; };
 		02E7C1B41BD624A5002F026D /* DisplayMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DisplayMode.h; sourceTree = "<group>"; };
@@ -3463,8 +3457,6 @@
 				02E7C1AD1BD624A5002F026D /* Core.cpp */,
 				02E7C1AE1BD624A5002F026D /* Core.h */,
 				02E7C1AF1BD624A5002F026D /* CoreMacOS.cpp */,
-				02E7C1B01BD624A5002F026D /* CoreMacOS_CarbonWindow.cpp */,
-				02E7C1B11BD624A5002F026D /* CoreMacOS_CarbonWindow.h */,
 				02E7C1B21BD624A5002F026D /* CoreMacOS_OpenGL.cpp */,
 				02E7C1B31BD624A5002F026D /* CoreMacOS_OpenGL.h */,
 				02E7C1B41BD624A5002F026D /* DisplayMode.h */,
@@ -4913,7 +4905,6 @@
 				02E7C8A21BD624A7002F026D /* TCPServerTransport.h in Headers */,
 				02E7C6F21BD624A7002F026D /* PosixThreads.h in Headers */,
 				02E7C5F61BD624A6002F026D /* AnimatedObject.h in Headers */,
-				02E7C7101BD624A7002F026D /* CoreMacOS_CarbonWindow.h in Headers */,
 				02E7C63A1BD624A6002F026D /* MongodbUpdateObject.h in Headers */,
 				02E7C7881BD624A7002F026D /* ResourceArchive.h in Headers */,
 				02E7C9C81BD624A7002F026D /* NativeViewPool.h in Headers */,
@@ -5465,7 +5456,6 @@
 				02E7C8A11BD624A7002F026D /* TCPServerTransport.h in Headers */,
 				02E7C6F11BD624A7002F026D /* PosixThreads.h in Headers */,
 				02E7C5F51BD624A6002F026D /* AnimatedObject.h in Headers */,
-				02E7C70F1BD624A7002F026D /* CoreMacOS_CarbonWindow.h in Headers */,
 				02E7C6391BD624A6002F026D /* MongodbUpdateObject.h in Headers */,
 				02E7C7871BD624A7002F026D /* ResourceArchive.h in Headers */,
 				02E7C9C71BD624A7002F026D /* NativeViewPool.h in Headers */,
@@ -6487,7 +6477,6 @@
 				02E7CF781BD639E1002F026D /* DownloaderCommon.cpp in Sources */,
 				02E7CC161BD624A7002F026D /* rhi_IndexBufferGLES2.cpp in Sources */,
 				02E7C6AC1BD624A6002F026D /* ObjectFactory.cpp in Sources */,
-				02E7C70E1BD624A7002F026D /* CoreMacOS_CarbonWindow.cpp in Sources */,
 				02E7CC181BD624A7002F026D /* rhi_PipelineStateGLES2.cpp in Sources */,
 				02E7C7DC1BD624A7002F026D /* AABBox3.cpp in Sources */,
 				02E7C7FE1BD624A7002F026D /* NeonMath.cpp in Sources */,
@@ -6983,7 +6972,6 @@
 				02E7CF771BD639E1002F026D /* DownloaderCommon.cpp in Sources */,
 				02E7CC151BD624A7002F026D /* rhi_IndexBufferGLES2.cpp in Sources */,
 				02E7C6AB1BD624A6002F026D /* ObjectFactory.cpp in Sources */,
-				02E7C70D1BD624A7002F026D /* CoreMacOS_CarbonWindow.cpp in Sources */,
 				02E7CC171BD624A7002F026D /* rhi_PipelineStateGLES2.cpp in Sources */,
 				02E7C7DB1BD624A7002F026D /* AABBox3.cpp in Sources */,
 				02E7C7FD1BD624A7002F026D /* NeonMath.cpp in Sources */,

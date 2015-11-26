@@ -86,7 +86,7 @@ StatSet::AddStat(const char* full_name, const char* short_name, unsigned parent_
 {
     using namespace statset;
 
-    unsigned id = InvalidIndex;
+    unsigned id = DAVA::InvalidIndex;
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
 
@@ -118,7 +118,7 @@ StatSet::AddPermanentStat(const char* full_name, const char* short_name, unsigne
 {
     using namespace statset;
 
-    unsigned id = InvalidIndex;
+    unsigned id = DAVA::InvalidIndex;
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
 
@@ -226,7 +226,7 @@ StatSet::StatID(const char* name)
 {
     using namespace statset;
 
-    unsigned id = InvalidIndex;
+    unsigned id = DAVA::InvalidIndex;
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
 

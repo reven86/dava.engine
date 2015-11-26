@@ -164,9 +164,9 @@ void TextureListModel::setScene(DAVA::Scene *scene)
     for (DAVA::TexturesMap::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
     {
 		DAVA::TextureDescriptor * descriptor = t->second->texDescriptor;
-		if(NULL != descriptor && descriptor->pathname.Exists())
-		{
-			textureDescriptorsAll.push_back(descriptor);
+        if (NULL != descriptor && DAVA::FileSystem::Instance()->Exists(descriptor->pathname))
+        {
+            textureDescriptorsAll.push_back(descriptor);
 			texturesAll[descriptor] = SafeRetain(t->second);
 		}
 	}

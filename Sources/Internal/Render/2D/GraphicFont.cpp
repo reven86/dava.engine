@@ -83,8 +83,8 @@ protected:
     friend class GraphicFont;
 };
 
-using FontMap = Map<FilePath, GraphicInternalFont*>;
-FontMap dataMap;
+using FontGraphicMap = Map<FilePath, GraphicInternalFont*>;
+FontGraphicMap dataMap;
 Mutex GraphicInternalFont::dataMapMutex;
 
 GraphicInternalFont::GraphicInternalFont()
@@ -107,7 +107,7 @@ GraphicInternalFont* GraphicInternalFont::Create(const FilePath& descriptorPath)
 {
     {
         LockGuard<Mutex> guard(dataMapMutex);
-        FontMap::iterator iter = dataMap.find(descriptorPath);
+        FontGraphicMap::iterator iter = dataMap.find(descriptorPath);
         if (iter != dataMap.end())
         {
             return SafeRetain(iter->second);
