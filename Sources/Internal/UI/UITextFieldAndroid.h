@@ -120,7 +120,7 @@ public:
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
 
-	void SetTextUseRtlAlign(bool useRtlAlign);
+    void SetTextUseRtlAlign(bool useRtlAlign);
 	bool GetTextUseRtlAlign() const;
 
 	void SetVisible(bool isVisible);

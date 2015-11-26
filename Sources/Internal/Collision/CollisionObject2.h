@@ -79,7 +79,7 @@ public:
     Vector2 basePolygonCenter; // real center of the collision polygon
 
     //Vector2 updatedCenter;		// real center of the collision polygon
-	ContactManifold2 manifold;
+    ContactManifold2 manifold;
 	
 	Polygon2 * basePolygon;
 	Polygon2 polygon;

@@ -105,8 +105,7 @@ public:
 
     //! Comparison operators
     inline bool operator==(const Vector2& _v) const;
-    inline bool operator != (const Vector2 & _v) const;
-	
+    inline bool operator!=(const Vector2& _v) const;
 };
 //! operators
 inline Vector2 operator - (const Vector2 & _v1, const Vector2 & _v2);
@@ -296,7 +295,7 @@ public:
     inline float32 SquareLength();
     inline float32 Length();
     inline void Normalize();
-	inline void Clamp(float32 min, float32 max);
+    inline void Clamp(float32 min, float32 max);
 
 	//! On operations
 	inline const Vector4 & operator += (const Vector4 & _v);
