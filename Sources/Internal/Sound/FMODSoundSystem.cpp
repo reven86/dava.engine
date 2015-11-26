@@ -173,7 +173,7 @@ bool SoundSystem::IsDebugModeOn() const
 {
     FMOD_DEBUGLEVEL debugLevel = 0;
     FMOD::Debug_GetLevel(&debugLevel);
-    return debugLevel == FMOD_DEBUG_LEVEL_ALL;
+    return debugLevel != FMOD_DEBUG_LEVEL_NONE;
 }
 
 SoundEvent * SoundSystem::CreateSoundEventByID(const FastName & eventName, const FastName & groupName)
