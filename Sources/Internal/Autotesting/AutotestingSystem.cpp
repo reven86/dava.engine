@@ -161,7 +161,7 @@ namespace DAVA
         Logger::Info("AutotestingSystem::OnAppFinished out");
     }
 
-	void AutotestingSystem::RunTests()
+    void AutotestingSystem::RunTests()
 	{
 		if (!isInit || isRunning)
 		{
