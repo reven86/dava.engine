@@ -25,7 +25,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.bda.controller.Controller;
 import com.dava.framework.InputManagerCompat.InputDeviceListener;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener, InputDeviceListener
@@ -37,8 +36,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private View splashView = null;
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
-	
-	private Controller mController = null;
 	
 	private InputManagerCompat inputManager = null;
 	
@@ -135,20 +132,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         inputManager = InputManagerCompat.Factory.getInputManager(this);
         
         splashView = GetSplashView();
-        ShowSplashScreenView();
-        
-        if(mController != null)
-        {
-            if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
-            {		
-        	    MogaFixForLollipop.init(mController, this);
-			}
-            else
-            {
-                mController.init();
-            }
-        	mController.setListener(surfaceView.mogaListener, new Handler());
-        }
 
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
         if (tm != null) {
@@ -158,7 +141,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			Log.d("", "no singalStrengthListner");
 		}
 
-		JNIApplication.app.mainCPPThread = new Thread(new Runnable() 
+		JNIApplication.mainCPPThread = new Thread(new Runnable() 
 		{
 			long startTime;
 			
@@ -219,12 +202,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                     {
                         Log.d(JNIConst.LOG_TAG, "[C++ main thread] suspend native in");
 
-                        PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
-                        boolean isScreenLocked = false;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
-                            isScreenLocked = !pm.isInteractive();
-                        else
-                            isScreenLocked = !pm.isScreenOn();
+                        boolean isScreenLocked = isScreenLocked();
                 
                         nativeOnPause(isScreenLocked);
 
@@ -249,8 +227,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			}
 		}, "cpp_main_thread");
 
-		mainLoopThreadID = JNIApplication.app.mainCPPThread.getId();
-		JNIApplication.app.mainCPPThread.start();
+		mainLoopThreadID = JNIApplication.mainCPPThread.getId();
+		JNIApplication.mainCPPThread.start();
 
         // check if we are starting from android notification popup
         // and execute appropriate runnable
@@ -380,11 +358,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // reverse order of onResume
         // Another activity is taking focus (this activity is about to be "paused").
         Log.d(JNIConst.LOG_TAG, "[Activity::onPause] in");
-
-        if(mController != null)
-        {
-            mController.onPause();
-        }
         
         inputManager.unregisterInputDeviceListener(this);
         
@@ -418,13 +391,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 accelerometer.Start();
             }
         }
-        
-        if(mController != null)
-        {
-            mController.onResume();
-        }
 
         inputManager.registerInputDeviceListener(this, null);
+        // if we connect gamepad after start game and do not 
+        // receive even onInputDeviceAdded double check gamepad axis
+        UpdateGamepadAxises();
         JNIUtils.keepScreenOnOnResume();
         
 
@@ -501,22 +472,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] c++ main thread join start");
 
         // Now wait for the CPP thread to quit
-        if (JNIApplication.app.mainCPPThread != null) {
+        if (JNIApplication.mainCPPThread != null) {
             try {
-                JNIApplication.app.mainCPPThread.join();
+                JNIApplication.mainCPPThread.join();
             } catch(Exception e) {
                 Log.v(JNIConst.LOG_TAG, "Problem stopping mainCPPThread: " + e);
             }
-            JNIApplication.app.mainCPPThread = null;
+            JNIApplication.mainCPPThread = null;
         }
 
         Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] c++ main thread join end");
-
-        // exit joystik controller
-        if(mController != null)
-        {
-            mController.exit();
-        }
 
         super.onDestroy();
 
@@ -617,30 +582,35 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			{
 
 		    	boolean isGamepadAvailable = false;
-				int[] inputDevices = InputDevice.getDeviceIds();
-				Set<Integer> avalibleAxises = new HashSet<Integer>(); 
-				for(int id : inputDevices)
-				{
-					if((InputDevice.getDevice(id).getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
-					{
-						isGamepadAvailable = true;
-						
-						List<MotionRange> ranges = InputDevice.getDevice(id).getMotionRanges();
-						for(MotionRange r : ranges)
-						{
-							int axisId = r.getAxis();
-							if(supportedAxises.contains(axisId))
-								avalibleAxises.add(axisId);
-						}
-					}
-				}
-				
-				surfaceView.SetAvailableGamepadAxises(avalibleAxises.toArray(new Integer[0]));
-				
-				nativeOnGamepadAvailable(isGamepadAvailable);
-				nativeOnGamepadTriggersAvailable(avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) || avalibleAxises.contains(MotionEvent.AXIS_BRAKE));
-			}
-		});
+                int[] inputDevices = InputDevice.getDeviceIds();
+                Set<Integer> avalibleAxises = new HashSet<Integer>();
+                for (int id : inputDevices) {
+                    InputDevice device = InputDevice.getDevice(id);
+                    if ((device.getSources()
+                            & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
+                        isGamepadAvailable = true;
+
+                        List<MotionRange> ranges = device.getMotionRanges();
+                        for (MotionRange r : ranges) {
+                            int axisId = r.getAxis();
+                            if (supportedAxises.contains(axisId)) {
+                                avalibleAxises.add(axisId);
+                            }
+                        }
+                        break; // only first connected device
+                    }
+                }
+
+                Integer[] axisIds = new Integer[avalibleAxises.size()];
+                surfaceView.SetAvailableGamepadAxises(
+                        avalibleAxises.toArray(axisIds));
+
+                nativeOnGamepadAvailable(isGamepadAvailable);
+                nativeOnGamepadTriggersAvailable(avalibleAxises
+                        .contains(MotionEvent.AXIS_LTRIGGER)
+                        || avalibleAxises.contains(MotionEvent.AXIS_BRAKE));
+            }
+        });
     }
     
 	@Override
@@ -737,6 +707,17 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		surfaceView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
 	}
 	
+	@SuppressWarnings("deprecation")
+	private boolean isScreenLocked() {
+		PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
+		boolean isScreenLocked = false;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+			isScreenLocked = !pm.isInteractive();
+		} else {
+			isScreenLocked = !pm.isScreenOn();
+		}
+		return isScreenLocked;
+	}
 	// Workaround! this function called from c++ when game wish to 
     // Quit it block GLThread because we already destroy singletons and can't 
     // return to GLThread back

@@ -59,6 +59,7 @@ public:
     inline bool IsChanged() const;
 	inline bool IsVisible() const;
     const DAVA::String& GetId() const;
+
 private:
     virtual void ImplShow() = 0;
 

@@ -124,7 +124,7 @@ namespace DAVA
 		}
 
         inline void AddBinding(uint64 parentKey, NMaterial* material)
-		{
+        {
 			MaterialBinding binding;
             binding.childMaterial = material;
             binding.parentKey = parentKey;
