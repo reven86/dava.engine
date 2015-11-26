@@ -175,7 +175,7 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad* quad)
         }
     }
 
-    uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
+    uint32 vBufferSize = static_cast<uint32>(verticesCount * sizeof(LandscapeVertex));
 
     rhi::VertexBuffer::Descriptor desc;
     desc.size = vBufferSize;

@@ -174,7 +174,7 @@ private:
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
-    DAVA::Thread * mainLoopThread = nullptr;
+    bool mainLoopThreadStarted = false;
 
     volatile bool quitFlag = false;
 
