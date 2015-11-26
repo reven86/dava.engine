@@ -129,8 +129,9 @@ protected:
 	IWebViewControl* webViewControl;
     
 private:
-    bool isNativeControlVisible;
-    int32 dataDetectorTypes;
+    bool isNativeControlVisible = false;
+    int32 dataDetectorTypes = DATA_DETECTOR_LINKS;
+
 public:
     INTROSPECTION_EXTEND(UIWebView, UIControl,
                          PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT));
