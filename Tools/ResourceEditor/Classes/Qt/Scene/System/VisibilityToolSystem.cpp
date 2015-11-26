@@ -128,7 +128,11 @@ void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
 
     for (const auto& p : checkPoints)
     {
-        p.debugSphere->SetLocalTransform(Matrix4::MakeTranslation(p.worldPosition));
+        Matrix4 t = Matrix4::MakeScale(Vector3(0.05f, 0.05f, 0.05f));
+        t.data[12] = p.worldPosition.x;
+        t.data[13] = p.worldPosition.y;
+        t.data[14] = p.worldPosition.z;
+        p.debugSphere->SetLocalTransform(t);
     }
 
     if (state == State::ComputingVisibility)
