@@ -379,11 +379,11 @@ Scene::~Scene()
     animatedMeshes.clear();
 
     for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
-	{
-		Camera * obj = *t;
-		obj->Release();
-	}
-	cameras.clear();
+    {
+        Camera* obj = *t;
+        obj->Release();
+    }
+    cameras.clear();
     
     SafeRelease(mainCamera);
     SafeRelease(drawCamera);

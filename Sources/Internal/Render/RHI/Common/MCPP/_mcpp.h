@@ -37,7 +37,8 @@ char* mcpp__fgets(char* buf, int max_size, FILE* file);
 int mcpp__stat(const char* path, stat_t* buffer);
 
 void mcpp__set_input(const void* data, unsigned data_sz);
+void mcpp__startup();
 void mcpp__cleanup();
-
+void mcpp__shutdown();
 
 #endif // ___MCPP_H__

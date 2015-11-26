@@ -61,7 +61,6 @@ public:
     ImageFormatInterface* GetImageFormatInterface(File *file) const;
 
     ImageInfo GetImageInfo(const FilePath &pathName) const;
-    ImageInfo GetImageInfo(File *infile) const;
 
     inline const Vector<String>& GetExtensionsFor(ImageFormat format) const;
     
@@ -69,14 +68,16 @@ public:
     ImageFormat GetImageFormatForExtension(const FilePath &pathname) const;
 
     ImageFormat GetImageFormatByName(const String& name) const;
-    
-protected:
-    ImageFormatInterface* wrappers[IMAGE_FORMAT_COUNT];
+
+private:
+    ImageInfo GetImageInfo(File* infile) const;
+
+    Array<ImageFormatInterface*, IMAGE_FORMAT_COUNT> wrappers;
 };
 
 inline ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
 {
-    DVASSERT(fileFormat >= 0 && fileFormat < IMAGE_FORMAT_COUNT);
+    DVASSERT(fileFormat < IMAGE_FORMAT_COUNT);
     return wrappers[fileFormat];
 }
 

@@ -39,8 +39,7 @@ class LocalNotificationText : public LocalNotification
 {
 
 private:
-	virtual void ImplShow();
-
+    void ImplShow() override;
 };
 
 }

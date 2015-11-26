@@ -46,7 +46,7 @@ protected:
     }
 
 public:
-	virtual void LoadResources();
+    virtual void LoadResources();
 	virtual void UnloadResources();
 
     virtual void Draw(const UIGeometricData &geometricData);

@@ -1,15 +1,10 @@
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/DynamicMemoryFile.h"
+#include "Base/BaseTypes.h"
+#include "Scene3D/PathManip.h"
+#include "_mcpp.h"
 
-
-    #include "_mcpp.h"
-
-    #include "FileSystem/FileSystem.h"
-    #include "FileSystem/DynamicMemoryFile.h"
-    #include "Base/BaseTypes.h"
 using DAVA::uint8;
-    #include "Scene3D/PathManip.h"
-
-
-    #include <stdio.h>
 
 struct
 FileEntry
@@ -50,6 +45,24 @@ void mcpp__set_input(const void* data, unsigned data_sz)
     entry.handle = _HandleBase + 0;
 
     _FileEntry.push_back(entry);
+}
+
+//------------------------------------------------------------------------------
+
+extern void xbegin_allocations(); // defined in support.cpp
+
+void mcpp__startup()
+{
+    xbegin_allocations();
+}
+
+//------------------------------------------------------------------------------
+
+extern void xend_allocations(); // defined in support.cpp
+
+void mcpp__shutdown()
+{
+    xend_allocations();
 }
 
 //------------------------------------------------------------------------------

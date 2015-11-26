@@ -550,43 +550,24 @@ VPROG_BEGIN
 
 
 #if VERTEX_FOG
+	
+    #define FOG_eye_position cameraPosition
+	#define FOG_view_position eyeCoordsPosition
+		
+#if FOG_ATMOSPHERE
+    #define FOG_to_light_dir toLightDir
+#endif
+	
+#if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
+	float3 world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
+	#define FOG_world_position world_position
+#endif
+	
+	#include "vp-fog-math.cgh" // in{float3 FOG_view_position; float3 FOG_eye_position; float3 FOG_to_light_dir; float3 FOG_world_position; } ; out{ float4 FOG_result }
+	
+	VP_OUT(varFog) = FOG_result;
 
-    FogParam    fog_param;
-
-    fog_param.color     = fogColor.rgb;
-    fog_param.limit     = fogLimit;
-    #if FOG_LINEAR
-    fog_param.start     = fogStart;
-    fog_param.end       = fogEnd;
-    #else
-    fog_param.density   = fogDensity;
-    #endif
-    #if FOG_HALFSPACE
-    fog_param.halfspace_height  = fogHalfspaceHeight;
-    fog_param.halfspace_falloff = fogHalfspaceFalloff;
-    fog_param.halfspace_density = fogHalfspaceDensity;
-    fog_param.halfspace_limit   = fogHalfspaceLimit;
-    #endif
-
-    #if FOG_ATMOSPHERE
-    fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
-
-    fog_param.atmosphere_distance = fogAtmosphereDistance;
-    #if !FOG_ATMOSPHERE_MAP
-    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
-    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
-    fog_param.atmosphere_scattering = fogAtmosphereScattering;
-    #endif
-    
-    #endif
-    
-    fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
-    fog_param.eye_position   = cameraPosition;
-    
-    VP_OUT(varFog) = CalculateVertexFog( fog_param );
-#endif // VERTEX_FOG
-
+#endif
 
 #if VERTEX_COLOR
     VP_OUT(varVertexColor) = VP_IN_COLOR0;

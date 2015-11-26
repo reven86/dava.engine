@@ -113,14 +113,14 @@ void PrivateMovieViewWinUAP::SetVisible(bool isVisible)
 
 void PrivateMovieViewWinUAP::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
-    IRandomAccessStream^ stream = CreateStreamFromFilePath(moviePath);
+    IRandomAccessStream ^ stream = CreateStreamFromFilePath(moviePath);
     if (stream)
     {
         OpenMovieFromStream(stream, params);
     }
 }
 
-void PrivateMovieViewWinUAP::OpenMovieFromStream(IRandomAccessStream^ stream, const OpenMovieParams& params)
+void PrivateMovieViewWinUAP::OpenMovieFromStream(IRandomAccessStream ^ stream, const OpenMovieParams& params)
 {
     movieLoaded = false;
     playRequest = false;
@@ -146,9 +146,8 @@ void PrivateMovieViewWinUAP::OpenMovieFromStream(IRandomAccessStream^ stream, co
         break;
     }
 
-    auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, stream, scaling]()
-    {
+    auto self{ shared_from_this() };
+    core->RunOnUIThread([this, self, stream, scaling]() {
         nativeMovieView->Stretch = scaling;
         nativeMovieView->SetSource(stream, L"");
     });
@@ -267,24 +266,24 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
 }
 
-Windows::Storage::Streams::IRandomAccessStream^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
+Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
 {
     String pathName = path.GetAbsolutePathname();
     std::replace(pathName.begin(), pathName.end(), '/', '\\');
-    Platform::String^ filePath = StringToRTString(pathName);
+    Platform::String ^ filePath = StringToRTString(pathName);
 
     try
     {
-        StorageFile^ file = WaitAsync(StorageFile::GetFileFromPathAsync(filePath));
+        StorageFile ^ file = WaitAsync(StorageFile::GetFileFromPathAsync(filePath));
         if (file != nullptr)
         {
             return WaitAsync(file->OpenAsync(FileAccessMode::Read));
         }
         return nullptr;
     }
-    catch (Platform::COMException^ e)
+    catch (Platform::COMException ^ e)
     {
-        Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)", 
+        Logger::Error("[MovieView] failed to load file %s: %s (0x%08x)",
                       RTStringToString(filePath).c_str(),
                       RTStringToString(e->Message).c_str(),
                       e->HResult);

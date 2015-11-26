@@ -57,7 +57,7 @@ void BaseTest::LoadResources()
     rect.dx = size.dx;
     rect.dy = size.dy;
 
-    sceneView = new UI3DView(rect, true);
+    sceneView = new UI3DView(rect);
     sceneView->SetScene(scene);
 
     AddControl(sceneView);

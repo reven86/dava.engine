@@ -59,10 +59,10 @@ private:
 };
 std::vector<VDeclDX9> VDeclDX9::_VDecl;
 
-static RingBuffer _DefConstRingBuf;
+static RingBuffer _DX9_DefConstRingBuf;
 
 static void
-DumpShaderText(const char* code, unsigned code_sz)
+DumpShaderTextDX9(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -356,7 +356,7 @@ RHI_IMPL_POOL_SIZE(PipelineStateDX9_t::ConstBuf, RESOURCE_CONST_BUFFER, Pipeline
 PipelineStateDX9_t::ConstBuf::ConstBuf()
     : value(nullptr)
     , inst(nullptr)
-    , reg(InvalidIndex)
+    , reg(DAVA::InvalidIndex)
     , regCount(0)
 {
 }
@@ -377,7 +377,7 @@ PipelineStateDX9_t::ConstBuf::~ConstBuf()
 void PipelineStateDX9_t::ConstBuf::Construct(ProgType ptype, unsigned reg_i, unsigned reg_count)
 {
     DVASSERT(!value);
-    DVASSERT(reg_i != InvalidIndex);
+    DVASSERT(reg_i != DAVA::InvalidIndex);
     DVASSERT(reg_count);
 
     progType = ptype;
@@ -417,7 +417,7 @@ PipelineStateDX9_t::ConstBuf::InstData() const
 {
     if (!inst)
     {
-        inst = _DefConstRingBuf.Alloc(4 * regCount);
+        inst = _DX9_DefConstRingBuf.Alloc(4 * regCount);
         memcpy(inst, value, regCount * 4 * sizeof(float));
     }
 
@@ -512,7 +512,7 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
                 sprintf(name, "VP_Buffer%u", i);
                 D3DXHANDLE c = const_tab->GetConstantByName(NULL, name);
 
-                cbufReg[i] = InvalidIndex;
+                cbufReg[i] = DAVA::InvalidIndex;
                 cbufCount[i] = 0;
 
                 if (c)
@@ -533,7 +533,7 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
                     if (strstr((const char*)bin, name))
                     {
                         Logger::Warning("shader has \"%s\", but no variables actually use it in code:\n", name);
-                        DumpShaderText((const char*)bin, bin_sz);
+                        DumpShaderTextDX9((const char*)bin, bin_sz);
                     }
                 }
             }
@@ -541,9 +541,9 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
             // do some additional sanity checks
             for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
             {
-                if (cbufReg[i] == InvalidIndex)
+                if (cbufReg[i] == DAVA::InvalidIndex)
                 {
-                    if (i == 0 && cbufReg[i + 1] != InvalidIndex)
+                    if (i == 0 && cbufReg[i + 1] != DAVA::InvalidIndex)
                     {
                         Logger::Warning("WARNING: vertex-const-buf [%u] is unused (all uniform/variables are unused)", i);
                     }
@@ -575,7 +575,7 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
         }
         Logger::Error("shader-uid : %s", uid.c_str());
         Logger::Error("vertex-shader text:\n");
-        DumpShaderText((const char*)bin, bin_sz);
+        DumpShaderTextDX9((const char*)bin, bin_sz);
     }
 
     return success;
@@ -704,7 +704,7 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
                 sprintf(name, "FP_Buffer%u", i);
                 D3DXHANDLE c = const_tab->GetConstantByName(NULL, name);
 
-                cbufReg[i] = InvalidIndex;
+                cbufReg[i] = DAVA::InvalidIndex;
                 cbufCount[i] = 0;
 
                 if (c)
@@ -725,7 +725,7 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
                     if (strstr((const char*)bin, name))
                     {
                         Logger::Warning("shader has \"%s\", but no variables actually use it in code:\n", name);
-                        DumpShaderText((const char*)bin, bin_sz);
+                        DumpShaderTextDX9((const char*)bin, bin_sz);
                     }
                 }
             }
@@ -733,9 +733,9 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
             // do some additional sanity checks
             for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
             {
-                if (cbufReg[i] == InvalidIndex)
+                if (cbufReg[i] == DAVA::InvalidIndex)
                 {
-                    if (i == 0 && cbufReg[i + 1] != InvalidIndex)
+                    if (i == 0 && cbufReg[i + 1] != DAVA::InvalidIndex)
                     {
                         Logger::Warning("WARNING: fragment-const-buf [%u] is unused (all uniform/variables are unused)", i);
                     }
@@ -762,7 +762,7 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
             Logger::Info((const char*)(err->GetBufferPointer()));
         }
         Logger::Error("fragment-shader text:\n");
-        DumpShaderText((const char*)bin, bin_sz);
+        DumpShaderTextDX9((const char*)bin, bin_sz);
     }
 
     return success;
@@ -1010,7 +1010,7 @@ void SetupDispatch(Dispatch* dispatch)
 
 void InitializeRingBuffer(uint32 size)
 {
-    _DefConstRingBuf.Initialize(size);
+    _DX9_DefConstRingBuf.Initialize(size);
 }
 
 const void*
@@ -1030,7 +1030,7 @@ void SetToRHI(Handle cb, const void* instData)
 
 void InvalidateAllConstBufferInstances()
 {
-    _DefConstRingBuf.Reset();
+    _DX9_DefConstRingBuf.Reset();
 
     for (ConstBufDX9Pool::Iterator b = ConstBufDX9Pool::Begin(), b_end = ConstBufDX9Pool::End(); b != b_end; ++b)
     {
