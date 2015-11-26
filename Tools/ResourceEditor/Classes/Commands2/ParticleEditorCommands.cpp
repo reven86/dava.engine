@@ -142,10 +142,6 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
                                       float32 scaleVelocityBase,
                                       float32 scaleVelocityFactor,
                                       bool isLooped,
-                                      const FilePath& spritePath,
-                                      eBlending blending,
-                                      bool enableFog,
-                                      bool enableFrameBlending,
                                       int32 particleOrientation,
                                       RefPtr<PropertyLine<float32>> life,
                                       RefPtr<PropertyLine<float32>> lifeVariation,
@@ -192,10 +188,6 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
     this->isLong = isLong;
     this->scaleVelocityBase = scaleVelocityBase;
     this->scaleVelocityFactor = scaleVelocityFactor;
-    this->spritePath = spritePath;
-    this->blending = blending;
-    this->enableFog = enableFog;
-    this->enableFrameBlending = enableFrameBlending;
     this->life = life;
     this->lifeVariation = lifeVariation;
     this->number = number;
@@ -244,9 +236,6 @@ void CommandUpdateParticleLayer::Redo()
     layer->scaleVelocityBase = scaleVelocityBase;
     layer->scaleVelocityFactor = scaleVelocityFactor;
     layer->isLooped = isLooped;
-    layer->blending = blending;
-    layer->enableFog = enableFog;
-    layer->enableFrameBlend = enableFrameBlending;
     PropertyLineHelper::SetValueLine(layer->life, life);
     PropertyLineHelper::SetValueLine(layer->lifeVariation, lifeVariation);
     PropertyLineHelper::SetValueLine(layer->number, number);
@@ -283,14 +272,6 @@ void CommandUpdateParticleLayer::Redo()
     layer->loopVariation = loopVariation;
 
     layer->SetPivotPoint(Vector2(pivotPointX, pivotPointY));
-
-    // This code must be after layer->frameOverlife set call, since setSprite
-    // may change the frames.
-    if (layer->spritePath != spritePath)
-    {
-        layer->SetSprite(spritePath);
-        //TODO: restart effect
-    }
 
     // The same is for emitter type.
     if (layer->type != layerType)
