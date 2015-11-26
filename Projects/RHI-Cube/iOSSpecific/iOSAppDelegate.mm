@@ -47,6 +47,7 @@
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
+    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     [window makeKeyAndVisible];
     window.backgroundColor = [UIColor redColor];
 
