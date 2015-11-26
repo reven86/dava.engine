@@ -56,16 +56,16 @@ using namespace DAVA;
 
 namespace
 {
-    String GetPathFromIndex(QModelIndex index)
+String GetPathFromIndex(QModelIndex index)
+{
+    QString path = index.data().toString();
+    while (index.parent().isValid())
     {
-        QString path = index.data().toString();
-        while (index.parent().isValid())
-        {
-            index = index.parent();
-            path += "/" + index.data().toString();
-        }
-        return path.toStdString();
+        index = index.parent();
+        path += "/" + index.data().toString();
     }
+    return path.toStdString();
+}
 }
 
 PropertiesWidget::PropertiesWidget(QWidget *parent)
@@ -320,7 +320,7 @@ void PropertiesWidget::UpdateSelection()
     QAbstractItemModel *prevModel = treeView->model();
     ControlNode *control = nullptr;
     StyleSheetNode *styleSheet = nullptr;
-    if (nullptr != treeView->model())
+    if (nullptr != prevModel)
     {
         auto index = treeView->indexAt(QPoint(0, 0));
         lastTopIndexPath = GetPathFromIndex(index);
@@ -387,7 +387,7 @@ void PropertiesWidget::ApplyExpanding()
     {
         return;
     }
-    QModelIndex index = treeView->model()->index(0, 0);
+    QModelIndex index = model->index(0, 0);
     while (index.isValid())
     {
         const auto &path = GetPathFromIndex(index);
