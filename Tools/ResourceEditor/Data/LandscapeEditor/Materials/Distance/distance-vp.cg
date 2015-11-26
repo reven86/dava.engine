@@ -44,5 +44,5 @@ VPROG_BEGIN
 	worldPosiion.xyz += normalize(offsetDirection) * (MAGIC_OFFSET_SCALE * length(offsetDirection));
 #endif
 
-	VP_OUT_POSITION = mul(worldPosiion, viewProjMatrix);
+	VP_OUT_POSITION = mul(position, worldViewProjMatrix);
 VPROG_END

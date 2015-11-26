@@ -48,8 +48,17 @@ public:
     void Draw();
 
 private:
+    void UpdatePointSet();
+    void Prerender();
+    void CreateRenderTarget();
+
+private:
     Vector<Entity*> entities;
+    Vector<Vector3> controlPoints;
+    ScopedPtr<Texture> cubemapTarget;
+    Texture* renderTarget = nullptr;
     VisibilityCheckRenderPass renderPass;
+    bool shouldPrerender = true;
 };
 }
 

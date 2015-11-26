@@ -43,18 +43,28 @@ public:
     VisibilityCheckComponent();
     Component* Clone(Entity* toEntity) override;
 
-    Texture* GetRenderTarget() const;
-
     float GetRadius() const;
     void SetRadius(float);
 
+    float GetDistanceBetweenPoints() const;
+    void SetDistanceBetweenPoints(float);
+
+    bool IsPointSetValid() const;
+    void InvalidatePointSet();
+    void BuildPointSet();
+
+    const Vector<Vector3>& GetPoints() const;
+
 private:
-    float radius = 1.0f;
-    ScopedPtr<Texture> renderTarget;
+    Vector<Vector3> points;
+    float radius = 5.0f;
+    float distanceBetweenPoints = 2.0f;
+    bool shouldBuildPointSet = true;
 
 public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
-                         PROPERTY("radius", "Ramera", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("distanceBetweenPoints", "Distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

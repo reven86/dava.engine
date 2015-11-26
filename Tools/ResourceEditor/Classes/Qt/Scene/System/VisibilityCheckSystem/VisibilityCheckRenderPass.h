@@ -41,7 +41,9 @@ public:
     VisibilityCheckRenderPass();
     ~VisibilityCheckRenderPass();
 
+    void PreRenderScene(RenderSystem* renderSystem, Texture* renderTarget);
     void RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point);
+    void RenderToOverlayTexture(RenderSystem* renderSystem, Texture* cubemap, Texture* renderTarget, const Vector3& point);
 
 private:
     void SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex);
@@ -54,9 +56,11 @@ private:
     ScopedPtr<Camera> camera;
     ScopedPtr<NMaterial> distanceMaterial;
     ScopedPtr<NMaterial> overrideMaterial;
+    ScopedPtr<NMaterial> prerenderMaterial;
     rhi::HDepthStencilState overrideDepthStencilState;
     rhi::RenderPassConfig renderTargetConfig;
     rhi::RenderPassConfig overrideConfig;
+    rhi::RenderPassConfig prerenderConfig;
 };
 }
 

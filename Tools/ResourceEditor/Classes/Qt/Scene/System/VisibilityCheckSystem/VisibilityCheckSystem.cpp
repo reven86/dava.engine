@@ -32,11 +32,15 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/VisibilityCheckComponent.h"
 #include "Render/Highlevel/RenderSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 using namespace DAVA;
 
+const uint32 renderTargetSize = 1024;
+
 VisibilityCheckSystem::VisibilityCheckSystem(Scene* scene)
     : SceneSystem(scene)
+    , cubemapTarget(Texture::CreateFBO(renderTargetSize, renderTargetSize, PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE))
 {
 }
 
@@ -70,18 +74,85 @@ void VisibilityCheckSystem::Process(float32 timeElapsed)
 
 void VisibilityCheckSystem::Draw()
 {
+    if (entities.empty())
+        return;
+
+    for (auto e : entities)
+    {
+        auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
+        if (!visibilityComponent->IsPointSetValid())
+        {
+            visibilityComponent->BuildPointSet();
+        }
+    }
+
+    UpdatePointSet();
+
     auto rs = GetScene()->GetRenderSystem();
     auto dbg = rs->GetDebugDrawer();
     for (auto e : entities)
     {
         auto worldTransform = e->GetWorldTransform();
         auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
-
         Vector3 position = worldTransform.GetTranslationVector();
         Vector3 direction = MultiplyVectorMat3x3(Vector3(0.0f, 0.0f, 1.0f), worldTransform);
         dbg->DrawCircle(position, direction, visibilityComponent->GetRadius(), 36, Color::White, RenderHelper::DRAW_WIRE_DEPTH);
-        dbg->DrawArrow(position, position + direction, 0.25f, Color::White, RenderHelper::DRAW_WIRE_DEPTH);
-
-        renderPass.RenderToCubemapFromPoint(rs, visibilityComponent->GetRenderTarget(), position);
     }
+
+    if (shouldPrerender)
+    {
+        Prerender();
+    }
+
+    for (const auto& point : controlPoints)
+    {
+        dbg->DrawIcosahedron(point, 0.1f, Color(1.0f, 1.0f, 0.5f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+        renderPass.RenderToCubemapFromPoint(rs, cubemapTarget, point);
+        renderPass.RenderToOverlayTexture(rs, cubemapTarget, renderTarget, point);
+        break;
+    }
+
+    RenderSystem2D::Instance()->DrawTexture(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
+}
+
+void VisibilityCheckSystem::UpdatePointSet()
+{
+    controlPoints.clear();
+
+    for (auto e : entities)
+    {
+        auto worldTransform = e->GetWorldTransform();
+        Vector3 position = worldTransform.GetTranslationVector();
+
+        auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
+        for (const auto& pt : visibilityComponent->GetPoints())
+        {
+            controlPoints.push_back(position + MultiplyVectorMat3x3(pt, worldTransform));
+        }
+    }
+}
+
+void VisibilityCheckSystem::Prerender()
+{
+    bool shouldCreateRenderTarget = (renderTarget == nullptr);
+
+    if (shouldCreateRenderTarget)
+    {
+        CreateRenderTarget();
+    }
+
+    renderPass.PreRenderScene(GetScene()->GetRenderSystem(), renderTarget);
+
+    shouldPrerender = false;
+}
+
+void VisibilityCheckSystem::CreateRenderTarget()
+{
+    if (renderTarget != nullptr)
+    {
+        SafeRelease(renderTarget);
+    }
+
+    renderTarget = Texture::CreateFBO(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight(),
+                                      PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D);
 }

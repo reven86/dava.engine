@@ -1,5 +1,5 @@
 RenderTechnique:
-    Layers: ["DebugRenderLayer"]
+    Layers: ["OpaqueRenderLayer"]
     RenderPass:
         Name: "ForwardPass"
         Shader: "~res:/LandscapeEditor/Materials/Distance/Distance"

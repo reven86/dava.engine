@@ -69,4 +69,8 @@ FPROG_BEGIN
 	FP_OUT_COLOR = float4(0.5 * occluded, 0.0, 0.0, 0.0);
 #endif
 
+#if defined(PRERENDER)
+	FP_OUT_COLOR = float4(0.0, 0.0, 0.0, 0.0);
+#endif
+
 FPROG_END

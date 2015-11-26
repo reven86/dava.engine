@@ -32,10 +32,7 @@
 
 using namespace DAVA;
 
-const uint32 renderTargetSize = 1024;
-
 VisibilityCheckComponent::VisibilityCheckComponent()
-    : renderTarget(Texture::CreateFBO(renderTargetSize, renderTargetSize, PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE))
 {
 }
 
@@ -55,9 +52,114 @@ float VisibilityCheckComponent::GetRadius() const
 void VisibilityCheckComponent::SetRadius(float r)
 {
     radius = r;
+    InvalidatePointSet();
 }
 
-Texture* VisibilityCheckComponent::GetRenderTarget() const
+float VisibilityCheckComponent::GetDistanceBetweenPoints() const
 {
-    return renderTarget;
+    return distanceBetweenPoints;
+}
+
+void VisibilityCheckComponent::SetDistanceBetweenPoints(float d)
+{
+    distanceBetweenPoints = d;
+    InvalidatePointSet();
+}
+
+bool VisibilityCheckComponent::IsPointSetValid() const
+{
+    return (shouldBuildPointSet == false);
+}
+
+void VisibilityCheckComponent::InvalidatePointSet()
+{
+    shouldBuildPointSet = true;
+}
+
+inline float randomFloat(float lower, float upper)
+{
+    return lower + (upper - lower) * (static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+}
+
+void VisibilityCheckComponent::BuildPointSet()
+{
+    auto polar = [](float angle, float distance) -> Vector3 {
+        return Vector3(std::cos(angle) * distance, std::sin(angle) * distance, 0.0f);
+    };
+
+    auto canIncludePoint = [this](const Vector3& pt) -> bool {
+        float distanceFromCenter = pt.x * pt.x + pt.y * pt.y;
+        if (distanceFromCenter > radius * radius)
+            return false;
+
+        for (const auto& e : points)
+        {
+            float dx = e.x - pt.x;
+            float dy = e.y - pt.y;
+            if (dx * dx + dy * dy < distanceBetweenPoints * distanceBetweenPoints)
+                return false;
+        }
+
+        return true;
+    };
+
+    auto generateAroundPoint = [this, &canIncludePoint, &polar](const Vector3& src) -> bool {
+        const uint32 maxAttempts = 36;
+        float angle = randomFloat(-PI, PI);
+        float da = 2.0f * PI / static_cast<float>(maxAttempts);
+        uint32 attempts = 0;
+        Vector3 newPoint;
+        bool canInclude = false;
+        do
+        {
+            newPoint = src + polar(angle, 2.0f * distanceBetweenPoints);
+            canInclude = canIncludePoint(newPoint);
+            angle += da;
+        } while ((++attempts < maxAttempts) && !canInclude);
+
+        if (canInclude)
+        {
+            points.push_back(newPoint);
+        }
+
+        return canInclude;
+    };
+
+    points.clear();
+    float totalSquare = radius * radius;
+    float smallSquare = distanceBetweenPoints * distanceBetweenPoints;
+    uint32 pointsToGenerate = 2 * static_cast<uint32>(totalSquare / smallSquare);
+    points.reserve(pointsToGenerate);
+
+    if (pointsToGenerate < 2)
+    {
+        points.emplace_back(0.0f, 0.0f, 0.0f);
+    }
+    else
+    {
+        auto lastPoint = polar(randomFloat(-PI, +PI), radius - distanceBetweenPoints);
+        points.push_back(lastPoint);
+
+        bool canGenerate = true;
+        while (canGenerate)
+        {
+            canGenerate = false;
+            for (int i = points.size() - 1; i >= 0; --i)
+            {
+                if (generateAroundPoint(points.at(i)))
+                {
+                    canGenerate = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    shouldBuildPointSet = false;
+}
+
+const Vector<Vector3>& VisibilityCheckComponent::GetPoints() const
+{
+    DVASSERT(points.size() > 0);
+    return points;
 }
