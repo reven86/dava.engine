@@ -626,36 +626,40 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         end
         return false
     end
+	local oldPosition = Vector.Vector2()
+	local function __isChanged(newPosition)
+		local result = true
+		if (oldPosition.x == newPosition.x) and (oldPosition.y == newPosition.y) then
+			result = false
+		end
+		oldPosition.x = newPosition.x
+		oldPosition.y = newPosition.y
+		return result
+	end
 
     if __click() then
         return true
     end
-    local containerCtrl, position, invert = GetControl(containerName)
-    local startPoint = containerCtrl:GetPivotPoint()
-    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
-    local finalPoint = autotestingSystem:GetMaxContainerOffsetSize(containerCtrl)
-    print(string.format('Final point: X: %f; Y: %f', finalPoint.x, finalPoint.y))
+    local containerCtrl, invert = GetControl(containerName)
 
     local function __getPosition() return autotestingSystem:GetContainerScrollPosition(containerCtrl) end
-
+	oldPosition = __getPosition()
     -- move to start of list and check cell
     for _ = 0, MAX_LIST_COUNT do -- move to up side
-        position = __getPosition()
-        if position.y <= startPoint.y then
-            break
-        end
         VerticalScroll(containerName, true, notInCenter)
+		if not __isChanged(__getPosition()) then
+			break
+		end
         if __click() then
             return true
         end
     end
     -- move to left side
     for _ = 0, MAX_LIST_COUNT do
-        position = __getPosition()
-        if position.x <= startPoint.x then
-            break
-        end
         HorizontalScroll(containerName, true)
+		if not __isChanged(__getPosition()) then
+			break
+		end
         if __click() then
             return true
         end
@@ -665,27 +669,18 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         invert = _ % 2 ~= 0 -- if true - right side, else - left
         -- move to right/left side
         for __ = 0, MAX_LIST_COUNT do
-            position = __getPosition()
-            if invert then
-                if position.x <= startPoint.x then
-                    break
-                end
-            else
-                if position.x >= finalPoint.x then
-                    break
-                end
-            end
             HorizontalScroll(containerName, invert)
+			if not __isChanged(__getPosition()) then
+				break
+			end
             if __click() then
                 return true
             end
         end
-        -- move to down side
-        position = __getPosition()
-        if position.y >= finalPoint.y then
-            break
-        end
         VerticalScroll(containerName, false, notInCenter)
+		if not __isChanged(__getPosition()) then
+				break
+		end
         if __click() then
             return true
         end
