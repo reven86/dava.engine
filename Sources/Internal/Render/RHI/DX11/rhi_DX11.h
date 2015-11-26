@@ -83,7 +83,7 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHIFragment(Handle tex, unsigned unitIndex, ID3D11DeviceContext* context);
 void SetToRHIVertex(Handle tex, unsigned unitIndex, ID3D11DeviceContext* context);
-void SetRenderTarget(Handle color, Handle depthstencil, ID3D11DeviceContext* context);
+void SetRenderTarget(Handle color, Handle depthstencil, unsigned level, TextureFace face, ID3D11DeviceContext* context);
 Size2i Size(Handle tex);
 }
 
