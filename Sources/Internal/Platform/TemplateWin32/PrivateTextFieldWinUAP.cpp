@@ -538,10 +538,6 @@ void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
         if (auto self = self_weak.lock())
             OnKeyDown(args);
     });
-    auto keyUp = ref new KeyEventHandler([this, self_weak](Object ^, KeyRoutedEventArgs ^ args) {
-        if (auto self = self_weak.lock())
-            OnKeyUp(args);
-    });
     auto gotFocus = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ ) {
         if (auto self = self_weak.lock())
             OnGotFocus();
@@ -551,7 +547,6 @@ void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
             OnLostFocus();
     });
     nativeControl->KeyDown += keyDown;
-    nativeControl->KeyUp += keyUp;
     nativeControl->GotFocus += gotFocus;
     nativeControl->LostFocus += lostFocus;
 }
@@ -619,24 +614,20 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
             });
         }
         break;
+    case VirtualKey::Enter:
+        // Known XAML bug: native TextBox generates two OnKeyDown events
+        // So use RepeatCount field to filter out extra event: second event comes with RepeatCount > 0
+        if (!IsMultiline() && 0 == args->KeyStatus.RepeatCount)
+        {
+            auto self{ shared_from_this() };
+            core->RunOnMainThread([this, self]() {
+                if (textFieldDelegate != nullptr)
+                    textFieldDelegate->TextFieldShouldReturn(uiTextField);
+            });
+        }
+        break;
     default:
         break;
-    }
-}
-
-void PrivateTextFieldWinUAP::OnKeyUp(KeyRoutedEventArgs ^ args)
-{
-    savedCaretPosition = GetNativeCaretPosition();
-
-    // There is a bug on desktop: single ENTER key press generates two KeyDown events
-    // So use KeyUp event for ENTER key
-    if (VirtualKey::Enter == args->Key && !IsMultiline())
-    {
-        auto self{ shared_from_this() };
-        core->RunOnMainThread([this, self]() {
-            if (textFieldDelegate != nullptr)
-                textFieldDelegate->TextFieldShouldReturn(uiTextField);
-        });
     }
 }
 
