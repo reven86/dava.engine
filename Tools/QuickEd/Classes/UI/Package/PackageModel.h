@@ -93,7 +93,7 @@ private: // PackageListener
     void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) override;
     void ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from) override;
 
-    int GetRowIndex(int row, const QModelIndex& parent);
+    int GetRowIndex(int row, const QModelIndex& parent) const;
 
     PackageNode *root = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;

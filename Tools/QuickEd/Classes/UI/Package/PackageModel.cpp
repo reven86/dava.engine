@@ -352,7 +352,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
     return mimeData;
 }
 
-int PackageModel::GetRowIndex(int row, const QModelIndex& parent)
+int PackageModel::GetRowIndex(int row, const QModelIndex& parent) const
 {
     if (row != -1)
     {
