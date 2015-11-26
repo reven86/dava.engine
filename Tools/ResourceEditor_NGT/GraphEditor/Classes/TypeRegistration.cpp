@@ -31,12 +31,16 @@
 #include "Action.h"
 #include "GraphEditor.h"
 #include "GraphNode.h"
+#include "Connector.h"
+#include "ConnectionSlot.h"
 
 #include <core_reflection/type_class_definition.hpp>
 
 void RegisterGrapEditorTypes(IDefinitionManager& mng)
 {
     mng.registerDefinition(new TypeClassDefinition<Action>());
+    mng.registerDefinition(new TypeClassDefinition<Connector>());
+    mng.registerDefinition(new TypeClassDefinition<ConnectionSlot>());
     mng.registerDefinition(new TypeClassDefinition<GraphEditor>());
     mng.registerDefinition(new TypeClassDefinition<GraphNode>());
 }

@@ -5,7 +5,8 @@ import WGControls 1.0
 
 Rectangle
 {
-    anchors.fill: parent.fill
+    id: graphEditorComponent
+    objectName: "GraphEditorView"
     color: palette.MainWindowColor
 
     property color majorLineColor: palette.MidLightColor
@@ -15,9 +16,28 @@ Rectangle
     property var title: "Graph Editor"
     property var layoutHints: { 'left': 0.5 }
 
+    property var slotsIndex : []
+    property var graphCanvasObject : graphCanvas
+    property var connectionStartSlot
+    property var interactiveConnectionCurve : connectionCurve
+
     onWidthChanged : { sizeChanged(width, height) }
     onHeightChanged : { sizeChanged(width, height) }
-    z : 0
+
+    function connect(output, input)
+    {
+        createConnection(output, input)
+    }
+
+    function getNodeContextMenu()
+    {
+        return nodeMenuModel
+    }
+
+    function getSlotContextMenu()
+    {
+        return slotMenuModel
+    }
 
     ColumnLayout
     {
@@ -29,9 +49,9 @@ Rectangle
         {
             id: graphCanvas;
             contextType: "2d";
+            z : 0
             Layout.fillHeight: true
             Layout.fillWidth: true
-            focus: true
 
             property var viewTransform: ViewTransform
             {
@@ -116,6 +136,7 @@ Rectangle
             {
                 anchors.fill: parent;
                 acceptedButtons: Qt.AllButtons
+                z : graphCanvas.z
                 
                 property var mouseDragStart;
                 
@@ -134,7 +155,6 @@ Rectangle
                     graphCanvas.requestPaint()
                 }
                 
-                hoverEnabled: true
                 onPositionChanged:
                 {
                     if(mouseDragStart && (mouse.buttons & Qt.MiddleButton))
@@ -157,30 +177,61 @@ Rectangle
                     mouseDragStart = null;
                 }
             }
-        }
 
-        WGListModel
-        {
-            id : nodesModel
-            source : nodes
-
-            ValueExtension {}
-        }
-        
-        Repeater
-        {
-            id: itemRepeater
-            model: nodesModel
-            delegate: SimpleComponent
+            WGListModel
             {
-                canvasContainer : graphCanvas
-                node : Value
+                id : nodesModel
+                source : nodes
+
+                ValueExtension {}
             }
-        }
-        
-        ContextMenu
-        {
-            menuModel : contextMenuModel
+            
+            Repeater
+            {
+                id: itemRepeater
+                model: nodesModel
+                delegate: SimpleComponent
+                {
+                    z : graphCanvas.z + 10
+                    node : Value
+                    nodeContextMenu : getNodeContextMenu()
+                }
+            }
+
+            WGListModel
+            {
+                id: connectorsMode
+                source: connectors
+
+                ValueExtension {}
+            }
+
+            Repeater
+            {
+                id: connectorRepeater
+                model: connectorsMode
+                delegate: ConnectionCurve
+                {
+                    curveColor : "red"
+                    z : graphCanvas.z + 100 // reserve some z range for nodes, slots and other stuff
+                    isInteractive : false
+                    outputSlot : slotsIndex[Value.outputSlot]
+                    inputSlot : slotsIndex[Value.inputSlot]
+                }
+            }
+
+            ConnectionCurve
+            {
+                id : connectionCurve
+                curveColor : "red"
+                z : graphCanvas.z + 110 // interactive curve always on top 
+            }
+
+            ContextMenu
+            {
+                z: graphCanvas.z
+                menuModel : contextMenuModel
+            }
         }
     }
 }

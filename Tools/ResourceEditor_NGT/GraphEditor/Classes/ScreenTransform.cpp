@@ -60,6 +60,8 @@ void ScreenTransform::Resize(QSizeF const& newPixelSize)
     pixelSize = newPixelSize;
     // screen center was moved in Vector(shiftX, shiftY). Move model ZeroPoint in opposite value
     UpdateMatrices(pixelToGlobal, globalToPixel, -shiftX, -shiftY);
+
+    TransformChanged();
 }
 
 void ScreenTransform::Shift(QPointF const& pixelShift)
@@ -68,6 +70,8 @@ void ScreenTransform::Shift(QPointF const& pixelShift)
     // move model ZeroPoint on canvas
     UpdateMatrices(globalToPixel, pixelToGlobal, scaledShift.x(), scaledShift.y());
     globalOrg = pixelToGlobal.map(QPointF(pixelSize.width() / 2.0, pixelSize.height() / 2.0));
+
+    TransformChanged();
 }
 
 void ScreenTransform::Scale(float scaleFactor, float x, float y)
@@ -77,6 +81,8 @@ void ScreenTransform::Scale(float scaleFactor, float x, float y)
     pixelToGlobal = globalToPixel.inverted();
     scale = globalToPixel.m11();
     globalOrg = pixelToGlobal.map(QPointF(pixelSize.width() / 2.0, pixelSize.height() / 2.0));
+
+    TransformChanged();
 }
 
 float ScreenTransform::GetScale() const

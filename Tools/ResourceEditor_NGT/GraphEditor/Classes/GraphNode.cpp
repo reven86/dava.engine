@@ -28,6 +28,8 @@
 
 #include "GraphNode.h"
 #include "ScreenTransform.h"
+#include "ConnectionSlot.h"
+#include "BaseModel.h"
 
 #include "Metadata/GraphNode.mpp"
 
@@ -35,9 +37,19 @@
 #include <core_reflection/i_definition_manager.hpp>
 #include <core_reflection/property_accessor.hpp>
 
-#include <QDebug>
+class ConnectionSlotsModel : public BaseModel<ConnectionSlot>
+{
+    using TBase = BaseModel<ConnectionSlot>;
 
-PropertyAccessor bindProperty(GraphNode* node, const char* propertyName)
+public:
+    ConnectionSlotsModel(std::vector<ObjectHandleT<ConnectionSlot>>&& objects)
+        : TBase(std::move(objects))
+    {
+    }
+};
+
+template <typename T>
+void setProperty(GraphNode* node, const char* propertyName, const T& value)
 {
     IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
     assert(defMng != nullptr);
@@ -45,7 +57,7 @@ PropertyAccessor bindProperty(GraphNode* node, const char* propertyName)
     IClassDefinition* definition = defMng->getDefinition<GraphNode>();
     assert(definition != nullptr);
 
-    return definition->bindProperty(propertyName, node);
+    definition->bindProperty(propertyName, node).setValue(value);
 }
 
 std::string const& GraphNode::GetTitle() const
@@ -58,6 +70,40 @@ void GraphNode::SetTitle(std::string const& title_)
     title = title_;
 }
 
+size_t GraphNode::GetUID() const
+{
+    return reinterpret_cast<size_t>(this);
+}
+
+GraphNode::GraphNode()
+{
+    transformConnectionID = ScreenTransform::Instance().TransformChanged.connect(std::bind(&GraphNode::ApplyTransform, this));
+}
+
+GraphNode::~GraphNode()
+{
+    ScreenTransform::Instance().TransformChanged.disconnect(transformConnectionID);
+}
+
+void GraphNode::Init(Params&& params)
+{
+    inputSlots.reset(new ConnectionSlotsModel(std::move(params.inputSlots)));
+    outputSlots.reset(new ConnectionSlotsModel(std::move(params.outputSlots)));
+    typeId = std::move(params.typeId);
+}
+
+void GraphNode::SetPosition(float x, float y)
+{
+    modelX = x;
+    modelY = y;
+    ApplyTransform();
+}
+
+QPointF GraphNode::GetPosition() const
+{
+    return QPointF(modelX, modelY);
+}
+
 float GraphNode::GetPosX() const
 {
     return pixelX;
@@ -65,7 +111,7 @@ float GraphNode::GetPosX() const
 
 void GraphNode::SetPosX(const float& x)
 {
-    bindProperty(this, "nodePosX").setValue(x);
+    pixelX = x;
 }
 
 float GraphNode::GetPosY() const
@@ -75,7 +121,7 @@ float GraphNode::GetPosY() const
 
 void GraphNode::SetPosY(const float& y)
 {
-    bindProperty(this, "nodePosY").setValue(y);
+    pixelY = y;
 }
 
 float GraphNode::GetScale() const
@@ -83,9 +129,9 @@ float GraphNode::GetScale() const
     return scale;
 }
 
-void GraphNode::SetScale(const float& scale)
+void GraphNode::SetScale(const float& scale_)
 {
-    bindProperty(this, "nodeScale").setValue(scale);
+    scale = scale_;
 }
 
 void GraphNode::Shift(float pixelShiftX, float pixelShiftY)
@@ -105,22 +151,19 @@ void GraphNode::ApplyTransform()
 {
     ScreenTransform& transform = ScreenTransform::Instance();
     QPointF pt = transform.GtoP(QPointF(modelX, modelY));
-    SetPosX(pt.x());
-    SetPosY(pt.y());
-    SetScale(transform.GetScale());
+    setProperty(this, "nodePosX", pt.x());
+    setProperty(this, "nodePosY", pt.y());
+    setProperty(this, "nodeScale", transform.GetScale());
+
+    NodeMoved();
 }
 
-void GraphNode::SetPosXImpl(const float& x)
+IListModel* GraphNode::GetInputSlots() const
 {
-    pixelX = x;
+    return inputSlots.get();
 }
 
-void GraphNode::SetPosYImpl(const float& y)
+IListModel* GraphNode::GetOutputSlots() const
 {
-    pixelY = y;
-}
-
-void GraphNode::SetScaleImpl(const float& scale_)
-{
-    scale = scale_;
+    return outputSlots.get();
 }

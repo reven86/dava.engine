@@ -4,7 +4,11 @@
     <file>ViewTransform.qml</file>
     <file>SimpleComponent.qml</file>
     <file>ContextMenu.qml</file>
-    <file>ConnectionSlot.qml</file>
+    <file>Slot.qml</file>
+    <file>InputSlot.qml</file>
+    <file>OutputSlot.qml</file>
+    <file>ConnectionCurve.qml</file>
+    <file>SlotImage.qml</file>
     <file>blueSlot.png</file>
     <file>greenSlot.png</file>
   </qresource>

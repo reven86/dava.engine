@@ -29,6 +29,8 @@
 #ifndef __GRAPHEDITOR_SCREENTRANSFORM_H__
 #define __GRAPHEDITOR_SCREENTRANSFORM_H__
 
+#include <core_common/signal.hpp>
+
 #include <QSizeF>
 #include <QPointF>
 #include <QMatrix>
@@ -46,6 +48,8 @@ public:
 
     QPointF GtoP(QPointF const& pixelPoint) const;
     QPointF PtoG(QPointF const& globalPoint) const;
+
+    Signal<void()> TransformChanged;
 
 private:
     ScreenTransform();

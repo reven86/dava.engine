@@ -6,13 +6,15 @@ import WGControls 1.0
 Item
 {
     id : root
-    property var canvasContainer
     property var node
+    property var nodeContextMenu
     property real margin : 4.0
 
-    x : node.nodePosX + width / 2.0
-    y : node.nodePosY + height / 2.0
-    z : 1
+    x : node.nodePosX
+    y : node.nodePosY
+    width : contentRect.width
+    height : contentRect.height
+
     transform : Scale
     {
         origin.x : 0
@@ -39,8 +41,8 @@ Item
             {
                 id: dragHandle
                 anchors.fill : parent
-                acceptedButtons : Qt.LeftButton | Qt.RightButton
-                hoverEnabled : true
+                acceptedButtons: Qt.LeftButton
+                preventStealing: true
 
                 property var mouseDragStart
 
@@ -48,7 +50,7 @@ Item
                 {
                     if(mouseDragStart && (mouse.buttons & Qt.LeftButton))
                     {
-                        var pos = mapToItem(canvasContainer, mouse.x, mouse.y)
+                        var pos = mapToItem(graphCanvasObject, mouse.x, mouse.y)
                         var delta = Qt.point(pos.x - mouseDragStart.x, pos.y - mouseDragStart.y)
                         node.shiftNode(delta.x, delta.y)
                         mouseDragStart = pos
@@ -57,13 +59,21 @@ Item
 
                 onPressed : 
                 {
-                    mouseDragStart = mapToItem(canvasContainer, mouse.x, mouse.y)
+                    mouseDragStart = mapToItem(graphCanvasObject, mouse.x, mouse.y)
                 }
 
                 onReleased : 
                 {
                     mouseDragStart = null
                 }
+            }
+
+            ContextMenu
+            {
+                id : contextMenu
+                z : root.z
+                menuModel : nodeContextMenu
+                contextObjectUid : node.uid
             }
         
             LinearGradient 
@@ -87,6 +97,7 @@ Item
                     Layout.fillHeight : true
                     Layout.alignment : Qt.AlignHCenter | Qt.AlignVCenter
                     text : node.title
+
                 }
 
                 Rectangle
@@ -103,30 +114,57 @@ Item
                     ColumnLayout
                     {
                         Layout.alignment : Qt.AlignTop | Qt.AlignLeft
-                        WGExpandingRowLayout
-                        {
-                            Text
-                            {
-                                text: "Output Slot1!"
-                            }
-        
-                            Image
-                            {
-                                source: "qrc:/GE/greenSlot.png"
-                                sourceSize.width : 12
-                                sourceSize.height : 12
-                            }
 
-                            WGColorButton {}
+                        WGListModel
+                        {
+                            id : inputSlotsModel
+                            source : node.inputSlots
+                            ValueExtension {}
                         }
-                        //ConnectonSlot {}
+
+                        Repeater
+                        {
+                            id : inputSlotsRepeater
+                            model : inputSlotsModel
+                            delegate : InputSlot
+                            {
+                                z : root.z + 10
+                                nodeObject : root
+                                slotObject : Value
+
+                            }
+                        }
+                    }
+
+                    ColumnLayout
+                    {
+                        Item
+                        {
+                            width : 30
+                        }
                     }
 
                     ColumnLayout
                     {
                         Layout.alignment : Qt.AlignTop | Qt.AlignRight
-                        //ConnectonSlot {}
-                        //ConnectonSlot {}
+                        WGListModel
+                        {
+                            id : outputSlotsModel
+                            source : node.outputSlots
+                            ValueExtension {}
+                        }
+
+                        Repeater
+                        {
+                            id : outputSlotsRepeater
+                            model : outputSlotsModel
+                            delegate : OutputSlot
+                            {
+                                z : root.z + 10
+                                nodeObject : root
+                                slotObject : Value
+                            }
+                        }
                     }
                 }
             }

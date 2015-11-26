@@ -40,8 +40,10 @@ std::string const& Action::GetTitle() const
     return title;
 }
 
-void Action::Trigger()
+void Action::Trigger(float x, float y, size_t objectUid)
 {
     if (callback)
-        callback();
+    {
+        callback(x, y, objectUid);
+    }
 }

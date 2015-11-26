@@ -5,6 +5,8 @@ import WGControls 1.0
 WGContextArea
 {
     property var menuModel
+    property var contextObjectUid : 0
+
     contextMenu : WGMenu
     {
         id : dynamicContextMenu
@@ -19,13 +21,13 @@ WGContextArea
         Instantiator
         {
             id : menuActions
-            model :  contextMenuModel
+            model : contextMenuModel
             onObjectAdded: dynamicContextMenu.insertItem( index, object )
             onObjectRemoved: dynamicContextMenu.removeItem( object )
             delegate : MenuItem
             {
                 text : Value.title
-                onTriggered : Value.trigger()
+                onTriggered : Value.trigger(popupPoint.x, popupPoint.y, contextObjectUid)
             }
         }
     }

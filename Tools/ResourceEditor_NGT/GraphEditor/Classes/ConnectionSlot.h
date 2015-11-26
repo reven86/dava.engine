@@ -26,89 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "ContextMenuModel.h"
+#ifndef __GRAPHEDITOR_CONNECTIONSLOT_H__
+#define __GRAPHEDITOR_CONNECTIONSLOT_H__
 
-#include <core_data_model/i_item_role.hpp>
-#include <core_data_model/i_item.hpp>
-#include <core_qt_common/helpers/qt_helpers.hpp>
+#include <core_reflection/object_handle.hpp>
+#include <core_reflection/reflected_object.hpp>
+#include <string>
 
-#include <memory>
-#include <algorithm>
+#include <QPointF>
 
-namespace
+class GraphNode;
+
+class ConnectionSlot
 {
-class ActionItem : public IItem
-{
+    DECLARE_REFLECTED
 public:
-    ActionItem(ObjectHandle action_)
-        : action(std::move(action_))
+    struct Params
     {
-    }
+        Params(const std::string& title_, const std::string& icon_, ObjectHandleT<GraphNode> parent_)
+            : title(std::move(title_))
+            , icon(std::move(icon_))
+            , parent(parent_)
+        {
+        }
 
-    int columnCount() const override
-    {
-        return 1;
-    }
-    const char* getDisplayText(int column) const override
-    {
-        return nullptr;
-    }
-    ThumbnailData getThumbnail(int column) const override
-    {
-        return nullptr;
-    }
+        std::string title;
+        std::string icon;
+        ObjectHandleT<GraphNode> parent;
+    };
 
-    Variant getData(int column, size_t roleId) const override
-    {
-        if (ValueRole::roleId_ == roleId)
-            return action;
+    void Init(Params&& params);
 
-        return Variant();
-    }
+    const std::string& GetTitle() const;
+    const std::string& GetIcon() const;
+    size_t GetUID() const;
 
-    bool setData(int column, size_t roleId, const Variant& data) override
-    {
-        return false;
-    }
+    ObjectHandleT<GraphNode> GetParentNode();
 
 private:
-    ObjectHandle action;
+    std::string title;
+    std::string icon;
+    ObjectHandleT<GraphNode> parent = nullptr;
 };
-} // namespace
 
-ContextMenuModel::ContextMenuModel(std::vector<ObjectHandle>&& actions)
-{
-    items.reserve(actions.size());
-    for (size_t i = 0; i < actions.size(); ++i)
-        items.push_back(new ActionItem(actions[i]));
-
-    actions.clear();
-}
-
-ContextMenuModel::~ContextMenuModel()
-{
-    for_each(items.begin(), items.end(), [](IItem* item) { delete item; });
-    items.clear();
-}
-
-IItem* ContextMenuModel::item(size_t index) const
-{
-    return items[index];
-}
-
-size_t ContextMenuModel::index(const IItem* item) const
-{
-    auto iter = std::find(items.begin(), items.end(), item);
-    assert(iter != items.end());
-    return std::distance(items.begin(), iter);
-}
-
-bool ContextMenuModel::empty() const
-{
-    return items.empty();
-}
-
-size_t ContextMenuModel::size() const
-{
-    return items.size();
-}
+#endif // __GRAPHEDITOR_CONNECTIONSLOT_H__

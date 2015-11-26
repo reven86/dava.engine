@@ -29,39 +29,74 @@
 #ifndef __GRAPHEDITOR_GRAPHNODE_H__
 #define __GRAPHEDITOR_GRAPHNODE_H__
 
+#include <core_common/signal.hpp>
+#include <core_data_model/i_list_model.hpp>
 #include <core_reflection/reflected_object.hpp>
-#include <string>
+#include <core_reflection/object_handle.hpp>
 
+#include <string>
+#include <QPointF>
+
+class ConnectionSlot;
 class GraphNode
 {
     DECLARE_REFLECTED
 public:
-    GraphNode() = default;
+    GraphNode();
+    ~GraphNode();
+
+    struct Params
+    {
+        using TSlotPtr = ObjectHandleT<ConnectionSlot>;
+        using TSlotCollection = std::vector<TSlotPtr>;
+
+        TSlotCollection inputSlots;
+        TSlotCollection outputSlots;
+        std::string typeId;
+    };
+
+    void Init(Params&& params);
+    void SetPosition(float x, float y);
+    QPointF GetPosition() const;
 
     std::string const& GetTitle() const;
     void SetTitle(std::string const& title);
 
-    float GetPosX() const;
-    void SetPosX(const float& x);
-    float GetPosY() const;
-    void SetPosY(const float& y);
-    float GetScale() const;
-    void SetScale(const float& scale);
+    size_t GetUID() const;
+    std::string const& GetType()
+    {
+        return typeId;
+    }
 
     void Shift(float pixelShiftX, float pixelShiftY);
-
     void ApplyTransform();
 
+    Signal<void()> NodeMoved;
+
 private:
-    void SetPosXImpl(const float& x);
-    void SetPosYImpl(const float& y);
-    void SetScaleImpl(const float& scale);
+    IListModel* GetInputSlots() const;
+    IListModel* GetOutputSlots() const;
+
+    float GetPosX() const;
+    void SetPosX(const float& x);
+
+    float GetPosY() const;
+    void SetPosY(const float& y);
+
+    float GetScale() const;
+    void SetScale(const float& scale);
 
 private:
     std::string title;
     float modelX = 0.0f, modelY = 0.0f;
     float pixelX = 0.0f, pixelY = 0.0f;
     float scale = 1.0f;
+
+    std::unique_ptr<IListModel> inputSlots;
+    std::unique_ptr<IListModel> outputSlots;
+    std::string typeId;
+
+    size_t transformConnectionID = 0;
 };
 
 #endif // __GRAPHEDITOR_GRAPHNODE_H__

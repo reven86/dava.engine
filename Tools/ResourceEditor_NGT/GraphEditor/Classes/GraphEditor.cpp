@@ -29,9 +29,7 @@
 #include "GraphEditor.h"
 #include "Metadata/GraphEditor.mpp"
 
-#include "Action.h"
-#include "NodeModel.h"
-#include "ContextMenuModel.h"
+#include "ConnectionManager.h"
 
 #include <core_dependency_system/i_interface.hpp>
 #include <core_reflection/i_definition_manager.hpp>
@@ -41,32 +39,13 @@ GraphEditor::GraphEditor()
     IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
     assert(defMng != nullptr);
 
-    std::vector<ObjectHandle> nodes;
-    {
-        ObjectHandleT<GraphNode> node = defMng->create<GraphNode>();
-        node->SetTitle("Real node from C++");
-        nodes.push_back(ObjectHandle(node));
-        nodeModel.reset(new NodeModel(std::move(nodes)));
-    }
+    ConnectionManager& mng = ConnectionManager::Instance();
+    mng.Initialize(defMng);
+}
 
-    {
-        ObjectHandleT<GraphNode> node = defMng->create<GraphNode>();
-        node->SetTitle("Second node");
-        node->SetPosX(30.0);
-        node->SetPosY(0.0);
-        nodes.push_back(ObjectHandle(node));
-        nodeModel.reset(new NodeModel(std::move(nodes)));
-    }
-
-    std::vector<ObjectHandle> actions;
-    for (size_t i = 0; i < 3; ++i)
-    {
-        ObjectHandleT<Action> action = defMng->create<Action>();
-        action->SetParams("Action : " + std::to_string(i), std::bind(&GraphEditor::OnActionTriggered, this));
-        actions.emplace_back(action);
-    }
-
-    contextMenuModel.reset(new ContextMenuModel(std::move(actions)));
+GraphEditor::~GraphEditor()
+{
+    ConnectionManager::Instance().Finilize();
 }
 
 void GraphEditor::SizeChanged(int width, int height)
@@ -75,37 +54,48 @@ void GraphEditor::SizeChanged(int width, int height)
         return;
 
     ScreenTransform::Instance().Resize(QSizeF(width, height));
-    ApplyTransform();
 }
 
-IListModel* GraphEditor::GetContextMenuModel() const
+IListModel* GraphEditor::GetConnectorsModel() const
 {
-    return static_cast<IListModel*>(contextMenuModel.get());
+    return ConnectionManager::Instance().GetConnectorsModel();
 }
 
 IListModel* GraphEditor::GetNodeModel() const
 {
-    return static_cast<IListModel*>(nodeModel.get());
+    return ConnectionManager::Instance().GetNodeModel();
+}
+
+IListModel* GraphEditor::GetRootContextMenuModel() const
+{
+    return ConnectionManager::Instance().GetRootContextMenuModel();
+}
+
+IListModel* GraphEditor::GetNodeContextMenuModel() const
+{
+    return ConnectionManager::Instance().GetNodeContextMenuModel();
+}
+
+IListModel* GraphEditor::GetSlotContextMenuModel() const
+{
+    return ConnectionManager::Instance().GetSlotContextMenuModel();
 }
 
 void GraphEditor::Scale(float factor, float x, float y)
 {
     ScreenTransform::Instance().Scale(factor, x, y);
-    ApplyTransform();
 }
 
 void GraphEditor::Shift(float x, float y)
 {
     ScreenTransform::Instance().Shift(QPointF(x, y));
-    ApplyTransform();
 }
 
 void GraphEditor::OnActionTriggered()
 {
 }
 
-void GraphEditor::ApplyTransform()
+void GraphEditor::CreateConnection(size_t outputUID, size_t inputUID)
 {
-    NodeModel* model = static_cast<NodeModel*>(nodeModel.get());
-    model->ApplyTransform();
+    ConnectionManager::Instance().CreateConnection(outputUID, inputUID);
 }

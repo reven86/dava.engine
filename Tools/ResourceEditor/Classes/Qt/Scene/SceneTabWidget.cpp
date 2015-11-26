@@ -191,20 +191,20 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
 
 void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex)
 {
-    SceneEditor2* scene = new SceneEditor2();
+    /*SceneEditor2* scene = new SceneEditor2();
     scene->SetScenePath(scenePathname);
 
     if (scenePathname.Exists())
     {
-        bool sceneWasLoaded = scene->Load(scenePathname);
-        if (!sceneWasLoaded)
-        {
-            QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
-        }
+    bool sceneWasLoaded = scene->Load(scenePathname);
+    if (!sceneWasLoaded)
+    {
+    QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
+    }
     }
 
     SetTabScene(tabIndex, scene);
-    SetCurrentTab(tabIndex);
+    SetCurrentTab(tabIndex);*/
 
     QtMainWindow::Instance()->WaitStop();
     updateTabBarVisibility();

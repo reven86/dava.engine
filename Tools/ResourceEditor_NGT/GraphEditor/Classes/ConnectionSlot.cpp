@@ -26,27 +26,36 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GRAPHEDITOR_CONTEXTMENUMODEL_H__
-#define __GRAPHEDITOR_CONTEXTMENUMODEL_H__
+#include "ConnectionSlot.h"
 
-#include <core_data_model/i_list_model.hpp>
-#include <core_reflection/object_handle.hpp>
+#include "Metadata/ConnectionSlot.mpp"
 
-#include <vector>
+#include "GraphNode.h"
 
-class ContextMenuModel : public IListModel
+void ConnectionSlot::Init(Params&& params)
 {
-public:
-    ContextMenuModel(std::vector<ObjectHandle>&& actions);
-    ~ContextMenuModel();
+    title = std::move(params.title);
+    icon = std::move(params.icon);
+    parent = params.parent;
+}
 
-    IItem* item(size_t index) const override;
-    size_t index(const IItem* item) const override;
-    bool empty() const override;
-    size_t size() const override;
+const std::string& ConnectionSlot::GetTitle() const
+{
+    return title;
+}
 
-private:
-    std::vector<IItem*> items;
-};
+const std::string& ConnectionSlot::GetIcon() const
+{
+    return icon;
+}
 
-#endif // __GRAPHEDITOR_CONTEXTMENUMODEL_H__
+size_t ConnectionSlot::GetUID() const
+{
+    return reinterpret_cast<size_t>(this);
+}
+
+ObjectHandleT<GraphNode> ConnectionSlot::GetParentNode()
+{
+    assert(parent != nullptr);
+    return parent;
+}

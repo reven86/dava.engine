@@ -32,6 +32,7 @@
 #include "ScreenTransform.h"
 
 #include <core_data_model/i_list_model.hpp>
+#include <core_reflection/reflected_object.hpp>
 
 #include <QObject>
 
@@ -40,25 +41,28 @@
 class GraphEditor : public QObject
 {
     Q_OBJECT
+
+    DECLARE_REFLECTED
 public:
     GraphEditor();
+    ~GraphEditor();
 
+private:
     void SizeChanged(int width, int height);
 
-    IListModel* GetContextMenuModel() const;
+    IListModel* GetConnectorsModel() const;
     IListModel* GetNodeModel() const;
+    IListModel* GetRootContextMenuModel() const;
+    IListModel* GetNodeContextMenuModel() const;
+    IListModel* GetSlotContextMenuModel() const;
 
     void Scale(float factor, float x, float y);
     void Shift(float x, float y);
 
-private:
-    Q_SLOT void OnActionTriggered();
+    void OnActionTriggered();
+    void CreateConnection(size_t outputUID, size_t inputUID);
 
     void ApplyTransform();
-
-private:
-    std::unique_ptr<IListModel> nodeModel;
-    std::unique_ptr<IListModel> contextMenuModel;
 };
 
 #endif // __GRAPHEDITOR_GRAPHEDITOR_H__

@@ -26,29 +26,39 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GRAPHEDITOR_NODEMODEL_H__
-#define __GRAPHEDITOR_NODEMODEL_H__
+#ifndef __GRAPHEDITOR_CONNECTION_H__
+#define __GRAPHEDITOR_CONNECTION_H__
 
-#include <core_data_model/i_list_model.hpp>
 #include <core_reflection/object_handle.hpp>
+#include <core_reflection/reflected_object.hpp>
 
-#include <vector>
+class ConnectionSlot;
 
-class NodeModel : public IListModel
+class Connector
 {
+    DECLARE_REFLECTED
 public:
-    NodeModel(std::vector<ObjectHandle>&& items);
-    ~NodeModel();
+    Connector();
+    ~Connector();
 
-    void ApplyTransform();
+    void Init(size_t outputSlotID, size_t intputSlotID);
 
-    IItem* item(size_t index) const override;
-    size_t index(const IItem* item) const override;
-    bool empty() const override;
-    size_t size() const override;
+    ObjectHandleT<ConnectionSlot> GetOutputSlot() const;
+    ObjectHandleT<ConnectionSlot> GetInputSlot() const;
+
+    size_t GetInputSlotId() const;
+    size_t GetOutputSlotId() const;
+
+    void Repaint();
 
 private:
-    std::vector<IItem*> items;
+    void DummySetSlotId(size_t const&);
+
+private:
+    size_t outputSlotID;
+    size_t intputSlotID;
+
+    size_t signalConnections[2];
 };
 
-#endif // __GRAPHEDITOR_NODEMODEL_H__
+#endif // __GRAPHEDITOR_CONNECTION_H__

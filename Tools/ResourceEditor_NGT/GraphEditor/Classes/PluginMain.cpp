@@ -32,6 +32,11 @@
 #include <core_generic_plugin/interfaces/i_component_context.hpp>
 #include <core_generic_plugin/generic_plugin.hpp>
 
+#include <core_variant/variant.hpp>
+#include <core_variant/interfaces/i_meta_type_manager.hpp>
+
+#include <core_reflection/i_definition_manager.hpp>
+
 #include <core_ui_framework/i_ui_framework.hpp>
 #include <core_ui_framework/i_ui_application.hpp>
 #include <core_ui_framework/i_view.hpp>
@@ -61,16 +66,16 @@ public:
         Variant::setMetaTypeManager(context.queryInterface<IMetaTypeManager>());
 
         RegisterGrapEditorTypes(*defMng);
+        editor = defMng->create<GraphEditor>(false);
 
-        editor = ObjectHandle(defMng->create<GraphEditor>(false));
-
-        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, editor);
+        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, ObjectHandle(editor));
         uiapplication->addView(*view);
     }
 
     bool Finalise(IComponentContext& context) override
     {
         view.reset();
+        editor = ObjectHandleT<GraphEditor>();
         return true;
     }
 
@@ -80,7 +85,7 @@ public:
 
 private:
     std::unique_ptr<IView> view;
-    ObjectHandle editor;
+    ObjectHandleT<GraphEditor> editor;
 };
 
 PLG_CALLBACK_FUNC(GraphEditorPlugin)
