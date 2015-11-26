@@ -45,6 +45,72 @@
 #include <QFrame>
 #include <QPushButton>
 
+#include "Commands2/AddComponentCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
+
+#include "Tools/LazyUpdater/LazyUpdater.h"
+
+using namespace DAVA;
+
+namespace LODEditorInternal
+{
+bool NeedUpdateLodInfo(const Command2* command)
+{
+    const int32 commandID = static_cast<int32>(command->GetId());
+    if (commandID == CMDID_BATCH)
+    {
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        Command2* firstCommand = batch->GetCommand(0);
+
+        return NeedUpdateLodInfo(firstCommand);
+    }
+    else
+    {
+        switch (commandID)
+        {
+        case CMDID_COMPONENT_ADD:
+        {
+            const AddComponentCommand* cmd = static_cast<const AddComponentCommand*>(command);
+            const Component* component = cmd->GetComponent();
+            const auto componentType = component->GetType();
+            return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
+        }
+        case CMDID_COMPONENT_REMOVE:
+        {
+            const RemoveComponentCommand* cmd = static_cast<const RemoveComponentCommand*>(command);
+            const Component* component = cmd->GetComponent();
+            const auto componentType = component->GetType();
+            return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
+        }
+
+        case CMDID_ENTITY_ADD:
+        case CMDID_ENTITY_REMOVE:
+        case CMDID_ENTITY_CHANGE_PARENT: //may be
+        {
+            const DAVA::Entity* entity = command->GetEntity();
+            if (entity != nullptr)
+            {
+                LodComponent* lc = GetLodComponent(entity);
+                ParticleEffectComponent* effect = GetEffectComponent(entity);
+                return (lc != nullptr) || (effect != nullptr);
+            }
+            break;
+        }
+
+        case CMDID_LOD_DISTANCE_CHANGE:
+        case CMDID_LOD_COPY_LAST_LOD:
+        case CMDID_LOD_DELETE:
+        case CMDID_LOD_CREATE_PLANE:
+            return true;
+
+        default:
+            break;
+        }
+    }
+
+    return false;
+}
+}
 
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)
@@ -53,6 +119,9 @@ LODEditor::LODEditor(QWidget* parent)
     , frameEditVisible(true)
 {
     ui->setupUi(this);
+
+    DAVA::Function<void()> fn(this, &LODEditor::UpdateUI);
+    uiUpdater = new LazyUpdater(fn, this);
 
     bool allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
     ui->checkBoxLodEditorMode->setChecked(allSceneModeEnabled);
@@ -122,26 +191,21 @@ void LODEditor::SetupSceneSignals()
 
 void LODEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
-    if (command->GetId() == CMDID_BATCH)
+    bool needUpdate = LODEditorInternal::NeedUpdateLodInfo(command);
+    if (needUpdate)
     {
-        CommandBatch *batch = (CommandBatch *)command;
-        Command2 *firstCommand = batch->GetCommand(0);
-        if (nullptr != firstCommand)
-        {
-            switch (firstCommand->GetId())
-            {
-            case CMDID_LOD_DISTANCE_CHANGE:
-            case CMDID_LOD_COPY_LAST_LOD:
-            case CMDID_LOD_DELETE:
-            case CMDID_LOD_CREATE_PLANE:
-                scene->editorLODSystem->CollectLODDataFromScene();
-                LODDataChanged(scene);
-                break;
-            default:
-                break;
-            }
-        }
+        uiUpdater->Update();
     }
+}
+
+void LODEditor::UpdateUI()
+{
+    DVASSERT(QtMainWindow::Instance());
+    DVASSERT(QtMainWindow::Instance()->GetCurrentScene());
+
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    scene->editorLODSystem->CollectLODDataFromScene();
+    LODDataChanged(scene);
 }
 
 void LODEditor::ForceDistanceStateChanged(bool checked)

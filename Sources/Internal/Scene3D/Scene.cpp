@@ -382,8 +382,8 @@ Scene::~Scene()
     {
         Camera* obj = *t;
         obj->Release();
-	}
-	cameras.clear();
+    }
+    cameras.clear();
     
     SafeRelease(mainCamera);
     SafeRelease(drawCamera);

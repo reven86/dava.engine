@@ -51,5 +51,4 @@ void UpdateProgBinary(Api targetApi, ProgType progType, const DAVA::FastName& ui
 } // namespace ShaderCache
 } // namespace rhi
 
-
 #endif // __RHI_SHADERCACHE_H__

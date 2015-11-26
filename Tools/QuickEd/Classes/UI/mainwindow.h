@@ -46,6 +46,7 @@ class PreviewWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
 class Document;
+class Project;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -66,14 +67,16 @@ public:
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
+    void OnProjectOpened(const DAVA::ResultList &resultList, const Project *project);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
 
     DialogReloadSprites* GetDialogReloadSprites() const;
     QCheckBox* GetCheckboxEmulation();
+    QComboBox *GetComboBoxLanguage();
 
 protected:
+
     void closeEvent(QCloseEvent *event) override;
 
 signals:
@@ -100,7 +103,6 @@ public slots:
 private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
-    void OnOpenFontManager();
     void OnShowHelp();
     
     void OnOpenProject();
@@ -117,6 +119,7 @@ private slots:
 
 private:
     void InitLanguageBox();
+    void FillComboboxLanguages(const Project* core);
     void InitRtlBox();
     void InitGlobalClasses();
     void InitEmulationMode();
@@ -133,9 +136,9 @@ private:
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction = nullptr;
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
-    LocalizationEditorDialog* localizationEditorDialog = nullptr;
     DialogReloadSprites* dialogReloadSprites = nullptr;
     QCheckBox* emulationBox = nullptr;
+    QComboBox *comboboxLanguage = nullptr;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

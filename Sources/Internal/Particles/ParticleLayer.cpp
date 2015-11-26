@@ -250,17 +250,17 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->deltaTime = deltaTime;
     dstLayer->deltaVariation = deltaVariation;
     dstLayer->loopVariation = loopVariation;
-	dstLayer->loopEndTime = loopEndTime;
-	
-	dstLayer->isDisabled = isDisabled;
+    dstLayer->loopEndTime = loopEndTime;
+
+    dstLayer->isDisabled = isDisabled;
 
 	dstLayer->type = type;
     dstLayer->degradeStrategy = degradeStrategy;
     dstLayer->sprite = sprite;
-    dstLayer->layerPivotPoint = layerPivotPoint;	
-	dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
+    dstLayer->layerPivotPoint = layerPivotPoint;
+    dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
 
-	dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
+    dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
 	dstLayer->frameOverLifeFPS = frameOverLifeFPS;
 	dstLayer->randomFrameOnStart = randomFrameOnStart;
 	dstLayer->loopSpriteAnimation = loopSpriteAnimation;
@@ -436,9 +436,9 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 		// Store the absolute path to sprite.
         FilePath spritePath = configPath.GetDirectory() + spriteNode->AsString();
         SetSprite(spritePath);
-    }	
-	if(pivotPointNode)
-	{
+    }
+    if (pivotPointNode)
+    {
 		Vector2 _pivot = pivotPointNode->AsPoint();
 		if ((format == 0)&&sprite)
 		{
@@ -648,9 +648,9 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     const YamlNode* endTimeNode = node->Get("endTime");
     if (endTimeNode)
         endTime = endTimeNode->AsFloat();
-		
-	isLooped = false;	
-	deltaTime = 0.0f;
+
+    isLooped = false;
+    deltaTime = 0.0f;
 	deltaVariation = 0.0f;
 	loopVariation = 0.0f;
 	
