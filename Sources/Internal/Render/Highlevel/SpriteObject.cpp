@@ -230,7 +230,7 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
     spriteObject->debugFlags = debugFlags;
     spriteObject->ownerDebugInfo = ownerDebugInfo;
 
-	return spriteObject;
+    return spriteObject;
 }
 
 

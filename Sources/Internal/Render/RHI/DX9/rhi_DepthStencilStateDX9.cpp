@@ -68,7 +68,7 @@ RHI_IMPL_POOL(DepthStencilStateDX9_t, RESOURCE_DEPTHSTENCIL_STATE, DepthStencilS
 //------------------------------------------------------------------------------
 
 static DWORD
-_CmpFunc(CmpFunc func)
+_CmpFuncDX9(CmpFunc func)
 {
     DWORD f = D3DCMP_ALWAYS;
 
@@ -106,7 +106,7 @@ _CmpFunc(CmpFunc func)
 //------------------------------------------------------------------------------
 
 static DWORD
-_StencilOp(StencilOperation op)
+_StencilOpDX9(StencilOperation op)
 {
     DWORD s = D3DSTENCILOP_KEEP;
 
@@ -151,26 +151,26 @@ dx9_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
 
     state->depthTestEnabled = desc.depthTestEnabled;
     state->depthWriteEnabled = desc.depthWriteEnabled;
-    state->depthFunc = _CmpFunc(CmpFunc(desc.depthFunc));
+    state->depthFunc = _CmpFuncDX9(CmpFunc(desc.depthFunc));
 
     state->stencilEnabled = desc.stencilEnabled;
     state->stencilTwoSided = desc.stencilTwoSided;
 
-    state->stencilFront.func = _CmpFunc(CmpFunc(desc.stencilFront.func));
+    state->stencilFront.func = _CmpFuncDX9(CmpFunc(desc.stencilFront.func));
     state->stencilFront.readMask = desc.stencilFront.readMask;
     state->stencilFront.writeMask = desc.stencilFront.writeMask;
     state->stencilFront.refValue = desc.stencilFront.refValue;
-    state->stencilFront.failOperation = _StencilOp(StencilOperation(desc.stencilFront.failOperation));
-    state->stencilFront.depthFailOperation = _StencilOp(StencilOperation(desc.stencilFront.depthFailOperation));
-    state->stencilFront.depthStencilPassOperation = _StencilOp(StencilOperation(desc.stencilFront.depthStencilPassOperation));
+    state->stencilFront.failOperation = _StencilOpDX9(StencilOperation(desc.stencilFront.failOperation));
+    state->stencilFront.depthFailOperation = _StencilOpDX9(StencilOperation(desc.stencilFront.depthFailOperation));
+    state->stencilFront.depthStencilPassOperation = _StencilOpDX9(StencilOperation(desc.stencilFront.depthStencilPassOperation));
 
-    state->stencilBack.func = _CmpFunc(CmpFunc(desc.stencilBack.func));
+    state->stencilBack.func = _CmpFuncDX9(CmpFunc(desc.stencilBack.func));
     state->stencilBack.readMask = desc.stencilBack.readMask;
     state->stencilBack.writeMask = desc.stencilBack.writeMask;
     state->stencilBack.refValue = desc.stencilBack.refValue;
-    state->stencilBack.failOperation = _StencilOp(StencilOperation(desc.stencilBack.failOperation));
-    state->stencilBack.depthFailOperation = _StencilOp(StencilOperation(desc.stencilBack.depthFailOperation));
-    state->stencilBack.depthStencilPassOperation = _StencilOp(StencilOperation(desc.stencilBack.depthStencilPassOperation));
+    state->stencilBack.failOperation = _StencilOpDX9(StencilOperation(desc.stencilBack.failOperation));
+    state->stencilBack.depthFailOperation = _StencilOpDX9(StencilOperation(desc.stencilBack.depthFailOperation));
+    state->stencilBack.depthStencilPassOperation = _StencilOpDX9(StencilOperation(desc.stencilBack.depthStencilPassOperation));
 
     return handle;
 }
