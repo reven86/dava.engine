@@ -125,7 +125,7 @@ void UIScrollViewContainer::Input(UIEvent *currentTouch)
 {
     if (UIEvent::Phase::WHEEL == currentTouch->phase)
     {
-        newScroll += currentTouch->scrollDelta.y;
+        newScroll += currentTouch->scrollDelta.y * GetWheelSensitivity();
     }
 
     if (currentTouch->tid == mainTouch)
@@ -198,8 +198,8 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
     {
         // Don't scroll if touchTreshold is not exceeded
         if ((Abs(currentTouch->point.x - scrollStartInitialPosition.x) > touchTreshold) ||
-			(Abs(currentTouch->point.y - scrollStartInitialPosition.y) > touchTreshold))
-		{
+            (Abs(currentTouch->point.y - scrollStartInitialPosition.y) > touchTreshold))
+        {
             UIScrollView *scrollView = DynamicTypeCheck<UIScrollView*>(this->GetParent());
             DVASSERT(scrollView);
             if(enableHorizontalScroll
@@ -225,18 +225,18 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
     {
         Input(currentTouch);
         mainTouch = -1;
-	}
+    }
     else if (UIEvent::Phase::WHEEL == currentTouch->phase)
     {
         Input(currentTouch);
     }
 
     if (scrollStartMovement && currentTouch->tid == mainTouch)
-	{
-		return true;
-	}
-	
-	return systemInput;
+    {
+        return true;
+    }
+
+    return systemInput;
 }
 
 void UIScrollViewContainer::Update(float32 timeElapsed)
@@ -281,22 +281,16 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
 
             const float32 accuracyDelta = 0.1f;
 
-            if (scrollView->GetVerticalScroll() == currentScroll)
+            if (accuracyDelta <= Abs(deltaScroll))
             {
-                if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
-                {
-                    relativePosition.y = currentScroll->GetPosition(deltaScroll, timeElapsed, true);
-                }
-                else
-                {
-                    relativePosition.y = currentScroll->GetPosition(posDelta.y, timeElapsed, lockTouch);
-                }
+                float32 dy = scrollView->GetRect().dy;
+                scrollView->GetVerticalScroll()->ScrollWithoutAnimation(deltaScroll, dy, &relativePosition.y);
             }
             else
             {
-                if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
+                if (scrollView->GetVerticalScroll() == currentScroll)
                 {
-                    relativePosition.y = scrollView->GetVerticalScroll()->GetPosition(deltaScroll, timeElapsed, true);
+                    relativePosition.y = currentScroll->GetPosition(posDelta.y, timeElapsed, lockTouch);
                 }
                 else
                 {

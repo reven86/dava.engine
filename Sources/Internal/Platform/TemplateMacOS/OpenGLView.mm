@@ -333,15 +333,26 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
 
     ev.phase = DAVA::UIEvent::Phase::WHEEL;
     ev.device = DAVA::UIEvent::Device::MOUSE;
-    
-    DAVA::Vector2 scrollDelta([theEvent scrollingDeltaX], [theEvent scrollingDeltaY]);
-    ev.scrollDelta = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(scrollDelta);
-    
+
+    const uint32 rawScrollCoefficient = 10;
+
+    DAVA::float32 rawScrollDelta([theEvent scrollingDeltaY]);
+    if (YES == [theEvent hasPreciseScrollingDeltas])
+    {
+        // touchpad or other precise device
+        // sends integer values (-3, -1, 0, 1, 40 etc)
+        ev.scrollDelta.y = rawScrollDelta / rawScrollCoefficient;
+    }
+    else
+    {
+        // simple mouse - sends float values from 0.1 for one wheel tick
+        ev.scrollDelta.y = rawScrollDelta * rawScrollCoefficient;
+    }
+
     NSPoint posInWindow = [theEvent locationInWindow];
     ev.physPoint.x = posInWindow.x;
     ev.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - posInWindow.y;
 
-    
     UIControlSystem::Instance()->OnInput(&ev);
 }
 
@@ -414,6 +425,23 @@ static int32 oldModifersFlags = 0;
     int32 keyCode = [event keyCode];
     uint32 charsLength = [chars length];
 
+    // first key_down event to send
+    {
+        DAVA::UIEvent ev;
+        if (isRepeat)
+        {
+            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN_REPEAT;
+        }
+        else
+        {
+            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+        }
+        ev.device = UIEvent::Device::KEYBOARD;
+        ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+
+        UIControlSystem::Instance()->OnInput(&ev);
+    }
+    // not send char event to be consistent with Windows
     for (uint32 i = 0; i < charsLength; ++i)
     {
         uint32 ch = [chars characterAtIndex:i];
@@ -430,25 +458,9 @@ static int32 oldModifersFlags = 0;
         ev.device = UIEvent::Device::KEYBOARD;
         ev.keyChar = static_cast<char16>(ch);
 
-        UIControlSystem::Instance()->OnInput(&ev);
+        UIControlSystem::Instance()
+        ->OnInput(&ev);
     }
-
-    {
-        DAVA::UIEvent ev;
-        if (isRepeat)
-        {
-            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN_REPEAT;
-        }
-        else
-        {
-            ev.phase = DAVA::UIEvent::Phase::KEY_DOWN;
-        }
-        ev.device = UIEvent::Device::KEYBOARD;
-        ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
-
-        UIControlSystem::Instance()->OnInput(&ev);
-    }
-
     keyboard.OnSystemKeyPressed(keyCode);
 }
 

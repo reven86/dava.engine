@@ -32,6 +32,7 @@
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 
 #include "Qt/DeviceInfo/MemoryTool/Models/MemoryBlocksModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/DataFormat.h"
 
 using namespace DAVA;
 
@@ -73,11 +74,11 @@ QVariant MemoryBlocksModel::data(const QModelIndex& index, int role) const
             {
                 const String& poolName = session->AllocPoolNameByMask(block->pool);
                 return QString("order=%1;size=%2;pool=[%3];backtrace=%4;%5")
-                    .arg(block->orderNo)
-                    .arg(block->allocByApp)
-                    .arg(poolName.c_str())
-                    .arg(block->bktraceHash)
-                    .arg(block->tags != 0 ? TagsToString(block->tags) : QString());
+                .arg(block->orderNo)
+                .arg(FormatNumberWithDigitGroups(block->allocByApp).c_str())
+                .arg(poolName.c_str())
+                .arg(block->bktraceHash)
+                .arg(block->tags != 0 ? TagsToString(block->tags) : QString());
             }
         }
         else if (ROLE_LINKITEM_POINTER == role)

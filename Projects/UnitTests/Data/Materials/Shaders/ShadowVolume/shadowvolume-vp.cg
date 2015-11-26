@@ -64,7 +64,7 @@ VPROG_BEGIN
     float4 posView = mul( position, worldViewMatrix );
     float3 lightVecView = posView.xyz * lightPosition0.w - lightPosition0.xyz;
     
-    if(dot(normal, -lightVecView) < 0.0)
+    if(dot(normal, lightVecView) >= 0.0)
 	{
 		if(posView.z * lightPosition0.w < lightPosition0.z)
 		{
@@ -74,7 +74,11 @@ VPROG_BEGIN
 		{
 			posView = float4(lightVecView, 0.0);
 		}
+		VP_OUT_POSITION = mul( posView, projMatrix );
 	}
-    VP_OUT_POSITION = mul( posView, projMatrix );
+	else
+	{
+		VP_OUT_POSITION = mul( position, worldViewProjMatrix );
+	}
     
 VPROG_END

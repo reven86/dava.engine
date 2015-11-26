@@ -376,13 +376,13 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
     float32 x = (point.x - bbox.min.x) * kW;
     float32 y = (point.y - bbox.min.y) * kW;
 
-	float32 x1 = floor(x);
-	float32 y1 = floor(y);
+    float32 x1 = floor(x);
+    float32 y1 = floor(y);
 
-	float32 x2 = ceil(x);
-	float32 y2 = ceil(y);
+    float32 x2 = ceil(x);
+    float32 y2 = ceil(y);
 
-	if (x1 == x2)
+    if (x1 == x2)
 		x2 += 1.0f;
 
 	if (y1 == y2)
@@ -934,11 +934,11 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
     int32 step = 1;
     int32 indexIndex = 0;
     int32 quadWidth = heightmap->Size();
-	for(int32 y = 0; y < currentNode->data.size-1; y += step)
-	{
-		for(int32 x = 0; x < currentNode->data.size-1; x += step)
-		{
-			indices[indexIndex++] = x + y * quadWidth;
+    for (int32 y = 0; y < currentNode->data.size - 1; y += step)
+    {
+        for (int32 x = 0; x < currentNode->data.size - 1; x += step)
+        {
+            indices[indexIndex++] = x + y * quadWidth;
 			indices[indexIndex++] = (x + step) + y * quadWidth;
 			indices[indexIndex++] = x + (y + step) * quadWidth;
 

@@ -55,8 +55,8 @@ public:
     DisplayMode currentMode;
     DisplayMode fullscreenMode;
     DisplayMode windowedMode;
-	bool isFullscreen;
-	RECT		windowPositionBeforeFullscreen;
+    bool isFullscreen;
+    RECT windowPositionBeforeFullscreen;
 
 private:
     static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;

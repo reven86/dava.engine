@@ -36,6 +36,8 @@ using DAVA::Logger;
 
     #include "_metal.h"
 
+#if !(TARGET_IPHONE_SIMULATOR == 1)
+
 namespace rhi
 {
 //==============================================================================
@@ -165,3 +167,5 @@ void SetupDispatch(Dispatch* dispatch)
 
 //==============================================================================
 } // namespace rhi
+
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)

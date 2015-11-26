@@ -311,29 +311,32 @@ void UIList::Update(float32 timeElapsed)
 
     float32 d = newPos - oldPos;
     oldPos = newPos;
-    
+
     float32 deltaScroll = newScroll - oldScroll;
     oldScroll = newScroll;
-    
+
     const float32 accuracyDelta = 0.1f;
-    
+
     Rect r = scrollContainer->GetRect();
-    if(orientation == ORIENTATION_HORIZONTAL)
+
+    if (accuracyDelta <= Abs(deltaScroll))
     {
-        if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
+        // this code works for mouse or touchpad scrolls
+        if (orientation == ORIENTATION_HORIZONTAL)
         {
-            r.x = scroll->GetPosition(deltaScroll, SystemTimer::FrameDelta(), true);
+            scroll->ScrollWithoutAnimation(deltaScroll, r.dx, &r.x);
         }
         else
         {
-            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            scroll->ScrollWithoutAnimation(deltaScroll, r.dy, &r.y);
         }
     }
     else
     {
-        if (accuracyDelta <= Abs(deltaScroll) && !lockTouch)
+        // this code works for scroll through touch screen.
+        if (orientation == ORIENTATION_HORIZONTAL)
         {
-            r.y = scroll->GetPosition(deltaScroll, SystemTimer::FrameDelta(), true);
+            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
         }
         else
         {
@@ -347,14 +350,14 @@ void UIList::Update(float32 timeElapsed)
     }
 
     List<UIControl*>::const_iterator it;
-    Rect viewRect = GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+    Rect viewRect = GetGeometricData().GetUnrotatedRect();
     const List<UIControl*> &scrollList = scrollContainer->GetChildren();
     List<UIControl*> removeList;
 
     //removing invisible elements
     for(it = scrollList.begin(); it != scrollList.end(); it++)
     {
-        Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+        Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();
         if(orientation == ORIENTATION_HORIZONTAL)
         {
             if(crect.x + crect.dx < viewRect.x - viewRect.dx || crect.x > viewRect.x + viewRect.dx*2)
@@ -496,7 +499,7 @@ void UIList::Input(UIEvent *currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-        newScroll += currentInput->scrollDelta.y;
+        newScroll += currentInput->scrollDelta.y * GetWheelSensitivity();
     }
     else
     {
@@ -547,7 +550,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
     {
         if (UIEvent::Phase::WHEEL == currentInput->phase)
         {
-            if(IsPointInside(currentInput->point))
+            if (IsPointInside(currentInput->point))
             {
                 Input(currentInput);
                 return true;

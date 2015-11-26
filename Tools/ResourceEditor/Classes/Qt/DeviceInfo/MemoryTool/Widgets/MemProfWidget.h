@@ -61,6 +61,8 @@ class SnapshotListModel;
 class MemoryStatItem;
 class ProfilingSession;
 
+class QCPItemTracer;
+
 class MemProfWidget : public QWidget
 {
     Q_OBJECT
@@ -79,6 +81,7 @@ public slots:
     void SnapshotProgress(DAVA::uint32 totalSize, DAVA::uint32 recvSize);
 
     void RealtimeToggled(bool checked);
+    void ScatterPointsToggled(bool checked);
     void DiffClicked();
     void PlotClicked(QMouseEvent* ev);
 
@@ -101,6 +104,9 @@ private:
 
     DAVA::Vector<QColor> poolColors;
     bool realtimeMode;
+    bool showScatterPoints = false;
+
+    QCPItemTracer* plotItemTracer = nullptr;
 };
 
 #endif // __DEVICELOGWIDGET_H__
