@@ -345,19 +345,6 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
                 phase = DAVA::UIEvent::Phase::ENDED;
                 break;
 
-    case 2: //ACTION_MOVE
-    {
-        if ((source & 0x10) > 0) //SOURCE_CLASS_JOYSTICK
-        {
-            phase = DAVA::UIEvent::Phase::JOYSTICK;
-        }
-        else //Touches
-        {
-            phase = DAVA::UIEvent::Phase::DRAG;
-        }
-    }
-    break;
-
     case 3: //ACTION_CANCEL
                 phase = DAVA::UIEvent::Phase::CANCELLED;
                 break;

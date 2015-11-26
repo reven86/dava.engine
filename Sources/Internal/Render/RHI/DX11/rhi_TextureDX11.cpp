@@ -80,7 +80,7 @@ TextureDX11_t::TextureDX11_t()
     , tex2d_dsv(nullptr)
     , isMapped(false)
     , cpuAccessRead(false)
-    , lastUnit(InvalidIndex)
+    , lastUnit(DAVA::InvalidIndex)
 {
 }
 
@@ -516,12 +516,12 @@ void SetRenderTarget(Handle color, Handle depthstencil, ID3D11DeviceContext* con
     TextureDX11_t* rt = TextureDX11Pool::Get(color);
     TextureDX11_t* ds = (depthstencil != InvalidHandle && depthstencil != DefaultDepthBuffer) ? TextureDX11Pool::Get(depthstencil) : nullptr;
 
-    if (rt->lastUnit != InvalidIndex)
+    if (rt->lastUnit != DAVA::InvalidIndex)
     {
         ID3D11ShaderResourceView* srv[1] = { NULL };
 
         context->PSSetShaderResources(rt->lastUnit, 1, srv);
-        rt->lastUnit = InvalidIndex;
+        rt->lastUnit = DAVA::InvalidIndex;
     }
 
     context->OMSetRenderTargets(1, &(rt->tex2d_rtv), (ds) ? ds->tex2d_dsv : ((depthstencil == DefaultDepthBuffer) ? _D3D11_DepthStencilView : nullptr));
