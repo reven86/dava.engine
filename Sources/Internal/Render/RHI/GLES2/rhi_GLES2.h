@@ -70,8 +70,8 @@ namespace TextureGLES2
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
-void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i = InvalidIndex);
-void SetAsRenderTarget(Handle tex, Handle depth, TextureFace faceIndex = TEXTURE_FACE_POSITIVE_X);
+void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i = DAVA::InvalidIndex);
+void SetAsRenderTarget(Handle tex, Handle depth, TextureFace cubemapFace = TextureFace::TEXTURE_FACE_POSITIVE_X);
 Size2i Size(Handle tex);
 void ReCreateAll();
 unsigned NeedRestoreCount();

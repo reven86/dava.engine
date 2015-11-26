@@ -21,6 +21,7 @@ VPROG_OUT_END
 
 property float4x4 worldViewProjMatrix : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
+property float4x4 viewProjMatrix : dynamic,a : ;
 
 #if defined(ENCODE_DISTANCE)
 property float3 cameraPosition : dynamic,a : ;
@@ -42,5 +43,5 @@ VPROG_BEGIN
 	VP_OUT(directionFromPoint) = worldPosiion.xyz - lightPosition0;
 #endif
 
-	VP_OUT_POSITION = mul(position, worldViewProjMatrix);
+	VP_OUT_POSITION = mul(worldPosiion, viewProjMatrix);
 VPROG_END
