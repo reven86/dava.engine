@@ -138,7 +138,6 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
     {
         DVASSERT(desc.type == TEXTURE_TYPE_2D);
         DVASSERT(!desc.cpuAccessWrite);
-        desc2d.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
         need_copy = true;
     }
 
@@ -240,6 +239,7 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
 
             desc2d.Usage = D3D11_USAGE_STAGING;
             desc2d.BindFlags = 0;
+            desc2d.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
             hr = _D3D11_Device->CreateTexture2D(&desc2d, NULL, &copy);
 

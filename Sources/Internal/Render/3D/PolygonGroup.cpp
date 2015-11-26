@@ -325,12 +325,16 @@ void PolygonGroup::BuildBuffers()
 
     vbDesc.size = vertexStride * vertexCount;
     vbDesc.initialData = meshData;
+    vbDesc.usage = rhi::USAGE_STATICDRAW;
 
     ibDesc.size = indexCount * INDEX_FORMAT_SIZE[indexFormat];
     ibDesc.initialData = indexArray;
+    ibDesc.usage = rhi::USAGE_STATICDRAW;
 
     vertexBuffer = rhi::CreateVertexBuffer(vbDesc);
+    DVASSERT(vertexBuffer);
     indexBuffer = rhi::CreateIndexBuffer(ibDesc);
+    DVASSERT(indexBuffer);
 
 #else
     uint32 vertexDataSize = vertexStride * vertexCount;

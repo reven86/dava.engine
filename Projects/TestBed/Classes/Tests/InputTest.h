@@ -26,26 +26,35 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __KEYBOARDTEST_TEST_H__
-#define __KEYBOARDTEST_TEST_H__
 
+#ifndef __INPUTTEST_TEST_H__
+#define __INPUTTEST_TEST_H__
+
+#include <DAVAEngine.h>
 #include "Infrastructure/BaseScreen.h"
 
-class KeyboardTest : public BaseScreen
+using namespace DAVA;
+
+class InputTest : public BaseScreen
 {
 public:
-    KeyboardTest();
+    InputTest();
 
 protected:
     void LoadResources() override;
     void UnloadResources() override;
 
 private:
-    void OnResetClick(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnInputChanged(DAVA::DeviceInfo::eHIDType hidType, bool connected);
 
-    DAVA::UIStaticText* previewText = nullptr;
-    DAVA::UIButton* resetButton = nullptr;
-    DAVA::UIControl* gamepad = nullptr;
+    void MousePressed(BaseObject* obj, void* data, void* callerData);
+    void TouchPressed(BaseObject* obj, void* data, void* callerData);
+    void KeyboardPressed(BaseObject* obj, void* data, void* callerData);
+
+    UIButton* mouse;
+    UIButton* touch;
+    UIButton* keyboard;
+    bool input[DeviceInfo::eHIDType::HID_COUNT_TYPE] = {false,false,false,false,false,false,false,false};
 };
 
-#endif //__KEYBOARDTEST_TEST_H__
+#endif //__INPUTTEST_TEST_H__
