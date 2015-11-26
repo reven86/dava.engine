@@ -47,6 +47,8 @@ class FileSystemDockWidget : public QDockWidget
     
 public:
     explicit FileSystemDockWidget(QWidget *parent = nullptr);
+    ~FileSystemDockWidget();
+    
     void SetProjectDir(const QString &path);
 
 signals:
@@ -63,7 +65,7 @@ private slots:
 private:
     void RefreshActions(const QModelIndexList &indexList);
     bool CanRemove(const QModelIndex &index) const;
-    std::unique_ptr<Ui::FileSystemDockWidget> ui = nullptr;
+    std::unique_ptr<Ui::FileSystemDockWidget> ui;
     QFileSystemModel *model = nullptr;
     QAction *newFolderAction = nullptr;
     QAction *newFileAction = nullptr;
