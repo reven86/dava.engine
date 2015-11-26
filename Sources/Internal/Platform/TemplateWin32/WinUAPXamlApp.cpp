@@ -139,16 +139,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 
     if (mouseCaptureMode != newMode)
     {
-        static Windows::Foundation::EventRegistrationToken token;
-
-        // Uninstall old capture mode
-        switch (mouseCaptureMode)
-        {
-        case DAVA::InputSystem::eMouseCaptureMode::PINING:
-            MouseDevice::GetForCurrentView()->MouseMoved -= token;
-            break;
-        }
-
         // Setup new capture mode
         switch (newMode)
         {
@@ -161,7 +151,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
             Logger::Error("Unsupported cursor capture mode");
             break;
         case DAVA::InputSystem::eMouseCaptureMode::PINING:
-            token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
             mouseCaptureMode = newMode;
             break;
         default:
@@ -184,7 +173,16 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
     if (isVisible != isMouseCursorShown)
     {
-        Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
+        if (isVisible)
+        {
+            MouseDevice::GetForCurrentView()->MouseMoved -= token;
+            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+        }
+        else
+        {
+            token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
+            Window::Current->CoreWindow->PointerCursor = nullptr;
+        }
         isMouseCursorShown = isVisible;
     }
     return true;
@@ -767,9 +765,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
 
     coreWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WinUAPXamlApp::OnAcceleratorKeyActivated);
-
     coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WinUAPXamlApp::OnChar);
-    MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
 
     if (isPhoneApiDetected)
     {
