@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "VisibilityToolPanel.h"
+#include "__VisibilityToolPanel.h"
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"
 #include "Tools/SliderWidget/SliderWidget.h"
@@ -49,8 +49,8 @@ class VisibilityPointLayout : public QWidget
 VisibilityToolPanel::VisibilityToolPanel(QWidget* parent)
     : LandscapeEditorBasePanel(parent)
 {
-	InitUI();
-	ConnectToSignals();
+    InitUI();
+    ConnectToSignals();
 }
 
 VisibilityToolPanel::~VisibilityToolPanel()
@@ -59,13 +59,13 @@ VisibilityToolPanel::~VisibilityToolPanel()
 
 bool VisibilityToolPanel::GetEditorEnabled()
 {
-	SceneEditor2* sceneEditor = GetActiveScene();
-	if (!sceneEditor)
-	{
-		return false;
-	}
+    SceneEditor2* sceneEditor = GetActiveScene();
+    if (!sceneEditor)
+    {
+        return false;
+    }
 
-	return sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
+    return sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
 }
 
 void VisibilityToolPanel::SetWidgetsState(bool enabled)
@@ -84,7 +84,7 @@ void VisibilityToolPanel::BlockAllSignals(bool block)
 
 void VisibilityToolPanel::InitUI()
 {
-	QVBoxLayout* layout = new QVBoxLayout(this);
+    QVBoxLayout* layout = new QVBoxLayout(this);
 
     buttonAddVisibilityPoint = new QPushButton(this);
     buttonComputeVisibilityArea = new QPushButton(this);
@@ -96,10 +96,10 @@ void VisibilityToolPanel::InitUI()
     layout->addWidget(buttonComputeVisibilityArea);
     layout->addWidget(buttonSaveTexture);
 
-	setLayout(layout);
+    setLayout(layout);
 
-	SetWidgetsState(false);
-	BlockAllSignals(true);
+    SetWidgetsState(false);
+    BlockAllSignals(true);
 
     buttonAddVisibilityPoint->setText(ResourceEditor::VISIBILITY_TOOL_ADD_POINT_CAPTION.c_str());
     buttonAddVisibilityPoint->setCheckable(true);
@@ -113,9 +113,9 @@ void VisibilityToolPanel::ConnectToSignals()
             this, SLOT(SetVisibilityToolButtonsState(SceneEditor2*, VisibilityToolSystem::State)));
 
     connect(SceneSignals::Instance(), SIGNAL(VisibilityToolToggled(SceneEditor2*)),
-			this, SLOT(EditorToggled(SceneEditor2*)));
+            this, SLOT(EditorToggled(SceneEditor2*)));
 
-	connect(buttonSaveTexture, SIGNAL(clicked()), this, SLOT(SaveTexture()));
+    connect(buttonSaveTexture, SIGNAL(clicked()), this, SLOT(SaveTexture()));
     connect(buttonAddVisibilityPoint, SIGNAL(clicked()), this, SLOT(AddVisibilityPoint()));
     connect(buttonComputeVisibilityArea, SIGNAL(clicked()), this, SLOT(ComputeVisibilityArea()));
 }
@@ -126,14 +126,14 @@ void VisibilityToolPanel::StoreState()
 
 void VisibilityToolPanel::RestoreState()
 {
-	SceneEditor2* sceneEditor = GetActiveScene();
+    SceneEditor2* sceneEditor = GetActiveScene();
 
-	bool enabled = sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
+    bool enabled = sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
     VisibilityToolSystem::State state = sceneEditor->visibilityToolSystem->GetState();
 
     SetWidgetsState(enabled);
-	
-	BlockAllSignals(true);
+
+    BlockAllSignals(true);
     buttonAddVisibilityPoint->setChecked(state == VisibilityToolSystem::State::AddingPoint);
     BlockAllSignals(!enabled);
 }
@@ -142,23 +142,23 @@ void VisibilityToolPanel::RestoreState()
 // to the values suitable for visibility tool system
 int32 VisibilityToolPanel::AreaSizeUIToSystem(int32 uiValue)
 {
-	int32 systemValue = uiValue * ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
-	return systemValue;
+    int32 systemValue = uiValue * ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
+    return systemValue;
 }
 
 int32 VisibilityToolPanel::AreaSizeSystemToUI(int32 systemValue)
 {
-	int32 uiValue = systemValue / ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
-	return uiValue;
+    int32 uiValue = systemValue / ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
+    return uiValue;
 }
 // end of convert functions ==========================
 
 void VisibilityToolPanel::SetVisibilityToolButtonsState(SceneEditor2* scene, VisibilityToolSystem::State state)
 {
-	if (scene != GetActiveScene())
-	{
-		return;
-	}
+    if (scene != GetActiveScene())
+    {
+        return;
+    }
 
     bool b = buttonAddVisibilityPoint->signalsBlocked();
     buttonAddVisibilityPoint->blockSignals(true);
@@ -172,17 +172,17 @@ void VisibilityToolPanel::SetVisibilityToolButtonsState(SceneEditor2* scene, Vis
 
 void VisibilityToolPanel::SaveTexture()
 {
-	FilePath currentPath = FileSystem::Instance()->GetUserDocumentsPath();
+    FilePath currentPath = FileSystem::Instance()->GetUserDocumentsPath();
     QString filePath = FileDialog::getSaveFileName(nullptr, QString(ResourceEditor::VISIBILITY_TOOL_SAVE_CAPTION.c_str()),
                                                    QString(currentPath.GetAbsolutePathname().c_str()),
                                                    PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
     FilePath selectedPathname = PathnameToDAVAStyle(filePath);
 
-	if(!selectedPathname.IsEmpty())
-	{
-		GetActiveScene()->visibilityToolSystem->SaveTexture(selectedPathname);
-	}
+    if (!selectedPathname.IsEmpty())
+    {
+        GetActiveScene()->visibilityToolSystem->SaveTexture(selectedPathname);
+    }
 }
 
 void VisibilityToolPanel::AddVisibilityPoint()
@@ -225,7 +225,7 @@ void VisibilityToolPanel::ComputeVisibilityArea()
 
 void VisibilityToolPanel::ConnectToShortcuts()
 {
-	LandscapeEditorShortcutManager* shortcutManager = LandscapeEditorShortcutManager::Instance();
+    LandscapeEditorShortcutManager* shortcutManager = LandscapeEditorShortcutManager::Instance();
 
     connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_POINT), SIGNAL(activated()),
             this, SLOT(AddVisibilityPoint()));
@@ -238,7 +238,7 @@ void VisibilityToolPanel::ConnectToShortcuts()
 
 void VisibilityToolPanel::DisconnectFromShortcuts()
 {
-	LandscapeEditorShortcutManager* shortcutManager = LandscapeEditorShortcutManager::Instance();
+    LandscapeEditorShortcutManager* shortcutManager = LandscapeEditorShortcutManager::Instance();
 
     disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_POINT), SIGNAL(activated()),
                this, SLOT(AddVisibilityPoint()));
@@ -246,5 +246,5 @@ void VisibilityToolPanel::DisconnectFromShortcuts()
                this, SLOT(ComputeVisibilityArea()));
 
     shortcutManager->SetBrushSizeShortcutsEnabled(false);
-	shortcutManager->SetVisibilityToolShortcutsEnabled(false);
+    shortcutManager->SetVisibilityToolShortcutsEnabled(false);
 }

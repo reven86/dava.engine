@@ -32,7 +32,6 @@
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "LandscapeEditorDrawSystem/CustomColorsProxy.h"
-#include "LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "LandscapeEditorDrawSystem/NotPassableTerrainProxy.h"
 #include "LandscapeEditorDrawSystem/RulerToolProxy.h"
 
@@ -53,7 +52,6 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	heightmapProxy(nullptr)
 ,	notPassableTerrainProxy(nullptr)
 ,	customColorsProxy(nullptr)
-,	visibilityToolProxy(nullptr)
 ,	rulerToolProxy(nullptr)
 ,	customDrawRequestCount(0)
 ,   sourceTilemaskPath("")
@@ -66,7 +64,6 @@ LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 	SafeRelease(landscapeProxy);
 	SafeRelease(heightmapProxy);
 	SafeRelease(customColorsProxy);
-	SafeRelease(visibilityToolProxy);
 	SafeRelease(rulerToolProxy);
 
     SafeDelete(notPassableTerrainProxy);
@@ -85,11 +82,6 @@ HeightmapProxy* LandscapeEditorDrawSystem::GetHeightmapProxy()
 CustomColorsProxy* LandscapeEditorDrawSystem::GetCustomColorsProxy()
 {
 	return customColorsProxy;
-}
-
-VisibilityToolProxy* LandscapeEditorDrawSystem::GetVisibilityToolProxy()
-{
-	return visibilityToolProxy;
 }
 
 RulerToolProxy* LandscapeEditorDrawSystem::GetRulerToolProxy()
@@ -431,10 +423,6 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	if (!customColorsProxy)
 	{
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
-    }
-    if (!visibilityToolProxy)
-    {
-        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
     if (!rulerToolProxy)
     {

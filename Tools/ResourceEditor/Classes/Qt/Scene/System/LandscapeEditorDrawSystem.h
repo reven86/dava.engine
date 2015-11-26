@@ -39,7 +39,6 @@ class LandscapeProxy;
 class HeightmapProxy;
 class NotPassableTerrainProxy;
 class CustomColorsProxy;
-class VisibilityToolProxy;
 class RulerToolProxy;
 class Command2;
 
@@ -69,7 +68,6 @@ public:
 	LandscapeProxy* GetLandscapeProxy();
 	HeightmapProxy* GetHeightmapProxy();
 	CustomColorsProxy* GetCustomColorsProxy();
-	VisibilityToolProxy* GetVisibilityToolProxy();
 	RulerToolProxy* GetRulerToolProxy();
 
 	eErrorType EnableCustomDraw();
@@ -143,7 +141,6 @@ protected:
     HeightmapProxy* heightmapProxy = nullptr;
     NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
     CustomColorsProxy* customColorsProxy = nullptr;
-    VisibilityToolProxy* visibilityToolProxy = nullptr;
     RulerToolProxy* rulerToolProxy = nullptr;
 
     uint32 customDrawRequestCount;

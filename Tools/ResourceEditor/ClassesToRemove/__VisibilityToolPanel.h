@@ -27,43 +27,62 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__LANDSCAPEEDITORSHORTCUTMANAGER__
-#define __RESOURCEEDITORQT__LANDSCAPEEDITORSHORTCUTMANAGER__
+#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLPANEL__
+#define __RESOURCEEDITORQT__VISIBILITYTOOLPANEL__
 
+#include "LandscapeEditorBasePanel.h"
 #include "DAVAEngine.h"
-#include "Base/StaticSingleton.h"
-
-#include <QShortcut>
+#include "../../Scene/System/VisibilityToolSystem.h"
 
 using namespace DAVA;
 
-class LandscapeEditorShortcutManager: public DAVA::StaticSingleton<LandscapeEditorShortcutManager>
+class QPushButton;
+class QListWidget;
+class VisibilityPointLayout;
+
+class VisibilityToolPanel : public LandscapeEditorBasePanel
 {
+    Q_OBJECT
+
 public:
-	LandscapeEditorShortcutManager();
-	~LandscapeEditorShortcutManager();
+    static const int DEF_AREA_MIN_SIZE = 3;
+    static const int DEF_AREA_MAX_SIZE = 40;
 
-	QShortcut* GetShortcutByName(const String& name);
-	QShortcut* CreateOrUpdateShortcut(const String& name, QKeySequence keySequence, bool autoRepeat = true, const String& description = "");
-	
-	void SetHeightMapEditorShortcutsEnabled(bool enabled);
-	
-	void SetTileMaskEditorShortcutsEnabled(bool enabled);
-	
-	void SetBrushSizeShortcutsEnabled(bool enabled);
-	
-	void SetBrushImageSwitchingShortcutsEnabled(bool enabled);
-	
-	void SetTextureSwitchingShortcutsEnabled(bool enabled);
-	
-	void SetStrengthShortcutsEnabled(bool enabled);
-	
-	void SetAvgStrengthShortcutsEnabled(bool enabled);
-	
+    explicit VisibilityToolPanel(QWidget* parent = 0);
+    ~VisibilityToolPanel();
+
+private slots:
+    void SetVisibilityToolButtonsState(SceneEditor2* scene, VisibilityToolSystem::State state);
+
+    void AddVisibilityPoint();
+    void ComputeVisibilityArea();
+    void SaveTexture();
+
+protected:
+    virtual bool GetEditorEnabled();
+
+    virtual void SetWidgetsState(bool enabled);
+    virtual void BlockAllSignals(bool block);
+
+    virtual void InitUI();
+    virtual void ConnectToSignals();
+
+    virtual void StoreState();
+    virtual void RestoreState();
+
+    virtual void ConnectToShortcuts();
+    virtual void DisconnectFromShortcuts();
+
 private:
-	Map<String, QShortcut*> shortcutsMap;
+    int32 AreaSizeUIToSystem(int32 uiValue);
+    int32 AreaSizeSystemToUI(int32 systemValue);
 
-	void InitDefaultShortcuts();
+private:
+    QPushButton* buttonAddVisibilityPoint = nullptr;
+    QPushButton* buttonComputeVisibilityArea = nullptr;
+    QPushButton* buttonSaveTexture = nullptr;
+    QListWidget* pointsList = nullptr;
+    Vector<VisibilityPointLayout> points;
 };
 
-#endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORSHORTCUTMANAGER__) */
+#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPANEL__) */

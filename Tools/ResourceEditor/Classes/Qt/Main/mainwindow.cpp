@@ -85,7 +85,6 @@
 #include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
 #include "Classes/Commands2/RulerToolActions.h"
 #include "Classes/Commands2/TilemaskEditorCommands.h"
-#include "Classes/Commands2/VisibilityToolActions.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
 
@@ -814,7 +813,6 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
 	QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
 	QObject::connect(ui->actionTileMapEditor, SIGNAL(triggered()), this, SLOT(OnTilemaskEditor()));
-	QObject::connect(ui->actionVisibilityCheckTool, SIGNAL(triggered()), this, SLOT(OnVisibilityTool()));
 	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionWayEditor, SIGNAL(triggered()), this, SLOT(OnWayEditor()));
 
@@ -857,7 +855,6 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnOpenHelp()));
 
 	//Landscape editors toggled
-	QObject::connect(SceneSignals::Instance(), SIGNAL(VisibilityToolToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(CustomColorsToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(HeightmapEditorToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(TilemaskEditorToggled(SceneEditor2*)), this, SLOT(OnLandscapeEditorToggled(SceneEditor2*)));
@@ -2293,10 +2290,6 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
 	{
 		ui->actionTileMapEditor->setChecked(true);
 	}
-	if (tools & SceneEditor2::LANDSCAPE_TOOL_VISIBILITY)
-	{
-		ui->actionVisibilityCheckTool->setChecked(true);
-	}
 	if (tools & SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
 	{
 		ui->actionShowNotPassableLandscape->setChecked(true);
@@ -2467,38 +2460,6 @@ void QtMainWindow::OnTilemaskEditor()
         if (LoadAppropriateTextureFormat())
 		{
 			sceneEditor->Exec(new ActionEnableTilemaskEditor(sceneEditor));
-		}
-		else
-		{
-			OnLandscapeEditorToggled(sceneEditor);
-		}
-	}
-}
-
-void QtMainWindow::OnVisibilityTool()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if (!sceneEditor)
-	{
-		return;
-	}
-    
-	if (sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
-	{
-		sceneEditor->Exec(new ActionDisableVisibilityTool(sceneEditor));
-	}
-	else
-	{
-        if (sceneEditor->pathSystem->IsPathEditEnabled())
-        {
-            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
-            OnLandscapeEditorToggled(sceneEditor);
-            return;
-        }
-
-        if (LoadAppropriateTextureFormat())
-		{
-			sceneEditor->Exec(new ActionEnableVisibilityTool(sceneEditor));
 		}
 		else
 		{

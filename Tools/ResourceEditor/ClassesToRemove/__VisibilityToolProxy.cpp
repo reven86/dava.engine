@@ -27,43 +27,53 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__LANDSCAPEEDITORSHORTCUTMANAGER__
-#define __RESOURCEEDITORQT__LANDSCAPEEDITORSHORTCUTMANAGER__
+#include "__VisibilityToolProxy.h"
 
-#include "DAVAEngine.h"
-#include "Base/StaticSingleton.h"
-
-#include <QShortcut>
-
-using namespace DAVA;
-
-class LandscapeEditorShortcutManager: public DAVA::StaticSingleton<LandscapeEditorShortcutManager>
+VisibilityToolProxy::VisibilityToolProxy(int32 size)
+    : size(size)
+    , visibilityPoint(Vector2(-1.f, -1.f))
+    , isVisibilityPointSet(false)
 {
-public:
-	LandscapeEditorShortcutManager();
-	~LandscapeEditorShortcutManager();
+    visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
 
-	QShortcut* GetShortcutByName(const String& name);
-	QShortcut* CreateOrUpdateShortcut(const String& name, QKeySequence keySequence, bool autoRepeat = true, const String& description = "");
-	
-	void SetHeightMapEditorShortcutsEnabled(bool enabled);
-	
-	void SetTileMaskEditorShortcutsEnabled(bool enabled);
-	
-	void SetBrushSizeShortcutsEnabled(bool enabled);
-	
-	void SetBrushImageSwitchingShortcutsEnabled(bool enabled);
-	
-	void SetTextureSwitchingShortcutsEnabled(bool enabled);
-	
-	void SetStrengthShortcutsEnabled(bool enabled);
-	
-	void SetAvgStrengthShortcutsEnabled(bool enabled);
-	
-private:
-	Map<String, QShortcut*> shortcutsMap;
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = (uint32)size;
+    viewport.height = (uint32)size;
+    RenderHelper::CreateClearPass(visibilityToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+}
 
-	void InitDefaultShortcuts();
-};
+VisibilityToolProxy::~VisibilityToolProxy()
+{
+    SafeRelease(visibilityToolTexture);
+}
 
-#endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORSHORTCUTMANAGER__) */
+int32 VisibilityToolProxy::GetSize()
+{
+    return size;
+}
+
+Texture* VisibilityToolProxy::GetTexture()
+{
+    return visibilityToolTexture;
+}
+
+void VisibilityToolProxy::SetVisibilityPoint(const Vector2& visibilityPoint)
+{
+    this->visibilityPoint = visibilityPoint;
+}
+
+Vector2 VisibilityToolProxy::GetVisibilityPoint()
+{
+    return visibilityPoint;
+}
+
+bool VisibilityToolProxy::IsVisibilityPointSet()
+{
+    return isVisibilityPointSet;
+}
+
+void VisibilityToolProxy::UpdateVisibilityPointSet(bool visibilityPointSet)
+{
+    isVisibilityPointSet = visibilityPointSet;
+}

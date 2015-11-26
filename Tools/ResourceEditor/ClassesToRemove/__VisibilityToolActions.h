@@ -27,62 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLPANEL__
-#define __RESOURCEEDITORQT__VISIBILITYTOOLPANEL__
+#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
+#define __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
 
-#include "LandscapeEditorBasePanel.h"
+#include "Commands2/CommandAction.h"
 #include "DAVAEngine.h"
-#include "../../Scene/System/VisibilityToolSystem.h"
 
 using namespace DAVA;
 
-class QPushButton;
-class QListWidget;
-class VisibilityPointLayout;
+class VisibilityToolProxy;
+class SceneEditor2;
 
-class VisibilityToolPanel: public LandscapeEditorBasePanel
+class ActionEnableVisibilityTool : public CommandAction
 {
-	Q_OBJECT
-
 public:
-	static const int DEF_AREA_MIN_SIZE = 3;
-	static const int DEF_AREA_MAX_SIZE = 40;
-
-	explicit VisibilityToolPanel(QWidget* parent = 0);
-	~VisibilityToolPanel();
-
-private slots:
-    void SetVisibilityToolButtonsState(SceneEditor2* scene, VisibilityToolSystem::State state);
-
-    void AddVisibilityPoint();
-    void ComputeVisibilityArea();
-    void SaveTexture();
+    ActionEnableVisibilityTool(SceneEditor2* forSceneEditor);
 
 protected:
-	virtual bool GetEditorEnabled();
+    SceneEditor2* sceneEditor;
 
-	virtual void SetWidgetsState(bool enabled);
-	virtual void BlockAllSignals(bool block);
-
-	virtual void InitUI();
-	virtual void ConnectToSignals();
-
-	virtual void StoreState();
-	virtual void RestoreState();
-
-	virtual void ConnectToShortcuts();
-	virtual void DisconnectFromShortcuts();
-
-private:
-    int32 AreaSizeUIToSystem(int32 uiValue);
-	int32 AreaSizeSystemToUI(int32 systemValue);
-
-private:
-    QPushButton* buttonAddVisibilityPoint = nullptr;
-    QPushButton* buttonComputeVisibilityArea = nullptr;
-    QPushButton* buttonSaveTexture = nullptr;
-    QListWidget* pointsList = nullptr;
-    Vector<VisibilityPointLayout> points;
+    virtual void Redo();
 };
 
-#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPANEL__) */
+class ActionDisableVisibilityTool : public CommandAction
+{
+public:
+    ActionDisableVisibilityTool(SceneEditor2* forSceneEditor);
+
+protected:
+    SceneEditor2* sceneEditor;
+
+    virtual void Redo();
+};
+
+#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__) */

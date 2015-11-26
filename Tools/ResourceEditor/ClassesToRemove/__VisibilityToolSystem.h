@@ -37,7 +37,7 @@
 using namespace DAVA;
 
 class EntityGroup;
-class VisibilityToolSystem: public LandscapeEditorSystem
+class VisibilityToolSystem : public LandscapeEditorSystem
 {
 public:
     enum class State : uint32
@@ -49,10 +49,10 @@ public:
 
 public:
     VisibilityToolSystem(Scene* scene);
-	virtual ~VisibilityToolSystem();
+    virtual ~VisibilityToolSystem();
 
-	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
-	bool DisableLandscapeEdititing();
+    LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
+    bool DisableLandscapeEdititing();
 
     void Process(DAVA::float32 timeElapsed);
     void Input(DAVA::UIEvent* event);
@@ -98,7 +98,7 @@ private:
     void DrawVisibilityAreaPoints();
     void DrawVisibilityAreaMark(const CheckPoint& point);
 
-    void ExcludeEntities(EntityGroup *entities) const;
+    void ExcludeEntities(EntityGroup* entities) const;
 
     void PerformVisibilityTest(const VisibilityTests::value_type& test);
     void ProcessNextVisibilityTests();

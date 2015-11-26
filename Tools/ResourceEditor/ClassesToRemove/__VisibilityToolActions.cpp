@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "VisibilityToolActions.h"
+#include "__VisibilityToolActions.h"
 #include "../Qt/Scene/System/LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "../Qt/Scene/SceneEditor2.h"
 #include "../Qt/Scene/SceneSignals.h"
@@ -35,77 +35,77 @@
 #include "../Qt/Main/QtUtils.h"
 
 ActionEnableVisibilityTool::ActionEnableVisibilityTool(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_VISIBILITY_TOOL_ENABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_VISIBILITY_TOOL_ENABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionEnableVisibilityTool::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool enabled = sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
-	if (enabled)
-	{
-		return;
-	}
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
 
-	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+    bool enabled = sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
+    if (enabled)
+    {
+        return;
+    }
 
-	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-	
-	if (!success )
-	{
-		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
-	}
-	
-	LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->visibilityToolSystem->EnableLandscapeEditing();
-	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
-	}
-    
-    if(success &&
-       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+    bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+    if (!success)
+    {
+        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+    }
+
+    LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->visibilityToolSystem->EnableLandscapeEditing();
+    if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+    }
+
+    if (success &&
+        LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(false);
     }
-    
-	SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
+
+    SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
 }
 
 ActionDisableVisibilityTool::ActionDisableVisibilityTool(SceneEditor2* forSceneEditor)
-:	CommandAction(CMDID_VISIBILITY_TOOL_DISABLE)
-,	sceneEditor(forSceneEditor)
+    : CommandAction(CMDID_VISIBILITY_TOOL_DISABLE)
+    , sceneEditor(forSceneEditor)
 {
 }
 
 void ActionDisableVisibilityTool::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
-	}
-	
-	bool disabled = !sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
-	if (disabled)
-	{
-		return;
-	}
+    if (sceneEditor == NULL)
+    {
+        return;
+    }
 
-	disabled = sceneEditor->visibilityToolSystem->DisableLandscapeEdititing();
-	if (!disabled)
-	{
-		ShowErrorDialog(ResourceEditor::VISIBILITY_TOOL_DISABLE_ERROR);
-	}
-    
-    if(disabled)
+    bool disabled = !sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
+    if (disabled)
+    {
+        return;
+    }
+
+    disabled = sceneEditor->visibilityToolSystem->DisableLandscapeEdititing();
+    if (!disabled)
+    {
+        ShowErrorDialog(ResourceEditor::VISIBILITY_TOOL_DISABLE_ERROR);
+    }
+
+    if (disabled)
     {
         sceneEditor->foliageSystem->SetFoliageVisible(true);
     }
 
-	SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
+    SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
 }

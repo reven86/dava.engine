@@ -26,37 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __VisibilityToolRenderPass_h__
-#define __VisibilityToolRenderPass_h__
+#ifndef __VisibilityCheckComponent_h__
+#define __VisibilityCheckComponent_h__
 
-#include "Render/Highlevel/RenderPass.h"
-#include "Render/RenderBase.h"
-#include "Render/Texture.h"
+#include "Entity/Component.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
-class VisibilityToolRenderPass : public RenderPass
+class VisibilityCheckComponent : public Component
 {
 public:
-    VisibilityToolRenderPass();
-    ~VisibilityToolRenderPass();
+    IMPLEMENT_COMPONENT_TYPE(VISIBILITY_CHECK_COMPONENT);
 
-    void RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point);
+public:
+    VisibilityCheckComponent();
+    Component* Clone(Entity* toEntity) override;
+
+    Texture* GetRenderTarget() const;
+
+    float GetRadius() const;
+    void SetRadius(float);
 
 private:
-    void SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex);
-    void RenderWithCurrentSettings(RenderSystem* renderSystem);
-    void DrawOverrideWithCurrentSettings(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point);
-    bool ShouldRenderObject(RenderObject*);
-    bool ShouldRenderBatch(RenderBatch*);
+    float radius = 1.0f;
+    ScopedPtr<Texture> renderTarget;
 
-private:
-    ScopedPtr<Camera> camera;
-    ScopedPtr<NMaterial> distanceMaterial;
-    ScopedPtr<NMaterial> overrideMaterial;
-    rhi::HDepthStencilState overrideDepthStencilState;
-    rhi::RenderPassConfig renderTargetConfig;
-    rhi::RenderPassConfig overrideConfig;
+public:
+    INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
+                         PROPERTY("radius", "Ramera", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

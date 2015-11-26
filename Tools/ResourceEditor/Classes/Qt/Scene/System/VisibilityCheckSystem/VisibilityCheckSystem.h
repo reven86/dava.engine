@@ -26,38 +26,31 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __VisibilityCheckSystem_h__
+#define __VisibilityCheckSystem_h__
 
-#ifndef __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
-#define __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
+#include "VisibilityCheckRenderPass.h"
+#include "Entity/SceneSystem.h"
 
-#include "Commands2/CommandAction.h"
-#include "DAVAEngine.h"
-
-using namespace DAVA;
-
-class VisibilityToolProxy;
-class SceneEditor2;
-
-class ActionEnableVisibilityTool: public CommandAction
+namespace DAVA
+{
+class VisibilityCheckComponent;
+class VisibilityCheckSystem : public SceneSystem
 {
 public:
-	ActionEnableVisibilityTool(SceneEditor2* forSceneEditor);
+    VisibilityCheckSystem(Scene* scene);
+    ~VisibilityCheckSystem();
 
-protected:
-	SceneEditor2* sceneEditor;
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void Process(float32 timeElapsed) override;
 
-	virtual void Redo();
+    void Draw();
+
+private:
+    Vector<Entity*> entities;
+    VisibilityCheckRenderPass renderPass;
 };
+}
 
-class ActionDisableVisibilityTool: public CommandAction
-{
-public:
-	ActionDisableVisibilityTool(SceneEditor2* forSceneEditor);
-
-protected:
-	SceneEditor2* sceneEditor;
-
-	virtual void Redo();
-};
-
-#endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__) */
+#endif

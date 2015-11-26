@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1084</width>
     <height>929</height>
    </rect>
   </property>
@@ -212,7 +212,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1084</width>
      <height>21</height>
     </rect>
    </property>
@@ -733,7 +733,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>90</height>
+          <height>88</height>
          </rect>
         </property>
        </widget>
@@ -763,7 +763,6 @@
    <addaction name="actionShowNotPassableLandscape"/>
    <addaction name="actionRulerTool"/>
    <addaction name="actionCustomColorsEditor"/>
-   <addaction name="actionVisibilityCheckTool"/>
    <addaction name="actionWayEditor"/>
   </widget>
   <widget class="QToolBar" name="sceneToolBar">
@@ -863,7 +862,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>90</height>
+          <height>89</height>
          </rect>
         </property>
        </widget>
@@ -2172,6 +2171,14 @@
   <action name="actionDumpSprites">
    <property name="text">
     <string>Sprites</string>
+   </property>
+  </action>
+  <action name="actionAddVisibilityComponent">
+   <property name="text">
+    <string>Add Visbility Check Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Visibility Component</string>
    </property>
   </action>
  </widget>

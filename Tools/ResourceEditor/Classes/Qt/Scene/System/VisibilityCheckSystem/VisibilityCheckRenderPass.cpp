@@ -26,14 +26,14 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "VisibilityToolRenderPass.h"
+#include "VisibilityCheckRenderPass.h"
 #include "Render/ShaderCache.h"
 
 using namespace DAVA;
 
 const uint32 cubemapFaces = 6;
 
-VisibilityToolRenderPass::VisibilityToolRenderPass()
+VisibilityCheckRenderPass::VisibilityCheckRenderPass()
     : RenderPass(PASS_FORWARD)
     , camera(new Camera())
     , distanceMaterial(new NMaterial())
@@ -70,11 +70,11 @@ VisibilityToolRenderPass::VisibilityToolRenderPass()
     overrideMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
-VisibilityToolRenderPass::~VisibilityToolRenderPass()
+VisibilityCheckRenderPass::~VisibilityCheckRenderPass()
 {
 }
 
-void VisibilityToolRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point)
+void VisibilityCheckRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point)
 {
     renderTargetConfig.colorBuffer[0].texture = renderTarget->handle;
     renderTargetConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
@@ -91,7 +91,7 @@ void VisibilityToolRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSyst
     DrawOverrideWithCurrentSettings(renderSystem, renderTarget, point);
 }
 
-void VisibilityToolRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex)
+void VisibilityCheckRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex)
 {
     const Vector3 directions[cubemapFaces] =
     {
@@ -127,7 +127,7 @@ void VisibilityToolRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vec
     camera->SetUp(upVectors[faceIndex]);
 }
 
-bool VisibilityToolRenderPass::ShouldRenderObject(RenderObject* object)
+bool VisibilityCheckRenderPass::ShouldRenderObject(RenderObject* object)
 {
     auto type = object->GetType();
 
@@ -135,12 +135,12 @@ bool VisibilityToolRenderPass::ShouldRenderObject(RenderObject* object)
     (type != RenderObject::TYPE_VEGETATION) && (type != RenderObject::TYPE_PARTICLE_EMTITTER);
 }
 
-bool VisibilityToolRenderPass::ShouldRenderBatch(RenderBatch* batch)
+bool VisibilityCheckRenderPass::ShouldRenderBatch(RenderBatch* batch)
 {
     return (batch->GetMaterial()->GetEffectiveFXName() != NMaterialName::SKYOBJECT);
 }
 
-void VisibilityToolRenderPass::RenderWithCurrentSettings(RenderSystem* renderSystem)
+void VisibilityCheckRenderPass::RenderWithCurrentSettings(RenderSystem* renderSystem)
 {
     ShaderDescriptorCache::ClearDynamicBindigs();
     SetupCameraParams(camera, camera);
@@ -173,7 +173,7 @@ void VisibilityToolRenderPass::RenderWithCurrentSettings(RenderSystem* renderSys
     rhi::EndRenderPass(renderTargetPass);
 }
 
-void VisibilityToolRenderPass::DrawOverrideWithCurrentSettings(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point)
+void VisibilityCheckRenderPass::DrawOverrideWithCurrentSettings(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point)
 {
     FastName fnCubemap("cubemap");
     if (overrideMaterial->HasLocalTexture(fnCubemap))

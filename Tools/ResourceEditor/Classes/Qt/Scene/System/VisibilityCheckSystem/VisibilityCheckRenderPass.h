@@ -26,54 +26,38 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __VisibilityCheckRenderPass_h__
+#define __VisibilityCheckRenderPass_h__
 
-#include "VisibilityToolProxy.h"
+#include "Render/Highlevel/RenderPass.h"
+#include "Render/RenderBase.h"
+#include "Render/Texture.h"
 
-VisibilityToolProxy::VisibilityToolProxy(int32 size)
-    : size(size)
-    , visibilityPoint(Vector2(-1.f, -1.f))
-    , isVisibilityPointSet(false)
+namespace DAVA
 {
-    visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
+class VisibilityCheckRenderPass : public RenderPass
+{
+public:
+    VisibilityCheckRenderPass();
+    ~VisibilityCheckRenderPass();
 
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = (uint32)size;
-    viewport.height = (uint32)size;
-    RenderHelper::CreateClearPass(visibilityToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+    void RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point);
+
+private:
+    void SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex);
+    void RenderWithCurrentSettings(RenderSystem* renderSystem);
+    void DrawOverrideWithCurrentSettings(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point);
+    bool ShouldRenderObject(RenderObject*);
+    bool ShouldRenderBatch(RenderBatch*);
+
+private:
+    ScopedPtr<Camera> camera;
+    ScopedPtr<NMaterial> distanceMaterial;
+    ScopedPtr<NMaterial> overrideMaterial;
+    rhi::HDepthStencilState overrideDepthStencilState;
+    rhi::RenderPassConfig renderTargetConfig;
+    rhi::RenderPassConfig overrideConfig;
+};
 }
 
-VisibilityToolProxy::~VisibilityToolProxy()
-{
-	SafeRelease(visibilityToolTexture);
-}
-
-int32 VisibilityToolProxy::GetSize()
-{
-	return size;
-}
-
-Texture* VisibilityToolProxy::GetTexture()
-{
-	return visibilityToolTexture;
-}
-
-void VisibilityToolProxy::SetVisibilityPoint(const Vector2& visibilityPoint)
-{
-	this->visibilityPoint = visibilityPoint;
-}
-
-Vector2 VisibilityToolProxy::GetVisibilityPoint()
-{
-	return visibilityPoint;
-}
-
-bool VisibilityToolProxy::IsVisibilityPointSet()
-{
-	return isVisibilityPointSet;
-}
-
-void VisibilityToolProxy::UpdateVisibilityPointSet(bool visibilityPointSet)
-{
-	isVisibilityPointSet = visibilityPointSet;
-}
+#endif

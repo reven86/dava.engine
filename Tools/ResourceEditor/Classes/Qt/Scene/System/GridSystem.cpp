@@ -33,9 +33,6 @@
 #include "Render/RenderHelper.h"
 #include "Qt/Settings/SettingsManager.h"
 
-// framework
-#include "Render/RenderHelper.h"
-
 #define LOWEST_GRID_STEP 0.1f
 #define LOWEST_GRID_SIZE 1.0f
 

@@ -34,25 +34,26 @@
 
 using namespace DAVA;
 
-class VisibilityToolProxy: public BaseObject
+class VisibilityToolProxy : public BaseObject
 {
 protected:
-	~VisibilityToolProxy();
+    ~VisibilityToolProxy();
+
 public:
-	VisibilityToolProxy(int32 size);
+    VisibilityToolProxy(int32 size);
 
-	int32 GetSize();
+    int32 GetSize();
 
-	Texture* GetTexture();
+    Texture* GetTexture();
 
-	void SetVisibilityPoint(const Vector2& visibilityPoint);
-	Vector2 GetVisibilityPoint();
+    void SetVisibilityPoint(const Vector2& visibilityPoint);
+    Vector2 GetVisibilityPoint();
 
-	void UpdateVisibilityPointSet(bool visibilityPointSet);
-	bool IsVisibilityPointSet();
+    void UpdateVisibilityPointSet(bool visibilityPointSet);
+    bool IsVisibilityPointSet();
 
 protected:
-	Texture* visibilityToolTexture;
+    Texture* visibilityToolTexture;
 
     int32 size;
     Vector2 visibilityPoint;

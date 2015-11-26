@@ -51,6 +51,7 @@
 #include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/SkeletonComponent.h"
+#include "Scene3D/Components/VisibilityCheckComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
@@ -121,9 +122,10 @@ Component * Component::CreateByType(uint32 componentType)
         return new SnapToLandscapeControllerComponent();
     case WASD_CONTROLLER_COMPONENT:
         return new WASDControllerComponent();
+    case VISIBILITY_CHECK_COMPONENT:
+        return new VisibilityCheckComponent();
 
-
-	case ANIMATION_COMPONENT:
+    case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:
         

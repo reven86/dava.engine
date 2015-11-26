@@ -185,7 +185,6 @@ public slots:
 	void OnHeightmapEditor();
 	void OnRulerTool();
 	void OnTilemaskEditor();
-	void OnVisibilityTool();
 	void OnNotPassableTerrain();
     void OnWayEditor();
 	
