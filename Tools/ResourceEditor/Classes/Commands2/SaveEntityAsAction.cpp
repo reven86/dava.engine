@@ -102,7 +102,7 @@ void SaveEntityAsAction::Redo()
             if (nullptr != props)
             {
                 props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-			}
+            }
         };
 
         //reset global material because of global material :)
@@ -129,7 +129,7 @@ void SaveEntityAsAction::Redo()
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
                 Matrix4 newLocalTransform = clone->GetLocalTransform();
                 newLocalTransform.SetTranslationVector(offset);
-				clone->SetLocalTransform(newLocalTransform);
+                clone->SetLocalTransform(newLocalTransform);
 
 				container->AddNode(clone);
 				RemoveReferenceToOwner(clone);

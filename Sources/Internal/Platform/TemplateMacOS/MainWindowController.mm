@@ -71,18 +71,18 @@ namespace DAVA
         core->SetCommandLine(argc, argv);
         core->EnableConsoleMode();
         core->CreateSingletons();
-		
-        Logger::Instance()->EnableConsoleMode();
-        
-		FrameworkDidLaunched();
-		FrameworkWillTerminate();
-		
-		core->ReleaseSingletons();
 
-		[globalPool release];
-		globalPool = 0;
-		return 0;
-	}
+        Logger::Instance()->EnableConsoleMode();
+
+        FrameworkDidLaunched();
+        FrameworkWillTerminate();
+
+        core->ReleaseSingletons();
+
+        [globalPool release];
+        globalPool = 0;
+        return 0;
+    }
 }
 
 @interface MainWindowController ()

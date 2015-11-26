@@ -126,7 +126,7 @@ private:
     void updateInfoPos(QLabel* label, const QPoint& pos = QPoint());
     void updateInfoOriginal(const QList<QImage>& images);
     void updateInfoConverted();
-	void updatePropertiesWarning();
+    void updatePropertiesWarning();
 
 	void reloadTextureToScene(DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu);
 

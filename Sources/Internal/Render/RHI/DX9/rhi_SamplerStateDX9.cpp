@@ -67,7 +67,7 @@ RHI_IMPL_POOL(SamplerStateDX9_t, RESOURCE_SAMPLER_STATE, SamplerState::Descripto
 //------------------------------------------------------------------------------
 
 static DWORD
-_AddrMode(TextureAddrMode mode)
+_AddrModeDX9(TextureAddrMode mode)
 {
     DWORD m = D3DTADDRESS_WRAP;
 
@@ -90,7 +90,7 @@ _AddrMode(TextureAddrMode mode)
 //------------------------------------------------------------------------------
 
 static DWORD
-_TextureFilter(TextureFilter filter)
+_TextureFilterDX9(TextureFilter filter)
 {
     DWORD f = 0;
 
@@ -110,7 +110,7 @@ _TextureFilter(TextureFilter filter)
 //------------------------------------------------------------------------------
 
 static DWORD
-_TextureMipFilter(TextureMipFilter filter)
+_TextureMipFilterDX9(TextureMipFilter filter)
 {
     DWORD f = 0;
 
@@ -141,23 +141,23 @@ dx9_SamplerState_Create(const SamplerState::Descriptor& desc)
     state->fragmentSamplerCount = desc.fragmentSamplerCount;
     for (unsigned i = 0; i != desc.fragmentSamplerCount; ++i)
     {
-        state->fragmentSampler[i].addrU = _AddrMode(TextureAddrMode(desc.fragmentSampler[i].addrU));
-        state->fragmentSampler[i].addrV = _AddrMode(TextureAddrMode(desc.fragmentSampler[i].addrV));
-        state->fragmentSampler[i].addrW = _AddrMode(TextureAddrMode(desc.fragmentSampler[i].addrW));
-        state->fragmentSampler[i].minFilter = _TextureFilter(TextureFilter(desc.fragmentSampler[i].minFilter));
-        state->fragmentSampler[i].magFilter = _TextureFilter(TextureFilter(desc.fragmentSampler[i].magFilter));
-        state->fragmentSampler[i].mipFilter = _TextureMipFilter(TextureMipFilter(desc.fragmentSampler[i].mipFilter));
+        state->fragmentSampler[i].addrU = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrU));
+        state->fragmentSampler[i].addrV = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrV));
+        state->fragmentSampler[i].addrW = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrW));
+        state->fragmentSampler[i].minFilter = _TextureFilterDX9(TextureFilter(desc.fragmentSampler[i].minFilter));
+        state->fragmentSampler[i].magFilter = _TextureFilterDX9(TextureFilter(desc.fragmentSampler[i].magFilter));
+        state->fragmentSampler[i].mipFilter = _TextureMipFilterDX9(TextureMipFilter(desc.fragmentSampler[i].mipFilter));
     }
 
     state->vertexSamplerCount = desc.vertexSamplerCount;
     for (unsigned i = 0; i != desc.vertexSamplerCount; ++i)
     {
-        state->vertexSampler[i].addrU = _AddrMode(TextureAddrMode(desc.vertexSampler[i].addrU));
-        state->vertexSampler[i].addrV = _AddrMode(TextureAddrMode(desc.vertexSampler[i].addrV));
-        state->vertexSampler[i].addrW = _AddrMode(TextureAddrMode(desc.vertexSampler[i].addrW));
-        state->vertexSampler[i].minFilter = _TextureFilter(TextureFilter(desc.vertexSampler[i].minFilter));
-        state->vertexSampler[i].magFilter = _TextureFilter(TextureFilter(desc.vertexSampler[i].magFilter));
-        state->vertexSampler[i].mipFilter = _TextureMipFilter(TextureMipFilter(desc.vertexSampler[i].mipFilter));
+        state->vertexSampler[i].addrU = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrU));
+        state->vertexSampler[i].addrV = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrV));
+        state->vertexSampler[i].addrW = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrW));
+        state->vertexSampler[i].minFilter = _TextureFilterDX9(TextureFilter(desc.vertexSampler[i].minFilter));
+        state->vertexSampler[i].magFilter = _TextureFilterDX9(TextureFilter(desc.vertexSampler[i].magFilter));
+        state->vertexSampler[i].mipFilter = _TextureMipFilterDX9(TextureMipFilter(desc.vertexSampler[i].mipFilter));
     }
 
     return handle;

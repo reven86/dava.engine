@@ -50,10 +50,9 @@ void FrameworkDidLaunched()
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(IOS_WIDTH, IOS_HEIGHT, "Gfx");
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(IOS_WIDTH*2, IOS_HEIGHT*2, "Gfx2");
-    
+
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
-    
+
     appOptions->SetInt32("fullscreen", 0);
 
 #else
@@ -69,6 +68,12 @@ void FrameworkDidLaunched()
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
 #endif 
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+#else
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
 
     GameCore * core = new GameCore();
     DAVA::Core::SetApplicationCore(core);

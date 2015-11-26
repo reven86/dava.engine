@@ -79,8 +79,8 @@ protected slots:
     void OnSpriteFolderBtn();
     void OnSpritePathChanged(const QString& text);
     void OnSpritePathEdited(const QString& text);
-	
-	void OnPivotPointReset();
+
+    void OnPivotPointReset();
     void OnSpriteUpdateTimerExpired();
 
 private:

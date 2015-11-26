@@ -39,6 +39,9 @@
  * If this is not the case, you will have to do some editing here and there.
  */
 
+#ifndef _MCPP_SYSTEM_H
+#define _MCPP_SYSTEM_H
+
 #define SYSTEM_H
 
 #if HAVE_CONFIG_H
@@ -370,10 +373,10 @@ typedef long expr_t;
  */
 #if IDMAX < IDLEN90MIN || NBUFF < SLEN90MIN + 3
 || NWORK < SLEN90MIN + 2 || NMACPARS < NMACPARS90MIN || NEXP < EXP_NEST90MIN || BLK_NEST < BLK_NEST90MIN
-#define STDC 0
+#define SYS_STDC 0
 #endif
-#ifndef STDC
-#define STDC 1 /* 1 : for ISO 9899:1990 or later   */
+#ifndef SYS_STDC
+#define SYS_STDC 1 /* 1 : for ISO 9899:1990 or later   */
 #endif
 
 #ifndef STDC_VERSION
@@ -389,3 +392,5 @@ typedef long expr_t;
  * The value can be changed by -V<n> option.
  */
 #define CPLUS 1 /* 199711L for C++ Standard     */
+
+#endif /* _MCPP_SYSTEM_H  */

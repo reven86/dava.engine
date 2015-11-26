@@ -296,7 +296,7 @@ protected:
 	float32 scaleVelocityFactor;
 	bool inheritPosition;
 	bool isLooped;
-	FilePath spritePath;
+    FilePath spritePath;
     eBlending blending;
     bool enableFog;
     bool enableFrameBlending;

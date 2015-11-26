@@ -31,13 +31,7 @@
 #include "Math/Math2D.h"
 
 namespace DAVA
-{
-#define B (4 / PI)
-#define C (-4 / (PI * PI))
-//  const float Q = 0.775;
-#define P (0.225f)
-#define ONE_DIV_TWO_PI (1.0f / PI_2)
-    
+{   
 #ifndef __GNUC__
     const int MultiplyDeBruijnBitPosition2[32] =
     {

@@ -153,9 +153,9 @@ namespace DAVA
         }
 
         inline void SetDefaultMaterialQuality(const FastName& quality)
-		{
-			defaultMaterialQuality = quality;
-		}
+        {
+            defaultMaterialQuality = quality;
+        }
 		
 		inline const FastName& GetDefaultMaterialQuality() const
 		{
