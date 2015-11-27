@@ -85,6 +85,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         active->Deactivate();
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
+        DocumentDeactivated(active);
     }
     
     active = document;
@@ -99,11 +100,17 @@ void DocumentGroup::SetActiveDocument(Document* document)
         connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
 
         undoGroup->setActiveStack(active->GetUndoStack());
+
+        active->SetScale(scale);
+        active->SetEmulationMode(emulationMode);
+        active->SetDPR(dpr);
+        active->SetPixelization(hasPixalization);
     }
     emit ActiveDocumentChanged(document);
     if (nullptr != active)
     {
         active->Activate();
+        DocumentActivated(active);
     }
 }
 
@@ -115,19 +122,63 @@ void DocumentGroup::SetSelectedNodes(const SelectedNodes& selected, const Select
     }
 }
 
-void DocumentGroup::SetEmulationMode(bool emulationMode)
+void DocumentGroup::SetEmulationMode(bool arg)
 {
+    emulationMode = arg;
     if (nullptr != active)
     {
-        active->SetEmulationMode(emulationMode);
+        active->SetEmulationMode(arg);
     }
 }
 
-void DocumentGroup::SetScale(float scale)
+void DocumentGroup::SetPixelization(bool arg)
 {
+    hasPixalization = arg;
     if (nullptr != active)
     {
-        active->SetScale(scale);
+        active->SetPixelization(arg);
+    }
+}
+
+void DocumentGroup::SetScale(float arg)
+{
+    scale = arg;
+    if (nullptr != active)
+    {
+        active->SetScale(arg);
+    }
+}
+
+void DocumentGroup::SetDPR(qreal arg)
+{
+    dpr = arg;
+    if (nullptr != active)
+    {
+        active->SetDPR(static_cast<double>(dpr));
+    }
+}
+
+void DocumentGroup::OnSelectAllRequested()
+{
+    if (active != nullptr)
+    {
+        active->GetSystemManager()->SelectAllControls.Emit();
+    }
+}
+
+void DocumentGroup::FocusNextChild()
+{
+    if (active != nullptr)
+    {
+        active->GetSystemManager()->FocusNextChild.Emit();
+    }
+}
+
+void DocumentGroup::FocusPreviousChild()
+{
+    if (active != nullptr)
+    {
+        active->GetSystemManager()->FocusPreviousChild.Emit();
     }
 }
 

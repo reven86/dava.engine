@@ -71,8 +71,8 @@ namespace
 {
 const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
 const DAVA::Vector2 magnetRange = DAVA::Vector2(7.0f, 7.0f);
-const DAVA::float32 moveStepByKeyboard = 1.0f;
-const DAVA::float32 expandedMoveStepByKeyboard = 10.0f;
+const DAVA::float32 moveStepByKeyboard = 10.0f;
+const DAVA::float32 expandedMoveStepByKeyboard = 1.0f;
 const DAVA::Vector2 borderInParentToMagnet = DAVA::Vector2(20.0f, 20.0f);
 const DAVA::Vector2 indentOfControlToManget = DAVA::Vector2(5.0f, 5.0f);
 const DAVA::Vector2 shareOfSizeToMagnetPivot = DAVA::Vector2(0.25f, 0.25f);
@@ -166,15 +166,16 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::Phase::BEGAN:
     {
-        extraDelta.SetZero();
-        prevPos = currentInput->point;
         microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
         currentHash = static_cast<size_t>(us.count());
-        return activeArea != HUDAreaInfo::NO_AREA;
+        extraDelta.SetZero();
+        prevPos = currentInput->point;
+        return false;
     }
     case UIEvent::Phase::DRAG:
     {
-        if (currentInput->point != prevPos)
+        UIEvent::eButtonID button = static_cast<UIEvent::eButtonID>(currentInput->tid);
+        if (button == UIEvent::BUTTON_1 && currentInput->point != prevPos)
         {
             if (ProcessDrag(currentInput->point))
             {
@@ -184,6 +185,10 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
         return false;
     }
     case UIEvent::Phase::ENDED:
+        if (activeArea == HUDAreaInfo::ROTATE_AREA)
+        {
+            ClampAngle();
+        }        
         systemManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
         return false;
     default:
@@ -207,10 +212,10 @@ bool EditorTransformSystem::ProcessKey(const int32 key)
 {
     if (!selectedControlNodes.empty())
     {
-        float step = moveStepByKeyboard;
+        float32 step = expandedMoveStepByKeyboard;
         if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
         {
-            step = expandedMoveStepByKeyboard;
+            step = moveStepByKeyboard;
         }
         Vector2 deltaPos;
         switch (key)
@@ -261,7 +266,7 @@ bool EditorTransformSystem::ProcessDrag(Vector2 pos)
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
     {
         bool withPivot = IsKeyPressed(KeyboardProxy::KEY_ALT);
-        bool rateably = IsKeyPressed(KeyboardProxy::KEY_SHIFT);
+        bool rateably = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         ResizeControl(delta, withPivot, rateably);
         return true;
     }
@@ -316,7 +321,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
     }
     if (!propertiesToChange.empty())
     {
-        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+        systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
     }
     systemManager->MagnetLinesChanged.Emit(magnets);
 }
@@ -545,7 +550,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     Vector2 finalSize(originalSize + adjustedSize);
     propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
 
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
 }
 
 Vector2 EditorTransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
@@ -586,7 +591,7 @@ Vector2 EditorTransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSiz
 {
     Vector<MagnetLineInfo> magnets;
 
-    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
+    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_SHIFT) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
     Vector2 adjustedDeltaToBorder(deltaSize);
     if (canAdjustResize)
     {
@@ -635,6 +640,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
                 return needRemove;
             };
             magnetLines.remove_if(removePredicate);
+
             if (!magnetLines.empty())
             {
                 std::function<bool(const MagnetLineСontrol&, const MagnetLineСontrol&)> predicate = [transformPoint, directions](const MagnetLineСontrol& left, const MagnetLineСontrol& right) -> bool {
@@ -687,7 +693,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
 }
 
 namespace
@@ -802,14 +808,14 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
     return true;
 }
 
 float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
 {
     float32 finalAngle = originalAngle + deltaAngle;
-    if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         static const int step = angleSegment; //fixed angle step
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
@@ -905,4 +911,17 @@ void EditorTransformSystem::UpdateNeighboursToMove()
             CollectNeighbours(neighbours, selectedControlNodes, parent);
         }
     }
+}
+
+void EditorTransformSystem::ClampAngle()
+{
+    float32 angle = angleProperty->GetValue().AsFloat();
+    if (fabs(angle) > 360)
+    {
+        angle += angle > 0.0f ? TRANSFORM_EPSILON : -TRANSFORM_EPSILON;
+        angle = static_cast<int32>(angle) % 360;
+    }
+    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(angle));
+    systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
 }

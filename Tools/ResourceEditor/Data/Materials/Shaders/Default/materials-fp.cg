@@ -51,10 +51,7 @@ FPROG_IN_BEGIN
         #if FAST_NORMALIZATION
         FPROG_IN_COLOR0_LOW(varHalfVec,3)
         #endif
-        FPROG_IN_COLOR1_LOW(varToLightVec,3)
-        #if DISTANCE_ATTENUATION
-        FPROG_IN_TEXCOORD6(varPerPixelAttenuation,1)
-        #endif
+        FPROG_IN_COLOR1_LOW(varToLightVec,3)        
         FPROG_IN_TEXCOORD7(varToCameraVec,3) 
         
     #endif
@@ -113,8 +110,7 @@ FPROG_OUT_END
 #endif
 
 #if PIXEL_LIT
-    DECL_FP_SAMPLER2D(normalmap)    
-    property float  lightIntensity0             : static,a : ;
+    DECL_FP_SAMPLER2D(normalmap)        
     property float  inSpecularity               : static,a : ;    
     property float3 metalFresnelReflectance     : static,a : ;
     property float  normalScale                 : static,a : ;
@@ -344,15 +340,7 @@ FPROG_BEGIN
         // lookup normal from normal map, move from [0, 1] to  [-1, 1] range, normalize
         float3 normal = 2.0 * FP_TEXTURE2D( normalmap, FP_IN(varTexCoord0) ).rgb - 1.0;
         normal.xy *= normalScale;
-        normal = normalize (normal);
-        //normal.z = sqrt(1.0 - (normal.x * normal.x + normal.y * normal.y));
-        //normal = vec3(0.0, 0.0, 1.0);
-    
-        float attenuation = lightIntensity0;
-        
-        #if DISTANCE_ATTENUATION
-            attenuation /= (FP_IN(varPerPixelAttenuation) * FP_IN(varPerPixelAttenuation));
-        #endif
+        normal = normalize (normal);        
     
         #if !FAST_NORMALIZATION
             float3 toLightNormalized = normalize(FP_IN(varToLightVec).xyz);
