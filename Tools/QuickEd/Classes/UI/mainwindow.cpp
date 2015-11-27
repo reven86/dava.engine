@@ -52,6 +52,19 @@ namespace
 
 using namespace DAVA;
 
+struct MainWindow::TabState
+{
+    TabState(QString arg = QString())
+        : tabText(arg)
+        , isModified(false)
+    {
+    }
+    QString tabText;
+    bool isModified;
+};
+
+Q_DECLARE_METATYPE(MainWindow::TabState*);
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
@@ -96,6 +109,9 @@ MainWindow::MainWindow(QWidget* parent)
     RebuildRecentMenu();
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
+
+    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
+    OnCurrentIndexChanged(-1);
 }
 
 void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
@@ -166,11 +182,6 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-QCheckBox* MainWindow::GetCheckboxEmulation()
-{
-    return emulationBox;
-}
-
 QComboBox* MainWindow::GetComboBoxLanguage()
 {
     return comboboxLanguage;
@@ -204,6 +215,16 @@ void MainWindow::OnCleanChanged(int index, bool val)
     {
         actionSaveDocument->setEnabled(tabState->isModified);
     }
+}
+
+bool MainWindow::IsInEmulationMode() const
+{
+    return emulationBox->isChecked();
+}
+
+bool MainWindow::isPixelized() const
+{
+    return actionPixelized->isChecked();
 }
 
 void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
@@ -510,7 +531,7 @@ void MainWindow::OnPixelizationStateChanged()
     bool isPixelized = actionPixelized->isChecked();
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
-    Texture::SetPixelization(isPixelized);
+    emit PixelizationChanged(isPixelized);
 }
 
 void MainWindow::OnRtlChanged(int arg)
@@ -579,15 +600,4 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
-}
-
-void MainWindow::OnDocumentChanged(Document* doc)
-{
-    if (nullptr != doc)
-    {
-        doc->SetEmulationMode(emulationBox->isChecked());
-
-        const bool isPixelized = EditorSettings::Instance()->IsPixelized();
-        Texture::SetPixelization(isPixelized);
-    }
 }

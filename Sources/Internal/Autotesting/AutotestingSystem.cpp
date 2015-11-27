@@ -167,8 +167,8 @@ namespace DAVA
         {
             return;
         }
-		isRunning = true;
-		OnTestStarted();
+        isRunning = true;
+        OnTestStarted();
 	}
 
 	void AutotestingSystem::OnInit()
@@ -503,8 +503,8 @@ namespace DAVA
     bool AutotestingSystem::FindTouch(int32 id, UIEvent& touch)
     {
         bool isFound = false;
-		Map<int32, UIEvent>::iterator findIt = touches.find(id);
-		if (findIt != touches.end())
+        Map<int32, UIEvent>::iterator findIt = touches.find(id);
+        if (findIt != touches.end())
 		{
 			isFound = true;
 			touch = findIt->second;

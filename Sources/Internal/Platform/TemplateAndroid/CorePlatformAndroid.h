@@ -88,7 +88,7 @@ public:
 
     void OnGamepadAvailable(bool isAvailable);
     void OnGamepadTriggersAvailable(bool isAvailable);
-    
+
     bool IsMultitouchEnabled();
 
 	bool DownloadHttpFile(const String & url, const String & documentsPathname);
