@@ -190,7 +190,7 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
 
 void PreviewWidget::OnDocumentActivated(Document* document)
 {
-    PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
+    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
     if (nullptr == context)
     {
         context = new PreviewContext();
@@ -207,7 +207,7 @@ void PreviewWidget::OnDocumentActivated(Document* document)
 
 void PreviewWidget::OnDocumentDeactivated(Document* document)
 {
-    PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
+    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
     context->canvasPosition = scrollAreaController->GetPosition();
 }
 
@@ -285,19 +285,15 @@ bool PreviewWidget::eventFilter(QObject *obj, QEvent *event)
         switch(event->type())
         {
             case QEvent::Wheel:
-                DVASSERT(nullptr != dynamic_cast<QWheelEvent*>(event));
-                OnWheelEvent(static_cast<QWheelEvent*>(event));
+                OnWheelEvent(DynamicTypeCheck<QWheelEvent*>(event));
                 break;
             case QEvent::NativeGesture:
-                DVASSERT(nullptr != dynamic_cast<QNativeGestureEvent*>(event));
-                OnNativeGuestureEvent(static_cast<QNativeGestureEvent*>(event));
+                OnNativeGuestureEvent(DynamicTypeCheck<QNativeGestureEvent*>(event));
                 break;
             case QEvent::MouseMove:
-                DVASSERT(nullptr != dynamic_cast<QMouseEvent*>(event));
-                OnMoveEvent(static_cast<QMouseEvent*>(event));
+                OnMoveEvent(DynamicTypeCheck<QMouseEvent*>(event));
             case QEvent::MouseButtonPress:
-                DVASSERT(nullptr != dynamic_cast<QMouseEvent*>(event));
-                lastMousePos = static_cast<QMouseEvent*>(event)->pos(); 
+                lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
             default:
                 break;
         }
@@ -311,6 +307,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     {
         return;
     }
+    //QWheelEvent::source to distinguish wheel and touchpad is implemented only in Qt 5.5
 #ifdef Q_OS_WIN //under MAC OS we get this event when scrolling by two fingers on MAC touchpad
     if(!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
 #endif //Q_OS_WIN
@@ -340,7 +337,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
         {
             return;
         }
-        qreal scale = GetScaleFromWheelEvent(ticksCount) / 100.0f;
+        qreal scale = GetScaleFromWheelEvent(ticksCount);
         QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
         scrollAreaController->AdjustScale(scale, pos);
     }
@@ -394,7 +391,8 @@ qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount)
     qreal scale = scrollAreaController->GetScale() * 100.0f;
     if (ticksCount > 0)
     {
-        auto iter = std::upper_bound(percentages.begin(), percentages.end(), static_cast<int>(scale));
+        int curScale = static_cast<int>(scale);
+        auto iter = std::upper_bound(percentages.begin(), percentages.end(), curScale);
         if (iter == percentages.end())
         {
             return scale;
@@ -419,7 +417,7 @@ qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount)
         }
         scale = *iter;
     }
-    return scale;
+    return scale / 100.0f;
 }
 
 void PreviewWidget::SetDPR(qreal arg)

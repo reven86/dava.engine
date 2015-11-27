@@ -154,13 +154,18 @@ void SelectionSystem::FocusToChild(bool next)
         return;
     }
     auto findIt = std::find(allNodes.begin(), allNodes.end(), startNode);
-    if (next)
+    if (findIt == allNodes.end())
     {
-        nextNode = findIt == allNodes.end() || ++findIt == allNodes.end() ? *allNodes.begin() : *findIt;
+        nextNode = next ? allNodes.front() : allNodes.back();
+    }
+    else if (next)
+    {
+        ++findIt;
+        nextNode = findIt == allNodes.end() ? allNodes.front() : *findIt;
     }
     else
     {
-        nextNode = findIt == allNodes.end() || findIt == allNodes.begin() ? *(allNodes.end() - 1) : *(--findIt);
+        nextNode = findIt == allNodes.begin() ? allNodes.back() : *(--findIt);
     }
 
     SelectedNodes newSelectedNodes;

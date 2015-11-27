@@ -321,7 +321,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
     }
     if (!propertiesToChange.empty())
     {
-        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
+        systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
     }
     systemManager->MagnetLinesChanged.Emit(magnets);
 }
@@ -550,7 +550,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     Vector2 finalSize(originalSize + adjustedSize);
     propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
 
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
+    systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
 }
 
 Vector2 EditorTransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
@@ -693,7 +693,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
+    systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
 }
 
 namespace
@@ -808,7 +808,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
+    systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
     return true;
 }
 
@@ -923,5 +923,5 @@ void EditorTransformSystem::ClampAngle()
     }
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(angle));
-    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), currentHash);
+    systemManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
 }
