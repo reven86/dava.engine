@@ -38,11 +38,11 @@
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "EditorSettings.h"
-#include "QtTools/ProjectFilesWatcher/ProjectFilesWatcher.h"
 
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
+#include <QFileSystemWatcher>
 
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -58,10 +58,10 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
-    , projectFilesWatcher(new ProjectFilesWatcher(this))
+    , fileSystemWatcher(new QFileSystemWatcher(this))
 {
-    connect(projectFilesWatcher, &ProjectFilesWatcher::FilesChanged, this, &EditorCore::OnFilesChanged);
-    connect(projectFilesWatcher, &ProjectFilesWatcher::FilesRemoved, this, &EditorCore::OnFilesRemoved);
+    connect(qApp, &QApplication::applicationStateChanged, this, &EditorCore::OnApplicationStateChanged);
+    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &EditorCore::OnFileChanged);
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
@@ -146,8 +146,6 @@ void EditorCore::OnReloadSprites()
 
 void EditorCore::OnFilesChanged(const QStringList& changedFiles)
 {
-    DVASSERT(std::find_if(changedFiles.begin(), changedFiles.end(), std::bind(&EditorCore::HasNoDocumentWithPath, this, std::placeholders::_1))
-        == changedFiles.end());
     bool yesToAll = false;
     bool noToAll = false;
     int changedCount = std::count_if(documents.begin(), documents.end(), [changedFiles](Document *document)
@@ -206,9 +204,6 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
 
 void EditorCore::OnFilesRemoved(const QStringList& removedFiles)
 {
-    DVASSERT(std::find_if(removedFiles.begin(), removedFiles.end(), std::bind(&EditorCore::HasNoDocumentWithPath, this, std::placeholders::_1))
-        == removedFiles.end());
-
     for (Document *document : documents)
     {
         QString path = document->GetPackageAbsolutePath();
@@ -429,16 +424,54 @@ void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
     }
 }
 
-bool EditorCore::HasNoDocumentWithPath(const QString &path) const
+void EditorCore::OnApplicationStateChanged(Qt::ApplicationState state)
 {
-    for (const Document* document : documents)
+    if (state == Qt::ApplicationActive)
+    {
+        ApplyFileChanges();
+    }
+}
+
+void EditorCore::OnFileChanged(const QString& path)
+{
+    changedFiles.insert(path);
+    Document* changedDocument = GetDocument(path);
+    DVASSERT(nullptr != changedDocument);
+    if (changedDocument->GetUndoStack()->isClean() || qApp->applicationState() == Qt::ApplicationActive)
+    {
+        ApplyFileChanges();
+    }
+}
+
+void EditorCore::ApplyFileChanges()
+{
+    QStringList changed;
+    QStringList removed;
+    for (const QString &filePath : changedFiles)
+    {
+        QFileInfo::exists(filePath) ? changed << filePath : removed << filePath;
+    }
+    changedFiles.clear();
+    if (!changed.empty())
+    {
+        OnFilesChanged(changed);
+    }
+    if (!removed.empty())
+    {
+        OnFilesRemoved(removed);
+    }
+}
+
+Document* EditorCore::GetDocument(const QString &path) const
+{
+    for (Document* document : documents)
     {
         if (document->GetPackageAbsolutePath() == path)
         {
-            return false;
+            return document;
         }
     }
-    return true;
+    return nullptr;
 }
 
 void EditorCore::OpenProject(const QString &path)
@@ -505,7 +538,7 @@ void EditorCore::CloseDocument(int index)
 
     //sync document list with tab list
     Document *detached = documents.takeAt(index);
-    projectFilesWatcher->UnwatchPath(detached->GetPackageFilePath());
+    fileSystemWatcher->removePath(detached->GetPackageAbsolutePath());
 
     documentGroup->SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
     documentGroup->RemoveDocument(detached);
@@ -521,7 +554,11 @@ int EditorCore::CreateDocument(int index, PackageNode *package)
     documentGroup->InsertDocument(index, document);
     int insertedIndex = mainWindow->AddTab(index, document->GetPackageFilePath());
     OnCurrentTabChanged(insertedIndex);
-    projectFilesWatcher->WatchPath(document->GetPackageFilePath());
+    QString path = document->GetPackageAbsolutePath();
+    if (!fileSystemWatcher->addPath(path))
+    {
+        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
+    }    
     return index;
 }
 
@@ -533,10 +570,13 @@ void EditorCore::SaveDocument(Document *document)
         return;
     }
     QString path = document->GetPackageAbsolutePath();
-    projectFilesWatcher->UnwatchPath(path);
+    fileSystemWatcher->removePath(path);
     DVVERIFY(project->SavePackage(document->GetPackage())); //TODO:log here
     document->GetUndoStack()->setClean();
-    projectFilesWatcher->WatchPath(document->GetPackageFilePath());
+    if (!fileSystemWatcher->addPath(path))
+    {
+        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
+    }
 }
 
 int EditorCore::GetIndexByPackagePath(const FilePath &davaPath) const

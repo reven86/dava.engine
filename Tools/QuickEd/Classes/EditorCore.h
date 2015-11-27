@@ -42,7 +42,7 @@ class DocumentGroup;
 class Project;
 class PackageNode;
 class SpritesPacker;
-class ProjectFilesWatcher;
+class QFileSystemWatcher;
 
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
@@ -52,8 +52,6 @@ public:
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project *GetProject() const;
-    SpritesPacker *GetSpritesPacker() const;
-    
     void Start();
 
 private slots:
@@ -80,8 +78,12 @@ private slots:
     void OnRtlChanged(bool isRtl);
     void OnGlobalStyleClassesChanged(const QString &classesStr);
 
+    void OnApplicationStateChanged(Qt::ApplicationState state);
+    void OnFileChanged(const QString & path);
+
 private:
-    bool HasNoDocumentWithPath(const QString &path) const;
+    void ApplyFileChanges();
+    Document* GetDocument(const QString &path) const;
     void OpenProject(const QString &path);
     bool CloseProject();
     int CreateDocument(int index, PackageNode *package);
@@ -96,7 +98,8 @@ private:
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
     DAVA::UIControl* rootControl = nullptr;
-    ProjectFilesWatcher *projectFilesWatcher = nullptr;
+    QFileSystemWatcher *fileSystemWatcher = nullptr;
+    QSet<QString> changedFiles;
 };
 
 inline EditorFontSystem *GetEditorFontSystem()
