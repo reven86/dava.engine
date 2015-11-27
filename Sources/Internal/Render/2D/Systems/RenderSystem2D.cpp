@@ -51,6 +51,7 @@ const FastName RenderSystem2D::FLAG_COLOR_OP("COLOR_OP");
 
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
@@ -83,6 +84,11 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alphablend.material"));
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
+
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL = new NMaterial();
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Additive.material"));
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ADDITIVE);
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
@@ -1527,7 +1533,7 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2& polygon, bool closed
 void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
 {
     Rect destRect(_dstRect);
-    if (destRect.dx < 0.f || destRect.dy < 0.f)
+    if ((destRect.dx == -1.0f) || (destRect.dy == -1.0f))
     {
         if (IsRenderTargetPass())
         {

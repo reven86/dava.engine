@@ -52,12 +52,24 @@ private:
     void Prerender();
     void CreateRenderTarget();
 
+    bool CacheIsValid();
+    void BuildCache();
+
+    struct StateCache
+    {
+        Size2i viewportSize;
+        Matrix4 viewprojMatrix;
+        Camera* camera = nullptr;
+    };
+
 private:
     Vector<Entity*> entities;
     Vector<Vector3> controlPoints;
     ScopedPtr<Texture> cubemapTarget;
     Texture* renderTarget = nullptr;
     VisibilityCheckRenderPass renderPass;
+    StateCache stateCache;
+    size_t currentPointIndex = 0;
     bool shouldPrerender = true;
 };
 }

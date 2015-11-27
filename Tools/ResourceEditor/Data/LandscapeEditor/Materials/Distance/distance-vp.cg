@@ -28,20 +28,17 @@ property float3 cameraPosition : dynamic,a : ;
 property float4 lightPosition0 : dynamic,a : ;
 #endif
 
-#define MAGIC_OFFSET_SCALE 0.03333333
-
 VPROG_BEGIN
 	float4 position = float4(VP_IN_POSITION, 1.0);    
-	float4 worldPosiion = mul(position, worldMatrix);
 
 #if defined(ENCODE_DISTANCE)
+	float4 worldPosiion = mul(position, worldMatrix);
 	VP_OUT(distanceToCamera) = length(worldPosiion.xyz - cameraPosition);
 #endif
 
 #if defined(DECODE_DISTANCE)
+	float4 worldPosiion = mul(position, worldMatrix);
 	VP_OUT(directionFromPoint) = worldPosiion.xyz - lightPosition0;
-	float3 offsetDirection = cameraPosition - worldPosiion.xyz;
-	worldPosiion.xyz += normalize(offsetDirection) * (MAGIC_OFFSET_SCALE * length(offsetDirection));
 #endif
 
 	VP_OUT_POSITION = mul(position, worldViewProjMatrix);

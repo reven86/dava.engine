@@ -54,6 +54,7 @@ void VisibilityCheckSystem::AddEntity(Entity* entity)
     if (requiredComponent != nullptr)
     {
         entities.push_back(entity);
+        shouldPrerender = true;
     }
 }
 
@@ -63,6 +64,7 @@ void VisibilityCheckSystem::RemoveEntity(Entity* entity)
     if (i != entities.end())
     {
         entities.erase(i);
+        shouldPrerender = true;
     }
 }
 
@@ -99,20 +101,41 @@ void VisibilityCheckSystem::Draw()
         dbg->DrawCircle(position, direction, visibilityComponent->GetRadius(), 36, Color::White, RenderHelper::DRAW_WIRE_DEPTH);
     }
 
+    if (!CacheIsValid())
+    {
+        BuildCache();
+        shouldPrerender = true;
+    }
+
     if (shouldPrerender)
     {
         Prerender();
     }
 
+    auto fromCamera = GetScene()->GetCurrentCamera();
+
+    size_t index = 0;
     for (const auto& point : controlPoints)
     {
-        dbg->DrawIcosahedron(point, 0.1f, Color(1.0f, 1.0f, 0.5f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
-        renderPass.RenderToCubemapFromPoint(rs, cubemapTarget, point);
-        renderPass.RenderToOverlayTexture(rs, cubemapTarget, renderTarget, point);
-        break;
+        if (currentPointIndex >= index)
+        {
+            dbg->DrawIcosahedron(point, 0.1f, Color(1.0f, 1.0f, 0.5f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+        }
+
+        if (currentPointIndex == index)
+        {
+            Color clr(0.0f, 0.0f, 0.0f, 0.0f);
+            clr.r = 1.0f / static_cast<float>(controlPoints.size() + 1);
+            renderPass.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget, point);
+            renderPass.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget, renderTarget, point, clr);
+        }
+
+        ++index;
     }
 
-    RenderSystem2D::Instance()->DrawTexture(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
+    Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
+    RenderSystem2D::Instance()->DrawTexture(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, Color::White, dstRect);
+    currentPointIndex = std::min(controlPoints.size(), currentPointIndex + 1);
 }
 
 void VisibilityCheckSystem::UpdatePointSet()
@@ -141,8 +164,9 @@ void VisibilityCheckSystem::Prerender()
         CreateRenderTarget();
     }
 
-    renderPass.PreRenderScene(GetScene()->GetRenderSystem(), renderTarget);
+    renderPass.PreRenderScene(GetScene()->GetRenderSystem(), GetScene()->GetCurrentCamera(), renderTarget);
 
+    currentPointIndex = 0;
     shouldPrerender = false;
 }
 
@@ -155,4 +179,28 @@ void VisibilityCheckSystem::CreateRenderTarget()
 
     renderTarget = Texture::CreateFBO(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight(),
                                       PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D);
+}
+
+bool VisibilityCheckSystem::CacheIsValid()
+{
+    Size2i vpSize(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight());
+    if (vpSize != stateCache.viewportSize)
+        return false;
+
+    auto cam = GetScene()->GetCurrentCamera();
+    if (cam != stateCache.camera)
+        return false;
+
+    auto currentMatrix = cam->GetViewProjMatrix();
+    if (memcmp(currentMatrix.data, stateCache.viewprojMatrix.data, sizeof(Matrix4)) != 0)
+        return false;
+
+    return true;
+}
+
+void VisibilityCheckSystem::BuildCache()
+{
+    stateCache.viewportSize = Size2i(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight());
+    stateCache.camera = GetScene()->GetCurrentCamera();
+    stateCache.viewprojMatrix = stateCache.camera->GetViewProjMatrix();
 }

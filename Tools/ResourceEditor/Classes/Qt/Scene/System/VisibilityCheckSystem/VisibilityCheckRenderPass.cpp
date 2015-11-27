@@ -37,7 +37,7 @@ VisibilityCheckRenderPass::VisibilityCheckRenderPass()
     : RenderPass(PASS_FORWARD)
     , camera(new Camera())
     , distanceMaterial(new NMaterial())
-    , overrideMaterial(new NMaterial())
+    , visibilityMaterial(new NMaterial())
     , prerenderMaterial(new NMaterial())
 {
     camera->SetupPerspective(90.0f, 1.0f, 1.0f, 5000.0f);
@@ -48,7 +48,8 @@ VisibilityCheckRenderPass::VisibilityCheckRenderPass()
 
     prerenderConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     prerenderConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    prerenderConfig.priority = PRIORITY_SERVICE_3D + 1;
+    prerenderConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+    prerenderConfig.priority = PRIORITY_SERVICE_3D + 5;
 
     renderTargetConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     renderTargetConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
@@ -58,14 +59,15 @@ VisibilityCheckRenderPass::VisibilityCheckRenderPass()
     std::fill_n(renderTargetConfig.colorBuffer[0].clearColor, 4, 1.0f);
 
     rhi::DepthStencilState::Descriptor dsDesc;
-    dsDesc.depthFunc = rhi::CMP_LESSEQUAL;
+    dsDesc.depthFunc = rhi::CMP_EQUAL;
     dsDesc.depthTestEnabled = 1;
     dsDesc.depthWriteEnabled = 0;
-    overrideDepthStencilState = rhi::AcquireDepthStencilState(dsDesc);
+    visibilityDepthStencilState = rhi::AcquireDepthStencilState(dsDesc);
 
-    overrideConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
-    overrideConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_LOAD;
-    overrideConfig.priority = PRIORITY_SERVICE_3D - 1;
+    visibilityConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    visibilityConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_LOAD;
+    visibilityConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+    visibilityConfig.priority = PRIORITY_SERVICE_3D - 5;
 
     distanceMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/Distance.Opaque.material"));
     distanceMaterial->PreBuildMaterial(PASS_FORWARD);
@@ -73,16 +75,16 @@ VisibilityCheckRenderPass::VisibilityCheckRenderPass()
     prerenderMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/Distance.Prerender.material"));
     prerenderMaterial->PreBuildMaterial(PASS_FORWARD);
 
-    overrideMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CompareDistance.Opaque.material"));
-    overrideMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ADDITIVE);
-    overrideMaterial->PreBuildMaterial(PASS_FORWARD);
+    visibilityMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CompareDistance.Opaque.material"));
+    visibilityMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ADDITIVE);
+    visibilityMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 VisibilityCheckRenderPass::~VisibilityCheckRenderPass()
 {
 }
 
-void VisibilityCheckRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSystem, Texture* renderTarget, const Vector3& point)
+void VisibilityCheckRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSystem, Camera* fromCamera, Texture* renderTarget, const Vector3& point)
 {
     renderTargetConfig.colorBuffer[0].texture = renderTarget->handle;
     renderTargetConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
@@ -93,7 +95,7 @@ void VisibilityCheckRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSys
     for (uint32 i = 0; i < cubemapFaces; ++i)
     {
         SetupCameraToRenderFromPointToFaceIndex(point, i);
-        RenderWithCurrentSettings(renderSystem);
+        RenderWithCurrentSettings(renderSystem, fromCamera);
     }
 }
 
@@ -146,14 +148,8 @@ bool VisibilityCheckRenderPass::ShouldRenderBatch(RenderBatch* batch)
     return (batch->GetMaterial()->GetEffectiveFXName() != NMaterialName::SKYOBJECT);
 }
 
-void VisibilityCheckRenderPass::PreRenderScene(RenderSystem* renderSystem, Texture* renderTarget)
+void VisibilityCheckRenderPass::PreRenderScene(RenderSystem* renderSystem, Camera* fromCamera, Texture* renderTarget)
 {
-    auto mainCamera = renderSystem->GetDrawCamera();
-
-    ShaderDescriptorCache::ClearDynamicBindigs();
-    SetupCameraParams(mainCamera, mainCamera);
-    PrepareVisibilityArrays(mainCamera, renderSystem);
-
     prerenderConfig.colorBuffer[0].texture = renderTarget->handle;
     prerenderConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
 
@@ -162,6 +158,10 @@ void VisibilityCheckRenderPass::PreRenderScene(RenderSystem* renderSystem, Textu
     rhi::BeginRenderPass(currentPass);
     rhi::BeginPacketList(localPacketList);
 
+    // passConfig = prerenderConfig;
+    ShaderDescriptorCache::ClearDynamicBindigs();
+    SetupCameraParams(fromCamera, fromCamera);
+    PrepareVisibilityArrays(fromCamera, renderSystem);
     for (auto layer : renderLayers)
     {
         const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
@@ -172,11 +172,10 @@ void VisibilityCheckRenderPass::PreRenderScene(RenderSystem* renderSystem, Textu
             RenderObject* renderObject = batch->GetRenderObject();
             if (ShouldRenderBatch(batch) && ShouldRenderObject(renderObject))
             {
-                renderObject->BindDynamicParameters(mainCamera);
+                renderObject->BindDynamicParameters(fromCamera);
                 rhi::Packet packet;
                 batch->BindGeometryData(packet);
                 prerenderMaterial->BindParams(packet);
-                packet.depthStencilState = overrideDepthStencilState;
                 rhi::AddPacket(localPacketList, packet);
             }
         }
@@ -186,16 +185,17 @@ void VisibilityCheckRenderPass::PreRenderScene(RenderSystem* renderSystem, Textu
     rhi::EndRenderPass(currentPass);
 }
 
-void VisibilityCheckRenderPass::RenderWithCurrentSettings(RenderSystem* renderSystem)
+void VisibilityCheckRenderPass::RenderWithCurrentSettings(RenderSystem* renderSystem, Camera* sceneCamera)
 {
-    ShaderDescriptorCache::ClearDynamicBindigs();
-    SetupCameraParams(camera, camera);
-    PrepareVisibilityArrays(camera, renderSystem);
-
     rhi::HPacketList localPacketList;
     auto renderTargetPass = rhi::AllocateRenderPass(renderTargetConfig, 1, &localPacketList);
     rhi::BeginRenderPass(renderTargetPass);
     rhi::BeginPacketList(localPacketList);
+
+    // passConfig = renderTargetConfig;
+    ShaderDescriptorCache::ClearDynamicBindigs();
+    SetupCameraParams(camera, camera);
+    PrepareVisibilityArrays(camera, renderSystem);
     for (auto layer : renderLayers)
     {
         const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
@@ -219,36 +219,44 @@ void VisibilityCheckRenderPass::RenderWithCurrentSettings(RenderSystem* renderSy
     rhi::EndRenderPass(renderTargetPass);
 }
 
-void VisibilityCheckRenderPass::RenderToOverlayTexture(RenderSystem* renderSystem, Texture* cubemap,
-                                                       Texture* renderTarget, const Vector3& point)
+void VisibilityCheckRenderPass::RenderVisibilityToTexture(RenderSystem* renderSystem, Camera* fromCamera, Texture* cubemap,
+                                                          Texture* renderTarget, const Vector3& point, const Color& color)
 {
     FastName fnCubemap("cubemap");
-    if (overrideMaterial->HasLocalTexture(fnCubemap))
+    if (visibilityMaterial->HasLocalTexture(fnCubemap))
     {
-        overrideMaterial->SetTexture(fnCubemap, cubemap);
+        visibilityMaterial->SetTexture(fnCubemap, cubemap);
     }
     else
     {
-        overrideMaterial->AddTexture(fnCubemap, cubemap);
+        visibilityMaterial->AddTexture(fnCubemap, cubemap);
     }
-    overrideMaterial->PreBuildMaterial(PASS_FORWARD);
 
-    auto mainCamera = renderSystem->GetDrawCamera();
+    if (visibilityMaterial->HasLocalProperty(NMaterialParamName::PARAM_FLAT_COLOR))
+    {
+        visibilityMaterial->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, color.color);
+    }
+    else
+    {
+        visibilityMaterial->AddProperty(NMaterialParamName::PARAM_FLAT_COLOR, color.color, rhi::ShaderProp::TYPE_FLOAT4);
+    }
 
-    ShaderDescriptorCache::ClearDynamicBindigs();
-    SetupCameraParams(mainCamera, mainCamera);
-    PrepareVisibilityArrays(mainCamera, renderSystem);
-
-    overrideConfig.colorBuffer[0].texture = renderTarget->handle;
-    overrideConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
-
-    rhi::HPacketList localPacketList;
-    auto currentPass = rhi::AllocateRenderPass(overrideConfig, 1, &localPacketList);
-    rhi::BeginRenderPass(currentPass);
-    rhi::BeginPacketList(localPacketList);
+    visibilityMaterial->PreBuildMaterial(PASS_FORWARD);
 
     Vector4 lightPosition(point.x, point.y, point.z, 0.0f);
 
+    visibilityConfig.colorBuffer[0].texture = renderTarget->handle;
+    visibilityConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
+
+    rhi::HPacketList localPacketList;
+    auto currentPass = rhi::AllocateRenderPass(visibilityConfig, 1, &localPacketList);
+    rhi::BeginRenderPass(currentPass);
+    rhi::BeginPacketList(localPacketList);
+
+    // passConfig = visibilityConfig;
+    ShaderDescriptorCache::ClearDynamicBindigs();
+    SetupCameraParams(fromCamera, fromCamera);
+    PrepareVisibilityArrays(fromCamera, renderSystem);
     for (auto layer : renderLayers)
     {
         const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
@@ -259,13 +267,13 @@ void VisibilityCheckRenderPass::RenderToOverlayTexture(RenderSystem* renderSyste
             RenderObject* renderObject = batch->GetRenderObject();
             if (ShouldRenderBatch(batch) && ShouldRenderObject(renderObject))
             {
-                renderObject->BindDynamicParameters(mainCamera);
+                renderObject->BindDynamicParameters(fromCamera);
                 Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &lightPosition, (pointer_size)&lightPosition);
 
                 rhi::Packet packet;
                 batch->BindGeometryData(packet);
-                overrideMaterial->BindParams(packet);
-                packet.depthStencilState = overrideDepthStencilState;
+                visibilityMaterial->BindParams(packet);
+                packet.depthStencilState = visibilityDepthStencilState;
                 rhi::AddPacket(localPacketList, packet);
             }
         }
