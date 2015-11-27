@@ -262,8 +262,8 @@ ParticleLayer * ParticleLayer::Clone()
 
     dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
     dstLayer->frameOverLifeFPS = frameOverLifeFPS;
-	dstLayer->randomFrameOnStart = randomFrameOnStart;
-	dstLayer->loopSpriteAnimation = loopSpriteAnimation;
+    dstLayer->randomFrameOnStart = randomFrameOnStart;
+    dstLayer->loopSpriteAnimation = loopSpriteAnimation;
 	dstLayer->particleOrientation = particleOrientation;
 
 	dstLayer->scaleVelocityBase = scaleVelocityBase;
@@ -440,8 +440,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (pivotPointNode)
     {
         Vector2 _pivot = pivotPointNode->AsPoint();
-		if ((format == 0)&&sprite)
-		{
+        if ((format == 0) && sprite)
+        {
 			
 			float32 ny=-_pivot.x/sprite->GetWidth()*2;
 			float32 nx=-_pivot.y/sprite->GetHeight()*2;

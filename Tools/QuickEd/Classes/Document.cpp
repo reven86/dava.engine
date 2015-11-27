@@ -36,10 +36,6 @@
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
-#include "Ui/MainWindow.h"
-#include "Ui/Preview/PreviewWidget.h"
-
-#include <QObject>
 
 using namespace DAVA;
 
@@ -53,15 +49,9 @@ Document::Document(PackageNode* _package, QObject* parent)
     systemManager.SelectionChanged.Connect(this, &Document::OnSelectedControlNodesChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
 
-    systemManager.PropertiesChanged.Connect([this](const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties, size_t hash)
-                                            {
+    systemManager.PropertiesChanged.Connect([this](const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties, size_t hash) {
         commandExecutor->ChangeProperty(properties, hash);
-                                            });
-
-    EditorCore* editorCore = qobject_cast<EditorCore*>(this->parent());
-    DVASSERT(nullptr != editorCore);
-    PreviewWidget* previewWidget = editorCore->GetMainWindow()->previewWidget;
-    systemManager.SelectionByMenuRequested.Connect(previewWidget, &PreviewWidget::OnSelectControlByMenu);
+    });
 
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
@@ -144,7 +134,7 @@ void Document::RefreshLayout()
 
 void Document::SetScale(float scale)
 {
-    DAVA::float32 realScale = scale / 100.0f;
+    DAVA::float32 realScale = scale;
     systemManager.GetScalableControl()->SetScale(Vector2(realScale, realScale));
     emit CanvasSizeChanged();
 }
@@ -152,6 +142,17 @@ void Document::SetScale(float scale)
 void Document::SetEmulationMode(bool arg)
 {
     systemManager.SetEmulationMode(arg);
+}
+
+void Document::SetPixelization(bool hasPixelization)
+{
+    Texture::SetPixelization(hasPixelization);
+}
+
+void Document::SetDPR(qreal arg)
+{
+    float32 dpr = static_cast<float32>(arg);
+    systemManager.DPRChanged.Emit(dpr);
 }
 
 void Document::RefreshAllControlProperties()

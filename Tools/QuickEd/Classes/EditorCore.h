@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef QUICKED_BASECONTROLLER_H
-#define QUICKED_BASECONTROLLER_H
+#ifndef QUICKED_EDITOR_CORE_H
+#define QUICKED_EDITOR_CORE_H
 
 #include <QObject>
 #include "UI/mainwindow.h"
@@ -41,6 +41,7 @@ class Document;
 class DocumentGroup;
 class Project;
 class PackageNode;
+class SpritesPacker;
 class ProjectFilesWatcher;
 
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
@@ -48,12 +49,15 @@ class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
     Q_OBJECT
 public:
     explicit EditorCore(QObject *parent = nullptr);
+    ~EditorCore();
+    MainWindow* GetMainWindow() const;
+    Project *GetProject() const;
+    SpritesPacker *GetSpritesPacker() const;
+    
     void Start();
 
-    MainWindow* GetMainWindow();
-    Project *GetProject() const;
-
 private slots:
+    void OnReloadSprites();
     void OnFilesChanged(const QStringList &changedFiles);
     void OnFilesRemoved(const QStringList &removedFiles);
     
@@ -83,31 +87,21 @@ private:
     int CreateDocument(int index, PackageNode *package);
     void SaveDocument(Document *document);
 
-    bool eventFilter( QObject *obj, QEvent *event ) override;
     void CloseDocument(int index);
     int GetIndexByPackagePath(const DAVA::FilePath &davaPath) const;
 
+    std::unique_ptr<SpritesPacker> spritesPacker;
     Project* project = nullptr;
     QList<Document*> documents;
     DocumentGroup* documentGroup = nullptr;
-    std::unique_ptr<MainWindow> mainWindow = nullptr;
+    std::unique_ptr<MainWindow> mainWindow;
     DAVA::UIControl* rootControl = nullptr;
     ProjectFilesWatcher *projectFilesWatcher = nullptr;
 };
-
-inline MainWindow* EditorCore::GetMainWindow()
-{
-    return mainWindow.get();
-}
-
-inline Project* EditorCore::GetProject() const
-{
-    return project;
-}
 
 inline EditorFontSystem *GetEditorFontSystem()
 {
     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
 }
 
-#endif // QUICKED_BASECONTROLLER_H
+#endif // QUICKED_EDITOR_CORE_H
