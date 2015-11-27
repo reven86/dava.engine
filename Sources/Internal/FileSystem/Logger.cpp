@@ -35,9 +35,6 @@
 
 #include "Utils/Utils.h"
 
-#if defined (__DAVAENGINE_WIN_UAP__)
-#include <Windows.h>
-#endif
 
 namespace DAVA
 {
