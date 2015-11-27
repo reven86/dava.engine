@@ -411,7 +411,7 @@ template <typename Vertex,rhi::PrimitiveType Prim>
 inline void
 DbgDraw::Buffer<Vertex,Prim>::flush_2d( rhi::Handle cmd_buf )
 {
-    if( _vb[_cur_vb_i] != InvalidIndex )
+    if( _vb[_cur_vb_i] != DAVA::InvalidIndex )
     {    
         if( _cur_v )
             rhi::VertexBuffer_Unmap( _vb[_cur_vb_i] );
@@ -441,7 +441,7 @@ template <typename Vertex, rhi::PrimitiveType Prim>
 inline void
 DbgDraw::Buffer<Vertex, Prim>::flush_batched_2d(rhi::HPacketList batch_buf)
 {
-    if (_vb[_cur_vb_i] != InvalidIndex)
+    if (_vb[_cur_vb_i] != DAVA::InvalidIndex)
     {
         if (_cur_v)
             rhi::UnmapVertexBuffer(_vb[_cur_vb_i]);

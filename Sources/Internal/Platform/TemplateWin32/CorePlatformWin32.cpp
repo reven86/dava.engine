@@ -179,10 +179,10 @@ namespace DAVA
 
             // get values from config in case if they are available
             fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
-			fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
-			fullscreenMode.bpp = windowedMode.bpp;
+            fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
+            fullscreenMode.bpp = windowedMode.bpp;
 
-			fullscreenMode = FindBestMode(fullscreenMode);
+            fullscreenMode = FindBestMode(fullscreenMode);
             shouldEnableFullscreen = options->GetInt32("fullscreen", 0) == 1;
             String title = options->GetString("title", "[set application title using core options property 'title']");
             WideString titleW = StringToWString(title);
@@ -312,10 +312,10 @@ namespace DAVA
     RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode& dm)
     {
         RECT clientSize;
-		clientSize.top = 0;
-		clientSize.left = 0;
-		clientSize.right = dm.width;
-		clientSize.bottom = dm.height;
+        clientSize.top = 0;
+        clientSize.left = 0;
+        clientSize.right = dm.width;
+        clientSize.bottom = dm.height;
         HWND hWindow = static_cast<HWND>(GetNativeView());
         AdjustWindowRect(&clientSize, GetWindowLong(hWindow, GWL_STYLE), FALSE);
 
@@ -393,10 +393,10 @@ namespace DAVA
         {
             DisplayMode mode;
             mode.width = dmi.dmPelsWidth;
-			mode.height = dmi.dmPelsHeight;
-			mode.bpp = dmi.dmBitsPerPel;
-			mode.refreshRate = dmi.dmDisplayFrequency;
-			ZeroMemory (&dmi, sizeof(dmi)) ;
+            mode.height = dmi.dmPelsHeight;
+            mode.bpp = dmi.dmBitsPerPel;
+            mode.refreshRate = dmi.dmDisplayFrequency;
+            ZeroMemory (&dmi, sizeof(dmi)) ;
 			availableDisplayModes.push_back(mode);
 		}
 	}
@@ -519,10 +519,10 @@ namespace DAVA
         {
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
         }
-		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
-		}
+        if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
+        {
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
+        }
 		if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
 		{
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;

@@ -163,10 +163,10 @@ namespace DAVA
 
     void AutotestingSystem::RunTests()
     {
-		if (!isInit || isRunning)
-		{
-			return;
-		}
+        if (!isInit || isRunning)
+        {
+            return;
+        }
 		isRunning = true;
 		OnTestStarted();
 	}
@@ -355,13 +355,13 @@ namespace DAVA
         luaSystem->StartTest();
     }
 
-    void AutotestingSystem::OnError(const String &errorMessage)
-	{
-		Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
+    void AutotestingSystem::OnError(const String& errorMessage)
+    {
+        Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
 
-		AutotestingDB::Instance()->Log("ERROR", errorMessage);
+        AutotestingDB::Instance()->Log("ERROR", errorMessage);
 
-		MakeScreenShot();
+        MakeScreenShot();
         
         AutotestingDB::Instance()->Log("ERROR", screenShotName);
 
@@ -450,7 +450,7 @@ namespace DAVA
                 touches[id] = input;
             }
             else
-			{
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d", id);
             }
         }
@@ -474,8 +474,8 @@ namespace DAVA
             {
                 findIt->second = input;
             }
-			else
-			{
+            else
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE", id);
             }
         }
@@ -488,8 +488,8 @@ namespace DAVA
             {
                 touches.erase(findIt);
             }
-			else
-			{
+            else
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found", id);
             }
         }
@@ -498,11 +498,11 @@ namespace DAVA
             //TODO: keyboard input
             break;
         }
-	}
+    }
 
-	bool AutotestingSystem::FindTouch(int32 id, UIEvent &touch)
-	{
-		bool isFound = false;
+    bool AutotestingSystem::FindTouch(int32 id, UIEvent& touch)
+    {
+        bool isFound = false;
 		Map<int32, UIEvent>::iterator findIt = touches.find(id);
 		if (findIt != touches.end())
 		{

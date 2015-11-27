@@ -35,8 +35,11 @@
 #include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/ResourceArchive.h"
-#include "Autotesting/AutotestingSystem.h"
 #include "Version.h"
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
 
 #include "UI/Layouts/UILayoutSystem.h"
 
@@ -48,7 +51,10 @@ GameCore::GameCore()
     : cursor(nullptr)
 {
     new GridVisualizer();
-    new AutotestingSystem();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	new AutotestingSystem();
+#endif
 
 	// Unpack the help data, if needed.
 	UnpackHelp();
@@ -63,8 +69,11 @@ GameCore::~GameCore()
     GridVisualizer::Instance()->Release();
 
     EditorSettings::Instance()->Release();
-        
-    AutotestingSystem::Instance()->Release();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	AutotestingSystem::Instance()->Release();
+#endif
+
 }
 
 void GameCore::OnAppStarted()

@@ -71,9 +71,12 @@ bool Project::OpenInternal(const QString &path)
     YamlParser* parser = YamlParser::Create(path.toStdString());
     if (nullptr == parser)
         return false;
-
-    QDir dir(path);
-    dir.cdUp();
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists())
+    {
+        return false;
+    }
+    SetProjectName(fileInfo.fileName());
 
     YamlNode* projectRoot = parser->GetRootNode();
     if (nullptr == projectRoot)
@@ -85,7 +88,7 @@ bool Project::OpenInternal(const QString &path)
     FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
 
-    SetProjectPath(dir.absolutePath());
+    SetProjectPath(fileInfo.absolutePath());
     projectPath.MakeDirectoryPathname();
 
     const auto &resFolders = FilePath::GetResourcesFolders();
@@ -164,7 +167,13 @@ bool Project::OpenInternal(const QString &path)
             const YamlNode *localeNode = platform->Get("Locale");
             if (localizationPathNode && localeNode)
             {
-                editorLocalizationSystem->InitLanguageWithDirectory(localizationPathNode->AsString(), localeNode->AsString());
+                FilePath localePath = localizationPathNode->AsString();
+                QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
+                QDir localePathDir(absPath);
+                editorLocalizationSystem->SetDirectory(localePathDir);
+
+                QString currentLocale = QString::fromStdString(localeNode->AsString());
+                editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
             }
         }
     }
@@ -182,7 +191,7 @@ bool Project::CheckAndUnlockProject(const QString& projectPath)
         return true;
     }
 
-    if (QMessageBox::question(qApp->activeWindow(), tr("File is locked!"), tr("The project file %1 is locked by other user. Do you want to unlock it?")) == QMessageBox::No)
+    if (QMessageBox::question(qApp->activeWindow(), tr("File is locked!"), tr("The project file %1 is locked by other user. Do you want to unlock it?").arg(projectPath)) == QMessageBox::No)
     {
         return false;
     }
@@ -252,11 +261,25 @@ QString Project::GetProjectPath() const
     return QString::fromStdString(projectPath.GetAbsolutePathname());
 }
 
+QString Project::GetProjectName() const
+{
+    return projectName;
+}
+
 void Project::SetProjectPath(QString arg)
 {
     if (GetProjectPath() != arg)
     {
         projectPath = arg.toStdString().c_str();
         emit ProjectPathChanged(arg);
+    }
+}
+
+void Project::SetProjectName(QString arg)
+{
+    if (projectName != arg)
+    {
+        projectName = arg;
+        emit ProjectNameChanged(arg);
     }
 }

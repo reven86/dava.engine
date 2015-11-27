@@ -157,7 +157,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 	longLayout->addWidget(scaleVelocityFactorSpinBox);
 	connect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 	connect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
-	mainBox->addLayout(longLayout);	
+	mainBox->addLayout(longLayout);
 
     QHBoxLayout* spriteHBox2 = new QHBoxLayout;
     spriteBtn = new QPushButton("Set sprite", this);
@@ -186,7 +186,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     connect(spritePathLabel, SIGNAL(textChanged(const QString&)), this, SLOT(OnSpritePathChanged(const QString&)));
     connect(spritePathLabel, SIGNAL(textEdited(const QString&)), this, SLOT(OnSpritePathEdited(const QString&)));
 
-	QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
+    QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
 	innerEmitterLabel = new QLabel("Inner Emitter", this);
 	innerEmitterPathLabel = new QLineEdit(this);
 	innerEmitterPathLabel->setReadOnly(true);
@@ -675,7 +675,7 @@ void EmitterLayerWidget::OnValueChanged()
 
     FilePath spritePath(spritePathLabel->text().toStdString());
 
-	CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
+    CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,
@@ -1019,9 +1019,7 @@ void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
 
     if (relativePathForParticlesPath.find("../") != String::npos)
     {
-        QString message = QString("You've opened particle sprite from incorrect path (%1).\n Correct one is %2.").
-            arg(QString::fromStdString(spritePath.GetDirectory().GetAbsolutePathname())).
-            arg(QString::fromStdString(particlesDataPath.GetAbsolutePathname()));
+        QString message = QString("You've opened particle sprite from incorrect path (%1).\n Correct one is %2.").arg(QString::fromStdString(spritePath.GetDirectory().GetAbsolutePathname())).arg(QString::fromStdString(particlesDataPath.GetAbsolutePathname()));
 
         QMessageBox msgBox(QMessageBox::Warning, "Warning", message);
         msgBox.exec();
@@ -1058,7 +1056,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 	// Sprite has no sense for Superemitter.
 	spriteBtn->setVisible(!isSuperemitter);
     spriteFolderBtn->setVisible(!isSuperemitter);
-	spriteLabel->setVisible(!isSuperemitter);
+    spriteLabel->setVisible(!isSuperemitter);
 	spritePathLabel->setVisible(!isSuperemitter);
 	
 	// The same is for "Additive" flag, Color, Alpha and Frame.	

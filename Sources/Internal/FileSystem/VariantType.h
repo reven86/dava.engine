@@ -106,12 +106,12 @@ public:
     explicit VariantType(const Matrix2& value);
     explicit VariantType(const Matrix3& value);
     explicit VariantType(const Matrix4& value);
-    explicit VariantType(const Color & value);
-	explicit VariantType(const FastName & value);
-	explicit VariantType(const AABBox3 & value);
-	explicit VariantType(const FilePath & value);
+    explicit VariantType(const Color& value);
+    explicit VariantType(const FastName& value);
+    explicit VariantType(const AABBox3& value);
+    explicit VariantType(const FilePath& value);
 
-	~VariantType();
+    ~VariantType();
 
     enum eVariantType
     {

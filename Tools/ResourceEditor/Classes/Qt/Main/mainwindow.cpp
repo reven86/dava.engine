@@ -207,7 +207,7 @@ QtMainWindow::~QtMainWindow()
 {
     const auto &logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
-    
+
     VariantType var(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size());
     SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, var);
 
@@ -701,7 +701,7 @@ void QtMainWindow::SetupDocks()
         LogWidget *logWidget = new LogWidget();
         logWidget->SetConvertFunction(&PointerSerializer::CleanUpString);
 
-        LoggerOutputObject *loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
+        LoggerOutputObject* loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
         connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
 
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
@@ -1322,7 +1322,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
         if ((toolsFlags & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR) &&
             !FileSystem::Instance()->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
         {
-			closeRequest->Cancel();
+            closeRequest->Cancel();
 			return;
 		}
 		
@@ -2671,7 +2671,7 @@ bool QtMainWindow::OpenScene( const QString & path )
                                                                               projectPath.GetAbsolutePathname().c_str(),
                                                                               argumentPath.GetAbsolutePathname().c_str()));
         }
-		else
+        else
 		{
             int needCloseIndex = -1;
 			SceneEditor2 *scene = ui->sceneTabWidget->GetCurrentScene();
@@ -2794,7 +2794,8 @@ void QtMainWindow::OnMaterialLightViewChanged(bool)
 
 void QtMainWindow::OnCustomQuality()
 {
-    QualitySwitcher::Show();
+    auto d = QualitySwitcher::GetDialog();
+    d->raise();
 }
 
 void QtMainWindow::UpdateConflictingActionsState(bool enable)
@@ -3191,7 +3192,7 @@ void QtMainWindow::SetActionCheckedSilently( QAction *action, bool checked )
 
 void QtMainWindow::RestartParticleEffects()
 {
-    const SceneTabWidget *widget = GetSceneWidget();
+    const SceneTabWidget* widget = GetSceneWidget();
     for (int tab = 0; tab < widget->GetTabCount(); ++tab)
     {
         SceneEditor2* scene = widget->GetTabScene(tab);

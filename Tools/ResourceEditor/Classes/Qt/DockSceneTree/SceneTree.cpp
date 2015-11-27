@@ -651,7 +651,7 @@ void SceneTree::EditModel()
 				DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
                 if (FileSystem::Instance()->Exists(entityRefPath))
                 {
-					QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
+                    QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
 				}
 				else
 				{
@@ -729,7 +729,7 @@ void SceneTree::ReloadModelAs()
 				FilePath p = sceneEditor->GetScenePath().GetDirectory();
                 if (FileSystem::Instance()->Exists(p) && sceneEditor->IsLoaded())
                 {
-					ownerPath = p.GetAbsolutePathname();
+                    ownerPath = p.GetAbsolutePathname();
 				}
 				else
 				{
@@ -740,7 +740,7 @@ void SceneTree::ReloadModelAs()
             QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-				sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
 			}
 		}
 	}
@@ -764,7 +764,7 @@ void SceneTree::SaveEntityAs()
             if (!filePath.isEmpty())
             {
                 sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
-			}
+            }
 		}
 	}
 }
@@ -799,7 +799,7 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
     bool blocked = selectionModel()->blockSignals(true);
 
     // if selected items were inside collapsed item, remove them from selection
-	QModelIndexList indexList = selectionModel()->selection().indexes();
+    QModelIndexList indexList = selectionModel()->selection().indexes();
 	for (int i = 0; i < indexList.size(); ++i)
 	{
 		QModelIndex childIndex = indexList[i];
@@ -819,8 +819,8 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
     selectionModel()->blockSignals(blocked);
 
-    if(needSync)
-	{
+    if (needSync)
+    {
         TreeSelectionChanged(selectionModel()->selection(), QItemSelection());
     }
 }
@@ -1186,7 +1186,7 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
             return;
         }
 
-		yamlPath = FilePath(filePath.toStdString());
+        yamlPath = FilePath(filePath.toStdString());
 	}		
 
     selectedLayer->innerEmitterPath = yamlPath;

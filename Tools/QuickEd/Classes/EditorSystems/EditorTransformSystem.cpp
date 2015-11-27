@@ -85,10 +85,10 @@ Vector2 RotateVector(Vector2 in, float32 angle)
     return in * rotateMatrix;
 }
 
-struct MagnetLine
+struct MagnetLineСontrol
 {
     //controlBox and targetBox in parent coordinates. controlSharePos ans targetSharePos is a share of corresponding size
-    MagnetLine(float32 controlSharePos_, const Rect& controlBox_, float32 targetSharePos_, const Rect& targetBox_, Vector2::eAxis axis_)
+    MagnetLineСontrol(float32 controlSharePos_, const Rect& controlBox_, float32 targetSharePos_, const Rect& targetBox_, Vector2::eAxis axis_)
         : controlSharePos(controlSharePos_)
         , controlBox(controlBox_)
         , targetSharePos(targetSharePos_)
@@ -323,9 +323,9 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
 
 namespace
 {
-List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* parentGD, const Vector<UIControl*>& neighbours, Vector2::eAxis axis)
+List<MagnetLineСontrol> CreateMagnetPairs(const Rect& box, const UIGeometricData* parentGD, const Vector<UIControl*>& neighbours, Vector2::eAxis axis)
 {
-    List<MagnetLine> magnets;
+    List<MagnetLineСontrol> magnets;
 
     Rect parentBox(Vector2(), parentGD->size);
 
@@ -369,11 +369,11 @@ List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* paren
 }
 
 //get all magneted lines
-void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>& magnetLines, const UIControl* control, Vector2::eAxis axis)
+void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLineСontrol>& magnetLines, const UIControl* control, Vector2::eAxis axis)
 {
     UIControl* parent = control->GetParent();
     const UIGeometricData* parentGD = &parent->GetGeometricData();
-    for (const MagnetLine& line : magnetLines)
+    for (const MagnetLineСontrol& line : magnetLines)
     {
         if (fabs(line.interval) < TRANSFORM_EPSILON)
         {
@@ -413,13 +413,13 @@ Vector2 EditorTransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<M
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        List<MagnetLine> magnetLines = CreateMagnetPairs(box, parentGD, neighbours, axis);
+        List<MagnetLineСontrol> magnetLines = CreateMagnetPairs(box, parentGD, neighbours, axis);
 
         //get nearest magnet line
-        std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [](const MagnetLine& left, const MagnetLine& right) -> bool {
+        std::function<bool(const MagnetLineСontrol&, const MagnetLineСontrol&)> predicate = [](const MagnetLineСontrol& left, const MagnetLineСontrol& right) -> bool {
             return fabs(left.interval) < fabs(right.interval);
         };
-        MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
+        MagnetLineСontrol nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
 
         float32 areaNearLineRight = nearestLine.targetPosition + magnetRange[axis];
         float32 areaNearLineLeft = nearestLine.targetPosition - magnetRange[axis];
@@ -430,7 +430,7 @@ Vector2 EditorTransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<M
             extraDelta[axis] = oldDelta[axis] - delta[axis];
         }
         //adjust all lines to transformed state to get matched lines
-        for (MagnetLine& line : magnetLines)
+        for (MagnetLineСontrol& line : magnetLines)
         {
             line.interval -= extraDelta[line.axis];
         }
@@ -620,9 +620,9 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
         if (directions[axis] != NO_DIRECTION)
         {
-            List<MagnetLine> magnetLines = CreateMagnetPairs(box, &parentGeometricData, neighbours, axis);
+            List<MagnetLineСontrol> magnetLines = CreateMagnetPairs(box, &parentGeometricData, neighbours, axis);
 
-            std::function<bool(const MagnetLine&)> removePredicate = [directions, transformPosition](const MagnetLine& line) -> bool {
+            std::function<bool(const MagnetLineСontrol&)> removePredicate = [directions, transformPosition](const MagnetLineСontrol& line) -> bool {
                 bool needRemove = true;
                 if (directions[line.axis] == POSITIVE_DIRECTION)
                 {
@@ -637,7 +637,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
             magnetLines.remove_if(removePredicate);
             if (!magnetLines.empty())
             {
-                std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
+                std::function<bool(const MagnetLineСontrol&, const MagnetLineСontrol&)> predicate = [transformPoint, directions](const MagnetLineСontrol& left, const MagnetLineСontrol& right) -> bool {
                     float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
                     float32 shareRight = right.controlSharePos - transformPoint[right.axis];
                     float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
@@ -645,7 +645,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
                     return fabs(distanceLeft) < fabs(distanceRight);
                 };
 
-                MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
+                MagnetLineСontrol nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
                 float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
                 float32 rangeForPosition = magnetRange[axis] * share;
                 float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
@@ -663,7 +663,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
                     extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
                 }
 
-                for (MagnetLine& line : magnetLines)
+                for (MagnetLineСontrol& line : magnetLines)
                 {
                     float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
                     line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare / directions[line.axis];

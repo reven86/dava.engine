@@ -63,8 +63,8 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray &text);
-    void AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray &msg);
+    void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& text);
+    void AddMessageAsync(DAVA::Logger::eLogLevel ll, const QByteArray& msg);
 
 public slots:
     void Clear();
@@ -89,7 +89,7 @@ private:
 
     QVector<LogItem> itemsToAdd;
     std::unique_ptr<QMutex> mutex = nullptr;
-    QTimer *syncTimer = nullptr;
+    QTimer* syncTimer = nullptr;
     QSize rowSize;
 };
 

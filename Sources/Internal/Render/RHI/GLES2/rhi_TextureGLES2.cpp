@@ -233,9 +233,9 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                             cmd->arg[10] = compressed;
 
                             if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                                _FlipRGBA4_ABGR4(desc.initialData[m], data_sz);
+                                _FlipRGBA4_ABGR4(data, data_sz);
                             else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                                _RGBA5551toABGR1555(desc.initialData[m], data_sz);
+                                _RGBA5551toABGR1555(data, data_sz);
 
                             ++cmd2_cnt;
                         }
@@ -711,7 +711,7 @@ void SetToRHI(Handle hstate)
 //==============================================================================
 
 static GLenum
-_TextureFilter(TextureFilter filter)
+_TextureFilterGLES2(TextureFilter filter)
 {
     GLenum f = GL_LINEAR;
 
@@ -731,7 +731,7 @@ _TextureFilter(TextureFilter filter)
 //------------------------------------------------------------------------------
 
 static GLenum
-_TextureMipFilter(TextureMipFilter filter)
+_TextureMipFilterGLES2(TextureMipFilter filter)
 {
     GLenum f = GL_LINEAR_MIPMAP_LINEAR;
 
@@ -754,7 +754,7 @@ _TextureMipFilter(TextureMipFilter filter)
 //------------------------------------------------------------------------------
 
 static GLenum
-_AddrMode(TextureAddrMode mode)
+_AddrModeGLES2(TextureAddrMode mode)
 {
     GLenum m = GL_REPEAT;
 
@@ -796,8 +796,8 @@ void SetupDispatch(Dispatch* dispatch)
 void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-    bool fragment = base_i != InvalidIndex;
-    uint32 sampler_i = (base_i == InvalidIndex) ? unit_i : base_i + unit_i;
+    bool fragment = base_i != DAVA::InvalidIndex;
+    uint32 sampler_i = (base_i == DAVA::InvalidIndex) ? unit_i : base_i + unit_i;
     GLenum target = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
     const SamplerState::Descriptor::Sampler* sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
@@ -821,17 +821,17 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
     {
         if (sampler->mipFilter != TEXMIPFILTER_NONE)
         {
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMipFilter(TextureMipFilter(sampler->mipFilter))));
+            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMipFilterGLES2(TextureMipFilter(sampler->mipFilter))));
         }
         else
         {
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureFilter(TextureFilter(sampler->minFilter))));
+            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureFilterGLES2(TextureFilter(sampler->minFilter))));
         }
 
-        GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilter(TextureFilter(sampler->magFilter))));
+        GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilterGLES2(TextureFilter(sampler->magFilter))));
 
-        GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrMode(TextureAddrMode(sampler->addrU))));
-        GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_T, _AddrMode(TextureAddrMode(sampler->addrV))));
+        GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrModeGLES2(TextureAddrMode(sampler->addrU))));
+        GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_T, _AddrModeGLES2(TextureAddrMode(sampler->addrV))));
 
         self->samplerState = *sampler;
         self->forceSetSamplerState = false;

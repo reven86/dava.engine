@@ -234,9 +234,9 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
     if (scrollStartMovement && currentTouch->tid == mainTouch)
     {
         return true;
-	}
-	
-	return systemInput;
+    }
+
+    return systemInput;
 }
 
 void UIScrollViewContainer::Update(float32 timeElapsed)
