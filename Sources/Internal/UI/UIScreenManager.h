@@ -32,12 +32,12 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
-#include "UI/UIScreenManagerMacOS.h"
+#if defined(__DAVAENGINE_MACOS__)
+    #include "UI/UIScreenManagerMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "UI/UIScreenManageriPhone.h"
-#elif defined(__DAVAENGINE_ANDROID__)
-	#include "UI/UIScreenManagerAndroid.h"
+    #include "UI/UIScreenManageriPhone.h"
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WINDOWS__)
+    #include "UI/UIScreenManagerAndroid.h"
 #else //PLATFORMS
 	//other platforms
 #endif //PLATFORMS
