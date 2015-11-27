@@ -85,6 +85,9 @@ private:
     void CorrectNodesToMove();
     void UpdateNeighboursToMove();
 
+    void ClampAngle();
+
+    size_t currentHash = 0;
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 prevPos;
@@ -92,7 +95,6 @@ private:
     SelectedControls selectedControlNodes;
     DAVA::List<std::unique_ptr<MoveInfo>> nodesToMove;
     DAVA::Vector<DAVA::UIControl*> neighbours;
-    size_t currentHash = 0;
 
     DAVA::UIGeometricData parentGeometricData;
     DAVA::UIGeometricData controlGeometricData;

@@ -658,29 +658,35 @@ void NMaterial::RebuildBindings()
                     else
                         bufferBinding->constBuffer = rhi::CreateFragmentConstBuffer(currShader->GetPiplineState(), bufferDescr.targetSlot);
 
-                    //create bindings for this buffer
-                    for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
+                    if (bufferBinding->constBuffer != rhi::InvalidHandle)
                     {
-                        NMaterialProperty* prop = GetMaterialProperty(propDescr.uid);
-                        if ((prop != nullptr)) //has property of the same type
-                        {
-                            DVASSERT(prop->type == propDescr.type);
+                        //if const buffer is InvalidHandle this means that whole const buffer was cut by shader compiler/linker
+                        //it should not be updated but still can be shared as other shader variants can use it
 
-                            // create property binding
-
-                            bufferBinding->propBindings.emplace_back(propDescr.type,
-                                                                     propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
-                        }
-                        else
+                        //create bindings for this buffer
+                        for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
                         {
-                            //just set default property to const buffer
-                            if (propDescr.type < rhi::ShaderProp::TYPE_FLOAT4)
+                            NMaterialProperty* prop = GetMaterialProperty(propDescr.uid);
+                            if ((prop != nullptr)) //has property of the same type
                             {
-                                rhi::UpdateConstBuffer1fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.bufferRegCount, propDescr.defaultValue, ShaderDescriptor::CalculateDataSize(propDescr.type, 1));
+                                DVASSERT(prop->type == propDescr.type);
+
+                                // create property binding
+
+                                bufferBinding->propBindings.emplace_back(propDescr.type,
+                                                                         propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
                             }
                             else
                             {
-                                rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                                //just set default property to const buffer
+                                if (propDescr.type < rhi::ShaderProp::TYPE_FLOAT4)
+                                {
+                                    rhi::UpdateConstBuffer1fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.bufferRegCount, propDescr.defaultValue, ShaderDescriptor::CalculateDataSize(propDescr.type, 1));
+                                }
+                                else
+                                {
+                                    rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                                }
                             }
                         }
                     }
@@ -708,11 +714,13 @@ void NMaterial::RebuildBindings()
                 bufferHandle = currShader->GetDynamicBuffer(bufferDescr.type, bufferDescr.targetSlot);
             }
 
-            DVASSERT(bufferHandle.IsValid());
-            if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
-                currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
-            else
-                currRenderVariant->fragmentConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+            if (bufferHandle.IsValid())
+            {
+                if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
+                    currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+                else
+                    currRenderVariant->fragmentConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+            }
         }
     }
 
