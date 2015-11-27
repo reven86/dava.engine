@@ -40,7 +40,7 @@
 
 Connector::Connector()
 {
-    signalConnections[0] = signalConnections[1] = 0;
+    signalConnections.fill(0);
 }
 
 Connector::~Connector()

@@ -41,7 +41,6 @@ class BaseModel : public IListModel
     using TItemIter = typename TCollection::iterator;
     using TConstItemIter = typename TCollection::const_iterator;
 
-public:
     class BaseItem : public IItem
     {
     public:
@@ -87,6 +86,7 @@ public:
         ObjectHandleT<T> object;
     };
 
+public:
     BaseModel() = default;
 
     BaseModel(std::vector<ObjectHandleT<T>>&& object)
@@ -110,7 +110,9 @@ public:
         });
 
         if (iter == items.end())
+        {
             return;
+        }
 
         size_t index = std::distance(items.begin(), iter);
         notifyPreItemsRemoved(nullptr, index, 1);
@@ -126,6 +128,7 @@ public:
 
     IItem* item(size_t index) const override
     {
+        assert(index < items.size());
         return items[index];
     }
 

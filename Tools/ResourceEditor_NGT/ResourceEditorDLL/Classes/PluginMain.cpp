@@ -219,7 +219,7 @@ private:
         QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
         QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
         QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
-        //QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
 
         IQtFramework* qtFramework = Context::queryInterface<IQtFramework>();
         DVASSERT(qtFramework != nullptr);

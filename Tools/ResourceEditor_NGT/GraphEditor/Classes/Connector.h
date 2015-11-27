@@ -32,6 +32,8 @@
 #include <core_reflection/object_handle.hpp>
 #include <core_reflection/reflected_object.hpp>
 
+#include <array>
+
 class ConnectionSlot;
 
 class Connector
@@ -58,7 +60,7 @@ private:
     size_t outputSlotID;
     size_t intputSlotID;
 
-    size_t signalConnections[2];
+    std::array<size_t, 2> signalConnections;
 };
 
 #endif // __GRAPHEDITOR_CONNECTION_H__

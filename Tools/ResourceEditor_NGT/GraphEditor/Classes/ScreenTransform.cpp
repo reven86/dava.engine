@@ -69,7 +69,7 @@ void ScreenTransform::Shift(QPointF const& pixelShift)
     QPointF scaledShift = pixelShift / scale;
     // move model ZeroPoint on canvas
     UpdateMatrices(globalToPixel, pixelToGlobal, scaledShift.x(), scaledShift.y());
-    globalOrg = pixelToGlobal.map(QPointF(pixelSize.width() / 2.0, pixelSize.height() / 2.0));
+    globalOrg = pixelToGlobal.map(QPointF(pixelSize.width() / 2.0f, pixelSize.height() / 2.0f));
 
     TransformChanged();
 }
@@ -80,7 +80,7 @@ void ScreenTransform::Scale(float scaleFactor, float x, float y)
     globalToPixel = globalToPixel * QMatrix(scaleFactor, 0.0, 0.0, scaleFactor, scaleShift.x(), scaleShift.y());
     pixelToGlobal = globalToPixel.inverted();
     scale = globalToPixel.m11();
-    globalOrg = pixelToGlobal.map(QPointF(pixelSize.width() / 2.0, pixelSize.height() / 2.0));
+    globalOrg = pixelToGlobal.map(QPointF(pixelSize.width() / 2.0f, pixelSize.height() / 2.0f));
 
     TransformChanged();
 }

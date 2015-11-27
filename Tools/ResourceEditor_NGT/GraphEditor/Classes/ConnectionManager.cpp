@@ -47,17 +47,17 @@ using TCreateSlotFn = std::function<ObjectHandleT<ConnectionSlot>(ObjectHandleT<
                                                                   const std::string&,
                                                                   const std::string&)>;
 
-const char* greenSlot = "qrc:/GE/greenSlot.png";
-const char* blueSlot = "qrc:/GE/blueSlot.png";
+const char* greenSlotIcon = "qrc:/GE/greenSlot.png";
+const char* bllueSlotIcon = "qrc:/GE/blueSlot.png";
 
 void InitNodeType1(ObjectHandleT<GraphNode> const& node, const std::string& nodeTypeId, TCreateSlotFn const& createFn)
 {
     GraphNode::Params params;
     params.typeId = nodeTypeId;
 
-    params.inputSlots.push_back(createFn(node, "Exec", greenSlot));
-    params.inputSlots.push_back(createFn(node, "Value", greenSlot));
-    params.outputSlots.push_back(createFn(node, "Flow", blueSlot));
+    params.inputSlots.push_back(createFn(node, "Exec", greenSlotIcon));
+    params.inputSlots.push_back(createFn(node, "Value", greenSlotIcon));
+    params.outputSlots.push_back(createFn(node, "Flow", bllueSlotIcon));
 
     node->SetTitle("Real node from C++");
     node->Init(std::move(params));
@@ -68,8 +68,8 @@ void InitNodeType2(ObjectHandleT<GraphNode> const& node, const std::string& node
     GraphNode::Params params;
     params.typeId = nodeTypeId;
 
-    params.outputSlots.push_back(createFn(node, "Angle", blueSlot));
-    params.outputSlots.push_back(createFn(node, "Type", blueSlot));
+    params.outputSlots.push_back(createFn(node, "Angle", bllueSlotIcon));
+    params.outputSlots.push_back(createFn(node, "Type", bllueSlotIcon));
 
     node->SetTitle("Second node");
     node->Init(std::move(params));
@@ -139,9 +139,7 @@ void ConnectionManager::Finilize()
 
 ObjectHandleT<GraphNode> ConnectionManager::CreateNode(const std::string& nodeTypeId)
 {
-    using std::placeholders::_1;
-    using std::placeholders::_2;
-    using std::placeholders::_3;
+    using namespace std::placeholders;
 
     return CreateNode(nodeTypeId, std::bind(&ConnectionManager::CreateSlot, this, _1, _2, _3));
 }
@@ -312,10 +310,14 @@ void ConnectionManager::SaveGraph(float x, float y, size_t objectUid)
 {
     QString graphFile = QFileDialog::getSaveFileName(nullptr, "Save Graph", QString(), "Graph (*.gr)");
     if (graphFile.isEmpty())
+    {
         return;
+    }
 
     if (!graphFile.endsWith(".gr"))
+    {
         graphFile += ".gr";
+    }
 
     QFile file(graphFile);
     if (file.open(QIODevice::WriteOnly) == false)
@@ -396,7 +398,7 @@ void ConnectionManager::LoadGraph(float x, float y, size_t objectUid)
             slotMap[name.toStdString()] = slotUid;
         }
 
-        CreateNode(typeId.toStdString(), [&](const TNodePtr& node, const std::string& title, const std::string& icon) {
+        TNodePtr node = CreateNode(typeId.toStdString(), [&](const TNodePtr& node, const std::string& title, const std::string& icon) {
             TSlotPtr slot = CreateSlot(node, title, icon);
             auto iter = slotMap.find(slot->GetTitle());
             assert(iter != slotMap.end());
@@ -404,8 +406,8 @@ void ConnectionManager::LoadGraph(float x, float y, size_t objectUid)
             slotMapping[iter->second] = slot->GetUID();
 
             return slot;
-        })
-        ->SetPosition(pos.x(), pos.y());
+        });
+        node->SetPosition(pos.x(), pos.y());
     }
 
     size_t connectionCount = 0;

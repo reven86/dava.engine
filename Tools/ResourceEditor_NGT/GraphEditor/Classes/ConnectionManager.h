@@ -97,7 +97,7 @@ private:
     template <typename T>
     struct ObjectHandleHash
     {
-        size_t operator()(ObjectHandleT<T> const& node)
+        size_t operator()(ObjectHandleT<T> const& node) const
         {
             return std::hash<T*>()(node.get());
         }

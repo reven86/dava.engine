@@ -57,7 +57,7 @@ private:
 private:
     QSizeF pixelSize = QSizeF(0.0f, 0.0f);
     QPointF globalOrg = QPointF(0.0f, 0.0f);
-    float scale = 1.0;
+    float scale = 1.0f;
 
     QMatrix globalToPixel;
     QMatrix pixelToGlobal;
