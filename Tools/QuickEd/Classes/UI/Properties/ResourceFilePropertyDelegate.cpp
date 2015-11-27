@@ -52,7 +52,7 @@ ResourceFilePropertyDelegate::~ResourceFilePropertyDelegate()
 
 }
 
-QWidget * ResourceFilePropertyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
+QWidget * ResourceFilePropertyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index)
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
@@ -88,7 +88,7 @@ bool ResourceFilePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractIt
     return model->setData(index, variant, Qt::EditRole);
 }
 
-void ResourceFilePropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
+void ResourceFilePropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions)
 {
     QAction *selectFileAction = new QAction(tr("..."), parent);
     selectFileAction->setToolTip(tr("Select resource file"));

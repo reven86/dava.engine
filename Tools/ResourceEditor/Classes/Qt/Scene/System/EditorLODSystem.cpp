@@ -69,6 +69,7 @@ void EditorLODSystem::RemoveEntity(DAVA::Entity * entity)
     DVASSERT(tmpComponent);
 
     sceneLODs.erase(tmpComponent);
+    RemoveSelectedLODsRecursive(entity);
 }
 
 void EditorLODSystem::AddSelectedLODsRecursive(DAVA::Entity *entity)

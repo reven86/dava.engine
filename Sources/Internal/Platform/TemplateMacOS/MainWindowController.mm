@@ -73,16 +73,16 @@ namespace DAVA
         core->CreateSingletons();
 
         Logger::Instance()->EnableConsoleMode();
-        
-		FrameworkDidLaunched();
-		FrameworkWillTerminate();
-		
-		core->ReleaseSingletons();
 
-		[globalPool release];
-		globalPool = 0;
-		return 0;
-	}
+        FrameworkDidLaunched();
+        FrameworkWillTerminate();
+
+        core->ReleaseSingletons();
+
+        [globalPool release];
+        globalPool = 0;
+        return 0;
+    }
 }
 
 @interface MainWindowController ()
