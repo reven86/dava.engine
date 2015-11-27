@@ -40,12 +40,20 @@ const uint32 renderTargetSize = 1024;
 
 VisibilityCheckSystem::VisibilityCheckSystem(Scene* scene)
     : SceneSystem(scene)
-    , cubemapTarget(Texture::CreateFBO(renderTargetSize, renderTargetSize, PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE))
 {
+    for (uint32 i = 0; i < CubemapsCount; ++i)
+    {
+        cubemapTarget[i] = Texture::CreateFBO(renderTargetSize, renderTargetSize,
+                                              PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
+    }
 }
 
 VisibilityCheckSystem::~VisibilityCheckSystem()
 {
+    for (uint32 i = 0; i < CubemapsCount; ++i)
+    {
+        SafeRelease(cubemapTarget[i]);
+    }
 }
 
 void VisibilityCheckSystem::AddEntity(Entity* entity)
@@ -112,30 +120,22 @@ void VisibilityCheckSystem::Draw()
         Prerender();
     }
 
-    auto fromCamera = GetScene()->GetCurrentCamera();
-
-    size_t index = 0;
     for (const auto& point : controlPoints)
     {
-        if (currentPointIndex >= index)
-        {
-            dbg->DrawIcosahedron(point, 0.1f, Color(1.0f, 1.0f, 0.5f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
-        }
+        dbg->DrawIcosahedron(point, 0.1f, Color(1.0f, 1.0f, 0.5f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+    }
 
-        if (currentPointIndex == index)
-        {
-            Color clr(0.0f, 0.0f, 0.0f, 0.0f);
-            clr.r = 1.0f / static_cast<float>(controlPoints.size() + 1);
-            renderPass.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget, point);
-            renderPass.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget, renderTarget, point, clr);
-        }
-
-        ++index;
+    Color clr(std::sqrt(1.0f / static_cast<float>(controlPoints.size() + 1)), 0.0f, 0.0f, 0.0f);
+    auto fromCamera = GetScene()->GetCurrentCamera();
+    for (uint32 cm = 0; (cm < CubemapsCount) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
+    {
+        const auto& point = controlPoints[currentPointIndex];
+        renderPass.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point);
+        renderPass.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point, clr);
     }
 
     Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
     RenderSystem2D::Instance()->DrawTexture(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, Color::White, dstRect);
-    currentPointIndex = std::min(controlPoints.size(), currentPointIndex + 1);
 }
 
 void VisibilityCheckSystem::UpdatePointSet()

@@ -62,10 +62,12 @@ private:
         Camera* camera = nullptr;
     };
 
+    static const uint32 CubemapsCount = 1;
+
 private:
     Vector<Entity*> entities;
     Vector<Vector3> controlPoints;
-    ScopedPtr<Texture> cubemapTarget;
+    Texture* cubemapTarget[CubemapsCount];
     Texture* renderTarget = nullptr;
     VisibilityCheckRenderPass renderPass;
     StateCache stateCache;
