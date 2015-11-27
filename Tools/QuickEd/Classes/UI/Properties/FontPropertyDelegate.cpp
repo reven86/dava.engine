@@ -51,7 +51,7 @@ FontPropertyDelegate::~FontPropertyDelegate()
 
 }
 
-QWidget * FontPropertyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
+QWidget * FontPropertyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index)
 {
     QComboBox *comboBox = new QComboBox(parent);
     comboBox->setObjectName("comboBox");
@@ -86,7 +86,7 @@ bool FontPropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel 
     return model->setData(index, variant, Qt::EditRole);
 }
 
-void FontPropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
+void FontPropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions)
 {
     configurePresetAction = new QAction(QIcon(":/Icons/configure.png"), tr("configure"), parent);
     configurePresetAction->setEnabled(false);
