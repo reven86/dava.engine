@@ -111,7 +111,7 @@ struct ParticleLayer : public BaseObject
     Vector2 layerPivotSizeOffsets; //precached for faster bbox computation
     void SetPivotPoint(Vector2 pivot);
 
-	FilePath		spritePath;		
+    FilePath		spritePath;		
 	bool isLooped;
 	bool isLong;
     eBlending blending;
@@ -132,9 +132,9 @@ struct ParticleLayer : public BaseObject
     RefPtr<PropertyLine<float32>> lifeVariation; // variation part of life that added to particle life during generation of the particle
 
     RefPtr<PropertyLine<float32>> number; // number of particles per second
-    RefPtr< PropertyLine<float32> > numberVariation;	// variation part of number that added to particle count during generation of the particle
-	
-	RefPtr< PropertyLine<Vector2> > size;				// size of particles in pixels 
+    RefPtr<PropertyLine<float32>> numberVariation; // variation part of number that added to particle count during generation of the particle
+
+    RefPtr< PropertyLine<Vector2> > size;				// size of particles in pixels 
 	RefPtr< PropertyLine<Vector2> > sizeVariation;		// size variation in pixels
 	RefPtr< PropertyLine<Vector2> > sizeOverLifeXY;	
 	

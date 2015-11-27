@@ -358,9 +358,9 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
 
 DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input, jint action, jint source)
 {
-        DAVA::UIEvent event;
-		event.tid = env->GetIntField(input, gInputEventTidField);
-		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
+    DAVA::UIEvent event;
+    event.tid = env->GetIntField(input, gInputEventTidField);
+        event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
 		event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
 		event.tapCount = env->GetIntField(input, gInputEventTapCountField);
 		event.timestamp = env->GetDoubleField(input, gInputEventTimeField);

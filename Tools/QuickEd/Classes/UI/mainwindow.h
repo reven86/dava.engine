@@ -55,15 +55,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
     Q_OBJECT
     
 public:
-    struct TabState{
-        TabState(QString arg = QString()) 
-            : tabText(arg)
-            , isModified(false)
-        {
-        }
-        QString tabText;
-        bool isModified;
-    };
+    struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
 
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
@@ -73,7 +65,8 @@ public:
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
     void ExecDialogReloadSprites(SpritesPacker* packer);
-    QCheckBox* GetCheckboxEmulation();
+    bool IsInEmulationMode() const;
+    bool isPixelized() const;
     QComboBox *GetComboBoxLanguage();
 
 protected:
@@ -94,11 +87,12 @@ signals:
     void RtlChanged(bool isRtl);
     void GlobalStyleClassesChanged(const QString &classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
+    void EmulationModeChanbed(bool emulationMode);
+    void PixelizationChanged(bool pixelization);
 
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
-    void OnDocumentChanged(Document* doc);
 
 private slots:
     void OnCurrentIndexChanged(int arg);
@@ -144,7 +138,5 @@ private:
 
     QComboBox *comboboxLanguage = nullptr;
 };
-
-Q_DECLARE_METATYPE(MainWindow::TabState*);
 
 #endif // MAINWINDOW_H
