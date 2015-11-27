@@ -46,9 +46,9 @@ using namespace DAVA;
 
 namespace
 {
-QString ScaleStringFromInt(int scale)
+QString ScaleStringFromInt(qreal scale)
 {
-    return QString("%1 %").arg(scale);
+    return QString("%1 %").arg(static_cast<int>(scale * 100.0f + EPSILON));
 }
 
 struct PreviewContext : WidgetContext
@@ -62,9 +62,9 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
     , scrollAreaController(new ScrollAreaController(this))
 {
-    percentages << 25 << 33 << 50 << 67 << 75 << 90
-                << 100 << 110 << 125 << 150 << 175 << 200 
-                << 250 << 300 << 400 << 500 << 600 << 700 << 800;
+    percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
+                << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f 
+                << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
     setupUi(this);
     davaGLWidget = new DavaGLWidget();
     frame->layout()->addWidget(davaGLWidget);
@@ -92,7 +92,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 
     connect(davaGLWidget, &DavaGLWidget::ScreenChanged, this, &PreviewWidget::OnMonitorChanged);
 
-    scaleCombo->setCurrentIndex(percentages.indexOf(100)); //100%
+    scaleCombo->setCurrentIndex(percentages.indexOf(1.00f)); //100%
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
@@ -241,7 +241,7 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
 
 void PreviewWidget::OnScaleChanged(qreal scale)
 {
-    scaleCombo->lineEdit()->setText(ScaleStringFromInt((scale + EPSILON) * 100.0f / davaGLWidget->devicePixelRatio()));
+    scaleCombo->lineEdit()->setText(ScaleStringFromInt((scale + EPSILON) / davaGLWidget->devicePixelRatio()));
     emit ScaleChanged(scale);
 }
 
@@ -249,7 +249,7 @@ void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
     float scale = static_cast<float>(percentages.at(index));
-    scrollAreaController->SetScale(scale / 100.0f * davaGLWidget->devicePixelRatio());
+    scrollAreaController->SetScale(scale * davaGLWidget->devicePixelRatio());
 }
 
 void PreviewWidget::OnScaleByComboText()
@@ -386,38 +386,46 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
     }
 }
 
-qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount)
+qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
 {
-    qreal scale = scrollAreaController->GetScale() * 100.0f;
+    qreal scale = scrollAreaController->GetScale();
     if (ticksCount > 0)
     {
-        int curScale = static_cast<int>(scale);
-        auto iter = std::upper_bound(percentages.begin(), percentages.end(), curScale);
-        if (iter == percentages.end())
-        {
-            return scale;
-        }
-        while (--ticksCount)
-        {
-            ++iter;
-        }
-        scale = iter != percentages.end() ? *iter : percentages.last();
+        scale = GetNextScale(scale, ticksCount);
     }
     if (ticksCount < 0)
     {
-        int curScale = static_cast<int>(scale);
-        auto iter = std::lower_bound(percentages.begin(), percentages.end(), curScale);
-        if (iter == percentages.end())
-        {
-            return scale;
-        }
-        while (ticksCount++ && iter != percentages.begin())
-        {
-            --iter;
-        }
-        scale = *iter;
+        scale = GetPreviousScale(scale, ticksCount);
     }
-    return scale / 100.0f;
+    return scale;
+}
+
+qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
+{
+    auto iter = std::upper_bound(percentages.begin(), percentages.end(), currentScale);
+    if (iter == percentages.end())
+    {
+        return currentScale;
+    }
+    while (--ticksCount)
+    {
+        ++iter;
+    }
+    return iter != percentages.end() ? *iter : percentages.last();
+}
+
+qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
+{
+    auto iter = std::lower_bound(percentages.begin(), percentages.end(), currentScale);
+    if (iter == percentages.end())
+    {
+        return currentScale;
+    }
+    while (ticksCount++ && iter != percentages.begin())
+    {
+        --iter;
+    }
+    return *iter;
 }
 
 void PreviewWidget::SetDPR(qreal arg)
