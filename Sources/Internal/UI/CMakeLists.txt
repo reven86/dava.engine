@@ -2,15 +2,15 @@ set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp)
 set( ADDED_H_PATTERNS   *.h   Components/*.h   Layouts/*.h    Styles/*.h)
 
 if( NOT ANDROID )
-    set( ERASE_FILES    UITextFieldAndroid.cpp 
-                        UITextFieldAndroid.h
-                        UIScreenManagerAndroid.h 
-                        UIScreenManagerAndroid.cpp )
+    list( APPEND ERASE_FILES UITextFieldAndroid.cpp 
+                             UITextFieldAndroid.h
+                             UIScreenManagerAndroid.h 
+                             UIScreenManagerAndroid.cpp )
 endif ()
 
 if( NOT MACOS )
-    set( ERASE_FILES    UIScreenManagerMacOS.cpp 
-                        UIScreenManagerMacOS.h )
+    list( APPEND ERASE_FILES UIScreenManagerMacOS.cpp 
+                             UIScreenManagerMacOS.h )
 endif()
 
 if( APPLE )
