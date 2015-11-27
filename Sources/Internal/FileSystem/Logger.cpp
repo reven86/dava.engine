@@ -35,6 +35,7 @@
 
 #include "Utils/Utils.h"
 
+
 namespace DAVA
 {
 
@@ -260,6 +261,15 @@ void Logger::FileLog(eLogLevel ll, const char8* text) const
         if (nullptr != file)
         {
             Array<char8, 128> prefix;
+
+
+#if defined (__DAVAENGINE_WIN_UAP__)
+            SYSTEMTIME st;
+            GetSystemTime(&st);
+            // then convert st to your precision needs
+            snprintf(&prefix[0], prefix.size(), "- %d:%d:%d %d", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+            file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
+#endif
             snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
             file->Write(text, static_cast<uint32>(strlen(text)));
