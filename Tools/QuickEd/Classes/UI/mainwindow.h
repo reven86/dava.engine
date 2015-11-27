@@ -68,7 +68,6 @@ public:
     bool IsInEmulationMode() const;
     bool isPixelized() const;
     QComboBox *GetComboBoxLanguage();
-    DialogReloadSprites* GetDialogReloadSprites();
 
 protected:
 

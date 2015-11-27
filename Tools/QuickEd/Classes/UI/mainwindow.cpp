@@ -601,6 +601,3 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
 }
-
-    }
-}

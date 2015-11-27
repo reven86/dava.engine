@@ -114,6 +114,7 @@ EditorCore::EditorCore(QObject *parent)
     documentGroup->SetPixelization(mainWindow->isPixelized());
     documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
     documentGroup->SetDPR(previewWidget->GetDPR());
+}
 
 EditorCore::~EditorCore() = default;
 
