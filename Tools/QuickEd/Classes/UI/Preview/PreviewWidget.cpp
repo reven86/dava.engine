@@ -48,12 +48,11 @@ namespace
 {
 QString ScaleStringFromInt(qreal scale)
 {
-    return QString("%1 %").arg(static_cast<int>(scale * 100.0f + EPSILON));
+    return QString("%1 %").arg(static_cast<int>(scale * 100.0f + 0.5f));
 }
 
 struct PreviewContext : WidgetContext
 {
-    ~PreviewContext() override = default;
     QPoint canvasPosition;
 };
 }
@@ -393,7 +392,7 @@ qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
     {
         scale = GetNextScale(scale, ticksCount);
     }
-    if (ticksCount < 0)
+    else if (ticksCount < 0)
     {
         scale = GetPreviousScale(scale, ticksCount);
     }
@@ -407,10 +406,9 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
     {
         return currentScale;
     }
-    while (--ticksCount)
-    {
-        ++iter;
-    }
+    ticksCount--;
+    ticksCount = std::min(std::distance(iter, percentages.end()), ticksCount);
+    std::advance(iter, ticksCount);
     return iter != percentages.end() ? *iter : percentages.last();
 }
 
@@ -421,10 +419,8 @@ qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
     {
         return currentScale;
     }
-    while (ticksCount++ && iter != percentages.begin())
-    {
-        --iter;
-    }
+    ticksCount = std::max(ticksCount, std::distance(iter, percentages.begin()));
+    std::advance(iter, ticksCount);
     return *iter;
 }
 
