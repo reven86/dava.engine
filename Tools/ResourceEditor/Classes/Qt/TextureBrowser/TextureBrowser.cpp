@@ -350,17 +350,30 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
     {
 		char tmp[1024];
 
-        const ImageInfo info = ImageSystem::Instance()->GetImageInfo(curDescriptor->GetSourceTexturePathname());
-        const char* formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
+        FilePath imagePath;
+        if (curDescriptor->IsCubeMap())
+        {
+            Vector<FilePath> faces;
+            curDescriptor->GetFacePathnames(faces);
+            DVASSERT(faces.size() > 0);
+            imagePath = faces[0];
+        }
+        else
+        {
+            imagePath = curDescriptor->GetSourceTexturePathname();
+        }
+
+        const ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePath);
+        String formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
 
         int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
 		int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
 
-		sprintf(tmp, "Format: %s\nSize: %dx%d\nData size: %s\nFile size: %s", formatStr, images[0].width(), images[0].height(),
-			 SizeInBytesToString(datasize).c_str(),
-			 SizeInBytesToString(filesize).c_str());
+        sprintf(tmp, "Format: %s\nSize: %dx%d\nData size: %s\nFile size: %s", formatStr.c_str(), images[0].width(), images[0].height(),
+                SizeInBytesToString(datasize).c_str(),
+                SizeInBytesToString(filesize).c_str());
 
-		ui->labelOriginalFormat->setText(tmp);
+        ui->labelOriginalFormat->setText(tmp);
 	}
 	else
 	{
