@@ -432,7 +432,8 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
         return currentScale;
     }
     ticksCount--;
-    ticksCount = std::min(std::distance(iter, percentages.end()), ticksCount);
+    int distance = std::distance(iter, percentages.end());
+    ticksCount = std::min(distance, ticksCount);
     std::advance(iter, ticksCount);
     return iter != percentages.end() ? *iter : percentages.last();
 }
@@ -444,7 +445,8 @@ qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
     {
         return currentScale;
     }
-    ticksCount = std::max(ticksCount, std::distance(iter, percentages.begin()));
+    int distance = std::distance(iter, percentages.begin());
+    ticksCount = std::max(ticksCount, distance);
     std::advance(iter, ticksCount);
     return *iter;
 }
