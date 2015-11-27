@@ -175,9 +175,14 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad* quad)
         }
     }
 
-    uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
-    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(vBufferSize);
-    rhi::UpdateVertexBuffer(vertexBuffer, landscapeVertices, 0, vBufferSize);
+    uint32 vBufferSize = static_cast<uint32>(verticesCount * sizeof(LandscapeVertex));
+
+    rhi::VertexBuffer::Descriptor desc;
+    desc.size = vBufferSize;
+    desc.initialData = landscapeVertices;
+    desc.usage = rhi::USAGE_STATICDRAW;
+
+    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(desc);
     vertexBuffers.push_back(vertexBuffer);
     
 #if defined(__DAVAENGINE_IPHONE__)
