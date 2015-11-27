@@ -6,7 +6,9 @@ if( NOT ANDROID )
                         UITextFieldAndroid.h
                         UIScreenManagerAndroid.h 
                         UIScreenManagerAndroid.cpp )
-elseif( NOT MACOS )
+endif ()
+
+if( NOT MACOS )
     set( ERASE_FILES    UIScreenManagerMacOS.cpp 
                         UIScreenManagerMacOS.h )
 endif()
