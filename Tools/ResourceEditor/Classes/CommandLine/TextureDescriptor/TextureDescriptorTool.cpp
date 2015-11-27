@@ -28,29 +28,12 @@
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorTool.h"
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "CommandLine/OptionName.h"
 
 #include "Render/PixelFormatDescriptor.h"
 
 using namespace DAVA;
 
-namespace OptionName
-{
-static const String Folder = "-folder";
-static const String File = "-file";
-static const String Resave = "-resave";
-static const String CopyCompression = "-copycompression";
-static const String Create = "-create";
-static const String SetCompression = "-setcompression";
-static const String Force = "-f";
-static const String Quality = "-quality";
-static const String Mipmaps = "-m";
-static const String Convert = "-convert";
-
-const String MakeNameForGPU(eGPUFamily gpuFamily)
-{
-    return ("-" + GPUFamilyDescriptor::GetGPUName(gpuFamily));
-}
-}
 
 TextureDescriptorTool::TextureDescriptorTool()
     : CommandLineTool("-texdescriptor")

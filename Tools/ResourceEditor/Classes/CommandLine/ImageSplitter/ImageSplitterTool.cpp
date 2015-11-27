@@ -28,16 +28,10 @@
 
 #include "CommandLine/ImageSplitter/ImageSplitterTool.h"
 #include "ImageTools/ImageTools.h"
+#include "CommandLine/OptionName.h"
 
 using namespace DAVA;
 
-namespace OptionName
-{
-static const String Split = "-split";
-static const String Merge = "-merge";
-static const String File = "-file";
-static const String Folder = "-folder";
-}
 
 ImageSplitterTool::ImageSplitterTool()
     : CommandLineTool("-imagesplitter")

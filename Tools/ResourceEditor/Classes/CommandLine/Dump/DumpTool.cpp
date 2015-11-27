@@ -31,17 +31,10 @@
 #include "CommandLine/Dump/SceneDumper.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
+#include "CommandLine/OptionName.h"
 
 using namespace DAVA;
 
-namespace OptionName
-{
-static const String Links = "-links";
-static const String InDir = "-indir";
-static const String ProcessFile = "-processfile";
-static const String QualityConfig = "-qualitycfgpath";
-static const String OutFile = "-outfile";
-}
 
 DumpTool::DumpTool()
     : CommandLineTool("-dump")

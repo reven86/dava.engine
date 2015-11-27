@@ -29,14 +29,10 @@
 #include "CommandLine/StaticOcclusion/StaticOcclusionTool.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "Scene/SceneEditor2.h"
+#include "CommandLine/OptionName.h"
 
 using namespace DAVA;
 
-namespace OptionName
-{
-static const String Build = "-build";
-static const String ProcessFile = "-processfile";
-}
 
 StaticOcclusionTool::StaticOcclusionTool()
     : CommandLineTool("-staticocclusion")

@@ -32,23 +32,9 @@
 #include "Project/ProjectManager.h"
 #include "Utils/StringUtils.h"
 
-using namespace DAVA;
+#include "CommandLine/OptionName.h"
 
-namespace OptionName
-{
-static const String Scene = "-scene";
-static const String Texture = "-texture";
-static const String InDir = "-indir";
-static const String OutDir = "-outdir";
-static const String ProcessDir = "-processdir";
-static const String ProcessFile = "-processfile";
-static const String ProcessFileList = "-processfilelist";
-static const String QualityConfig = "-qualitycfgpath";
-static const String GPU = "-gpu";
-static const String Quality = "-quality";
-static const String SaveNormals = "-saveNormals";
-static const String deprecated_Export = "-export";
-}
+using namespace DAVA;
 
 SceneExporterTool::SceneExporterTool()
     : CommandLineTool("-sceneexporter")

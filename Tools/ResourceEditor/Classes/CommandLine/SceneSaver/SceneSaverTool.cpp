@@ -28,19 +28,9 @@
 
 #include "CommandLine/SceneSaver/SceneSaverTool.h"
 #include "CommandLine/SceneSaver/SceneSaver.h"
+#include "CommandLine/OptionName.h"
 
 using namespace DAVA;
-
-namespace OptionName
-{
-static const String Save = "-save";
-static const String Resave = "-resave";
-static const String Yaml = "-yaml";
-static const String InDir = "-indir";
-static const String OutDir = "-outdir";
-static const String ProcessFile = "-processfile";
-static const String CopyConverted = "-copyconverted";
-}
 
 SceneSaverTool::SceneSaverTool()
     : CommandLineTool("-scenesaver")

@@ -32,15 +32,12 @@
 #include "Scene/SceneEditor2.h"
 #include "Commands2/BeastAction.h"
 
+#include "CommandLine/OptionName.h"
+
 using namespace DAVA;
 
 #if defined (__DAVAENGINE_BEAST__)
 
-namespace OptionName
-{
-static const String File = "-file";
-static const String Output = "-output";
-}
 
 BeastCommandLineTool::BeastCommandLineTool()
     : CommandLineTool("-beast")

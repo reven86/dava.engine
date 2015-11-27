@@ -27,5 +27,50 @@
 =====================================================================================*/
 
 #include "CommandLine/OptionName.h"
+#include "Render/GPUFamilyDescriptor.h"
 
 const DAVA::String OptionName::deprecated_forceClose("-forceclose");
+const DAVA::String OptionName::deprecated_Export("-export");
+
+const DAVA::String OptionName::Output("-output");
+const DAVA::String OptionName::OutFile("-outfile");
+const DAVA::String OptionName::OutDir("-outdir");
+
+const DAVA::String OptionName::File("-file");
+const DAVA::String OptionName::ProcessFile("-processfile");
+
+const DAVA::String OptionName::ProcessFileList("-processfilelist");
+
+const DAVA::String OptionName::Folder("-folder");
+const DAVA::String OptionName::InDir("-indir");
+const DAVA::String OptionName::ProcessDir("-processdir");
+
+const DAVA::String OptionName::QualityConfig("-qualitycfgpath");
+
+const DAVA::String OptionName::Split("-split");
+const DAVA::String OptionName::Merge("-merge");
+const DAVA::String OptionName::Save("-save");
+const DAVA::String OptionName::Resave("-resave");
+const DAVA::String OptionName::Build("-build");
+const DAVA::String OptionName::Convert("-convert");
+const DAVA::String OptionName::Create("-create");
+
+const DAVA::String OptionName::Links("-links");
+const DAVA::String OptionName::Scene("-scene");
+const DAVA::String OptionName::Texture("-texture");
+const DAVA::String OptionName::Yaml("-yaml");
+
+const DAVA::String OptionName::GPU("-gpu");
+const DAVA::String OptionName::Quality("-quality");
+const DAVA::String OptionName::Force("-f");
+const DAVA::String OptionName::Mipmaps("-m");
+
+const DAVA::String OptionName::SaveNormals("-saveNormals");
+const DAVA::String OptionName::CopyConverted("-copyconverted");
+const DAVA::String OptionName::CopyCompression("-copycompression");
+const DAVA::String OptionName::SetCompression("-setcompression");
+
+const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
+{
+    return ("-" + GPUFamilyDescriptor::GetGPUName(gpuFamily));
+}
