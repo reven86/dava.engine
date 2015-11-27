@@ -81,8 +81,7 @@ struct SerializedTransport
 
 static DeviceInfo::ePlatform IntToPlatform(uint32 n)
 {
-    return DeviceInfo::PLATFORM_MACOS <= n && n < DeviceInfo::PLATFORMS_COUNT ? static_cast<DeviceInfo::ePlatform>(n)
-                                                                              : DeviceInfo::PLATFORM_UNKNOWN;
+    return DeviceInfo::PLATFORM_MACOS <= n && n < DeviceInfo::PLATFORMS_COUNT ? static_cast<DeviceInfo::ePlatform>(n) : DeviceInfo::PLATFORM_UNKNOWN_VALUE;
 }
 
 static eGPUFamily IntToGPUFamily(uint32 n)

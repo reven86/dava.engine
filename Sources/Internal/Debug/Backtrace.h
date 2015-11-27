@@ -26,53 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_BACKTRACE_H__
 #define __DAVAENGINE_BACKTRACE_H__
 
+// clang-format off
 #include "Base/BaseTypes.h"
 #include "FileSystem/Logger.h"
+
 namespace DAVA
 {
-//namespace Backtrace 
-//{
-    
-#define MAX_BACKTRACE_DEPTH  50
-    
-struct Backtrace
+namespace Debug
 {
-    uint32 size;
-    void * array[MAX_BACKTRACE_DEPTH];
-    pointer_size hash;   // identical backtraces have identical hash values. At the same time it does not guarantee that stacks are the same. 
-};
-    
-/**
-    \brief Function to create backtrace from current point and calculate hash.
-    */
-Backtrace * CreateBacktrace();
-/**
-    \brief Function to release backtrace.
-    */
-void ReleaseBacktrace(Backtrace * backtrace);
-/*
-    \brief Get backtrace to created pointer
-    */
-void GetBacktrace(Backtrace * backtrace);
-    
-    
-struct BacktraceLog
-{
-    uint32 size;
-    char ** strings;
-};
-    
-void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log);
-void ReleaseBacktraceLog(BacktraceLog * log);
-        
-void PrintBackTraceToLog(Logger::eLogLevel logLevel = Logger::eLogLevel::LEVEL_FRAMEWORK);
 
-//};
+struct StackFrame
+{
+    StackFrame() = default;
+    StackFrame(void* addr_, const char8* func_)
+        : addr(addr_)
+        , function(func_)
+    {}
+    StackFrame(void* addr_, String func_)
+        : addr(addr_)
+        , function(std::move(func_))
+    {}
+
+    void* addr;
+    String function;
 };
+
+DAVA_NOINLINE Vector<StackFrame> GetBacktrace(size_t framesToCapture = -1);
+
+// Convert backtrace to string
+//  1st version uses already obtained backtrace and formats up to nframes items
+//  2nd version internally gets backtrace and formats all items
+String BacktraceToString(const Vector<StackFrame>& backtrace, size_t nframes = -1);
+String BacktraceToString(size_t framesToCapture);
+
+// Prints backtrace to log using specified log level
+//  1st version uses already obtained backtrace
+//  2nd version internally gets backtrace and logs all items
+void BacktraceToLog(const Vector<StackFrame>& backtrace, Logger::eLogLevel ll = Logger::LEVEL_ERROR);
+void BacktraceToLog(size_t framesToCapture = -1, Logger::eLogLevel ll = Logger::LEVEL_ERROR);
+
+// Low level function to get stack frames and symbols
+DAVA_NOINLINE size_t GetStackFrames(void* frames[], size_t framesToCapture);
+String GetSymbolFromAddr(void* addr, bool demangle = true);
+String DemangleSymbol(const char8* symbol);
+
+} // namespace Debug
+} // namespace DAVA
 
 #endif // __DAVAENGINE_BACKTRACE_H__
-

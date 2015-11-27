@@ -302,7 +302,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
     size_t componentsCount = activeComponents.size();
     for (size_t i = 0; i < componentsCount; i++)
     {
-        ParticleEffectComponent * effect = activeComponents[i];
+        ParticleEffectComponent* effect = activeComponents[i];
         if (effect->activeLodLevel!=effect->desiredLodLevel)
             UpdateActiveLod(effect);
         if (effect->state == ParticleEffectComponent::STATE_STARTING)  

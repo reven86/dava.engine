@@ -28,12 +28,10 @@
 
 
 #include "mainwindow.h"
+#include "Project/Project.h"
 #include "Document.h"
-//////////////////////////////////////////////////////////////////////////
-#include "fontmanagerdialog.h"
+
 #include "Helpers/ResourcesManageHelper.h"
-#include "Dialogs/LocalizationEditorDialog.h"
-//////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
@@ -54,27 +52,22 @@ namespace
 
 using namespace DAVA;
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
-    , localizationEditorDialog(new LocalizationEditorDialog(this))
-    , dialogReloadSprites(new DialogReloadSprites(this))
+    , loggerOutput(new LoggerOutputObject)
 {
     setupUi(this);
 
-    LoggerOutputObject* loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
-    connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
+    connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
 
     DebugTools::ConnectToUI(this);
 
     // Reload Sprites
-    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
-    connect(actionReloadSprites, &QAction::triggered, this, &MainWindow::OnSetupCacheSettingsForPacker);
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
 
-    actionLocalizationManager->setEnabled(false);
     toolBarPlugins->addSeparator();
     InitLanguageBox();
     toolBarPlugins->addSeparator();
@@ -93,9 +86,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::OnCurrentIndexChanged);
     connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
-
-    connect(actionFontManager, &QAction::triggered, this, &MainWindow::OnOpenFontManager);
-    connect(actionLocalizationManager, &QAction::triggered, localizationEditorDialog, &LocalizationEditorDialog::exec);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
@@ -176,14 +166,14 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
-{
-    return dialogReloadSprites;
-}
-
 QCheckBox* MainWindow::GetCheckboxEmulation()
 {
     return emulationBox;
+}
+
+QComboBox* MainWindow::GetComboBoxLanguage()
+{
+    return comboboxLanguage;
 }
 
 void MainWindow::OnCurrentIndexChanged(int arg)
@@ -216,10 +206,14 @@ void MainWindow::OnCleanChanged(int index, bool val)
     }
 }
 
-void MainWindow::OnOpenFontManager()
+void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
 {
-    FontManagerDialog fontManagerDialog(false, QString(), this);
-    fontManagerDialog.exec();
+    DVASSERT(nullptr != packer);
+    auto lastFlags = acceptableLoggerFlags;
+    acceptableLoggerFlags = (1 << Logger::LEVEL_ERROR) | (1 << Logger::LEVEL_WARNING);
+    DialogReloadSprites dialogReloadSprites(packer, this);
+    dialogReloadSprites.exec();
+    acceptableLoggerFlags = lastFlags;
 }
 
 void MainWindow::OnShowHelp()
@@ -231,7 +225,7 @@ void MainWindow::OnShowHelp()
 
 void MainWindow::InitLanguageBox()
 {
-    QComboBox *comboboxLanguage = new QComboBox();
+    comboboxLanguage = new QComboBox();
     comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     QLabel *label = new QLabel(tr("language"));
     label->setBuddy(comboboxLanguage);
@@ -242,10 +236,16 @@ void MainWindow::InitLanguageBox()
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
-    comboboxLanguage->setModel(localizationEditorDialog->currentLocaleComboBox->model());
-    connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
-    connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
-    comboboxLanguage->setCurrentIndex(localizationEditorDialog->currentLocaleComboBox->currentIndex());
+}
+
+void MainWindow::FillComboboxLanguages(const Project* project)
+{
+    QString currentText = project->GetEditorLocalizationSystem()->GetCurrentLocale();
+    bool wasBlocked = comboboxLanguage->blockSignals(true); //performace fix
+    comboboxLanguage->clear();
+    comboboxLanguage->addItems(project->GetEditorLocalizationSystem()->GetAvailableLocaleNames());
+    comboboxLanguage->setCurrentText(currentText);
+    comboboxLanguage->blockSignals(wasBlocked);
 }
 
 void MainWindow::InitRtlBox()
@@ -408,7 +408,6 @@ void MainWindow::DisableActions()
     actionSaveDocument->setEnabled(false);
 
     actionClose_project->setEnabled(false);
-    actionFontManager->setEnabled(false);
 }
 
 void MainWindow::RebuildRecentMenu()
@@ -450,19 +449,19 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     ev->ignore();
 }
 
-void MainWindow::OnProjectOpened(const ResultList &resultList, QString projectPath)
+void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
-    actionLocalizationManager->setEnabled(resultList);
     fileSystemDockWidget->setEnabled(resultList);
+    QString projectPath = project->GetProjectPath() + project->GetProjectName();
     if (resultList)
     {
         UpdateProjectSettings(projectPath);
 
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
-        localizationEditorDialog->FillLocaleComboBox();
+        FillComboboxLanguages(project);
     }
     else
     {
@@ -524,6 +523,14 @@ void MainWindow::OnGlobalClassesChanged(const QString &str)
     emit GlobalStyleClassesChanged(str);
 }
 
+void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& output)
+{
+    if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
+    {
+        logWidget->AddMessage(logLevel, output);
+    }
+}
+
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 {
     Color newColor;
@@ -572,24 +579,6 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
-}
-
-void MainWindow::OnSetupCacheSettingsForPacker()
-{
-    auto spritesPacker = dialogReloadSprites->GetSpritesPacker();
-    DVASSERT(nullptr != spritesPacker);
-
-    if (EditorSettings::Instance()->IsUsingAssetCache())
-    {
-        spritesPacker->SetCacheTool(
-        EditorSettings::Instance()->GetAssetCacheIp(),
-        EditorSettings::Instance()->GetAssetCachePort(),
-        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
-    }
-    else
-    {
-        spritesPacker->ClearCacheTool();
-    }
 }
 
 void MainWindow::OnDocumentChanged(Document* doc)
