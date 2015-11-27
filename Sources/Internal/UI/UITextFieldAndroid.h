@@ -123,7 +123,7 @@ public:
     void SetTextUseRtlAlign(bool useRtlAlign);
     bool GetTextUseRtlAlign() const;
 
-	void SetVisible(bool isVisible);
+    void SetVisible(bool isVisible);
 
 	void SetIsPassword(bool isPassword);
 

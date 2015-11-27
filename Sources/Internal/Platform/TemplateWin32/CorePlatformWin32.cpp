@@ -396,8 +396,8 @@ namespace DAVA
             mode.height = dmi.dmPelsHeight;
             mode.bpp = dmi.dmBitsPerPel;
             mode.refreshRate = dmi.dmDisplayFrequency;
-            ZeroMemory (&dmi, sizeof(dmi)) ;
-			availableDisplayModes.push_back(mode);
+            ZeroMemory(&dmi, sizeof(dmi));
+            availableDisplayModes.push_back(mode);
 		}
 	}
 
@@ -523,7 +523,7 @@ namespace DAVA
         {
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
         }
-		if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
+        if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
 		{
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
 		}

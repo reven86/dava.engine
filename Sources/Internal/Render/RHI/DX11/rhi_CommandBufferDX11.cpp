@@ -122,9 +122,9 @@ SyncObjectDX11_t
     uint32 is_used : 1;
 };
 
-typedef ResourcePool<CommandBufferDX11_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false> CommandBufferPool;
-typedef ResourcePool<RenderPassDX11_t, RESOURCE_RENDER_PASS, RenderPassConfig, false> RenderPassPool;
-typedef ResourcePool<SyncObjectDX11_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false> SyncObjectPool;
+typedef ResourcePool<CommandBufferDX11_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false> CommandBufferPoolDX11;
+typedef ResourcePool<RenderPassDX11_t, RESOURCE_RENDER_PASS, RenderPassConfig, false> RenderPassPoolDX11;
+typedef ResourcePool<SyncObjectDX11_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false> SyncObjectPoolDX11;
 
 RHI_IMPL_POOL(CommandBufferDX11_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false);
 RHI_IMPL_POOL(RenderPassDX11_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
@@ -141,11 +141,11 @@ FrameDX11
     ID3D11CommandList* cmdList;
 };
 
-static std::vector<FrameDX11> _Frame;
-static bool _FrameStarted = false;
-static unsigned _FrameNumber = 1;
+static std::vector<FrameDX11> _DX11_Frame;
+static bool _DX11_FrameStarted = false;
+static unsigned _DX11_FrameNumber = 1;
 //static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex _FrameSync;
+static DAVA::Mutex _DX11_FrameSync;
 
 static void _ExecuteQueuedCommandsDX11();
 
@@ -231,16 +231,16 @@ dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, H
 {
     DVASSERT(cmdBufCount);
 
-    Handle handle = RenderPassPool::Alloc();
-    RenderPassDX11_t* pass = RenderPassPool::Get(handle);
+    Handle handle = RenderPassPoolDX11::Alloc();
+    RenderPassDX11_t* pass = RenderPassPoolDX11::Get(handle);
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passDesc.priority;
 
     for (unsigned i = 0; i != cmdBufCount; ++i)
     {
-        Handle h = CommandBufferPool::Alloc();
-        CommandBufferDX11_t* cb = CommandBufferPool::Get(h);
+        Handle h = CommandBufferPoolDX11::Alloc();
+        CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(h);
 
         cb->commandList = nullptr;
         cb->passCfg = passDesc;
@@ -269,24 +269,24 @@ dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, H
 static void
 dx11_RenderPass_Begin(Handle pass)
 {
-    _FrameSync.Lock();
+    _DX11_FrameSync.Lock();
 
-    if (!_FrameStarted)
+    if (!_DX11_FrameStarted)
     {
-        _Frame.push_back(FrameDX11());
-        _Frame.back().number = _FrameNumber;
-        _Frame.back().sync = rhi::InvalidHandle;
-        _Frame.back().readyToExecute = false;
-        _Frame.back().cmdList = nullptr;
+        _DX11_Frame.push_back(FrameDX11());
+        _DX11_Frame.back().number = _DX11_FrameNumber;
+        _DX11_Frame.back().sync = rhi::InvalidHandle;
+        _DX11_Frame.back().readyToExecute = false;
+        _DX11_Frame.back().cmdList = nullptr;
 
-        Trace("\n\n-------------------------------\nframe %u started\n", _FrameNumber);
-        _FrameStarted = true;
-        ++_FrameNumber;
+        Trace("\n\n-------------------------------\nframe %u started\n", _DX11_FrameNumber);
+        _DX11_FrameStarted = true;
+        ++_DX11_FrameNumber;
     }
 
-    _Frame.back().pass.push_back(pass);
+    _DX11_Frame.back().pass.push_back(pass);
 
-    _FrameSync.Unlock();
+    _DX11_FrameSync.Unlock();
     //-    _CmdQueue.push_back( pass );
 }
 
@@ -314,20 +314,20 @@ void SetupDispatch(Dispatch* dispatch)
 static void
 dx11_CommandBuffer_Begin(Handle cmdBuf)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     ID3D11DeviceContext* context = cb->context;
     bool clear_color = cb->isFirstInPass && cb->passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
     bool clear_depth = cb->isFirstInPass && cb->passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
     ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetView };
 
     cb->cur_topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    cb->cur_ib = InvalidIndex;
-    cb->cur_vb = InvalidIndex;
+    cb->cur_ib = DAVA::InvalidIndex;
+    cb->cur_vb = DAVA::InvalidIndex;
     cb->cur_vb_stride = 0;
     cb->cur_pipelinestate = InvalidHandle;
     cb->cur_stride = 0;
     cb->cur_query_buf = InvalidHandle;
-    cb->cur_query_i = InvalidIndex;
+    cb->cur_query_i = DAVA::InvalidIndex;
     cb->cur_rs = nullptr;
 
     cb->rs_param.cullMode = CULL_NONE;
@@ -402,7 +402,7 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
 static void
 dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     cb->context->OMSetRenderTargets(0, NULL, NULL);
     cb->context->FinishCommandList(TRUE, &(cb->commandList));
@@ -414,7 +414,7 @@ dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 static void
 dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     const VertexLayout* vdecl = (vdeclUID == VertexLayout::InvalidUID) ? nullptr : VertexLayout::Get(vdeclUID);
 
     cb->cur_pipelinestate = ps;
@@ -429,7 +429,7 @@ dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
 static void
 dx11_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     cb->rs_param.cullMode = mode;
     cb->cur_rs = nullptr;
@@ -439,7 +439,7 @@ dx11_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 
 void dx11_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     int x = rect.x;
     int y = rect.y;
     int w = rect.width;
@@ -466,7 +466,7 @@ void dx11_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 static void
 dx11_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     int x = vp.x;
     int y = vp.y;
     int w = vp.width;
@@ -496,7 +496,7 @@ dx11_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 static void
 dx11_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     cb->rs_param.wireframe = (mode == FILLMODE_WIREFRAME);
 }
@@ -506,7 +506,7 @@ dx11_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 static void
 dx11_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     cb->cur_vb = vb;
     cb->cur_vb_stride = (cb->cur_vb_stride) ? cb->cur_vb_stride : PipelineStateDX11::VertexLayoutStride(cb->cur_pipelinestate);
@@ -517,7 +517,7 @@ dx11_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 static void
 dx11_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     ConstBufferDX11::SetToRHI(buffer, cb->context);
 
@@ -529,7 +529,7 @@ dx11_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle b
 static void
 dx11_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     TextureDX11::SetToRHIVertex(tex, unitIndex, cb->context);
 
@@ -541,7 +541,7 @@ dx11_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 static void
 dx11_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     cb->cur_ib = ib;
 }
@@ -551,7 +551,7 @@ dx11_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 static void
 dx11_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     cb->cur_query_i = objectIndex;
 }
@@ -561,7 +561,7 @@ dx11_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 static void
 dx11_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     DVASSERT(cb->cur_query_buf == InvalidHandle);
     cb->cur_query_buf = queryBuf;
@@ -572,7 +572,7 @@ dx11_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 static void
 dx11_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     ConstBufferDX11::SetToRHI(buffer, cb->context);
 
@@ -584,7 +584,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle
 static void
 dx11_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     TextureDX11::SetToRHIFragment(tex, unitIndex, cb->context);
 
@@ -596,7 +596,7 @@ dx11_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle te
 static void
 dx11_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     DepthStencilStateDX11::SetToRHI(depthStencilState, cb->context);
 }
@@ -606,7 +606,7 @@ dx11_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 static void
 dx11_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
     SamplerStateDX11::SetToRHI(samplerState, cb->context);
 
@@ -618,7 +618,7 @@ dx11_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 static void
 dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     ID3D11DeviceContext* ctx = cb->context;
     unsigned vertexCount = 0;
     D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -658,12 +658,12 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
 
     StatSet::IncStat(stat_SET_VB, 1);
 
-    if (cb->cur_query_i != InvalidIndex)
+    if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     ctx->Draw(vertexCount, baseVertex);
 
-    if (cb->cur_query_i != InvalidIndex)
+    if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
@@ -688,7 +688,7 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
 static void
 dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     ID3D11DeviceContext* ctx = cb->context;
     unsigned indexCount = 0;
     D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -729,12 +729,12 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     VertexBufferDX11::SetToRHI(cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx);
     StatSet::IncStat(stat_SET_VB, 1);
 
-    if (cb->cur_query_i != InvalidIndex)
+    if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     ctx->DrawIndexed(indexCount, startIndex, firstVertex);
 
-    if (cb->cur_query_i != InvalidIndex)
+    if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
@@ -759,7 +759,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
 static void
 dx11_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     wchar_t txt[128];
 
     ::MultiByteToWideChar(CP_ACP, 0, text, -1, txt, countof(txt));
@@ -779,8 +779,8 @@ dx11_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 static Handle
 dx11_SyncObject_Create()
 {
-    Handle handle = SyncObjectPool::Alloc();
-    SyncObjectDX11_t* sync = SyncObjectPool::Get(handle);
+    Handle handle = SyncObjectPoolDX11::Alloc();
+    SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(handle);
 
     sync->is_signaled = false;
     sync->is_used = false;
@@ -793,7 +793,7 @@ dx11_SyncObject_Create()
 static void
 dx11_SyncObject_Delete(Handle obj)
 {
-    SyncObjectPool::Free(obj);
+    SyncObjectPoolDX11::Free(obj);
 }
 
 //------------------------------------------------------------------------------
@@ -802,7 +802,7 @@ static bool
 dx11_SyncObject_IsSignaled(Handle obj)
 {
     bool signaled = false;
-    SyncObjectDX11_t* sync = SyncObjectPool::Get(obj);
+    SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(obj);
 
     if (sync)
         signaled = sync->is_signaled;
@@ -828,12 +828,12 @@ _ExecuteQueuedCommandsDX11()
     unsigned frame_n = 0;
     bool do_exec = true;
 
-    _FrameSync.Lock();
-    if (_Frame.size())
+    _DX11_FrameSync.Lock();
+    if (_DX11_Frame.size())
     {
-        for (std::vector<Handle>::iterator p = _Frame.begin()->pass.begin(), p_end = _Frame.begin()->pass.end(); p != p_end; ++p)
+        for (std::vector<Handle>::iterator p = _DX11_Frame.begin()->pass.begin(), p_end = _DX11_Frame.begin()->pass.end(); p != p_end; ++p)
         {
-            RenderPassDX11_t* pp = RenderPassPool::Get(*p);
+            RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
             bool do_add = true;
 
             for (unsigned i = 0; i != pass.size(); ++i)
@@ -850,25 +850,25 @@ _ExecuteQueuedCommandsDX11()
                 pass.push_back(pp);
         }
 
-        pass_h = _Frame.begin()->pass;
-        frame_n = _Frame.begin()->number;
-        cmdList = _Frame.begin()->cmdList;
+        pass_h = _DX11_Frame.begin()->pass;
+        frame_n = _DX11_Frame.begin()->number;
+        cmdList = _DX11_Frame.begin()->cmdList;
     }
     else
     {
         do_exec = false;
     }
 
-    if (_Frame.size() && _Frame.begin()->sync != InvalidHandle)
+    if (_DX11_Frame.size() && _DX11_Frame.begin()->sync != InvalidHandle)
     {
-        SyncObjectDX11_t* sync = SyncObjectPool::Get(_Frame.begin()->sync);
+        SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(_DX11_Frame.begin()->sync);
 
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
     }
 
-    _FrameSync.Unlock();
+    _DX11_FrameSync.Unlock();
 
     if (do_exec)
     {
@@ -885,31 +885,31 @@ _ExecuteQueuedCommandsDX11()
             for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
             {
                 Handle cb_h = pp->cmdBuf[b];
-                CommandBufferDX11_t* cb = CommandBufferPool::Get(cb_h);
+                CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cb_h);
 
                 cb->Execute();
 
                 if (cb->sync != InvalidHandle)
                 {
-                    SyncObjectDX11_t* sync = SyncObjectPool::Get(cb->sync);
+                    SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(cb->sync);
 
                     sync->frame = frame_n;
                     sync->is_signaled = false;
                 }
 
-                CommandBufferPool::Free(cb_h);
+                CommandBufferPoolDX11::Free(cb_h);
             }
         }
 
-        _FrameSync.Lock();
+        _DX11_FrameSync.Lock();
         {
             Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
-            _Frame.erase(_Frame.begin());
+            _DX11_Frame.erase(_DX11_Frame.begin());
 
             for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-                RenderPassPool::Free(*p);
+                RenderPassPoolDX11::Free(*p);
         }
-        _FrameSync.Unlock();
+        _DX11_FrameSync.Unlock();
 
         // do present
 
@@ -917,7 +917,7 @@ _ExecuteQueuedCommandsDX11()
 
         // update sync-objects
 
-        for (SyncObjectPool::Iterator s = SyncObjectPool::Begin(), s_end = SyncObjectPool::End(); s != s_end; ++s)
+        for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
         {
             if (s->is_used && (frame_n - s->frame >= 2))
                 s->is_signaled = true;
@@ -1057,9 +1057,9 @@ _RenderFuncDX11(DAVA::BaseObject* obj, void*, void*)
             _DX11_PendingImmediateCmdSync.Unlock();
             //            TRACE_END_EVENT(22,"rhi","imm.cmd processing");
 
-            _FrameSync.Lock();
-            do_wait = !(_Frame.size() && _Frame.begin()->readyToExecute);
-            _FrameSync.Unlock();
+            _DX11_FrameSync.Lock();
+            do_wait = !(_DX11_Frame.size() && _DX11_Frame.begin()->readyToExecute);
+            _DX11_FrameSync.Unlock();
         } while (do_wait);
         TRACE_END_EVENT(22, "rhi", "wait-to-exec");
 
@@ -1113,40 +1113,40 @@ dx11_Present(Handle sync)
     {
         Trace("rhi-dx11.present\n");
         TRACE_BEGIN_EVENT(11, "rhi", "dx11_Present");
-        _FrameSync.Lock();
+        _DX11_FrameSync.Lock();
         {
-            if (_Frame.size())
+            if (_DX11_Frame.size())
             {
-                _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_Frame.back().cmdList));
+                _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList));
 
-                _Frame.back().readyToExecute = true;
-                _Frame.back().sync = sync;
-                _FrameStarted = false;
-                Trace("\n\n-------------------------------\nframe %u generated\n", _Frame.back().number);
+                _DX11_Frame.back().readyToExecute = true;
+                _DX11_Frame.back().sync = sync;
+                _DX11_FrameStarted = false;
+                Trace("\n\n-------------------------------\nframe %u generated\n", _DX11_Frame.back().number);
             }
         }
-        _FrameSync.Unlock();
+        _DX11_FrameSync.Unlock();
 
         unsigned frame_cnt = 0;
 
         do
         {
-            _FrameSync.Lock();
-            frame_cnt = static_cast<unsigned>(_Frame.size());
+            _DX11_FrameSync.Lock();
+            frame_cnt = static_cast<unsigned>(_DX11_Frame.size());
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-            _FrameSync.Unlock();
+            _DX11_FrameSync.Unlock();
         } while (frame_cnt >= _DX11_RenderThreadFrameCount);
         TRACE_END_EVENT(11, "rhi", "dx11_Present");
     }
     else
     {
         TRACE_BEGIN_EVENT(22, "rhi", "dx11_Present");
-        if (_Frame.size())
+        if (_DX11_Frame.size())
         {
-            _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_Frame.back().cmdList));
-            _Frame.back().readyToExecute = true;
-            _Frame.back().sync = sync;
-            _FrameStarted = false;
+            _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList));
+            _DX11_Frame.back().readyToExecute = true;
+            _DX11_Frame.back().sync = sync;
+            _DX11_FrameStarted = false;
         }
         else
         {
@@ -1238,29 +1238,29 @@ void DiscardAll()
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
-    _FrameSync.Lock();
-    for (std::vector<FrameDX11>::iterator f = _Frame.begin(), f_end = _Frame.end(); f != f_end; ++f)
+    _DX11_FrameSync.Lock();
+    for (std::vector<FrameDX11>::iterator f = _DX11_Frame.begin(), f_end = _DX11_Frame.end(); f != f_end; ++f)
     {
         if (f->readyToExecute)
         {
             if (f->sync != InvalidHandle)
             {
-                SyncObjectDX11_t* s = SyncObjectPool::Get(f->sync);
+                SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(f->sync);
                 s->is_signaled = true;
                 s->is_used = true;
             }
 
             for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
             {
-                RenderPassDX11_t* pp = RenderPassPool::Get(*p);
+                RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
 
                 for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
                 {
-                    CommandBufferDX11_t* cb = CommandBufferPool::Get(*b);
+                    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
 
                     if (cb->sync != InvalidHandle)
                     {
-                        SyncObjectDX11_t* s = SyncObjectPool::Get(cb->sync);
+                        SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(cb->sync);
                         s->is_signaled = true;
                         s->is_used = true;
                     }
@@ -1268,15 +1268,15 @@ void DiscardAll()
                     if (cb->commandList)
                         cb->commandList->Release();
 
-                    CommandBufferPool::Free(*b);
+                    CommandBufferPoolDX11::Free(*b);
                 }
 
-                RenderPassPool::Free(*p);
+                RenderPassPoolDX11::Free(*p);
             }
         }
     }
-    _Frame.clear();
-    _FrameSync.Unlock();
+    _DX11_Frame.clear();
+    _DX11_FrameSync.Unlock();
 
     _D3D11_ImmediateContext->OMSetRenderTargets(0, NULL, NULL);
 

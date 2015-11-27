@@ -42,11 +42,11 @@ using namespace DAVA;
 
 namespace
 {
-    const FastName PROPERTY_NAME_SIZE("size");
-    const FastName PROPERTY_NAME_POSITION("position");
-    const FastName PROPERTY_NAME_TEXT("text");
-    const FastName PROPERTY_NAME_FONT("font");
-    const FastName PROPERTY_NAME_CLASSES("classes");
+const FastName INTROSPECTION_PROPERTY_NAME_SIZE("size");
+const FastName INTROSPECTION_PROPERTY_NAME_POSITION("position");
+const FastName INTROSPECTION_PROPERTY_NAME_TEXT("text");
+const FastName INTROSPECTION_PROPERTY_NAME_FONT("font");
+const FastName INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 }
 
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMember, const IntrospectionProperty *sourceProperty, eCloneType copyType)
@@ -135,22 +135,22 @@ IntrospectionProperty::~IntrospectionProperty()
 
 IntrospectionProperty *IntrospectionProperty::Create(UIControl *control, const InspMember *member, const IntrospectionProperty *sourceProperty, eCloneType cloneType)
 {
-    if (member->Name() == PROPERTY_NAME_TEXT)
+    if (member->Name() == INTROSPECTION_PROPERTY_NAME_TEXT)
     {
         return new LocalizedTextValueProperty(control, member, sourceProperty, cloneType);
     }
-    else if (member->Name() == PROPERTY_NAME_FONT)
+    else if (member->Name() == INTROSPECTION_PROPERTY_NAME_FONT)
     {
         return new FontValueProperty(control, member, sourceProperty, cloneType);
     }
     else
     {
         IntrospectionProperty *result = new IntrospectionProperty(control, member, sourceProperty, cloneType);;
-        if (member->Name() == PROPERTY_NAME_SIZE || member->Name() == PROPERTY_NAME_POSITION)
+        if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
         {
             result->flags |= EF_DEPENDS_ON_LAYOUTS;
         }
-        if (member->Name() == PROPERTY_NAME_CLASSES)
+        if (member->Name() == INTROSPECTION_PROPERTY_NAME_CLASSES)
         {
             result->flags |= EF_AFFECTS_STYLES;
         }

@@ -49,14 +49,13 @@ class SpinnerAdapter : public BaseObject
 {
 
 public:
-    
     enum eItemOrder
     {
-        PREVIOUS = -1,
-        CURRENT = 0,
-        NEXT = 1
+        EIO_PREVIOUS = -1,
+        EIO_CURRENT = 0,
+        EIO_NEXT = 1
     };
-    
+
     class SelectionObserver
     {
     public:

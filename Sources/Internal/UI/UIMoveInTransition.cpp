@@ -113,7 +113,7 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         {
             drawState.SetPosition(xNextPosition, yNextPosition);
         }
-		else 
+        else 
 		{
 			drawState.SetPosition(0, 0);
 		}

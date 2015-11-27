@@ -35,12 +35,13 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "EditorSettings.h"
 
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
-
 
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -52,15 +53,15 @@ using namespace DAVA;
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
     , Singleton<EditorCore>()
+    , spritesPacker(std::make_unique<SpritesPacker>())
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
-    , mainWindow(new MainWindow())
+    , mainWindow(std::make_unique<MainWindow>())
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
 
-    connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
-    connect(project, &Project::ProjectPathChanged, mainWindow.get(), &MainWindow::OnSetupCacheSettingsForPacker);
+    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSprites);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow.get(), &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -114,12 +115,27 @@ EditorCore::EditorCore(QObject *parent)
     documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
     documentGroup->SetDPR(previewWidget->GetDPR());
 
-    qApp->installEventFilter(this);
+EditorCore::~EditorCore() = default;
+
+MainWindow* EditorCore::GetMainWindow() const
+{
+    return mainWindow.get();
+}
+
+Project* EditorCore::GetProject() const
+{
+    return project;
 }
 
 void EditorCore::Start()
 {
     mainWindow->show();
+}
+
+void EditorCore::OnReloadSprites()
+{
+    CloseAllDocuments();
+    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
 }
 
 void EditorCore::OnGLWidgedInitialized()
@@ -163,9 +179,19 @@ void EditorCore::OnOpenPackageFile(const QString &path)
 
 void EditorCore::OnProjectPathChanged(const QString &projectPath)
 {
+    if (EditorSettings::Instance()->IsUsingAssetCache())
+    {
+        spritesPacker->SetCacheTool(
+                                    EditorSettings::Instance()->GetAssetCacheIp(),
+                                    EditorSettings::Instance()->GetAssetCachePort(),
+                                    EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+    }
+    else
+    {
+        spritesPacker->ClearCacheTool();
+    }
+    
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-    auto spritesPacker = mainWindow->GetDialogReloadSprites()->GetSpritesPacker();
-    DVASSERT(nullptr != spritesPacker);
     spritesPacker->ClearTasks();
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
@@ -407,39 +433,3 @@ int EditorCore::GetIndexByPackagePath(const QString &fileName) const
     return -1;
 }
 
-bool EditorCore::eventFilter( QObject *obj, QEvent *event )
-{
-    QEvent::Type eventType = event->type();
-
-    if ( qApp == obj )
-    {
-        if ( QEvent::ApplicationStateChange == eventType )
-        {
-            QApplicationStateChangeEvent* stateChangeEvent = static_cast<QApplicationStateChangeEvent*>( event );
-            Qt::ApplicationState state = stateChangeEvent->applicationState();
-            switch ( state )
-            {
-            case Qt::ApplicationInactive:
-            {
-                if (QtLayer::Instance())
-                {
-                    QtLayer::Instance()->OnSuspend();
-                }
-                break;
-            }
-            case Qt::ApplicationActive:
-            {
-                if (QtLayer::Instance())
-                {
-                    QtLayer::Instance()->OnResume();
-                }
-                break;
-            }
-            default:
-                break;
-            }
-        }
-    }
-
-    return QObject::eventFilter( obj, event );
-}

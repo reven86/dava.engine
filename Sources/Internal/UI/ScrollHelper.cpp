@@ -106,7 +106,7 @@ namespace DAVA
         if (viewSize > elementSize)
         {
             virtualViewSize = elementSize;
-		}
+        }
 	}
 	
 	float ScrollHelper::GetPosition() const

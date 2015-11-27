@@ -30,7 +30,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "Base/Result.h"
+
+#include "FileSystem/Logger.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
@@ -44,8 +45,9 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
-class DialogReloadSprites;
 class Document;
+class SpritesPacker;
+class LoggerOutputObject;
 class Project;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -62,7 +64,7 @@ public:
     void OnProjectOpened(const DAVA::ResultList &resultList, const Project *project);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
-
+    void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
     bool isPixelized() const;
     QComboBox *GetComboBoxLanguage();
@@ -92,7 +94,6 @@ signals:
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
-    void OnSetupCacheSettingsForPacker();
 
 private slots:
     void OnCurrentIndexChanged(int arg);
@@ -110,6 +111,7 @@ private slots:
     
     void OnRtlChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
+    void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray &output);
 
 private:
     void InitLanguageBox();
@@ -117,7 +119,7 @@ private:
     void InitRtlBox();
     void InitGlobalClasses();
     void InitEmulationMode();
-	void InitMenu();
+    void InitMenu();
     void SetupViewMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);
@@ -130,8 +132,11 @@ private:
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction = nullptr;
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
-    DialogReloadSprites* dialogReloadSprites = nullptr;
+
     QCheckBox* emulationBox = nullptr;
+    LoggerOutputObject *loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
+    qint64 acceptableLoggerFlags = ~0; //all flags accepted
+
     QComboBox *comboboxLanguage = nullptr;
 };
 
