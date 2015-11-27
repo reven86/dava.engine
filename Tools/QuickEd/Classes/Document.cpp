@@ -144,12 +144,6 @@ void Document::SetPixelization(bool hasPixelization)
     Texture::SetPixelization(hasPixelization);
 }
 
-void Document::SetDPR(qreal arg)
-{
-    float32 dpr = static_cast<float32>(arg);
-    systemManager.DPRChanged.Emit(dpr);
-}
-
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
