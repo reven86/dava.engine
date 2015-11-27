@@ -44,7 +44,7 @@ EnumPropertyDelegate::~EnumPropertyDelegate()
 {
 }
 
-QWidget * EnumPropertyDelegate::createEditor( QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index ) const
+QWidget * EnumPropertyDelegate::createEditor( QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index )
 {
     QComboBox *comboBox = new QComboBox(parent);
     comboBox->setObjectName(QString::fromUtf8("comboBox"));
