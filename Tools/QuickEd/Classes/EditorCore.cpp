@@ -357,10 +357,9 @@ void EditorCore::SaveDocument(int index)
 
 void EditorCore::SaveAllDocuments()
 {
-    for (auto &document : documents)
+    for (int i = 0, size = documents.size(); i < size; ++i)
     {
-        DVVERIFY(project->SavePackage(document->GetPackage()));
-        document->GetUndoStack()->setClean();
+        SaveDocument(i);
     }
 }
 
