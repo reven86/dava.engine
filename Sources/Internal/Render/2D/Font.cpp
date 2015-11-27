@@ -61,11 +61,7 @@ Font::Font()
 
 Font::~Font()
 {
-    auto fontManager = FontManager::Instance();
-    if (fontManager != nullptr)
-    {
-        FontManager::Instance()->UnregisterFont(this);
-    }
+    FontManager::Instance()->UnregisterFont(this);
 }
 
 
