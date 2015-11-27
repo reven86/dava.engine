@@ -50,6 +50,10 @@ AddressResolver::~AddressResolver()
 
 bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+    return false;
+#else
     DVASSERT(loop != nullptr);
     DVASSERT(handle == nullptr);
 
@@ -78,19 +82,27 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
         Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", Net::ErrorToString(res));
         return false;
     }
+#endif
 }
 
 void AddressResolver::Cancel()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#else
     if (nullptr != handle)
     {
         uv_cancel(reinterpret_cast<uv_req_t*>(handle));
         handle = nullptr;
     }
+#endif
 }
 
 void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, struct addrinfo* response)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#else
     AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
     if (nullptr != resolver)
     {
@@ -100,6 +112,7 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
     SafeDelete(handle);
 
     uv_freeaddrinfo(response);
+#endif
 }
 
 void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
