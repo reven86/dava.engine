@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  *  ColladaSceneNodeAnimation.cpp
  *  ColladaConverter
@@ -37,4 +36,3 @@
  */
 
 #include "ColladaSceneNodeAnimation.h"
-

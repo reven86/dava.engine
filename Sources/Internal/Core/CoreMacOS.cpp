@@ -31,7 +31,6 @@
 
 #if defined(__DAVAENGINE_MACOS__)
 
-#include "Core/CoreMacOS_CarbonWindow.h"
 #include "Core/CoreMacOS_OpenGL.h"
 
 namespace DAVA 

@@ -50,7 +50,7 @@ namespace rhi
 
 static Dispatch DispatchDX11 = { 0 };
 
-static RenderDeviceCaps _DeviceCaps = {};
+static RenderDeviceCaps _DeviceCapsDX11 = {};
 
 //------------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ dx11_HostApi()
 static const RenderDeviceCaps&
 dx11_DeviceCaps()
 {
-    return _DeviceCaps;
+    return _DeviceCapsDX11;
 }
 
 //------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ dx11_TextureFormatSupported(TextureFormat format)
 //------------------------------------------------------------------------------
 
 static bool
-_IsValidIntelCard(unsigned vendor_id, unsigned device_id)
+_IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
 {
     return ((vendor_id == 0x8086) && // Intel Architecture
 
@@ -293,12 +293,12 @@ void dx11_Initialize(const InitParam& param)
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
-    _DeviceCaps.is32BitIndicesSupported = true;
-    _DeviceCaps.isFramebufferFetchSupported = true;
-    _DeviceCaps.isVertexTextureUnitsSupported = true;
-    _DeviceCaps.isUpperLeftRTOrigin = true;
-    _DeviceCaps.isZeroBaseClipRange = true;
-    _DeviceCaps.isCenterPixelMapping = false;
+    _DeviceCapsDX11.is32BitIndicesSupported = true;
+    _DeviceCapsDX11.isFramebufferFetchSupported = true;
+    _DeviceCapsDX11.isVertexTextureUnitsSupported = true;
+    _DeviceCapsDX11.isUpperLeftRTOrigin = true;
+    _DeviceCapsDX11.isZeroBaseClipRange = true;
+    _DeviceCapsDX11.isCenterPixelMapping = false;
 }
 
 //==============================================================================

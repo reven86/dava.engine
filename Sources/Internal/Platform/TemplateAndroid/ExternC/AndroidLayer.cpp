@@ -178,7 +178,6 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
     {
         DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
     }
-   
 }
 
 void DeinitApplication()
@@ -346,20 +345,7 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
                 phase = DAVA::UIEvent::Phase::ENDED;
                 break;
 
-    case 2: //ACTION_MOVE
-    {
-        if ((source & 0x10) > 0) //SOURCE_CLASS_JOYSTICK
-        {
-            phase = DAVA::UIEvent::Phase::JOYSTICK;
-        }
-        else //Touches
-        {
-            phase = DAVA::UIEvent::Phase::DRAG;
-        }
-    }
-    break;
-
-            case 3: //ACTION_CANCEL
+    case 3: //ACTION_CANCEL
                 phase = DAVA::UIEvent::Phase::CANCELLED;
                 break;
 
@@ -371,9 +357,9 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
 }
 
 DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input, jint action, jint source)
-    {
-		DAVA::UIEvent event;
-		event.tid = env->GetIntField(input, gInputEventTidField);
+{
+    DAVA::UIEvent event;
+        event.tid = env->GetIntField(input, gInputEventTidField);
 		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
 		event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
 		event.tapCount = env->GetIntField(input, gInputEventTapCountField);

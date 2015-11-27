@@ -326,7 +326,12 @@ bool SceneFile::ReadMaterial()
 	
 bool SceneFile::ReadStaticMesh()
 {
-	uint32 polyGroupCount;
+    bool rebuildTangentSpace = false;
+    #ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
+    rebuildTangentSpace = true;
+    #endif
+
+    uint32 polyGroupCount;
 	sceneFP->Read(&polyGroupCount, sizeof(uint32));
 	if (debugLogEnabled)Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
 	
@@ -400,7 +405,7 @@ bool SceneFile::ReadStaticMesh()
         delete [] indices;
 
         const int32 prerequiredFormat = EVF_TANGENT | EVF_BINORMAL | EVF_NORMAL;
-        if ((polygonGroup->GetFormat() & prerequiredFormat) == prerequiredFormat)
+        if (rebuildTangentSpace && ((polygonGroup->GetFormat() & prerequiredFormat) == prerequiredFormat))
             MeshUtils::RebuildMeshTangentSpace(polygonGroup, true);
         else
             polygonGroup->BuildBuffers();
@@ -616,7 +621,7 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
                 AnimatedMesh* animatedMesh = scene->GetAnimatedMesh(meshIndex + animatedMeshIndexOffset);
                 meshNode->AddPolygonGroup(animatedMesh, polyGroupIndex, material);
             }
-		}
+        }
         if (parentNode != scene) 
         {
             parentNode->AddNode(node);

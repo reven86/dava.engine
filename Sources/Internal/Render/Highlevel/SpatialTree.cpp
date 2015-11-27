@@ -284,8 +284,8 @@ void QuadTree::AddRenderObject(RenderObject * renderObject)
     }
     uint16 nodeToAdd = FindObjectAddNode(0, renderObject->GetWorldBoundingBox());
     nodes[nodeToAdd].objects.push_back(renderObject);
-	renderObject->SetTreeNodeIndex(nodeToAdd);
-	renderObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
+    renderObject->SetTreeNodeIndex(nodeToAdd);
+    renderObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
 }
 
 void QuadTree::RemoveRenderObject(RenderObject * renderObject)
