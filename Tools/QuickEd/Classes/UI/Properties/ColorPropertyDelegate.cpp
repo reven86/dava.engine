@@ -150,12 +150,16 @@ void ColorPropertyDelegate::OnEditingFinished()
 
 void ColorPropertyDelegate::OnTextChanged(const QString& text)
 {
-    QColor color(HexToQColor(text));
-    chooseColorAction->setIcon(CreateIcon(color));
     QPalette palette(lineEdit->palette());
     int pos = -1;
     QString textCopy(text);
     bool valid = lineEdit->validator()->validate(textCopy, pos) == QValidator::Acceptable;
     palette.setColor(QPalette::Text, valid ? Qt::black : Qt::red);
     lineEdit->setPalette(palette);
+
+    if (valid)
+    {
+        QColor color(HexToQColor(text));
+        chooseColorAction->setIcon(CreateIcon(color));
+    }
 }
