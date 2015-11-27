@@ -420,6 +420,7 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
         ResetRender();
         ReInitCoordinatesSystem();
         UIScreenManager::Instance()->ScreenSizeChanged();
+        UIControlSystem::Instance()->ScreenSizeChanged();
     });
 }
 
