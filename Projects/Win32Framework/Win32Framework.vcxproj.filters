@@ -279,9 +279,6 @@
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.h">
-      <Filter>Internal\Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
@@ -1729,6 +1726,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.h">
       <Filter>Internal\Render\RHI\DX11</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h">
+      <Filter>Internal\Debug</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1789,9 +1789,6 @@
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp">
-      <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.cpp">
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp">
@@ -3081,6 +3078,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_VertexBufferDX11.cpp">
       <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp">
+      <Filter>Internal\Debug</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

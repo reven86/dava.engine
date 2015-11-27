@@ -212,7 +212,7 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
     rootControl->SetEmulationMode(emulationMode);
-    EmulationModeChangedSignal.Emit(std::move(emulationMode));
+    EmulationModeChangedSignal.Emit(emulationMode);
 }
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
@@ -235,7 +235,7 @@ void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContaine
         else
         {
             editingRootControls.erase(node);
-            EditingRootControlsChanged.Emit(std::move(editingRootControls));
+            EditingRootControlsChanged.Emit(editingRootControls);
         }
     }
 }
@@ -248,7 +248,7 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
         if (destination == packageControlsNode)
         {
             editingRootControls.insert(node);
-            EditingRootControlsChanged.Emit(std::move(editingRootControls));
+            EditingRootControlsChanged.Emit(editingRootControls);
         }
     }
 }

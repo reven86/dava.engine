@@ -156,10 +156,10 @@ namespace DAVA
         {
             defaultMaterialQuality = quality;
         }
-		
-		inline const FastName& GetDefaultMaterialQuality() const
-		{
-			return defaultMaterialQuality;
+
+        inline const FastName& GetDefaultMaterialQuality() const
+        {
+            return defaultMaterialQuality;
 		}
 		
 		void ResolveMaterialBindings();

@@ -1,30 +1,20 @@
 set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp)  
 set( ADDED_H_PATTERNS   *.h   Components/*.h   Layouts/*.h    Styles/*.h)
 
-if( WIN32 )
-    set( ERASE_FILES 	UITextFieldAndroid.cpp 
-    					UITextFieldAndroid.h
-    					UIScreenManagerAndroid.h 
-    					UIScreenManagerAndroid.cpp )
 
-elseif( ANDROID )
-    set( ERASE_FILES 	UIScreenManagerMacOS.cpp 
-    					UIScreenManagerMacOS.h )
+if( NOT ANDROID )
+    set( ERASE_FILES    UITextFieldAndroid.cpp 
+                        UITextFieldAndroid.h
+                        UIScreenManagerAndroid.h 
+                        UIScreenManagerAndroid.cpp )
+elseif( NOT MACOS )
+    set( ERASE_FILES    UIScreenManagerMacOS.cpp 
+                        UIScreenManagerMacOS.h )
+endif()
 
-elseif( MACOS )
-    set( ERASE_FILES 	UITextFieldAndroid.cpp 
-    					UITextFieldAndroid.h )
-    list( APPEND ADDED_CPP_PATTERNS *.mm )    
-
-elseif( IOS )
-    set( ERASE_FILES 	UITextFieldAndroid.cpp 
-    					UITextFieldAndroid.h 
-    					UIScreenManagerMacOS.cpp 
-    					UIScreenManagerMacOS.h 
-    					UIScreenManagerAndroid.h 
-    					UIScreenManagerAndroid.cpp )
-    list( APPEND ADDED_CPP_PATTERNS *.mm )    
-    
+if( APPLE )
+    list( APPEND ADDED_CPP_PATTERNS *.mm )  
+        
 endif()
 
 define_source_files( PARENT_SCOPE 

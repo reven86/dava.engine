@@ -101,13 +101,16 @@ private:
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
     void SetDPR(qreal dpr);
+    qreal GetScaleFromWheelEvent(int ticksCount) const;
+    qreal GetNextScale(qreal currentScale, int ticksCount) const;
+    qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
 
     QPoint lastMousePos;
     qreal dpr = 1.0f;
     Document* document = nullptr;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
-    QList<int> percentages;
+    QList<qreal> percentages;
 
     SelectionContainer selectionContainer;
 };

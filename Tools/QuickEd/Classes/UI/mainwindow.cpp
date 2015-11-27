@@ -69,18 +69,15 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
-    , dialogReloadSprites(new DialogReloadSprites(this))
+    , loggerOutput(new LoggerOutputObject)
 {
     setupUi(this);
 
-    LoggerOutputObject* loggerOutput = new LoggerOutputObject(); //will be removed by DAVA::Logger
-    connect(loggerOutput, &LoggerOutputObject::OutputReady, logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
+    connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
 
     DebugTools::ConnectToUI(this);
 
     // Reload Sprites
-    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
-    connect(actionReloadSprites, &QAction::triggered, this, &MainWindow::OnSetupCacheSettingsForPacker);
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
 
@@ -185,11 +182,6 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DialogReloadSprites* MainWindow::GetDialogReloadSprites()
-{
-    return dialogReloadSprites;
-}
-
 QComboBox* MainWindow::GetComboBoxLanguage()
 {
     return comboboxLanguage;
@@ -235,6 +227,20 @@ bool MainWindow::isPixelized() const
     return actionPixelized->isChecked();
 }
 
+void MainWindow::OnOpenFontManager()
+{
+    FontManagerDialog fontManagerDialog(false, QString(), this);
+    fontManagerDialog.exec();
+}
+
+void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
+    DVASSERT(nullptr != packer);
+    auto lastFlags = acceptableLoggerFlags;
+    acceptableLoggerFlags = (1 << Logger::LEVEL_ERROR) | (1 << Logger::LEVEL_WARNING);
+    DialogReloadSprites dialogReloadSprites(packer, this);
+    dialogReloadSprites.exec();
+    acceptableLoggerFlags = lastFlags;
+}
 void MainWindow::OnShowHelp()
 {
     FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
@@ -542,6 +548,14 @@ void MainWindow::OnGlobalClassesChanged(const QString &str)
     emit GlobalStyleClassesChanged(str);
 }
 
+void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray &output)
+{
+    if(static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
+    {
+        logWidget->AddMessage(logLevel, output);
+    }
+}
+
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 {
     Color newColor;
@@ -590,22 +604,4 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
-}
-
-void MainWindow::OnSetupCacheSettingsForPacker()
-{
-    auto spritesPacker = dialogReloadSprites->GetSpritesPacker();
-    DVASSERT(nullptr != spritesPacker);
-
-    if (EditorSettings::Instance()->IsUsingAssetCache())
-    {
-        spritesPacker->SetCacheTool(
-        EditorSettings::Instance()->GetAssetCacheIp(),
-        EditorSettings::Instance()->GetAssetCachePort(),
-        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
-    }
-    else
-    {
-        spritesPacker->ClearCacheTool();
-    }
 }
