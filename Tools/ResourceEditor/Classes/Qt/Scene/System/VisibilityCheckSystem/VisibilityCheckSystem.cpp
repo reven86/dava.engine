@@ -27,6 +27,8 @@
 =====================================================================================*/
 
 #include "VisibilityCheckSystem.h"
+#include "../../SceneSignals.h"
+
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/TransformComponent.h"
@@ -46,6 +48,10 @@ VisibilityCheckSystem::VisibilityCheckSystem(Scene* scene)
         cubemapTarget[i] = Texture::CreateFBO(renderTargetSize, renderTargetSize,
                                               PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
     }
+
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, [this]() {
+        shouldPrerender = true;
+    });
 }
 
 VisibilityCheckSystem::~VisibilityCheckSystem()
@@ -122,7 +128,7 @@ void VisibilityCheckSystem::Draw()
 
     for (const auto& point : controlPoints)
     {
-        dbg->DrawIcosahedron(point, 0.1f, Color(1.0f, 1.0f, 0.5f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+        dbg->DrawIcosahedron(point.point, 0.1f, Color(1.0f, 1.0f, 0.5f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
     }
 
     Color clr(std::sqrt(1.0f / static_cast<float>(controlPoints.size() + 1)), 0.0f, 0.0f, 0.0f);
@@ -130,8 +136,8 @@ void VisibilityCheckSystem::Draw()
     for (uint32 cm = 0; (cm < CubemapsCount) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         const auto& point = controlPoints[currentPointIndex];
-        renderPass.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point);
-        renderPass.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point, clr);
+        renderPass.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point.point);
+        renderPass.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point.point, point.color);
     }
 
     Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
@@ -150,7 +156,7 @@ void VisibilityCheckSystem::UpdatePointSet()
         auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
         for (const auto& pt : visibilityComponent->GetPoints())
         {
-            controlPoints.push_back(position + MultiplyVectorMat3x3(pt, worldTransform));
+            controlPoints.emplace_back(position + MultiplyVectorMat3x3(pt, worldTransform), visibilityComponent->GetColor());
         }
     }
 }
@@ -178,7 +184,7 @@ void VisibilityCheckSystem::CreateRenderTarget()
     }
 
     renderTarget = Texture::CreateFBO(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight(),
-                                      PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D);
+                                      PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
 }
 
 bool VisibilityCheckSystem::CacheIsValid()

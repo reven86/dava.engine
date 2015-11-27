@@ -29,6 +29,7 @@
 #ifndef __VisibilityCheckComponent_h__
 #define __VisibilityCheckComponent_h__
 
+#include "Math/Color.h"
 #include "Entity/Component.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
@@ -49,6 +50,9 @@ public:
     float GetDistanceBetweenPoints() const;
     void SetDistanceBetweenPoints(float);
 
+    Color GetColor() const;
+    void SetColor(const Color&);
+
     bool IsPointSetValid() const;
     void InvalidatePointSet();
     void BuildPointSet();
@@ -57,6 +61,7 @@ public:
 
 private:
     Vector<Vector3> points;
+    Color color;
     float radius = 5.0f;
     float distanceBetweenPoints = 2.0f;
     bool shouldBuildPointSet = true;
@@ -64,7 +69,8 @@ private:
 public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
                          PROPERTY("radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("distanceBetweenPoints", "Distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("distanceBetweenPoints", "Distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

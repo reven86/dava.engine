@@ -62,11 +62,23 @@ private:
         Camera* camera = nullptr;
     };
 
+    struct RenderPoint
+    {
+        Vector3 point;
+        Color color;
+
+        RenderPoint(const Vector3& p, const Color& c)
+            : point(p)
+            , color(c)
+        {
+        }
+    };
+
     static const uint32 CubemapsCount = 1;
 
 private:
     Vector<Entity*> entities;
-    Vector<Vector3> controlPoints;
+    Vector<RenderPoint> controlPoints;
     Texture* cubemapTarget[CubemapsCount];
     Texture* renderTarget = nullptr;
     VisibilityCheckRenderPass renderPass;

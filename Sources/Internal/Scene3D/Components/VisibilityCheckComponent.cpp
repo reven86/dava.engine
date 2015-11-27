@@ -33,6 +33,7 @@
 using namespace DAVA;
 
 VisibilityCheckComponent::VisibilityCheckComponent()
+    : color(1.0f, 0.0f, 0.0f, 0.0f)
 {
 }
 
@@ -162,4 +163,14 @@ const Vector<Vector3>& VisibilityCheckComponent::GetPoints() const
 {
     DVASSERT(points.size() > 0);
     return points;
+}
+
+Color VisibilityCheckComponent::GetColor() const
+{
+    return color / static_cast<float>(points.size());
+}
+
+void VisibilityCheckComponent::SetColor(const Color& clr)
+{
+    color = clr;
 }
