@@ -58,11 +58,14 @@ public:
     ID3D11RenderTargetView* tex2d_rtv;
     ID3D11DepthStencilView* tex2d_dsv;
 
+    ID3D11Texture2D* tex2d_copy;
+
     void* mappedData;
     unsigned mappedLevel;
     TextureFace mappedFace;
 
     unsigned isMapped : 1;
+    unsigned cpuAccessRead : 1;
     unsigned lastUnit;
 };
 
@@ -71,11 +74,13 @@ TextureDX11_t::TextureDX11_t()
     , height(0)
     , arraySize(1)
     , tex2d(nullptr)
+    , tex2d_copy(nullptr)
     , tex2d_srv(nullptr)
     , tex2d_rtv(nullptr)
     , tex2d_dsv(nullptr)
     , isMapped(false)
-    , lastUnit(InvalidIndex)
+    , cpuAccessRead(false)
+    , lastUnit(DAVA::InvalidIndex)
 {
 }
 
@@ -97,6 +102,7 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
     bool need_srv = true;
     bool need_rtv = false;
     bool need_dsv = false;
+    bool need_copy = false;
 
     desc2d.Width = desc.width;
     desc2d.Height = desc.height;
@@ -110,11 +116,6 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
     desc2d.CPUAccessFlags = 0; //D3D11_CPU_ACCESS_WRITE;
     desc2d.MiscFlags = 0;
 
-    // CRAP: just to make it work somehow
-    //{
-    //if( desc.format == TEXTURE_FORMAT_R5G6B5 || desc.format == TEXTURE_FORMAT_R4G4B4A4 )
-    //    desc2d.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    //}
     DVASSERT(desc2d.Format != DXGI_FORMAT_UNKNOWN);
 
     if (desc.type == TEXTURE_TYPE_CUBE)
@@ -131,6 +132,14 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
         desc2d.BindFlags |= D3D11_BIND_RENDER_TARGET;
         desc2d.MipLevels = 1;
         need_rtv = true;
+    }
+
+    if (desc.cpuAccessRead)
+    {
+        DVASSERT(desc.type == TEXTURE_TYPE_2D);
+        DVASSERT(!desc.cpuAccessWrite);
+        desc2d.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+        need_copy = true;
     }
 
     if (desc.format == TEXTURE_FORMAT_D16 || desc.format == TEXTURE_FORMAT_D24S8)
@@ -194,6 +203,7 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
         tex->arraySize = desc2d.ArraySize;
         tex->mipLevelCount = desc2d.MipLevels;
         tex->mappedData = nullptr;
+        tex->cpuAccessRead = desc.cpuAccessRead;
         tex->isMapped = false;
 
         if (need_srv)
@@ -221,6 +231,21 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_srv = srv;
+            }
+        }
+
+        if (need_copy)
+        {
+            ID3D11Texture2D* copy = nullptr;
+
+            desc2d.Usage = D3D11_USAGE_STAGING;
+            desc2d.BindFlags = 0;
+
+            hr = _D3D11_Device->CreateTexture2D(&desc2d, NULL, &copy);
+
+            if (SUCCEEDED(hr))
+            {
+                tex->tex2d_copy = copy;
             }
         }
 
@@ -295,6 +320,12 @@ dx11_Texture_Delete(Handle tex)
         self->tex2d->Release();
         self->tex2d = nullptr;
 
+        if (self->tex2d_copy)
+        {
+            self->tex2d_copy->Release();
+            self->tex2d_copy = nullptr;
+        }
+
         if (self->mappedData)
         {
             ::free(self->mappedData);
@@ -313,10 +344,30 @@ dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
     DVASSERT(!self->isMapped);
-    self->mappedData = ::realloc(self->mappedData, TextureSize(self->format, self->width, self->height, level));
-    self->mappedLevel = level;
-    self->mappedFace = face;
-    self->isMapped = true;
+
+    if (self->cpuAccessRead)
+    {
+        DVASSERT(self->tex2d_copy);
+
+        D3D11_MAPPED_SUBRESOURCE res = { 0 };
+        DX11Command cmd[] =
+        {
+          { DX11Command::COPY_RESOURCE, { uint64(self->tex2d_copy), uint64(self->tex2d) } },
+          { DX11Command::MAP, { uint64(self->tex2d_copy), 0, D3D11_MAP_READ, 0, uint64(&res) } }
+        };
+        ExecDX11(cmd, countof(cmd));
+
+        self->mappedData = res.pData;
+        self->mappedLevel = level;
+        self->isMapped = true;
+    }
+    else
+    {
+        self->mappedData = ::realloc(self->mappedData, TextureSize(self->format, self->width, self->height, level));
+        self->mappedLevel = level;
+        self->mappedFace = face;
+        self->isMapped = true;
+    }
 
     if (self->format == TEXTURE_FORMAT_R8G8B8A8)
     {
@@ -343,59 +394,76 @@ dx11_Texture_Unmap(Handle tex)
 
     DVASSERT(self->isMapped);
 
-    if (self->format == TEXTURE_FORMAT_R8G8B8A8)
+    if (self->cpuAccessRead)
     {
-        _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
-    else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
-    {
-        _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
-    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
-    {
-        _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
+        DVASSERT(self->tex2d_copy);
 
-    uint32 rc_i = 0;
-    uint32 face = 0;
-
-    if (self->arraySize == 6)
-    {
-        switch (self->mappedFace)
+        D3D11_MAPPED_SUBRESOURCE res = { 0 };
+        DX11Command cmd[] =
         {
-        case TEXTURE_FACE_POSITIVE_X:
-            face = 0;
-            break;
-        case TEXTURE_FACE_NEGATIVE_X:
-            face = 1;
-            break;
-        case TEXTURE_FACE_POSITIVE_Y:
-            face = 2;
-            break;
-        case TEXTURE_FACE_NEGATIVE_Y:
-            face = 3;
-            break;
-        case TEXTURE_FACE_POSITIVE_Z:
-            face = 4;
-            break;
-        case TEXTURE_FACE_NEGATIVE_Z:
-            face = 5;
-            break;
-        }
+          { DX11Command::UNMAP, { uint64(self->tex2d_copy), 0 } }
+        };
+        ExecDX11(cmd, countof(cmd));
 
-        rc_i = self->mappedLevel + (face * self->mipLevelCount);
+        self->isMapped = false;
+        self->mappedData = nullptr;
     }
     else
     {
-        rc_i = self->mappedLevel;
+        if (self->format == TEXTURE_FORMAT_R8G8B8A8)
+        {
+            _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        }
+        else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
+        {
+            _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        }
+        else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+        {
+            _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        }
+
+        uint32 rc_i = 0;
+        uint32 face = 0;
+
+        if (self->arraySize == 6)
+        {
+            switch (self->mappedFace)
+            {
+            case TEXTURE_FACE_POSITIVE_X:
+                face = 0;
+                break;
+            case TEXTURE_FACE_NEGATIVE_X:
+                face = 1;
+                break;
+            case TEXTURE_FACE_POSITIVE_Y:
+                face = 2;
+                break;
+            case TEXTURE_FACE_NEGATIVE_Y:
+                face = 3;
+                break;
+            case TEXTURE_FACE_POSITIVE_Z:
+                face = 4;
+                break;
+            case TEXTURE_FACE_NEGATIVE_Z:
+                face = 5;
+                break;
+            }
+
+            rc_i = self->mappedLevel + (face * self->mipLevelCount);
+        }
+        else
+        {
+            rc_i = self->mappedLevel;
+        }
+
+        DX11Command cmd = { DX11Command::UPDATE_SUBRESOURCE, { uint64(self->tex2d), rc_i, NULL, uint64(self->mappedData), TextureStride(self->format, Size2i(self->width, self->height), self->mappedLevel), 0 } };
+        ExecDX11(&cmd, 1);
+        self->isMapped = false;
+
+        ::free(self->mappedData);
+        self->mappedData = nullptr;
     }
-
-    DX11Command cmd = { DX11Command::UPDATE_SUBRESOURCE, { uint64(self->tex2d), rc_i, NULL, uint64(self->mappedData), TextureStride(self->format, Size2i(self->width, self->height), self->mappedLevel), 0 } };
-    ExecDX11(&cmd, 1);
-    self->isMapped = false;
-
-    ::free(self->mappedData);
-    self->mappedData = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -448,12 +516,12 @@ void SetRenderTarget(Handle color, Handle depthstencil, ID3D11DeviceContext* con
     TextureDX11_t* rt = TextureDX11Pool::Get(color);
     TextureDX11_t* ds = (depthstencil != InvalidHandle && depthstencil != DefaultDepthBuffer) ? TextureDX11Pool::Get(depthstencil) : nullptr;
 
-    if (rt->lastUnit != InvalidIndex)
+    if (rt->lastUnit != DAVA::InvalidIndex)
     {
         ID3D11ShaderResourceView* srv[1] = { NULL };
 
         context->PSSetShaderResources(rt->lastUnit, 1, srv);
-        rt->lastUnit = InvalidIndex;
+        rt->lastUnit = DAVA::InvalidIndex;
     }
 
     context->OMSetRenderTargets(1, &(rt->tex2d_rtv), (ds) ? ds->tex2d_dsv : ((depthstencil == DefaultDepthBuffer) ? _D3D11_DepthStencilView : nullptr));

@@ -33,7 +33,7 @@
 class LoggerOutputObject::LoggerOutputContainer : private DAVA::LoggerOutput, public QObject
 {
 public:
-    LoggerOutputContainer(LoggerOutputObject *parent);
+    LoggerOutputContainer(LoggerOutputObject* parent);
 
 private slots:
     void AboutToBeDestroyed();
@@ -41,7 +41,7 @@ private slots:
 private:
     ~LoggerOutputContainer() override;
     void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
-    LoggerOutputObject *parent = nullptr;
+    LoggerOutputObject* parent = nullptr;
 };
 
 LoggerOutputObject::LoggerOutputContainer::LoggerOutputContainer(LoggerOutputObject* parent_)

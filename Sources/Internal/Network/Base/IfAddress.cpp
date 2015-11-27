@@ -40,6 +40,10 @@ namespace Net
 Vector<IfAddress> IfAddress::GetInstalledInterfaces(bool withInternal)
 {
     Vector<IfAddress> result;
+
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#else
     int n = 0;
     uv_interface_address_t* ifaddr = NULL;
     int error = uv_interface_addresses(&ifaddr, &n);
@@ -64,6 +68,7 @@ Vector<IfAddress> IfAddress::GetInstalledInterfaces(bool withInternal)
         }
         uv_free_interface_addresses(ifaddr, n);
     }
+#endif
     return result;
 }
 

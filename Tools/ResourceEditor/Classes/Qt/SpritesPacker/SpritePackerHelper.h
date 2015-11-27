@@ -48,26 +48,15 @@ public:
 signals:
 	void readyAll();
 
-protected:
-    
+private:
     void EnumerateSpritesForReloading(Scene * scene, Map<String, Sprite *> &sprites);
     void EnumerateSpritesForParticleEmitter(ParticleEmitter* emitter, Map<String, Sprite *> &sprites);
-
-    void FindAllParticleEffectsRecursive(DAVA::Entity *entity , DAVA::List<DAVA::Entity*> & particleEffects);
 
 	void Pack(DAVA::eGPUFamily gpu);
 	void Reload();
 
-    // Stop particle effects and remember their started states.
-    void StopParticleEffects(Scene * scene);
-
-    // Restart particle effects which were initially started.
-    void RestartParticleEffects();
-
-	QFuture<void> *future;
-	QFutureWatcher<void> watcher;
-    
-    Map<ParticleEffectComponent*, bool> particleEffectsState;
+    QFuture<void>* future;
+    QFutureWatcher<void> watcher;
 
 private slots:
     void threadRepackAllFinished();

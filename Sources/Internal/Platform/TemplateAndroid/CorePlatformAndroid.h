@@ -80,15 +80,15 @@ public:
     void OnCreateActivity();
     void OnDestroyActivity();
 
-	void KeyUp(int32 keyCode);
-	void KeyDown(int32 keyCode);
+    void KeyUp(int32 keyCode);
+    void KeyDown(int32 keyCode);
 
-	void OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs);
-	void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
+    void OnInput(int32 action, int32 source, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs);
+    void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
 
-	void OnGamepadAvailable(bool isAvailable);
-	void OnGamepadTriggersAvailable(bool isAvailable);
-    
+    void OnGamepadAvailable(bool isAvailable);
+    void OnGamepadTriggersAvailable(bool isAvailable);
+
     bool IsMultitouchEnabled();
 
 	bool DownloadHttpFile(const String & url, const String & documentsPathname);

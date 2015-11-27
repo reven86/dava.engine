@@ -35,16 +35,17 @@
 
 namespace
 {
-    struct LibraryContext : public WidgetContext
+struct LibraryContext : WidgetContext
+{
+    LibraryContext(Document* document)
     {
-        LibraryContext(Document *document)
-        {
-            DVASSERT(nullptr != document);
-            libraryModel = new LibraryModel(document->GetPackage(), document);
-        }
-        LibraryModel *libraryModel;
-    };
-}
+        DVASSERT(nullptr != document);
+        libraryModel = new LibraryModel(document->GetPackage(), document);
+    }
+    ~LibraryContext() override = default;
+    LibraryModel* libraryModel;
+};
+} //unnamed namespace
 
 LibraryWidget::LibraryWidget(QWidget* parent)
     : QDockWidget(parent)

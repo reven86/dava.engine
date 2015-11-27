@@ -53,17 +53,17 @@ using DAVA::Logger;
 
 namespace rhi
 {
-uint32 stat_DIP = InvalidIndex;
-uint32 stat_DP = InvalidIndex;
-uint32 stat_DTL = InvalidIndex;
-uint32 stat_DTS = InvalidIndex;
-uint32 stat_DLL = InvalidIndex;
-uint32 stat_SET_PS = InvalidIndex;
-uint32 stat_SET_SS = InvalidIndex;
-uint32 stat_SET_TEX = InvalidIndex;
-uint32 stat_SET_CB = InvalidIndex;
-uint32 stat_SET_VB = InvalidIndex;
-uint32 stat_SET_IB = InvalidIndex;
+uint32 stat_DIP = DAVA::InvalidIndex;
+uint32 stat_DP = DAVA::InvalidIndex;
+uint32 stat_DTL = DAVA::InvalidIndex;
+uint32 stat_DTS = DAVA::InvalidIndex;
+uint32 stat_DLL = DAVA::InvalidIndex;
+uint32 stat_SET_PS = DAVA::InvalidIndex;
+uint32 stat_SET_SS = DAVA::InvalidIndex;
+uint32 stat_SET_TEX = DAVA::InvalidIndex;
+uint32 stat_SET_CB = DAVA::InvalidIndex;
+uint32 stat_SET_VB = DAVA::InvalidIndex;
+uint32 stat_SET_IB = DAVA::InvalidIndex;
 
 static Dispatch _Impl = { 0 };
 
@@ -95,7 +95,7 @@ void Initialize(Api api, const InitParam& param)
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
-#if !(TARGET_IPHONE_SIMULATOR==1)
+#if !(TARGET_IPHONE_SIMULATOR == 1)
     case RHI_METAL:
         metal_Initialize(param);
         break;
@@ -182,7 +182,7 @@ Create(const Descriptor& desc)
 void Delete(Handle vb)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_VertexBuffer_Delete)( vb );
+    return (*_Impl.impl_VertexBuffer_Delete)(vb);
 #else
     if (vb != rhi::InvalidHandle)
     {

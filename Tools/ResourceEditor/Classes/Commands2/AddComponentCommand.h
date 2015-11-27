@@ -36,17 +36,18 @@ class AddComponentCommand : public Command2
 {
 public:
 	AddComponentCommand(DAVA::Entity* entity, DAVA::Component* component);
-	~AddComponentCommand();
+    ~AddComponentCommand() override;
 
-	virtual void Undo();
-	virtual void Redo();
+    void Undo() override;
+    void Redo() override;
 
-	virtual DAVA::Entity* GetEntity() const;
+    DAVA::Entity* GetEntity() const override;
+    const DAVA::Component* GetComponent() const;
 
 private:
-	DAVA::Entity* entity;
-    DAVA::Component* component;
-    DAVA::Component* backup;
+    DAVA::Entity* entity = nullptr;
+    DAVA::Component* component = nullptr;
+    DAVA::Component* backup = nullptr;
 };
 
 #endif // __ADD_COMPONENT_COMMAND_H__

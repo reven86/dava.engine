@@ -152,7 +152,7 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
             // ex. not zh-Hans-CN, but can be zh-Hans_CN
             posScriptEnd = requestedLangId.find('_', posPartStart);
         }
-        
+
         String scriptPart = requestedLangId.substr(posPartStart);
         if(posScriptEnd != String::npos)
         {
@@ -164,12 +164,12 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
         {
             scriptPart = "Hans";
         }
-        else if(scriptPart == "TW" || scriptPart == "HK")
+        else if (scriptPart == "TW" || scriptPart == "HK")
         {
             scriptPart = "Hant";
         }
         langPart = Format("%s-%s", langPart.c_str(), scriptPart.c_str());
-        
+
         Logger::FrameworkDebug("LocalizationSystem requested locale %s is not supported, trying to check part %s", requestedLangId.c_str(), langPart.c_str());
         localeFilePath = directoryPath + (langPart + ".yaml");
         if (FileSystem::Instance()->Exists(localeFilePath))
