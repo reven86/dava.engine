@@ -172,10 +172,10 @@ public:
 	*/
     virtual DisplayMode GetCurrentDisplayMode();
 
-	/**
+    /**
 		\brief Quit from application & release all subsystems
 	*/
-	virtual void Quit();
+    virtual void Quit();
 
     /**
 		\brief Set icon for application's window.

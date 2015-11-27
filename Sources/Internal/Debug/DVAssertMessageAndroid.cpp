@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "DVAssertMessage.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -35,15 +34,12 @@
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 
-#include "Platform/TemplateAndroid/AndroidCrashReport.h"
-#include "Debug/Backtrace.h"
-
-using namespace DAVA;
-
-bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
+namespace DAVA
 {
-    Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-    PrintBackTraceToLog(Logger::LEVEL_ERROR);
+namespace DVAssertMessage
+{
+bool InnerShow(eModalType modalType, const char* message)
+{
 	JNI::JavaClass msg("com/dava/framework/JNIAssert");
 	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
 
@@ -55,5 +51,8 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 
 	return breakExecution == JNI_FALSE? false : true;
 }
+
+} // namespace DVAssertMessage
+} // namespace DAVA
 
 #endif

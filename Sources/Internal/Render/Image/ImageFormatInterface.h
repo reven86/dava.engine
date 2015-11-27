@@ -75,7 +75,7 @@ public:
     virtual ~ImageFormatInterface() = default;
 
     virtual ImageFormat GetImageFormat() const = 0;
-    virtual bool IsMyImage(File *file) const = 0;
+    virtual bool CanProcessFile(File* file) const = 0;
 
     virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
 

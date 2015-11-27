@@ -51,7 +51,7 @@ public:
 
     ImageFormat GetImageFormat() const override;
 
-    bool IsMyImage(File *infile) const override;
+    bool CanProcessFile(File* infile) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
     eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;

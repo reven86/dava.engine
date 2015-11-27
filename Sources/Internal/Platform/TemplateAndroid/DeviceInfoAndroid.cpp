@@ -144,6 +144,10 @@ eGPUFamily DeviceInfoPrivate::GetGPUFamily()
         {
             gpuFamily = GPU_POWERVR_ANDROID;
         }
+        else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_DXT1))
+        {
+            gpuFamily = GPU_TEGRA;
+        }
         else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_ATC_RGB))
         {
             gpuFamily = GPU_ADRENO;
@@ -151,10 +155,6 @@ eGPUFamily DeviceInfoPrivate::GetGPUFamily()
         else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_ETC1))
         {
             gpuFamily = GPU_MALI;
-        }
-        else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_DXT1))
-        {
-            gpuFamily = GPU_TEGRA;
         }
     }
 

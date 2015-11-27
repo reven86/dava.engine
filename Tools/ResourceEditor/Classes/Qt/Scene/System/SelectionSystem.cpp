@@ -266,9 +266,9 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
 
 void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
 {
-	if (!IsLocked())
-	{
-		Clear();
+    if (!IsLocked())
+    {
+        Clear();
 
         uint32 count = newSelection.Size();
         for (uint32 i = 0; i < count; ++i)
@@ -328,7 +328,7 @@ void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
 {
-    if(!IsLocked())
+    if (!IsLocked())
     {
         for (size_t i = 0; i < entities.Size(); ++i)
         {
