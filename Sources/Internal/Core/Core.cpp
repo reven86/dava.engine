@@ -112,8 +112,58 @@ Core::~Core()
     SafeRelease(core);
 }
 
+namespace debug_details
+{
+void (*defaultStructuredExceptionFunc)(unsigned int, PEXCEPTION_POINTERS) = nullptr;
+
+void my_trans_func(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
+{
+    switch (exceptionCode)
+    {
+    case EXCEPTION_FLT_DENORMAL_OPERAND:
+    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+    case EXCEPTION_FLT_INEXACT_RESULT:
+    case EXCEPTION_FLT_INVALID_OPERATION:
+    case EXCEPTION_FLT_OVERFLOW:
+    case EXCEPTION_FLT_STACK_CHECK:
+    case EXCEPTION_FLT_UNDERFLOW:
+    {
+        std::stringstream ss;
+        ss << "floating-point structured exception: 0x" << std::hex << exceptionCode;
+        throw std::runtime_error(ss.str());
+    }
+    default:
+        if (defaultStructuredExceptionFunc != nullptr)
+        {
+            defaultStructuredExceptionFunc(exceptionCode, pExpInfo);
+        }
+    };
+};
+
+#pragma fenv_access(on)
+void EnableFloatingPointExceptions()
+{
+    unsigned int fe_value = ~(/*_EM_INVALID | _EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW /* | _EM_INEXACT*/);
+    unsigned int mask = _MCW_EM;
+    unsigned int currentWord = 0;
+    errno_t result = _controlfp_s(&currentWord, fe_value, mask); // https://msdn.microsoft.com/en-us/library/c9676k6h.aspx
+    DVASSERT(result == 0);
+    debug_details::defaultStructuredExceptionFunc = _set_se_translator(&debug_details::my_trans_func); // https://msdn.microsoft.com/en-us/library/5z4bw5h5.aspx
+
+    float32 div = 0.f;
+    float32 f = 15.f / div;
+    float32 f2 = 30.f * div;
+}
+
+} // end namespace debug_details
+
 void Core::CreateSingletons()
 {
+#ifdef __DAVAENGINE_DEBUG__
+#ifdef __DAVAENGINE_WINDOWS__
+    debug_details::EnableFloatingPointExceptions();
+#endif // __DAVAENGINE_WINDOWS__
+#endif // __DAVAENGINE_DEBUG__
     // check types size
     new Logger();
     new AllocatorFactory();

@@ -137,12 +137,12 @@ protected:
 
 	Vector<SoundEvent *> soundsToReleaseOnUpdate;
 
-    FMOD::System * fmodSystem;
-    FMOD::EventSystem * fmodEventSystem;
+    FMOD::System* fmodSystem = nullptr;
+    FMOD::EventSystem* fmodEventSystem = nullptr;
 
-    FMOD::ChannelGroup * masterChannelGroup;
-    FMOD::ChannelGroup * masterEventChannelGroup;
-    
+    FMOD::ChannelGroup* masterChannelGroup = nullptr;
+    FMOD::ChannelGroup* masterEventChannelGroup = nullptr;
+
     Vector<SoundGroup> soundGroups;
     Map<FilePath, FMOD::EventProject *> projectsMap;
 

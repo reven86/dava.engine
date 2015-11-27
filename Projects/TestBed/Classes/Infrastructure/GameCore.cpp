@@ -47,6 +47,7 @@
 #include "Tests/UIBackgroundTest.h"
 #include "Tests/ClipTest.h"
 #include "Tests/UIBackgroundTest.h"
+#include "Tests/FloatingPointExceptionTest.h"
 //$UNITTEST_INCLUDE
 
 #include "MemoryManager/MemoryProfiler.h"
@@ -78,6 +79,7 @@ void GameCore::RegisterTests()
     new UIBackgroundTest();
     new ClipTest();
     new UIBackgroundTest();
+    new FloatingPointExceptionTest();
     //$UNITTEST_CTOR
 }
 
