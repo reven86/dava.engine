@@ -227,13 +227,8 @@ bool MainWindow::isPixelized() const
     return actionPixelized->isChecked();
 }
 
-void MainWindow::OnOpenFontManager()
-{
-    FontManagerDialog fontManagerDialog(false, QString(), this);
-    fontManagerDialog.exec();
-}
-
 void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
+{
     DVASSERT(nullptr != packer);
     auto lastFlags = acceptableLoggerFlags;
     acceptableLoggerFlags = (1 << Logger::LEVEL_ERROR) | (1 << Logger::LEVEL_WARNING);
@@ -241,6 +236,7 @@ void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
     dialogReloadSprites.exec();
     acceptableLoggerFlags = lastFlags;
 }
+
 void MainWindow::OnShowHelp()
 {
     FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
