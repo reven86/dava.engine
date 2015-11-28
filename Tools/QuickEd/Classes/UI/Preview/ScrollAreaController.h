@@ -48,27 +48,32 @@ public:
     Q_PROPERTY(QSize canvasSize READ GetCanvasSize NOTIFY CanvasSizeChanged);
     Q_PROPERTY(QSize viewSize READ GetViewSize WRITE SetViewSize NOTIFY ViewSizeChanged);
     Q_PROPERTY(QPoint position READ GetPosition WRITE SetPosition NOTIFY PositionChanged);
+    Q_PROPERTY(qreal scale READ GetScale WRITE SetScale NOTIFY ScaleChanged);
 
     ScrollAreaController(QObject* parent = nullptr);
     ~ScrollAreaController() = default;
 
     void SetNestedControl(DAVA::UIControl* nestedControl);
+    void AdjustScale(qreal newScale, QPointF mousePos);
 
-    DAVA::UIControl* GetBackgroundControl();
     QSize GetCanvasSize() const;
     QSize GetViewSize() const;
     QPoint GetPosition() const;
+    qreal GetScale() const;
+    qreal GetMinScale() const;
+    qreal GetMaxScale() const;
 
 public slots:
     void SetViewSize(QSize size);
     void SetPosition(QPoint position);
     void UpdateCanvasContentSize();
+    void SetScale(qreal scale);
 
 signals:
     void CanvasSizeChanged(QSize canvasSize);
     void ViewSizeChanged(QSize size);
     void PositionChanged(QPoint position);
-    
+    void ScaleChanged(qreal scale);
     void NestedControlPositionChanged(QPoint position);
 
 private:
@@ -78,7 +83,10 @@ private:
     QSize canvasSize = QSize(0, 0);
     QSize viewSize = QSize(0, 0);
     QPoint position = QPoint(0, 0);
-    const int margin = 50;
+    qreal scale = 0.0f;
+    const qreal minScale = 0.25f;
+    const qreal maxScale = 8.0f;
+    const int Margin = 50;
 };
 
 #endif // __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__
