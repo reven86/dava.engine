@@ -65,7 +65,6 @@ public slots:
     void SetEmulationMode(bool emulationMode);
     void SetPixelization(bool hasPixelization);
     void SetScale(float scale);
-    void SetDPR(qreal dpr);
     void OnSelectAllRequested();
     void FocusNextChild();
     void FocusPreviousChild();
@@ -74,7 +73,6 @@ protected:
     bool emulationMode = false;
     bool hasPixalization = false;
     float scale = 100.0f;
-    qreal dpr = 1.0f;
 
     Document *active;
     QList<Document*> documentList;

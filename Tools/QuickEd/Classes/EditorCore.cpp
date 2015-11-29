@@ -103,7 +103,6 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
 
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
-    connect(previewWidget, &PreviewWidget::DPRChanged, documentGroup, &DocumentGroup::SetDPR);
     connect(previewWidget, &PreviewWidget::FocusNextChild, documentGroup, &DocumentGroup::FocusNextChild);
     connect(previewWidget, &PreviewWidget::FocusPreviousChild, documentGroup, &DocumentGroup::FocusPreviousChild);
     connect(previewWidget, &PreviewWidget::SelectAllRequested, documentGroup, &DocumentGroup::OnSelectAllRequested);
@@ -115,7 +114,6 @@ EditorCore::EditorCore(QObject *parent)
     documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
     documentGroup->SetPixelization(mainWindow->isPixelized());
     documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
-    documentGroup->SetDPR(previewWidget->GetDPR());
 }
 
 EditorCore::~EditorCore() = default;

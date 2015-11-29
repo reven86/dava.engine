@@ -236,7 +236,7 @@ void DavaGLWidget::OnResize()
     if (nullptr != renderer)
     {
         int currentDPR = davaGLView->devicePixelRatio();
-        DAVA::QtLayer::Instance()->Resize(width() * currentDPR, height() * currentDPR);
+        DAVA::QtLayer::Instance()->Resize(width(), height());
         emit Resized(width(), height(), currentDPR);
     }
 }
