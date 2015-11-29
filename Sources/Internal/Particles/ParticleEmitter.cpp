@@ -315,8 +315,8 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
         }
         else
         {
-			lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
-		}
+            lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
+        }
 		
 
 		const YamlNode * nameNode = emitterNode->Get("name");

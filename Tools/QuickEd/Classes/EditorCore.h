@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef QUICKED_BASECONTROLLER_H
-#define QUICKED_BASECONTROLLER_H
+#ifndef QUICKED_EDITOR_CORE_H
+#define QUICKED_EDITOR_CORE_H
 
 #include <QObject>
 #include "UI/mainwindow.h"
@@ -41,19 +41,22 @@ class Document;
 class DocumentGroup;
 class Project;
 class PackageNode;
+class SpritesPacker;
 
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
 public:
     explicit EditorCore(QObject *parent = nullptr);
-    ~EditorCore() = default;
+    ~EditorCore();
+    MainWindow* GetMainWindow() const;
+    Project *GetProject() const;
+    SpritesPacker *GetSpritesPacker() const;
+    
     void Start();
 
-    MainWindow* GetMainWindow();
-    Project *GetProject() const;
-
 protected slots:
+    void OnReloadSprites();
     void OnCleanChanged(bool clean);
     void OnOpenPackageFile(const QString &path);
     void OnProjectPathChanged(const QString &path);
@@ -80,30 +83,20 @@ protected:
     void SaveDocument(Document *document);
 
 private:
-    bool eventFilter( QObject *obj, QEvent *event ) override;
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
-    ///Return: pointer to currentDocument if exists, nullptr if not
+    
+    std::unique_ptr<SpritesPacker> spritesPacker;
     Project* project = nullptr;
     QList<Document*> documents;
     DocumentGroup* documentGroup = nullptr;
-    std::unique_ptr<MainWindow> mainWindow = nullptr;
+    std::unique_ptr<MainWindow> mainWindow;
     DAVA::UIControl* rootControl = nullptr;
 };
-
-inline MainWindow* EditorCore::GetMainWindow()
-{
-    return mainWindow.get();
-}
-
-inline Project* EditorCore::GetProject() const
-{
-    return project;
-}
 
 inline EditorFontSystem *GetEditorFontSystem()
 {
     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
 }
 
-#endif // QUICKED_BASECONTROLLER_H
+#endif // QUICKED_EDITOR_CORE_H

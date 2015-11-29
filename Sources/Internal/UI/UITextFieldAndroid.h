@@ -121,9 +121,9 @@ public:
     DAVA::int32 GetTextAlign();
 
     void SetTextUseRtlAlign(bool useRtlAlign);
-	bool GetTextUseRtlAlign() const;
+    bool GetTextUseRtlAlign() const;
 
-	void SetVisible(bool isVisible);
+    void SetVisible(bool isVisible);
 
 	void SetIsPassword(bool isPassword);
 

@@ -39,10 +39,10 @@ public:
     explicit FontPropertyDelegate(PropertiesTreeItemDelegate *delegate);
     ~FontPropertyDelegate();
 
-    virtual QWidget * createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+    virtual QWidget * createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) override;
     virtual void setEditorData(QWidget * editor, const QModelIndex & index) const override;
     virtual bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
-    virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const override;
+    virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) override;
 
 private slots:
     void addPresetClicked();
