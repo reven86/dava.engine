@@ -171,9 +171,7 @@ void UIWebView::LoadFromYamlNode(const DAVA::YamlNode* node, DAVA::UIYamlLoader*
 
 YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader* loader)
 {
-    ScopedPtr<UIWebView> baseControl(new UIWebView());
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    return node;
+    return nullptr;
 }
 
 UIWebView* UIWebView::Clone()
