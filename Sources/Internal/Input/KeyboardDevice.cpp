@@ -104,9 +104,9 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_DELETE] = DVKEY_DELETE;
     keyTranslator[VK_BACK] = DVKEY_BACKSPACE;
     keyTranslator[VK_RETURN] = DVKEY_ENTER;
-	keyTranslator[VK_CONTROL] = DVKEY_CTRL;
-	keyTranslator[VK_MENU] = DVKEY_ALT;
-	keyTranslator[VK_SHIFT] = DVKEY_SHIFT;
+    keyTranslator[VK_CONTROL] = DVKEY_CTRL;
+    keyTranslator[VK_MENU] = DVKEY_ALT;
+    keyTranslator[VK_SHIFT] = DVKEY_SHIFT;
 	keyTranslator[VK_CAPITAL] = DVKEY_CAPSLOCK;
     keyTranslator[VK_SPACE] = DVKEY_SPACE;
     keyTranslator[VK_TAB] = DVKEY_TAB;

@@ -62,9 +62,9 @@ public:
     void clear();
 
     inline V& at(const K& key);
-    inline const V & at(const K &key) const;
-    
-	V & operator[](const K &key);
+    inline const V& at(const K& key) const;
+
+    V& operator[](const K& key);
     const V & operator[] (const K & key) const;
 
     HashMap<K, V>& operator=(const HashMap<K, V>& hm);

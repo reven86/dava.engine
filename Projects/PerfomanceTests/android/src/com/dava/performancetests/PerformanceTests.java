@@ -20,7 +20,9 @@ public class PerformanceTests extends JNIActivity {
 		return true;
 	}
 
-	public JNISurfaceView GetSurfaceView() {
+    
+    @Override
+	public JNISurfaceView FindSurfaceView() {	
 		setContentView(R.layout.activity_main);
 		JNISurfaceView view = (JNISurfaceView) findViewById(R.id.view1);
 		return view;

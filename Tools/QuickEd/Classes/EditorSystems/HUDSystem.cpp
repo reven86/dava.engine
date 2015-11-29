@@ -81,7 +81,7 @@ struct HUDSystem::HUD
     UIControl* control = nullptr;
     UIControl* hudControl = nullptr;
     RefPtr<HUDContainer> container;
-    Map<HUDAreaInfo::eArea, RefPtr<UIControl>> hudControls;
+    Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
 
 HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
@@ -124,6 +124,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemManager->DPRChanged.Connect(this, &HUDSystem::OnDPRChanged);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
     systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
@@ -166,6 +167,10 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
                 hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
+                for (auto& hudControlsIter : hudMap.at(controlNode)->hudControls)
+                {
+                    hudControlsIter.second->SetDPR(dpr);
+                }
                 sortedControlList.insert(controlNode);
             }
         }
@@ -178,16 +183,28 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
+    bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
+    eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
     switch (currentInput->phase)
     {
     case UIEvent::Phase::MOVE:
-        ProcessCursor(currentInput->point);
+        ProcessCursor(currentInput->point, searchOrder);
         return false;
     case UIEvent::Phase::BEGAN:
     {
+        ProcessCursor(currentInput->point, searchOrder);
+        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->tid != UIEvent::BUTTON_1)
+        {
+            return true;
+        }
         //check that we can draw rect
         Vector<ControlNode*> nodes;
-        systemManager->CollectControlNodesByPos(nodes, currentInput->point);
+        Vector<ControlNode*> nodesUnderPoint;
+        Vector2 point = currentInput->point;
+        auto predicate = [point](const UIControl* control) -> bool {
+            return control->GetSystemVisible() && control->IsPointInside(point);
+        };
+        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
         bool noHudableControls = nodes.empty() || (nodes.size() == 1 && nodes.front()->GetParent() == packageNode);
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
@@ -205,24 +222,29 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             if (size.x < 0.0f)
             {
                 point.x += size.x;
-                size.x *= -1;
+                size.x *= -1.0f;
             }
             if (size.y <= 0.0f)
             {
                 point.y += size.y;
-                size.y *= -1;
+                size.y *= -1.0f;
             }
             selectionRectControl->SetRect(Rect(point, size));
+            FixPositionForScroll(selectionRectControl.Get());
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
     case UIEvent::Phase::ENDED:
-        ProcessCursor(currentInput->point);
+    {
+        ProcessCursor(currentInput->point, searchOrder);
         selectionRectControl->SetSize(Vector2());
         bool retVal = dragRequested;
         SetCanDrawRect(false);
         dragRequested = false;
         return retVal;
+    }
+    default:
+        return false;
     }
     return false;
 }
@@ -269,6 +291,18 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         magnetControls.emplace_back(control);
 
         FixPositionForScroll(control);
+    }
+}
+
+void HUDSystem::OnDPRChanged(float32 arg)
+{
+    dpr = arg;
+    for (auto& hudMapIter : hudMap)
+    {
+        for (auto& hudControlsIter : hudMapIter.second->hudControls)
+        {
+            hudControlsIter.second->SetDPR(dpr);
+        }
     }
 }
 
@@ -364,4 +398,3 @@ void HUDSystem::UpdateAreasVisibility()
         }
     }
 }
-

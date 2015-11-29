@@ -70,8 +70,7 @@ ScopedPtr<BASE_OBJECT>::ScopedPtr(BASE_OBJECT * p)
 template<typename BASE_OBJECT>
 ScopedPtr<BASE_OBJECT>::ScopedPtr(const ScopedPtr& scopedPtr)
 {
-	object = scopedPtr.object;
-	object->Retain();
+    object = SafeRetain(scopedPtr.object);
 }
 
 template<typename BASE_OBJECT>
@@ -82,11 +81,13 @@ const ScopedPtr<BASE_OBJECT>& ScopedPtr<BASE_OBJECT>::operator=(const ScopedPtr&
 		return *this;
 	}
 
-    SafeRelease(object);
-	object = scopedPtr.object;
-	object->Retain();
+    if (object != scopedPtr.object)
+    {
+        SafeRelease(object);
+        object = SafeRetain(scopedPtr.object);
+    }
 
-	return *this;
+    return *this;
 }
 
 template<typename BASE_OBJECT>
