@@ -45,6 +45,8 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
 {
     ui->setupUi(this);
     ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
+    
+    ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
 
     model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
     QStringList filters;
@@ -66,10 +68,20 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
     deleteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteAction, &QAction::triggered, this, &FileSystemDockWidget::onDeleteFile);
+    
+#if defined Q_OS_WIN
+    QString actionName = tr("Show in explorer");
+#else if defined Q_OS_MAC
+    QString actionName = tr("Show in finder");
+#endif //Q_OS_WIN //Q_OS_MAC
+    showInSystemExplorer = new QAction(actionName, this);
+    connect(showInSystemExplorer, &QAction::triggered, this, &FileSystemDockWidget::OnShowInExplorer);
+    
 
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
     ui->treeView->addAction(deleteAction);
+    ui->treeView->addAction(showInSystemExplorer);
 }
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
@@ -228,4 +240,34 @@ void FileSystemDockWidget::onDeleteFile()
         }
     }
     RefreshActions(indexes);
+}
+
+void FileSystemDockWidget::OnShowInExplorer()
+{
+    const QModelIndexList &indexes = ui->treeView->selectionModel()->selectedIndexes();
+    if(indexes.size() != 1)
+    {
+        return;
+    }
+    QString pathIn = model->fileInfo(indexes.at(0)).absoluteFilePath();
+#ifdef Q_OS_MAC
+    QStringList args;
+    args << "-e";
+    args << "tell application \"Finder\"";
+    args << "-e";
+    args << "activate";
+    args << "-e";
+    args << "select POSIX file \""+pathIn+"\"";
+    args << "-e";
+    args << "end tell";
+    QProcess::startDetached("osascript", args);
+#endif
+#ifdef Q_OS_WIN
+    QFileInfo info(pathIn);
+    QStringList args;
+    if(info.isDir())
+        args << "-p";
+    args << "/select," << QDir::toNativeSeparators(pathIn);
+    QProcess::startDetached("explorer", args);
+#endif
 }
