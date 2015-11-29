@@ -38,22 +38,44 @@
 #include "QtTools/FileDialog/FileDialog.h"
 
 
+class FileSystemModel : public QFileSystemModel
+{
+    
+public:
+    FileSystemModel(QObject *parent = nullptr);
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+};
+
+FileSystemModel::FileSystemModel(QObject *parent)
+    : QFileSystemModel(parent)
+{
+    
+}
+
+Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
+{
+    return QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+}
+
 FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
-    , model(new QFileSystemModel(this))
+    , model(new FileSystemModel(this))
 {
     ui->setupUi(this);
     ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
     
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
-
+    ui->treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    
     model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
     QStringList filters;
     filters << "*.yaml";
     model->setNameFilters(filters);
     model->setNameFilterDisables(false);
-
+    model->setReadOnly(false);
+    
     connect(ui->treeView, &QTreeView::doubleClicked, this, &FileSystemDockWidget::onDoubleClicked);
     connect(ui->filterLine, &QLineEdit::textChanged, this, &FileSystemDockWidget::setFilterFixedString);
 
@@ -74,14 +96,23 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
 #else if defined Q_OS_MAC
     QString actionName = tr("Show in finder");
 #endif //Q_OS_WIN //Q_OS_MAC
-    showInSystemExplorer = new QAction(actionName, this);
-    connect(showInSystemExplorer, &QAction::triggered, this, &FileSystemDockWidget::OnShowInExplorer);
+    showInSystemExplorerAction = new QAction(actionName, this);
+    connect(showInSystemExplorerAction, &QAction::triggered, this, &FileSystemDockWidget::OnShowInExplorer);
     
+    renameAction = new QAction(tr("Rename"), this);
+    connect(renameAction, &QAction::triggered, this, &FileSystemDockWidget::OnRename);
+    
+    openFileAction = new QAction(tr("Open File"), this);
+    openFileAction->setShortcuts({ QKeySequence(Qt::Key_Return), QKeySequence(Qt::Key_Enter)});
+    openFileAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(openFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnOpenFile);
 
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
     ui->treeView->addAction(deleteAction);
-    ui->treeView->addAction(showInSystemExplorer);
+    ui->treeView->addAction(showInSystemExplorerAction);
+    ui->treeView->addAction(renameAction);
+    ui->treeView->addAction(openFileAction);
 }
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
@@ -108,16 +139,16 @@ void FileSystemDockWidget::SetProjectDir(const QString &path)
 
 void FileSystemDockWidget::RefreshActions( const QModelIndexList &indexList )
 {
-    bool canCreateFile = true;
     bool canCreateDir = true;
     bool canRemove = !indexList.empty();
+    bool canOpen = false;
     if (indexList.size() == 1)
     {
         QModelIndex selectedIndex = indexList.front();
         bool isDir = model->isDir(selectedIndex);
-        canCreateFile = true;
         canCreateDir = isDir;
         canRemove = CanRemove(selectedIndex);
+        canOpen = !isDir;
         deleteAction->setText(isDir ? "Remove folder" : "Remove file");
     }
     else
@@ -129,8 +160,9 @@ void FileSystemDockWidget::RefreshActions( const QModelIndexList &indexList )
         }
     }
     newFolderAction->setEnabled(canCreateDir);
-    newFileAction->setEnabled(canCreateFile);
     deleteAction->setEnabled(canRemove);
+    openFileAction->setEnabled(canOpen);
+    openFileAction->setVisible(canOpen);
 }
 
 bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
@@ -249,7 +281,7 @@ void FileSystemDockWidget::OnShowInExplorer()
     {
         return;
     }
-    QString pathIn = model->fileInfo(indexes.at(0)).absoluteFilePath();
+    QString pathIn = model->fileInfo(indexes.first()).absoluteFilePath();
 #ifdef Q_OS_MAC
     QStringList args;
     args << "-e";
@@ -270,4 +302,18 @@ void FileSystemDockWidget::OnShowInExplorer()
     args << "/select," << QDir::toNativeSeparators(pathIn);
     QProcess::startDetached("explorer", args);
 #endif
+}
+
+void FileSystemDockWidget::OnRename()
+{
+    const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
+    DVASSERT(selected.size() == 1);
+    ui->treeView->edit(selected.first());
+}
+
+void FileSystemDockWidget::OnOpenFile()
+{
+    const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
+    DVASSERT(selected.size() == 1);
+    onDoubleClicked(selected.first());
 }

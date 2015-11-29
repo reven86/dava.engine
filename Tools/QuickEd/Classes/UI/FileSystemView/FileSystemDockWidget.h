@@ -62,6 +62,8 @@ private slots:
     void onNewFile();
     void onDeleteFile();
     void OnShowInExplorer();
+    void OnRename();
+    void OnOpenFile();
 
 private:
     void RefreshActions(const QModelIndexList &indexList);
@@ -71,7 +73,9 @@ private:
     QAction *newFolderAction = nullptr;
     QAction *newFileAction = nullptr;
     QAction *deleteAction = nullptr;
-    QAction *showInSystemExplorer = nullptr;
+    QAction *showInSystemExplorerAction = nullptr;
+    QAction *renameAction = nullptr;
+    QAction *openFileAction = nullptr;
 };
 
 #endif // __UI_EDITOR_FILE_SYSTEM_TREE_WIDGET_H__
