@@ -166,6 +166,8 @@ void FileSystemDockWidget::onNewFolder()
         QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
         model->mkdir(currIndex, folderName);
     }
+    auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
+    RefreshActions(selectedIndexes);
 }
 
 void FileSystemDockWidget::onNewFile()
@@ -189,6 +191,7 @@ void FileSystemDockWidget::onNewFile()
     QFile file(strFile);
     file.open(QIODevice::WriteOnly);
     file.close();
+    RefreshActions(selectedIndexes);
 }
 
 void FileSystemDockWidget::onDeleteFile()
@@ -224,4 +227,5 @@ void FileSystemDockWidget::onDeleteFile()
             }
         }
     }
+    RefreshActions(indexes);
 }
