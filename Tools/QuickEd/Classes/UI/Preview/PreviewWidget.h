@@ -74,6 +74,7 @@ public slots:
     void OnDocumentDeactivated(Document* document);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnRootControlPositionChanged(const DAVA::Vector2 &pos);
+    void OnNestedControlPositionChanged(const QPoint &pos);
 
 private slots:
     void OnScaleChanged(qreal scale);
@@ -92,6 +93,7 @@ protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
+    void ApplyPosChanges();
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
@@ -107,6 +109,8 @@ private:
 
     SelectionContainer selectionContainer;
     RulerController* rulerController = nullptr;
+    QPoint rootControlPos;
+    QPoint canvasPos;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget()

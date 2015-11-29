@@ -38,21 +38,6 @@ const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
 const Vector2 ROTATE_CONTROL_SIZE(15.0f, 15);
 }
 
-void FixPositionForScroll(UIControl* controlInHud)
-{
-    DVASSERT(controlInHud != nullptr);
-    static UIControl* backgroundControl = nullptr; //background control stay unchanged all the time
-    if (backgroundControl == nullptr)
-    {
-        backgroundControl = controlInHud;
-        while (backgroundControl->GetParent()->GetParent() != nullptr) //first control is screen
-        {
-            backgroundControl = backgroundControl->GetParent();
-        }
-    }
-    controlInHud->SetPosition(controlInHud->GetPosition() - backgroundControl->GetPosition() - backgroundControl->GetChildren().front()->GetPosition());
-}
-
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
     : UIControl()
     , area(area_)
@@ -83,7 +68,6 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-    FixPositionForScroll(this);
     bool valid_ = control->GetSystemVisible() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
     SetValid(valid_);
     if (valid)

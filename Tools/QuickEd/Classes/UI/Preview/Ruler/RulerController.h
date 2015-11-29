@@ -54,8 +54,6 @@ public slots:
     // Update the ruler markers with the mouse position.
     void UpdateRulerMarkers(QPoint curMousePos);
     void SetViewPos(QPoint pos);
-    void SetCanvasPos(QPoint pos);
-    void SetRootControlPos(QPoint pos);
 
 signals:
     // Horizontal/Vertical ruler settings are changed.
@@ -75,9 +73,7 @@ protected:
 
 private:
     // Screen view pos and scale.
-    QPoint screenViewPos; //for scrolling
-    QPoint canvasPos; //top left corner of visible canvas
-    QPoint rootControlPos; //position of root control inside canvas
+    QPoint viewPos;
     float screenScale;
 
     // Ruler settings.

@@ -55,9 +55,14 @@ void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
     if(nullptr != nestedControl)
     {
         backgroundControl->AddControl(nestedControl);
-        nestedControl->SetPosition(Vector2(Margin, Margin));
         UpdateCanvasContentSize();
     }
+}
+
+void ScrollAreaController::SetMovableControl(DAVA::UIControl* arg)
+{
+    movableControl = arg;
+    UpdatePosition();
 }
 
 void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
@@ -84,7 +89,6 @@ void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
     QPointF deltaMousePos = mousePos * (1 - newScale / oldScale);
     QPoint newPosition(absPosition.x() * scale - deltaMousePos.x()
                   , absPosition.y() * scale - deltaMousePos.y());
-    
     
     newPosition.setX(qBound(0, newPosition.x(), (canvasSize - viewSize).width()));
     newPosition.setY(qBound(0, newPosition.y(), (canvasSize - viewSize).height()));
@@ -170,7 +174,7 @@ void ScrollAreaController::SetPosition(QPoint position_)
 
 void ScrollAreaController::UpdatePosition()
 {
-    if (nullptr != nestedControl)
+    if (nullptr != movableControl)
     {
         QSize offset = (canvasSize - viewSize) / 2;
         
@@ -182,8 +186,9 @@ void ScrollAreaController::UpdatePosition()
         {
             offset.setHeight(position.y());
         }
+        offset -= QSize(Margin, Margin);
         Vector2 position(-offset.width(), -offset.height());
-        backgroundControl->SetPosition(position);
+        movableControl->SetPosition(position);
 
         QPoint positionPoint(static_cast<int>(position.x), static_cast<int>(position.y));
         NestedControlPositionChanged(positionPoint);

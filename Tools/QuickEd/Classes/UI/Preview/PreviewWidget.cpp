@@ -79,8 +79,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
 
-    connect(scrollAreaController, &ScrollAreaController::PositionChanged, rulerController, &RulerController::SetViewPos);
-    connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, rulerController, &RulerController::SetCanvasPos);
+    connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
 
 
     verticalRuler->SetRulerOrientation(Qt::Vertical);
@@ -194,12 +193,12 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     if (nullptr != document)
     {
         EditorSystemsManager* systemManager = document->GetSystemManager();
-        UIControl* root = systemManager->GetRootControl();
-        DVASSERT(nullptr != root);
-        scrollAreaController->SetNestedControl(root);
+        scrollAreaController->SetNestedControl(systemManager->GetRootControl());
+        scrollAreaController->SetMovableControl(systemManager->GetScalableControl());
     }
     else
     {
+        scrollAreaController->SetMovableControl(nullptr);
         scrollAreaController->SetNestedControl(nullptr);
     }
 }
@@ -234,8 +233,20 @@ void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
 
 void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
 {
-    QPoint additionalPos(static_cast<int>(pos.x), static_cast<int>(pos.y));
-    rulerController->SetRootControlPos(additionalPos);
+    rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
+    ApplyPosChanges();
+}
+
+void PreviewWidget::OnNestedControlPositionChanged(const QPoint &pos)
+{
+    canvasPos = pos;
+    ApplyPosChanges();
+}
+
+void PreviewWidget::ApplyPosChanges()
+{
+    QPoint viewPos = canvasPos + rootControlPos;
+    rulerController->SetViewPos(-viewPos);
 }
 
 void PreviewWidget::UpdateScrollArea()
