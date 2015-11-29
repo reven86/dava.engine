@@ -40,12 +40,11 @@ UIWebView::UIWebView(const Rect& rect)
     , webViewControl(nullptr)
     , isNativeControlVisible(false)
 {
-    internalFont = GraphicFont::Create("~res:/Fonts/korinna_df.fnt", "~res:/Fonts/korinna_df.tex");
+    background->SetDrawType(UIControlBackground::DRAW_FILL); //there is no good ways to indicate webview
 }
 
 UIWebView::~UIWebView()
 {
-    SafeRelease(internalFont);
 }
 
 void UIWebView::SetDelegate(IUIWebViewDelegate*)
@@ -191,32 +190,6 @@ void UIWebView::CopyDataFrom(UIControl* srcControl)
 
 void UIWebView::SystemDraw(const DAVA::UIGeometricData& geometricData)
 {
-    static const WideString wStr = L"WebViewStub";
-    static Vector<GraphicFont::GraphicFontVertex> vertices(4 * wStr.length());
-
-    float32 x = geometricData.position.x + relativePosition.x;
-    float32 y = geometricData.position.y + relativePosition.y;
-    int32 charactersDrawn = 0;
-    internalFont->DrawStringToBuffer(wStr, static_cast<int>(x), static_cast<int>(y), vertices.data(), charactersDrawn);
-
-    static const uint32 vertexCount = static_cast<uint32>(vertices.size());
-    static const uint32 indexCount = 6 * vertexCount / 4;
-
-    RenderSystem2D::BatchDescriptor batchDescriptor;
-    batchDescriptor.singleColor = Color::Black;
-    batchDescriptor.vertexCount = vertexCount;
-    batchDescriptor.indexCount = Min(TextBlockGraphicRender::GetSharedIndexBufferCapacity(), indexCount);
-    batchDescriptor.vertexPointer = vertices.front().position.data;
-    batchDescriptor.vertexStride = TextBlockGraphicRender::TextVerticesDefaultStride;
-    batchDescriptor.texCoordPointer = vertices.front().texCoord.data;
-    batchDescriptor.texCoordStride = TextBlockGraphicRender::TextVerticesDefaultStride;
-    batchDescriptor.indexPointer = TextBlockGraphicRender::GetSharedIndexBuffer();
-    batchDescriptor.material = RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;
-    batchDescriptor.textureSetHandle = internalFont->GetTexture()->singleTextureSet;
-    batchDescriptor.samplerStateHandle = internalFont->GetTexture()->samplerStateHandle;
-    batchDescriptor.worldMatrix = &Matrix4::IDENTITY;
-    RenderSystem2D::Instance()->PushBatch(batchDescriptor);
-
     UIControl::SystemDraw(geometricData);
 }
 

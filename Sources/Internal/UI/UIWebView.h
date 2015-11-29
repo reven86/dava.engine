@@ -135,9 +135,6 @@ protected:
 private:
     bool isNativeControlVisible = false;
     int32 dataDetectorTypes = DATA_DETECTOR_LINKS;
-#if defined __NO_NATIVE_WEBVIEW__
-    GraphicFont* internalFont = nullptr;
-#endif //__NO_NATIVE_WEBVIEW__
 
 public:
     INTROSPECTION_EXTEND(UIWebView, UIControl,
