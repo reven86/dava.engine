@@ -182,7 +182,8 @@ void ScrollAreaController::UpdatePosition()
         {
             offset.setHeight(position.y());
         }
-        backgroundControl->SetPosition(-Vector2(offset.width(), offset.height()));
+        Vector2 position(-offset.width(), -offset.height());
+        backgroundControl->SetPosition(position);
 
         QPoint positionPoint(static_cast<int>(position.x), static_cast<int>(position.y));
         NestedControlPositionChanged(positionPoint);

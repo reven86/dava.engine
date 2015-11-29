@@ -61,12 +61,6 @@ void RulerController::SetViewPos(QPoint pos)
 
 void RulerController::SetCanvasPos(QPoint pos)
 {
-    pos *= -1;
-    if (canvasPos != pos)
-    {
-        canvasPos = pos;
-        ApplyPosChanged();
-    }
 }
 
 void RulerController::SetRootControlPos(QPoint pos)
@@ -81,6 +75,7 @@ void RulerController::SetRootControlPos(QPoint pos)
 
 void RulerController::ApplyPosChanged()
 {
+    DAVA::Logger::Info("screen pos: %d, root pos: %d, canvas pos: %d", screenViewPos.y(), rootControlPos.y(), canvasPos.y());
     QPoint viewPos = screenViewPos + rootControlPos + canvasPos;
 
     horisontalRulerSettings.startPos = viewPos.x();
@@ -91,7 +86,7 @@ void RulerController::ApplyPosChanged()
 
 void RulerController::SetScale(float scale)
 {
-    screenScale = scale / 100.f;
+    screenScale = scale;
     horisontalRulerSettings.zoomLevel = screenScale;
     verticalRulerSettings.zoomLevel = screenScale;
 
