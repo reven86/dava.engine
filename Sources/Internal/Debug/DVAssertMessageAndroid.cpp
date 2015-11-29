@@ -38,7 +38,6 @@ namespace DAVA
 {
 namespace DVAssertMessage
 {
-
 bool InnerShow(eModalType modalType, const char* message)
 {
 	JNI::JavaClass msg("com/dava/framework/JNIAssert");

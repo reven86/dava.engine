@@ -53,93 +53,94 @@ using namespace DAVA;
 
 namespace
 {
-    struct PackageContext : public WidgetContext
+struct PackageContext : WidgetContext
+{
+    PackageContext(Document* document)
     {
-        PackageContext(Document *document)
-        {
-            DVASSERT(nullptr != document);
-            packageModel = new PackageModel(document->GetPackage(), document->GetCommandExecutor(), document);
-            filteredPackageModel = new FilteredPackageModel(document);
-            filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-            filteredPackageModel->setSourceModel(packageModel);
-        }
-        PackageModel *packageModel;
-        FilteredPackageModel *filteredPackageModel;
-        PackageWidget::ExpandedIndexes expandedIndexes;
-        QString filterString;
-    };
-
-    void AddSeparatorAction(QWidget* widget)
-    {
-        QAction* separator = new QAction(widget);
-        separator->setSeparator(true);
-        widget->addAction(separator);
+        DVASSERT(nullptr != document);
+        packageModel = new PackageModel(document->GetPackage(), document->GetCommandExecutor(), document);
+        filteredPackageModel = new FilteredPackageModel(document);
+        filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+        filteredPackageModel->setSourceModel(packageModel);
     }
-    
-    bool CanInsertControlOrStyle(const PackageBaseNode *dest, PackageBaseNode *node, DAVA::int32 destIndex)
-    {
-        if(dynamic_cast<ControlNode*>(node))
-        {
-            return dest->CanInsertControl(static_cast<ControlNode*>(node), destIndex);
-        }
-        if(dynamic_cast<StyleSheetNode*>(node))
-        {
-            return dest->CanInsertStyle(static_cast<StyleSheetNode*>(node), destIndex);
-        }
-        else
-        {
-            return false;
-        }
-    }
-    
-    bool CanMoveUpDown(const PackageBaseNode *dest, PackageBaseNode *node, bool up)
-    {
-        DVASSERT(nullptr != node);
-        DVASSERT(nullptr != dest);
+    ~PackageContext() override = default;
+    PackageModel* packageModel;
+    FilteredPackageModel* filteredPackageModel;
+    PackageWidget::ExpandedIndexes expandedIndexes;
+    QString filterString;
+};
 
-        if(dest->GetParent() != node->GetParent())
-        {
-            return false;
-        }
+void AddSeparatorAction(QWidget* widget)
+{
+    QAction* separator = new QAction(widget);
+    separator->setSeparator(true);
+    widget->addAction(separator);
+}
 
-        const PackageBaseNode *destParent = dest->GetParent();
-        DVASSERT(nullptr != destParent);
-        
-        int destIndex = destParent->GetIndex(dest);
-        if(!up)
-        {
-            destIndex += 1;
-        }
-        return CanInsertControlOrStyle(destParent, node, destIndex);
-    }
-    
-    bool CanMoveLeft(PackageBaseNode *node)
+bool CanInsertControlOrStyle(const PackageBaseNode *dest, PackageBaseNode *node, DAVA::int32 destIndex)
+{
+    if(dynamic_cast<ControlNode*>(node))
     {
-        PackageBaseNode *parentNode = node->GetParent();
-        DVASSERT(parentNode != nullptr);
-        PackageBaseNode *grandParentNode = parentNode->GetParent();
-        if(grandParentNode != nullptr)
-        {
-            int destIndex = grandParentNode->GetIndex(parentNode) + 1;
-            return CanInsertControlOrStyle(grandParentNode, node, destIndex);
-        }
+        return dest->CanInsertControl(static_cast<ControlNode*>(node), destIndex);
+    }
+    if(dynamic_cast<StyleSheetNode*>(node))
+    {
+        return dest->CanInsertStyle(static_cast<StyleSheetNode*>(node), destIndex);
+    }
+    else
+    {
         return false;
     }
-    
-    bool CanMoveRight(PackageBaseNode *node)
+}
+
+bool CanMoveUpDown(const PackageBaseNode *dest, PackageBaseNode *node, bool up)
+{
+    DVASSERT(nullptr != node);
+    DVASSERT(nullptr != dest);
+
+    if(dest->GetParent() != node->GetParent())
     {
-        PackageIterator iterUp(node, [node](const PackageBaseNode* dest){
-            return CanMoveUpDown(dest, node, true);
-        });
-        --iterUp;
-        if(!iterUp.IsValid())
-        {
-            return false;
-        }
-        PackageBaseNode *dest = *iterUp;
-        int destIndex = dest->GetCount();
-        return CanInsertControlOrStyle(dest, node, destIndex);
+        return false;
     }
+
+    const PackageBaseNode *destParent = dest->GetParent();
+    DVASSERT(nullptr != destParent);
+    
+    int destIndex = destParent->GetIndex(dest);
+    if(!up)
+    {
+        destIndex += 1;
+    }
+    return CanInsertControlOrStyle(destParent, node, destIndex);
+}
+
+bool CanMoveLeft(PackageBaseNode *node)
+{
+    PackageBaseNode *parentNode = node->GetParent();
+    DVASSERT(parentNode != nullptr);
+    PackageBaseNode *grandParentNode = parentNode->GetParent();
+    if(grandParentNode != nullptr)
+    {
+        int destIndex = grandParentNode->GetIndex(parentNode) + 1;
+        return CanInsertControlOrStyle(grandParentNode, node, destIndex);
+    }
+    return false;
+}
+
+bool CanMoveRight(PackageBaseNode *node)
+{
+    PackageIterator iterUp(node, [node](const PackageBaseNode* dest){
+        return CanMoveUpDown(dest, node, true);
+    });
+    --iterUp;
+    if(!iterUp.IsValid())
+    {
+        return false;
+    }
+    PackageBaseNode *dest = *iterUp;
+    int destIndex = dest->GetCount();
+    return CanInsertControlOrStyle(dest, node, destIndex);
+}
 } //unnamed namespace
 
 PackageWidget::PackageWidget(QWidget *parent)

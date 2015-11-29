@@ -112,8 +112,8 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         if (!isOver)
         {
             drawState.SetPosition(xNextPosition, yNextPosition);
-		}
-		else 
+        }
+        else 
 		{
 			drawState.SetPosition(0, 0);
 		}
