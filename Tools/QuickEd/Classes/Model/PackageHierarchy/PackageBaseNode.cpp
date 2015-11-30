@@ -141,39 +141,48 @@ bool PackageBaseNode::IsReadOnly() const
     return parent ? parent->IsReadOnly() : true;
 }
 
+namespace
+{
+    uint32 CalculateDepth(PackageBaseNode *node)
+    {
+        DVASSERT(nullptr != node);
+        uint32 depth = 0;
+        PackageBaseNode *parent = node->GetParent();
+        while (nullptr != parent)
+        {
+            ++depth;
+            parent = parent->GetParent();
+        }
+        return depth;
+    }
+
+    PackageBaseNode* ReduceDepth(PackageBaseNode *node, uint32 reduceValue)
+    {
+        for (int i = 0; i < reduceValue; ++i)
+        {
+            node = node->GetParent();
+        }
+        return node;
+    }
+} //unnamed namepace
 
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
 {
     DVASSERT(nullptr != left && nullptr != right);
+    int depthLeft = CalculateDepth(left);
+    int depthRight = CalculateDepth(right);
+
     PackageBaseNode* leftParent = left;
-    int depthLeft = 0;
-    while (nullptr != leftParent->GetParent())
-    {
-        leftParent = leftParent->GetParent();
-        ++depthLeft;
-    }
-    int depthRight = 0;
     PackageBaseNode* rightParent = right;
-    while (nullptr != rightParent->GetParent())
+    if (depthLeft > depthRight)
     {
-        rightParent = rightParent->GetParent();
-        ++depthRight;
+        leftParent = ReduceDepth(leftParent, depthLeft - depthRight);
     }
-    leftParent = left;
-    rightParent = right;
-    while (depthLeft != depthRight)
+    else
     {
-        if (depthLeft > depthRight)
-        {
-            leftParent = leftParent->GetParent();
-            --depthLeft;
-        }
-        else
-        {
-            rightParent = rightParent->GetParent();
-            --depthRight;
-        }
+        rightParent = ReduceDepth(rightParent, depthRight - depthLeft);
     }
+    
     if (leftParent == right)
     {
         return false;

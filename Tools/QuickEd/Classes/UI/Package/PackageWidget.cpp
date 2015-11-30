@@ -359,8 +359,6 @@ void PackageWidget::OnPaste()
     }
 }
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
-
 void PackageWidget::OnCut()
 {
     Vector<ControlNode*> controls;
