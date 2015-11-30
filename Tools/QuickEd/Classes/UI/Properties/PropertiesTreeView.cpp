@@ -30,6 +30,7 @@
 #include "PropertiesTreeView.h"
 #include <QPainter>
 #include <QHeaderView>
+#include <QApplication>
 
 PropertiesTreeView::PropertiesTreeView( QWidget *parent /*= NULL*/ )
 : QTreeView(parent)
