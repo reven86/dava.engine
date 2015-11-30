@@ -26,15 +26,15 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __NO_NATIVE_WEBVIEW__
 
 #include "UIWebView.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__NO_NATIVE_WEBVIEW__)
+#include "WebViewControlStub.h"
+#elif defined(__DAVAENGINE_MACOS__
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Platform/TemplateiOS/WebViewControliOS.h"
@@ -59,14 +59,14 @@ UIWebView::UIWebView(const Rect& rect)
     webViewControl->Initialize(newRect);
     UpdateControlRect();
 
-    UpdateNativeControlVisible(isNativeControlVisible); // will be displayed in WillAppear.
-    SetDataDetectorTypes(dataDetectorTypes);
+    UpdateNativeControlVisible(false); // will be displayed in WillAppear.
+    SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 
 UIWebView::~UIWebView()
 {
 	SafeDelete(webViewControl);
-}
+};
 
 void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 {
@@ -286,7 +286,5 @@ void UIWebView::Update(float32 timeElapsed)
     webViewControl->Update();
     UIControl::Update(timeElapsed);
 }
-#endif //__DAVAENGINE_WIN_UAP__
+#endif
 };
-
-#endif //__NO_NATIVE_WEBVIEW__

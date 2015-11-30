@@ -34,11 +34,6 @@
 #include "IWebViewControl.h"
 
 namespace DAVA {
-
-#if defined __NO_NATIVE_WEBVIEW__
-class GraphicFont;
-#endif //__NO_NATIVE_WEBVIEW__
-
 // The purpose of UIWebView class is displaying embedded Web Page Controls.
 class UIWebView : public UIControl
 {
@@ -133,11 +128,8 @@ protected:
 	IWebViewControl* webViewControl;
     
 private:
-    bool isNativeControlVisible = false;
-    int32 dataDetectorTypes = DATA_DETECTOR_LINKS;
-#if defined __NO_NATIVE_WEBVIEW__
-    GraphicFont* internalFont = nullptr;
-#endif //__NO_NATIVE_WEBVIEW__
+    bool isNativeControlVisible;
+    int32 dataDetectorTypes;
 
 public:
     INTROSPECTION_EXTEND(UIWebView, UIControl,
