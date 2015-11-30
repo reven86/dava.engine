@@ -33,9 +33,6 @@
 
 #if defined(__DAVAENGINE_MACOS__) 
 
-#if defined(__DAVAENGINE_NPAPI__)
-#include "NPAPIOpenGLLayerMacOS.h"
-#endif
 
 #if defined(Q_OS_MAC)
 #include "Platform/Qt/MacOS/CorePlatformMacOS.h"

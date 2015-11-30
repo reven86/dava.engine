@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 // ColladaConverter.cpp : Defines the entry point for the console application.
 //
 
@@ -50,12 +49,12 @@ using namespace DAVA;
 #include <GL/glew.h>
 
 #if defined(_WIN32)
-#	include <GL/glut.h>
-#	include <direct.h>
-#	define getcwd _getcwd
+#include <GL/glut.h>
+#include <direct.h>
+#define getcwd _getcwd
 
 #elif defined(__APPLE__) || defined(MACOSX)
-#	include <GLUT/glut.h>
+#include <GLUT/glut.h>
 #endif
 
 
@@ -287,5 +286,4 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-#endif 
-
+#endif

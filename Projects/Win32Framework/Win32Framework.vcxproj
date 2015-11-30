@@ -251,6 +251,7 @@
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h" />
     <ClInclude Include="..\..\Sources\Internal\Functional\Function.h" />
     <ClInclude Include="..\..\Sources\Internal\Functional\Functional.h" />
     <ClInclude Include="..\..\Sources\Internal\Functional\Signal.h" />
@@ -294,7 +295,6 @@
     <ClInclude Include="..\..\Sources\Internal\Collision\Collisions.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\ApplicationCore.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h" />
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\DisplayMode.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssert.h" />
@@ -776,8 +776,8 @@
     <ClCompile Include="..\..\Sources\Internal\Core\ApplicationCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\Core.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessage.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessageWin.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>

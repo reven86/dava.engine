@@ -413,7 +413,7 @@ metal_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
-    if (objectIndex != InvalidIndex)
+    if (objectIndex != DAVA::InvalidIndex)
     {
         [cb->encoder setVisibilityResultMode:MTLVisibilityResultModeBoolean offset:objectIndex * QueryBUfferElemeentAlign];
     }

@@ -199,11 +199,11 @@ namespace DAVA
             lua_remove(L, -2); /* remove file name */
             lua_concat(L, 2); /* add entry to possible error message */
         }
-		return name;  /* not found */
-	}
+        return name; /* not found */
+    }
 
-	int AutotestingSystemLua::RequireModule(lua_State* L)
-	{
+    int AutotestingSystemLua::RequireModule(lua_State* L)
+    {
 		String module = lua_tostring(L, -1);
 		lua_pop(L, 1);
 		FilePath path = Instance()->Findfile(L, module.c_str(), "path");
@@ -537,10 +537,10 @@ namespace DAVA
         {
         case DVKEY_BACKSPACE:
         {
-			//TODO: act the same way on iPhone
-			WideString str = L"";
-			if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), -1, str))
-			{
+            //TODO: act the same way on iPhone
+            WideString str = L"";
+            if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), -1, str))
+            {
 				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), -1, str));
 			}
 			break;
@@ -717,11 +717,11 @@ namespace DAVA
         ProcessInput(touchDown);
     }
 
-    void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
-	{
-		UIEvent touchMove;
-		touchMove.tid = touchId;
-		touchMove.tapCount = 1;
+    void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
+    {
+        UIEvent touchMove;
+        touchMove.tid = touchId;
+        touchMove.tapCount = 1;
 		touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
 		touchMove.point = point;
 
@@ -774,11 +774,11 @@ namespace DAVA
             return false; //TODO: report error?
         }
 
-        luaopen_AutotestingSystem(luaState);	// load the wrappered module
-		luaopen_UIControl(luaState);	// load the wrappered module
-		luaopen_Rect(luaState);	// load the wrappered module
-		luaopen_Vector(luaState);	// load the wrappered module
-		luaopen_KeyedArchive(luaState);	// load the wrappered module
+        luaopen_AutotestingSystem(luaState); // load the wrappered module
+        luaopen_UIControl(luaState); // load the wrappered module
+        luaopen_Rect(luaState); // load the wrappered module
+        luaopen_Vector(luaState); // load the wrappered module
+        luaopen_KeyedArchive(luaState);	// load the wrappered module
 		luaopen_Polygon2(luaState);	// load the wrappered module
 
 		if (!delegate)
