@@ -149,6 +149,7 @@ private:
 
     void SetTitleName();
     void SetDisplayOrientations();
+    void TrackWindowMinimumSize();
 
     void ResetRender();
 
@@ -174,7 +175,7 @@ private:
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
-    Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
+    bool mainLoopThreadStarted = false;
 
     volatile bool quitFlag = false;
 
@@ -209,7 +210,7 @@ private:
     int32 physicalHeight = static_cast<int32>(viewHeight * viewScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
-    DeferredScreenMetricEvents* deferredSizeScaleEvents;
+    std::unique_ptr<DeferredScreenMetricEvents> deferredSizeScaleEvents;
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
