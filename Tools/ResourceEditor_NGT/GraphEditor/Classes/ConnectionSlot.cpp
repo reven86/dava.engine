@@ -54,7 +54,7 @@ size_t ConnectionSlot::GetUID() const
     return reinterpret_cast<size_t>(this);
 }
 
-ObjectHandleT<GraphNode> ConnectionSlot::GetParentNode()
+ObjectHandleT<GraphNode> ConnectionSlot::GetParentNode() const
 {
     assert(parent != nullptr);
     return parent;

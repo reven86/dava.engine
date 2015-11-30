@@ -146,8 +146,7 @@ Rectangle
                     // Zoom into the current mouse location
                     var screenPos = Qt.point(wheel.x, wheel.y)
                     var oldPos = graphCanvas.viewTransform.inverseTransform(screenPos);
-                    graphCanvas.viewTransform.xScale *= delta;
-                    graphCanvas.viewTransform.yScale *= delta;
+                    graphCanvas.viewTransform.scale(delta)
                     var newScreenPos = graphCanvas.viewTransform.transform(Qt.point(oldPos.x, oldPos.y));
                     var shift = Qt.point(screenPos.x - newScreenPos.x, screenPos.y - newScreenPos.y)
                     graphCanvas.viewTransform.shift(shift);

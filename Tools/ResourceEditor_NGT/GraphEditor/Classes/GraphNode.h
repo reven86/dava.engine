@@ -38,7 +38,7 @@
 #include <QPointF>
 
 class ConnectionSlot;
-class GraphNode
+class GraphNode final
 {
     DECLARE_REFLECTED
 public:
@@ -63,7 +63,7 @@ public:
     void SetTitle(std::string const& title);
 
     size_t GetUID() const;
-    std::string const& GetType()
+    std::string const& GetType() const
     {
         return typeId;
     }

@@ -57,8 +57,8 @@ private:
     void DummySetSlotId(size_t const&);
 
 private:
-    size_t outputSlotID;
-    size_t intputSlotID;
+    size_t outputSlotID = 0;
+    size_t intputSlotID = 0;
 
     std::array<size_t, 2> signalConnections;
 };

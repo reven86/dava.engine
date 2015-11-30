@@ -3,10 +3,19 @@ import QtQuick 2.3
 Item
 {
     property var container;
-    property real xScale: container ? container.width * .8 : 1;
-    property real yScale: container ? -container.height * .8 : 1;
-    property point origin: Qt.point(container ? container.width * .1 : 0,
-                                    container ? container.height * .9 : 0)
+    property real xScale: container ? container.width * 0.8 : 1;
+    property real yScale: container ? -container.height * 0.8 : 1;
+    property point origin: Qt.point(container ? container.width * 0.1 : 0,
+                                    container ? container.height * 0.9 : 0)
+
+    function scale(scaleFactor)
+    {
+        xScale *= scaleFactor;
+        yScale *= scaleFactor;
+
+        xScale = Math.max(xScale, 1.0);
+        yScale = Math.min(yScale, -1.0);
+    }
 
     function transformX(val)
     {

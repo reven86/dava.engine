@@ -61,7 +61,7 @@ public:
     const std::string& GetIcon() const;
     size_t GetUID() const;
 
-    ObjectHandleT<GraphNode> GetParentNode();
+    ObjectHandleT<GraphNode> GetParentNode() const;
 
 private:
     std::string title;
