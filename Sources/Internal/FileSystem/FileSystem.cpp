@@ -31,6 +31,7 @@
 
 #include "Base/Platform.h"
 
+#include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Debug/DVAssert.h"
@@ -64,22 +65,6 @@
 
 namespace DAVA
 {
-
-#if defined(__DAVAENGINE_WINDOWS__)
-using StringType = WideString;
-    #define ToNativeStringType(x) UTF8Utils::EncodeToWideString(x)
-    #define RemoveFunction(x) ::_wremove(x)
-    #define RenameFunction(x, y) ::_wrename(x, y)
-    #define StatStruct _stat
-    #define StatFunction _wstat
-#else
-using StringType = String
-    #define ToNativeStringType(x) (x)
-    #define RemoveFunction(x) ::remove(x)
-    #define RenameFunction(x, y) ::rename(x, y)
-    #define StatStruct stat
-    #define StatFunction stat
-#endif
 
 FileSystem::FileSystem()
 {
@@ -236,12 +221,12 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-    StringType toFile = ToNativeStringType(newFile.GetAbsolutePathname());
-    StringType fromFile = ToNativeStringType(existingFile.GetAbsolutePathname());
+    FileAPI::StringType toFile = ToNativeStringType(newFile.GetAbsolutePathname());
+    FileAPI::StringType fromFile = ToNativeStringType(existingFile.GetAbsolutePathname());
 
     if (overwriteExisting)
     {
-        RemoveFunction(toFile.c_str());
+        FileAPI::RemoveFile(toFile.c_str());
     }
     else
     {
@@ -250,7 +235,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
             return false;
         }
     }
-    int result = RenameFunction(fromFile.c_str(), toFile.c_str());
+    int result = FileAPI::RenameFile(fromFile.c_str(), toFile.c_str());
     bool error = (0 != result);
     if (error)
     {
@@ -293,7 +278,7 @@ bool FileSystem::DeleteFile(const FilePath & filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
 	// function unlink return 0 on success, -1 on error
-    int res = RemoveFunction(ToNativeStringType(filePath.GetAbsolutePathname()).c_str());
+    int res = FileAPI::RemoveFile(ToNativeStringType(filePath.GetAbsolutePathname()).c_str());
     return (res == 0);
 }
 	
@@ -463,9 +448,9 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 	if (IsAPKPath(path))
 		return (fileSet.find(path) != fileSet.end());
 #endif
-    struct StatStruct s;
-    StringType path = ToNativeStringType(pathToCheck.GetAbsolutePathname());
-    if (StatFunction(path.c_str(), &s) == 0)
+    FileAPI::StatStruct s;
+    FileAPI::StringType path = ToNativeStringType(pathToCheck.GetAbsolutePathname());
+    if (FileAPI::Stat(path.c_str(), &s) == 0)
     {
         return (0 != (s.st_mode & S_IFREG));
 	}
@@ -489,9 +474,9 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 		return (dirSet.find(path) != dirSet.end());
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-    struct StatStruct s;
-    StringType path = ToNativeStringType(pathToCheck.GetAbsolutePathname());
-    if (StatFunction(path.c_str(), &s) == 0)
+    FileAPI::StatStruct s;
+    FileAPI::StringType path = ToNativeStringType(pathToCheck.GetAbsolutePathname());
+    if (FileAPI::Stat(path.c_str(), &s) == 0)
     {
         return (0 != (s.st_mode & S_IFDIR));
 	}

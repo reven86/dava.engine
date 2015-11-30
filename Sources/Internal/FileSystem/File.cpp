@@ -31,6 +31,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/FileAPIHelper.h"
 
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
@@ -106,17 +107,17 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
 {
     FILE * file = 0;
     uint32 size = 0;
-    WideString path = UTF8Utils::EncodeToWideString(filePath.GetAbsolutePathname());
+    FileAPI::StringType path = ToNativeStringType(filePath.GetAbsolutePathname());
 
     if((attributes & File::OPEN) && (attributes & File::READ))
     {
         if(attributes & File::WRITE)
         {
-            file = _wfopen(path.c_str(), L"r+b");
+            file = FileAPI::OpenFile(path.c_str(), LITERAL("r+b"));
         }
         else
         {
-            file = _wfopen(path.c_str(), L"rb");
+            file = FileAPI::OpenFile(path.c_str(), LITERAL("rb"));
         }
         
         if (!file) return NULL;
@@ -126,12 +127,12 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
     }
     else if ((attributes & File::CREATE) && (attributes & File::WRITE))
     {
-        file = _wfopen(path.c_str(), L"wb");
+        file = FileAPI::OpenFile(path.c_str(), LITERAL("wb"));
         if (!file)return NULL;
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
-        file = _wfopen(path.c_str(), L"ab");
+        file = FileAPI::OpenFile(path.c_str(), LITERAL("ab"));
         if (!file)return NULL;
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
@@ -140,7 +141,6 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
     {
         return nullptr;
     }
-    
     
     File * fileInstance = new File();
     fileInstance->filename = filePath;
