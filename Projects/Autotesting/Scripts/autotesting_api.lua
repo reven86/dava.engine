@@ -222,22 +222,25 @@ MP_STATE = {}
 MP_STATE['READY'] = "ready"
 MP_STATE['NO_DEVICE'] = "not_found"
 
+STATE_RECORD = "State"
+COMMAND_RECORD = "Command"
+
 -- mark current device as ready to work in DB
 function ReadState(name)
-    return autotestingSystem:ReadState(name, "State")
+    return autotestingSystem:ReadState(name, STATE_RECORD )
 end
 
 function ReadCommand(name)
-    return autotestingSystem:ReadState(name, "Command")
+    return autotestingSystem:ReadState(name, COMMAND_RECORD )
 end
 
 function WriteState(name, state)
-    autotestingSystem:WriteState(name, "State", state)
+    autotestingSystem:WriteState(name, STATE_RECORD , state)
     coroutine.yield()
 end
 
 function WriteCommand(name, command)
-    autotestingSystem:WriteState(name, "Command", command)
+    autotestingSystem:WriteState(name, COMMAND_RECORD, command)
     coroutine.yield()
 end
 
