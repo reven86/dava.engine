@@ -67,7 +67,7 @@ bool BasePropertyDelegate::setModelData(QWidget *editor, QAbstractItemModel *mod
 
 }
 
-void BasePropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
+void BasePropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions)
 {
     AbstractProperty *property = static_cast<AbstractProperty *>(index.internalPointer());
     if (property && property->GetFlags() & AbstractProperty::EF_CAN_RESET )

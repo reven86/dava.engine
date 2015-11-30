@@ -76,13 +76,13 @@ public:
 
     Circle circle; // circle in case if it's circle collision object
     //float32 basePolygonRadius;	//	Square radius of the rotated object
-    Vector2 basePolygonCenter;	// real center of the collision polygon
+    Vector2 basePolygonCenter; // real center of the collision polygon
 
-	//Vector2 updatedCenter;		// real center of the collision polygon
-	ContactManifold2 manifold;
-	
-	Polygon2 * basePolygon;
-	Polygon2 polygon;
+    //Vector2 updatedCenter;		// real center of the collision polygon
+    ContactManifold2 manifold;
+
+    Polygon2* basePolygon;
+    Polygon2 polygon;
 	AABBox2 bbox;
 	
 	uint32 updateFrameIndex;

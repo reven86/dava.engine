@@ -164,11 +164,11 @@ namespace DAVA
     void AutotestingSystem::RunTests()
     {
         if (!isInit || isRunning)
-		{
-			return;
-		}
-		isRunning = true;
-		OnTestStarted();
+        {
+            return;
+        }
+        isRunning = true;
+        OnTestStarted();
 	}
 
 	void AutotestingSystem::OnInit()
@@ -357,12 +357,12 @@ namespace DAVA
 
     void AutotestingSystem::OnError(const String& errorMessage)
     {
-		Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
+        Logger::Error("AutotestingSystem::OnError %s", errorMessage.c_str());
 
-		AutotestingDB::Instance()->Log("ERROR", errorMessage);
+        AutotestingDB::Instance()->Log("ERROR", errorMessage);
 
-		MakeScreenShot();
-        
+        MakeScreenShot();
+
         AutotestingDB::Instance()->Log("ERROR", screenShotName);
 
 		if (isDB && deviceId != "not-initialized")
@@ -475,7 +475,7 @@ namespace DAVA
                 findIt->second = input;
             }
             else
-			{
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE", id);
             }
         }
@@ -489,7 +489,7 @@ namespace DAVA
                 touches.erase(findIt);
             }
             else
-			{
+            {
                 Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found", id);
             }
         }
@@ -500,11 +500,11 @@ namespace DAVA
         }
     }
 
-	bool AutotestingSystem::FindTouch(int32 id, UIEvent &touch)
-	{
-		bool isFound = false;
-		Map<int32, UIEvent>::iterator findIt = touches.find(id);
-		if (findIt != touches.end())
+    bool AutotestingSystem::FindTouch(int32 id, UIEvent& touch)
+    {
+        bool isFound = false;
+        Map<int32, UIEvent>::iterator findIt = touches.find(id);
+        if (findIt != touches.end())
 		{
 			isFound = true;
 			touch = findIt->second;

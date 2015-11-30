@@ -38,7 +38,10 @@ namespace DAVA
 static const String UISWITCH_BUTTON_LEFT_NAME = "buttonLeft";
 static const String UISWITCH_BUTTON_RIGHT_NAME = "buttonRight";
 static const String UISWITCH_BUTTON_TOGGLE_NAME = "buttonToggle";
-static const float32 SWITCH_ANIMATION_TIME = 0.1f;
+static const float32 UISWITCH_SWITCH_ANIMATION_TIME = 0.1f;
+static const int32 UISWITCH_MOVE_ANIMATION_TRACK = 10;
+static const float32 UISWITCH_ANCHOR_UNDEFINED = 10000.f;
+static float32 dragAnchorX = UISWITCH_ANCHOR_UNDEFINED;
 
 class TogglePositionAnimation : public LinearAnimation<float32>
 {
@@ -203,13 +206,9 @@ void UISwitch::LoadFromYamlNodeCompleted()
     InitControls();
 }
 
-static const int32 MOVE_ANIMATION_TRACK = 10;
-static const float32 ANCHOR_UNDEFINED = 10000;
-static float32 dragAnchorX = ANCHOR_UNDEFINED;
-
 void UISwitch::Input(UIEvent *currentInput)
 {
-    if (toggle->IsAnimating(MOVE_ANIMATION_TRACK))
+    if (toggle->IsAnimating(UISWITCH_MOVE_ANIMATION_TRACK))
     {
         return;
     }
@@ -224,12 +223,12 @@ void UISwitch::Input(UIEvent *currentInput)
         }
         else
         {
-            dragAnchorX = ANCHOR_UNDEFINED;
+            dragAnchorX = UISWITCH_ANCHOR_UNDEFINED;
         }
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
-        if (dragAnchorX < ANCHOR_UNDEFINED)
+        if (dragAnchorX < UISWITCH_ANCHOR_UNDEFINED)
         {
             CheckToggleSideChange(currentInput);
 
@@ -250,7 +249,7 @@ void UISwitch::Input(UIEvent *currentInput)
     }
     else if (currentInput->phase == UIEvent::Phase::ENDED || currentInput->phase == UIEvent::Phase::CANCELLED)
     {
-        if (dragAnchorX < ANCHOR_UNDEFINED)
+        if (dragAnchorX < UISWITCH_ANCHOR_UNDEFINED)
         {
             CheckToggleSideChange(currentInput);
             toggle->SetSelected(false);
@@ -261,9 +260,9 @@ void UISwitch::Input(UIEvent *currentInput)
         }       
         float32 toggleX = GetToggleUttermostPosition();
 
-        bool causedByTap = dragAnchorX >= ANCHOR_UNDEFINED;
-        Animation * animation = new TogglePositionAnimation(causedByTap, this, &(toggle->relativePosition.x), toggleX, SWITCH_ANIMATION_TIME, Interpolation::EASY_IN);
-        animation->Start(MOVE_ANIMATION_TRACK);
+        bool causedByTap = dragAnchorX >= UISWITCH_ANCHOR_UNDEFINED;
+        Animation* animation = new TogglePositionAnimation(causedByTap, this, &(toggle->relativePosition.x), toggleX, UISWITCH_SWITCH_ANIMATION_TIME, Interpolation::EASY_IN);
+        animation->Start(UISWITCH_MOVE_ANIMATION_TRACK);
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
@@ -273,7 +272,7 @@ void UISwitch::SetIsLeftSelected(bool aIsLeftSelected)
 {
     InternalSetIsLeftSelected(aIsLeftSelected, true);
     float32 toggleXPosition = GetToggleUttermostPosition();
-    toggle->StopAnimations(MOVE_ANIMATION_TRACK);
+    toggle->StopAnimations(UISWITCH_MOVE_ANIMATION_TRACK);
     toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
 }
 

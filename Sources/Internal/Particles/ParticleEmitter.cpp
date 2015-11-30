@@ -312,13 +312,13 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
         if (lifeTimeNode)
         {
             lifeTime = lifeTimeNode->AsFloat();
-		}else
-		{
-			lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
-		}
-		
+        }
+        else
+        {
+            lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
+        }
 
-		const YamlNode * nameNode = emitterNode->Get("name");
+        const YamlNode * nameNode = emitterNode->Get("name");
 		if (nameNode)		
 			name = FastName(nameNode->AsString().c_str());
 		if (emitterNode->Get("emissionAngle"))

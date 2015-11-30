@@ -420,12 +420,12 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         DAVA::Texture::SetDefaultGPU(gpu);
 
         DAVA::TexturesMap allScenesTextures;
-        DAVA::Vector<DAVA::NMaterial*> allSceneMaterials;
+        DAVA::Set<DAVA::NMaterial*> allSceneMaterials;
         for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
         {
             SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-            SceneHelper::EnumerateMaterialInstances(scene, allSceneMaterials);
+            SceneHelper::EnumerateMaterials(scene, allSceneMaterials);
         }
 
         if (!allScenesTextures.empty())
@@ -2794,7 +2794,8 @@ void QtMainWindow::OnMaterialLightViewChanged(bool)
 
 void QtMainWindow::OnCustomQuality()
 {
-    QualitySwitcher::Show();
+    auto d = QualitySwitcher::GetDialog();
+    d->raise();
 }
 
 void QtMainWindow::UpdateConflictingActionsState(bool enable)

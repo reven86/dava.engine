@@ -118,14 +118,14 @@ public:
     void SetFontSize(float size);
 
     void SetTextAlign(DAVA::int32 align);
-	DAVA::int32 GetTextAlign();
+    DAVA::int32 GetTextAlign();
 
-	void SetTextUseRtlAlign(bool useRtlAlign);
-	bool GetTextUseRtlAlign() const;
+    void SetTextUseRtlAlign(bool useRtlAlign);
+    bool GetTextUseRtlAlign() const;
 
-	void SetVisible(bool isVisible);
+    void SetVisible(bool isVisible);
 
-	void SetIsPassword(bool isPassword);
+    void SetIsPassword(bool isPassword);
 
 	void SetInputEnabled(bool value);
 

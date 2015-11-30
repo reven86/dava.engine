@@ -60,15 +60,15 @@ signals:
 public slots:
     void OnDocumentChanged(Document* context);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
-
-private slots:
-    void OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
-    void filterTextChanged(const QString&);
-    void OnImport();
     void OnCopy();
     void OnPaste();
     void OnCut();
     void OnDelete();
+    void OnImport();
+
+private slots:
+    void OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
+    void filterTextChanged(const QString&);
     void OnRename();
     void OnAddStyle();
 

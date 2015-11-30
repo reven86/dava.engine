@@ -70,7 +70,7 @@ namespace TextureGLES2
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
-void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i = InvalidIndex);
+void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i = DAVA::InvalidIndex);
 void SetAsRenderTarget(Handle tex, Handle depth);
 Size2i Size(Handle tex);
 void ReCreateAll();
