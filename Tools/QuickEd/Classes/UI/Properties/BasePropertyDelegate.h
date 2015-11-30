@@ -45,7 +45,7 @@ class BasePropertyDelegate: public QObject
 public:
     explicit BasePropertyDelegate(PropertiesTreeItemDelegate *delegate = NULL);
     virtual ~BasePropertyDelegate();
-    virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const override;
+    virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) override;
     virtual bool setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
     static bool IsValueModified(QWidget *editor)
