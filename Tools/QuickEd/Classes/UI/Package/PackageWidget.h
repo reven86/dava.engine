@@ -64,11 +64,11 @@ public slots:
     void OnPaste();
     void OnCut();
     void OnDelete();
+    void OnImport();
 
 private slots:
     void OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
     void filterTextChanged(const QString&);
-    void OnImport();
     void OnRename();
     void OnAddStyle();
 

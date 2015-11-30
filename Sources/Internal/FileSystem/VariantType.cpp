@@ -433,7 +433,7 @@ void VariantType::SetVariant(const VariantType& var)
         {
             SetKeyedArchive(var.AsKeyedArchive());
         }
-		break;
+        break;
 	case TYPE_INT64:
 		{
 			SetInt64(var.AsInt64());
@@ -1489,7 +1489,7 @@ void* VariantType::MetaObject()
         ret = pointerValue;
         break;
     case TYPE_KEYED_ARCHIVE:
-		ret = &pointerValue;
+        ret = &pointerValue;
 		break;
 	default:
 		{
@@ -1553,7 +1553,7 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetUInt64(*((DAVA::uint64*)src));
         break;
     case TYPE_VECTOR2:
-		v.SetVector2(*((DAVA::Vector2 *) src));
+        v.SetVector2(*((DAVA::Vector2 *) src));
 		break;
 	case TYPE_VECTOR3:
 		v.SetVector3(*((DAVA::Vector3 *) src));
@@ -1683,8 +1683,8 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
             *((DAVA::int64*)dst) = val.AsInt64();
             break;
         case TYPE_UINT64:
-            *((DAVA::uint64 *) dst) = val.AsUInt64();
-			break;
+            *((DAVA::uint64*)dst) = val.AsUInt64();
+            break;
 		case TYPE_VECTOR2:
 			*((DAVA::Vector2 *) dst) = val.AsVector2();
 			break;
@@ -1776,7 +1776,7 @@ VariantType VariantType::FromType(int type)
         break;
     case TYPE_UINT64:
         v.SetUInt64(0);
-		break;
+        break;
 	case TYPE_VECTOR2:
 		v.SetVector2(Vector2());
 		break;
