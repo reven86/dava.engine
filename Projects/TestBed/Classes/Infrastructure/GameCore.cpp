@@ -46,7 +46,7 @@
 #include "Tests/FullscreenTest.h"
 #include "Tests/UIBackgroundTest.h"
 #include "Tests/ClipTest.h"
-#include "Tests/UIBackgroundTest.h"
+#include "Tests/InputTest.h"
 //$UNITTEST_INCLUDE
 
 #include "MemoryManager/MemoryProfiler.h"
@@ -77,7 +77,7 @@ void GameCore::RegisterTests()
     new FullscreenTest();
     new UIBackgroundTest();
     new ClipTest();
-    new UIBackgroundTest();
+    new InputTest();
     //$UNITTEST_CTOR
 }
 

@@ -147,6 +147,7 @@ public:
         HID_KEYBOARD_TYPE,
         HID_KEYPAD_TYPE,
         HID_SYSTEM_CONTROL_TYPE,
+        HID_TOUCH_TYPE,
         HID_COUNT_TYPE,
     };
     using ListForStorageInfo = List<StorageInfo>;
