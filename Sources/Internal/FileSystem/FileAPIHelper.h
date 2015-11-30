@@ -48,13 +48,13 @@ using StringType = WideString;
     #define LITERAL(x) L##x
     #define ToNativeStringType(x) UTF8Utils::EncodeToWideString(x)
 
-static auto OpenFile = ::_wfopen;
-static auto RemoveFile = ::_wremove;
-static auto RenameFile = ::_wrename;
+const auto OpenFile = ::_wfopen;
+const auto RemoveFile = ::_wremove;
+const auto RenameFile = ::_wrename;
 struct StatStruct : public _stat
 {
 };
-static auto Stat = _wstat;
+const auto Stat = _wstat;
 
 #else
 using StringType = String;
@@ -62,13 +62,13 @@ using StringType = String;
     #define LITERAL(x) x
     #define ToNativeStringType(x) (x)
 
-static auto OpenFile = ::fopen;
-static auto RemoveFile = ::remove;
-static auto RenameFile = ::rename;
+const auto OpenFile = ::fopen;
+const auto RemoveFile = ::remove;
+const auto RenameFile = ::rename;
 struct StatStruct : public stat
 {
 };
-static auto Stat = stat;
+const auto Stat = stat;
 
 #endif
 }

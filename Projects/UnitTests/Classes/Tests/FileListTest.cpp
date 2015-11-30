@@ -50,13 +50,18 @@ DAVA_TESTCLASS(FileListTest)
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
         RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
+        
+    #if defined(__DAVAENGINE_WINDOWS__)
+        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTestWindowsExtension/", true);
+        RecursiveCopy("~res:/TestData/FileListTestWindowsExtension/", "~doc:/TestData/FileListTestWindowsExtension/");
+    #endif
     }
 
     DAVA_TEST(ResTestFunction)
     {
         ScopedPtr<FileList> fileList(new FileList("~res:/TestData/FileListTest/"));
 
-        TEST_VERIFY(fileList->GetDirectoryCount() == 4);
+        TEST_VERIFY(fileList->GetDirectoryCount() == 3);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -164,33 +169,61 @@ DAVA_TESTCLASS(FileListTest)
                     }
                 }
             }
-            else //cyrillic Folder4
+            else
             {
-                TEST_VERIFY(files->GetFileCount() == 1);
-                FilePath txtFileName = files->GetPathname(2); //first file name
-                TEST_VERIFY(txtFileName.GetExtension() == ".txt");
-                
-                RefPtr<File> file(File::Create(txtFileName, File::OPEN | File::READ));
-                TEST_VERIFY(file != nullptr);
-                if (file == nullptr)
-                {
-                    continue;
-                }
-
-                const String expectedContent = "Hello :)";
-                String content;
-                file->ReadString(content);
-
-                TEST_VERIFY(content == expectedContent);
+                TEST_VERIFY(false);
             }
         }
     }
+
+#if defined(__DAVAENGINE_WINDOWS__)
+    void RunCyrillicPathTest(const String& location)
+    {
+        ScopedPtr<FileList> fileList(new FileList(location + "TestData/FileListTestWindowsExtension/"));
+
+        TEST_VERIFY(fileList->GetDirectoryCount() == 1);
+        TEST_VERIFY(fileList->GetFileCount() == 0);
+
+        for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
+        {
+            if (fileList->IsNavigationDirectory(ifo)) continue;
+
+            String filename = fileList->GetFilename(ifo);
+            FilePath pathname = fileList->GetPathname(ifo);
+            ScopedPtr<FileList> files(new FileList(pathname));
+            TEST_VERIFY(files->GetDirectoryCount() == 0);
+
+            TEST_VERIFY(files->GetFileCount() == 1);
+            FilePath txtFileName = files->GetPathname(2); //first file name
+            TEST_VERIFY(txtFileName.GetExtension() == ".txt");
+            
+            RefPtr<File> file(File::Create(txtFileName, File::OPEN | File::READ));
+            TEST_VERIFY(file != nullptr);
+            if (file == nullptr)
+            {
+                continue;
+            }
+
+            const String expectedContent = "Hello :)";
+            String content;
+            file->ReadString(content);
+
+            TEST_VERIFY(content == expectedContent);
+        }
+    }
+
+    DAVA_TEST(FileListTestWindowsExtensions)
+    {
+        RunCyrillicPathTest("~res:/");
+        RunCyrillicPathTest("~doc:/");
+    }
+#endif // __DAVAENGINE_WINDOWS__
 
     DAVA_TEST(DocTestFunction)
     {
         ScopedPtr<FileList> fileList(new FileList("~doc:/TestData/FileListTest/"));
 
-        TEST_VERIFY(fileList->GetDirectoryCount() == 4);
+        TEST_VERIFY(fileList->GetDirectoryCount() == 3);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -298,26 +331,10 @@ DAVA_TESTCLASS(FileListTest)
                     }
                 }
             }
-            else //cyrillic Folder4
+            else
             {
-                TEST_VERIFY(files->GetFileCount() == 1);
-                FilePath txtFileName = files->GetPathname(2); //first file name
-                TEST_VERIFY(txtFileName.GetExtension() == ".txt");
-
-                RefPtr<File> file(File::Create(txtFileName, File::OPEN | File::READ));
-                TEST_VERIFY(file != nullptr);
-                if (file == nullptr)
-                {
-                    continue;
-                }
-
-                const String expectedContent = "Hello :)";
-                String content;
-                file->ReadString(content);
-
-                TEST_VERIFY(content == expectedContent);
+                TEST_VERIFY(false);
             }
-
         }
     }
 
