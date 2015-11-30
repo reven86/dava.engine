@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="GE">
     <file>GraphEditorView.qml</file>
+    <file>ConnectorsLayer.qml</file>
     <file>ViewTransform.qml</file>
     <file>SimpleComponent.qml</file>
     <file>ContextMenu.qml</file>

@@ -5,6 +5,6 @@
 #include "core_reflection/utilities/reflection_function_utilities.hpp"
 
 BEGIN_EXPOSE( Connector, MetaNone() )
-    EXPOSE("outputSlot", GetOutputSlotId, DummySetSlotId, MetaNone())
-    EXPOSE("inputSlot", GetInputSlotId, DummySetSlotId, MetaNone())
+    EXPOSE("outputSlot", GetOutputSlotId, MetaNone())
+    EXPOSE("inputSlot", GetInputSlotId, MetaNone())
 END_EXPOSE()

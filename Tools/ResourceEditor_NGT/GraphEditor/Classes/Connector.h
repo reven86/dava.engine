@@ -51,16 +51,9 @@ public:
     size_t GetInputSlotId() const;
     size_t GetOutputSlotId() const;
 
-    void Repaint();
-
-private:
-    void DummySetSlotId(size_t const&);
-
 private:
     size_t outputSlotID = 0;
     size_t intputSlotID = 0;
-
-    std::array<size_t, 2> signalConnections;
 };
 
 #endif // __GRAPHEDITOR_CONNECTION_H__

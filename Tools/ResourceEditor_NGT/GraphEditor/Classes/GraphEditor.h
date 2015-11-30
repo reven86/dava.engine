@@ -29,8 +29,6 @@
 #ifndef __GRAPHEDITOR_GRAPHEDITOR_H__
 #define __GRAPHEDITOR_GRAPHEDITOR_H__
 
-#include "ScreenTransform.h"
-
 #include <core_data_model/i_list_model.hpp>
 #include <core_reflection/reflected_object.hpp>
 
@@ -48,21 +46,13 @@ public:
     ~GraphEditor();
 
 private:
-    void SizeChanged(int width, int height);
-
     IListModel* GetConnectorsModel() const;
     IListModel* GetNodeModel() const;
     IListModel* GetRootContextMenuModel() const;
     IListModel* GetNodeContextMenuModel() const;
     IListModel* GetSlotContextMenuModel() const;
 
-    void Scale(float factor, float x, float y);
-    void Shift(float x, float y);
-
-    void OnActionTriggered();
     void CreateConnection(size_t outputUID, size_t inputUID);
-
-    void ApplyTransform();
 };
 
 #endif // __GRAPHEDITOR_GRAPHEDITOR_H__

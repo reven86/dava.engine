@@ -56,8 +56,11 @@ public:
     };
 
     void Init(Params&& params);
-    void SetPosition(float x, float y);
-    QPointF GetPosition() const;
+
+    float GetPosX() const;
+    void SetPosX(float posX);
+    float GetPosY() const;
+    void SetPosY(float posY);
 
     std::string const& GetTitle() const;
     void SetTitle(std::string const& title);
@@ -69,34 +72,22 @@ public:
     }
 
     void Shift(float pixelShiftX, float pixelShiftY);
-    void ApplyTransform();
-
-    Signal<void()> NodeMoved;
 
 private:
     IListModel* GetInputSlots() const;
     IListModel* GetOutputSlots() const;
 
-    float GetPosX() const;
-    void SetPosX(const float& x);
-
-    float GetPosY() const;
-    void SetPosY(const float& y);
-
-    float GetScale() const;
-    void SetScale(const float& scale);
+    /// we need this method to call it through NGT reflection system and signal qml that value changed
+    void PosXChanged(const float& x);
+    void PosYChanged(const float& y);
 
 private:
     std::string title;
     float modelX = 0.0f, modelY = 0.0f;
-    float pixelX = 0.0f, pixelY = 0.0f;
-    float scale = 1.0f;
 
     std::unique_ptr<IListModel> inputSlots;
     std::unique_ptr<IListModel> outputSlots;
     std::string typeId;
-
-    size_t transformConnectionID = 0;
 };
 
 #endif // __GRAPHEDITOR_GRAPHNODE_H__

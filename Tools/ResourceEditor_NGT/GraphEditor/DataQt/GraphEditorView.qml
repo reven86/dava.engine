@@ -21,12 +21,10 @@ Rectangle
     property var connectionStartSlot
     property var interactiveConnectionCurve : connectionCurve
 
-    onWidthChanged : { sizeChanged(width, height) }
-    onHeightChanged : { sizeChanged(width, height) }
-
     function connect(output, input)
     {
         createConnection(output, input)
+        repaintConnectors()
     }
 
     function getNodeContextMenu()
@@ -37,6 +35,11 @@ Rectangle
     function getSlotContextMenu()
     {
         return slotMenuModel
+    }
+
+    function repaintConnectors()
+    {
+        connectorsLayer.requestPaint()
     }
 
     ColumnLayout
@@ -150,8 +153,8 @@ Rectangle
                     var newScreenPos = graphCanvas.viewTransform.transform(Qt.point(oldPos.x, oldPos.y));
                     var shift = Qt.point(screenPos.x - newScreenPos.x, screenPos.y - newScreenPos.y)
                     graphCanvas.viewTransform.shift(shift);
-                    scaleCanvas(delta, wheel.x, wheel.y);
                     graphCanvas.requestPaint()
+                    repaintConnectors()
                 }
                 
                 onPositionChanged:
@@ -160,9 +163,10 @@ Rectangle
                     {
                         var pos = Qt.point(mouse.x, mouse.y)
                         var delta = Qt.point(pos.x - mouseDragStart.x, pos.y - mouseDragStart.y)
-                        shiftCanvas(delta.x, delta.y)
                         mouseDragStart = pos
+                        graphCanvas.viewTransform.shift(delta);
                         graphCanvas.requestPaint()
+                        repaintConnectors()
                     }
                 }
                 
@@ -185,45 +189,59 @@ Rectangle
                 ValueExtension {}
             }
             
-            Repeater
+            Item
             {
-                id: itemRepeater
-                model: nodesModel
-                delegate: SimpleComponent
+                id : graphObject
+                x: graphCanvasObject.viewTransform.origin.x
+                y: graphCanvasObject.viewTransform.origin.y
+                z : 50
+
+                width : dummyRow.width
+                height : dummyRow.height
+                transform : Scale
                 {
-                    z : graphCanvas.z + 10
-                    node : Value
-                    nodeContextMenu : getNodeContextMenu()
+                    origin.x : 0
+                    origin.y : 0
+                    xScale : graphCanvasObject.viewTransform.xScale
+                    yScale : graphCanvasObject.viewTransform.xScale
                 }
-            }
 
-            WGListModel
-            {
-                id: connectorsMode
-                source: connectors
-
-                ValueExtension {}
-            }
-
-            Repeater
-            {
-                id: connectorRepeater
-                model: connectorsMode
-                delegate: ConnectionCurve
+                RowLayout
                 {
-                    curveColor : "red"
-                    z : graphCanvas.z + 100 // reserve some z range for nodes, slots and other stuff
-                    isInteractive : false
-                    outputSlot : slotsIndex[Value.outputSlot]
-                    inputSlot : slotsIndex[Value.inputSlot]
-                }
-            }
+                    id : dummyRow
+                    Repeater
+                    {
+                        id: itemRepeater
+                        model: nodesModel
+                        delegate: SimpleComponent
+                        {
+                            x : Value.nodePosX
+                            y : Value.nodePosY
+                            z : graphCanvas.z + 10
 
-            ConnectionCurve
-            {
-                id : connectionCurve
-                curveColor : "red"
-                z : graphCanvas.z + 110 // interactive curve always on top 
+                            node : Value
+                            nodeContextMenu : getNodeContextMenu()
+                        }
+                    }
+
+                    ConnectorsLayer
+                    {
+                        id : connectorsLayer
+                        x : 0
+                        y : 0
+                        z : 100
+                        width : graphObject.width
+                        height : graphObject.height
+                        curveColor : "red"
+                        connectors : connectorsModel
+                    }
+
+                    ConnectionCurve
+                    {
+                        id : connectionCurve
+                        curveColor : "red"
+                    }
+                }
             }
 
             ContextMenu

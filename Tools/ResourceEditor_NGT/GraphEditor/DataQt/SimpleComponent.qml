@@ -10,18 +10,8 @@ Item
     property var nodeContextMenu
     property real margin : 4.0
 
-    x : node.nodePosX
-    y : node.nodePosY
     width : contentRect.width
     height : contentRect.height
-
-    transform : Scale
-    {
-        origin.x : 0
-        origin.y : 0
-        xScale : node.nodeScale
-        yScale : node.nodeScale
-    }
 
     Rectangle
     {
@@ -50,16 +40,17 @@ Item
                 {
                     if(mouseDragStart && (mouse.buttons & Qt.LeftButton))
                     {
-                        var pos = mapToItem(graphCanvasObject, mouse.x, mouse.y)
+                        var pos = graphCanvas.viewTransform.inverseTransform(mapToItem(graphCanvasObject, mouse.x, mouse.y))
                         var delta = Qt.point(pos.x - mouseDragStart.x, pos.y - mouseDragStart.y)
                         node.shiftNode(delta.x, delta.y)
                         mouseDragStart = pos
+                        graphEditorComponent.repaintConnectors()
                     }
                 }
 
                 onPressed : 
                 {
-                    mouseDragStart = mapToItem(graphCanvasObject, mouse.x, mouse.y)
+                    mouseDragStart = graphCanvas.viewTransform.inverseTransform(mapToItem(graphCanvasObject, mouse.x, mouse.y))
                 }
 
                 onReleased : 

@@ -5,9 +5,8 @@
 #include "core_reflection/utilities/reflection_function_utilities.hpp"
 
 BEGIN_EXPOSE( GraphNode, MetaNone() )
-    EXPOSE("nodePosX", GetPosX, SetPosX, MetaNone())
-    EXPOSE("nodePosY", GetPosY, SetPosY, MetaNone())
-    EXPOSE("nodeScale", GetScale, SetScale, MetaNone())
+    EXPOSE("nodePosX", GetPosX, PosXChanged, MetaNone())
+    EXPOSE("nodePosY", GetPosY, PosYChanged, MetaNone())
     EXPOSE("title", GetTitle, MetaNone())
     EXPOSE("inputSlots", GetInputSlots, MetaNone())
     EXPOSE("outputSlots", GetOutputSlots, MetaNone())

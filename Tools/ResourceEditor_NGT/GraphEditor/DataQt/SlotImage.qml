@@ -50,9 +50,7 @@ Image
 
         onPressed :
         {
-            console.log("Pressed")
             interactiveConnectionCurve.startPoint = getGlobalCenter();
-            interactiveConnectionCurve.requestPaint()
             connectionStartSlot = slot
         }
 

@@ -48,14 +48,6 @@ GraphEditor::~GraphEditor()
     ConnectionManager::Instance().Finilize();
 }
 
-void GraphEditor::SizeChanged(int width, int height)
-{
-    if (width == 0 || height == 0)
-        return;
-
-    ScreenTransform::Instance().Resize(QSizeF(width, height));
-}
-
 IListModel* GraphEditor::GetConnectorsModel() const
 {
     return ConnectionManager::Instance().GetConnectorsModel();
@@ -79,20 +71,6 @@ IListModel* GraphEditor::GetNodeContextMenuModel() const
 IListModel* GraphEditor::GetSlotContextMenuModel() const
 {
     return ConnectionManager::Instance().GetSlotContextMenuModel();
-}
-
-void GraphEditor::Scale(float factor, float x, float y)
-{
-    ScreenTransform::Instance().Scale(factor, x, y);
-}
-
-void GraphEditor::Shift(float x, float y)
-{
-    ScreenTransform::Instance().Shift(QPointF(x, y));
-}
-
-void GraphEditor::OnActionTriggered()
-{
 }
 
 void GraphEditor::CreateConnection(size_t outputUID, size_t inputUID)

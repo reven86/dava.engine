@@ -35,7 +35,6 @@
 #include "GraphNode.h"
 #include "ConnectionSlot.h"
 #include "Connector.h"
-#include "ScreenTransform.h"
 
 #include <QFileDialog>
 #include <QFile>
@@ -331,8 +330,7 @@ void ConnectionManager::SaveGraph(float x, float y, size_t objectUid)
     for (TNodeToSlotsMap::value_type const& mapNode : nodeToSlots)
     {
         TNodePtr node = mapNode.first;
-        QPointF pos = node->GetPosition();
-        stream << QString::fromStdString(node->GetType()) << " " << pos.x() << " " << pos.y() << " " << node->GetUID() << "\n";
+        stream << QString::fromStdString(node->GetType()) << " " << node->GetPosX() << " " << node->GetPosY() << " " << node->GetUID() << "\n";
 
         TSlots const& slotCollection = mapNode.second;
         stream << slotCollection.size() << "\n";
@@ -407,7 +405,8 @@ void ConnectionManager::LoadGraph(float x, float y, size_t objectUid)
 
             return slot;
         });
-        node->SetPosition(pos.x(), pos.y());
+        node->SetPosX(pos.x());
+        node->SetPosY(pos.y());
     }
 
     size_t connectionCount = 0;
@@ -422,8 +421,9 @@ void ConnectionManager::LoadGraph(float x, float y, size_t objectUid)
 
 void ConnectionManager::CreateNodeHelper(float x, float y, size_t objectUid, const std::string& typeId)
 {
-    QPointF pt = ScreenTransform::Instance().PtoG(QPointF(x, y));
-    CreateNode(typeId)->SetPosition(pt.x(), pt.y());
+    TNodePtr node = CreateNode(typeId);
+    node->SetPosX(x);
+    node->SetPosY(y);
 }
 
 void ConnectionManager::ClearModel()

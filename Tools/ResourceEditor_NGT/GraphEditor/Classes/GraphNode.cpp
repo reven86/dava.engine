@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "GraphNode.h"
-#include "ScreenTransform.h"
 #include "ConnectionSlot.h"
 #include "BaseModel.h"
 
@@ -77,12 +76,10 @@ size_t GraphNode::GetUID() const
 
 GraphNode::GraphNode()
 {
-    transformConnectionID = ScreenTransform::Instance().TransformChanged.connect(std::bind(&GraphNode::ApplyTransform, this));
 }
 
 GraphNode::~GraphNode()
 {
-    ScreenTransform::Instance().TransformChanged.disconnect(transformConnectionID);
 }
 
 void GraphNode::Init(Params&& params)
@@ -92,70 +89,32 @@ void GraphNode::Init(Params&& params)
     typeId = std::move(params.typeId);
 }
 
-void GraphNode::SetPosition(float x, float y)
-{
-    modelX = x;
-    modelY = y;
-    ApplyTransform();
-}
-
-QPointF GraphNode::GetPosition() const
-{
-    return QPointF(modelX, modelY);
-}
-
 float GraphNode::GetPosX() const
 {
-    return pixelX;
+    return modelX;
 }
 
-void GraphNode::SetPosX(const float& x)
+void GraphNode::SetPosX(float x)
 {
-    pixelX = x;
+    modelX = x;
+    setProperty(this, "nodePosX", modelY);
 }
 
 float GraphNode::GetPosY() const
 {
-    return pixelY;
+    return modelY;
 }
 
-void GraphNode::SetPosY(const float& y)
+void GraphNode::SetPosY(float y)
 {
-    pixelY = y;
+    modelY = y;
+    setProperty(this, "nodePosY", modelY);
 }
 
-float GraphNode::GetScale() const
+void GraphNode::Shift(float modelShiftX, float modelShiftY)
 {
-    return scale;
-}
-
-void GraphNode::SetScale(const float& scale_)
-{
-    scale = scale_;
-}
-
-void GraphNode::Shift(float pixelShiftX, float pixelShiftY)
-{
-    ScreenTransform& transform = ScreenTransform::Instance();
-    QPointF zeroPoint = transform.PtoG(QPointF(0.0f, 0.0f));
-    QPointF shiftPoint = transform.PtoG(QPointF(pixelShiftX, pixelShiftY));
-    QPointF globalShift = shiftPoint - zeroPoint;
-
-    modelX += globalShift.x();
-    modelY += globalShift.y();
-
-    ApplyTransform();
-}
-
-void GraphNode::ApplyTransform()
-{
-    ScreenTransform& transform = ScreenTransform::Instance();
-    QPointF pt = transform.GtoP(QPointF(modelX, modelY));
-    setProperty(this, "nodePosX", pt.x());
-    setProperty(this, "nodePosY", pt.y());
-    setProperty(this, "nodeScale", transform.GetScale());
-
-    NodeMoved();
+    SetPosX(GetPosX() + modelShiftX);
+    SetPosY(GetPosY() + modelShiftY);
 }
 
 IListModel* GraphNode::GetInputSlots() const
@@ -166,4 +125,14 @@ IListModel* GraphNode::GetInputSlots() const
 IListModel* GraphNode::GetOutputSlots() const
 {
     return outputSlots.get();
+}
+
+void GraphNode::PosXChanged(const float& x)
+{
+
+}
+
+void GraphNode::PosYChanged(const float& y)
+{
+
 }

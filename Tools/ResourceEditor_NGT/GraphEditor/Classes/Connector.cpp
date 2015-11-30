@@ -40,25 +40,16 @@
 
 Connector::Connector()
 {
-    signalConnections.fill(0);
 }
 
 Connector::~Connector()
 {
-    ObjectHandleT<GraphNode> outputNode = GetOutputSlot()->GetParentNode();
-    outputNode->NodeMoved.disconnect(signalConnections[0]);
-
-    ObjectHandleT<GraphNode> inputNode = GetInputSlot()->GetParentNode();
-    inputNode->NodeMoved.disconnect(signalConnections[1]);
 }
 
 void Connector::Init(size_t outputSlotID_, size_t intputSlotID_)
 {
     outputSlotID = outputSlotID_;
     intputSlotID = intputSlotID_;
-
-    signalConnections[0] = GetOutputSlot()->GetParentNode()->NodeMoved.connect(std::bind(&Connector::Repaint, this));
-    signalConnections[1] = GetInputSlot()->GetParentNode()->NodeMoved.connect(std::bind(&Connector::Repaint, this));
 }
 
 ObjectHandleT<ConnectionSlot> Connector::GetOutputSlot() const
@@ -73,17 +64,6 @@ ObjectHandleT<ConnectionSlot> Connector::GetInputSlot() const
     return ConnectionManager::Instance().GetSlot(intputSlotID);
 }
 
-void Connector::Repaint()
-{
-    IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
-    assert(defMng != nullptr);
-
-    IClassDefinition* definition = defMng->getDefinition<Connector>();
-    assert(definition != nullptr);
-
-    definition->bindProperty("outputSlot", this).setValue(0);
-}
-
 size_t Connector::GetInputSlotId() const
 {
     return intputSlotID;
@@ -92,12 +72,4 @@ size_t Connector::GetInputSlotId() const
 size_t Connector::GetOutputSlotId() const
 {
     return outputSlotID;
-}
-
-void Connector::DummySetSlotId(size_t const&)
-{
-    // we don't do anything here, because you can not change slot id in runtime.
-    // You need recreate connector with this purpose
-    // This method need to notify qml that connector must be repainted.
-    // And i need setter for this. NGT will notify qml only if i call setValue through property
 }

@@ -27,7 +27,11 @@ WGContextArea
             delegate : MenuItem
             {
                 text : Value.title
-                onTriggered : Value.trigger(popupPoint.x, popupPoint.y, contextObjectUid)
+                onTriggered :
+                {
+                    var pt = graphCanvas.viewTransform.inverseTransform(popupPoint)
+                    Value.trigger(pt.x, pt.y, contextObjectUid)
+                }
             }
         }
     }

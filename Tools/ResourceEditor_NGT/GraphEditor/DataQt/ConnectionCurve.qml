@@ -5,25 +5,20 @@ Canvas
     anchors.fill: parent
     antialiasing : true
 
+    property real _xScale
+    property real _yScale
+    property var _origin
+
     property var startPoint
     property var endPoint
     property color curveColor
-    property bool isInteractive : true
-    property var outputSlot
-    property var inputSlot
-
-    onOutputSlotChanged: { requestPaint() }
-    onInputSlotChanged: { requestPaint() }
 
     onPaint:
     {
         var ctx = getContext('2d');
         ctx.clearRect(0, 0, width, height);
 
-        var _startPoint = isInteractive ? startPoint : outputSlot.getGlobalCenter();
-        var _endPoint = isInteractive ? endPoint : inputSlot.getGlobalCenter();
-
-        if (_startPoint == null || _endPoint == null)
+        if (startPoint == null || endPoint == null)
             return;
 
         ctx.lineWidth = 6.0
@@ -31,8 +26,8 @@ Canvas
         ctx.strokeStyle = Qt.rgba(curveColor.r, curveColor.g, curveColor.b, 0.3)
 
         ctx.beginPath()
-        ctx.moveTo(_startPoint.x, _startPoint.y)
-        ctx.lineTo(_endPoint.x, _endPoint.y)
+        ctx.moveTo(startPoint.x, startPoint.y)
+        ctx.lineTo(endPoint.x, endPoint.y)
         ctx.stroke();
 
         // -- Solid line
@@ -41,8 +36,8 @@ Canvas
         ctx.strokeStyle = curveColor
 
         ctx.beginPath()
-        ctx.moveTo(_startPoint.x, _startPoint.y)
-        ctx.lineTo(_endPoint.x, _endPoint.y)
+        ctx.moveTo(startPoint.x, startPoint.y)
+        ctx.lineTo(endPoint.x, endPoint.y)
         ctx.stroke();
     }
 }
