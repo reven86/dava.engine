@@ -61,13 +61,6 @@ QualitySettingsSystem::QualitySettingsSystem()
     EnableOption(QUALITY_OPTION_VEGETATION_ANIMATION, true);
     EnableOption(QUALITY_OPTION_STENCIL_SHADOW, true);
     EnableOption(QUALITY_OPTION_WATER_DECORATIONS, false);
-    EnableOption(QUALITY_OPTION_DISABLE_EFFECTS, false);
-    EnableOption(QUALITY_OPTION_LOD0_EFFECTS, false);
-
-    EnableOption(QUALITY_OPTION_DISABLE_FOG, false);
-    EnableOption(QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION, false);
-    EnableOption(QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING, false);
-    EnableOption(QUALITY_OPTION_DISABLE_FOG_HALF_SPACE, false);
 }
 
 void QualitySettingsSystem::Load(const FilePath &path)

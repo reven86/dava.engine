@@ -157,26 +157,33 @@ void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPa
 
 bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPathname)
 {
-	FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(originalPathname);
-    if(false == FileSystem::Instance()->IsFile(descriptorPathname))
+    const FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(originalPathname);
+    const String extension = originalPathname.GetExtension();
+    const ImageFormat sourceFormat = ImageSystem::Instance()->GetImageFormatForExtension(extension);
+    if (false == FileSystem::Instance()->IsFile(descriptorPathname))
     {
-        auto descriptor = new TextureDescriptor();
-        
-		const String extension = originalPathname.GetExtension();
-		const ImageFormat sourceFormat = ImageSystem::Instance()->GetImageFormatForExtension(extension);
-		if (sourceFormat != IMAGE_FORMAT_UNKNOWN)
-		{
+        std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
+        if (sourceFormat != IMAGE_FORMAT_UNKNOWN)
+        {
 			descriptor->dataSettings.sourceFileFormat = sourceFormat;
 			descriptor->dataSettings.sourceFileExtension = extension;
 		}
         
         descriptor->Save(descriptorPathname);
-		delete descriptor;
-
 		return true;
     }
+    else
+    {
+        std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPathname));
+        if (sourceFormat != descriptor->dataSettings.sourceFileFormat)
+        {
+            descriptor->dataSettings.sourceFileFormat = sourceFormat;
+            descriptor->dataSettings.sourceFileExtension = extension;
+            descriptor->Save(descriptorPathname);
+        }
+    }
 
-	return false;
+    return false;
 }
 
 
