@@ -38,13 +38,15 @@ FloatingPointExceptionTest::FloatingPointExceptionTest ()
 
 void DoFloatingPointException(DAVA::BaseObject*, void*, void*)
 {
-    // TODO
-    DAVA::Logger::Debug("try overflow floating point number");
+    DAVA::Logger::Debug("start floating point test");
+    
     DAVA::float32 max_value = std::numeric_limits<float>::max();
+    DAVA::float32 min_value = std::numeric_limits<float>::min();
+    DAVA::float32 inf = std::numeric_limits<float>::infinity();
     try
     {
         DAVA::float32 value = max_value / 0.f;
-        DAVA::Logger::Debug("value: %f", value);
+        DAVA::Logger::Debug("value: max_value / 0.f == %f", value);
     } catch (std::exception& ex)
     {
         DAVA::Logger::Debug("catch floating point exception: %s", ex.what());
@@ -53,7 +55,7 @@ void DoFloatingPointException(DAVA::BaseObject*, void*, void*)
     try
     {
         DAVA::float32 value = max_value * max_value;
-        DAVA::Logger::Debug("value: %f", value);
+        DAVA::Logger::Debug("value: max_value * max_value == %f", value);
     }
     catch (std::exception& ex)
     {
@@ -62,13 +64,25 @@ void DoFloatingPointException(DAVA::BaseObject*, void*, void*)
 
     try
     {
-        DAVA::float32 value = 0.0001f / max_value;
-        DAVA::Logger::Debug("value: %f", value);
+        DAVA::float32 value = min_value / max_value;
+        DAVA::Logger::Debug("value: min_value / max_value == %f", value);
     }
     catch (std::exception& ex)
     {
         DAVA::Logger::Debug("catch floating point exception: %s", ex.what());
     }
+
+    try
+    {
+        DAVA::float32 value = inf * 0.f;
+        DAVA::Logger::Debug("value: inf * 0.f == %f", value);
+    }
+    catch (std::exception& ex)
+    {
+        DAVA::Logger::Debug("catch floating point exception: %s", ex.what());
+    }
+
+    DAVA::Logger::Debug("finish floating point test");
 }
 
 void FloatingPointExceptionTest::LoadResources()

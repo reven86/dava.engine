@@ -65,6 +65,8 @@
 #include "Job/JobManager.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
+#include <cfenv>
+#pragma STDC FENV_ACCESS on
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
 
@@ -114,9 +116,11 @@ Core::~Core()
 
 namespace debug_details
 {
+#ifdef __DAVAENGINE_DEBUG__
+#ifdef __DAVAENGINE_WINDOWS__
 void (*defaultStructuredExceptionFunc)(unsigned int, PEXCEPTION_POINTERS) = nullptr;
 
-void my_trans_func(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
+void structuredExceptionHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
 {
     switch (exceptionCode)
     {
@@ -145,7 +149,8 @@ void my_trans_func(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
         else
         {
             std::stringstream ss;
-            ss << "structured exception: 0x" << std::hex << exceptionCode;
+            ss << "structured exception: 0x" << std::hex << exceptionCode
+               << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
             throw std::runtime_error(ss.str());
         }
     };
@@ -153,7 +158,7 @@ void my_trans_func(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
 
 void EnableFloatingPointExceptions()
 {
-    debug_details::defaultStructuredExceptionFunc = _set_se_translator(&debug_details::my_trans_func); // https://msdn.microsoft.com/en-us/library/5z4bw5h5.aspx
+    debug_details::defaultStructuredExceptionFunc = _set_se_translator(&debug_details::structuredExceptionHandler); // https://msdn.microsoft.com/en-us/library/5z4bw5h5.aspx
 
     unsigned int fe_value = ~(_EM_INVALID | /*_EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW /* | _EM_INEXACT*/);
     unsigned int mask = _MCW_EM;
@@ -162,19 +167,62 @@ void EnableFloatingPointExceptions()
     DVASSERT(err == 0);
     err = _controlfp_s(&currentWord, fe_value, mask); // https://msdn.microsoft.com/en-us/library/c9676k6h.aspx
     DVASSERT(err == 0);
+    Logger::Info("FPU exceptions enabled");
 }
-
+#else // __DAVAENGINE_WINDOWS__
+// also add flag -fnon-call-exceptions
+void handle_fpu_exceptions(int err)
+{
+    std::stringstream ss;
+    ss << "floating point exception: code: 0x" << std::hex << err;
+    throw std::runtime_error(ss.str());
+}
+void EnableFloatingPointExceptions()
+{
+// https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
+// http://en.cppreference.com/w/cpp/numeric/fenv
+#ifndef FE_NOMASK_ENV
+    Logger::Info("FPU exceptions not supported");
+    // still try
+    int result = feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
+    DVASSERT(result != -1);
+    signal(SIGFPE, handle_fpu_exceptions);
+#else
+    int result = feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
+    DVASSERT(result != -1);
+    signal(SIGFPE, handle_fpu_exceptions);
+    Logger::Info("FPU exceptions enabled");
+#endif
+}
+#endif // non __DAVAENGINE_WINDOWS__
+#else // __DAVAENGINE_DEBUG__
+#ifdef __DAVAENGINE_WINDOWS__
+void DisableFloatingPointExceptions()
+{
+    // do nothing on windows fpu exceptions disabled by default
+}
+#else // non __DAVAENGINE_WINDOWS__
+void DisableFloatingPointExceptions()
+{
+    Logger::Info("disable FPU exceptions");
+    int result = fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
+    DVASSERT(result != -1);
+}
+#endif 
+#endif // not __DAVAENGINE_DEBUG__
 } // end namespace debug_details
 
 void Core::CreateSingletons()
 {
-#ifdef __DAVAENGINE_DEBUG__
-#ifdef __DAVAENGINE_WINDOWS__
-    debug_details::EnableFloatingPointExceptions();
-#endif // __DAVAENGINE_WINDOWS__
-#endif // __DAVAENGINE_DEBUG__
     // check types size
     new Logger();
+
+#ifdef __DAVAENGINE_DEBUG__
+    debug_details::EnableFloatingPointExceptions();
+#else
+    debug_details::DisableFloatingPointExceptions();
+#endif // __DAVAENGINE_DEBUG__
+
     new AllocatorFactory();
     new JobManager();
     new FileSystem();
