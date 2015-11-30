@@ -72,12 +72,12 @@ void UIScreenshoter::OnFrame()
     }
 }
 
-Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format)
+Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
     Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
 
-    MakeScreenshotInternal(control, screenshot, nullptr);
+    MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha);
 
     return screenshot;
 }
@@ -87,22 +87,22 @@ void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
     Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
 
-    MakeScreenshotInternal(control, screenshot, callback);
+    MakeScreenshotInternal(control, screenshot, callback, false);
 
     SafeRelease(screenshot);
 }
 
 void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot)
 {
-    MakeScreenshotInternal(control, screenshot, nullptr);
+    MakeScreenshotInternal(control, screenshot, nullptr, false);
 }
 
 void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback)
 {
-    MakeScreenshotInternal(control, screenshot, callback);
+    MakeScreenshotInternal(control, screenshot, callback, false);
 }
 
-void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback)
+void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha)
 {
     if (control == nullptr)
         return;
@@ -137,6 +137,10 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     RenderSystem2D::Instance()->BeginRenderTargetPass(waiter.texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D);
     control->SystemUpdate(0.0f);
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+    if (clearAlpha)
+    {
+        RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, screenshot->GetWidth(), screenshot->GetHeight()), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+    }
     RenderSystem2D::Instance()->EndRenderTargetPass();
     for (auto& info : controls3d)
     {
