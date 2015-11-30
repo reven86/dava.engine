@@ -127,9 +127,14 @@ void my_trans_func(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
     case EXCEPTION_FLT_OVERFLOW:
     case EXCEPTION_FLT_STACK_CHECK:
     case EXCEPTION_FLT_UNDERFLOW:
+    // https://social.msdn.microsoft.com/Forums/en-US/48f63378-19be-413f-88a5-0f24aa72d3c8/the-exceptions-statusfloatmultipletraps-and-statusfloatmultiplefaults-is-needed-in-more
+    case STATUS_FLOAT_MULTIPLE_TRAPS:
+    case STATUS_FLOAT_MULTIPLE_FAULTS:
     {
+        _clearfp();
         std::stringstream ss;
-        ss << "floating-point structured exception: 0x" << std::hex << exceptionCode;
+        ss << "floating-point structured exception: 0x" << std::hex << exceptionCode
+           << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
         throw std::runtime_error(ss.str());
     }
     default:
@@ -137,22 +142,26 @@ void my_trans_func(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
         {
             defaultStructuredExceptionFunc(exceptionCode, pExpInfo);
         }
+        else
+        {
+            std::stringstream ss;
+            ss << "structured exception: 0x" << std::hex << exceptionCode;
+            throw std::runtime_error(ss.str());
+        }
     };
 };
 
-#pragma fenv_access(on)
 void EnableFloatingPointExceptions()
 {
-    unsigned int fe_value = ~(/*_EM_INVALID | _EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW /* | _EM_INEXACT*/);
-    unsigned int mask = _MCW_EM;
-    unsigned int currentWord = 0;
-    errno_t result = _controlfp_s(&currentWord, fe_value, mask); // https://msdn.microsoft.com/en-us/library/c9676k6h.aspx
-    DVASSERT(result == 0);
     debug_details::defaultStructuredExceptionFunc = _set_se_translator(&debug_details::my_trans_func); // https://msdn.microsoft.com/en-us/library/5z4bw5h5.aspx
 
-    float32 div = 0.f;
-    float32 f = 15.f / div;
-    float32 f2 = 30.f * div;
+    unsigned int fe_value = ~(_EM_INVALID | /*_EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW /* | _EM_INEXACT*/);
+    unsigned int mask = _MCW_EM;
+    unsigned int currentWord = 0;
+    errno_t err = _controlfp_s(&currentWord, 0, 0);
+    DVASSERT(err == 0);
+    err = _controlfp_s(&currentWord, fe_value, mask); // https://msdn.microsoft.com/en-us/library/c9676k6h.aspx
+    DVASSERT(err == 0);
 }
 
 } // end namespace debug_details
