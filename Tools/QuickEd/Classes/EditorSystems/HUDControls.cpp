@@ -33,9 +33,9 @@ using namespace DAVA;
 
 namespace
 {
-const Vector2 PIVOT_CONTROL_SIZE(20.0f, 20.0f);
-const Vector2 FRAME_RECT_SIZE(15.0f, 15.0f);
-const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
+const Vector2 PIVOT_CONTROL_SIZE(15.0f, 15.0f);
+const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
+const Vector2 ROTATE_CONTROL_SIZE(15.0f, 15);
 }
 
 void FixPositionForScroll(UIControl* controlInHud)
@@ -50,7 +50,7 @@ void FixPositionForScroll(UIControl* controlInHud)
             backgroundControl = backgroundControl->GetParent();
         }
     }
-    controlInHud->SetPosition(controlInHud->GetPosition() - backgroundControl->GetPosition());
+    controlInHud->SetPosition(controlInHud->GetPosition() - backgroundControl->GetPosition() - backgroundControl->GetChildren().front()->GetPosition());
 }
 
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
@@ -62,6 +62,11 @@ ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
 HUDAreaInfo::eArea ControlContainer::GetArea() const
 {
     return area;
+}
+
+void ControlContainer::SetDPR(float32 arg)
+{
+    dpr = arg;
 }
 
 HUDContainer::HUDContainer(UIControl* container)
@@ -175,11 +180,12 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     SetName("Frame Rect Control");
     background->SetSprite("~res:/Gfx/HUDControls/Rect", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void FrameRectControl::InitFromGD(const UIGeometricData& geometricData)
 {
-    Rect rect(Vector2(), FRAME_RECT_SIZE);
+    Rect rect(Vector2(), FRAME_RECT_SIZE * dpr);
     rect.SetCenter(GetPos(geometricData));
 
     UIControl* parent = GetParent();
@@ -222,12 +228,13 @@ PivotPointControl::PivotPointControl()
 {
     SetName("pivot point control");
     background->SetSprite("~res:/Gfx/HUDControls/Pivot", 0);
-    background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
 {
-    Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
+    Rect rect(Vector2(), PIVOT_CONTROL_SIZE * dpr);
     const Rect& controlRect = geometricData.GetUnrotatedRect();
     rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
 
@@ -242,13 +249,14 @@ RotateControl::RotateControl()
     : ControlContainer(HUDAreaInfo::ROTATE_AREA)
 {
     SetName("rotate control");
-    background->SetSprite("~res:/Gfx/HUDControls/Rotate", 2);
-    background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    background->SetSprite("~res:/Gfx/HUDControls/Rotate", 0);
+    background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 void RotateControl::InitFromGD(const UIGeometricData& geometricData)
 {
-    Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
+    Rect rect(Vector2(), ROTATE_CONTROL_SIZE * dpr);
     Rect controlRect = geometricData.GetUnrotatedRect();
     rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
 
@@ -276,7 +284,6 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
         Rect borderRect = CreateFrameBorderRect(i, rect);
         (*chilrenIt)->SetRect(borderRect);
     }
-    FixPositionForScroll(this);
     UIControl::Draw(geometricData);
 }
 

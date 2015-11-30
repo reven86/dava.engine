@@ -52,22 +52,23 @@ using namespace DAVA;
 
 namespace
 {
-    struct PackageContext : public WidgetContext
+struct PackageContext : WidgetContext
+{
+    PackageContext(Document* document)
     {
-        PackageContext(Document *document)
-        {
-            DVASSERT(nullptr != document);
-            packageModel = new PackageModel(document->GetPackage(), document->GetCommandExecutor(), document);
-            filteredPackageModel = new FilteredPackageModel(document);
-            filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-            filteredPackageModel->setSourceModel(packageModel);
-        }
-        PackageModel *packageModel;
-        FilteredPackageModel *filteredPackageModel;
-        PackageWidget::ExpandedIndexes expandedIndexes;
-        QString filterString;
-    };
-}
+        DVASSERT(nullptr != document);
+        packageModel = new PackageModel(document->GetPackage(), document->GetCommandExecutor(), document);
+        filteredPackageModel = new FilteredPackageModel(document);
+        filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+        filteredPackageModel->setSourceModel(packageModel);
+    }
+    ~PackageContext() override = default;
+    PackageModel* packageModel;
+    FilteredPackageModel* filteredPackageModel;
+    PackageWidget::ExpandedIndexes expandedIndexes;
+    QString filterString;
+};
+} //unnamed namespace
 
 PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)

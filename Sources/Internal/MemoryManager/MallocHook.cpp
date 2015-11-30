@@ -39,7 +39,8 @@
 #elif defined(__DAVAENGINE_ANDROID__)
 #include <malloc.h>
 #include <dlfcn.h>
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#include <android/log.h>
+#elif defined(__DAVAENGINE_APPLE__)
 #include <dlfcn.h>
 #include <malloc/malloc.h>
 #else
@@ -129,10 +130,10 @@ size_t MallocHook::MallocSize(void* ptr)
 {
 #if defined(__DAVAENGINE_WIN32__)
     return _msize(ptr);
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_APPLE__)
     return malloc_size(ptr);
 #elif defined(__DAVAENGINE_ANDROID__)
-    return RealMallocSize(ptr);
+    return RealMallocSize != nullptr ? RealMallocSize(ptr) : 0;
 #else
 #error "Unknown platform"
 #endif
@@ -206,11 +207,20 @@ void MallocHook::Install()
 
 #if defined(__DAVAENGINE_ANDROID__)
     // Get address of malloc_usable_size as it isn't exported on android
-    void* libc = dlopen("libc.so", 0);
-    assert(libc != nullptr && "Failed to load libc.so");
-    fptr = dlsym(libc, "malloc_usable_size");
-    RealMallocSize = reinterpret_cast<size_t (*)(void*)>(fptr);
-    assert(fptr != nullptr && "Failed to get 'malloc_usable_size'");
+    fptr = dlsym(RTLD_DEFAULT, "malloc_usable_size");
+    if (nullptr == fptr)
+    {
+        void* libc = dlopen("libc.so", 0);
+        if (libc != nullptr)
+        {
+            fptr = dlsym(libc, "malloc_usable_size");
+            RealMallocSize = reinterpret_cast<size_t (*)(void*)>(fptr);
+        }
+    }
+    if (nullptr == RealMallocSize)
+    { // DAVA::Logger in not available yet
+        __android_log_print(ANDROID_LOG_ERROR, "DAVA", "!!! malloc_usable_size is not available");
+    }
 #endif
 
 #else

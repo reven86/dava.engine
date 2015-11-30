@@ -141,8 +141,8 @@ private:
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
 
-    void UpdateStatAfterAlloc(MemoryBlock* block);
-    void UpdateStatAfterDealloc(MemoryBlock* block);
+    void UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemoryUsage);
+    void UpdateStatAfterDealloc(MemoryBlock* block, uint32 systemMemoryUsage);
 
     void UpdateStatAfterGPUAlloc(MemoryBlock* block, size_t sizeIncr);
     void UpdateStatAfterGPUDealloc(MemoryBlock* block);
