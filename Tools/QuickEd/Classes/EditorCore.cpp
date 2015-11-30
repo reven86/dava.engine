@@ -171,7 +171,7 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
                     button = QMessageBox::warning(
                         qApp->activeWindow()
                         , tr("File %1 changed").arg(fileInfo.fileName())
-                        , tr("%1\n\n This file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath())
+                        , tr("%1\n\nThis file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath())
                         , changedCount > 1 ?
                         QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll
                         : QMessageBox::Yes | QMessageBox::No
@@ -210,21 +210,14 @@ void EditorCore::OnFilesRemoved(const QStringList& removedFiles)
         if (removedFiles.contains(path))
         {
             QMessageBox::StandardButton button = QMessageBox::No;
-            if (document->GetUndoStack()->isClean())
-            {
-                button = QMessageBox::Yes;
-            }
-            else
-            {
                 QFileInfo fileInfo(path);
-                button = QMessageBox::warning(
-                    qApp->activeWindow()
-                    , tr("File %1 is renamed or deleted").arg(fileInfo.fileName())
-                    , tr("%1\n\n This file has been renamed or deleted outside of the editor. Do you want to close it?").arg(fileInfo.absoluteFilePath())
-                    , QMessageBox::Yes | QMessageBox::No
-                    , QMessageBox::No
-                    );
-            }
+            button = QMessageBox::warning(
+                qApp->activeWindow()
+                , tr("File %1 is renamed or deleted").arg(fileInfo.fileName())
+                , tr("%1\n\nThis file has been renamed or deleted outside of the editor. Do you want to close it?").arg(fileInfo.absoluteFilePath())
+                , QMessageBox::Yes | QMessageBox::No
+                , QMessageBox::No
+                );
             if (button == QMessageBox::Yes)
             {
                 CloseDocument(documents.indexOf(document));
@@ -436,7 +429,7 @@ void EditorCore::OnFileChanged(const QString& path)
     changedFiles.insert(path);
     Document* changedDocument = GetDocument(path);
     DVASSERT(nullptr != changedDocument);
-    if (changedDocument->GetUndoStack()->isClean() || qApp->applicationState() == Qt::ApplicationActive)
+    if ((QFileInfo::exists(path) && changedDocument->GetUndoStack()->isClean()) || qApp->applicationState() == Qt::ApplicationActive)
     {
         ApplyFileChanges();
     }
