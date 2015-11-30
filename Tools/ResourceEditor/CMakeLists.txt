@@ -28,7 +28,6 @@ include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
 
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet  )
-include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada )
 
 include_directories   (.)
 include_directories   ( "../TextureTools" )
@@ -36,6 +35,7 @@ include_directories   ( "Classes" )
 include_directories   ( "Classes/Qt" )
 include_directories   ( "Classes/Qt/CubemapEditor" )
 include_directories   ( "Classes/Qt/TextureBrowser" )
+include_directories   ( "Classes/Collada" )
 
 add_definitions       (
 -D__DAVAENGINE_SPEEDTREE__
@@ -68,16 +68,12 @@ if( WIN32 )
     set( BEAST_WRAPPER   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
     set( BEAST_LIB       "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
 
-    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_release_bullet.lib 
-                                  ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/WIN32_release_collada.lib  )    
-    set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_debug_bullet.lib 
-                                  ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/WIN32_debug_collada.lib  )    
+    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_release_bullet.lib )    
+    set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/WIN32_debug_bullet.lib )    
 
 elseif( MACOS )
-    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/MACOS_release_bullet.a 
-                                  ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/MACOS_release_collada.a  )    
-    set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/MACOS_debug_bullet.a 
-                                  ${DAVA_THIRD_PARTY_ROOT_PATH}/Collada/Bin/MACOS_debug_collada.a  )    
+    set( THIRD_PARTY_LIB_RELEASE  ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/MACOS_release_bullet.a )    
+    set( THIRD_PARTY_LIB_DEBUG    ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet/Bin/MACOS_debug_bullet.a  )    
 
 endif()
 
@@ -100,7 +96,7 @@ set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
 
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
-set( UNIFIED_IGNORE_LIST  )
+set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
 DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
                            COPY_WIN32  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll
