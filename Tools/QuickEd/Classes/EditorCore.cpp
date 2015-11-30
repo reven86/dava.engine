@@ -448,7 +448,14 @@ void EditorCore::ApplyFileChanges()
     QStringList removed;
     for (const QString &filePath : changedFiles)
     {
-        QFileInfo::exists(filePath) ? changed << filePath : removed << filePath;
+        if (QFileInfo::exists(filePath))
+        {
+            changed << filePath;
+        }
+        else
+        {
+            removed << filePath;
+        }
     }
     changedFiles.clear();
     if (!changed.empty())

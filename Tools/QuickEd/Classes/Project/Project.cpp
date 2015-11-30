@@ -209,8 +209,6 @@ bool Project::CheckAndUnlockProject(const QString& projectPath)
 
 RefPtr<PackageNode> Project::OpenPackage(const FilePath &packagePath)
 {
-    String fwPath = packagePath.GetFrameworkPath();
-
     EditorUIPackageBuilder builder;
     
     bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
