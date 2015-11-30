@@ -30,6 +30,8 @@
 
 #include "WebViewControlStub.h"
 
+using namespace DAVA;
+
 WebViewControl::WebViewControl(UIWebView&)
 {
 }

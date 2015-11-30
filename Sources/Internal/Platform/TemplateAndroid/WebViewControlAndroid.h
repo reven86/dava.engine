@@ -30,8 +30,8 @@
 #ifndef __DAVAENGINE_WEBVIEWCONTROL_H__
 #define __DAVAENGINE_WEBVIEWCONTROL_H__
 
-#include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_ANDROID__)
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_ANDROID__) && !defined(__NO_NATIVE_WEBVIEW__)
 
 #include "../../UI/IWebViewControl.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
@@ -143,6 +143,6 @@ private:
 
 };
 
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined(__DAVAENGINE_ANDROID__) && !defined(__NO_NATIVE_WEBVIEW__)
 
 #endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_MACOS_H__) */

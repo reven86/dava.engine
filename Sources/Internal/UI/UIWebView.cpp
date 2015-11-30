@@ -34,7 +34,7 @@
 
 #if defined(__NO_NATIVE_WEBVIEW__)
 #include "WebViewControlStub.h"
-#elif defined(__DAVAENGINE_MACOS__
+#elif defined(__DAVAENGINE_MACOS__)
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Platform/TemplateiOS/WebViewControliOS.h"

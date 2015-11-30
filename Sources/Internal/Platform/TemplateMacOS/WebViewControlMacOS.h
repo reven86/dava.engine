@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_WEBVIEWCONTROL_MACOS_H__
 #define __DAVAENGINE_WEBVIEWCONTROL_MACOS_H__
 
+#include "Base/Platform.h"
+#if defined __DAVAENGINE_MACOS__ && !defined __NO_NATIVE_WEBVIEW__
+
 #include "../../UI/IWebViewControl.h"
 
 namespace DAVA {
@@ -92,5 +95,7 @@ private:
 };
 
 };
+
+#endif //defined __DAVAENGINE_MACOS__ && !defined __NO_NATIVE_WEBVIEW__
 
 #endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_MACOS_H__) */
