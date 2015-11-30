@@ -102,13 +102,18 @@ ColladaTexture::ColladaTexture(FCDImage* _image)
     texturePathName = nstring;
 
     { //Prepare correct texture descriptor for image
-        FilePath texturePath(texturePathName);
-        auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
-        if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+        DAVA::FilePath texturePath(texturePathName);
+        const DAVA::String extension = texturePath.GetExtension();
+        if (!extension.empty())
         {
-            texturePath = TextureDescriptor::GetDescriptorPathname(texturePath);
+            auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
+            if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+            {
+                texturePath = TextureDescriptor::GetDescriptorPathname(texturePath);
+            }
+
+            TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
         }
-        TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
     }
 
     /*try 

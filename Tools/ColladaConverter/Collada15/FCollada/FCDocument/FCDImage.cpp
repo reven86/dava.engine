@@ -39,7 +39,7 @@ FCDImage::~FCDImage()
 
 void FCDImage::SetFilename(const fstring& _filename)
 {
-	ResetVideoFlag();
+    ResetVideoFlag();
 	if (_filename.empty()) filename->clear();
 	else
 	{
