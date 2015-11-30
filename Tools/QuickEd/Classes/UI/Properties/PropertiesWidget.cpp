@@ -274,7 +274,9 @@ QAction *PropertiesWidget::CreateSeparator()
 
 void PropertiesWidget::OnModelChanged()
 {
+    bool blocked = treeView->blockSignals(true);
     treeView->expandToDepth(0);
+    treeView->blockSignals(blocked);
     treeView->resizeColumnToContents(0);
     ApplyExpanding();
 }
