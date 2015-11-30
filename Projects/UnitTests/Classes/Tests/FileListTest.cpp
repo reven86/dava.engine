@@ -164,7 +164,7 @@ DAVA_TESTCLASS(FileListTest)
                     }
                 }
             }
-            else if (ifo == 5) //cyrillic Folder4
+            else //cyrillic Folder4
             {
                 TEST_VERIFY(files->GetFileCount() == 1);
                 FilePath txtFileName = files->GetPathname(2); //first file name
@@ -182,10 +182,6 @@ DAVA_TESTCLASS(FileListTest)
                 file->ReadString(content);
 
                 TEST_VERIFY(content == expectedContent);
-            }
-            else
-            {
-                TEST_VERIFY(false);
             }
         }
     }
@@ -302,7 +298,7 @@ DAVA_TESTCLASS(FileListTest)
                     }
                 }
             }
-            else if (ifo == 5) //cyrillic Folder4
+            else //cyrillic Folder4
             {
                 TEST_VERIFY(files->GetFileCount() == 1);
                 FilePath txtFileName = files->GetPathname(2); //first file name
@@ -321,10 +317,7 @@ DAVA_TESTCLASS(FileListTest)
 
                 TEST_VERIFY(content == expectedContent);
             }
-            else
-            {
-                TEST_VERIFY(false);
-            }
+
         }
     }
 

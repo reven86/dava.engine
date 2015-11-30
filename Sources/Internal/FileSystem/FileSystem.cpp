@@ -475,8 +475,8 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
     FileAPI::StatStruct s;
-    FileAPI::StringType path = ToNativeStringType(pathToCheck.GetAbsolutePathname());
-    if (FileAPI::Stat(path.c_str(), &s) == 0)
+    FileAPI::StringType pathToCheckStr = ToNativeStringType(pathToCheck.GetAbsolutePathname());
+    if (FileAPI::Stat(pathToCheckStr.c_str(), &s) == 0)
     {
         return (0 != (s.st_mode & S_IFDIR));
 	}
