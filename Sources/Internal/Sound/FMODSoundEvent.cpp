@@ -85,6 +85,14 @@ bool FMODSoundEvent::Trigger()
         FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
         if(fmodEventInfo)
         {
+            // http://stackoverflow.com/questions/570669/checking-if-a-double-or-float-is-nan-in-c
+            DVASSERT(position == position);
+            DVASSERT(direction == direction);
+            if (isDirectional)
+            {
+                DVASSERT(direction.Length() <= 1.f);
+                DVASSERT(direction.Length() > 0.f);
+            }
             FMOD_VERIFY(fmodEventInfo->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : nullptr));
             FMOD_VERIFY(fmodEventInfo->setVolume(volume));
             ApplyParamsToEvent(fmodEventInfo);
