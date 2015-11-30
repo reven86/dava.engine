@@ -158,7 +158,7 @@ namespace
 
     PackageBaseNode* ReduceDepth(PackageBaseNode *node, uint32 reduceValue)
     {
-        for (int i = 0; i < reduceValue; ++i)
+        for (uint32 i = 0; i < reduceValue; ++i)
         {
             node = node->GetParent();
         }
