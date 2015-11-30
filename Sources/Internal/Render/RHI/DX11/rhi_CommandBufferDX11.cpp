@@ -815,8 +815,6 @@ _ExecuteQueuedCommandsDX11()
 {
     Trace("rhi-dx11.exec-queued-cmd\n");
 
-    TRACE_BEGIN_EVENT(22, "rhi", "_ExecuteQueuedCommandsDX11");
-
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
@@ -891,7 +889,11 @@ _ExecuteQueuedCommandsDX11()
                 CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cb_h);
 
                 if (!do_discard)
+                {
+                    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
                     cb->Execute();
+                    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
+                }
 
                 if (cb->sync != InvalidHandle)
                 {
@@ -917,7 +919,9 @@ _ExecuteQueuedCommandsDX11()
 
         // do present
 
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
         _D3D11_SwapChain->Present(0, 0);
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
 
         // update sync-objects
 
@@ -930,8 +934,6 @@ _ExecuteQueuedCommandsDX11()
 
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Unlock();
-
-    TRACE_END_EVENT(22, "rhi", "_ExecuteQueuedCommandsDX11");
 }
 
 //------------------------------------------------------------------------------
@@ -996,6 +998,7 @@ void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
         do
         {
             _DX11_PendingImmediateCmdSync.Lock();
@@ -1018,6 +1021,8 @@ void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
             }
             _DX11_PendingImmediateCmdSync.Unlock();
         } while (!executed);
+
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
     }
     //TRACE_END_EVENT((force_immediate)?22:11,"rhi","ExecDX11");
 }
@@ -1034,10 +1039,12 @@ _RenderFuncDX11(DAVA::BaseObject* obj, void*, void*)
 
     while (true)
     {
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
+
         bool do_wait = true;
         bool do_exit = false;
 
-        TRACE_BEGIN_EVENT(22, "rhi", "wait-to-exec");
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
         do
         {
             // CRAP: busy-wait
@@ -1048,29 +1055,33 @@ _RenderFuncDX11(DAVA::BaseObject* obj, void*, void*)
             if (do_exit)
                 break;
 
-            //            TRACE_BEGIN_EVENT(22,"rhi","imm.cmd processing");
             _DX11_PendingImmediateCmdSync.Lock();
             if (_DX11_PendingImmediateCmd)
             {
                 Trace("exec imm cmd (%u)\n", _DX11_PendingImmediateCmdCount);
+                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
                 _ExecDX11(_DX11_PendingImmediateCmd, _DX11_PendingImmediateCmdCount);
                 _DX11_PendingImmediateCmd = nullptr;
                 _DX11_PendingImmediateCmdCount = 0;
                 Trace("exec-imm-cmd done\n");
+                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
             }
             _DX11_PendingImmediateCmdSync.Unlock();
-            //            TRACE_END_EVENT(22,"rhi","imm.cmd processing");
 
             _DX11_FrameSync.Lock();
             do_wait = !(_DX11_Frame.size() && _DX11_Frame.begin()->readyToExecute);
             _DX11_FrameSync.Unlock();
         } while (do_wait);
-        TRACE_END_EVENT(22, "rhi", "wait-to-exec");
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
 
         if (do_exit)
             break;
 
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
         _ExecuteQueuedCommandsDX11();
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
     }
 
     Trace("RHI render-thread stopped\n");
@@ -1085,6 +1096,7 @@ void InitializeRenderThreadDX11(uint32 frameCount)
         _DX11_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFuncDX11));
         _DX11_RenderThread->SetName("RHI.dx11-render");
         _DX11_RenderThread->Start();
+        _DX11_RenderThread->BindToProcessor(1);
         _DX11_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
         _DX11_RenderThreadStartedSync.Wait();
     }
@@ -1113,10 +1125,12 @@ void UninitializeRenderThreadDX11()
 static void
 dx11_Present(Handle sync)
 {
+    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
+
     if (_DX11_RenderThreadFrameCount)
     {
         Trace("rhi-dx11.present\n");
-        TRACE_BEGIN_EVENT(11, "rhi", "dx11_Present");
+
         _DX11_FrameSync.Lock();
         {
             if (_DX11_Frame.size())
@@ -1135,6 +1149,7 @@ dx11_Present(Handle sync)
         unsigned frame_cnt = 0;
         bool reset_pending = false;
 
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
             _DX11_FrameSync.Lock();
@@ -1142,12 +1157,15 @@ dx11_Present(Handle sync)
             reset_pending = _DX11_ResetPending;
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _DX11_FrameSync.Unlock();
+
+            if (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending)
+                DAVA::Thread::Yield();
+
         } while (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending);
-        TRACE_END_EVENT(11, "rhi", "dx11_Present");
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
     }
     else
     {
-        TRACE_BEGIN_EVENT(22, "rhi", "dx11_Present");
         if (_DX11_Frame.size())
         {
             _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList));
@@ -1165,8 +1183,8 @@ dx11_Present(Handle sync)
         }
 
         _ExecuteQueuedCommandsDX11();
-        TRACE_END_EVENT(22, "rhi", "dx11_Present");
     }
+    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
 }
 
 //------------------------------------------------------------------------------
@@ -1229,7 +1247,6 @@ void CommandBufferDX11_t::Execute()
 {
     SCOPED_FUNCTION_TIMING();
 
-    TRACE_BEGIN_EVENT(22, "rhi", "CommandBufferDX11_t::Execute");
     DVASSERT(isComplete);
     context->Release();
     context = nullptr;
@@ -1251,7 +1268,6 @@ void CommandBufferDX11_t::Execute()
 
     commandList->Release();
     commandList = nullptr;
-    TRACE_END_EVENT(22, "rhi", "CommandBufferDX11_t::Execute");
 }
 
 //------------------------------------------------------------------------------
