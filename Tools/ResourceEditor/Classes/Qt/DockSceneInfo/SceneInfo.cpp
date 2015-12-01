@@ -145,6 +145,8 @@ void SceneInfo::Initialize3DDrawSection()
     QtPropertyData* header = CreateInfoHeader("DrawInfo");
 
     AddChild("Visible Render Object Count", header);
+    AddChild("Occluded Render Object Count", header);
+
     AddChild("DrawPrimitiveCalls", header);
     AddChild("DrawIndexedPrimitiveCalls", header);
     AddChild("LineList", header);
@@ -165,6 +167,8 @@ void SceneInfo::Refresh3DDrawInfo()
     const RenderStats& renderStats = activeScene->GetRenderStats();
 
     SetChild("Visible Render Object Count", renderStats.visibleRenderObjects, header);
+    SetChild("Occluded Render Object Count", renderStats.occludedRenderObjects, header);
+
     SetChild("DrawPrimitiveCalls", renderStats.drawPrimitive, header);
     SetChild("DrawIndexedPrimitiveCalls", renderStats.drawIndexedPrimitive, header);
     SetChild("LineList", renderStats.primitiveLineListCount, header);

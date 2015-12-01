@@ -119,6 +119,7 @@ struct RenderStats
     uint32 packets2d = 0U;
 
     uint32 visibleRenderObjects = 0U;
+    uint32 occludedRenderObjects = 0U;
 };
 }
 
