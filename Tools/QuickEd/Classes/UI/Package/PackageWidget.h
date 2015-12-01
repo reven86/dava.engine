@@ -77,21 +77,15 @@ private:
     void SaveContext();
     void RefreshActions();
 
-    void OnControlSelectedInEditor(const QList<ControlNode *> &node);
-
     void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
     void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
 
-    template <typename NodeType>
-    void CollectSelectedNodes(const QItemSelection &selected, DAVA::Vector<NodeType*> &nodes, bool forCopy, bool forRemove);
-
     ExpandedIndexes GetExpandedIndexes() const;
     void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
 
-private:
     QAction *CreateSeparator();
     Document* document = nullptr;
     QAction* importPackageAction = nullptr;
@@ -107,7 +101,6 @@ private:
 
     QString lastFilterText;
     ExpandedIndexes expandedIndexes;
-
     SelectionContainer selectionContainer;
 };
 

@@ -62,7 +62,7 @@ SelectionSystem::~SelectionSystem()
 void SelectionSystem::OnActivated()
 {
     systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
-    connectionID = systemManager->SelectionChanged.Connect(this, &SelectionSystem::SetSelection);
+    connectionID = systemManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
 }
 
 void SelectionSystem::OnDeactivated()
@@ -91,7 +91,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode*)
 {
     SelectedNodes deselected;
     deselected.insert(node);
@@ -217,6 +217,11 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
     }
     SetSelection(selected, deselected);
     return !selected.empty() || !deselected.empty();
+}
+
+void SelectionSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    selectionContainer.MergeSelection(selected, deselected);
 }
 
 void SelectionSystem::SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected)

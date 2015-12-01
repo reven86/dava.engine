@@ -46,7 +46,7 @@ Document::Document(PackageNode* _package, QObject* parent)
     , undoStack(new QUndoStack(this))
     , systemManager(_package)
 {
-    systemManager.SelectionChanged.Connect(this, &Document::OnSelectionChanged);
+    systemManager.SelectionChanged.Connect(this, &Document::OnSelectedControlNodesChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
 
     systemManager.PropertiesChanged.Connect([this](const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties, size_t hash) {
@@ -157,13 +157,10 @@ void Document::RefreshAllControlProperties()
 
 void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectedNodes reallySelected, reallyDeselected;
-    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionContainer.GetNotExistedItems(selected, reallySelected);
-    selectionContainer.MergeSelection(selected, deselected);
-    if (!reallySelected.empty() || !reallyDeselected.empty())
-    {
-        systemManager.SelectionChanged.Emit(selected, deselected);
-        SelectedNodesChanged(selected, deselected);
-    }
+    systemManager.SelectionChanged.Emit(selected, deselected);
+}
+
+void Document::OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    SelectedNodesChanged(selected, deselected);
 }
