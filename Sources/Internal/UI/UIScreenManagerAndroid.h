@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_DEFAULT_SCREENMANAGER_C_H__
-#define __DAVAENGINE_DEFAULT_SCREENMANAGER_C_H__
+#ifndef __DAVAENGINE_ANDROID_SCREENMANAGER_C_H__
+#define __DAVAENGINE_ANDROID_SCREENMANAGER_C_H__
 
 #include "DAVAEngine.h"
 

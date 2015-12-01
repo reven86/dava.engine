@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_MACOSAPP_SCREENMANAGER_C_H__
-#define __DAVAENGINE_MACOSAPP_SCREENMANAGER_C_H__
+#ifndef __DAVAENGINE_DEFAULT_SCREENMANAGER_C_H__
+#define __DAVAENGINE_DEFAULT_SCREENMANAGER_C_H__
 
 #include "DAVAEngine.h"
 
@@ -78,4 +78,4 @@ private:
 };
 };
 
-#endif // __DAVAENGINE_MACOSAPP_SCREENMANAGER_C_H__
+#endif // __DAVAENGINE_DEFAULT_SCREENMANAGER_C_H__

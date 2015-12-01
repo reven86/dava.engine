@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_SCREENMANAGER_H__
 #define __DAVAENGINE_SCREENMANAGER_H__
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
     #include "UI/UIScreenManagerDefault.h"
