@@ -64,6 +64,10 @@ public:
 signals:
     void ScaleChanged(float scale);
     void DeleteRequested();
+    void ImportRequested();
+    void CutRequested();
+    void CopyRequested();
+    void PasteRequested();
     void SelectAllRequested();
     void FocusNextChild();
     void FocusPreviousChild();
