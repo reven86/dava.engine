@@ -55,7 +55,6 @@ struct StatStruct : public _stat
 const auto Stat = _wstat;
 
 #else
-using StringType = String;
 
 #define NativeStringLiteral(x) x
 
