@@ -151,21 +151,23 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
+#ifdef __DAVAENGINE_WINDOWS__
+    WideString existingFilePath = UTF8Utils::EncodeToWideString(existingFile.GetAbsolutePathname());
+    WideString newFilePath = UTF8Utils::EncodeToWideString(newFile.GetAbsolutePathname());
+#endif
+
 #ifdef __DAVAENGINE_WIN32__
 
-	BOOL ret = ::CopyFileA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), !overwriteExisting);
-	return ret != 0;
+    BOOL ret = ::CopyFileW(existingFilePath.c_str(), newFilePath.c_str(), !overwriteExisting);
+    return ret != 0;
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    WideString existingFilePath = UTF8Utils::EncodeToWideString(existingFile.GetAbsolutePathname());
-    WideString newFilePath = UTF8Utils::EncodeToWideString(newFile.GetAbsolutePathname());
     COPYFILE2_EXTENDED_PARAMETERS params = 
     { 
         /* dwSize */      sizeof(COPYFILE2_EXTENDED_PARAMETERS), 
         /* dwCopyFlags */ overwriteExisting ? DWORD(0) : COPY_FILE_FAIL_IF_EXISTS 
     };
-
     return ::CopyFile2(existingFilePath.c_str(), newFilePath.c_str(), &params) == S_OK;
 
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -380,17 +382,12 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 {
     String path;
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-    
+#if defined(__DAVAENGINE_WINDOWS__)
+
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetCurrentDirectoryW(MAX_PATH, tempDir.data());
     path = UTF8Utils::EncodeToUTF8(tempDir.data());
 
-#elif defined(__DAVAENGINE_WIN32__)
-
-    Array<char, MAX_PATH> tempDir;
-    ::GetCurrentDirectoryA(MAX_PATH, tempDir.data());
-    path = tempDir.data();
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
     Array<char, PATH_MAX> tempDir;
@@ -408,9 +405,10 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     FilePath currentExecuteDirectory;
 
 #if defined(__DAVAENGINE_WIN32__)
-    Array<char, MAX_PATH> tempDir;
-    ::GetModuleFileNameA(nullptr, tempDir.data(), MAX_PATH);
-    currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
+    Array<wchar_t, MAX_PATH> tempDir;
+    ::GetModuleFileNameW(nullptr, tempDir.data(), MAX_PATH);
+    String path = UTF8Utils::EncodeToUTF8(tempDir.data());
+    currentExecuteDirectory = FilePath(path).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
     Array<char, PATH_MAX> tempDir;
     proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
@@ -427,13 +425,10 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
 {
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
     
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WINDOWS__)
     WideString path = UTF8Utils::EncodeToWideString(newWorkingDirectory.GetAbsolutePathname());
     BOOL res = ::SetCurrentDirectoryW(path.c_str());
     return (res != 0);
-#elif defined(__DAVAENGINE_WIN32__)
-	BOOL res = ::SetCurrentDirectoryA(newWorkingDirectory.GetAbsolutePathname().c_str());
-	return (res != 0);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     
 	return (chdir(newWorkingDirectory.GetAbsolutePathname().c_str()) == 0);
@@ -461,8 +456,9 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 {
 #if defined (__DAVAENGINE_WIN32__)
-	DWORD stats = GetFileAttributesA(pathToCheck.GetAbsolutePathname().c_str());
-	return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
+    WideString path = ToNativeStringType(pathToCheck.GetAbsolutePathname());
+    DWORD stats = GetFileAttributesW(path.c_str());
+    return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
 #else //defined (__DAVAENGINE_WIN32__)
 #if defined(__DAVAENGINE_ANDROID__)
     
@@ -489,14 +485,14 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 HANDLE CreateFileWin(const String& path, bool shareRead = false)
 {
     int share = shareRead ? FILE_SHARE_READ : 0;
+    WideString pathWide = UTF8Utils::EncodeToWideString(path);
 
 #if defined (__DAVAENGINE_WIN32__)
 
-    HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, share, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hFile = CreateFileW(pathWide.c_str(), GENERIC_READ, share, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    WideString pathWide = UTF8Utils::EncodeToWideString(path);
     CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS) };
     params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
     params.dwFileFlags = 0;

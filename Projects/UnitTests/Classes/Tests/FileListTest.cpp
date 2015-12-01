@@ -177,7 +177,7 @@ DAVA_TESTCLASS(FileListTest)
     }
 
 #if defined(__DAVAENGINE_WINDOWS__)
-    void RunCyrillicPathTest(const String& location)
+    void RunWindowsExtensionTest(const String& location)
     {
         ScopedPtr<FileList> fileList(new FileList(location + "TestData/FileListTestWindowsExtension/"));
 
@@ -214,8 +214,8 @@ DAVA_TESTCLASS(FileListTest)
 
     DAVA_TEST(FileListTestWindowsExtensions)
     {
-        RunCyrillicPathTest("~res:/");
-        RunCyrillicPathTest("~doc:/");
+        RunWindowsExtensionTest("~res:/");
+        RunWindowsExtensionTest("~doc:/");
     }
 #endif // __DAVAENGINE_WINDOWS__
 
