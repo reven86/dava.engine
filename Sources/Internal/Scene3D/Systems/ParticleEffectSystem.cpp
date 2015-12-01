@@ -289,6 +289,10 @@ void ParticleEffectSystem::ImmediateEvent(Component * component, uint32 event)
 void ParticleEffectSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("ParticleEffectSystem::Process");
+    if (timeElapsed == 0.f)
+    {
+        timeElapsed = 0.000001f;
+    }
 
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS))
         return;
@@ -801,5 +805,4 @@ Map<String, float32> ParticleEffectSystem::GetGlobalExternals()
 {
 	return globalExternalValues;
 }
-
 }

@@ -53,7 +53,11 @@ LodSystem::LodSystem(Scene * scene)
 void LodSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("LodSystem::Process");
-    
+    if (timeElapsed == 0.f)
+    {
+        timeElapsed = 0.000001f;
+    }
+
     SetCamera(GetScene()->GetCurrentCamera());
 
 	float32 currFps = 1.0f/timeElapsed;
