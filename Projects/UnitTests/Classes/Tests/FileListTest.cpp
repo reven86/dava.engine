@@ -56,7 +56,7 @@ DAVA_TESTCLASS(FileListTest)
     {
         ScopedPtr<FileList> fileList(new FileList("~res:/TestData/FileListTest/"));
 
-        TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+        TEST_VERIFY(fileList->GetDirectoryCount() == 4);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -164,6 +164,25 @@ DAVA_TESTCLASS(FileListTest)
                     }
                 }
             }
+            else if (ifo == 5) //cyrillic Folder4
+            {
+                TEST_VERIFY(files->GetFileCount() == 1);
+                FilePath txtFileName = files->GetPathname(2); //first file name
+                TEST_VERIFY(txtFileName.GetExtension() == ".txt");
+                
+                RefPtr<File> file(File::Create(txtFileName, File::OPEN | File::READ));
+                TEST_VERIFY(file != nullptr);
+                if (file == nullptr)
+                {
+                    continue;
+                }
+
+                const String expectedContent = "Hello :)";
+                String content;
+                file->ReadString(content);
+
+                TEST_VERIFY(content == expectedContent);
+            }
             else
             {
                 TEST_VERIFY(false);
@@ -175,7 +194,7 @@ DAVA_TESTCLASS(FileListTest)
     {
         ScopedPtr<FileList> fileList(new FileList("~doc:/TestData/FileListTest/"));
 
-        TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+        TEST_VERIFY(fileList->GetDirectoryCount() == 4);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -282,6 +301,25 @@ DAVA_TESTCLASS(FileListTest)
                         TEST_VERIFY(false);
                     }
                 }
+            }
+            else if (ifo == 5) //cyrillic Folder4
+            {
+                TEST_VERIFY(files->GetFileCount() == 1);
+                FilePath txtFileName = files->GetPathname(2); //first file name
+                TEST_VERIFY(txtFileName.GetExtension() == ".txt");
+
+                RefPtr<File> file(File::Create(txtFileName, File::OPEN | File::READ));
+                TEST_VERIFY(file != nullptr);
+                if (file == nullptr)
+                {
+                    continue;
+                }
+
+                const String expectedContent = "Hello :)";
+                String content;
+                file->ReadString(content);
+
+                TEST_VERIFY(content == expectedContent);
             }
             else
             {
