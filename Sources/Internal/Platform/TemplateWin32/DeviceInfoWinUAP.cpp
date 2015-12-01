@@ -39,7 +39,6 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
-#include "Utils/UTF8Utils.h"
 #include "Base/GlobalEnum.h"
 
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
@@ -276,7 +275,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
         Platform::String^ path = removableStorages->GetAt(i)->Path;
-        storage.path = UTF8Utils::EncodeToUTF8(path->Data());
+        storage.path = FilePath::FromNativeString(path->Data());
         if (FillStorageSpaceInfo(storage))
         {
             result.push_back(storage);
