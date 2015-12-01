@@ -625,7 +625,7 @@
     keyboardFrame = [textCtrl.window convertRect:keyboardFrame toView:textCtrl.superview];
 
     // Recalculate to virtual coordinates.
-	DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
+    DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
     keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 	
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);

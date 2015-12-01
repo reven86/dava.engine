@@ -77,6 +77,7 @@ CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
 {
     wasCreated = false;
     renderIsActive = false;
+    viewSizeChanged = false;
     width = 0;
     height = 0;
     screenOrientation = Core::SCREEN_ORIENTATION_PORTRAIT; //no need rotate GL for Android
@@ -124,14 +125,19 @@ void CorePlatformAndroid::ProcessFrame()
 {
     if (renderIsActive)
     {
+        if (viewSizeChanged)
+        {
+            ProcessResizeView();
+        }
+
         Core::SystemProcessFrame();
     }
 }
 
-void CorePlatformAndroid::ResizeView(int32 w, int32 h)
+void CorePlatformAndroid::ProcessResizeView()
 {
-    width = w;
-    height = h;
+    viewSizeChanged = false;
+
     DeviceInfo::InitializeScreenInfo();
     UpdateScreenMode();
 }
@@ -166,10 +172,12 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
     renderIsActive = true;
 
+    width = w;
+    height = h;
+    viewSizeChanged = true;
+
     if (wasCreated)
     {
-        ResizeView(w, h);
-
         rhi::ResetParam params;
         params.width = (uint32)width;
         params.height = (uint32)height;
@@ -180,7 +188,7 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
     {
         wasCreated = true;
 
-        ResizeView(w, h);
+        ProcessResizeView();
         rendererParams.width = (uint32)width;
         rendererParams.height = (uint32)height;
 
@@ -311,20 +319,28 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
 {
     GamepadDevice& gamepadDevice = InputSystem::Instance()->GetGamepadDevice();
 
-    int32 davaKey = GamepadDevice::INVALID_DAVAKEY;
+    uint32 davaKey = GamepadDevice::INVALID_DAVAKEY;
     if (isKeycode)
+    {
         davaKey = gamepadDevice.GetDavaEventIdForSystemKeycode(elementKey);
+    }
     else
+    {
         davaKey = gamepadDevice.GetDavaEventIdForSystemAxis(elementKey);
+    }
 
     if (davaKey == GamepadDevice::INVALID_DAVAKEY)
+    {
+        Logger::Debug("unknown gamepad element code: 0x%H", elementKey);
         return;
+    }
 
     UIEvent newEvent;
     newEvent.tid = davaKey;
     newEvent.physPoint.x = value;
     newEvent.point.x = value;
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
+    newEvent.device = DAVA::UIEvent::Device::GAMEPAD;
 
     gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
     InputSystem::Instance()->ProcessInputEvent(&newEvent);

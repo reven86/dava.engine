@@ -112,7 +112,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
     Vector3 ez(worldTransform->_20, worldTransform->_21, worldTransform->_22);
     ex.Normalize();
     ey.Normalize();
-	ez.Normalize();
+    ez.Normalize();
 	basisVectors[2] = ey; basisVectors[3] = ez;
 	basisVectors[4] = ex; basisVectors[5] = ez;
     basisVectors[6] = ey;

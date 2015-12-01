@@ -1928,6 +1928,8 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
+
         do
         {
             _GLES2_PendingImmediateCmdSync.Lock();
@@ -1950,6 +1952,8 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
         } while (!executed);
+
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
     }
 }
 

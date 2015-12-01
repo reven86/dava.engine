@@ -70,6 +70,7 @@ void ShadowVolumeRenderLayer::PrepareRenderData()
     rhi::VertexBuffer::Descriptor vDesc;
     vDesc.size = sizeof(Vector3) * VERTEX_COUNT;
     vDesc.initialData = quad.data();
+    vDesc.usage = rhi::USAGE_STATICDRAW;
     quadBuffer = rhi::CreateVertexBuffer(vDesc);
 
     rhi::VertexLayout vxLayout;
