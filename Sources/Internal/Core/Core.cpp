@@ -71,7 +71,8 @@
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
-// not used
+#include <cfenv>
+#pragma STDC FENV_ACCESS on
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Input/AccelerometerAndroid.h"
 #endif //PLATFORMS
@@ -174,6 +175,8 @@ void EnableFloatingPointExceptions()
 {
 // https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
 // http://en.cppreference.com/w/cpp/numeric/fenv
+// on iOS better in debug add flag -fsanitize=undefined
+#ifdef __DAVAENGINE_ANDROID__
 #ifndef FE_NOMASK_ENV
     Logger::Info("FPU exceptions not supported");
     // still try
@@ -184,6 +187,7 @@ void EnableFloatingPointExceptions()
     DVASSERT(result != -1);
     Logger::Info("FPU exceptions enabled");
 #endif
+#endif // __DAVAENGINE_ANDROID__
 }
 #endif // non __DAVAENGINE_WINDOWS__
 #else // __DAVAENGINE_DEBUG__
@@ -196,8 +200,12 @@ void DisableFloatingPointExceptions()
 void DisableFloatingPointExceptions()
 {
     Logger::Info("disable FPU exceptions");
+#ifdef __DAVAENGINE_ANDROID__
     int result = fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
     DVASSERT(result != -1);
+#else
+// on iOS fpu exceptions disables by default
+#endif
 }
 #endif 
 #endif // not __DAVAENGINE_DEBUG__
@@ -207,7 +215,7 @@ void Core::CreateSingletons()
 {
     // check types size
     new Logger();
-
+    
 #ifdef __DAVAENGINE_DEBUG__
     debug_details::EnableFloatingPointExceptions();
 #else
