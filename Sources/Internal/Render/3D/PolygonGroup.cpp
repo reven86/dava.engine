@@ -319,30 +319,21 @@ void PolygonGroup::BuildBuffers()
     if (indexBuffer.IsValid())
         rhi::DeleteIndexBuffer(indexBuffer);
 
-#if 1
     rhi::VertexBuffer::Descriptor vbDesc;
     rhi::IndexBuffer::Descriptor ibDesc;
 
     vbDesc.size = vertexStride * vertexCount;
     vbDesc.initialData = meshData;
+    vbDesc.usage = rhi::USAGE_STATICDRAW;
 
     ibDesc.size = indexCount * INDEX_FORMAT_SIZE[indexFormat];
     ibDesc.initialData = indexArray;
+    ibDesc.usage = rhi::USAGE_STATICDRAW;
 
     vertexBuffer = rhi::CreateVertexBuffer(vbDesc);
+    DVASSERT(vertexBuffer);
     indexBuffer = rhi::CreateIndexBuffer(ibDesc);
-
-#else
-    uint32 vertexDataSize = vertexStride * vertexCount;
-    vertexBuffer = rhi::CreateVertexBuffer(vertexDataSize);
-    rhi::UpdateVertexBuffer(vertexBuffer, meshData, 0, vertexDataSize);
-
-    if (indexBuffer.IsValid())
-        rhi::DeleteIndexBuffer(indexBuffer);
-    uint32 indexDataSize = indexCount * INDEX_FORMAT_SIZE[indexFormat];
-    indexBuffer = rhi::CreateIndexBuffer(indexDataSize);
-    rhi::UpdateIndexBuffer(indexBuffer, indexArray, 0, indexDataSize);    
-#endif
+    DVASSERT(indexBuffer);
 };
 
 void PolygonGroup::RestoreBuffers()

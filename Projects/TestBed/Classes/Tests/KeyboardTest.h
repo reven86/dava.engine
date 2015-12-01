@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __KEYBOARDTEST_TEST_H__
 #define __KEYBOARDTEST_TEST_H__
 
-#include <DAVAEngine.h>
 #include "Infrastructure/BaseScreen.h"
 
 class KeyboardTest : public BaseScreen
@@ -46,6 +45,7 @@ private:
 
     DAVA::UIStaticText* previewText = nullptr;
     DAVA::UIButton* resetButton = nullptr;
+    DAVA::UIControl* gamepad = nullptr;
 };
 
 #endif //__KEYBOARDTEST_TEST_H__

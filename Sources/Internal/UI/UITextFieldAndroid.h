@@ -125,7 +125,7 @@ public:
 
     void SetVisible(bool isVisible);
 
-	void SetIsPassword(bool isPassword);
+    void SetIsPassword(bool isPassword);
 
 	void SetInputEnabled(bool value);
 
