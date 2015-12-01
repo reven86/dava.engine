@@ -142,8 +142,10 @@ void EditorCore::Start()
 
 void EditorCore::OnReloadSprites()
 {
-    CloseAllDocuments();
-    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+    if (CloseAllDocuments())
+    {
+        mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+    }
 }
 
 void EditorCore::OnGLWidgedInitialized()
