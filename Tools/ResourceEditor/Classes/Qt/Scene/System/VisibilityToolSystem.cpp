@@ -422,24 +422,17 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 
         if(!needToExclude)
         {   // exclude sky
-            
-            Vector<NMaterial *> materials;
-            SceneHelper::EnumerateMaterialInstances(object, materials);
-            
-            const uint32 matCount = materials.size();
-            for(uint32 m = 0; m < matCount; ++m)
-            {
-                NMaterial* material = materials[m];
-                while (material && !material->GetEffectiveFXName().IsValid())
-                    material = material->GetParent();
 
-                if (material)
+            Set<NMaterial*> materials;
+            SceneHelper::EnumerateMaterials(object, materials);
+
+            const uint32 matCount = materials.size();
+            for (const auto& material : materials)
+            {
+                if ((NMaterialName::SKYOBJECT == material->GetEffectiveFXName()))
                 {
-                    if ((NMaterialName::SKYOBJECT == material->GetEffectiveFXName()))
-                    {
-                        needToExclude = true;
-                        break;
-                    }
+                    needToExclude = true;
+                    break;
                 }
             }
         }
