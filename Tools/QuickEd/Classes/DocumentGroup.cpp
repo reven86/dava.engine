@@ -49,6 +49,7 @@ void DocumentGroup::InsertDocument(int index, Document* document)
     undoGroup->addStack(document->GetUndoStack());
     if (documentList.contains(document))
     {
+        DVASSERT(false && "document already exists in document group");
         return;
     }
     documentList.insert(index, document);
