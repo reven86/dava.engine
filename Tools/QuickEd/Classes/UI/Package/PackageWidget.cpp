@@ -728,7 +728,7 @@ void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
 
 void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    DVASSERT(!selected.empty() || deselected.empty());
+    DVASSERT(!selected.empty() || !deselected.empty());
     selectionContainer.MergeSelection(selected, deselected);
 
     RefreshActions();
@@ -740,11 +740,10 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
         QModelIndex srcIndex = packageModel->indexByNode(node);
         QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
         treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
-
-        for (const auto& node : selected)
-        {
-            SelectNodeImpl(node);
-        }
+    }
+    for (const auto& node : selected)
+    {
+        SelectNodeImpl(node);
     }
 
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);

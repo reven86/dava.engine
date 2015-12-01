@@ -61,14 +61,20 @@ SelectionSystem::~SelectionSystem()
 
 void SelectionSystem::OnActivated()
 {
-    systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+    }
     connectionID = systemManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
 }
 
 void SelectionSystem::OnDeactivated()
 {
     systemManager->SelectionChanged.Disconnect(connectionID);
-    systemManager->SelectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        systemManager->SelectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
+    }
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
