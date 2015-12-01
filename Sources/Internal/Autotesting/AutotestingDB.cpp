@@ -267,9 +267,10 @@ namespace DAVA
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
 
-		String result;
-		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, new KeyedArchive());
-		result = deviceArchive->GetString(param, DB_ERROR_STR_VALUE);
+		
+		ScopedPtr<KeyedArchive> emptyKeyedArchive(new KeyedArchive());
+		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, emptyKeyedArchive);
+		String result = deviceArchive->GetString(param, DB_ERROR_STR_VALUE);
 		
 		Logger::Info("AutotestingDB::ReadState device=%s: %s='%s'", device.c_str(), param.c_str(), result.c_str());
 		SafeRelease(dbUpdateObject);
@@ -283,7 +284,9 @@ namespace DAVA
 
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
-		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, new KeyedArchive());
+		ScopedPtr<KeyedArchive> emptyKeyedArchive(new KeyedArchive());
+		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, emptyKeyedArchive);
+		
 		deviceArchive->SetString(param, state);
 		multiplayerArchive->SetArchive(device, deviceArchive);
 		SaveToDB(dbUpdateObject);
