@@ -59,25 +59,13 @@ private:
         DAVA::Camera* camera = nullptr;
     };
 
-    struct RenderPoint
-    {
-        DAVA::Vector3 point;
-        DAVA::Color color;
-
-        RenderPoint(const DAVA::Vector3& p, const DAVA::Color& c)
-            : point(p)
-            , color(c)
-        {
-        }
-    };
-
     static const DAVA::uint32 CubemapsCount = 1;
 
 private:
     DAVA::Vector<DAVA::Entity*> entities;
     DAVA::Texture* cubemapTarget[CubemapsCount];
     DAVA::Texture* renderTarget = nullptr;
-    DAVA::Vector<RenderPoint> controlPoints;
+    DAVA::Vector<VisibilityCheckRenderer::VisbilityPoint> controlPoints;
     VisibilityCheckRenderer renderer;
     StateCache stateCache;
     size_t currentPointIndex = 0;

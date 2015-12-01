@@ -141,7 +141,7 @@ void VisibilityCheckSystem::Draw()
     {
         const auto& point = controlPoints[currentPointIndex];
         renderer.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point.point);
-        renderer.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point.point, point.color);
+        renderer.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point);
     }
 
     DAVA::Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
@@ -155,12 +155,17 @@ void VisibilityCheckSystem::UpdatePointSet()
     for (auto e : entities)
     {
         auto worldTransform = e->GetWorldTransform();
-        Vector3 position = worldTransform.GetTranslationVector();
+        DAVA::Vector3 position = worldTransform.GetTranslationVector();
+        DAVA::Vector3 normal = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
+        normal.Normalize();
 
         auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
+        float upAngle = std::cos((90.0f - visibilityComponent->GetUpAngle()) * PI / 180.0f);
+        float dnAngle = -std::cos((90.0f - visibilityComponent->GetDownAngle()) * PI / 180.0f);
         for (const auto& pt : visibilityComponent->GetPoints())
         {
-            controlPoints.emplace_back(position + MultiplyVectorMat3x3(pt, worldTransform), visibilityComponent->GetNormalizedColor());
+            controlPoints.emplace_back(position + MultiplyVectorMat3x3(pt, worldTransform), normal,
+                                       visibilityComponent->GetNormalizedColor(), upAngle, dnAngle);
         }
     }
 }

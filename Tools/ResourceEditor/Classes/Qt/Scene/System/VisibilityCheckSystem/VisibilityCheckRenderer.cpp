@@ -232,7 +232,8 @@ void VisibilityCheckRenderer::RenderWithCurrentSettings(DAVA::RenderSystem* rend
     }
 }
 
-void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const DAVA::Color& color)
+void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const DAVA::Vector3& normal,
+                                                                 DAVA::float32 topAngleCosine, DAVA::float32 bottomAngleCosine, const DAVA::Color& color)
 {
     DAVA::FastName fnCubemap("cubemap");
     if (visibilityMaterial->HasLocalTexture(fnCubemap))
@@ -243,6 +244,7 @@ void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* 
     {
         visibilityMaterial->AddTexture(fnCubemap, cubemapTexture);
     }
+
     if (visibilityMaterial->HasLocalProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR))
     {
         visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, color.color);
@@ -251,17 +253,38 @@ void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* 
     {
         visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, color.color, rhi::ShaderProp::TYPE_FLOAT4);
     }
+
+    DAVA::FastName tNormal("transformedNormal");
+    if (visibilityMaterial->HasLocalProperty(tNormal))
+    {
+        visibilityMaterial->SetPropertyValue(tNormal, normal.data);
+    }
+    else
+    {
+        visibilityMaterial->AddProperty(tNormal, normal.data, rhi::ShaderProp::TYPE_FLOAT3);
+    }
+
+    DAVA::FastName vAngles("verticalAngles");
+    DAVA::Vector2 va(topAngleCosine, bottomAngleCosine);
+    if (visibilityMaterial->HasLocalProperty(vAngles))
+    {
+        visibilityMaterial->SetPropertyValue(vAngles, va.data);
+    }
+    else
+    {
+        visibilityMaterial->AddProperty(vAngles, va.data, rhi::ShaderProp::TYPE_FLOAT2);
+    }
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
 void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Texture* cubemap,
-                                                        DAVA::Texture* renderTarget, const DAVA::Vector3& point, const DAVA::Color& color)
+                                                        DAVA::Texture* renderTarget, const VisbilityPoint& vp)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
-    UpdateVisibilityMaterialProperties(cubemap, color);
+    UpdateVisibilityMaterialProperties(cubemap, vp.normal, vp.upAngleCosine, vp.downAngleCosine, vp.color);
     CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
 
-    DAVA::Vector4 pointLocation(point.x, point.y, point.z, 0.0f);
+    DAVA::Vector4 pointLocation(vp.point.x, vp.point.y, vp.point.z, 0.0f);
 
     visibilityConfig.colorBuffer[0].texture = renderTarget->handle;
     visibilityConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;

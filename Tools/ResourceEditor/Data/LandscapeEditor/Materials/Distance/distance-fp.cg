@@ -59,6 +59,8 @@ FPROG_BEGIN
 
 #if defined(DECODE_DISTANCE)
 	property float4 flatColor : static,a : ;
+	property float3 transformedNormal : static,a : ;
+	property float2 verticalAngles : static,a : ;
 #endif
 
 #if defined(ENCODE_DISTANCE)
@@ -66,11 +68,15 @@ FPROG_BEGIN
 #endif
 
 #if defined(DECODE_DISTANCE)
-	float actualDistance = length(FP_IN(directionFromPoint));
 	float4 sampledDistance = FP_TEXTURECUBE(cubemap, FP_IN(directionFromPoint));
 	float decodedDistance = DecodeFloatRGBA(sampledDistance);
+	float actualDistance = length(FP_IN(directionFromPoint));
 	float occluded = float(actualDistance / decodedDistance < MAGIC_TRESHOLD);
-	FP_OUT_COLOR = flatColor * occluded;
+	
+	float3 nDir = normalize(FP_IN(directionFromPoint));
+	float DdotN = dot(nDir, transformedNormal);
+	float angleScale = float(clamp(DdotN, verticalAngles.y, verticalAngles.x) == DdotN);
+	FP_OUT_COLOR = flatColor * (occluded * angleScale);
 #endif
 
 #if defined(PRERENDER)

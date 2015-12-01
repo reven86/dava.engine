@@ -198,3 +198,25 @@ void VisibilityCheckComponent::SetValid()
 {
     isValid = true;
 }
+
+float VisibilityCheckComponent::GetUpAngle() const
+{
+    return upAngle;
+}
+
+void VisibilityCheckComponent::SetUpAngle(float value)
+{
+    upAngle = std::max(0.0f, std::min(90.0f, value));
+    isValid = false;
+}
+
+float VisibilityCheckComponent::GetDownAngle() const
+{
+    return downAngle;
+}
+
+void VisibilityCheckComponent::SetDownAngle(float value)
+{
+    downAngle = std::max(0.0f, std::min(90.0f, value));
+    isValid = false;
+}

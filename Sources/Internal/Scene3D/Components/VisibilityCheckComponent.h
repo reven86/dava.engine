@@ -51,9 +51,15 @@ public:
     void SetDistanceBetweenPoints(float);
 
     const Color& GetColor() const;
-    Color GetNormalizedColor() const;
-
     void SetColor(const Color&);
+
+    float GetUpAngle() const;
+    void SetUpAngle(float);
+
+    float GetDownAngle() const;
+    void SetDownAngle(float);
+
+    Color GetNormalizedColor() const;
 
     bool IsPointSetValid() const;
     void InvalidatePointSet();
@@ -69,6 +75,8 @@ private:
     Color color;
     float radius = 5.0f;
     float distanceBetweenPoints = 2.0f;
+    float upAngle = 45.0f;
+    float downAngle = 45.0f;
     bool shouldBuildPointSet = true;
     bool isValid = false;
 
@@ -76,7 +84,9 @@ public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
                          PROPERTY("radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("distanceBetweenPoints", "Distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("upAngle", "Up Angle", GetUpAngle, SetUpAngle, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("downAngle", "Down Angle", GetDownAngle, SetDownAngle, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 
