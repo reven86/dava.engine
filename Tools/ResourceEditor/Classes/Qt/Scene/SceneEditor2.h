@@ -58,7 +58,6 @@
 #include "Scene/System/EditorMaterialSystem.h"
 #include "Scene/System/WayEditSystem.h"
 #include "Scene/System/PathSystem.h"
-#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 
 #include "Scene3D/Systems/StaticOcclusionBuildSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
@@ -67,11 +66,10 @@
 
 class SceneCameraSystem;
 class SceneCollisionSystem;
-
 class HoodSystem;
-
 class EditorLODSystem;
 class FogSettingsChangedReceiver;
+class VisibilityCheckSystem;
 
 class SceneEditor2 : public DAVA::Scene
 {

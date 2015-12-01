@@ -33,20 +33,19 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/VisibilityCheckComponent.h"
+
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
-using namespace DAVA;
-
-const uint32 renderTargetSize = 1024;
-
-VisibilityCheckSystem::VisibilityCheckSystem(Scene* scene)
-    : SceneSystem(scene)
+VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
+    : DAVA::SceneSystem(scene)
 {
-    for (uint32 i = 0; i < CubemapsCount; ++i)
+    const DAVA::uint32 renderTargetSize = 1024;
+
+    for (DAVA::uint32 i = 0; i < CubemapsCount; ++i)
     {
-        cubemapTarget[i] = Texture::CreateFBO(renderTargetSize, renderTargetSize,
-                                              PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
+        cubemapTarget[i] = DAVA::Texture::CreateFBO(renderTargetSize, renderTargetSize,
+                                                    DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
     }
 
     QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, [this]() {
@@ -62,9 +61,9 @@ VisibilityCheckSystem::~VisibilityCheckSystem()
     }
 }
 
-void VisibilityCheckSystem::AddEntity(Entity* entity)
+void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
 {
-    auto requiredComponent = entity->GetComponent(Component::VISIBILITY_CHECK_COMPONENT);
+    auto requiredComponent = entity->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT);
     if (requiredComponent != nullptr)
     {
         entities.push_back(entity);
@@ -72,7 +71,7 @@ void VisibilityCheckSystem::AddEntity(Entity* entity)
     }
 }
 
-void VisibilityCheckSystem::RemoveEntity(Entity* entity)
+void VisibilityCheckSystem::RemoveEntity(DAVA::Entity* entity)
 {
     auto i = std::find(entities.begin(), entities.end(), entity);
     if (i != entities.end())
@@ -82,7 +81,7 @@ void VisibilityCheckSystem::RemoveEntity(Entity* entity)
     }
 }
 
-void VisibilityCheckSystem::Process(float32 timeElapsed)
+void VisibilityCheckSystem::Process(DAVA::float32 timeElapsed)
 {
     if (entities.empty())
         return;
@@ -95,7 +94,7 @@ void VisibilityCheckSystem::Draw()
 
     for (auto e : entities)
     {
-        auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
+        auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
         if (!visibilityComponent->IsPointSetValid())
         {
             visibilityComponent->BuildPointSet();
@@ -109,10 +108,10 @@ void VisibilityCheckSystem::Draw()
     for (auto e : entities)
     {
         auto worldTransform = e->GetWorldTransform();
-        auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
-        Vector3 position = worldTransform.GetTranslationVector();
-        Vector3 direction = MultiplyVectorMat3x3(Vector3(0.0f, 0.0f, 1.0f), worldTransform);
-        dbg->DrawCircle(position, direction, visibilityComponent->GetRadius(), 36, Color::White, RenderHelper::DRAW_WIRE_DEPTH);
+        auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(e->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
+        DAVA::Vector3 position = worldTransform.GetTranslationVector();
+        DAVA::Vector3 direction = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
+        dbg->DrawCircle(position, direction, visibilityComponent->GetRadius(), 36, DAVA::Color::White, DAVA::RenderHelper::DRAW_WIRE_DEPTH);
     }
 
     if (!CacheIsValid())
@@ -128,20 +127,20 @@ void VisibilityCheckSystem::Draw()
 
     for (const auto& point : controlPoints)
     {
-        dbg->DrawIcosahedron(point.point, 0.1f, Color(1.0f, 1.0f, 0.5f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+        dbg->DrawIcosahedron(point.point, 0.1f, DAVA::Color(1.0f, 1.0f, 0.5f, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
     }
 
-    Color clr(std::sqrt(1.0f / static_cast<float>(controlPoints.size() + 1)), 0.0f, 0.0f, 0.0f);
+    DAVA::Color clr(std::sqrt(1.0f / static_cast<float>(controlPoints.size() + 1)), 0.0f, 0.0f, 0.0f);
     auto fromCamera = GetScene()->GetCurrentCamera();
-    for (uint32 cm = 0; (cm < CubemapsCount) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
+    for (DAVA::uint32 cm = 0; (cm < CubemapsCount) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         const auto& point = controlPoints[currentPointIndex];
         renderPass.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point.point);
         renderPass.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point.point, point.color);
     }
 
-    Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
-    RenderSystem2D::Instance()->DrawTexture(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, Color::White, dstRect);
+    DAVA::Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
+    DAVA::RenderSystem2D::Instance()->DrawTexture(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, Color::White, dstRect);
 }
 
 void VisibilityCheckSystem::UpdatePointSet()

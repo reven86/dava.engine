@@ -32,18 +32,15 @@
 #include "VisibilityCheckRenderPass.h"
 #include "Entity/SceneSystem.h"
 
-namespace DAVA
-{
-class VisibilityCheckComponent;
-class VisibilityCheckSystem : public SceneSystem
+class VisibilityCheckSystem : public DAVA::SceneSystem
 {
 public:
-    VisibilityCheckSystem(Scene* scene);
+    VisibilityCheckSystem(DAVA::Scene* scene);
     ~VisibilityCheckSystem();
 
-    void AddEntity(Entity* entity) override;
-    void RemoveEntity(Entity* entity) override;
-    void Process(float32 timeElapsed) override;
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+    void Process(DAVA::float32 timeElapsed) override;
 
     void Draw();
 
@@ -57,35 +54,34 @@ private:
 
     struct StateCache
     {
-        Size2i viewportSize;
-        Matrix4 viewprojMatrix;
-        Camera* camera = nullptr;
+        DAVA::Size2i viewportSize;
+        DAVA::Matrix4 viewprojMatrix;
+        DAVA::Camera* camera = nullptr;
     };
 
     struct RenderPoint
     {
-        Vector3 point;
-        Color color;
+        DAVA::Vector3 point;
+        DAVA::Color color;
 
-        RenderPoint(const Vector3& p, const Color& c)
+        RenderPoint(const DAVA::Vector3& p, const DAVA::Color& c)
             : point(p)
             , color(c)
         {
         }
     };
 
-    static const uint32 CubemapsCount = 1;
+    static const DAVA::uint32 CubemapsCount = 1;
 
 private:
-    Vector<Entity*> entities;
-    Vector<RenderPoint> controlPoints;
-    Texture* cubemapTarget[CubemapsCount];
-    Texture* renderTarget = nullptr;
+    DAVA::Vector<DAVA::Entity*> entities;
+    DAVA::Texture* cubemapTarget[CubemapsCount];
+    DAVA::Texture* renderTarget = nullptr;
+    DAVA::Vector<RenderPoint> controlPoints;
     VisibilityCheckRenderPass renderPass;
     StateCache stateCache;
     size_t currentPointIndex = 0;
     bool shouldPrerender = true;
 };
-}
 
 #endif

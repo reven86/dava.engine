@@ -29,31 +29,27 @@
 #include "VisibilityCheckRenderPass.h"
 #include "Render/ShaderCache.h"
 
-using namespace DAVA;
-
-const uint32 cubemapFaces = 6;
-
 VisibilityCheckRenderPass::VisibilityCheckRenderPass()
-    : RenderPass(PASS_FORWARD)
-    , camera(new Camera())
-    , distanceMaterial(new NMaterial())
-    , visibilityMaterial(new NMaterial())
-    , prerenderMaterial(new NMaterial())
+    : RenderPass(DAVA::PASS_FORWARD)
+    , camera(new DAVA::Camera())
+    , distanceMaterial(new DAVA::NMaterial())
+    , visibilityMaterial(new DAVA::NMaterial())
+    , prerenderMaterial(new DAVA::NMaterial())
 {
     camera->SetupPerspective(90.0f, 1.0f, 1.0f, 5000.0f);
 
-    auto sortingFlags = RenderBatchArray::SORT_THIS_FRAME | RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
+    auto sortingFlags = DAVA::RenderBatchArray::SORT_THIS_FRAME | DAVA::RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
+    AddRenderLayer(new DAVA::RenderLayer(DAVA::RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
+    AddRenderLayer(new DAVA::RenderLayer(DAVA::RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
 
     prerenderConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     prerenderConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     prerenderConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
-    prerenderConfig.priority = PRIORITY_SERVICE_3D + 5;
+    prerenderConfig.priority = DAVA::PRIORITY_SERVICE_3D + 5;
 
     renderTargetConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     renderTargetConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    renderTargetConfig.priority = PRIORITY_SERVICE_3D;
+    renderTargetConfig.priority = DAVA::PRIORITY_SERVICE_3D;
     renderTargetConfig.viewport.x = 0;
     renderTargetConfig.viewport.y = 0;
     std::fill_n(renderTargetConfig.colorBuffer[0].clearColor, 4, 1.0f);
@@ -67,24 +63,25 @@ VisibilityCheckRenderPass::VisibilityCheckRenderPass()
     visibilityConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     visibilityConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_LOAD;
     visibilityConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
-    visibilityConfig.priority = PRIORITY_SERVICE_3D - 5;
+    visibilityConfig.priority = DAVA::PRIORITY_SERVICE_3D - 5;
 
-    distanceMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/Distance.Opaque.material"));
-    distanceMaterial->PreBuildMaterial(PASS_FORWARD);
+    distanceMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Opaque.material"));
+    distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
-    prerenderMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/Distance.Prerender.material"));
-    prerenderMaterial->PreBuildMaterial(PASS_FORWARD);
+    prerenderMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Prerender.material"));
+    prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
-    visibilityMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CompareDistance.Opaque.material"));
-    visibilityMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ADDITIVE);
-    visibilityMaterial->PreBuildMaterial(PASS_FORWARD);
+    visibilityMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/CompareDistance.Opaque.material"));
+    visibilityMaterial->AddFlag(DAVA::NMaterialFlagName::FLAG_BLENDING, DAVA::BLENDING_ADDITIVE);
+    visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
 VisibilityCheckRenderPass::~VisibilityCheckRenderPass()
 {
 }
 
-void VisibilityCheckRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSystem, Camera* fromCamera, Texture* renderTarget, const Vector3& point)
+void VisibilityCheckRenderPass::RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera,
+                                                         DAVA::Texture* renderTarget, const DAVA::Vector3& point)
 {
     renderTargetConfig.colorBuffer[0].texture = renderTarget->handle;
     renderTargetConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
@@ -92,35 +89,34 @@ void VisibilityCheckRenderPass::RenderToCubemapFromPoint(RenderSystem* renderSys
     renderTargetConfig.viewport.height = renderTarget->GetHeight();
 
     camera->SetPosition(point);
-    for (uint32 i = 0; i < cubemapFaces; ++i)
+    for (DAVA::uint32 i = 0; i < 6; ++i)
     {
         SetupCameraToRenderFromPointToFaceIndex(point, i);
         RenderWithCurrentSettings(renderSystem, fromCamera);
     }
 }
 
-void VisibilityCheckRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex)
+void VisibilityCheckRenderPass::SetupCameraToRenderFromPointToFaceIndex(const DAVA::Vector3& point, DAVA::uint32 faceIndex)
 {
-    const Vector3 directions[cubemapFaces] =
+    const DAVA::Vector3 directions[6] =
     {
-      Vector3(+1.0f, 0.0f, 0.0f),
-      Vector3(-1.0f, 0.0f, 0.0f),
-      Vector3(0.0f, +1.0f, 0.0f),
-      Vector3(0.0f, -1.0f, 0.0f),
-      Vector3(0.0f, 0.0f, +1.0f),
-      Vector3(0.0f, 0.0f, -1.0f),
+      DAVA::Vector3(+1.0f, 0.0f, 0.0f),
+      DAVA::Vector3(-1.0f, 0.0f, 0.0f),
+      DAVA::Vector3(0.0f, +1.0f, 0.0f),
+      DAVA::Vector3(0.0f, -1.0f, 0.0f),
+      DAVA::Vector3(0.0f, 0.0f, +1.0f),
+      DAVA::Vector3(0.0f, 0.0f, -1.0f),
     };
-    const Vector3 upVectors[cubemapFaces] =
+    const DAVA::Vector3 upVectors[6] =
     {
-      Vector3(0.0f, -1.0f, 0.0f),
-      Vector3(0.0f, -1.0f, 0.0f),
-      Vector3(0.0f, 0.0f, 1.0f),
-      Vector3(0.0f, 0.0f, -1.0f),
-      Vector3(0.0f, -1.0f, 0.0f),
-      Vector3(0.0f, -1.0f, 0.0f),
+      DAVA::Vector3(0.0f, -1.0f, 0.0f),
+      DAVA::Vector3(0.0f, -1.0f, 0.0f),
+      DAVA::Vector3(0.0f, 0.0f, 1.0f),
+      DAVA::Vector3(0.0f, 0.0f, -1.0f),
+      DAVA::Vector3(0.0f, -1.0f, 0.0f),
+      DAVA::Vector3(0.0f, -1.0f, 0.0f),
     };
-
-    const rhi::TextureFace targetFaces[cubemapFaces] =
+    const rhi::TextureFace targetFaces[6] =
     {
       rhi::TEXTURE_FACE_POSITIVE_X,
       rhi::TEXTURE_FACE_NEGATIVE_X,
@@ -135,20 +131,20 @@ void VisibilityCheckRenderPass::SetupCameraToRenderFromPointToFaceIndex(const Ve
     camera->SetUp(upVectors[faceIndex]);
 }
 
-bool VisibilityCheckRenderPass::ShouldRenderObject(RenderObject* object)
+bool VisibilityCheckRenderPass::ShouldRenderObject(DAVA::RenderObject* object)
 {
     auto type = object->GetType();
 
-    return (type != RenderObject::TYPE_SPEED_TREE) && (type != RenderObject::TYPE_SPRITE) &&
-    (type != RenderObject::TYPE_VEGETATION) && (type != RenderObject::TYPE_PARTICLE_EMTITTER);
+    return (type != DAVA::RenderObject::TYPE_SPEED_TREE) && (type != DAVA::RenderObject::TYPE_SPRITE) &&
+    (type != DAVA::RenderObject::TYPE_VEGETATION) && (type != DAVA::RenderObject::TYPE_PARTICLE_EMTITTER);
 }
 
-bool VisibilityCheckRenderPass::ShouldRenderBatch(RenderBatch* batch)
+bool VisibilityCheckRenderPass::ShouldRenderBatch(DAVA::RenderBatch* batch)
 {
-    return (batch->GetMaterial()->GetEffectiveFXName() != NMaterialName::SKYOBJECT);
+    return batch->GetMaterial()->GetEffectiveFXName() != DAVA::NMaterialName::SKYOBJECT;
 }
 
-void VisibilityCheckRenderPass::PreRenderScene(RenderSystem* renderSystem, Camera* fromCamera, Texture* renderTarget)
+void VisibilityCheckRenderPass::PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Texture* renderTarget)
 {
     prerenderConfig.colorBuffer[0].texture = renderTarget->handle;
     prerenderConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
@@ -159,17 +155,17 @@ void VisibilityCheckRenderPass::PreRenderScene(RenderSystem* renderSystem, Camer
     rhi::BeginPacketList(localPacketList);
 
     // passConfig = prerenderConfig;
-    ShaderDescriptorCache::ClearDynamicBindigs();
+    DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
     SetupCameraParams(fromCamera, fromCamera);
     PrepareVisibilityArrays(fromCamera, renderSystem);
     for (auto layer : renderLayers)
     {
-        const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
-        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
-        for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
+        const DAVA::RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+        DAVA::uint32 batchCount = renderBatchArray.GetRenderBatchCount();
+        for (DAVA::uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch* batch = renderBatchArray.Get(batchIndex);
-            RenderObject* renderObject = batch->GetRenderObject();
+            DAVA::RenderBatch* batch = renderBatchArray.Get(batchIndex);
+            DAVA::RenderObject* renderObject = batch->GetRenderObject();
             if (ShouldRenderBatch(batch) && ShouldRenderObject(renderObject))
             {
                 renderObject->BindDynamicParameters(fromCamera);
@@ -185,7 +181,7 @@ void VisibilityCheckRenderPass::PreRenderScene(RenderSystem* renderSystem, Camer
     rhi::EndRenderPass(currentPass);
 }
 
-void VisibilityCheckRenderPass::RenderWithCurrentSettings(RenderSystem* renderSystem, Camera* sceneCamera)
+void VisibilityCheckRenderPass::RenderWithCurrentSettings(DAVA::RenderSystem* renderSystem, DAVA::Camera* sceneCamera)
 {
     rhi::HPacketList localPacketList;
     auto renderTargetPass = rhi::AllocateRenderPass(renderTargetConfig, 1, &localPacketList);
@@ -193,17 +189,17 @@ void VisibilityCheckRenderPass::RenderWithCurrentSettings(RenderSystem* renderSy
     rhi::BeginPacketList(localPacketList);
 
     // passConfig = renderTargetConfig;
-    ShaderDescriptorCache::ClearDynamicBindigs();
+    DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
     SetupCameraParams(camera, camera);
     PrepareVisibilityArrays(camera, renderSystem);
     for (auto layer : renderLayers)
     {
-        const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
-        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
-        for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
+        const DAVA::RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+        DAVA::uint32 batchCount = renderBatchArray.GetRenderBatchCount();
+        for (DAVA::uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch* batch = renderBatchArray.Get(batchIndex);
-            RenderObject* renderObject = batch->GetRenderObject();
+            DAVA::RenderBatch* batch = renderBatchArray.Get(batchIndex);
+            DAVA::RenderObject* renderObject = batch->GetRenderObject();
             if (ShouldRenderBatch(batch) && ShouldRenderObject(renderObject))
             {
                 renderObject->BindDynamicParameters(camera);
@@ -219,10 +215,10 @@ void VisibilityCheckRenderPass::RenderWithCurrentSettings(RenderSystem* renderSy
     rhi::EndRenderPass(renderTargetPass);
 }
 
-void VisibilityCheckRenderPass::RenderVisibilityToTexture(RenderSystem* renderSystem, Camera* fromCamera, Texture* cubemap,
-                                                          Texture* renderTarget, const Vector3& point, const Color& color)
+void VisibilityCheckRenderPass::RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Texture* cubemap,
+                                                          DAVA::Texture* renderTarget, const DAVA::Vector3& point, const DAVA::Color& color)
 {
-    FastName fnCubemap("cubemap");
+    DAVA::FastName fnCubemap("cubemap");
     if (visibilityMaterial->HasLocalTexture(fnCubemap))
     {
         visibilityMaterial->SetTexture(fnCubemap, cubemap);
@@ -232,18 +228,18 @@ void VisibilityCheckRenderPass::RenderVisibilityToTexture(RenderSystem* renderSy
         visibilityMaterial->AddTexture(fnCubemap, cubemap);
     }
 
-    if (visibilityMaterial->HasLocalProperty(NMaterialParamName::PARAM_FLAT_COLOR))
+    if (visibilityMaterial->HasLocalProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR))
     {
-        visibilityMaterial->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, color.color);
+        visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, color.color);
     }
     else
     {
-        visibilityMaterial->AddProperty(NMaterialParamName::PARAM_FLAT_COLOR, color.color, rhi::ShaderProp::TYPE_FLOAT4);
+        visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, color.color, rhi::ShaderProp::TYPE_FLOAT4);
     }
 
-    visibilityMaterial->PreBuildMaterial(PASS_FORWARD);
+    visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
-    Vector4 lightPosition(point.x, point.y, point.z, 0.0f);
+    DAVA::Vector4 lightPosition(point.x, point.y, point.z, 0.0f);
 
     visibilityConfig.colorBuffer[0].texture = renderTarget->handle;
     visibilityConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
@@ -253,22 +249,22 @@ void VisibilityCheckRenderPass::RenderVisibilityToTexture(RenderSystem* renderSy
     rhi::BeginRenderPass(currentPass);
     rhi::BeginPacketList(localPacketList);
 
-    // passConfig = visibilityConfig;
-    ShaderDescriptorCache::ClearDynamicBindigs();
+    DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
     SetupCameraParams(fromCamera, fromCamera);
     PrepareVisibilityArrays(fromCamera, renderSystem);
     for (auto layer : renderLayers)
     {
-        const RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
-        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
-        for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
+        const DAVA::RenderBatchArray& renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
+        DAVA::uint32 batchCount = renderBatchArray.GetRenderBatchCount();
+        for (DAVA::uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch* batch = renderBatchArray.Get(batchIndex);
-            RenderObject* renderObject = batch->GetRenderObject();
+            DAVA::RenderBatch* batch = renderBatchArray.Get(batchIndex);
+            DAVA::RenderObject* renderObject = batch->GetRenderObject();
             if (ShouldRenderBatch(batch) && ShouldRenderObject(renderObject))
             {
                 renderObject->BindDynamicParameters(fromCamera);
-                Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &lightPosition, (pointer_size)&lightPosition);
+                DAVA::Renderer::GetDynamicBindings().SetDynamicParam(DAVA::DynamicBindings::PARAM_LIGHT0_POSITION, &lightPosition,
+                                                                     (DAVA::pointer_size)&lightPosition);
 
                 rhi::Packet packet;
                 batch->BindGeometryData(packet);

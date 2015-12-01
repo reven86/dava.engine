@@ -33,35 +33,33 @@
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 
-namespace DAVA
-{
-class VisibilityCheckRenderPass : public RenderPass
+class VisibilityCheckRenderPass : public DAVA::RenderPass
 {
 public:
     VisibilityCheckRenderPass();
     ~VisibilityCheckRenderPass();
 
-    void PreRenderScene(RenderSystem* renderSystem, Camera* camera, Texture* renderTarget);
-    void RenderToCubemapFromPoint(RenderSystem* renderSystem, Camera* camera, Texture* renderTarget, const Vector3& point);
-    void RenderVisibilityToTexture(RenderSystem* renderSystem, Camera* camera, Texture* cubemap, Texture* renderTarget,
-                                   const Vector3& point, const Color& color);
+    void PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* renderTarget);
+    void RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* renderTarget, const DAVA::Vector3& point);
+    void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* cubemap, DAVA::Texture* renderTarget,
+                                   const DAVA::Vector3& point, const DAVA::Color& color);
 
 private:
-    void SetupCameraToRenderFromPointToFaceIndex(const Vector3& point, uint32 faceIndex);
-    void RenderWithCurrentSettings(RenderSystem* renderSystem, Camera* sceneCamera);
-    bool ShouldRenderObject(RenderObject*);
-    bool ShouldRenderBatch(RenderBatch*);
+    void SetupCameraToRenderFromPointToFaceIndex(const DAVA::Vector3& point, DAVA::uint32 faceIndex);
+    void RenderWithCurrentSettings(DAVA::RenderSystem* renderSystem, DAVA::Camera* sceneCamera);
+    bool ShouldRenderObject(DAVA::RenderObject*);
+    bool ShouldRenderBatch(DAVA::RenderBatch*);
 
 private:
-    ScopedPtr<Camera> camera;
-    ScopedPtr<NMaterial> distanceMaterial;
-    ScopedPtr<NMaterial> visibilityMaterial;
-    ScopedPtr<NMaterial> prerenderMaterial;
+    DAVA::ScopedPtr<DAVA::Camera> camera;
+    DAVA::ScopedPtr<DAVA::NMaterial> distanceMaterial;
+    DAVA::ScopedPtr<DAVA::NMaterial> visibilityMaterial;
+    DAVA::ScopedPtr<DAVA::NMaterial> prerenderMaterial;
     rhi::HDepthStencilState visibilityDepthStencilState;
     rhi::RenderPassConfig renderTargetConfig;
     rhi::RenderPassConfig visibilityConfig;
     rhi::RenderPassConfig prerenderConfig;
 };
-}
+
 
 #endif
