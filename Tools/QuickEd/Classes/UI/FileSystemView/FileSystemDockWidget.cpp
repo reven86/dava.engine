@@ -296,12 +296,11 @@ void FileSystemDockWidget::OnShowInExplorer()
     QProcess::startDetached("osascript", args);
 #endif
 #ifdef Q_OS_WIN
-    QFileInfo info(pathIn);
-    QStringList args;
-    if(info.isDir())
-        args << "-p";
-    args << "/select," << QDir::toNativeSeparators(pathIn);
-    QProcess::startDetached("explorer", args);
+    QString param;
+    param = QLatin1String("/select,");
+    param += QDir::toNativeSeparators(pathIn);
+    QString command = QString("explorer") + " " + param;
+    QProcess::startDetached(command);
 #endif
 }
 
