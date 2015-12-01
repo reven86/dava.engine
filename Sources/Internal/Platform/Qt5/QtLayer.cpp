@@ -122,8 +122,8 @@ void QtLayer::Resize(int32 width, int32 height, int32 currentScreen)
     vcs->SetInputScreenAreaSize(realWidth, realHeight);
     
     vcs->UnregisterAllAvailableResourceSizes();
-    vcs->RegisterAvailableResourceSize(realWidth, realHeight, "Gfx");
-    vcs->RegisterAvailableResourceSize(realWidth, realHeight, "Gfx2");
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx");
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx2");
     
     vcs->SetPhysicalScreenSize(realWidth, realHeight);
     vcs->SetVirtualScreenSize(width, height);
