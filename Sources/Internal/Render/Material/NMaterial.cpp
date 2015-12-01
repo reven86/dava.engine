@@ -93,6 +93,8 @@ NMaterial::NMaterial()
 
 NMaterial::~NMaterial()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     SetParent(nullptr);
     DVASSERT(children.size() == 0); //as children refernce parent in our material scheme, this should not be released while it has children
     for (auto& prop : localProperties)
@@ -114,6 +116,8 @@ NMaterial::~NMaterial()
 
 void NMaterial::BindParams(rhi::Packet& target)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     //Logger::Info( "bind-params" );
     DVASSERT(activeVariantInstance); //trying to bind material that was not staged to render
     DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
@@ -233,6 +237,17 @@ void NMaterial::CollectLocalTextures(Set<MaterialTextureInfo*>& collection) cons
     }
 }
 
+bool NMaterial::ContainsTexture(Texture* texture) const
+{
+    for (const auto& lc : localTextures)
+    {
+        if (lc.second->texture == texture)
+            return true;
+    }
+
+    return false;
+}
+
 void NMaterial::SetFXName(const FastName& fx)
 {
     fxName = fx;
@@ -274,6 +289,8 @@ void NMaterial::SetQualityGroup(const FastName& quality)
 
 void NMaterial::AddProperty(const FastName& propName, const float32* propData, rhi::ShaderProp::Type type, uint32 arraySize)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localProperties.at(propName) == nullptr);
     NMaterialProperty* prop = new NMaterialProperty();
     prop->name = propName;
@@ -341,6 +358,8 @@ const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
 
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localTextures.at(slotName) == nullptr);
     MaterialTextureInfo* texInfo = new MaterialTextureInfo();
     texInfo->texture = SafeRetain(texture);
@@ -388,6 +407,8 @@ Texture* NMaterial::GetLocalTexture(const FastName& slotName)
 
 void NMaterial::AddFlag(const FastName& flagName, int32 value)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(localFlags.find(flagName) == localFlags.end());
     localFlags[flagName] = value;
     InvalidateRenderVariants();
@@ -438,6 +459,8 @@ bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
 
 void NMaterial::SetParent(NMaterial* _parent)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(_parent != this);
 
     if (parent == _parent)
@@ -646,29 +669,35 @@ void NMaterial::RebuildBindings()
                     else
                         bufferBinding->constBuffer = rhi::CreateFragmentConstBuffer(currShader->GetPiplineState(), bufferDescr.targetSlot);
 
-                    //create bindings for this buffer
-                    for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
+                    if (bufferBinding->constBuffer != rhi::InvalidHandle)
                     {
-                        NMaterialProperty* prop = GetMaterialProperty(propDescr.uid);
-                        if ((prop != nullptr)) //has property of the same type
-                        {
-                            DVASSERT(prop->type == propDescr.type);
+                        //if const buffer is InvalidHandle this means that whole const buffer was cut by shader compiler/linker
+                        //it should not be updated but still can be shared as other shader variants can use it
 
-                            // create property binding
-
-                            bufferBinding->propBindings.emplace_back(propDescr.type,
-                                                                     propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
-                        }
-                        else
+                        //create bindings for this buffer
+                        for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
                         {
-                            //just set default property to const buffer
-                            if (propDescr.type < rhi::ShaderProp::TYPE_FLOAT4)
+                            NMaterialProperty* prop = GetMaterialProperty(propDescr.uid);
+                            if ((prop != nullptr)) //has property of the same type
                             {
-                                rhi::UpdateConstBuffer1fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.bufferRegCount, propDescr.defaultValue, ShaderDescriptor::CalculateDataSize(propDescr.type, 1));
+                                DVASSERT(prop->type == propDescr.type);
+
+                                // create property binding
+
+                                bufferBinding->propBindings.emplace_back(propDescr.type,
+                                                                         propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
                             }
                             else
                             {
-                                rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                                //just set default property to const buffer
+                                if (propDescr.type < rhi::ShaderProp::TYPE_FLOAT4)
+                                {
+                                    rhi::UpdateConstBuffer1fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.bufferRegCount, propDescr.defaultValue, ShaderDescriptor::CalculateDataSize(propDescr.type, 1));
+                                }
+                                else
+                                {
+                                    rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                                }
                             }
                         }
                     }
@@ -696,11 +725,13 @@ void NMaterial::RebuildBindings()
                 bufferHandle = currShader->GetDynamicBuffer(bufferDescr.type, bufferDescr.targetSlot);
             }
 
-            DVASSERT(bufferHandle.IsValid());
-            if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
-                currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
-            else
-                currRenderVariant->fragmentConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+            if (bufferHandle.IsValid())
+            {
+                if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
+                    currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+                else
+                    currRenderVariant->fragmentConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+            }
         }
     }
 
@@ -781,6 +812,7 @@ void NMaterial::RebuildTextureBindings()
 
 bool NMaterial::PreBuildMaterial(const FastName& passName)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
     //shader rebuild first - as it sets needRebuildBindings and needRebuildTextures
     if (needRebuildVariants)
         RebuildRenderVariants();
@@ -811,6 +843,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
 
 NMaterial* NMaterial::Clone()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     NMaterial* clonedMaterial = new NMaterial();
     clonedMaterial->materialName = materialName;
     clonedMaterial->fxName = fxName;
@@ -841,6 +875,8 @@ NMaterial* NMaterial::Clone()
 
 void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DataNode::Save(archive, serializationContext);
 
     if (parent)
@@ -899,6 +935,8 @@ void NMaterial::Save(KeyedArchive* archive, SerializationContext* serializationC
 
 void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DataNode::Load(archive, serializationContext);
 
     if (serializationContext->GetVersion() < RHI_SCENE_VERSION)
@@ -983,6 +1021,8 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
 
 void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     /*the following stuff is for importing old NMaterial stuff*/
 
     if (archive->IsKeyExists(NMaterialSerializationKey::MaterialName))

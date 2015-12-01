@@ -81,7 +81,7 @@ public:
     virtual IAsyncOperation<IInputStream^>^ UriToStreamAsync(Uri^ uri);
 
 private:
-    IAsyncOperation<IInputStream^>^ GetStreamFromFilePathAsync(const FilePath& filePath);
+    IAsyncOperation<IInputStream ^> ^ GetStreamFromFilePathAsync(const FilePath& filePath);
     IAsyncOperation<IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
 
     Platform::String^ htmlData;
@@ -108,7 +108,7 @@ IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
     return GetStreamFromFilePathAsync(path);
 }
 
-IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
+IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
 {
     String fileNameStr = filePath.GetAbsolutePathname();
     std::replace(fileNameStr.begin(), fileNameStr.end(), '/', '\\');
@@ -321,7 +321,7 @@ void PrivateWebViewWinUAP::Update()
 void PrivateWebViewWinUAP::CreateNativeControl()
 {
     nativeWebView = ref new WebView();
-    nativeWebView->DefaultBackgroundColor = Colors::Black;
+    defaultBkgndColor = nativeWebView->DefaultBackgroundColor;
     InstallEventHandlers();
 
     nativeWebView->MinWidth = 0.0;
@@ -329,6 +329,7 @@ void PrivateWebViewWinUAP::CreateNativeControl()
     nativeWebView->Visibility = Visibility::Visible;
 
     core->XamlApplication()->AddUIElement(nativeWebView);
+    SetNativePositionAndSize(rectInWindowSpace, true); // After creation move native control offscreen
 }
 
 void PrivateWebViewWinUAP::InstallEventHandlers()
@@ -457,7 +458,7 @@ void PrivateWebViewWinUAP::SetNativePositionAndSize(const Rect& rect, bool offSc
 
 void PrivateWebViewWinUAP::SetNativeBackgroundTransparency(bool enabled)
 {
-    nativeWebView->DefaultBackgroundColor = enabled ? Colors::Transparent : Colors::Black;
+    nativeWebView->DefaultBackgroundColor = enabled ? Colors::Transparent : defaultBkgndColor;
 }
 
 void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)

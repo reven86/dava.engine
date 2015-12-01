@@ -39,11 +39,10 @@
 
 namespace DAVA
 {
-    
 class LocalNotificationUAP : public LocalNotificationImpl
 {
 public:
-    LocalNotificationUAP(const String &_id);
+    LocalNotificationUAP(const String& _id);
 
     void SetAction(const WideString& action) override;
     void Hide() override;
@@ -53,14 +52,13 @@ public:
     void RemoveAllDelayedNotifications();
 
 private:
-    void CreateOrUpdateNotification(Windows::Data::Xml::Dom::XmlDocument^ notificationDeclaration,
+    void CreateOrUpdateNotification(Windows::Data::Xml::Dom::XmlDocument ^ notificationDeclaration,
                                     const Windows::Foundation::DateTime* startTime = nullptr,
                                     bool ghostNotification = false);
 
-    Windows::UI::Notifications::ToastNotifier^ toastNotifier;
-    Windows::UI::Notifications::ToastNotification^ notification;
+    Windows::UI::Notifications::ToastNotifier ^ toastNotifier;
+    Windows::UI::Notifications::ToastNotification ^ notification;
 };
-
 }
 
 #endif

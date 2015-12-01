@@ -69,6 +69,7 @@ void EditorLODSystem::RemoveEntity(DAVA::Entity * entity)
     DVASSERT(tmpComponent);
 
     sceneLODs.erase(tmpComponent);
+    RemoveSelectedLODsRecursive(entity);
 }
 
 void EditorLODSystem::AddSelectedLODsRecursive(DAVA::Entity *entity)
@@ -234,10 +235,9 @@ void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodCompone
         DAVA::int32 switchIndex = 0;
 
         RenderBatch *rb = ro->GetRenderBatch(i, lodIndex, switchIndex);
-        if (lodIndex < 0 || lodIndex >= DAVA::LodComponent::MAX_LOD_LAYERS)
+        DVASSERT(lodIndex < DAVA::LodComponent::MAX_LOD_LAYERS);
+        if (lodIndex < 0)
         {
-            Logger::Error("Unexpected lod index (%d) when collecting triangles on entity %s. Max lod index is %d%s", 
-				lodIndex, en->GetName().c_str(), DAVA::LodComponent::MAX_LOD_LAYERS, PointerSerializer::FromPointer(en).c_str());
             continue;
         }
     
@@ -408,7 +408,7 @@ FilePath EditorLODSystem::GetDefaultTexturePathForPlaneEntity() const
     String texturePostfix = "_planes.png";
     FilePath texturePath = textureFolder + entityName + texturePostfix;
     int32 i = 0;
-    while(texturePath.Exists())
+    while (FileSystem::Instance()->Exists(texturePath))
     {
         i++;
         texturePath = textureFolder + Format("%s_%d%s", entityName.c_str(), i, texturePostfix.c_str());

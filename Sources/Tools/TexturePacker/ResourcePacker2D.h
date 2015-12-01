@@ -76,7 +76,7 @@ private:
     bool IsUsingCache() const;
 
     Vector<String> FetchFlags(const FilePath& flagsPathname);
-    DefinitionFile* ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName, bool twoSideMargin, uint32 texturesMargin);
+    DefinitionFile* ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName);
     static String GetProcessFolderName();
 
     void AddError(const String& errorMsg);

@@ -64,7 +64,6 @@ using namespace ::Windows::Globalization;
 
 namespace DAVA
 {
-
 // MSDN:: https://msdn.microsoft.com/en-us/library/windows/hardware/ff541364(v=vs.85).aspx
 const wchar_t* GUID_DEVINTERFACE_MOUSE = L"System.Devices.InterfaceClassGuid:=\"{378DE44C-56EF-11D1-BC8C-00A0C91405DD}\"";
 const wchar_t* GUID_DEVINTERFACE_KEYBOARD = L"System.Devices.InterfaceClassGuid:=\"{884b96c3-56ef-11d1-bc8c-00a0c91405dd}\"";
@@ -322,8 +321,8 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 
 DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
-    DeviceWatcher^ watcher = nullptr;
-    Platform::Collections::Vector<Platform::String^>^ requestedProperties = ref new Platform::Collections::Vector<Platform::String^>();
+    DeviceWatcher ^ watcher = nullptr;
+    Platform::Collections::Vector<Platform::String ^> ^ requestedProperties = ref new Platform::Collections::Vector<Platform::String ^>();
     requestedProperties->Append("System.Devices.InterfaceClassGuid");
     requestedProperties->Append("System.ItemNameDisplay");
     if (MOUSE == type)
@@ -348,7 +347,7 @@ DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
     auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this, type](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
         OnDeviceRemoved(type, information);
     });
-    auto updated = ref new TypedEventHandler<DeviceWatcher^, DeviceInformationUpdate^>([this, type](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
+    auto updated = ref new TypedEventHandler<DeviceWatcher ^, DeviceInformationUpdate ^>([this, type](DeviceWatcher ^ watcher, DeviceInformationUpdate ^ information) {
         OnDeviceUpdated(type, information);
     });
     if (TOUCH != type)
@@ -406,7 +405,7 @@ void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpd
     }
 }
 
-void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpdate^ information)
+void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpdate ^ information)
 {
     if (TOUCH == type)
     {
@@ -422,7 +421,7 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
     else
     {
         bool isEnabled = false;
-        Windows::Foundation::Collections::IMapView<Platform::String^, Platform::Object^>^ properties = information->Properties;
+        Windows::Foundation::Collections::IMapView<Platform::String ^, Platform::Object ^> ^ properties = information->Properties;
         if (properties->HasKey(L"System.Devices.InterfaceEnabled"))
         {
             isEnabled = safe_cast<bool>(properties->Lookup(L"System.Devices.InterfaceEnabled"));

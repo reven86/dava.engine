@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
  *  ColladaSceneNodeAnimation.h
  *  ColladaConverter
@@ -45,18 +44,15 @@
 
 namespace DAVA
 {
-
 class ColladaSceneNodeAnimation
 {
 public:
-	struct Key
-	{
-		float32		time;
-		Quaternion	rotation;	
-		Vector3		translation;
-	};
-	
-	
+    struct Key
+    {
+        float32 time;
+        Quaternion rotation;
+        Vector3 translation;
+    };
 };
 };
 

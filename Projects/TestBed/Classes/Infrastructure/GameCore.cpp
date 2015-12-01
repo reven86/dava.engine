@@ -49,6 +49,8 @@
 #include "Tests/InputTest.h"
 //$UNITTEST_INCLUDE
 
+#include "MemoryManager/MemoryProfiler.h"
+
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "NotificationScreen";
@@ -83,12 +85,16 @@ void GameCore::RegisterTests()
 #include <algorithm>
 
 using namespace DAVA;
+using namespace DAVA::Net;
 
 void GameCore::OnAppStarted()
 {
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
 
+#if !defined(__DAVAENGINE_WIN_UAP__)
+    InitNetwork();
+#endif
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
@@ -145,6 +151,9 @@ void GameCore::OnAppFinished()
     screens.clear();
 
     SafeRelease(testListScreen);
+#if !defined(__DAVAENGINE_WIN_UAP__)
+    netLogger.Uninstall();
+#endif
 }
 
 void GameCore::BeginFrame()
@@ -190,3 +199,59 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
+
+#if !defined(__DAVAENGINE_WIN_UAP__)
+const char8 GameCore::announceMulticastGroup[] = "239.192.100.1";
+void GameCore::InitNetwork()
+{
+    enum eServiceTypes
+    {
+        SERVICE_LOG = 0,
+        SERVICE_MEMPROF = 1
+    };
+
+    auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
+        if (!loggerInUse)
+        {
+            loggerInUse = true;
+            return &netLogger;
+        }
+        return nullptr;
+    };
+    NetCore::Instance()->RegisterService(SERVICE_LOG, loggerCreate,
+                                         [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
+
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    auto memprofCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
+        if (!memprofInUse)
+        {
+            memprofInUse = true;
+            return &memprofServer;
+        }
+        return nullptr;
+    };
+    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, memprofCreate,
+                                         [this](IChannelListener* obj, void*) -> void { memprofInUse = false; });
+#endif
+    NetConfig config(SERVER_ROLE);
+    config.AddTransport(TRANSPORT_TCP, Net::Endpoint(9999));
+    config.AddService(SERVICE_LOG);
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    config.AddService(SERVICE_MEMPROF);
+#endif
+    peerDescr = PeerDescription(config);
+    Net::Endpoint annoEndpoint(announceMulticastGroup, ANNOUNCE_PORT);
+    id_anno = NetCore::Instance()->CreateAnnouncer(annoEndpoint, ANNOUNCE_TIME_PERIOD, MakeFunction(this, &GameCore::AnnounceDataSupplier));
+    id_net = NetCore::Instance()->CreateController(config, NULL);
+}
+size_t GameCore::AnnounceDataSupplier(size_t length, void* buffer)
+{
+    if (true == peerDescr.NetworkInterfaces().empty())
+    {
+        peerDescr.SetNetworkInterfaces(NetCore::Instance()->InstalledInterfaces());
+        if (true == peerDescr.NetworkInterfaces().empty())
+            return 0;
+    }
+    return peerDescr.Serialize(buffer, length);
+}
+#endif // !defined(__DAVAENGINE_WIN_UAP__)

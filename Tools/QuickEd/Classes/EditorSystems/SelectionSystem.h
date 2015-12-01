@@ -33,6 +33,7 @@
 #include "EditorSystems/BaseEditorSystem.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Math/Rect.h"
+#include "UI/UIEvent.h"
 #include <Functional/SignalBase.h>
 
 class EditorSystemsManager;
@@ -54,12 +55,13 @@ public:
 
 private:
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
-
     void OnSelectByRect(const DAVA::Rect& rect);
-
+    void SelectAllControls();
+    void FocusNextChild();
+    void FocusPreviousChild();
+    void FocusToChild(bool next);
     void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);
-
-    bool ProcessMousePress(const DAVA::Vector2& point);
+    bool ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::eButtonID buttonID);
 
     bool mousePressed = false;
     SelectionContainer selectionContainer;

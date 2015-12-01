@@ -149,7 +149,7 @@ public:
 
     ImageFormat GetImageFormat() const override;
 
-    bool IsMyImage(File *file) const override;
+    bool CanProcessFile(File* file) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap = 0) const override;
 
@@ -209,10 +209,6 @@ inline ImageFormat LibPVRHelper::GetImageFormat() const
     return IMAGE_FORMAT_PVR;
 }
 
-inline LibPVRHelper* CreateLibPVRHelper()
-{
-    return new LibPVRHelper;
-}
 
 };
 

@@ -235,8 +235,6 @@ void PolygonGroup::CreateBaseVertexArray()
     
 void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
     aabbox = AABBox3(); // reset bbox
     
     Matrix4 normalMatrix4;
@@ -313,13 +311,14 @@ uint32 PolygonGroup::ReleaseGeometryData()
 
 void PolygonGroup::BuildBuffers()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (vertexBuffer.IsValid())
         rhi::DeleteVertexBuffer(vertexBuffer);
 
     if (indexBuffer.IsValid())
         rhi::DeleteIndexBuffer(indexBuffer);
 
-#if 1
     rhi::VertexBuffer::Descriptor vbDesc;
     rhi::IndexBuffer::Descriptor ibDesc;
 
@@ -335,18 +334,6 @@ void PolygonGroup::BuildBuffers()
     DVASSERT(vertexBuffer);
     indexBuffer = rhi::CreateIndexBuffer(ibDesc);
     DVASSERT(indexBuffer);
-
-#else
-    uint32 vertexDataSize = vertexStride * vertexCount;
-    vertexBuffer = rhi::CreateVertexBuffer(vertexDataSize);
-    rhi::UpdateVertexBuffer(vertexBuffer, meshData, 0, vertexDataSize);
-
-    if (indexBuffer.IsValid())
-        rhi::DeleteIndexBuffer(indexBuffer);
-    uint32 indexDataSize = indexCount * INDEX_FORMAT_SIZE[indexFormat];
-    indexBuffer = rhi::CreateIndexBuffer(indexDataSize);
-    rhi::UpdateIndexBuffer(indexBuffer, indexArray, 0, indexDataSize);    
-#endif
 };
 
 void PolygonGroup::RestoreBuffers()
@@ -487,8 +474,7 @@ void PolygonGroup::RecalcAABBox()
     }
 }
 
-
-void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
+void PolygonGroup::CopyData(const uint8** meshData, uint8** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 

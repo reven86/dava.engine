@@ -50,7 +50,7 @@ public:
     {
         Logger::Debug("****** TextDelegate1::TextFieldOnTextChanged: new=%s, old=%s", WStringToString(newText).c_str(), WStringToString(oldText).c_str());
     }
-    void TextFieldShouldReturn(UITextField* textField)
+    void TextFieldShouldReturn(UITextField* textField) override
     {
         textField->CloseKeyboard();
     }
