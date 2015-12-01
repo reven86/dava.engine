@@ -104,25 +104,25 @@ inline void DavaDebugBreak()
 // end=assert=msg - used as marker on teamcity to fail build
 #define LogErrorFunction(assertType, expr, msg, file, line, backtrace)                         \
     {                                                                                          \
-        DAVA::Logger::Error(                          \
-        "========================================\n"  \
-        "%s\n"                                        \
-        "%s\n"                                        \
-        "%s\n"                                        \
-        "at %s:%d\n"                                  \
-        "======================end=assert=msg====",   \
+        DAVA::Logger::Error(                                  \
+        "========================================\n"          \
+        "%s\n"                                                \
+        "%s\n"                                                \
+        "%s\n"                                                \
+        "at %s:%d\n"                                          \
+        "======================end=assert=msg====",           \
         assertType, expr, msg, file, line); \
         DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_ERROR); \
     }
 #define LogWarningFunction(assertType, expr, msg, file, line, backtrace)                       \
     {                                                                                          \
-        DAVA::Logger::Warning(                        \
-        "========================================\n"  \
-        "%s\n"                                        \
-        "%s\n"                                        \
-        "%s\n"                                        \
-        "at %s:%d\n"                                  \
-        "======================end=assert=msg====",   \
+        DAVA::Logger::Warning(                                \
+        "========================================\n"          \
+        "%s\n"                                                \
+        "%s\n"                                                \
+        "%s\n"                                                \
+        "at %s:%d\n"                                          \
+        "======================end=assert=msg====",           \
         assertType, expr, msg, file, line); \
         DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_WARNING); \
     }
@@ -137,21 +137,21 @@ inline void DavaDebugBreak()
 // Android and ios both allow content scrolling in assert dialog, so show full backtrace
 // On desktops dialogs are not scrollable so limit frames to 8
 #ifndef DVASSERT_UI_BACKTRACE_DEPTH
-#   if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-#       define DVASSERT_UI_BACKTRACE_DEPTH  8
-#   else
-#       define DVASSERT_UI_BACKTRACE_DEPTH  -1
-#   endif
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#define DVASSERT_UI_BACKTRACE_DEPTH 8
+#else
+#define DVASSERT_UI_BACKTRACE_DEPTH -1
+#endif
 #endif
 
 #define MessageFunction(messagetype, assertType, expr, msg, file, line, backtrace) \
-    DAVA::DVAssertMessage::ShowMessage(messagetype,   \
-                                       "%s\n"         \
-                                       "%s\n"         \
-                                       "%s\n"         \
-                                       "at %s:%d\n"   \
-                                       "Callstack:\n" \
-                                       "%s",          \
+    DAVA::DVAssertMessage::ShowMessage(messagetype,                       \
+                                       "%s\n"                             \
+                                       "%s\n"                             \
+                                       "%s\n"                             \
+                                       "at %s:%d\n"                       \
+                                       "Callstack:\n"                     \
+                                       "%s",                              \
                                        assertType, expr, msg, file, line, \
                                        DAVA::Debug::BacktraceToString(backtrace, DVASSERT_UI_BACKTRACE_DEPTH).c_str())
 #else //ENABLE_ASSERT_MESSAGE
@@ -188,7 +188,7 @@ inline void DavaDebugBreak()
     {                                                                                  \
         DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
         LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__, backtrace);       \
-        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT",   \
                             #expr, "", __FILE__, __LINE__, backtrace))                 \
         {                                                                              \
             DavaDebugBreak();                                                          \
@@ -201,7 +201,7 @@ inline void DavaDebugBreak()
     {                                                                                  \
         DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__, backtrace);      \
-        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT",   \
                             #expr, msg, __FILE__, __LINE__, backtrace))                \
         {                                                                              \
             DavaDebugBreak();                                                          \
@@ -214,7 +214,7 @@ inline void DavaDebugBreak()
     {                                                                                  \
         DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
         LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__, backtrace);   \
-        MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING",    \
+        MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING",      \
                         #expr, msg, __FILE__, __LINE__, backtrace);                    \
     }
 

@@ -175,9 +175,14 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad* quad)
         }
     }
 
-    uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
-    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(vBufferSize);
-    rhi::UpdateVertexBuffer(vertexBuffer, landscapeVertices, 0, vBufferSize);
+    uint32 vBufferSize = static_cast<uint32>(verticesCount * sizeof(LandscapeVertex));
+
+    rhi::VertexBuffer::Descriptor desc;
+    desc.size = vBufferSize;
+    desc.initialData = landscapeVertices;
+    desc.usage = rhi::USAGE_STATICDRAW;
+
+    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(desc);
     vertexBuffers.push_back(vertexBuffer);
     
 #if defined(__DAVAENGINE_IPHONE__)
@@ -383,12 +388,12 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
     float32 y2 = ceil(y);
 
     if (x1 == x2)
-		x2 += 1.0f;
+        x2 += 1.0f;
 
-	if (y1 == y2)
-		y2 += 1.0f;
+    if (y1 == y2)
+        y2 += 1.0f;
 
-	uint16 * data = heightmap->Data();
+    uint16 * data = heightmap->Data();
 	int32 imW = heightmap->Size();
 
 	Vector3 p1(x1, y1, 0);
@@ -939,11 +944,11 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
         for (int32 x = 0; x < currentNode->data.size - 1; x += step)
         {
             indices[indexIndex++] = x + y * quadWidth;
-			indices[indexIndex++] = (x + step) + y * quadWidth;
-			indices[indexIndex++] = x + (y + step) * quadWidth;
+            indices[indexIndex++] = (x + step) + y * quadWidth;
+            indices[indexIndex++] = x + (y + step) * quadWidth;
 
-			indices[indexIndex++] = (x + step) + y * quadWidth;
-			indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
+            indices[indexIndex++] = (x + step) + y * quadWidth;
+            indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
 			indices[indexIndex++] = x + (y + step) * quadWidth;     
 		}
 	}

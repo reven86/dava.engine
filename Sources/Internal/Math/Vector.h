@@ -297,9 +297,9 @@ public:
     inline void Normalize();
     inline void Clamp(float32 min, float32 max);
 
-	//! On operations
-	inline const Vector4 & operator += (const Vector4 & _v);
-	inline const Vector4 & operator -= (const Vector4 & _v);
+    //! On operations
+    inline const Vector4& operator+=(const Vector4& _v);
+    inline const Vector4 & operator -= (const Vector4 & _v);
 	inline const Vector4 & operator *= (float32 f);
 	inline const Vector4 & operator /= (float32 f);
 	inline Vector4 operator -() const;

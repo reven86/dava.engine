@@ -76,6 +76,8 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable);
     JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv * env, jobject classthis);
     JNIEXPORT int JNICALL Java_com_dava_framework_JNIActivity_nativeGetDesiredFPS(JNIEnv* env, jobject classthis);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 
     //JNISurfaceView
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
@@ -87,9 +89,6 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
 
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeReset(JNIEnv* env, jobject classthis, jint w, jint h);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 };
 
 namespace 
@@ -176,7 +175,7 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
     }
     else
     {
-      DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
+        DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
     }
 }
 
@@ -345,7 +344,7 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
                 phase = DAVA::UIEvent::Phase::ENDED;
                 break;
 
-            case 3: //ACTION_CANCEL
+    case 3: //ACTION_CANCEL
                 phase = DAVA::UIEvent::Phase::CANCELLED;
                 break;
 
@@ -353,16 +352,16 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
                 break;
             }
 
-             return phase;
-    }
+            return phase;
+}
 
-    DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input, jint action, jint source)
-    {
-        DAVA::UIEvent event;
-		event.tid = env->GetIntField(input, gInputEventTidField);
-		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
-		event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
-		event.tapCount = env->GetIntField(input, gInputEventTapCountField);
+DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input, jint action, jint source)
+{
+    DAVA::UIEvent event;
+    event.tid = env->GetIntField(input, gInputEventTidField);
+    event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
+    event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
+        event.tapCount = env->GetIntField(input, gInputEventTapCountField);
 		event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
         event.phase = GetPhase(action, source);
         if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
@@ -497,16 +496,7 @@ void Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobj
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeReset(JNIEnv* env, jobject classthis, jint w, jint h)
-{
-	if(core)
-	{
-        LOGI("__ NATIVE RESET ___ %d, %d", w, h);
-        core->RenderReset(w, h);
-    }
-}
-
-void Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject classthis)
+void Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis)
 {
     if (core)
     {
@@ -514,7 +504,7 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject 
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock)
+void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock)
 {
 	if(core)
 	{

@@ -586,7 +586,7 @@ void MemoryManager::RemoveBlock(MemoryBlock* block)
 
 void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
-    {   // Update memory usage reported by system 
+    { // Update memory usage reported by system
         statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
         statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
@@ -623,7 +623,7 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemory
 
 void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
-    {   // Update memory usage reported by system 
+    { // Update memory usage reported by system
         statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
         statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
@@ -724,7 +724,7 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
 {
     const size_t EXTRA_FRAMES = 5;
     const size_t FRAMES_COUNT = BACKTRACE_DEPTH + EXTRA_FRAMES;
-    void* frames[FRAMES_COUNT] = {nullptr};
+    void* frames[FRAMES_COUNT] = { nullptr };
     Memset(backtrace, 0, sizeof(Backtrace));
 
     Debug::GetStackFrames(frames, FRAMES_COUNT);

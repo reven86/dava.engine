@@ -46,7 +46,7 @@
 #include "Tests/FullscreenTest.h"
 #include "Tests/UIBackgroundTest.h"
 #include "Tests/ClipTest.h"
-#include "Tests/UIBackgroundTest.h"
+#include "Tests/InputTest.h"
 #include "Tests/FloatingPointExceptionTest.h"
 //$UNITTEST_INCLUDE
 
@@ -78,7 +78,7 @@ void GameCore::RegisterTests()
     new FullscreenTest();
     new UIBackgroundTest();
     new ClipTest();
-    new UIBackgroundTest();
+    new InputTest();
     new FloatingPointExceptionTest();
     //$UNITTEST_CTOR
 }
