@@ -104,8 +104,6 @@ MainWindow::MainWindow(QWidget *parent)
     InitMenu();
     RestoreMainWindowState();
 
-    fileSystemDockWidget->setEnabled(false);
-
     RebuildRecentMenu();
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
@@ -131,7 +129,6 @@ void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
 
 void MainWindow::OnProjectIsOpenChanged(bool arg)
 {
-    fileSystemDockWidget->setEnabled(arg);
     this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 }
 
@@ -190,10 +187,6 @@ QComboBox* MainWindow::GetComboBoxLanguage()
 void MainWindow::OnCurrentIndexChanged(int arg)
 {
     bool enabled = arg >= 0;
-    packageWidget->setEnabled(enabled);
-    propertiesWidget->setEnabled(enabled);
-    previewWidget->setEnabled(enabled);
-    libraryWidget->setEnabled(enabled);
     TabState *tabState = tabBar->tabData(arg).value<TabState*>();
     actionSaveDocument->setEnabled(nullptr != tabState && tabState->isModified); //set action enabled if new documend still modified
 }
@@ -474,7 +467,6 @@ void MainWindow::OnProjectOpened(const ResultList &resultList, const Project *pr
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
-    fileSystemDockWidget->setEnabled(resultList);
     QString projectPath = project->GetProjectPath() + project->GetProjectName();
     if (resultList)
     {
