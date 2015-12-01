@@ -133,7 +133,7 @@ namespace DAVA
 
 	void AutotestingDB::FailOnLocalBuild()
 	{
-		if (!dbClient)
+		if (dbClient == nullptr)
 			autoSys->OnError("Could not work with BD on local build");
 	}
 
@@ -288,38 +288,6 @@ namespace DAVA
 		multiplayerArchive->SetArchive(device, deviceArchive);
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
-	}
-
-	// DEPRECATED: Rewrite for new DB conception
-	String AutotestingDB::ReadString(const String &name)
-	{
-		Logger::Info("AutotestingSystem::ReadString name=%s", name.c_str());
-
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_aux");
-		String result;
-
-		result = currentRunArchive->GetString(name, DB_ERROR_STR_VALUE);
-
-		SafeRelease(dbUpdateObject);
-		Logger::Info("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());
-		return result;
-	}
-
-	// DEPRECATED: Rewrite for new DB conception
-	void AutotestingDB::WriteString(const String &name, const String &text)
-	{
-		Logger::Info("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());
-
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "aux");
-
-		currentRunArchive->SetString(name, text);
-
-		SaveToDB(dbUpdateObject);
-		SafeRelease(dbUpdateObject);
-
-		Logger::Info("AutotestingSystem::WriteString finish");
 	}
 
 	// auxiliary methods

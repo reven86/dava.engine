@@ -6289,65 +6289,6 @@ fail:
 }
 
 
-static int _wrap_AutotestingSystemLua_WriteString(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-  DAVA::String *arg2 = 0 ;
-  DAVA::String *arg3 = 0 ;
-  DAVA::String temp2 ;
-  DAVA::String temp3 ;
-  
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::WriteString",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteString",1,"DAVA::AutotestingSystemLua *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteString",2,"DAVA::String const &");
-  if(!lua_isstring(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteString",3,"DAVA::String const &");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_WriteString",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
-  }
-  
-  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
-  (arg1)->WriteString((DAVA::String const &)*arg2,(DAVA::String const &)*arg3);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_AutotestingSystemLua_ReadString(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-  DAVA::String *arg2 = 0 ;
-  DAVA::String temp2 ;
-  DAVA::String result;
-  
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::ReadString",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadString",1,"DAVA::AutotestingSystemLua *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadString",2,"DAVA::String const &");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_ReadString",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
-  }
-  
-  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  result = (arg1)->ReadString((DAVA::String const &)*arg2);
-  lua_pushlstring(L,(&result)->data(),(&result)->size()); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_AutotestingSystemLua_MakeScreenshot(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
@@ -6424,8 +6365,6 @@ static swig_lua_method swig_AutotestingSystemLua_methods[]= {
     { "IsPhoneScreen", _wrap_AutotestingSystemLua_IsPhoneScreen},
     { "SaveKeyedArchiveToDevice", _wrap_AutotestingSystemLua_SaveKeyedArchiveToDevice},
     { "GetTestParameter", _wrap_AutotestingSystemLua_GetTestParameter},
-    { "WriteString", _wrap_AutotestingSystemLua_WriteString},
-    { "ReadString", _wrap_AutotestingSystemLua_ReadString},
     { "MakeScreenshot", _wrap_AutotestingSystemLua_MakeScreenshot},
     {0,0}
 };

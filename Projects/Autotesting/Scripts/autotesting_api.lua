@@ -196,15 +196,6 @@ function GetParameter(name, default)
     OnError("Couldn't find value for variable " .. name)
 end
 
-function ReadString(name)
-    return autotestingSystem:ReadString(name)
-end
-
-function WriteString(name, text)
-    autotestingSystem:WriteString(name, text)
-    coroutine.yield()
-end
-
 function MakeScreenshot()
     local name = autotestingSystem:MakeScreenshot()
     coroutine.yield()
@@ -218,20 +209,18 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Multiplayer API
 ----------------------------------------------------------------------------------------------------
-MP_STATE = {}
-MP_STATE['READY'] = "ready"
-MP_STATE['NO_DEVICE'] = "not_found"
+MP_STATE = {READY="ready", NO_DEVICE="not_found"}
 
 STATE_RECORD = "State"
 COMMAND_RECORD = "Command"
 
 -- mark current device as ready to work in DB
 function ReadState(name)
-    return autotestingSystem:ReadState(name, STATE_RECORD )
+    return autotestingSystem:ReadState(name, STATE_RECORD)
 end
 
 function ReadCommand(name)
-    return autotestingSystem:ReadState(name, COMMAND_RECORD )
+    return autotestingSystem:ReadState(name, COMMAND_RECORD)
 end
 
 function WriteState(name, state)

@@ -151,9 +151,6 @@ public:
 
 	String GetTestParameter(const String &device);
 
-	void WriteString(const String &name, const String &text);
-	String ReadString(const String &name);
-
 	String MakeScreenshot();
 
 protected:

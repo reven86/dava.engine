@@ -361,18 +361,6 @@ namespace DAVA
 		AutotestingDB::Instance()->Log(level, message);
 	}
 
-	void AutotestingSystemLua::WriteString(const String & name, const String & text)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteString name=%s text=%s", name.c_str(), text.c_str());
-		AutotestingDB::Instance()->WriteString(name, text);
-	}
-
-	String AutotestingSystemLua::ReadString(const String & name)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadString name=%s", name.c_str());
-		return AutotestingDB::Instance()->ReadString(name);
-	}
-
 	bool AutotestingSystemLua::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
 	{
 		Logger::FrameworkDebug("AutotestingSystemLua::SaveKeyedArchiveToDevice");

@@ -79,9 +79,6 @@ namespace DAVA
 		String GetStringTestParameter(const String &deviceName, const String &parameter);
 		int32 GetIntTestParameter(const String &deviceName, const String &parameter);
 
-		String ReadString(const String &name);
-		void WriteString(const String &name, const String &text);
-
 		bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive);
 
 		void UploadScreenshot(const String &name, Image *image);
