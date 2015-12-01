@@ -47,9 +47,6 @@ public:
     // Set the screen view pos and scale.
     void SetScale(float scale);
 
-    // Update the rulers by sending "settings changed" signal to them.
-    void UpdateRulers();
-
 public slots:
     // Update the ruler markers with the mouse position.
     void UpdateRulerMarkers(QPoint curMousePos);
@@ -65,7 +62,9 @@ signals:
     void VerticalRulerMarkPositionChanged(int position);
 
 protected:
-    void ApplyPosChanged();
+    // Update the rulers by sending "settings changed" signal to them.
+    void UpdateRulers();
+
     void SetupInitialRulerSettings(RulerSettings& settings);
 
     // Recalculate the ruler settings depending on position/zoom level and emit signals.
@@ -74,7 +73,7 @@ protected:
 private:
     // Screen view pos and scale.
     QPoint viewPos;
-    float screenScale;
+    float screenScale = 1.0f;
 
     // Ruler settings.
     RulerSettings horisontalRulerSettings;

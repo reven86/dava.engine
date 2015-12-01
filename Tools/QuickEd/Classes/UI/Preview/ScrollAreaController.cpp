@@ -61,8 +61,11 @@ void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
 
 void ScrollAreaController::SetMovableControl(DAVA::UIControl* arg)
 {
-    movableControl = arg;
-    UpdatePosition();
+    if (arg != movableControl)
+    {
+        movableControl = arg;
+        UpdatePosition();
+    }
 }
 
 void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
