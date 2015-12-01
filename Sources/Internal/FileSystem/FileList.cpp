@@ -60,7 +60,7 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
     intptr_t hFile;
     FileEntry entry;
 
-    WideString searchPath = UTF8Utils::EncodeToWideString(path.GetAbsolutePathname());
+    WideString searchPath = path.GetNativeAbsolutePathname();
     if (searchPath.back() == L'\\' || searchPath.back() == L'/')
         searchPath += L'*';
     else
@@ -71,8 +71,8 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
         do
 		{
             //TODO: need to check for Win32
-            entry.path = filepath + UTF8Utils::EncodeToUTF8(c_file.name);
             entry.name = UTF8Utils::EncodeToUTF8(c_file.name);
+            entry.path = filepath + entry.name;
             entry.size = c_file.size;
             entry.isHidden = (_A_HIDDEN & c_file.attrib) != 0;
 			entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;

@@ -43,10 +43,8 @@ namespace FileAPI
 {
 
 #if defined(__DAVAENGINE_WINDOWS__)
-using StringType = WideString;
 
-    #define LITERAL(x) L##x
-    #define ToNativeStringType(x) UTF8Utils::EncodeToWideString(x)
+#define NativeStringLiteral(x) L##x
 
 const auto OpenFile = ::_wfopen;
 const auto RemoveFile = ::_wremove;
@@ -59,8 +57,7 @@ const auto Stat = _wstat;
 #else
 using StringType = String;
 
-    #define LITERAL(x) x
-    #define ToNativeStringType(x) (x)
+#define NativeStringLiteral(x) x
 
 const auto OpenFile = ::fopen;
 const auto RemoveFile = ::remove;

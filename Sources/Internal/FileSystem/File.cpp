@@ -33,7 +33,6 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
 
-#include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
 
 #if defined (__DAVAENGINE_WINDOWS__)
@@ -107,17 +106,17 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
 {
     FILE * file = 0;
     uint32 size = 0;
-    FileAPI::StringType path = ToNativeStringType(filePath.GetAbsolutePathname());
+    FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
 
     if((attributes & File::OPEN) && (attributes & File::READ))
     {
         if(attributes & File::WRITE)
         {
-            file = FileAPI::OpenFile(path.c_str(), LITERAL("r+b"));
+            file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("r+b"));
         }
         else
         {
-            file = FileAPI::OpenFile(path.c_str(), LITERAL("rb"));
+            file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("rb"));
         }
         
         if (!file) return NULL;
@@ -127,12 +126,12 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
     }
     else if ((attributes & File::CREATE) && (attributes & File::WRITE))
     {
-        file = FileAPI::OpenFile(path.c_str(), LITERAL("wb"));
+        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("wb"));
         if (!file)return NULL;
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
-        file = FileAPI::OpenFile(path.c_str(), LITERAL("ab"));
+        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("ab"));
         if (!file)return NULL;
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));

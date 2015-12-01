@@ -104,6 +104,16 @@ public:
 	 */
     String GetAbsolutePathname() const;
 
+#ifdef __DAVAENGINE_WINDOWS__
+    using NativeStringType = WideString;
+    NativeStringType GetNativeAbsolutePathname() const;
+    static FilePath FromNativeString(const NativeStringType& path);
+#else
+    using NativeStringType = String;
+    NativeStringType GetNativeAbsolutePathname() const;
+    static FilePath FromNativeString(const NativeStringType& path);
+#endif // __DAVAENGINE_WINDOWS__
+
     /**
         \brief Function to retrieve filename from pathname. Filename for path "/Users/Folder/image.png" is "image.png".
         \returns filename value

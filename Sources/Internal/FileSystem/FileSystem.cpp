@@ -35,7 +35,6 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Debug/DVAssert.h"
-#include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
@@ -138,7 +137,7 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
         return DIRECTORY_EXISTS;
     
 #ifdef __DAVAENGINE_WINDOWS__
-    WideString path = UTF8Utils::EncodeToWideString(filePath.GetAbsolutePathname());
+    FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
     BOOL res = ::CreateDirectoryW(path.c_str(), 0);
     return (res == 0) ? DIRECTORY_CANT_CREATE : DIRECTORY_CREATED;
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -152,8 +151,8 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
 #ifdef __DAVAENGINE_WINDOWS__
-    WideString existingFilePath = UTF8Utils::EncodeToWideString(existingFile.GetAbsolutePathname());
-    WideString newFilePath = UTF8Utils::EncodeToWideString(newFile.GetAbsolutePathname());
+    FilePath::NativeStringType existingFilePath = existingFile.GetNativeAbsolutePathname();
+    FilePath::NativeStringType newFilePath = newFile.GetNativeAbsolutePathname();
 #endif
 
 #ifdef __DAVAENGINE_WIN32__
@@ -223,8 +222,8 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-    FileAPI::StringType toFile = ToNativeStringType(newFile.GetAbsolutePathname());
-    FileAPI::StringType fromFile = ToNativeStringType(existingFile.GetAbsolutePathname());
+    FilePath::NativeStringType toFile = newFile.GetNativeAbsolutePathname();
+    FilePath::NativeStringType fromFile = existingFile.GetNativeAbsolutePathname();
 
     if (overwriteExisting)
     {
@@ -280,7 +279,7 @@ bool FileSystem::DeleteFile(const FilePath & filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
 	// function unlink return 0 on success, -1 on error
-    int res = FileAPI::RemoveFile(ToNativeStringType(filePath.GetAbsolutePathname()).c_str());
+    int res = FileAPI::RemoveFile(filePath.GetNativeAbsolutePathname().c_str());
     return (res == 0);
 }
 	
@@ -314,7 +313,7 @@ bool FileSystem::DeleteDirectory(const FilePath & path, bool isRecursive)
 	}
 	SafeRelease(fileList);
 #ifdef __DAVAENGINE_WINDOWS__
-    WideString sysPath = UTF8Utils::EncodeToWideString(path.GetAbsolutePathname());
+    FilePath::NativeStringType sysPath = path.GetNativeAbsolutePathname();
     int32 chmodres = _wchmod(sysPath.c_str(), _S_IWRITE); // change read-only file mode
     int32 res = _wrmdir(sysPath.c_str());
     return (res == 0);
@@ -426,7 +425,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
     
 #if defined(__DAVAENGINE_WINDOWS__)
-    WideString path = UTF8Utils::EncodeToWideString(newWorkingDirectory.GetAbsolutePathname());
+    FilePath::NativeStringType path = newWorkingDirectory.GetNativeAbsolutePathname();
     BOOL res = ::SetCurrentDirectoryW(path.c_str());
     return (res != 0);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -444,7 +443,7 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 		return (fileSet.find(path) != fileSet.end());
 #endif
     FileAPI::StatStruct s;
-    FileAPI::StringType path = ToNativeStringType(pathToCheck.GetAbsolutePathname());
+    FilePath::NativeStringType path = pathToCheck.GetNativeAbsolutePathname();
     if (FileAPI::Stat(path.c_str(), &s) == 0)
     {
         return (0 != (s.st_mode & S_IFREG));
@@ -471,7 +470,7 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
     FileAPI::StatStruct s;
-    FileAPI::StringType pathToCheckStr = ToNativeStringType(pathToCheck.GetAbsolutePathname());
+    FilePath::NativeStringType pathToCheckStr = pathToCheck.GetNativeAbsolutePathname();
     if (FileAPI::Stat(pathToCheckStr.c_str(), &s) == 0)
     {
         return (0 != (s.st_mode & S_IFDIR));
@@ -485,7 +484,7 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 HANDLE CreateFileWin(const String& path, bool shareRead = false)
 {
     int share = shareRead ? FILE_SHARE_READ : 0;
-    WideString pathWide = UTF8Utils::EncodeToWideString(path);
+    FilePath::NativeStringType pathWide = FilePath(path).GetNativeAbsolutePathname();
 
 #if defined (__DAVAENGINE_WIN32__)
 
