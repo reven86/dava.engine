@@ -160,6 +160,7 @@ namespace
     {
         for (uint32 i = 0; i < reduceValue; ++i)
         {
+            DVASSERT(node != nullptr);
             node = node->GetParent();
         }
         return node;
@@ -169,42 +170,42 @@ namespace
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
 {
     DVASSERT(nullptr != left && nullptr != right);
+    if (left == right)
+    {
+        return false;
+    }
     int depthLeft = CalculateDepth(left);
     int depthRight = CalculateDepth(right);
 
     PackageBaseNode* leftParent = left;
     PackageBaseNode* rightParent = right;
+   
     if (depthLeft > depthRight)
     {
         leftParent = ReduceDepth(leftParent, depthLeft - depthRight);
+        if (leftParent == right) // if left is child of right
+        {
+            return false;
+        }
+        left = leftParent;
     }
     else
     {
         rightParent = ReduceDepth(rightParent, depthRight - depthLeft);
+        if (rightParent == left) //if right is child of left
+        {
+            return true;
+        }
+        right = rightParent;
     }
     
-    if (leftParent == right)
-    {
-        return false;
-    }
-    if (rightParent == left)
-    {
-        return true;
-    }
-    left = leftParent;
-    right = rightParent;
     while (true)
     {
         leftParent = left->GetParent();
         rightParent = right->GetParent();
-        if (nullptr == leftParent)
-        {
-            return false;
-        }
-        if (nullptr == rightParent)
-        {
-            return true;
-        }
+        DVASSERT(nullptr != leftParent);
+        DVASSERT(nullptr != rightParent);
+
         if (leftParent == rightParent)
         {
             return leftParent->GetIndex(left) < leftParent->GetIndex(right);

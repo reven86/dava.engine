@@ -404,6 +404,11 @@ void PackageWidget::OnDelete()
     {
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
+
+        std::sort(packages.begin(), packages.end(), [](PackageBaseNode* left, PackageBaseNode* right){
+            return !CompareByLCA(left, right);
+        });
+
         document->GetCommandExecutor()->RemoveImportedPackagesFromPackage(packages, document->GetPackage());
     }
 }
