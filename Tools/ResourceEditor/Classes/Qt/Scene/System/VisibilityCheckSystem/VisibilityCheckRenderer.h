@@ -26,18 +26,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __VisibilityCheckRenderPass_h__
-#define __VisibilityCheckRenderPass_h__
+#ifndef __VisibilityCheckRenderer_h__
+#define __VisibilityCheckRenderer_h__
 
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 
-class VisibilityCheckRenderPass : public DAVA::RenderPass
+class VisibilityCheckRenderer
 {
 public:
-    VisibilityCheckRenderPass();
-    ~VisibilityCheckRenderPass();
+    VisibilityCheckRenderer();
+    ~VisibilityCheckRenderer();
 
     void PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* renderTarget);
     void RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* renderTarget, const DAVA::Vector3& point);
@@ -50,8 +50,12 @@ private:
     bool ShouldRenderObject(DAVA::RenderObject*);
     bool ShouldRenderBatch(DAVA::RenderBatch*);
 
+    void CollectRenderBatches(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera,
+                              DAVA::Camera* lodCamera, DAVA::Vector<DAVA::RenderBatch*>& batches);
+    void UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const DAVA::Color& color);
+
 private:
-    DAVA::ScopedPtr<DAVA::Camera> camera;
+    DAVA::ScopedPtr<DAVA::Camera> cubemapCamera;
     DAVA::ScopedPtr<DAVA::NMaterial> distanceMaterial;
     DAVA::ScopedPtr<DAVA::NMaterial> visibilityMaterial;
     DAVA::ScopedPtr<DAVA::NMaterial> prerenderMaterial;

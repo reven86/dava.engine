@@ -40,7 +40,7 @@
 VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
 {
-    const DAVA::uint32 renderTargetSize = 1024;
+    const DAVA::uint32 renderTargetSize = 2048;
 
     for (DAVA::uint32 i = 0; i < CubemapsCount; ++i)
     {
@@ -95,9 +95,14 @@ void VisibilityCheckSystem::Draw()
     for (auto e : entities)
     {
         auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
-        if (!visibilityComponent->IsPointSetValid())
+        if (!visibilityComponent->IsValid())
         {
-            visibilityComponent->BuildPointSet();
+            if (!visibilityComponent->IsPointSetValid())
+            {
+                visibilityComponent->BuildPointSet();
+            }
+            shouldPrerender = true;
+            visibilityComponent->SetValid();
         }
     }
 
@@ -135,8 +140,8 @@ void VisibilityCheckSystem::Draw()
     for (DAVA::uint32 cm = 0; (cm < CubemapsCount) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         const auto& point = controlPoints[currentPointIndex];
-        renderPass.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point.point);
-        renderPass.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point.point, point.color);
+        renderer.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point.point);
+        renderer.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point.point, point.color);
     }
 
     DAVA::Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
@@ -155,7 +160,7 @@ void VisibilityCheckSystem::UpdatePointSet()
         auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
         for (const auto& pt : visibilityComponent->GetPoints())
         {
-            controlPoints.emplace_back(position + MultiplyVectorMat3x3(pt, worldTransform), visibilityComponent->GetColor());
+            controlPoints.emplace_back(position + MultiplyVectorMat3x3(pt, worldTransform), visibilityComponent->GetNormalizedColor());
         }
     }
 }
@@ -169,7 +174,7 @@ void VisibilityCheckSystem::Prerender()
         CreateRenderTarget();
     }
 
-    renderPass.PreRenderScene(GetScene()->GetRenderSystem(), GetScene()->GetCurrentCamera(), renderTarget);
+    renderer.PreRenderScene(GetScene()->GetRenderSystem(), GetScene()->GetCurrentCamera(), renderTarget);
 
     currentPointIndex = 0;
     shouldPrerender = false;

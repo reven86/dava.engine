@@ -50,7 +50,9 @@ public:
     float GetDistanceBetweenPoints() const;
     void SetDistanceBetweenPoints(float);
 
-    Color GetColor() const;
+    const Color& GetColor() const;
+    Color GetNormalizedColor() const;
+
     void SetColor(const Color&);
 
     bool IsPointSetValid() const;
@@ -59,12 +61,16 @@ public:
 
     const Vector<Vector3>& GetPoints() const;
 
+    bool IsValid() const;
+    void SetValid();
+
 private:
     Vector<Vector3> points;
     Color color;
     float radius = 5.0f;
     float distanceBetweenPoints = 2.0f;
     bool shouldBuildPointSet = true;
+    bool isValid = false;
 
 public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,

@@ -10,5 +10,4 @@ DECL_FP_SAMPLERCUBE(cubemap)
 
 FPROG_BEGIN
 	FP_OUT_COLOR = FP_TEXTURECUBE(cubemap, FP_IN(varNormal));
-	// float4(0.5 * FP_IN(varNormal) + 0.5, 1.0);
 FPROG_END

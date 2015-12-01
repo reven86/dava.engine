@@ -165,12 +165,36 @@ const Vector<Vector3>& VisibilityCheckComponent::GetPoints() const
     return points;
 }
 
-Color VisibilityCheckComponent::GetColor() const
+const Color& VisibilityCheckComponent::GetColor() const
 {
-    return color / static_cast<float>(points.size());
+    return color;
 }
 
 void VisibilityCheckComponent::SetColor(const Color& clr)
 {
+    DVASSERT(!points.empty());
     color = clr;
+    color.a = 1.0f;
+    isValid = false;
+}
+
+Color VisibilityCheckComponent::GetNormalizedColor() const
+{
+    Color normalizedColor;
+    float fpoints = static_cast<float>(points.size());
+    normalizedColor.r = std::max(1.0f / 255.0f, color.r / fpoints);
+    normalizedColor.g = std::max(1.0f / 255.0f, color.g / fpoints);
+    normalizedColor.b = std::max(1.0f / 255.0f, color.b / fpoints);
+    normalizedColor.a = 0.0f;
+    return normalizedColor;
+}
+
+bool VisibilityCheckComponent::IsValid() const
+{
+    return isValid && !shouldBuildPointSet;
+}
+
+void VisibilityCheckComponent::SetValid()
+{
+    isValid = true;
 }

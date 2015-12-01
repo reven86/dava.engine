@@ -29,7 +29,7 @@
 #ifndef __VisibilityCheckSystem_h__
 #define __VisibilityCheckSystem_h__
 
-#include "VisibilityCheckRenderPass.h"
+#include "VisibilityCheckRenderer.h"
 #include "Entity/SceneSystem.h"
 
 class VisibilityCheckSystem : public DAVA::SceneSystem
@@ -78,7 +78,7 @@ private:
     DAVA::Texture* cubemapTarget[CubemapsCount];
     DAVA::Texture* renderTarget = nullptr;
     DAVA::Vector<RenderPoint> controlPoints;
-    VisibilityCheckRenderPass renderPass;
+    VisibilityCheckRenderer renderer;
     StateCache stateCache;
     size_t currentPointIndex = 0;
     bool shouldPrerender = true;
