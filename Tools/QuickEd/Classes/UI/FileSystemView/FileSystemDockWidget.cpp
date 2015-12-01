@@ -34,6 +34,7 @@
 #include <QMenu>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QProcess>
 
 #include "QtTools/FileDialog/FileDialog.h"
 
