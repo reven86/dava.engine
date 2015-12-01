@@ -164,7 +164,7 @@ bool ProgGLES2::Construct(const char* srcCode)
         else
         {
             Logger::Error("%sprog-compile failed:", (type == PROG_VERTEX) ? "v" : "f");
-            Logger::Info(info);
+            Logger::Error(info);
             DumpShaderTextGLES2(srcCode, strlen(srcCode));
         }
 

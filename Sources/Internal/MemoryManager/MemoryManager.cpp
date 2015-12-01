@@ -724,7 +724,7 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
 {
     const size_t EXTRA_FRAMES = 5;
     const size_t FRAMES_COUNT = BACKTRACE_DEPTH + EXTRA_FRAMES;
-    void* frames[FRAMES_COUNT] = {nullptr};
+    void* frames[FRAMES_COUNT] = { nullptr };
     Memset(backtrace, 0, sizeof(Backtrace));
 
     Debug::GetStackFrames(frames, FRAMES_COUNT);

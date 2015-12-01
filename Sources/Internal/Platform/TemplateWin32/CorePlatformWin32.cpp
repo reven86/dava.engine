@@ -398,7 +398,7 @@ namespace DAVA
             mode.refreshRate = dmi.dmDisplayFrequency;
             ZeroMemory(&dmi, sizeof(dmi));
             availableDisplayModes.push_back(mode);
-		}
+        }
 	}
 
 	DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
@@ -524,7 +524,7 @@ namespace DAVA
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
         }
         if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
-		{
+        {
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
 		}
 		if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)

@@ -75,7 +75,7 @@ struct Rect
     inline Rect& operator-=(const Vector2& point);
 
     inline Rect operator+(const Vector2& Point) const;
-    inline Rect 	operator - (const Vector2 & Point) const;
+    inline Rect operator-(const Vector2& Point) const;
 };
 
 inline Rect::Rect()
