@@ -139,7 +139,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
     if (clearAlpha)
     {
-        RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, screenshot->GetWidth(), screenshot->GetHeight()), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+        RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, static_cast<float32>(screenshot->GetWidth()), static_cast<float32>(screenshot->GetHeight())), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
     }
     RenderSystem2D::Instance()->EndRenderTargetPass();
     for (auto& info : controls3d)
