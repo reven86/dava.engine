@@ -385,17 +385,17 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetCurrentDirectoryW(MAX_PATH, tempDir.data());
-    path = UTF8Utils::EncodeToUTF8(tempDir.data());
+    currentWorkingDirectory = FilePath::FromNativeString(tempDir.data());
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
     Array<char, PATH_MAX> tempDir;
     getcwd(tempDir.data(), PATH_MAX);
     path = tempDir.data();
+    currentWorkingDirectory = FilePath(std::move(path));
 
 #endif //PLATFORMS
 
-    currentWorkingDirectory = FilePath(std::move(path));
     return currentWorkingDirectory.MakeDirectoryPathname();
 }
 
@@ -406,8 +406,7 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 #if defined(__DAVAENGINE_WIN32__)
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetModuleFileNameW(nullptr, tempDir.data(), MAX_PATH);
-    String path = UTF8Utils::EncodeToUTF8(tempDir.data());
-    currentExecuteDirectory = FilePath(path).GetDirectory();
+    currentExecuteDirectory = FilePath::FromNativeString(tempDir.data()).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
     Array<char, PATH_MAX> tempDir;
     proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
@@ -455,7 +454,7 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 {
 #if defined (__DAVAENGINE_WIN32__)
-    WideString path = ToNativeStringType(pathToCheck.GetAbsolutePathname());
+    FilePath::NativeStringType path = pathToCheck.GetNativeAbsolutePathname();
     DWORD stats = GetFileAttributesW(path.c_str());
     return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
 #else //defined (__DAVAENGINE_WIN32__)
@@ -630,21 +629,20 @@ const FilePath FileSystem::GetUserDocumentsPath()
 {
 #if defined(__DAVAENGINE_WIN32__)
 
-    char szPath[MAX_PATH + 1];
-    SHGetFolderPathA(nullptr, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, szPath);
-    size_t n = strlen(szPath);
-    szPath[n] = '\\';
+    wchar_t szPath[MAX_PATH + 1];
+    SHGetFolderPathW(nullptr, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, szPath);
+    size_t n = wcslen(szPath);
+    szPath[n] = L'\\';
     szPath[n+1] = 0;
-    String str(szPath);
 
-    return FilePath(str).MakeDirectoryPathname();
+    return FilePath::FromNativeString(szPath).MakeDirectoryPathname();
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
     //take local folder as user documents folder
     using namespace Windows::Storage;
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
-    return FilePath(UTF8Utils::EncodeToUTF8(roamingFolder)).MakeDirectoryPathname();
+    return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
 
 #endif
 }
@@ -653,14 +651,13 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 {
 #if defined(__DAVAENGINE_WIN32__)
 
-    char szPath[MAX_PATH + 1];
-    SHGetFolderPathA(NULL, CSIDL_COMMON_DOCUMENTS, NULL, SHGFP_TYPE_CURRENT, szPath);
-    size_t n = strlen(szPath);
-    szPath[n] = '\\';
+    wchar_t szPath[MAX_PATH + 1] = {};
+    SHGetFolderPathW(NULL, CSIDL_COMMON_DOCUMENTS, NULL, SHGFP_TYPE_CURRENT, szPath);
+    size_t n = wcslen(szPath);
+    szPath[n] = L'\\';
     szPath[n+1] = 0;
-    String str(szPath);
 
-    return FilePath(str).MakeDirectoryPathname();
+    return FilePath::FromNativeString(szPath).MakeDirectoryPathname();
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 

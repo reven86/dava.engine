@@ -375,7 +375,7 @@ FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
     return GetAbsolutePathname();
 }
 
-FilePath FilePath::FromNativeString(const NativeStringType& path);
+FilePath FilePath::FromNativeString(const NativeStringType& path)
 {
     return FilePath(path);
 }
