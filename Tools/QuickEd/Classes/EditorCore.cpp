@@ -463,9 +463,10 @@ void EditorCore::ApplyFileChanges()
 
 Document* EditorCore::GetDocument(const QString &path) const
 {
+    FilePath davaPath(path.toStdString().c_str());
     for (Document* document : documents)
     {
-        if (document->GetPackageAbsolutePath() == path)
+        if (document->GetPackageFilePath() == davaPath)
         {
             return document;
         }
