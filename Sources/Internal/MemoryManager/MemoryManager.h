@@ -89,15 +89,16 @@ public:
 
     static void RegisterAllocPoolName(uint32 index, const char8* name);
     static void RegisterTagName(uint32 tagMask, const char8* name);
-
+    
     void EnableLightWeightMode();
     void SetCallbacks(Function<void()> updateCallback, Function<void(uint32, bool)> tagCallback);
     void Update();
 
-    DAVA_NOINLINE void* Allocate(size_t size, uint32 poolIndex);
+    //new_type = 0(new), 1(new[])
+    DAVA_NOINLINE void* Allocate(size_t size, uint32 poolIndex, uint32 type_new = 0);
     DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
     void* Reallocate(void* ptr, size_t newSize);
-    void Deallocate(void* ptr);
+    void Deallocate(void* ptr, uint32 type_new = 0);
     
     void EnterTagScope(uint32 tag);
     void LeaveTagScope(uint32 tag);
@@ -110,6 +111,8 @@ public:
 
     uint32 GetSystemMemoryUsage() const;
     uint32 GetTrackedMemoryUsage(uint32 poolIndex = ALLOC_POOL_TOTAL) const;
+
+    uint32 GetTaggedMemoryUsage(uint32 tagIndex = MAX_TAG_COUNT - 1) const;
 
     uint32 CalcStatConfigSize() const;
     void GetStatConfig(void* buffer, uint32 bufSize) const;

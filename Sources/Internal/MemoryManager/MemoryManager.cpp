@@ -63,18 +63,18 @@ namespace DAVA
 
 struct MemoryManager::MemoryBlock
 {
-    MemoryBlock* prev;      // Pointer to previous block
-    MemoryBlock* next;      // Pointer to next block
-    void* realBlockStart;   // Pointer to real block start
-    void* padding1;         // Padding to make sure that
-    uint32 padding2;        //          struct size is integral multiple of 16 bytes
-    uint32 orderNo;         // Block order number
-    uint32 allocByApp;      // Size requested by application
-    uint32 allocTotal;      // Total allocated size
-    uint32 bktraceHash;     // Unique hash number to identify block backtrace
-    uint32 pool;            // Allocation pool block belongs to
-    uint32 tags;            // Tags block belongs to
-    uint32 mark;            // Mark to distinguish tracked memory blocks
+    MemoryBlock* prev = nullptr;      // Pointer to previous block
+    MemoryBlock* next = nullptr;      // Pointer to next block
+    void* realBlockStart = nullptr;   // Pointer to real block start
+    void* padding1 = nullptr;         // Padding to make sure that
+    uint32 type_new = 0;        //          struct size is integral multiple of 16 bytes
+    uint32 orderNo = 0;         // Block order number
+    uint32 allocByApp = 0;      // Size requested by application
+    uint32 allocTotal = 0;      // Total allocated size
+    uint32 bktraceHash = 0;     // Unique hash number to identify block backtrace
+    uint32 pool = 0;            // Allocation pool block belongs to
+    uint32 tags = 0;            // Tags block belongs to
+    uint32 mark = 0;            // Mark to distinguish tracked memory blocks
 };
 static_assert(sizeof(MemoryManager::MemoryBlock) % 16 == 0, "sizeof(MemoryManager::MemoryBlock) % 16 != 0");
 
@@ -193,7 +193,7 @@ void MemoryManager::Update()
     }
 }
 
-DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
+DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex, uint32 type_new)
 {
     assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
 
@@ -205,9 +205,11 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
     }
 
     MemoryBlock* block = static_cast<MemoryBlock*>(MallocHook::Malloc(totalSize));
+ 
     if (block != nullptr)
     {
         block->mark = BLOCK_MARK;
+        block->type_new = type_new;
         block->pool = poolIndex;
         block->realBlockStart = static_cast<void*>(block);
         block->allocByApp = static_cast<uint32>(size);
@@ -229,6 +231,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(allocMutex);
             block->tags = statGeneral.activeTags;
             block->orderNo = statGeneral.nextBlockNo++;
+
             InsertBlock(block);
         }
         {
@@ -245,7 +248,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
-        return static_cast<void*>(block + 1);
+        return static_cast<void*>(block + 1);;
     }
     return nullptr;
 }
@@ -346,7 +349,7 @@ void* MemoryManager::Reallocate(void* ptr, size_t newSize)
     }
 }
     
-void MemoryManager::Deallocate(void* ptr)
+void MemoryManager::Deallocate(void* ptr, uint32 type_new)
 {
     if (ptr != nullptr)
     {
@@ -457,6 +460,14 @@ uint32 MemoryManager::GetTrackedMemoryUsage(uint32 poolIndex) const
 
     LockType lock(statMutex);
     return statAllocPool[poolIndex].allocByApp;
+}
+
+uint32 MemoryManager::GetTaggedMemoryUsage(uint32 tagIndex) const
+{
+    assert(tagIndex < MAX_TAG_COUNT);
+
+    LockType lock(statMutex);
+    return statTag[tagIndex].allocByApp;
 }
 
 void MemoryManager::EnterTagScope(uint32 tag)
@@ -586,7 +597,7 @@ void MemoryManager::RemoveBlock(MemoryBlock* block)
 
 void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
-    { // Update memory usage reported by system
+    {   // Update memory usage reported by system 
         statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
         statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
@@ -610,20 +621,28 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemory
 
     {   // Update tag statistics
         uint32 tags = statGeneral.activeTags;
-        for (size_t index = 0;tags != 0;++index, tags >>= 1)
+        if (tags)
         {
-            if (tags & 0x01)
+            for (size_t index = 0; tags != 0; ++index, tags >>= 1)
             {
-                statTag[index].allocByApp += block->allocByApp;
-                statTag[index].blockCount += 1;
+                if (tags & 0x01)
+                {
+                    statTag[index].allocByApp += block->allocByApp;
+                    statTag[index].blockCount += 1;
+                }
             }
+        }
+        else
+        {
+            statTag[MAX_TAG_COUNT - 1].allocByApp += block->allocByApp;
+            statTag[MAX_TAG_COUNT - 1].blockCount += 1;
         }
     }
 }
 
 void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
-    { // Update memory usage reported by system
+    {   // Update memory usage reported by system 
         statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
         statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
@@ -640,13 +659,21 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 systemMemo
     }
     {   // Update tag statistics
         uint32 tags = block->tags;
-        for (size_t index = 0;tags != 0;++index, tags >>= 1)
+        if (tags)
         {
-            if (tags & 0x01)
+            for (size_t index = 0; tags != 0; ++index, tags >>= 1)
             {
-                statTag[index].allocByApp -= block->allocByApp;
-                statTag[index].blockCount -= 1;
+                if (tags & 0x01)
+                {
+                    statTag[index].allocByApp -= block->allocByApp;
+                    statTag[index].blockCount -= 1;
+                }
             }
+        }
+        else
+        {
+            statTag[MAX_TAG_COUNT - 1].allocByApp -= block->allocByApp;
+            statTag[MAX_TAG_COUNT - 1].blockCount -= 1;
         }
     }
 }
@@ -839,10 +866,17 @@ void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) c
         pools[i] = statAllocPool[i];
     }
 
-    TagAllocStat* tags = OffsetPointer<TagAllocStat>(pools, sizeof(AllocPoolStat) * registeredAllocPoolCount);
-    for (uint32 i = 0;i < registeredTagCount;++i)
+    TagAllocStat* tags = OffsetPointer<TagAllocStat>(pools, sizeof(AllocPoolStat) * (registeredAllocPoolCount + 1));
+    for (uint32 i = 0;i < registeredTagCount + 1; ++i)
     {
-        tags[i] = statTag[i];
+        if (i < registeredTagCount)
+        {
+            tags[i] = statTag[i];
+        }
+        else
+        {
+            tags[i] = statTag[MAX_TAG_COUNT - 1];
+        }
     }
 }
 
