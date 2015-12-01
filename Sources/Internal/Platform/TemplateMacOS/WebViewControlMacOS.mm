@@ -29,7 +29,7 @@
 
 
 #include "Base/Platform.h"
-#if defined __DAVAENGINE_MACOS__ && !defined __NO_NATIVE_WEBVIEW__
+#if defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
 
 #include "WebViewControlMacOS.h"
 #include "MainWindowController.h"
@@ -494,4 +494,4 @@ void* WebViewControl::GetImageCache() const
     return webImageCachePtr;
 }
 
-#endif //defined __DAVAENGINE_MACOS__ && !defined __NO_NATIVE_WEBVIEW__
+#endif //defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__

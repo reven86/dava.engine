@@ -31,9 +31,9 @@
 #define __DAVAENGINE_WEBVIEWCONTROL_H__
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_ANDROID__) && !defined(__NO_NATIVE_WEBVIEW__)
+#if defined(__DAVAENGINE_ANDROID__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
-#include "../../UI/IWebViewControl.h"
+#include "UI/IWebViewControl.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA {
@@ -143,6 +143,6 @@ private:
 
 };
 
-#endif //#if defined(__DAVAENGINE_ANDROID__) && !defined(__NO_NATIVE_WEBVIEW__)
+#endif //#if defined(__DAVAENGINE_ANDROID__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
 #endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_MACOS_H__) */

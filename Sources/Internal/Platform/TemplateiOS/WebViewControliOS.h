@@ -31,9 +31,9 @@
 #define __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_IPHONE__) && !defined(__NO_NATIVE_WEBVIEW__)
+#if defined(__DAVAENGINE_IPHONE__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
-#include "../../UI/IWebViewControl.h"
+#include "UI/IWebViewControl.h"
 
 namespace DAVA {
 
@@ -127,6 +127,6 @@ private:
 
 };
 
-#endif //defined(__DAVAENGINE_IPHONE__) && !defined(__NO_NATIVE_WEBVIEW__)
+#endif //defined(__DAVAENGINE_IPHONE__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
 #endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_IOS_H__) */

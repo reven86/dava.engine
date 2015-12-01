@@ -30,7 +30,7 @@
 #ifndef __WEBVIEW_CONTROL_STUB_H__
 #define __WEBVIEW_CONTROL_STUB_H__
 
-#if defined __NO_NATIVE_WEBVIEW__
+#if defined __DISABLE_NATIVE_WEBVIEW__
 
 namespace DAVA
 {
@@ -68,6 +68,6 @@ public:
 };
 };
 
-#endif //__NO_NATIVE_WEBVIEW__
+#endif //__DISABLE_NATIVE_WEBVIEW__
 
 #endif //__WEBVIEW_CONTROL_STUB_H__
