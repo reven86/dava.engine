@@ -55,7 +55,7 @@ _CreateInputLayout(const VertexLayout& layout, const void* code, unsigned code_s
 {
     ID3D11InputLayout* vdecl = nullptr;
     D3D11_INPUT_ELEMENT_DESC elem[32];
-    uint32 elemCount = 0;
+    DAVA::uint32 elemCount = 0;
 
     //Logger::Info("create-dx11-layout");
     DVASSERT(layout.ElementCount() < countof(elem));
@@ -169,7 +169,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
 {
     ID3D11InputLayout* vdecl = nullptr;
     D3D11_INPUT_ELEMENT_DESC elem[32];
-    uint32 elemCount = 0;
+    DAVA::uint32 elemCount = 0;
 
     //Logger::Info("create-compatible-dx11-layout");
     DVASSERT(vbLayout.ElementCount() < countof(elem));
@@ -177,7 +177,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
     {
         DVASSERT(vprogLayout.ElementSemantics(i) != VS_PAD);
 
-        unsigned vb_elem_i = InvalidIndex;
+        unsigned vb_elem_i = DAVA::InvalidIndex;
 
         for (unsigned k = 0; k != vbLayout.ElementCount(); ++k)
         {
@@ -188,7 +188,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
             }
         }
 
-        if (vb_elem_i != InvalidIndex)
+        if (vb_elem_i != DAVA::InvalidIndex)
         {
             elem[elemCount].AlignedByteOffset = (UINT)(vbLayout.ElementOffset(vb_elem_i));
             elem[elemCount].SemanticIndex = vprogLayout.ElementSemanticsIndex(i);
@@ -354,7 +354,7 @@ static RingBuffer _DefConstRingBuf;
 ConstBufDX11::ConstBufDX11()
     : buf(nullptr)
     , value(nullptr)
-    , buf_i(InvalidIndex)
+    , buf_i(DAVA::InvalidIndex)
     , regCount(0)
 {
 }
@@ -402,7 +402,7 @@ _BlendOpDX11(BlendOp op)
 void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
 {
     DVASSERT(!value);
-    DVASSERT(bufIndex != InvalidIndex);
+    DVASSERT(bufIndex != DAVA::InvalidIndex);
     DVASSERT(regCnt);
 
     D3D11_BUFFER_DESC desc = { 0 };
@@ -445,7 +445,7 @@ void ConstBufDX11::Destroy()
         }
 
         value = nullptr;
-        buf_i = InvalidIndex;
+        buf_i = DAVA::InvalidIndex;
         regCount = 0;
     }
 }

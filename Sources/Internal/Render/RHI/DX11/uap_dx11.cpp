@@ -200,13 +200,60 @@ void CreateDeviceResources()
         D3D_FEATURE_LEVEL_9_1
     };
 
+    ComPtr<IDXGIAdapter> defAdapter;
+    ComPtr<IDXGIFactory1> factory;
+    std::vector<ComPtr<IDXGIAdapter>> adapter;
+    const uint32 preferredVendorID[] =
+    {
+      0x10DE, // nVIDIA
+      0x1002 /*,     // ATI
+        0x4D4F4351  // Qualcomm*/
+    };
+
+    if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&factory)))
+    {
+        IDXGIAdapter* a = NULL;
+
+        for (UINT i = 0; factory->EnumAdapters(i, &a) != DXGI_ERROR_NOT_FOUND; ++i)
+        {
+            adapter.push_back(a);
+        }
+    }
+
+    DAVA::Logger::Info("detected GPUs (%u) :", adapter.size());
+    for (unsigned i = 0; i != adapter.size(); ++i)
+    {
+        DXGI_ADAPTER_DESC desc = { 0 };
+
+        if (SUCCEEDED(adapter[i]->GetDesc(&desc)))
+        {
+            char info[128];
+
+            ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
+
+            DAVA::Logger::Info("  adapter[%u]  \"%s\"  vendor= %04X  device= %04X", i, info, desc.VendorId, desc.DeviceId);
+
+            if (!defAdapter)
+            {
+                for (unsigned k = 0; k != countof(preferredVendorID); ++k)
+                {
+                    if (desc.VendorId == preferredVendorID[k])
+                    {
+                        defAdapter = adapter[i];
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     // Create the Direct3D 11 API device object and a corresponding context.
     ComPtr<ID3D11Device> device;
     ComPtr<ID3D11DeviceContext> context;
 
     HRESULT hr = D3D11CreateDevice(
-    nullptr, // Specify nullptr to use the default adapter.
-    D3D_DRIVER_TYPE_HARDWARE, // Create a device using the hardware graphics driver.
+    defAdapter.Get(), // Specify nullptr to use the default adapter.
+    (defAdapter) ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, // Create a device using the hardware graphics driver.
     0, // Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
     creationFlags, // Set debug and Direct2D compatibility flags.
     featureLevels, // List of feature levels this app can support.
@@ -216,6 +263,22 @@ void CreateDeviceResources()
     &m_d3dFeatureLevel, // Returns feature level of device created.
     &context // Returns the device immediate context.
     );
+
+    if (FAILED(hr))
+    {
+        hr = D3D11CreateDevice(
+        nullptr, // Specify nullptr to use the default adapter.
+        D3D_DRIVER_TYPE_HARDWARE, // Create a device using the hardware graphics driver.
+        0, // Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
+        creationFlags, // Set debug and Direct2D compatibility flags.
+        featureLevels, // List of feature levels this app can support.
+        ARRAYSIZE(featureLevels), // Size of the list above.
+        D3D11_SDK_VERSION, // Always set this to D3D11_SDK_VERSION for Windows Store apps.
+        &device, // Returns the Direct3D device created.
+        &m_d3dFeatureLevel, // Returns feature level of device created.
+        &context // Returns the device immediate context.
+        );
+    }
 
 #if 0
     if (FAILED(hr))
@@ -239,6 +302,32 @@ void CreateDeviceResources()
             );
     }
 #endif
+
+    if (device.Get())
+    {
+        IDXGIDevice* dxgiDevice = NULL;
+        IDXGIAdapter* dxgiAdapter = defAdapter.Get();
+
+        if (!dxgiAdapter)
+        {
+            if (SUCCEEDED(device.Get()->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice))))
+                dxgiDevice->GetAdapter(&dxgiAdapter);
+        }
+
+        if (dxgiAdapter)
+        {
+            DXGI_ADAPTER_DESC desc = { 0 };
+
+            if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
+            {
+                char info[128];
+
+                ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
+
+                DAVA::Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
+            }
+        }
+    }
 
 #if defined(_DEBUG)
     if (SdkLayersAvailable())
@@ -652,9 +741,9 @@ void resize_swapchain(int32 width, int32 height, float32 sx, float32 sy)
     // Do not actually resize swapchain if sizes and scales are the same
     const float32 MAGNITUDE = 1000.0f; // Compare up to 3 digits after point
     bool doResize = int32(m_logicalSize.Width) != width ||
-                    int32(m_logicalSize.Height) != height ||
-                    int32((m_compositionScaleX - sx) * MAGNITUDE) != 0 ||
-                    int32((m_compositionScaleY - sy) * MAGNITUDE) != 0;
+    int32(m_logicalSize.Height) != height ||
+    int32((m_compositionScaleX - sx) * MAGNITUDE) != 0 ||
+    int32((m_compositionScaleY - sy) * MAGNITUDE) != 0;
 
     if (doResize)
     {

@@ -48,7 +48,7 @@ public:
     virtual void RemoveAllDelayedNotifications() = 0;
 
     static LocalNotificationImpl *Create(const String &_id);
-    
+
     const DAVA::String& GetId()
     {
         return notificationId;

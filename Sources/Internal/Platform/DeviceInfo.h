@@ -75,7 +75,7 @@ public:
         PLATFORM_WIN32,
         PLATFORM_DESKTOP_WIN_UAP,
         PLATFORM_PHONE_WIN_UAP,
-        PLATFORM_UNKNOWN,
+        PLATFORM_UNKNOWN_VALUE,
         PLATFORMS_COUNT
     };
 
@@ -147,6 +147,7 @@ public:
         HID_KEYBOARD_TYPE,
         HID_KEYPAD_TYPE,
         HID_SYSTEM_CONTROL_TYPE,
+        HID_TOUCH_TYPE,
         HID_COUNT_TYPE,
     };
     using ListForStorageInfo = List<StorageInfo>;
