@@ -422,12 +422,13 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	if (!heightmapProxy)
 	{
 		Heightmap* heightmap = baseLandscape->GetHeightmap();
-		if (heightmap == NULL || heightmap->Size() == 0)
-		{
+        if (heightmap == nullptr || heightmap->Size() == 0)
+        {
 			return LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
 		}
-		heightmapProxy = new HeightmapProxy(baseLandscape->GetHeightmap()->Clone(NULL));
-	}
+        ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
+        heightmapProxy = new HeightmapProxy(clonedHeightmap);
+    }
 	if (!customColorsProxy)
 	{
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));

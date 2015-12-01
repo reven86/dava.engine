@@ -113,7 +113,7 @@ private:
 
 	void UpdateScreenMode();
 
-    void ResizeView(int32 w, int32 h);
+    void ProcessResizeView();
 
 private:
 	int32 width;
@@ -121,12 +121,13 @@ private:
 
 	bool wasCreated;
 	bool renderIsActive;
+    bool viewSizeChanged;
 
-	bool foreground;
+    bool foreground;
 
-	AndroidSystemDelegate *androidDelegate;
+    AndroidSystemDelegate* androidDelegate;
 
-	String externalStorage;
+    String externalStorage;
 	String internalStorage;
 };
 };

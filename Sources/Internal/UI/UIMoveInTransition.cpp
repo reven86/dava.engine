@@ -113,9 +113,9 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         {
             drawState.SetPosition(xNextPosition, yNextPosition);
         }
-        else 
-		{
-			drawState.SetPosition(0, 0);
+        else
+        {
+            drawState.SetPosition(0, 0);
 		}
 
         RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
