@@ -85,11 +85,23 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	return surfaceView;
     }
     
+    // https://code.google.com/p/android/issues/detail?id=81083
+    private void FixNoClassDefFoundError81083() {
+    	try {
+    		Class.forName("android.os.AsyncTask");
+    	}
+    	catch(Throwable e) {
+    		Log.e(JNIConst.LOG_TAG, e.toString());
+    	}
+    }
+    
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         // The activity is being created.
         Log.d(JNIConst.LOG_TAG, "[Activity::onCreate] in");
+        
+        FixNoClassDefFoundError81083();
         
     	activity = this;
         super.onCreate(savedInstanceState);
