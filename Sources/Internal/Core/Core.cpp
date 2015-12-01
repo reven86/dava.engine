@@ -170,13 +170,6 @@ void EnableFloatingPointExceptions()
     Logger::Info("FPU exceptions enabled");
 }
 #else // __DAVAENGINE_WINDOWS__
-// also add flag -fnon-call-exceptions
-void handle_fpu_exceptions(int err)
-{
-    std::stringstream ss;
-    ss << "floating point exception: code: 0x" << std::hex << err;
-    throw std::runtime_error(ss.str());
-}
 void EnableFloatingPointExceptions()
 {
 // https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
@@ -186,11 +179,9 @@ void EnableFloatingPointExceptions()
     // still try
     int result = feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
     DVASSERT(result != -1);
-    signal(SIGFPE, handle_fpu_exceptions);
 #else
     int result = feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
     DVASSERT(result != -1);
-    signal(SIGFPE, handle_fpu_exceptions);
     Logger::Info("FPU exceptions enabled");
 #endif
 }
@@ -231,7 +222,16 @@ void Core::CreateSingletons()
     FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
-    new SoundSystem();
+    Logger::Info("SoundSystem init start");
+    try
+    {
+        new SoundSystem();
+    }
+    catch (std::exception& ex)
+    {
+        Logger::Info("%s", ex.what());
+    }
+    Logger::Info("SoundSystem init finish");
 
     if (isConsoleMode)
     {
