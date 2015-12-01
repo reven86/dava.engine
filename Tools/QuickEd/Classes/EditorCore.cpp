@@ -210,7 +210,7 @@ void EditorCore::OnFilesRemoved(const QStringList& removedFiles)
         if (removedFiles.contains(path))
         {
             QMessageBox::StandardButton button = QMessageBox::No;
-                QFileInfo fileInfo(path);
+            QFileInfo fileInfo(path);
             button = QMessageBox::warning(
                 qApp->activeWindow()
                 , tr("File %1 is renamed or deleted").arg(fileInfo.fileName())
