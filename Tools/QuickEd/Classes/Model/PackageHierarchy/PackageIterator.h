@@ -27,30 +27,58 @@
 =====================================================================================*/
 
 
-#include "PropertiesTreeView.h"
-#include <QPainter>
-#include <QHeaderView>
-#include <QApplication>
+#ifndef __QUICKED_PACKAGE_ITERATOR_H__
+#define __QUICKED_PACKAGE_ITERATOR_H__
 
-PropertiesTreeView::PropertiesTreeView(QWidget* parent /*= NULL*/)
-    : QTreeView(parent)
+#include "Base/BaseTypes.h"
+#include "Functional/Function.h"
+
+class PackageNode;
+class PackageBaseNode;
+
+class PackageIterator
 {
+public:
+    using MatchFunction = DAVA::Function<bool(const PackageBaseNode*)>;
+    PackageIterator(const PackageIterator& it);
+    explicit PackageIterator(PackageBaseNode* node, MatchFunction func = defaultFunction);
+    ~PackageIterator();
+    bool IsValid() const;
+    void SetMatchFunction(MatchFunction func);
 
+    PackageIterator& operator=(const PackageIterator& it);
+
+    PackageIterator& operator++();
+    const PackageIterator operator++(int);
+    PackageIterator& operator+=(int n);
+
+    PackageIterator& operator--();
+    const PackageIterator operator--(int);
+    PackageIterator& operator-=(int n);
+
+    PackageBaseNode* operator*() const;
+
+private:
+    struct IteratorData;
+    std::unique_ptr<IteratorData> impl;
+    static const MatchFunction defaultFunction;
+};
+
+inline const PackageIterator PackageIterator::operator++(int)
+{
+    PackageIterator it = *this;
+    ++(*this);
+    return it;
 }
 
-PropertiesTreeView::~PropertiesTreeView()
+inline const PackageIterator PackageIterator::operator--(int)
 {
-
+    PackageIterator it = *this;
+    --(*this);
+    return it;
 }
 
-void PropertiesTreeView::drawRow(QPainter * painter, const QStyleOptionViewItem &option, const QModelIndex & index) const
-{
-    QStyleOptionViewItemV3 opt = option;
+PackageIterator operator+(PackageIterator iter, int n);
+PackageIterator operator-(PackageIterator iter, int n);
 
-    QTreeView::drawRow(painter, opt, index);
-    QColor color = static_cast<QRgb>(QApplication::style()->styleHint(QStyle::SH_Table_GridLineColor, &opt));
-    painter->save();
-    painter->setPen(QPen(color));
-    painter->drawLine(opt.rect.x(), opt.rect.bottom(), opt.rect.right(), opt.rect.bottom());
-    painter->restore();
-}
+#endif // __QUICKED_PACKAGE_ITERATOR_H__

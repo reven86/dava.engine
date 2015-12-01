@@ -97,6 +97,30 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
 
+    QAction* importPackageAction = new QAction(tr("Import package"), this);
+    importPackageAction->setShortcut(QKeySequence::New);
+    importPackageAction->setShortcutContext(Qt::WindowShortcut);
+    connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
+    davaGLWidget->addAction(importPackageAction);
+
+    QAction* cutAction = new QAction(tr("Cut"), this);
+    cutAction->setShortcut(QKeySequence::Cut);
+    cutAction->setShortcutContext(Qt::WindowShortcut);
+    connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
+    davaGLWidget->addAction(cutAction);
+
+    QAction* copyAction = new QAction(tr("Copy"), this);
+    copyAction->setShortcut(QKeySequence::Copy);
+    copyAction->setShortcutContext(Qt::WindowShortcut);
+    connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
+    davaGLWidget->addAction(copyAction);
+
+    QAction* pasteAction = new QAction(tr("Paste"), this);
+    pasteAction->setShortcut(QKeySequence::Paste);
+    pasteAction->setShortcutContext(Qt::WindowShortcut);
+    connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
+    davaGLWidget->addAction(pasteAction);
+
     QAction* deleteAction = new QAction(tr("Delete"), this);
     deleteAction->setShortcut(QKeySequence::Delete);
     deleteAction->setShortcutContext(Qt::WindowShortcut); //widget shortcut is not working for davaGLWidget
