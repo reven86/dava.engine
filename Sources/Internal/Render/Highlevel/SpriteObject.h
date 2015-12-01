@@ -100,9 +100,9 @@ private:
     void Clear();
     void ClearRenderBatches();
     void Restore();
-    void UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffer iBuffer);
-	void Init(Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint);
-	void SetupRenderBatch();
+    void UpdateBufferData(RenderBatch* batch);
+    void Init(Sprite* spr, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint);
+    void SetupRenderBatch();
     void RegisterRestoreCallback();
 
 private:
