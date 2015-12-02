@@ -464,10 +464,14 @@ uint32 MemoryManager::GetTrackedMemoryUsage(uint32 poolIndex) const
 
 uint32 MemoryManager::GetTaggedMemoryUsage(uint32 tagIndex) const
 {
-    assert(tagIndex < registeredTagCount || tagIndex == UNTAGGED);
+    DVASSERT(tagIndex != 0 && IsPowerOf2(tagIndex));
+
+    const size_t index = HighestBitIndex(tagIndex);
+    
+    DVASSERT(index < MAX_TAG_COUNT);
 
     LockType lock(statMutex);
-    return statTag[tagIndex].allocByApp;
+    return statTag[index].allocByApp;
 }
 
 void MemoryManager::EnterTagScope(uint32 tag)

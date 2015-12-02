@@ -112,7 +112,7 @@ public:
     uint32 GetSystemMemoryUsage() const;
     uint32 GetTrackedMemoryUsage(uint32 poolIndex = ALLOC_POOL_TOTAL) const;
 
-    uint32 GetTaggedMemoryUsage(uint32 tagIndex = UNTAGGED) const;
+    uint32 GetTaggedMemoryUsage(uint32 tagIndex) const;
 
     uint32 CalcStatConfigSize() const;
     void GetStatConfig(void* buffer, uint32 bufSize) const;
