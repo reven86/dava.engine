@@ -67,11 +67,11 @@ public:
     
 protected:
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    virtual void OnBackground() {};
+    void OnBackground() override {};
     
-    virtual void OnForeground() {};
+    void OnForeground() override {};
     
-    virtual void OnDeviceLocked() {};
+    void OnDeviceLocked() override {};
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
     void RegisterTests();

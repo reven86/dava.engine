@@ -29,7 +29,6 @@
 
 #include "UI/UISlider.h"
 #include "UI/UIButton.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/YamlNode.h"
 #include "Base/ObjectFactory.h"
@@ -49,12 +48,12 @@ static const String UISLIDER_THUMB_SPRITE_CONTROL_NAME = "thumbSpriteControl";
 static const String UISLIDER_MIN_SPRITE_CONTROL_NAME = "minSpriteControl";
 static const String UISLIDER_MAX_SPRITE_CONTROL_NAME = "maxSpriteControl";
 
-UISlider::UISlider(const Rect & rect)
-:	UIControl(rect)
-,	minBackground(NULL)
-,	maxBackground(NULL)
-,	thumbButton(NULL)
-,   spritesEmbedded(false)
+UISlider::UISlider(const Rect& rect)
+    : UIControl(rect)
+    , minBackground(NULL)
+    , maxBackground(NULL)
+    , thumbButton(NULL)
+    , spritesEmbedded(false)
 {
     SetInputEnabled(true, false);
 	isEventsContinuos = true;
@@ -218,10 +217,11 @@ void UISlider::RemoveControl(UIControl *control)
 
 void UISlider::Input(UIEvent *currentInput)
 {
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)                                        
-	if (currentInput->phase == UIEvent::PHASE_MOVE || currentInput->phase == UIEvent::PHASE_KEYCHAR)
-		return;
-#endif
+    // not supported for now.
+    if (UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase || UIEvent::Phase::CHAR == currentInput->phase || UIEvent::Phase::KEY_DOWN == currentInput->phase || UIEvent::Phase::KEY_UP == currentInput->phase || UIEvent::Phase::KEY_DOWN_REPEAT == currentInput->phase || UIEvent::Phase::CHAR_REPEAT == currentInput->phase || UIEvent::Phase::ERROR == currentInput->phase || UIEvent::Phase::JOYSTICK == currentInput->phase)
+    {
+        return;
+    }
 	
 	const Rect & absRect = GetGeometricData().GetUnrotatedRect();
 	//absTouchPoint = currentInput->point;
@@ -248,9 +248,10 @@ void UISlider::Input(UIEvent *currentInput)
 		{
 			PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 		}
-	}else if (currentInput->phase == UIEvent::PHASE_ENDED) 
-	{
-		/* if not continuos always perform event because last move position almost always the same as end pos */
+    }
+    else if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        /* if not continuos always perform event because last move position almost always the same as end pos */
 		PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 	}
 
@@ -378,8 +379,8 @@ YamlNode * UISlider::SaveToYamlNode(UIYamlLoader * loader)
 
     return node;
 }
-	
-UIControl* UISlider::Clone()
+
+UISlider* UISlider::Clone()
 {
 	UISlider *t = new UISlider(GetRect());
 	t->CopyDataFrom(this);
@@ -429,14 +430,6 @@ void UISlider::AttachToSubcontrols()
 	}
 
     InitInactiveParts(thumbButton->GetBackground()->GetSprite());
-}
-
-List<UIControl*> UISlider::GetSubcontrols()
-{
-	List<UIControl*> subControls;
-	AddControlToList(subControls, UISLIDER_THUMB_SPRITE_CONTROL_NAME);
-
-	return subControls;
 }
 
 void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, const UIYamlLoader* loader)

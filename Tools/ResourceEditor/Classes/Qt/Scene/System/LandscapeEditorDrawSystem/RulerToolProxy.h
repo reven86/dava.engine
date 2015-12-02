@@ -45,10 +45,6 @@ public:
 
 	Texture* GetTexture();
 
-	void UpdateTexture();
-	void ResetTextureChanged();
-	bool IsTextureChanged();
-
 protected:
 	Texture* rulerToolTexture;
 	int32 size;

@@ -31,6 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
+namespace
+{
 class InputDelegate : public UITextFieldDelegate
 {
 public:
@@ -56,6 +58,7 @@ struct ButtonInfo {
     int32 tag;
     Rect rect;
 };
+}
 
 static const ButtonInfo alignButtonsInfo[] = {
     { L"Top left", ALIGN_TOP | ALIGN_LEFT, Rect(450, 30, 100, 20) },
@@ -124,7 +127,8 @@ void StaticTextTest::LoadResources()
     inputText->SetText(L"");
     inputText->SetDebugDraw(true);
     inputText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
-    inputText->SetDelegate(inputDelegate = new InputDelegate(this));
+    inputDelegate = new InputDelegate(this);
+    inputText->SetDelegate(inputDelegate);
     inputText->SetMultiline(true);
     AddControl(inputText);
 
@@ -191,9 +195,10 @@ void StaticTextTest::LoadResources()
 
 void StaticTextTest::UnloadResources()
 {
+    inputText->SetDelegate(nullptr);
+    SafeDelete(inputDelegate);
     SafeRelease(previewText);
     SafeRelease(inputText);
-    SafeDelete(inputDelegate);
     SafeRelease(requireTextSizeButton);
     for (auto btn : alignButtons)
     {
@@ -210,6 +215,8 @@ void StaticTextTest::UnloadResources()
         SafeRelease(btn);
     }
     multilineButtons.clear();
+
+    BaseScreen::UnloadResources();
 }
 
 void StaticTextTest::SetPreviewText(const DAVA::WideString& text)

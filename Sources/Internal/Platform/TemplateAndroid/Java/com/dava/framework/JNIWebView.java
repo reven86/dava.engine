@@ -113,8 +113,14 @@ public class JNIWebView {
         @Override
         public boolean onKeyPreIme(int keyCode, KeyEvent event) {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
-                clearFocus();
-                return false;
+            	if (event.getAction() == KeyEvent.ACTION_DOWN)
+            	{
+            		// skip down event
+            	} else
+            	{
+            		clearFocus();
+            	}
+                return true;
             }
             return super.onKeyPreIme(keyCode, event);
         }
@@ -538,8 +544,7 @@ public class JNIWebView {
                 }
             }
 
-            JNIActivity.GetActivity()
-                    .PostEventToGL(new jsCallback(id, message));
+            JNIActivity.GetActivity().RunOnMainLoopThread(new jsCallback(id, message));
             result.confirm();
             return true;
         }

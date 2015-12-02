@@ -46,9 +46,6 @@ public:
 	virtual ~AndroidSystemDelegate() = default;
 
 	virtual bool DownloadHttpFile(const String & url, const String & documentsPathname) = 0;
-    
-    virtual GLint RenderBuffer() = 0;
-	virtual GLint FrameBuffer() = 0;
 
 	JNIEnv* GetEnvironment() const {return environment;};
 	JavaVM* GetVM() const {return vm;};
@@ -70,20 +67,20 @@ public:
 
 	void Quit() override;
 
-	void RenderRecreated(int32 w, int32 h);
-	void RepaintView();
+    void RenderReset(int32 w, int32 h);
+    void ProcessFrame();
 
-	// called from Activity and manage a visible lifetime
-	void StartVisible();
-	void StopVisible();
+    // called from Activity and manage a visible lifetime
+    void StartVisible();
+    void StopVisible();
 
-	void StartForeground();
-	void StopForeground(bool isLock);
+    void StartForeground();
+    void StopForeground(bool isLock);
 
-	void OnCreateActivity();
-	void OnDestroyActivity();
+    void OnCreateActivity();
+    void OnDestroyActivity();
 
-	void KeyUp(int32 keyCode);
+    void KeyUp(int32 keyCode);
 	void KeyDown(int32 keyCode);
 
 	void OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs);
@@ -107,6 +104,8 @@ public:
     int32 GetViewWidth() const { return width; };
     int32 GetViewHeight() const { return height; };
 
+    void SetNativeWindow(void* nativeWindow);
+
 private:
 
 	void QuitAction();
@@ -114,7 +113,7 @@ private:
 
 	void UpdateScreenMode();
 
-    void ResizeView(int32 w, int32 h);
+    void ProcessResizeView();
 
 private:
 	int32 width;
@@ -122,8 +121,9 @@ private:
 
 	bool wasCreated;
 	bool renderIsActive;
+    bool viewSizeChanged;
 
-	bool foreground;
+    bool foreground;
 
 	AndroidSystemDelegate *androidDelegate;
 

@@ -33,52 +33,71 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderBatch.h"
-#include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/RenderBatchArray.h"
 
 namespace DAVA
 {
 
-class RenderLayerBatchArray;
 class Camera;
 class OcclusionQuery;
-    
 class RenderLayer
 {
 public:
-    RenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
+    enum eRenderLayerID
+    {
+        RENDER_LAYER_INVALID_ID = -1,
+        RENDER_LAYER_OPAQUE_ID = 0,
+        RENDER_LAYER_AFTER_OPAQUE_ID = 1,
+        RENDER_LAYER_ALPHA_TEST_LAYER_ID = 2,
+        RENDER_LAYER_WATER_ID = 3,
+        RENDER_LAYER_TRANSLUCENT_ID = 4,
+        RENDER_LAYER_AFTER_TRANSLUCENT_ID = 5,
+        RENDER_LAYER_SHADOW_VOLUME_ID = 6,
+        RENDER_LAYER_VEGETATION_ID = 7,
+        RENDER_LAYER_DEBUG_DRAW_ID = 8,
+        RENDER_LAYER_ID_COUNT
+    };
+
+    static eRenderLayerID GetLayerIDByName(const FastName& name);
+    static const FastName& GetLayerNameByID(eRenderLayerID layer);
+
+    // LAYERS SORTING FLAGS
+    static const uint32 LAYER_SORTING_FLAGS_OPAQUE;
+    static const uint32 LAYER_SORTING_FLAGS_AFTER_OPAQUE;
+    static const uint32 LAYER_SORTING_FLAGS_ALPHA_TEST_LAYER;
+    static const uint32 LAYER_SORTING_FLAGS_WATER;
+    static const uint32 LAYER_SORTING_FLAGS_TRANSLUCENT;
+    static const uint32 LAYER_SORTING_FLAGS_AFTER_TRANSLUCENT;
+    static const uint32 LAYER_SORTING_FLAGS_SHADOW_VOLUME;
+    static const uint32 LAYER_SORTING_FLAGS_VEGETATION;
+    static const uint32 LAYER_SORTING_FLAGS_DEBUG_DRAW;
+
+    RenderLayer(eRenderLayerID id, uint32 sortingFlags);
     virtual ~RenderLayer();
-    
-    inline RenderLayerID GetRenderLayerID() const;
-	inline const FastName & GetName() const;
-	inline uint32 GetFlags() const;
 
-    virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
-    
+    inline eRenderLayerID GetRenderLayerID() const;
+    inline uint32 GetSortingFlags() const;
+
+    virtual void Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList);
+
 protected:
-    FastName name;
-    uint32 flags;
-    RenderLayerID id;
-    
+    eRenderLayerID layerID;
+    uint32 sortFlags;
+
 public:
-    INTROSPECTION(RenderLayer,
-        MEMBER(name, "Name", I_VIEW )
-        //COLLECTION(renderBatchArray, "Render Batch Array", I_VIEW)
-    );
+    INTROSPECTION(RenderLayer, NULL
+                  //COLLECTION(renderBatchArray, "Render Batch Array", I_VIEW)
+                  );
 };
-    
-inline RenderLayerID RenderLayer::GetRenderLayerID() const
+
+inline RenderLayer::eRenderLayerID RenderLayer::GetRenderLayerID() const
 {
-    return id;
-}
-    
-inline const FastName & RenderLayer::GetName() const
-{
-    return name;
+    return layerID;
 }
 
-inline uint32 RenderLayer::GetFlags() const
+inline uint32 RenderLayer::GetSortingFlags() const
 {
-    return flags;
+    return sortFlags;
 }
 
 } // ns

@@ -54,22 +54,10 @@ DeviceInfoPrivate::DeviceInfoPrivate() : jniDeviceInfo("com/dava/framework/JNIDe
 	getHTTPProxyHost = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPProxyHost");
 	getHTTPNonProxyHosts = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPNonProxyHosts");
 	getHTTPProxyPort = jniDeviceInfo.GetStaticMethod<jint>("GetHTTPProxyPort");
-	getGPUFamily = jniDeviceInfo.GetStaticMethod<jint>("GetGPUFamily");
 	getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
 	getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
 	isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
 
-}
-
-namespace
-{
-    String jstringToString(jstring s)
-    {
-        DVASSERT(0 != s);
-        String result;
-        JNI::CreateStringFromJni(s, result);
-        return result;
-    }
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -84,42 +72,42 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-	return jstringToString(getVersion());
+    return JNI::ToString(getVersion());
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-	return jstringToString(getManufacturer());
+    return JNI::ToString(getManufacturer());
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-	return jstringToString(getModel());
+    return JNI::ToString(getModel());
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-	return jstringToString(getLocale());
+    return JNI::ToString(getLocale());
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-	return jstringToString(getRegion());
+    return JNI::ToString(getRegion());
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-	return jstringToString(getTimeZone());
+    return JNI::ToString(getTimeZone());
 }
 
 String DeviceInfoPrivate::GetUDID()
 {
-	return jstringToString(getUDID());
+    return JNI::ToString(getUDID());
 }
 
 WideString DeviceInfoPrivate::GetName()
 {
-    return StringToWString(jstringToString(getName()));
+    return StringToWString(JNI::ToString(getName()));
 }
 
 int32 DeviceInfoPrivate::GetZBufferSize()
@@ -129,12 +117,12 @@ int32 DeviceInfoPrivate::GetZBufferSize()
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-	return jstringToString(getHTTPProxyHost());
+    return JNI::ToString(getHTTPProxyHost());
 }
 
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-	return jstringToString(getHTTPNonProxyHosts());
+    return JNI::ToString(getHTTPNonProxyHosts());
 }
 
 int32 DeviceInfoPrivate::GetHTTPProxyPort()
@@ -149,7 +137,28 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-	return static_cast<eGPUFamily>(getGPUFamily());
+    eGPUFamily gpuFamily = GPU_INVALID;
+    if (Renderer::IsInitialized())
+    {
+        if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_PVRTC_4BPP_RGBA))
+        {
+            gpuFamily = GPU_POWERVR_ANDROID;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_DXT1))
+        {
+            gpuFamily = GPU_TEGRA;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_ATC_RGB))
+        {
+            gpuFamily = GPU_ADRENO;
+        }
+        else if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_ETC1))
+        {
+            gpuFamily = GPU_MALI;
+        }
+    }
+
+    return gpuFamily;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
@@ -182,11 +191,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     return l;
 }
 
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    return sysconf(_SC_NPROCESSORS_CONF);
-}
-
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
@@ -197,13 +201,14 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    DVASSERT(false && "Not Implement");
+    //TODO: remove this empty realization and implement detection of HID connection
     return false;
 }
 
-void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
+bool DeviceInfoPrivate::IsTouchPresented()
 {
-    DVASSERT(false && "Not Implement");
+    //TODO: remove this empty realization and implement detection touch
+    return true;
 }
 
 DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
@@ -234,12 +239,11 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
 
 		fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
 		jstring jStr = (jstring)env->GetObjectField(object, fieldID);
-		char str[512] = {0};
-		JNI::CreateStringFromJni(env, jStr, str);
-		info.path = String(str);
-	}
 
-	return info;
+        info.path = JNI::ToString(jStr);
+    }
+
+    return info;
 }
 
 int32 DeviceInfoPrivate::GetNetworkType()

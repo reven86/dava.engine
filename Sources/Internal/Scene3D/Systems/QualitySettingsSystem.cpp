@@ -41,11 +41,18 @@ namespace DAVA
 const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("Vegetation Animation");
 const FastName QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW("Stencil Shadows");
 const FastName QualitySettingsSystem::QUALITY_OPTION_WATER_DECORATIONS("Water Decorations");
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS("Disable effects");
+const FastName QualitySettingsSystem::QUALITY_OPTION_LOD0_EFFECTS("Lod0 effects");
+
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG("Disable fog");
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION("Disable fog attenuation");
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING("Disable fog scattering");
+const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE("Disable half-space fog");
 
 QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
     , curSoundQuality(0)
-    , prerequiredVertexFromat(EVF_FORCE_DWORD) //default format set to keep all streams
+    , cutUnusedVertexStreams(false) //default set to keep all streams
     , keepUnusedQualityEntities(false)
 {
     Load("~res:/quality.yaml");
@@ -53,6 +60,13 @@ QualitySettingsSystem::QualitySettingsSystem()
     EnableOption(QUALITY_OPTION_VEGETATION_ANIMATION, true);
     EnableOption(QUALITY_OPTION_STENCIL_SHADOW, true);
     EnableOption(QUALITY_OPTION_WATER_DECORATIONS, false);
+    EnableOption(QUALITY_OPTION_DISABLE_EFFECTS, false);
+    EnableOption(QUALITY_OPTION_LOD0_EFFECTS, false);
+
+    EnableOption(QUALITY_OPTION_DISABLE_FOG, false);
+    EnableOption(QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION, false);
+    EnableOption(QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING, false);
+    EnableOption(QUALITY_OPTION_DISABLE_FOG_HALF_SPACE, false);
 }
 
 void QualitySettingsSystem::Load(const FilePath &path)
@@ -333,14 +347,13 @@ FilePath QualitySettingsSystem::GetSFXQualityConfigPath(size_t index) const
     return ret;
 }
 
-
-int32 QualitySettingsSystem::GetPrerequiredVertexFormat()
+bool QualitySettingsSystem::GetAllowCutUnusedVertexStreams()
 {
-    return prerequiredVertexFromat;
+    return cutUnusedVertexStreams;
 }
-void QualitySettingsSystem::SetPrerequiredVertexFormat(int32 format)
+void QualitySettingsSystem::SetAllowCutUnusedVertexStreams(bool cut)
 {
-    prerequiredVertexFromat = format;
+    cutUnusedVertexStreams = cut;
 }
 
 size_t QualitySettingsSystem::GetMaterialQualityGroupCount() const
@@ -523,6 +536,4 @@ void QualitySettingsSystem::UpdateEntityVisibilityRecursively(Entity *e, bool qu
     for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
         UpdateEntityVisibilityRecursively(e->GetChild(i), qualityVisible);
 }
-
-
 }

@@ -243,16 +243,17 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 	if(scene == treeModel->GetScene())
 	{
 		auto selectionWasBlocked = selectionModel()->blockSignals(true);
+        filteringProxyModel->setSourceModel(nullptr);
+        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+        filteringProxyModel->setSourceModel(treeModel);
 
-		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-
-		treeModel->ReloadFilter();
+        treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
 
-		SyncSelectionToTree();
-		EmitParticleSignals(QItemSelection());
+        SyncSelectionToTree();
+        EmitParticleSignals(QItemSelection());
 
-		if (treeModel->IsFilterSet())
+        if (treeModel->IsFilterSet())
         {
             ExpandFilteredItems();
         }
@@ -730,12 +731,12 @@ void SceneTree::ReloadModelAs()
 				}
 				else
 				{
-					ownerPath = ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname();
-				}
-			}
+                    ownerPath = ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname();
+                }
+            }
 
-			QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
-			if(!filePath.isEmpty())
+            QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
+            if(!filePath.isEmpty())
 			{
 				sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
 			}
@@ -754,12 +755,12 @@ void SceneTree::SaveEntityAs()
 			DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
 			if(!scenePath.Exists() || !sceneEditor->IsLoaded())
 			{
-				scenePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-			}
+                scenePath = ProjectManager::Instance()->GetDataSourcePath();
+            }
 
-			QString filePath = FileDialog::getSaveFileName(NULL, QString("Save scene file"), QString(scenePath.GetDirectory().GetAbsolutePathname().c_str()), QString("DAVA SceneV2 (*.sc2)"));
-			if(!filePath.isEmpty())
-			{
+            QString filePath = FileDialog::getSaveFileName(NULL, QString("Save scene file"), QString(scenePath.GetDirectory().GetAbsolutePathname().c_str()), QString("DAVA SceneV2 (*.sc2)"));
+            if (!filePath.isEmpty())
+            {
 				sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
 			}
 		}
@@ -1170,13 +1171,13 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
 	FilePath yamlPath = selectedEmitter->configPath;
 	if (forceAskFileName)
 	{
-		QString projectPath = ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str();
-		QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter YAML file"),
-			projectPath, QString("YAML File (*.yaml)"));
+        QString projectPath = ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str();
+        QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter YAML file"),
+                                                       projectPath, QString("YAML File (*.yaml)"));
 
-		if (filePath.isEmpty())
-		{
-			return;
+        if (filePath.isEmpty())
+        {
+            return;
 		}
 
 		yamlPath = FilePath(filePath.toStdString());
@@ -1292,7 +1293,7 @@ void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileNa
     if (forceAskFileName)
     {
         FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-        QString particlesPath = defaultPath.IsEmpty()?ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str():defaultPath.GetAbsolutePathname().c_str();
+        QString particlesPath = defaultPath.IsEmpty() ? ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str() : defaultPath.GetAbsolutePathname().c_str();
 
         FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
         
@@ -1340,7 +1341,7 @@ void SceneTree::PerformSaveEffectEmitters(bool forceAskFileName)
 
 QString SceneTree::GetParticlesConfigPath()
 {
-	return ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str();
+    return ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str();
 }
 
 void SceneTree::CleanupParticleEditorSelectedItems()

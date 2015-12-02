@@ -126,7 +126,6 @@
 #include "Render/Shader.h"
 #include "Render/ShaderCache.h"
 #include "Core/DisplayMode.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/Cursor.h"
 #include "Render/MipmapReplacer.h"
@@ -135,11 +134,10 @@
 
 // Fonts
 #include "Render/2D/Font.h"
-#include "Render/2D/GraphicsFont.h"
+#include "Render/2D/GraphicFont.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
-#include "Render/2D/DFFont.h"
 
 // UI
 #include "UI/UIControl.h"
@@ -155,14 +153,10 @@
 #include "UI/UIScreen.h"
 #include "UI/UIList.h"
 #include "UI/UIListCell.h"
-#include "UI/UIJoypad.h"
 #include "UI/UITextField.h"
 #include "UI/UISlider.h"
 #include "UI/UIScrollBar.h"
 #include "UI/UIJoypad.h"
-#include "UI/UI3DView.h"
-#include "UI/UIHierarchy.h"
-#include "UI/UIHierarchyCell.h"
 #include "UI/UIFileSystemDialog.h"
 #include "UI/UIWebView.h"
 #include "UI/UIScrollView.h"
@@ -187,6 +181,7 @@
 
 #include "UI/UIScrollViewContainer.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/UIScreenshoter.h"
 
 // Game object manager / 2D Scene
 #include "Scene2D/GameObject.h"
@@ -212,18 +207,17 @@
 #include "Render/3D/EdgeAdjacency.h"
 #include "Render/3D/MeshUtils.h"
 
-// Material compiler
-#include "Render/Material/MaterialCompiler.h"
-#include "Render/Material/MaterialGraph.h"
-#include "Render/Material/MaterialGraphNode.h"
-#include "Render/Material/RenderTechnique.h"
+#include "Render/RenderHelper.h"
+#include "Render/DynamicBufferAllocator.h"
+
 #include "Render/Material/NMaterialNames.h"
 
 // 3D scene management
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/SpriteNode.h"
 #include "Scene3D/MeshInstanceNode.h"
+#include "Render/Highlevel/RenderPass.h"
+#include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/Light.h"
@@ -231,17 +225,12 @@
 #include "Render/Highlevel/SkinnedMesh.h"
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
-#include "Render/Highlevel/RenderFastNames.h"
-#include "Render/Highlevel/LandscapeChunk.h"
-#include "Render/Highlevel/SkyboxRenderObject.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
-#include "Render/Highlevel/Vegetation/TextureSheet.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "Scene3D/AnimationData.h"
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Scene3D/LodNode.h"
-#include "Scene3D/ImposterNode.h"
 #include "Scene3D/ParticleEmitterNode.h"
 #include "Scene3D/ParticleEffectNode.h"
 #include "Scene3D/SwitchNode.h"
@@ -287,7 +276,7 @@
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
 
-
+#include "Job/JobManager.h"
 
 // Notifications
 #include "Notification/LocalNotification.h"

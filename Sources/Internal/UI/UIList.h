@@ -213,8 +213,6 @@ public:
 
     const List<UIControl*> &GetVisibleCells();
 
-    virtual List<UIControl* >& GetRealChildren();
-
     UIListCell* GetReusableCell(const String &cellIdentifier);//returns cell from the cells cache, if returns 0 you need to create the new one
 
     virtual void SystemWillAppear(); // Internal method used by ControlSystem
@@ -227,7 +225,7 @@ public:
     virtual float32 ViewPosition(UIScrollBar *forScrollBar);
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
 
-    virtual UIControl *Clone();
+    UIList* Clone() override;
     virtual void CopyDataFrom(UIControl *srcControl);
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
@@ -260,6 +258,8 @@ protected:
     float32 addPos;
     float32 oldPos;
     float32 newPos;
+    float32 oldScroll = 0.f;
+    float32 newScroll = 0.f;
 
     int32 touchHoldSize;
 

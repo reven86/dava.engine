@@ -36,8 +36,8 @@ namespace DAVA
 class UIAnchorComponent : public UIComponent
 {
 public:
-    IMPLEMENT_COMPONENT_TYPE(ANCHOR_COMPONENT);
-    
+    IMPLEMENT_UI_COMPONENT_TYPE(ANCHOR_COMPONENT);
+
     UIAnchorComponent();
     UIAnchorComponent(const UIAnchorComponent &src);
     
@@ -49,7 +49,10 @@ private:
     
 public:
     UIAnchorComponent* Clone() const override;
-    
+
+    bool IsEnabled() const;
+    void SetEnabled(bool enabled);
+
     bool IsLeftAnchorEnabled() const;
     void SetLeftAnchorEnabled(bool enabled);
     
@@ -95,6 +98,7 @@ private:
 private:
     enum eFlags
     {
+        FLAG_ENABLED,
         FLAG_LEFT_ENABLED,
         FLAG_HCENTER_ENABLED,
         FLAG_RIGHT_ENABLED,
@@ -104,7 +108,7 @@ private:
         FLAG_USE_RTL,
         FLAGS_COUNT
     };
-    
+
     std::bitset<FLAGS_COUNT> flags;
     float32 leftAnchor = 0.0f;
     float32 hCenterAnchor = 0.0f;
@@ -115,6 +119,8 @@ private:
 
 public:
     INTROSPECTION_EXTEND(UIAnchorComponent, UIComponent,
+                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
+
                          PROPERTY("leftAnchorEnabled", "Left Anchor Enabled", IsLeftAnchorEnabled, SetLeftAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("leftAnchor", "Left Anchor", GetLeftAnchor, SetLeftAnchor, I_SAVE | I_VIEW | I_EDIT)
 
@@ -132,10 +138,8 @@ public:
 
                          PROPERTY("bottomAnchorEnabled", "Bottom Anchor Enabled", IsBottomAnchorEnabled, SetBottomAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("bottomAnchor", "Bottom Anchor", GetBottomAnchor, SetBottomAnchor, I_SAVE | I_VIEW | I_EDIT)
-                         
-                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
-                         );
-    
+
+                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT));
 };
 
 }

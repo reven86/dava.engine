@@ -82,10 +82,10 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
     propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate("*.txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["sprite"] = new ResourceFilePropertyDelegate("*.txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate("*.txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate("*.sc2", "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
-    propertyNameTypeItemDelegates["font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
@@ -104,16 +104,6 @@ PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
     {
         SafeDelete(iter.value());
     }
-}
-
-void PropertiesTreeItemDelegate::paint( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
-{
-    QStyledItemDelegate::paint(painter, option, index);
-}
-
-QSize PropertiesTreeItemDelegate::sizeHint( const QStyleOptionViewItem &option, const QModelIndex &index ) const
-{
-    return QStyledItemDelegate::sizeHint(option, index);
 }
 
 QWidget *PropertiesTreeItemDelegate::createEditor( QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index ) const
@@ -192,11 +182,6 @@ void PropertiesTreeItemDelegate::setModelData(QWidget * editor, QAbstractItemMod
         return;
 
     QStyledItemDelegate::setModelData(editor, model, index);
-}
-
-void PropertiesTreeItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    QStyledItemDelegate::updateEditorGeometry(editor, option, index);
 }
 
 bool PropertiesTreeItemDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)

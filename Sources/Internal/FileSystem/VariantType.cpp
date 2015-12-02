@@ -416,15 +416,15 @@ void VariantType::SetVariant(const VariantType& var)
         case TYPE_STRING:
         {
             SetString(var.AsString());
-		}
-		break;	
-	case TYPE_WIDE_STRING:
-		{ 
-			SetWideString(var.AsWideString());
-		}
-		break;
-	case TYPE_BYTE_ARRAY:
-		{
+        }
+        break;
+        case TYPE_WIDE_STRING:
+        {
+            SetWideString(var.AsWideString());
+        }
+        break;
+        case TYPE_BYTE_ARRAY:
+        {
 			Vector<uint8> *ar = (Vector<uint8>*) var.pointerValue;
 			SetByteArray(ar->data(), static_cast<int32>(ar->size()));
 		}
@@ -702,7 +702,7 @@ bool VariantType::Write(File * fp) const
         case TYPE_STRING:
         {
             int32 len = (int32)stringValue->length();
-			written = fp->Write(&len, 4);
+            written = fp->Write(&len, 4);
             if (written != 4)
             {
                 return false;
@@ -956,7 +956,7 @@ bool VariantType::Read(File * fp)
         case TYPE_STRING:
         {
             int32 len;
-			read = fp->Read(&len, 4);
+            read = fp->Read(&len, 4);
             if (read != 4)
             {
                 return false;
@@ -1471,16 +1471,16 @@ void* VariantType::MetaObject()
         break;
     case TYPE_STRING:
         ret = stringValue;
-        break;	
-	case TYPE_WIDE_STRING:
-		ret = wideStringValue;
-		break;
-	case TYPE_VECTOR2:
-	case TYPE_BYTE_ARRAY:
-	case TYPE_VECTOR3:
-	case TYPE_VECTOR4:
-	case TYPE_MATRIX2:
-	case TYPE_MATRIX3:
+        break;
+    case TYPE_WIDE_STRING:
+        ret = wideStringValue;
+        break;
+    case TYPE_VECTOR2:
+    case TYPE_BYTE_ARRAY:
+    case TYPE_VECTOR3:
+    case TYPE_VECTOR4:
+    case TYPE_MATRIX2:
+    case TYPE_MATRIX3:
 	case TYPE_MATRIX4:
 	case TYPE_COLOR:
 	case TYPE_FASTNAME:
@@ -1535,16 +1535,16 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
     case TYPE_STRING:
         v.SetString(*((DAVA::String*)src));
         break;
-	case TYPE_WIDE_STRING:
-		v.SetWideString(*((DAVA::WideString *) src));
-		break;
-	case TYPE_UINT32:
-		v.SetUInt32(*((uint32 *) src));
-		break;
-	//case TYPE_BYTE_ARRAY:
-	//	break;
-	case TYPE_KEYED_ARCHIVE:
-		v.SetKeyedArchive(*((DAVA::KeyedArchive **) src));
+    case TYPE_WIDE_STRING:
+        v.SetWideString(*((DAVA::WideString*)src));
+        break;
+    case TYPE_UINT32:
+        v.SetUInt32(*((uint32*)src));
+        break;
+    //case TYPE_BYTE_ARRAY:
+    //	break;
+    case TYPE_KEYED_ARCHIVE:
+        v.SetKeyedArchive(*((DAVA::KeyedArchive **) src));
 		break;
 	case TYPE_INT64:
 		v.SetInt64(*((DAVA::int64 *) src));
@@ -1658,16 +1658,16 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
         case TYPE_STRING:
             *((DAVA::String*)dst) = val.AsString();
             break;
-		case TYPE_WIDE_STRING:
-			*((DAVA::WideString *) dst) = val.AsWideString();
-			break;
-		case TYPE_UINT32:
-			*((uint32 *) dst) = val.AsUInt32();
-			break;
-			//case TYPE_BYTE_ARRAY:
-			//	break;
-		case TYPE_KEYED_ARCHIVE:
-			{
+        case TYPE_WIDE_STRING:
+            *((DAVA::WideString*)dst) = val.AsWideString();
+            break;
+        case TYPE_UINT32:
+            *((uint32*)dst) = val.AsUInt32();
+            break;
+        //case TYPE_BYTE_ARRAY:
+        //	break;
+        case TYPE_KEYED_ARCHIVE:
+            {
 				DAVA::KeyedArchive *dstArchive = *((DAVA::KeyedArchive **) dst);
 				if(nullptr != dstArchive)
 				{
@@ -1755,15 +1755,15 @@ VariantType VariantType::FromType(int type)
     case TYPE_STRING:
         v.SetString("");
         break;
-	case TYPE_WIDE_STRING:
-		v.SetWideString(WideString());
-		break;
-	case TYPE_UINT32:
-		v.SetUInt32(0);
-		break;
-	case TYPE_BYTE_ARRAY:
-		v.SetByteArray(nullptr, 0);
-		break;
+    case TYPE_WIDE_STRING:
+        v.SetWideString(WideString());
+        break;
+    case TYPE_UINT32:
+        v.SetUInt32(0);
+        break;
+    case TYPE_BYTE_ARRAY:
+        v.SetByteArray(nullptr, 0);
+        break;
 	case TYPE_KEYED_ARCHIVE:
 		{
 			KeyedArchive *ka = new KeyedArchive();

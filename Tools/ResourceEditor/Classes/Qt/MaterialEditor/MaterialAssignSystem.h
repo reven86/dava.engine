@@ -42,13 +42,7 @@ public:
 
     static void AssignMaterial(SceneEditor2 *scene, DAVA::NMaterial *instance, DAVA::NMaterial *newMaterialParent);
 
-    static void AssignMaterialToGroup(SceneEditor2 *scene, const EntityGroup *group, DAVA::NMaterial *newMaterialParent);
-    static void AssignMaterialToEntity(SceneEditor2 *scene, DAVA::Entity *entity, DAVA::NMaterial *newMaterialParent);
-    
 protected:
-
-    static void AssignMaterial(SceneEditor2 *scene, const DAVA::Set<DAVA::NMaterial *> & allMaterials, DAVA::NMaterial *newMaterialParent);
-    
     static DAVA::NMaterial * SelectMaterial(const DAVA::Set<DAVA::NMaterial *> & materials);
 };
 

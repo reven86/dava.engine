@@ -34,155 +34,158 @@
 
 namespace DAVA
 {
-
-UITextFieldWinUAP::UITextFieldWinUAP(UITextField* uiTextField)
-    : privateImpl(PrivateTextFieldWinUAP::Create(uiTextField))
+TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField)
+    : privateImpl(std::make_shared<PrivateTextFieldWinUAP>(uiTextField))
 {}
 
-UITextFieldWinUAP::~UITextFieldWinUAP()
+TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
     // Tell private implementation that owner is sentenced to death
     privateImpl->OwnerAtPremortem();
 }
 
-void UITextFieldWinUAP::SetVisible(bool isVisible)
+void TextFieldPlatformImpl::SetVisible(bool isVisible)
 {
     privateImpl->SetVisible(isVisible);
 }
 
-void UITextFieldWinUAP::SetIsPassword(bool isPassword)
+void TextFieldPlatformImpl::SetIsPassword(bool isPassword)
 {
     privateImpl->SetIsPassword(isPassword);
 }
 
-void UITextFieldWinUAP::SetMaxLength(int32 value)
+void TextFieldPlatformImpl::SetMaxLength(int32 value)
 {
     privateImpl->SetMaxLength(value);
 }
 
-void UITextFieldWinUAP::OpenKeyboard()
+void TextFieldPlatformImpl::OpenKeyboard()
 {
     privateImpl->OpenKeyboard();
 }
 
-void UITextFieldWinUAP::CloseKeyboard()
+void TextFieldPlatformImpl::CloseKeyboard()
 {
     privateImpl->CloseKeyboard();
 }
 
-void UITextFieldWinUAP::UpdateRect(const Rect& rect)
+void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 {
     privateImpl->UpdateRect(rect);
 }
 
-void UITextFieldWinUAP::SetText(const WideString& text)
+void TextFieldPlatformImpl::SetText(const WideString& text)
 {
     privateImpl->SetText(text);
 }
 
-void UITextFieldWinUAP::GetText(WideString& text) const
+void TextFieldPlatformImpl::GetText(WideString& text) const
 {
     privateImpl->GetText(text);
 }
 
-void UITextFieldWinUAP::SetTextColor(const Color& color)
+void TextFieldPlatformImpl::SetTextColor(const Color& color)
 {
     privateImpl->SetTextColor(color);
 }
 
-void UITextFieldWinUAP::SetTextAlign(int32 align)
+void TextFieldPlatformImpl::SetTextAlign(int32 align)
 {
     privateImpl->SetTextAlign(align);
 }
 
-int32 UITextFieldWinUAP::GetTextAlign() const
+int32 TextFieldPlatformImpl::GetTextAlign() const
 {
     return privateImpl->GetTextAlign();
 }
 
-void UITextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
+void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 {
     privateImpl->SetTextUseRtlAlign(useRtlAlign);
 }
 
-bool UITextFieldWinUAP::GetTextUseRtlAlign() const
+bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 {
     return privateImpl->GetTextUseRtlAlign();
 }
 
-void UITextFieldWinUAP::SetFontSize(float32 size)
+void TextFieldPlatformImpl::SetFontSize(float32 size)
 {
     privateImpl->SetFontSize(size);
 }
 
-void UITextFieldWinUAP::SetDelegate(UITextFieldDelegate* textFieldDelegate)
+void TextFieldPlatformImpl::SetDelegate(UITextFieldDelegate* textFieldDelegate)
 {
     privateImpl->SetDelegate(textFieldDelegate);
 }
 
-void UITextFieldWinUAP::SetMultiline(bool value)
+void TextFieldPlatformImpl::SetMultiline(bool value)
 {
     privateImpl->SetMultiline(value);
 }
 
-void UITextFieldWinUAP::SetInputEnabled(bool value)
+void TextFieldPlatformImpl::SetInputEnabled(bool value)
 {
-    privateImpl->SetInputEnabled(!value);
+    privateImpl->SetInputEnabled(value);
 }
 
-void UITextFieldWinUAP::SetRenderToTexture(bool value)
+void TextFieldPlatformImpl::SetRenderToTexture(bool value)
 {
     privateImpl->SetRenderToTexture(value);
 }
 
-bool UITextFieldWinUAP::IsRenderToTexture() const
+bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
     return privateImpl->IsRenderToTexture();
 }
 
-void UITextFieldWinUAP::SetAutoCapitalizationType(int32 value)
+void TextFieldPlatformImpl::SetAutoCapitalizationType(int32 value)
 {
     privateImpl->SetAutoCapitalizationType(value);
 }
 
-void UITextFieldWinUAP::SetAutoCorrectionType(int32 value)
+void TextFieldPlatformImpl::SetAutoCorrectionType(int32 value)
 {
     privateImpl->SetAutoCorrectionType(value);
 }
 
-void UITextFieldWinUAP::SetSpellCheckingType(int32 value)
+void TextFieldPlatformImpl::SetSpellCheckingType(int32 value)
 {
     privateImpl->SetSpellCheckingType(value);
 }
 
-void UITextFieldWinUAP::SetKeyboardAppearanceType(int32 value)
+void TextFieldPlatformImpl::SetKeyboardAppearanceType(int32 value)
 {
     privateImpl->SetKeyboardAppearanceType(value);
 }
 
-void UITextFieldWinUAP::SetKeyboardType(int32 value)
+void TextFieldPlatformImpl::SetKeyboardType(int32 value)
 {
     privateImpl->SetKeyboardType(value);
 }
 
-void UITextFieldWinUAP::SetReturnKeyType(int32 value)
+void TextFieldPlatformImpl::SetReturnKeyType(int32 value)
 {
     privateImpl->SetReturnKeyType(value);
 }
 
-void UITextFieldWinUAP::SetEnableReturnKeyAutomatically(bool value)
+void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
 {
     privateImpl->SetEnableReturnKeyAutomatically(value);
 }
 
-uint32 UITextFieldWinUAP::GetCursorPos() const
+uint32 TextFieldPlatformImpl::GetCursorPos() const
 {
     return privateImpl->GetCursorPos();
 }
 
-void UITextFieldWinUAP::SetCursorPos(uint32 pos)
+void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 {
     privateImpl->SetCursorPos(pos);
+}
+
+void TextFieldPlatformImpl::SystemDraw(const UIGeometricData&)
+{
 }
 
 }   // namespace DAVA

@@ -124,7 +124,7 @@ enum MoviePlayerHelperPlaybackState
 -(void) loadMovie:(NSURL *)movieURL
 {
     videoPlayer = [[AVPlayer alloc] init];
-    videoAsset = [[AVAsset assetWithURL:movieURL] retain];
+    videoAsset = (AVURLAsset*)[[AVAsset assetWithURL:movieURL] retain];
 
     playerState = eStateInitializing;
     NSArray *assetKeysToLoadAndTest = [NSArray arrayWithObjects:@"playable", @"tracks", @"duration", nil];
@@ -171,7 +171,7 @@ enum MoviePlayerHelperPlaybackState
     videoView = [[NSView alloc] init];
   	[videoView setWantsLayer:YES];
     videoView.layer.backgroundColor = [[NSColor clearColor] CGColor];
-    NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetOpenGLView();
+    NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetNativeView();
     [openGLView addSubview:videoView];
 
     AVPlayerLayer *newPlayerLayer = [AVPlayerLayer playerLayerWithPlayer:videoPlayer];

@@ -266,16 +266,21 @@
             }
         }
         // End workaround
-        
+
         [cachedText release];
         cachedText = [[NSString alloc] initWithString:fieldText];
-        
+
         DAVA::WideString newString;
         cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newString);
         
         cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newString, oldString);
     }
+}
+
+- (void)textViewDidChange:(UITextView*)textView
+{
+    [self eventEditingChanged:textView];
 }
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
@@ -598,13 +603,20 @@
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
-	if (!cppTextField || !cppTextField->GetDelegate())
-	{
-		return;
-	}
+    if (nullptr == cppTextField)
+    {
+        return;
+    }
 
-	// convert own frame to window coordinates, frame is in superview's coordinates
-	CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
+    auto* delegate = cppTextField->GetDelegate();
+
+    if (nullptr == delegate)
+    {
+        return;
+    }
+
+    // convert own frame to window coordinates, frame is in superview's coordinates
+    CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
 
 	// calculate the area of own frame that is covered by keyboard
 	CGRect keyboardFrame = CGRectIntersection(ownFrame, lastKeyboardFrame);
@@ -619,7 +631,7 @@
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
     keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
-	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
+    delegate->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
 @end

@@ -28,7 +28,9 @@
 
 
 #include "Main/RecentMenuItems.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
+
+#include "FileSystem/KeyedArchive.h"
 
 #include <QMenu>
 #include <QAction>
@@ -145,7 +147,7 @@ DAVA::Vector<DAVA::String> RecentMenuItems::Get() const
         DAVA::uint32 recentFilesMaxCount = SettingsManager::GetValue(settingsKeyCount).AsInt32();
         DAVA::uint32 size = DAVA::Min(archiveRecentFiles->Count(), recentFilesMaxCount);
         retVector.resize(size);
-        for (auto i = 0; i < size; ++i)
+        for (DAVA::uint32 i = 0; i < size; ++i)
         {
             retVector[i] = archiveRecentFiles->GetString(DAVA::Format("%d", i));
         }

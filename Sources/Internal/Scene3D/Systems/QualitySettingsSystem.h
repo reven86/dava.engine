@@ -58,6 +58,13 @@ public:
     static const FastName QUALITY_OPTION_VEGETATION_ANIMATION;
     static const FastName QUALITY_OPTION_STENCIL_SHADOW;
     static const FastName QUALITY_OPTION_WATER_DECORATIONS;
+    static const FastName QUALITY_OPTION_DISABLE_EFFECTS;
+    static const FastName QUALITY_OPTION_LOD0_EFFECTS;
+
+    static const FastName QUALITY_OPTION_DISABLE_FOG;
+    static const FastName QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION;
+    static const FastName QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING;
+    static const FastName QUALITY_OPTION_DISABLE_FOG_HALF_SPACE;
 
     QualitySettingsSystem();
 
@@ -105,8 +112,8 @@ public:
     
 	void UpdateEntityAfterLoad(Entity *entity);
 
-    int32 GetPrerequiredVertexFormat();
-    void SetPrerequiredVertexFormat(int32 format);
+    bool GetAllowCutUnusedVertexStreams();
+    void SetAllowCutUnusedVertexStreams(bool cut);
 
     void SetKeepUnusedEntities(bool keep);
     bool GetKeepUnusedEntities();
@@ -148,7 +155,7 @@ protected:
 
 	FastNameMap<bool> qualityOptions;
 
-    int32 prerequiredVertexFromat;
+    bool cutUnusedVertexStreams;
 
     bool keepUnusedQualityEntities; //for editor to prevent cutting entities with unused quality
 };

@@ -16,13 +16,14 @@ add_definitions       (
 
 include ( PlatformSettings )
 
+include_directories   ( . )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 
 if( IOS OR ANDROID )
-    set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  TexturePacker/CommandLineParser.cpp )
-    set( ADDED_H_PATTERNS   TeamcityOutput/*.h   TexturePacker/CommandLineParser.h    )
+    set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  CommandLine/CommandLineParser.cpp )
+    set( ADDED_H_PATTERNS   TeamcityOutput/*.h   CommandLine/CommandLineParser.h    )
 
 else()
     set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp CommandLine/*.cpp TeamcityOutput/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )

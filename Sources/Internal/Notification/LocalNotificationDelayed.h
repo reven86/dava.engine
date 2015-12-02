@@ -44,7 +44,7 @@ public:
     void Post();
 
 private:
-	virtual void ImplShow();
+    void ImplShow() override;
 
 private:
     int delaySeconds;

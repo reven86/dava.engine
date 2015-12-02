@@ -239,7 +239,9 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &pack
     {
         control.Set(prototype->Clone());
     }
-    
+
+    control->SetPackageContext(nullptr);
+
     controlsStack.push_back(new ControlDescr(control.Get(), true));
     return control.Get();
 }
@@ -280,7 +282,6 @@ void DefaultUIPackageBuilder::EndControl(bool isRoot)
         {
             UIControl *control = controlsStack.back()->control.Get();
             control->AddControl(lastDescr->control.Get());
-            lastDescr->control->UpdateLayout();
         }
     }
     SafeDelete(lastDescr);

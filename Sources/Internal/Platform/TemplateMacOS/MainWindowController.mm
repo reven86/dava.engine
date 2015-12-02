@@ -35,7 +35,6 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-
 namespace DAVA 
 {
 	int Core::Run(int argc, char *argv[], AppHandle handle)
@@ -47,21 +46,27 @@ namespace DAVA
 		core->CreateSingletons();
 
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
-		
-		int retVal = NSApplicationMain(argc,  (const char **) argv);
+
+        //detecting physical screen size and initing core system with this size
+        float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
+        const DeviceInfo::ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(screenInfo.width, screenInfo.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(screenInfo.width * scale, screenInfo.height * scale);
+
+        int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
         // core->ReleaseSingletons() is called from there
-        
-		[globalPool release];
-		globalPool = 0;
-		return retVal;
-	}
-	
-	int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
-	{
-		NSAutoreleasePool * globalPool = 0;
-		globalPool = [[NSAutoreleasePool alloc] init];
+
+        [globalPool release];
+        globalPool = 0;
+        return retVal;
+    }
+
+    int Core::RunCmdTool(int argc, char* argv[], AppHandle handle)
+    {
+        NSAutoreleasePool* globalPool = 0;
+        globalPool = [[NSAutoreleasePool alloc] init];
 		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
 		core->SetCommandLine(argc, argv);
 		core->EnableConsoleMode();
@@ -109,11 +114,6 @@ namespace DAVA
 		// mouseLocation.y = 
 		return mouseLocation;
 	}
-	
-	void* CoreMacOSPlatform::GetOpenGLView()
-	{
-		return mainWindowController->openGLView;
-	}
 }
 
 - (id)init
@@ -141,8 +141,10 @@ namespace DAVA
     NSRect fullscreenRect = [[NSScreen mainScreen] frame];
 	
 	FrameworkDidLaunched();
+#if RHI_COMPLETE
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-    
+#endif
+
     String title;
     int32 width = 800;
     int32 height = 600;
@@ -175,19 +177,26 @@ namespace DAVA
     
     [mainWindow setContentSize:rect.size];
     [openGLView setFrame: rect];
-    
-	core = Core::GetApplicationCore();
-    RenderManager::Instance()->DetectRenderingCapabilities();
-    RenderSystem2D::Instance()->Init();
 
-	// start animation
-	currFPS = RenderManager::Instance()->GetFPS();
+    core = Core::GetApplicationCore();
+    Core::Instance()->SetNativeView(openGLView);
+
+#if RHI_COMPLETE
+    RenderManager::Instance()->DetectRenderingCapabilities();
+#endif
+
+// start animation
+#if RHI_COMPLETE
+    currFPS = RenderManager::Instance()->GetFPS();
+#else
+    currFPS = 60;
+#endif
     [self startAnimationTimer];
 
-	// make window main
-	[mainWindow makeKeyAndOrderFront:nil];
-	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
-	[mainWindow setAcceptsMouseMovedEvents:YES];
+    // make window main
+    [mainWindow makeKeyAndOrderFront:nil];
+    [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
+    [mainWindow setAcceptsMouseMovedEvents:YES];
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
@@ -213,6 +222,7 @@ namespace DAVA
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
     fullScreen = false;
+    Core::Instance()->GetApplicationCore()->OnExitFullscreen();
 }
 
 -(bool) isFullScreen
@@ -220,7 +230,7 @@ namespace DAVA
     return fullScreen;
 }
 
-- (void) setFullScreen:(bool)_fullScreen
+- (bool)setFullScreen:(bool)_fullScreen
 {
     if(fullScreen != _fullScreen)
     {
@@ -231,6 +241,7 @@ namespace DAVA
             // just toggle current state
             // fullScreen variable will be set in windowDidEnterFullScreen/windowDidExitFullScreen callbacks
             [mainWindowController->mainWindow toggleFullScreen: nil];
+            return YES;
         }
         // fullsreen for 10.5+ MacOS
         // this code can be uncommented to have 10.5+ fullscreen support
@@ -252,8 +263,10 @@ namespace DAVA
         {
             // fullscreen for older macOS isn't supperted
             DVASSERT_MSG(false, "Fullscreen isn't supperted for this MacOS version");
+            return NO;
         }
     }
+    return YES;
 }
 
 - (void) keyDown:(NSEvent *)event
@@ -356,12 +369,14 @@ namespace DAVA
 {
 //	NSLog(@"anim timer fired: %@", openGLView);
     [openGLView setNeedsDisplay:YES];
-	if (currFPS != RenderManager::Instance()->GetFPS())
-	{
-		currFPS = RenderManager::Instance()->GetFPS();
-		[self stopAnimationTimer];
-		[self startAnimationTimer];
-	}
+#if RHI_COMPLETE
+    if (currFPS != RenderManager::Instance()->GetFPS())
+    {
+        currFPS = RenderManager::Instance()->GetFPS();
+        [self stopAnimationTimer];
+        [self startAnimationTimer];
+    }
+#endif
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -370,12 +385,14 @@ namespace DAVA
     
     [self OnResume];
     
+#if RHI_COMPLETE
     DAVA::Cursor * activeCursor = RenderManager::Instance()->GetCursor();
     if (activeCursor)
     {
         NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
         [cursor set];
     }
+#endif
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
@@ -384,7 +401,13 @@ namespace DAVA
 //	[NSMenu setMenuBarVisible: YES];
 	[self createWindows];
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
-	Core::Instance()->SystemAppStarted();
+
+    DAVA::CoreMacOSPlatform* macCore = (DAVA::CoreMacOSPlatform*)Core::Instance();
+    macCore->rendererParams.window = mainWindowController->openGLView;
+    macCore->rendererParams.width = [mainWindowController->openGLView frame].size.width;
+    macCore->rendererParams.height = [mainWindowController->openGLView frame].size.height;
+
+    Core::Instance()->SystemAppStarted();
 }
 
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification
@@ -438,7 +461,6 @@ namespace DAVA
 	return NSTerminateNow;
 }
 
-
 - (void)OnSuspend
 {
     if(core)
@@ -463,9 +485,6 @@ namespace DAVA
     }
 }
 
-
-
-
 @end
 
 namespace DAVA 
@@ -473,30 +492,23 @@ namespace DAVA
 
 Core::eScreenMode CoreMacOSPlatform::GetScreenMode()
 {
-    return ([mainWindowController isFullScreen]) ? Core::MODE_FULLSCREEN : Core::MODE_WINDOWED;
+    return ([mainWindowController isFullScreen]) ? Core::eScreenMode::FULLSCREEN : Core::eScreenMode::WINDOWED;
 }
 
-void CoreMacOSPlatform::ToggleFullscreen()
+bool CoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 {
-    if (GetScreenMode() == Core::MODE_FULLSCREEN) // check if we try to switch mode
+    if (screenMode == Core::eScreenMode::FULLSCREEN)
     {
-        [mainWindowController setFullScreen:false];
+        return [mainWindowController setFullScreen:true] == YES;
+    }
+    else if (screenMode == Core::eScreenMode::WINDOWED)
+    {
+        return [mainWindowController setFullScreen:false] == YES;
     }
     else
     {
-        [mainWindowController setFullScreen:true];
-    }
-}
-
-void CoreMacOSPlatform::SwitchScreenToMode(eScreenMode screenMode)
-{
-    if (screenMode == Core::MODE_FULLSCREEN)
-    {
-        [mainWindowController setFullScreen:true];
-    }
-    else if (screenMode == Core::MODE_WINDOWED)
-    {
-        [mainWindowController setFullScreen:false];
+        Logger::Error("Unsupported screen mode");
+        return false;
     }
 }
 

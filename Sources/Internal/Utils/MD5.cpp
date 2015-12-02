@@ -90,7 +90,9 @@ void MD5::ForFile(const FilePath& pathName, MD5Digest& digest)
     {
         Array<uint8, 1024> readBuffer;
         uint32 readBytes = 0;
-        while ((readBytes = file->Read(readBuffer.data(), readBuffer.size())) != 0)
+        const uint32 bufSize = static_cast<uint32>(readBuffer.size());
+
+        while ((readBytes = file->Read(readBuffer.data(), bufSize)) != 0)
         {
             md5.Update(readBuffer.data(), readBytes);
         }
@@ -134,22 +136,22 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
                 }
             }
         }
-        else 
-		{
-			// update MD5 according to the file
+        else
+        {
+            // update MD5 according to the file
             String name = fileList->GetPathname(i).GetFilename();
             md5.Update(reinterpret_cast<const uint8*>(name.c_str()), static_cast<uint32>(name.size()));
 
             MD5Digest fileDigest;
             MD5::ForFile(fileList->GetPathname(i), fileDigest);
-            md5.Update(fileDigest.digest.data(), fileDigest.digest.size());
+            md5.Update(fileDigest.digest.data(), static_cast<uint32>(fileDigest.digest.size()));
         }
     }
 }
 
 void MD5::HashToChar(const MD5Digest& digest, char8* buffer, uint32 bufferSize)
 {
-    HashToChar(digest.digest.data(), digest.digest.size(), buffer, bufferSize);
+    HashToChar(digest.digest.data(), static_cast<uint32>(digest.digest.size()), buffer, bufferSize);
 }
 
 void MD5::HashToChar(const uint8* hash, uint32 hashSize, char8* buffer, uint32 bufferSize)
@@ -168,7 +170,7 @@ void MD5::HashToChar(const uint8* hash, uint32 hashSize, char8* buffer, uint32 b
 void MD5::CharToHash(const char8* buffer, MD5Digest& digest)
 {
     const int32 bufferSize = Min(static_cast<int32>(strlen(buffer)), MD5Digest::DIGEST_SIZE * 2);
-    CharToHash(buffer, bufferSize, digest.digest.data(), digest.digest.size());
+    CharToHash(buffer, bufferSize, digest.digest.data(), static_cast<uint32>(digest.digest.size()));
 }
 
 void MD5::CharToHash(const char8* buffer, uint32 bufferSize, uint8* hash, uint32 hashSize)

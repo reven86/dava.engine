@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Render/2D/Sprite.h"
 
 namespace DAVA 
 {
@@ -86,33 +87,33 @@ public:
 	const Vector2& GetScale() const;
 	const Vector2& GetPivot() const;
 
-	virtual RenderObject * Clone(RenderObject *newObject);
+    RenderObject* Clone(RenderObject* newObject) override;
 
-	virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-protected:
+    void RecalcBoundingBox() override;
 
-	void CreateMeshFromSprite(int32 frameToGen);
+    void BindDynamicParameters(Camera* camera) override;
 
+private:
     void Clear();
+    void ClearRenderBatches();
+    void Restore();
+    void UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffer iBuffer);
 	void Init(Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint);
 	void SetupRenderBatch();
+    void RegisterRestoreCallback();
 
-	Sprite *sprite;
-	Vector2 sprScale;
-	Vector2 sprPivot;
-	int32 frame;
-
-	eSpriteType spriteType;
-
-
-	Vector<float32> verts;
-	Vector<float32> textures;
-
+private:
+    Sprite* sprite = nullptr;
+    Matrix4 worldMatrix;
+    Vector2 sprScale;
+    Vector2 sprPivot;
+    int32 frame = 0;
+    eSpriteType spriteType = SPRITE_OBJECT;
 
 public:
-
 	INTROSPECTION_EXTEND(SpriteObject, RenderObject, 
 		NULL
 	);

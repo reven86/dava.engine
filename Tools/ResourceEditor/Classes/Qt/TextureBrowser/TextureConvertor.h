@@ -38,7 +38,6 @@
 
 #include "DAVAEngine.h"
 #include "Render/TextureDescriptor.h"
-#include "Render/RenderManager.h"
 
 #include "TextureInfo.h"
 #include "TextureConvertorWork.h"

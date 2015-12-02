@@ -527,9 +527,9 @@ namespace DAVA
 
 		UIEvent keyPress;
 		keyPress.tid = keyChar;
-		keyPress.phase = UIEvent::PHASE_KEYCHAR;
-		keyPress.tapCount = 1;
-		keyPress.keyChar = keyChar;
+        keyPress.phase = UIEvent::Phase::CHAR;
+        keyPress.tapCount = 1;
+        keyPress.keyChar = keyChar;
 
 		Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
 			keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
@@ -709,9 +709,9 @@ namespace DAVA
 	void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId, int32 tapCount)
 	{
 		UIEvent touchDown;
-		touchDown.phase = UIEvent::PHASE_BEGAN;
-		touchDown.tid = touchId;
-		touchDown.tapCount = tapCount;
+        touchDown.phase = UIEvent::Phase::BEGAN;
+        touchDown.tid = touchId;
+        touchDown.tapCount = tapCount;
 		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
 		touchDown.point = point;
 		ProcessInput(touchDown);
@@ -727,16 +727,16 @@ namespace DAVA
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{
-			touchMove.phase = UIEvent::PHASE_DRAG;
-			ProcessInput(touchMove);
-		}
+            touchMove.phase = UIEvent::Phase::DRAG;
+            ProcessInput(touchMove);
+        }
 		else
 		{
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 			Logger::Warning("AutotestingSystemLua::TouchMove point=(%f, %f) ignored no touch down found", point.x, point.y);
 #else
-			touchMove.phase = UIEvent::PHASE_MOVE;
-			ProcessInput(touchMove);
+            touchMove.phase = UIEvent::Phase::MOVE;
+            ProcessInput(touchMove);
 #endif
 		}
 	}
@@ -748,28 +748,27 @@ namespace DAVA
 		{
 			AutotestingSystem::Instance()->OnError("TouchAction::TouchUp touch down not found");
 		}
-		touchUp.phase = UIEvent::PHASE_ENDED;
-		touchUp.tid = touchId;
+        touchUp.phase = UIEvent::Phase::ENDED;
+        touchUp.tid = touchId;
 
-		ProcessInput(touchUp);
+        ProcessInput(touchUp);
 	}
 
 	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
 	{
-		Vector<UIEvent> touches;
-		touches.push_back(input);
-        UIControlSystem::Instance()->OnInput(touches, touches);
+        UIEvent ev = input;
+        UIControlSystem::Instance()->OnInput(&ev);
 
         AutotestingSystem::Instance()->OnInput(input);
     }
 
-    inline void AutotestingSystemLua::ParsePath(const String &path, Vector<String> &parsedPath)
-	{
-		Split(path, "/", parsedPath);
-	}
+    inline void AutotestingSystemLua::ParsePath(const String& path, Vector<String>& parsedPath)
+    {
+        Split(path, "/", parsedPath);
+    }
 
-	bool AutotestingSystemLua::LoadWrappedLuaObjects()
-	{
+    bool AutotestingSystemLua::LoadWrappedLuaObjects()
+    {
 		if (!luaState)
 		{
 			return false; //TODO: report error?

@@ -35,7 +35,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/*.cpp) \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/Controller/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) \
+	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
 
 LOCAL_LDLIBS := -lz -lOpenSLES -landroid

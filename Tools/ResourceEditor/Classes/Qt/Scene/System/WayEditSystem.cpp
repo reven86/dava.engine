@@ -48,10 +48,6 @@ WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selecti
     , collisionSystem(_collisionSystem)
     , underCursorPathEntity(nullptr)
 {
-    wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
-        DAVA::RenderStateData::STATE_COLORMASK_ALL |
-        DAVA::RenderStateData::STATE_DEPTH_TEST);
-
     sceneEditor = static_cast<SceneEditor2 *>(GetScene());
 }
 
@@ -260,7 +256,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
 {
     if (isEnabled)
     {
-        if((DAVA::UIEvent::BUTTON_1 == event->tid) && (DAVA::UIEvent::PHASE_MOVE == event->phase))
+        if ((DAVA::UIEvent::BUTTON_1 == event->tid) && (DAVA::UIEvent::Phase::MOVE == event->phase))
         {
             underCursorPathEntity = nullptr;
             const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
@@ -274,12 +270,12 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
             }
         }
 
-        if ((DAVA::UIEvent::BUTTON_1 == event->tid) && (DAVA::UIEvent::PHASE_BEGAN == event->phase))
+        if ((DAVA::UIEvent::BUTTON_1 == event->tid) && (DAVA::UIEvent::Phase::BEGAN == event->phase))
         {
             inCloneState = sceneEditor->modifSystem->InCloneState();
         }
-        
-        if ((DAVA::UIEvent::PHASE_ENDED == event->phase) && (DAVA::UIEvent::BUTTON_1 == event->tid))
+
+        if ((DAVA::UIEvent::Phase::ENDED == event->phase) && (DAVA::UIEvent::BUTTON_1 == event->tid))
         {
             bool cloneJustDone = false;
             if (inCloneState && !sceneEditor->modifSystem->InCloneState())
@@ -493,8 +489,6 @@ void WayEditSystem::Draw()
         
         DAVA::WaypointComponent* wpComponent = GetWaypointComponent(e);
         DVASSERT(wpComponent);
-
-        RenderManager::SetDynamicParam(PARAM_WORLD, &e->GetWorldTransform(), (pointer_size)&e->GetWorldTransform());
         
         AABBox3 worldBox = selectionSystem->GetSelectionAABox(e);
 
@@ -515,11 +509,9 @@ void WayEditSystem::Draw()
         {
             greenValue = 1.0f;
         }
-        
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 0.3f));
-        DAVA::RenderHelper::Instance()->FillBox(worldBox, wayDrawState);
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 1.0f));
-        DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, wayDrawState);
+
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
     }
 }
 

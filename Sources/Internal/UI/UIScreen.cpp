@@ -28,7 +28,6 @@
 
 
 #include "UI/UIScreen.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
 #include <Render/2D/Systems/RenderSystem2D.h>
@@ -79,6 +78,7 @@ void UIScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenRect)
 {
     fullScreenRect = newFullScreenRect;
     UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
+    SetSize(newFullScreenRect.GetSize());
 }
 
 	
@@ -108,15 +108,14 @@ void UIScreen::SystemDraw(const UIGeometricData &geometricData)
 
 void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
-    RenderSystem2D::Instance()->Flush();
+    static auto drawColor(Color::Black);
 
-	RenderManager::Instance()->SetColor(0, 0, 0, 1.0f);
-	UIGeometricData drawData;
-	drawData.position = relativePosition;
-	drawData.size = size;
-	drawData.pivotPoint = GetPivotPoint();
-	drawData.scale = scale;
-	drawData.angle = angle;
+    UIGeometricData drawData;
+    drawData.position = relativePosition;
+    drawData.size = size;
+    drawData.pivotPoint = GetPivotPoint();
+    drawData.scale = scale;
+    drawData.angle = angle;
     drawData.AddGeometricData(geometricData);
 
 	Rect drawRect = drawData.GetUnrotatedRect();
@@ -125,36 +124,18 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
                                   (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
 	if (fullRect.x < 0)
 	{
-		RenderHelper::Instance()->FillRect(Rect(
-													fullRect.x
-												 ,	0
-												 ,	-fullRect.x
-												 ,	virtualSize.y)
-                                                 ,  RenderState::RENDERSTATE_2D_BLEND);
-		RenderHelper::Instance()->FillRect(Rect(
-												 virtualSize.x
-												 ,	0
-												 ,	fullRect.x + fullRect.dx - virtualSize.x
-												 ,	virtualSize.y)
-                                                 ,  RenderState::RENDERSTATE_2D_BLEND);
-	}
-	else 
-	{
-		RenderHelper::Instance()->FillRect(Rect(
-													0
-												 ,	fullRect.y
-												 ,	virtualSize.x + 1
-												 ,	-fullRect.y)
-                                                 ,  RenderState::RENDERSTATE_2D_BLEND);
-		RenderHelper::Instance()->FillRect(Rect(
-												 0
-												 ,	virtualSize.y
-												 ,	virtualSize.x + 1
-												 ,	fullRect.y + fullRect.dy - virtualSize.y)
-                                                 ,  RenderState::RENDERSTATE_2D_BLEND);
-	}
-
-	RenderManager::Instance()->ResetColor();
+        auto rect1 = Rect(fullRect.x, 0, -fullRect.x, virtualSize.y);
+        RenderSystem2D::Instance()->FillRect(rect1, drawColor);
+        auto rect2 = Rect(fullRect.dx - fullRect.x, 0, fullRect.x, virtualSize.y);
+        RenderSystem2D::Instance()->FillRect(rect2, drawColor);
+    }
+    else
+    {
+        auto rect1 = Rect(0, fullRect.y, virtualSize.x + 1, -fullRect.y);
+        RenderSystem2D::Instance()->FillRect(rect1, drawColor);
+        auto rect2 = Rect(0, fullRect.dy, virtualSize.x + 1, -fullRect.y);
+        RenderSystem2D::Instance()->FillRect(rect2, drawColor);
+    }
 }
 
 
