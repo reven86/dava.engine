@@ -56,6 +56,9 @@ public:
     float GetDistanceBetweenPoints() const;
     void SetDistanceBetweenPoints(float);
 
+    float GetMaximumDistance() const;
+    void SetMaximumDistance(float);
+
     float GetVerticalVariance() const;
     void SetVerticalVariance(float);
 
@@ -87,6 +90,7 @@ private:
     float upAngle = 45.0f;
     float downAngle = 45.0f;
     float verticalVariance = 0.0f;
+    float maximumDistance = 250.0f;
     bool shouldBuildPointSet = true;
     bool isValid = false;
     bool isEnabled = true;
@@ -97,6 +101,7 @@ public:
                          PROPERTY("Enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Distance Between Points", "Minimal distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Maximum Distance", "Maximum distance to check", GetMaximumDistance, SetMaximumDistance, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Up Angle", "Up Angle", GetUpAngle, SetUpAngle, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Down Angle", "Down Angle", GetDownAngle, SetDownAngle, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Vertical Variance", "Vertical Variance", GetVerticalVariance, SetVerticalVariance, I_SAVE | I_VIEW | I_EDIT)

@@ -33,6 +33,14 @@
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 
+struct VisibilityCheckRendererDelegate
+{
+    virtual ~VisibilityCheckRendererDelegate()
+    {
+    }
+    virtual bool shouldDrawRenderObject(DAVA::RenderObject*) = 0;
+};
+
 class VisibilityCheckRenderer
 {
 public:
@@ -43,13 +51,15 @@ public:
         DAVA::Color color;
         DAVA::float32 upAngleCosine;
         DAVA::float32 downAngleCosine;
+        DAVA::float32 maxDistance;
         VisbilityPoint(const DAVA::Vector3& p, const DAVA::Vector3& n, const DAVA::Color& clr,
-                       DAVA::float32 upAngle, DAVA::float32 downAngle)
+                       DAVA::float32 upAngle, DAVA::float32 downAngle, DAVA::float32 md)
             : point(p)
             , normal(n)
             , color(clr)
             , upAngleCosine(upAngle)
             , downAngleCosine(downAngle)
+            , maxDistance(md)
         {
         }
     };
@@ -57,6 +67,8 @@ public:
 public:
     VisibilityCheckRenderer();
     ~VisibilityCheckRenderer();
+
+    void SetDelegate(VisibilityCheckRendererDelegate*);
 
     void PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* renderTarget);
 
@@ -74,10 +86,10 @@ private:
     void CollectRenderBatches(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera,
                               DAVA::Camera* lodCamera, DAVA::Vector<DAVA::RenderBatch*>& batches);
 
-    void UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const DAVA::Vector3& normal,
-                                            DAVA::float32 topAngleCosine, DAVA::float32 bottomAngleCosine, const DAVA::Color& color);
+    void UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const VisbilityPoint& vp);
 
 private:
+    VisibilityCheckRendererDelegate* renderDelegate = nullptr;
     DAVA::ScopedPtr<DAVA::Camera> cubemapCamera;
     DAVA::ScopedPtr<DAVA::NMaterial> distanceMaterial;
     DAVA::ScopedPtr<DAVA::NMaterial> visibilityMaterial;

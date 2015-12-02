@@ -40,6 +40,8 @@
 VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
 {
+    renderer.SetDelegate(this);
+
     const DAVA::uint32 renderTargetSize = 2048;
 
     for (DAVA::uint32 i = 0; i < CubemapsCount; ++i)
@@ -61,6 +63,26 @@ VisibilityCheckSystem::~VisibilityCheckSystem()
     }
 }
 
+void VisibilityCheckSystem::RegisterEntity(DAVA::Entity* entity)
+{
+    auto visibilityComponent = entity->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT);
+    auto renderComponent = DAVA::GetRenderComponent(entity);
+    if ((renderComponent != nullptr) || (visibilityComponent != nullptr))
+    {
+        AddEntity(entity);
+    }
+}
+
+void VisibilityCheckSystem::UnregisterEntity(DAVA::Entity* entity)
+{
+    auto visibilityComponent = entity->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT);
+    auto renderComponent = DAVA::GetRenderComponent(entity);
+    if ((renderComponent != nullptr) || (visibilityComponent != nullptr))
+    {
+        RemoveEntity(entity);
+    }
+}
+
 void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
 {
     auto requiredComponent = entity->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT);
@@ -68,6 +90,13 @@ void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
     {
         entities.push_back(entity);
         shouldPrerender = true;
+    }
+
+    auto renderComponent = DAVA::GetRenderComponent(entity);
+    if (renderComponent != nullptr)
+    {
+        auto ro = renderComponent->GetRenderObject();
+        renderObjectToEntity[ro] = entity;
     }
 }
 
@@ -79,12 +108,13 @@ void VisibilityCheckSystem::RemoveEntity(DAVA::Entity* entity)
         entities.erase(i);
         shouldPrerender = true;
     }
-}
 
-void VisibilityCheckSystem::Process(DAVA::float32 timeElapsed)
-{
-    if (entities.empty())
-        return;
+    auto renderComponent = DAVA::GetRenderComponent(entity);
+    if (renderComponent != nullptr)
+    {
+        auto ro = renderComponent->GetRenderObject();
+        renderObjectToEntity.erase(ro);
+    }
 }
 
 void VisibilityCheckSystem::Draw()
@@ -163,10 +193,11 @@ void VisibilityCheckSystem::UpdatePointSet()
             normal.Normalize();
             float upAngle = std::cos((90.0f - visibilityComponent->GetUpAngle()) * PI / 180.0f);
             float dnAngle = -std::cos((90.0f - visibilityComponent->GetDownAngle()) * PI / 180.0f);
+            float maxDist = visibilityComponent->GetMaximumDistance();
             for (const auto& pt : visibilityComponent->GetPoints())
             {
                 controlPoints.emplace_back(position + MultiplyVectorMat3x3(pt, worldTransform), normal,
-                                           visibilityComponent->GetNormalizedColor(), upAngle, dnAngle);
+                                           visibilityComponent->GetNormalizedColor(), upAngle, dnAngle, maxDist);
             }
         }
     }
@@ -220,4 +251,47 @@ void VisibilityCheckSystem::BuildCache()
     stateCache.viewportSize = Size2i(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight());
     stateCache.camera = GetScene()->GetCurrentCamera();
     stateCache.viewprojMatrix = stateCache.camera->GetViewProjMatrix();
+}
+
+bool VisibilityCheckSystem::shouldDrawRenderObject(DAVA::RenderObject* object)
+{
+    auto type = object->GetType();
+
+    if (type == DAVA::RenderObject::TYPE_LANDSCAPE)
+        return true;
+
+    if ((type == DAVA::RenderObject::TYPE_SPEED_TREE) || (type == DAVA::RenderObject::TYPE_SPRITE) ||
+        (type == DAVA::RenderObject::TYPE_VEGETATION) || (type == DAVA::RenderObject::TYPE_PARTICLE_EMTITTER))
+    {
+        return false;
+    }
+
+    if (renderObjectToEntity.count(object) == 0)
+        return false;
+
+    auto entity = renderObjectToEntity.at(object);
+
+    KeyedArchive* customProps = GetCustomPropertiesArchieve(entity);
+    if (customProps)
+    {
+        DAVA::String collisionTypeString = "CollisionType";
+        if ((object->GetMaxSwitchIndex() > 0) && (object->GetSwitchIndex() > 0))
+        {
+            collisionTypeString = "CollisionTypeCrashed";
+        }
+
+        const int32 collisiontype = customProps->GetInt32(collisionTypeString, 0);
+
+        if ((ResourceEditor::ESOT_NO_COLISION == collisiontype) ||
+            (ResourceEditor::ESOT_TREE == collisiontype) ||
+            (ResourceEditor::ESOT_BUSH == collisiontype) ||
+            (ResourceEditor::ESOT_FALLING == collisiontype) ||
+            (ResourceEditor::ESOT_FRAGILE_PROJ_INV == collisiontype) ||
+            (ResourceEditor::ESOT_SPEED_TREE == collisiontype))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }

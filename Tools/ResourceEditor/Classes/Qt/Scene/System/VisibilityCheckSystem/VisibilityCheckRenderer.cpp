@@ -94,6 +94,11 @@ VisibilityCheckRenderer::~VisibilityCheckRenderer()
 {
 }
 
+void VisibilityCheckRenderer::SetDelegate(VisibilityCheckRendererDelegate* de)
+{
+    renderDelegate = de;
+}
+
 void VisibilityCheckRenderer::RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera,
                                                        DAVA::Texture* renderTarget, const DAVA::Vector3& point)
 {
@@ -147,10 +152,8 @@ void VisibilityCheckRenderer::SetupCameraToRenderFromPointToFaceIndex(const DAVA
 
 bool VisibilityCheckRenderer::ShouldRenderObject(DAVA::RenderObject* object)
 {
-    auto type = object->GetType();
-
-    return (type != DAVA::RenderObject::TYPE_SPEED_TREE) && (type != DAVA::RenderObject::TYPE_SPRITE) &&
-    (type != DAVA::RenderObject::TYPE_VEGETATION) && (type != DAVA::RenderObject::TYPE_PARTICLE_EMTITTER);
+    DVASSERT(renderDelegate != nullptr);
+    return renderDelegate->shouldDrawRenderObject(object);
 }
 
 bool VisibilityCheckRenderer::ShouldRenderBatch(DAVA::RenderBatch* batch)
@@ -232,8 +235,7 @@ void VisibilityCheckRenderer::RenderWithCurrentSettings(DAVA::RenderSystem* rend
     }
 }
 
-void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const DAVA::Vector3& normal,
-                                                                 DAVA::float32 topAngleCosine, DAVA::float32 bottomAngleCosine, const DAVA::Color& color)
+void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const VisbilityPoint& vp)
 {
     DAVA::FastName fnCubemap("cubemap");
     if (visibilityMaterial->HasLocalTexture(fnCubemap))
@@ -247,32 +249,32 @@ void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* 
 
     if (visibilityMaterial->HasLocalProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR))
     {
-        visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, color.color);
+        visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, vp.color.color);
     }
     else
     {
-        visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, color.color, rhi::ShaderProp::TYPE_FLOAT4);
+        visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, vp.color.color, rhi::ShaderProp::TYPE_FLOAT4);
     }
 
     DAVA::FastName tNormal("transformedNormal");
     if (visibilityMaterial->HasLocalProperty(tNormal))
     {
-        visibilityMaterial->SetPropertyValue(tNormal, normal.data);
+        visibilityMaterial->SetPropertyValue(tNormal, vp.normal.data);
     }
     else
     {
-        visibilityMaterial->AddProperty(tNormal, normal.data, rhi::ShaderProp::TYPE_FLOAT3);
+        visibilityMaterial->AddProperty(tNormal, vp.normal.data, rhi::ShaderProp::TYPE_FLOAT3);
     }
 
-    DAVA::FastName vAngles("verticalAngles");
-    DAVA::Vector2 va(topAngleCosine, bottomAngleCosine);
-    if (visibilityMaterial->HasLocalProperty(vAngles))
+    DAVA::FastName props("pointProperties");
+    DAVA::Vector3 propValue(vp.downAngleCosine, vp.upAngleCosine, vp.maxDistance);
+    if (visibilityMaterial->HasLocalProperty(props))
     {
-        visibilityMaterial->SetPropertyValue(vAngles, va.data);
+        visibilityMaterial->SetPropertyValue(props, propValue.data);
     }
     else
     {
-        visibilityMaterial->AddProperty(vAngles, va.data, rhi::ShaderProp::TYPE_FLOAT2);
+        visibilityMaterial->AddProperty(props, propValue.data, rhi::ShaderProp::TYPE_FLOAT3);
     }
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
@@ -281,7 +283,7 @@ void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* rend
                                                         DAVA::Texture* renderTarget, const VisbilityPoint& vp)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
-    UpdateVisibilityMaterialProperties(cubemap, vp.normal, vp.upAngleCosine, vp.downAngleCosine, vp.color);
+    UpdateVisibilityMaterialProperties(cubemap, vp);
     CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
 
     DAVA::Vector4 pointLocation(vp.point.x, vp.point.y, vp.point.z, 0.0f);

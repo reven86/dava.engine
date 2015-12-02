@@ -32,15 +32,16 @@
 #include "VisibilityCheckRenderer.h"
 #include "Entity/SceneSystem.h"
 
-class VisibilityCheckSystem : public DAVA::SceneSystem
+class VisibilityCheckSystem : public DAVA::SceneSystem, VisibilityCheckRendererDelegate
 {
 public:
     VisibilityCheckSystem(DAVA::Scene* scene);
     ~VisibilityCheckSystem();
 
+    void RegisterEntity(DAVA::Entity* entity) override;
+    void UnregisterEntity(DAVA::Entity* entity) override;
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
-    void Process(DAVA::float32 timeElapsed) override;
 
     void Draw();
 
@@ -51,6 +52,8 @@ private:
 
     bool CacheIsValid();
     void BuildCache();
+
+    bool shouldDrawRenderObject(DAVA::RenderObject*) override;
 
     struct StateCache
     {
@@ -66,6 +69,7 @@ private:
     DAVA::Texture* cubemapTarget[CubemapsCount];
     DAVA::Texture* renderTarget = nullptr;
     DAVA::Vector<VisibilityCheckRenderer::VisbilityPoint> controlPoints;
+    DAVA::Map<DAVA::RenderObject*, DAVA::Entity*> renderObjectToEntity;
     VisibilityCheckRenderer renderer;
     StateCache stateCache;
     size_t currentPointIndex = 0;

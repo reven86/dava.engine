@@ -260,3 +260,13 @@ void VisibilityCheckComponent::SetVerticalVariance(float value)
     verticalVariance = std::max(0.0f, value);
     shouldBuildPointSet = true;
 }
+
+float VisibilityCheckComponent::GetMaximumDistance() const
+{
+    return maximumDistance;
+}
+
+void VisibilityCheckComponent::SetMaximumDistance(float value)
+{
+    maximumDistance = std::max(0.0f, value);
+}
