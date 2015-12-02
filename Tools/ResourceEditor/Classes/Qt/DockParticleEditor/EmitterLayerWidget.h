@@ -75,6 +75,7 @@ signals:
 protected slots:
 	void OnLodsChanged();
     void OnValueChanged();
+    void OnLayerMaterialValueChanged();
     void OnSpriteBtn();
     void OnSpriteFolderBtn();
     void OnSpritePathChanged(const QString& text);

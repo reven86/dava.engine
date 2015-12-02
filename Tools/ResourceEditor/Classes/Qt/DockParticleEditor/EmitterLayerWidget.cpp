@@ -29,6 +29,8 @@
 
 #include "EmitterLayerWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
+#include "Commands2/ParticleLayerCommands.h"
+
 #include "TextureBrowser/TextureConvertor.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
@@ -228,9 +230,9 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 	mainBox->addLayout(pivotPointLayout);
 	
 
-	frameBlendingCheckBox = new QCheckBox("Enable frame blending");	
-	connect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	mainBox->addWidget(frameBlendingCheckBox);
+	frameBlendingCheckBox = new QCheckBox("Enable frame blending");
+    connect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
+    mainBox->addWidget(frameBlendingCheckBox);
 
 	//particle orieantation
 	QVBoxLayout* orientationLayout = new QVBoxLayout();	
@@ -280,11 +282,11 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     blendLayout->addLayout(presetLayout);
     mainBox->addLayout(blendLayout);
 
-    connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+    connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
 
     fogCheckBox = new QCheckBox("Enable fog");
-    connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	mainBox->addWidget(fogCheckBox);
+    connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
+    mainBox->addWidget(fogCheckBox);
 
 
 	lifeTimeLine = new TimeLineWidget(this);
@@ -656,7 +658,6 @@ void EmitterLayerWidget::OnValueChanged()
 
 	ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
 
-    eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
 
     int32 particleOrientation = 0;
     if (cameraFacingCheckBox->isChecked())
@@ -673,8 +674,6 @@ void EmitterLayerWidget::OnValueChanged()
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    FilePath spritePath(spritePathLabel->text().toStdString());
-
     CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
@@ -685,10 +684,6 @@ void EmitterLayerWidget::OnValueChanged()
                          scaleVelocityBaseSpinBox->value(),
                          scaleVelocityFactorSpinBox->value(),
                          isLoopedCheckBox->isChecked(),
-                         spritePath,
-                         blending,
-                         fogCheckBox->isChecked(),
-                         frameBlendingCheckBox->isChecked(),
                          particleOrientation,
                          propLife.GetPropLine(),
                          propLifeVariation.GetPropLine(),
@@ -736,6 +731,21 @@ void EmitterLayerWidget::OnValueChanged()
             effect->Restart(true);
     }	
 	emit ValueChanged();
+}
+
+void EmitterLayerWidget::OnLayerMaterialValueChanged()
+{
+    if (blockSignals)
+        return;
+
+    const eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
+    const FilePath spritePath(spritePathLabel->text().toStdString());
+
+    DVASSERT(activeScene);
+    CommandChangeLayerMaterialProperties* updateLayerCmd = new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked());
+    activeScene->Exec(updateLayerCmd);
+
+    emit ValueChanged();
 }
 
 void EmitterLayerWidget::OnLodsChanged()
@@ -1025,7 +1035,7 @@ void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
         msgBox.exec();
     }
 
-    OnValueChanged();
+    OnLayerMaterialValueChanged();
 }
 
 void EmitterLayerWidget::FillLayerTypes()
