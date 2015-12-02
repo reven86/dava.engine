@@ -149,6 +149,8 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     ui->treeView->addAction(showInSystemExplorerAction);
     ui->treeView->addAction(renameAction);
     ui->treeView->addAction(openFileAction);
+    
+    RefreshActions(QModelIndexList());
 }
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
@@ -178,6 +180,8 @@ void FileSystemDockWidget::RefreshActions( const QModelIndexList &indexList )
     bool canCreateDir = true;
     bool canRemove = !indexList.empty();
     bool canOpen = false;
+    bool canShow = false;
+    bool canRename = false;
     if (indexList.size() == 1)
     {
         QModelIndex selectedIndex = indexList.front();
@@ -185,20 +189,17 @@ void FileSystemDockWidget::RefreshActions( const QModelIndexList &indexList )
         canCreateDir = isDir;
         canRemove = CanRemove(selectedIndex);
         canOpen = !isDir;
-        deleteAction->setText(isDir ? "Remove folder" : "Remove file");
-    }
-    else
-    {
-        deleteAction->setText("Remove selected items");
-        for (const auto &index : indexList)
-        {
-            canRemove &= CanRemove(index);
-        }
+        canShow = true;
+        canRename = true;
     }
     newFolderAction->setEnabled(canCreateDir);
     deleteAction->setEnabled(canRemove);
     openFileAction->setEnabled(canOpen);
     openFileAction->setVisible(canOpen);
+    showInSystemExplorerAction->setEnabled(canShow);
+    showInSystemExplorerAction->setVisible(canShow);
+    renameAction->setEnabled(canRename);
+    renameAction->setVisible(canRename);
 }
 
 bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
@@ -222,8 +223,17 @@ bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
 bool FileSystemDockWidget::ValidateInputDialogText(QInputDialog* dialog, const QString& text)
 {
     const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
-    DVASSERT(selected.size() == 1);
-    QString path = model->filePath(selected.front()) + "/";
+    DVASSERT(selected.size() <= 1);
+    QString path;
+    if(selected.isEmpty())
+    {
+        path = model->rootPath();
+    }
+    else if(selected.size() == 1)
+    {
+        path = model->filePath(selected.front());
+    }
+    path += "/";
 
     const QObjectList &children = dialog->children();
     auto iter = std::find_if(children.begin(), children.end(), [](const QObject* obj)
@@ -232,7 +242,7 @@ bool FileSystemDockWidget::ValidateInputDialogText(QInputDialog* dialog, const Q
     });
     if (iter == children.end())
     {
-        Logger::Warning("create folder inpud dialog: can not find lineedit");
+        Logger::Warning("create folder inpud dialog: can not find line edit");
         return false;
     }
     QLineEdit *lineEdit = qobject_cast<QLineEdit*>(*iter);
@@ -249,6 +259,7 @@ bool FileSystemDockWidget::ValidateInputDialogText(QInputDialog* dialog, const Q
 
     QPalette palette(lineEdit->palette());
     bool enabled = true;
+    DAVA::Logger::Info("%s", QString(path + text).toUtf8().data());
     if (QFileInfo::exists(path + text))
     {
         dialog->setLabelText(defaultDialogLabel + "\nthis folder already exists");
@@ -290,7 +301,7 @@ void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
 void FileSystemDockWidget::onNewFolder()
 {
     QInputDialog dialog(this);
-    QString newFolder = tr("NewFolder");
+    QString newFolder = tr("New Folder");
     dialog.setWindowTitle(newFolder);
     dialog.setLabelText(defaultDialogLabel);
     dialog.setTextValue(newFolder);
@@ -305,7 +316,7 @@ void FileSystemDockWidget::onNewFolder()
         int i = 1; 
         do
         {
-            dialog.setTextValue(newFolder + QString(" (% 1)").arg(i++));
+            dialog.setTextValue(newFolder + QString(" (%1)").arg(i++));
 
         } while (!ValidateInputDialogText(&dialog, dialog.textValue()));
     }
@@ -314,10 +325,6 @@ void FileSystemDockWidget::onNewFolder()
     QString folderName = dialog.textValue();
     if (ret == QDialog::Accepted && !folderName.isEmpty())
     {
-        if (QFileInfo::exists(folderName))
-        {
-            
-        }
         auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
         DVASSERT(selectedIndexes.empty() || selectedIndexes.size() == 1);
         QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
