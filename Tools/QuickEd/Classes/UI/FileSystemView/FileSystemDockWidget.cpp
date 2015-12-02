@@ -29,6 +29,8 @@
 
 #include "FileSystemDockWidget.h"
 
+#include "FileSystem/Logger.h"
+
 #include "ui_FileSystemDockWidget.h"
 #include <DAVAEngine.h>
 #include <QMenu>
