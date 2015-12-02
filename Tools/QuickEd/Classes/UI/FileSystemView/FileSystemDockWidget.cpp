@@ -38,25 +38,42 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
-
+namespace
+{
+QString yamlExtensionString = ".yaml";
 class FileSystemModel : public QFileSystemModel
 {
-    
+
 public:
     FileSystemModel(QObject *parent = nullptr);
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-
+    bool setData(const QModelIndex & idx, const QVariant & value, int role = Qt::EditRole) override;
 };
+} //unnamed namespace
+
 
 FileSystemModel::FileSystemModel(QObject *parent)
     : QFileSystemModel(parent)
 {
-    
+
 }
 
 Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
 {
     return QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+}
+
+bool FileSystemModel::setData(const QModelIndex & idx, const QVariant & value, int role)
+{
+    if (value.canConvert<QString>())
+    {
+        QString name = value.toString();
+        if (!name.endsWith(yamlExtensionString))
+        {
+            return QFileSystemModel::setData(idx, name + yamlExtensionString, role);
+        }
+    }
+    return QFileSystemModel::setData(idx, value, role);
 }
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
@@ -72,7 +89,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     
     model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
     QStringList filters;
-    filters << "*.yaml";
+    filters << "*" + yamlExtensionString;
     model->setNameFilters(filters);
     model->setNameFilterDisables(false);
     model->setReadOnly(false);
@@ -196,7 +213,7 @@ void FileSystemDockWidget::onDoubleClicked(const QModelIndex &index)
 void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
 {
     QStringList filters;
-    filters << QString("*%1*.yaml").arg(filterStr);
+    filters << QString("*%1*" + yamlExtensionString).arg(filterStr);
     model->setNameFilters(filters);
 }
 
@@ -222,15 +239,15 @@ void FileSystemDockWidget::onNewFile()
     QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
 
     QString folderPath = model->filePath(currIndex);
-    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*.yaml");
+    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*" + yamlExtensionString);
     if (strFile.isEmpty())
     {
         return;
     }
     QFileInfo fileInfo(strFile);
-    if (fileInfo.suffix().toLower() != "yaml")
+    if (fileInfo.suffix().toLower() != QString(yamlExtensionString).remove('.'))
     {
-        strFile += ".yaml";
+        strFile += yamlExtensionString;
     }
 
     QFile file(strFile);
