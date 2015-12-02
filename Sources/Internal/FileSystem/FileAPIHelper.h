@@ -49,10 +49,10 @@ namespace FileAPI
 const auto OpenFile = ::_wfopen;
 const auto RemoveFile = ::_wremove;
 const auto RenameFile = ::_wrename;
-struct StatStruct : public _stat
+struct Stat : public _stat
 {
 };
-const auto Stat = _wstat;
+const auto FileStat = _wstat;
 
 #else
 
@@ -61,10 +61,10 @@ const auto Stat = _wstat;
 const auto OpenFile = ::fopen;
 const auto RemoveFile = ::remove;
 const auto RenameFile = ::rename;
-struct StatStruct : public stat
+struct Stat : public stat
 {
 };
-const auto Stat = stat;
+const auto FileStat = stat;
 
 #endif
 }

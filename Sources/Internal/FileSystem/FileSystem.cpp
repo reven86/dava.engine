@@ -403,7 +403,7 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 {
     FilePath currentExecuteDirectory;
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetModuleFileNameW(nullptr, tempDir.data(), MAX_PATH);
     currentExecuteDirectory = FilePath::FromNativeString(tempDir.data()).GetDirectory();
@@ -443,9 +443,9 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
         return (fileSet.find(path) != fileSet.end());
     }
 #endif
-    FileAPI::StatStruct s;
+    FileAPI::Stat s;
     FilePath::NativeStringType pathStr = pathToCheck.GetNativeAbsolutePathname();
-    if (FileAPI::Stat(pathStr.c_str(), &s) == 0)
+    if (FileAPI::FileStat(pathStr.c_str(), &s) == 0)
     {
         return (0 != (s.st_mode & S_IFREG));
 	}
@@ -475,9 +475,9 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-    FileAPI::StatStruct s;
+    FileAPI::Stat s;
     FilePath::NativeStringType pathToCheckStr = pathToCheck.GetNativeAbsolutePathname();
-    if (FileAPI::Stat(pathToCheckStr.c_str(), &s) == 0)
+    if (FileAPI::FileStat(pathToCheckStr.c_str(), &s) == 0)
     {
         return (0 != (s.st_mode & S_IFDIR));
 	}
