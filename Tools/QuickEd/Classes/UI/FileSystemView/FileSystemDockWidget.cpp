@@ -259,7 +259,6 @@ bool FileSystemDockWidget::ValidateInputDialogText(QInputDialog* dialog, const Q
 
     QPalette palette(lineEdit->palette());
     bool enabled = true;
-    DAVA::Logger::Info("%s", QString(path + text).toUtf8().data());
     if (QFileInfo::exists(path + text))
     {
         dialog->setLabelText(defaultDialogLabel + "\nthis folder already exists");
