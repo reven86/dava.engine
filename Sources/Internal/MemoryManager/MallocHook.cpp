@@ -56,7 +56,7 @@ namespace
 
 void* HookedMalloc(size_t size)
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT, 2);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
 void* HookedRealloc(void* ptr, size_t newSize)
@@ -92,7 +92,7 @@ char* HookedStrdup(const char* src)
 
 void HookedFree(void* ptr)
 {
-    DAVA::MemoryManager::Instance()->Deallocate(ptr, 2);
+    DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
 } // unnamed namespace
 

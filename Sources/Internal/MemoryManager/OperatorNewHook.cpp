@@ -51,12 +51,12 @@ void operator delete(void* ptr) DAVA_NOEXCEPT
 
 DAVA_NOINLINE void* operator new [](size_t size)
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT, 1);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
 void operator delete[](void* ptr) DAVA_NOEXCEPT
 {
-    DAVA::MemoryManager::Instance()->Deallocate(ptr, 1);
+    DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
