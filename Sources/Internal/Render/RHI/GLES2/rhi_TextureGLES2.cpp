@@ -375,14 +375,11 @@ RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 static void
 gles2_Texture_Delete(Handle tex)
 {
-    if (tex != InvalidHandle)
-    {
-        TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
+    TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
 
-        self->MarkRestored();
-        self->Destroy();
-        TextureGLES2Pool::Free(tex);
-    }
+    self->MarkRestored();
+    self->Destroy();
+    TextureGLES2Pool::Free(tex);
 }
 
 //------------------------------------------------------------------------------
