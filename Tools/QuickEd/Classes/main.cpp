@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
         state == Qt::ApplicationActive ? qtLayer->OnResume() : qtLayer->OnSuspend();
     });
     InitPVRTexTool();
+    DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
 
     // Editor Settings might be used by any singleton below during initialization, so
     // initialize it before any other one.
