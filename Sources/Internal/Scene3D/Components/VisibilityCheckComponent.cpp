@@ -33,7 +33,6 @@
 using namespace DAVA;
 
 VisibilityCheckComponent::VisibilityCheckComponent()
-    : color(1.0f, 0.0f, 0.0f, 0.0f)
 {
 }
 
@@ -180,12 +179,14 @@ void VisibilityCheckComponent::SetColor(const Color& clr)
 
 Color VisibilityCheckComponent::GetNormalizedColor() const
 {
-    Color normalizedColor;
-    float fpoints = static_cast<float>(points.size());
-    normalizedColor.r = std::max(1.0f / 255.0f, color.r / fpoints);
-    normalizedColor.g = std::max(1.0f / 255.0f, color.g / fpoints);
-    normalizedColor.b = std::max(1.0f / 255.0f, color.b / fpoints);
-    normalizedColor.a = 0.0f;
+    Color normalizedColor = color;
+    if (shouldNormalizeColor)
+    {
+        float fpoints = static_cast<float>(points.size());
+        normalizedColor.r = std::max(1.0f / 255.0f, color.r / fpoints);
+        normalizedColor.g = std::max(1.0f / 255.0f, color.g / fpoints);
+        normalizedColor.b = std::max(1.0f / 255.0f, color.b / fpoints);
+    }
     return normalizedColor;
 }
 
@@ -219,4 +220,24 @@ void VisibilityCheckComponent::SetDownAngle(float value)
 {
     downAngle = std::max(0.0f, std::min(90.0f, value));
     isValid = false;
+}
+
+bool VisibilityCheckComponent::IsEnabled() const
+{
+    return isEnabled;
+}
+
+void VisibilityCheckComponent::SetEnabled(bool value)
+{
+    isEnabled = value;
+}
+
+bool VisibilityCheckComponent::ShoouldNormalizeColor() const
+{
+    return shouldNormalizeColor;
+}
+
+void VisibilityCheckComponent::SetShoouldNormalizeColor(bool value)
+{
+    shouldNormalizeColor = value;
 }

@@ -89,9 +89,6 @@ void VisibilityCheckSystem::Process(DAVA::float32 timeElapsed)
 
 void VisibilityCheckSystem::Draw()
 {
-    if (entities.empty())
-        return;
-
     for (auto e : entities)
     {
         auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
@@ -112,11 +109,14 @@ void VisibilityCheckSystem::Draw()
     auto dbg = rs->GetDebugDrawer();
     for (auto e : entities)
     {
-        auto worldTransform = e->GetWorldTransform();
         auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(e->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
-        DAVA::Vector3 position = worldTransform.GetTranslationVector();
-        DAVA::Vector3 direction = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
-        dbg->DrawCircle(position, direction, visibilityComponent->GetRadius(), 36, DAVA::Color::White, DAVA::RenderHelper::DRAW_WIRE_DEPTH);
+        if (visibilityComponent->IsEnabled())
+        {
+            auto worldTransform = e->GetWorldTransform();
+            DAVA::Vector3 position = worldTransform.GetTranslationVector();
+            DAVA::Vector3 direction = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
+            dbg->DrawCircle(position, direction, visibilityComponent->GetRadius(), 36, DAVA::Color::White, DAVA::RenderHelper::DRAW_WIRE_DEPTH);
+        }
     }
 
     if (!CacheIsValid())
@@ -154,18 +154,20 @@ void VisibilityCheckSystem::UpdatePointSet()
 
     for (auto e : entities)
     {
-        auto worldTransform = e->GetWorldTransform();
-        DAVA::Vector3 position = worldTransform.GetTranslationVector();
-        DAVA::Vector3 normal = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
-        normal.Normalize();
-
         auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
-        float upAngle = std::cos((90.0f - visibilityComponent->GetUpAngle()) * PI / 180.0f);
-        float dnAngle = -std::cos((90.0f - visibilityComponent->GetDownAngle()) * PI / 180.0f);
-        for (const auto& pt : visibilityComponent->GetPoints())
+        if (visibilityComponent->IsEnabled())
         {
-            controlPoints.emplace_back(position + MultiplyVectorMat3x3(pt, worldTransform), normal,
-                                       visibilityComponent->GetNormalizedColor(), upAngle, dnAngle);
+            auto worldTransform = e->GetWorldTransform();
+            DAVA::Vector3 position = worldTransform.GetTranslationVector();
+            DAVA::Vector3 normal = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
+            normal.Normalize();
+            float upAngle = std::cos((90.0f - visibilityComponent->GetUpAngle()) * PI / 180.0f);
+            float dnAngle = -std::cos((90.0f - visibilityComponent->GetDownAngle()) * PI / 180.0f);
+            for (const auto& pt : visibilityComponent->GetPoints())
+            {
+                controlPoints.emplace_back(position + MultiplyVectorMat3x3(pt, worldTransform), normal,
+                                           visibilityComponent->GetNormalizedColor(), upAngle, dnAngle);
+            }
         }
     }
 }

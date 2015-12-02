@@ -44,6 +44,12 @@ public:
     VisibilityCheckComponent();
     Component* Clone(Entity* toEntity) override;
 
+    bool IsEnabled() const;
+    void SetEnabled(bool);
+
+    bool ShoouldNormalizeColor() const;
+    void SetShoouldNormalizeColor(bool);
+
     float GetRadius() const;
     void SetRadius(float);
 
@@ -72,16 +78,20 @@ public:
 
 private:
     Vector<Vector3> points;
-    Color color;
+    Color color = Color(1.0f, 0.0f, 0.0f, 1.0f);
     float radius = 5.0f;
     float distanceBetweenPoints = 2.0f;
     float upAngle = 45.0f;
     float downAngle = 45.0f;
     bool shouldBuildPointSet = true;
     bool isValid = false;
+    bool isEnabled = true;
+    bool shouldNormalizeColor = true;
 
 public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
+                         PROPERTY("isEnabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("shouldNormalizeColor", "Normalize Color", ShoouldNormalizeColor, SetShoouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("distanceBetweenPoints", "Distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)

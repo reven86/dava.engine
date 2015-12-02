@@ -75,8 +75,8 @@ FPROG_BEGIN
 	
 	float3 nDir = normalize(FP_IN(directionFromPoint));
 	float DdotN = dot(nDir, transformedNormal);
-	float angleScale = float(clamp(DdotN, verticalAngles.y, verticalAngles.x) == DdotN);
-	FP_OUT_COLOR = flatColor * (occluded * angleScale);
+	float angleLimit = float(clamp(DdotN, verticalAngles.y, verticalAngles.x) == DdotN);
+	FP_OUT_COLOR = flatColor * (occluded * angleLimit);
 #endif
 
 #if defined(PRERENDER)
