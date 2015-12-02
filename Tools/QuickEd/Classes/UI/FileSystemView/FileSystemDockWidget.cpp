@@ -290,9 +290,10 @@ void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
 void FileSystemDockWidget::onNewFolder()
 {
     QInputDialog dialog(this);
-    dialog.setWindowTitle(tr("New folder"));
+    QString newFolder = tr("NewFolder");
+    dialog.setWindowTitle(newFolder);
     dialog.setLabelText(defaultDialogLabel);
-    dialog.setTextValue(tr("New folder"));
+    dialog.setTextValue(newFolder);
     dialog.setTextEchoMode(QLineEdit::Normal);
     dialog.setInputMethodHints(Qt::ImhUrlCharactersOnly);
 
@@ -304,7 +305,7 @@ void FileSystemDockWidget::onNewFolder()
         int i = 1; 
         do
         {
-            dialog.setTextValue(tr("new folder (%1)").arg(i++));
+            dialog.setTextValue(newFolder + QString(" (% 1)").arg(i++));
 
         } while (!ValidateInputDialogText(&dialog, dialog.textValue()));
     }
