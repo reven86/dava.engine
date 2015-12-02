@@ -39,6 +39,7 @@
 #include <QProcess>
 #include <QDialogButtonBox>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QDirIterator>
 
 #include "QtTools/FileDialog/FileDialog.h"
