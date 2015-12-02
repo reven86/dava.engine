@@ -90,7 +90,6 @@ bool FMODSoundEvent::Trigger()
             DVASSERT(direction == direction);
             if (isDirectional)
             {
-                DVASSERT(direction.Length() <= 1.f);
                 DVASSERT(direction.Length() > 0.f);
             }
             FMOD_VERIFY(fmodEventInfo->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : nullptr));
