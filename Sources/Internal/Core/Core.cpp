@@ -53,7 +53,6 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -145,7 +144,6 @@ void Core::CreateSingletons()
     new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
-    new FrameOcclusionQueryManager();
 
     new VirtualCoordinatesSystem();
     new RenderSystem2D();
@@ -242,7 +240,6 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
-    FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
 

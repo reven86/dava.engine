@@ -224,5 +224,7 @@ void RenderStats::Reset()
 
     visibleRenderObjects = 0U;
     occludedRenderObjects = 0U;
+
+    queryResults.clear();
 }
 }

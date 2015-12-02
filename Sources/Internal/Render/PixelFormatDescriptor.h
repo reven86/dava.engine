@@ -41,9 +41,6 @@ namespace DAVA
 	\brief Class that represents pixel format for internal using in our SDK. 
  */
 
-#if defined (__DAVAENGINE_OPENGL__)
-
-
 class PixelFormatDescriptor
 {
 public:
@@ -69,8 +66,6 @@ public:
     rhi::TextureFormat format;
     bool isHardwareSupported;
 };
-
-#endif //#if defined (__DAVAENGINE_OPENGL__)
 
 };
 #endif // __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__

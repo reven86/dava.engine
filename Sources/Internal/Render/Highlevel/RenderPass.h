@@ -83,6 +83,19 @@ protected:
     rhi::HPacketList packetList;
     rhi::HRenderPass renderPass;
 
+#ifdef __DAVAENGINE_RENDERSTATS__
+    struct LayersQuery
+    {
+        rhi::HQueryBuffer query;
+        uint32 queryObjectCount = 0;
+    };
+
+    bool LayersQueryIsReady(const LayersQuery& buf);
+    void ProcessVisibilityQuery();
+
+    Deque<LayersQuery> queryBuffers;
+#endif
+
 public:
     INTROSPECTION(RenderPass,
                   COLLECTION(renderLayers, "Render Layers", I_VIEW | I_EDIT)

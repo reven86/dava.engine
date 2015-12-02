@@ -30,7 +30,6 @@
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
 #include "Render/RenderHelper.h"
-#include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -118,16 +117,9 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
         RenderSystem2D::Instance()->Flush();
     }
 
-    bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
-    if (uiDrawQueryWasOpen)
-        FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
-
     PrepareFrameBufferIfNeed();
     scene->SetMainPassViewport(viewportRc);
     scene->Draw();
-
-    if (uiDrawQueryWasOpen)
-        FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     if (drawToFrameBuffer)
     {

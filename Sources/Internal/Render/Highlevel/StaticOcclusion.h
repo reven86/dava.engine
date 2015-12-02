@@ -35,7 +35,6 @@
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
-#include "Render/OcclusionQuery.h"
 
 namespace DAVA
 {

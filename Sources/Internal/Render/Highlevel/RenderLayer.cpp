@@ -33,7 +33,6 @@
 #include "Render/Highlevel/Camera.h"
 #include "Base/Radix/Radix.h"
 #include "Debug/Stats.h"
-#include "Render/OcclusionQuery.h"
 
 namespace DAVA
 {
@@ -98,15 +97,12 @@ RenderLayer::eRenderLayerID RenderLayer::GetLayerIDByName(const FastName& name)
     return RENDER_LAYER_INVALID_ID;
 }
 
-void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList)
+void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList, uint32 queryIndexOffset)
 {
     TIME_PROFILE("RenderLayer::Draw");
 
     uint32 size = (uint32)batchArray.GetRenderBatchCount();
-
-    FrameOcclusionQueryManager::Instance()->BeginQuery(GetLayerNameByID(layerID));
     rhi::Packet packet;
-
     for (uint32 k = 0; k < size; ++k)
     {
         RenderBatch* batch = batchArray.Get(k);
@@ -119,10 +115,11 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
             DVASSERT(packet.primitiveCount);
             mat->BindParams(packet);
             packet.debugMarker = mat->GetEffectiveFXName().c_str();
+#ifdef __DAVAENGINE_RENDERSTATS__
+            packet.queryIndex = queryIndexOffset + k;
+#endif
             rhi::AddPacket(packetList, packet);
         }
     }
-
-    FrameOcclusionQueryManager::Instance()->EndQuery(GetLayerNameByID(layerID));
 }
 };

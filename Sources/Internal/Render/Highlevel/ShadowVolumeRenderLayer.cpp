@@ -87,7 +87,7 @@ void ShadowVolumeRenderLayer::PrepareRenderData()
     shadowRectMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
-void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList)
+void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList, uint32 queryIndexOffset)
 {
     if (!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
     {
@@ -96,7 +96,7 @@ void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray& rende
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW) && renderBatchArray.GetRenderBatchCount())
     {
-        RenderLayer::Draw(camera, renderBatchArray, packetList);
+        RenderLayer::Draw(camera, renderBatchArray, packetList, queryIndexOffset);
 
         shadowRectMaterial->BindParams(shadowRectPacket);
         rhi::AddPacket(packetList, shadowRectPacket);

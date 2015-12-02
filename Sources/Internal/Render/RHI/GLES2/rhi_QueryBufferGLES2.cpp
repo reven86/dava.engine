@@ -187,7 +187,7 @@ void BeginQuery(Handle handle, uint32 objectIndex)
         {
             #if defined(__DAVAENGINE_IPHONE__)
             glGenQueriesEXT(1, &q);
-	    #elif defined(__DAVAENGINE_ANDROID__)
+	        #elif defined(__DAVAENGINE_ANDROID__)
             #else
             glGenQueries(1, &q);
             #endif
@@ -200,7 +200,7 @@ void BeginQuery(Handle handle, uint32 objectIndex)
             #if defined(__DAVAENGINE_IPHONE__)
             glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, q);
 	        #elif defined(__DAVAENGINE_ANDROID__)
-            #elif defined(__DAVAENGINE_MACOS__)
+            #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             glBeginQuery(GL_SAMPLES_PASSED, q);
             #else
             glBeginQuery(GL_ANY_SAMPLES_PASSED, q);
@@ -222,7 +222,7 @@ void EndQuery(Handle handle, uint32 objectIndex)
             #if defined(__DAVAENGINE_IPHONE__)
             glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
 			#elif defined(__DAVAENGINE_ANDROID__)
-            #elif defined(__DAVAENGINE_MACOS__)
+            #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             glEndQuery(GL_SAMPLES_PASSED);
             #else
             glEndQuery(GL_ANY_SAMPLES_PASSED);

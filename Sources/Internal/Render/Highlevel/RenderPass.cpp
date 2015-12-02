@@ -186,13 +186,16 @@ void RenderPass::DrawLayers(Camera* camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, (pointer_size)&rcpViewportSize);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, (pointer_size)&viewportOffset);
 
+    uint32 queryObjectOffset = 0;
     size_t size = renderLayers.size();
     for (size_t k = 0; k < size; ++k)
     {
         RenderLayer* layer = renderLayers[k];
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
-        layer->Draw(camera, batchArray, packetList);
+
+        layer->Draw(camera, batchArray, packetList, queryObjectOffset);
+        queryObjectOffset += batchArray.GetRenderBatchCount();
     }
 }
 
@@ -205,8 +208,60 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
     }
 }
 
+#if __DAVAENGINE_RENDERSTATS__
+bool RenderPass::LayersQueryIsReady(const LayersQuery& buf)
+{
+    for (uint32 i = 0; i < buf.queryObjectCount; ++i)
+    {
+        if (!rhi::QueryIsReady(buf.query, i))
+            return false;
+    }
+    return true;
+}
+
+void RenderPass::ProcessVisibilityQuery()
+{
+    DVASSERT(queryBuffers.size() < 100);
+
+    while (queryBuffers.size() && LayersQueryIsReady(queryBuffers.front()))
+    {
+        RenderStats& stats = Renderer::GetRenderStats();
+        uint32 objectIndexOffset = 0;
+        for (uint32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+        {
+            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
+            for (uint32 obj = 0; obj < layersBatchArrays[i].GetRenderBatchCount(); ++obj)
+            {
+                stats.queryResults[layerName] += rhi::QueryValue(queryBuffers.front().query, objectIndexOffset + obj);
+            }
+            objectIndexOffset += layersBatchArrays[i].GetRenderBatchCount();
+        }
+
+        rhi::DeleteQueryBuffer(queryBuffers.front().query);
+        queryBuffers.pop_front();
+    }
+}
+#endif
+
 void RenderPass::BeginRenderPass()
 {
+#if __DAVAENGINE_RENDERSTATS__
+    LayersQuery layersQuery;
+    for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+        layersQuery.queryObjectCount += layersBatchArrays[i].GetRenderBatchCount();
+
+    if (layersQuery.queryObjectCount)
+    {
+        layersQuery.query = rhi::CreateQueryBuffer(layersQuery.queryObjectCount);
+        queryBuffers.push_back(layersQuery);
+        passConfig.queryBuffer = layersQuery.query;
+    }
+    else
+    {
+        passConfig.queryBuffer = rhi::InvalidHandle;
+    }
+#endif
+
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
     rhi::BeginRenderPass(renderPass);
     rhi::BeginPacketList(packetList);
@@ -216,6 +271,10 @@ void RenderPass::EndRenderPass()
 {
     rhi::EndPacketList(packetList);
     rhi::EndRenderPass(renderPass);
+
+#if __DAVAENGINE_RENDERSTATS__
+    ProcessVisibilityQuery();
+#endif
 }
 
 void RenderPass::ClearLayersArrays()
