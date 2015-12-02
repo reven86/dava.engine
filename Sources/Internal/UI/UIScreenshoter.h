@@ -67,7 +67,7 @@ public:
      * \param format PixelFormat
      * \return target texture
      */
-    Texture* MakeScreenshot(UIControl* control, const PixelFormat format);
+    Texture* MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha = false);
 
     /**
      * \brief Render control to texture and call callback when it will rendered
@@ -109,7 +109,7 @@ private:
         Function<void(Texture*)> callback;
     };
 
-    void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback);
+    void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha);
     void FindAll3dViews(UIControl* control, List<UIScreenshoter::Control3dInfo>& foundViews);
     void RenderToTexture(const ScreenshotWaiter& waiter);
 

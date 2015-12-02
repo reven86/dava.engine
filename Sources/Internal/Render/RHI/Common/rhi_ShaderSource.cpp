@@ -32,6 +32,7 @@
     #include "FileSystem/Logger.h"
 using DAVA::Logger;
     #include "FileSystem/DynamicMemoryFile.h"
+    #include "FileSystem/FileSystem.h"
 using DAVA::DynamicMemoryFile;
     #include "Utils/Utils.h"
 #include "Debug/Profiler.h"
@@ -1455,7 +1456,9 @@ void ShaderSourceCache::Save(const char* fileName)
 {
     using namespace DAVA;
 
-    File* file = File::Create(fileName, File::WRITE | File::CREATE);
+    static const FilePath cacheTempFile("~doc:/shader_source_cache_temp.bin");
+
+    File* file = File::Create(cacheTempFile, File::WRITE | File::CREATE);
 
     if (file)
     {
@@ -1472,6 +1475,8 @@ void ShaderSourceCache::Save(const char* fileName)
         }
 
         file->Release();
+
+        FileSystem::Instance()->MoveFile(cacheTempFile, fileName, true);
     }
 }
 
