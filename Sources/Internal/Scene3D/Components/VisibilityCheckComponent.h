@@ -96,12 +96,12 @@ public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
                          PROPERTY("Enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Distance between points", "Distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Distance Between Points", "Minimal distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Up Angle", "Up Angle", GetUpAngle, SetUpAngle, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Down Angle", "Down Angle", GetDownAngle, SetDownAngle, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Vertical Variance", "Vertical Variance", GetVerticalVariance, SetVerticalVariance, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Should Normalize Color", "If enabled scales overlay's color to match current color.", ShoouldNormalizeColor, SetShoouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("Normalize Color", "If enabled scales overlay's color to match current color.", ShoouldNormalizeColor, SetShoouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

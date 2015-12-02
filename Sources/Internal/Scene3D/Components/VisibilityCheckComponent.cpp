@@ -191,9 +191,9 @@ Color VisibilityCheckComponent::GetNormalizedColor() const
     if (shouldNormalizeColor)
     {
         float fpoints = static_cast<float>(points.size());
-        normalizedColor.r = std::max(1.0f / 255.0f, color.r / fpoints);
-        normalizedColor.g = std::max(1.0f / 255.0f, color.g / fpoints);
-        normalizedColor.b = std::max(1.0f / 255.0f, color.b / fpoints);
+        normalizedColor.r = (color.r > 0.0f) ? std::max(1.0f / 255.0f, color.r / fpoints) : 0.0f;
+        normalizedColor.g = (color.g > 0.0f) ? std::max(1.0f / 255.0f, color.g / fpoints) : 0.0f;
+        normalizedColor.b = (color.b > 0.0f) ? std::max(1.0f / 255.0f, color.b / fpoints) : 0.0f;
     }
     return normalizedColor;
 }
