@@ -295,8 +295,6 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
 static void
 dx11_Texture_Delete(Handle tex)
 {
-    if (tex != InvalidHandle)
-    {
         TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
         if (self->tex2d_srv)
@@ -333,7 +331,6 @@ dx11_Texture_Delete(Handle tex)
         }
 
         TextureDX11Pool::Free(tex);
-    }
 }
 
 //------------------------------------------------------------------------------
