@@ -37,6 +37,7 @@
 #include <QProcess>
 #include <QDialogButtonBox>
 #include <QLineEdit>
+#include <QDirIterator>
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -203,12 +204,16 @@ bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
     {
         return true;
     }
-    else
+    QDir dir(model->filePath(index));
+    QDirIterator dirIterattor(dir, QDirIterator::Subdirectories);
+    while (dirIterattor.hasNext())
     {
-        QDir dir(model->filePath(index));
-        int count = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries).count();
-        return count == 0;
+        if (dirIterattor.next().endsWith(yamlExtensionString))
+        {
+            return false;
+        }
     }
+    return true;
 }
 
 bool FileSystemDockWidget::ValidateInputDialogText(QInputDialog* dialog, const QString& text)
@@ -344,37 +349,18 @@ void FileSystemDockWidget::onNewFile()
 
 void FileSystemDockWidget::onDeleteFile()
 {
-    bool hasFiles = false;
-    bool hasFolders = false;
     const QModelIndexList &indexes = ui->treeView->selectionModel()->selectedIndexes();
-    for (const auto &index : indexes)
+    DVASSERT(indexes.size() == 1);
+    auto index = indexes.front();
+    bool isDir = model->isDir(index);
+    QString text = tr("Delete ") + (isDir ? "folder" : "file") + " \"" + model->fileName(index) + "\"" + (isDir ? " and its content" : "") + "?";
+    if (QMessageBox::Yes == QMessageBox::question(this, text, text, QMessageBox::Yes | QMessageBox::No))
     {
-        bool isDir = model->isDir(index);
-        hasFiles |= !isDir;
-        hasFolders |= isDir;
-    }
-    DVASSERT(hasFiles || hasFolders);
-    QString text = tr("Delete ") + (hasFiles ? tr("files") : "") + (hasFiles && hasFolders ? tr("and") : "") + (hasFolders ? tr("folders") : "");
-    if (QMessageBox::Yes == QMessageBox::question(this, text, text + "?", QMessageBox::Yes | QMessageBox::No))
-    {
-        for (const auto &index : indexes)
+        if (!model->remove(index))
         {
-            if (model->isDir(index))
-            {
-                if (!model->rmdir(index))
-                {
-                    DAVA::Logger::Error("can not remove folder %s", model->fileName(index).toUtf8().data());
-                }
-            }
-            else
-            {
-                if (!model->remove(index))
-                {
-                    DAVA::Logger::Error("can not remove file %s", model->fileName(index).toUtf8().data());
-                }
-            }
+            DAVA::Logger::Error("can not remove file %s", model->isDir(index) ? "folder" : "file", model->fileName(index).toUtf8().data());
         }
-    }
+}
     RefreshActions(indexes);
 }
 
