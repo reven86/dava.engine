@@ -40,6 +40,7 @@ namespace Ui {
 }
 
 class QFileSystemModel;
+class QInputDialog;
 
 class FileSystemDockWidget : public QDockWidget
 {
@@ -64,10 +65,12 @@ private slots:
     void OnShowInExplorer();
     void OnRename();
     void OnOpenFile();
+    void OnInputDialogTextChanged(const QString &text);
 
 private:
     void RefreshActions(const QModelIndexList &indexList);
     bool CanRemove(const QModelIndex &index) const;
+    bool ValidateInputDialogText(QInputDialog *dialog, const QString &text);
     std::unique_ptr<Ui::FileSystemDockWidget> ui;
     QFileSystemModel *model = nullptr;
     QAction *newFolderAction = nullptr;

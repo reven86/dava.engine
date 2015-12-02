@@ -35,18 +35,22 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QProcess>
+#include <QDialogButtonBox>
+#include <QLineEdit>
 
 #include "QtTools/FileDialog/FileDialog.h"
 
 namespace
 {
-QString yamlExtensionString = ".yaml";
+const QString yamlExtensionString = ".yaml";
+const QString defaultDialogLabel = "Enter new folder name:";
 class FileSystemModel : public QFileSystemModel
 {
 
 public:
     FileSystemModel(QObject *parent = nullptr);
     Qt::ItemFlags flags(const QModelIndex &index) const override;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex & idx, const QVariant & value, int role = Qt::EditRole) override;
 };
 } //unnamed namespace
@@ -61,6 +65,16 @@ FileSystemModel::FileSystemModel(QObject *parent)
 Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
 {
     return QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+}
+
+QVariant FileSystemModel::data(const QModelIndex & index, int role) const
+{
+    QVariant data = QFileSystemModel::data(index, role);
+    if (index.isValid() && role == Qt::EditRole && !isDir(index) && data.canConvert<QString>())
+    {
+        return data.toString().remove(QRegularExpression(yamlExtensionString + "$"));
+    }
+    return data;
 }
 
 bool FileSystemModel::setData(const QModelIndex & idx, const QVariant & value, int role)
@@ -197,6 +211,54 @@ bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
     }
 }
 
+bool FileSystemDockWidget::ValidateInputDialogText(QInputDialog* dialog, const QString& text)
+{
+    const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
+    DVASSERT(selected.size() == 1);
+    QString path = model->filePath(selected.front()) + "/";
+
+    const QObjectList &children = dialog->children();
+    auto iter = std::find_if(children.begin(), children.end(), [](const QObject* obj)
+    {
+        return qobject_cast<const QLineEdit*>(obj) != nullptr;
+    });
+    if (iter == children.end())
+    {
+        Logger::Warning("create folder inpud dialog: can not find lineedit");
+        return false;
+    }
+    QLineEdit *lineEdit = qobject_cast<QLineEdit*>(*iter);
+    iter = std::find_if(children.begin(), children.end(), [](const QObject* obj)
+    {
+        return qobject_cast<const QDialogButtonBox*>(obj) != nullptr;
+    });
+    if (iter == children.end())
+    {
+        Logger::Warning("create folder inpud dialog: can not find button box");
+        return false;
+    }
+    QDialogButtonBox *buttonBox = qobject_cast<QDialogButtonBox*>(*iter);
+
+    QPalette palette(lineEdit->palette());
+    bool enabled = true;
+    if (QFileInfo::exists(path + text))
+    {
+        dialog->setLabelText(defaultDialogLabel + "\nthis folder already exists");
+        palette.setColor(QPalette::Text, Qt::red);
+        enabled = false;
+    }
+    else
+    {
+        dialog->setLabelText(defaultDialogLabel);
+        palette.setColor(QPalette::Text, Qt::black);
+        enabled = true;
+    }
+    lineEdit->setPalette(palette);
+    QPushButton *okButton = buttonBox->button(QDialogButtonBox::Ok);
+    okButton->setEnabled(enabled);
+    return enabled;
+}
+
 void FileSystemDockWidget::OnSelectionChanged( const QItemSelection &selected, const QItemSelection &deselected )
 {
     RefreshActions(selected.indexes());
@@ -219,10 +281,34 @@ void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
 
 void FileSystemDockWidget::onNewFolder()
 {
-    bool ok = false;
-    QString folderName = QInputDialog::getText(this, tr("New folder"), tr("Folder name:"), QLineEdit::Normal, tr("New folder"), &ok);
-    if (ok && !folderName.isEmpty())
+    QInputDialog dialog(this);
+    dialog.setWindowTitle(tr("New folder"));
+    dialog.setLabelText(defaultDialogLabel);
+    dialog.setTextValue(tr("New folder"));
+    dialog.setTextEchoMode(QLineEdit::Normal);
+    dialog.setInputMethodHints(Qt::ImhUrlCharactersOnly);
+
+    connect(&dialog, &QInputDialog::textValueChanged, this, &FileSystemDockWidget::OnInputDialogTextChanged);
+    dialog.okButtonText(); //force ensure layout of dialog
+    
+    if (!ValidateInputDialogText(&dialog, dialog.textValue()))
     {
+        int i = 1; 
+        do
+        {
+            dialog.setTextValue(tr("new folder (%1)").arg(i++));
+
+        } while (!ValidateInputDialogText(&dialog, dialog.textValue()));
+    }
+
+    int ret = dialog.exec();
+    QString folderName = dialog.textValue();
+    if (ret == QDialog::Accepted && !folderName.isEmpty())
+    {
+        if (QFileInfo::exists(folderName))
+        {
+            
+        }
         auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
         DVASSERT(selectedIndexes.empty() || selectedIndexes.size() == 1);
         QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
@@ -333,4 +419,10 @@ void FileSystemDockWidget::OnOpenFile()
     const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
     DVASSERT(selected.size() == 1);
     onDoubleClicked(selected.first());
+}
+
+void FileSystemDockWidget::OnInputDialogTextChanged(const QString& text)
+{
+    QInputDialog *dialog = qobject_cast<QInputDialog*>(sender());
+    ValidateInputDialogText(dialog, text);
 }
