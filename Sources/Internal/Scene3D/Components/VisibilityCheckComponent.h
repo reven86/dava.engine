@@ -56,6 +56,9 @@ public:
     float GetDistanceBetweenPoints() const;
     void SetDistanceBetweenPoints(float);
 
+    float GetVerticalVariance() const;
+    void SetVerticalVariance(float);
+
     const Color& GetColor() const;
     void SetColor(const Color&);
 
@@ -83,6 +86,7 @@ private:
     float distanceBetweenPoints = 2.0f;
     float upAngle = 45.0f;
     float downAngle = 45.0f;
+    float verticalVariance = 0.0f;
     bool shouldBuildPointSet = true;
     bool isValid = false;
     bool isEnabled = true;
@@ -90,13 +94,14 @@ private:
 
 public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
-                         PROPERTY("isEnabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("shouldNormalizeColor", "Normalize Color", ShoouldNormalizeColor, SetShoouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("distanceBetweenPoints", "Distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("upAngle", "Up Angle", GetUpAngle, SetUpAngle, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("downAngle", "Down Angle", GetDownAngle, SetDownAngle, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("Enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Distance between points", "Distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Up Angle", "Up Angle", GetUpAngle, SetUpAngle, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Down Angle", "Down Angle", GetDownAngle, SetDownAngle, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Vertical Variance", "Vertical Variance", GetVerticalVariance, SetVerticalVariance, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Should Normalize Color", "If enabled scales overlay's color to match current color.", ShoouldNormalizeColor, SetShoouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

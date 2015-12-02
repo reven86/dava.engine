@@ -155,6 +155,14 @@ void VisibilityCheckComponent::BuildPointSet()
         }
     }
 
+    if (verticalVariance > 0.0f)
+    {
+        for (auto& p : points)
+        {
+            p.z = randomFloat(-verticalVariance, verticalVariance);
+        }
+    }
+
     shouldBuildPointSet = false;
 }
 
@@ -240,4 +248,15 @@ bool VisibilityCheckComponent::ShoouldNormalizeColor() const
 void VisibilityCheckComponent::SetShoouldNormalizeColor(bool value)
 {
     shouldNormalizeColor = value;
+}
+
+float VisibilityCheckComponent::GetVerticalVariance() const
+{
+    return verticalVariance;
+}
+
+void VisibilityCheckComponent::SetVerticalVariance(float value)
+{
+    verticalVariance = std::max(0.0f, value);
+    shouldBuildPointSet = true;
 }

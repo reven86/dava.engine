@@ -53,7 +53,7 @@ float DecodeFloatRGBA(float4 encoded)
 }
 #endif
 
-#define MAGIC_TRESHOLD 1.001
+#define MAGIC_TRESHOLD 1.0001
 
 FPROG_BEGIN
 
