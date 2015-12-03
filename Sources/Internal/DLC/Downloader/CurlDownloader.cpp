@@ -626,8 +626,7 @@ DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, int32 
     }
 
     DownloadError retError = ErrorForEasyHandle(currentCurlHandle, curlStatus);
-    retSize = static_cast<int64>(sizeToDownload);
-
+    retSize = static_cast<uint64>(sizeToDownload);
 
     /* cleanup curl stuff */ 
     curl_easy_cleanup(currentCurlHandle);

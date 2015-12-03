@@ -367,8 +367,8 @@ void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily 
         tex.second->ReloadAs(targetGPU);
     }
 
-    DAVA::Vector<DAVA::NMaterial*> materials;
-    SceneHelper::EnumerateMaterialInstances(entity, materials);
+    DAVA::Set<DAVA::NMaterial*> materials;
+    SceneHelper::EnumerateMaterials(entity, materials);
     for (auto& mat : materials)
     {
         mat->InvalidateTextureBindings();

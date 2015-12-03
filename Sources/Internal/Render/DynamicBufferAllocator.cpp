@@ -255,11 +255,9 @@ AllocResultIB AllocateIndexBuffer(uint32 indexCount)
 const uint32 VERTICES_PER_QUAD = 4;
 const uint32 INDICES_PER_QUAD = 6;
 
-void FillQuadListData()
+void FillQuadListData(uint16* indices, uint32 quadCount)
 {
-    uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
-    uint16* indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);
-    for (uint32 i = 0; i < currMaxQuadCount; ++i)
+    for (uint32 i = 0; i < quadCount; ++i)
     {
         indices[i * INDICES_PER_QUAD + 0] = i * VERTICES_PER_QUAD + 0;
         indices[i * INDICES_PER_QUAD + 1] = i * VERTICES_PER_QUAD + 1;
@@ -268,13 +266,17 @@ void FillQuadListData()
         indices[i * INDICES_PER_QUAD + 4] = i * VERTICES_PER_QUAD + 1;
         indices[i * INDICES_PER_QUAD + 5] = i * VERTICES_PER_QUAD + 3; //preserve order
     }
-    rhi::UnmapIndexBuffer(currQuadList);
 }
 
 void RestoreQuadList()
 {
     if (currQuadList.IsValid() && rhi::NeedRestoreIndexBuffer(currQuadList))
-        FillQuadListData();
+    {
+        uint16* bufferData = new uint16[currMaxQuadCount * INDICES_PER_QUAD];
+        FillQuadListData(bufferData, currMaxQuadCount);
+        rhi::UpdateIndexBuffer(currQuadList, bufferData, 0, currMaxQuadCount * INDICES_PER_QUAD * sizeof(uint16));
+        SafeDeleteArray(bufferData);
+    }
 }
 
 rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
@@ -290,9 +292,19 @@ rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
             rhi::DeleteIndexBuffer(currQuadList);
 
         currMaxQuadCount = Max(currMaxQuadCount * 2, quadCount);
-        uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
-        currQuadList = rhi::CreateIndexBuffer(bufferSize);
-        FillQuadListData();
+
+        uint32 indiciesCount = currMaxQuadCount * INDICES_PER_QUAD;
+        uint16* bufferData = new uint16[indiciesCount];
+        FillQuadListData(bufferData, currMaxQuadCount);
+
+        rhi::IndexBuffer::Descriptor iDesc;
+        iDesc.size = indiciesCount * sizeof(uint16);
+        iDesc.usage = rhi::USAGE_STATICDRAW;
+        iDesc.initialData = bufferData;
+
+        currQuadList = rhi::CreateIndexBuffer(iDesc);
+
+        SafeDeleteArray(bufferData);
     }
     return currQuadList;
 }

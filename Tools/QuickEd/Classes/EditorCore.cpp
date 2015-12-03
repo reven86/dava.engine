@@ -51,7 +51,7 @@
 
 using namespace DAVA;
 
-EditorCore::EditorCore(QObject *parent)
+EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
@@ -88,7 +88,6 @@ EditorCore::EditorCore(QObject *parent)
     connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
-
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
@@ -112,7 +111,14 @@ EditorCore::EditorCore(QObject *parent)
     connect(previewWidget, &PreviewWidget::FocusNextChild, documentGroup, &DocumentGroup::FocusNextChild);
     connect(previewWidget, &PreviewWidget::FocusPreviousChild, documentGroup, &DocumentGroup::FocusPreviousChild);
     connect(previewWidget, &PreviewWidget::SelectAllRequested, documentGroup, &DocumentGroup::OnSelectAllRequested);
-    connect(previewWidget, &PreviewWidget::DeleteRequested, mainWindow->packageWidget, &PackageWidget::OnDelete);
+
+    auto packageWidget = mainWindow->packageWidget;
+    connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
+    connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
+    connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
+    connect(previewWidget, &PreviewWidget::CopyRequested, packageWidget, &PackageWidget::OnCopy);
+    connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
+
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
@@ -141,8 +147,10 @@ void EditorCore::Start()
 
 void EditorCore::OnReloadSprites()
 {
-    CloseAllDocuments();
-    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+    if (CloseAllDocuments())
+    {
+        mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+    }
 }
 
 void EditorCore::OnFilesChanged(const QStringList& changedFiles)
@@ -264,15 +272,15 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
         spritesPacker->SetCacheTool(
-                                    EditorSettings::Instance()->GetAssetCacheIp(),
-                                    EditorSettings::Instance()->GetAssetCachePort(),
-                                    EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+        EditorSettings::Instance()->GetAssetCacheIp(),
+        EditorSettings::Instance()->GetAssetCachePort(),
+        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
     }
     else
     {
         spritesPacker->ClearCacheTool();
     }
-    
+
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();
     QDirIterator it(projectPath + "/DataSource");

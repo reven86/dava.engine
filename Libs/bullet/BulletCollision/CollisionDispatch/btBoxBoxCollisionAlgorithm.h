@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -55,41 +54,40 @@ class btPersistentManifold;
 ///box-box collision detection
 class btBoxBoxCollisionAlgorithm : public btActivatingCollisionAlgorithm
 {
-	bool	m_ownManifold;
-	btPersistentManifold*	m_manifoldPtr;
-	
+    bool m_ownManifold;
+    btPersistentManifold* m_manifoldPtr;
+
 public:
-	btBoxBoxCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci)
-		: btActivatingCollisionAlgorithm(ci) {}
+    btBoxBoxCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci)
+        : btActivatingCollisionAlgorithm(ci)
+    {
+    }
 
-	virtual void processCollision (btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual void processCollision(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	btBoxBoxCollisionAlgorithm(btPersistentManifold* mf,const btCollisionAlgorithmConstructionInfo& ci,btCollisionObject* body0,btCollisionObject* body1);
+    btBoxBoxCollisionAlgorithm(btPersistentManifold* mf, const btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0, btCollisionObject* body1);
 
-	virtual ~btBoxBoxCollisionAlgorithm();
+    virtual ~btBoxBoxCollisionAlgorithm();
 
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray)
-	{
-		if (m_manifoldPtr && m_ownManifold)
-		{
-			manifoldArray.push_back(m_manifoldPtr);
-		}
-	}
+    virtual void getAllContactManifolds(btManifoldArray& manifoldArray)
+    {
+        if (m_manifoldPtr && m_ownManifold)
+        {
+            manifoldArray.push_back(m_manifoldPtr);
+        }
+    }
 
-
-	struct CreateFunc :public 	btCollisionAlgorithmCreateFunc
-	{
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0,btCollisionObject* body1)
-		{
-			int bbsize = sizeof(btBoxBoxCollisionAlgorithm);
-			void* ptr = ci.m_dispatcher1->allocateCollisionAlgorithm(bbsize);
-			return new(ptr) btBoxBoxCollisionAlgorithm(0,ci,body0,body1);
-		}
-	};
-
+    struct CreateFunc : public btCollisionAlgorithmCreateFunc
+    {
+        virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0, btCollisionObject* body1)
+        {
+            int bbsize = sizeof(btBoxBoxCollisionAlgorithm);
+            void* ptr = ci.m_dispatcher1->allocateCollisionAlgorithm(bbsize);
+            return new (ptr) btBoxBoxCollisionAlgorithm(0, ci, body0, body1);
+        }
+    };
 };
 
 #endif //BT_BOX_BOX__COLLISION_ALGORITHM_H
-

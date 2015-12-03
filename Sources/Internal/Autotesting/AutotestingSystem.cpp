@@ -169,9 +169,9 @@ namespace DAVA
         }
         isRunning = true;
         OnTestStarted();
-	}
+    }
 
-	void AutotestingSystem::OnInit()
+    void AutotestingSystem::OnInit()
 	{
 		DVASSERT(!isInit);
 		isInit = true;
@@ -362,7 +362,7 @@ namespace DAVA
         AutotestingDB::Instance()->Log("ERROR", errorMessage);
 
         MakeScreenShot();
-        
+
         AutotestingDB::Instance()->Log("ERROR", screenShotName);
 
 		if (isDB && deviceId != "not-initialized")
@@ -505,8 +505,8 @@ namespace DAVA
         bool isFound = false;
         Map<int32, UIEvent>::iterator findIt = touches.find(id);
         if (findIt != touches.end())
-		{
-			isFound = true;
+        {
+            isFound = true;
 			touch = findIt->second;
 		}
 		return isFound;

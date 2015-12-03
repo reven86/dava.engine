@@ -64,6 +64,10 @@ signals:
     void ScaleChanged(float scale);
     void DPRChanged(qreal dpr);
     void DeleteRequested();
+    void ImportRequested();
+    void CutRequested();
+    void CopyRequested();
+    void PasteRequested();
     void SelectAllRequested();
     void FocusNextChild();
     void FocusPreviousChild();
@@ -76,7 +80,7 @@ public slots:
 
 private slots:
     void OnScaleChanged(qreal scale);
-	void OnScaleByComboIndex(int value);
+    void OnScaleByComboIndex(int value);
 	void OnScaleByComboText();
     
     void OnGLWidgetResized(int width, int height, int dpr);
@@ -88,7 +92,7 @@ private slots:
 
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
-    
+
 protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
 
