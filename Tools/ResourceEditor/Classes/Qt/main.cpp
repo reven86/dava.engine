@@ -116,7 +116,7 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 #if defined(__DAVAENGINE_MACOS__)
     DAVA::QtLayer::MakeAppForeground(false);
 #elif defined(__DAVAENGINE_WIN32__)
-    WinConsoleIOLocker locker;
+//    WinConsoleIOLocker locker; //temporary disabled because of freezes of Windows Console
 #endif //platforms
 
     Core::Instance()->EnableConsoleMode();

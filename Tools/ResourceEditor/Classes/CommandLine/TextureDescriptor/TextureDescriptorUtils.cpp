@@ -197,7 +197,9 @@ void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPat
 	TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPathname);
 	if(!descriptor) return;
 
-	DVASSERT(descriptor->compression);
+    descriptor->dataSettings.SetGenerateMipmaps(generateMipMaps);
+
+    DVASSERT(descriptor->compression);
 
 	auto endIt = compressionParams.end();
 	for(auto it = compressionParams.begin(); it != endIt; ++it)
