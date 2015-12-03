@@ -15,7 +15,7 @@ Image
 
     function getGlobalCenter()
     {
-        return mapToItem(graphCanvasObject, width / 2.0, height / 2.0)
+        return mapToItem(objectsContainer, width / 2.0, height / 2.0)
     }
 
     Component.onCompleted :
@@ -50,14 +50,20 @@ Image
 
         onPressed :
         {
-            interactiveConnectionCurve.startPoint = getGlobalCenter();
+            var pt = getGlobalCenter();
+            interactiveConnectionCurve.startX = pt.x;
+            interactiveConnectionCurve.startY = pt.y;
+            interactiveConnectionCurve.endX = pt.x;
+            interactiveConnectionCurve.endY = pt.y;
+            interactiveConnectionCurve.visible = true;
             connectionStartSlot = slot
         }
 
         onPositionChanged :
         {
-            interactiveConnectionCurve.endPoint = mapToItem(graphCanvasObject, mouse.x, mouse.y)
-            interactiveConnectionCurve.requestPaint()
+            var pt = mapToItem(objectsContainer, mouse.x, mouse.y)
+            interactiveConnectionCurve.endX = pt.x;
+            interactiveConnectionCurve.endY = pt.y;
         }
 
         function findSlot(root, point)
@@ -87,20 +93,22 @@ Image
         onReleased :
         {
             connectionStartSlot = null
-            interactiveConnectionCurve.startPoint = null
-            interactiveConnectionCurve.endPoint = null
-            interactiveConnectionCurve.requestPaint()
+            interactiveConnectionCurve.startX = 0;
+            interactiveConnectionCurve.startY = 0;
+            interactiveConnectionCurve.endX = 0;
+            interactiveConnectionCurve.endY = 0;
+            interactiveConnectionCurve.visible = false;
 
-            var point = mapToItem(graphCanvasObject, mouse.x, mouse.y)
+            var point = mapToItem(objectsContainer, mouse.x, mouse.y)
 
-            var child = findSlot(graphCanvasObject, point)
+            var child = findSlot(objectsContainer, point)
             if (child == null)
                 return;
 
             if (slot.isInput)
-                graphEditorComponent.connect(child.slotObject.uid, slot.slotObject.uid)
-            else
                 graphEditorComponent.connect(slot.slotObject.uid, child.slotObject.uid)
+            else
+                graphEditorComponent.connect(child.slotObject.uid, slot.slotObject.uid)
         }
 
         ContextMenu

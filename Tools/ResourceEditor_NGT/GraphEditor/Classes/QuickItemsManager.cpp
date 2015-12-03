@@ -26,72 +26,29 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GRAPHEDITOR_GRAPHNODE_H__
-#define __GRAPHEDITOR_GRAPHNODE_H__
+#include "QuickItemsManager.h"
 
-#include <core_common/signal.hpp>
-#include <core_data_model/i_list_model.hpp>
-#include <core_reflection/reflected_object.hpp>
-#include <core_reflection/object_handle.hpp>
+#include "ConnectionItem.h"
 
-#include <string>
-#include <QPointF>
-
-class ConnectionSlot;
-class GraphNode final
+QuickItemsManager& QuickItemsManager::Instance()
 {
-    DECLARE_REFLECTED
-public:
-    GraphNode();
-    ~GraphNode();
+    static QuickItemsManager mng;
+    return mng;
+}
 
-    struct Params
-    {
-        using TSlotPtr = ObjectHandleT<ConnectionSlot>;
-        using TSlotCollection = std::vector<TSlotPtr>;
+void QuickItemsManager::RegisterObject(ConnectionItem* item)
+{
+    items.emplace(item->GetUID(), item);
+}
 
-        TSlotCollection inputSlots;
-        TSlotCollection outputSlots;
-        std::string typeId;
-    };
+void QuickItemsManager::UnregisterObject(ConnectionItem* item)
+{
+    items.erase(item->GetUID());
+}
 
-    void Init(Params&& params);
-
-    float GetPosX() const;
-    void SetPosX(float posX);
-    float GetPosY() const;
-    void SetPosY(float posY);
-
-    std::string const& GetTitle() const;
-    void SetTitle(std::string const& title);
-
-    size_t GetUID() const;
-    std::string const& GetType() const
-    {
-        return typeId;
-    }
-
-    void Shift(float modelShiftX, float modelShiftY);
-    void ShiftImpl(float modelShiftX, float modelShiftY);
-
-    Signal<void(float x, float y)> MoveNodes;
-    Signal<void(GraphNode*)> Changed;
-
-private:
-    IListModel* GetInputSlots() const;
-    IListModel* GetOutputSlots() const;
-
-    /// we need this method to call it through NGT reflection system and signal qml that value changed
-    void PosXChanged(const float& x);
-    void PosYChanged(const float& y);
-
-private:
-    std::string title;
-    float modelX = 0.0f, modelY = 0.0f;
-
-    std::unique_ptr<IListModel> inputSlots;
-    std::unique_ptr<IListModel> outputSlots;
-    std::string typeId;
-};
-
-#endif // __GRAPHEDITOR_GRAPHNODE_H__
+void QuickItemsManager::RepaintItem(size_t uid)
+{
+    auto iter = items.find(uid);
+    if (iter != items.end())
+        iter->second->update();
+}

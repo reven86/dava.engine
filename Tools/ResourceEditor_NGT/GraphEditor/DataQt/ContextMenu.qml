@@ -30,7 +30,7 @@ WGContextArea
                 onTriggered :
                 {
                     var pt = graphCanvas.viewTransform.inverseTransform(popupPoint)
-                    Value.trigger(pt.x, pt.y, contextObjectUid)
+                    Value.trigger(pt.x, -pt.y, contextObjectUid)
                 }
             }
         }

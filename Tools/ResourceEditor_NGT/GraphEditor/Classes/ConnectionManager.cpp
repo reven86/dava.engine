@@ -35,6 +35,7 @@
 #include "GraphNode.h"
 #include "ConnectionSlot.h"
 #include "Connector.h"
+#include "QuickItemsManager.h"
 
 #include <QFileDialog>
 #include <QFile>
@@ -146,6 +147,8 @@ ObjectHandleT<GraphNode> ConnectionManager::CreateNode(const std::string& nodeTy
 ConnectionManager::TNodePtr ConnectionManager::CreateNode(const std::string& nodeTypeId, const TCreateSlotFn& fn)
 {
     TNodePtr node = GetDefinitionManager().create<GraphNode>(true);
+    node->Changed.connect(std::bind(&ConnectionManager::GraphNodeChanged, this, std::placeholders::_1));
+    node->MoveNodes.connect(std::bind(&ConnectionManager::MoveHalf, this, std::placeholders::_1, std::placeholders::_2));
 
     if (nodeTypeId == "type1")
         InitNodeType1(node, nodeTypeId, fn);
@@ -445,6 +448,40 @@ void ConnectionManager::ClearModel()
     slotToConnector.clear();
     uidToSlot.clear();
     nodeToSlots.clear();
+}
+
+void ConnectionManager::GraphNodeChanged(GraphNode* node)
+{
+    QuickItemsManager& mng = QuickItemsManager::Instance();
+
+    TNodePtr nodePtr(node);
+
+    auto nodeIter = nodeToSlots.find(nodePtr);
+    assert(nodeIter != nodeToSlots.end());
+
+    for (TSlotPtr& slot : nodeIter->second)
+    {
+        auto slotIter = slotToConnector.find(slot);
+        if (slotIter != slotToConnector.end())
+        {
+            for (TConnectorPtr& connector : slotIter->second)
+                mng.RepaintItem(connector->GetUID());
+        }
+    }
+}
+
+void ConnectionManager::MoveHalf(float x, float y)
+{
+    size_t count = nodeToSlots.size() >> 2;
+    count = std::min(count, static_cast<size_t>(100));
+    size_t counter = 0;
+    auto iter = nodeToSlots.begin();
+    while (counter < count)
+    {
+        iter->first->ShiftImpl(x, y);
+        iter++;
+        counter++;
+    }
 }
 
 ObjectHandleT<ConnectionSlot> ConnectionManager::GetSlot(size_t slotUID)

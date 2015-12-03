@@ -73,3 +73,9 @@ size_t Connector::GetOutputSlotId() const
 {
     return outputSlotID;
 }
+
+size_t Connector::GetUID() const
+{
+    size_t uid = reinterpret_cast<size_t>(this);
+    return uid;
+}

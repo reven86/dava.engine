@@ -19,6 +19,21 @@ Slot
             text: slotObject.title
         }
 
+        WGTextBox
+        {
+            placeholderText: "empty text"
+            width : 30
+            assetBrowserContextMenu: false
+        }
+
+        WGSpinBox
+        {
+            width: 120
+            value: 25
+            minimumValue: 0
+            maximumValue: 100
+        }
+
         SlotImage
         {
             z : outputSlot.z

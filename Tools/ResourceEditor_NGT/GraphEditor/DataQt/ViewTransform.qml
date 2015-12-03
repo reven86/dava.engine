@@ -13,8 +13,8 @@ Item
         xScale *= scaleFactor;
         yScale *= scaleFactor;
 
-        xScale = Math.max(xScale, 1.0);
-        yScale = Math.min(yScale, -1.0);
+        xScale = Math.max(xScale, 0.01);
+        yScale = Math.min(yScale, -0.01);
     }
 
     function transformX(val)

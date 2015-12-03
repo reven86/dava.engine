@@ -2,6 +2,7 @@ import QtQuick 2.1
 import QtQuick.Layouts 1.0
 import QtQuick.Controls 1.2
 import WGControls 1.0
+import DAVA 1.0
 
 Rectangle
 {
@@ -18,13 +19,13 @@ Rectangle
 
     property var slotsIndex : []
     property var graphCanvasObject : graphCanvas
+    property var objectsContainer : graphObject
     property var connectionStartSlot
     property var interactiveConnectionCurve : connectionCurve
 
     function connect(output, input)
     {
         createConnection(output, input)
-        repaintConnectors()
     }
 
     function getNodeContextMenu()
@@ -35,11 +36,6 @@ Rectangle
     function getSlotContextMenu()
     {
         return slotMenuModel
-    }
-
-    function repaintConnectors()
-    {
-        connectorsLayer.requestPaint()
     }
 
     ColumnLayout
@@ -154,7 +150,6 @@ Rectangle
                     var shift = Qt.point(screenPos.x - newScreenPos.x, screenPos.y - newScreenPos.y)
                     graphCanvas.viewTransform.shift(shift);
                     graphCanvas.requestPaint()
-                    repaintConnectors()
                 }
                 
                 onPositionChanged:
@@ -166,7 +161,6 @@ Rectangle
                         mouseDragStart = pos
                         graphCanvas.viewTransform.shift(delta);
                         graphCanvas.requestPaint()
-                        repaintConnectors()
                     }
                 }
                 
@@ -188,58 +182,63 @@ Rectangle
 
                 ValueExtension {}
             }
+
+            WGListModel
+            {
+                id : connectors
+                source : connectorsModel
+
+                ValueExtension {}
+            }
             
             Item
             {
                 id : graphObject
-                x: graphCanvasObject.viewTransform.origin.x
-                y: graphCanvasObject.viewTransform.origin.y
                 z : 50
 
-                width : dummyRow.width
-                height : dummyRow.height
-                transform : Scale
+                transform : [
+                Scale
                 {
                     origin.x : 0
                     origin.y : 0
                     xScale : graphCanvasObject.viewTransform.xScale
                     yScale : graphCanvasObject.viewTransform.xScale
+                },
+                Translate
+                {
+                    x : graphCanvasObject.viewTransform.origin.x
+                    y : graphCanvasObject.viewTransform.origin.y
+                }
+                ]
+
+                Repeater
+                {
+                    model : connectors
+                    delegate : ConnectionItem
+                    {
+                        outputSlot : slotsIndex[Value.outputSlot]
+                        inputSlot : slotsIndex[Value.inputSlot]
+                        uid : Value.uid
+                    }
                 }
 
-                RowLayout
+                InteractiveConnectionItem
                 {
-                    id : dummyRow
-                    Repeater
-                    {
-                        id: itemRepeater
-                        model: nodesModel
-                        delegate: SimpleComponent
-                        {
-                            x : Value.nodePosX
-                            y : Value.nodePosY
-                            z : graphCanvas.z + 10
+                    id : connectionCurve
+                    visible : false
+                }
 
-                            node : Value
-                            nodeContextMenu : getNodeContextMenu()
-                        }
-                    }
-
-                    ConnectorsLayer
+                Repeater
+                {
+                    id: itemRepeater
+                    model: nodesModel
+                    delegate: SimpleComponent
                     {
-                        id : connectorsLayer
-                        x : 0
-                        y : 0
-                        z : 100
-                        width : graphObject.width
-                        height : graphObject.height
-                        curveColor : "red"
-                        connectors : connectorsModel
-                    }
+                        x : Value.nodePosX
+                        y : Value.nodePosY
 
-                    ConnectionCurve
-                    {
-                        id : connectionCurve
-                        curveColor : "red"
+                        node : Value
+                        nodeContextMenu : getNodeContextMenu()
                     }
                 }
             }

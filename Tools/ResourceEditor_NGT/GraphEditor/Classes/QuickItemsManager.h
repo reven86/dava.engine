@@ -26,72 +26,25 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GRAPHEDITOR_GRAPHNODE_H__
-#define __GRAPHEDITOR_GRAPHNODE_H__
+#ifndef __GRAPHEDITOR_QUICKITEMSMANAGER_H__
+#define __GRAPHEDITOR_QUICKITEMSMANAGER_H__
 
-#include <core_common/signal.hpp>
-#include <core_data_model/i_list_model.hpp>
-#include <core_reflection/reflected_object.hpp>
-#include <core_reflection/object_handle.hpp>
+#include <unordered_map>
 
-#include <string>
-#include <QPointF>
-
-class ConnectionSlot;
-class GraphNode final
+class ConnectionItem;
+class QuickItemsManager
 {
-    DECLARE_REFLECTED
 public:
-    GraphNode();
-    ~GraphNode();
+    static QuickItemsManager& Instance();
 
-    struct Params
-    {
-        using TSlotPtr = ObjectHandleT<ConnectionSlot>;
-        using TSlotCollection = std::vector<TSlotPtr>;
-
-        TSlotCollection inputSlots;
-        TSlotCollection outputSlots;
-        std::string typeId;
-    };
-
-    void Init(Params&& params);
-
-    float GetPosX() const;
-    void SetPosX(float posX);
-    float GetPosY() const;
-    void SetPosY(float posY);
-
-    std::string const& GetTitle() const;
-    void SetTitle(std::string const& title);
-
-    size_t GetUID() const;
-    std::string const& GetType() const
-    {
-        return typeId;
-    }
-
-    void Shift(float modelShiftX, float modelShiftY);
-    void ShiftImpl(float modelShiftX, float modelShiftY);
-
-    Signal<void(float x, float y)> MoveNodes;
-    Signal<void(GraphNode*)> Changed;
+    void RegisterObject(ConnectionItem* item);
+    void UnregisterObject(ConnectionItem* item);
+    void RepaintItem(size_t uid);
 
 private:
-    IListModel* GetInputSlots() const;
-    IListModel* GetOutputSlots() const;
+    QuickItemsManager() = default;
 
-    /// we need this method to call it through NGT reflection system and signal qml that value changed
-    void PosXChanged(const float& x);
-    void PosYChanged(const float& y);
-
-private:
-    std::string title;
-    float modelX = 0.0f, modelY = 0.0f;
-
-    std::unique_ptr<IListModel> inputSlots;
-    std::unique_ptr<IListModel> outputSlots;
-    std::string typeId;
+    std::unordered_map<size_t, ConnectionItem*> items;
 };
 
-#endif // __GRAPHEDITOR_GRAPHNODE_H__
+#endif // __GRAPHEDITOR_QUICKITEMSMANAGER_H__

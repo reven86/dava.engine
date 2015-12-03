@@ -9,6 +9,7 @@ Item
     property var node
     property var nodeContextMenu
     property real margin : 4.0
+    opacity: 1.0
 
     width : contentRect.width
     height : contentRect.height
@@ -42,9 +43,8 @@ Item
                     {
                         var pos = graphCanvas.viewTransform.inverseTransform(mapToItem(graphCanvasObject, mouse.x, mouse.y))
                         var delta = Qt.point(pos.x - mouseDragStart.x, pos.y - mouseDragStart.y)
-                        node.shiftNode(delta.x, delta.y)
+                        node.shiftNode(delta.x, -delta.y)
                         mouseDragStart = pos
-                        graphEditorComponent.repaintConnectors()
                     }
                 }
 
@@ -132,6 +132,7 @@ Item
                         Item
                         {
                             width : 30
+                            opacity : 1.0
                         }
                     }
 

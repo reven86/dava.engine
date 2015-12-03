@@ -51,6 +51,8 @@ public:
     size_t GetInputSlotId() const;
     size_t GetOutputSlotId() const;
 
+    size_t GetUID() const;
+
 private:
     size_t outputSlotID = 0;
     size_t intputSlotID = 0;

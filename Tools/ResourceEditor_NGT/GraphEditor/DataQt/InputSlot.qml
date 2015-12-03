@@ -20,6 +20,11 @@ Slot
             slot : inputSlot
         }
 
+        WGColorButton
+        {
+            color: "blue"
+        }
+
         Text
         {
             Layout.alignment : Qt.AlignTop | Qt.AlignLeft

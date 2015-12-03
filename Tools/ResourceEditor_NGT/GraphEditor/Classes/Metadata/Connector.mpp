@@ -7,4 +7,5 @@
 BEGIN_EXPOSE( Connector, MetaNone() )
     EXPOSE("outputSlot", GetOutputSlotId, MetaNone())
     EXPOSE("inputSlot", GetInputSlotId, MetaNone())
+    EXPOSE("uid", GetUID, MetaNone())
 END_EXPOSE()

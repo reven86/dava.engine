@@ -113,8 +113,16 @@ void GraphNode::SetPosY(float y)
 
 void GraphNode::Shift(float modelShiftX, float modelShiftY)
 {
+    //MoveNodes(modelShiftX, modelShiftY);
+    ShiftImpl(modelShiftX, modelShiftY);
+}
+
+void GraphNode::ShiftImpl(float modelShiftX, float modelShiftY)
+{
     SetPosX(GetPosX() + modelShiftX);
     SetPosY(GetPosY() + modelShiftY);
+
+    Changed(this);
 }
 
 IListModel* GraphNode::GetInputSlots() const

@@ -93,6 +93,10 @@ private:
 
     void ClearModel();
 
+    void GraphNodeChanged(GraphNode* node);
+
+    void MoveHalf(float x, float y);
+
 private:
     template <typename T>
     struct ObjectHandleHash

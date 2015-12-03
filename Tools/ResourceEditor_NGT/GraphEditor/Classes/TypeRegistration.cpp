@@ -33,6 +33,7 @@
 #include "GraphNode.h"
 #include "Connector.h"
 #include "ConnectionSlot.h"
+#include "ConnectionItem.h"
 
 #include <core_reflection/type_class_definition.hpp>
 
@@ -43,4 +44,7 @@ void RegisterGrapEditorTypes(IDefinitionManager& mng)
     mng.registerDefinition(new TypeClassDefinition<ConnectionSlot>());
     mng.registerDefinition(new TypeClassDefinition<GraphEditor>());
     mng.registerDefinition(new TypeClassDefinition<GraphNode>());
+
+    qmlRegisterType<ConnectionItem>("DAVA", 1, 0, "ConnectionItem");
+    qmlRegisterType<InteractiveConnectionItem>("DAVA", 1, 0, "InteractiveConnectionItem");
 }
