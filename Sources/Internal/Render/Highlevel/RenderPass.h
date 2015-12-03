@@ -88,12 +88,20 @@ protected:
     {
         rhi::HQueryBuffer query;
         Array<uint32, RenderLayer::RENDER_LAYER_ID_COUNT> perLayerObjectCount = {};
-        uint32 queryObjectCount = 0;
+        uint32 usedQueryObjectsCount = 0;
+
+        void Reset()
+        {
+            query = rhi::HQueryBuffer(rhi::InvalidHandle);
+            Memset(perLayerObjectCount.data(), 0, sizeof(uint32) * perLayerObjectCount.size());
+            usedQueryObjectsCount = 0;
+        }
     };
 
     bool LayersQueryIsReady(const LayersQuery& buf);
     void ProcessVisibilityQuery();
 
+    LayersQuery currentLayersQuery;
     Deque<LayersQuery> queryBuffers;
 #endif
 

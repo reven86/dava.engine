@@ -194,7 +194,13 @@ void RenderPass::DrawLayers(Camera* camera)
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
 
-        queryObjectOffset += layer->Draw(camera, batchArray, packetList, queryObjectOffset);
+        uint32 drawedBatches = layer->Draw(camera, batchArray, packetList, queryObjectOffset);
+        queryObjectOffset += drawedBatches;
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+        currentLayersQuery.perLayerObjectCount[layer->GetRenderLayerID()] = drawedBatches;
+        currentLayersQuery.usedQueryObjectsCount += drawedBatches;
+#endif
     }
 }
 
@@ -210,11 +216,11 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
 #if __DAVAENGINE_RENDERSTATS__
 bool RenderPass::LayersQueryIsReady(const LayersQuery& buf)
 {
-    if (!buf.queryObjectCount)
+    if (!buf.usedQueryObjectsCount)
         return true;
 
-    //check first and last query object
-    return rhi::QueryIsReady(buf.query, 0) && ((buf.queryObjectCount > 1) ? rhi::QueryIsReady(buf.query, buf.queryObjectCount - 1) : true);
+    //check first and last used query object
+    return rhi::QueryIsReady(buf.query, 0) && ((buf.usedQueryObjectsCount > 1) ? rhi::QueryIsReady(buf.query, buf.usedQueryObjectsCount - 1) : true);
 }
 
 void RenderPass::ProcessVisibilityQuery()
@@ -244,22 +250,17 @@ void RenderPass::ProcessVisibilityQuery()
 void RenderPass::BeginRenderPass()
 {
 #if __DAVAENGINE_RENDERSTATS__
-    LayersQuery layersQuery;
+    uint32 maxObjectsCount = 0;
     size_t layersCount = renderLayers.size();
     for (size_t k = 0; k < layersCount; ++k)
     {
         RenderLayer::eRenderLayerID layerID = renderLayers[k]->GetRenderLayerID();
-        uint32 batchCount = layersBatchArrays[layerID].GetRenderBatchCount();
-
-        layersQuery.perLayerObjectCount[layerID] = batchCount;
-        layersQuery.queryObjectCount += batchCount;
+        maxObjectsCount += layersBatchArrays[layerID].GetRenderBatchCount();
     }
 
-    if (layersQuery.queryObjectCount)
+    if (maxObjectsCount)
     {
-        layersQuery.query = rhi::CreateQueryBuffer(layersQuery.queryObjectCount);
-        queryBuffers.push_back(layersQuery);
-        passConfig.queryBuffer = layersQuery.query;
+        passConfig.queryBuffer = rhi::CreateQueryBuffer(maxObjectsCount);
     }
     else
     {
@@ -278,6 +279,21 @@ void RenderPass::EndRenderPass()
     rhi::EndRenderPass(renderPass);
 
 #if __DAVAENGINE_RENDERSTATS__
+    rhi::HQueryBuffer qBuffer = rhi::HQueryBuffer(passConfig.queryBuffer);
+    if (passConfig.queryBuffer != rhi::InvalidHandle)
+    {
+        if (currentLayersQuery.usedQueryObjectsCount)
+        {
+            currentLayersQuery.query = qBuffer;
+            queryBuffers.push_back(currentLayersQuery);
+        }
+        else
+        {
+            rhi::DeleteQueryBuffer(qBuffer);
+        }
+        currentLayersQuery.Reset();
+    }
+
     ProcessVisibilityQuery();
 #endif
 }
