@@ -97,7 +97,7 @@ Branch* MemorySnapshot::CreateBranch(const Vector<const String*>& startNames) co
     {
         const Vector<const String*>* bktraceNames = symbolTable->GetBacktraceSymbols(pair.first);
         const Vector<MMBlock*>& blocks = pair.second;
-        
+
         if (bktraceNames != nullptr && !blocks.empty() && !bktraceNames->empty())
         {
             int startFrame = FindNamesInBacktrace(startNames, *bktraceNames);

@@ -53,10 +53,10 @@ GameCore::GameCore()
     new RulerController();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	new AutotestingSystem();
+    new AutotestingSystem();
 #endif
 
-	// Unpack the help data, if needed.
+    // Unpack the help data, if needed.
 	UnpackHelp();
 
 	//Initialize internal resources of application
@@ -72,9 +72,8 @@ GameCore::~GameCore()
     EditorSettings::Instance()->Release();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	AutotestingSystem::Instance()->Release();
+    AutotestingSystem::Instance()->Release();
 #endif
-
 }
 
 void GameCore::OnAppStarted()

@@ -70,8 +70,6 @@ void LightmapsPacker::ParseSpriteDescriptors()
 		file->ReadLine(buf, sizeof(buf)); //frame rect
 		int32 x, y, dx, dy, unused0, unused1, unused2;
 		sscanf(buf, "%d %d %d %d %d %d %d", &x, &y, &dx, &dy, &unused0, &unused1, &unused2);
-		dx++;//cause TexturePacker::ReduceRectToOriginalSize removed one pixel by default
-		dy++;
 
 		Vector2 textureSize = GetTextureSize(originalTextureName);
 		data.uvOffset = Vector2((float32)x/textureSize.x, (float32)y/textureSize.y);

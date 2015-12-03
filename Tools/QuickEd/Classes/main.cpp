@@ -35,7 +35,6 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "TextureCompression/PVRConverter.h"
 
-
 void InitPVRTexTool()
 {
 #if defined (__DAVAENGINE_MACOS__)

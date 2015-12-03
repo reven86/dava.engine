@@ -43,6 +43,7 @@ struct PackageIterator::IteratorData
 
     MatchFunction func = defaultFunction;
     PackageBaseNode* currentNode = nullptr;
+
 private:
     DAVA::uint32 currentIndex = 0;
     ParentIndexes parentIndexes;
@@ -125,8 +126,7 @@ PackageIterator& PackageIterator::operator--()
         do
         {
             impl->currentNode = impl->Previous();
-        }
-        while (IsValid() && !impl->Accaptable());
+        } while (IsValid() && !impl->Accaptable());
     }
     return *this;
 }
@@ -158,7 +158,7 @@ void PackageIterator::IteratorData::InitFromNode(PackageBaseNode* node)
 {
     currentNode = node;
     PackageBaseNode* parent = node->GetParent();
-    
+
     ParentIndexes parentIndexesReverse;
 
     while (nullptr != parent)

@@ -125,9 +125,9 @@ private:
 
     bool foreground;
 
-    AndroidSystemDelegate *androidDelegate;
+    AndroidSystemDelegate* androidDelegate;
 
-	String externalStorage;
+    String externalStorage;
 	String internalStorage;
 };
 };
