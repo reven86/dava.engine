@@ -180,7 +180,10 @@ GLCommand
         GET_ACTIVE_UNIFORM,
         GET_UNIFORM_LOCATION,
 
-        SET_UNIFORM_1I
+        SET_UNIFORM_1I,
+
+        GET_QUERYOBJECT_UIV,
+        DELETE_QUERIES
     };
 
     Func func;

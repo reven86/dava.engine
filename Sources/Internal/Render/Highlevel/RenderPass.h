@@ -87,6 +87,7 @@ protected:
     struct LayersQuery
     {
         rhi::HQueryBuffer query;
+        Array<uint32, RenderLayer::RENDER_LAYER_ID_COUNT> perLayerObjectCount = {};
         uint32 queryObjectCount = 0;
     };
 

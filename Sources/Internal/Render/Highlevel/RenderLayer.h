@@ -77,7 +77,7 @@ public:
     inline eRenderLayerID GetRenderLayerID() const;
     inline uint32 GetSortingFlags() const;
 
-    virtual void Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList, uint32 queryIndexOffset);
+    virtual uint32 Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList, uint32 queryIndexOffset);
 
 protected:
     eRenderLayerID layerID;

@@ -1909,6 +1909,30 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
                 #endif
         }
         break;
+
+        case GLCommand::GET_QUERYOBJECT_UIV:
+        {
+#if defined(__DAVAENGINE_IPHONE__)
+            EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
+            EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+#endif
+            cmd->status = err;
+        }
+        break;
+
+        case GLCommand::DELETE_QUERIES:
+        {
+#if defined(__DAVAENGINE_IPHONE__)
+            EXEC_GL(glDeleteQueriesEXT(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
+            EXEC_GL(glDeleteQueries(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+#endif
+            cmd->status = err;
+        }
+        break;
         }
     }
 #undef EXEC_GL

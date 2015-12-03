@@ -194,8 +194,7 @@ void RenderPass::DrawLayers(Camera* camera)
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
 
-        layer->Draw(camera, batchArray, packetList, queryObjectOffset);
-        queryObjectOffset += batchArray.GetRenderBatchCount();
+        queryObjectOffset += layer->Draw(camera, batchArray, packetList, queryObjectOffset);
     }
 }
 
@@ -211,17 +210,16 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
 #if __DAVAENGINE_RENDERSTATS__
 bool RenderPass::LayersQueryIsReady(const LayersQuery& buf)
 {
-    for (uint32 i = 0; i < buf.queryObjectCount; ++i)
-    {
-        if (!rhi::QueryIsReady(buf.query, i))
-            return false;
-    }
-    return true;
+    if (!buf.queryObjectCount)
+        return true;
+
+    //check first and last query object
+    return rhi::QueryIsReady(buf.query, 0) && ((buf.queryObjectCount > 1) ? rhi::QueryIsReady(buf.query, buf.queryObjectCount - 1) : true);
 }
 
 void RenderPass::ProcessVisibilityQuery()
 {
-    DVASSERT(queryBuffers.size() < 100);
+    DVASSERT(queryBuffers.size() < 128);
 
     while (queryBuffers.size() && LayersQueryIsReady(queryBuffers.front()))
     {
@@ -230,11 +228,11 @@ void RenderPass::ProcessVisibilityQuery()
         for (uint32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
         {
             FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
-            for (uint32 obj = 0; obj < layersBatchArrays[i].GetRenderBatchCount(); ++obj)
+            for (uint32 obj = 0; obj < queryBuffers.front().perLayerObjectCount[i]; ++obj)
             {
                 stats.queryResults[layerName] += rhi::QueryValue(queryBuffers.front().query, objectIndexOffset + obj);
             }
-            objectIndexOffset += layersBatchArrays[i].GetRenderBatchCount();
+            objectIndexOffset += queryBuffers.front().perLayerObjectCount[i];
         }
 
         rhi::DeleteQueryBuffer(queryBuffers.front().query);
@@ -247,8 +245,15 @@ void RenderPass::BeginRenderPass()
 {
 #if __DAVAENGINE_RENDERSTATS__
     LayersQuery layersQuery;
-    for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
-        layersQuery.queryObjectCount += layersBatchArrays[i].GetRenderBatchCount();
+    size_t layersCount = renderLayers.size();
+    for (size_t k = 0; k < layersCount; ++k)
+    {
+        RenderLayer::eRenderLayerID layerID = renderLayers[k]->GetRenderLayerID();
+        uint32 batchCount = layersBatchArrays[layerID].GetRenderBatchCount();
+
+        layersQuery.perLayerObjectCount[layerID] = batchCount;
+        layersQuery.queryObjectCount += batchCount;
+    }
 
     if (layersQuery.queryObjectCount)
     {

@@ -44,7 +44,7 @@ public:
     ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags);
     virtual ~ShadowVolumeRenderLayer() override;
 
-    void Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList, uint32 queryIndexOffset = 0) override;
+    uint32 Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList, uint32 queryIndexOffset = 0) override;
 
 private:
     void PrepareRenderData();

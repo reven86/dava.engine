@@ -97,20 +97,8 @@ gles2_QueryBuffer_Delete(Handle handle)
 
     if (buf)
     {
-        for (std::vector<GLuint>::iterator q = buf->query.begin(), q_end = buf->query.end(); q != q_end; ++q)
-        {
-            GLuint id = *q;
-
-            if (id)
-            {
-                #if defined(__DAVAENGINE_IPHONE__)
-                glDeleteQueriesEXT(1, &id);
-		#elif defined(__DAVAENGINE_ANDROID__)
-                #else
-                glDeleteQueries(1, &id);
-                #endif
-            }
-        }
+        GLCommand cmd1 = { GLCommand::DELETE_QUERIES, { uint64(buf->query.size()), uint64(buf->query.data()) } };
+        ExecGL(&cmd1, 1);
 
         buf->query.clear();
     }
@@ -128,14 +116,10 @@ gles2_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
     {
         GLuint result = 0;
 
-        #if defined(__DAVAENGINE_IPHONE__)
-        glGetQueryObjectuivEXT(buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE_EXT, &result);
-	#elif defined(__DAVAENGINE_ANDROID__)
-        #else
-        glGetQueryObjectuiv(buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE, &result);
-        #endif
+        GLCommand cmd1 = { GLCommand::GET_QUERYOBJECT_UIV, { uint64(buf->query[objectIndex]), uint64(GL_QUERY_RESULT_AVAILABLE), uint64(&result) } };
+        ExecGL(&cmd1, 1);
 
-        ready = result == GL_TRUE;
+        ready = (result == GL_TRUE);
     }
 
     return ready;
@@ -151,12 +135,8 @@ gles2_QueryBuffer_Value(Handle handle, uint32 objectIndex)
     {
         GLuint result = 0;
 
-        #if defined(__DAVAENGINE_IPHONE__)
-        glGetQueryObjectuivEXT(buf->query[objectIndex], GL_QUERY_RESULT_EXT, &result);
-		#elif defined(__DAVAENGINE_ANDROID__)
-        #else
-        glGetQueryObjectuiv(buf->query[objectIndex], GL_QUERY_RESULT, &result);
-        #endif
+        GLCommand cmd1 = { GLCommand::GET_QUERYOBJECT_UIV, { uint64(buf->query[objectIndex]), uint64(GL_QUERY_RESULT), uint64(&result) } };
+        ExecGL(&cmd1, 1);
 
         value = result;
     }

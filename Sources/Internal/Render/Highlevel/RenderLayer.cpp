@@ -97,7 +97,7 @@ RenderLayer::eRenderLayerID RenderLayer::GetLayerIDByName(const FastName& name)
     return RENDER_LAYER_INVALID_ID;
 }
 
-void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList, uint32 queryIndexOffset)
+uint32 RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList, uint32 queryIndexOffset)
 {
     TIME_PROFILE("RenderLayer::Draw");
 
@@ -121,5 +121,7 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
             rhi::AddPacket(packetList, packet);
         }
     }
+
+    return size;
 }
 };
