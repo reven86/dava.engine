@@ -87,6 +87,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
     connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
 
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
@@ -157,6 +158,8 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
         QString path = document->GetPackageAbsolutePath();
         if (changedFiles.contains(path))
         {
+            documentGroup->SetActiveDocument(document);
+
             DVASSERT(QFileInfo::exists(path));
             QMessageBox::StandardButton button = QMessageBox::No;
             if (document->GetUndoStack()->isClean())
@@ -195,7 +198,6 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
                 if (nullptr != package)
                 {
                     index = CreateDocument(index, package.Get());
-                    mainWindow->SetCurrentTab(index);
                 }
             }
         }
@@ -209,6 +211,8 @@ void EditorCore::OnFilesRemoved(const QStringList& removedFiles)
         QString path = document->GetPackageAbsolutePath();
         if (removedFiles.contains(path))
         {
+            documentGroup->SetActiveDocument(document);
+
             QMessageBox::StandardButton button = QMessageBox::No;
             QFileInfo fileInfo(path);
             button = QMessageBox::warning(
@@ -233,18 +237,6 @@ void EditorCore::OnGLWidgedInitialized()
     if (projectCount > 0)
     {
         OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
-    }
-}
-
-void EditorCore::OnCleanChanged(bool clean)
-{
-    QUndoStack *undoStack = qobject_cast<QUndoStack*>(sender());
-    for (int i = 0; i < documents.size(); ++i)
-    {
-        if (undoStack == documents.at(i)->GetUndoStack())
-        {
-            mainWindow->OnCleanChanged(i, clean);
-        }
     }
 }
 
@@ -549,10 +541,9 @@ void EditorCore::CloseDocument(int index)
 int EditorCore::CreateDocument(int index, PackageNode *package)
 {
     Document *document = new Document(package, this);
-    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &EditorCore::OnCleanChanged);
     documents.insert(index, document);
     documentGroup->InsertDocument(index, document);
-    int insertedIndex = mainWindow->AddTab(index, document->GetPackageFilePath());
+    int insertedIndex = mainWindow->AddTab(document, index);
     OnCurrentTabChanged(insertedIndex);
     QString path = document->GetPackageAbsolutePath();
     if (!fileSystemWatcher->addPath(path))

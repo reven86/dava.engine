@@ -59,7 +59,6 @@ private slots:
     void OnFilesChanged(const QStringList &changedFiles);
     void OnFilesRemoved(const QStringList &removedFiles);
     
-    void OnCleanChanged(bool clean);
     void OnOpenPackageFile(const QString &path);
     void OnProjectPathChanged(const QString &path);
     void OnGLWidgedInitialized();
