@@ -32,6 +32,8 @@
 
 using namespace DAVA;
 
+REGISTER_CLASS(VisibilityCheckComponent)
+
 VisibilityCheckComponent::VisibilityCheckComponent()
 {
 }
@@ -291,4 +293,38 @@ void VisibilityCheckComponent::SetHeightAboveLandscape(float value)
 {
     heightAboveLandscape = value;
     isValid = false;
+}
+
+void VisibilityCheckComponent::Serialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext)
+{
+    Component::Serialize(archive, serializationContext);
+
+    archive->SetColor("vsc.color", color);
+    archive->SetFloat("vsc.radius", radius);
+    archive->SetFloat("vsc.distanceBetweenPoints", distanceBetweenPoints);
+    archive->SetFloat("vsc.upAngle", upAngle);
+    archive->SetFloat("vsc.downAngle", downAngle);
+    archive->SetFloat("vsc.verticalVariance", verticalVariance);
+    archive->SetFloat("vsc.maximumDistance", maximumDistance);
+    archive->SetFloat("vsc.heightAboveLandscape", heightAboveLandscape);
+    archive->SetBool("vsc.isEnabled", isEnabled);
+    archive->SetBool("vsc.shouldNormalizeColor", shouldNormalizeColor);
+    archive->SetBool("vsc.shouldPlaceOnLandscape", shouldPlaceOnLandscape);
+}
+
+void VisibilityCheckComponent::Deserialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext)
+{
+    isValid = false;
+    shouldBuildPointSet = true;
+    color = archive->GetColor("vsc.color");
+    radius = archive->GetFloat("vsc.radius");
+    distanceBetweenPoints = archive->GetFloat("vsc.distanceBetweenPoints");
+    upAngle = archive->GetFloat("vsc.upAngle");
+    downAngle = archive->GetFloat("vsc.downAngle");
+    verticalVariance = archive->GetFloat("vsc.verticalVariance");
+    maximumDistance = archive->GetFloat("vsc.maximumDistance");
+    heightAboveLandscape = archive->GetFloat("vsc.heightAboveLandscape");
+    isEnabled = archive->GetBool("vsc.isEnabled");
+    shouldNormalizeColor = archive->GetBool("vsc.shouldNormalizeColor");
+    shouldPlaceOnLandscape = archive->GetBool("vsc.shouldPlaceOnLandscape");
 }

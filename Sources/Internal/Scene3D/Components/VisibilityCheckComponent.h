@@ -88,6 +88,9 @@ public:
     bool IsValid() const;
     void SetValid();
 
+    void Serialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext) override;
+    void Deserialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext) override;
+
 private:
     Vector<Vector3> points;
     Color color = Color(1.0f, 0.0f, 0.0f, 1.0f);
