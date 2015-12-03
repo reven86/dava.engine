@@ -153,7 +153,7 @@ void VisibilityCheckRenderer::SetupCameraToRenderFromPointToFaceIndex(const DAVA
 bool VisibilityCheckRenderer::ShouldRenderObject(DAVA::RenderObject* object)
 {
     DVASSERT(renderDelegate != nullptr);
-    return renderDelegate->shouldDrawRenderObject(object);
+    return renderDelegate->ShouldDrawRenderObject(object);
 }
 
 bool VisibilityCheckRenderer::ShouldRenderBatch(DAVA::RenderBatch* batch)

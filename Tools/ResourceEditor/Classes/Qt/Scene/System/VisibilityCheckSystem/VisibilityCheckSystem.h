@@ -32,6 +32,11 @@
 #include "VisibilityCheckRenderer.h"
 #include "Entity/SceneSystem.h"
 
+namespace DAVA
+{
+class Landscape;
+}
+
 class VisibilityCheckSystem : public DAVA::SceneSystem, VisibilityCheckRendererDelegate
 {
 public:
@@ -53,7 +58,9 @@ private:
     bool CacheIsValid();
     void BuildCache();
 
-    bool shouldDrawRenderObject(DAVA::RenderObject*) override;
+    bool ShouldDrawRenderObject(DAVA::RenderObject*) override;
+    float GetHeightAtHeightmapPoint(DAVA::float32 x, DAVA::float32 y, DAVA::Landscape*);
+    bool PlacePointOnLandscape(DAVA::Vector3&, DAVA::Landscape*);
 
     struct StateCache
     {

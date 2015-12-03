@@ -270,3 +270,25 @@ void VisibilityCheckComponent::SetMaximumDistance(float value)
 {
     maximumDistance = std::max(0.0f, value);
 }
+
+bool VisibilityCheckComponent::ShouldPlaceOnLandscape() const
+{
+    return shouldPlaceOnLandscape;
+}
+
+void VisibilityCheckComponent::SetShouldPlaceOnLandscape(bool value)
+{
+    shouldPlaceOnLandscape = value;
+    isValid = false;
+}
+
+float VisibilityCheckComponent::GetHeightAboveLandscape() const
+{
+    return heightAboveLandscape;
+}
+
+void VisibilityCheckComponent::SetHeightAboveLandscape(float value)
+{
+    heightAboveLandscape = value;
+    isValid = false;
+}

@@ -73,6 +73,12 @@ public:
 
     Color GetNormalizedColor() const;
 
+    bool ShouldPlaceOnLandscape() const;
+    void SetShouldPlaceOnLandscape(bool);
+
+    float GetHeightAboveLandscape() const;
+    void SetHeightAboveLandscape(float);
+
     bool IsPointSetValid() const;
     void InvalidatePointSet();
     void BuildPointSet();
@@ -85,16 +91,18 @@ public:
 private:
     Vector<Vector3> points;
     Color color = Color(1.0f, 0.0f, 0.0f, 1.0f);
-    float radius = 5.0f;
-    float distanceBetweenPoints = 2.0f;
+    float radius = 20.0f;
+    float distanceBetweenPoints = 4.0f;
     float upAngle = 45.0f;
     float downAngle = 45.0f;
     float verticalVariance = 0.0f;
     float maximumDistance = 250.0f;
+    float heightAboveLandscape = 3.0f;
     bool shouldBuildPointSet = true;
     bool isValid = false;
     bool isEnabled = true;
     bool shouldNormalizeColor = true;
+    bool shouldPlaceOnLandscape = true;
 
 public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
@@ -106,7 +114,9 @@ public:
                          PROPERTY("Down Angle", "Down Angle", GetDownAngle, SetDownAngle, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Vertical Variance", "Vertical Variance", GetVerticalVariance, SetVerticalVariance, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Normalize Color", "If enabled scales overlay's color to match current color.", ShoouldNormalizeColor, SetShoouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("Normalize Color", "If enabled scales overlay's color to match current color.", ShoouldNormalizeColor, SetShoouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Place on Landscape", "Snaps each point to landscape", ShouldPlaceOnLandscape, SetShouldPlaceOnLandscape, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Height Above the Landscape", "Distance from landscape to each point", GetHeightAboveLandscape, SetHeightAboveLandscape, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

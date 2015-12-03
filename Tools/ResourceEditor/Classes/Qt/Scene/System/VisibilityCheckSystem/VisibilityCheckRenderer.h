@@ -38,7 +38,7 @@ struct VisibilityCheckRendererDelegate
     virtual ~VisibilityCheckRendererDelegate()
     {
     }
-    virtual bool shouldDrawRenderObject(DAVA::RenderObject*) = 0;
+    virtual bool ShouldDrawRenderObject(DAVA::RenderObject*) = 0;
 };
 
 class VisibilityCheckRenderer
