@@ -268,9 +268,13 @@ namespace DAVA
 		KeyedArchive *multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
 
 		
-		ScopedPtr<KeyedArchive> emptyKeyedArchive(new KeyedArchive());
-		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, emptyKeyedArchive);
-		String result = deviceArchive->GetString(param, DB_ERROR_STR_VALUE);
+		
+		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, nullptr);
+		String result = DB_ERROR_STR_VALUE;
+        if (deviceArchive != nullptr)
+        {
+            result = deviceArchive->GetString(param, DB_ERROR_STR_VALUE);
+        }
 		
 		Logger::Info("AutotestingDB::ReadState device=%s: %s='%s'", device.c_str(), param.c_str(), result.c_str());
 		SafeRelease(dbUpdateObject);
