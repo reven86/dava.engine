@@ -27,16 +27,17 @@
 =====================================================================================*/
 
 
-#import "iPhoneProjectDelegate.h"
+#import "iOSAppDelegate.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-@implementation iPhoneProjectDelegate
+@implementation iOSAppDelegate
 
 @synthesize window;
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application 
 {    
+    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	[window makeKeyAndVisible];
 	window.backgroundColor = [UIColor redColor];
 	
@@ -45,6 +46,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	[window makeKeyAndVisible];
 	window.backgroundColor = [UIColor redColor];
 	
