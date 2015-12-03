@@ -28,19 +28,15 @@
 
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
-#import <DAVAEngine.h>
-#import "Infrastructure/GameCore.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import <UIKit/UIKit.h>
 
-@interface iPhoneProjectDelegate : HelperAppDelegate
+@interface iOSAppDelegate : HelperAppDelegate
 {
-    UIWindow *window;
+    UIWindow* window;
 }
-
-@property (nonatomic, retain) IBOutlet UIWindow *window;
 
 @end
 

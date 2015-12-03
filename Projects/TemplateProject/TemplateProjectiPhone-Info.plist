@@ -26,10 +26,6 @@
 	<true/>
 	<key>MinimumOSVersion</key>
 	<string>3.0</string>
-	<key>NSMainNibFile</key>
-	<string>MainWindow</string>
-	<key>NSMainNibFile~ipad</key>
-	<string>MainWindow-iPad</string>
 	<key>UIInterfaceOrientation</key>
 	<string>UIInterfaceOrientationLandscapeLeft</string>
 	<key>UIStatusBarHidden</key>

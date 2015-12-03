@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -58,58 +57,56 @@ class btDispatcher;
 class btCollisionObject;
 
 /// btCompoundCollisionAlgorithm  supports collision between CompoundCollisionShapes and other collision shapes
-class btCompoundCollisionAlgorithm  : public btActivatingCollisionAlgorithm
+class btCompoundCollisionAlgorithm : public btActivatingCollisionAlgorithm
 {
-	btAlignedObjectArray<btCollisionAlgorithm*> m_childCollisionAlgorithms;
-	bool m_isSwapped;
+    btAlignedObjectArray<btCollisionAlgorithm*> m_childCollisionAlgorithms;
+    bool m_isSwapped;
 
-	class btPersistentManifold*	m_sharedManifold;
-	bool					m_ownsManifold;
+    class btPersistentManifold* m_sharedManifold;
+    bool m_ownsManifold;
 
-	int	m_compoundShapeRevision;//to keep track of changes, so that childAlgorithm array can be updated
-	
-	void	removeChildAlgorithms();
-	
-	void	preallocateChildAlgorithms(btCollisionObject* body0,btCollisionObject* body1);
+    int m_compoundShapeRevision; //to keep track of changes, so that childAlgorithm array can be updated
+
+    void removeChildAlgorithms();
+
+    void preallocateChildAlgorithms(btCollisionObject* body0, btCollisionObject* body1);
 
 public:
+    btCompoundCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0, btCollisionObject* body1, bool isSwapped);
 
-	btCompoundCollisionAlgorithm( const btCollisionAlgorithmConstructionInfo& ci,btCollisionObject* body0,btCollisionObject* body1,bool isSwapped);
+    virtual ~btCompoundCollisionAlgorithm();
 
-	virtual ~btCompoundCollisionAlgorithm();
+    virtual void processCollision(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual void processCollision (btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	btScalar	calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual void getAllContactManifolds(btManifoldArray& manifoldArray)
+    {
+        int i;
+        for (i = 0; i < m_childCollisionAlgorithms.size(); i++)
+        {
+            if (m_childCollisionAlgorithms[i])
+                m_childCollisionAlgorithms[i]->getAllContactManifolds(manifoldArray);
+        }
+    }
 
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray)
-	{
-		int i;
-		for (i=0;i<m_childCollisionAlgorithms.size();i++)
-		{
-			if (m_childCollisionAlgorithms[i])
-				m_childCollisionAlgorithms[i]->getAllContactManifolds(manifoldArray);
-		}
-	}
+    struct CreateFunc : public btCollisionAlgorithmCreateFunc
+    {
+        virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0, btCollisionObject* body1)
+        {
+            void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btCompoundCollisionAlgorithm));
+            return new (mem) btCompoundCollisionAlgorithm(ci, body0, body1, false);
+        }
+    };
 
-	struct CreateFunc :public 	btCollisionAlgorithmCreateFunc
-	{
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0,btCollisionObject* body1)
-		{
-			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btCompoundCollisionAlgorithm));
-			return new(mem) btCompoundCollisionAlgorithm(ci,body0,body1,false);
-		}
-	};
-
-	struct SwappedCreateFunc :public 	btCollisionAlgorithmCreateFunc
-	{
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0,btCollisionObject* body1)
-		{
-			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btCompoundCollisionAlgorithm));
-			return new(mem) btCompoundCollisionAlgorithm(ci,body0,body1,true);
-		}
-	};
-
+    struct SwappedCreateFunc : public btCollisionAlgorithmCreateFunc
+    {
+        virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0, btCollisionObject* body1)
+        {
+            void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btCompoundCollisionAlgorithm));
+            return new (mem) btCompoundCollisionAlgorithm(ci, body0, body1, true);
+        }
+    };
 };
 
 #endif //BT_COMPOUND_COLLISION_ALGORITHM_H

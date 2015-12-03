@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -55,44 +54,47 @@ subject to the following restrictions:
 ///Performance of btTriangleMesh and btTriangleIndexVertexArray used in a btBvhTriangleMeshShape is the same.
 class btTriangleMesh : public btTriangleIndexVertexArray
 {
-	btAlignedObjectArray<btVector3>	m_4componentVertices;
-	btAlignedObjectArray<float>		m_3componentVertices;
+    btAlignedObjectArray<btVector3> m_4componentVertices;
+    btAlignedObjectArray<float> m_3componentVertices;
 
-	btAlignedObjectArray<unsigned int>		m_32bitIndices;
-	btAlignedObjectArray<unsigned short int>		m_16bitIndices;
-	bool	m_use32bitIndices;
-	bool	m_use4componentVertices;
-	
+    btAlignedObjectArray<unsigned int> m_32bitIndices;
+    btAlignedObjectArray<unsigned short int> m_16bitIndices;
+    bool m_use32bitIndices;
+    bool m_use4componentVertices;
 
-	public:
-		btScalar	m_weldingThreshold;
+public:
+    btScalar m_weldingThreshold;
 
-		btTriangleMesh (bool use32bitIndices=true,bool use4componentVertices=true);
+    btTriangleMesh(bool use32bitIndices = true, bool use4componentVertices = true);
 
-		bool	getUse32bitIndices() const
-		{
-			return m_use32bitIndices;
-		}
+    bool getUse32bitIndices() const
+    {
+        return m_use32bitIndices;
+    }
 
-		bool	getUse4componentVertices() const
-		{
-			return m_use4componentVertices;
-		}
-		///By default addTriangle won't search for duplicate vertices, because the search is very slow for large triangle meshes.
-		///In general it is better to directly use btTriangleIndexVertexArray instead.
-		void	addTriangle(const btVector3& vertex0,const btVector3& vertex1,const btVector3& vertex2, bool removeDuplicateVertices=false);
-		
-		int getNumTriangles() const;
+    bool getUse4componentVertices() const
+    {
+        return m_use4componentVertices;
+    }
+    ///By default addTriangle won't search for duplicate vertices, because the search is very slow for large triangle meshes.
+    ///In general it is better to directly use btTriangleIndexVertexArray instead.
+    void addTriangle(const btVector3& vertex0, const btVector3& vertex1, const btVector3& vertex2, bool removeDuplicateVertices = false);
 
-		virtual void	preallocateVertices(int numverts){(void) numverts;}
-		virtual void	preallocateIndices(int numindices){(void) numindices;}
+    int getNumTriangles() const;
 
-		///findOrAddVertex is an internal method, use addTriangle instead
-		int		findOrAddVertex(const btVector3& vertex, bool removeDuplicateVertices);
-		///addIndex is an internal method, use addTriangle instead
-		void	addIndex(int index);
-		
+    virtual void preallocateVertices(int numverts)
+    {
+        (void)numverts;
+    }
+    virtual void preallocateIndices(int numindices)
+    {
+        (void)numindices;
+    }
+
+    ///findOrAddVertex is an internal method, use addTriangle instead
+    int findOrAddVertex(const btVector3& vertex, bool removeDuplicateVertices);
+    ///addIndex is an internal method, use addTriangle instead
+    void addIndex(int index);
 };
 
 #endif //BT_TRIANGLE_MESH_H
-

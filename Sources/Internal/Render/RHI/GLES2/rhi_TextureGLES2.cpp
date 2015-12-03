@@ -73,6 +73,8 @@ public:
     {
         Handle color;
         Handle depthStencil;
+        TextureFace face;
+        uint32_t level;
 
         GLuint frameBuffer;
     };
@@ -838,14 +840,14 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
     }
 }
 
-void SetAsRenderTarget(Handle tex, Handle depth)
+void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned level)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
     GLuint fb = 0;
     DVASSERT(self->isRenderTarget || self->isRenderBuffer);
     for (unsigned i = 0; i != self->fbo.size(); ++i)
     {
-        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth)
+        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth && self->fbo[i].face == face && self->fbo[i].level == level)
         {
             fb = self->fbo[i].frameBuffer;
             break;
@@ -859,9 +861,35 @@ void SetAsRenderTarget(Handle tex, Handle depth)
         if (fb)
         {
             TextureGLES2_t* ds = (depth != InvalidHandle && depth != DefaultDepthBuffer) ? TextureGLES2Pool::Get(depth) : nullptr;
+            GLenum target = GL_TEXTURE_2D;
+
+            if (self->isCubeMap)
+            {
+                switch (face)
+                {
+                case TEXTURE_FACE_POSITIVE_X:
+                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+                    break;
+                case TEXTURE_FACE_NEGATIVE_X:
+                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+                    break;
+                case TEXTURE_FACE_POSITIVE_Y:
+                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+                    break;
+                case TEXTURE_FACE_NEGATIVE_Y:
+                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+                    break;
+                case TEXTURE_FACE_POSITIVE_Z:
+                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+                    break;
+                case TEXTURE_FACE_NEGATIVE_Z:
+                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+                    break;
+                }
+            }
 
             glBindFramebuffer(GL_FRAMEBUFFER, fb);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, self->uid, level);
             if (ds)
             {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -884,8 +912,13 @@ void SetAsRenderTarget(Handle tex, Handle depth)
 
             if (status == GL_FRAMEBUFFER_COMPLETE)
             {
-                TextureGLES2_t::fbo_t fbo = { tex, depth, fb };
+                TextureGLES2_t::fbo_t fbo;
 
+                fbo.color = tex;
+                fbo.depthStencil = depth;
+                fbo.face = face;
+                fbo.level = level;
+                fbo.frameBuffer = fb;
                 self->fbo.push_back(fbo);
             }
             else

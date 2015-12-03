@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -57,48 +56,46 @@ class btPersistentManifold;
 /// Other features are frame-coherency (persistent data) and collision response.
 class btSphereBoxCollisionAlgorithm : public btActivatingCollisionAlgorithm
 {
-	bool	m_ownManifold;
-	btPersistentManifold*	m_manifoldPtr;
-	bool	m_isSwapped;
-	
+    bool m_ownManifold;
+    btPersistentManifold* m_manifoldPtr;
+    bool m_isSwapped;
+
 public:
+    btSphereBoxCollisionAlgorithm(btPersistentManifold* mf, const btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* col0, btCollisionObject* col1, bool isSwapped);
 
-	btSphereBoxCollisionAlgorithm(btPersistentManifold* mf,const btCollisionAlgorithmConstructionInfo& ci,btCollisionObject* col0,btCollisionObject* col1, bool isSwapped);
+    virtual ~btSphereBoxCollisionAlgorithm();
 
-	virtual ~btSphereBoxCollisionAlgorithm();
+    virtual void processCollision(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual void processCollision (btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+    virtual void getAllContactManifolds(btManifoldArray& manifoldArray)
+    {
+        if (m_manifoldPtr && m_ownManifold)
+        {
+            manifoldArray.push_back(m_manifoldPtr);
+        }
+    }
 
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray)
-	{
-		if (m_manifoldPtr && m_ownManifold)
-		{
-			manifoldArray.push_back(m_manifoldPtr);
-		}
-	}
+    btScalar getSphereDistance(btCollisionObject* boxObj, btVector3& v3PointOnBox, btVector3& v3PointOnSphere, const btVector3& v3SphereCenter, btScalar fRadius);
 
-	btScalar getSphereDistance( btCollisionObject* boxObj,btVector3& v3PointOnBox, btVector3& v3PointOnSphere, const btVector3& v3SphereCenter, btScalar fRadius );
+    btScalar getSpherePenetration(btCollisionObject* boxObj, btVector3& v3PointOnBox, btVector3& v3PointOnSphere, const btVector3& v3SphereCenter, btScalar fRadius, const btVector3& aabbMin, const btVector3& aabbMax);
 
-	btScalar getSpherePenetration( btCollisionObject* boxObj, btVector3& v3PointOnBox, btVector3& v3PointOnSphere, const btVector3& v3SphereCenter, btScalar fRadius, const btVector3& aabbMin, const btVector3& aabbMax);
-	
-	struct CreateFunc :public 	btCollisionAlgorithmCreateFunc
-	{
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0,btCollisionObject* body1)
-		{
-			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btSphereBoxCollisionAlgorithm));
-			if (!m_swapped)
-			{
-				return new(mem) btSphereBoxCollisionAlgorithm(0,ci,body0,body1,false);
-			} else
-			{
-				return new(mem) btSphereBoxCollisionAlgorithm(0,ci,body0,body1,true);
-			}
-		}
-	};
-
+    struct CreateFunc : public btCollisionAlgorithmCreateFunc
+    {
+        virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, btCollisionObject* body0, btCollisionObject* body1)
+        {
+            void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btSphereBoxCollisionAlgorithm));
+            if (!m_swapped)
+            {
+                return new (mem) btSphereBoxCollisionAlgorithm(0, ci, body0, body1, false);
+            }
+            else
+            {
+                return new (mem) btSphereBoxCollisionAlgorithm(0, ci, body0, body1, true);
+            }
+        }
+    };
 };
 
 #endif //BT_SPHERE_BOX_COLLISION_ALGORITHM_H
-

@@ -393,7 +393,7 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
     if (y1 == y2)
         y2 += 1.0f;
 
-	uint16 * data = heightmap->Data();
+    uint16 * data = heightmap->Data();
 	int32 imW = heightmap->Size();
 
 	Vector3 p1(x1, y1, 0);
@@ -948,7 +948,7 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
             indices[indexIndex++] = x + (y + step) * quadWidth;
 
             indices[indexIndex++] = (x + step) + y * quadWidth;
-			indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
+            indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
 			indices[indexIndex++] = x + (y + step) * quadWidth;     
 		}
 	}

@@ -27,32 +27,33 @@
     Revision History:
         * Created by Vitaliy Borodovsky 
 =====================================================================================*/
-#import "iPhoneProjectDelegate.h"
-
+#import "iOSAppDelegate.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-@implementation iPhoneProjectDelegate
+@implementation iOSAppDelegate
 
 @synthesize window;
 
-- (void)applicationDidFinishLaunching:(UIApplication*)application
-{
-    [window makeKeyAndVisible];
-    window.backgroundColor = [UIColor redColor];
-
-    [super applicationDidFinishLaunching:application];
+- (void)applicationDidFinishLaunching:(UIApplication *)application 
+{    
+    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+	[window makeKeyAndVisible];
+	window.backgroundColor = [UIColor redColor];
+	
+	[super applicationDidFinishLaunching:application];
 }
 
-- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    [window makeKeyAndVisible];
-    window.backgroundColor = [UIColor redColor];
-
-    return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+	[window makeKeyAndVisible];
+	window.backgroundColor = [UIColor redColor];
+	
+	return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
-- (void)dealloc
+- (void)dealloc 
 {
     [window release];
     [super dealloc];
