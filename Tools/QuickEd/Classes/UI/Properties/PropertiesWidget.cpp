@@ -283,12 +283,12 @@ void PropertiesWidget::OnModelChanged()
 
 void PropertiesWidget::OnExpanded(const QModelIndex& index)
 {
-    expandedItems.insert(GetPathFromIndex(index));
+    itemsState[GetPathFromIndex(index)] = true;
 }
 
 void PropertiesWidget::OnCollapsed(const QModelIndex& index)
 {
-    expandedItems.erase(GetPathFromIndex(index));
+    itemsState[GetPathFromIndex(index)] = false;
 }
 
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
@@ -397,10 +397,10 @@ void PropertiesWidget::ApplyExpanding()
         {
             treeView->scrollTo(index, QTreeView::PositionAtTop);
         }
-
-        if (expandedItems.find(path) != expandedItems.end())
+        auto iter = itemsState.find(path);
+        if (iter != itemsState.end())
         {
-            treeView->setExpanded(index, true);
+            treeView->setExpanded(index, iter->second);
         }
 
         index = treeView->indexBelow(index);
