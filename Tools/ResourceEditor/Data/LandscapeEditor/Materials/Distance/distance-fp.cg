@@ -53,7 +53,7 @@ float DecodeFloatRGBA(float4 encoded)
 }
 #endif
 
-#define MAGIC_TRESHOLD 1.0000001
+#define MAGIC_TRESHOLD 1.0001
 
 FPROG_BEGIN
 
@@ -71,7 +71,7 @@ FPROG_BEGIN
 	float4 sampledDistance = FP_TEXTURECUBE(cubemap, FP_IN(directionFromPoint));
 	float decodedDistance = DecodeFloatRGBA(sampledDistance);
 	float actualDistance = length(FP_IN(directionFromPoint));
-	float occluded = float(actualDistance / decodedDistance < MAGIC_TRESHOLD);
+	float occluded = float(actualDistance / decodedDistance <= MAGIC_TRESHOLD);
 	
 	float3 nDir = normalize(FP_IN(directionFromPoint));
 	float DdotN = dot(nDir, transformedNormal);
