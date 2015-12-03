@@ -57,9 +57,14 @@ const FilePath& ProjectManager::GetDataSourcePath() const
     return dataSourcePath;
 }
 
-const FilePath& ProjectManager::GetParticlesPath() const
+const FilePath& ProjectManager::GetParticlesConfigPath() const
 {
-    return particlesPath;
+    return particlesConfigPath;
+}
+
+const FilePath& ProjectManager::GetParticlesDataPath() const
+{
+    return particlesDataPath;
 }
 
 const FilePath& ProjectManager::GetWorkspacePath() const
@@ -103,7 +108,7 @@ void ProjectManager::OpenProject(const FilePath& incomePath)
 
         projectPath = incomePath;
 
-        if (incomePath.Exists())
+        if (FileSystem::Instance()->Exists(incomePath))
         {
             DAVA::FilePath::AddTopResourcesFolder(projectPath);
 
@@ -183,7 +188,7 @@ void ProjectManager::LoadMaterialsSettings()
 
     // parse available material templates
     const DAVA::FilePath materialsListPath = DAVA::FilePath("~res:/Materials/assignable.yaml");
-    if(materialsListPath.Exists())
+    if (FileSystem::Instance()->Exists(materialsListPath))
     {
         ScopedPtr<DAVA::YamlParser> parser(DAVA::YamlParser::Create(materialsListPath));
         DAVA::YamlNode *rootNode = parser->GetRootNode();
@@ -205,7 +210,7 @@ void ProjectManager::LoadMaterialsSettings()
                         path->GetType() == DAVA::YamlNode::TYPE_STRING)
                     {
                         const DAVA::FilePath templatePath = materialsListDir + path->AsString();
-                        if(templatePath.Exists())
+                        if (FileSystem::Instance()->Exists(templatePath))
                         {
                             AvailableMaterialTemplate amt;
                             amt.name = name->AsString().c_str();
@@ -225,13 +230,15 @@ void ProjectManager::UpdateInternalValues()
     if (projectPath.IsEmpty())
     {
         dataSourcePath = "";
-        particlesPath = "";
+        particlesConfigPath = "";
+        particlesDataPath = "";
         workspacePath = "";
     }
     else
     {
         dataSourcePath = projectPath + "DataSource/3d/";
-        particlesPath = projectPath + "Data/Configs/Particles/";
+        particlesConfigPath = projectPath + "Data/Configs/Particles/";
+        particlesDataPath = projectPath + "Data/Gfx/Particles/";
         workspacePath = "~doc:/ResourceEditor/" + projectPath.GetLastDirectoryName() + "/";
     }
 }

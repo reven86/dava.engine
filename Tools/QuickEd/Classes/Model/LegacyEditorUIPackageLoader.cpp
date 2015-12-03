@@ -45,9 +45,9 @@ using namespace DAVA;
 
 namespace
 {
-const FastName PROPERTY_NAME_MULTILINE("multiline");
-const FastName PROPERTY_NAME_SIZE("size");
-const FastName PROPERTY_NAME_TEXT_USE_RTL_ALIGN("textUseRtlAlign");
+const FastName UIPACKAGELOADER_PROPERTY_NAME_MULTILINE("multiline");
+const FastName UIPACKAGELOADER_PROPERTY_NAME_SIZE("size");
+const FastName UIPACKAGELOADER_PROPERTY_NAME_TEXT_USE_RTL_ALIGN("textUseRtlAlign");
 }
 
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data)
@@ -125,7 +125,7 @@ bool LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath, Abstr
     if (data)
     {
         legacyControl->SetName(data->name);
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member(PROPERTY_NAME_SIZE), VariantType(data->size));
+        builder->ProcessProperty(legacyControl->TypeInfo()->Member(UIPACKAGELOADER_PROPERTY_NAME_SIZE), VariantType(data->size));
     }
     else
     {
@@ -386,7 +386,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     "returnKeyType"
                 };
 
-                if (member->Name() == PROPERTY_NAME_MULTILINE)
+                if (member->Name() == UIPACKAGELOADER_PROPERTY_NAME_MULTILINE)
                 {
                     if (valueNode->AsBool())
                     {
@@ -408,7 +408,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                         return VariantType(UIStaticText::MULTILINE_DISABLED);
                     }
                 }
-                else if (member->Name() == PROPERTY_NAME_TEXT_USE_RTL_ALIGN)
+                else if (member->Name() == UIPACKAGELOADER_PROPERTY_NAME_TEXT_USE_RTL_ALIGN)
                 {
                     return VariantType(static_cast<int32>(valueNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE));
                 }

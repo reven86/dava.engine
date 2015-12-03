@@ -124,13 +124,15 @@ private:
     void updateConvertedImageAndInfo(const QList<QImage>& images, DAVA::TextureDescriptor& descriptor);
     void updateInfoColor(QLabel* label, const QColor& color = QColor());
     void updateInfoPos(QLabel* label, const QPoint& pos = QPoint());
-    void updateInfoOriginal(const QList<QImage> &images);
-	void updateInfoConverted();
-	void updatePropertiesWarning();
+    void updateInfoOriginal(const QList<QImage>& images);
+    void updateInfoConverted();
+    void updatePropertiesWarning();
 
 	void reloadTextureToScene(DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu);
 
     void ConvertMultipleTextures(eTextureConvertMode convertMode);
+
+    void UpdateSceneMaterialsWithTexture(DAVA::Texture* texture);
 
 private slots:
 	void textureListViewImages(bool checked);

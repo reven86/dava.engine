@@ -44,6 +44,8 @@
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Render/RenderCallbacks.h"
 
+#include "FileSystem/FileSystem.h"
+
 namespace DAVA
 {
 
@@ -376,7 +378,7 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
         }
         else
         {
-            if(lightmapTexturePath.Exists())
+            if (FileSystem::Instance()->Exists(lightmapTexturePath))
             {
                 GenerateDensityMapFromTransparencyMask(lightmapTexturePath, densityBits);
             }
@@ -892,16 +894,18 @@ void VegetationRenderObject::CreateRenderData()
     vertexCount = (uint32)vertexData.size();
     indexCount = (uint32)indexData.size();
 
-    uint32 vertexBufferSize = (uint32)(vertexData.size() * sizeof(VegetationVertex));
-    vertexBuffer = rhi::CreateVertexBuffer(vertexBufferSize);
-    rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
+    rhi::VertexBuffer::Descriptor vDesc;
+    vDesc.size = (uint32)(vertexData.size() * sizeof(VegetationVertex));
+    vDesc.initialData = &vertexData.front();
+    vDesc.usage = rhi::USAGE_STATICDRAW;
+    vertexBuffer = rhi::CreateVertexBuffer(vDesc);
 
-    uint32 indexBufferSize = (uint32)(indexData.size() * sizeof(VegetationIndex));
-    rhi::IndexBuffer::Descriptor indexDesc;
-    indexDesc.size = indexBufferSize;
-    indexDesc.indexSize = rhi::INDEX_SIZE_32BIT;
-    indexBuffer = rhi::CreateIndexBuffer(indexDesc);
-    rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
+    rhi::IndexBuffer::Descriptor iDesc;
+    iDesc.size = (uint32)(indexData.size() * sizeof(VegetationIndex));
+    iDesc.indexSize = rhi::INDEX_SIZE_32BIT;
+    iDesc.initialData = &indexData.front();
+    iDesc.usage = rhi::USAGE_STATICDRAW;
+    indexBuffer = rhi::CreateIndexBuffer(iDesc);
 
 #if defined(__DAVAENGINE_IPHONE__)
     renderData->ReleaseRenderData(); //release vertex and index buffers data
@@ -1044,7 +1048,7 @@ void VegetationRenderObject::ClearRenderBatches()
 
 void VegetationRenderObject::SetCustomGeometryPath(const FilePath& path)
 {
-    if (!path.IsEmpty() && path.Exists())
+    if (FileSystem::Instance()->Exists(path))
     {
         VegetationGeometryDataPtr fetchedData =
         VegetationGeometryDataReader::ReadScene(path);
@@ -1307,8 +1311,8 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
 void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(FilePath lightmapPath, Vector<bool>& densityMapBits)
 {
     lightmapPath.ReplaceExtension(".png");
-    
-    if(lightmapPath.Exists())
+
+    if (FileSystem::Instance()->Exists(lightmapPath))
     {
         ScopedPtr<Image> lightmapImage(LoadSingleImage(lightmapPath));
         if (lightmapImage)

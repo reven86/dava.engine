@@ -53,7 +53,6 @@ class EmitterLayerWidget: public QWidget, public BaseParticleEditorContentWidget
     
 public:
     explicit EmitterLayerWidget(QWidget *parent = 0);
-    ~EmitterLayerWidget();
 
 	void Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer, bool updateMinimized);
 	ParticleLayer* GetLayer() const {return layer;};
@@ -76,10 +75,13 @@ signals:
 protected slots:
 	void OnLodsChanged();
     void OnValueChanged();
+    void OnLayerMaterialValueChanged();
     void OnSpriteBtn();
+    void OnSpriteFolderBtn();
     void OnSpritePathChanged(const QString& text);
-	
-	void OnPivotPointReset();
+    void OnSpritePathEdited(const QString& text);
+
+    void OnPivotPointReset();
     void OnSpriteUpdateTimerExpired();
 
 private:
@@ -108,7 +110,6 @@ private:
 
     ParticleLayer* layer = nullptr;
 
-    Sprite* sprite = nullptr;
     QTimer* spriteUpdateTimer = nullptr;
     DAVA::Stack<std::pair<rhi::HSyncObject, Texture*>> spriteUpdateTexturesStack;
 
@@ -158,6 +159,7 @@ private:
     QLineEdit* innerEmitterPathLabel = nullptr;
 
     QPushButton* spriteBtn = nullptr;
+    QPushButton* spriteFolderBtn = nullptr;
     QPushButton* pivotPointResetButton = nullptr;
 
     TimeLineWidget* lifeTimeLine = nullptr;

@@ -32,190 +32,160 @@
 
 namespace DAVA
 {
-TextureAtlas::PackNode* TextureAtlas::PackNode::Insert(const Size2i& imageSize)
+TextureAtlas::AtlasNode* TextureAtlas::Insert(const TextureAtlas::AtlasNodePtr& node, const Size2i& imageSize, void* imagePtr)
 {
-    if (!isLeaf)
+    DVASSERT(node);
+
+    if (node->child[0])
     {
-        TextureAtlas::PackNode* imageNode = child[0]->Insert(imageSize);
-        if (imageNode)
-            return imageNode;
+        DVASSERT(node->child[1]);
+
+        AtlasNode* insResult = Insert(node->child[0], imageSize, imagePtr);
+        if (insResult)
+        {
+            return insResult;
+        }
         else
-            return child[1]->Insert(imageSize);
+        {
+            return Insert(node->child[1], imageSize, imagePtr);
+        }
     }
     else
     {
-        if (isImageSet)
-            return nullptr;
-
-        if (atlas.useTwoSideMargin)
+        if (node->imagePtr)
         {
-            int32 dw = packCell.rect.dx - packCell.leftMargin - packCell.rightMargin - imageSize.dx;
-            int32 dh = packCell.rect.dy - packCell.topMargin - packCell.bottomMargin - imageSize.dy;
+            return nullptr;
+        }
 
-            if (dw < 0 || dh < 0)
-                return nullptr;
+        ImageCell& cell = node->cell;
 
-            if (dw == 0 && dh == 0)
-            {
-                isImageSet = true;
-                return this;
-            }
+        int32 occupiedWidth = imageSize.dx + cell.leftEdgePixel + cell.rightEdgePixel + cell.rightMargin;
+        int32 cell0height = imageSize.dy + cell.topEdgePixel + cell.bottomEdgePixel + cell.bottomMargin;
+        int32 restWidth = cell.rect.dx - occupiedWidth;
+        int32 restHeight = cell.rect.dy - cell0height;
 
-            isLeaf = false;
+        auto SetImage = [&] {
+            node->imagePtr = imagePtr;
+            cell.imageRect.dx = imageSize.dx;
+            cell.imageRect.dy = imageSize.dy;
+            cell.imageRect.x = cell.rect.x + cell.leftEdgePixel;
+            cell.imageRect.y = cell.rect.y + cell.topEdgePixel;
+        };
 
-            child[0] = new TextureAtlas::PackNode(atlas);
-            child[1] = new TextureAtlas::PackNode(atlas);
-
-            child[0]->packCell = child[1]->packCell = packCell;
-
-            if (dw > dh) // horizontal split
-            {
-                child[0]->packCell.rightMargin = 1;
-                child[1]->packCell.leftMargin = 1;
-                auto dxLeft = imageSize.dx + child[0]->packCell.rightMargin + child[0]->packCell.leftMargin;
-                child[0]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y, dxLeft, packCell.rect.dy);
-                child[1]->packCell.rect = Rect2i(packCell.rect.x + dxLeft, packCell.rect.y, packCell.rect.dx - dxLeft, packCell.rect.dy);
-            }
-            else // vertical split
-            {
-                child[0]->packCell.bottomMargin = 1;
-                child[1]->packCell.topMargin = 1;
-                auto dyTop = imageSize.dy + child[0]->packCell.topMargin + child[0]->packCell.bottomMargin;
-                child[0]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y, packCell.rect.dx, dyTop);
-                child[1]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y + dyTop, packCell.rect.dx, packCell.rect.dy - dyTop);
-            }
+        if (restWidth == 0 && restHeight == 0)
+        {
+            SetImage();
+            return node.get();
+        }
+        else if (restWidth < 0 || restHeight < 0)
+        {
+            return nullptr;
         }
         else
         {
-            int32 dw = packCell.rect.dx - imageSize.dx;
-            int32 dh = packCell.rect.dy - imageSize.dy;
-
-            int32 rightMargin = atlas.texturesMargin;
-            int32 bottomMargin = atlas.texturesMargin;
-
-            if (dw < 0)
+            int32 longest = (restWidth > restHeight) ? restWidth : restHeight;
+            if (longest <= splitter) // it's no use to make split
             {
-                if (touchesRightBorder && (dw + rightMargin) >= 0)
+                // try to add edge pixel anyway
+                if (longest == restWidth && cell.rightEdgePixel == 0 && restWidth >= edgePixel)
                 {
-                    rightMargin += dw; // actually rightMargin is reduced as dw is negative there
-                    dw = 0;
+                    restWidth -= edgePixel;
+                    cell.rightEdgePixel = edgePixel;
                 }
-                else
-                    return nullptr;
-            }
-
-            if (dh < 0)
-            {
-                if (touchesBottomBorder && (dh + bottomMargin) >= 0)
+                else if (longest == restHeight && cell.bottomEdgePixel == 0 && restHeight >= edgePixel)
                 {
-                    bottomMargin += dh; // actually bottomMargin is reduced as dh is negative there
-                    dh = 0;
+                    restHeight -= edgePixel;
+                    cell.bottomEdgePixel = edgePixel;
                 }
-                else
-                    return nullptr;
+
+                cell.rightMargin += restWidth;
+                cell.bottomMargin += restHeight;
+                SetImage();
+                return node.get();
             }
 
-            if (dw == 0 && dh == 0)
+            node->child[0].reset(new TextureAtlas::AtlasNode);
+            node->child[1].reset(new TextureAtlas::AtlasNode);
+
+            ImageCell& cell0 = node->child[0]->cell;
+            ImageCell& cell1 = node->child[1]->cell;
+
+            cell0 = cell1 = cell;
+
+            if (longest == restWidth) // horizontal split
             {
-                isImageSet = true;
-                this->packCell.rightMargin = rightMargin;
-                this->packCell.bottomMargin = bottomMargin;
-                return this;
-            }
+                cell0.rightEdgePixel = edgePixel;
+                cell0.rightMargin = texturesMargin;
+                cell1.leftEdgePixel = edgePixel;
 
-            isLeaf = false;
+                int32 cell0width = imageSize.dx + cell0.leftEdgePixel + cell0.rightEdgePixel + cell0.rightMargin;
 
-            child[0] = new TextureAtlas::PackNode(atlas);
-            child[1] = new TextureAtlas::PackNode(atlas);
-
-            child[0]->packCell.isTwoSideMargin = child[1]->packCell.isTwoSideMargin = false;
-            child[0]->touchesBottomBorder = child[1]->touchesBottomBorder = this->touchesBottomBorder;
-            child[0]->touchesRightBorder = child[1]->touchesRightBorder = this->touchesRightBorder;
-
-            if (dw > dh) // horizontal split
-            {
-                child[0]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y, imageSize.dx, packCell.rect.dy);
-                child[1]->packCell.rect = Rect2i(packCell.rect.x + imageSize.dx, packCell.rect.y, packCell.rect.dx - imageSize.dx, packCell.rect.dy);
-                child[0]->touchesRightBorder = false;
+                cell0.rect = Rect2i(cell.rect.x, cell.rect.y, cell0width, cell.rect.dy);
+                cell1.rect = Rect2i(cell.rect.x + cell0width, cell.rect.y, cell.rect.dx - cell0width, cell.rect.dy);
             }
             else // vertical split
             {
-                child[0]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y, packCell.rect.dx, imageSize.dy);
-                child[1]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y + imageSize.dy, packCell.rect.dx, packCell.rect.dy - imageSize.dy);
-                child[0]->touchesBottomBorder = false;
+                cell0.bottomEdgePixel = edgePixel;
+                cell0.bottomMargin = texturesMargin;
+                cell1.topEdgePixel = edgePixel;
+
+                int32 cell0height = imageSize.dy + cell0.topEdgePixel + cell0.bottomEdgePixel + cell0.bottomMargin;
+
+                cell0.rect = Rect2i(cell.rect.x, cell.rect.y, cell.rect.dx, cell0height);
+                cell1.rect = Rect2i(cell.rect.x, cell.rect.y + cell0height, cell.rect.dx, cell.rect.dy - cell0height);
             }
+
+            return Insert(node->child[0], imageSize, imagePtr);
         }
-
-        return child[0]->Insert(imageSize);
     }
 }
 
-void TextureAtlas::PackNode::Release()
+TextureAtlas::TextureAtlas(const Rect2i& rect, bool useTwoSideMargin, int32 _texturesMargin)
+    : texturesMargin(_texturesMargin)
+    , edgePixel(useTwoSideMargin ? 1 : 0)
+    , splitter(texturesMargin + edgePixel + edgePixel)
 {
-    if (child[0])
-        child[0]->Release();
-
-    if (child[1])
-        child[1]->Release();
-
-    delete this;
+    rootNode.reset(new AtlasNode);
+    rootNode->cell.rect = rect;
 }
 
-TextureAtlas::TextureAtlas(const Rect2i& _rect, bool _useTwoSideMargin, int32 _texturesMargin)
-    : useTwoSideMargin(_useTwoSideMargin)
-    , texturesMargin(_texturesMargin)
+bool TextureAtlas::AddImage(const Size2i& imageSize, void* imagePtr)
 {
-    root = new PackNode(*this);
-    root->touchesRightBorder = true;
-    root->touchesBottomBorder = true;
-    root->packCell.rect = rect = _rect;
-    root->packCell.isTwoSideMargin = useTwoSideMargin;
-}
-
-TextureAtlas::~TextureAtlas()
-{
-    Release();
-}
-
-void TextureAtlas::Release()
-{
-    if (root)
-    {
-        root->Release();
-        root = 0;
-    }
-}
-
-bool TextureAtlas::AddImage(const Size2i& imageSize, void* searchPtr)
-{
-    PackNode* node = root->Insert(imageSize);
+    AtlasNode* node = Insert(rootNode, imageSize, imagePtr);
     if (node)
     {
-        node->searchPtr = searchPtr;
-        Logger::FrameworkDebug("set search ptr to rect:(%d, %d) ims: (%d, %d)", node->packCell.rect.dx, node->packCell.rect.dy, imageSize.dx, imageSize.dy);
-    }
-    return (node != 0);
-}
-
-PackedInfo* TextureAtlas::SearchRectForPtr(void* searchPtr)
-{
-    TextureAtlas::PackNode* res = root->SearchRectForPtr(searchPtr);
-    return (res ? &res->packCell : 0);
-}
-
-TextureAtlas::PackNode* TextureAtlas::PackNode::SearchRectForPtr(void* searchPtr)
-{
-    if (searchPtr == this->searchPtr)
-    {
-        return this;
+        Logger::FrameworkDebug("image set to (%d, %d), image size [%d x %d]", node->cell.rect.dx, node->cell.rect.dy, imageSize.dx, imageSize.dy);
+        return true;
     }
     else
     {
-        TextureAtlas::PackNode* res = 0;
-        if (child[0])
-            res = child[0]->SearchRectForPtr(searchPtr);
-        if (!res && child[1])
-            res = child[1]->SearchRectForPtr(searchPtr);
+        return false;
+    }
+}
+
+ImageCell* TextureAtlas::GetImageCell(void* searchPtr)
+{
+    AtlasNode* res = SearchRectForPtr(rootNode, searchPtr);
+    return (res ? &res->cell : nullptr);
+}
+
+TextureAtlas::AtlasNode* TextureAtlas::SearchRectForPtr(const AtlasNodePtr& node, void* imagePtr)
+{
+    if (imagePtr == node->imagePtr)
+    {
+        return node.get();
+    }
+    else
+    {
+        TextureAtlas::AtlasNode* res = nullptr;
+        if (node->child[0])
+        {
+            res = SearchRectForPtr(node->child[0], imagePtr);
+        }
+        if (!res && node->child[1])
+        {
+            res = SearchRectForPtr(node->child[1], imagePtr);
+        }
         return res;
     }
 }
