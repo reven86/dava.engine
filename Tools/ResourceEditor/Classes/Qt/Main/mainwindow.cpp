@@ -809,7 +809,8 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionCubemapEditor, SIGNAL(triggered()), this, SLOT(OnCubemapEditor()));
     QObject::connect(ui->actionImageSplitter, SIGNAL(triggered()), this, SLOT(OnImageSplitter()));
 
-	QObject::connect(ui->actionShowNotPassableLandscape, SIGNAL(triggered()), this, SLOT(OnNotPassableTerrain()));
+    QObject::connect(ui->actionForce_first_LOD_on_Landscape, SIGNAL(triggered(bool)), this, SLOT(OnForceFirstLod(bool)));
+    QObject::connect(ui->actionShowNotPassableLandscape, SIGNAL(triggered()), this, SLOT(OnNotPassableTerrain()));
 	QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
 	QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
 	QObject::connect(ui->actionTileMapEditor, SIGNAL(triggered()), this, SLOT(OnTilemaskEditor()));
@@ -1048,8 +1049,9 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionVisibilityCheckTool->setEnabled(enable);
 	ui->actionCustomColorsEditor->setEnabled(enable);
     ui->actionWayEditor->setEnabled(enable);
+    ui->actionForce_first_LOD_on_Landscape->setEnabled(enable);
 
-	ui->actionEnableCameraLight->setEnabled(enable);
+    ui->actionEnableCameraLight->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
 	ui->actionReloadSprites->setEnabled(enable);
     ui->actionSetLightViewMode->setEnabled(enable);
@@ -2274,26 +2276,35 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
 
 	UpdateConflictingActionsState(tools == 0);
 
-	if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
+    bool shouldEnableFirstLod = false;
+    if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
 	{
 		ui->actionCustomColorsEditor->setChecked(true);
-	}
+        shouldEnableFirstLod = true;
+    }
 	if (tools & SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
 	{
 		ui->actionHeightMapEditor->setChecked(true);
-	}
+        shouldEnableFirstLod = true;
+    }
 	if (tools & SceneEditor2::LANDSCAPE_TOOL_RULER)
 	{
 		ui->actionRulerTool->setChecked(true);
-	}
+        shouldEnableFirstLod = true;
+    }
 	if (tools & SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR)
 	{
 		ui->actionTileMapEditor->setChecked(true);
-	}
+        shouldEnableFirstLod = true;
+    }
 	if (tools & SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
 	{
 		ui->actionShowNotPassableLandscape->setChecked(true);
-	}
+        shouldEnableFirstLod = true;
+    }
+
+    ui->actionForce_first_LOD_on_Landscape->setChecked(shouldEnableFirstLod);
+    OnForceFirstLod(shouldEnableFirstLod);
 }
 
 void QtMainWindow::OnCustomColorsEditor()
@@ -2466,6 +2477,25 @@ void QtMainWindow::OnTilemaskEditor()
 			OnLandscapeEditorToggled(sceneEditor);
 		}
 	}
+}
+
+void QtMainWindow::OnForceFirstLod(bool enabled)
+{
+    auto scene = GetCurrentScene();
+    if (scene == nullptr)
+    {
+        ui->actionForce_first_LOD_on_Landscape->setChecked(false);
+        return;
+    }
+
+    auto landscape = FindLandscape(scene);
+    if (landscape == nullptr)
+    {
+        ui->actionForce_first_LOD_on_Landscape->setChecked(false);
+        return;
+    }
+
+    landscape->SetForceFirstLod(enabled);
 }
 
 void QtMainWindow::OnNotPassableTerrain()

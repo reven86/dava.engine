@@ -732,7 +732,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>92</height>
+          <height>89</height>
          </rect>
         </property>
        </widget>
@@ -757,6 +757,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionForce_first_LOD_on_Landscape"/>
    <addaction name="actionHeightMapEditor"/>
    <addaction name="actionTileMapEditor"/>
    <addaction name="actionShowNotPassableLandscape"/>
@@ -861,7 +862,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>86</height>
+          <height>89</height>
          </rect>
         </property>
        </widget>
@@ -2178,6 +2179,18 @@
    </property>
    <property name="toolTip">
     <string>Add Visibility Component</string>
+   </property>
+  </action>
+  <action name="actionForce_first_LOD_on_Landscape">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIconsTextureDialog/zoom_100.png</normaloff>:/QtIconsTextureDialog/zoom_100.png</iconset>
+   </property>
+   <property name="text">
+    <string>Force first LOD on Landscape</string>
    </property>
   </action>
  </widget>

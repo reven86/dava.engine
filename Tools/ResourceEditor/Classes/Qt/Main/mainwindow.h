@@ -181,7 +181,8 @@ public slots:
     void OnInavalidateStaticOcclusion();
 
 	void OnLandscapeEditorToggled(SceneEditor2* scene);
-	void OnCustomColorsEditor();
+    void OnForceFirstLod(bool);
+    void OnCustomColorsEditor();
 	void OnHeightmapEditor();
 	void OnRulerTool();
 	void OnTilemaskEditor();
