@@ -74,6 +74,7 @@ public:
         Handle color;
         Handle depthStencil;
         TextureFace face;
+        uint32_t level;
 
         GLuint frameBuffer;
     };
@@ -846,7 +847,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
     DVASSERT(self->isRenderTarget || self->isRenderBuffer);
     for (unsigned i = 0; i != self->fbo.size(); ++i)
     {
-        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth && self->fbo[i].face == face)
+        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth && self->fbo[i].face == face && self->fbo[i].level == level)
         {
             fb = self->fbo[i].frameBuffer;
             break;
@@ -916,6 +917,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
                 fbo.color = tex;
                 fbo.depthStencil = depth;
                 fbo.face = face;
+                fbo.level = level;
                 fbo.frameBuffer = fb;
                 self->fbo.push_back(fbo);
             }
