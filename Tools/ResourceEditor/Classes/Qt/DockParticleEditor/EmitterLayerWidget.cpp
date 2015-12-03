@@ -191,7 +191,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
     innerEmitterLabel = new QLabel("Inner Emitter", this);
     innerEmitterPathLabel = new QLineEdit(this);
-	innerEmitterPathLabel->setReadOnly(true);
+    innerEmitterPathLabel->setReadOnly(true);
 	innerEmitterLayout->addWidget(innerEmitterLabel);
 	innerEmitterLayout->addWidget(innerEmitterPathLabel);
 	mainBox->addLayout(innerEmitterLayout);
@@ -234,7 +234,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addWidget(frameBlendingCheckBox);
 
     //particle orieantation
-	QVBoxLayout* orientationLayout = new QVBoxLayout();	
+    QVBoxLayout* orientationLayout = new QVBoxLayout();	
 	particleOrientationLabel = new QLabel("Particle Orientation");
 	orientationLayout->addWidget(particleOrientationLabel);
 	QHBoxLayout* facingLayout = new QHBoxLayout();
@@ -662,7 +662,7 @@ void EmitterLayerWidget::OnValueChanged()
     if (cameraFacingCheckBox->isChecked())
         particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING;
     if (xFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
+        particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
 	if (yFacingCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
 	if (zFacingCheckBox->isChecked())
@@ -1068,8 +1068,8 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     spriteLabel->setVisible(!isSuperemitter);
     spritePathLabel->setVisible(!isSuperemitter);
 
-    // The same is for "Additive" flag, Color, Alpha and Frame.	
-	colorRandomGradient->setVisible(!isSuperemitter);
+    // The same is for "Additive" flag, Color, Alpha and Frame.
+    colorRandomGradient->setVisible(!isSuperemitter);
 	colorOverLifeGradient->setVisible(!isSuperemitter);
 	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
@@ -1105,7 +1105,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 
     // Some controls are however specific for this mode only - display and update them.
     innerEmitterLabel->setVisible(isSuperemitter);
-	innerEmitterPathLabel->setVisible(isSuperemitter);
+    innerEmitterPathLabel->setVisible(isSuperemitter);
 	
 	if (isSuperemitter && this->layer->innerEmitter)
 	{

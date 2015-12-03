@@ -102,10 +102,37 @@ PHY_ScalarType hdt, bool flipQuadEdges)
     m_heightfieldDataUnknown = heightfieldData;
     m_heightDataType = hdt;
     m_flipQuadEdges = flipQuadEdges;
+    m_useDiamondSubdivision = false;
+    m_upAxis = upAxis;
     m_localScaling.setValue(btScalar(1.), btScalar(1.), btScalar(1.));
 
-    m_localAabbMin.setValue(0, 0, m_minHeight);
-    m_localAabbMax.setValue(m_width, m_length, m_maxHeight);
+    // determine min/max axis-aligned bounding box (aabb) values
+    switch (m_upAxis)
+    {
+    case 0:
+    {
+        m_localAabbMin.setValue(m_minHeight, 0, 0);
+        m_localAabbMax.setValue(m_maxHeight, m_width, m_length);
+        break;
+    }
+    case 1:
+    {
+        m_localAabbMin.setValue(0, m_minHeight, 0);
+        m_localAabbMax.setValue(m_width, m_maxHeight, m_length);
+        break;
+    };
+    case 2:
+    {
+        m_localAabbMin.setValue(0, 0, m_minHeight);
+        m_localAabbMax.setValue(m_width, m_length, m_maxHeight);
+        break;
+    }
+    default:
+    {
+        //need to get valid m_upAxis
+        btAssert(0 && "Bad m_upAxis");
+    }
+    }
 
     // remember origin (defined as exact middle of aabb)
     m_localOrigin = btScalar(0.5) * (m_localAabbMin + m_localAabbMax);
@@ -120,7 +147,7 @@ void btHeightfieldTerrainShape::getAabb(const btTransform& t, btVector3& aabbMin
     btVector3 halfExtents = (m_localAabbMax - m_localAabbMin) * m_localScaling * btScalar(0.5);
 
     btVector3 localOrigin(0, 0, 0);
-    localOrigin[2] = (m_minHeight + m_maxHeight) * btScalar(0.5);
+    localOrigin[m_upAxis] = (m_minHeight + m_maxHeight) * btScalar(0.5);
     localOrigin *= m_localScaling;
 
     btMatrix3x3 abs_b = t.getBasis().absolute();
@@ -137,20 +164,90 @@ void btHeightfieldTerrainShape::getAabb(const btTransform& t, btVector3& aabbMin
 /// This returns the "raw" (user's initial) height, not the actual height.
 /// The actual height needs to be adjusted to be relative to the center
 ///   of the heightfield's AABB.
-btScalar btHeightfieldTerrainShape::getRawHeightFieldValue(int x, int y) const
+btScalar
+btHeightfieldTerrainShape::getRawHeightFieldValue(int x, int y) const
 {
+    //BTREVIEW 0.1%
+    btScalar val = 0.f;
+
     //i've commented this lines to improve speed!
-    return m_heightfieldDataFloat[(y * m_heightStickWidth) + x];
+    //	switch (m_heightDataType)
+    //	{
+    //	case PHY_FLOAT:
+    //		{
+    val = m_heightfieldDataFloat[(y * m_heightStickWidth) + x];
+    //			break;
+    //		}
+    //
+    //	case PHY_UCHAR:
+    //		{
+    //			unsigned char heightFieldValue = m_heightfieldDataUnsignedChar[(y*m_heightStickWidth)+x];
+    //			val = heightFieldValue * m_heightScale;
+    //			break;
+    //		}
+    //
+    //	case PHY_SHORT:
+    //		{
+    //			short hfValue = m_heightfieldDataShort[(y * m_heightStickWidth) + x];
+    //			val = hfValue * m_heightScale;
+    //			break;
+    //		}
+    //
+    //	default:
+    //		{
+    //			btAssert(!"Bad m_heightDataType");
+    //		}
+    //	}
+
+    return val;
 }
 
 /// this returns the vertex in bullet-local coordinates
-btVector3 btHeightfieldTerrainShape::getVertex(int x, int y) const
+void btHeightfieldTerrainShape::getVertex(int x, int y, btVector3& vertex) const
 {
+    //BTREVIEW 1%
+
     btAssert(x >= 0);
     btAssert(y >= 0);
     btAssert(x < m_heightStickWidth);
     btAssert(y < m_heightStickLength);
-    return btVector3(m_width2 + btScalar(x), m_length2 + btScalar(y), getRawHeightFieldValue(x, y) - m_localOrigin.m_floats[2]);
+
+    btScalar height = getRawHeightFieldValue(x, y);
+
+    //i've commented this lines to improve speed!
+    //	switch (m_upAxis)
+    //	{
+    //	case 0:
+    //		{
+    //		vertex.setValue(
+    //			height - m_localOrigin.getX(),
+    //			(-m_width/btScalar(2.0)) + x,
+    //			(-m_length/btScalar(2.0) ) + y
+    //			);
+    //			break;
+    //		}
+    //	case 1:
+    //		{
+    //			vertex.setValue(
+    //			(-m_width/btScalar(2.0)) + x,
+    //			height - m_localOrigin.getY(),
+    //			(-m_length/btScalar(2.0)) + y
+    //			);
+    //			break;
+    //		};
+    //	case 2:
+    //		{
+    vertex.setValue(m_width2 + btScalar(x), m_length2 + btScalar(y), height - m_localOrigin.getZ());
+    //			break;
+    //		}
+    //	default:
+    //		{
+    //			//need to get valid m_upAxis
+    //			btAssert(0);
+    //		}
+    //	}
+
+    vertex *= m_localScaling;
 }
 
 static inline int
@@ -195,8 +292,8 @@ void btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback
 {
     //BTREVIEW 2.2%
     // scale down the input aabb's so they are in local (non-scaled) coordinates
-    btVector3 localAabbMin = aabbMin / m_localScaling; // btVector3(1.f / m_localScaling[0], 1.f / m_localScaling[1], 1.f / m_localScaling[2]);
-    btVector3 localAabbMax = aabbMax / m_localScaling; // btVector3(1.f / m_localScaling[0], 1.f / m_localScaling[1], 1.f / m_localScaling[2]);
+    btVector3 localAabbMin = aabbMin * btVector3(1.f / m_localScaling[0], 1.f / m_localScaling[1], 1.f / m_localScaling[2]);
+    btVector3 localAabbMax = aabbMax * btVector3(1.f / m_localScaling[0], 1.f / m_localScaling[1], 1.f / m_localScaling[2]);
 
     // account for local origin
     localAabbMin += m_localOrigin;
@@ -218,82 +315,87 @@ void btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback
 
     int startX = 0;
     int endX = m_heightStickWidth - 1;
-    int startY = 0;
-    int endY = m_heightStickLength - 1;
+    int startJ = 0;
+    int endJ = m_heightStickLength - 1;
 
+    //i've commented this lines to improve speed!
+    //	switch (m_upAxis)
+    //	{
+    //	case 0:
+    //		{
+    //			if (quantizedAabbMin[1]>startX)
+    //				startX = quantizedAabbMin[1];
+    //			if (quantizedAabbMax[1]<endX)
+    //				endX = quantizedAabbMax[1];
+    //			if (quantizedAabbMin[2]>startJ)
+    //				startJ = quantizedAabbMin[2];
+    //			if (quantizedAabbMax[2]<endJ)
+    //				endJ = quantizedAabbMax[2];
+    //			break;
+    //		}
+    //	case 1:
+    //		{
+    //			if (quantizedAabbMin[0]>startX)
+    //				startX = quantizedAabbMin[0];
+    //			if (quantizedAabbMax[0]<endX)
+    //				endX = quantizedAabbMax[0];
+    //			if (quantizedAabbMin[2]>startJ)
+    //				startJ = quantizedAabbMin[2];
+    //			if (quantizedAabbMax[2]<endJ)
+    //				endJ = quantizedAabbMax[2];
+    //			break;
+    //		};
+    //	case 2:
+    //		{
     if (quantizedAabbMin[0] > startX)
         startX = quantizedAabbMin[0];
-
     if (quantizedAabbMax[0] < endX)
         endX = quantizedAabbMax[0];
+    if (quantizedAabbMin[1] > startJ)
+        startJ = quantizedAabbMin[1];
+    if (quantizedAabbMax[1] < endJ)
+        endJ = quantizedAabbMax[1];
+    //			break;
+    //		}
+    //	default:
+    //		{
+    //			//need to get valid m_upAxis
+    //			btAssert(0);
+    //		}
+    //	}
 
-    if (quantizedAabbMin[1] > startY)
-        startY = quantizedAabbMin[1];
-
-    if (quantizedAabbMax[1] < endY)
-        endY = quantizedAabbMax[1];
-
-    auto hData = m_heightfieldDataFloat;
-    if (m_flipQuadEdges)
+    for (int j = startJ; j < endJ; j++)
     {
-        float sx = m_localScaling.getX();
-        float sy = m_localScaling.getY();
-        float sz = m_localScaling.getZ();
-
-        float fStartX = sx * (m_width2 + static_cast<float>(startX));
-        float fy = sy * (m_length2 + static_cast<float>(startY));
-        float fz = m_localOrigin.m_floats[2];
-
-        for (int y = startY; y < endY; ++y, fy += sy)
+        for (int x = startX; x < endX; x++)
         {
-            int r0 = y * m_heightStickWidth;
-            int r1 = (y + 1) * m_heightStickWidth;
-
-            float fx = fStartX;
-            float y0x0 = sz * (m_heightfieldDataFloat[startX + r0] - fz);
-            float y1x0 = sz * (m_heightfieldDataFloat[startX + r1] - fz);
-            for (int x = startX; x < endX; ++x, fx += sx)
+            btVector3 vertices[3];
+            if (m_flipQuadEdges || (m_useDiamondSubdivision && !((j + x) & 1)))
             {
-                float y0x1 = sz * (m_heightfieldDataFloat[x + 1 + r0] - fz);
-                float y1x1 = sz * (m_heightfieldDataFloat[x + 1 + r1] - fz);
-
-                btVector3 vertices[4];
-                vertices[0] = btVector3(fx, fy, y0x0);
-                vertices[1] = btVector3(fx + sx, fy, y0x1);
-                vertices[2] = btVector3(fx + sx, fy + sy, y1x1);
-                vertices[3] = btVector3(fx, fy + sy, y1x0);
-                callback->processTriangle(vertices, x, y);
-
-                vertices[1] = vertices[2];
-                vertices[2] = vertices[3];
-                callback->processTriangle(vertices, x, y);
-
-                y0x0 = y0x1;
-                y1x0 = y1x1;
+                //first triangle
+                getVertex(x, j, vertices[0]);
+                getVertex(x + 1, j, vertices[1]);
+                getVertex(x + 1, j + 1, vertices[2]);
+                callback->processTriangle(vertices, x, j);
+                //second triangle
+                getVertex(x, j, vertices[0]);
+                getVertex(x + 1, j + 1, vertices[1]);
+                getVertex(x, j + 1, vertices[2]);
+                callback->processTriangle(vertices, x, j);
+            }
+            else
+            {
+                //first triangle
+                getVertex(x, j, vertices[0]);
+                getVertex(x, j + 1, vertices[1]);
+                getVertex(x + 1, j, vertices[2]);
+                callback->processTriangle(vertices, x, j);
+                //second triangle
+                getVertex(x + 1, j, vertices[0]);
+                getVertex(x, j + 1, vertices[1]);
+                getVertex(x + 1, j + 1, vertices[2]);
+                callback->processTriangle(vertices, x, j);
             }
         }
-    }
-    else
-    {
-        assert(false);
-        /*
-		btVector3 localScaling = m_localScaling;
-		for (int j = startJ; j < endJ; j++)
-		{
-			for (int x = startX; x < endX; x++)
-			{
-				btVector3 vertices[4];
-				vertices[0] = localScaling * getVertex(x, j);
-				vertices[1] = localScaling * getVertex(x, j + 1);
-				vertices[2] = localScaling * getVertex(x + 1, j);
-				callback->processTriangle(vertices, x, j);
-				vertices[0] = localScaling * getVertex(x + 1, j);
-				vertices[1] = localScaling * getVertex(x, j + 1);
-				vertices[2] = localScaling * getVertex(x + 1, j + 1);
-				callback->processTriangle(vertices, x, j);
-			}
-		}
-		*/
     }
 }
 
@@ -308,7 +410,6 @@ void btHeightfieldTerrainShape::setLocalScaling(const btVector3& scaling)
 {
     m_localScaling = scaling;
 }
-
 const btVector3& btHeightfieldTerrainShape::getLocalScaling() const
 {
     return m_localScaling;

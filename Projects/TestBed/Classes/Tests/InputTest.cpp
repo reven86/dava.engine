@@ -32,12 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-InputTest::InputTest ()
+InputTest::InputTest()
     : BaseScreen("InputTest")
 {
-     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_MOUSE_TYPE).Connect(this, &InputTest::OnInputChanged);
-     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_KEYBOARD_TYPE).Connect(this, &InputTest::OnInputChanged);
-     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_POINTER_TYPE).Connect(this, &InputTest::OnInputChanged);
+    DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_MOUSE_TYPE).Connect(this, &InputTest::OnInputChanged);
+    DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_KEYBOARD_TYPE).Connect(this, &InputTest::OnInputChanged);
+    DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_POINTER_TYPE).Connect(this, &InputTest::OnInputChanged);
 }
 
 void InputTest::OnInputChanged(DAVA::DeviceInfo::eHIDType hidType, bool connected)
@@ -95,7 +95,7 @@ void InputTest::LoadResources()
     h = screenSize.dy * 0.05f;
     startX = screenSize.dx * 0.5f - w * 0.5f;
     startY = h;
-    // button mouse 
+    // button mouse
     mouse = new UIButton(Rect(startX, startY, w, h));
     mouse->SetStateFont(0xFF, font);
     mouse->SetDebugDraw(true);
@@ -135,4 +135,3 @@ void InputTest::UnloadResources()
     SafeRelease(touch);
     SafeRelease(keyboard);
 }
-

@@ -125,10 +125,10 @@ private:
 
     bool foreground;
 
-    AndroidSystemDelegate *androidDelegate;
+    AndroidSystemDelegate* androidDelegate;
 
-	String externalStorage;
-	String internalStorage;
+    String externalStorage;
+    String internalStorage;
 };
 };
 #endif // #if defined(__DAVAENGINE_ANDROID__)
