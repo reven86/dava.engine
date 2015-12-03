@@ -500,12 +500,13 @@ namespace DAVA
             return phase;
         }
 
-        outTouch.tid = button;
+        outTouch.mouseButton = static_cast<UIEvent::MouseButton>(button);
         outTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
         outTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
         outTouch.phase = phase;
         outTouch.device = deviceId;
         outTouch.tapCount = 1;
+        outTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         return phase;
     }
@@ -581,12 +582,13 @@ namespace DAVA
         {
             touchPhase = UIEvent::Phase::WHEEL;
 
-            newTouch.tid = 0;
+            newTouch.mouseButton = UIEvent::MouseButton::None;
             newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
             newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
             newTouch.scrollDelta.y = static_cast<int16>(buttonData) / static_cast<float32>(WHEEL_DELTA);
             newTouch.phase = UIEvent::Phase::WHEEL;
             newTouch.device = deviceId;
+            newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
         }
         else
 		{
@@ -620,12 +622,13 @@ namespace DAVA
     void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure)
     {
         UIEvent newTouch;
-        newTouch.tid = fingerId;
+        newTouch.touchId = fingerId;
         newTouch.physPoint.x = x;
         newTouch.physPoint.y = y;
         newTouch.phase = phase;
         newTouch.device = deviceId;
         newTouch.tapCount = 1;
+        newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&newTouch);
     }
@@ -676,16 +679,20 @@ namespace DAVA
         // no break
         case WM_KEYUP:
         {
-            int32 system_key_code = static_cast<int32>(wParam);
+            uint32 system_key_code = static_cast<uint32>(wParam);
+            uint32 extended_key_info = static_cast<uint32>(lParam);
+            uint32 add_256_if_right_extended_key = ((1 << 23) & extended_key_info) * 256; // 0 or 256
+            system_key_code += add_256_if_right_extended_key;
 
             UIEvent ev;
             ev.phase = UIEvent::Phase::KEY_UP;
-            ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
+            ev.key = keyboard.GetDavaKeyForSystemKey(system_key_code);
             ev.device = UIEvent::Device::KEYBOARD;
+            ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
             UIControlSystem::Instance()->OnInput(&ev);
 
-            keyboard.OnSystemKeyUnpressed(system_key_code);
+            keyboard.OnKeyUnpressed(ev.key);
         }
         break;
 
@@ -693,7 +700,10 @@ namespace DAVA
         // no break;
         case WM_KEYDOWN:
         {
-            int32 system_key_code = static_cast<int32>(wParam);
+            uint32 system_key_code = static_cast<int32>(wParam);
+            uint32 extended_key_info = static_cast<uint32>(lParam);
+            uint32 add_256_if_right_extended_key = ((1 << 23) & extended_key_info) * 256; // 0 or 256
+            system_key_code += add_256_if_right_extended_key;
 
             UIEvent ev;
             if ((HIWORD(lParam) & KF_REPEAT) == 0)
@@ -704,12 +714,13 @@ namespace DAVA
             {
                 ev.phase = UIEvent::Phase::KEY_DOWN_REPEAT;
             }
-            ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
+            ev.key = keyboard.GetDavaKeyForSystemKey(system_key_code);
             ev.device = UIEvent::Device::KEYBOARD;
+            ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
             UIControlSystem::Instance()->OnInput(&ev);
 
-            keyboard.OnSystemKeyPressed(system_key_code);
+            keyboard.OnKeyPressed(ev.key);
         };
         break;
 
@@ -725,6 +736,8 @@ namespace DAVA
             {
                 ev.phase = UIEvent::Phase::CHAR_REPEAT;
             }
+            ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+
             UIControlSystem::Instance()->OnInput(&ev);
         }
         break;

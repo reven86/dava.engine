@@ -490,7 +490,7 @@ void UIList::Update(float32 timeElapsed)
 
 void UIList::Input(UIEvent *currentInput)
 {
-    if (lockTouch && currentInput->tid != mainTouch)
+    if (lockTouch && currentInput->touchId != mainTouch)
     {
         // Ignore any other touches when the input is locked.
         currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD);
@@ -519,7 +519,7 @@ void UIList::Input(UIEvent *currentInput)
     {
         lockTouch = true;
         oldPos = newPos;
-        mainTouch = currentInput->tid;
+        mainTouch = currentInput->touchId;
     }
     break;
     case UIEvent::Phase::DRAG:
@@ -564,7 +564,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
                 Input(currentInput);
             }
         }
-        else if (currentInput->tid == mainTouch && currentInput->phase == UIEvent::Phase::DRAG)
+        else if (currentInput->touchId == mainTouch && currentInput->phase == UIEvent::Phase::DRAG)
         {
             if(orientation == ORIENTATION_HORIZONTAL)
             {
@@ -585,7 +585,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
                 }
             }
         }
-        else if (currentInput->tid == mainTouch && currentInput->phase == UIEvent::Phase::ENDED)
+        else if (currentInput->touchId == mainTouch && currentInput->phase == UIEvent::Phase::ENDED)
         {
             mainTouch = -1;
             lockTouch = false;

@@ -525,17 +525,18 @@ namespace DAVA
 			return;
 		}
 
-		UIEvent keyPress;
-		keyPress.tid = keyChar;
-        keyPress.phase = UIEvent::Phase::CHAR;
+        // TODO fix this bad code, if some one use it
+        UIEvent keyPress;
+        keyPress.keyChar = keyChar;
+        keyPress.phase = UIEvent::Phase::KEY_DOWN;
         keyPress.tapCount = 1;
         keyPress.keyChar = keyChar;
 
-        Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
+        Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.key, keyPress.phase,
                                keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
-        switch (keyPress.tid)
+        switch (keyPress.key)
         {
-        case DVKEY_BACKSPACE:
+        case Key::BACKSPACE:
         {
             //TODO: act the same way on iPhone
             WideString str = L"";
@@ -545,13 +546,13 @@ namespace DAVA
 			}
 			break;
 		}
-		case DVKEY_ENTER:
-		{
+        case Key::ENTER:
+        {
 			uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
 			break;
 		}
-		case DVKEY_ESCAPE:
-		{
+        case Key::ESCAPE:
+        {
 			uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
 			break;
 		}
@@ -710,7 +711,7 @@ namespace DAVA
 	{
 		UIEvent touchDown;
         touchDown.phase = UIEvent::Phase::BEGAN;
-        touchDown.tid = touchId;
+        touchDown.touchId = touchId;
         touchDown.tapCount = tapCount;
         touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchDown.point = point;
@@ -720,7 +721,7 @@ namespace DAVA
     void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
     {
         UIEvent touchMove;
-        touchMove.tid = touchId;
+        touchMove.touchId = touchId;
         touchMove.tapCount = 1;
         touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
 		touchMove.point = point;
@@ -749,7 +750,7 @@ namespace DAVA
 			AutotestingSystem::Instance()->OnError("TouchAction::TouchUp touch down not found");
 		}
         touchUp.phase = UIEvent::Phase::ENDED;
-        touchUp.tid = touchId;
+        touchUp.touchId = touchId;
 
         ProcessInput(touchUp);
     }

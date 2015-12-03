@@ -30,8 +30,9 @@
 #ifndef __DAVAENGINE_UI_EVENT_H__
 #define __DAVAENGINE_UI_EVENT_H__
 
-#include "Base/BaseTypes.h"
 #include "Math/Vector.h"
+#include "Input/KeyboardDevice.h"
+#include "Input/GamepadDevice.h"
 
 namespace DAVA
 {
@@ -84,12 +85,14 @@ public:
 
     friend class UIControlSystem;
 
-    enum eButtonID : int32
+    enum class MouseButton : uint32
     {
-        BUTTON_NONE = 0,
-        BUTTON_1,
-        BUTTON_2,
-        BUTTON_3
+        None = 0,
+        Left = 1,
+        Right = 2,
+        Middle = 3,
+        Extended1 = 4,
+        Extended2 = 5
     };
 
     enum class Device : uint32
@@ -116,7 +119,13 @@ public:
     eInputHandledType GetInputHandledType() { return inputHandledType; };
     void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
 
-    uint32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
+    union {
+        uint32 touchId;
+        Key key;
+        char32_t keyChar; // unicode utf32 char
+        MouseButton mouseButton;
+        GamepadDevice::eDavaGamepadElement element;
+    };
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 scrollDelta; // scroll delta in mouse wheel clicks (or lines)
     Vector2 physPoint; // point of pressure in physical coordinates
@@ -125,7 +134,6 @@ public:
     UIControl* touchLocker = nullptr; // control that handles this input
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     int32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
-    char16 keyChar = 0; // (TODO make char32_t) unicode/translated character produced by key using current language, caps etc. Used only with CHAR.
     Device device = Device::UNKNOWN;
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 };

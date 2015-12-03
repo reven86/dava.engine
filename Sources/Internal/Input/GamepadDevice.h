@@ -31,7 +31,6 @@
 #define __GAMEPAD_DEVICE_H_
 
 #include "Base/BaseObject.h"
-#include "UI/UIEvent.h"
 
 namespace DAVA
 {
@@ -47,31 +46,30 @@ public:
             
         GAMEPAD_PROFILE_COUNT
     };
-        
-        
-    enum eDavaGamepadElement
+
+    enum eDavaGamepadElement : uint32
     {
         GAMEPAD_ELEMENT_BUTTON_A = 0,
         GAMEPAD_ELEMENT_BUTTON_B,
         GAMEPAD_ELEMENT_BUTTON_X,
         GAMEPAD_ELEMENT_BUTTON_Y,
-        GAMEPAD_ELEMENT_BUTTON_LS,  //Left shoulder
-        GAMEPAD_ELEMENT_BUTTON_RS,  //Right shoulder
-            
-        GAMEPAD_ELEMENT_LT,         //Left trigger
-        GAMEPAD_ELEMENT_RT,         //Right trigger
-            
-        GAMEPAD_ELEMENT_AXIS_LX,    //Left joystick, axis X
-        GAMEPAD_ELEMENT_AXIS_LY,    //Left joystick, axis Y
-        GAMEPAD_ELEMENT_AXIS_RX,    //Right joystick, axis X
-        GAMEPAD_ELEMENT_AXIS_RY,    //Right joystick, axis Y
-            
+        GAMEPAD_ELEMENT_BUTTON_LS, //Left shoulder
+        GAMEPAD_ELEMENT_BUTTON_RS, //Right shoulder
+
+        GAMEPAD_ELEMENT_LT, //Left trigger
+        GAMEPAD_ELEMENT_RT, //Right trigger
+
+        GAMEPAD_ELEMENT_AXIS_LX, //Left joystick, axis X
+        GAMEPAD_ELEMENT_AXIS_LY, //Left joystick, axis Y
+        GAMEPAD_ELEMENT_AXIS_RX, //Right joystick, axis X
+        GAMEPAD_ELEMENT_AXIS_RY, //Right joystick, axis Y
+
         GAMEPAD_ELEMENT_DPAD_X,
         GAMEPAD_ELEMENT_DPAD_Y,
-            
+
         GAMEPAD_ELEMENT_COUNT
     };
-        
+
     GamepadDevice();
         
     void Reset();

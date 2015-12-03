@@ -1511,14 +1511,14 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 if (exclusiveInput)
                 {
                     UIControlSystem::Instance()->SetExclusiveInputLocker(this,
-                                                                         currentInput->tid);
+                                                                         currentInput->touchId);
                 }
 
                 PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
 
                 if (!multiInput)
                 {
-                    currentInputID = currentInput->tid;
+                    currentInputID = currentInput->touchId;
                 }
 
                 Input(currentInput);
@@ -1536,7 +1536,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
             if (currentInput->touchLocker == this)
             {
-                if (multiInput || currentInputID == currentInput->tid)
+                if (multiInput || currentInputID == currentInput->touchId)
                 {
                     if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
                     {
@@ -1581,10 +1581,10 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
             if (currentInput->touchLocker == this)
             {
-                if (multiInput || currentInputID == currentInput->tid)
+                if (multiInput || currentInputID == currentInput->touchId)
                 {
                     Input(currentInput);
-                    if (currentInput->tid == currentInputID)
+                    if (currentInput->touchId == currentInputID)
                     {
                         currentInputID = 0;
                     }
@@ -1731,7 +1731,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         }
 
         currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
-        if(currentInput->tid == currentInputID)
+        if (currentInput->touchId == currentInputID)
         {
             currentInputID = 0;
         }
