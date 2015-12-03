@@ -180,7 +180,10 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad* quad)
     rhi::VertexBuffer::Descriptor desc;
     desc.size = vBufferSize;
     desc.initialData = landscapeVertices;
-    desc.usage = rhi::USAGE_STATICDRAW;
+    if (updatable)
+        desc.usage = rhi::USAGE_DYNAMICDRAW;
+    else
+        desc.usage = rhi::USAGE_STATICDRAW;
 
     rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(desc);
     vertexBuffers.push_back(vertexBuffer);
@@ -1279,5 +1282,14 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
 void Landscape::SetForceFirstLod(bool force)
 {
     forceFirstLod = force;
+}
+
+void Landscape::SetUpdatable(bool isUpdatable)
+{
+    if (updatable != isUpdatable)
+    {
+        updatable = isUpdatable;
+        BuildLandscape();
+    }
 }
 }
