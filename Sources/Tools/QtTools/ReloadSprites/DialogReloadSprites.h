@@ -43,19 +43,19 @@ class DialogReloadSprites : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DialogReloadSprites(SpritesPacker *packer, QWidget *parent = nullptr);
+    explicit DialogReloadSprites(SpritesPacker* packer, QWidget* parent = nullptr);
     ~DialogReloadSprites();
-        
+
 private slots:
     void OnStartClicked();
     void OnStopClicked();
     void OnRunningChangedQueued(bool running); //we can work with widgets only in application thread
     void OnRunningChangedDirect(bool running); //we can move to thead only from current thread
     void OnCheckboxShowConsoleToggled(bool checked);
-    
+
 protected:
     void closeEvent(QCloseEvent *event) override;
-    
+
 private:
     void LoadSettings();
     void SaveSettings() const;

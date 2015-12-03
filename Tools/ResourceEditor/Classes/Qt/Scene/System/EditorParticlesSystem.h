@@ -49,9 +49,9 @@ public:
 
 private:
     void Draw();
-	
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+
+    virtual void AddEntity(DAVA::Entity* entity);
+    virtual void RemoveEntity(DAVA::Entity * entity);
 
 	void ProcessCommand(const Command2 *command, bool redo);
 	

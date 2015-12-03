@@ -31,6 +31,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/FileAPIHelper.h"
 
 #include "Utils/StringFormat.h"
 
@@ -105,15 +106,17 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
 {
     FILE * file = 0;
     uint32 size = 0;
+    FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
+
     if((attributes & File::OPEN) && (attributes & File::READ))
     {
         if(attributes & File::WRITE)
         {
-            file = fopen(filePath.GetAbsolutePathname().c_str(), "r+b");
+            file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("r+b"));
         }
         else
         {
-            file = fopen(filePath.GetAbsolutePathname().c_str(), "rb");
+            file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("rb"));
         }
         
         if (!file) return NULL;
@@ -123,12 +126,12 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
     }
     else if ((attributes & File::CREATE) && (attributes & File::WRITE))
     {
-        file = fopen(filePath.GetAbsolutePathname().c_str(), "wb");
+        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("wb"));
         if (!file)return NULL;
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
-        file = fopen(filePath.GetAbsolutePathname().c_str(), "ab");
+        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("ab"));
         if (!file)return NULL;
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
@@ -137,7 +140,6 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
     {
         return nullptr;
     }
-    
     
     File * fileInstance = new File();
     fileInstance->filename = filePath;
@@ -214,11 +216,10 @@ uint32 File::ReadString(char8 * destinationBuffer, uint32 destinationBufferSize)
 uint32 File::ReadString(String & destinationString)
 {
     uint32 writeIndex = 0;
-	while(!IsEof())
-	{
-		uint8 currentChar;
-		Read(&currentChar, 1);
-		
+    uint8 currentChar = 0;
+
+    while (!IsEof() && Read(&currentChar, 1) != 0)
+    {
         if(0 != currentChar)
         {
 	    	destinationString += currentChar;

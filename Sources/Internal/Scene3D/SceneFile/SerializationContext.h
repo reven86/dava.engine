@@ -160,9 +160,9 @@ namespace DAVA
         inline const FastName& GetDefaultMaterialQuality() const
         {
             return defaultMaterialQuality;
-		}
-		
-		void ResolveMaterialBindings();
+        }
+
+        void ResolveMaterialBindings();
 
         void AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos);
         void AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format);

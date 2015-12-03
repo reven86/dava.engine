@@ -131,8 +131,8 @@ void SceneUtils::CopyFiles(Set<String> &errorLog)
         if (FileSystem::Instance()->Exists(it->first))
         {
             FileSystem::Instance()->DeleteFile(it->second);
-			retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
-		}
+            retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
+        }
 
 		if(!retCopy)
 		{
