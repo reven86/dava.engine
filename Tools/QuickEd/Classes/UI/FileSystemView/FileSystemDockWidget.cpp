@@ -28,11 +28,12 @@
 
 
 #include "FileSystemDockWidget.h"
+#include "ValidatedTextInputDialog.h"
+#include "FileSystemModel.h"
 
 #include "FileSystem/Logger.h"
 
 #include "ui_FileSystemDockWidget.h"
-#include <DAVAEngine.h>
 #include <QMenu>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -48,51 +49,7 @@ namespace
 {
 const QString yamlExtensionString = ".yaml";
 const QString defaultDialogLabel = "Enter new folder name:";
-class FileSystemModel : public QFileSystemModel
-{
-
-public:
-    FileSystemModel(QObject *parent = nullptr);
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-    bool setData(const QModelIndex & idx, const QVariant & value, int role = Qt::EditRole) override;
-};
 } //unnamed namespace
-
-
-FileSystemModel::FileSystemModel(QObject *parent)
-    : QFileSystemModel(parent)
-{
-
-}
-
-Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
-{
-    return QFileSystemModel::flags(index) | Qt::ItemIsEditable;
-}
-
-QVariant FileSystemModel::data(const QModelIndex & index, int role) const
-{
-    QVariant data = QFileSystemModel::data(index, role);
-    if (index.isValid() && role == Qt::EditRole && !isDir(index) && data.canConvert<QString>())
-    {
-        return data.toString().remove(QRegularExpression(yamlExtensionString + "$"));
-    }
-    return data;
-}
-
-bool FileSystemModel::setData(const QModelIndex & idx, const QVariant & value, int role)
-{
-    if (value.canConvert<QString>())
-    {
-        QString name = value.toString();
-        if (!name.endsWith(yamlExtensionString))
-        {
-            return QFileSystemModel::setData(idx, name + yamlExtensionString, role);
-        }
-    }
-    return QFileSystemModel::setData(idx, value, role);
-}
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -220,62 +177,6 @@ bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
     return true;
 }
 
-bool FileSystemDockWidget::ValidateInputDialogText(QInputDialog* dialog, const QString& text)
-{
-    const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
-    DVASSERT(selected.size() <= 1);
-    QString path;
-    if(selected.isEmpty())
-    {
-        path = model->rootPath();
-    }
-    else if(selected.size() == 1)
-    {
-        path = model->filePath(selected.front());
-    }
-    path += "/";
-
-    const QObjectList &children = dialog->children();
-    auto iter = std::find_if(children.begin(), children.end(), [](const QObject* obj)
-    {
-        return qobject_cast<const QLineEdit*>(obj) != nullptr;
-    });
-    if (iter == children.end())
-    {
-        Logger::Warning("create folder inpud dialog: can not find line edit");
-        return false;
-    }
-    QLineEdit *lineEdit = qobject_cast<QLineEdit*>(*iter);
-    iter = std::find_if(children.begin(), children.end(), [](const QObject* obj)
-    {
-        return qobject_cast<const QDialogButtonBox*>(obj) != nullptr;
-    });
-    if (iter == children.end())
-    {
-        Logger::Warning("create folder inpud dialog: can not find button box");
-        return false;
-    }
-    QDialogButtonBox *buttonBox = qobject_cast<QDialogButtonBox*>(*iter);
-
-    QPalette palette(lineEdit->palette());
-    bool enabled = true;
-    if (QFileInfo::exists(path + text))
-    {
-        dialog->setLabelText(defaultDialogLabel + "\nthis folder already exists");
-        palette.setColor(QPalette::Text, Qt::red);
-        enabled = false;
-    }
-    else
-    {
-        dialog->setLabelText(defaultDialogLabel);
-        palette.setColor(QPalette::Text, Qt::black);
-        enabled = true;
-    }
-    lineEdit->setPalette(palette);
-    QPushButton *okButton = buttonBox->button(QDialogButtonBox::Ok);
-    okButton->setEnabled(enabled);
-    return enabled;
-}
 
 void FileSystemDockWidget::OnSelectionChanged( const QItemSelection &selected, const QItemSelection &deselected )
 {
@@ -299,26 +200,41 @@ void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
 
 void FileSystemDockWidget::onNewFolder()
 {
-    QInputDialog dialog(this);
-    QString newFolder = tr("New Folder");
-    dialog.setWindowTitle(newFolder);
-    dialog.setLabelText(defaultDialogLabel);
-    dialog.setTextValue(newFolder);
-    dialog.setTextEchoMode(QLineEdit::Normal);
+    ValidatedTextInputDialog dialog(this);
+    QString newFolderName = tr("New Folder");
+    dialog.setWindowTitle(newFolderName);
     dialog.setInputMethodHints(Qt::ImhUrlCharactersOnly);
 
-    connect(&dialog, &QInputDialog::textValueChanged, this, &FileSystemDockWidget::OnInputDialogTextChanged);
-    dialog.okButtonText(); //force ensure layout of dialog
-    
-    if (!ValidateInputDialogText(&dialog, dialog.textValue()))
+    const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
+    DVASSERT(selected.size() <= 1);
+    QString path;
+    if (selected.isEmpty())
     {
+        path = model->rootPath();
+    }
+    else if (selected.size() == 1)
+    {
+        path = model->filePath(selected.front());
+    }
+    path += "/";
+
+    auto validateFunction = [path](const QString &text)
+    {
+        return !QFileInfo::exists(path + text);
+    };
+
+    dialog.SetValidator(validateFunction);
+
+    if (!validateFunction(newFolderName))
+    {
+        QString newFolderName_ = newFolderName + " (%1)";
         int i = 1; 
         do
         {
-            dialog.setTextValue(newFolder + QString(" (%1)").arg(i++));
-
-        } while (!ValidateInputDialogText(&dialog, dialog.textValue()));
+            newFolderName = newFolderName_.arg(i++);
+        } while (!validateFunction(newFolderName));
     }
+    dialog.setTextValue(newFolderName);
 
     int ret = dialog.exec();
     QString folderName = dialog.textValue();
@@ -415,10 +331,4 @@ void FileSystemDockWidget::OnOpenFile()
     const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
     DVASSERT(selected.size() == 1);
     onDoubleClicked(selected.first());
-}
-
-void FileSystemDockWidget::OnInputDialogTextChanged(const QString& text)
-{
-    QInputDialog *dialog = qobject_cast<QInputDialog*>(sender());
-    ValidateInputDialogText(dialog, text);
 }
