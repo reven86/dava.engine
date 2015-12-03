@@ -125,9 +125,9 @@ public:
 
     void SetVisible(bool isVisible);
 
-	void SetIsPassword(bool isPassword);
+    void SetIsPassword(bool isPassword);
 
-	void SetInputEnabled(bool value);
+    void SetInputEnabled(bool value);
 
 	void SetRenderToTexture(bool value);
 	bool IsRenderToTexture() const;

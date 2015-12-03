@@ -164,7 +164,7 @@ bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPath
     {
         std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
         if (sourceFormat != IMAGE_FORMAT_UNKNOWN)
-		{
+        {
 			descriptor->dataSettings.sourceFileFormat = sourceFormat;
 			descriptor->dataSettings.sourceFileExtension = extension;
 		}

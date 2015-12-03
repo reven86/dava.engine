@@ -28,7 +28,7 @@ public:
     void Deserialize(const QByteArray &data);
 
 public slots:
-    void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray &msg);
+    void AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& msg);
 
 signals:
     void ItemClicked(const QString &data);

@@ -51,8 +51,8 @@ public:
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project *GetProject() const;
-    SpritesPacker *GetSpritesPacker() const;
-    
+    SpritesPacker* GetSpritesPacker() const;
+
     void Start();
 
 protected slots:
@@ -85,7 +85,7 @@ protected:
 private:
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
-    
+
     std::unique_ptr<SpritesPacker> spritesPacker;
     Project* project = nullptr;
     QList<Document*> documents;

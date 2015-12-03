@@ -130,7 +130,7 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
         if (!(FileSystem::Instance()->Exists(filePath) && filePath.GetExtension() == ".sc2"))
         {
             continue;
-		}
+        }
 		
 		DAVA::Entity * entity = sceneEditor->structureSystem->Load(filePath);
 		

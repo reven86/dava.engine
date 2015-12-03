@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -54,113 +53,108 @@ subject to the following restrictions:
 ///It takes a triangle mesh as input, for example a btTriangleMesh or btTriangleIndexVertexArray. The btBvhTriangleMeshShape class allows for triangle mesh deformations by a refit or partialRefit method.
 ///Instead of building the bounding volume hierarchy acceleration structure, it is also possible to serialize (save) and deserialize (load) the structure from disk.
 ///See Demos\ConcaveDemo\ConcavePhysicsDemo.cpp for an example.
-ATTRIBUTE_ALIGNED16(class) btBvhTriangleMeshShape : public btTriangleMeshShape
+ATTRIBUTE_ALIGNED16(class)
+btBvhTriangleMeshShape : public btTriangleMeshShape
 {
+    btOptimizedBvh* m_bvh;
+    btTriangleInfoMap* m_triangleInfoMap;
 
-	btOptimizedBvh*	m_bvh;
-	btTriangleInfoMap*	m_triangleInfoMap;
-
-	bool m_useQuantizedAabbCompression;
-	bool m_ownsBvh;
-	bool m_pad[11];////need padding due to alignment
+    bool m_useQuantizedAabbCompression;
+    bool m_ownsBvh;
+    bool m_pad[11]; ////need padding due to alignment
 
 public:
+    BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	BT_DECLARE_ALIGNED_ALLOCATOR();
+    btBvhTriangleMeshShape(btStridingMeshInterface * meshInterface, bool useQuantizedAabbCompression, bool buildBvh = true);
 
-	
-	btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression, bool buildBvh = true);
+    ///optionally pass in a larger bvh aabb, used for quantization. This allows for deformations within this aabb
+    btBvhTriangleMeshShape(btStridingMeshInterface * meshInterface, bool useQuantizedAabbCompression, const btVector3& bvhAabbMin, const btVector3& bvhAabbMax, bool buildBvh = true);
 
-	///optionally pass in a larger bvh aabb, used for quantization. This allows for deformations within this aabb
-	btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression,const btVector3& bvhAabbMin,const btVector3& bvhAabbMax, bool buildBvh = true);
-	
-	virtual ~btBvhTriangleMeshShape();
+    virtual ~btBvhTriangleMeshShape();
 
-	bool getOwnsBvh () const
-	{
-		return m_ownsBvh;
-	}
+    bool getOwnsBvh() const
+    {
+        return m_ownsBvh;
+    }
 
+    void performRaycast(btTriangleCallback * callback, const btVector3& raySource, const btVector3& rayTarget);
+    void performConvexcast(btTriangleCallback * callback, const btVector3& boxSource, const btVector3& boxTarget, const btVector3& boxMin, const btVector3& boxMax);
 
-	
-	void performRaycast (btTriangleCallback* callback, const btVector3& raySource, const btVector3& rayTarget);
-	void performConvexcast (btTriangleCallback* callback, const btVector3& boxSource, const btVector3& boxTarget, const btVector3& boxMin, const btVector3& boxMax);
+    virtual void processAllTriangles(btTriangleCallback * callback, const btVector3& aabbMin, const btVector3& aabbMax) const;
 
-	virtual void	processAllTriangles(btTriangleCallback* callback,const btVector3& aabbMin,const btVector3& aabbMax) const;
+    void refitTree(const btVector3& aabbMin, const btVector3& aabbMax);
 
-	void	refitTree(const btVector3& aabbMin,const btVector3& aabbMax);
+    ///for a fast incremental refit of parts of the tree. Note: the entire AABB of the tree will become more conservative, it never shrinks
+    void partialRefitTree(const btVector3& aabbMin, const btVector3& aabbMax);
 
-	///for a fast incremental refit of parts of the tree. Note: the entire AABB of the tree will become more conservative, it never shrinks
-	void	partialRefitTree(const btVector3& aabbMin,const btVector3& aabbMax);
+    //debugging
+    virtual const char* getName() const
+    {
+        return "BVHTRIANGLEMESH";
+    }
 
-	//debugging
-	virtual const char*	getName()const {return "BVHTRIANGLEMESH";}
+    virtual void setLocalScaling(const btVector3& scaling);
 
+    btOptimizedBvh* getOptimizedBvh()
+    {
+        return m_bvh;
+    }
 
-	virtual void	setLocalScaling(const btVector3& scaling);
-	
-	btOptimizedBvh*	getOptimizedBvh()
-	{
-		return m_bvh;
-	}
+    void setOptimizedBvh(btOptimizedBvh * bvh, const btVector3& localScaling = btVector3(1, 1, 1));
 
-	void	setOptimizedBvh(btOptimizedBvh* bvh, const btVector3& localScaling=btVector3(1,1,1));
+    void buildOptimizedBvh();
 
-	void    buildOptimizedBvh();
+    bool usesQuantizedAabbCompression() const
+    {
+        return m_useQuantizedAabbCompression;
+    }
 
-	bool	usesQuantizedAabbCompression() const
-	{
-		return	m_useQuantizedAabbCompression;
-	}
+    void setTriangleInfoMap(btTriangleInfoMap * triangleInfoMap)
+    {
+        m_triangleInfoMap = triangleInfoMap;
+    }
 
-	void	setTriangleInfoMap(btTriangleInfoMap* triangleInfoMap)
-	{
-		m_triangleInfoMap = triangleInfoMap;
-	}
+    const btTriangleInfoMap* getTriangleInfoMap() const
+    {
+        return m_triangleInfoMap;
+    }
 
-	const btTriangleInfoMap*	getTriangleInfoMap() const
-	{
-		return m_triangleInfoMap;
-	}
-	
-	btTriangleInfoMap*	getTriangleInfoMap()
-	{
-		return m_triangleInfoMap;
-	}
+    btTriangleInfoMap* getTriangleInfoMap()
+    {
+        return m_triangleInfoMap;
+    }
 
-	virtual	int	calculateSerializeBufferSize() const;
+    virtual int calculateSerializeBufferSize() const;
 
-	///fills the dataBuffer and returns the struct name (and 0 on failure)
-	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
+    ///fills the dataBuffer and returns the struct name (and 0 on failure)
+    virtual const char* serialize(void* dataBuffer, btSerializer* serializer) const;
 
-	virtual void	serializeSingleBvh(btSerializer* serializer) const;
+    virtual void serializeSingleBvh(btSerializer * serializer) const;
 
-	virtual void	serializeSingleTriangleInfoMap(btSerializer* serializer) const;
-
+    virtual void serializeSingleTriangleInfoMap(btSerializer * serializer) const;
 };
 
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
-struct	btTriangleMeshShapeData
+struct btTriangleMeshShapeData
 {
-	btCollisionShapeData	m_collisionShapeData;
+    btCollisionShapeData m_collisionShapeData;
 
-	btStridingMeshInterfaceData m_meshInterface;
+    btStridingMeshInterfaceData m_meshInterface;
 
-	btQuantizedBvhFloatData		*m_quantizedFloatBvh;
-	btQuantizedBvhDoubleData	*m_quantizedDoubleBvh;
+    btQuantizedBvhFloatData* m_quantizedFloatBvh;
+    btQuantizedBvhDoubleData* m_quantizedDoubleBvh;
 
-	btTriangleInfoMapData	*m_triangleInfoMap;
-	
-	float	m_collisionMargin;
+    btTriangleInfoMapData* m_triangleInfoMap;
 
-	char m_pad3[4];
-	
+    float m_collisionMargin;
+
+    char m_pad3[4];
 };
 
-
-SIMD_FORCE_INLINE	int	btBvhTriangleMeshShape::calculateSerializeBufferSize() const
+SIMD_FORCE_INLINE int btBvhTriangleMeshShape::calculateSerializeBufferSize() const
 {
-	return sizeof(btTriangleMeshShapeData);
+    return sizeof(btTriangleMeshShapeData);
 }
 
 

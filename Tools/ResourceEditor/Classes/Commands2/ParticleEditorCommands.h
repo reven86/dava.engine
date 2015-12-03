@@ -241,10 +241,6 @@ public:
               float32 scaleVelocityBase,
               float32 scaleVelocityFactor,
               bool isLooped,
-              const FilePath& spritePath,
-              eBlending blending,
-              bool enableFog,
-              bool enableFrameBlending,
               int32 particleOrientation,
               RefPtr<PropertyLine<float32>> life,
               RefPtr<PropertyLine<float32>> lifeVariation,
@@ -296,10 +292,6 @@ protected:
 	float32 scaleVelocityFactor;
 	bool inheritPosition;
 	bool isLooped;
-    FilePath spritePath;
-    eBlending blending;
-    bool enableFog;
-    bool enableFrameBlending;
 	int32 particleOrientation;
 	RefPtr< PropertyLine<float32> > life;
 	RefPtr< PropertyLine<float32> > lifeVariation;
@@ -419,27 +411,7 @@ protected:
 	FilePath filePath;    
 };
 
-/*
-// The same for Inner Emitters.
-class CommandLoadInnerEmitterFromYaml : public CommandAction
-{
-public:
-	DAVA_DEPRECATED(CommandLoadInnerEmitterFromYaml()); // DEPRECATED: using ParticlesEditorController(QOBJECT)
-	
-protected:
-    virtual void Execute(); 
-};
 
-class CommandSaveInnerEmitterToYaml : public CommandAction
-{
-public:
-	DAVA_DEPRECATED(CommandSaveInnerEmitterToYaml(bool forceAskFilename)); // DEPRECATED: using ParticlesEditorController(QOBJECT)
-	
-protected:
-    virtual void Execute(); 
-    
-    bool forceAskFilename;
-};
-*/
+
 
 #endif //__PARTICLE_EDITOR_COMMANDS_H__

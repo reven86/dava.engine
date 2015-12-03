@@ -87,7 +87,7 @@ void LogWidget::Deserialize(const QByteArray& data)
     ui->filter->selectUserData(logLevels);
 }
 
-void LogWidget::AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray &msg)
+void LogWidget::AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& msg)
 {
     if (QThread::currentThread() == qApp->thread())
     {
