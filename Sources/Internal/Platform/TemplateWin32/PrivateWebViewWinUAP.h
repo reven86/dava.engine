@@ -127,9 +127,10 @@ private:
     UIWebView* uiWebView = nullptr;
     IUIWebViewDelegate* webViewDelegate = nullptr;
     Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
+    Windows::UI::Color defaultBkgndColor;   // Original WebView's background color used on transparency turned off
 
     bool renderToTexture = false;
-    bool visible = true;
+    bool visible = false;                   // Native control initially is invisible
     Rect rectInWindowSpace;
 
     WebViewProperties properties;

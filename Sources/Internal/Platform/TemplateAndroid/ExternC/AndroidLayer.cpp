@@ -76,6 +76,8 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable);
     JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv * env, jobject classthis);
     JNIEXPORT int JNICALL Java_com_dava_framework_JNIActivity_nativeGetDesiredFPS(JNIEnv* env, jobject classthis);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 
     //JNISurfaceView
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
@@ -87,9 +89,6 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
 
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeReset(JNIEnv* env, jobject classthis, jint w, jint h);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 };
 
 namespace 
@@ -412,14 +411,18 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
 					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
 					allInputs.push_back(event);
-				}
+
+                    env->DeleteLocalRef(jInput);
+                }
 				if (touchIndex < activeInputsCount)
 				{
 					jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
 
 					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
 					activeInputs.push_back(event);
-				}
+
+                    env->DeleteLocalRef(jInput);
+                }
 			}
 			core->OnInput(action, source, activeInputs, allInputs);
 		}
@@ -497,16 +500,7 @@ void Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobj
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeReset(JNIEnv* env, jobject classthis, jint w, jint h)
-{
-	if(core)
-	{
-        LOGI("__ NATIVE RESET ___ %d, %d", w, h);
-        core->RenderReset(w, h);
-    }
-}
-
-void Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject classthis)
+void Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis)
 {
     if (core)
     {
@@ -514,7 +508,7 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject 
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock)
+void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock)
 {
 	if(core)
 	{

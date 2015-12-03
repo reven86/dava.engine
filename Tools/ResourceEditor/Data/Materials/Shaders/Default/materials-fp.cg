@@ -178,7 +178,7 @@ FPROG_BEGIN
         #if PIXEL_LIT || ALPHATEST || ALPHABLEND || VERTEX_LIT
             min10float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) );
             #if ALPHA_MASK 
-                textureColor0.a *= FP_TEXTURE2D( alphamask, FP_IN(varTexCoord1) ).a;
+                textureColor0.a *= FP_A8(FP_TEXTURE2D( alphamask, FP_IN(varTexCoord1) ));
             #endif
         #else
             min10float3 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb;
@@ -282,7 +282,7 @@ FPROG_BEGIN
 
             #if VIEW_ALBEDO
                 #if TILED_DECAL_MASK
-                    min10float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
+                    min10float maskSample = FP_A8(FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
                     min10float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                     color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
                 #else
@@ -312,7 +312,7 @@ FPROG_BEGIN
         
             #if VIEW_ALBEDO
                 #if TILED_DECAL_MASK
-                    min10float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
+                    min10float maskSample = FP_A8(FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
                     min10float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                     color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
                 #else
@@ -486,7 +486,7 @@ FPROG_BEGIN
 		#endif
 		
         #if TILED_DECAL_MASK
-            min10float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
+            min10float maskSample = FP_A8(FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
             min10float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
             color.rgb += (tileColor.rgb - color.rgb) * tileColor.a * maskSample;
         #endif

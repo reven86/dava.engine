@@ -739,8 +739,8 @@ void YamlNode::InternalSetByteArray(const uint8* byteArray, int32 byteArraySize)
 void YamlNode::InternalSetKeyedArchive(KeyedArchive* archive)
 {
     //creation array with variables
-    const Map<String, VariantType*> & innerArchiveMap =  archive->GetArchieveData();
-    for (Map<String, VariantType*>::const_iterator it = innerArchiveMap.begin(); it != innerArchiveMap.end(); ++it)
+    const KeyedArchive::UnderlyingMap& innerArchiveMap = archive->GetArchieveData();
+    for (KeyedArchive::UnderlyingMap::const_iterator it = innerArchiveMap.begin(); it != innerArchiveMap.end(); ++it)
     {
         YamlNode* arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
         arrayElementNodeValue->InternalAddNodeToMap(it->second->GetTypeName(), CreateNodeFromVariantType(*it->second), false);
