@@ -362,7 +362,7 @@ namespace DAVA
         AutotestingDB::Instance()->Log("ERROR", errorMessage);
 
         MakeScreenShot();
-        
+
         AutotestingDB::Instance()->Log("ERROR", screenShotName);
 
 		if (isDB && deviceId != "not-initialized")

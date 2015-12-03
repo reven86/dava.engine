@@ -652,9 +652,9 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     isLooped = false;
     deltaTime = 0.0f;
     deltaVariation = 0.0f;
-	loopVariation = 0.0f;
-	
-	const YamlNode * isLoopedNode = node->Get("isLooped");
+    loopVariation = 0.0f;
+
+    const YamlNode * isLoopedNode = node->Get("isLooped");
 	if (isLoopedNode)
 		isLooped = isLoopedNode->AsBool();
 		
