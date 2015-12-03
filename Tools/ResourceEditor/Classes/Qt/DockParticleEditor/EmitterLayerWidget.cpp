@@ -159,7 +159,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 	longLayout->addWidget(scaleVelocityFactorSpinBox);
 	connect(scaleVelocityBaseSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
 	connect(scaleVelocityFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
-	mainBox->addLayout(longLayout);
+    mainBox->addLayout(longLayout);
 
     QHBoxLayout* spriteHBox2 = new QHBoxLayout;
     spriteBtn = new QPushButton("Set sprite", this);
@@ -189,7 +189,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     connect(spritePathLabel, SIGNAL(textEdited(const QString&)), this, SLOT(OnSpritePathEdited(const QString&)));
 
     QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
-	innerEmitterLabel = new QLabel("Inner Emitter", this);
+    innerEmitterLabel = new QLabel("Inner Emitter", this);
 	innerEmitterPathLabel = new QLineEdit(this);
 	innerEmitterPathLabel->setReadOnly(true);
 	innerEmitterLayout->addWidget(innerEmitterLabel);
@@ -1067,7 +1067,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 	spriteBtn->setVisible(!isSuperemitter);
     spriteFolderBtn->setVisible(!isSuperemitter);
     spriteLabel->setVisible(!isSuperemitter);
-	spritePathLabel->setVisible(!isSuperemitter);
+    spritePathLabel->setVisible(!isSuperemitter);
 	
 	// The same is for "Additive" flag, Color, Alpha and Frame.	
 	colorRandomGradient->setVisible(!isSuperemitter);

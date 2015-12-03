@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -56,9 +55,14 @@ public:
     btScalar m_restitution;
     int pad[2];
 
-    btMaterial(){}
-    btMaterial(btScalar fric, btScalar rest) { m_friction = fric; m_restitution = rest; }
+    btMaterial()
+    {
+    }
+    btMaterial(btScalar fric, btScalar rest)
+    {
+        m_friction = fric;
+        m_restitution = rest;
+    }
 };
 
 #endif // BT_MATERIAL_H
-

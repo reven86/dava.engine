@@ -108,8 +108,8 @@ namespace DAVA
             virtualViewSize = elementSize;
         }
     }
-	
-	float ScrollHelper::GetPosition() const
+
+    float ScrollHelper::GetPosition() const
 	{
 		return position;
 	}

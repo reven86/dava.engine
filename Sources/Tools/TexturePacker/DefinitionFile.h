@@ -45,8 +45,8 @@ public:
 
     DefinitionFile();
     ~DefinitionFile();
-	
-	void ClearPackedFrames();
+
+    void ClearPackedFrames();
 	void LoadPNG(const FilePath & fullname, const FilePath & processDirectoryPath);
 
 	Size2i GetFrameSize(int frame) const;

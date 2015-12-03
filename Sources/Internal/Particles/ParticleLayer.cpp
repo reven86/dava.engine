@@ -264,7 +264,7 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->frameOverLifeFPS = frameOverLifeFPS;
     dstLayer->randomFrameOnStart = randomFrameOnStart;
     dstLayer->loopSpriteAnimation = loopSpriteAnimation;
-	dstLayer->particleOrientation = particleOrientation;
+    dstLayer->particleOrientation = particleOrientation;
 
 	dstLayer->scaleVelocityBase = scaleVelocityBase;
 	dstLayer->scaleVelocityFactor = scaleVelocityFactor;
@@ -653,8 +653,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     deltaTime = 0.0f;
     deltaVariation = 0.0f;
     loopVariation = 0.0f;
-	
-	const YamlNode * isLoopedNode = node->Get("isLooped");
+
+    const YamlNode * isLoopedNode = node->Get("isLooped");
 	if (isLoopedNode)
 		isLooped = isLoopedNode->AsBool();
 		

@@ -50,7 +50,7 @@
 
 using namespace DAVA;
 
-EditorCore::EditorCore(QObject *parent)
+EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
@@ -81,7 +81,6 @@ EditorCore::EditorCore(QObject *parent)
     EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
     connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
     connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
-
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
@@ -192,15 +191,15 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
         spritesPacker->SetCacheTool(
-                                    EditorSettings::Instance()->GetAssetCacheIp(),
-                                    EditorSettings::Instance()->GetAssetCachePort(),
-                                    EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+        EditorSettings::Instance()->GetAssetCacheIp(),
+        EditorSettings::Instance()->GetAssetCachePort(),
+        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
     }
     else
     {
         spritesPacker->ClearCacheTool();
     }
-    
+
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();
     QDirIterator it(projectPath + "/DataSource");

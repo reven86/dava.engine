@@ -75,13 +75,13 @@ private slots:
     void OnMoveDown();
     void OnMoveLeft();
     void OnMoveRight();
-    void OnBeforeNodesMoved(const SelectedNodes &nodes);
-    void OnNodesMoved(const SelectedNodes &nodes);
+    void OnBeforeNodesMoved(const SelectedNodes& nodes);
+    void OnNodesMoved(const SelectedNodes& nodes);
 
 private:
-    void CollectExpandedIndexes(PackageBaseNode *node);
+    void CollectExpandedIndexes(PackageBaseNode* node);
     void MoveNodeUpDown(bool up);
-    void MoveNodeImpl(PackageBaseNode *node, PackageBaseNode *dest, DAVA::uint32 destIndex);
+    void MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex);
     void CreateActions();
     void PlaceActions();
     void LoadContext();

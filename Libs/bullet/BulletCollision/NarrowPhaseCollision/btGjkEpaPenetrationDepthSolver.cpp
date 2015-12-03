@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -50,46 +49,43 @@ subject to the following restrictions:
 
 #include "BulletCollision/NarrowPhaseCollision/btGjkEpa2.h"
 
-bool btGjkEpaPenetrationDepthSolver::calcPenDepth( btSimplexSolverInterface& simplexSolver,
-											  const btConvexShape* pConvexA, const btConvexShape* pConvexB,
-											  const btTransform& transformA, const btTransform& transformB,
-											  btVector3& v, btVector3& wWitnessOnA, btVector3& wWitnessOnB,
-											  class btIDebugDraw* debugDraw, btStackAlloc* stackAlloc )
+bool btGjkEpaPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& simplexSolver,
+                                                  const btConvexShape* pConvexA, const btConvexShape* pConvexB,
+                                                  const btTransform& transformA, const btTransform& transformB,
+                                                  btVector3& v, btVector3& wWitnessOnA, btVector3& wWitnessOnB,
+                                                  class btIDebugDraw* debugDraw, btStackAlloc* stackAlloc)
 {
+    (void)debugDraw;
+    (void)v;
+    (void)simplexSolver;
 
-	(void)debugDraw;
-	(void)v;
-	(void)simplexSolver;
+    //	const btScalar				radialmargin(btScalar(0.));
 
-//	const btScalar				radialmargin(btScalar(0.));
-	
-	btVector3	guessVector(transformA.getOrigin()-transformB.getOrigin());
-	btGjkEpaSolver2::sResults	results;
-	
+    btVector3 guessVector(transformA.getOrigin() - transformB.getOrigin());
+    btGjkEpaSolver2::sResults results;
 
-	if(btGjkEpaSolver2::Penetration(pConvexA,transformA,
-								pConvexB,transformB,
-								guessVector,results))
-	
-		{
-	//	debugDraw->drawLine(results.witnesses[1],results.witnesses[1]+results.normal,btVector3(255,0,0));
-		//resultOut->addContactPoint(results.normal,results.witnesses[1],-results.depth);
-		wWitnessOnA = results.witnesses[0];
-		wWitnessOnB = results.witnesses[1];
-		v = results.normal;
-		return true;		
-		} else
-	{
-		if(btGjkEpaSolver2::Distance(pConvexA,transformA,pConvexB,transformB,guessVector,results))
-		{
-			wWitnessOnA = results.witnesses[0];
-			wWitnessOnB = results.witnesses[1];
-			v = results.normal;
-			return false;
-		}
-	}
+    if (btGjkEpaSolver2::Penetration(pConvexA, transformA,
+                                     pConvexB, transformB,
+                                     guessVector, results))
 
-	return false;
+    {
+        //	debugDraw->drawLine(results.witnesses[1],results.witnesses[1]+results.normal,btVector3(255,0,0));
+        //resultOut->addContactPoint(results.normal,results.witnesses[1],-results.depth);
+        wWitnessOnA = results.witnesses[0];
+        wWitnessOnB = results.witnesses[1];
+        v = results.normal;
+        return true;
+    }
+    else
+    {
+        if (btGjkEpaSolver2::Distance(pConvexA, transformA, pConvexB, transformB, guessVector, results))
+        {
+            wWitnessOnA = results.witnesses[0];
+            wWitnessOnB = results.witnesses[1];
+            v = results.normal;
+            return false;
+        }
+    }
+
+    return false;
 }
-
-

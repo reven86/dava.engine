@@ -68,7 +68,7 @@ extern "C"
 
         jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);
         jsize lengthOfArray = env->GetArrayLength(newText);
-		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, newString);
+        DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, newString);
 		env->ReleaseByteArrayElements(newText, bufferPtr, 0);
 
 		bufferPtr = env->GetByteArrayElements(oldText, NULL);

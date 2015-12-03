@@ -51,7 +51,7 @@ public:
 private:
     void OnNotifyText(BaseObject *obj, void *data, void *callerData);
     void OnNotifyTextDelayed(BaseObject *obj, void *data, void *callerData);
-    void OnNotifyCancelDelayed(BaseObject *obj, void *data, void *callerData);
+    void OnNotifyCancelDelayed(BaseObject* obj, void* data, void* callerData);
     void OnHideText(BaseObject *obj, void *data, void *callerData);
     void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
     void OnHideProgress(BaseObject *obj, void *data, void *callerData);
@@ -62,7 +62,7 @@ private:
 private:
     UIButton *showNotificationText;
     UIButton *showNotificationTextDelayed;
-    UIButton *cancelDelayedNotifications;
+    UIButton* cancelDelayedNotifications;
     UIButton *hideNotificationText;
     UIButton *showNotificationProgress;
     UIButton *hideNotificationProgress;
