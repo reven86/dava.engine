@@ -107,6 +107,8 @@ ColladaTexture::ColladaTexture(FCDImage* _image)
             Logger::Warning("Too long(%d) path: %s", pathSize, texturePathName.c_str());
         }
 
+        bool pathApplied = false;
+
         const FilePath texturePath(texturePathName);
         if (FileSystem::Instance()->Exists(texturePath))
         {
@@ -117,10 +119,12 @@ ColladaTexture::ColladaTexture(FCDImage* _image)
                 if (imageFormat != IMAGE_FORMAT_UNKNOWN)
                 {
                     TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
+                    pathApplied = true;
                 }
             }
         }
-        else
+
+        if (!pathApplied)
         {
             texturePathName = "";
         }
