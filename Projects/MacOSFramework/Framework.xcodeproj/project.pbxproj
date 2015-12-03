@@ -1697,12 +1697,6 @@
 		028C15CD1BD66A6000B2266F /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B321BD66A5E00B2266F /* MipmapReplacer.h */; };
 		028C15CE1BD66A6000B2266F /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B321BD66A5E00B2266F /* MipmapReplacer.h */; };
 		028C15CF1BD66A6000B2266F /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B321BD66A5E00B2266F /* MipmapReplacer.h */; };
-		028C15D01BD66A6000B2266F /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B331BD66A5E00B2266F /* OcclusionQuery.cpp */; };
-		028C15D11BD66A6000B2266F /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B331BD66A5E00B2266F /* OcclusionQuery.cpp */; };
-		028C15D21BD66A6000B2266F /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B331BD66A5E00B2266F /* OcclusionQuery.cpp */; };
-		028C15D31BD66A6000B2266F /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B341BD66A5E00B2266F /* OcclusionQuery.h */; };
-		028C15D41BD66A6000B2266F /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B341BD66A5E00B2266F /* OcclusionQuery.h */; };
-		028C15D51BD66A6000B2266F /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0B341BD66A5E00B2266F /* OcclusionQuery.h */; };
 		028C15D61BD66A6000B2266F /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B351BD66A5E00B2266F /* PixelFormatDescriptor.cpp */; };
 		028C15D71BD66A6000B2266F /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B351BD66A5E00B2266F /* PixelFormatDescriptor.cpp */; };
 		028C15D81BD66A6000B2266F /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0B351BD66A5E00B2266F /* PixelFormatDescriptor.cpp */; };
@@ -3608,8 +3602,6 @@
 		028C0B301BD66A5E00B2266F /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
 		028C0B311BD66A5E00B2266F /* MipmapReplacer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MipmapReplacer.cpp; sourceTree = "<group>"; };
 		028C0B321BD66A5E00B2266F /* MipmapReplacer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MipmapReplacer.h; sourceTree = "<group>"; };
-		028C0B331BD66A5E00B2266F /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
-		028C0B341BD66A5E00B2266F /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
 		028C0B351BD66A5E00B2266F /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
 		028C0B361BD66A5E00B2266F /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
 		028C0B371BD66A5E00B2266F /* PVRDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRDefines.h; sourceTree = "<group>"; };
@@ -4838,8 +4830,6 @@
 				028C0B241BD66A5E00B2266F /* Material */,
 				028C0B311BD66A5E00B2266F /* MipmapReplacer.cpp */,
 				028C0B321BD66A5E00B2266F /* MipmapReplacer.h */,
-				028C0B331BD66A5E00B2266F /* OcclusionQuery.cpp */,
-				028C0B341BD66A5E00B2266F /* OcclusionQuery.h */,
 				028C0B351BD66A5E00B2266F /* PixelFormatDescriptor.cpp */,
 				028C0B361BD66A5E00B2266F /* PixelFormatDescriptor.h */,
 				028C0B371BD66A5E00B2266F /* PVRDefines.h */,
@@ -5810,7 +5800,6 @@
 				028C14BE1BD66A6000B2266F /* GPUFamilyDescriptor.h in Headers */,
 				028C13CB1BD66A6000B2266F /* NSFullScreenWindow.h in Headers */,
 				028C18BA1BD66A6000B2266F /* RotationControllerSystem.h in Headers */,
-				028C15D51BD66A6000B2266F /* OcclusionQuery.h in Headers */,
 				028C10981BD66A6000B2266F /* Circle.h in Headers */,
 				028C11C11BD66A6000B2266F /* LogConsumer.h in Headers */,
 				028C183C1BD66A6000B2266F /* EntityFamily.h in Headers */,
@@ -6321,7 +6310,6 @@
 				028C198D1BD66A6000B2266F /* ControlLayoutData.h in Headers */,
 				028C11531BD66A6000B2266F /* TCPSocket.h in Headers */,
 				028C11891BD66A6000B2266F /* Announcer.h in Headers */,
-				028C15D31BD66A6000B2266F /* OcclusionQuery.h in Headers */,
 				028C17411BD66A6000B2266F /* UniqueStateSet.h in Headers */,
 				028C18521BD66A6000B2266F /* ParticleEmitterNode.h in Headers */,
 				028C15341BD66A6000B2266F /* SpeedTreeObject.h in Headers */,
@@ -6879,7 +6867,6 @@
 				028C14BD1BD66A6000B2266F /* GPUFamilyDescriptor.h in Headers */,
 				028C13CA1BD66A6000B2266F /* NSFullScreenWindow.h in Headers */,
 				028C18B91BD66A6000B2266F /* RotationControllerSystem.h in Headers */,
-				028C15D41BD66A6000B2266F /* OcclusionQuery.h in Headers */,
 				028C10971BD66A6000B2266F /* Circle.h in Headers */,
 				028C11C01BD66A6000B2266F /* LogConsumer.h in Headers */,
 				028C183B1BD66A6000B2266F /* EntityFamily.h in Headers */,
@@ -7790,7 +7777,6 @@
 				028C0E641BD66A6000B2266F /* Result.cpp in Sources */,
 				028C19CE1BD66A6000B2266F /* UISizePolicyComponent.cpp in Sources */,
 				028C187B1BD66A6000B2266F /* SceneFileV2.cpp in Sources */,
-				028C15D21BD66A6000B2266F /* OcclusionQuery.cpp in Sources */,
 				028C19F81BD66A6000B2266F /* UIStyleSheetStructs.cpp in Sources */,
 				028C17EE1BD66A6000B2266F /* UpdatableComponent.cpp in Sources */,
 				028C16621BD66A6000B2266F /* rhi_ShaderCache.cpp in Sources */,
@@ -8255,7 +8241,6 @@
 				028C0E621BD66A6000B2266F /* Result.cpp in Sources */,
 				028C19CC1BD66A6000B2266F /* UISizePolicyComponent.cpp in Sources */,
 				028C18791BD66A6000B2266F /* SceneFileV2.cpp in Sources */,
-				028C15D01BD66A6000B2266F /* OcclusionQuery.cpp in Sources */,
 				028C19F61BD66A6000B2266F /* UIStyleSheetStructs.cpp in Sources */,
 				028C17EC1BD66A6000B2266F /* UpdatableComponent.cpp in Sources */,
 				028C16601BD66A6000B2266F /* rhi_ShaderCache.cpp in Sources */,
@@ -8719,7 +8704,6 @@
 				028C0E631BD66A6000B2266F /* Result.cpp in Sources */,
 				028C19CD1BD66A6000B2266F /* UISizePolicyComponent.cpp in Sources */,
 				028C187A1BD66A6000B2266F /* SceneFileV2.cpp in Sources */,
-				028C15D11BD66A6000B2266F /* OcclusionQuery.cpp in Sources */,
 				028C19F71BD66A6000B2266F /* UIStyleSheetStructs.cpp in Sources */,
 				028C17ED1BD66A6000B2266F /* UpdatableComponent.cpp in Sources */,
 				028C16611BD66A6000B2266F /* rhi_ShaderCache.cpp in Sources */,
