@@ -142,7 +142,7 @@ void VisibilityCheckRenderer::SetupCameraToRenderFromPointToFaceIndex(const DAVA
       rhi::TEXTURE_FACE_POSITIVE_Z,
       rhi::TEXTURE_FACE_NEGATIVE_Z,
     };
-    renderTargetConfig.colorBuffer[0].cubemapTextureFace = targetFaces[faceIndex];
+    renderTargetConfig.colorBuffer[0].textureFace = targetFaces[faceIndex];
 
     cubemapCamera->SetTarget(point + directions[faceIndex]);
     cubemapCamera->SetUp(upVectors[faceIndex]);
