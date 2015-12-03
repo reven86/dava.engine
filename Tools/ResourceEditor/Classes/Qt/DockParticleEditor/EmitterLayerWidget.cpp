@@ -745,6 +745,8 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     CommandChangeLayerMaterialProperties* updateLayerCmd = new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked());
     activeScene->Exec(updateLayerCmd);
 
+    UpdateLayerSprite();
+
     emit ValueChanged();
 }
 
@@ -813,25 +815,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
 
-    if (layer->sprite)
-    {
-        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-        RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
-        {
-            Sprite::DrawState drawState = {};
-            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
-            RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
-        }
-        RenderSystem2D::Instance()->EndRenderTargetPass();
-        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
-        spriteUpdateTimer->start(0);
-        spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
-    }
-    else
-    {
-        spriteLabel->setPixmap( QPixmap() );
-        spritePathLabel->setText("<none>");
-    }
+    UpdateLayerSprite();
 
     //particle orientation
     cameraFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
@@ -983,6 +967,29 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     blockSignals = false;
 	
 	adjustSize();
+}
+
+void EmitterLayerWidget::UpdateLayerSprite()
+{
+    if (layer->sprite)
+    {
+        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
+        {
+            Sprite::DrawState drawState = {};
+            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
+            RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
+        }
+        RenderSystem2D::Instance()->EndRenderTargetPass();
+        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
+        spriteUpdateTimer->start(0);
+        spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
+    }
+    else
+    {
+        spriteLabel->setPixmap(QPixmap());
+        spritePathLabel->setText("<none>");
+    }
 }
 
 void EmitterLayerWidget::UpdateTooltip()
