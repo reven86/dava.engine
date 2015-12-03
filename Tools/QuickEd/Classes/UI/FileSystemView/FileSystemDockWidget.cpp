@@ -238,8 +238,9 @@ void FileSystemDockWidget::onNewFolder()
 
     int ret = dialog.exec();
     QString folderName = dialog.textValue();
-    if (ret == QDialog::Accepted && !folderName.isEmpty())
+    if (ret == QDialog::Accepted)
     {
+        DVASSERT(!folderName.isEmpty());
         auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
         DVASSERT(selectedIndexes.empty() || selectedIndexes.size() == 1);
         QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
@@ -262,7 +263,7 @@ void FileSystemDockWidget::onNewFile()
         return;
     }
     QFileInfo fileInfo(strFile);
-    if (fileInfo.suffix().toLower() != QString(yamlExtensionString).remove('.'))
+    if (!strFile.endsWith(yamlExtensionString))
     {
         strFile += yamlExtensionString;
     }

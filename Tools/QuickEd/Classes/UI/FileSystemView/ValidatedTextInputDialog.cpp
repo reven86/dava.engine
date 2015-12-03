@@ -48,7 +48,7 @@ void ValidatedTextInputDialog::OnTextChanged(const QString& text)
 {
     QPalette palette(lineEdit->palette());
     bool enabled = true;
-    if (!validateFunction(text))
+    if (text.isEmpty() || !validateFunction(text))
     {
         setLabelText(defaultDialogLabel + "\nthis folder already exists");
         palette.setColor(QPalette::Text, Qt::red);
