@@ -726,7 +726,6 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     }
     catch (Platform::Exception^ e)
     {
-        Logger::Info("!!!!!!!!!Platform::Exception %s", RTStringToString(e->ToString()).c_str());
     }
 
     core->RunOnMainThread([this, x, y, phase, pointerOrButtonIndex]() {
