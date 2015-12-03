@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -52,46 +51,40 @@ subject to the following restrictions:
 #include "LinearMath/btMatrix3x3.h"
 #include "btCollisionMargin.h"
 
-
-
-
 /// The btEmptyShape is a collision shape without actual collision detection shape, so most users should ignore this class.
 /// It can be replaced by another shape during runtime, but the inertia tensor should be recomputed.
-class btEmptyShape	: public btConcaveShape
+class btEmptyShape : public btConcaveShape
 {
 public:
-	btEmptyShape();
+    btEmptyShape();
 
-	virtual ~btEmptyShape();
+    virtual ~btEmptyShape();
 
+    ///getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
+    void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
 
-	///getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
-	void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+    virtual void setLocalScaling(const btVector3& scaling)
+    {
+        m_localScaling = scaling;
+    }
+    virtual const btVector3& getLocalScaling() const
+    {
+        return m_localScaling;
+    }
 
+    virtual void calculateLocalInertia(btScalar mass, btVector3& inertia) const;
 
-	virtual void	setLocalScaling(const btVector3& scaling)
-	{
-		m_localScaling = scaling;
-	}
-	virtual const btVector3& getLocalScaling() const 
-	{
-		return m_localScaling;
-	}
+    virtual const char* getName() const
+    {
+        return "Empty";
+    }
 
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
-	
-	virtual const char*	getName()const
-	{
-		return "Empty";
-	}
-
-	virtual void processAllTriangles(btTriangleCallback* ,const btVector3& ,const btVector3& ) const
-	{
-	}
+    virtual void processAllTriangles(btTriangleCallback*, const btVector3&, const btVector3&) const
+    {
+    }
 
 protected:
-	btVector3	m_localScaling;
-
+    btVector3 m_localScaling;
 };
 
 

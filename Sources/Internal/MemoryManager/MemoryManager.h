@@ -68,6 +68,7 @@ class MemoryManager final
 public:
     static const uint32 MAX_ALLOC_POOL_COUNT = 24;
     static const uint32 MAX_TAG_COUNT = 32;
+    static const uint32 UNTAGGED = MAX_TAG_COUNT - 1;
 
     struct MemoryBlock;
     struct InternalMemoryBlock;
@@ -110,6 +111,8 @@ public:
 
     uint32 GetSystemMemoryUsage() const;
     uint32 GetTrackedMemoryUsage(uint32 poolIndex = ALLOC_POOL_TOTAL) const;
+
+    uint32 GetTaggedMemoryUsage(uint32 tagIndex) const;
 
     uint32 CalcStatConfigSize() const;
     void GetStatConfig(void* buffer, uint32 bufSize) const;

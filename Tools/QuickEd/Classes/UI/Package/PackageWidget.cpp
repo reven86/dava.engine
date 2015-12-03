@@ -95,13 +95,13 @@ void AddSeparatorAction(QWidget* widget)
     widget->addAction(separator);
 }
 
-bool CanInsertControlOrStyle(const PackageBaseNode *dest, PackageBaseNode *node, DAVA::int32 destIndex)
+bool CanInsertControlOrStyle(const PackageBaseNode* dest, PackageBaseNode* node, DAVA::int32 destIndex)
 {
-    if(dynamic_cast<ControlNode*>(node))
+    if (dynamic_cast<ControlNode*>(node))
     {
         return dest->CanInsertControl(static_cast<ControlNode*>(node), destIndex);
     }
-    if(dynamic_cast<StyleSheetNode*>(node))
+    if (dynamic_cast<StyleSheetNode*>(node))
     {
         return dest->CanInsertStyle(static_cast<StyleSheetNode*>(node), destIndex);
     }
@@ -111,33 +111,33 @@ bool CanInsertControlOrStyle(const PackageBaseNode *dest, PackageBaseNode *node,
     }
 }
 
-bool CanMoveUpDown(const PackageBaseNode *dest, PackageBaseNode *node, bool up)
+bool CanMoveUpDown(const PackageBaseNode* dest, PackageBaseNode* node, bool up)
 {
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != dest);
 
-    if(dest->GetParent() != node->GetParent())
+    if (dest->GetParent() != node->GetParent())
     {
         return false;
     }
 
-    const PackageBaseNode *destParent = dest->GetParent();
+    const PackageBaseNode* destParent = dest->GetParent();
     DVASSERT(nullptr != destParent);
-    
+
     int destIndex = destParent->GetIndex(dest);
-    if(!up)
+    if (!up)
     {
         destIndex += 1;
     }
     return CanInsertControlOrStyle(destParent, node, destIndex);
 }
 
-bool CanMoveLeft(PackageBaseNode *node)
+bool CanMoveLeft(PackageBaseNode* node)
 {
-    PackageBaseNode *parentNode = node->GetParent();
+    PackageBaseNode* parentNode = node->GetParent();
     DVASSERT(parentNode != nullptr);
-    PackageBaseNode *grandParentNode = parentNode->GetParent();
-    if(grandParentNode != nullptr)
+    PackageBaseNode* grandParentNode = parentNode->GetParent();
+    if (grandParentNode != nullptr)
     {
         int destIndex = grandParentNode->GetIndex(parentNode) + 1;
         return CanInsertControlOrStyle(grandParentNode, node, destIndex);
@@ -145,17 +145,17 @@ bool CanMoveLeft(PackageBaseNode *node)
     return false;
 }
 
-bool CanMoveRight(PackageBaseNode *node)
+bool CanMoveRight(PackageBaseNode* node)
 {
-    PackageIterator iterUp(node, [node](const PackageBaseNode* dest){
+    PackageIterator iterUp(node, [node](const PackageBaseNode* dest) {
         return CanMoveUpDown(dest, node, true);
     });
     --iterUp;
-    if(!iterUp.IsValid())
+    if (!iterUp.IsValid())
     {
         return false;
     }
-    PackageBaseNode *dest = *iterUp;
+    PackageBaseNode* dest = *iterUp;
     int destIndex = dest->GetCount();
     return CanInsertControlOrStyle(dest, node, destIndex);
 }
@@ -229,12 +229,12 @@ void PackageWidget::CreateActions()
     moveDownAction->setShortcut(Qt::ControlModifier + Qt::Key_Down);
     moveDownAction->setShortcutContext(Qt::WidgetShortcut);
     connect(moveDownAction, &QAction::triggered, this, &PackageWidget::OnMoveDown);
-    
+
     moveLeftAction = new QAction(tr("Move left"), this);
     moveLeftAction->setShortcut(Qt::ControlModifier + Qt::Key_Left);
     moveLeftAction->setShortcutContext(Qt::WidgetShortcut);
     connect(moveLeftAction, &QAction::triggered, this, &PackageWidget::OnMoveLeft);
-    
+
     moveRightAction = new QAction(tr("Move right"), this);
     moveRightAction->setShortcut(Qt::ControlModifier + Qt::Key_Right);
     moveRightAction->setShortcutContext(Qt::WidgetShortcut);
@@ -332,15 +332,15 @@ void PackageWidget::RefreshActions()
         canInsertPackages = node->IsInsertingPackagesSupported();
         canInsertStyles = node->IsInsertingStylesSupported();
         canEdit = node->IsEditingSupported();
-        
-        if(node->CanRemove())
+
+        if (node->CanRemove())
         {
             PackageIterator iterUp(node, [node](const PackageBaseNode* dest) -> bool {
                 return CanMoveUpDown(dest, node, true);
             });
             --iterUp;
             canMoveUp = iterUp.IsValid();
-            
+
             PackageIterator iterDown(node, [node](const PackageBaseNode* dest) -> bool {
                 return CanMoveUpDown(dest, node, false);
             });
@@ -559,12 +559,11 @@ void PackageWidget::MoveNodeUpDown(bool up)
     });
     PackageBaseNode* nextNode = up ? *(--iter) : *(++iter);
     DVASSERT(nullptr != nextNode);
-    DVASSERT((dynamic_cast<ControlNode*>(node) != nullptr && dynamic_cast<const ControlNode*>(nextNode) != nullptr)
-             || (dynamic_cast<StyleSheetsNode*>(node) != nullptr && dynamic_cast<const StyleSheetsNode*>(nextNode) != nullptr));
+    DVASSERT((dynamic_cast<ControlNode*>(node) != nullptr && dynamic_cast<const ControlNode*>(nextNode) != nullptr) || (dynamic_cast<StyleSheetsNode*>(node) != nullptr && dynamic_cast<const StyleSheetsNode*>(nextNode) != nullptr));
     PackageBaseNode* nextNodeParent = nextNode->GetParent();
     DVASSERT(nextNodeParent != nullptr);
     int destIndex = nextNodeParent->GetIndex(nextNode);
-    if(!up)
+    if (!up)
     {
         ++destIndex;
     }
@@ -576,13 +575,13 @@ void PackageWidget::OnMoveLeft()
     const SelectedNodes& nodes = selectionContainer.selectedNodes;
     DVASSERT(nodes.size() == 1);
     PackageBaseNode* node = *nodes.begin();
-    
-    PackageBaseNode *parentNode = node->GetParent();
+
+    PackageBaseNode* parentNode = node->GetParent();
     DVASSERT(parentNode != nullptr);
-    PackageBaseNode *grandParentNode = parentNode->GetParent();
+    PackageBaseNode* grandParentNode = parentNode->GetParent();
     DVASSERT(grandParentNode != nullptr);
     int destIndex = grandParentNode->GetIndex(parentNode) + 1;
-    
+
     MoveNodeImpl(node, grandParentNode, destIndex);
 }
 
@@ -591,20 +590,20 @@ void PackageWidget::OnMoveRight()
     const SelectedNodes& nodes = selectionContainer.selectedNodes;
     DVASSERT(nodes.size() == 1);
     PackageBaseNode* node = *nodes.begin();
-    
-    PackageIterator iterUp(node, [node](const PackageBaseNode* dest){
+
+    PackageIterator iterUp(node, [node](const PackageBaseNode* dest) {
         return CanMoveUpDown(dest, node, true);
     });
     --iterUp;
-    
+
     DVASSERT(iterUp.IsValid());
-    
-    PackageBaseNode *dest = *iterUp;
-    
+
+    PackageBaseNode* dest = *iterUp;
+
     MoveNodeImpl(node, dest, dest->GetCount());
 }
 
-void PackageWidget::MoveNodeImpl(PackageBaseNode *node, PackageBaseNode *dest, DAVA::uint32 destIndex)
+void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex)
 {
     auto commandExecutor = document->GetCommandExecutor();
     if (dynamic_cast<ControlNode*>(node) != nullptr)
@@ -684,18 +683,18 @@ PackageWidget::ExpandedIndexes PackageWidget::GetExpandedIndexes() const
 
 void PackageWidget::OnBeforeNodesMoved(const SelectedNodes& nodes)
 {
-    for (const auto &node : nodes)
+    for (const auto& node : nodes)
     {
         CollectExpandedIndexes(node);
     }
 }
 
-void PackageWidget::OnNodesMoved(const SelectedNodes &nodes)
+void PackageWidget::OnNodesMoved(const SelectedNodes& nodes)
 {
     treeView->selectionModel()->clear();
     SetSelectedNodes(nodes, SelectedNodes());
 
-    for (const auto &node : expandedNodes)
+    for (const auto& node : expandedNodes)
     {
         QModelIndex srcIndex = packageModel->indexByNode(node);
         QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);

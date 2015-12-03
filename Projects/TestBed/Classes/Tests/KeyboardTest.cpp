@@ -43,9 +43,9 @@ Vector2 hiddenPos(-100, -100);
 
 auto gamepadButtonsNames =
 { "button_a", "button_b", "button_x", "button_y", "button_left", "button_right",
-        "button_up", "button_down", "button_select", "button_start",
-        "shift_left", "shift_right", "triger_left", "triger_right",
-        "stick_left", "stick_right" };
+  "button_up", "button_down", "button_select", "button_start",
+  "shift_left", "shift_right", "triger_left", "triger_right",
+  "stick_left", "stick_right" };
 
 Map<String, UIControl*> gamepadButtons;
 
@@ -65,23 +65,24 @@ public:
     }
     ~CustomText()
     {
-    	InputCallback gamepadCallback(this, &CustomText::OnGamepadEvent, InputSystem::INPUT_DEVICE_JOYSTICK);
-    	InputSystem::Instance()->RemoveInputCallback(gamepadCallback);
+        InputCallback gamepadCallback(this, &CustomText::OnGamepadEvent, InputSystem::INPUT_DEVICE_JOYSTICK);
+        InputSystem::Instance()->RemoveInputCallback(gamepadCallback);
     }
 
     bool SystemInput(UIEvent* currentInput) override
     {
-    	bool result = false;
-    	if (currentInput->device == UIEvent::Device::GAMEPAD)
-    	{
-    		// this code never happen
-    		DVASSERT(false);
-    		OnGamepadEvent(currentInput);
-    	} else
-    	{
-    		result = OnMouseTouchOrKeyboardEvent(currentInput);
-    	}
-    	return result;
+        bool result = false;
+        if (currentInput->device == UIEvent::Device::GAMEPAD)
+        {
+            // this code never happen
+            DVASSERT(false);
+            OnGamepadEvent(currentInput);
+        }
+        else
+        {
+            result = OnMouseTouchOrKeyboardEvent(currentInput);
+        }
+        return result;
     }
 
     void ResetCounters()
@@ -145,10 +146,10 @@ private:
     }
     void OnGamepadEvent(UIEvent* event)
     {
-    	//Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
+        //Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
 
-    	DVASSERT(event->device == UIEvent::Device::GAMEPAD);
-    	DVASSERT(event->phase == UIEvent::Phase::JOYSTICK);
+        DVASSERT(event->device == UIEvent::Device::GAMEPAD);
+        DVASSERT(event->phase == UIEvent::Phase::JOYSTICK);
 
         switch (event->tid)
         {
@@ -385,7 +386,6 @@ private:
     float32 lastWheel = 0.f;
 
     //gamepad state
-
 };
 
 CustomText* customText = nullptr;
@@ -451,17 +451,17 @@ void KeyboardTest::LoadResources()
     gamepad = new UIControl(gamepadPos);
     auto pathToBack = FilePath("~res:/Gfx/GamepadTest/gamepad");
     gamepad->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
-	gamepad->SetSprite(pathToBack, 0);
-	AddControl(gamepad);
+    gamepad->SetSprite(pathToBack, 0);
+    AddControl(gamepad);
 
     for (auto& buttonOrAxisName : gamepadButtonsNames)
     {
         UIControl* img = new UIControl(gamepadPos);
         auto path = FilePath("~res:/Gfx/GamepadTest/") + buttonOrAxisName;
         img->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
-    	img->SetSprite(path, 0);
-    	gamepadButtons[buttonOrAxisName] = img;
-    	AddControl(img);
+        img->SetSprite(path, 0);
+        gamepadButtons[buttonOrAxisName] = img;
+        AddControl(img);
         img->SetVisible(false);
     }
 }

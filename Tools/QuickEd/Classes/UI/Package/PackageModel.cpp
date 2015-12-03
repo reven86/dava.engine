@@ -369,7 +369,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     }
 
     int rowIndex = GetRowIndex(row, parent);
-    
+
     PackageBaseNode *destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
     
     ControlsContainerNode *destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);

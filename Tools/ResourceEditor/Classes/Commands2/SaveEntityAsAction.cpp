@@ -131,7 +131,7 @@ void SaveEntityAsAction::Redo()
                 newLocalTransform.SetTranslationVector(offset);
                 clone->SetLocalTransform(newLocalTransform);
 
-				container->AddNode(clone);
+                container->AddNode(clone);
 				RemoveReferenceToOwner(clone);
 			}
 

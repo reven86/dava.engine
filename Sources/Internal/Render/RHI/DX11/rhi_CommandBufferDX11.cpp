@@ -42,9 +42,9 @@ using DAVA::Logger;
     #include "Concurrency/Semaphore.h"
     #include "_dx11.h"
 
-#define LUMIA_1020_FLUSH_CRUTCH_FIX
+#define LUMIA_1020_DEPTHBUF_WORKAROUND 1
 
-#if defined(LUMIA_1020_FLUSH_CRUTCH_FIX)
+#if LUMIA_1020_DEPTHBUF_WORKAROUND
 #include "Platform/DeviceInfo.h"
 #endif
 
@@ -90,15 +90,19 @@ public:
     void Reset();
     void Execute();
 
+    void _ApplyTopology(PrimitiveType primType, uint32 primCount, unsigned* indexCount);
+    void _ApplyVertexData();
+    void _ApplyRasterizerState();
+    void _ApplyConstBuffers();
+
     RenderPassConfig passCfg;
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 isComplete : 1;
 
     D3D11_PRIMITIVE_TOPOLOGY cur_topo;
-    Handle cur_ib;
     Handle cur_vb;
-    Handle cur_vb_stride;
+    uint32 cur_vb_stride;
     Handle cur_pipelinestate;
     uint32 cur_stride;
     Handle cur_query_buf;
@@ -107,9 +111,18 @@ public:
     RasterizerParamDX11 rs_param;
     ID3D11RasterizerState* cur_rs;
 
+    ID3D11RasterizerState* last_rs;
+    Handle last_vb;
+    uint32 last_vb_stride;
+    Handle last_ps;
+    uint32 last_vdecl;
+
     ID3D11DeviceContext* context;
     ID3DUserDefinedAnnotation* contextAnnotation;
     ID3D11CommandList* commandList;
+
+    ID3D11Buffer* vertexConstBuffer[MAX_CONST_BUFFER_COUNT];
+    ID3D11Buffer* fragmentConstBuffer[MAX_CONST_BUFFER_COUNT];
 
     Handle sync;
 };
@@ -329,7 +342,6 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
     ID3D11DeviceContext* context = cb->context;
     bool clear_color = cb->isFirstInPass && cb->passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
     bool clear_depth = cb->isFirstInPass && cb->passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
-    //-    ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetViewPtr() };
     ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetView };
 
     cb->Reset();
@@ -348,7 +360,7 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
         cb->def_viewport.Width = float(sz.dx);
         cb->def_viewport.Height = float(sz.dy);
 
-        TextureDX11::SetRenderTarget(cb->passCfg.colorBuffer[0].texture, cb->passCfg.depthStencilBuffer.texture, context);
+        TextureDX11::SetRenderTarget(cb->passCfg.colorBuffer[0].texture, cb->passCfg.depthStencilBuffer.texture, cb->passCfg.colorBuffer[0].textureLevel, cb->passCfg.colorBuffer[0].textureFace, context);
     }
     else
     {
@@ -393,6 +405,7 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
 
         ds_view->Release();
     }
+    //-    context->IASetPrimitiveTopology(cb->cur_topo);
 }
 
 //------------------------------------------------------------------------------
@@ -418,8 +431,13 @@ dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
     cb->cur_pipelinestate = ps;
     cb->cur_vb_stride = (vdecl) ? vdecl->Stride() : 0;
 
-    PipelineStateDX11::SetToRHI(ps, vdeclUID, cb->context);
-    StatSet::IncStat(stat_SET_PS, 1);
+    if (ps != cb->last_ps || vdeclUID != cb->last_vdecl)
+    {
+        PipelineStateDX11::SetToRHI(ps, vdeclUID, cb->context);
+        cb->last_ps = ps;
+        cb->last_vdecl = vdeclUID;
+        StatSet::IncStat(stat_SET_PS, 1);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -517,9 +535,7 @@ dx11_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle b
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
-    ConstBufferDX11::SetToRHI(buffer, cb->context);
-
-    StatSet::IncStat(stat_SET_CB, 1);
+    ConstBufferDX11::SetToRHI(buffer, cb->context, cb->vertexConstBuffer);
 }
 
 //------------------------------------------------------------------------------
@@ -541,7 +557,8 @@ dx11_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
-    cb->cur_ib = ib;
+    IndexBufferDX11::SetToRHI(ib, 0, cb->context);
+    StatSet::IncStat(stat_SET_IB, 1);
 }
 
 //------------------------------------------------------------------------------
@@ -572,9 +589,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
-    ConstBufferDX11::SetToRHI(buffer, cb->context);
-
-    StatSet::IncStat(stat_SET_CB, 1);
+    ConstBufferDX11::SetToRHI(buffer, cb->context, cb->fragmentConstBuffer);
 }
 
 //------------------------------------------------------------------------------
@@ -619,42 +634,12 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     ID3D11DeviceContext* ctx = cb->context;
     unsigned vertexCount = 0;
-    D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     INT baseVertex = 0;
 
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        vertexCount = count * 3;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-        break;
-
-    case PRIMITIVE_TRIANGLESTRIP:
-        vertexCount = 2 + count;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        vertexCount = count * 2;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-        break;
-    }
-
-    if (topo != cb->cur_topo)
-    {
-        ctx->IASetPrimitiveTopology(topo);
-        cb->cur_topo = topo;
-    }
-
-    if (!cb->cur_rs)
-    {
-        cb->cur_rs = _GetRasterizerState(cb->rs_param);
-        ctx->RSSetState(cb->cur_rs);
-    }
-
-    VertexBufferDX11::SetToRHI(cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx);
-
-    StatSet::IncStat(stat_SET_VB, 1);
+    cb->_ApplyTopology(type, count, &vertexCount);
+    cb->_ApplyVertexData();
+    cb->_ApplyRasterizerState();
+    cb->_ApplyConstBuffers();
 
     if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
@@ -665,6 +650,7 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
         QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
+    /*
     switch (topo)
     {
     case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
@@ -679,6 +665,7 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
     default:
         break;
     }
+*/
 }
 
 //------------------------------------------------------------------------------
@@ -689,43 +676,11 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     ID3D11DeviceContext* ctx = cb->context;
     unsigned indexCount = 0;
-    D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        indexCount = count * 3;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-        break;
-
-    case PRIMITIVE_TRIANGLESTRIP:
-        indexCount = 2 + count;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        indexCount = count * 2;
-        topo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-        break;
-    }
-
-    if (topo != cb->cur_topo)
-    {
-        ctx->IASetPrimitiveTopology(topo);
-        cb->cur_topo = topo;
-    }
-
-    if (!cb->cur_rs)
-    {
-        cb->cur_rs = _GetRasterizerState(cb->rs_param);
-        ctx->RSSetState(cb->cur_rs);
-    }
-
-    IndexBufferDX11::SetToRHI(cb->cur_ib, 0, ctx);
-    StatSet::IncStat(stat_SET_IB, 1);
-
-    VertexBufferDX11::SetToRHI(cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx);
-    StatSet::IncStat(stat_SET_VB, 1);
+    cb->_ApplyTopology(type, count, &indexCount);
+    cb->_ApplyVertexData();
+    cb->_ApplyRasterizerState();
+    cb->_ApplyConstBuffers();
 
     if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
@@ -736,6 +691,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
+    /*
     switch (topo)
     {
     case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
@@ -750,6 +706,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     default:
         break;
     }
+*/
 }
 
 //------------------------------------------------------------------------------
@@ -1207,8 +1164,7 @@ CommandBufferDX11_t::~CommandBufferDX11_t()
 void CommandBufferDX11_t::Reset()
 {
     cur_topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    cur_ib = DAVA::InvalidIndex;
-    cur_vb = DAVA::InvalidIndex;
+    cur_vb = InvalidHandle;
     cur_vb_stride = 0;
     cur_pipelinestate = InvalidHandle;
     cur_stride = 0;
@@ -1220,6 +1176,15 @@ void CommandBufferDX11_t::Reset()
     rs_param.scissorEnabled = false;
     rs_param.wireframe = false;
 
+    last_rs = nullptr;
+    last_vb = InvalidHandle;
+    last_vb_stride = 0;
+    last_ps = InvalidHandle;
+    last_vdecl = VertexLayout::InvalidUID;
+
+    memset(vertexConstBuffer, 0, sizeof(vertexConstBuffer));
+    memset(fragmentConstBuffer, 0, sizeof(fragmentConstBuffer));
+
     context->IASetPrimitiveTopology(cur_topo);
 
     isComplete = false;
@@ -1227,21 +1192,84 @@ void CommandBufferDX11_t::Reset()
 
 //------------------------------------------------------------------------------
 
-/*
- * Workaround for Nokia 909 (Lumia 1020) with graphics driver bug
- */
-#if defined(LUMIA_1020_FLUSH_CRUTCH_FIX)
-bool ShouldFlushAfterRenderPass()
+void CommandBufferDX11_t::_ApplyTopology(PrimitiveType primType, uint32 primCount, unsigned* indexCount)
 {
-    static int isLumia1020 = -1;
-    if (isLumia1020 == -1)
+    D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+    switch (primType)
     {
-        const DAVA::String Nokia909DeviceId = "NOKIA RM-875";
-        isLumia1020 = DAVA::DeviceInfo::GetModel().find(Nokia909DeviceId) == 0 ? 1 : 0;
+    case PRIMITIVE_TRIANGLELIST:
+        *indexCount = primCount * 3;
+        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        break;
+
+    case PRIMITIVE_TRIANGLESTRIP:
+        *indexCount = 2 + primCount;
+        topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+        break;
+
+    case PRIMITIVE_LINELIST:
+        *indexCount = primCount * 2;
+        topo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+        break;
     }
-    return (isLumia1020 > 0);
+
+    if (topo != cur_topo)
+    {
+        context->IASetPrimitiveTopology(topo);
+        cur_topo = topo;
+    }
 }
+
+//------------------------------------------------------------------------------
+
+void CommandBufferDX11_t::_ApplyVertexData()
+{
+    if (cur_vb != last_vb || cur_vb_stride != last_vb_stride)
+    {
+        VertexBufferDX11::SetToRHI(cur_vb, 0, 0, cur_vb_stride, context);
+        StatSet::IncStat(stat_SET_VB, 1);
+        last_vb = cur_vb;
+        last_vb_stride = cur_vb_stride;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void CommandBufferDX11_t::_ApplyRasterizerState()
+{
+    if (!cur_rs)
+    {
+        cur_rs = _GetRasterizerState(rs_param);
+    }
+
+    if (cur_rs != last_rs)
+    {
+        context->RSSetState(cur_rs);
+        last_rs = cur_rs;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void CommandBufferDX11_t::_ApplyConstBuffers()
+{
+#if 0
+    unsigned vertexBufCount = 0;
+    unsigned fragmentBufCount = 0;
+
+    PipelineStateDX11::GetConstBufferCount(last_ps, &vertexBufCount, &fragmentBufCount);
+
+    context->VSSetConstantBuffers(0, vertexBufCount, vertexConstBuffer);
+    context->PSSetConstantBuffers(0, fragmentBufCount, fragmentConstBuffer);
+#else
+    context->VSSetConstantBuffers(0, MAX_CONST_BUFFER_COUNT, vertexConstBuffer);
+    context->PSSetConstantBuffers(0, MAX_CONST_BUFFER_COUNT, fragmentConstBuffer);
 #endif
+    StatSet::IncStat(stat_SET_CB, 2);
+}
+
+//------------------------------------------------------------------------------
 
 void CommandBufferDX11_t::Execute()
 {
@@ -1259,12 +1287,17 @@ void CommandBufferDX11_t::Execute()
 
     _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
 	
-#if defined(LUMIA_1020_FLUSH_CRUTCH_FIX)
-    if (ShouldFlushAfterRenderPass())
+    #if LUMIA_1020_DEPTHBUF_WORKAROUND
     {
-        _D3D11_ImmediateContext->Flush();
+        static int isLumia1020 = -1;
+
+        if (isLumia1020 == -1)
+            isLumia1020 = DAVA::DeviceInfo::GetModel().find("NOKIA RM-875") == 0 ? 1 : 0;
+
+        if (isLumia1020)
+            _D3D11_ImmediateContext->Flush();
     }
-#endif
+    #endif
 
     commandList->Release();
     commandList = nullptr;

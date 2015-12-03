@@ -65,7 +65,7 @@ struct MainWindow::TabState
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
@@ -104,8 +104,6 @@ MainWindow::MainWindow(QWidget *parent)
     InitMenu();
     RestoreMainWindowState();
 
-    fileSystemDockWidget->setEnabled(false);
-
     RebuildRecentMenu();
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
@@ -131,7 +129,6 @@ void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
 
 void MainWindow::OnProjectIsOpenChanged(bool arg)
 {
-    fileSystemDockWidget->setEnabled(arg);
     this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 }
 
@@ -190,10 +187,6 @@ QComboBox* MainWindow::GetComboBoxLanguage()
 void MainWindow::OnCurrentIndexChanged(int arg)
 {
     bool enabled = arg >= 0;
-    packageWidget->setEnabled(enabled);
-    propertiesWidget->setEnabled(enabled);
-    previewWidget->setEnabled(enabled);
-    libraryWidget->setEnabled(enabled);
     TabState *tabState = tabBar->tabData(arg).value<TabState*>();
     actionSaveDocument->setEnabled(nullptr != tabState && tabState->isModified); //set action enabled if new documend still modified
 }
@@ -227,7 +220,7 @@ bool MainWindow::isPixelized() const
     return actionPixelized->isChecked();
 }
 
-void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
+void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
 {
     DVASSERT(nullptr != packer);
     auto lastFlags = acceptableLoggerFlags;
@@ -470,11 +463,10 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     ev->ignore();
 }
 
-void MainWindow::OnProjectOpened(const ResultList &resultList, const Project *project)
+void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
-    fileSystemDockWidget->setEnabled(resultList);
     QString projectPath = project->GetProjectPath() + project->GetProjectName();
     if (resultList)
     {
@@ -544,9 +536,9 @@ void MainWindow::OnGlobalClassesChanged(const QString &str)
     emit GlobalStyleClassesChanged(str);
 }
 
-void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray &output)
+void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& output)
 {
-    if(static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
+    if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
     {
         logWidget->AddMessage(logLevel, output);
     }

@@ -188,7 +188,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
         if (activeArea == HUDAreaInfo::ROTATE_AREA)
         {
             ClampAngle();
-        }        
+        }
         systemManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
         return false;
     default:
