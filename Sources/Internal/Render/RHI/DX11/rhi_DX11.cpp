@@ -177,6 +177,58 @@ void _InitDX11()
     D3D_FEATURE_LEVEL feature[] = { /*D3D_FEATURE_LEVEL_11_1, */ D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
     #endif
     DXGI_SWAP_CHAIN_DESC swapchain_desc = { 0 };
+    IDXGIAdapter* defAdapter = NULL;
+
+    // enumerate adapters
+    {
+        IDXGIFactory* factory = NULL;
+        std::vector<IDXGIAdapter*> adapter;
+        const uint32 preferredVendorID[] =
+        {
+          0x10DE, // nVIDIA
+          0x1002 // ATI
+        };
+
+        if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&factory)))
+        {
+            IDXGIAdapter* a = NULL;
+
+            for (UINT i = 0; factory->EnumAdapters(i, &a) != DXGI_ERROR_NOT_FOUND; ++i)
+            {
+                adapter.push_back(a);
+            }
+        }
+
+        Logger::Info("detected GPUs (%u) :", adapter.size());
+        for (unsigned i = 0; i != adapter.size(); ++i)
+        {
+            DXGI_ADAPTER_DESC desc = { 0 };
+
+            if (SUCCEEDED(adapter[i]->GetDesc(&desc)))
+            {
+                char info[128];
+
+                ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
+
+                Logger::Info("  adapter[%u]  \"%s\"  vendor= %04X  device= %04X", i, info, desc.VendorId, desc.DeviceId);
+
+                if (!defAdapter)
+                {
+                    for (unsigned k = 0; k != countof(preferredVendorID); ++k)
+                    {
+                        if (desc.VendorId == preferredVendorID[k])
+                        {
+                            defAdapter = adapter[i];
+                            break;
+                        }
+                    }
+                }
+                //if( desc.VendorId == 0x8086 )
+                //    defAdapter = adapter[i];
+            }
+        }
+    }
+
 
     #if 0
     flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -204,9 +256,18 @@ void _InitDX11()
     swapchain_desc.Flags = 0;
 
     hr = D3D11CreateDeviceAndSwapChain(
-    NULL, D3D_DRIVER_TYPE_HARDWARE, NULL,
+    defAdapter, (defAdapter) ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, NULL,
     flags, feature, countof(feature), D3D11_SDK_VERSION, &swapchain_desc,
     &_D3D11_SwapChain, &_D3D11_Device, &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
+
+    if (FAILED(hr))
+    {
+        // fall back to 'default' adapter
+        hr = D3D11CreateDeviceAndSwapChain(
+        NULL, D3D_DRIVER_TYPE_HARDWARE, NULL,
+        flags, feature, countof(feature), D3D11_SDK_VERSION, &swapchain_desc,
+        &_D3D11_SwapChain, &_D3D11_Device, &_D3D11_FeatureLevel, &_D3D11_ImmediateContext);
+    }
 
     if (SUCCEEDED(hr))
     {
@@ -214,6 +275,26 @@ void _InitDX11()
 
         if (SUCCEEDED(hr))
         {
+            IDXGIDevice* dxgiDevice = NULL;
+            IDXGIAdapter* dxgiAdapter = NULL;
+
+            if (SUCCEEDED(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice))))
+            {
+                if (SUCCEEDED(dxgiDevice->GetAdapter(&dxgiAdapter)))
+                {
+                    DXGI_ADAPTER_DESC desc = { 0 };
+
+                    if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
+                    {
+                        char info[128];
+
+                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
+
+                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
+                    }
+                }
+            }
+
             hr = _D3D11_Device->QueryInterface(__uuidof(ID3D11Debug), (void**)(&_D3D11_Debug));
 
             hr = _D3D11_ImmediateContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation));
