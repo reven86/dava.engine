@@ -2496,6 +2496,7 @@ void QtMainWindow::OnForceFirstLod(bool enabled)
     }
 
     landscape->SetForceFirstLod(enabled);
+    SceneSignals::Instance()->EmitNonModifyingEvent();
 }
 
 void QtMainWindow::OnNotPassableTerrain()

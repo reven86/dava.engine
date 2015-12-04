@@ -50,7 +50,11 @@ VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
                                                     DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
     }
 
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, [this]() {
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, [this](Scene*, const Command2*, bool) {
+        shouldPrerender = true;
+    });
+
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::NonModifyingEventEmitted, [this]() {
         shouldPrerender = true;
     });
 }

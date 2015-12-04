@@ -365,6 +365,7 @@ void LODEditor::ForceLayerActivated(int index)
 {
     int layer = ui->forceLayer->itemData(index).toInt();
     GetCurrentEditorLODSystem()->SetForceLayer(layer);
+    SceneSignals::Instance()->EmitNonModifyingEvent();
 }
 
 void LODEditor::CreateForceLayerValues(int layersCount)
@@ -372,11 +373,11 @@ void LODEditor::CreateForceLayerValues(int layersCount)
     ui->forceLayer->clear();
 
     ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
-
     for (DAVA::int32 i = 0; i < layersCount; ++i)
     {
         ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
     }
+    ui->forceLayer->addItem("Last", DAVA::LodComponent::LAST_LOD_LAYER);
 
     ui->forceLayer->setCurrentIndex(0);
 }
