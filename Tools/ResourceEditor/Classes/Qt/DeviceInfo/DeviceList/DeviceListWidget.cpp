@@ -58,6 +58,7 @@ DeviceListWidget::DeviceListWidget( QWidget *parent )
     connect( ui->showLog, &QPushButton::clicked, this, &DeviceListWidget::showLogClicked );
 
     connect(ui->viewDump, &QPushButton::clicked, this, &DeviceListWidget::OnViewDump);
+    connect(ui->discoverDevice, &QPushButton::clicked, this, &DeviceListWidget::OnDeviceDiscover);
 }
 
 DeviceListWidget::~DeviceListWidget() {}
@@ -79,5 +80,14 @@ void DeviceListWidget::OnViewDump()
         {
             delete obj;
         }
+    }
+}
+
+void DeviceListWidget::OnDeviceDiscover()
+{
+    QString s = ui->ipaddr->text().trimmed();
+    if (!s.isEmpty())
+    {
+        emit deviceDiscoverClicked(s);
     }
 }
