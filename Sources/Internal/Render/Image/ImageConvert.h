@@ -545,6 +545,50 @@ struct PackRGB888
     }
 };
 
+struct UnpackRGBA16161616
+{
+    inline void operator()(const RGBA16161616* input, uint32& r, uint32& g, uint32& b, uint32& a)
+    {
+        r = input->r;
+        g = input->g;
+        b = input->b;
+        a = input->a;
+    }
+};
+
+struct PackRGBA16161616
+{
+    inline void operator()(uint32& r, uint32& g, uint32& b, uint32& a, RGBA16161616* out)
+    {
+        out->r = r;
+        out->g = g;
+        out->b = b;
+        out->a = a;
+    }
+};
+
+struct UnpackRGBA32323232
+{
+    inline void operator()(const RGBA32323232* input, uint32& r, uint32& g, uint32& b, uint32& a)
+    {
+        r = input->r;
+        g = input->g;
+        b = input->b;
+        a = input->a;
+    }
+};
+
+struct PackRGBA32323232
+{
+    inline void operator()(uint32& r, uint32& g, uint32& b, uint32& a, RGBA32323232* out)
+    {
+        out->r = r;
+        out->g = g;
+        out->b = b;
+        out->a = a;
+    }
+};
+
 struct UnpackRGBA5551
 {
     inline void operator()(const uint16 * input, uint32 & r, uint32 & g, uint32 & b, uint32 & a)
@@ -928,6 +972,16 @@ public:
         else if ((inFormat == FORMAT_RGBA5551) && (outFormat == FORMAT_RGBA5551))
         {
             ConvertDownscaleTwiceBillinear<uint16, uint16, UnpackRGBA5551, PackRGBA5551> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if ((inFormat == FORMAT_RGBA16161616) && (outFormat == FORMAT_RGBA16161616))
+        {
+            ConvertDownscaleTwiceBillinear<RGBA16161616, RGBA16161616, UnpackRGBA16161616, PackRGBA16161616> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if ((inFormat == FORMAT_RGBA32323232) && (outFormat == FORMAT_RGBA32323232))
+        {
+            ConvertDownscaleTwiceBillinear<RGBA32323232, RGBA32323232, UnpackRGBA32323232, PackRGBA32323232> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else

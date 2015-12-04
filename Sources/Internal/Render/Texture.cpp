@@ -71,7 +71,7 @@ namespace DAVA
 {
 namespace Validator
 {
-bool IsFormatSupported(PixelFormat format)
+bool IsFormatHardwareSupported(PixelFormat format)
 {
     const auto& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     return formatDescriptor.isHardwareSupported;
@@ -113,12 +113,11 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
     Vector<Image*>& imageSet = *images;
 
     PixelFormat format = imageSet[0]->format;
-    if (IsFormatSupported(format))
+    if (IsFormatHardwareSupported(format))
     {
         return true;
     }
-
-    if (format == FORMAT_RGB888)
+    else if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
     {
         const uint32 count = static_cast<uint32>(imageSet.size());
         for (uint32 i = 0; i < count; ++i)
@@ -136,8 +135,10 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
 
         return true;
     }
-
-    return false;
+    else
+    {
+        return false;
+    }
 }
 }
 
