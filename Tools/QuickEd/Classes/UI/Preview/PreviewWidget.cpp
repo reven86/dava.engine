@@ -371,7 +371,7 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
         scrollAreaController->AdjustScale(scale + event->value(), pos);
         break;
     case Qt::SmartZoomNativeGesture:
-            scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
+        scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
         //event->value() returns 1 or 0
         break;
     default:
