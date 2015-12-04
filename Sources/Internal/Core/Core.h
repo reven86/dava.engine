@@ -272,9 +272,6 @@ protected:
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
-    void InitializeNetwork();
-    void DeInitializeNetwork();
-
     KeyedArchive * options;
 
 	bool isActive;
