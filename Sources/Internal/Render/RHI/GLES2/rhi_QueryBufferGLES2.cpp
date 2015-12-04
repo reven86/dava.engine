@@ -234,7 +234,10 @@ void SetQueryIndex(Handle handle, uint32 objectIndex)
     if (buf->curObjectIndex != objectIndex)
     {
         if (buf->curObjectIndex != DAVA::InvalidIndex)
+        {
             _glEndQuery();
+            buf->curObjectIndex = DAVA::InvalidIndex;
+        }
 
         if (objectIndex != DAVA::InvalidIndex)
         {
@@ -258,10 +261,10 @@ void SetQueryIndex(Handle handle, uint32 objectIndex)
             {
                 _glBeginQuery(q);
                 buf->pendingQueries.push_back(std::make_pair(q, objectIndex));
+
+                buf->curObjectIndex = objectIndex;
             }
         }
-
-        buf->curObjectIndex = objectIndex;
     }
 }
 
