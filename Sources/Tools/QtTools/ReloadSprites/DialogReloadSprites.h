@@ -42,38 +42,28 @@ namespace Ui
 class DialogReloadSprites : public QDialog
 {
     Q_OBJECT
-    QThread workerThread;
 public:
-    explicit DialogReloadSprites(QWidget *parent = nullptr);
+    explicit DialogReloadSprites(SpritesPacker* packer, QWidget* parent = nullptr);
     ~DialogReloadSprites();
-    SpritesPacker *GetSpritesPacker() const;
-    QAction* GetActionReloadSprites() const;
-signals:
-    bool StarPackProcess();
+
 private slots:
     void OnStartClicked();
     void OnStopClicked();
-    void OnRunningChanged(bool running);
+    void OnRunningChangedQueued(bool running); //we can work with widgets only in application thread
+    void OnRunningChangedDirect(bool running); //we can move to thead only from current thread
+    void OnCheckboxShowConsoleToggled(bool checked);
+
 protected:
     void closeEvent(QCloseEvent *event) override;
+
 private:
     void LoadSettings();
     void SaveSettings() const;
     void BlockingStop();
 
-    Ui::DialogReloadSprites *ui;
+    std::unique_ptr<Ui::DialogReloadSprites> ui;
     SpritesPacker *spritesPacker;
-    QAction *actionReloadSprites;
+    QThread workerThread; //we need this thread only for "cancel" button
 };
-
-inline SpritesPacker* DialogReloadSprites::GetSpritesPacker() const
-{
-    return spritesPacker;
-}
-
-inline QAction* DialogReloadSprites::GetActionReloadSprites() const
-{
-    return actionReloadSprites;
-}
 
 #endif // __DIALOG_RELOAD_SPRITES_H__

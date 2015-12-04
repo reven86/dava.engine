@@ -21,9 +21,9 @@ if ( DAVA_NO_RENDER )
     set ( DAVA_NO_RHI_METAL true )
 endif ()
 
-if ( WIN32 )
-    list( APPEND FRAMEWORK_DEFINITIONS -D_WINSOCK_DEPRECATED_NO_WARNINGS )
-endif ()
+if( DAVA_DISABLE_AUTOTESTS  )
+    list( APPEND FRAMEWORK_DEFINITIONS -DDISABLE_AUTOTESTS )
+endif()
 
 if( NOT DISABLE_SOUNDS )
     list( APPEND FRAMEWORK_DEFINITIONS -DDAVA_FMOD )
@@ -215,17 +215,37 @@ define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}"
 
 generate_source_groups_project ()
 
+
+
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
+                                                        "Internal/Autotesting"
+                                                   IGNORE_LIST_APPLE  
+                                                        "TemplateMacOS/CoreMacOSPlatformBase.cpp"
+                                                        "iOS/ICloudKeyValue.cpp"
+                                                        "Notification/LocalNotificationIOS.cpp"
+                                                        "Concurrency/ThreadPosix.cpp"
+                                                        "Render/Texture.cpp" 
+                                                        "Render/RHI/GLES2"
+                                                        "TemplateMacOS/MainWindowController.mm"
+                                                    IGNORE_LIST_IOS
+                                                        "TemplateiOS/BackgroundView.mm"
+                                                        "TemplateiOS/HelperAppDelegate.mm"
+                                                        "TemplateiOS/DPIHelperiOS.mm"
+                                                        "TemplateiOS"
+                                                        "UI/UITextFieldiPhone.mm"
+                                                   )
 
-include_directories    (.)
-include_directories    ( ${DAVA_INCLUDE_DIR} )
-include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} ) 
-include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
 
-set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
+include_directories      (.)
+include_directories      ( ${DAVA_INCLUDE_DIR} )
+include_directories      ( ${ADD_ENGINE_INCLUDES_DIR} ) 
+include_directories      ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
 
-add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
-add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
+set                      ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
+
+add_definitions          ( ${FRAMEWORK_DEFINITIONS} )
+add_library              ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
 
 if( LINK_THIRD_PARTY )                 
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} ALL     "${LIST_SHARED_LIBRARIES}" )

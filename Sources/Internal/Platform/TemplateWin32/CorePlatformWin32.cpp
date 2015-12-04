@@ -178,16 +178,16 @@ namespace DAVA
             windowedMode.bpp = options->GetInt32("bpp");
 
             // get values from config in case if they are available
-			fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
-			fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
-			fullscreenMode.bpp = windowedMode.bpp;
+            fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
+            fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
+            fullscreenMode.bpp = windowedMode.bpp;
 
-			fullscreenMode = FindBestMode(fullscreenMode);
+            fullscreenMode = FindBestMode(fullscreenMode);
             shouldEnableFullscreen = options->GetInt32("fullscreen", 0) == 1;
             String title = options->GetString("title", "[set application title using core options property 'title']");
             WideString titleW = StringToWString(title);
             SetWindowText(hWindow, titleW.c_str());
-		}
+        }
 
         Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
 
@@ -311,11 +311,11 @@ namespace DAVA
 
     RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode& dm)
     {
-		RECT clientSize;
-		clientSize.top = 0;
-		clientSize.left = 0;
-		clientSize.right = dm.width;
-		clientSize.bottom = dm.height;
+        RECT clientSize;
+        clientSize.top = 0;
+        clientSize.left = 0;
+        clientSize.right = dm.width;
+        clientSize.bottom = dm.height;
         HWND hWindow = static_cast<HWND>(GetNativeView());
         AdjustWindowRect(&clientSize, GetWindowLong(hWindow, GWL_STYLE), FALSE);
 
@@ -392,16 +392,16 @@ namespace DAVA
         while (EnumDisplaySettings(NULL, iModeNum++, &dmi))
         {
             DisplayMode mode;
-			mode.width = dmi.dmPelsWidth;
-			mode.height = dmi.dmPelsHeight;
-			mode.bpp = dmi.dmBitsPerPel;
-			mode.refreshRate = dmi.dmDisplayFrequency;
-			ZeroMemory (&dmi, sizeof(dmi)) ;
-			availableDisplayModes.push_back(mode);
-		}
-	}
+            mode.width = dmi.dmPelsWidth;
+            mode.height = dmi.dmPelsHeight;
+            mode.bpp = dmi.dmBitsPerPel;
+            mode.refreshRate = dmi.dmDisplayFrequency;
+            ZeroMemory(&dmi, sizeof(dmi));
+            availableDisplayModes.push_back(mode);
+        }
+    }
 
-	DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
+    DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
 	{
 		DWORD iModeNum = 0;
 		DEVMODE	dmi;
@@ -513,20 +513,20 @@ namespace DAVA
     static bool mouseCursorShown = true;
     static USHORT mouseButtonsDownMask = 0;
 
-	void HandleMouseButtonsPressed(USHORT buttsFlags)
-	{
-		if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
-		}
+    void HandleMouseButtonsPressed(USHORT buttsFlags)
+    {
+        if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
+        {
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
+        }
+        if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
+        {
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
+        }
+        if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
+        {
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
+        }
 		if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
 		{
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
@@ -818,11 +818,11 @@ namespace DAVA
             break;
         case WM_DESTROY:
             PostQuitMessage(0);
-			return 0;
+            return 0;
 
-		case WM_ACTIVATE:
-			{
-				ApplicationCore * core = Core::Instance()->GetApplicationCore();
+        case WM_ACTIVATE:
+        {
+            ApplicationCore* core = Core::Instance()->GetApplicationCore();
                 WORD loWord = LOWORD(wParam);
                 WORD hiWord = HIWORD(wParam);
                 if(!loWord || hiWord)

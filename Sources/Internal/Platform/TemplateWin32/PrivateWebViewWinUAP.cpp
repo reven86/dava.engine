@@ -81,7 +81,7 @@ public:
     virtual IAsyncOperation<IInputStream^>^ UriToStreamAsync(Uri^ uri);
 
 private:
-    IAsyncOperation<IInputStream^>^ GetStreamFromFilePathAsync(const FilePath& filePath);
+    IAsyncOperation<IInputStream ^> ^ GetStreamFromFilePathAsync(const FilePath& filePath);
     IAsyncOperation<IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
 
     Platform::String^ htmlData;
@@ -108,7 +108,7 @@ IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
     return GetStreamFromFilePathAsync(path);
 }
 
-IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
+IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
 {
     String fileNameStr = filePath.GetAbsolutePathname();
     std::replace(fileNameStr.begin(), fileNameStr.end(), '/', '\\');

@@ -103,7 +103,7 @@ class QuadTree : public RenderHierarchy
     List<RenderObject*> worldInitObjects;
 
     void DebugDrawNode(uint16 nodeId);
-	UniqueHandle debugDrawStateHandle;
+    UniqueHandle debugDrawStateHandle;
 
 protected:
 	~QuadTree()

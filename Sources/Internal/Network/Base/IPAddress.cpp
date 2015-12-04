@@ -67,7 +67,9 @@ IPAddress IPAddress::FromString(const char8* addr)
 
 #ifdef __DAVAENGINE_WIN_UAP__
 
-    return IPAddress(htonl(inet_addr(addr)));
+    IN_ADDR address = {};
+    inet_pton(AF_INET, addr, &address);
+    return IPAddress(htonl(address.S_un.S_addr));
 
 #else
 

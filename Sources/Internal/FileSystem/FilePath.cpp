@@ -400,7 +400,7 @@ String FilePath::ResolveResourcesPath() const
             for(auto iter = resourceFolders.rbegin(); iter != resourceFolders.rend(); ++iter)
             {
                 path = iter->absolutePathname + relativePathname;
-                if(path.Exists())
+                if (FileSystem::Instance()->Exists(path))
                 {
                     return path.absolutePathname;
                 }
@@ -924,17 +924,7 @@ FilePath::ePathType FilePath::GetPathType(const String &pathname)
     
 bool FilePath::Exists() const
 {
-    if(pathType == PATH_IN_MEMORY || pathType == PATH_EMPTY)
-    {
-        return false;
-    }
-    
-    if(IsDirectoryPathname())
-    {
-        return FileSystem::Instance()->IsDirectory(*this);
-    }
-
-    return FileSystem::Instance()->IsFile(*this);
+    return FileSystem::Instance()->Exists(*this);
 }
 
 int32 FilePath::Compare( const FilePath &right ) const

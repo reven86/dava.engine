@@ -87,8 +87,8 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         float32 xNextPosition = xPrevPosition - endXPos[type];
         float32 yNextPosition = yPrevPosition - endYPos[type];
 
-        if(!isOver)
-		{
+        if (!isOver)
+        {
             drawState.SetPosition(xPrevPosition, yPrevPosition);
 		}
 		else 
@@ -108,15 +108,15 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
         float32 yPrevPosition = endYPos[type - 4] * normalizedTime;
         float32 xNextPosition = xPrevPosition - endXPos[type - 4];
         float32 yNextPosition = yPrevPosition - endYPos[type - 4];
-		
-		if(!isOver)
-		{
-			drawState.SetPosition(xNextPosition, yNextPosition);
-		}
-		else 
-		{
-			drawState.SetPosition(0, 0);
-		}
+
+        if (!isOver)
+        {
+            drawState.SetPosition(xNextPosition, yNextPosition);
+        }
+        else
+        {
+            drawState.SetPosition(0, 0);
+        }
 
         RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
 

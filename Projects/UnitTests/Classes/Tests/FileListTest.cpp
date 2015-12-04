@@ -186,7 +186,8 @@ DAVA_TESTCLASS(FileListTest)
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
-            if (fileList->IsNavigationDirectory(ifo)) continue;
+            if (fileList->IsNavigationDirectory(ifo))
+                continue;
 
             String filename = fileList->GetFilename(ifo);
             FilePath pathname = fileList->GetPathname(ifo);
@@ -196,7 +197,7 @@ DAVA_TESTCLASS(FileListTest)
             TEST_VERIFY(files->GetFileCount() == 1);
             FilePath txtFileName = files->GetPathname(2); //first file name
             TEST_VERIFY(txtFileName.GetExtension() == ".txt");
-            
+
             RefPtr<File> file(File::Create(txtFileName, File::OPEN | File::READ));
             TEST_VERIFY(file != nullptr);
             if (file == nullptr)

@@ -4,6 +4,7 @@ set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo"
 
 project               ( QuickEd )
 
+set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )

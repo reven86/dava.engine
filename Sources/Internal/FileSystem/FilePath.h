@@ -282,9 +282,9 @@ public:
     static void RemoveResourcesFolder(const FilePath & folder);
     static const List<FilePath>& GetResourcesFolders();
 
-    bool Exists() const;
-    
-	int32 Compare(const FilePath &right) const;
+    DAVA_DEPRECATED(bool Exists() const);
+
+    int32 Compare(const FilePath& right) const;
 
 protected:
     

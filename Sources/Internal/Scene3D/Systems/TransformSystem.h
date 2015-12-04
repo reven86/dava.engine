@@ -48,19 +48,12 @@ public:
 	TransformSystem(Scene * scene);
 	~TransformSystem();
 
-    Transform * CreateTransform();
-
     void ImmediateEvent(Component * component, uint32 event) override;
 	virtual void AddEntity(Entity * entity);
 	virtual void RemoveEntity(Entity * entity);
-    //virtual void SetParent(Entity * entity, Entity * parent);
 
-
-    void DeleteTransform(Transform * transform);
     void LinkTransform(int32 parentIndex, int32 childIndex);
 	void UnlinkTransform(int32 childIndex);
-
-    //void AllocateMatrix();
 
     virtual void Process(float32 timeElapsed);
 

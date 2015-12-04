@@ -740,12 +740,16 @@ RenderPassConfig
     ColorBuffer
     {
         Handle texture;
+        TextureFace textureFace;
+        uint32 textureLevel;
         LoadAction loadAction;
         StoreAction storeAction;
         float clearColor[4];
 
         ColorBuffer()
             : texture(InvalidHandle)
+            , textureFace(TEXTURE_FACE_NEGATIVE_X)
+            , textureLevel(0)
             , loadAction(LOADACTION_CLEAR)
             , storeAction(STOREACTION_NONE)
         {
@@ -873,8 +877,6 @@ nonaliased_cast(src x)
 
     return tmp.d;
 }
-
-const unsigned InvalidIndex = (unsigned)(-1);
 
 #define countof(array) (sizeof(array) / sizeof(array[0]))
 #define L_ALIGNED_SIZE(size, align) (((size) + ((align)-1)) & (~((align)-1)))

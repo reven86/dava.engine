@@ -26,11 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "UI/UIScreenManager.h"
-#include "Base/BaseObject.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
+
+#include "Base/BaseObject.h"
+#include "UI/UIScreenManager.h"
 
 namespace DAVA
 {
@@ -136,4 +137,4 @@ void ScreenManager::StartGLAnimation()
 }*/
 };
 
-#endif // defined(__DAVAENGINE_ANDROID__)
+#endif // __DAVAENGINE_ANDROID__

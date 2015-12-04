@@ -119,7 +119,7 @@ private:
     };
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 
-    DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
+    DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN_VALUE;
     DeviceInfo::ScreenInfo screenInfo;
     eGPUFamily gpu = GPU_INVALID;
     String platformString;

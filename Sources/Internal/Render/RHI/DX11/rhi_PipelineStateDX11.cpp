@@ -33,6 +33,7 @@
     #include "rhi_DX11.h"
 
     #include "Debug/DVAssert.h"
+    #include "Debug/Profiler.h"
     #include "FileSystem/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
@@ -54,7 +55,7 @@ _CreateInputLayout(const VertexLayout& layout, const void* code, unsigned code_s
 {
     ID3D11InputLayout* vdecl = nullptr;
     D3D11_INPUT_ELEMENT_DESC elem[32];
-    uint32 elemCount = 0;
+    DAVA::uint32 elemCount = 0;
 
     //Logger::Info("create-dx11-layout");
     DVASSERT(layout.ElementCount() < countof(elem));
@@ -168,7 +169,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
 {
     ID3D11InputLayout* vdecl = nullptr;
     D3D11_INPUT_ELEMENT_DESC elem[32];
-    uint32 elemCount = 0;
+    DAVA::uint32 elemCount = 0;
 
     //Logger::Info("create-compatible-dx11-layout");
     DVASSERT(vbLayout.ElementCount() < countof(elem));
@@ -176,7 +177,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
     {
         DVASSERT(vprogLayout.ElementSemantics(i) != VS_PAD);
 
-        unsigned vb_elem_i = InvalidIndex;
+        unsigned vb_elem_i = DAVA::InvalidIndex;
 
         for (unsigned k = 0; k != vbLayout.ElementCount(); ++k)
         {
@@ -187,7 +188,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
             }
         }
 
-        if (vb_elem_i != InvalidIndex)
+        if (vb_elem_i != DAVA::InvalidIndex)
         {
             elem[elemCount].AlignedByteOffset = (UINT)(vbLayout.ElementOffset(vb_elem_i));
             elem[elemCount].SemanticIndex = vprogLayout.ElementSemanticsIndex(i);
@@ -333,7 +334,7 @@ public:
 
     bool SetConst(unsigned const_i, unsigned count, const float* data);
     bool SetConst(unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount);
-    void SetToRHI(ID3D11DeviceContext* context) const;
+    void SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const;
 
 private:
     void _EnsureMapped();
@@ -343,6 +344,7 @@ private:
     mutable float* value;
     unsigned buf_i;
     unsigned regCount;
+    mutable uint32 updatePending : 1;
 };
 
 static RingBuffer _DefConstRingBuf;
@@ -352,7 +354,7 @@ static RingBuffer _DefConstRingBuf;
 ConstBufDX11::ConstBufDX11()
     : buf(nullptr)
     , value(nullptr)
-    , buf_i(InvalidIndex)
+    , buf_i(DAVA::InvalidIndex)
     , regCount(0)
 {
 }
@@ -400,7 +402,7 @@ _BlendOpDX11(BlendOp op)
 void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
 {
     DVASSERT(!value);
-    DVASSERT(bufIndex != InvalidIndex);
+    DVASSERT(bufIndex != DAVA::InvalidIndex);
     DVASSERT(regCnt);
 
     D3D11_BUFFER_DESC desc = { 0 };
@@ -419,6 +421,7 @@ void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
         value = (float*)(malloc(regCnt * 4 * sizeof(float)));
         buf_i = bufIndex;
         regCount = regCnt;
+        updatePending = true;
     }
     else
     {
@@ -442,7 +445,7 @@ void ConstBufDX11::Destroy()
         }
 
         value = nullptr;
-        buf_i = InvalidIndex;
+        buf_i = DAVA::InvalidIndex;
         regCount = 0;
     }
 }
@@ -464,6 +467,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_count, const float*
     if (const_i + const_count <= regCount)
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
+        updatePending = true;
         success = true;
     }
 
@@ -479,6 +483,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
     if (const_i <= regCount && const_sub_i < 4)
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
+        updatePending = true;
         success = true;
     }
 
@@ -487,16 +492,15 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
 
 //------------------------------------------------------------------------------
 
-void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context) const
+void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const
 {
-    context->UpdateSubresource(buf, 0, NULL, value, regCount * 4 * sizeof(float), 0);
+    if (updatePending)
+    {
+        context->UpdateSubresource(buf, 0, NULL, value, regCount * 4 * sizeof(float), 0);
+        updatePending = false;
+    }
 
-    ID3D11Buffer* cb[1] = { buf };
-
-    if (progType == PROG_VERTEX)
-        context->VSSetConstantBuffers(buf_i, 1, &buf);
-    else
-        context->PSSetConstantBuffers(buf_i, 1, &buf);
+    buffer[buf_i] = buf;
 }
 
 //==============================================================================
@@ -976,6 +980,14 @@ VertexLayoutStride(Handle ps)
     return ps11->vertexLayout.Stride();
 }
 
+void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount)
+{
+    PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
+
+    *vertexBufCount = ps11->vertexBufCount;
+    *fragmentBufCount = ps11->fragmentBufCount;
+}
+
 } // namespace PipelineStateDX11
 
 namespace ConstBufferDX11
@@ -992,11 +1004,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ConstBuffer_Delete = &dx11_ConstBuffer_Delete;
 }
 
-void SetToRHI(Handle cb, ID3D11DeviceContext* context)
+void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer)
 {
     ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
 
-    cb11->SetToRHI(context);
+    cb11->SetToRHI(context, buffer);
 }
 
 void InitializeRingBuffer(uint32 size)

@@ -74,7 +74,7 @@ class UIControlSystem : public Singleton<UIControlSystem>
     friend void Core::CreateSingletons();
 
     int frameSkip;
-	int transitionType;
+    int transitionType;
 
     Vector<UIEvent> touchEvents;
 

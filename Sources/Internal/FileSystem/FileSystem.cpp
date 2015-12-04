@@ -433,8 +433,8 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
 #endif //PLATFORMS
 	return false; 
 }
-  
-bool FileSystem::IsFile(const FilePath & pathToCheck)
+
+bool FileSystem::IsFile(const FilePath& pathToCheck) const
 {
 #if defined(__DAVAENGINE_ANDROID__)
     const String& path = pathToCheck.GetAbsolutePathname();
@@ -453,7 +453,7 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
  	return false;
 }
 
-bool FileSystem::IsDirectory(const FilePath & pathToCheck)
+bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
 {
 #if defined (__DAVAENGINE_WIN32__)
     FilePath::NativeStringType path = pathToCheck.GetNativeAbsolutePathname();
@@ -962,5 +962,21 @@ bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
     }
 
     return false;
+}
+
+bool FileSystem::Exists(const FilePath& filePath) const
+{
+    const FilePath::ePathType pathType = filePath.GetType();
+    if (pathType == FilePath::PATH_IN_MEMORY || pathType == FilePath::PATH_EMPTY)
+    {
+        return false;
+    }
+
+    if (filePath.IsDirectoryPathname())
+    {
+        return IsDirectory(filePath);
+    }
+
+    return IsFile(filePath);
 }
 }

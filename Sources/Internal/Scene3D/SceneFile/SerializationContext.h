@@ -125,7 +125,7 @@ namespace DAVA
 
         inline void AddBinding(uint64 parentKey, NMaterial* material)
         {
-			MaterialBinding binding;
+            MaterialBinding binding;
             binding.childMaterial = material;
             binding.parentKey = parentKey;
 
@@ -153,16 +153,16 @@ namespace DAVA
         }
 
         inline void SetDefaultMaterialQuality(const FastName& quality)
-		{
-			defaultMaterialQuality = quality;
-		}
-		
-		inline const FastName& GetDefaultMaterialQuality() const
-		{
-			return defaultMaterialQuality;
-		}
-		
-		void ResolveMaterialBindings();
+        {
+            defaultMaterialQuality = quality;
+        }
+
+        inline const FastName& GetDefaultMaterialQuality() const
+        {
+            return defaultMaterialQuality;
+        }
+
+        void ResolveMaterialBindings();
 
         void AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos);
         void AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format);

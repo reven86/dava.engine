@@ -1613,6 +1613,10 @@ if( NOT _CMAKE_IN_TRY_COMPILE )
  unset( __toolchain_config )
 endif()
 
+
+set( APPLE )
+set( MACOS )
+
 # force cmake to produce / instead of \ in build commands for Ninja generator
 if( CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_HOST_WIN32 )
  # it is a bad hack after all

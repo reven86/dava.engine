@@ -34,7 +34,6 @@ RemoveComponentCommand::RemoveComponentCommand(DAVA::Entity* _entity, DAVA::Comp
 	: Command2(CMDID_COMPONENT_REMOVE, "Remove Component")
     , entity(_entity)
     , component(_component)
-    , backup(NULL)
 {
 	DVASSERT(entity);
     DVASSERT(component);
@@ -54,10 +53,15 @@ void RemoveComponentCommand::Redo()
 void RemoveComponentCommand::Undo()
 {
 	entity->AddComponent(backup);
-    backup = NULL;
+    backup = nullptr;
 }
 
 DAVA::Entity* RemoveComponentCommand::GetEntity() const
 {
 	return entity;
+}
+
+const DAVA::Component* RemoveComponentCommand::GetComponent() const
+{
+    return component;
 }

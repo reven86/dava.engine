@@ -73,27 +73,24 @@
 
 #ifdef COLLADA_GLUT_RENDER
 
-    #if defined (__DAVAENGINE_WIN32__)
+    #if defined(__DAVAENGINE_WIN32__)
         #include <GL/glew.h>
     #endif
 
 	#if defined(_WIN32)
-	#	include <GL/glut.h>
-	#	include <direct.h>
-	#	define getcwd _getcwd
+	#include <GL/glut.h>
+	#include <direct.h>
+	#define getcwd _getcwd
 
 	#elif defined(__APPLE__) || defined(MACOSX)
-	#	include <GLUT/glut.h>
+	#include <GLUT/glut.h>
 	#endif
 
 #endif // COLLADA_GLUT_RENDER
 
-
-namespace DAVA 
+namespace DAVA
 {
-	Matrix4 ConvertMatrix( FMMatrix44 & matrix );
-	Matrix4 ConvertMatrixT( FMMatrix44 & matrix );
+Matrix4 ConvertMatrix(FMMatrix44& matrix);
+Matrix4 ConvertMatrixT(FMMatrix44& matrix);
 };
 #endif // __COLLADAINCLUDES_H__
-
-

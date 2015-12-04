@@ -46,8 +46,8 @@ protected:
     }
 
 public:
-	virtual void LoadResources();
-	virtual void UnloadResources();
+    virtual void LoadResources();
+    virtual void UnloadResources();
 
     virtual void Draw(const UIGeometricData &geometricData);
     virtual void Update(float32 timeElapsed);

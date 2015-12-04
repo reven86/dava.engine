@@ -94,7 +94,9 @@ public:
 	bool BeastWaitCanceled();
 
 	void EnableGlobalTimeout(bool enable);
-    
+
+    void RestartParticleEffects();
+
 // qt actions slots
 public slots:
 	void OnProjectOpen();
