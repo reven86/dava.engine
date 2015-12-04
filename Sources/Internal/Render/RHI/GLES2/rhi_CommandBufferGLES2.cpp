@@ -721,7 +721,7 @@ void CommandBufferGLES2_t::Execute()
                 {
                     Size2i sz = TextureGLES2::Size(passCfg.colorBuffer[0].texture);
 
-                    TextureGLES2::SetAsRenderTarget(passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture);
+                    TextureGLES2::SetAsRenderTarget(passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture, passCfg.colorBuffer[0].textureFace, passCfg.colorBuffer[0].textureLevel);
                     def_viewport[2] = sz.dx;
                     def_viewport[3] = sz.dy;
                 }
@@ -1928,6 +1928,8 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
+
         do
         {
             _GLES2_PendingImmediateCmdSync.Lock();
@@ -1950,6 +1952,8 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
         } while (!executed);
+
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
     }
 }
 

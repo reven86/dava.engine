@@ -35,12 +35,13 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "EditorSettings.h"
 
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
-
 
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -49,18 +50,18 @@
 
 using namespace DAVA;
 
-EditorCore::EditorCore(QObject *parent)
+EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
     , Singleton<EditorCore>()
+    , spritesPacker(std::make_unique<SpritesPacker>())
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
-    , mainWindow(new MainWindow())
+    , mainWindow(std::make_unique<MainWindow>())
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
 
-    connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
-    connect(project, &Project::ProjectPathChanged, mainWindow.get(), &MainWindow::OnSetupCacheSettingsForPacker);
+    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSprites);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow.get(), &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -74,16 +75,12 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow.get(), &MainWindow::SaveDocument, this, static_cast<void (EditorCore::*)(int)>(&EditorCore::SaveDocument));
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-
+    connect(mainWindow.get(), &MainWindow::EmulationModeChanbed, documentGroup, &DocumentGroup::SetEmulationMode);
+    connect(mainWindow.get(), &MainWindow::PixelizationChanged, documentGroup, &DocumentGroup::SetPixelization);
     QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
     EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
     connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
     connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
-
-    QCheckBox* emulationBox = mainWindow->GetCheckboxEmulation();
-    connect(emulationBox, &QCheckBox::clicked, documentGroup, &DocumentGroup::SetEmulationMode);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
@@ -97,19 +94,57 @@ EditorCore::EditorCore(QObject *parent)
     auto previewWidget = mainWindow->previewWidget;
     auto scrollAreaController = previewWidget->GetScrollAreaController();
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::DocumentActivated, previewWidget, &PreviewWidget::OnDocumentActivated);
+    connect(documentGroup, &DocumentGroup::DocumentDeactivated, previewWidget, &PreviewWidget::OnDocumentDeactivated);
     connect(documentGroup, &DocumentGroup::SelectedNodesChanged, previewWidget, &PreviewWidget::SetSelectedNodes);
 
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
+
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
+    connect(previewWidget, &PreviewWidget::DPRChanged, documentGroup, &DocumentGroup::SetDPR);
+    connect(previewWidget, &PreviewWidget::FocusNextChild, documentGroup, &DocumentGroup::FocusNextChild);
+    connect(previewWidget, &PreviewWidget::FocusPreviousChild, documentGroup, &DocumentGroup::FocusPreviousChild);
+    connect(previewWidget, &PreviewWidget::SelectAllRequested, documentGroup, &DocumentGroup::OnSelectAllRequested);
+
+    auto packageWidget = mainWindow->packageWidget;
+    connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
+    connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
+    connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
+    connect(previewWidget, &PreviewWidget::CopyRequested, packageWidget, &PackageWidget::OnCopy);
+    connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
+
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
-    qApp->installEventFilter(this);
+    documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
+    documentGroup->SetPixelization(mainWindow->isPixelized());
+    documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
+    documentGroup->SetDPR(previewWidget->GetDPR());
+}
+
+EditorCore::~EditorCore() = default;
+
+MainWindow* EditorCore::GetMainWindow() const
+{
+    return mainWindow.get();
+}
+
+Project* EditorCore::GetProject() const
+{
+    return project;
 }
 
 void EditorCore::Start()
 {
     mainWindow->show();
+}
+
+void EditorCore::OnReloadSprites()
+{
+    if (CloseAllDocuments())
+    {
+        mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+    }
 }
 
 void EditorCore::OnGLWidgedInitialized()
@@ -153,9 +188,19 @@ void EditorCore::OnOpenPackageFile(const QString &path)
 
 void EditorCore::OnProjectPathChanged(const QString &projectPath)
 {
+    if (EditorSettings::Instance()->IsUsingAssetCache())
+    {
+        spritesPacker->SetCacheTool(
+        EditorSettings::Instance()->GetAssetCacheIp(),
+        EditorSettings::Instance()->GetAssetCachePort(),
+        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+    }
+    else
+    {
+        spritesPacker->ClearCacheTool();
+    }
+
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-    auto spritesPacker = mainWindow->GetDialogReloadSprites()->GetSpritesPacker();
-    DVASSERT(nullptr != spritesPacker);
     spritesPacker->ClearTasks();
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
@@ -397,39 +442,3 @@ int EditorCore::GetIndexByPackagePath(const QString &fileName) const
     return -1;
 }
 
-bool EditorCore::eventFilter( QObject *obj, QEvent *event )
-{
-    QEvent::Type eventType = event->type();
-
-    if ( qApp == obj )
-    {
-        if ( QEvent::ApplicationStateChange == eventType )
-        {
-            QApplicationStateChangeEvent* stateChangeEvent = static_cast<QApplicationStateChangeEvent*>( event );
-            Qt::ApplicationState state = stateChangeEvent->applicationState();
-            switch ( state )
-            {
-            case Qt::ApplicationInactive:
-            {
-                if (QtLayer::Instance())
-                {
-                    QtLayer::Instance()->OnSuspend();
-                }
-                break;
-            }
-            case Qt::ApplicationActive:
-            {
-                if (QtLayer::Instance())
-                {
-                    QtLayer::Instance()->OnResume();
-                }
-                break;
-            }
-            default:
-                break;
-            }
-        }
-    }
-
-    return QObject::eventFilter( obj, event );
-}

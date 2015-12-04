@@ -124,27 +124,54 @@ inline GamepadDevice::eDavaGamepadProfile GamepadDevice::GetProfile() const
 
 inline void GamepadDevice::SystemProcessElement(GamepadDevice::eDavaGamepadElement element, float32 value)
 {
-    DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
-    elementValues[element] = value;
+    if (element >= 0 && element < GAMEPAD_ELEMENT_COUNT)
+    {
+        elementValues[element] = value;
+    }
+    else
+    {
+        DVASSERT(false && "unknown element");
+    }
 }
 
 inline float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement element) const
 {
-    DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
-    return elementValues[element];
+    if (element >= 0 && element < GAMEPAD_ELEMENT_COUNT)
+    {
+        return elementValues[element];
+    }
+    else
+    {
+        DVASSERT(false && "unknown element");
+        return 0.f;
+    }
 }
     
 #if defined(__DAVAENGINE_ANDROID__)
 inline uint8 GamepadDevice::GetDavaEventIdForSystemKeycode(int32 systemKey) const
 {
-    DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
-    return keyTranslator[systemKey];
+    if (systemKey < MAX_TRANSLATOR_KEYS && systemKey >= 0)
+    {
+        return keyTranslator[systemKey];
+    }
+    else
+    {
+        DVASSERT(false && "unknown systemKey");
+        return INVALID_DAVAKEY;
+    }
 }
 
 inline uint8 GamepadDevice::GetDavaEventIdForSystemAxis(int32 systemKey) const
 {
-    DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
-    return axisTranslator[systemKey];
+    if (systemKey < MAX_TRANSLATOR_KEYS && systemKey >= 0)
+    {
+        return axisTranslator[systemKey];
+    }
+    else
+    {
+        DVASSERT(false && "unknown systemKey");
+        return INVALID_DAVAKEY;
+    }
 }
 
 inline void GamepadDevice::GamepadDevice::OnTriggersAvailable(bool isAvailable)

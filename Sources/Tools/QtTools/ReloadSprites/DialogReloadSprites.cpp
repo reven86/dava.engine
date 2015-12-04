@@ -29,9 +29,12 @@
 
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
+#include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+
 #include "TextureCompression/TextureConverter.h"
 #include "ui_DialogReloadSprites.h"
 #include <QSettings>
+#include <QTimer>
 #include "Base/GlobalEnum.h"
 
 using namespace DAVA;
@@ -40,32 +43,38 @@ namespace
     const QString GPU = "gpu";
     const QString QUALITY = "quality";
     const QString CLEAR_ON_START = "clear on start";
+    const QString SHOW_CONSOLE = "show console";
+    const QString CONSOLE_STATE = "console state";
 }
 
-DialogReloadSprites::DialogReloadSprites(QWidget* parent)
+DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::DialogReloadSprites)
-    , actionReloadSprites(new QAction(QIcon(":/QtTools/Icons/reload.png"), tr("Reload Sprites"), this))
+    , spritesPacker(packer)
 {
+    DVASSERT(nullptr != spritesPacker);
     qRegisterMetaType<DAVA::eGPUFamily>("DAVA::eGPUFamily");
     qRegisterMetaType<DAVA::TextureConverter::eConvertQuality>("DAVA::TextureConverter::eConvertQuality");
     
-    connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
-
-    spritesPacker = new SpritesPacker();
     workerThread.setStackSize(16 * 1024 * 1024);
-    spritesPacker->moveToThread(&workerThread);
+
     ui->setupUi(this);
-    OnRunningChanged(spritesPacker->IsRunning());
+
+    LoggerOutputObject* loggerOutput = new LoggerOutputObject(this); //will be removed by dialog
+    connect(loggerOutput, &LoggerOutputObject::OutputReady, ui->logWidget, &LogWidget::AddMessage, Qt::DirectConnection);
+
     ui->pushButton_start->setDisabled(spritesPacker->IsRunning());
     ui->comboBox_targetGPU->setDisabled(spritesPacker->IsRunning());
     ui->comboBox_quality->setDisabled(spritesPacker->IsRunning());
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->pushButton_start, &QPushButton::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_targetGPU, &QComboBox::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_quality, &QComboBox::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChanged);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->pushButton_start, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_targetGPU, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_quality, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->checkBox_clean, &QWidget::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChangedQueued, Qt::QueuedConnection);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChangedDirect, Qt::DirectConnection);
     connect(ui->pushButton_cancel, &QPushButton::clicked, this, &DialogReloadSprites::OnStopClicked);
     connect(ui->pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
+    connect(ui->checkBox_showConsole, &QCheckBox::toggled, this, &DialogReloadSprites::OnCheckboxShowConsoleToggled);
 
     const auto &gpuMap = GlobalEnumMap<eGPUFamily>::Instance();
     for (size_t i = 0; i < gpuMap->GetCount(); ++i)
@@ -101,24 +110,19 @@ DialogReloadSprites::~DialogReloadSprites()
     SaveSettings();
     if(spritesPacker->IsRunning())
     {
-        OnStopClicked();
+        BlockingStop();
     }
-    delete spritesPacker;
-    delete ui;
 }
 
 void DialogReloadSprites::OnStartClicked()
 {
-    if (!StarPackProcess())
-    {
-        return;
-    }
     const auto gpuData = ui->comboBox_targetGPU->currentData();
     const auto qualityData = ui->comboBox_quality->currentData();
     if (!gpuData.isValid() || !qualityData.isValid())
     {
         return;
     }
+    spritesPacker->moveToThread(&workerThread);
     workerThread.start();
     auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
     auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
@@ -137,9 +141,33 @@ void DialogReloadSprites::OnStopClicked()
     }
 }
 
-void DialogReloadSprites::OnRunningChanged(bool running)
+void DialogReloadSprites::OnRunningChangedQueued(bool running)
 {
     ui->pushButton_cancel->setText(running ? "Cancel" : "Close");
+    if (!running)
+    {
+        workerThread.quit();
+        workerThread.wait();
+    }
+}
+
+void DialogReloadSprites::OnRunningChangedDirect(bool running)
+{
+    spritesPacker->moveToThread(qApp->thread());
+}
+
+void DialogReloadSprites::OnCheckboxShowConsoleToggled(bool checked)
+{
+    ui->logWidget->setVisible(checked);
+    if (!checked)
+    {
+        setFixedHeight(minimumSizeHint().height());
+    }
+    else
+    {
+        setMinimumHeight(minimumSizeHint().height());
+        setMaximumHeight(QWIDGETSIZE_MAX);
+    }
 }
 
 void DialogReloadSprites::closeEvent(QCloseEvent *event)
@@ -151,31 +179,58 @@ void DialogReloadSprites::closeEvent(QCloseEvent *event)
 void DialogReloadSprites::LoadSettings()
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
+    settings.beginGroup("DialogReloadSprites");
     const auto &targetGPU = settings.value(GPU);
     if (targetGPU.isValid())
     {
-        const auto &string = GlobalEnumMap<eGPUFamily>::Instance()->ToString(targetGPU.toInt());
-        ui->comboBox_targetGPU->setCurrentText(string);
+        for (int i = 0, k = ui->comboBox_targetGPU->count(); i < k; i++)
+        {
+            if (ui->comboBox_targetGPU->itemData(i) == targetGPU)
+            {
+                ui->comboBox_targetGPU->setCurrentIndex(i);
+            }
+        }
     }
     const auto &quality = settings.value(QUALITY);
     if (quality.isValid())
     {
-        const auto &string = GlobalEnumMap<TextureConverter::eConvertQuality>::Instance()->ToString(quality.toInt());
-        ui->comboBox_quality->setCurrentText(string);
+        for (int i = 0, k = ui->comboBox_quality->count(); i < k; i++)
+        {
+            if (ui->comboBox_quality->itemData(i) == quality)
+            {
+                ui->comboBox_quality->setCurrentIndex(i);
+            }
+        }
     }
     const auto &clear = settings.value(CLEAR_ON_START);
     if (clear.isValid())
     {
         ui->checkBox_clean->setChecked(clear.toBool());
     }
+    const auto& consoleState = settings.value(CONSOLE_STATE);
+    if (consoleState.canConvert<QByteArray>())
+    {
+        ui->logWidget->Deserialize(consoleState.toByteArray());
+    }
+
+    const auto& showConsole = settings.value(SHOW_CONSOLE);
+    if (showConsole.canConvert<bool>())
+    {
+        ui->checkBox_showConsole->setChecked(showConsole.toBool());
+    }
+    settings.endGroup();
 }
 
 void DialogReloadSprites::SaveSettings() const
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.setValue(GPU, ui->comboBox_targetGPU->currentData().toInt());
-    settings.setValue(QUALITY, ui->comboBox_quality->currentData().toInt());
+    settings.beginGroup("DialogReloadSprites");
+    settings.setValue(GPU, ui->comboBox_targetGPU->currentData());
+    settings.setValue(QUALITY, ui->comboBox_quality->currentData());
     settings.setValue(CLEAR_ON_START, ui->checkBox_clean->isChecked());
+    settings.setValue(CONSOLE_STATE, ui->logWidget->Serialize());
+    settings.setValue(SHOW_CONSOLE, ui->checkBox_showConsole->isChecked());
+    settings.endGroup();
 }
 
 void DialogReloadSprites::BlockingStop()
@@ -190,6 +245,5 @@ void DialogReloadSprites::BlockingStop()
         loop.exec();
     }
     QApplication::restoreOverrideCursor();
-    workerThread.quit();
     this->setEnabled(true);
 }
