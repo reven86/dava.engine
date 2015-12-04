@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ValidatedTextInputDialog::ValidatedTextInputDialog(QWidget* parent)
     : QInputDialog(parent)
 {
-    setLabelText(defaultDialogLabel);
     setTextEchoMode(QLineEdit::Normal);
     ExtractInternalWidgets();
 
@@ -44,19 +43,30 @@ void ValidatedTextInputDialog::SetValidator(std::function<bool(const QString&)> 
     validateFunction = validator;
 }
 
+void ValidatedTextInputDialog::SetWarningMessage(const QString& message)
+{
+    warningMessage = message;
+}
+
+void ValidatedTextInputDialog::setLabelText(const QString &arg)
+{
+    labelText = arg;
+    QInputDialog::setLabelText(arg);
+}
+
 void ValidatedTextInputDialog::OnTextChanged(const QString& text)
 {
     QPalette palette(lineEdit->palette());
     bool enabled = true;
     if (text.isEmpty() || !validateFunction(text))
     {
-        setLabelText(defaultDialogLabel + "\nthis folder already exists");
+        QInputDialog::setLabelText(warningMessage);
         palette.setColor(QPalette::Text, Qt::red);
         enabled = false;
     }
     else
     {
-        setLabelText(defaultDialogLabel);
+        QInputDialog::setLabelText(labelText);
         palette.setColor(QPalette::Text, Qt::black);
         enabled = true;
     }

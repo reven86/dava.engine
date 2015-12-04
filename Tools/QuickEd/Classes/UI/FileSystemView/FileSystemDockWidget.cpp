@@ -48,7 +48,6 @@
 namespace
 {
 const QString yamlExtensionString = ".yaml";
-const QString defaultDialogLabel = "Enter new folder name:";
 } //unnamed namespace
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
@@ -166,10 +165,10 @@ bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
         return true;
     }
     QDir dir(model->filePath(index));
-    QDirIterator dirIterattor(dir, QDirIterator::Subdirectories);
-    while (dirIterattor.hasNext())
+    QDirIterator dirIterator(dir, QDirIterator::Subdirectories);
+    while (dirIterator.hasNext())
     {
-        if (dirIterattor.next().endsWith(yamlExtensionString))
+        if (dirIterator.next().endsWith(yamlExtensionString))
         {
             return false;
         }
@@ -204,6 +203,8 @@ void FileSystemDockWidget::onNewFolder()
     QString newFolderName = tr("New Folder");
     dialog.setWindowTitle(newFolderName);
     dialog.setInputMethodHints(Qt::ImhUrlCharactersOnly);
+    dialog.setLabelText("Enter new folder name:");
+    dialog.SetWarningMessage("This folder already exists");
 
     const auto &selected = ui->treeView->selectionModel()->selectedIndexes();
     DVASSERT(selected.size() <= 1);
