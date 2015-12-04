@@ -68,18 +68,14 @@ void android_gl_init(void* _window)
     eglInitialize(_display, nullptr, nullptr);
 
     //try initialize 24 bit depth buffer
-    _GLES2_IsGlDepth24Stencil8Supported = true;
     eglChooseConfig(_display, d24s8ConfigAttribs, &_config, 1, &numConfigs);
     if (_config == nullptr)
     {
-        _GLES2_IsGlDepth24Stencil8Supported = false;
         //try initialize 16 bit depth buffer with NVidia extension
-        _GLES2_IsGlDepthNvNonLinearSupported = true;
         eglChooseConfig(_display, d16s8NvidiaConfigAttribs, &_config, 1, &numConfigs);
     }
     if (_config == nullptr)
     {
-        _GLES2_IsGlDepthNvNonLinearSupported = false;
         //worst case only 16 bit depth buffer
         eglChooseConfig(_display, d16s8ConfigAttribs, &_config, 1, &numConfigs);
     }

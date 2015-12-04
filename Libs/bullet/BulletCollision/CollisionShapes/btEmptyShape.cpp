@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -47,33 +46,27 @@ subject to the following restrictions:
 
 #include "btCollisionShape.h"
 
-
-btEmptyShape::btEmptyShape() : btConcaveShape ()
+btEmptyShape::btEmptyShape()
+    : btConcaveShape()
 {
-	m_shapeType = EMPTY_SHAPE_PROXYTYPE;
+    m_shapeType = EMPTY_SHAPE_PROXYTYPE;
 }
-
 
 btEmptyShape::~btEmptyShape()
 {
 }
 
-
-	///getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
-void btEmptyShape::getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
+///getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
+void btEmptyShape::getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const
 {
-	btVector3 margin(getMargin(),getMargin(),getMargin());
+    btVector3 margin(getMargin(), getMargin(), getMargin());
 
-	aabbMin = t.getOrigin() - margin;
+    aabbMin = t.getOrigin() - margin;
 
-	aabbMax = t.getOrigin() + margin;
-
+    aabbMax = t.getOrigin() + margin;
 }
 
-void	btEmptyShape::calculateLocalInertia(btScalar ,btVector3& ) const
+void btEmptyShape::calculateLocalInertia(btScalar, btVector3&) const
 {
-	btAssert(0);
+    btAssert(0);
 }
-
-	
-	

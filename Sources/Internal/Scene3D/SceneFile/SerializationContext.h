@@ -34,7 +34,7 @@
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
-#include "Render/RHI/rhi_Type.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {
@@ -52,7 +52,7 @@ namespace DAVA
         struct PolygonGroupLoadInfo
         {
             uint32 filePos = 0;
-            int32 requestedFormat = 0;
+            int32 requestedFormat = EVF_VERTEX; //vertex position loading is required as all code assumes it is there
             bool onScene = false;
         };
 	
@@ -159,8 +159,8 @@ namespace DAVA
 
         inline const FastName& GetDefaultMaterialQuality() const
         {
-			return defaultMaterialQuality;
-		}
+            return defaultMaterialQuality;
+        }
 		
 		void ResolveMaterialBindings();
 

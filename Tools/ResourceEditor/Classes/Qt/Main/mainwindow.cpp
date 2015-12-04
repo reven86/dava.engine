@@ -420,12 +420,12 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         DAVA::Texture::SetDefaultGPU(gpu);
 
         DAVA::TexturesMap allScenesTextures;
-        DAVA::Vector<DAVA::NMaterial*> allSceneMaterials;
+        DAVA::Set<DAVA::NMaterial*> allSceneMaterials;
         for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
         {
             SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-            SceneHelper::EnumerateMaterialInstances(scene, allSceneMaterials);
+            SceneHelper::EnumerateMaterials(scene, allSceneMaterials);
         }
 
         if (!allScenesTextures.empty())
@@ -1323,7 +1323,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
             !FileSystem::Instance()->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
         {
             closeRequest->Cancel();
-			return;
+            return;
 		}
 		
 		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
@@ -2672,7 +2672,7 @@ bool QtMainWindow::OpenScene( const QString & path )
                                                                               argumentPath.GetAbsolutePathname().c_str()));
         }
         else
-		{
+        {
             int needCloseIndex = -1;
 			SceneEditor2 *scene = ui->sceneTabWidget->GetCurrentScene();
 			if(scene && (ui->sceneTabWidget->GetTabCount() == 1))

@@ -75,6 +75,7 @@ signals:
 protected slots:
 	void OnLodsChanged();
     void OnValueChanged();
+    void OnLayerMaterialValueChanged();
     void OnSpriteBtn();
     void OnSpriteFolderBtn();
     void OnSpritePathChanged(const QString& text);
@@ -86,6 +87,7 @@ protected slots:
 private:
 	void InitWidget(QWidget* );
 	void UpdateTooltip();
+    void UpdateLayerSprite();
 	
 	void FillLayerTypes();
 	int32 LayerTypeToIndex(ParticleLayer::eType layerType);

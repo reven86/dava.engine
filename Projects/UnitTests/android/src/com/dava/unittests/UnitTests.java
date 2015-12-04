@@ -7,7 +7,7 @@ import com.dava.framework.JNIActivity;
 import com.dava.framework.JNISurfaceView;
 
 public class UnitTests extends JNIActivity {
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -27,4 +27,10 @@ public class UnitTests extends JNIActivity {
 		return view;
 	}
 
+	private native void nativeCall(int countC, boolean releaseRef);
+	public void TestCallToNativeInitiatedByJava(int countJava, int countC, boolean releaseRef) {
+		for (int i = 0; i < countJava; ++i) {
+			nativeCall(countC, releaseRef);
+		}
+	}
 }

@@ -828,10 +828,12 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
         Handle dsState = (p->depthStencilState != rhi::InvalidHandle) ? p->depthStencilState : pl->defDepthStencilState;
         Handle sState = (p->samplerState != rhi::InvalidHandle) ? p->samplerState : pl->defSamplerState;
 
+        #if 0
         if (p->debugMarker)
         {
             rhi::CommandBuffer::SetMarker(cmdBuf, p->debugMarker);
         }
+        #endif
 
         if (p->renderPipelineState != pl->curPipelineState || p->vertexLayoutUID != pl->curVertexLayout)
         {

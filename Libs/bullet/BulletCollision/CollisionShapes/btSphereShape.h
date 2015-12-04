@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -48,54 +47,57 @@ subject to the following restrictions:
 #include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h" // for the types
 
 ///The btSphereShape implements an implicit sphere, centered around a local origin with radius.
-ATTRIBUTE_ALIGNED16(class) btSphereShape : public btConvexInternalShape
+ATTRIBUTE_ALIGNED16(class)
+btSphereShape : public btConvexInternalShape
 
 {
-	
 public:
-	BT_DECLARE_ALIGNED_ALLOCATOR();
+    BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	btSphereShape (btScalar radius) : btConvexInternalShape ()
-	{
-		m_shapeType = SPHERE_SHAPE_PROXYTYPE;
-		m_implicitShapeDimensions.setX(radius);
-		m_collisionMargin = radius;
-	}
-	
-	virtual btVector3	localGetSupportingVertex(const btVector3& vec)const;
-	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const;
-	//notice that the vectors should be unit length
-	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
+    btSphereShape(btScalar radius)
+        : btConvexInternalShape()
+    {
+        m_shapeType = SPHERE_SHAPE_PROXYTYPE;
+        m_implicitShapeDimensions.setX(radius);
+        m_collisionMargin = radius;
+    }
 
+    virtual btVector3 localGetSupportingVertex(const btVector3& vec) const;
+    virtual btVector3 localGetSupportingVertexWithoutMargin(const btVector3& vec) const;
+    //notice that the vectors should be unit length
+    virtual void batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const;
 
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+    virtual void calculateLocalInertia(btScalar mass, btVector3 & inertia) const;
 
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+    virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
 
+    btScalar getRadius() const
+    {
+        return m_implicitShapeDimensions.getX() * m_localScaling.getX();
+    }
 
-	btScalar	getRadius() const { return m_implicitShapeDimensions.getX() * m_localScaling.getX();}
+    void setUnscaledRadius(btScalar radius)
+    {
+        m_implicitShapeDimensions.setX(radius);
+        btConvexInternalShape::setMargin(radius);
+    }
 
-	void	setUnscaledRadius(btScalar	radius)
-	{
-		m_implicitShapeDimensions.setX(radius);
-		btConvexInternalShape::setMargin(radius);
-	}
+    //debugging
+    virtual const char* getName() const
+    {
+        return "SPHERE";
+    }
 
-	//debugging
-	virtual const char*	getName()const {return "SPHERE";}
-
-	virtual void	setMargin(btScalar margin)
-	{
-		btConvexInternalShape::setMargin(margin);
-	}
-	virtual btScalar	getMargin() const
-	{
-		//to improve gjk behaviour, use radius+margin as the full margin, so never get into the penetration case
-		//this means, non-uniform scaling is not supported anymore
-		return getRadius();
-	}
-
-
+    virtual void setMargin(btScalar margin)
+    {
+        btConvexInternalShape::setMargin(margin);
+    }
+    virtual btScalar getMargin() const
+    {
+        //to improve gjk behaviour, use radius+margin as the full margin, so never get into the penetration case
+        //this means, non-uniform scaling is not supported anymore
+        return getRadius();
+    }
 };
 
 
