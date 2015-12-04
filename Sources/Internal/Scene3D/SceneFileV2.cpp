@@ -183,23 +183,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
         Logger::FrameworkDebug("+ save data objects");
         Logger::FrameworkDebug("- save file path: %s", filename.GetDirectory().GetAbsolutePathname().c_str());
     }
-    
-//    // Process file paths
-//    for (int32 mi = 0; mi < _scene->GetMaterials()->GetChildrenCount(); ++mi)
-//    {
-//        Material * material = dynamic_cast<Material*>(_scene->GetMaterials()->GetChild(mi));
-//        for (int k = 0; k < Material::TEXTURE_COUNT; ++k)
-//        {
-//            if (material->names[k].length() > 0)
-//            {
-//                replace(material->names[k], rootNodePath, String(""));
-//                Logger::FrameworkDebug("- preprocess mat path: %s rpn: %s", material->names[k].c_str(), material->textures[k]->relativePathname.c_str());
-//            }
-//        }   
-//    }
-    
-//    SaveDataHierarchy(_scene->GetMaterials(), file, 1);
-//    SaveDataHierarchy(_scene->GetStaticMeshes(), file, 1);
 
 	if (isSaveForGame)
 		scene->OptimizeBeforeExport();
@@ -475,10 +458,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
             LoadDataNode(scene, nullptr, file);
 		}
 
-        uint32 filePos = file->GetPos();
-        if (filePos < file->GetSize()) // comparing pos and size, seems like IsEOF is not working is some situations
+        if (header.nodeCount > 0)
         {
             // try to load global material
+            uint32 filePos = file->GetPos();
             KeyedArchive* archive = new KeyedArchive();
             archive->Load(file);
 
