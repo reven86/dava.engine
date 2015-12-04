@@ -63,6 +63,23 @@ public:
     }
 };
 
+auto versionListComparator = [](const QString & left, const QString & right)
+{
+    QRegularExpression regExp("\\_");
+    QStringList leftList = left.split(regExp, QString::SkipEmptyParts);
+    QStringList rightList = right.split(regExp, QString::SkipEmptyParts);
+
+    int minSize = qMin(leftList.size(), rightList.size());
+    for (int i = 0; i < minSize; ++i)
+    {
+        if(leftList.at(i) < rightList.at(i))
+        {
+            return true;
+        }
+    }
+    return false;
+};
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -470,13 +487,10 @@ QWidget * MainWindow::CreateAppAvalibleTableItem(Application * app)
             versions.push_back(app->GetVersion(j)->id);
         }
 
-        qSort(versions.begin(), versions.end(), [](const QString &left, const QString &right)
-        {
-            return QString::localeAwareCompare(left, right) < 0;
-        });
-
+        qSort(versions.begin(), versions.end(), versionListComparator);
+        
         QComboBox * comboBox = new QComboBox();
-        for(int j = 0; j < versCount; ++j)
+        for (int j = versCount - 1; j >= 0; --j)
         {
             comboBox->addItem(versions[j]);
         }
