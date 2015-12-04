@@ -120,7 +120,6 @@ bool HeightmapEditorSystem::DisableLandscapeEdititing()
 	
 	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
-    drawSystem->GetBaseLandscape()->SetUpdatable(false);
 	
 	enabled = false;
 	return !enabled;
