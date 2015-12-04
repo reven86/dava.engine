@@ -7,7 +7,7 @@ exec_clang_format()
         return
     fi
 
-	python codeformat/git-clang-format.py --binary codeformat/clang-format --style file ${files}
+	python RepoTools/codeformat/git-clang-format.py --binary RepoTools/codeformat/clang-format --style file ${files}
 	error_code=$?
 
 	if [ $error_code -ne 0 ]; then

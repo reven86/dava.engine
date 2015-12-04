@@ -5,7 +5,7 @@ import errno
 
 def main(): 
 	try:
-		os.mkdir('../.git/hooks')
+		os.mkdir('../../.git/hooks')
 	except OSError as exc: 
 		#already exists
 	  if exc.errno == errno.EEXIST:
@@ -13,7 +13,7 @@ def main():
 	    pass
 	  else: raise
 
-	shutil.copy('pre-commit', '../.git/hooks/pre-commit')
+	shutil.copy('pre-commit', '../../.git/hooks/pre-commit')
 
 
 if __name__ == '__main__':
