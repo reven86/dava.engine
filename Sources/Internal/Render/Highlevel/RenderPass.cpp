@@ -186,7 +186,6 @@ void RenderPass::DrawLayers(Camera* camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, (pointer_size)&rcpViewportSize);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, (pointer_size)&viewportOffset);
 
-    uint32 queryObjectOffset = 0;
     size_t size = renderLayers.size();
     for (size_t k = 0; k < size; ++k)
     {
@@ -194,13 +193,7 @@ void RenderPass::DrawLayers(Camera* camera)
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
 
-        uint32 drawedBatches = layer->Draw(camera, batchArray, packetList, queryObjectOffset);
-        queryObjectOffset += drawedBatches;
-
-#if defined(__DAVAENGINE_RENDERSTATS__)
-        currentLayersQuery.perLayerObjectCount[layer->GetRenderLayerID()] = drawedBatches;
-        currentLayersQuery.usedQueryObjectsCount += drawedBatches;
-#endif
+        layer->Draw(camera, batchArray, packetList);
     }
 }
 
@@ -214,34 +207,20 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
 }
 
 #if __DAVAENGINE_RENDERSTATS__
-bool RenderPass::LayersQueryIsReady(const LayersQuery& buf)
-{
-    if (!buf.usedQueryObjectsCount)
-        return true;
-
-    //check first and last used query object
-    return rhi::QueryIsReady(buf.query, 0) && ((buf.usedQueryObjectsCount > 1) ? rhi::QueryIsReady(buf.query, buf.usedQueryObjectsCount - 1) : true);
-}
-
 void RenderPass::ProcessVisibilityQuery()
 {
     DVASSERT(queryBuffers.size() < 128);
 
-    while (queryBuffers.size() && LayersQueryIsReady(queryBuffers.front()))
+    while (queryBuffers.size() && rhi::QueryIsReady(queryBuffers.front(), 0))
     {
         RenderStats& stats = Renderer::GetRenderStats();
-        uint32 objectIndexOffset = 0;
         for (uint32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
         {
             FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
-            for (uint32 obj = 0; obj < queryBuffers.front().perLayerObjectCount[i]; ++obj)
-            {
-                stats.queryResults[layerName] += rhi::QueryValue(queryBuffers.front().query, objectIndexOffset + obj);
-            }
-            objectIndexOffset += queryBuffers.front().perLayerObjectCount[i];
+            stats.queryResults[layerName] += rhi::QueryValue(queryBuffers.front(), i);
         }
 
-        rhi::DeleteQueryBuffer(queryBuffers.front().query);
+        rhi::DeleteQueryBuffer(queryBuffers.front());
         queryBuffers.pop_front();
     }
 }
@@ -250,22 +229,9 @@ void RenderPass::ProcessVisibilityQuery()
 void RenderPass::BeginRenderPass()
 {
 #if __DAVAENGINE_RENDERSTATS__
-    uint32 maxObjectsCount = 0;
-    size_t layersCount = renderLayers.size();
-    for (size_t k = 0; k < layersCount; ++k)
-    {
-        RenderLayer::eRenderLayerID layerID = renderLayers[k]->GetRenderLayerID();
-        maxObjectsCount += layersBatchArrays[layerID].GetRenderBatchCount();
-    }
-
-    if (maxObjectsCount)
-    {
-        passConfig.queryBuffer = rhi::CreateQueryBuffer(maxObjectsCount);
-    }
-    else
-    {
-        passConfig.queryBuffer = rhi::InvalidHandle;
-    }
+    rhi::HQueryBuffer qBuffer = rhi::CreateQueryBuffer(RenderLayer::RENDER_LAYER_ID_COUNT);
+    passConfig.queryBuffer = qBuffer;
+    queryBuffers.push_back(qBuffer);
 #endif
 
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
@@ -279,21 +245,6 @@ void RenderPass::EndRenderPass()
     rhi::EndRenderPass(renderPass);
 
 #if __DAVAENGINE_RENDERSTATS__
-    rhi::HQueryBuffer qBuffer = rhi::HQueryBuffer(passConfig.queryBuffer);
-    if (passConfig.queryBuffer != rhi::InvalidHandle)
-    {
-        if (currentLayersQuery.usedQueryObjectsCount)
-        {
-            currentLayersQuery.query = qBuffer;
-            queryBuffers.push_back(currentLayersQuery);
-        }
-        else
-        {
-            rhi::DeleteQueryBuffer(qBuffer);
-        }
-        currentLayersQuery.Reset();
-    }
-
     ProcessVisibilityQuery();
 #endif
 }

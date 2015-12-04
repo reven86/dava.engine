@@ -669,7 +669,6 @@ void CommandBufferGLES2_t::Execute()
     IndexSize idx_size = INDEX_SIZE_16BIT;
     unsigned tex_unit_0 = 0;
     Handle cur_query_buf = InvalidHandle;
-    uint32 cur_query_i = DAVA::InvalidIndex;
     GLint def_viewport[4] = { 0, 0, 0, 0 };
 
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
@@ -786,6 +785,8 @@ void CommandBufferGLES2_t::Execute()
                 }
 
                 glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+
+                DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
             }
         }
         break;
@@ -796,7 +797,8 @@ void CommandBufferGLES2_t::Execute()
 
             if (isLastInPass)
             {
-                //                    glFlush();
+                if (cur_query_buf != InvalidHandle)
+                    QueryBufferGLES2::QueryComplete(cur_query_buf);
 
                 if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                 {
@@ -854,7 +856,9 @@ void CommandBufferGLES2_t::Execute()
 
         case GLES2__SET_QUERY_INDEX:
         {
-            cur_query_i = uint32(arg[0]);
+            if (cur_query_buf != InvalidHandle)
+                QueryBufferGLES2::SetQueryIndex(cur_query_buf, uint32(arg[0]));
+
             c += 1;
         }
         break;
@@ -1049,9 +1053,6 @@ void CommandBufferGLES2_t::Execute()
                     ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
-
             if (vdecl_pending)
             {
                 PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl);
@@ -1074,11 +1075,6 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
-
-            //Logger::Info( "  dp" );
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
 
             c += 2;
         }
@@ -1118,9 +1114,6 @@ void CommandBufferGLES2_t::Execute()
                 cur_base_vert = firstVertex;
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
-
             int i_sz = GL_UNSIGNED_SHORT;
             int i_off = startIndex * sizeof(uint16);
 
@@ -1147,10 +1140,6 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
-            //LCP;
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
 
             //LCP;
             c += 4;

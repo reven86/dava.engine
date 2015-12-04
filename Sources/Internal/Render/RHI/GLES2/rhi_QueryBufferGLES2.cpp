@@ -36,6 +36,28 @@ using DAVA::Logger;
 
     #include "_gl.h"
 
+#if defined(__DAVAENGINE_IPHONE__)
+
+#define _glBeginQuery(q) glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, q)
+#define _glEndQuery() glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT)
+
+#elif defined(__DAVAENGINE_ANDROID__)
+
+#define _glBeginQuery(q)
+#define _glEndQuery()
+
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+
+#define _glBeginQuery(q) glBeginQuery(GL_SAMPLES_PASSED, q)
+#define _glEndQuery() glEndQuery(GL_SAMPLES_PASSED)
+
+#else
+
+#define _glBeginQuery(q) glBeginQuery(GL_ANY_SAMPLES_PASSED, q)
+#define _glEndQuery() glEndQuery(GL_ANY_SAMPLES_PASSED)
+
+#endif
+
 namespace rhi
 {
 //==============================================================================
@@ -44,26 +66,21 @@ class
 QueryBufferGLES2_t
 {
 public:
-    QueryBufferGLES2_t();
-    ~QueryBufferGLES2_t();
+    QueryBufferGLES2_t()
+        : curObjectIndex(DAVA::InvalidIndex)
+        , bufferCompleted(false){};
+    ~QueryBufferGLES2_t(){};
 
-    std::vector<GLuint> query;
+    std::vector<std::pair<GLuint, uint32>> pendingQueries;
+    std::vector<uint32> results;
+    uint32 curObjectIndex;
+    uint32 bufferCompleted : 1;
 };
 
 typedef ResourcePool<QueryBufferGLES2_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false> QueryBufferGLES2Pool;
 RHI_IMPL_POOL(QueryBufferGLES2_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false);
 
 //==============================================================================
-
-QueryBufferGLES2_t::QueryBufferGLES2_t()
-{
-}
-
-//------------------------------------------------------------------------------
-
-QueryBufferGLES2_t::~QueryBufferGLES2_t()
-{
-}
 
 static Handle
 gles2_QueryBuffer_Create(uint32 maxObjectCount)
@@ -73,8 +90,11 @@ gles2_QueryBuffer_Create(uint32 maxObjectCount)
 
     if (buf)
     {
-        buf->query.resize(maxObjectCount);
-        memset(&(buf->query[0]), 0, sizeof(buf->query[0]) * buf->query.size());
+        buf->results.resize(maxObjectCount);
+        memset(buf->results.data(), 0, sizeof(uint32) * buf->results.size());
+        buf->pendingQueries.clear();
+        buf->curObjectIndex = DAVA::InvalidIndex;
+        buf->bufferCompleted = false;
     }
 
     return handle;
@@ -87,6 +107,21 @@ gles2_QueryBuffer_Reset(Handle handle)
 
     if (buf)
     {
+        memset(buf->results.data(), 0, sizeof(uint32) * buf->results.size());
+
+        if (buf->pendingQueries.size())
+        {
+            std::vector<GLuint> glQueries(buf->pendingQueries.size());
+            std::transform(buf->pendingQueries.begin(), buf->pendingQueries.end(), glQueries.begin(), [](const std::pair<GLuint, uint32>& p) { return p.first; });
+
+            GLCommand cmd1 = { GLCommand::DELETE_QUERIES, { uint64(glQueries.size()), uint64(glQueries.data()) } };
+            ExecGL(&cmd1, 1);
+
+            buf->pendingQueries.clear();
+        }
+
+        buf->curObjectIndex = DAVA::InvalidIndex;
+        buf->bufferCompleted = false;
     }
 }
 
@@ -97,29 +132,67 @@ gles2_QueryBuffer_Delete(Handle handle)
 
     if (buf)
     {
-        GLCommand cmd1 = { GLCommand::DELETE_QUERIES, { uint64(buf->query.size()), uint64(buf->query.data()) } };
-        ExecGL(&cmd1, 1);
+        if (buf->pendingQueries.size())
+        {
+            std::vector<GLuint> glQueries(buf->pendingQueries.size());
+            std::transform(buf->pendingQueries.begin(), buf->pendingQueries.end(), glQueries.begin(), [](const std::pair<GLuint, uint32>& p) { return p.first; });
 
-        buf->query.clear();
+            GLCommand cmd1 = { GLCommand::DELETE_QUERIES, { uint64(glQueries.size()), uint64(glQueries.data()) } };
+            ExecGL(&cmd1, 1);
+
+            buf->pendingQueries.clear();
+        }
     }
 
     QueryBufferGLES2Pool::Free(handle);
 }
 
 static bool
-gles2_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
+gles2_QueryBuffer_IsReady(Handle handle, uint32 _1)
 {
     bool ready = false;
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if (buf && objectIndex < buf->query.size())
+    if (buf)
     {
-        GLuint result = 0;
+        if (buf->bufferCompleted)
+        {
+            ready = true;
 
-        GLCommand cmd1 = { GLCommand::GET_QUERYOBJECT_UIV, { uint64(buf->query[objectIndex]), uint64(GL_QUERY_RESULT_AVAILABLE), uint64(&result) } };
-        ExecGL(&cmd1, 1);
+            if (buf->pendingQueries.size())
+            {
+                for (int32 q = buf->pendingQueries.size() - 1; q >= 0; --q)
+                {
+                    GLuint queryName = buf->pendingQueries[q].first;
+                    GLuint result = 0;
 
-        ready = (result == GL_TRUE);
+                    GLCommand cmd1 = { GLCommand::GET_QUERYOBJECT_UIV, { uint64(queryName), uint64(GL_QUERY_RESULT_AVAILABLE), uint64(&result) } };
+                    ExecGL(&cmd1, 1);
+
+                    if (result == GL_TRUE)
+                    {
+                        GLCommand cmd2[2] = {
+                            { GLCommand::GET_QUERYOBJECT_UIV, { uint64(queryName), uint64(GL_QUERY_RESULT), uint64(&result) } },
+                            { GLCommand::DELETE_QUERIES, {
+                                                         1, uint64(&(queryName)),
+                                                         } }
+                        };
+                        ExecGL(cmd2, 2);
+
+                        uint32 resultIndex = buf->pendingQueries[q].second;
+                        if (resultIndex < buf->results.size())
+                            buf->results[resultIndex] = result;
+
+                        buf->pendingQueries[q] = buf->pendingQueries.back();
+                        buf->pendingQueries.pop_back();
+                    }
+                    else
+                    {
+                        ready = false;
+                    }
+                }
+            }
+        }
     }
 
     return ready;
@@ -128,20 +201,16 @@ gles2_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
 static int
 gles2_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
-    int value = 0;
-    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
-
-    if (buf && objectIndex < buf->query.size())
+    if (gles2_QueryBuffer_IsReady(handle, objectIndex))
     {
-        GLuint result = 0;
-
-        GLCommand cmd1 = { GLCommand::GET_QUERYOBJECT_UIV, { uint64(buf->query[objectIndex]), uint64(GL_QUERY_RESULT), uint64(&result) } };
-        ExecGL(&cmd1, 1);
-
-        value = result;
+        QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
+        if (buf && objectIndex < buf->results.size())
+        {
+            return buf->results[objectIndex];
+        }
     }
 
-    return value;
+    return 0;
 }
 
 namespace QueryBufferGLES2
@@ -155,60 +224,66 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_QueryBuffer_Value = &gles2_QueryBuffer_Value;
 }
 
-void BeginQuery(Handle handle, uint32 objectIndex)
+void SetQueryIndex(Handle handle, uint32 objectIndex)
 {
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if (buf && objectIndex < buf->query.size())
+    if (buf)
     {
-        GLuint q = buf->query[objectIndex];
-
-        if (!q)
+        if (buf->curObjectIndex != objectIndex)
         {
-            #if defined(__DAVAENGINE_IPHONE__)
-            glGenQueriesEXT(1, &q);
-	        #elif defined(__DAVAENGINE_ANDROID__)
-            #else
-            glGenQueries(1, &q);
-            #endif
+            if (buf->curObjectIndex != DAVA::InvalidIndex)
+                _glEndQuery();
 
-            buf->query[objectIndex] = q;
-        }
+            if (objectIndex != DAVA::InvalidIndex)
+            {
+                GLuint q = 0;
 
-        if (q)
-        {
-            #if defined(__DAVAENGINE_IPHONE__)
-            glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, q);
-	        #elif defined(__DAVAENGINE_ANDROID__)
-            #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-            glBeginQuery(GL_SAMPLES_PASSED, q);
-            #else
-            glBeginQuery(GL_ANY_SAMPLES_PASSED, q);
-            #endif
+#if defined(__DAVAENGINE_IPHONE__)
+                glGenQueriesEXT(1, &q);
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
+                glGenQueries(1, &q);
+#endif
+
+                if (q)
+                {
+                    _glBeginQuery(q);
+                    buf->pendingQueries.push_back(std::make_pair(q, objectIndex));
+                }
+            }
+
+            buf->curObjectIndex = objectIndex;
         }
     }
 }
 
-void EndQuery(Handle handle, uint32 objectIndex)
+void QueryComplete(Handle handle)
 {
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
 
-    if (buf && objectIndex < buf->query.size())
+    if (buf)
     {
-        GLuint q = buf->query[objectIndex];
-
-        if (q)
+        if (buf->curObjectIndex != DAVA::InvalidIndex)
         {
-            #if defined(__DAVAENGINE_IPHONE__)
-            glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
-			#elif defined(__DAVAENGINE_ANDROID__)
-            #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-            glEndQuery(GL_SAMPLES_PASSED);
-            #else
-            glEndQuery(GL_ANY_SAMPLES_PASSED);
-            #endif
+            _glEndQuery();
+            buf->curObjectIndex = DAVA::InvalidIndex;
         }
+
+        buf->bufferCompleted = true;
     }
+}
+
+bool QueryIsCompleted(Handle handle)
+{
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
+
+    if (buf)
+    {
+        return buf->bufferCompleted;
+    }
+
+    return false;
 }
 }
 

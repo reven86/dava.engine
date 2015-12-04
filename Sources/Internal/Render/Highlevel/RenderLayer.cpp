@@ -97,7 +97,7 @@ RenderLayer::eRenderLayerID RenderLayer::GetLayerIDByName(const FastName& name)
     return RENDER_LAYER_INVALID_ID;
 }
 
-uint32 RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList, uint32 queryIndexOffset)
+void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList)
 {
     TIME_PROFILE("RenderLayer::Draw");
 
@@ -116,12 +116,10 @@ uint32 RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi
             mat->BindParams(packet);
             packet.debugMarker = mat->GetEffectiveFXName().c_str();
 #ifdef __DAVAENGINE_RENDERSTATS__
-            packet.queryIndex = queryIndexOffset + k;
+            packet.queryIndex = layerID;
 #endif
             rhi::AddPacket(packetList, packet);
         }
     }
-
-    return size;
 }
 };
