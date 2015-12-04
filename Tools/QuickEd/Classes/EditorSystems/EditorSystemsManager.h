@@ -93,8 +93,6 @@ class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
-
 class EditorSystemsManager : PackageListener
 {
 public:
