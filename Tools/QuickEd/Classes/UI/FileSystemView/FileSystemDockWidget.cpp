@@ -263,7 +263,6 @@ void FileSystemDockWidget::onNewFile()
     {
         return;
     }
-    QFileInfo fileInfo(strFile);
     if (!strFile.endsWith(yamlExtensionString))
     {
         strFile += yamlExtensionString;
@@ -281,8 +280,9 @@ void FileSystemDockWidget::onDeleteFile()
     DVASSERT(indexes.size() == 1);
     auto index = indexes.front();
     bool isDir = model->isDir(index);
+    QString title = tr("Delete ") + (isDir ? "folder" : "file") + "?";
     QString text = tr("Delete ") + (isDir ? "folder" : "file") + " \"" + model->fileName(index) + "\"" + (isDir ? " and its content" : "") + "?";
-    if (QMessageBox::Yes == QMessageBox::question(this, text, text, QMessageBox::Yes | QMessageBox::No))
+    if (QMessageBox::Yes == QMessageBox::question(this, title, text, QMessageBox::Yes | QMessageBox::No))
     {
         if (!model->remove(index))
         {
