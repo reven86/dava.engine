@@ -40,6 +40,8 @@ namespace DAVA
 namespace Net
 {
 
+const char8 NetCore::defaultAnnounceMulticastGroup[] = "239.192.100.1";
+
 NetCore::NetCore()
     : loop(true)
     , isFinishing(false)
@@ -68,10 +70,10 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* contex
     }
 }
 
-NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback)
+NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndpoint)
 {
     DVASSERT(false == isFinishing);
-    Announcer* ctrl = new Announcer(&loop, endpoint, sendPeriod, needDataCallback);
+    Announcer* ctrl = new Announcer(&loop, endpoint, sendPeriod, needDataCallback, tcpEndpoint);
     loop.Post(Bind(&NetCore::DoStart, this, ctrl));
     return ObjectToTrackId(ctrl);
 }
@@ -80,15 +82,20 @@ NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<vo
 {
     DVASSERT(false == isFinishing);
     Discoverer* ctrl = new Discoverer(&loop, endpoint, dataReadyCallback);
+    discovererId = ObjectToTrackId(ctrl);
     loop.Post(Bind(&NetCore::DoStart, this, ctrl));
-    return ObjectToTrackId(ctrl);
+    return discovererId;
 }
 
 void NetCore::DestroyController(TrackId id)
 {
     DVASSERT(false == isFinishing);
     DVASSERT(GetTrackedObject(id) != NULL);
-	loop.Post(Bind(&NetCore::DoDestroy, this, id, nullptr));
+    if (id == discovererId)
+    {
+        discovererId = INVALID_TRACK_ID;
+    }
+    loop.Post(Bind(&NetCore::DoDestroy, this, id, nullptr));
 }
 
 void NetCore::DestroyControllerBlocked(TrackId id)
@@ -137,6 +144,22 @@ void NetCore::Finish(bool runOutLoop)
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
     if (runOutLoop)
         loop.Run(IOLoop::RUN_DEFAULT);
+}
+
+bool NetCore::TryDiscoverDevice(const Endpoint& endpoint)
+{
+    if (discovererId != INVALID_TRACK_ID)
+    {
+        auto it = trackedObjects.find(TrackIdToObject(discovererId));
+        if (it != trackedObjects.end())
+        {
+            // Variable is named in honor of big fan and donater of tanks - Sergey Demidov
+            // And this man assures that cast below is valid, so do not worry, guys
+            Discoverer* SergeyDemidov = static_cast<Discoverer*>(*it);
+            return SergeyDemidov->TryDiscoverDevice(endpoint);
+        }
+    }
+    return false;
 }
 
 void NetCore::DoStart(IController* ctrl)
