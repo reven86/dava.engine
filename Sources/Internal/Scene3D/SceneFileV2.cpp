@@ -475,9 +475,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
             LoadDataNode(scene, nullptr, file);
 		}
 
-        // load global material
+        uint32 filePos = file->GetPos();
+        if (filePos < file->GetSize()) // comparing pos and size, seems like IsEOF is not working is some situations
         {
-            uint32 filePos = file->GetPos();
+            // try to load global material
             KeyedArchive* archive = new KeyedArchive();
             archive->Load(file);
 
