@@ -32,50 +32,48 @@
 
 #include "DAVAEngine.h"
 
-namespace DAVA 
+namespace DAVA
 {
 class UIScreenManager : public Singleton<UIScreenManager>
 {
 public:
-	UIScreenManager();
-	virtual ~UIScreenManager();
-	
-	void RegisterScreen(int screenId, UIScreen * screen);
+    UIScreenManager();
+    virtual ~UIScreenManager();
 
-	void SetFirst(int screenId);
-	void SetScreen(int screenId, UIScreenTransition * transition = 0);
+    void RegisterScreen(int screenId, UIScreen* screen);
 
-	UIScreen *GetScreen(int screenId);
-	UIScreen *GetScreen();
-	int32 GetScreenId();
+    void SetFirst(int screenId);
+    void SetScreen(int screenId, UIScreenTransition* transition = 0);
+
+    UIScreen* GetScreen(int screenId);
+    UIScreen* GetScreen();
+    int32 GetScreenId();
 
     void ScreenSizeChanged();
 
-
 private:
-	
-	void ActivateGLController();
-	
-	struct Screen
-	{
-		enum eType 
-		{
-			TYPE_NULL = 0,
-			TYPE_SCREEN,
-		};
-		Screen(eType _type = TYPE_NULL, void * _value  = 0) 
-		{
-			type = _type;
-			value = _value;
-		}
-		eType	type;
-		void *	value;
-	};
-	
-	Map<int, Screen>		screens;
-	int						glControllerId;
-	int						activeControllerId;
-	int						activeScreenId;
+    void ActivateGLController();
+
+    struct Screen
+    {
+        enum eType
+        {
+            TYPE_NULL = 0,
+            TYPE_SCREEN,
+        };
+        Screen(eType _type = TYPE_NULL, void* _value = 0)
+        {
+            type = _type;
+            value = _value;
+        }
+        eType type;
+        void* value;
+    };
+
+    Map<int, Screen> screens;
+    int glControllerId;
+    int activeControllerId;
+    int activeScreenId;
 };
 };
 

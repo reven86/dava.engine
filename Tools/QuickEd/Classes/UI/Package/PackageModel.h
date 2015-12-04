@@ -68,8 +68,8 @@ public:
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
 
 signals:
-    void BeforeNodesMoved(const SelectedNodes &nodes);
-    void NodesMoved(const SelectedNodes &nodes);
+    void BeforeNodesMoved(const SelectedNodes& nodes);
+    void NodesMoved(const SelectedNodes& nodes);
 
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
@@ -95,8 +95,8 @@ private: // PackageListener
 
     int GetRowIndex(int row, const QModelIndex& parent) const;
 
-    PackageNode *root = nullptr;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    PackageNode* root = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
 };
 
 #endif // __QUICKED_PACKAGE_MODEL_H__

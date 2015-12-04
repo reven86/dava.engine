@@ -78,7 +78,7 @@ public slots:
 
 private slots:
     void OnScaleChanged(qreal scale);
-	void OnScaleByComboIndex(int value);
+    void OnScaleByComboIndex(int value);
 	void OnScaleByComboText();
     
     void OnGLWidgetResized(int width, int height);
@@ -88,7 +88,7 @@ private slots:
     
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
-    
+
 protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
 

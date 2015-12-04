@@ -39,10 +39,10 @@ NotificationScreen::NotificationScreen()
     , showNotificationTextDelayed(nullptr)
     , cancelDelayedNotifications(nullptr)
     , showNotificationProgress(nullptr)
-	, hideNotificationProgress(nullptr)
-	, notificationProgress(nullptr)
-	, notificationText(nullptr)
-	, progress(0)
+    , hideNotificationProgress(nullptr)
+    , notificationProgress(nullptr)
+    , notificationText(nullptr)
+    , progress(0)
 {
 }
 
@@ -63,7 +63,7 @@ void NotificationScreen::LoadResources()
     showNotificationText->SetStateFontColor(0xFF, Color::White);
     showNotificationText->SetStateText(0xFF, L"Notify text");
 
-	showNotificationText->SetDebugDraw(true);
+    showNotificationText->SetDebugDraw(true);
 	showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
 	AddControl(showNotificationText);
     
@@ -85,16 +85,16 @@ void NotificationScreen::LoadResources()
     cancelDelayedNotifications->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyCancelDelayed));
     AddControl(cancelDelayedNotifications);
 
-	hideNotificationText = new UIButton(Rect(10, 300, 450, 60));
-	hideNotificationText->SetStateFont(0xFF, font);
+    hideNotificationText = new UIButton(Rect(10, 300, 450, 60));
+    hideNotificationText->SetStateFont(0xFF, font);
 	hideNotificationText->SetStateFontColor(0xFF, Color::White);
 	hideNotificationText->SetStateText(0xFF, L"Hide text");
 
 	hideNotificationText->SetDebugDraw(false);
 	hideNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideText));
-	AddControl(hideNotificationText); 
+    AddControl(hideNotificationText);
 
-	showNotificationProgress = new UIButton(Rect(500, 10, 450, 60));
+    showNotificationProgress = new UIButton(Rect(500, 10, 450, 60));
 	showNotificationProgress->SetStateFont(0xFF, font);
 	showNotificationProgress->SetStateFontColor(0xFF, Color::White);
 	showNotificationProgress->SetStateText(0xFF, L"Notify progress");
@@ -191,7 +191,7 @@ void NotificationScreen::OnNotifyTextDelayed(BaseObject *obj, void *data, void *
     LocalNotificationController::Instance()->PostDelayedNotification(L"Test Delayed notification Title", L"Some text", 5);
 }
 
-void NotificationScreen::OnNotifyCancelDelayed(BaseObject *obj, void *data, void *callerData)
+void NotificationScreen::OnNotifyCancelDelayed(BaseObject* obj, void* data, void* callerData)
 {
     LocalNotificationController::Instance()->RemoveAllDelayedNotifications();
 }

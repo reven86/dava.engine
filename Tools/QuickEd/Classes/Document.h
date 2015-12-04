@@ -102,7 +102,6 @@ private:
     QUndoStack* undoStack = nullptr;
 
     EditorSystemsManager systemManager;
-    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

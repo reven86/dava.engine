@@ -232,7 +232,7 @@ void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links)
         if (FileSystem::Instance()->Exists(flagsTXT))
         {
             links.insert(flagsTXT);
-		}
+        }
 	}
 }
 

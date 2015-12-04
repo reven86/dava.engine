@@ -62,7 +62,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     , scrollAreaController(new ScrollAreaController(this))
 {
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
-                << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f 
+                << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
                 << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
     setupUi(this);
     davaGLWidget = new DavaGLWidget();
@@ -82,7 +82,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::PositionChanged, this, &PreviewWidget::OnPositionChanged);
     connect(scrollAreaController, &ScrollAreaController::ScaleChanged, this, &PreviewWidget::OnScaleChanged);
-    
+
     connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
@@ -118,7 +118,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     pasteAction->setShortcutContext(Qt::WindowShortcut);
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
     davaGLWidget->addAction(pasteAction);
-
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
     deleteAction->setShortcut(QKeySequence::Delete);
@@ -290,24 +289,24 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
     scrollAreaController->SetPosition(canvasPosition);
 }
 
-bool PreviewWidget::eventFilter(QObject *obj, QEvent *event)
+bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
 {
-    if(obj == davaGLWidget->GetGLView())
+    if (obj == davaGLWidget->GetGLView())
     {
-        switch(event->type())
+        switch (event->type())
         {
-            case QEvent::Wheel:
-                OnWheelEvent(DynamicTypeCheck<QWheelEvent*>(event));
-                break;
-            case QEvent::NativeGesture:
-                OnNativeGuestureEvent(DynamicTypeCheck<QNativeGestureEvent*>(event));
-                break;
-            case QEvent::MouseMove:
-                OnMoveEvent(DynamicTypeCheck<QMouseEvent*>(event));
-            case QEvent::MouseButtonPress:
-                lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
-            default:
-                break;
+        case QEvent::Wheel:
+            OnWheelEvent(DynamicTypeCheck<QWheelEvent*>(event));
+            break;
+        case QEvent::NativeGesture:
+            OnNativeGuestureEvent(DynamicTypeCheck<QNativeGestureEvent*>(event));
+            break;
+        case QEvent::MouseMove:
+            OnMoveEvent(DynamicTypeCheck<QMouseEvent*>(event));
+        case QEvent::MouseButtonPress:
+            lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
+        default:
+            break;
         }
     }
     return QWidget::eventFilter(obj, event);
@@ -319,9 +318,9 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     {
         return;
     }
-    //QWheelEvent::source to distinguish wheel and touchpad is implemented only in Qt 5.5
+//QWheelEvent::source to distinguish wheel and touchpad is implemented only in Qt 5.5
 #ifdef Q_OS_WIN //under MAC OS we get this event when scrolling by two fingers on MAC touchpad
-    if(!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+    if (!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
 #endif //Q_OS_WIN
     {
 #ifdef Q_OS_WIN
@@ -334,7 +333,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
         int horizontalScrollBarValue = horizontalScrollBar->value();
         horizontalScrollBarValue -= delta.x() * horizontalScrollBar->pageStep() * wheelDelta;
         horizontalScrollBar->setValue(horizontalScrollBarValue);
-        
+
         int verticalScrollBarValue = verticalScrollBar->value();
         verticalScrollBarValue -= delta.y() * verticalScrollBar->pageStep() * wheelDelta;
         verticalScrollBar->setValue(verticalScrollBarValue);
@@ -366,23 +365,23 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
     const qreal expandedScale = 1.5f;
     qreal scale = scrollAreaController->GetScale();
     QPoint pos = event->pos();
-    switch(event->gestureType())
+    switch (event->gestureType())
     {
-        case Qt::ZoomNativeGesture:
-            scrollAreaController->AdjustScale(scale + event->value(), pos);
-                        break;
-        case Qt::SmartZoomNativeGesture:
+    case Qt::ZoomNativeGesture:
+        scrollAreaController->AdjustScale(scale + event->value(), pos);
+        break;
+    case Qt::SmartZoomNativeGesture:
             scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
-            //event->value() returns 1 or 0
-            break;
-        default:
-            break;
+        //event->value() returns 1 or 0
+        break;
+    default:
+        break;
     }
 }
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
-    if (event->buttons() & Qt::MiddleButton) 
+    if (event->buttons() & Qt::MiddleButton)
     {
         QPoint delta(event->pos() - lastMousePos);
         lastMousePos = event->pos();

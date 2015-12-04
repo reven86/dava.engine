@@ -65,7 +65,7 @@ struct MainWindow::TabState
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
@@ -220,7 +220,7 @@ bool MainWindow::isPixelized() const
     return actionPixelized->isChecked();
 }
 
-void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
+void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
 {
     DVASSERT(nullptr != packer);
     auto lastFlags = acceptableLoggerFlags;
@@ -463,7 +463,7 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     ev->ignore();
 }
 
-void MainWindow::OnProjectOpened(const ResultList &resultList, const Project *project)
+void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
@@ -536,9 +536,9 @@ void MainWindow::OnGlobalClassesChanged(const QString &str)
     emit GlobalStyleClassesChanged(str);
 }
 
-void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray &output)
+void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& output)
 {
-    if(static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
+    if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
     {
         logWidget->AddMessage(logLevel, output);
     }

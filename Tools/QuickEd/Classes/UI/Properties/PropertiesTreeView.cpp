@@ -32,8 +32,8 @@
 #include <QHeaderView>
 #include <QApplication>
 
-PropertiesTreeView::PropertiesTreeView( QWidget *parent /*= NULL*/ )
-: QTreeView(parent)
+PropertiesTreeView::PropertiesTreeView(QWidget* parent /*= NULL*/)
+    : QTreeView(parent)
 {
 
 }
