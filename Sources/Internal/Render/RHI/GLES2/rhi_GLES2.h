@@ -184,7 +184,9 @@ GLCommand
         SET_UNIFORM_1I,
 
         GET_QUERYOBJECT_UIV,
-        DELETE_QUERIES
+        DELETE_QUERIES,
+
+        GET_QUERY_RESULT_NO_WAIT
     };
 
     Func func;
