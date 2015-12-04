@@ -72,9 +72,15 @@ auto versionListComparator = [](const QString & left, const QString & right)
     int minSize = qMin(leftList.size(), rightList.size());
     for (int i = 0; i < minSize; ++i)
     {
-        if(leftList.at(i) < rightList.at(i))
+        const QString &leftSubStr = leftList.at(i);
+        const QString &rightSubStr = rightList.at(i);
+        if (leftSubStr < rightSubStr)
         {
             return true;
+        }
+        else if (leftSubStr > rightSubStr)
+        {
+            return false;
         }
     }
     return false;
