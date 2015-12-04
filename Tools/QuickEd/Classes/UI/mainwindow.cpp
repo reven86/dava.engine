@@ -54,9 +54,9 @@ using namespace DAVA;
 
 struct MainWindow::TabState
 {
-    TabState(Document* document_, const QString &tabText)
+    TabState(Document* document_, const QString &tabText_)
         : document(document_)
-        , tabText(tabText)
+        , tabText(tabText_)
     {
         DVASSERT(document != nullptr);
     }
@@ -139,7 +139,7 @@ void MainWindow::OnCountChanged(int count)
 
 void MainWindow::OnDocumentChanged(Document* document)
 {
-    bool enabled = document != nullptr;
+    bool enabled = (document != nullptr);
     packageWidget->setEnabled(enabled);
     propertiesWidget->setEnabled(enabled);
     previewWidget->setEnabled(enabled);
