@@ -100,15 +100,34 @@ ColladaTexture::ColladaTexture(FCDImage* _image)
     wcsnrtombs(nstring, &origTmp, 512, 256, NULL);
 #endif
     texturePathName = nstring;
-
     { //Prepare correct texture descriptor for image
-        FilePath texturePath(texturePathName);
-        auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
-        if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+        const size_t pathSize = texturePathName.length();
+        if (pathSize >= 256)
         {
-            texturePath = TextureDescriptor::GetDescriptorPathname(texturePath);
+            Logger::Warning("Too long(%d) path: %s", pathSize, texturePathName.c_str());
         }
-        TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
+
+        bool pathApplied = false;
+
+        const FilePath texturePath(texturePathName);
+        if (FileSystem::Instance()->Exists(texturePath))
+        {
+            const String extension = texturePath.GetExtension();
+            if (!extension.empty())
+            {
+                auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
+                if (imageFormat != IMAGE_FORMAT_UNKNOWN)
+                {
+                    TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
+                    pathApplied = true;
+                }
+            }
+        }
+
+        if (!pathApplied)
+        {
+            texturePathName = "";
+        }
     }
 
     /*try 
