@@ -32,13 +32,13 @@ VPROG_BEGIN
 	float4 position = float4(VP_IN_POSITION, 1.0);    
 
 #if defined(ENCODE_DISTANCE)
-	float4 worldPosiion = mul(position, worldMatrix);
-	VP_OUT(distanceToCamera) = length(worldPosiion.xyz - cameraPosition);
+	float4 worldPosition = mul(position, worldMatrix);
+	VP_OUT(distanceToCamera) = length(worldPosition.xyz - cameraPosition);
 #endif
 
 #if defined(DECODE_DISTANCE)
-	float4 worldPosiion = mul(position, worldMatrix);
-	VP_OUT(directionFromPoint) = worldPosiion.xyz - lightPosition0;
+	float4 worldPosition = mul(position, worldMatrix);
+	VP_OUT(directionFromPoint) = worldPosition.xyz - lightPosition0.xyz;
 #endif
 
 	VP_OUT_POSITION = mul(position, worldViewProjMatrix);
