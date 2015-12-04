@@ -93,7 +93,6 @@ public:
         numChar = 0;
         numCharRepeat = 0;
         lastChar = L'\0';
-        lastKey = Key::UNKNOWN;
 
         numMouseEvents = 0;
         numDrag = 0;
@@ -293,7 +292,7 @@ private:
             break;
         case UIEvent::Phase::WHEEL: //!<Mouse wheel event. MacOS & Win32 only
             ++numMouseWheel;
-            lastWheel = currentInput->physPoint.y;
+            lastWheel = currentInput->scrollDelta.y;
             break;
         case UIEvent::Phase::CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
             ++numMouseCancel;
@@ -324,29 +323,29 @@ private:
             break;
         case UIEvent::Phase::KEY_DOWN:
             ++numKeyDown;
-            lastKey = currentInput->key;
+            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
             break;
         case UIEvent::Phase::KEY_DOWN_REPEAT:
             ++numKeyDownRepeat;
-            lastKey = currentInput->key;
+            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
             break;
         case UIEvent::Phase::KEY_UP:
             ++numKeyUp;
-            lastKey = currentInput->key;
+            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
             break;
         default:
             break;
         };
 
         std::wstringstream currentText;
-        currentText << L"Keyboards: " << numKeyboardEvents << L"\n"
-                    << L"KD: " << numKeyDown << L"\n"
-                    << L"KU: " << numKeyUp << L"\n"
-                    << L"KDR: " << numKeyDownRepeat << L"\n"
-                    << L"Ch: " << numChar << L"\n"
-                    << L"ChR: " << numCharRepeat << L"\n"
-                    << L"ch: \'" << lastChar << L"\'\n"
-                    << L"k: " << static_cast<uint32>(lastKey) << L"\n"
+        currentText << L"Keys: " << numKeyboardEvents << L"\n"
+                    << L"D: " << numKeyDown << L"\n"
+                    << L"U: " << numKeyUp << L"\n"
+                    << L"DR: " << numKeyDownRepeat << L"\n"
+                    << L"C: " << numChar << L"\n"
+                    << L"CR: " << numCharRepeat << L"\n"
+                    << L"c: \'" << lastChar << L"\'\n"
+                    << L"k: " << lastKey << L"\n"
                     << L"Mouse: " << numMouseEvents << L"\n"
                     << L"Drg: " << numDrag << L"\n"
                     << L"Mv: " << numMouseMove << L"\n"
@@ -354,7 +353,7 @@ private:
                     << L"Up: " << numMouseUp << L"\n"
                     << L"Whl: " << numMouseWheel << L"\n"
                     << L"Cncl: " << numMouseCancel << L"\n"
-                    << L"Key: " << lastMouseKey << L"\n"
+                    << L"Btn: " << lastMouseKey << L"\n"
                     << L"X: " << lastMouseX << L"\n"
                     << L"Y: " << lastMouseY << L"\n"
                     << L"Whl: " << lastWheel;
@@ -372,7 +371,7 @@ private:
     uint32 numChar = 0;
     uint32 numCharRepeat = 0;
     wchar_t lastChar = L'\0';
-    Key lastKey = Key::UNKNOWN;
+    WideString lastKey;
 
     uint32 numMouseEvents = 0;
     uint32 numDrag = 0;

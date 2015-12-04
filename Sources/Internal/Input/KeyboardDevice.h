@@ -58,7 +58,7 @@ enum class Key : uint32
 
     LWIN,
     RWIN,
-    APPS,
+    APPS, // https://en.wikipedia.org/wiki/Menu_key
 
     PAUSE,
     CAPSLOCK,
@@ -170,7 +170,8 @@ enum class Key : uint32
 class KeyboardDevice : public BaseObject
 {
 public:
-    bool IsKeyPressed(Key key) const;
+    bool IsKeyPressed(Key key) const; // during frame
+    static const String& GetKeyName(Key key);
 
 private:
     friend class InputSystem;
@@ -178,7 +179,6 @@ private:
     ~KeyboardDevice();
     KeyboardDevice();
 
-    // internal framework functions
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
@@ -189,7 +189,7 @@ private:
 
     Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> currentFrameKeyStatus;
     Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> realKeyStatus;
-    const static int MAX_KEYS = 512;
+    static const int MAX_KEYS = 512;
     Array<Key, MAX_KEYS> keyTranslator;
 };
 };

@@ -125,12 +125,16 @@ public:
         char32_t keyChar; // unicode utf32 char
         MouseButton mouseButton;
         GamepadDevice::eDavaGamepadElement element;
+        struct
+        {
+            float32 x;
+            float32 y;
+        } scrollDelta; // scroll delta in mouse wheel clicks (or lines)
     };
     Vector2 point; // point of pressure in virtual coordinates
-    Vector2 scrollDelta; // scroll delta in mouse wheel clicks (or lines)
     Vector2 physPoint; // point of pressure in physical coordinates
     float64 timestamp = 0.0; //(TODO not all platforms) time stemp of the event occurrence
-    Phase phase = Phase::BEGAN; // began, ended, moved. See Phase
+    Phase phase = Phase::ERROR; // began, ended, moved. See Phase
     UIControl* touchLocker = nullptr; // control that handles this input
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     int32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)

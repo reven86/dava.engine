@@ -31,6 +31,129 @@
 
 namespace DAVA
 {
+static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames =
+{
+  "UNKNOWN",
+  "ESCAPE",
+  "BACKSPACE",
+  "TAB",
+  "ENTER",
+  "SPACE",
+  "LSHIFT",
+  "LCTRL",
+  "LALT",
+  "RSHIFT",
+  "RCTRL",
+  "RALT",
+
+  "LWIN",
+  "RWIN",
+  "APPS",
+
+  "PAUSE",
+  "CAPSLOCK",
+  "NUMLOCK",
+  "SCROLLLOCK",
+
+  "PGUP",
+  "PGDN",
+  "HOME",
+  "END",
+  "INSERT",
+  "DELETE",
+
+  "LEFT",
+  "UP",
+  "RIGHT",
+  "DOWN",
+
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+
+  "GRAVE",
+  "MINUS",
+  "EQUALS",
+  "BACKSLASH",
+  "LBRACKET",
+  "RBRACKET",
+  "SEMICOLON",
+  "APOSTROPHE",
+  "COMMA",
+  "PERIOD",
+  "SLASH",
+
+  "NUMPAD0",
+  "NUMPAD1",
+  "NUMPAD2",
+  "NUMPAD3",
+  "NUMPAD4",
+  "NUMPAD5",
+  "NUMPAD6",
+  "NUMPAD7",
+  "NUMPAD8",
+  "NUMPAD9",
+
+  "MULTIPLY",
+  "DIVIDE",
+  "ADD",
+  "SUBTRACT",
+  "DECIMAL",
+
+  "F1",
+  "F2",
+  "F3",
+  "F4",
+  "F5",
+  "F6",
+  "F7",
+  "F8",
+  "F9",
+  "F10",
+  "F11",
+  "F12",
+
+  //Android keys
+  "BACK",
+  "MENU",
+
+  // exist on some keyboards
+  "NON_US_BACKSLASH"
+};
 
 KeyboardDevice::KeyboardDevice()
 {
@@ -47,6 +170,11 @@ KeyboardDevice::~KeyboardDevice()
 bool KeyboardDevice::IsKeyPressed(Key key) const
 {
     return currentFrameKeyStatus[static_cast<unsigned>(key)];
+}
+
+const String& KeyboardDevice::GetKeyName(Key key)
+{
+    return keyNames[static_cast<unsigned>(key)];
 }
 
 void KeyboardDevice::OnKeyPressed(Key key)
@@ -95,10 +223,12 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_CONTROL] = Key::LCTRL;
     keyTranslator[VK_MENU] = Key::LALT;
     keyTranslator[VK_SHIFT] = Key::LSHIFT;
+    keyTranslator[VK_APPS] = Key::APPS;
 
     keyTranslator[256 + VK_CONTROL] = Key::RCTRL;
     keyTranslator[256 + VK_MENU] = Key::RALT;
     keyTranslator[256 + VK_SHIFT] = Key::RSHIFT;
+    keyTranslator[256 + VK_APPS] = Key::APPS; // win api mark this key as extended
 
     keyTranslator[VK_CAPITAL] = Key::CAPSLOCK;
     keyTranslator[VK_SPACE] = Key::SPACE;

@@ -243,11 +243,11 @@ namespace DAVA
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
-        isRightButtonPressed = false;
-        isLeftButtonPressed = false;
-        isMiddleButtonPressed = false;
+        //isRightButtonPressed = false;
+        //isLeftButtonPressed = false;
+        //isMiddleButtonPressed = false;
 
-		return true;
+        return true;
 	}
 
 	void CoreWin32Platform::Run()
@@ -435,189 +435,282 @@ namespace DAVA
         SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
     }
 
-    UIEvent::Phase CoreWin32Platform::MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, UIEvent& outTouch)
+    //  UIEvent::Phase CoreWin32Platform::MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, UIEvent& outTouch)
+    //  {
+    //      int button = 0;
+    //      UIEvent::Phase phase = UIEvent::Phase::ERROR;
+
+    //      if (LOWORD(wParam))
+    //      {
+    //          phase = UIEvent::Phase::MOVE;
+    //      }
+
+    //      if(isLeftButtonPressed)
+    //          button = 1;
+    //      else if(isRightButtonPressed)
+    //          button = 2;
+    //      else if(isMiddleButtonPressed)
+    //          button = 3;
+
+    //if(buttsFlags & RI_MOUSE_LEFT_BUTTON_DOWN || buttsFlags & RI_MOUSE_RIGHT_BUTTON_DOWN || buttsFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
+    //{
+    //          phase = UIEvent::Phase::BEGAN;
+    //          if(buttsFlags & RI_MOUSE_LEFT_BUTTON_DOWN)
+    //          {
+    //              isLeftButtonPressed = true;
+    //              button = 1;
+    //          }
+    //          if(buttsFlags & RI_MOUSE_RIGHT_BUTTON_DOWN)
+    //          {
+    //              isRightButtonPressed = true;
+    //              button = 2;
+    //          }
+    //          if(buttsFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
+    //          {
+    //              isMiddleButtonPressed = true;
+    //              button = 3;
+    //          }
+    //}
+    //else if(buttsFlags & RI_MOUSE_LEFT_BUTTON_UP || buttsFlags & RI_MOUSE_RIGHT_BUTTON_UP || buttsFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
+    //{
+    //          phase = UIEvent::Phase::ENDED;
+    //          if(buttsFlags & RI_MOUSE_LEFT_BUTTON_UP)
+    //          {
+    //              isLeftButtonPressed = false;
+    //              button = 1;
+    //          }
+    //          if(buttsFlags & RI_MOUSE_RIGHT_BUTTON_UP)
+    //          {
+    //              isRightButtonPressed = false;
+    //              button = 2;
+    //          }
+    //          if(buttsFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
+    //          {
+    //              isMiddleButtonPressed = false;
+    //              button = 3;
+    //          }
+    //}
+    //      else if (button && phase == UIEvent::Phase::MOVE)
+    //      {
+    //          phase = UIEvent::Phase::DRAG;
+    //      }
+
+    //      if (phase == UIEvent::Phase::ERROR)
+    //      {
+    //          return phase;
+    //      }
+
+    //      outTouch.mouseButton = static_cast<UIEvent::MouseButton>(button);
+    //      outTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
+    //      outTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
+    //      outTouch.phase = phase;
+    //      outTouch.device = deviceId;
+    //      outTouch.tapCount = 1;
+    //      outTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+
+    //      return phase;
+    //  }
+
+    //   static bool mouseCursorShown = true;
+    //   static USHORT mouseButtonsDownMask = 0;
+
+    //   void HandleMouseButtonsPressed(USHORT buttsFlags)
+    //   {
+    //       if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
+    //       {
+    //           mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
+    //       }
+    //       if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
+    //       {
+    //           mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
+    //       }
+    //       if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
+    //       {
+    //		mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
+    //	}
+    //	if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
+    //	{
+    //		mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
+    //	}
+    //	if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)
+    //	{
+    //		mouseButtonsDownMask |= RI_MOUSE_BUTTON_5_DOWN;
+    //	}
+    //}
+
+    //void HandleMouseButtonsReleased(USHORT buttsFlags)
+    //{
+    //	if (mouseButtonsDownMask == 0)
+    //	{
+    //		return;
+    //	}
+
+    //	// Reset the mouse buttons mask, release capture if mask is empty (all buttons released).
+    //	if (buttsFlags & RI_MOUSE_BUTTON_1_UP)
+    //	{
+    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_1_DOWN;
+    //	}
+    //	if (buttsFlags & RI_MOUSE_BUTTON_2_UP)
+    //	{
+    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_2_DOWN;
+    //	}
+    //	if (buttsFlags & RI_MOUSE_BUTTON_3_UP)
+    //	{
+    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_3_DOWN;
+    //	}
+    //	if (buttsFlags & RI_MOUSE_BUTTON_4_UP)
+    //	{
+    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_4_DOWN;
+    //	}
+    //	if (buttsFlags & RI_MOUSE_BUTTON_5_UP)
+    //	{
+    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_5_DOWN;
+    //	}
+    //}
+
+    struct MouseButtonChange
     {
-        int button = 0;
-        UIEvent::Phase phase = UIEvent::Phase::ERROR;
+        UIEvent::MouseButton button;
+        UIEvent::Phase beginOrEnd;
+    };
 
-        if (LOWORD(wParam))
+    static Vector<MouseButtonChange> mouseButtonChanges;
+
+    void GetMouseButtonChanges(uint16_t mouseButtonFlags, Vector<MouseButtonChange>& out)
+    {
+        out.clear();
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_1_UP)
         {
-            phase = UIEvent::Phase::MOVE;
+            out.push_back({ UIEvent::MouseButton::Left, UIEvent::Phase::ENDED });
         }
-
-        if(isLeftButtonPressed)
-            button = 1;
-        else if(isRightButtonPressed)
-            button = 2;
-        else if(isMiddleButtonPressed)
-            button = 3;
-
-		if(buttsFlags & RI_MOUSE_LEFT_BUTTON_DOWN || buttsFlags & RI_MOUSE_RIGHT_BUTTON_DOWN || buttsFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
-		{
-            phase = UIEvent::Phase::BEGAN;
-            if(buttsFlags & RI_MOUSE_LEFT_BUTTON_DOWN)
-            {
-                isLeftButtonPressed = true;
-                button = 1;
-            }
-            if(buttsFlags & RI_MOUSE_RIGHT_BUTTON_DOWN)
-            {
-                isRightButtonPressed = true;
-                button = 2;
-            }
-            if(buttsFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
-            {
-                isMiddleButtonPressed = true;
-                button = 3;
-            }
-		}
-		else if(buttsFlags & RI_MOUSE_LEFT_BUTTON_UP || buttsFlags & RI_MOUSE_RIGHT_BUTTON_UP || buttsFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
-		{
-            phase = UIEvent::Phase::ENDED;
-            if(buttsFlags & RI_MOUSE_LEFT_BUTTON_UP)
-            {
-                isLeftButtonPressed = false;
-                button = 1;
-            }
-            if(buttsFlags & RI_MOUSE_RIGHT_BUTTON_UP)
-            {
-                isRightButtonPressed = false;
-                button = 2;
-            }
-            if(buttsFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
-            {
-                isMiddleButtonPressed = false;
-                button = 3;
-            }
-		}
-        else if (button && phase == UIEvent::Phase::MOVE)
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_2_UP)
         {
-            phase = UIEvent::Phase::DRAG;
+            out.push_back({ UIEvent::MouseButton::Right, UIEvent::Phase::ENDED });
         }
-
-        if (phase == UIEvent::Phase::ERROR)
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_3_UP)
         {
-            return phase;
+            out.push_back({ UIEvent::MouseButton::Middle, UIEvent::Phase::ENDED });
         }
-
-        outTouch.mouseButton = static_cast<UIEvent::MouseButton>(button);
-        outTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
-        outTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
-        outTouch.phase = phase;
-        outTouch.device = deviceId;
-        outTouch.tapCount = 1;
-        outTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-
-        return phase;
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_4_UP)
+        {
+            out.push_back({ UIEvent::MouseButton::Extended1, UIEvent::Phase::ENDED });
+        }
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_5_UP)
+        {
+            out.push_back({ UIEvent::MouseButton::Extended2, UIEvent::Phase::ENDED });
+        }
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_1_DOWN)
+        {
+            out.push_back({ UIEvent::MouseButton::Left, UIEvent::Phase::BEGAN });
+        }
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_2_DOWN)
+        {
+            out.push_back({ UIEvent::MouseButton::Right, UIEvent::Phase::BEGAN });
+        }
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_3_DOWN)
+        {
+            out.push_back({ UIEvent::MouseButton::Middle, UIEvent::Phase::BEGAN });
+        }
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_4_DOWN)
+        {
+            out.push_back({ UIEvent::MouseButton::Extended1, UIEvent::Phase::BEGAN });
+        }
+        if (mouseButtonFlags & RI_MOUSE_BUTTON_5_DOWN)
+        {
+            out.push_back({ UIEvent::MouseButton::Extended2, UIEvent::Phase::BEGAN });
+        }
     }
 
-    static bool mouseCursorShown = true;
-    static USHORT mouseButtonsDownMask = 0;
-
-    void HandleMouseButtonsPressed(USHORT buttsFlags)
+    void CoreWin32Platform::OnMouseMove(float32 x, float32 y)
     {
-        if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
+        UIEvent e;
+        e.physPoint = Vector2(x, y);
+        e.device = UIEvent::Device::MOUSE;
+        e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+
+        if (mouseButtonState.any())
         {
-            mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
-        }
-        if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
-        {
-            mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
-        }
-        if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
-        {
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_5_DOWN;
-		}
-	}
-
-	void HandleMouseButtonsReleased(USHORT buttsFlags)
-	{
-		if (mouseButtonsDownMask == 0)
-		{
-			return;
-		}
-
-		// Reset the mouse buttons mask, release capture if mask is empty (all buttons released).
-		if (buttsFlags & RI_MOUSE_BUTTON_1_UP)
-		{
-			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_1_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_2_UP)
-		{
-			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_2_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_3_UP)
-		{
-			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_3_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_4_UP)
-		{
-			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_4_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_5_UP)
-		{
-			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_5_DOWN;
-		}
-	}
-
-    void CoreWin32Platform::OnMouseEvent(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
-    {
-        UIEvent newTouch;
-        UIEvent::Phase touchPhase = UIEvent::Phase::ERROR;
-
-        if (HIWORD(wParam) || mouseButtonsDownMask > 0) // isPoint inside window or some clicks already captured
-        {
-            HandleMouseButtonsPressed(buttsFlags);
-        }
-
-        if(buttsFlags & RI_MOUSE_WHEEL)
-        {
-            touchPhase = UIEvent::Phase::WHEEL;
-
-            newTouch.mouseButton = UIEvent::MouseButton::None;
-            newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
-            newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
-            newTouch.scrollDelta.y = static_cast<int16>(buttonData) / static_cast<float32>(WHEEL_DELTA);
-            newTouch.phase = UIEvent::Phase::WHEEL;
-            newTouch.device = deviceId;
-            newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+            for (unsigned buttonIndex = static_cast<unsigned>(UIEvent::MouseButton::Left);
+                 buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::Extended2);
+                 ++buttonIndex)
+            {
+                unsigned bitIndex = buttonIndex - 1;
+                if (mouseButtonState[bitIndex])
+                {
+                    e.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
+                    e.phase = UIEvent::Phase::DRAG;
+                    UIControlSystem::Instance()->OnInput(&e);
+                }
+            }
         }
         else
-		{
-            if(HIWORD(wParam) || mouseButtonsDownMask > 0) // HIWORD(wParam) - isPoint inside window
-			{
-                touchPhase = MoveTouchsToVector(deviceId, buttsFlags, wParam, lParam, newTouch);
-            }
-        }
-
-        if (touchPhase != UIEvent::Phase::ERROR)
         {
-            UIControlSystem::Instance()->OnInput(&newTouch);
+            e.mouseButton = UIEvent::MouseButton::None;
+            e.phase = UIEvent::Phase::MOVE;
+            UIControlSystem::Instance()->OnInput(&e);
         }
-
-#if RHI_COMPLETE
-        if (RenderManager::Instance()->GetCursor() != nullptr && mouseCursorShown)
-        {
-            ShowCursor(false);
-            mouseCursorShown = false;
-        }
-        if (RenderManager::Instance()->GetCursor() == nullptr && !mouseCursorShown)
-        {
-            ShowCursor(false);
-            mouseCursorShown = false;
-        }
-#endif // RHI_COMPLETE
-
-        HandleMouseButtonsReleased(buttsFlags);
     }
+
+    void CoreWin32Platform::OnMouseWheel(float32 wheelDelta, float32 x, float32 y)
+    {
+        UIEvent e;
+        e.physPoint = Vector2(x, y);
+        e.device = UIEvent::Device::MOUSE;
+        e.scrollDelta.y = wheelDelta;
+        e.phase = UIEvent::Phase::WHEEL;
+        e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+
+        UIControlSystem::Instance()->OnInput(&e);
+    }
+
+    void CoreWin32Platform::OnMouseButtonChange(UIEvent::Phase phase, UIEvent::MouseButton button, float32 x, float32 y)
+    {
+        UIEvent e;
+        e.physPoint = Vector2(x, y);
+        e.device = UIEvent::Device::MOUSE;
+        e.phase = phase;
+        e.mouseButton = button;
+        e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+
+        UIControlSystem::Instance()->OnInput(&e);
+    }
+
+    //  void CoreWin32Platform::OnMouseEvent(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
+    //  {
+    //      UIEvent newTouch;
+
+    //      if (HIWORD(wParam) || mouseButtonsDownMask > 0) // isPoint inside window or some clicks already captured
+    //      {
+    //          HandleMouseButtonsPressed(buttsFlags);
+    //      }
+
+    //      if(buttsFlags & RI_MOUSE_WHEEL)
+    //      {
+    //          newTouch.phase = UIEvent::Phase::WHEEL;
+
+    //          newTouch.mouseButton = UIEvent::MouseButton::None;
+    //          newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
+    //          newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
+    //          newTouch.scrollDelta.y = static_cast<int16>(buttonData) / static_cast<float32>(WHEEL_DELTA);
+    //          newTouch.phase = UIEvent::Phase::WHEEL;
+    //          newTouch.device = deviceId;
+    //          newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    //      }
+    //      else
+    //{
+    //          if(HIWORD(wParam) || mouseButtonsDownMask > 0) // HIWORD(wParam) - isPoint inside window
+    //	{
+    //              newTouch.phase = MoveTouchsToVector(deviceId, buttsFlags, wParam, lParam, newTouch);
+    //          }
+    //      }
+
+    //      if (newTouch.phase != UIEvent::Phase::ERROR)
+    //      {
+    //          UIControlSystem::Instance()->OnInput(&newTouch);
+    //      }
+
+    //      HandleMouseButtonsReleased(buttsFlags);
+    //  }
 
     void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure)
     {
@@ -633,35 +726,32 @@ namespace DAVA
         UIControlSystem::Instance()->OnInput(&newTouch);
     }
 
-    struct MouseDevice
-    {
-        uint32 which; // mouse index
-        String name; // name for debug
-    };
+    //struct MouseDevice
+    //{
+    //    uint32 which; // mouse index
+    //    String name; // name for debug
+    //};
 
-    struct TouchDevice
-    {
-        uint32 which; // surface index
-        String name; // name for debug
-    };
+    //struct TouchDevice
+    //{
+    //    uint32 which; // surface index
+    //    String name; // name for debug
+    //};
 
-    String CoreWin32Platform::GetDeviceName(HANDLE hDevice)
-    {
-        std::array<char, 1024> buffer;
-        UINT size = static_cast<UINT>(buffer.size());
-        int resultSize = GetRawInputDeviceInfoA(hDevice, RIDI_DEVICENAME, &buffer[0], &size);
-        if (resultSize > 0)
-        {
-            return String(buffer.data(), static_cast<size_t>(resultSize));
-        }
+    //String CoreWin32Platform::GetDeviceName(HANDLE hDevice)
+    //{
+    //    std::array<char, 1024> buffer;
+    //    UINT size = static_cast<UINT>(buffer.size());
+    //    int resultSize = GetRawInputDeviceInfoA(hDevice, RIDI_DEVICENAME, &buffer[0], &size);
+    //    if (resultSize > 0)
+    //    {
+    //        return String(buffer.data(), static_cast<size_t>(resultSize));
+    //    }
 
-        DVASSERT(false && "Failed to get device name");
-        return String();
-    }
+    //    DVASSERT(false && "Failed to get device name");
+    //    return String();
+    //}
 
-    LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-    {
-        CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
 #endif
@@ -669,6 +759,9 @@ namespace DAVA
 #define WHEEL_DELTA 120
 #endif
 
+    LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+    {
+        CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
         KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
 
         switch (message)
@@ -681,7 +774,12 @@ namespace DAVA
         {
             uint32 system_key_code = static_cast<uint32>(wParam);
             uint32 extended_key_info = static_cast<uint32>(lParam);
-            uint32 add_256_if_right_extended_key = ((1 << 23) & extended_key_info) * 256; // 0 or 256
+            uint32 add_256_if_right_extended_key = ((1 << 24) & extended_key_info) > 0 ? 256 : 0;
+            uint32 scan_code = (extended_key_info & 0xFF0000) >> 16;
+            if (VK_SHIFT == system_key_code && scan_code == 0x36) // is right shift key
+            {
+                add_256_if_right_extended_key = 256;
+            }
             system_key_code += add_256_if_right_extended_key;
 
             UIEvent ev;
@@ -702,7 +800,12 @@ namespace DAVA
         {
             uint32 system_key_code = static_cast<int32>(wParam);
             uint32 extended_key_info = static_cast<uint32>(lParam);
-            uint32 add_256_if_right_extended_key = ((1 << 23) & extended_key_info) * 256; // 0 or 256
+            uint32 add_256_if_right_extended_key = ((1 << 24) & extended_key_info) > 0 ? 256 : 0;
+            uint32 scan_code = (extended_key_info & 0xFF0000) >> 16;
+            if (VK_SHIFT == system_key_code && scan_code == 0x36) // is right shift key
+            {
+                add_256_if_right_extended_key = 256;
+            }
             system_key_code += add_256_if_right_extended_key;
 
             UIEvent ev;
@@ -727,7 +830,7 @@ namespace DAVA
         case WM_CHAR:
         {
             UIEvent ev;
-            ev.keyChar = static_cast<char16>(wParam);
+            ev.keyChar = static_cast<char32_t>(wParam);
             if ((HIWORD(lParam) & KF_REPEAT) == 0)
             {
                 ev.phase = UIEvent::Phase::CHAR;
@@ -744,39 +847,73 @@ namespace DAVA
 
         case WM_INPUT:
         {
-            HRAWINPUT hRawInput = reinterpret_cast<HRAWINPUT>(lParam);
-            RAWINPUT inp;
-            UINT dwSize = sizeof(inp);
-
-            GetRawInputData(hRawInput, RID_INPUT, &inp, &dwSize, sizeof(RAWINPUTHEADER));
-
-            if (inp.header.dwType == RIM_TYPEMOUSE && inp.data.mouse.usFlags == 0)
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms645590%28v=vs.85%29.aspx
+            bool isApplicationInForeground = (wParam == 0);
+            if (isApplicationInForeground)
             {
-                LONG x = inp.data.mouse.lLastX;
-                LONG y = inp.data.mouse.lLastY;
+                HRAWINPUT hRawInput = reinterpret_cast<HRAWINPUT>(lParam);
+                RAWINPUT input;
+                UINT dwSize = sizeof(input);
 
-                bool isMove = x || y;
-                bool isInside = false;
+                GetRawInputData(hRawInput, RID_INPUT, &input, &dwSize, sizeof(RAWINPUTHEADER));
 
-                if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+                if (input.header.dwType == RIM_TYPEMOUSE && input.data.mouse.usFlags == 0)
                 {
-                    SetCursorPosCenterInternal(hWnd);
-                    isInside = true;
-                }
-                else
-                {
-                    POINT p;
-                    GetCursorPos(&p);
-                    ScreenToClient(hWnd, &p);
-                    x += p.x;
-                    y += p.y;
+                    LONG x = input.data.mouse.lLastX;
+                    LONG y = input.data.mouse.lLastY;
 
-                    RECT clientRect;
-                    GetClientRect(hWnd, &clientRect);
-                    isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom);
-                }
+                    bool isMove = x || y;
+                    bool isInside = false;
 
-                core->OnMouseEvent(UIEvent::Device::MOUSE, inp.data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), inp.data.mouse.usButtonData); // only move, drag and wheel events
+                    if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+                    {
+                        SetCursorPosCenterInternal(hWnd);
+                        isInside = true;
+                    }
+                    else
+                    {
+                        POINT p;
+                        GetCursorPos(&p);
+                        ScreenToClient(hWnd, &p);
+                        x += p.x;
+                        y += p.y;
+
+                        RECT clientRect;
+                        GetClientRect(hWnd, &clientRect);
+                        isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom);
+                    }
+
+                    float32 x_pos = static_cast<float32>(x);
+                    float32 y_pos = static_cast<float32>(y);
+
+                    if (isInside)
+                    {
+                        bool isMouseWheelChanged = (input.data.mouse.usButtonFlags & RI_MOUSE_WHEEL) != 0;
+                        bool isMouseButtonsChanged = (!isMouseWheelChanged && (input.data.mouse.usButtonFlags >= RI_MOUSE_BUTTON_1_DOWN));
+
+                        if (isMove && !isMouseButtonsChanged)
+                        {
+                            core->OnMouseMove(x_pos, y_pos);
+                        }
+                        if (isMouseWheelChanged)
+                        {
+                            float32 wheelDelta = static_cast<int16>(input.data.mouse.usButtonData) / static_cast<float32>(WHEEL_DELTA);
+                            core->OnMouseWheel(wheelDelta, x_pos, y_pos);
+                        }
+                        if (isMouseButtonsChanged)
+                        {
+                            GetMouseButtonChanges(input.data.mouse.usButtonFlags, mouseButtonChanges);
+                            for (auto& change : mouseButtonChanges)
+                            {
+                                core->OnMouseButtonChange(change.beginOrEnd, change.button, x_pos, y_pos);
+                                bool isButtonDown = (change.beginOrEnd == UIEvent::Phase::BEGAN);
+                                unsigned buttonIndex = static_cast<unsigned>(change.button) - 1;
+                                core->mouseButtonState[buttonIndex] = isButtonDown;
+                            }
+                        }
+                        return 0;
+                    }
+                }
             }
             break;
         }
@@ -822,46 +959,46 @@ namespace DAVA
             CloseTouchInputHandle(h_touch_input);
             return 0;
         }
-        case WM_NCMOUSEMOVE:
-            if (!mouseCursorShown)
-            {
-                ShowCursor(true);
-                mouseCursorShown = true;
-            }
-            break;
+        //case WM_NCMOUSEMOVE:
+        //    if (!mouseCursorShown)
+        //    {
+        //        ShowCursor(true);
+        //        mouseCursorShown = true;
+        //    }
+        //    break;
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
 
         case WM_ACTIVATE:
         {
-            ApplicationCore* core = Core::Instance()->GetApplicationCore();
+            ApplicationCore* appCore = core->GetApplicationCore();
                 WORD loWord = LOWORD(wParam);
                 WORD hiWord = HIWORD(wParam);
                 if(!loWord || hiWord)
                 {
                     Logger::FrameworkDebug("[PlatformWin32] deactivate application");
-					
-                    if(core)
-					{
-						core->OnSuspend();
-					}
+
+                    if (appCore)
+                    {
+                        appCore->OnSuspend();
+                    }
 					else 
 					{
-						Core::Instance()->SetIsActive(false);
-					}
+                        core->SetIsActive(false);
+                    }
                 }
                 else
                 {
                     Logger::FrameworkDebug("[PlatformWin32] activate application");
-					if(core)
-					{
-						core->OnResume();
-					}
+                    if (appCore)
+                    {
+                        appCore->OnResume();
+                    }
 					else 
 					{
-						Core::Instance()->SetIsActive(true);
-					}
+                        core->SetIsActive(true);
+                    }
                 }
 			};
 			break;
