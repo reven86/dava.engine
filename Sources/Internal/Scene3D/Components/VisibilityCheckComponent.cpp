@@ -146,7 +146,7 @@ void VisibilityCheckComponent::BuildPointSet()
         while (canGenerate)
         {
             canGenerate = false;
-            for (int i = points.size() - 1; i >= 0; --i)
+            for (int i = static_cast<int>(points.size()) - 1; i >= 0; --i)
             {
                 if (generateAroundPoint(points.at(i)))
                 {
