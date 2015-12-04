@@ -442,8 +442,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         Vector2 _pivot = pivotPointNode->AsPoint();
         if ((format == 0) && sprite)
         {
-			
-			float32 ny=-_pivot.x/sprite->GetWidth()*2;
+            float32 ny=-_pivot.x/sprite->GetWidth()*2;
 			float32 nx=-_pivot.y/sprite->GetHeight()*2;
 			_pivot.Set(nx, ny);
 		}
