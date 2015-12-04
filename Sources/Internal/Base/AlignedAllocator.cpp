@@ -40,8 +40,8 @@ void* AllocateAlignedMemory(uint32 size, uint32 align)
 #else // assuming POSIX for now
 
     void* result = nullptr;
-    int32 result = posix_memalign(&result, align, size);
-    DVASSERT(result == 0);
+    int32 success = posix_memalign(&result, align, size);
+    DVASSERT(success == 0);
     return result;
 
 #endif
@@ -55,7 +55,7 @@ void FreeAlignedMemory(void* ptr)
 
 #else // still assuming POSIX for now
 
-    free(ptr)
+    free(ptr);
 
 #endif
 }
