@@ -157,18 +157,10 @@ void Document::RefreshAllControlProperties()
 
 void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectedNodes reallySelected, reallyDeselected;
-    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionContainer.GetNotExistedItems(selected, reallySelected);
-    selectionContainer.MergeSelection(selected, deselected);
-    if (!reallySelected.empty() || !reallyDeselected.empty())
-    {
-        systemManager.SelectionChanged.Emit(selected, deselected);
-    }
+    systemManager.SelectionChanged.Emit(selected, deselected);
 }
 
 void Document::OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    selectionContainer.MergeSelection(selected, deselected);
     SelectedNodesChanged(selected, deselected);
 }
