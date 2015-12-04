@@ -366,7 +366,7 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
         return nullptr;
     }
 
-    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
+    FilePtr file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
     DVASSERT(file);
 
     Vector<Image*> images;

@@ -72,41 +72,50 @@ struct ImageInfo
 class ImageFormatInterface
 {
 public:
+    inline explicit ImageFormatInterface(ImageFormat format, String name, Vector<String> extensions, Vector<PixelFormat> pixelFormats);
     virtual ~ImageFormatInterface() = default;
 
-    virtual ImageFormat GetImageFormat() const = 0;
-    virtual bool CanProcessFile(File* file) const = 0;
-
-    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
-
-    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
-
-    virtual ImageInfo GetImageInfo(File *infile) const = 0;
-    inline ImageInfo GetImageInfo(const FilePath &path) const;
+    inline ImageFormat GetImageFormat() const;
+    inline const char* GetFormatName() const;
+    inline const Vector<String>& GetExtensions() const;
+    inline ImageInfo GetImageInfo(const FilePath& path) const;
 
     inline bool IsFormatSupported(PixelFormat format) const;
     inline bool IsFileExtensionSupported(const String& extension) const;
 
-    inline const Vector<String>& Extensions() const;
-    inline const char* Name() const;
-    
+    virtual bool CanProcessFile(const FilePtr& file) const = 0;
+
+    virtual eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 fromMipmap) const = 0;
+
+    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
+
+    virtual ImageInfo GetImageInfo(const FilePtr& infile) const = 0;
+
 protected:
-    Vector<PixelFormat> supportedFormats;
-    Vector<String> supportedExtensions;
+    ImageFormat imageFormat;
     String name;
+    Vector<String> supportedExtensions;
+    Vector<PixelFormat> supportedFormats;
 };
 
-ImageInfo ImageFormatInterface::GetImageInfo(const FilePath &path) const
+ImageFormatInterface::ImageFormatInterface(ImageFormat _format, String _name, Vector<String> _extensions, Vector<PixelFormat> _pixelFormats)
+    : imageFormat(_format)
+    , name(_name)
+    , supportedExtensions(std::move(_extensions))
+    , supportedFormats(std::move(_pixelFormats))
 {
-    File *infile = File::Create(path, File::OPEN | File::READ);
-    if (nullptr == infile)
-    {
-        return ImageInfo();
-    }
-    ImageInfo info = GetImageInfo(infile);
-    infile->Release();
-    return info;
+}
+
+ImageFormat ImageFormatInterface::GetImageFormat() const
+{
+    return imageFormat;
+}
+
+ImageInfo ImageFormatInterface::GetImageInfo(const FilePath& path) const
+{
+    ScopedPtr<File> infile(File::Create(path, File::OPEN | File::READ));
+    return (infile ? GetImageInfo(infile) : ImageInfo());
 }
 
 inline bool ImageFormatInterface::IsFormatSupported(PixelFormat format) const
@@ -128,12 +137,12 @@ inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extensi
     return false;
 }
 
-inline const Vector<String>& ImageFormatInterface::Extensions() const
+inline const Vector<String>& ImageFormatInterface::GetExtensions() const
 {
     return supportedExtensions;
 }
 
-inline const char* ImageFormatInterface::Name() const
+inline const char* ImageFormatInterface::GetFormatName() const
 {
     return name.c_str();
 }

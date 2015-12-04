@@ -38,20 +38,21 @@
 
 namespace DAVA
 {
-
 LibWebPHelper::LibWebPHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_WEBP,
+      "WEBP",
+      { ".webp" },
+      { FORMAT_RGB888, FORMAT_RGBA8888 })
 {
-    name.assign("WEBP");
-    supportedExtensions.push_back(".webp");
-    supportedFormats = { {FORMAT_RGB888, FORMAT_RGBA8888} };
 }
 
-bool LibWebPHelper::CanProcessFile(File* infile) const
+bool LibWebPHelper::CanProcessFile(const FilePtr& infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
+eErrorCode LibWebPHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
 {
     WebPDecoderConfig config;
     WebPBitstreamFeatures* bitstream = &config.input;
@@ -190,7 +191,7 @@ eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vec
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
+DAVA::ImageInfo LibWebPHelper::GetImageInfo(const FilePtr& infile) const
 {
     WebPDecoderConfig config;
     WebPInitDecoderConfig(&config);

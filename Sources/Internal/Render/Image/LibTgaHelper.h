@@ -44,16 +44,14 @@ public:
     
     LibTgaHelper();
 
-    ImageFormat GetImageFormat() const override;
+    bool CanProcessFile(const FilePtr& infile) const override;
 
-    bool CanProcessFile(File* file) const override;
-
-    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
+    eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
 
     eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-    
-    ImageInfo GetImageInfo(File *infile) const override;
+
+    ImageInfo GetImageInfo(const FilePtr& infile) const override;
 
     struct TgaInfo
     {
@@ -116,11 +114,6 @@ private:
         bool isAtEnd;
     };
 };
-
-inline ImageFormat LibTgaHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_TGA;
-}
 
 };
 

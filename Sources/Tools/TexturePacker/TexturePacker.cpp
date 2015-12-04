@@ -740,9 +740,9 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
                     else
                     {
                         AddError(Format("Compression format '%s' can't be saved to %s image for GPU '%s'",
-                            GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
-                            wrapper->Name(),
-                            GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
+                                        GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
+                                        wrapper->GetFormatName(),
+                                        GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
 
                         keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
                     }
@@ -770,8 +770,8 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
                     else
                     {
                         AddError(Format("Format '%s' is not supported for %s images.",
-                            GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
-                            wrapper->Name()));
+                                        GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
+                                        wrapper->GetFormatName()));
                     }
                 }
             }
@@ -795,7 +795,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
             if (keys.imageFormat == IMAGE_FORMAT_PVR || keys.imageFormat == IMAGE_FORMAT_DDS)
             {
                 AddError(Format("Compression format is not specified for '%s' token",
-                    ImageSystem::Instance()->GetImageFormatInterface(keys.imageFormat)->Name()));
+                                ImageSystem::Instance()->GetImageFormatInterface(keys.imageFormat)->GetFormatName()));
                 keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
             }
         }

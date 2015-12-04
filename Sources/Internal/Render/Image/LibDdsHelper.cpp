@@ -27,46 +27,237 @@
 =====================================================================================*/
 
 
-#include "Render/Image/Image.h"
-#include "Render/Image/ImageSystem.h"
-#include "Render/Image/ImageConvert.h"
 #include "Render/Image/LibDdsHelper.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageConvert.h"
+#include "Render/Image/DDS/NvttHelper.h"
+#include "Render/Image/DDS/QualcommHelper.h"
 
 #include "Render/Texture.h"
 #include "Render/PixelFormatDescriptor.h"
-#include "Render/Renderer.h"
-#include <libdxt/nvtt.h>
-#include <libdxt/nvtt_extra.h>
 
-#include "FileSystem/File.h"
-#include "FileSystem/FileSystem.h"
-
-#include "Utils/Utils.h"
 #include "Utils/CRC32.h"
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-
-//disabling of warning 
-    #pragma warning(push)
-    #pragma warning(disable : 4091)
-    #include <libatc/TextureConverter.h>
-    #pragma warning(pop)
-
-#else
-    #include <libatc/TextureConverter.h>
-#endif
-
-#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32)((uint8)(ch0)) | ((uint32)((uint8)(ch1)) << 8) | ((uint32)((uint8)(ch2)) << 16) | ((uint32)((uint8)(ch3)) << 24))
-#define DDS_MAGIC_NUMBER 0x20534444 // equivalent of 'D''D''S'' '
-#define METADATA_CRC_TAG 0x5f435243 // equivalent of 'C''R''C''_'
-
-using namespace nvtt;
 
 namespace DAVA
 {
-namespace DDSFile
+
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32)((uint8)(ch0)) | ((uint32)((uint8)(ch1)) << 8) | ((uint32)((uint8)(ch2)) << 16) | ((uint32)((uint8)(ch3)) << 24))
+
+const uint32 FOURCC_CRC = MAKEFOURCC('C', 'R', 'C', '_');
+
+namespace dds
 {
-struct DDSPixelFormat
+const uint32 FOURCC_DDS = MAKEFOURCC('D', 'D', 'S', ' ');
+
+const uint32 FOURCC_DXT1 = MAKEFOURCC('D', 'X', 'T', '1');
+const uint32 FOURCC_DXT2 = MAKEFOURCC('D', 'X', 'T', '2');
+const uint32 FOURCC_DXT3 = MAKEFOURCC('D', 'X', 'T', '3');
+const uint32 FOURCC_DXT4 = MAKEFOURCC('D', 'X', 'T', '4');
+const uint32 FOURCC_DXT5 = MAKEFOURCC('D', 'X', 'T', '5');
+const uint32 FOURCC_RXGB = MAKEFOURCC('R', 'X', 'G', 'B');
+const uint32 FOURCC_ATI1 = MAKEFOURCC('A', 'T', 'I', '1');
+const uint32 FOURCC_ATI2 = MAKEFOURCC('A', 'T', 'I', '2');
+const uint32 FOURCC_BC4U = MAKEFOURCC('B', 'C', '4', 'U');
+const uint32 FOURCC_BC4S = MAKEFOURCC('B', 'C', '4', 'S');
+const uint32 FOURCC_BC5S = MAKEFOURCC('B', 'C', '5', 'S');
+
+const uint32 FOURCC_RGBG = MAKEFOURCC('R', 'G', 'B', 'G');
+const uint32 FOURCC_GRGB = MAKEFOURCC('G', 'R', 'G', 'B');
+
+const uint32 FOURCC_ATC_RGB = MAKEFOURCC('A', 'T', 'C', ' ');
+const uint32 FOURCC_ATC_RGBA_EXPLICIT_ALPHA = MAKEFOURCC('A', 'T', 'C', 'I');
+const uint32 FOURCC_ATC_RGBA_INTERPOLATED_ALPHA = MAKEFOURCC('A', 'T', 'C', 'A');
+
+const uint32 FOURCC_A2XY = MAKEFOURCC('A', '2', 'X', 'Y');
+
+const uint32 FOURCC_UYVY = MAKEFOURCC('U', 'Y', 'V', 'Y');
+const uint32 FOURCC_YUY2 = MAKEFOURCC('Y', 'U', 'Y', '2');
+
+const uint32 FOURCC_DX10 = MAKEFOURCC('D', 'X', '1', '0');
+
+const uint32 DDSCAPS_COMPLEX = 0x00000008U;
+const uint32 DDSCAPS_TEXTURE = 0x00001000U;
+const uint32 DDSCAPS_MIPMAP = 0x00400000U;
+const uint32 DDSCAPS2_VOLUME = 0x00200000U;
+const uint32 DDSCAPS2_CUBEMAP = 0x00000200U;
+
+const uint32 DDSCAPS2_CUBEMAP_POSITIVEX = 0x00000400U;
+const uint32 DDSCAPS2_CUBEMAP_NEGATIVEX = 0x00000800U;
+const uint32 DDSCAPS2_CUBEMAP_POSITIVEY = 0x00001000U;
+const uint32 DDSCAPS2_CUBEMAP_NEGATIVEY = 0x00002000U;
+const uint32 DDSCAPS2_CUBEMAP_POSITIVEZ = 0x00004000U;
+const uint32 DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x00008000U;
+const uint32 DDSCAPS2_CUBEMAP_ALL_FACES = 0x0000FC00U;
+
+enum D3D_FORMAT : uint32
+{
+    // 32 bit RGB formats.
+    D3DFMT_R8G8B8 = 20,
+    D3DFMT_A8R8G8B8 = 21,
+    D3DFMT_X8R8G8B8 = 22,
+    D3DFMT_R5G6B5 = 23,
+    D3DFMT_X1R5G5B5 = 24,
+    D3DFMT_A1R5G5B5 = 25,
+    D3DFMT_A4R4G4B4 = 26,
+    D3DFMT_R3G3B2 = 27,
+    D3DFMT_A8 = 28,
+    D3DFMT_A8R3G3B2 = 29,
+    D3DFMT_X4R4G4B4 = 30,
+    D3DFMT_A2B10G10R10 = 31,
+    D3DFMT_A8B8G8R8 = 32,
+    D3DFMT_X8B8G8R8 = 33,
+    D3DFMT_G16R16 = 34,
+    D3DFMT_A2R10G10B10 = 35,
+
+    D3DFMT_A16B16G16R16 = 36,
+
+    // Palette formats.
+    D3DFMT_A8P8 = 40,
+    D3DFMT_P8 = 41,
+
+    // Luminance formats.
+    D3DFMT_L8 = 50,
+    D3DFMT_A8L8 = 51,
+    D3DFMT_A4L4 = 52,
+    D3DFMT_L16 = 81,
+
+    // Floating point formats
+    D3DFMT_R16F = 111,
+    D3DFMT_G16R16F = 112,
+    D3DFMT_A16B16G16R16F = 113,
+    D3DFMT_R32F = 114,
+    D3DFMT_G32R32F = 115,
+    D3DFMT_A32B32G32R32F = 116,
+};
+
+enum DXGI_FORMAT : uint32
+{
+    DXGI_FORMAT_UNKNOWN = 0,
+
+    DXGI_FORMAT_R32G32B32A32_TYPELESS = 1,
+    DXGI_FORMAT_R32G32B32A32_FLOAT = 2,
+    DXGI_FORMAT_R32G32B32A32_UINT = 3,
+    DXGI_FORMAT_R32G32B32A32_SINT = 4,
+
+    DXGI_FORMAT_R32G32B32_TYPELESS = 5,
+    DXGI_FORMAT_R32G32B32_FLOAT = 6,
+    DXGI_FORMAT_R32G32B32_UINT = 7,
+    DXGI_FORMAT_R32G32B32_SINT = 8,
+
+    DXGI_FORMAT_R16G16B16A16_TYPELESS = 9,
+    DXGI_FORMAT_R16G16B16A16_FLOAT = 10,
+    DXGI_FORMAT_R16G16B16A16_UNORM = 11,
+    DXGI_FORMAT_R16G16B16A16_UINT = 12,
+    DXGI_FORMAT_R16G16B16A16_SNORM = 13,
+    DXGI_FORMAT_R16G16B16A16_SINT = 14,
+
+    DXGI_FORMAT_R32G32_TYPELESS = 15,
+    DXGI_FORMAT_R32G32_FLOAT = 16,
+    DXGI_FORMAT_R32G32_UINT = 17,
+    DXGI_FORMAT_R32G32_SINT = 18,
+
+    DXGI_FORMAT_R32G8X24_TYPELESS = 19,
+    DXGI_FORMAT_D32_FLOAT_S8X24_UINT = 20,
+    DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS = 21,
+    DXGI_FORMAT_X32_TYPELESS_G8X24_UINT = 22,
+
+    DXGI_FORMAT_R10G10B10A2_TYPELESS = 23,
+    DXGI_FORMAT_R10G10B10A2_UNORM = 24,
+    DXGI_FORMAT_R10G10B10A2_UINT = 25,
+
+    DXGI_FORMAT_R11G11B10_FLOAT = 26,
+
+    DXGI_FORMAT_R8G8B8A8_TYPELESS = 27,
+    DXGI_FORMAT_R8G8B8A8_UNORM = 28,
+    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29,
+    DXGI_FORMAT_R8G8B8A8_UINT = 30,
+    DXGI_FORMAT_R8G8B8A8_SNORM = 31,
+    DXGI_FORMAT_R8G8B8A8_SINT = 32,
+
+    DXGI_FORMAT_R16G16_TYPELESS = 33,
+    DXGI_FORMAT_R16G16_FLOAT = 34,
+    DXGI_FORMAT_R16G16_UNORM = 35,
+    DXGI_FORMAT_R16G16_UINT = 36,
+    DXGI_FORMAT_R16G16_SNORM = 37,
+    DXGI_FORMAT_R16G16_SINT = 38,
+
+    DXGI_FORMAT_R32_TYPELESS = 39,
+    DXGI_FORMAT_D32_FLOAT = 40,
+    DXGI_FORMAT_R32_FLOAT = 41,
+    DXGI_FORMAT_R32_UINT = 42,
+    DXGI_FORMAT_R32_SINT = 43,
+
+    DXGI_FORMAT_R24G8_TYPELESS = 44,
+    DXGI_FORMAT_D24_UNORM_S8_UINT = 45,
+    DXGI_FORMAT_R24_UNORM_X8_TYPELESS = 46,
+    DXGI_FORMAT_X24_TYPELESS_G8_UINT = 47,
+
+    DXGI_FORMAT_R8G8_TYPELESS = 48,
+    DXGI_FORMAT_R8G8_UNORM = 49,
+    DXGI_FORMAT_R8G8_UINT = 50,
+    DXGI_FORMAT_R8G8_SNORM = 51,
+    DXGI_FORMAT_R8G8_SINT = 52,
+
+    DXGI_FORMAT_R16_TYPELESS = 53,
+    DXGI_FORMAT_R16_FLOAT = 54,
+    DXGI_FORMAT_D16_UNORM = 55,
+    DXGI_FORMAT_R16_UNORM = 56,
+    DXGI_FORMAT_R16_UINT = 57,
+    DXGI_FORMAT_R16_SNORM = 58,
+    DXGI_FORMAT_R16_SINT = 59,
+
+    DXGI_FORMAT_R8_TYPELESS = 60,
+    DXGI_FORMAT_R8_UNORM = 61,
+    DXGI_FORMAT_R8_UINT = 62,
+    DXGI_FORMAT_R8_SNORM = 63,
+    DXGI_FORMAT_R8_SINT = 64,
+    DXGI_FORMAT_A8_UNORM = 65,
+
+    DXGI_FORMAT_R1_UNORM = 66,
+
+    DXGI_FORMAT_R9G9B9E5_SHAREDEXP = 67,
+
+    DXGI_FORMAT_R8G8_B8G8_UNORM = 68,
+    DXGI_FORMAT_G8R8_G8B8_UNORM = 69,
+
+    DXGI_FORMAT_BC1_TYPELESS = 70,
+    DXGI_FORMAT_BC1_UNORM = 71,
+    DXGI_FORMAT_BC1_UNORM_SRGB = 72,
+
+    DXGI_FORMAT_BC2_TYPELESS = 73,
+    DXGI_FORMAT_BC2_UNORM = 74,
+    DXGI_FORMAT_BC2_UNORM_SRGB = 75,
+
+    DXGI_FORMAT_BC3_TYPELESS = 76,
+    DXGI_FORMAT_BC3_UNORM = 77,
+    DXGI_FORMAT_BC3_UNORM_SRGB = 78,
+
+    DXGI_FORMAT_BC4_TYPELESS = 79,
+    DXGI_FORMAT_BC4_UNORM = 80,
+    DXGI_FORMAT_BC4_SNORM = 81,
+
+    DXGI_FORMAT_BC5_TYPELESS = 82,
+    DXGI_FORMAT_BC5_UNORM = 83,
+    DXGI_FORMAT_BC5_SNORM = 84,
+
+    DXGI_FORMAT_B5G6R5_UNORM = 85,
+    DXGI_FORMAT_B5G5R5A1_UNORM = 86,
+    DXGI_FORMAT_B8G8R8A8_UNORM = 87,
+    DXGI_FORMAT_B8G8R8X8_UNORM = 88
+};
+
+enum DDS_PIXELFORMAT_FLAGS : uint32
+{
+    DDPF_ALPHAPIXELS = 0x1,
+    DDPF_ALPHA = 0x2,
+    DDPF_FOURCC = 0x4,
+    DDPF_RGB = 0x40,
+    DDPF_YUV = 0x200,
+    DDPF_LUMINANCE = 0x20000,
+    DDPF_NORMAL = 0x80000000 // Custom nv flag
+};
+
+struct DDS_PIXELFORMAT
 {
     uint32 size = 0;
     uint32 flags = 0;
@@ -77,8 +268,9 @@ struct DDSPixelFormat
     uint32 BBitMask = 0;
     uint32 ABitMask = 0;
 };
+static_assert(sizeof(DDS_PIXELFORMAT) == 32, "Invalid DDS Pixelformat size");
 
-struct MetaData //uint32 reserved1[11]
+struct DDS_RESERVED //uint32 reserved1[11]
 {
     uint32 reserved0 = 0;
     uint32 reserved1 = 0;
@@ -92,8 +284,9 @@ struct MetaData //uint32 reserved1[11]
     uint32 reserved9 = 0;
     uint32 reserved10 = 0;
 };
+static_assert(sizeof(DDS_RESERVED) == 44, "Invalid reserved[11] size");
 
-struct Header
+struct DDS_HEADER
 {
     uint32 size = 0;
     uint32 flags = 0;
@@ -102,679 +295,692 @@ struct Header
     uint32 pitchOrLinearSize = 0;
     uint32 depth = 0;
     uint32 mipMapCount = 0;
-    MetaData metadata; //uint32 reserved1[11]
-    DDSPixelFormat format;
+    DDS_RESERVED reserved;
+    DDS_PIXELFORMAT format;
     uint32 caps = 0;
     uint32 caps2 = 0;
     uint32 caps3 = 0;
     uint32 caps4 = 0;
     uint32 reserved2 = 0;
 };
+static_assert(sizeof(DDS_HEADER) == 124, "Invalid DDS Header size");
 
-struct FileHeader
+struct DDS_HEADER_DXT10
 {
-    uint32 magicNumber = 0;
-    Header formatHeader;
-
-    bool IsValid() const
-    {
-        return magicNumber == DDS_MAGIC_NUMBER;
-    }
+    uint32 dxgiFormat = 0;
+    uint32 resourceDimension = 0;
+    uint32 miscFlag = 0;
+    uint32 arraySize = 0;
+    uint32 miscFlags2 = 0;
 };
-
-FileHeader ReadHeader(File* inFile)
-{
-    FileHeader header;
-    inFile->Seek(0, File::SEEK_FROM_START);
-    uint32 read = inFile->Read(&header);
-    DVVERIFY(read == sizeof(header));
-
-    return header;
-}
+static_assert(sizeof(DDS_HEADER_DXT10) == 20, "Invalid DDS DXT10 Header size");
 }
 
-class QualcommHelper
+class DDSHandler;
+using DDSHandlerPtr = std::unique_ptr<DDSHandler>;
+
+class DDSHandler
 {
 public:
-    static const int32 Q_FORMAT_COUNT = 9;
+    static DDSHandlerPtr CreateForFile(const FilePtr& file);
 
-    struct PairQualcommPixelGLFormat
-    {
-        int32 qFormat;
-        PixelFormat davaFormat;
-        PairQualcommPixelGLFormat(int32 _qFormat, PixelFormat _davaFormat)
-        {
-            qFormat = _qFormat;
-            davaFormat = _davaFormat;
-        }
-        PairQualcommPixelGLFormat() = delete;
-    };
-
-    static const Array<PairQualcommPixelGLFormat, Q_FORMAT_COUNT> formatPair;
-
-    int32 static GetQualcommFormat(PixelFormat format);
-    PixelFormat static GetDavaFormat(int32 qFormat);
-};
-
-const Array<QualcommHelper::PairQualcommPixelGLFormat, QualcommHelper::Q_FORMAT_COUNT> QualcommHelper::formatPair =
-{ {
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGB, FORMAT_ATC_RGB),
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA, FORMAT_ATC_RGBA_EXPLICIT_ALPHA),
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, FORMAT_ATC_RGBA_INTERPOLATED_ALPHA),
-
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGBA_8UI, FORMAT_RGBA8888),
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGB_8UI, FORMAT_RGB888),
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGB5_A1UI, FORMAT_RGBA5551),
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGBA_4444, FORMAT_RGBA4444),
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGB_565, FORMAT_RGB565),
-QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ALPHA_8, FORMAT_A8),
-} };
-
-int32 QualcommHelper::GetQualcommFormat(PixelFormat format)
-{
-    for (auto& pair : formatPair)
-    {
-        if (pair.davaFormat == format)
-        {
-            return pair.qFormat;
-        }
-    }
-
-    Logger::Error("Wrong pixel format (%d).", format);
-    return -1;
-}
-
-PixelFormat QualcommHelper::GetDavaFormat(int32 format)
-{
-    for (auto& pair : formatPair)
-    {
-        if (pair.qFormat == format)
-        {
-            return pair.davaFormat;
-        }
-    }
-
-    Logger::Error("Wrong qualcomm format (%d).", format);
-    return FORMAT_INVALID;
-}
-
-class NvttHelper
-{
-public:
-    struct DDSInfo
-    {
-        uint32 width;
-        uint32 height;
-        uint32 dataSize;
-        uint32 mipmapsCount;
-        uint32 headerSize;
-        uint32 faceCount;
-        uint32 faceFlags;
-
-        DDSInfo()
-        {
-            width = 0;
-            height = 0;
-            dataSize = 0;
-            mipmapsCount = 0;
-            headerSize = 0;
-            faceCount = 0;
-            faceFlags = 0;
-        }
-    };
-
-    struct PairNvttPixelGLFormat
-    {
-        static const int32 WRONG_GL_VALUE = -1;
-        nvtt::Format nvttFormat;
-        PixelFormat davaFormat;
-        //int32		 glFormat;
-
-        PairNvttPixelGLFormat(nvtt::Format _nvttFormat, PixelFormat _davaFormat, uint32 _glFormat)
-        {
-            nvttFormat = _nvttFormat;
-            davaFormat = _davaFormat;
-            //glFormat   = _glFormat;
-        }
-    };
-
-    const static PairNvttPixelGLFormat formatNamesMap[];
-
-    static bool InitDecompressor(nvtt::Decompressor& dec, const FilePath& fileName);
-    static bool InitDecompressor(nvtt::Decompressor& dec, File* file);
-    static bool InitDecompressor(nvtt::Decompressor& dec, const uint8* mem, uint32 size);
-
-    static bool ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, int32 baseMipMap, bool forceSoftwareConvertation);
-    static PixelFormat GetPixelFormat(nvtt::Decompressor& dec);
-    static PixelFormat GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat);
-    static nvtt::Format GetNVTTFormatByPixelFormat(PixelFormat pixelFormat);
-    static bool IsAtcFormat(nvtt::Format format);
-    static bool GetInfo(nvtt::Decompressor& dec, DDSInfo& info);
-    static uint32 GetDataSize(nvtt::Decompressor& dec);
-    static uint32 GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex);
-    static void SwapBRChannels(uint8* data, uint32 size);
+    ImageInfo GetImageInfo();
+    bool GetTextures(Vector<Image*>& images, uint32 firstMip);
+    bool GetCRC(uint32& crc);
+    bool WriteCRC();
+    bool WritePixelFormat(PixelFormat format);
 
 private:
-    static bool DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, PixelFormat format, Vector<Image*>& imageSet, int32 baseMipMap);
-    static bool DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vector<Image*>& imageSet, int32 baseMipMap);
+    explicit DDSHandler(const FilePtr& file);
+
+    bool WriteMagicWord();
+    bool WriteMainHeader();
+    bool ReadMagicWord();
+    bool ReadHeaders();
+    void FetchPixelFormats();
+    void FetchFacesInfo();
+    bool IsSupportedFormat();
+
+private:
+    ScopedPtr<File> file;
+    dds::DDS_HEADER mainHeader;
+    std::unique_ptr<dds::DDS_HEADER_DXT10> extHeader;
+    bool needConvertFormat = false;
+    dds::D3D_FORMAT d3dPixelFormat;
+    PixelFormat davaPixelFormat = FORMAT_INVALID;
+    uint32 faceCount = 0;
+    Array<rhi::TextureFace, Texture::CUBE_FACE_COUNT> faces;
 };
 
-const NvttHelper::PairNvttPixelGLFormat NvttHelper::formatNamesMap[] =
+DDSHandlerPtr DDSHandler::CreateForFile(const FilePtr& file)
 {
-//FORMAT_NAMES_MAP_COUNT should be increased in case of addition to set
-#if defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT1, FORMAT_DXT1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT),
-#else
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT1, FORMAT_DXT1, PairNvttPixelGLFormat::WRONG_GL_VALUE),
-#endif //GL_COMPRESSED_RGB_S3TC_DXT1_EXT
-    
-#if defined(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT1a, FORMAT_DXT1A, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT),
-#else
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT1a, FORMAT_DXT1A, PairNvttPixelGLFormat::WRONG_GL_VALUE),
-#endif //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+    DVASSERT(file);
 
-#if defined(GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT3, FORMAT_DXT3, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT),
-#else
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT3, FORMAT_DXT3, PairNvttPixelGLFormat::WRONG_GL_VALUE),
-#endif //GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+    DDSHandlerPtr ddsFile(new DDSHandler(file));
+    uint32 pos = file->GetPos();
 
-#if defined(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT5, FORMAT_DXT5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT),
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT5n, FORMAT_DXT5NM, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT),
-#else
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT5, FORMAT_DXT5, PairNvttPixelGLFormat::WRONG_GL_VALUE),
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_DXT5n, FORMAT_DXT5NM, PairNvttPixelGLFormat::WRONG_GL_VALUE),
-#endif //GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_ATC_RGB, FORMAT_ATC_RGB, 0),
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_ATC_RGBA_EXPLICIT_ALPHA, FORMAT_ATC_RGBA_EXPLICIT_ALPHA, 0),
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_ATC_RGBA_INTERPOLATED_ALPHA, FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, 0),
-
-  NvttHelper::PairNvttPixelGLFormat(nvtt::Format_RGBA, FORMAT_RGBA8888, PairNvttPixelGLFormat::WRONG_GL_VALUE),
-};
-
-bool NvttHelper::InitDecompressor(nvtt::Decompressor& dec, const FilePath& fileName)
-{
-    if (fileName.IsEmpty())
+    if (ddsFile->ReadMagicWord() && ddsFile->ReadHeaders())
     {
-        Logger::Error("[NvttHelper::InitDecompressor] try init with empty name");
-        return false;
-    }
-
-    if (!dec.initWithDDSFile(fileName.GetAbsolutePathname().c_str()))
-    {
-        Logger::Error("[NvttHelper::InitDecompressor] Wrong dds file (%s).", fileName.GetAbsolutePathname().c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool NvttHelper::InitDecompressor(nvtt::Decompressor& dec, File* file)
-{
-    DVASSERT(file != nullptr);
-
-    file->Seek(0, File::SEEK_FROM_START);
-    uint32 fileSize = file->GetSize();
-    uint8* fileBuffer = new uint8[fileSize];
-    file->Read(fileBuffer, fileSize);
-    bool initied = dec.initWithDDSFile(fileBuffer, fileSize);
-    file->Seek(0, File::SEEK_FROM_START);
-    SafeDeleteArray(fileBuffer);
-    return initied;
-}
-
-bool NvttHelper::InitDecompressor(nvtt::Decompressor& dec, const uint8* mem, uint32 size)
-{
-    if (NULL == mem || size == 0)
-    {
-        Logger::Error("[NvttHelper::InitDecompressor] Wrong buffer params.");
-        return false;
-    }
-
-    if (!dec.initWithDDSFile(mem, size))
-    {
-        Logger::Error("[NvttHelper::InitDecompressor] Wrong buffer.");
-        return false;
-    }
-
-    return true;
-}
-
-bool NvttHelper::ReadDxtFile(nvtt::Decompressor& dec, Vector<Image*>& imageSet, int32 baseMipMap, bool forceSoftwareConvertation)
-{
-    DDSInfo info;
-    if (!GetInfo(dec, info))
-    {
-        Logger::Error("[NvttHelper::ReadDxtFile] Error during header reading.");
-        return false;
-    }
-
-    if (0 == info.width || 0 == info.height || 0 == info.mipmapsCount)
-    {
-        Logger::Error("[NvttHelper::ReadDxtFile] Wrong mipmapsCount/width/height value in dds header.");
-        return false;
-    }
-
-    baseMipMap = Min(baseMipMap, (int32)(info.mipmapsCount - 1));
-
-    nvtt::Format format;
-    if (!dec.getCompressionFormat(format))
-    {
-        Logger::Error("[NvttHelper::ReadDxtFile] Getting format information cause error.");
-        return false;
-    }
-
-    //check hardware support, in case of rgb use nvtt to reorder bytes
-    bool isHardwareSupport = PixelFormatDescriptor::GetPixelFormatDescriptor(GetPixelFormatByNVTTFormat(format)).isHardwareSupported;
-
-    if (!forceSoftwareConvertation && isHardwareSupport)
-    {
-        PixelFormat pixFormat = GetPixelFormat(dec);
-        if (pixFormat == FORMAT_INVALID)
-        {
-            return false;
-        }
-
-        uint8* compressedImges = new uint8[info.dataSize];
-
-        if (!dec.getRawData(compressedImges, info.dataSize))
-        {
-            Logger::Error("[NvttHelper::ReadDxtFile] Reading compressed data cause error in nvtt lib.");
-
-            SafeDeleteArray(compressedImges);
-            return false;
-        }
-
-        if (format == Format_RGB)
-        {
-            SwapBRChannels(compressedImges, info.dataSize);
-        }
-
-        bool retValue = true;
-
-        uint32 offset = 0;
-        for (uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
-        {
-            uint32 faceWidth = info.width;
-            uint32 faceHeight = info.height;
-
-            for (uint32 i = 0; i < info.mipmapsCount; ++i)
-            {
-                uint32 mipSize = 0;
-                if (!dec.getMipmapSize(i, mipSize))
-                {
-                    retValue = false;
-                    break;
-                }
-
-                if ((int32)i >= baseMipMap)
-                { // load only actual image data
-                    Image* innerImage = Image::Create(faceWidth, faceHeight, pixFormat);
-                    innerImage->mipmapLevel = i - baseMipMap;
-
-                    if (info.faceCount > 1)
-                    {
-                        innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
-                    }
-
-                    Memcpy(innerImage->data, compressedImges + offset, mipSize);
-                    imageSet.push_back(innerImage);
-                }
-
-                offset += mipSize;
-                faceWidth = Max((uint32)1, faceWidth / 2);
-                faceHeight = Max((uint32)1, faceHeight / 2);
-            }
-        }
-
-        SafeDeleteArray(compressedImges);
-        return retValue;
+        return ddsFile;
     }
     else
     {
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
-        Logger::Error("[NvttHelper::ReadDxtFile] Android should have hardware decoding of DDS. iPhone should have no support of DDS.");
-        return false;
-#else //#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+        file->Seek(pos, File::SEEK_FROM_START);
+        return nullptr;
+    }
+}
 
-        if (IsAtcFormat(format))
+DDSHandler::DDSHandler(const FilePtr& _ddsFile)
+    : file(_ddsFile)
+{
+}
+
+bool DDSHandler::IsSupportedFormat()
+{
+    return (davaPixelFormat != FORMAT_INVALID);
+}
+
+ImageInfo DDSHandler::GetImageInfo()
+{
+    ImageInfo info;
+
+    FetchPixelFormats();
+
+    if (IsSupportedFormat())
+    {
+        info.width = mainHeader.width;
+        info.height = mainHeader.height;
+
+        info.format = davaPixelFormat;
+
+        uint32 headersSize = sizeof(dds::FOURCC_DDS) + sizeof(dds::DDS_HEADER);
+        if (extHeader)
         {
-            return DecompressAtc(dec, info, GetPixelFormatByNVTTFormat(format), imageSet, baseMipMap);
+            headersSize += sizeof(dds::DDS_HEADER_DXT10);
         }
-        else
-        {
-            return DecompressDxt(dec, info, imageSet, baseMipMap);
-        }
-        
-#endif //#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+
+        info.dataSize = file->GetSize() - headersSize;
+        info.mipmapsCount = (0 == mainHeader.mipMapCount) ? 1 : mainHeader.mipMapCount;
     }
 
+    return info;
+}
+
+bool DDSHandler::ReadMagicWord()
+{
+    uint32 dataRead = 0;
+    if (sizeof(dds::FOURCC_DDS) == file->Read(&dataRead))
+    {
+        return dds::FOURCC_DDS == dataRead;
+    }
     return false;
 }
 
-PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor& dec)
+bool DDSHandler::WriteMagicWord()
 {
-    nvtt::Format innerFormat;
-
-    if (!dec.getCompressionFormat(innerFormat))
+    if (sizeof(dds::FOURCC_DDS) == file->Write(&dds::FOURCC_DDS, sizeof(dds::FOURCC_DDS)))
     {
-        Logger::Error("[NvttHelper::GetPixelFormat] Wrong dds file compression format.");
-        return FORMAT_INVALID;
+        return true;
     }
-
-    PixelFormat format = NvttHelper::GetPixelFormatByNVTTFormat(innerFormat);
-    if (format == FORMAT_INVALID)
+    else
     {
-        Logger::Error("[NvttHelper::GetPixelFormat] Can't map nvtt format to pixel format");
+        return false;
     }
-
-    return format;
 }
 
-PixelFormat NvttHelper::GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat)
+bool DDSHandler::WriteMainHeader()
 {
-    PixelFormat retValue = FORMAT_INVALID;
-    for (uint32 i = 0; i < Format_COUNT; ++i)
+    if (sizeof(mainHeader) == file->Write(&mainHeader, sizeof(mainHeader)))
     {
-        if (formatNamesMap[i].nvttFormat == nvttFormat)
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool DDSHandler::ReadHeaders()
+{
+    DVVERIFY(!extHeader);
+
+    if (sizeof(dds::DDS_HEADER) != file->Read(&mainHeader))
+    {
+        return false;
+    }
+
+    if ((mainHeader.format.flags & dds::DDPF_FOURCC) && (mainHeader.format.fourCC == dds::FOURCC_DX10))
+    {
+        extHeader.reset(new dds::DDS_HEADER_DXT10);
+        if (sizeof(dds::DDS_HEADER_DXT10) != file->Read(&extHeader))
         {
-            retValue = formatNamesMap[i].davaFormat;
-            break;
+            return false;
         }
     }
-    return retValue;
-}
 
-nvtt::Format NvttHelper::GetNVTTFormatByPixelFormat(PixelFormat pixelFormat)
-{
-    //bc5 is unsupported, used to determinate fail in search
-    for (uint32 i = 0; i < Format_COUNT; ++i)
-    {
-        if (formatNamesMap[i].davaFormat == pixelFormat)
-        {
-            return formatNamesMap[i].nvttFormat;
-        }
-    }
-
-    return Format_BC5;
-}
-
-bool NvttHelper::IsAtcFormat(nvtt::Format format)
-{
-    return (format == Format_ATC_RGB || format == Format_ATC_RGBA_EXPLICIT_ALPHA || format == Format_ATC_RGBA_INTERPOLATED_ALPHA);
-}
-
-bool NvttHelper::GetInfo(nvtt::Decompressor& dec, DDSInfo& info)
-{
-    bool retVal = dec.getInfo(info.mipmapsCount, info.width, info.height, info.dataSize, info.headerSize, info.faceCount, info.faceFlags);
-    if (!retVal)
-    {
-        Logger::Error("[NvttHelper::GetInfo] Error: can't read info from DDS file.");
-    }
-
-    return retVal;
-}
-
-
-
-uint32 NvttHelper::GetDataSize(nvtt::Decompressor& dec)
-{
-    DDSInfo info;
-    GetInfo(dec, info);
-    return info.dataSize;
-}
-
-
-uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
-{
-    uint32 faceId = Texture::INVALID_CUBEMAP_FACE;
-
-    if (faceIndex >= 0 && faceIndex < 6)
-    {
-        int bitIndex = 0;
-        int faceIdIndex = 0;
-        for (int i = 0; i < 6; ++i)
-        {
-            if ((nvttFaceDesc >> i) & 1)
-            {
-                bitIndex++;
-
-                if (bitIndex >= (faceIndex + 1))
-                {
-                    faceIdIndex = i;
-                    break;
-                }
-            }
-        }
-
-        static uint32 faceIndexMap[] = {
-            rhi::TEXTURE_FACE_POSITIVE_X,
-            rhi::TEXTURE_FACE_NEGATIVE_X,
-            rhi::TEXTURE_FACE_POSITIVE_Y,
-            rhi::TEXTURE_FACE_NEGATIVE_Y,
-            rhi::TEXTURE_FACE_POSITIVE_Z,
-            rhi::TEXTURE_FACE_NEGATIVE_Z
-        };
-
-        faceId = faceIndexMap[faceIdIndex];
-    }
-
-    return faceId;
-}
-
-void NvttHelper::SwapBRChannels(uint8* data, uint32 size)
-{
-    for (uint32 i = 0; i < size; i += 4)
-    {
-        //RGBA <-> BGRA
-
-        uint8* rComponent = data + i;
-
-        uint8* bComponent = data + i + 2;
-        uint8 tmp = *rComponent;
-        *rComponent = *bComponent;
-        *bComponent = tmp;
-    }
-}
-
-bool NvttHelper::DecompressDxt(const nvtt::Decompressor& dec, DDSInfo info, Vector<Image*>& imageSet, int32 baseMipMap)
-{
-    for (uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
-    {
-        uint32 faceWidth = info.width;
-        uint32 faceHeight = info.height;
-
-        for (int32 i = 0; i < baseMipMap; ++i)
-        {
-            faceWidth = Max((uint32)1, faceWidth / 2);
-            faceHeight = Max((uint32)1, faceHeight / 2);
-        }
-
-        for (uint32 i = baseMipMap; i < info.mipmapsCount; ++i)
-        {
-            // load only actual image data
-            Image* innerImage = Image::Create(faceWidth, faceHeight, FORMAT_RGBA8888);
-            if (dec.process(innerImage->data, innerImage->dataSize, i, faceIndex))
-            {
-                SwapBRChannels(innerImage->data, innerImage->dataSize);
-
-                innerImage->mipmapLevel = i - baseMipMap;
-
-                if (info.faceCount > 1)
-                {
-                    innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
-                }
-
-                imageSet.push_back(innerImage);
-            }
-            else
-            {
-                Logger::Error("nvtt lib compression fail.");
-                SafeRelease(innerImage);
-                return false;
-            }
-
-            faceWidth = Max((uint32)1, faceWidth / 2);
-            faceHeight = Max((uint32)1, faceHeight / 2);
-        }
-    }
     return true;
 }
 
-bool NvttHelper::DecompressAtc(const nvtt::Decompressor& dec, DDSInfo info, PixelFormat format, Vector<Image*>& imageSet, int32 baseMipMap)
+bool DDSHandler::WriteCRC()
 {
-#if defined(__DAVAENGINE_WIN_UAP__)
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return false;
-
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-#if defined(__DAVAENGINE_MACOS__)
-    if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+    FilePath filepath = file->GetFilename();
+    if (mainHeader.reserved.crcTag == FOURCC_CRC)
     {
-        Logger::Error("Decompressing FORMAT_ATC_RGBA_INTERPOLATED_ALPHA disabled on OSX platform, because of bug in qualcomm library");
-        return false;
-    }
-#endif
-    uint8* compressedImges = new uint8[info.dataSize];
-
-    if (!dec.getRawData(compressedImges, info.dataSize))
-    {
-        Logger::Error("[NvttHelper::DecompressAtc] Reading compressed data cause error in nvtt lib.");
-
-        SafeDeleteArray(compressedImges);
+        Logger::Error("CRC is already added into %s", filepath.GetStringValue().c_str());
         return false;
     }
 
-    bool res = true;
-    unsigned char* buffer = compressedImges;
-    const int32 qualcommFormat = QualcommHelper::GetQualcommFormat(format);
-
-    for (uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
+    if (mainHeader.reserved.crcTag != 0 || mainHeader.reserved.crcValue != 0)
     {
-        uint32 faceWidth = info.width;
-        uint32 faceHeight = info.height;
+        Logger::Error("Reserved for CRC place is used in %s", filepath.GetStringValue().c_str());
+        return false;
+    }
 
-        for (int32 i = 0; i < baseMipMap; ++i)
+    const uint32 fileSize = file->GetSize();
+    Vector<char8> fileBuffer(fileSize);
+
+    file->Seek(0, File::SEEK_FROM_START);
+    if (file->Read(fileBuffer.data(), fileSize) != fileSize)
+    {
+        Logger::Error("Cannot read from file %s", filepath.GetStringValue().c_str());
+        return false;
+    }
+
+    mainHeader.reserved.crcTag = FOURCC_CRC;
+    mainHeader.reserved.crcValue = CRC32::ForBuffer(fileBuffer.data(), fileSize);
+
+    file->Seek(0, File::SEEK_FROM_START);
+
+    if (!WriteMagicWord() || !WriteMainHeader())
+    {
+        Logger::Error("Cannot write to file %s", filepath.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool DDSHandler::WritePixelFormat(PixelFormat format)
+{
+    FilePath filepath = file->GetFilename();
+    mainHeader.reserved.davaPixelFormat = format;
+    file->Seek(0, File::SEEK_FROM_START);
+
+    if (!WriteMagicWord() || !WriteMainHeader())
+    {
+        Logger::Error("Cannot write to file %s", filepath.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool DDSHandler::GetCRC(uint32& crc)
+{
+    if (mainHeader.reserved.crcTag == FOURCC_CRC)
+    {
+        crc = mainHeader.reserved.crcValue;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void DDSHandler::FetchFacesInfo()
+{
+    if ((mainHeader.caps2 & dds::DDSCAPS2_CUBEMAP_ALL_FACES) == dds::DDSCAPS2_CUBEMAP_ALL_FACES)
+    {
+        faceCount = Texture::CUBE_FACE_COUNT;
+        for (uint32 face = 0; face < faceCount; ++face)
         {
-            unsigned int mipMapSize = 0;
-            dec.getMipmapSize(i, mipMapSize);
-            buffer += mipMapSize;
+            faces[face] = static_cast<rhi::TextureFace>(face);
+        }
+    }
+    else
+    {
+        static const uint32 ddsFaces[] = {
+            dds::DDSCAPS2_CUBEMAP_POSITIVEX,
+            dds::DDSCAPS2_CUBEMAP_NEGATIVEX,
+            dds::DDSCAPS2_CUBEMAP_POSITIVEY,
+            dds::DDSCAPS2_CUBEMAP_NEGATIVEY,
+            dds::DDSCAPS2_CUBEMAP_POSITIVEZ,
+            dds::DDSCAPS2_CUBEMAP_NEGATIVEZ
+        };
 
-            faceWidth = Max((uint32)1, faceWidth / 2);
-            faceHeight = Max((uint32)1, faceHeight / 2);
+        faceCount = 0;
+        for (int face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
+        {
+            if (mainHeader.caps2 & ddsFaces[face])
+            {
+                faces[faceCount++] = static_cast<rhi::TextureFace>(face);
+            }
         }
 
-        for (uint32 i = baseMipMap; i < info.mipmapsCount; ++i)
+        if (faceCount == 0)
         {
-            TQonvertImage srcImg = { 0 };
-            TQonvertImage dstImg = { 0 };
+            faceCount = 1;
+        }
+    }
+}
 
-            srcImg.nWidth = faceWidth;
-            srcImg.nHeight = faceHeight;
-            srcImg.nFormat = qualcommFormat;
-            dec.getMipmapSize(i, srcImg.nDataSize);
-            srcImg.pData = buffer;
-            buffer += srcImg.nDataSize;
+void DDSHandler::FetchPixelFormats()
+{
+    const uint32& flags = mainHeader.format.flags;
+    const uint32& bitCount = mainHeader.format.RGBBitCount;
+    const uint32& rMask = mainHeader.format.RBitMask;
+    const uint32& gMask = mainHeader.format.GBitMask;
+    const uint32& bMask = mainHeader.format.BBitMask;
+    const uint32& aMask = mainHeader.format.ABitMask;
+    bool flagRGB = (flags & dds::DDPF_RGB && !(flags & dds::DDPF_ALPHAPIXELS));
+    bool flagRGBA = (flags & dds::DDPF_RGB && (flags & dds::DDPF_ALPHAPIXELS));
+    bool flagAlpha = (flags & dds::DDPF_ALPHA) != 0;
+    bool flagFourCC = (flags & dds::DDPF_FOURCC) != 0;
 
-            dstImg.nWidth = faceWidth;
-            dstImg.nHeight = faceHeight;
-            dstImg.nFormat = Q_FORMAT_RGBA_8UI;
-            dstImg.nDataSize = 0;
-            dstImg.pData = NULL;
+    needConvertFormat = false;
+    davaPixelFormat = FORMAT_INVALID;
 
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS ||
-                dstImg.nDataSize == 0)
+    if (flagRGBA)
+    {
+        if (rMask == 0xff && gMask == 0xff00 && bMask == 0xff0000 && aMask == 0xff000000)
+        {
+            davaPixelFormat = FORMAT_RGBA8888;
+        }
+        else if (rMask == 0x7c00 && gMask == 0x3e0 && bMask == 0x1f && aMask == 0x8000)
+        {
+            needConvertFormat = true;
+            d3dPixelFormat = dds::D3DFMT_A1R5G5B5;
+            davaPixelFormat = FORMAT_RGBA5551;
+        }
+        else if (rMask == 0xff0000 && gMask == 0xff00 && bMask == 0xff && aMask == 0xff000000)
+        {
+            needConvertFormat = true;
+            d3dPixelFormat = dds::D3DFMT_A8R8G8B8;
+            davaPixelFormat = FORMAT_RGBA8888;
+        }
+        else if (rMask == 0xf00 && gMask == 0xf0 && bMask == 0xf && aMask == 0xf000)
+        {
+            needConvertFormat = true;
+            d3dPixelFormat = dds::D3DFMT_A4R4G4B4;
+            davaPixelFormat = FORMAT_RGBA4444;
+        }
+    }
+    else if (flagRGB)
+    {
+        if (rMask == 0xf800 && gMask == 0x7e0 && bMask == 0x1f)
+        {
+            davaPixelFormat = FORMAT_RGB565;
+        }
+        else if (rMask == 0xff0000 && gMask == 0xff00 && bMask == 0xff)
+        {
+            if (bitCount == 24)
             {
-                Logger::Error("[NvttHelper::DecompressAtc] Reading decompress atc data.");
-                res = false;
+                davaPixelFormat = FORMAT_RGB888;
+            }
+            else if (bitCount == 32)
+            {
+                needConvertFormat = true;
+                d3dPixelFormat = dds::D3DFMT_X8R8G8B8;
+                davaPixelFormat = FORMAT_RGB888;
+            }
+        }
+
+    }
+    else if (flagAlpha && bitCount == 8 && aMask == 0xff)
+    {
+        davaPixelFormat = FORMAT_A8;
+    }
+    else if (flagFourCC)
+    {
+        if (mainHeader.format.fourCC == dds::FOURCC_DX10)
+        {
+            DVASSERT(extHeader);
+            switch (extHeader->dxgiFormat)
+            {
+            case dds::DXGI_FORMAT_R8G8B8A8_UNORM:
+            {
+                davaPixelFormat = FORMAT_RGBA8888;
                 break;
             }
-
-            dstImg.pData = new unsigned char[dstImg.nDataSize];
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS)
+            case dds::DXGI_FORMAT_B5G5R5A1_UNORM:
             {
-                Logger::Error("[NvttHelper::DecompressAtc] Reading decompress atc data.");
-                SafeDeleteArray(dstImg.pData);
-
-                res = false;
+                needConvertFormat = true;
+                d3dPixelFormat = dds::D3DFMT_A1R5G5B5;
+                davaPixelFormat = FORMAT_RGBA5551;
                 break;
             }
-
-            Image* innerImage = Image::CreateFromData(faceWidth, faceHeight, FORMAT_RGBA8888, dstImg.pData);
-            innerImage->mipmapLevel = i - baseMipMap;
-
-            if (info.faceCount > 1)
+            case dds::DXGI_FORMAT_B5G6R5_UNORM:
             {
-                innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
+                davaPixelFormat = FORMAT_RGB565;
+                break;
+            }
+            case dds::DXGI_FORMAT_BC1_UNORM:
+            {
+                davaPixelFormat = FORMAT_DXT1;
+                break;
+            }
+            case dds::DXGI_FORMAT_BC2_UNORM:
+            {
+                davaPixelFormat = FORMAT_DXT3;
+                break;
+            }
+            case dds::DXGI_FORMAT_BC3_UNORM:
+            {
+                davaPixelFormat = (flags & dds::DDPF_NORMAL) ? FORMAT_DXT5NM : FORMAT_DXT5;
+                break;
+            }
+            case dds::DXGI_FORMAT_R16G16B16A16_FLOAT:
+            {
+                davaPixelFormat = FORMAT_RGBA16161616;
+                break;
+            }
+            case dds::DXGI_FORMAT_R32G32B32A32_FLOAT:
+            {
+                davaPixelFormat = FORMAT_RGBA32323232;
+                break;
+            }
+            }
+        }
+        else
+        {
+            const uint32& fourcc = mainHeader.format.fourCC;
+            if (fourcc == dds::FOURCC_DXT1)
+            {
+                davaPixelFormat = FORMAT_DXT1;
+            }
+            else if (fourcc == dds::FOURCC_DXT3)
+            {
+                davaPixelFormat = FORMAT_DXT3;
+            }
+            else if (fourcc == dds::FOURCC_DXT5)
+            {
+                davaPixelFormat = (flags & dds::DDPF_NORMAL) ? FORMAT_DXT5NM : FORMAT_DXT5;
+            }
+            else if (fourcc == dds::FOURCC_ATC_RGB)
+            {
+                davaPixelFormat = FORMAT_ATC_RGB;
+            }
+            else if (fourcc == dds::FOURCC_ATC_RGBA_EXPLICIT_ALPHA)
+            {
+                davaPixelFormat = FORMAT_ATC_RGBA_EXPLICIT_ALPHA;
+            }
+            else if (fourcc == dds::FOURCC_ATC_RGBA_INTERPOLATED_ALPHA)
+            {
+                davaPixelFormat = FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
+            }
+            else if (fourcc == dds::D3DFMT_A16B16G16R16F)
+            {
+                davaPixelFormat = FORMAT_RGBA16161616;
+            }
+            else if (fourcc == dds::D3DFMT_A32B32G32R32F)
+            {
+                davaPixelFormat = FORMAT_RGBA32323232;
+            }
+        }
+    }
+}
+
+uint32 GetFormatSizeInBytes(dds::D3D_FORMAT format)
+{
+    switch (format)
+    {
+    case dds::D3DFMT_R3G3B2:
+    case dds::D3DFMT_A8:
+    case dds::D3DFMT_P8:
+    case dds::D3DFMT_L8:
+    case dds::D3DFMT_A4L4:
+        return 1;
+
+    case dds::D3DFMT_R5G6B5:
+    case dds::D3DFMT_X1R5G5B5:
+    case dds::D3DFMT_A1R5G5B5:
+    case dds::D3DFMT_A4R4G4B4:
+    case dds::D3DFMT_X4R4G4B4:
+    case dds::D3DFMT_A8R3G3B2:
+    case dds::D3DFMT_A8P8:
+    case dds::D3DFMT_A8L8:
+    case dds::D3DFMT_L16:
+    case dds::D3DFMT_R16F:
+        return 2;
+
+    case dds::D3DFMT_R8G8B8:
+        return 3;
+
+    case dds::D3DFMT_A8R8G8B8:
+    case dds::D3DFMT_A8B8G8R8:
+    case dds::D3DFMT_X8R8G8B8:
+    case dds::D3DFMT_X8B8G8R8:
+    case dds::D3DFMT_A2B10G10R10:
+    case dds::D3DFMT_A2R10G10B10:
+    case dds::D3DFMT_G16R16:
+    case dds::D3DFMT_G16R16F:
+    case dds::D3DFMT_R32F:
+        return 4;
+
+    case dds::D3DFMT_A16B16G16R16:
+    case dds::D3DFMT_A16B16G16R16F:
+    case dds::D3DFMT_G32R32F:
+        return 8;
+
+    case dds::D3DFMT_A32B32G32R32F:
+        return 16;
+
+    default:
+        DVASSERT(false && "undefined format");
+    }
+}
+
+void ConvertImage(const uint8* srcData, Image* dstImage, dds::D3D_FORMAT srcFormat, PixelFormat dstFormat)
+{
+    DVASSERT(dstImage);
+    DVASSERT(dstImage->format == dstFormat);
+
+    const uint32& w = dstImage->width;
+    const uint32& h = dstImage->height;
+
+    uint32 srcPitch = w * GetFormatSizeInBytes(srcFormat);
+    uint32 dstPitch = w * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstFormat);
+
+    switch (srcFormat)
+    {
+    case dds::D3DFMT_A8R8G8B8:
+    {
+        ConvertDirect<BGRA8888, RGBA8888, ConvertBGRA8888toRGBA8888> convert;
+        convert(srcData, w, h, srcPitch, dstImage->data, w, h, dstPitch);
+        break;
+    }
+    case dds::D3DFMT_X8R8G8B8:
+    {
+        ConvertDirect<BGRA8888, RGB888, ConvertBGRA8888toRGB888> convert;
+        convert(srcData, w, h, srcPitch, dstImage->data, w, h, dstPitch);
+        break;
+    }
+    case dds::D3DFMT_A1R5G5B5:
+    {
+        ConvertDirect<uint16, uint16, ConvertARGB1555toRGBA5551> convert;
+        convert(srcData, w, h, srcPitch, dstImage->data, w, h, dstPitch);
+        break;
+    }
+    case dds::D3DFMT_A4R4G4B4:
+    {
+        ConvertDirect<uint16, uint16, ConvertARGB4444toRGBA4444> convert;
+        convert(srcData, w, h, srcPitch, dstImage->data, w, h, dstPitch);
+        break;
+    }
+    //     case dds::D3DFMT_A16B16G16R16F:
+    //     {
+    //         ConvertDirect<ABGR16161616, RGBA16161616, ConvertABGR16161616toRGBA16161616> convert;
+    //         convert(srcData, w, h, srcPitch, dstImage->data, w, h, dstPitch);
+    //         break;
+    //     }
+    //     case dds::D3DFMT_A32B32G32R32F:
+    //     {
+    //         ConvertDirect<ABGR32323232, RGBA32323232, ConvertABGR32323232toRGBA32323232> convert;
+    //         convert(srcData, w, h, srcPitch, dstImage->data, w, h, dstPitch);
+    //         break;
+    //     }
+    default:
+        DVASSERT(false && "undefined format");
+    }
+}
+
+bool DDSHandler::GetTextures(Vector<Image*>& images, uint32 baseMipMap)
+{
+    ImageInfo info = GetImageInfo();
+    if (info.format == FORMAT_INVALID)
+    {
+        Logger::Error("Invalid/unsupported format of DDS file '%s'", file->GetFilename().GetStringValue().c_str());
+        return false;
+    }
+    if (0 == info.width || 0 == info.height || 0 == info.mipmapsCount)
+    {
+        Logger::Error("Wrong mipmapsCount/width/height value for DDS file '%s'");
+        return false;
+    }
+
+    FetchFacesInfo();
+
+    baseMipMap = Min(baseMipMap, (info.mipmapsCount - 1));
+
+    Vector<uint8> rawData(info.dataSize);
+    uint8* dataBegin = rawData.data();
+    auto readSize = file->Read(dataBegin, info.dataSize);
+    if (readSize != info.dataSize)
+    {
+        Logger::Error("Can't read data from %s", file->GetFilename().GetStringValue().c_str());
+        return false;
+    }
+
+    const uint32 bitsPerPixel = needConvertFormat ?
+    GetFormatSizeInBytes(d3dPixelFormat) * 8 :
+    PixelFormatDescriptor::GetPixelFormatSizeInBits(davaPixelFormat);
+
+    uint32 offset = 0;
+    for (uint32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
+    {
+        uint32 mipWidth = info.width;
+        uint32 mipHeight = info.height;
+
+        for (uint32 mip = 0; mip < info.mipmapsCount; ++mip)
+        {
+            uint32 bytesInMip = mipWidth * mipHeight * bitsPerPixel / 8;
+
+            if (mip >= baseMipMap)
+            {
+                Image* innerImage = Image::Create(mipWidth, mipHeight, info.format);
+                DVASSERT(innerImage);
+
+                if (needConvertFormat)
+                {
+                    ConvertImage(dataBegin + offset, innerImage, d3dPixelFormat, davaPixelFormat);
+                }
+                else
+                {
+                    Memcpy(innerImage->data, dataBegin + offset, innerImage->dataSize);
+                }
+
+                innerImage->mipmapLevel = mip - baseMipMap;
+
+                if (faceCount > 1)
+                {
+                    innerImage->cubeFaceID = faces[faceIndex];
+                }
+
+                images.push_back(innerImage);
             }
 
-            //SwapBRChannels(innerImage->data, innerImage->dataSize);
-            imageSet.push_back(innerImage);
-
-            faceWidth = Max((uint32)1, faceWidth / 2);
-            faceHeight = Max((uint32)1, faceHeight / 2);
-
-            SafeDeleteArray(dstImg.pData);
+            offset += bytesInMip;
+            mipWidth = Max(1U, mipWidth / 2);
+            mipHeight = Max(1U, mipHeight / 2);
         }
     }
 
-    SafeDeleteArray(compressedImges);
-    return res;
-#else
-    return false;
-#endif //defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+    return true;
 }
 
 LibDdsHelper::LibDdsHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_DDS,
+      "DDS",
+      { ".dds" },
+      { FORMAT_ATC_RGB,
+        FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
+        FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
+        FORMAT_DXT1,
+        FORMAT_REMOVED_DXT_1N,
+        FORMAT_DXT1A,
+        FORMAT_DXT3,
+        FORMAT_DXT5,
+        FORMAT_DXT5NM,
+        FORMAT_RGBA8888 })
 {
-    name.assign("DDS");
-    supportedExtensions.push_back(".dds");
-    supportedFormats = { { FORMAT_ATC_RGB,
-                           FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
-                           FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
-                           FORMAT_DXT1,
-                           FORMAT_REMOVED_DXT_1N,
-                           FORMAT_DXT1A,
-                           FORMAT_DXT3,
-                           FORMAT_DXT5,
-                           FORMAT_DXT5NM,
-                           FORMAT_RGBA8888 } };
 }
 
-bool LibDdsHelper::CanProcessFile(File* infile) const
+bool LibDdsHelper::CanProcessFile(const FilePtr& infile) const
 {
-    DDSFile::FileHeader header = DDSFile::ReadHeader(infile);
-    return header.IsValid();
+    DVASSERT(infile);
+    DDSHandlerPtr reader = DDSHandler::CreateForFile(infile);
+    infile->Seek(0, File::SEEK_FROM_START);
+    return (reader.get() != nullptr);
 }
 
-eErrorCode LibDdsHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
+eErrorCode LibDdsHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
 {
-    return ReadFile(infile, imageSet, baseMipMap, false);
+    DVASSERT(infile);
+
+    DDSHandlerPtr reader = DDSHandler::CreateForFile(infile);
+    if (reader && reader->GetTextures(imageSet, baseMipMap))
+    {
+        return eErrorCode::SUCCESS;
+    }
+    else
+    {
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
+    }
 }
 
 eErrorCode LibDdsHelper::WriteFile(const FilePath& outFileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
-    //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
     if (!outFileName.IsEqualToExtension(".dds"))
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong output file name specified: '%s'", outFileName.GetAbsolutePathname().c_str());
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
+    bool writeOk = false;
+
     if (compressionFormat == FORMAT_ATC_RGB ||
         compressionFormat == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
         compressionFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
-        return WriteAtcFile(outFileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
+        writeOk = QualcommHelper::WriteAtcFile(outFileName, imageSet, compressionFormat);
     }
     else
     {
         Vector<Vector<Image*>> imageSets;
         imageSets.push_back(imageSet);
-        return WriteDxtFile(outFileName, imageSets, compressionFormat, false) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
+        writeOk = NvttHelper::WriteDxtFile(outFileName, compressionFormat, imageSets);
+    }
+
+    if (writeOk)
+    {
+        ScopedPtr<File> ddsFile(File::Create(outFileName, File::OPEN | File::READ | File::WRITE));
+
+        DDSHandlerPtr ddsHandler = DDSHandler::CreateForFile(ddsFile);
+        if (ddsHandler && ddsHandler->WritePixelFormat(compressionFormat))
+        {
+            return DAVA::eErrorCode::SUCCESS;
+        }
+        else
+        {
+            Logger::Error("[LibDdsHelper::WriteFile] Can't add pixel format to metadata of %s", outFileName.GetStringValue().c_str());
+            return eErrorCode::ERROR_WRITE_FAIL;
+        }
+    }
+    else
+    {
+        return DAVA::eErrorCode::ERROR_WRITE_FAIL;
     }
 }
 
@@ -786,99 +992,78 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
         return eErrorCode::ERROR_WRITE_FAIL;
     }
 
-    //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
     if (!fileName.IsEqualToExtension(".dds"))
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong output file name specifed: '%s'", fileName.GetAbsolutePathname().c_str());
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
+    bool writeOk = false;
+
     if (compressionFormat == FORMAT_ATC_RGB ||
         compressionFormat == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
         compressionFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
-        return WriteAtcFileAsCubemap(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
+        writeOk = QualcommHelper::WriteAtcFileAsCubemap(fileName, imageSet, compressionFormat);
     }
     else
     {
-        return WriteDxtFile(fileName, imageSet, compressionFormat, true) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
+        writeOk = NvttHelper::WriteDxtFile(fileName, compressionFormat, imageSet);
+    }
+
+    if (writeOk)
+    {
+        ScopedPtr<File> ddsFile(File::Create(fileName, File::OPEN | File::READ | File::WRITE));
+
+        DDSHandlerPtr ddsHandler = DDSHandler::CreateForFile(ddsFile);
+        if (ddsHandler && ddsHandler->WritePixelFormat(compressionFormat))
+        {
+            return DAVA::eErrorCode::SUCCESS;
+        }
+        else
+        {
+            Logger::Error("[LibDdsHelper::WriteFile] Can't add pixel format to metadata of %s", fileName.GetStringValue().c_str());
+            return eErrorCode::ERROR_WRITE_FAIL;
+        }
+    }
+    else
+    {
+        return DAVA::eErrorCode::ERROR_WRITE_FAIL;
     }
 }
 
-ImageInfo LibDdsHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo LibDdsHelper::GetImageInfo(const FilePtr& infile) const
 {
-    const DDSFile::FileHeader fileHeader = DDSFile::ReadHeader(infile);
-
-    ImageInfo info;
-    info.width = fileHeader.formatHeader.width;
-    info.height = fileHeader.formatHeader.height;
-    info.dataSize = infile->GetSize() - sizeof(DDSFile::FileHeader);
-    info.format = static_cast<PixelFormat>(fileHeader.formatHeader.metadata.davaPixelFormat);
-    if (info.format == FORMAT_INVALID)
+    DDSHandlerPtr reader(DDSHandler::CreateForFile(infile));
+    if (reader)
     {
-        nvtt::Decompressor dec;
-        if (NvttHelper::InitDecompressor(dec, infile))
-        {
-            info.format = NvttHelper::GetPixelFormat(dec);
-        }
+        return reader->GetImageInfo();
     }
-    info.mipmapsCount = fileHeader.formatHeader.mipMapCount;
-
-    return info;
+    else
+    {
+        return ImageInfo();
+    }
 }
 
 bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
 {
-    ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
+    ScopedPtr<File> ddsFile(File::Create(filePathname, File::OPEN | File::READ | File::WRITE));
     if (!ddsFile)
     {
         Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] cannot open file %s", filePathname.GetStringValue().c_str());
         return false;
     }
 
-    DDSFile::FileHeader header = DDSFile::ReadHeader(ddsFile);
-    if (!header.IsValid())
+    DDSHandlerPtr ddsHandler(DDSHandler::CreateForFile(ddsFile));
+    if (ddsHandler)
     {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] is not DDS file %s", filePathname.GetStringValue().c_str());
+        return ddsHandler->WriteCRC();
+    }
+    else
+    {
+        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] is not a DDS file %s", filePathname.GetStringValue().c_str());
         return false;
     }
-
-    if (header.formatHeader.metadata.crcTag == METADATA_CRC_TAG)
-    {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] CRC is already added into %s", filePathname.GetStringValue().c_str());
-        return false;
-    }
-
-    if (header.formatHeader.metadata.crcTag != 0 || header.formatHeader.metadata.crcValue != 0)
-    {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] reserved for CRC place is used in %s", filePathname.GetStringValue().c_str());
-        return false;
-    }
-
-    const uint32 fileSize = ddsFile->GetSize();
-    Vector<char8> fileBuffer(fileSize);
-
-    ddsFile->Seek(0, File::SEEK_FROM_START);
-    if (ddsFile->Read(fileBuffer.data(), fileSize) != fileSize)
-    {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot read from file %s", filePathname.GetStringValue().c_str());
-        return false;
-    }
-
-    ddsFile.reset(); //to close file for reading
-
-    DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(fileBuffer.data());
-    outHeader->formatHeader.metadata.crcTag = METADATA_CRC_TAG;
-    outHeader->formatHeader.metadata.crcValue = CRC32::ForBuffer(fileBuffer.data(), fileSize);
-
-    ddsFile.reset(File::Create(filePathname, File::WRITE | File::CREATE));
-    if (fileSize != ddsFile->Write(fileBuffer.data(), fileSize))
-    {
-        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot write to file %s", filePathname.GetAbsolutePathname().c_str());
-        return false;
-    }
-
-    return true;
 }
 
 uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
@@ -890,504 +1075,49 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
         return false;
     }
 
-    DDSFile::FileHeader header = DDSFile::ReadHeader(ddsFile);
-    if (!header.IsValid())
+    DDSHandlerPtr reader(DDSHandler::CreateForFile(ddsFile));
+    if (reader)
     {
-        Logger::Error("[LibDdsHelper::GetCRCFromFile] is not DDS file %s", filePathname.GetStringValue().c_str());
-        return false;
-    }
-
-    if (header.formatHeader.metadata.crcTag == METADATA_CRC_TAG)
-    {
-        return header.formatHeader.metadata.crcValue;
-    }
-
-    ddsFile.reset(); //to close file before crc calculation
-    return CRC32::ForFile(filePathname);
-}
-
-eErrorCode LibDdsHelper::ReadFile(File* file, Vector<Image*>& imageSet, int32 baseMipMap, bool forceSoftwareConvertation)
-{
-    DVASSERT(file != nullptr);
-
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, file))
-    {
-        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
-    }
-
-    return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap, forceSoftwareConvertation) ? eErrorCode::SUCCESS : eErrorCode::ERROR_READ_FAIL;
-}
-
-bool LibDdsHelper::DecompressImageToRGBA(const Image& image, Vector<Image*>& imageSet, bool forceSoftwareConvertation)
-{
-    if (!(image.format >= FORMAT_DXT1 && image.format <= FORMAT_DXT5NM))
-    {
-        Logger::Error("[LibDdsHelper::DecompressImageToRGBA] Wrong copression format (%d).", image.format);
-        return false;
-    }
-    nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(image.format);
-    if (nvtt::Format_BC5 == innerComprFormat)
-    { //bc5 is unsupported, used to determinate fail in search
-        Logger::Error("[LibDdsHelper::DecompressImageToRGBA] Can't work with nvtt::Format_BC5.");
-        return false;
-    }
-
-    InputOptions inputOptions;
-    inputOptions.setTextureLayout(TextureType_2D, image.width, image.height);
-    inputOptions.setMipmapGeneration(false);
-
-    CompressionOptions compressionOptions;
-    compressionOptions.setFormat(innerComprFormat);
-    if (FORMAT_DXT5NM == image.format)
-    {
-        inputOptions.setNormalMap(true);
-    }
-
-    uint32 headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    uint8* imageHeaderBuffer = new uint8[headerSize];
-
-    uint32 realHeaderSize = nvtt::Decompressor::getHeader(imageHeaderBuffer, headerSize, inputOptions, compressionOptions);
-
-    nvtt::Decompressor dec;
-
-    uint8* compressedImageBuffer = new uint8[realHeaderSize + image.dataSize];
-    Memcpy(compressedImageBuffer, imageHeaderBuffer, realHeaderSize);
-    Memcpy(compressedImageBuffer + realHeaderSize, image.data, image.dataSize);
-    SafeDeleteArray(imageHeaderBuffer);
-
-    bool retValue = NvttHelper::InitDecompressor(dec, compressedImageBuffer, realHeaderSize + image.dataSize);
-    if (retValue)
-    {
-        retValue = NvttHelper::ReadDxtFile(dec, imageSet, 0, forceSoftwareConvertation);
-    }
-
-    SafeDeleteArray(compressedImageBuffer);
-    return retValue;
-}
-
-
-bool LibDdsHelper::WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat)
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
-    return false;
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return false;
-
-#else
-
-    if (compressionFormat != FORMAT_ATC_RGB &&
-        compressionFormat != FORMAT_ATC_RGBA_EXPLICIT_ALPHA &&
-        compressionFormat != FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
-    {
-        Logger::Error("[LibDdsHelper::WriteAtcFile] Wrong copression format (%d).", compressionFormat);
-        return false;
-    }
-
-    //VI: calculate image buffer size
-    uint32 compressedDataSize = 0;
-    Vector<uint32> mipSize;
-    mipSize.resize(imageSet.size());
-    uint32 dataCount = static_cast<uint32>(imageSet.size());
-    if (imageSet.size() == 0)
-    {
-        Logger::Error("[LibDdsHelper::WriteAtcFile] Empty income image vector.");
-        return false;
-    }
-
-    auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0]->format);
-    auto atcFormat = QualcommHelper::GetQualcommFormat(imageSet[0]->format);
-    for (uint32 i = 0; i < dataCount; ++i)
-    {
-        TQonvertImage srcImg = { 0 };
-
-        srcImg.nWidth = imageSet[i]->width;
-        srcImg.nHeight = imageSet[i]->height;
-        srcImg.nFormat = atcFormat;
-        srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
-        srcImg.pData = imageSet[i]->data;
-
-        TQonvertImage dstImg = { 0 };
-        dstImg.nWidth = imageSet[i]->width;
-        dstImg.nHeight = imageSet[i]->height;
-        dstImg.nFormat = QualcommHelper::GetQualcommFormat(compressionFormat);
-        dstImg.nDataSize = 0;
-        dstImg.pData = NULL;
-
-        if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
+        uint32 crc;
+        if (reader->GetCRC(crc))
         {
-            Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-            return false;
-        }
-        compressedDataSize += dstImg.nDataSize;
-        mipSize[i] = dstImg.nDataSize;
-    }
-
-    //VI: convert faces
-    unsigned int headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    Vector<unsigned char> outFileBufferData(headerSize + compressedDataSize);
-    unsigned char* header = outFileBufferData.data();
-    unsigned char* compressedData = header + headerSize;
-    unsigned char* buffer = compressedData;
-    for (uint32 i = 0; i < dataCount; ++i)
-    {
-        TQonvertImage srcImg = { 0 };
-
-        srcImg.nWidth = imageSet[i]->width;
-        srcImg.nHeight = imageSet[i]->height;
-        srcImg.nFormat = atcFormat;
-        srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
-        srcImg.pData = imageSet[i]->data;
-
-        TQonvertImage dstImg = { 0 };
-        dstImg.nWidth = imageSet[i]->width;
-        dstImg.nHeight = imageSet[i]->height;
-        dstImg.nFormat = QualcommHelper::GetQualcommFormat(compressionFormat);
-        dstImg.nDataSize = mipSize[i];
-        dstImg.pData = buffer;
-        buffer += dstImg.nDataSize;
-
-        if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-        {
-            Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-            return false;
-        }
-    }
-
-    nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(compressionFormat);
-
-    nvtt::TextureType textureType = nvtt::TextureType_2D;
-    InputOptions inputOptions;
-    inputOptions.setTextureLayout(textureType, imageSet[0]->width, imageSet[0]->height);
-    inputOptions.setMipmapGeneration(dataCount > 1, dataCount - 1);
-
-    CompressionOptions compressionOptions;
-    compressionOptions.setFormat(innerComprFormat);
-
-    nvtt::Decompressor decompress;
-    const uint32 realHeaderSize = decompress.getHeader(header, headerSize, inputOptions, compressionOptions);
-
-    const FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
-    bool res = false;
-    File* file = File::Create(fileName, File::CREATE | File::WRITE);
-    if (file)
-    {
-        { //Store PixelFormat format in metadata
-            DVASSERT(realHeaderSize >= sizeof(DDSFile::FileHeader));
-            DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(header);
-            outHeader->formatHeader.metadata.davaPixelFormat = compressionFormat;
-        }
-
-        file->Write(header, realHeaderSize);
-        file->Write(compressedData, compressedDataSize);
-
-        SafeRelease(file);
-        FileSystem::Instance()->DeleteFile(fileNameOriginal);
-        res = FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true);
-        if (!res)
-            Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
-    }
-    else
-    {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
-    }
-
-    return res;
-#endif
-}
-
-bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath& fileNameOriginal, const Vector<Vector<DAVA::Image*>>& imageSet, DAVA::PixelFormat compressionFormat, bool isCubemap)
-{
-#ifdef __DAVAENGINE_IPHONE__
-
-    DVASSERT_MSG(false, "No necessary write compressed files on mobile");
-    return false;
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return false;
-    
-#else
-    if (!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM) || (compressionFormat == FORMAT_RGBA8888)))
-    {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Wrong copression format (%d).", compressionFormat);
-        return false;
-    }
-
-    nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(compressionFormat);
-    if (nvtt::Format_BC5 == innerComprFormat)
-    {
-        //bc5 is unsupported, used to determinate fail in search
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Can't work with nvtt::Format_BC5.");
-        return false;
-    }
-    if (imageSet.empty() || imageSet[0].empty())
-    {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Empty incoming image vector.");
-        return false;
-    }
-
-    Vector<Vector<Image*>> workingImages = imageSet;
-    for (auto& imageVec : workingImages)
-    {
-        for_each(imageVec.begin(), imageVec.end(), SafeRetain<Image>);
-    }
-    SCOPE_EXIT
-    {
-        for (auto& imageVec : workingImages)
-        {
-            for_each(imageVec.begin(), imageVec.end(), SafeRelease<Image>);
-        }
-    };
-
-    for (auto& imageVec : workingImages)
-    {
-        for (auto& image : imageVec)
-        {
-            auto inputFormat = image->format;
-
-            if (inputFormat >= FORMAT_DXT1 && inputFormat <= FORMAT_DXT5NM)
-            {
-                Vector<Image*> decomprImages;
-                if (DecompressImageToRGBA(*image, decomprImages, true) && decomprImages.size() == 1)
-                {
-                    SafeRelease(image);
-                    image = decomprImages[0];
-                }
-                else
-                {
-                    Logger::Error("[LibDdsHelper::WriteDxtFile] Error during decompressing of DXT into RGBA");
-                    for_each(decomprImages.begin(), decomprImages.end(), SafeRelease<Image>);
-                    return false;
-                }
-            }
-            else if (inputFormat != FORMAT_RGBA8888)
-            {
-                Image* newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
-                ImageConvert::ConvertImageDirect(image, newImage);
-
-                newImage->cubeFaceID = image->cubeFaceID;
-                newImage->mipmapLevel = image->mipmapLevel;
-
-                SafeRelease(image);
-                image = newImage;
-            }
-        }
-    }
-
-    nvtt::TextureType textureType = isCubemap ? nvtt::TextureType_Cube : nvtt::TextureType_2D;
-
-    int facesCount = static_cast<int>(workingImages.size());
-    int mipmapsCount = static_cast<int>(workingImages[0].size());
-    InputOptions inputOptions;
-    inputOptions.setTextureLayout(textureType, workingImages[0][0]->width, workingImages[0][0]->height);
-    inputOptions.setMipmapGeneration(mipmapsCount > 1, mipmapsCount - 1);
-
-    for (int f = 0; f < facesCount; ++f)
-    {
-        for (int m = 0; m < mipmapsCount; ++m)
-        {
-            Image* image = workingImages[f][m];
-            ImageConvert::SwapRedBlueChannels(image);
-            inputOptions.setMipmapData(image->data, image->width, image->height, 1, f, m);
-            ImageConvert::SwapRedBlueChannels(image);
-        }
-    }
-
-    CompressionOptions compressionOptions;
-    compressionOptions.setFormat(innerComprFormat);
-    if (FORMAT_DXT5NM == compressionFormat)
-    {
-        inputOptions.setNormalMap(true);
-    }
-
-    OutputOptions outputOptions;
-    FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
-    outputOptions.setFileName(fileName.GetAbsolutePathname().c_str());
-
-    Compressor compressor;
-    bool ret = compressor.process(inputOptions, compressionOptions, outputOptions);
-    if (ret)
-    {
-        FileSystem::Instance()->DeleteFile(fileNameOriginal);
-        if (!FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true))
-        {
-            Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
-            ret = false;
+            return crc;
         }
         else
         {
-            //I hope we Will remove this code after refactoring of DAVA::Image class
-            ScopedPtr<File> ddsFile(File::Create(fileNameOriginal, File::OPEN | File::READ | File::WRITE));
-
-            DDSFile::FileHeader ddsHeader;
-            ddsFile->Read(&ddsHeader);
-            ddsHeader.formatHeader.metadata.davaPixelFormat = compressionFormat;
-
-            ddsFile->Seek(0, File::SEEK_FROM_START);
-            ddsFile->Write(&ddsHeader);
+            reader.reset();
+            return CRC32::ForFile(filePathname);
         }
     }
     else
     {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Error during writing DDS file (%s).", fileName.GetAbsolutePathname().c_str());
+        Logger::Error("[LibDdsHelper::GetCRCFromFile] is not a DDS file %s", filePathname.GetStringValue().c_str());
+        return false;
     }
-
-    return ret;
-#endif //__DAVAENGINE_IPHONE__
 }
 
-bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath& fileNameOriginal, const Vector<Vector<DAVA::Image*>>& imageSet, DAVA::PixelFormat compressionFormat)
+ImagePtr LibDdsHelper::DecompressToRGBA(const Image* image)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
-    return false;
+    DVASSERT(image);
 
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return false;
-    
-#else
-
-    if (compressionFormat != FORMAT_ATC_RGB &&
-        compressionFormat != FORMAT_ATC_RGBA_EXPLICIT_ALPHA &&
-        compressionFormat != FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+    switch (image->format)
     {
-        Logger::Error("[LibDdsHelper::WriteAtcFile] Wrong copression format (%d).", compressionFormat);
-        return false;
+    case FORMAT_DXT1:
+    case FORMAT_DXT1A:
+    case FORMAT_DXT3:
+    case FORMAT_DXT5:
+    case FORMAT_DXT5NM:
+    {
+        return NvttHelper::DecompressDxtToRGBA(image);
     }
-    if (imageSet.size() == 0)
+    case FORMAT_ATC_RGB:
+    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
     {
-        Logger::Error("[LibDdsHelper::WriteAtcFile] Empty income image vector.");
-        return false;
+        return QualcommHelper::DecompressAtcToRGBA(image);
+    }
     }
 
-    //VI: calculate image buffer size
-    const int facesCount = static_cast<int>(imageSet.size());
-    const int mipmapsCount = static_cast<int>(imageSet[0].size());
-
-    uint32 compressedDataSize = 0;
-    Vector<Vector<uint32>> mipSize;
-    mipSize.resize(facesCount);
-
-    const int32 qualcommFormat = QualcommHelper::GetQualcommFormat(compressionFormat);
-
-    auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0][0]->format);
-    auto atcFormat = QualcommHelper::GetQualcommFormat(imageSet[0][0]->format);
-    for (int32 f = 0; f < facesCount; ++f)
-    {
-        mipSize[f].resize(mipmapsCount);
-
-        for (int32 m = 0; m < mipmapsCount; ++m)
-        {
-            Image* image = imageSet[f][m];
-
-            TQonvertImage srcImg = { 0 };
-
-            srcImg.nWidth = image->width;
-            srcImg.nHeight = image->height;
-            srcImg.nFormat = atcFormat;
-            srcImg.nDataSize = image->width * image->height * pixelSize;
-            srcImg.pData = image->data;
-
-            TQonvertImage dstImg = { 0 };
-            dstImg.nWidth = image->width;
-            dstImg.nHeight = image->height;
-            dstImg.nFormat = qualcommFormat;
-            dstImg.nDataSize = 0;
-            dstImg.pData = NULL;
-
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-            {
-                Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-                return false;
-            }
-
-            compressedDataSize += dstImg.nDataSize;
-            mipSize[f][m] = dstImg.nDataSize;
-        }
-    }
-
-    //VI: convert faces
-    unsigned int headerSize = DECOMPRESSOR_MIN_HEADER_SIZE;
-    Vector<unsigned char> outFileBufferData(headerSize + compressedDataSize);
-    unsigned char* header = outFileBufferData.data();
-    unsigned char* compressedData = header + headerSize;
-    unsigned char* buffer = compressedData;
-    for (int32 f = 0; f < facesCount; ++f)
-    {
-        for (int32 m = 0; m < mipmapsCount; ++m)
-        {
-            Image* image = imageSet[f][m];
-
-            TQonvertImage srcImg = { 0 };
-
-            srcImg.nWidth = image->width;
-            srcImg.nHeight = image->height;
-            srcImg.nFormat = atcFormat;
-            srcImg.nDataSize = image->width * image->height * pixelSize;
-            srcImg.pData = image->data;
-
-            TQonvertImage dstImg = { 0 };
-            dstImg.nWidth = image->width;
-            dstImg.nHeight = image->height;
-            dstImg.nFormat = qualcommFormat;
-            dstImg.nDataSize = mipSize[f][m];
-            dstImg.pData = buffer;
-            buffer += dstImg.nDataSize;
-
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-            {
-                Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-                return false;
-            }
-        }
-    }
-
-    nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(compressionFormat);
-
-    nvtt::TextureType textureType = nvtt::TextureType_Cube;
-    InputOptions inputOptions;
-    inputOptions.setTextureLayout(textureType, imageSet[0][0]->width, imageSet[0][0]->height);
-
-    inputOptions.setMipmapGeneration(mipmapsCount > 1, mipmapsCount - 1);
-
-    CompressionOptions compressionOptions;
-    compressionOptions.setFormat(innerComprFormat);
-
-    nvtt::Decompressor decompress;
-    const uint32 realHeaderSize = decompress.getHeader(header, headerSize, inputOptions, compressionOptions);
-
-    const FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
-    bool res = false;
-    File* file = File::Create(fileName, File::CREATE | File::WRITE);
-    if (file)
-    {
-        { //Store PixelFormat format in metadata
-            DVASSERT(realHeaderSize >= sizeof(DDSFile::FileHeader));
-            DDSFile::FileHeader* outHeader = reinterpret_cast<DDSFile::FileHeader*>(header);
-            outHeader->formatHeader.metadata.davaPixelFormat = compressionFormat;
-        }
-
-        file->Write(header, realHeaderSize);
-        file->Write(compressedData, compressedDataSize);
-
-        SafeRelease(file);
-        FileSystem::Instance()->DeleteFile(fileNameOriginal);
-        res = FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true);
-        if (!res)
-            Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
-    }
-    else
-    {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
-    }
-
-    return res;
-#endif
+    return ImagePtr(nullptr);
 }
-};
+}

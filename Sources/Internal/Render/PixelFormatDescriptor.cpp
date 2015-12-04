@@ -80,6 +80,8 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
     ,
     { FORMAT_BGR888, { FORMAT_BGR888, FastName("BGR888"), 24, TEXTURE_FORMAT_INVALID, false } }
 #endif
+    ,
+    { FORMAT_INVALID, { FORMAT_INVALID, FastName("invalid"), 0, TEXTURE_FORMAT_INVALID, false } }
 };
 
 const PixelFormatDescriptor& PixelFormatDescriptor::GetPixelFormatDescriptor(const PixelFormat formatID)

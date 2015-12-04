@@ -27,35 +27,21 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_WEB_P_HELPER_H__
-#define __DAVAENGINE_WEB_P_HELPER_H__
-
-#include "Render/Image/ImageFormatInterface.h"
+#ifndef __DAVAENGINE_QUALCOMM_HELPER_H__
+#define __DAVAENGINE_QUALCOMM_HELPER_H__
 
 #include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
+#include "Render/RenderBase.h"
+#include "Render/Image/Image.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-class LibWebPHelper: public ImageFormatInterface
+namespace QualcommHelper
 {
-public:
-    LibWebPHelper();
+ImagePtr DecompressAtcToRGBA(const Image* image);
+bool WriteAtcFile(const FilePath& fileNameOriginal, const Vector<Image*>& imageSet, PixelFormat compressionFormat);
+bool WriteAtcFileAsCubemap(const FilePath& fileNameOriginal, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat);
+}
+}
 
-    bool CanProcessFile(const FilePtr& infile) const override;
-
-    eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
-
-    //only RGBA8888 or RGB888
-    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    //only RGBA8888 or RGB888
-    eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    ImageInfo GetImageInfo(const FilePtr& infile) const override;
-};
-
-};
-
-#endif // __DAVAENGINE_WEB_P_HELPER_H__
+#endif // __DAVAENGINE_QUALCOMM_HELPER_H__

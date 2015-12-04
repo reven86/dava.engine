@@ -27,35 +27,21 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_WEB_P_HELPER_H__
-#define __DAVAENGINE_WEB_P_HELPER_H__
-
-#include "Render/Image/ImageFormatInterface.h"
+#ifndef __DAVAENGINE_NVTT_HELPER_H__
+#define __DAVAENGINE_NVTT_HELPER_H__
 
 #include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
+#include "Render/RenderBase.h"
+#include "Render/Image/Image.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-class LibWebPHelper: public ImageFormatInterface
+namespace NvttHelper
 {
-public:
-    LibWebPHelper();
+ImagePtr DecompressDxtToRGBA(const Image* image);
+bool WriteDxtFile(const FilePath& outFileName, PixelFormat compressionFormat, const Vector<Vector<Image*>>& imageSet);
+bool WriteDdsFile(const FilePath& outFileName, PixelFormat compressionFormat, const Vector<uint8>& compressedData, uint32 width, uint32 height, uint32 mipCount, bool isCubemap);
+}
+}
 
-    bool CanProcessFile(const FilePtr& infile) const override;
-
-    eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap = 0) const override;
-
-    //only RGBA8888 or RGB888
-    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    //only RGBA8888 or RGB888
-    eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    ImageInfo GetImageInfo(const FilePtr& infile) const override;
-};
-
-};
-
-#endif // __DAVAENGINE_WEB_P_HELPER_H__
+#endif // __DAVAENGINE_NVTT_HELPER_H__

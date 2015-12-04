@@ -46,8 +46,8 @@ public:
     ImageSystem();
     virtual ~ImageSystem();
 
-    eErrorCode Load(const FilePath &pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
-    eErrorCode Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
+    eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, uint32 baseMipmap = 0) const;
+    eErrorCode Load(const FilePtr& file, Vector<Image*>& imageSet, uint32 baseMipmap = 0) const;
 
     Image* EnsurePowerOf2Image(Image *image) const;
     void EnsurePowerOf2Images(Vector<Image*>& images) const;
@@ -58,7 +58,7 @@ public:
 
     inline ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
     ImageFormatInterface* GetImageFormatInterface(const FilePath &pathName) const;
-    ImageFormatInterface* GetImageFormatInterface(File *file) const;
+    ImageFormatInterface* GetImageFormatInterface(const FilePtr& file) const;
 
     ImageInfo GetImageInfo(const FilePath &pathName) const;
 
@@ -70,8 +70,6 @@ public:
     ImageFormat GetImageFormatByName(const String& name) const;
 
 private:
-    ImageInfo GetImageInfo(File* infile) const;
-
     Array<ImageFormatInterface*, IMAGE_FORMAT_COUNT> wrappers;
 };
 
@@ -83,7 +81,7 @@ inline ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fi
 
 inline const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
 {
-    return GetImageFormatInterface(format)->Extensions();
+    return GetImageFormatInterface(format)->GetExtensions();
 }
 
 };

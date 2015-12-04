@@ -66,7 +66,7 @@ ImageSystem::~ImageSystem()
     }
 }
 
-eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap) const
+eErrorCode ImageSystem::Load(const FilePath& pathname, Vector<Image*>& imageSet, uint32 baseMipmap) const
 {
     ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
     if (!fileRead)
@@ -78,7 +78,7 @@ eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageS
     return result;
 }
 
-eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap) const
+eErrorCode ImageSystem::Load(const FilePtr& file, Vector<Image*>& imageSet, uint32 baseMipmap) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -171,7 +171,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
     return nullptr;
 }
 
-ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePtr& file) const
 {
     for(auto wrapper : wrappers)
     {
@@ -207,7 +207,7 @@ ImageFormat ImageSystem::GetImageFormatByName(const String& name) const
 {
     for (auto wrapper : wrappers)
     {
-        if (CompareCaseInsensitive(wrapper->Name(), name) == 0)
+        if (CompareCaseInsensitive(wrapper->GetFormatName(), name) == 0)
             return wrapper->GetImageFormat();
     }
 
@@ -216,32 +216,21 @@ ImageFormat ImageSystem::GetImageFormatByName(const String& name) const
 
 ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
 {
-    ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName); //fast by pathname
-    if (nullptr == properWrapper)
+    ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
+    if (infile)
     {
-        ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
-        if (infile)
+        ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName);
+        if (!properWrapper)
         {
-            return GetImageInfo(infile);
+            properWrapper = GetImageFormatInterface(infile);
         }
 
-        return ImageInfo();
-    }
-
-    return properWrapper->GetImageInfo(pathName);
-}
-
-ImageInfo ImageSystem::GetImageInfo(File *infile) const
-{
-    DVASSERT(infile != nullptr);
-
-    const ImageFormatInterface* properWrapper = GetImageFormatInterface(infile);
-    if (nullptr != properWrapper)
-    {
-        infile->Seek(0, File::SEEK_FROM_START); //reset file state after GetImageFormatInterface
-        return properWrapper->GetImageInfo(infile);
+        if (properWrapper)
+        {
+            return properWrapper->GetImageInfo(infile);
+        }
     }
 
     return ImageInfo();
-}    
+}
 };

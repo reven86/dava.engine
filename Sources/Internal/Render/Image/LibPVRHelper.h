@@ -147,17 +147,14 @@ class LibPVRHelper: public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibPVRHelper();
 
-    ImageFormat GetImageFormat() const override;
+    bool CanProcessFile(const FilePtr& infile) const override;
 
-    bool CanProcessFile(File* file) const override;
-
-    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap = 0) const override;
+    eErrorCode ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 fromMipmap = 0) const override;
 
     eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
     eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(File *infile) const override;
+    ImageInfo GetImageInfo(const FilePtr& infile) const override;
 
     bool AddCRCIntoMetaData(const FilePath &filePathname) const override;
     uint32 GetCRCFromFile(const FilePath &filePathname) const override;
@@ -203,11 +200,6 @@ protected:
     static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
     static bool AllocateImageData(Image *image, uint32 mipMapLevel, const PVRHeaderV3 &header);
 };
-
-inline ImageFormat LibPVRHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_PVR;
-}
 
 
 };

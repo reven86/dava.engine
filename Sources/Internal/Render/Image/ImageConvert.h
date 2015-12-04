@@ -32,6 +32,7 @@
 #include "Image.h"
 #include "Render/Texture.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Image/LibDdsHelper.h"
 
 namespace DAVA
 {
@@ -42,6 +43,7 @@ struct RGB888
     uint8 g;
     uint8 b;
 };
+static_assert(sizeof(RGB888) == sizeof(uint8) * 3, "remove alignment");
 
 struct BGR888
 {
@@ -49,6 +51,7 @@ struct BGR888
     uint8 g;
     uint8 r;
 };
+static_assert(sizeof(BGR888) == sizeof(uint8) * 3, "remove alignment");
 
 struct BGRA8888
 {
@@ -57,6 +60,34 @@ struct BGRA8888
     uint8 r;
     uint8 a;
 };
+static_assert(sizeof(BGRA8888) == sizeof(uint8) * 4, "remove alignment");
+
+struct RGBA8888
+{
+    uint8 r;
+    uint8 g;
+    uint8 b;
+    uint8 a;
+};
+static_assert(sizeof(RGBA8888) == sizeof(uint8) * 4, "remove alignment");
+
+struct ARGB8888
+{
+    uint8 a;
+    uint8 r;
+    uint8 g;
+    uint8 b;
+};
+static_assert(sizeof(ARGB8888) == sizeof(uint8) * 4, "remove alignment");
+
+struct ABGR8888
+{
+    uint8 a;
+    uint8 b;
+    uint8 g;
+    uint8 r;
+};
+static_assert(sizeof(ABGR8888) == sizeof(uint8) * 4, "remove alignment");
 
 struct RGBA16161616
 {
@@ -65,6 +96,7 @@ struct RGBA16161616
     uint16 b;
     uint16 a;
 };
+static_assert(sizeof(RGBA16161616) == sizeof(uint16) * 4, "remove alignment");
 
 struct RGBA32323232
 {
@@ -73,17 +105,71 @@ struct RGBA32323232
     uint32 b;
     uint32 a;
 };
+static_assert(sizeof(RGBA32323232) == sizeof(uint32) * 4, "remove alignment");
+
+struct ABGR16161616
+{
+    uint16 a;
+    uint16 b;
+    uint16 g;
+    uint16 r;
+};
+static_assert(sizeof(ABGR16161616) == sizeof(uint16) * 4, "remove alignment");
+
+struct ABGR32323232
+{
+    uint32 a;
+    uint32 b;
+    uint32 g;
+    uint32 r;
+};
+static_assert(sizeof(ABGR32323232) == sizeof(uint32) * 4, "remove alignment");
 
 struct ConvertBGRA8888toRGBA8888
 {
-    // input and output is the same memory
-    inline void operator()(const BGRA8888* input, uint32* output)
+    inline void operator()(const BGRA8888* input, RGBA8888* output)
     {
-        static_assert(sizeof(BGRA8888) == sizeof(uint32), "remove alignment");
-        //             {input->b, input->g, input->r, input->a}
-        //..............r...g...b
-        BGRA8888 tmp = {input->r, input->g, input->b, input->a};
-        *output = *reinterpret_cast<uint32*>(&tmp);
+        RGBA8888 tmp = { input->r, input->g, input->b, input->a };
+        *output = tmp;
+    }
+};
+
+struct ConvertARGB8888toRGBA8888
+{
+    inline void operator()(const ARGB8888* input, RGBA8888* output)
+    {
+        const ARGB8888 inp = *input;
+        output->r = inp.r;
+        output->g = inp.g;
+        output->b = inp.b;
+        output->a = inp.a;
+    }
+};
+
+struct ConvertABGR8888toRGBA8888
+{
+    inline void operator()(const ABGR8888* input, RGBA8888* output)
+    {
+        const ABGR8888 inp = *input;
+        output->r = inp.r;
+        output->g = inp.g;
+        output->b = inp.b;
+        output->a = inp.a;
+    }
+};
+
+struct ConvertARGB1555toRGBA5551
+{
+    inline void operator()(const uint16* input, uint16* output)
+    {
+        //arrr rrgg gggb bbbb --> rrrr rggg ggbb bbba
+        const uint16 in = *input;
+        uint16 r = (in & 0x003e) << 9;
+        uint16 g = (in & 0x07c0) >> 1;
+        uint16 b = (in & 0xf800) >> 11;
+        uint16 a = (in & 0x0001) << 15;
+
+        *output = r | g | b | a;
     }
 };
 
@@ -97,7 +183,16 @@ struct ConvertRGBA8888toRGB888
         output->r = (pixel & 0xFF);
     }
 };
-    
+
+struct ConvertBGRA8888toRGB888
+{
+    inline void operator()(const BGRA8888* input, RGB888* output)
+    {
+        RGB888 tmp{ input->r, input->g, input->b };
+        *output = tmp;
+    }
+};
+
 struct ConvertRGB888toRGBA8888
 {
     inline void operator()(const RGB888 *input, uint32 * output)
@@ -135,6 +230,30 @@ struct ConvertRGBA32323232toRGBA8888
         uint8 b = (input->b >> 24) & 0xFF;
         uint8 a = (input->a >> 24) & 0xFF;
         *output = (a << 24) | (b << 16) | (g << 8) | r;
+    }
+};
+
+struct ConvertABGR16161616toRGBA16161616
+{
+    inline void operator()(const ABGR16161616* input, RGBA16161616* output)
+    {
+        ABGR16161616 inp = *input;
+        output->r = inp.r;
+        output->g = inp.g;
+        output->b = inp.b;
+        output->a = inp.a;
+    }
+};
+
+struct ConvertABGR32323232toRGBA32323232
+{
+    inline void operator()(const ABGR32323232* input, RGBA32323232* output)
+    {
+        ABGR32323232 inp = *input;
+        output->r = inp.r;
+        output->g = inp.g;
+        output->b = inp.b;
+        output->a = inp.a;
     }
 };
 
@@ -268,6 +387,16 @@ struct ConvertABGR4444toRGBA4444
 
         out[0] = ((gr & 0x0f) << 4) | ((gr & 0xf0) >> 4); //rg
         out[1] = ((ab & 0x0f) << 4) | ((ab & 0xf0) >> 4); //ba
+    }
+};
+
+struct ConvertARGB4444toRGBA4444
+{
+    inline void operator()(const uint16* input, uint16* output)
+    {
+        //aaaa rrrr gggg bbbb --> rrrr gggg bbbb aaaa
+        uint16 a = *input & 0xF;
+        *output = (*input >> 4) | (a << 12);
     }
 };
 
@@ -667,7 +796,7 @@ public:
         }
         else if (inFormat == FORMAT_BGRA8888 && outFormat == FORMAT_RGBA8888)
         {
-            ConvertDirect<BGRA8888, uint32, ConvertBGRA8888toRGBA8888> convert;
+            ConvertDirect<BGRA8888, RGBA8888, ConvertBGRA8888toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
             return true;
         }
@@ -717,7 +846,7 @@ public:
         }
         case FORMAT_RGBA8888:
         {
-            ConvertDirect<BGRA8888, uint32, ConvertBGRA8888toRGBA8888> swap;
+            ConvertDirect<BGRA8888, RGBA8888, ConvertBGRA8888toRGBA8888> swap;
             swap(srcData, width, height, pitch, dstData);
             return;
         }

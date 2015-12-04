@@ -72,21 +72,22 @@ void jpegErrorExit (j_common_ptr cinfo)
     // Jump to the setjmp point
     longjmp(myerr->setjmp_buffer, 1);
 }
-    
+
 LibJpegHelper::LibJpegHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_JPEG,
+      "JPG",
+      { ".jpg", ".jpeg" },
+      { FORMAT_RGB888, FORMAT_A8 })
 {
-    name.assign("JPG");
-    supportedExtensions.emplace_back(".jpg");
-    supportedExtensions.emplace_back(".jpeg");
-    supportedFormats = { { FORMAT_RGB888, FORMAT_A8 } };
 }
 
-bool LibJpegHelper::CanProcessFile(File* infile) const
+bool LibJpegHelper::CanProcessFile(const FilePtr& infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }
-    
-eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
+
+eErrorCode LibJpegHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
 {
 #if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IOS__)
     // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
@@ -277,8 +278,8 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     SafeRelease(convertedImage);
     return eErrorCode::SUCCESS;
 }
-   
-DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
+
+DAVA::ImageInfo LibJpegHelper::GetImageInfo(const FilePtr& infile) const
 {
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;

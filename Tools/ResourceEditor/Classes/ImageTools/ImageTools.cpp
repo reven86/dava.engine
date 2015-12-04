@@ -269,19 +269,15 @@ QImage ImageTools::FromDavaImage(Image *image)
             case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
             case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
             {
-                Vector<Image* > vec;
-                LibDdsHelper::DecompressImageToRGBA(*image, vec, true);
-                if(vec.size() == 1)
+                ScopedPtr<Image> newImage(LibDdsHelper::DecompressToRGBA(image));
+                if (newImage)
                 {
-                    qtImage = FromDavaImage(vec.front());
+                    qtImage = FromDavaImage(newImage);
                 }
                 else
                 {
-                    DAVA::Logger::Error("Error during conversion from DDS to QImage.");
+                    DAVA::Logger::Error("Error during decompression to RGBA image");
                 }
-                
-                for_each(vec.begin(), vec.end(), SafeRelease<DAVA::Image>);
-                
                 break;
             }
             case FORMAT_PVR4:

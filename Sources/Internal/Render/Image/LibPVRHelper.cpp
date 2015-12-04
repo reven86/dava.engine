@@ -121,12 +121,12 @@ PVRFile::~PVRFile()
 const uint32 PVRTEX3_METADATAIDENT	= 0x03525650;
 
 LibPVRHelper::LibPVRHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_PVR, "PVR", { ".pvr" }, {})
 {
-    name.assign("PVR");
-    supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
+bool LibPVRHelper::CanProcessFile(const FilePtr& file) const
 {
     bool isPvrFile = false;
 
@@ -141,7 +141,7 @@ bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
     return isPvrFile;
 }
 
-eErrorCode LibPVRHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const
+eErrorCode LibPVRHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 fromMipmap) const
 {
     PVRFile *pvrFile = ReadFile(infile, true, true);
     if (pvrFile != nullptr)
@@ -171,7 +171,7 @@ eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vec
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibPVRHelper::GetImageInfo(File *infile) const
+DAVA::ImageInfo LibPVRHelper::GetImageInfo(const FilePtr& infile) const
 {
     ImageInfo info;
 

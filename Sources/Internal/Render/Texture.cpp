@@ -419,8 +419,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
         Logger::Error("[Texture::LoadImages] Load not available: invalid requested GPU family (%s)", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
         return false;
     }
-	
-    const int32 baseMipMap = GetBaseMipMap();
+
+    const uint32 baseMipMap = GetBaseMipMap();
     if (texDescriptor->IsCubeMap() && (!GPUFamilyDescriptor::IsGPUForDevice(gpu)))
     {
         Vector<FilePath> facePathes;
@@ -1090,8 +1090,7 @@ void Texture::SetPixelization(bool value)
     //RHI_COMPLETE
 }
 
-
-int32 Texture::GetBaseMipMap() const
+uint32 Texture::GetBaseMipMap() const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1100,7 +1099,7 @@ int32 Texture::GetBaseMipMap() const
         const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
         if (nullptr != curTxQuality)
         {
-            return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);
+            return static_cast<uint32>(curTxQuality->albedoBaseMipMapLevel);
         }
     }
 

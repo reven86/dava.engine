@@ -38,29 +38,29 @@ namespace DAVA
 
 static const uint8 MAX_BYTES_IN_PIXEL = 16;
 
-
 LibTgaHelper::LibTgaHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_TGA,
+      "TGA",
+      { ".tga", ".tpic" },
+      { FORMAT_RGBA8888,
+        FORMAT_RGBA5551,
+        FORMAT_RGBA4444,
+        FORMAT_RGB888,
+        FORMAT_RGB565,
+        FORMAT_RGBA16161616,
+        FORMAT_RGBA32323232,
+        FORMAT_A8,
+        FORMAT_A16 })
 {
-    name.assign("TGA");
-    supportedExtensions.emplace_back(".tga");
-    supportedExtensions.emplace_back(".tpic");
-    supportedFormats = { {  FORMAT_RGBA8888,
-                            FORMAT_RGBA5551,
-                            FORMAT_RGBA4444,
-                            FORMAT_RGB888,
-                            FORMAT_RGB565,
-                            FORMAT_RGBA16161616,
-                            FORMAT_RGBA32323232,
-                            FORMAT_A8,
-                            FORMAT_A16 } };
 }
 
-bool LibTgaHelper::CanProcessFile(File* infile) const
+bool LibTgaHelper::CanProcessFile(const FilePtr& infile) const
 {
     return !(GetImageInfo(infile).isEmpty());
 }
 
-ImageInfo LibTgaHelper::GetImageInfo(File *infile) const
+DAVA::ImageInfo LibTgaHelper::GetImageInfo(const FilePtr& infile) const
 {
     DVASSERT(infile);
 
@@ -199,7 +199,7 @@ struct Convert_RGBA5551_to_TgaARGB1555
     }
 };
 
-eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
+eErrorCode LibTgaHelper::ReadFile(const FilePtr& infile, Vector<Image*>& imageSet, uint32 baseMipMap) const
 {
     DVASSERT(infile);
 
