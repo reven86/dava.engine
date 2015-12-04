@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,22 +26,72 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_DAVARENDERER_H__
-#define __QTTOOLS_DAVARENDERER_H__
+#ifndef __GRAPHEDITOR_GRAPHNODE_H__
+#define __GRAPHEDITOR_GRAPHNODE_H__
 
-#include <QObject>
+#include <core_common/signal.hpp>
+#include <core_data_model/i_list_model.hpp>
+#include <core_reflection/reflected_object.hpp>
+#include <core_reflection/object_handle.hpp>
 
-class QSurface;
-class QOpenGLContext;
+#include <string>
+#include <QPointF>
 
-class DavaRenderer : public QObject
+class ConnectionSlot;
+class GraphNode final
 {
-    Q_OBJECT
+    DECLARE_REFLECTED
 public:
-    DavaRenderer(QSurface * surface, QOpenGLContext * context);
-    ~DavaRenderer() override;
-public slots:
-    void paint();
+    GraphNode();
+    ~GraphNode();
+
+    struct Params
+    {
+        using TSlotPtr = ObjectHandleT<ConnectionSlot>;
+        using TSlotCollection = std::vector<TSlotPtr>;
+
+        TSlotCollection inputSlots;
+        TSlotCollection outputSlots;
+        std::string typeId;
+    };
+
+    void Init(Params&& params);
+
+    float GetPosX() const;
+    void SetPosX(float posX);
+    float GetPosY() const;
+    void SetPosY(float posY);
+
+    std::string const& GetTitle() const;
+    void SetTitle(std::string const& title);
+
+    size_t GetUID() const;
+    std::string const& GetType() const
+    {
+        return typeId;
+    }
+
+    void Shift(float modelShiftX, float modelShiftY);
+    void ShiftImpl(float modelShiftX, float modelShiftY);
+
+    Signal<void(float x, float y)> MoveNodes;
+    Signal<void(GraphNode*)> Changed;
+
+private:
+    IListModel* GetInputSlots() const;
+    IListModel* GetOutputSlots() const;
+
+    /// we need this method to call it through NGT reflection system and signal qml that value changed
+    void PosXChanged(const float& x);
+    void PosYChanged(const float& y);
+
+private:
+    std::string title;
+    float modelX = 0.0f, modelY = 0.0f;
+
+    std::unique_ptr<IListModel> inputSlots;
+    std::unique_ptr<IListModel> outputSlots;
+    std::string typeId;
 };
 
-#endif //__QTTOOLS_DAVARENDERER_H__
+#endif // __GRAPHEDITOR_GRAPHNODE_H__

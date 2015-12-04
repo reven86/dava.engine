@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,22 +26,29 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_DAVARENDERER_H__
-#define __QTTOOLS_DAVARENDERER_H__
+#include "QuickItemsManager.h"
 
-#include <QObject>
+#include "ConnectionItem.h"
 
-class QSurface;
-class QOpenGLContext;
-
-class DavaRenderer : public QObject
+QuickItemsManager& QuickItemsManager::Instance()
 {
-    Q_OBJECT
-public:
-    DavaRenderer(QSurface * surface, QOpenGLContext * context);
-    ~DavaRenderer() override;
-public slots:
-    void paint();
-};
+    static QuickItemsManager mng;
+    return mng;
+}
 
-#endif //__QTTOOLS_DAVARENDERER_H__
+void QuickItemsManager::RegisterObject(ConnectionItem* item)
+{
+    items.emplace(item->GetUID(), item);
+}
+
+void QuickItemsManager::UnregisterObject(ConnectionItem* item)
+{
+    items.erase(item->GetUID());
+}
+
+void QuickItemsManager::RepaintItem(size_t uid)
+{
+    auto iter = items.find(uid);
+    if (iter != items.end())
+        iter->second->update();
+}

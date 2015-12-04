@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,87 +26,66 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DAVAEngine.h"
+#include "TypeRegistration.h"
+#include "GraphEditor.h"
 
-#include "Platform/Qt5/QtLayer.h"
-#include "DavaRenderer.h"
+#include <core_generic_plugin/interfaces/i_component_context.hpp>
+#include <core_generic_plugin/generic_plugin.hpp>
 
-#include "Base/Singleton.h"
+#include <core_variant/variant.hpp>
+#include <core_variant/interfaces/i_meta_type_manager.hpp>
 
-#include <QOpenGLContext>
+#include <core_reflection/i_definition_manager.hpp>
 
-namespace
-{
+#include <core_ui_framework/i_ui_framework.hpp>
+#include <core_ui_framework/i_ui_application.hpp>
+#include <core_ui_framework/i_view.hpp>
 
-class OGLContextBinder: public DAVA::Singleton<OGLContextBinder>
+class GraphEditorPlugin : public PluginMain
 {
 public:
-    OGLContextBinder(QSurface * surface, QOpenGLContext * context)
-        : renderSurface(surface)
-        , renderContext(context)
+    GraphEditorPlugin(IComponentContext& context)
     {
     }
 
-    ~OGLContextBinder()
+    bool PostLoad(IComponentContext& context) override
     {
+        return true;
     }
 
-    void AcquireContex()
+    void Initialise(IComponentContext& context) override
     {
-        prevContext = QOpenGLContext::currentContext();
-        if (prevContext != nullptr)
-            prevSurface = prevContext->surface();
-        else
-            prevSurface = nullptr;
+        IUIFramework* uiFramework = context.queryInterface<IUIFramework>();
+        IUIApplication* uiapplication = context.queryInterface<IUIApplication>();
+        IDefinitionManager* defMng = context.queryInterface<IDefinitionManager>();
 
-        renderContext->makeCurrent(renderSurface);
+        assert(uiFramework != nullptr);
+        assert(uiapplication != nullptr);
+        assert(defMng != nullptr);
+
+        Variant::setMetaTypeManager(context.queryInterface<IMetaTypeManager>());
+
+        RegisterGrapEditorTypes(*defMng);
+        editor = defMng->create<GraphEditor>(false);
+
+        view = uiFramework->createView("qrc:/GE/GraphEditorView.qml", IUIFramework::ResourceType::Url, ObjectHandle(editor));
+        uiapplication->addView(*view);
     }
 
-    void ReleaseContext()
+    bool Finalise(IComponentContext& context) override
     {
-        renderContext->doneCurrent();
+        view.reset();
+        editor = ObjectHandleT<GraphEditor>();
+        return true;
+    }
 
-        if (prevContext != nullptr && prevSurface != nullptr)
-            prevContext->makeCurrent(prevSurface);
+    void Unload(IComponentContext& context) override
+    {
     }
 
 private:
-    QSurface * renderSurface = nullptr;
-    QOpenGLContext * renderContext = nullptr;
-
-    QSurface * prevSurface = nullptr;
-    QOpenGLContext * prevContext = nullptr;
+    std::unique_ptr<IView> view;
+    ObjectHandleT<GraphEditor> editor;
 };
 
-void AcqureContext()
-{
-    OGLContextBinder::Instance()->AcquireContex();
-}
-
-void ReleaseContext()
-{
-    OGLContextBinder::Instance()->ReleaseContext();
-}
-
-}
-
-DavaRenderer::DavaRenderer(QSurface * surface, QOpenGLContext * context)
-{
-    DVASSERT(OGLContextBinder::Instance() == nullptr);
-    new OGLContextBinder(surface, context);
-
-    DAVA::Core::Instance()->rendererParams.acquireContextFunc = &AcqureContext;
-    DAVA::Core::Instance()->rendererParams.releaseContextFunc = &ReleaseContext;
-
-    DAVA::QtLayer::Instance()->AppStarted();
-    DAVA::QtLayer::Instance()->OnResume();
-}
-
-DavaRenderer::~DavaRenderer()
-{
-    DAVA::QtLayer::Instance()->Release();}
-
-void DavaRenderer::paint()
-{
-    DAVA::QtLayer::Instance()->ProcessFrame();
-}
+PLG_CALLBACK_FUNC(GraphEditorPlugin)

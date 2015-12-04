@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,22 +26,36 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_DAVARENDERER_H__
-#define __QTTOOLS_DAVARENDERER_H__
+#ifndef __GRAPHEDITOR_CONNECTION_H__
+#define __GRAPHEDITOR_CONNECTION_H__
 
-#include <QObject>
+#include <core_reflection/object_handle.hpp>
+#include <core_reflection/reflected_object.hpp>
 
-class QSurface;
-class QOpenGLContext;
+#include <array>
 
-class DavaRenderer : public QObject
+class ConnectionSlot;
+
+class Connector
 {
-    Q_OBJECT
+    DECLARE_REFLECTED
 public:
-    DavaRenderer(QSurface * surface, QOpenGLContext * context);
-    ~DavaRenderer() override;
-public slots:
-    void paint();
+    Connector();
+    ~Connector();
+
+    void Init(size_t outputSlotID, size_t intputSlotID);
+
+    ObjectHandleT<ConnectionSlot> GetOutputSlot() const;
+    ObjectHandleT<ConnectionSlot> GetInputSlot() const;
+
+    size_t GetInputSlotId() const;
+    size_t GetOutputSlotId() const;
+
+    size_t GetUID() const;
+
+private:
+    size_t outputSlotID = 0;
+    size_t intputSlotID = 0;
 };
 
-#endif //__QTTOOLS_DAVARENDERER_H__
+#endif // __GRAPHEDITOR_CONNECTION_H__

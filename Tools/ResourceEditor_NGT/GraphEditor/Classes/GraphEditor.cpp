@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,22 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QTTOOLS_DAVARENDERER_H__
-#define __QTTOOLS_DAVARENDERER_H__
+#include "GraphEditor.h"
+#include "Metadata/GraphEditor.mpp"
 
-#include <QObject>
+#include "ConnectionManager.h"
 
-class QSurface;
-class QOpenGLContext;
+#include <core_dependency_system/i_interface.hpp>
+#include <core_reflection/i_definition_manager.hpp>
 
-class DavaRenderer : public QObject
+GraphEditor::GraphEditor()
 {
-    Q_OBJECT
-public:
-    DavaRenderer(QSurface * surface, QOpenGLContext * context);
-    ~DavaRenderer() override;
-public slots:
-    void paint();
-};
+    IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
+    assert(defMng != nullptr);
 
-#endif //__QTTOOLS_DAVARENDERER_H__
+    ConnectionManager& mng = ConnectionManager::Instance();
+    mng.Initialize(defMng);
+}
+
+GraphEditor::~GraphEditor()
+{
+    ConnectionManager::Instance().Finilize();
+}
+
+IListModel* GraphEditor::GetConnectorsModel() const
+{
+    return ConnectionManager::Instance().GetConnectorsModel();
+}
+
+IListModel* GraphEditor::GetNodeModel() const
+{
+    return ConnectionManager::Instance().GetNodeModel();
+}
+
+IListModel* GraphEditor::GetRootContextMenuModel() const
+{
+    return ConnectionManager::Instance().GetRootContextMenuModel();
+}
+
+IListModel* GraphEditor::GetNodeContextMenuModel() const
+{
+    return ConnectionManager::Instance().GetNodeContextMenuModel();
+}
+
+IListModel* GraphEditor::GetSlotContextMenuModel() const
+{
+    return ConnectionManager::Instance().GetSlotContextMenuModel();
+}
+
+void GraphEditor::CreateConnection(size_t outputUID, size_t inputUID)
+{
+    ConnectionManager::Instance().CreateConnection(outputUID, inputUID);
+}
