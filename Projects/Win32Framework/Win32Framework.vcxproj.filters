@@ -1171,9 +1171,6 @@
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.h">
       <Filter>Internal\DLC\Patcher</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Bind.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
       <Filter>Internal\DLC</Filter>
     </ClInclude>

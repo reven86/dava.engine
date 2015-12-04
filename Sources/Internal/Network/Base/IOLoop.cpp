@@ -42,9 +42,7 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
                                       , quitFlag(false)
                                       , uvasync()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     if (useDefaultIOLoop)
     {
         actualLoop = uv_default_loop();
@@ -63,9 +61,7 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
 
 IOLoop::~IOLoop()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     // We can close default loop too
     DVVERIFY(0 == uv_loop_close(actualLoop));
 #endif
@@ -73,10 +69,7 @@ IOLoop::~IOLoop()
 
 int32 IOLoop::Run(eRunMode runMode)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    return 0;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     static const uv_run_mode modes[] = {
         UV_RUN_DEFAULT,
         UV_RUN_ONCE,
@@ -84,14 +77,14 @@ int32 IOLoop::Run(eRunMode runMode)
     };
     DVASSERT(RUN_DEFAULT == runMode || RUN_ONCE == runMode || RUN_NOWAIT == runMode);
     return uv_run(actualLoop, modes[runMode]);
+#else
+    return 0;
 #endif
 }
 
 void IOLoop::Post(UserHandlerType handler)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     {
         LockGuard<Mutex> lock(mutex);
         // TODO: maybe do not insert duplicates
@@ -103,9 +96,7 @@ void IOLoop::Post(UserHandlerType handler)
 
 void IOLoop::PostQuit()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     if (false == quitFlag)
     {
         quitFlag = true;
@@ -116,9 +107,7 @@ void IOLoop::PostQuit()
 
 void IOLoop::HandleAsync()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     {
         // Steal queued handlers for execution and release mutex
         // Main reason to do so is to avoid deadlocks if executed
