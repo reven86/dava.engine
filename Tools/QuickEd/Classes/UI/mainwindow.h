@@ -61,16 +61,14 @@ public:
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    void OnProjectOpened(const DAVA::ResultList &resultList, const Project *project);
-    int AddTab(const DAVA::FilePath &scenePath);
-    void OnCleanChanged(int index, bool val);
+    void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
+    int AddTab(Document *document, int index);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
     bool isPixelized() const;
-    QComboBox *GetComboBoxLanguage();
+    QComboBox* GetComboBoxLanguage();
 
 protected:
-
     void closeEvent(QCloseEvent *event) override;
 
 signals:
@@ -93,9 +91,10 @@ signals:
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
+    void OnDocumentChanged(Document *document);
 
 private slots:
-    void OnCurrentIndexChanged(int arg);
+    void OnCleanChanged(bool val);
     void OnSaveDocument();
     void OnShowHelp();
     
@@ -110,7 +109,7 @@ private slots:
     
     void OnRtlChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
-    void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray &output);
+    void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
 
 private:
     void InitLanguageBox();
@@ -133,10 +132,10 @@ private:
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
 
     QCheckBox* emulationBox = nullptr;
-    LoggerOutputObject *loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
+    LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
-    QComboBox *comboboxLanguage = nullptr;
+    QComboBox* comboboxLanguage = nullptr;
 };
 
 #endif // MAINWINDOW_H

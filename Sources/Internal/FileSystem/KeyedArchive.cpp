@@ -176,8 +176,8 @@ bool KeyedArchive::Save(File *archive) const
     }
     for (const auto& obj : orderedMap)
     {
-		VariantType key;
-		key.SetString(obj.first);
+        VariantType key;
+        key.SetString(obj.first);
         if (!key.Write(archive)
             || !obj.second->Write(archive))
         {

@@ -30,14 +30,14 @@
 #ifndef __DAVAENGINE_SCREENMANAGER_H__
 #define __DAVAENGINE_SCREENMANAGER_H__
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
-#include "UI/UIScreenManagerMacOS.h"
+    #include "UI/UIScreenManagerDefault.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "UI/UIScreenManageriPhone.h"
+    #include "UI/UIScreenManageriPhone.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-	#include "UI/UIScreenManagerAndroid.h"
+    #include "UI/UIScreenManagerAndroid.h"
 #else //PLATFORMS
 	//other platforms
 #endif //PLATFORMS

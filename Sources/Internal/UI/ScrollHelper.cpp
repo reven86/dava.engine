@@ -108,10 +108,10 @@ namespace DAVA
             virtualViewSize = elementSize;
         }
     }
-	
-	float ScrollHelper::GetPosition() const
-	{
-		return position;
+
+    float ScrollHelper::GetPosition() const
+    {
+        return position;
 	}
 	
 	void ScrollHelper::SetViewSize(float32 size)
