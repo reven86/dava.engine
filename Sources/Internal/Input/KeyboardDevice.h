@@ -143,6 +143,7 @@ enum class Key : uint32
     ADD,
     SUBTRACT,
     DECIMAL,
+    NUMPADENTER,
 
     F1,
     F2,
@@ -163,6 +164,7 @@ enum class Key : uint32
 
     // exist on some keyboards
     NON_US_BACKSLASH,
+    PRINTSCREEN,
 
     TOTAL_KEYS_COUNT
 };
