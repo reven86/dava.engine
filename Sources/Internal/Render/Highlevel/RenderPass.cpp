@@ -207,14 +207,25 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
 }
 
 #if __DAVAENGINE_RENDERSTATS__
+
+bool RenderPass::QueryBufferIsReady(rhi::HQueryBuffer qBuffer)
+{
+    for (uint32 i = 0; i < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++i)
+    {
+        if (!rhi::QueryIsReady(qBuffer, i))
+            return false;
+    }
+    return true;
+}
+
 void RenderPass::ProcessVisibilityQuery()
 {
     DVASSERT(queryBuffers.size() < 128);
 
-    while (queryBuffers.size() && rhi::QueryIsReady(queryBuffers.front(), 0))
+    while (queryBuffers.size() && QueryBufferIsReady(queryBuffers.front()))
     {
         RenderStats& stats = Renderer::GetRenderStats();
-        for (uint32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+        for (uint32 i = 0; i < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++i)
         {
             FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
             stats.queryResults[layerName] += rhi::QueryValue(queryBuffers.front(), i);
@@ -251,7 +262,7 @@ void RenderPass::EndRenderPass()
 
 void RenderPass::ClearLayersArrays()
 {
-    for (uint32 id = 0; id < (uint32)RenderLayer::RENDER_LAYER_ID_COUNT; ++id)
+    for (uint32 id = 0; id < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++id)
     {
         layersBatchArrays[id].Clear();
     }

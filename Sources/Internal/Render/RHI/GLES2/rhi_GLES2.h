@@ -65,6 +65,8 @@ void SetupDispatch(Dispatch* dispatch);
 void SetQueryIndex(Handle buf, uint32 objectIndex);
 void QueryComplete(Handle buf);
 bool QueryIsCompleted(Handle buf);
+
+void ReleaseQueryObjectsPool();
 }
 
 namespace TextureGLES2

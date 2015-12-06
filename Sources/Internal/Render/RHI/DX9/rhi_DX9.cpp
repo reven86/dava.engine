@@ -141,6 +141,7 @@ _IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 static void
 dx9_Uninitialize()
 {
+    QueryBufferDX9::ReleaseQueryPool();
     UninitializeRenderThreadDX9();
 }
 

@@ -102,7 +102,6 @@ public:
     Handle cur_pipelinestate;
     uint32 cur_stride;
     Handle cur_query_buf;
-    uint32 cur_query_i;
     D3D11_VIEWPORT def_viewport;
     RasterizerParamDX11 rs_param;
     ID3D11RasterizerState* cur_rs;
@@ -393,6 +392,8 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
 
         ds_view->Release();
     }
+
+    DVASSERT(!cb->isFirstInPass || cb->cur_query_buf == InvalidHandle || !QueryBufferDX11::QueryIsCompleted(cb->cur_query_buf));
 }
 
 //------------------------------------------------------------------------------
@@ -401,6 +402,9 @@ static void
 dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
+
+    if (cb->isLastInPass && cb->cur_query_buf != InvalidHandle)
+        QueryBufferDX11::QueryComplete(cb->cur_query_buf, cb->context);
 
     cb->context->FinishCommandList(TRUE, &(cb->commandList));
     cb->sync = syncObject;
@@ -551,7 +555,8 @@ dx11_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
-    cb->cur_query_i = objectIndex;
+    if (cb->cur_query_buf != InvalidHandle)
+        QueryBufferDX11::SetQueryIndex(cb->cur_query_buf, objectIndex, cb->context);
 }
 
 //------------------------------------------------------------------------------
@@ -656,13 +661,7 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
 
     StatSet::IncStat(stat_SET_VB, 1);
 
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
-
     ctx->Draw(vertexCount, baseVertex);
-
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
     switch (topo)
@@ -727,13 +726,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     VertexBufferDX11::SetToRHI(cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx);
     StatSet::IncStat(stat_SET_VB, 1);
 
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
-
     ctx->DrawIndexed(indexCount, startIndex, firstVertex);
-
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
     switch (topo)
@@ -1213,7 +1206,6 @@ void CommandBufferDX11_t::Reset()
     cur_pipelinestate = InvalidHandle;
     cur_stride = 0;
     cur_query_buf = InvalidHandle;
-    cur_query_i = DAVA::InvalidIndex;
     cur_rs = nullptr;
 
     rs_param.cullMode = CULL_NONE;

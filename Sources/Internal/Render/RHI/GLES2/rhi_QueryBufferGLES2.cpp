@@ -58,8 +58,6 @@ using DAVA::Logger;
 
 #endif
 
-#define MAX_PENDING_QUERIES 256
-
 namespace rhi
 {
 //==============================================================================
@@ -82,7 +80,9 @@ public:
 typedef ResourcePool<QueryBufferGLES2_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false> QueryBufferGLES2Pool;
 RHI_IMPL_POOL(QueryBufferGLES2_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false);
 
-std::vector<GLuint> QueryObjectPool;
+std::vector<GLuint> QueryObjectGLES2Pool;
+
+#define GLES2_MAX_PENDING_QUERIES 256
 
 //==============================================================================
 
@@ -113,7 +113,7 @@ gles2_QueryBuffer_Reset(Handle handle)
     if (buf->pendingQueries.size())
     {
         for (size_t q = 0; q < buf->pendingQueries.size(); ++q)
-            QueryObjectPool.push_back(buf->pendingQueries[q].first);
+            QueryObjectGLES2Pool.push_back(buf->pendingQueries[q].first);
 
         buf->pendingQueries.clear();
     }
@@ -131,7 +131,7 @@ gles2_QueryBuffer_Delete(Handle handle)
     if (buf->pendingQueries.size())
     {
         for (size_t q = 0; q < buf->pendingQueries.size(); ++q)
-            QueryObjectPool.push_back(buf->pendingQueries[q].first);
+            QueryObjectGLES2Pool.push_back(buf->pendingQueries[q].first);
 
         buf->pendingQueries.clear();
     }
@@ -142,13 +142,13 @@ gles2_QueryBuffer_Delete(Handle handle)
 static void
 gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
 {
-    GLCommand cmd[MAX_PENDING_QUERIES];
-    uint32 results[MAX_PENDING_QUERIES];
+    GLCommand cmd[GLES2_MAX_PENDING_QUERIES];
+    uint32 results[GLES2_MAX_PENDING_QUERIES];
     uint32 cmdCount = uint32(buf->pendingQueries.size());
 
     if (cmdCount)
     {
-        DVASSERT(cmdCount < MAX_PENDING_QUERIES);
+        DVASSERT(cmdCount < GLES2_MAX_PENDING_QUERIES);
 
         for (uint32 q = 0; q < cmdCount; ++q)
         {
@@ -166,7 +166,7 @@ gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
                 if (resultIndex < buf->results.size())
                     buf->results[resultIndex] = results[q];
 
-                QueryObjectPool.push_back(buf->pendingQueries.back().first);
+                QueryObjectGLES2Pool.push_back(buf->pendingQueries.back().first);
 
                 buf->pendingQueries[q] = buf->pendingQueries.back();
                 buf->pendingQueries.pop_back();
@@ -205,6 +205,7 @@ gles2_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
     DVASSERT(buf);
+
     gles2_Check_Query_Results(buf);
 
     if (objectIndex < buf->results.size())
@@ -242,10 +243,10 @@ void SetQueryIndex(Handle handle, uint32 objectIndex)
         if (objectIndex != DAVA::InvalidIndex)
         {
             GLuint q = 0;
-            if (QueryObjectPool.size())
+            if (QueryObjectGLES2Pool.size())
             {
-                q = QueryObjectPool.back();
-                QueryObjectPool.pop_back();
+                q = QueryObjectGLES2Pool.back();
+                QueryObjectGLES2Pool.pop_back();
             }
             else
             {
@@ -289,6 +290,18 @@ bool QueryIsCompleted(Handle handle)
 
     return buf->bufferCompleted;
 }
+
+void ReleaseQueryObjectsPool()
+{
+    if (QueryObjectGLES2Pool.size())
+    {
+        GLCommand cmd = { GLCommand::DELETE_QUERIES, { uint64(QueryObjectGLES2Pool.size()), uint64(QueryObjectGLES2Pool.data()) } };
+        ExecGL(&cmd, 1);
+
+        QueryObjectGLES2Pool.clear();
+    }
+}
+
 }
 
 //==============================================================================

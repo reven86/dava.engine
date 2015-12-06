@@ -280,6 +280,7 @@ _OGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsize
 
 void gles2_Uninitialize()
 {
+    QueryBufferGLES2::ReleaseQueryObjectsPool();
     UninitializeRenderThreadGLES2();
 }
 

@@ -624,7 +624,6 @@ void CommandBufferDX9_t::Execute()
     Handle cur_pipelinestate = InvalidHandle;
     uint32 cur_stride = 0;
     Handle cur_query_buf = InvalidHandle;
-    uint32 cur_query_i = DAVA::InvalidIndex;
     D3DVIEWPORT9 def_viewport;
 
     _D3D9_Device->GetViewport(&def_viewport);
@@ -704,6 +703,8 @@ void CommandBufferDX9_t::Execute()
 
                     DX9_CALL(_D3D9_Device->Clear(0, NULL, flags, D3DCOLOR_RGBA(r, g, b, a), passCfg.depthStencilBuffer.clearDepth, 0), "Clear");
                 }
+
+                DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferDX9::QueryIsCompleted(cur_query_buf));
             }
         }
         break;
@@ -714,6 +715,9 @@ void CommandBufferDX9_t::Execute()
 
             if (isLastInPass)
             {
+                if (cur_query_buf != InvalidHandle)
+                    QueryBufferDX9::QueryComplete(cur_query_buf);
+
                 DX9_CALL(_D3D9_Device->EndScene(), "EndScene");
                 if (_D3D9_BackBuf)
                 {
@@ -766,7 +770,8 @@ void CommandBufferDX9_t::Execute()
 
         case DX9__SET_QUERY_INDEX:
         {
-            cur_query_i = uint32(arg[0]);
+            if (cur_query_buf != InvalidHandle)
+                QueryBufferDX9::SetQueryIndex(cur_query_buf, uint32(arg[0]));
             c += 1;
         }
         break;
@@ -919,9 +924,6 @@ void CommandBufferDX9_t::Execute()
 
         case DX9__DRAW_PRIMITIVE:
         {
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
-
             DX9_CALL(_D3D9_Device->DrawPrimitive((D3DPRIMITIVETYPE)(arg[0]), /*base_vertex*/ 0, UINT(arg[1])), "DrawPrimitive");
             StatSet::IncStat(stat_DP, 1);
             switch (arg[0])
@@ -942,9 +944,6 @@ void CommandBufferDX9_t::Execute()
                 break;
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferDX9::EndQuery(cur_query_buf, cur_query_i);
-
             c += 2;
         }
         break;
@@ -957,13 +956,7 @@ void CommandBufferDX9_t::Execute()
             uint32 firstVertex = uint32(arg[3]);
             uint32 startIndex = uint32(arg[4]);
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
-
             DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(type, firstVertex, 0, vertexCount, startIndex, primCount), "DrawIndexedPrimitive");
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferDX9::EndQuery(cur_query_buf, cur_query_i);
 
             StatSet::IncStat(stat_DIP, 1);
             switch (type)
