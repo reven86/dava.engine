@@ -46,7 +46,6 @@ void ChannelAdapter::SetConnection(IConnectionPtr& conn)
     LockGuard<RecursiveMutex> guard(mutex);
 
     connection = conn;
-    connectionWasHere = true;
     channelListener->OnChannelOpen(this);
 }
 
@@ -83,6 +82,7 @@ bool ChannelAdapter::Send(const void* data, size_t length, uint32 /*flags*/, uin
 void ChannelAdapter::Receive(const void* data, size_t length)
 {
     LockGuard<RecursiveMutex> guard(mutex);
+    connectionWasHere = true;
     channelListener->OnPacketReceived(this, data, length);
 }
 

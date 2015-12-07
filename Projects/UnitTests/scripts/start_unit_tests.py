@@ -79,12 +79,16 @@ def start_unittests_on_uwp_device():
 
     for root, dirs, files in os.walk("../Release"):
         for file in files:
-            if file.endswith(".appx") and PRJ_NAME_BASE in file:
+            if file.endswith(".appxbundle") and PRJ_NAME_BASE in file:
                  name.append(os.path.join(root, file))
 
-    sub_process = subprocess.Popen(["../../../Tools/Bin/UWPRunner.exe", '--package', name[0], 
+    package_name = name[0]
+    arch = sys.argv[2]
+    sub_process = subprocess.Popen(["../../../Tools/Bin/UWPRunner.exe", 
+                                    '--package', package_name, 
+                                    '--arch', arch,
                                     '--tc_test'],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     return sub_process
 
