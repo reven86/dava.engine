@@ -178,6 +178,7 @@ public:
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
+    friend ref class WinUAPXamlApp;
     ~KeyboardDevice();
     KeyboardDevice();
 

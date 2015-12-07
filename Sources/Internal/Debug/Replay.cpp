@@ -111,7 +111,7 @@ void Replay::RecordEvent(const UIEvent * ev)
 	Write(ev->phase);
 	Write(ev->controlState);
 	Write(ev->tapCount);
-	Write<uint16>(ev->keyChar);
+    Write<uint32>(ev->keyChar);
     Write(static_cast<uint32>(ev->device));
 }
 

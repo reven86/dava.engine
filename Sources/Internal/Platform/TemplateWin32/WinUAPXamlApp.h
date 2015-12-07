@@ -136,7 +136,7 @@ private:
 
     struct MouseButtonState
     {
-        UIEvent::eButtonID button = UIEvent::BUTTON_NONE;
+        UIEvent::MouseButton button = UIEvent::MouseButton::None;
         bool isPressed = false;
     };
 

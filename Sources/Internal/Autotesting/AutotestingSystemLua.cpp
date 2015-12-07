@@ -563,8 +563,8 @@ namespace DAVA
 				break;
 			}
 			WideString str;
-			str += keyPress.keyChar;
-			if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
+            str += static_cast<wchar_t>(keyPress.keyChar);
+            if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
 			{
 				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
 			}
