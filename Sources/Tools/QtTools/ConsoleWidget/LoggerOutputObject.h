@@ -32,7 +32,7 @@
 
 #include "FileSystem/Logger.h"
 #include <QObject>
- 
+
 class LoggerOutputObject final
 : public QObject
 {
@@ -42,7 +42,7 @@ public:
     ~LoggerOutputObject() = default;
 
 signals:
-    void OutputReady(DAVA::Logger::eLogLevel ll, const QByteArray &text);
+    void OutputReady(DAVA::Logger::eLogLevel ll, const QByteArray& text);
 
 private:
     class LoggerOutputContainer;

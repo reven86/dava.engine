@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -48,94 +47,93 @@ subject to the following restrictions:
 #include "btConvexInternalShape.h"
 #include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h" // for the types
 
-
 ///The btCapsuleShape represents a capsule around the Y axis, there is also the btCapsuleShapeX aligned around the X axis and btCapsuleShapeZ around the Z axis.
 ///The total height is height+2*radius, so the height is just the height between the center of each 'sphere' of the capsule caps.
 ///The btCapsuleShape is a convex hull of two spheres. The btMultiSphereShape is a more general collision shape that takes the convex hull of multiple sphere, so it can also represent a capsule when just using two spheres.
 class btCapsuleShape : public btConvexInternalShape
 {
 protected:
-	int	m_upAxis;
+    int m_upAxis;
 
 protected:
-	///only used for btCapsuleShapeZ and btCapsuleShapeX subclasses.
-	btCapsuleShape() : btConvexInternalShape() {m_shapeType = CAPSULE_SHAPE_PROXYTYPE;};
+    ///only used for btCapsuleShapeZ and btCapsuleShapeX subclasses.
+    btCapsuleShape()
+        : btConvexInternalShape()
+    {
+        m_shapeType = CAPSULE_SHAPE_PROXYTYPE;
+    };
 
 public:
-	btCapsuleShape(btScalar radius,btScalar height);
+    btCapsuleShape(btScalar radius, btScalar height);
 
-	///CollisionShape Interface
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+    ///CollisionShape Interface
+    virtual void calculateLocalInertia(btScalar mass, btVector3& inertia) const;
 
-	/// btConvexShape Interface
-	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const;
+    /// btConvexShape Interface
+    virtual btVector3 localGetSupportingVertexWithoutMargin(const btVector3& vec) const;
 
-	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
-	
-	virtual void setMargin(btScalar collisionMargin)
-	{
-		//correct the m_implicitShapeDimensions for the margin
-		btVector3 oldMargin(getMargin(),getMargin(),getMargin());
-		btVector3 implicitShapeDimensionsWithMargin = m_implicitShapeDimensions+oldMargin;
-		
-		btConvexInternalShape::setMargin(collisionMargin);
-		btVector3 newMargin(getMargin(),getMargin(),getMargin());
-		m_implicitShapeDimensions = implicitShapeDimensionsWithMargin - newMargin;
+    virtual void batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const;
 
-	}
+    virtual void setMargin(btScalar collisionMargin)
+    {
+        //correct the m_implicitShapeDimensions for the margin
+        btVector3 oldMargin(getMargin(), getMargin(), getMargin());
+        btVector3 implicitShapeDimensionsWithMargin = m_implicitShapeDimensions + oldMargin;
 
-	virtual void getAabb (const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const
-	{
-			btVector3 halfExtents(getRadius(),getRadius(),getRadius());
-			halfExtents[m_upAxis] = getRadius() + getHalfHeight();
-			halfExtents += btVector3(getMargin(),getMargin(),getMargin());
-			btMatrix3x3 abs_b = t.getBasis().absolute();  
-			btVector3 center = t.getOrigin();
-			btVector3 extent = btVector3(abs_b[0].dot(halfExtents),abs_b[1].dot(halfExtents),abs_b[2].dot(halfExtents));		  
-			
-			aabbMin = center - extent;
-			aabbMax = center + extent;
-	}
+        btConvexInternalShape::setMargin(collisionMargin);
+        btVector3 newMargin(getMargin(), getMargin(), getMargin());
+        m_implicitShapeDimensions = implicitShapeDimensionsWithMargin - newMargin;
+    }
 
-	virtual const char*	getName()const 
-	{
-		return "CapsuleShape";
-	}
+    virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const
+    {
+        btVector3 halfExtents(getRadius(), getRadius(), getRadius());
+        halfExtents[m_upAxis] = getRadius() + getHalfHeight();
+        halfExtents += btVector3(getMargin(), getMargin(), getMargin());
+        btMatrix3x3 abs_b = t.getBasis().absolute();
+        btVector3 center = t.getOrigin();
+        btVector3 extent = btVector3(abs_b[0].dot(halfExtents), abs_b[1].dot(halfExtents), abs_b[2].dot(halfExtents));
 
-	int	getUpAxis() const
-	{
-		return m_upAxis;
-	}
+        aabbMin = center - extent;
+        aabbMax = center + extent;
+    }
 
-	btScalar	getRadius() const
-	{
-		int radiusAxis = (m_upAxis+2)%3;
-		return m_implicitShapeDimensions[radiusAxis];
-	}
+    virtual const char* getName() const
+    {
+        return "CapsuleShape";
+    }
 
-	btScalar	getHalfHeight() const
-	{
-		return m_implicitShapeDimensions[m_upAxis];
-	}
+    int getUpAxis() const
+    {
+        return m_upAxis;
+    }
 
-	virtual void	setLocalScaling(const btVector3& scaling)
-	{
-		btVector3 oldMargin(getMargin(),getMargin(),getMargin());
-		btVector3 implicitShapeDimensionsWithMargin = m_implicitShapeDimensions+oldMargin;
-		btVector3 unScaledImplicitShapeDimensionsWithMargin = implicitShapeDimensionsWithMargin / m_localScaling;
+    btScalar getRadius() const
+    {
+        int radiusAxis = (m_upAxis + 2) % 3;
+        return m_implicitShapeDimensions[radiusAxis];
+    }
 
-		btConvexInternalShape::setLocalScaling(scaling);
+    btScalar getHalfHeight() const
+    {
+        return m_implicitShapeDimensions[m_upAxis];
+    }
 
-		m_implicitShapeDimensions = (unScaledImplicitShapeDimensionsWithMargin * m_localScaling) - oldMargin;
+    virtual void setLocalScaling(const btVector3& scaling)
+    {
+        btVector3 oldMargin(getMargin(), getMargin(), getMargin());
+        btVector3 implicitShapeDimensionsWithMargin = m_implicitShapeDimensions + oldMargin;
+        btVector3 unScaledImplicitShapeDimensionsWithMargin = implicitShapeDimensionsWithMargin / m_localScaling;
 
-	}
+        btConvexInternalShape::setLocalScaling(scaling);
 
-	virtual	int	calculateSerializeBufferSize() const;
+        m_implicitShapeDimensions = (unScaledImplicitShapeDimensionsWithMargin * m_localScaling) - oldMargin;
+    }
 
-	///fills the dataBuffer and returns the struct name (and 0 on failure)
-	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
+    virtual int calculateSerializeBufferSize() const;
 
-
+    ///fills the dataBuffer and returns the struct name (and 0 on failure)
+    virtual const char* serialize(void* dataBuffer, btSerializer* serializer) const;
 };
 
 ///btCapsuleShapeX represents a capsule around the Z axis
@@ -143,17 +141,13 @@ public:
 class btCapsuleShapeX : public btCapsuleShape
 {
 public:
+    btCapsuleShapeX(btScalar radius, btScalar height);
 
-	btCapsuleShapeX(btScalar radius,btScalar height);
-		
-	//debugging
-	virtual const char*	getName()const
-	{
-		return "CapsuleX";
-	}
-
-	
-
+    //debugging
+    virtual const char* getName() const
+    {
+        return "CapsuleX";
+    }
 };
 
 ///btCapsuleShapeZ represents a capsule around the Z axis
@@ -161,42 +155,40 @@ public:
 class btCapsuleShapeZ : public btCapsuleShape
 {
 public:
-	btCapsuleShapeZ(btScalar radius,btScalar height);
+    btCapsuleShapeZ(btScalar radius, btScalar height);
 
-		//debugging
-	virtual const char*	getName()const
-	{
-		return "CapsuleZ";
-	}
-
-	
+    //debugging
+    virtual const char* getName() const
+    {
+        return "CapsuleZ";
+    }
 };
 
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
-struct	btCapsuleShapeData
+struct btCapsuleShapeData
 {
-	btConvexInternalShapeData	m_convexInternalShapeData;
+    btConvexInternalShapeData m_convexInternalShapeData;
 
-	int	m_upAxis;
+    int m_upAxis;
 
-	char	m_padding[4];
+    char m_padding[4];
 };
 
-SIMD_FORCE_INLINE	int	btCapsuleShape::calculateSerializeBufferSize() const
+SIMD_FORCE_INLINE int btCapsuleShape::calculateSerializeBufferSize() const
 {
-	return sizeof(btCapsuleShapeData);
+    return sizeof(btCapsuleShapeData);
 }
 
-	///fills the dataBuffer and returns the struct name (and 0 on failure)
-SIMD_FORCE_INLINE	const char*	btCapsuleShape::serialize(void* dataBuffer, btSerializer* serializer) const
+///fills the dataBuffer and returns the struct name (and 0 on failure)
+SIMD_FORCE_INLINE const char* btCapsuleShape::serialize(void* dataBuffer, btSerializer* serializer) const
 {
-	btCapsuleShapeData* shapeData = (btCapsuleShapeData*) dataBuffer;
-	
-	btConvexInternalShape::serialize(&shapeData->m_convexInternalShapeData,serializer);
+    btCapsuleShapeData* shapeData = (btCapsuleShapeData*)dataBuffer;
 
-	shapeData->m_upAxis = m_upAxis;
-	
-	return "btCapsuleShapeData";
+    btConvexInternalShape::serialize(&shapeData->m_convexInternalShapeData, serializer);
+
+    shapeData->m_upAxis = m_upAxis;
+
+    return "btCapsuleShapeData";
 }
 
 #endif //BT_CAPSULE_SHAPE_H

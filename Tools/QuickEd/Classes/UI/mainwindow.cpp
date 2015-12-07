@@ -54,18 +54,19 @@ using namespace DAVA;
 
 struct MainWindow::TabState
 {
-    TabState(QString arg = QString())
-        : tabText(arg)
-        , isModified(false)
+    TabState(Document* document_, const QString &tabText_)
+        : document(document_)
+        , tabText(tabText_)
     {
+        DVASSERT(document != nullptr);
     }
+    Document *document = nullptr;
     QString tabText;
-    bool isModified;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
@@ -96,7 +97,6 @@ MainWindow::MainWindow(QWidget *parent)
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
     connect(tabBar, &QTabBar::tabCloseRequested, this, &MainWindow::TabClosed);
-    connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::OnCurrentIndexChanged);
     connect(tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
     setUnifiedTitleAndToolBarOnMac(true);
 
@@ -109,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent)
     toolBarPlugins->setEnabled(false);
 
     connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
-    OnCurrentIndexChanged(-1);
+    OnDocumentChanged(nullptr);
 }
 
 void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
@@ -135,7 +135,29 @@ void MainWindow::OnProjectIsOpenChanged(bool arg)
 void MainWindow::OnCountChanged(int count)
 {
     actionSaveAllDocuments->setEnabled(count > 0);
-    OnCurrentIndexChanged(tabBar->currentIndex());
+}
+
+void MainWindow::OnDocumentChanged(Document* document)
+{
+    bool enabled = (document != nullptr);
+    packageWidget->setEnabled(enabled);
+    propertiesWidget->setEnabled(enabled);
+    previewWidget->setEnabled(enabled);
+    libraryWidget->setEnabled(enabled);
+
+    actionSaveDocument->setEnabled(nullptr != document && document->GetUndoStack()->isClean());
+
+    for (int index = 0, count = tabBar->count(); index < count; ++index)
+    {
+        QVariant var = tabBar->tabData(index);
+        DVASSERT(var.canConvert<TabState*>());
+        TabState *tabState = var.value<TabState*>();
+        if (tabState->document == document)
+        {
+            tabBar->setCurrentIndex(index);
+            return;
+        }
+    }
 }
 
 int MainWindow::CloseTab(int index)
@@ -184,29 +206,30 @@ QComboBox* MainWindow::GetComboBoxLanguage()
     return comboboxLanguage;
 }
 
-void MainWindow::OnCurrentIndexChanged(int arg)
+void MainWindow::OnCleanChanged(bool isClean)
 {
-    bool enabled = arg >= 0;
-    TabState *tabState = tabBar->tabData(arg).value<TabState*>();
-    actionSaveDocument->setEnabled(nullptr != tabState && tabState->isModified); //set action enabled if new documend still modified
-}
-
-void MainWindow::OnCleanChanged(int index, bool val)
-{
-    DVASSERT(index >= 0);
-    TabState *tabState = tabBar->tabData(index).value<TabState*>();
-    tabState->isModified = !val;
-
-    QString tabText = tabState->tabText;
-    if (!val)
+    QUndoStack *undoStack = qobject_cast<QUndoStack*>(sender());
+    DVASSERT(nullptr != undoStack);
+    Document *document = qobject_cast<Document*>(undoStack->parent());
+    if (nullptr == document)
     {
-        tabText.append('*');
+        return; //undostack emit clear when destroyed
     }
-    tabBar->setTabText(index, tabText);
-
-    if (index == tabBar->currentIndex())
+    for (int index = 0, count = tabBar->count(); index < count; ++index)
     {
-        actionSaveDocument->setEnabled(tabState->isModified);
+        QVariant var = tabBar->tabData(index);
+        DVASSERT(var.canConvert<TabState*>());
+        TabState *tabState = var.value<TabState*>();
+        if (tabState->document == document)
+        {
+            QString tabText = tabState->tabText;
+            if (!isClean)
+            {
+                tabText += "*";
+            }
+            tabBar->setTabText(index, tabText);
+            actionSaveDocument->setEnabled(!isClean);
+        }
     }
 }
 
@@ -220,7 +243,7 @@ bool MainWindow::isPixelized() const
     return actionPixelized->isChecked();
 }
 
-void MainWindow::ExecDialogReloadSprites(SpritesPacker *packer)
+void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
 {
     DVASSERT(nullptr != packer);
     auto lastFlags = acceptableLoggerFlags;
@@ -445,15 +468,20 @@ void MainWindow::RebuildRecentMenu()
     menuRecent->setEnabled(projectCount > 0);
 }
 
-int MainWindow::AddTab(const FilePath &scenePath)
+int MainWindow::AddTab(Document *document, int index)
 {
-    QString tabText(scenePath.GetFilename().c_str());
-    int index = tabBar->addTab(tabText);
-    tabBar->setTabToolTip(index, scenePath.GetAbsolutePathname().c_str());
-    TabState* tabState = new TabState(tabText);
-    tabBar->setTabData(index, QVariant::fromValue<TabState*>(tabState));
+    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &MainWindow::OnCleanChanged);
+
+    QFileInfo fileInfo(document->GetPackageAbsolutePath());
+    QString tabText(fileInfo.fileName());
+    bool blockSignals = tabBar->blockSignals(true); //block signals, because insertTab emit currentTabChanged
+    int insertedIndex = tabBar->insertTab(index, tabText);
+    tabBar->blockSignals(blockSignals);
+    tabBar->setTabToolTip(insertedIndex, fileInfo.absoluteFilePath());
+    TabState* tabState = new TabState(document, tabText);
+    tabBar->setTabData(insertedIndex, QVariant::fromValue<TabState*>(tabState));
     OnCountChanged(tabBar->count());
-    return index;
+    return insertedIndex;
 }
 
 void MainWindow::closeEvent(QCloseEvent *ev)
@@ -463,7 +491,7 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     ev->ignore();
 }
 
-void MainWindow::OnProjectOpened(const ResultList &resultList, const Project *project)
+void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
@@ -536,9 +564,9 @@ void MainWindow::OnGlobalClassesChanged(const QString &str)
     emit GlobalStyleClassesChanged(str);
 }
 
-void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray &output)
+void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& output)
 {
-    if(static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
+    if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
     {
         logWidget->AddMessage(logLevel, output);
     }

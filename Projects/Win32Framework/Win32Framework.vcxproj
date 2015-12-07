@@ -684,9 +684,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIPopup.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreen.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManager.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhone.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhoneImpl.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerMacOS.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenshoter.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScrollBar.h" />
@@ -1144,7 +1142,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIParticles.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIPopup.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreen.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerMacOS.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreenshoter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreenTransition.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIScrollBar.cpp" />

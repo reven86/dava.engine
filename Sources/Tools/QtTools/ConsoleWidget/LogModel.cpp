@@ -39,7 +39,6 @@
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 
-
 LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
     , mutex(new QMutex)
