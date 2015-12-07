@@ -328,7 +328,7 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 
 DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
-    hids.emplace(make_pair(type, Set<String>()));
+    hids.emplace(type, Set<String>());
     DeviceWatcher^ watcher = nullptr;
     Platform::Collections::Vector<Platform::String^>^ requestedProperties = ref new Platform::Collections::Vector<Platform::String^>();
     requestedProperties->Append("System.Devices.InterfaceClassGuid");
@@ -390,8 +390,7 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
     //TODO: delete it, kostil for surface mouse
     if (MOUSE == type)
     {
-        std::wstring id(information->Id->Data());
-        if (id.find(KOSTIL_SURFACE_MOUSE) != std::wstring::npos)
+        if (wcsstr(information->Id->Data(), KOSTIL_SURFACE_MOUSE) != nullptr)
         {
             return;
         }
@@ -399,18 +398,17 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
     //TODO: delete it, kostil for surface keyboard
     if (KEYBOARD == type)
     {
-        std::wstring id(information->Id->Data());
-        if (wcsstr(id.c_str(), KOSTIL_SURFACE_KEYBOARD) != nullptr)
+        if (wcsstr(information->Id->Data(), KOSTIL_SURFACE_KEYBOARD) != nullptr)
         {
             return;
         }
     }
-    auto it = hids.find(type);
     String id = RTStringToString(information->Id);
-    auto idIter = it->second.find(id);
-    if (idIter == it->second.end())
+    Set<String>& setIdDevices = hids[type];
+    auto idIter = setIdDevices.find(id);
+    if (idIter == setIdDevices.end())
     {
-        it->second.emplace(id);
+        setIdDevices.emplace(std::move(id));
         NotifyAllClients(type, true);
     }
 }
@@ -418,12 +416,12 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
 void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpdate^ information)
 {
     LockGuard<Mutex> lock(hidsMutex);
-    auto it = hids.find(type);
     String id = RTStringToString(information->Id);
-    auto idIter = it->second.find(id);
-    if (idIter != it->second.end())
+    Set<String>& setIdDevices = hids[type];
+    auto idIter = setIdDevices.find(id);
+    if (idIter != setIdDevices.end())
     {
-        it->second.erase(idIter);
+        setIdDevices.erase(idIter);
         NotifyAllClients(type, false);
     }
 }
@@ -431,7 +429,7 @@ void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpd
 void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpdate^ information)
 {
     LockGuard<Mutex> lock(hidsMutex);
-    auto it = hids.find(type);
+    Set<String>& setIdDevices = hids[type];
     if (TOUCH == type)
     {
         TouchCapabilities touchCapabilities;
@@ -441,11 +439,11 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
             isTouchPresent = newState;
             if (isTouchPresent)
             {
-                it->second.emplace(DEFAULT_TOUCH_ID);
+                setIdDevices.emplace(DEFAULT_TOUCH_ID);
             }
             else
             {
-                it->second.erase(DEFAULT_TOUCH_ID);
+                setIdDevices.erase(DEFAULT_TOUCH_ID);
             }
             NotifyAllClients(type, isTouchPresent);
         }
@@ -459,20 +457,20 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
             isEnabled = safe_cast<bool>(properties->Lookup(L"System.Devices.InterfaceEnabled"));
         }
         String id = RTStringToString(information->Id);
-        auto iterId = it->second.find(id);
+        auto iterId = setIdDevices.find(id);
         if (isEnabled)
         {
-            if (iterId == it->second.end())
+            if (iterId == setIdDevices.end())
             {
-                it->second.emplace(id);
+                setIdDevices.emplace(std::move(id));
                 NotifyAllClients(type, isEnabled);
             }
         }
         else
         {
-            if (iterId != it->second.end())
+            if (iterId != setIdDevices.end())
             {
-                it->second.erase(id);
+                setIdDevices.erase(id);
                 NotifyAllClients(type, isEnabled);
             }
         }
