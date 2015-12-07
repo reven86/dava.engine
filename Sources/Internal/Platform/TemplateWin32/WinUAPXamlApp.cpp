@@ -429,33 +429,54 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
     });
 }
 
-WinUAPXamlApp::MouseButtonState WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties)
+void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties, Vector<MouseButtonChange>& out)
 {
-    MouseButtonState result;
+    out.clear();
 
-    if (isLeftButtonPressed != pointProperties->IsLeftButtonPressed)
+    if (GetMouseButtonState(UIEvent::MouseButton::Left) != pointProperties->IsLeftButtonPressed)
     {
-        result.button = UIEvent::MouseButton::Left;
-        result.isPressed = pointProperties->IsLeftButtonPressed;
+        MouseButtonChange change;
+        change.button = UIEvent::MouseButton::Left;
+        change.beginOrEnd = pointProperties->IsLeftButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+        out.push_back(change);
     }
 
-    if (isRightButtonPressed != pointProperties->IsRightButtonPressed)
+    if (GetMouseButtonState(UIEvent::MouseButton::Right) != pointProperties->IsRightButtonPressed)
     {
-        result.button = UIEvent::MouseButton::Right;
-        result.isPressed = pointProperties->IsRightButtonPressed;
+        MouseButtonChange change;
+        change.button = UIEvent::MouseButton::Right;
+        change.beginOrEnd = pointProperties->IsRightButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+        out.push_back(change);
     }
 
-    if (isMiddleButtonPressed != pointProperties->IsMiddleButtonPressed)
+    if (GetMouseButtonState(UIEvent::MouseButton::Middle) != pointProperties->IsMiddleButtonPressed)
     {
-        result.button = UIEvent::MouseButton::Middle;
-        result.isPressed = pointProperties->IsMiddleButtonPressed;
+        MouseButtonChange change;
+        change.button = UIEvent::MouseButton::Middle;
+        change.beginOrEnd = pointProperties->IsMiddleButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+        out.push_back(change);
     }
 
-    isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
-    isRightButtonPressed = pointProperties->IsRightButtonPressed;
-    isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
+    if (GetMouseButtonState(UIEvent::MouseButton::Extended1) != pointProperties->IsXButton1Pressed)
+    {
+        MouseButtonChange change;
+        change.button = UIEvent::MouseButton::Extended1;
+        change.beginOrEnd = pointProperties->IsXButton1Pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+        out.push_back(change);
+    }
 
-    return result;
+    if (GetMouseButtonState(UIEvent::MouseButton::Extended2) != pointProperties->IsXButton2Pressed)
+    {
+        MouseButtonChange change;
+        change.button = UIEvent::MouseButton::Extended2;
+        change.beginOrEnd = pointProperties->IsXButton2Pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+        out.push_back(change);
+    }
+
+    for (auto& change : out)
+    {
+        SetMouseButtonState(change.button, change.beginOrEnd == UIEvent::Phase::BEGAN);
+    }
 }
 
 void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRoutedEventArgs ^ args)
@@ -468,15 +489,22 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRo
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
-        pointerOrButtonIndex = static_cast<int32>(mouseBtnChange.button);
+        UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
+        for (auto& change : mouseButtonChanges)
+        {
+            auto fn = [this, x, y, change, type]() {
+                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type));
+            };
+            core->RunOnMainThread(fn);
+        }
     }
-
-    auto fn = [this, x, y, pointerOrButtonIndex, type]() {
-        DAVATouchEvent(UIEvent::Phase::BEGAN, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
-    };
-
-    core->RunOnMainThread(fn);
+    else
+    {
+        auto fn = [this, x, y, pointerOrButtonIndex, type]() {
+            DAVATouchEvent(UIEvent::Phase::BEGAN, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
+        };
+        core->RunOnMainThread(fn);
+    }
 }
 
 void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
@@ -489,15 +517,23 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
-        pointerOrButtonIndex = static_cast<int32>(mouseBtnChange.button);
+        UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
+        for (auto& change : mouseButtonChanges)
+        {
+            auto fn = [this, x, y, change, type]() {
+                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type));
+            };
+            core->RunOnMainThread(fn);
+        }
     }
+    else
+    {
+        auto fn = [this, x, y, pointerOrButtonIndex, type]() {
+            DAVATouchEvent(UIEvent::Phase::ENDED, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
+        };
 
-    auto fn = [this, x, y, pointerOrButtonIndex, type]() {
-        DAVATouchEvent(UIEvent::Phase::ENDED, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
-    };
-
-    core->RunOnMainThread(fn);
+        core->RunOnMainThread(fn);
+    }
 }
 
 void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
@@ -512,31 +548,26 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     int32 pointerOrButtonIndex = pointerPoint->PointerId;
 
+    float32 x = pointerPoint->Position.X;
+    float32 y = pointerPoint->Position.X;
+
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
+        UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
 
-        if (UIEvent::MouseButton::Left != mouseBtnChange.button)
+        for (auto& change : mouseButtonChanges)
         {
-            phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-            pointerOrButtonIndex = static_cast<int32>(mouseBtnChange.button);
+            auto fn = [this, x, y, change, type]() {
+                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type));
+            };
+            core->RunOnMainThread(fn);
         }
-        else if (isLeftButtonPressed)
-        {
-            pointerOrButtonIndex = static_cast<int32>(UIEvent::MouseButton::Left);
-        }
-        else if (isRightButtonPressed)
-        {
-            pointerOrButtonIndex = static_cast<int32>(UIEvent::MouseButton::Right);
-        }
-        else
+
+        if (mouseButtonsState.none())
         {
             phase = UIEvent::Phase::MOVE;
         }
     }
-
-    float32 x = pointerPoint->Position.X;
-    float32 y = pointerPoint->Position.Y;
 
     core->RunOnMainThread([this, phase, x, y, pointerOrButtonIndex, type]() {
         DAVATouchEvent(phase, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
@@ -560,12 +591,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object ^ /*sender*/,
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     if (PointerDeviceType::Mouse == type || PointerDeviceType::Pen == type)
     {
-        passEventForProcession = isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed;
+        UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
 
-        PointerPointProperties ^ pointerProperties = pointerPoint->Properties;
-        isLeftButtonPressed = pointerProperties->IsLeftButtonPressed;
-        isRightButtonPressed = pointerProperties->IsRightButtonPressed;
-        isMiddleButtonPressed = pointerProperties->IsMiddleButtonPressed;
+        passEventForProcession = mouseButtonsState.any();
 
         SetCursorVisible(true);
     }
@@ -627,7 +655,7 @@ void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher 
 {
     int32 key = static_cast<uint32>(keyEventArgs->VirtualKey);
 
-    if (key == VK_SHIFT && keyEventArgs->KeyStatus.ScanCode == 0x36)
+    if (key == VK_SHIFT && keyEventArgs->KeyStatus.ScanCode == 0x36) // right shift scan code(on windows)
     {
         key += 256;
     }
@@ -710,31 +738,33 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
 
-    PointerPoint ^ pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
+    PointerPoint ^ pointerPoint = nullptr;
 
-    UIEvent::Phase phase = UIEvent::Phase::MOVE;
-    int32 pointerOrButtonIndex = static_cast<int32>(UIEvent::MouseButton::None);
-
-    MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
-    if (UIEvent::MouseButton::None != mouseBtnChange.button)
+    try
     {
-        phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-        pointerOrButtonIndex = static_cast<int32>(mouseBtnChange.button);
+        pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
     }
-    else if (isLeftButtonPressed)
+    catch (Platform::Exception ^ e)
     {
-        pointerOrButtonIndex = static_cast<int32>(UIEvent::MouseButton::Left);
-        phase = UIEvent::Phase::DRAG;
-    }
-    else if (isRightButtonPressed)
-    {
-        pointerOrButtonIndex = static_cast<int32>(UIEvent::MouseButton::Right);
-        phase = UIEvent::Phase::DRAG;
+        Logger::Error("%s", RTStringToString(e->Message).c_str());
     }
 
-    core->RunOnMainThread([this, x, y, phase, pointerOrButtonIndex]() {
-        DAVATouchEvent(phase, x, y, pointerOrButtonIndex, UIEvent::Device::MOUSE);
-    });
+    if (pointerPoint != nullptr)
+    {
+        UIEvent::Phase phase = UIEvent::Phase::MOVE;
+        int32 pointerOrButtonIndex = static_cast<int32>(UIEvent::MouseButton::None);
+
+        UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
+
+        if (mouseButtonsState.any())
+        {
+            phase = UIEvent::Phase::DRAG;
+        }
+
+        core->RunOnMainThread([this, x, y, phase, pointerOrButtonIndex]() {
+            DAVATouchEvent(phase, x, y, pointerOrButtonIndex, UIEvent::Device::MOUSE);
+        });
+    }
 }
 
 void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device device)
