@@ -79,7 +79,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     if (isTouchPresent)
     {
-        hids[TOUCH].insert(DEFAULT_TOUCH_ID);
+        hids[TOUCH].emplace(DEFAULT_TOUCH_ID);
     }
     isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
@@ -328,7 +328,7 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 
 DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
-    hids.insert(make_pair(type, Set<String>()));
+    hids.emplace(make_pair(type, Set<String>()));
     DeviceWatcher^ watcher = nullptr;
     Platform::Collections::Vector<Platform::String^>^ requestedProperties = ref new Platform::Collections::Vector<Platform::String^>();
     requestedProperties->Append("System.Devices.InterfaceClassGuid");
@@ -383,6 +383,10 @@ void DeviceInfoPrivate::CreateAndStartHIDWatcher()
 void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)
 {
     LockGuard<Mutex> lock(hidsMutex);
+    if (!information->IsEnabled)
+    {
+        return;
+    }
     //TODO: delete it, kostil for surface mouse
     if (MOUSE == type)
     {
@@ -396,21 +400,17 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
     if (KEYBOARD == type)
     {
         std::wstring id(information->Id->Data());
-        if (id.find(KOSTIL_SURFACE_KEYBOARD) != std::wstring::npos)
+        if (wcsstr(id.c_str(), KOSTIL_SURFACE_KEYBOARD) != nullptr)
         {
             return;
         }
-    }
-    if (!information->IsEnabled)
-    {
-        return;
     }
     auto it = hids.find(type);
     String id = RTStringToString(information->Id);
     auto idIter = it->second.find(id);
     if (idIter == it->second.end())
     {
-        it->second.insert(id);
+        it->second.emplace(id);
         NotifyAllClients(type, true);
     }
 }
@@ -441,7 +441,7 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
             isTouchPresent = newState;
             if (isTouchPresent)
             {
-                it->second.insert(DEFAULT_TOUCH_ID);
+                it->second.emplace(DEFAULT_TOUCH_ID);
             }
             else
             {
@@ -464,7 +464,7 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
         {
             if (iterId == it->second.end())
             {
-                it->second.insert(id);
+                it->second.emplace(id);
                 NotifyAllClients(type, isEnabled);
             }
         }
@@ -481,6 +481,7 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
 
 bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
 {
+    LockGuard<Mutex> lock(hidsMutex);
     return (hids[type].size() > 0);
 }
 
