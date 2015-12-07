@@ -75,6 +75,7 @@ private slots:
     void OnAutoSaveTimeoutChanged(int);
     void OnPortChanged(int);
     void OnAutoStartChanged(int);
+    void OnSystemStartupChanged(int);
 
     void OnRemoteServerAdded();
     void OnRemoteServerRemoved();

@@ -49,6 +49,7 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
+#include <QSettings>
 
 namespace
 {
@@ -75,6 +76,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
     connect(ui->autoSaveTimeoutSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAutoSaveTimeoutChanged(int)));
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnPortChanged(int)));
     connect(ui->autoStartCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnAutoStartChanged(int)));
+    connect(ui->systemStartupCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnSystemStartupChanged(int)));
 
     connect(ui->addNewServerButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnRemoteServerAdded);
 
@@ -225,6 +227,23 @@ void AssetCacheServerWindow::OnAutoStartChanged(int)
     VerifyData();
 }
 
+void AssetCacheServerWindow::OnSystemStartupChanged(int val)
+{
+#if defined(__DAVAENGINE_WIN32__)
+    QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+    if (val == Qt::Checked)
+    {
+        settings.setValue("AssetCacheServer", QCoreApplication::applicationFilePath().replace('/', '\\'));
+    }
+    else
+    {
+        settings.remove("AssetCacheServer");
+    }
+#endif
+
+    VerifyData();
+}
+
 void AssetCacheServerWindow::OnRemoteServerAdded()
 {
     AddRemoteServer(ServerData(DEFAULT_REMOTE_IP, DEFAULT_REMOTE_PORT, false));
@@ -330,6 +349,7 @@ void AssetCacheServerWindow::SaveSettings()
     serverCore.Settings().SetAutoSaveTimeoutMin(ui->autoSaveTimeoutSpinBox->value());
     serverCore.Settings().SetPort(ui->portSpinBox->value());
     serverCore.Settings().SetAutoStart(ui->autoStartCheckBox->isChecked());
+    serverCore.Settings().SetLaunchOnSystemStartup(ui->systemStartupCheckBox->isChecked());
 
     serverCore.Settings().ResetServers();
     for (auto& server : remoteServers)
@@ -351,6 +371,7 @@ void AssetCacheServerWindow::LoadSettings()
     ui->autoSaveTimeoutSpinBox->setValue(serverCore.Settings().GetAutoSaveTimeoutMin());
     ui->portSpinBox->setValue(serverCore.Settings().GetPort());
     ui->autoStartCheckBox->setChecked(serverCore.Settings().IsAutoStart());
+    ui->systemStartupCheckBox->setChecked(serverCore.Settings().IsLaunchOnSystemStartup());
 
     RemoveServers();
     auto& servers = serverCore.Settings().GetServers();
