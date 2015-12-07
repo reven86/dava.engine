@@ -571,8 +571,8 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             {
                 phase = UIEvent::Phase::MOVE;
 
-                core->RunOnMainThread([this, phase, x, y, pointerOrButtonIndex, type]() {
-                    DAVATouchEvent(phase, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
+                core->RunOnMainThread([this, phase, x, y, type]() {
+                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::None), ToDavaDeviceId(type));
                 });
             }
             else
