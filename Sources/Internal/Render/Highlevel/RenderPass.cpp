@@ -222,7 +222,7 @@ void RenderPass::ProcessVisibilityQuery()
 {
     DVASSERT(queryBuffers.size() < 128);
 
-    while (queryBuffers.size() && QueryBufferIsReady(queryBuffers.front()))
+    while (queryBuffers.size() && rhi::QueryBufferIsReady(queryBuffers.front()))
     {
         RenderStats& stats = Renderer::GetRenderStats();
         for (uint32 i = 0; i < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++i)

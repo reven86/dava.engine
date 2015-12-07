@@ -139,7 +139,23 @@ dx11_Check_Query_Results(QueryBufferDX11_t* buf)
 }
 
 static bool
-dx11_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
+dx11_QueryBuffer_IsReady(Handle handle)
+{
+    bool ready = false;
+    QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
+    DVASSERT(buf);
+
+    if (buf->bufferCompleted)
+    {
+        dx11_Check_Query_Results(buf);
+        ready = (buf->pendingQueries.size() == 0);
+    }
+
+    return ready;
+}
+
+static bool
+dx11_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 {
     bool ready = false;
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
@@ -187,6 +203,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_QueryBuffer_Reset = &dx11_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete = &dx11_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady = &dx11_QueryBuffer_IsReady;
+    dispatch->impl_QueryBuffer_ObjectIsReady = &dx11_QueryBuffer_ObjectIsReady;
     dispatch->impl_QueryBuffer_Value = &dx11_QueryBuffer_Value;
 }
 

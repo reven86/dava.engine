@@ -71,7 +71,8 @@ Dispatch
     Handle (*impl_QueryBuffer_Create)(unsigned maxObjectCount);
     void (*impl_QueryBuffer_Reset)(Handle buf);
     void (*impl_QueryBuffer_Delete)(Handle buf);
-    bool (*impl_QueryBuffer_IsReady)(Handle buf, uint32 objectIndex);
+    bool (*impl_QueryBuffer_IsReady)(Handle buf);
+    bool (*impl_QueryBuffer_ObjectIsReady)(Handle buf, uint32 objectIndex);
     int (*impl_QueryBuffer_Value)(Handle buf, uint32 objectIndex);
 
     Handle (*impl_Texture_Create)(const Texture::Descriptor& desc);

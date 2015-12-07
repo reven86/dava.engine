@@ -153,7 +153,23 @@ dx9_Check_Query_Results(QueryBufferDX9_t* buf)
 }
 
 static bool
-dx9_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
+dx9_QueryBuffer_IsReady(Handle handle)
+{
+    bool ready = false;
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
+
+    if (buf->bufferCompleted)
+    {
+        dx9_Check_Query_Results(buf);
+        ready = (buf->pendingQueries.size() == 0);
+    }
+
+    return ready;
+}
+
+static bool
+dx9_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 {
     bool ready = false;
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
@@ -201,6 +217,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_QueryBuffer_Reset = &dx9_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete = &dx9_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady = &dx9_QueryBuffer_IsReady;
+    dispatch->impl_QueryBuffer_ObjectIsReady = &dx9_QueryBuffer_ObjectIsReady;
     dispatch->impl_QueryBuffer_Value = &dx9_QueryBuffer_Value;
 }
 

@@ -176,7 +176,23 @@ gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
 }
 
 static bool
-gles2_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
+gles2_QueryBuffer_IsReady(Handle handle)
+{
+    bool ready = false;
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
+    DVASSERT(buf);
+
+    if (buf->bufferCompleted)
+    {
+        gles2_Check_Query_Results(buf);
+        ready = (buf->pendingQueries.size() == 0);
+    }
+
+    return ready;
+}
+
+static bool
+gles2_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 {
     bool ready = false;
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
@@ -224,6 +240,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_QueryBuffer_Reset = &gles2_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete = &gles2_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady = &gles2_QueryBuffer_IsReady;
+    dispatch->impl_QueryBuffer_ObjectIsReady = &gles2_QueryBuffer_ObjectIsReady;
     dispatch->impl_QueryBuffer_Value = &gles2_QueryBuffer_Value;
 }
 
