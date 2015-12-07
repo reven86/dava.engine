@@ -36,6 +36,7 @@
 #include "Render/2D/Sprite.h"
 
 #include "UI/UIControlBackground.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -104,6 +105,15 @@ public:
         Matrix4* worldMatrix = nullptr;
     };
 
+    struct RenderTargetPassDescriptor
+    {
+        Texture* target = nullptr;
+        Color clearColor = Color::Clear;
+        int32 priority = PRIORITY_SERVICE_2D;
+        bool shouldTransformVirtualToPhysical = true;
+        bool shouldClear = true;
+    };
+
     enum ColorOperations
     {
         COLOR_MUL = 0,
@@ -126,6 +136,8 @@ public:
     virtual ~RenderSystem2D();
     
     void Init();
+
+    void SetVirtualToPhysicalTransformEnabled(bool);
 
     void Draw(Sprite* sprite, Sprite::DrawState* drawState, const Color& color);
     void DrawStretched(Sprite* sprite, Sprite::DrawState* drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color);
@@ -171,7 +183,10 @@ public:
     void SetSpriteClipping(bool clipping);
 
     void BeginRenderTargetPass(Texture* target, bool needClear = true, const Color& clearColor = Color::Clear, int32 priority = PRIORITY_SERVICE_2D);
+    void BeginRenderTargetPass(const RenderTargetPassDescriptor&);
     void EndRenderTargetPass();
+
+    void PerformRenderTargetPass(const RenderTargetPassDescriptor&, const DAVA::Function<void()>& commands);
 
     /* 2D DRAW HELPERS */
 
@@ -278,7 +293,14 @@ private:
         return (currentPacketListHandle != packetList2DHandle);
     };
 
-    Matrix4 virtualToPhysicalMatrix;
+    const Matrix4& VirtualToPhysicalMatrix() const;
+
+    float32 AlignToX(float32 value);
+    float32 AlignToY(float32 value);
+
+private:
+    Matrix4 actualVirtualToPhysicalMatrix;
+
     Matrix4 projMatrix;
     Matrix4 viewMatrix;
     uint32 projMatrixSemantic;
@@ -333,6 +355,7 @@ private:
 
     int32 renderTargetWidth;
     int32 renderTargetHeight;
+    bool virtualToPhysicalTransformEnabled = true;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)

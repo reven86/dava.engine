@@ -453,10 +453,14 @@ void VisibilityToolSystem::RenderVisibilityPoint(bool clearTarget)
 
     const Vector2 curSize(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), clearTarget);
-    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White,
-                                            Rect(visibilityPoint * landscapeSize - curSize / 2.f, curSize));
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = visibilityToolProxy->GetTexture();
+    desc.shouldClear = clearTarget;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->PerformRenderTargetPass(desc, [this, &visibilityPoint, &curSize]() {
+        RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White,
+                                                Rect(visibilityPoint * landscapeSize - curSize / 2.f, curSize));
+    });
 }
 
 void VisibilityToolSystem::DrawVisibilityPoint()
@@ -475,14 +479,18 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 
     static const float32 pointSize = 6.f;
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityAreaTexture, false);
-    for (uint32 i = 0; i < points.size(); ++i)
-    {
-		uint32 colorIndex = (uint32)points[i].z;
-        Rect rect(points[i].x - pointSize / 2.f, points[i].y - pointSize / 2.f, pointSize, pointSize);
-        RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
-    }
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = visibilityAreaTexture;
+    desc.shouldClear = false;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->PerformRenderTargetPass(desc, [this, &points]() {
+        for (uint32 i = 0; i < points.size(); ++i)
+        {
+            uint32 colorIndex = (uint32)points[i].z;
+            Rect rect(points[i].x - pointSize / 2.f, points[i].y - pointSize / 2.f, pointSize, pointSize);
+            RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
+        }
+    });
 }
 
 void VisibilityToolSystem::SaveTexture(const FilePath& filePath)

@@ -164,9 +164,13 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
     texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
                                       image->GetWidth(), image->GetHeight(), false);
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(customColorsTarget, false);
-    RenderSystem2D::Instance()->DrawTexture(texture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = customColorsTarget;
+    desc.shouldClear = false;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->PerformRenderTargetPass(desc, [this]() {
+        RenderSystem2D::Instance()->DrawTexture(texture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
+    });
 
     customColorsProxy->UpdateRect(updatedRect);
 }

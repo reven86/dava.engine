@@ -174,35 +174,40 @@ void RenderSystem2D::EndFrame()
 
 void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */, int32 priority /* = PRIORITY_SERVICE_2D */)
 {
+    RenderTargetPassDescriptor desc = { target, clearColor, priority, true, needClear };
+    BeginRenderTargetPass(desc);
+}
+
+void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& desc)
+{
     DVASSERT(!IsRenderTargetPass());
-    DVASSERT(target);
-    DVASSERT(target->GetWidth() && target->GetHeight())
+    DVASSERT(desc.target);
+    DVASSERT(desc.target->GetWidth() && desc.target->GetHeight())
 
     Flush();
 
+    SetVirtualToPhysicalTransformEnabled(desc.shouldTransformVirtualToPhysical);
+
     rhi::RenderPassConfig renderTargetPassConfig;
-    renderTargetPassConfig.colorBuffer[0].texture = target->handle;
-    renderTargetPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
-    renderTargetPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
-    renderTargetPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
-    renderTargetPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
-    renderTargetPassConfig.priority = priority;
-    renderTargetPassConfig.viewport.width = target->GetWidth();
-    renderTargetPassConfig.viewport.height = target->GetHeight();
+    renderTargetPassConfig.colorBuffer[0].texture = desc.target->handle;
+    renderTargetPassConfig.colorBuffer[0].clearColor[0] = desc.clearColor.r;
+    renderTargetPassConfig.colorBuffer[0].clearColor[1] = desc.clearColor.g;
+    renderTargetPassConfig.colorBuffer[0].clearColor[2] = desc.clearColor.b;
+    renderTargetPassConfig.colorBuffer[0].clearColor[3] = desc.clearColor.a;
+    renderTargetPassConfig.priority = desc.priority;
+    renderTargetPassConfig.viewport.width = desc.target->GetWidth();
+    renderTargetPassConfig.viewport.height = desc.target->GetHeight();
     renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
     renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    if (needClear)
-        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    else
-        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    renderTargetPassConfig.colorBuffer[0].loadAction = desc.shouldClear ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
 
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
     rhi::BeginRenderPass(passTargetHandle);
     rhi::BeginPacketList(currentPacketListHandle);
 
-    renderTargetWidth = target->GetWidth();
-    renderTargetHeight = target->GetHeight();
+    renderTargetWidth = desc.target->GetWidth();
+    renderTargetHeight = desc.target->GetHeight();
 
     ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
@@ -222,8 +227,16 @@ void RenderSystem2D::EndRenderTargetPass()
     renderTargetWidth = 0;
     renderTargetHeight = 0;
 
+    SetVirtualToPhysicalTransformEnabled(true);
     ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
+}
+
+void RenderSystem2D::PerformRenderTargetPass(const RenderTargetPassDescriptor& desc, const DAVA::Function<void()>& cmd)
+{
+    BeginRenderTargetPass(desc);
+    cmd();
+    EndRenderTargetPass();
 }
 
 void RenderSystem2D::SetViewMatrix(const Matrix4& _viewMatrix)
@@ -260,11 +273,11 @@ void RenderSystem2D::Setup2DMatrices()
     {
         // Make translation by half pixel for DirectX systems
         static Matrix4 pixelMappingMatrix = Matrix4::MakeTranslation(Vector3(-0.5f, -0.5f, 0.f));
-        projMatrix = virtualToPhysicalMatrix * pixelMappingMatrix * projMatrix;
+        projMatrix = VirtualToPhysicalMatrix() * pixelMappingMatrix * projMatrix;
     }
     else
     {
-        projMatrix = virtualToPhysicalMatrix * projMatrix;
+        projMatrix = VirtualToPhysicalMatrix() * projMatrix;
     }
 
     projMatrixSemantic += 8; //cause eight is beautiful
@@ -282,7 +295,41 @@ void RenderSystem2D::ScreenSizeChanged()
     glTranslate.glTranslate(realDrawOffset.x, realDrawOffset.y, 0.0f);
     glScale.glScale(scale.x, scale.y, 1.0f);
 
-    virtualToPhysicalMatrix = glScale * glTranslate;
+    actualVirtualToPhysicalMatrix = glScale * glTranslate;
+}
+
+void RenderSystem2D::SetVirtualToPhysicalTransformEnabled(bool value)
+{
+    virtualToPhysicalTransformEnabled = value;
+}
+
+const Matrix4& RenderSystem2D::VirtualToPhysicalMatrix() const
+{
+    return virtualToPhysicalTransformEnabled ? actualVirtualToPhysicalMatrix : Matrix4::IDENTITY;
+}
+
+float32 RenderSystem2D::AlignToX(float32 value)
+{
+    if (virtualToPhysicalTransformEnabled)
+    {
+        return AlignToX(value);
+    }
+    else
+    {
+        return std::floor(value + 0.5f);
+    }
+}
+
+float32 RenderSystem2D::AlignToY(float32 value)
+{
+    if (virtualToPhysicalTransformEnabled)
+    {
+        return AlignToY(value);
+    }
+    else
+    {
+        return std::floor(value + 0.5f);
+    }
 }
 
 void RenderSystem2D::SetClip(const Rect &rect)
@@ -425,7 +472,7 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
     Flush();
     if (currentClip.dx > 0.f && currentClip.dy > 0.f)
     {
-        const Rect& transformedClipRect = TransformClipRect(currentClip, virtualToPhysicalMatrix);
+        const Rect& transformedClipRect = TransformClipRect(currentClip, VirtualToPhysicalMatrix());
         packet.scissorRect.x = (int16)transformedClipRect.x;
         packet.scissorRect.y = (int16)transformedClipRect.y;
         packet.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
@@ -626,7 +673,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
-            const Rect& transformedClipRect = TransformClipRect(currentClip, virtualToPhysicalMatrix);
+            const Rect& transformedClipRect = TransformClipRect(currentClip, VirtualToPhysicalMatrix());
             currentPacket.scissorRect.x = (int16)transformedClipRect.x;
             currentPacket.scissorRect.y = (int16)transformedClipRect.y;
             currentPacket.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
@@ -727,8 +774,8 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
                 }
                 else
                 {
-                    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x);//x2
-                    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y);//y2
+                    spriteTempVertices[2] = spriteTempVertices[6] = AlignToX(frameVertices[frame][0] * scaleX + x); //x2
+                    spriteTempVertices[5] = spriteTempVertices[7] = AlignToY(frameVertices[frame][1] * scaleY + y); //y2
                     spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2];//x1
                     spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5];//y1
                 }
@@ -746,8 +793,8 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
                 }
                 else
                 {
-                    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] + x);//x2
-                    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] + y);//y2
+                    spriteTempVertices[2] = spriteTempVertices[6] = AlignToX(frameVertices[frame][0] + x); //x2
+                    spriteTempVertices[5] = spriteTempVertices[7] = AlignToY(frameVertices[frame][1] + y); //y2
                     spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2];//x1
                     spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5];//y1
                 }
@@ -769,9 +816,9 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
                     }
                     else
                     {
-                        spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x);//x2
+                        spriteTempVertices[2] = spriteTempVertices[6] = AlignToX(frameVertices[frame][0] * scaleX + x); //x2
                         spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2];//x1
-                        spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y);//y1
+                        spriteTempVertices[1] = spriteTempVertices[3] = AlignToY(frameVertices[frame][1] * scaleY + y); //y1
                         spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1];//y2
                     }
                 }
@@ -787,9 +834,9 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
                     }
                     else
                     {
-                        spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] + x);//x2
+                        spriteTempVertices[2] = spriteTempVertices[6] = AlignToX(frameVertices[frame][0] + x); //x2
                         spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2];//x1
-                        spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] + y);//y1
+                        spriteTempVertices[1] = spriteTempVertices[3] = AlignToY(frameVertices[frame][1] + y); //y1
                         spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1];//y2
                     }
                 }
@@ -808,8 +855,8 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
                     }
                     else
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x);//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y);//y2
+                        spriteTempVertices[0] = spriteTempVertices[4] = AlignToX(frameVertices[frame][0] * scaleX + x); //x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = AlignToY(frameVertices[frame][1] * scaleY + y); //y2
                         spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0];//x2
                         spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5];//y1
                     }
@@ -826,8 +873,8 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
                     }
                     else
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] + x);//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] + y);//y2
+                        spriteTempVertices[0] = spriteTempVertices[4] = AlignToX(frameVertices[frame][0] + x); //x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = AlignToY(frameVertices[frame][1] + y); //y2
                         spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0];//x2
                         spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5];//y1
                     }
@@ -849,8 +896,8 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
             }
             else
             {
-                spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x);//x1
-                spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y);//y1
+                spriteTempVertices[0] = spriteTempVertices[4] = AlignToX(frameVertices[frame][0] * scaleX + x); //x1
+                spriteTempVertices[1] = spriteTempVertices[3] = AlignToY(frameVertices[frame][1] * scaleY + y); //y1
                 spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0];//x2
                 spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1];//y2
             }
@@ -866,8 +913,8 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
             }
             else
             {
-                spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] + x);//x1
-                spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] + y);//y1
+                spriteTempVertices[0] = spriteTempVertices[4] = AlignToX(frameVertices[frame][0] + x); //x1
+                spriteTempVertices[1] = spriteTempVertices[3] = AlignToY(frameVertices[frame][1] + y); //y1
                 spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0];//x2
                 spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1];//y2
             }
@@ -923,15 +970,17 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         Texture * t = sprite->GetTexture(frame);
 
         Vector2 virtualTexSize = Vector2((float32)t->width, (float32)t->height);
-        if (sprite->type == Sprite::SPRITE_FROM_FILE)
+        if (virtualToPhysicalTransformEnabled)
         {
-            virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(virtualTexSize, sprite->GetResourceSizeIndex());
+            if (sprite->type == Sprite::SPRITE_FROM_FILE)
+            {
+                virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(virtualTexSize, sprite->GetResourceSizeIndex());
+            }
+            else if (!sprite->textureInVirtualSpace)
+            {
+                virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(virtualTexSize);
+            }
         }
-        else if (!sprite->textureInVirtualSpace)
-        {
-            virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(virtualTexSize);
-        }
-
         float32 adjWidth = 1.f / virtualTexSize.x;
         float32 adjHeight = 1.f / virtualTexSize.y;
 
@@ -1043,8 +1092,6 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     Vector2 stretchCap(Min(size.x * 0.5f, stretchCapVector.x),
         Min(size.y * 0.5f, stretchCapVector.y));
 
-    rhi::HTextureSet textureHandle = sprite->GetTexture(frame)->singleTextureSet;
-
     bool needGenerateData = false;
     StretchDrawData * stretchData = 0;
     if(pStreachData)
@@ -1149,8 +1196,6 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
 
     Vector2 stretchCap( Min( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) ),
                         Min( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) ) );
-
-    rhi::HTextureSet textureHandle = sprite->GetTexture(frame)->singleTextureSet;
 
     stretchCap.x = Min( stretchCap.x * 0.5f, stretchCapVector.x );
     stretchCap.y = Min( stretchCap.y * 0.5f, stretchCapVector.y );
@@ -1540,7 +1585,10 @@ void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Co
             destRect.dy = (float32)Renderer::GetFramebufferHeight();
         }
 
-        destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
+        if (virtualToPhysicalTransformEnabled)
+        {
+            destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
+        }
     }
 
     spriteTempVertices[0] = spriteTempVertices[4] = destRect.x; //x1
@@ -1807,9 +1855,10 @@ void StretchDrawData::GenerateStretchData()
 
     VirtualCoordinatesSystem * vcs = VirtualCoordinatesSystem::Instance();
 
-    const Vector2 uvSize = vcs->ConvertVirtualToResource(Vector2(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)),
-        sprite->GetResourceSizeIndex()
-        ) / textureSize;
+    const Vector2 uvSize = vcs->ConvertVirtualToResource(Vector2(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
+                                                                 sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)),
+                                                         sprite->GetResourceSizeIndex()) /
+    textureSize;
     const Vector2 uvLeftTopCap = vcs->ConvertVirtualToResource(xyRealLeftTopCap, sprite->GetResourceSizeIndex()) / textureSize;
     const Vector2 uvRightBottomCap = vcs->ConvertVirtualToResource(xyRealRightBottomCap, sprite->GetResourceSizeIndex()) / textureSize;
 
