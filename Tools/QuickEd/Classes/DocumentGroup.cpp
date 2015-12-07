@@ -43,15 +43,16 @@ DocumentGroup::~DocumentGroup()
 {
 }
 
-void DocumentGroup::AddDocument(Document* document)
+void DocumentGroup::InsertDocument(int index, Document* document)
 {
     DVASSERT(nullptr != document);
     undoGroup->addStack(document->GetUndoStack());
     if (documentList.contains(document))
     {
+        DVASSERT(false && "document already exists in document group");
         return;
     }
-    documentList.append(document);
+    documentList.insert(index, document);
 }
 
 void DocumentGroup::RemoveDocument(Document* document)

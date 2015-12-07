@@ -414,8 +414,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
                     env->DeleteLocalRef(jInput);
                 }
-				if (touchIndex < activeInputsCount)
-				{
+                if (touchIndex < activeInputsCount)
+                {
 					jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
 
 					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
@@ -423,8 +423,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
                     env->DeleteLocalRef(jInput);
                 }
-			}
-			core->OnInput(action, source, activeInputs, allInputs);
+            }
+            core->OnInput(action, source, activeInputs, allInputs);
 		}
 	}
 
