@@ -207,17 +207,6 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
 }
 
 #if __DAVAENGINE_RENDERSTATS__
-
-bool RenderPass::QueryBufferIsReady(rhi::HQueryBuffer qBuffer)
-{
-    for (uint32 i = 0; i < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++i)
-    {
-        if (!rhi::QueryIsReady(qBuffer, i))
-            return false;
-    }
-    return true;
-}
-
 void RenderPass::ProcessVisibilityQuery()
 {
     DVASSERT(queryBuffers.size() < 128);

@@ -86,7 +86,6 @@ protected:
 #ifdef __DAVAENGINE_RENDERSTATS__
 
     void ProcessVisibilityQuery();
-    bool QueryBufferIsReady(rhi::HQueryBuffer qBuffer);
 
     Deque<rhi::HQueryBuffer> queryBuffers;
 
