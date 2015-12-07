@@ -67,8 +67,6 @@ void ScenePreviewControl::RecreateScene()
     editorScene->AddSystem(rotationSystem, (MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT)),
                            Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
-    editorScene->AddSystem(new TransformSystem(editorScene), MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
-
     SetScene(editorScene);
 }
 
@@ -151,7 +149,6 @@ void ScenePreviewControl::CreateCamera()
     light->AddFlag(Light::CAST_SHADOW);
     lightNode->SetName("preview-light");
     lightNode->AddComponent(new LightComponent(light));
-    lightNode->AddComponent(new TransformComponent());
     lightNode->SetLocalTransform(Matrix4::MakeTranslation(light->GetPosition()));
 
     editorScene->AddNode(cameraNode);
