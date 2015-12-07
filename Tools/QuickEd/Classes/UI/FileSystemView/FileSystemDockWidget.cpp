@@ -269,7 +269,12 @@ void FileSystemDockWidget::onNewFile()
     }
 
     QFile file(strFile);
-    file.open(QIODevice::WriteOnly);
+    if(file.open(QIODevice::WriteOnly))
+    {
+        QString title = tr("Can not create file");
+        QMessageBox::warning(this, title, title + tr("\n%1").arg(strFile));
+        DAVA::Logger::Error("%s", QString(title + ": %1").arg(strFile).toUtf8().data());
+    }
     file.close();
     RefreshActions(selectedIndexes);
 }
