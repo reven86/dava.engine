@@ -177,7 +177,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_QueryBuffer_Reset = &metal_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete = &metal_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady = &metal_QueryBuffer_IsReady;
-    dispatch->impl_QueryBuffer_ObjectIsReady = &gles2_QueryBuffer_ObjectIsReady;
+    dispatch->impl_QueryBuffer_ObjectIsReady = &metal_QueryBuffer_ObjectIsReady;
     dispatch->impl_QueryBuffer_Value = &metal_QueryBuffer_Value;
 }
 }
