@@ -71,69 +71,6 @@ private:
     bool emulationMode = false;
 };
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
-{
-    DVASSERT(nullptr != left && nullptr != right);
-    PackageBaseNode* leftParent = left;
-    int depthLeft = 0;
-    while (nullptr != leftParent->GetParent())
-    {
-        leftParent = leftParent->GetParent();
-        ++depthLeft;
-    }
-    int depthRight = 0;
-    PackageBaseNode* rightParent = right;
-    while (nullptr != rightParent->GetParent())
-    {
-        rightParent = rightParent->GetParent();
-        ++depthRight;
-    }
-    leftParent = left;
-    rightParent = right;
-    while (depthLeft != depthRight)
-    {
-        if (depthLeft > depthRight)
-        {
-            leftParent = leftParent->GetParent();
-            --depthLeft;
-        }
-        else
-        {
-            rightParent = rightParent->GetParent();
-            --depthRight;
-        }
-    }
-    if (leftParent == right)
-    {
-        return false;
-    }
-    if (rightParent == left)
-    {
-        return true;
-    }
-    left = leftParent;
-    right = rightParent;
-    while (true)
-    {
-        leftParent = left->GetParent();
-        rightParent = right->GetParent();
-        if (nullptr == leftParent)
-        {
-            return false;
-        }
-        if (nullptr == rightParent)
-        {
-            return true;
-        }
-        if (leftParent == rightParent)
-        {
-            return leftParent->GetIndex(left) < leftParent->GetIndex(right);
-        }
-        left = leftParent;
-        right = rightParent;
-    }
-}
-
 EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     : rootControl(new RootControl(this))
     , scalableControl(new UIControl())
