@@ -68,15 +68,15 @@ inline CHAR AtomicIncrement(volatile CHAR* value)
 }
 inline SHORT AtomicIncrement(volatile SHORT* value)
 {
-    return ::_InterlockedIncrement16(value);
+    return ::InterlockedIncrement16(value);
 }
 inline LONG AtomicIncrement(volatile LONG* value)
 {
-    return ::_InterlockedIncrement(value);
+    return ::InterlockedIncrement(value);
 }
 inline LONGLONG AtomicIncrement(volatile LONGLONG* value)
 {
-    return ::_InterlockedIncrement64(value);
+    return ::InterlockedIncrement64(value);
 }
 
 //atomic decrement overloads 
@@ -95,7 +95,7 @@ inline LONG AtomicDecrement(volatile LONG* value)
 }
 inline LONGLONG AtomicDecrement(volatile LONGLONG* value)
 {
-    return ::_InterlockedDecrement64(value);
+    return ::InterlockedDecrement64(value);
 }
 
 //atomic swap overloads 
@@ -113,7 +113,7 @@ inline LONG AtomicSwap(volatile LONG* target, LONG desired)
 }
 inline LONGLONG AtomicSwap(volatile LONGLONG* target, LONGLONG desired)
 {
-    return ::_InterlockedExchange64(target, desired);
+    return ::InterlockedExchange64(target, desired);
 }
 
 //atomic cas overloads
