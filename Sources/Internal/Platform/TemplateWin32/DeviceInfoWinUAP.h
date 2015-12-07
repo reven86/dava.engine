@@ -105,18 +105,10 @@ private:
     bool isMousePresent = false;
     bool isKeyboardPresent = false;
     bool isMobileMode = false;
-    Map<NativeHIDType, uint16> hids =
-    {
-      { UNKNOWN, 0 },
-      { POINTER, 0 },
-      { MOUSE, 0 },
-      { JOYSTICK, 0 },
-      { GAMEPAD, 0 },
-      { KEYBOARD, 0 },
-      { KEYPAD, 0 },
-      { SYSTEM_CONTROL, 0 },
-      { TOUCH, 0 }
-    };
+
+    Map<NativeHIDType, Set<String> > hids;
+    Mutex hidsMutex;
+
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 
     DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
