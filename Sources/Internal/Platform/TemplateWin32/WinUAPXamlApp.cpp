@@ -98,6 +98,23 @@ WinUAPXamlApp::WinUAPXamlApp()
     }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
+
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+    if (!isPhoneApiDetected)
+    {
+        // Here land of black magic and fire-spitting dragons begins
+        MEMORY_BASIC_INFORMATION bi;
+        VirtualQuery(static_cast<void*>(&GetModuleFileNameA), &bi, sizeof(bi));
+        HMODULE hkernel = reinterpret_cast<HMODULE>(bi.AllocationBase);
+
+        HMODULE(WINAPI * LoadLibraryW)
+        (LPCWSTR lpLibFileName);
+        LoadLibraryW = reinterpret_cast<decltype(LoadLibraryW)>(GetProcAddress(hkernel, "LoadLibraryW"));
+
+        HMODULE huser = LoadLibraryW(L"user32.dll");
+        SetCursorPos = reinterpret_cast<decltype(SetCursorPos)>(GetProcAddress(huser, "SetCursorPos"));
+    }
+#endif
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
@@ -172,6 +189,24 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
     if (isVisible != isMouseCursorShown)
     {
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+        if (!isVisible)
+        {
+            Window::Current->CoreWindow->PointerCursor = nullptr;
+
+            Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
+            float32 centerX = rc.Width / 2.0f;
+            float32 centerY = rc.Height / 2.0f;
+
+            float32 scale = DeviceInfo::GetScreenInfo().scale;
+            SetCursorPos(static_cast<int>((centerX + rc.X) * scale), static_cast<int>((centerY + rc.Y) * scale));
+            skipMouseMoveEvent = true;
+        }
+        else
+        {
+            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+        }
+#else
         if (isVisible)
         {
             MouseDevice::GetForCurrentView()->MouseMoved -= token;
@@ -182,6 +217,7 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
             token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
             Window::Current->CoreWindow->PointerCursor = nullptr;
         }
+#endif
         isMouseCursorShown = isVisible;
     }
     return true;
@@ -504,6 +540,36 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
 {
     if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING || !isMouseCursorShown)
     {
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+        PointerDeviceType deviceType = args->GetCurrentPoint(nullptr)->PointerDevice->PointerDeviceType;
+        if (!isPhoneApiDetected && PointerDeviceType::Mouse == deviceType)
+        {
+            if (skipMouseMoveEvent)
+            {
+                skipMouseMoveEvent = false;
+                return;
+            }
+
+            Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
+            float32 centerX = rc.Width / 2.0f;
+            float32 centerY = rc.Height / 2.0f;
+
+            PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
+            float32 x = pointerPoint->Position.X;
+            float32 y = pointerPoint->Position.Y;
+
+            float32 deltaX = x - centerX;
+            float32 deltaY = y - centerY;
+
+            core->RunOnMainThread([this, deltaX, deltaY]() {
+                DAVATouchEvent(UIEvent::Phase::MOVE, deltaX, deltaY, UIEvent::BUTTON_NONE, UIEvent::Device::MOUSE);
+            });
+
+            float32 scale = DeviceInfo::GetScreenInfo().scale;
+            SetCursorPos(static_cast<int>((centerX + rc.X) * scale), static_cast<int>((centerY + rc.Y) * scale));
+            skipMouseMoveEvent = true;
+        }
+#endif
         return;
     }
 
