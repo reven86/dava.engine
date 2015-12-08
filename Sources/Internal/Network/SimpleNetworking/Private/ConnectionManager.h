@@ -30,6 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_SIMPLE_CONNECTION_MANAGER_H__
 #define __DAVAENGINE_SIMPLE_CONNECTION_MANAGER_H__
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include "Network/SimpleNetworking/SimpleNetCore.h"
 #include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
@@ -59,4 +62,5 @@ private:
 }  // namespace Net
 } // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif //  __DAVAENGINE_SIMPLE_CONNECTION_MANAGER_H__

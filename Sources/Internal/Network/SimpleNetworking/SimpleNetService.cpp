@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include "Network/SimpleNetworking/SimpleNetService.h"
 #include "Network/SimpleNetworking/Private/SimpleNetServicePrivate.h"
 
@@ -80,4 +83,6 @@ Endpoint SimpleNetService::GetServiceEndpoint() const
 }
 
 }  // namespace Net
-}  // namespace DAVA
+} // namespace DAVA
+
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING

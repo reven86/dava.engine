@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_CHANNEL_ADAPTER_H__
 #define __DAVAENGINE_CHANNEL_ADAPTER_H__
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include "Concurrency/Mutex.h"
 #include "Network/IChannel.h"
 #include "Network/SimpleNetworking/IConnection.h"
@@ -65,4 +68,5 @@ private:
 }  // namespace Net
 }  // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif  // __DAVAENGINE_CHANNEL_ADAPTER_H__

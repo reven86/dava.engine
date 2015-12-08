@@ -31,11 +31,10 @@
 #define __DAVAENGINE_SIMPLE_NETWORKING_COMMON_H__
 
 #include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
 
 namespace DAVA
 {
-
-#ifdef __DAVAENGINE_WINDOWS__
 
 using socket_t = SOCKET;
 #define DV_SD_BOTH SD_BOTH
@@ -50,25 +49,8 @@ inline void CloseSocket(socket_t sock)
 {
     ::closesocket(sock);
 }
-
-#else
-
-using socket_t = int;
-#define DV_SD_BOTH SHUT_RDWR
-#define DV_INVALID_SOCKET -1
-
-inline bool CheckSocketResult(int result)
-{
-    return result == 0;
-}
-
-inline void CloseSocket(socket_t sock)
-{
-    ::close(sock);
-}
-
-#endif
     
 }  // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif  // __DAVAENGINE_SIMPLE_NETWORKING_COMMON_H__

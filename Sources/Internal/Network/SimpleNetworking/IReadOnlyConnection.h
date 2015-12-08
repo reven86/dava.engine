@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_IREADONLY_CONNECTION_H__
 #define __DAVAENGINE_IREADONLY_CONNECTION_H__
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include <exception>
 #include <memory>
 #include <type_traits>
@@ -104,4 +107,5 @@ void IReadOnlyConnection::Read(Container& container, size_t count)
 }  // namespace Net
 }  // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif  // __DAVAENGINE_IREADONLY_CONNECTION_H__

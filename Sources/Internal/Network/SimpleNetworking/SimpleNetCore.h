@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_SIMPLE_NET_CORE_H__
 #define __DAVAENGINE_SIMPLE_NET_CORE_H__
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include <memory.h>
 
 #include "Concurrency/Atomic.h"
@@ -93,4 +96,5 @@ private:
 }  // namespace Net
 }  // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif  // __DAVAENGINE_SIMPLE_NET_CORE_H__

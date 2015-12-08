@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_LOG_NETWORK_ERROR_H__
 #define __DAVAENGINE_LOG_NETWORK_ERROR_H__
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include "Debug/DVAssert.h"
 #include <libuv/uv.h>
 
@@ -38,13 +41,7 @@ namespace DAVA
 
 inline void LogNetworkError(const String& str)
 {
-    int error_num = 0;
-#ifdef __DAVAENGINE_WINDOWS__
-    error_num = WSAGetLastError();
-#else
-    error_num = errno;
-#endif
-
+    int error_num = WSAGetLastError();
     if (error_num == 0)
         return;
 
@@ -55,4 +52,5 @@ inline void LogNetworkError(const String& str)
 
 }  // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif  // __DAVAENGINE_LOG_NETWORK_ERROR_H__

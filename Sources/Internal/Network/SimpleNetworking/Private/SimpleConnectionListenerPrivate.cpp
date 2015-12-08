@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include "Network/SimpleNetworking/Private/SimpleConnectionListenerPrivate.h"
 
 namespace DAVA
@@ -135,4 +138,6 @@ void ConnectionListenerPrivate::Start(IConnectionPtr& conn)
 }
 
 }  // namespace Net
-}  // namespace DAVA
+} // namespace DAVA
+
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING

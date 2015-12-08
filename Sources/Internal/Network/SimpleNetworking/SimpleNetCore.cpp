@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include "Network/SimpleNetworking/Private/SimpleNetCorePrivate.h"
 
 namespace DAVA
@@ -74,4 +77,6 @@ const SimpleNetService* SimpleNetCore::GetService(const String& serviceName) con
 }
 
 }  // namespace Net
-}  // namespace DAVA
+} // namespace DAVA
+
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING

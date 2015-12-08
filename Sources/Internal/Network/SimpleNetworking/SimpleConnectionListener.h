@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_H__
 #define __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_H__
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include <functional>
 #include "Network/SimpleNetworking/IConnection.h"
 #include "Network/SimpleNetworking/SimpleNetCore.h"
@@ -75,4 +78,5 @@ private:
 }  // namespace Net
 }  // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif  // __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_H__

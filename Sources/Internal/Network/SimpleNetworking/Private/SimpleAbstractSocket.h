@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_SIMPLE_ABSTRACT_SOCKET_H__
 #define __DAVAENGINE_SIMPLE_ABSTRACT_SOCKET_H__
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include <memory>
 #include "Network/Base/Endpoint.h"
 
@@ -56,4 +59,5 @@ using ISimpleAbstractSocketPtr = std::shared_ptr<ISimpleAbstractSocket>;
 }  // namespace Net
 }  // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif  // __DAVAENGINE_SIMPLE_ABSTRACT_SOCKET_H__

@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_SIMPLE_TCP_CLIENT_H__
 #define __DAVAENGINE_SIMPLE_TCP_CLIENT_H__
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include "Network/SimpleNetworking/Private/SimpleTcpSocket.h"
 
 namespace DAVA
@@ -42,12 +45,10 @@ class SimpleTcpClient : public SimpleTcpSocket
 public:
     SimpleTcpClient(const Endpoint& endPoint);
     bool Connect();
-
-private:
-	OVERLAPPED ol;
 };
 
 }  // namespace Net
 }  // namespace DAVA
 
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
 #endif  // __DAVAENGINE_SIMPLE_TCP_CLIENT_H__

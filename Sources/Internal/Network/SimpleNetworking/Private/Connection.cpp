@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WINDOWS__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
+
 #include "Network/SimpleNetworking/Private/Connection.h"
 
 #include <libuv/uv.h>
@@ -97,4 +100,6 @@ size_t Connection::WrittenBytesCount()
 }
     
 }  // namespace Net
-}  // namespace DAVA
+} // namespace DAVA
+
+#endif // __DAVAENGINE_WINDOWS__ && DAVA_ENABLE_UAP_NETWORK_LOGGING
