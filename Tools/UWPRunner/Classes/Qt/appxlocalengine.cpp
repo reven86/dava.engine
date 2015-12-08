@@ -62,25 +62,6 @@ using namespace ABI::Windows::System;
 
 QT_USE_NAMESPACE
 
-// Set a break handler for gracefully breaking long-running ops
-static bool g_ctrlReceived = false;
-static bool g_handleCtrl = false;
-static BOOL WINAPI ctrlHandler(DWORD type)
-{
-    switch (type) {
-    case CTRL_C_EVENT:
-    case CTRL_CLOSE_EVENT:
-    case CTRL_LOGOFF_EVENT:
-        g_ctrlReceived = g_handleCtrl;
-        return g_handleCtrl;
-    case CTRL_BREAK_EVENT:
-    case CTRL_SHUTDOWN_EVENT:
-    default:
-        break;
-    }
-    return false;
-}
-
 QString sidForPackage(const QString &packageFamilyName)
 {
     QString sid;
@@ -300,9 +281,6 @@ AppxLocalEngine::AppxLocalEngine(Runner *runner)
     RETURN_VOID_IF_FAILED("Failed to instantiate package debug settings");
 
     d->retrieveInstalledPackages();
-
-    // Set a break handler for gracefully exiting from long-running operations
-    SetConsoleCtrlHandler(&ctrlHandler, true);
     d->hasFatalError = false;
 }
 
@@ -473,40 +451,6 @@ bool AppxLocalEngine::suspend()
 
     HRESULT hr = d->packageDebug->Suspend(wchar(d->packageFullName));
     RETURN_FALSE_IF_FAILED("Failed to suspend application");
-
-    return true;
-}
-
-bool AppxLocalEngine::waitForFinished(int secs)
-{
-    Q_D(AppxLocalEngine);
-    qCDebug(lcWinRtRunner) << __FUNCTION__;
-
-    debugMonitor->start(d->packageFamilyName);
-
-    g_handleCtrl = true;
-    int time = 0;
-    forever {
-        PACKAGE_EXECUTION_STATE state;
-        HRESULT hr = d->packageDebug->GetPackageExecutionState(wchar(d->packageFullName), &state);
-        RETURN_FALSE_IF_FAILED("Failed to get package execution state");
-        qCDebug(lcWinRtRunner) << "Current execution state:" << state;
-        if (state == PES_TERMINATED || state == PES_UNKNOWN)
-            break;
-
-        ++time;
-        if ((secs && time > secs) || g_ctrlReceived) {
-            g_handleCtrl = false;
-            return false;
-        }
-
-        Sleep(1000); // Wait one second between checks
-        qCDebug(lcWinRtRunner) << "Waiting for app to quit - msecs to go:" << secs - time;
-    }
-    g_handleCtrl = false;
-
-    if (!GetExitCodeProcess(d->processHandle, &d->exitCode))
-        d->exitCode = UINT_MAX;
 
     return true;
 }

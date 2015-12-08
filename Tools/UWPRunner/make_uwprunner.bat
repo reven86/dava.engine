@@ -4,7 +4,7 @@ mkdir _build
 cd _build
 
 ::generate project and building
-cmake -G"Visual Studio 12" ../
+cmake -G"Visual Studio 12" ../ -DUNITY_BUILD=true
 cmake --build . --config Release
 
 ::leave directory and copy artifacts to Tools/Bin

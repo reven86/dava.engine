@@ -274,14 +274,6 @@ bool Runner::stop()
     return d->engine->stop();
 }
 
-bool Runner::wait(int maxWaitTime)
-{
-    Q_D(Runner);
-    Q_ASSERT(d->engine);
-
-    return d->engine->waitForFinished(maxWaitTime);
-}
-
 bool Runner::setupTest()
 {
     Q_D(Runner);

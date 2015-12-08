@@ -75,7 +75,7 @@ QT_USE_NAMESPACE
 #define CHECK_RESULT_FATAL(errorMessage, action)\
     do {CHECK_RESULT(errorMessage, d->hasFatalError = true; action;);} while (false)
 
-static ProcessorArchitecture toProcessorArchitecture(APPX_PACKAGE_ARCHITECTURE appxArch)
+ProcessorArchitecture AppxEngine::toProcessorArchitecture(APPX_PACKAGE_ARCHITECTURE appxArch)
 {
     switch (appxArch) {
     case APPX_PACKAGE_ARCHITECTURE_X86:

@@ -109,25 +109,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(CoreConServer, coreConServer, (12))
         ret; \
     }
 
-// Set a break handler for gracefully breaking long-running ops
-static bool g_ctrlReceived = false;
-static bool g_handleCtrl = false;
-static BOOL WINAPI ctrlHandler(DWORD type)
-{
-    switch (type) {
-    case CTRL_C_EVENT:
-    case CTRL_CLOSE_EVENT:
-    case CTRL_LOGOFF_EVENT:
-        g_ctrlReceived = g_handleCtrl;
-        return g_handleCtrl;
-    case CTRL_BREAK_EVENT:
-    case CTRL_SHUTDOWN_EVENT:
-    default:
-        break;
-    }
-    return false;
-}
-
 class AppxPhoneEnginePrivate : public AppxEnginePrivate
 {
 public:
@@ -138,22 +119,6 @@ public:
     CoreConDevice *device;
     QSet<QString> dependencies;
 };
-
-static ProcessorArchitecture toProcessorArchitecture(APPX_PACKAGE_ARCHITECTURE appxArch)
-{
-    switch (appxArch) {
-    case APPX_PACKAGE_ARCHITECTURE_X86:
-        return ProcessorArchitecture_X86;
-    case APPX_PACKAGE_ARCHITECTURE_ARM:
-        return ProcessorArchitecture_Arm;
-    case APPX_PACKAGE_ARCHITECTURE_X64:
-        return ProcessorArchitecture_X64;
-    case APPX_PACKAGE_ARCHITECTURE_NEUTRAL:
-        // fall-through intended
-    default:
-        return ProcessorArchitecture_Neutral;
-    }
-}
 
 static bool getPhoneProductId(IStream *manifestStream, QString *productId)
 {
@@ -249,8 +214,6 @@ AppxPhoneEngine::AppxPhoneEngine(Runner *runner)
         return;
     }
 
-    // Set a break handler for gracefully exiting from long-running operations
-    SetConsoleCtrlHandler(&ctrlHandler, true);
     d->hasFatalError = false;
 }
 
@@ -444,31 +407,6 @@ bool AppxPhoneEngine::suspend()
 {
     qCDebug(lcWinRtRunner) << __FUNCTION__;
     return false;
-}
-
-bool AppxPhoneEngine::waitForFinished(int secs)
-{
-    Q_D(AppxPhoneEngine);
-    qCDebug(lcWinRtRunner) << __FUNCTION__;
-
-    ComPtr<ICcConnection3> connection;
-    HRESULT hr = d->connection.As(&connection);
-    RETURN_FALSE_IF_FAILED("Failed to cast connection");
-
-    g_handleCtrl = true;
-    int time = 0;
-    forever {
-        ++time;
-        if ((secs && time > secs) || g_ctrlReceived) {
-            g_handleCtrl = false;
-            return false;
-        }
-
-        Sleep(1000); // Wait one second between checks
-        qCDebug(lcWinRtRunner) << "Waiting for app to quit - msecs to go: " << secs - time;
-    }
-    g_handleCtrl = false;
-    return true;
 }
 
 bool AppxPhoneEngine::stop()

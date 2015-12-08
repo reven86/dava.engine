@@ -78,7 +78,6 @@ public:
     bool disableDebugging();
     bool suspend();
     bool stop();
-    bool wait(int maxWaitTime = 0);
     bool setupTest();
     bool collectTest();
     qint64 pid();

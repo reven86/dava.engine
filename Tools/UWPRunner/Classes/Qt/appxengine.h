@@ -43,6 +43,11 @@
 #include <QtCore/QScopedPointer>
 #include <QtCore/QString>
 
+#include <AppxPackaging.h>
+#include <windows.applicationmodel.h>
+
+using ABI::Windows::System::ProcessorArchitecture;
+
 QT_USE_NAMESPACE
 
 struct IAppxManifestReader;
@@ -53,6 +58,8 @@ public:
     qint64 pid() const Q_DECL_OVERRIDE;
     int exitCode() const Q_DECL_OVERRIDE;
     QString executable() const Q_DECL_OVERRIDE;
+
+    static ProcessorArchitecture toProcessorArchitecture(APPX_PACKAGE_ARCHITECTURE appxArch);
 
 protected:
     explicit AppxEngine(Runner *runner, AppxEnginePrivate *dd);

@@ -26,6 +26,10 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+#ifndef __DAVAENGINE_SIMPLE_CONNECTION_MANAGER_H__
+#define __DAVAENGINE_SIMPLE_CONNECTION_MANAGER_H__
+
 #include "Network/SimpleNetworking/SimpleNetCore.h"
 #include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
@@ -53,4 +57,6 @@ private:
 };
     
 }  // namespace Net
-}  // namespace DAVA
+} // namespace DAVA
+
+#endif //  __DAVAENGINE_SIMPLE_CONNECTION_MANAGER_H__

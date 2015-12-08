@@ -61,6 +61,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <windows.h>
+#include <WTypes.h>
+#include <OAIdl.h>
 
 #ifndef CORECON_VER
 static_assert(false, "You must define the CoreCon version with CORECON_VER.");

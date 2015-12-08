@@ -60,7 +60,6 @@ public:
                         const QString &debuggerArguments) Q_DECL_OVERRIDE;
     bool disableDebugging() Q_DECL_OVERRIDE;
     bool suspend() Q_DECL_OVERRIDE;
-    bool waitForFinished(int secs) Q_DECL_OVERRIDE;
     bool stop() Q_DECL_OVERRIDE;
 
     QString devicePath(const QString &relativePath) const Q_DECL_OVERRIDE;
