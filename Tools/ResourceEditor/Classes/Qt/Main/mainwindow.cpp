@@ -1322,10 +1322,10 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
             !FileSystem::Instance()->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
         {
             closeRequest->Cancel();
-			return;
-		}
-		
-		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+            return;
+        }
+
+        scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
 	}
 
     if(!SaveScene(scene))

@@ -93,8 +93,6 @@ class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
-
 class EditorSystemsManager : PackageListener
 {
 public:
@@ -152,6 +150,7 @@ private:
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
     bool previewMode = true;
+    SelectionContainer selectionContainer;
 };
 
 template <class OutIt, class Predicate>

@@ -56,10 +56,10 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
         if (scenePath.Exists())
         {
             defaultPath = scenePath.GetDirectory();
-		}
-	}
-	
-	SelectEntityPathWidget* firstWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(),"");
+        }
+    }
+
+    SelectEntityPathWidget* firstWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(),"");
 	SelectEntityPathWidget* secondWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(),"");
 	SelectEntityPathWidget* thirdWidget = new SelectEntityPathWidget(parent, defaultPath.GetAbsolutePathname(),"");
 

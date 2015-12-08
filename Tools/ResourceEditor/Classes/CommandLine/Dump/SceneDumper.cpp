@@ -232,8 +232,8 @@ void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links)
         if (FileSystem::Instance()->Exists(flagsTXT))
         {
             links.insert(flagsTXT);
-		}
-	}
+        }
+    }
 }
 
 void SceneDumper::DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const

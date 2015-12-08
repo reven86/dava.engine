@@ -113,8 +113,10 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
     ex.Normalize();
     ey.Normalize();
     ez.Normalize();
-    basisVectors[2] = ey; basisVectors[3] = ez;
-	basisVectors[4] = ex; basisVectors[5] = ez;
+    basisVectors[2] = ey;
+    basisVectors[3] = ez;
+    basisVectors[4] = ex;
+    basisVectors[5] = ez;
     basisVectors[6] = ey;
     basisVectors[7] = ex;
 

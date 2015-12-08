@@ -151,8 +151,8 @@ bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPath
         std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
         if (sourceFormat != IMAGE_FORMAT_UNKNOWN)
         {
-			descriptor->dataSettings.sourceFileFormat = sourceFormat;
-			descriptor->dataSettings.sourceFileExtension = extension;
+            descriptor->dataSettings.sourceFileFormat = sourceFormat;
+            descriptor->dataSettings.sourceFileExtension = extension;
 		}
         
         descriptor->Save(descriptorPathname);
@@ -161,7 +161,7 @@ bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPath
     else
     {
         std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPathname));
-        if (sourceFormat != descriptor->dataSettings.sourceFileFormat)
+        if ((sourceFormat != descriptor->dataSettings.sourceFileFormat) && (sourceFormat != IMAGE_FORMAT_UNKNOWN))
         {
             descriptor->dataSettings.sourceFileFormat = sourceFormat;
             descriptor->dataSettings.sourceFileExtension = extension;
