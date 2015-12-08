@@ -73,24 +73,27 @@ struct PackageContext : WidgetContext
 template <typename NodeType>
 void CollectSelectedNodes(const SelectedNodes &selectedNodes, Vector<NodeType*> &nodes, bool forCopy, bool forRemove)
 {
-    DAVA::Set<PackageBaseNode*> sortedNodes(selectedNodes.begin(), selectedNodes.end());
+    DAVA::Set<PackageBaseNode*> sortedNodes;
+    std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](const auto &node)
+       {
+           return dynamic_cast<NodeType*>(node);
+       });
     for (PackageBaseNode *node : sortedNodes)
     {
-        NodeType *convertedNode = dynamic_cast<NodeType*>(node);
-
-        if (convertedNode && node->GetParent() != nullptr)
+        DVASSERT(nullptr != node);
+        if(node->GetParent() != nullptr)
         {
-            if ((!forCopy || convertedNode->CanCopy()) &&
-                (!forRemove || convertedNode->CanRemove()))
+            if ((!forCopy || node->CanCopy()) &&
+                (!forRemove || node->CanRemove()))
             {
-                PackageBaseNode *parent = convertedNode->GetParent();
+                PackageBaseNode *parent = node->GetParent();
                 while (nullptr != parent && sortedNodes.find(parent) == sortedNodes.end())
                 {
                     parent = parent->GetParent();
                 }
                 if (nullptr == parent)
                 {
-                    nodes.push_back(convertedNode);
+                    nodes.push_back(DynamicTypeCheck<NodeType*>(node));
                 }
             }
         }
