@@ -5,6 +5,7 @@ import os
 import subprocess
 import errno
 
+formatOK = True
 cwd = os.getcwd()
 sources = ['../Sources/Internal', '../Projects', '../Tools']
 for source in sources:
@@ -20,5 +21,9 @@ for source in sources:
 						raise
 				stdout, stderr = proc.communicate()
 				if stdout.find("<replacement ") > -1:
+					formatOK = false
 					errorMsg = "##teamcity[message text=\'" + "%s not formatted" % os.path.join(root, filename) + "\' errorDetails=\'\' status=\'" + "ERROR" + "\']\n"
 					print errorMsg
+
+if formatOK:
+	print "##teamcity[message text=\'" + "format OK" + "\' errorDetails=\'\' status=\'" + "NORMAL" + "\']\n"
