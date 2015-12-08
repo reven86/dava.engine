@@ -235,10 +235,10 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     };
     core->RunOnUIThreadBlocked(func);
     // start device watchers, after creation main thread dispatcher
-    if (!isCreateWatchers)
+    if (!areCreatedWatchers)
     {
         CreateAndStartHIDWatcher();
-        isCreateWatchers = true;
+        areCreatedWatchers = true;
     }
 }
 
