@@ -89,24 +89,16 @@ auto versionListComparator = [](const QString & left, const QString & right)
             qlonglong rightVal = rightSubSubStr.toLongLong(&rightOk);
             if(leftOk && rightOk)
             {
-                if(leftVal < rightVal)
+                if(leftVal != rightVal)
                 {
-                    return true;
-                }
-                else if(leftVal > rightVal)
-                {
-                    return false;
+                    return leftVal < rightVal;
                 }
             }
             else //date format or other
             {
-                if(leftSubSubStr < rightSubSubStr)
+                if(leftSubSubStr != rightSubSubStr)
                 {
-                    return true;
-                }
-                else if(leftSubSubStr > rightSubSubStr)
-                {
-                    return false;
+                    return leftSubSubStr < rightSubSubStr;
                 }
             }
         }
