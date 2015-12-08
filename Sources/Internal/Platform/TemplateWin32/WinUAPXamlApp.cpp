@@ -702,11 +702,18 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
-
+    
+    PointerPoint ^ pointerPoint = nullptr;
     try
     {
-        PointerPoint ^ pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
-
+        pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
+    }
+    catch (Platform::Exception^ e)
+    {
+        Logger::FrameworkDebug("Exception in OnMouseMoved(): GetCurrentPoint %s", RTStringToString(e->Message).c_str());
+    }
+    if (nullptr != pointerPoint)
+    {
         MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
         if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
         {
@@ -723,9 +730,6 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
             pointerOrButtonIndex = UIEvent::BUTTON_2;
             phase = UIEvent::Phase::DRAG;
         }
-    }
-    catch (Platform::Exception^ e)
-    {
     }
 
     core->RunOnMainThread([this, x, y, phase, pointerOrButtonIndex]() {
