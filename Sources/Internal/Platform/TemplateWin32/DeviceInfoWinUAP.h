@@ -106,7 +106,7 @@ private:
     bool isMousePresent = false;
     bool isKeyboardPresent = false;
     bool isMobileMode = false;
-    bool isCreateWatchers = false;
+    bool areCreatedWatchers = false;
 
     ConcurrentObject<Map<NativeHIDType, Set<String> > > hids;
 
