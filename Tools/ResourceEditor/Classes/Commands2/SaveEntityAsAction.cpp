@@ -132,7 +132,7 @@ void SaveEntityAsAction::Redo()
                 clone->SetLocalTransform(newLocalTransform);
 
                 container->AddNode(clone);
-				RemoveReferenceToOwner(clone);
+                RemoveReferenceToOwner(clone);
 			}
 
 			container->SetName(sc2Path.GetFilename().c_str());

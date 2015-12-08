@@ -82,4 +82,6 @@ private:
     PackageBaseNode *parent;
 };
 
+bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
+
 #endif // __UI_EDITOR_UI_PACKAGE_MODEL_NODE__
