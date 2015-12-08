@@ -21,9 +21,11 @@ for source in sources:
 						raise
 				stdout, stderr = proc.communicate()
 				if stdout.find("<replacement ") > -1:
-					formatOK = false
+					formatOK = False
 					errorMsg = "##teamcity[message text=\'" + "%s not formatted" % os.path.join(root, filename) + "\' errorDetails=\'\' status=\'" + "ERROR" + "\']\n"
 					print errorMsg
 
 if formatOK:
 	print "##teamcity[message text=\'" + "format OK" + "\' errorDetails=\'\' status=\'" + "NORMAL" + "\']\n"
+else:
+	exit("not all files formatted")
