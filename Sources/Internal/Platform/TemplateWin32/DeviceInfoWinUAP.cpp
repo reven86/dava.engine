@@ -78,7 +78,9 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     if (isTouchPresent)
     {
-        (*(hids.GetAccessor()))[TOUCH].emplace(DEFAULT_TOUCH_ID);
+        auto hidsAccessor(hids.GetAccessor());
+        Set<String>& setIdDevices = (*(hidsAccessor))[TOUCH];
+        setIdDevices.emplace(DEFAULT_TOUCH_ID);
     }
     isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
@@ -483,7 +485,8 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
 bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
 {
     auto hidsAccessor(hids.GetAccessor());
-    return ((*(hidsAccessor))[type].size() > 0);
+    Set<String>& setIdDevices = (*(hidsAccessor))[type];
+    return (setIdDevices.size() > 0);
 }
 
 }
