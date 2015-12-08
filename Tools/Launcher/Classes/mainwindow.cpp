@@ -102,6 +102,7 @@ auto versionListComparator = [](const QString & left, const QString & right)
                 }
             }
         }
+        //if version lists are equal - checking for extra subversion
         if(leftSubList.size() != rightSubList.size())
         {
             return leftSubList.size() < rightSubList.size();
