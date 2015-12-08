@@ -295,9 +295,12 @@ void RenderSystem2D::ScreenSizeChanged()
     glScale.glScale(scale.x, scale.y, 1.0f);
 
     actualVirtualToPhysicalMatrix = glScale * glTranslate;
+    actualPhysicalToVirtualScale.x = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(1.0f);
+    actualPhysicalToVirtualScale.y = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(1.0f);
     if (virtualToPhysicalTransformEnabled)
     {
         currentVirtualToPhysicalMatrix = actualVirtualToPhysicalMatrix;
+        currentPhysicalToVirtualScale = actualPhysicalToVirtualScale;
     }
 }
 
@@ -305,30 +308,17 @@ void RenderSystem2D::SetVirtualToPhysicalTransformEnabled(bool value)
 {
     virtualToPhysicalTransformEnabled = value;
     currentVirtualToPhysicalMatrix = value ? actualVirtualToPhysicalMatrix : Matrix4::IDENTITY;
+    currentPhysicalToVirtualScale = value ? actualPhysicalToVirtualScale : Vector2(1.0f, 1.0f);
 }
 
 float32 RenderSystem2D::AlignToX(float32 value)
 {
-    if (virtualToPhysicalTransformEnabled)
-    {
-        return VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(value);
-    }
-    else
-    {
-        return std::floor(value + 0.5f);
-    }
+    return std::floor(value / currentPhysicalToVirtualScale.x + 0.5f) * currentPhysicalToVirtualScale.x;
 }
 
 float32 RenderSystem2D::AlignToY(float32 value)
 {
-    if (virtualToPhysicalTransformEnabled)
-    {
-        return VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(value);
-    }
-    else
-    {
-        return std::floor(value + 0.5f);
-    }
+    return std::floor(value / currentPhysicalToVirtualScale.y + 0.5f) * currentPhysicalToVirtualScale.y;
 }
 
 void RenderSystem2D::SetClip(const Rect &rect)

@@ -297,7 +297,10 @@ private:
 
 private:
     Matrix4 currentVirtualToPhysicalMatrix;
+    Vector2 currentPhysicalToVirtualScale;
+
     Matrix4 actualVirtualToPhysicalMatrix;
+    Vector2 actualPhysicalToVirtualScale;
 
     Matrix4 projMatrix;
     Matrix4 viewMatrix;
