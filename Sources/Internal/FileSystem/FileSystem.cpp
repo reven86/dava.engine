@@ -450,7 +450,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         return (0 != (s.st_mode & S_IFREG));
     }
 
- 	return false;
+    return false;
 }
 
 bool FileSystem::IsDirectory(const FilePath& pathToCheck) const

@@ -313,8 +313,8 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                   { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
                   { GLCommand::RESTORE_TEXTURE0, {} }
                 };
-                ExecGL(cmd3, countof(cmd3), force_immediate);
-            }
+            ExecGL(cmd3, countof(cmd3), force_immediate);
+        }
         }
         else
         {
@@ -396,14 +396,11 @@ RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 static void
 gles2_Texture_Delete(Handle tex)
 {
-    if (tex != InvalidHandle)
-    {
-        TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
+    TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
 
-        self->MarkRestored();
-        self->Destroy();
-        TextureGLES2Pool::Free(tex);
-    }
+    self->MarkRestored();
+    self->Destroy();
+    TextureGLES2Pool::Free(tex);
 }
 
 //------------------------------------------------------------------------------

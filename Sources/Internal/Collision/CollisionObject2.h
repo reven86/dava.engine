@@ -84,8 +84,8 @@ public:
     Polygon2* basePolygon;
     Polygon2 polygon;
     AABBox2 bbox;
-	
-	uint32 updateFrameIndex;
+
+    uint32 updateFrameIndex;
 	bool collisionOnLastFrame;
     
     bool forceUpdate;

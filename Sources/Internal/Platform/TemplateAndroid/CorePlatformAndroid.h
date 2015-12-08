@@ -128,7 +128,7 @@ private:
     AndroidSystemDelegate* androidDelegate;
 
     String externalStorage;
-	String internalStorage;
+    String internalStorage;
 };
 };
 #endif // #if defined(__DAVAENGINE_ANDROID__)
