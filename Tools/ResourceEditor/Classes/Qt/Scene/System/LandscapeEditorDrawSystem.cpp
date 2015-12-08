@@ -425,12 +425,12 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
         if (heightmap == nullptr || heightmap->Size() == 0)
         {
             return LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
-		}
+        }
         ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
         heightmapProxy = new HeightmapProxy(clonedHeightmap);
     }
     if (!customColorsProxy)
-	{
+    {
         customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
     }
     if (!visibilityToolProxy)
