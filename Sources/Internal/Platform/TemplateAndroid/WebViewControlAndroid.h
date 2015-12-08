@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_WEBVIEWCONTROL_H__
 #define __DAVAENGINE_WEBVIEWCONTROL_H__
 
-#include "Base/Platform.h"
+#include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
 #include "UI/IWebViewControl.h"
