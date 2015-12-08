@@ -11,7 +11,7 @@ if os.name == 'nt':
 	execName = 'clang-format.exe'
 else:
 	execName = 'clang-format'
-sources = ['../Sources/Internal', '../Projects', '../Tools']
+sources = ['../../Sources/Internal', '../../Projects', '../../Tools']
 for source in sources:
 	for root, dirnames, filenames in os.walk(source):
 		for ext in ['cpp', 'h', 'c', 'mm']:
