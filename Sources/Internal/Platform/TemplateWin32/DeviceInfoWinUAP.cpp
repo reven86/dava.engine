@@ -40,7 +40,6 @@
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 #include "Base/GlobalEnum.h"
-#include "Concurrency/LockGuard.h"
 
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
 
