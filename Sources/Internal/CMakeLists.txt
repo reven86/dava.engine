@@ -169,12 +169,13 @@ elseif( WIN32 )
     list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" 
                                                 "delayimp.lib" )
                                                 
-    if ( NOT DAVA_NO_RHI_DX9 )
+    if ( NOT DAVA_NO_RHI_DX9 OR NOT DAVA_NO_RHI_DX11 )
         list ( APPEND LIST_SHARED_LIBRARIES "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
                                             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  
                                             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" 
                                             "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" 
-                                            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
+                                            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
+                                            "dxgi.lib" )
     endif ()
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
