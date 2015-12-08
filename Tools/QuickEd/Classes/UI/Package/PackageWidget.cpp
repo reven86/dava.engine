@@ -76,7 +76,7 @@ void CollectSelectedNodes(const SelectedNodes &selectedNodes, Vector<NodeType*> 
     DAVA::Set<PackageBaseNode*> sortedNodes;
     std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](const auto &node)
        {
-           return dynamic_cast<NodeType*>(node);
+           return (dynamic_cast<NodeType*>(node) != nullptr);
        });
     for (PackageBaseNode *node : sortedNodes)
     {
