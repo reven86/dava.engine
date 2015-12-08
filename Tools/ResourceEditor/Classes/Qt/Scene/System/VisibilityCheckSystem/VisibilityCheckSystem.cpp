@@ -123,7 +123,7 @@ void VisibilityCheckSystem::RemoveEntity(DAVA::Entity* entity)
 
 void VisibilityCheckSystem::Draw()
 {
-    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM))
     {
         return;
     }
@@ -309,7 +309,8 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
     }
 
     auto entityIterator = renderObjectToEntity.find(object);
-    DVASSERT(entityIterator != renderObjectToEntity.end());
+    if (entityIterator == renderObjectToEntity.end())
+        return false;
 
     KeyedArchive* customProps = GetCustomPropertiesArchieve(entityIterator->second);
     if (customProps)
