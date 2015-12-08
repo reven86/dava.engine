@@ -67,22 +67,22 @@ namespace DAVA
     {
         NSAutoreleasePool* globalPool = 0;
         globalPool = [[NSAutoreleasePool alloc] init];
-		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
-		core->SetCommandLine(argc, argv);
-		core->EnableConsoleMode();
-		core->CreateSingletons();
-		
-        Logger::Instance()->EnableConsoleMode();
-        
-		FrameworkDidLaunched();
-		FrameworkWillTerminate();
-		
-		core->ReleaseSingletons();
+        DAVA::CoreMacOSPlatform* core = new DAVA::CoreMacOSPlatform();
+        core->SetCommandLine(argc, argv);
+        core->EnableConsoleMode();
+        core->CreateSingletons();
 
-		[globalPool release];
-		globalPool = 0;
-		return 0;
-	}
+        Logger::Instance()->EnableConsoleMode();
+
+        FrameworkDidLaunched();
+        FrameworkWillTerminate();
+
+        core->ReleaseSingletons();
+
+        [globalPool release];
+        globalPool = 0;
+        return 0;
+    }
 }
 
 @interface MainWindowController ()
@@ -232,7 +232,7 @@ namespace DAVA
 
 - (bool)setFullScreen:(bool)_fullScreen
 {
-    if(fullScreen != _fullScreen)
+    if (fullScreen != _fullScreen)
     {
         double macOSVer = floor(NSAppKitVersionNumber);
         // fullscreen for new 10.7+ MacOS

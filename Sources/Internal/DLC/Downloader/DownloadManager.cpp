@@ -617,6 +617,18 @@ DownloadError DownloadManager::TryDownload()
     if (RESUMED == currentTask->type)
     {
         MakeResumedDownload();
+
+        // if file is downloaded - we don't need to try download it again
+        ScopedPtr<File> dstFile(File::Create(currentTask->storePath, File::OPEN | File::READ));
+        if (dstFile)
+        {
+            uint64 currentFileSize = dstFile->GetSize();
+            uint64 sizeToDownload = currentTask->downloadTotal - currentFileSize;
+            if (0 < currentTask->downloadTotal && 0 == sizeToDownload)
+            {
+                return DLE_NO_ERROR;
+            }
+        }
     }
     else    
     {
@@ -649,7 +661,7 @@ void DownloadManager::MakeFullDownload()
 {
     currentTask->type = FULL;
 
-    if (currentTask->storePath.Exists())
+    if (FileSystem::Instance()->Exists(currentTask->storePath))
     {
         if (FileSystem::Instance()->DeleteFile(currentTask->storePath))
         {

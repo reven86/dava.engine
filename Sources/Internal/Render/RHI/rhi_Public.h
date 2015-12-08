@@ -367,7 +367,7 @@ Packet
         , vertexConstCount(0)
         , fragmentConstCount(0)
         , primitiveCount(0)
-        , queryIndex(InvalidIndex)
+        , queryIndex(DAVA::InvalidIndex)
         , options(0)
         , debugMarker(nullptr)
     {
@@ -380,4 +380,5 @@ void AddPacket(HPacketList packetList, const Packet& packet);
 void EndPacketList(HPacketList packetList, HSyncObject syncObject = HSyncObject(InvalidHandle)); // 'packetList' handle invalid after this, no explicit "release" needed
 
 } // namespace rhi
+
 #endif // __RHI_PUBLIC_H__

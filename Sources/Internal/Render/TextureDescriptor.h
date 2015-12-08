@@ -75,11 +75,11 @@ public:
         }
         void SetDefaultValues();
 
-		int8 wrapModeS;
-		int8 wrapModeT;
+        int8 wrapModeS;
+        int8 wrapModeT;
 
-		int8 minFilter;
-		int8 magFilter;
+        int8 minFilter;
+        int8 magFilter;
         int8 mipFilter;
 
         INTROSPECTION(TextureDrawSettings,

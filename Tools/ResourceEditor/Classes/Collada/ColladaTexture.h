@@ -34,28 +34,27 @@
 
 namespace DAVA
 {
-
 class ColladaTexture
 {
 public:
-	ColladaTexture(FCDImage * image);
-	~ColladaTexture();
-	
-	bool PreLoad();
-	void ProcessDevilImage();
+    ColladaTexture(FCDImage* image);
+    ~ColladaTexture();
 
-	GLuint	GetTextureId() { return textureId; };
+    bool PreLoad();
+    void ProcessDevilImage();
 
-	FCDImage  * image;
+    GLuint GetTextureId()
+    {
+        return textureId;
+    };
 
-	GLuint		textureId;
-	bool		hasOpacity;
-	
-	fstring texturePathName;
+    FCDImage* image;
+
+    GLuint textureId;
+    bool hasOpacity;
+
+    fstring texturePathName;
 };
-
 };
 
 #endif // __COLLADALOADER_TEXTURE_H__
-
-

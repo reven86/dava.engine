@@ -32,9 +32,11 @@
 #include "EditorSystems/SelectionSystem.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
+#include "UI/UIControl.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
 
 using namespace DAVA;
 
@@ -43,6 +45,9 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
 {
     systemManager->GetPackage()->AddListener(this);
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+    systemManager->SelectAllControls.Connect(this, &SelectionSystem::SelectAllControls);
+    systemManager->FocusNextChild.Connect(this, &SelectionSystem::FocusNextChild);
+    systemManager->FocusPreviousChild.Connect(this, &SelectionSystem::FocusPreviousChild);
 }
 
 SelectionSystem::~SelectionSystem()
@@ -72,23 +77,14 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::BEGAN:
         mousePressed = true;
-        return ProcessMousePress(currentInput->point);
+        return ProcessMousePress(currentInput->point, static_cast<UIEvent::eButtonID>(currentInput->tid));
     case UIEvent::Phase::ENDED:
         if (!mousePressed)
         {
-            return ProcessMousePress(currentInput->point);
+            return ProcessMousePress(currentInput->point, static_cast<UIEvent::eButtonID>(currentInput->tid));
         }
         mousePressed = false;
         return false;
-    case UIEvent::Phase::KEY_DOWN:
-    {
-        if (currentInput->tid == DVKEY_TAB)
-        {
-            SetSelection(SelectedNodes(), selectionContainer.selectedNodes);
-            //TODO: select next control
-            return true;
-        }
-    }
     default:
         return false;
     }
@@ -107,7 +103,10 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     SelectedNodes deselected;
     SelectedNodes selected;
     Set<ControlNode*> areaNodes;
-    systemManager->CollectControlNodesByRect(areaNodes, rect);
+    auto predicate = [rect](const UIControl* control) -> bool {
+        return control->GetSystemVisible() && rect.RectContains(control->GetGeometricData().GetAABBox());
+    };
+    systemManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate);
     if (!areaNodes.empty())
     {
         for (auto node : areaNodes)
@@ -123,23 +122,73 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     SetSelection(selected, deselected);
 }
 
-bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
+void SelectionSystem::SelectAllControls()
+{
+    SelectedNodes selected;
+    systemManager->CollectControlNodes(std::inserter(selected, selected.end()), [](const UIControl*) { return true; });
+    SetSelection(selected, SelectedNodes());
+}
+
+void SelectionSystem::FocusNextChild()
+{
+    FocusToChild(true);
+}
+
+void SelectionSystem::FocusPreviousChild()
+{
+    FocusToChild(false);
+}
+
+void SelectionSystem::FocusToChild(bool next)
+{
+    PackageBaseNode* startNode = nullptr;
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        startNode = *selectionContainer.selectedNodes.rbegin();
+    }
+    PackageBaseNode* nextNode = nullptr;
+    Vector<PackageBaseNode*> allNodes;
+    systemManager->CollectControlNodes(std::back_inserter(allNodes), [](const UIControl*) { return true; });
+    if (allNodes.empty())
+    {
+        return;
+    }
+    auto findIt = std::find(allNodes.begin(), allNodes.end(), startNode);
+    if (findIt == allNodes.end())
+    {
+        nextNode = next ? allNodes.front() : allNodes.back();
+    }
+    else if (next)
+    {
+        ++findIt;
+        nextNode = findIt == allNodes.end() ? allNodes.front() : *findIt;
+    }
+    else
+    {
+        nextNode = findIt == allNodes.begin() ? allNodes.back() : *(--findIt);
+    }
+
+    SelectedNodes newSelectedNodes;
+    newSelectedNodes.insert(nextNode);
+    SetSelection(newSelectedNodes, selectionContainer.selectedNodes);
+}
+
+bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eButtonID buttonID)
 {
     SelectedNodes selected;
     SelectedNodes deselected;
-    DAVA::Vector<ControlNode*> nodesUnderPoint;
-    systemManager->CollectControlNodesByPos(nodesUnderPoint, point);
-    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
-    {
-        deselected = selectionContainer.selectedNodes;
-    }
+    Vector<ControlNode*> nodesUnderPoint;
+    auto predicate = [point](const UIControl* control) -> bool {
+        return control->GetSystemVisible() && control->IsPointInside(point);
+    };
+    systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
+
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
-        if (IsKeyPressed(KeyboardProxy::KEY_ALT))
+        if (buttonID == UIEvent::BUTTON_2)
         {
-            ControlNode* selectedNode = nullptr;
-            systemManager->SelectionByMenuRequested.Emit(nodesUnderPoint, point, selectedNode);
+            ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPoint, point);
             if (nullptr != selectedNode)
             {
                 node = selectedNode;
@@ -148,6 +197,10 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
             {
                 return true; //selection was required but cancelled
             }
+        }
+        if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
+        {
+            deselected = selectionContainer.selectedNodes;
         }
         if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && selectionContainer.IsSelected(node))
         {

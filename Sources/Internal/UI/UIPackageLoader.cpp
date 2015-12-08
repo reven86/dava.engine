@@ -30,6 +30,7 @@
 #include "UIPackageLoader.h"
 
 #include "Base/ObjectFactory.h"
+#include "FileSystem/FileSystem.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
@@ -81,7 +82,7 @@ bool UIPackageLoader::LoadPackage(const FilePath &packagePath, AbstractUIPackage
         loadingQueue.clear();
     }
 
-    if (!packagePath.Exists())
+    if (!FileSystem::Instance()->Exists(packagePath))
         return false;
 
     RefPtr<YamlParser> parser(YamlParser::Create(packagePath));

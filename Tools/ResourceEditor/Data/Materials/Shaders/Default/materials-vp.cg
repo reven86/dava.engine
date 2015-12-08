@@ -100,10 +100,7 @@ VPROG_OUT_BEGIN
         #if FAST_NORMALIZATION
         VPROG_OUT_COLOR0_LOW(varHalfVec,3)
         #endif
-        VPROG_OUT_COLOR1_LOW(varToLightVec,3)
-        #if DISTANCE_ATTENUATION
-        VPROG_OUT_TEXCOORD6(varPerPixelAttenuation,1)
-        #endif
+        VPROG_OUT_COLOR1_LOW(varToLightVec,3)        
         VPROG_OUT_TEXCOORD7(varToCameraVec,3) 
     #endif    
     
@@ -497,12 +494,7 @@ VPROG_BEGIN
         float3 n = normalize( mul( float4(inNormal,1.0), worldViewInvTransposeMatrix ).xyz );
         float3 t = normalize( mul( float4(inTangent,1.0), worldViewInvTransposeMatrix ).xyz );
         float3 b = normalize( mul( float4(inBinormal,1.0), worldViewInvTransposeMatrix ).xyz );
-    #endif
-    
-    #if DISTANCE_ATTENUATION
-        VP_OUT(varPerPixelAttenuation) = length(toLightDir);
-    #endif
-    //lightDir = normalize(lightDir);
+    #endif       
     
     // transform light and half angle vectors by tangent basis
     float3 v;

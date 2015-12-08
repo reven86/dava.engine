@@ -32,6 +32,7 @@
 
 #include <QAbstractItemModel>
 #include <QMimeData>
+#include "EditorSystems/SelectionContainer.h"
 
 #include "Model/PackageHierarchy/PackageListener.h"
 
@@ -65,7 +66,11 @@ public:
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
-    
+
+signals:
+    void BeforeNodesMoved(const SelectedNodes& nodes);
+    void NodesMoved(const SelectedNodes& nodes);
+
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
     void StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property) override;
@@ -87,12 +92,11 @@ private: // PackageListener
     
     void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) override;
     void ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from) override;
-    
-private:
-    PackageNode *root;
-    QtModelPackageCommandExecutor *commandExecutor;
 
+    int GetRowIndex(int row, const QModelIndex& parent) const;
 
+    PackageNode* root = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
 };
 
 #endif // __QUICKED_PACKAGE_MODEL_H__

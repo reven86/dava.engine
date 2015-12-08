@@ -14,6 +14,10 @@ set ( FRAMEWORK_DEFINITIONS
 -DCURL_STATICLIB
 )
 
+if( DAVA_DISABLE_AUTOTESTS  )
+    list( APPEND FRAMEWORK_DEFINITIONS -DDISABLE_AUTOTESTS )
+endif()
+
 if( NOT DISABLE_SOUNDS )
     list( APPEND FRAMEWORK_DEFINITIONS -DDAVA_FMOD )
 
@@ -151,7 +155,7 @@ elseif( WIN32 )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" "delayimp.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" "delayimp.lib" "dxgi.lib" )
 #    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
@@ -172,17 +176,37 @@ define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}"
 
 generate_source_groups_project ()
 
+
+
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST        
+                                                        "Internal/Autotesting"
+                                                   IGNORE_LIST_APPLE  
+                                                        "TemplateMacOS/CoreMacOSPlatformBase.cpp"
+                                                        "iOS/ICloudKeyValue.cpp"
+                                                        "Notification/LocalNotificationIOS.cpp"
+                                                        "Concurrency/ThreadPosix.cpp"
+                                                        "Render/Texture.cpp" 
+                                                        "Render/RHI/GLES2"
+                                                        "TemplateMacOS/MainWindowController.mm"
+                                                    IGNORE_LIST_IOS
+                                                        "TemplateiOS/BackgroundView.mm"
+                                                        "TemplateiOS/HelperAppDelegate.mm"
+                                                        "TemplateiOS/DPIHelperiOS.mm"
+                                                        "TemplateiOS"
+                                                        "UI/UITextFieldiPhone.mm"
+                                                   )
 
-include_directories    (.)
-include_directories    ( ${DAVA_INCLUDE_DIR} )
-include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} ) 
-include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
 
-set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
+include_directories      (.)
+include_directories      ( ${DAVA_INCLUDE_DIR} )
+include_directories      ( ${ADD_ENGINE_INCLUDES_DIR} ) 
+include_directories      ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
 
-add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
-add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
+set                      ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
+
+add_definitions          ( ${FRAMEWORK_DEFINITIONS} )
+add_library              ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
 
 if( LINK_THIRD_PARTY )                 
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} ALL     "${LIST_SHARED_LIBRARIES}" )

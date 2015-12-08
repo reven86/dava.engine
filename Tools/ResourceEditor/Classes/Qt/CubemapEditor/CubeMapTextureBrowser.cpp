@@ -307,10 +307,10 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
 			if(checkedState)
 			{
 				FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
-				if(fp.Exists())
-				{
-					DAVA::Vector<DAVA::FilePath> faceNames;
-					CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
+                if (FileSystem::Instance()->Exists(fp))
+                {
+                    DAVA::Vector<DAVA::FilePath> faceNames;
+                    CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
 					for(size_t faceIndex = 0; faceIndex < faceNames.size(); ++faceIndex)
 					{
                         if (faceNames[faceIndex].IsEmpty())

@@ -108,7 +108,16 @@ namespace DAVA
     void SoundSystem::InitFromQualitySettings()
     {
     }
-    
+
+    void SoundSystem::SetDebugMode(bool debug)
+    {
+    }
+
+    bool SoundSystem::IsDebugModeOn() const
+    {
+        return false;
+    }
+
     void SoundSystem::ParseSFXConfig(const FilePath & configPath)
     {
     }

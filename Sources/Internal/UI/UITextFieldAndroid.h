@@ -110,24 +110,24 @@ public:
 
     void OpenKeyboard();
     void CloseKeyboard();
-    void GetText(WideString & string) const;
-	void SetText(const WideString & string);
-	void UpdateRect(const Rect & rect);
+    void GetText(WideString& string) const;
+    void SetText(const WideString& string);
+    void UpdateRect(const Rect& rect);
 
-	void SetTextColor(const DAVA::Color &color);
-	void SetFontSize(float size);
+    void SetTextColor(const DAVA::Color& color);
+    void SetFontSize(float size);
 
-	void SetTextAlign(DAVA::int32 align);
-	DAVA::int32 GetTextAlign();
+    void SetTextAlign(DAVA::int32 align);
+    DAVA::int32 GetTextAlign();
 
-	void SetTextUseRtlAlign(bool useRtlAlign);
-	bool GetTextUseRtlAlign() const;
+    void SetTextUseRtlAlign(bool useRtlAlign);
+    bool GetTextUseRtlAlign() const;
 
-	void SetVisible(bool isVisible);
+    void SetVisible(bool isVisible);
 
-	void SetIsPassword(bool isPassword);
+    void SetIsPassword(bool isPassword);
 
-	void SetInputEnabled(bool value);
+    void SetInputEnabled(bool value);
 
 	void SetRenderToTexture(bool value);
 	bool IsRenderToTexture() const;
@@ -177,7 +177,7 @@ private:
     Rect rect;
     WideString text;
     int32_t align;
-	bool useRtlAlign;
+    bool useRtlAlign;
 };
 
 };

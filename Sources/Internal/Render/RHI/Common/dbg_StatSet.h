@@ -46,8 +46,8 @@ class
 StatSet
 {
 public:
-    static unsigned AddStat(const char* full_name, const char* short_name, unsigned parent_id = InvalidIndex);
-    static unsigned AddPermanentStat(const char* full_name, const char* short_name, unsigned parent_id = InvalidIndex);
+    static unsigned AddStat(const char* full_name, const char* short_name, unsigned parent_id = DAVA::InvalidIndex);
+    static unsigned AddPermanentStat(const char* full_name, const char* short_name, unsigned parent_id = DAVA::InvalidIndex);
 
     static void ResetAll();
 

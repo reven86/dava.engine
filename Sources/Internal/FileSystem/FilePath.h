@@ -104,6 +104,24 @@ public:
 	 */
     String GetAbsolutePathname() const;
 
+#ifdef __DAVAENGINE_WINDOWS__
+    using NativeStringType = WideString;
+#else
+    using NativeStringType = String;
+#endif // __DAVAENGINE_WINDOWS__
+
+    /**
+        \brief Function to retrieve pathname
+        \returns pathname value in native string type
+	 */
+    NativeStringType GetNativeAbsolutePathname() const;
+
+    /**
+        \brief Function to create an object from native string
+        \returns FilePath object
+	 */
+    static FilePath FromNativeString(const NativeStringType& path);
+
     /**
         \brief Function to retrieve filename from pathname. Filename for path "/Users/Folder/image.png" is "image.png".
         \returns filename value
@@ -264,9 +282,9 @@ public:
     static void RemoveResourcesFolder(const FilePath & folder);
     static const List<FilePath>& GetResourcesFolders();
 
-    bool Exists() const;
-    
-	int32 Compare(const FilePath &right) const;
+    DAVA_DEPRECATED(bool Exists() const);
+
+    int32 Compare(const FilePath& right) const;
 
 protected:
     
