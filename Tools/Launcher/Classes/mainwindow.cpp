@@ -65,44 +65,54 @@ public:
 
 auto versionListComparator = [](const QString & left, const QString & right)
 {
-    QRegularExpression regExp("\\_");
-    QStringList leftList = left.split(regExp, QString::SkipEmptyParts);
-    QStringList rightList = right.split(regExp, QString::SkipEmptyParts);
+    QStringList leftList = left.split('_', QString::SkipEmptyParts);
+    QStringList rightList = right.split('_', QString::SkipEmptyParts);
 
     int minSize = qMin(leftList.size(), rightList.size());
     for (int i = 0; i < minSize; ++i)
     {
-        QString leftSubStr = leftList.at(i);
-        QString rightSubStr = rightList.at(i);
-        std::cout << leftSubStr.toUtf8().data() << " : " << rightSubStr.toUtf8().data() << std::endl;
-        bool leftOk;
-        qlonglong leftInt = leftSubStr.remove('.').remove('-').toLongLong(&leftOk);
-        bool rightOk;
-        qlonglong rightInt = rightSubStr.remove('.').remove('-').toLongLong(&rightOk);
-        if(leftOk && rightOk)
+        const QString &leftSubStr = leftList.at(i);
+        const QString &rightSubStr = rightList.at(i);
+        QStringList leftSubList = leftSubStr.split('.', QString::SkipEmptyParts);
+        QStringList rightSubList = rightSubStr.split('.', QString::SkipEmptyParts);
+        int subMinSize = qMin(leftSubList.size(), rightSubList.size());
+        for(int subStrIndex = 0; subStrIndex < subMinSize; ++subStrIndex)
         {
-            if(leftInt < rightInt)
+            bool leftOk;
+            bool rightOk;
+            const QString &leftSubSubStr = leftSubList.at(subStrIndex);
+            const QString &rightSubSubStr = rightSubList.at(subStrIndex);
+            qlonglong leftVal = leftSubSubStr.toLongLong(&leftOk);
+            qlonglong rightVal = rightSubSubStr.toLongLong(&rightOk);
+            if(leftOk && rightOk)
             {
-                return true;
+                if(leftVal < rightVal)
+                {
+                    return true;
+                }
+                else if(leftVal > rightVal)
+                {
+                    return false;
+                }
             }
-            else if (leftInt > rightInt)
+            else //date format or other
             {
-                return false;
+                if(leftSubSubStr < rightSubSubStr)
+                {
+                    return true;
+                }
+                else if(leftSubSubStr > rightSubSubStr)
+                {
+                    return false;
+                }
             }
         }
-        else
+        if(leftSubList.size() != rightSubList.size())
         {
-            if (leftSubStr < rightSubStr)
-            {
-                return true;
-            }
-            else if (leftSubStr > rightSubStr)
-            {
-                return false;
-            }
+            return leftSubList.size() < rightSubList.size();
         }
     }
-    return false;
+    return false; // string are equal
 };
 
 MainWindow::MainWindow(QWidget *parent) :
