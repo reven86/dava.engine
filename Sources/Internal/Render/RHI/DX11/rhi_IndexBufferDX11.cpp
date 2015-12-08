@@ -146,20 +146,17 @@ dx11_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 static void
 dx11_IndexBuffer_Delete(Handle ib)
 {
-    if (ib != InvalidHandle)
+    IndexBufferDX11_t* self = IndexBufferDX11Pool::Get(ib);
+
+    if (self->buffer)
     {
-        IndexBufferDX11_t* self = IndexBufferDX11Pool::Get(ib);
-
-        if (self->buffer)
-        {
-            self->buffer->Release();
-            self->buffer = nullptr;
-        }
-
-        self->size = 0;
-
-        IndexBufferDX11Pool::Free(ib);
+        self->buffer->Release();
+        self->buffer = nullptr;
     }
+
+    self->size = 0;
+
+    IndexBufferDX11Pool::Free(ib);
 }
 
 //------------------------------------------------------------------------------

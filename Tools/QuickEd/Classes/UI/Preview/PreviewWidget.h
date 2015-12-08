@@ -79,7 +79,7 @@ public slots:
 private slots:
     void OnScaleChanged(qreal scale);
     void OnScaleByComboIndex(int value);
-	void OnScaleByComboText();
+    void OnScaleByComboText();
     
     void OnGLWidgetResized(int width, int height);
 
