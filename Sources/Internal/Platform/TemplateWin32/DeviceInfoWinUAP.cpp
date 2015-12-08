@@ -79,7 +79,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     if (isTouchPresent)
     {
-        hids[TOUCH].emplace(DEFAULT_TOUCH_ID);
+        (*(hids.GetAccessor()))[TOUCH].emplace(DEFAULT_TOUCH_ID);
     }
     isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
@@ -236,7 +236,11 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     };
     core->RunOnUIThreadBlocked(func);
     // start device watchers, after creation main thread dispatcher
-    CreateAndStartHIDWatcher();
+    if (!isCreateWatchers)
+    {
+        CreateAndStartHIDWatcher();
+        isCreateWatchers = true;
+    }
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -328,7 +332,7 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 
 DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
-    hids.emplace(type, Set<String>());
+    hids.GetAccessor()->emplace(type, Set<String>());
     DeviceWatcher^ watcher = nullptr;
     Platform::Collections::Vector<Platform::String^>^ requestedProperties = ref new Platform::Collections::Vector<Platform::String^>();
     requestedProperties->Append("System.Devices.InterfaceClassGuid");
@@ -382,7 +386,6 @@ void DeviceInfoPrivate::CreateAndStartHIDWatcher()
 
 void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)
 {
-    LockGuard<Mutex> lock(hidsMutex);
     if (!information->IsEnabled)
     {
         return;
@@ -403,8 +406,9 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
             return;
         }
     }
+    auto hidsAccessor(hids.GetAccessor());
     String id = RTStringToString(information->Id);
-    Set<String>& setIdDevices = hids[type];
+    Set<String>& setIdDevices = (*(hidsAccessor))[type];
     auto idIter = setIdDevices.find(id);
     if (idIter == setIdDevices.end())
     {
@@ -415,9 +419,9 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ inf
 
 void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpdate^ information)
 {
-    LockGuard<Mutex> lock(hidsMutex);
     String id = RTStringToString(information->Id);
-    Set<String>& setIdDevices = hids[type];
+    auto hidsAccessor(hids.GetAccessor());
+    Set<String>& setIdDevices = (*(hidsAccessor))[type];
     auto idIter = setIdDevices.find(id);
     if (idIter != setIdDevices.end())
     {
@@ -428,8 +432,8 @@ void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpd
 
 void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpdate^ information)
 {
-    LockGuard<Mutex> lock(hidsMutex);
-    Set<String>& setIdDevices = hids[type];
+    auto hidsAccessor(hids.GetAccessor());
+    Set<String>& setIdDevices = (*(hidsAccessor))[type];
     if (TOUCH == type)
     {
         TouchCapabilities touchCapabilities;
@@ -479,8 +483,8 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
 
 bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
 {
-    LockGuard<Mutex> lock(hidsMutex);
-    return (hids[type].size() > 0);
+    auto hidsAccessor(hids.GetAccessor());
+    return ((*(hidsAccessor))[type].size() > 0);
 }
 
 }

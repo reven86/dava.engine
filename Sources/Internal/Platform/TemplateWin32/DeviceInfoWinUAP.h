@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Platform/DeviceInfoPrivateBase.h"
+#include "Concurrency/ConcurrentObject.h"
 
 namespace DAVA
 {
@@ -105,9 +106,9 @@ private:
     bool isMousePresent = false;
     bool isKeyboardPresent = false;
     bool isMobileMode = false;
+    bool isCreateWatchers = false;
 
-    Map<NativeHIDType, Set<String> > hids;
-    Mutex hidsMutex;
+    ConcurrentObject<Map<NativeHIDType, Set<String> > > hids;
 
     Vector<Windows::Devices::Enumeration::DeviceWatcher ^> watchers;
 
