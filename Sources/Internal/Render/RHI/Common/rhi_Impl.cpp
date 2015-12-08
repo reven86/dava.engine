@@ -76,30 +76,30 @@ void Initialize(Api api, const InitParam& param)
 {
     switch (api)
     {
-#if !defined(DAVA_NO_RHI_DX9)
+#if defined(__DAVAENGINE_WIN32__)
     case RHI_DX9:
         dx9_Initialize(param);
         break;
 #endif
 
-#if !defined(DAVA_NO_RHI_DX11)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     case RHI_DX11:
         dx11_Initialize(param);
         break;
 #endif
             
-#if !defined(DAVA_NO_RHI_GLES2)
+#if !defined(__DAVAENGINE_WIN_UAP__)
     case RHI_GLES2:
         gles2_Initialize(param);
         break;
 #endif
 
-#if !defined(DAVA_NO_RHI_METAL) && \
-defined(__DAVAENGINE_IPHONE__) &&  \
-!(TARGET_IPHONE_SIMULATOR == 1)
+#if defined(__DAVAENGINE_IPHONE__)
+#if !(TARGET_IPHONE_SIMULATOR == 1)
     case RHI_METAL:
         metal_Initialize(param);
         break;
+#endif //#if !(TARGET_IPHONE_SIMULATOR==1)
 #endif
 
     default:
@@ -121,10 +121,7 @@ bool NeedRestoreResources()
 
 void Uninitialize()
 {
-    if (_Impl.impl_Uninitialize != nullptr)
-    {
-        (*_Impl.impl_Uninitialize)();
-    }
+    (*_Impl.impl_Uninitialize)();
 }
 
 void PresentImpl(Handle sync)
@@ -184,15 +181,13 @@ Create(const Descriptor& desc)
 
 void Delete(Handle vb)
 {
-#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_VertexBuffer_Delete)(vb);
-#else
     if (vb != rhi::InvalidHandle)
     {
-        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_VERTEX);
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_VERTEX);        
+        #endif
+        (*_Impl.impl_VertexBuffer_Delete)(vb);
     }
-    return (*_Impl.impl_VertexBuffer_Delete)(vb);
-#endif
 }
 
 bool Update(Handle vb, const void* data, uint32 offset, uint32 size)
@@ -237,17 +232,15 @@ Create(const Descriptor& desc)
 #endif
 }
 
-void Delete(Handle vb)
+void Delete(Handle ib)
 {
-#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_IndexBuffer_Delete)(vb);
-#else
-    if (vb != rhi::InvalidHandle)
+    if (ib != InvalidHandle)
     {
-        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_INDEX);
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(ib, DAVA::ALLOC_GPU_RDO_INDEX);        
+        #endif
+        (*_Impl.impl_IndexBuffer_Delete)(ib);
     }
-    return (*_Impl.impl_IndexBuffer_Delete)(vb);
-#endif
 }
 
 bool Update(Handle vb, const void* data, uint32 offset, uint32 size)
@@ -347,15 +340,13 @@ Create(const Texture::Descriptor& desc)
 
 void Delete(Handle tex)
 {
-#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return (*_Impl.impl_Texture_Delete)(tex);
-#else
-    if (tex != rhi::InvalidHandle)
+    if (tex != InvalidHandle)
     {
-        DAVA_MEMORY_PROFILER_GPU_DEALLOC(tex, DAVA::ALLOC_GPU_TEXTURE);
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(tex, DAVA::ALLOC_GPU_TEXTURE);    
+        #endif
+        (*_Impl.impl_Texture_Delete)(tex);
     }
-    return (*_Impl.impl_Texture_Delete)(tex);
-#endif
 }
 
 void* Map(Handle tex, unsigned level, TextureFace face)
@@ -465,7 +456,8 @@ bool SetConst(Handle cb, uint32 constIndex, uint32 constSubIndex, const float* d
 
 void Delete(Handle cb)
 {
-    return (*_Impl.impl_ConstBuffer_Delete)(cb);
+    if (cb != InvalidHandle)
+        (*_Impl.impl_ConstBuffer_Delete)(cb);
 }
 
 } // namespace ConstBuffer
