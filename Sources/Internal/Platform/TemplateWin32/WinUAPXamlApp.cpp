@@ -541,7 +541,8 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
     if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING || !isMouseCursorShown)
     {
 #if defined(DAVA_WINUAP_MOUSE_HACK)
-        PointerDeviceType deviceType = args->GetCurrentPoint(nullptr)->PointerDevice->PointerDeviceType;
+        PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
+        PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
         if (!isPhoneApiDetected && PointerDeviceType::Mouse == deviceType)
         {
             if (skipMouseMoveEvent)
@@ -550,19 +551,37 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
                 return;
             }
 
+            UIEvent::Phase phase = UIEvent::Phase::MOVE;
+            int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
+            MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
+            if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
+            {
+                phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+                pointerOrButtonIndex = mouseBtnChange.button;
+            }
+            else if (isLeftButtonPressed)
+            {
+                pointerOrButtonIndex = UIEvent::BUTTON_1;
+                phase = UIEvent::Phase::DRAG;
+            }
+            else if (isRightButtonPressed)
+            {
+                pointerOrButtonIndex = UIEvent::BUTTON_2;
+                phase = UIEvent::Phase::DRAG;
+            }
+
             Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
             float32 centerX = rc.Width / 2.0f;
             float32 centerY = rc.Height / 2.0f;
 
-            PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
             float32 x = pointerPoint->Position.X;
             float32 y = pointerPoint->Position.Y;
 
             float32 deltaX = x - centerX;
             float32 deltaY = y - centerY;
 
-            core->RunOnMainThread([this, deltaX, deltaY]() {
-                DAVATouchEvent(UIEvent::Phase::MOVE, deltaX, deltaY, UIEvent::BUTTON_NONE, UIEvent::Device::MOUSE);
+            core->RunOnMainThread([this, deltaX, deltaY, phase, pointerOrButtonIndex]() {
+                DAVATouchEvent(phase, deltaX, deltaY, pointerOrButtonIndex, UIEvent::Device::MOUSE);
             });
 
             float32 scale = DeviceInfo::GetScreenInfo().scale;
@@ -776,7 +795,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     }
     catch (Platform::Exception^ e)
     {
-        Logger::FrameworkDebug("Exception in OnMouseMoved(): GetCurrentPoint %s", RTStringToString(e->Message).c_str());
+        Logger::FrameworkDebug("Exception in WinUAPXamlApp::OnMouseMoved: 0x%08X - %s", e->HResult, RTStringToString(e->Message).c_str());
     }
     if (nullptr != pointerPoint)
     {
