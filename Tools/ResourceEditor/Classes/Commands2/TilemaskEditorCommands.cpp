@@ -113,7 +113,7 @@ void ActionDisableTilemaskEditor::Redo()
 ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* _landscapeProxy, const Rect& _updatedRect)
     : Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
 {
-    updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
+    updatedRect = Rect(std::floor(_updatedRect.x), std::floor(_updatedRect.y), std::ceil(_updatedRect.dx), std::ceil(_updatedRect.dy));
     landscapeProxy = SafeRetain(_landscapeProxy);
 
     texture[0] = texture[1] = nullptr;

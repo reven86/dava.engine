@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __VisibilityCheckComponent_h__
-#define __VisibilityCheckComponent_h__
+#ifndef __VISIBILITYCHECKCOMPONENT_H__
+#define __VISIBILITYCHECKCOMPONENT_H__
 
 #include "Math/Color.h"
 #include "Entity/Component.h"
@@ -50,34 +50,34 @@ public:
     bool ShoouldNormalizeColor() const;
     void SetShoouldNormalizeColor(bool);
 
-    float GetRadius() const;
-    void SetRadius(float);
+    float32 GetRadius() const;
+    void SetRadius(float32);
 
-    float GetDistanceBetweenPoints() const;
-    void SetDistanceBetweenPoints(float);
+    float32 GetDistanceBetweenPoints() const;
+    void SetDistanceBetweenPoints(float32);
 
-    float GetMaximumDistance() const;
-    void SetMaximumDistance(float);
+    float32 GetMaximumDistance() const;
+    void SetMaximumDistance(float32);
 
-    float GetVerticalVariance() const;
-    void SetVerticalVariance(float);
+    float32 GetVerticalVariance() const;
+    void SetVerticalVariance(float32);
 
     const Color& GetColor() const;
     void SetColor(const Color&);
 
-    float GetUpAngle() const;
-    void SetUpAngle(float);
+    float32 GetUpAngle() const;
+    void SetUpAngle(float32);
 
-    float GetDownAngle() const;
-    void SetDownAngle(float);
+    float32 GetDownAngle() const;
+    void SetDownAngle(float32);
 
     Color GetNormalizedColor() const;
 
     bool ShouldPlaceOnLandscape() const;
     void SetShouldPlaceOnLandscape(bool);
 
-    float GetHeightAboveLandscape() const;
-    void SetHeightAboveLandscape(float);
+    float32 GetHeightAboveLandscape() const;
+    void SetHeightAboveLandscape(float32);
 
     bool IsPointSetValid() const;
     void InvalidatePointSet();
@@ -94,13 +94,13 @@ public:
 private:
     Vector<Vector3> points;
     Color color = Color(1.0f, 0.0f, 0.0f, 1.0f);
-    float radius = 20.0f;
-    float distanceBetweenPoints = 4.0f;
-    float upAngle = 45.0f;
-    float downAngle = 45.0f;
-    float verticalVariance = 0.0f;
-    float maximumDistance = 250.0f;
-    float heightAboveLandscape = 3.0f;
+    float32 radius = 20.0f;
+    float32 distanceBetweenPoints = 4.0f;
+    float32 upAngle = 45.0f;
+    float32 downAngle = 45.0f;
+    float32 verticalVariance = 0.0f;
+    float32 maximumDistance = 250.0f;
+    float32 heightAboveLandscape = 3.0f;
     bool shouldBuildPointSet = true;
     bool isValid = false;
     bool isEnabled = true;

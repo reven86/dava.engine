@@ -790,13 +790,13 @@ Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
     rhi::TextureType requestedType = fboDesc.textureType;
 
     int32 dx = Max((int32)w, 8);
-    if (fboDesc.ensurePOT)
+    if (fboDesc.ensurePowerOf2)
     {
         EnsurePowerOf2(dx);
     }
 
     int32 dy = Max((int32)h, 8);
-    if (fboDesc.ensurePOT)
+    if (fboDesc.ensurePowerOf2)
     {
         EnsurePowerOf2(dy);
     }
@@ -848,7 +848,7 @@ Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
     return tx;
 }
 
-Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDepth, rhi::TextureType requestedType, bool ensurePOT)
+Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDepth, rhi::TextureType requestedType, bool ensurePowerOf2)
 {
     FBODescriptor fboDesc;
 
@@ -858,7 +858,7 @@ Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDep
     fboDesc.needDepth = needDepth;
     fboDesc.needPixelReadback = false;
     fboDesc.textureType = requestedType;
-    fboDesc.ensurePOT = ensurePOT;
+    fboDesc.ensurePowerOf2 = ensurePowerOf2;
 
     return CreateFBO(fboDesc);
 }

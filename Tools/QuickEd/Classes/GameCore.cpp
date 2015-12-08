@@ -57,9 +57,9 @@ GameCore::GameCore()
 #endif
 
     // Unpack the help data, if needed.
-	UnpackHelp();
+    UnpackHelp();
 
-	//Initialize internal resources of application
+    //Initialize internal resources of application
 	ResourcesManageHelper::InitInternalResources();
     UIControlSystem::Instance()->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 }

@@ -670,6 +670,7 @@ void QtMainWindow::SetupStatusBar()
     CreateStatusBarButton(ui->actionLightmapCanvas, ui->statusBar);
     CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
     CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
+    CreateStatusBarButton(ui->actionEnableVisibilitySystem, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
     
 	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
@@ -776,6 +777,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
 	QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
+    QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(toggled(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
 
     QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
     
@@ -809,7 +811,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionCubemapEditor, SIGNAL(triggered()), this, SLOT(OnCubemapEditor()));
     QObject::connect(ui->actionImageSplitter, SIGNAL(triggered()), this, SLOT(OnImageSplitter()));
 
-    QObject::connect(ui->actionForce_first_LOD_on_Landscape, SIGNAL(triggered(bool)), this, SLOT(OnForceFirstLod(bool)));
+    QObject::connect(ui->actionForceFirstLODonLandscape, SIGNAL(triggered(bool)), this, SLOT(OnForceFirstLod(bool)));
     QObject::connect(ui->actionShowNotPassableLandscape, SIGNAL(triggered()), this, SLOT(OnNotPassableTerrain()));
 	QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
 	QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
@@ -1049,7 +1051,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionVisibilityCheckTool->setEnabled(enable);
 	ui->actionCustomColorsEditor->setEnabled(enable);
     ui->actionWayEditor->setEnabled(enable);
-    ui->actionForce_first_LOD_on_Landscape->setEnabled(enable);
+    ui->actionForceFirstLODonLandscape->setEnabled(enable);
 
     ui->actionEnableCameraLight->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
@@ -1323,9 +1325,9 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
         {
             closeRequest->Cancel();
             return;
-		}
-		
-		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+        }
+
+        scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
 	}
 
     if(!SaveScene(scene))
@@ -1439,6 +1441,11 @@ void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
 void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 {
     Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
+}
+
+void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
+{
+    Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM, enabled);
 }
 
 void QtMainWindow::OnEnableDisableShadows(bool enable)
@@ -2303,7 +2310,7 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
         shouldEnableFirstLod = true;
     }
 
-    ui->actionForce_first_LOD_on_Landscape->setChecked(shouldEnableFirstLod);
+    ui->actionForceFirstLODonLandscape->setChecked(shouldEnableFirstLod);
     OnForceFirstLod(shouldEnableFirstLod);
 }
 
@@ -2484,14 +2491,14 @@ void QtMainWindow::OnForceFirstLod(bool enabled)
     auto scene = GetCurrentScene();
     if (scene == nullptr)
     {
-        ui->actionForce_first_LOD_on_Landscape->setChecked(false);
+        ui->actionForceFirstLODonLandscape->setChecked(false);
         return;
     }
 
     auto landscape = FindLandscape(scene);
     if (landscape == nullptr)
     {
-        ui->actionForce_first_LOD_on_Landscape->setChecked(false);
+        ui->actionForceFirstLODonLandscape->setChecked(false);
         return;
     }
 

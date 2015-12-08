@@ -33,6 +33,7 @@
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
+#include "Base/AlignedAllocator.h"
 
 HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	: DAVA::SceneSystem(scene)
@@ -51,7 +52,7 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	btVector3 worldMax(1000,1000,1000);
 
 	collConfiguration = new btDefaultCollisionConfiguration();
-    collDispatcher = new btCollisionDispatcher(collConfiguration);
+    collDispatcher = CreateObjectAligned<btCollisionDispatcher, 16>(collConfiguration);
     collBroadphase = new btAxisSweep3(worldMin, worldMax);
     collDebugDraw = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
     collDebugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
@@ -87,7 +88,7 @@ HoodSystem::~HoodSystem()
 	delete collWorld;
 	delete collDebugDraw;
 	delete collBroadphase;
-    delete collDispatcher;
+    DestroyObjectAligned(collDispatcher);
     delete collConfiguration;
 }
 

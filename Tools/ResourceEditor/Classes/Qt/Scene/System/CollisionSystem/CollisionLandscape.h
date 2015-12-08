@@ -39,7 +39,7 @@ class CollisionLandscape : public CollisionBaseObject
 {
 public:
 	CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Landscape *landscape);
-	virtual ~CollisionLandscape();
+    ~CollisionLandscape();
 
 private:
     class CollisionLandscapePrivate;

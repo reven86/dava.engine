@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __VisibilityCheckSystem_h__
-#define __VisibilityCheckSystem_h__
+#ifndef __VISIBILITYCHECKSYSTEM_H__
+#define __VISIBILITYCHECKSYSTEM_H__
 
 #include "VisibilityCheckRenderer.h"
 #include "Entity/SceneSystem.h"
@@ -59,7 +59,7 @@ private:
     void BuildCache();
 
     bool ShouldDrawRenderObject(DAVA::RenderObject*) override;
-    float GetHeightAtHeightmapPoint(DAVA::float32 x, DAVA::float32 y, DAVA::Landscape*);
+    DAVA::float32 GetHeightAtHeightmapPoint(DAVA::float32 x, DAVA::float32 y, DAVA::Landscape*);
     bool PlacePointOnLandscape(DAVA::Vector3&, DAVA::Landscape*);
 
     struct StateCache
@@ -69,11 +69,11 @@ private:
         DAVA::Camera* camera = nullptr;
     };
 
-    static const DAVA::uint32 CubemapsCount = 1;
+    static const DAVA::uint32 CUBEMAPS_COUNT = 1;
 
 private:
-    DAVA::Vector<DAVA::Entity*> entities;
-    DAVA::Texture* cubemapTarget[CubemapsCount];
+    DAVA::Vector<DAVA::Entity*> entitiesWithVisibilityComponent;
+    DAVA::Texture* cubemapTarget[CUBEMAPS_COUNT];
     DAVA::Texture* renderTarget = nullptr;
     DAVA::Vector<VisibilityCheckRenderer::VisbilityPoint> controlPoints;
     DAVA::Map<DAVA::RenderObject*, DAVA::Entity*> renderObjectToEntity;

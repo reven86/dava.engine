@@ -165,10 +165,10 @@ void VisibilityCheckRenderer::CollectRenderBatches(DAVA::RenderSystem* renderSys
     DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
     fromCamera->SetupDynamicParameters(false, nullptr);
 
-    DAVA::Vector<DAVA::RenderObject*> rendeObjects;
-    renderSystem->GetRenderHierarchy()->Clip(fromCamera, rendeObjects, DAVA::RenderObject::VISIBLE);
+    DAVA::Vector<DAVA::RenderObject*> renderObjects;
+    renderSystem->GetRenderHierarchy()->Clip(fromCamera, renderObjects, DAVA::RenderObject::VISIBLE);
 
-    for (auto renderObject : rendeObjects)
+    for (auto renderObject : renderObjects)
     {
         if (ShouldRenderObject(renderObject))
         {

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1084</width>
-    <height>933</height>
+    <width>1205</width>
+    <height>969</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -212,7 +212,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1084</width>
+     <width>1205</width>
      <height>21</height>
     </rect>
    </property>
@@ -351,6 +351,7 @@
     <addaction name="actionShowEditorGizmo"/>
     <addaction name="actionLightmapCanvas"/>
     <addaction name="actionShowStaticOcclusion"/>
+    <addaction name="actionEnableVisibilitySystem"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -732,7 +733,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>89</height>
+          <height>94</height>
          </rect>
         </property>
        </widget>
@@ -757,7 +758,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionForce_first_LOD_on_Landscape"/>
+   <addaction name="actionForceFirstLODonLandscape"/>
    <addaction name="actionHeightMapEditor"/>
    <addaction name="actionTileMapEditor"/>
    <addaction name="actionShowNotPassableLandscape"/>
@@ -862,7 +863,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>89</height>
+          <height>91</height>
          </rect>
         </property>
        </widget>
@@ -2181,7 +2182,7 @@
     <string>Add Visibility Component</string>
    </property>
   </action>
-  <action name="actionForce_first_LOD_on_Landscape">
+  <action name="actionForceFirstLODonLandscape">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -2191,6 +2192,21 @@
    </property>
    <property name="text">
     <string>Force first LOD on Landscape</string>
+   </property>
+  </action>
+  <action name="actionEnableVisibilitySystem">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/eye.png</normaloff>:/QtIcons/eye.png</iconset>
+   </property>
+   <property name="text">
+    <string>Enable Visibility System</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+V</string>
    </property>
   </action>
  </widget>

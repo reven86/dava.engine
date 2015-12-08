@@ -64,8 +64,8 @@ void NotificationScreen::LoadResources()
     showNotificationText->SetStateText(0xFF, L"Notify text");
 
     showNotificationText->SetDebugDraw(true);
-	showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
-	AddControl(showNotificationText);
+    showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
+    AddControl(showNotificationText);
     
     showNotificationTextDelayed = new UIButton(Rect(10, 100, 450, 60));
     showNotificationTextDelayed->SetStateFont(0xFF, font);

@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __VisibilityCheckRenderer_h__
-#define __VisibilityCheckRenderer_h__
+#ifndef __VISIBILITYCHECKRENDERER_H__
+#define __VISIBILITYCHECKRENDERER_H__
 
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/RenderBase.h"

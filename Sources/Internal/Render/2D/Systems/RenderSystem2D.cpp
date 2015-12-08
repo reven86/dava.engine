@@ -136,6 +136,8 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL);
+    SafeRelease(DEFAULT_2D_FILL_ALPHA_MATERIAL);
+    SafeRelease(DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL);
 }
 
 void RenderSystem2D::BeginFrame()
@@ -1530,25 +1532,9 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2& polygon, bool closed
     DrawPolygon(copyPoly, closed, color);
 }
 
-void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+void RenderSystem2D::DrawTextureWithoutAdjustingRects(Texture* texture, NMaterial* material, const Color& color,
+                                                      const Rect& destRect, const Rect& _srcRect)
 {
-    Rect destRect(_dstRect);
-    if ((destRect.dx == -1.0f) || (destRect.dy == -1.0f))
-    {
-        if (IsRenderTargetPass())
-        {
-            destRect.dx = (float32)renderTargetWidth;
-            destRect.dy = (float32)renderTargetHeight;
-        }
-        else
-        {
-            destRect.dx = (float32)Renderer::GetFramebufferWidth();
-            destRect.dy = (float32)Renderer::GetFramebufferHeight();
-        }
-
-        destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
-    }
-
     spriteTempVertices[0] = spriteTempVertices[4] = destRect.x; //x1
     spriteTempVertices[5] = spriteTempVertices[7] = destRect.y; //y2
     spriteTempVertices[1] = spriteTempVertices[3] = destRect.y + destRect.dy; //y1
@@ -1581,6 +1567,27 @@ void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Co
     batch.texCoordPointer = texCoords;
     batch.indexPointer = indices;
     PushBatch(batch);
+}
+
+void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+{
+    Rect destRect(_dstRect);
+    if ((destRect.dx < 0.0f) || (destRect.dy < 0.0f))
+    {
+        if (IsRenderTargetPass())
+        {
+            destRect.dx = (float32)renderTargetWidth;
+            destRect.dy = (float32)renderTargetHeight;
+        }
+        else
+        {
+            destRect.dx = (float32)Renderer::GetFramebufferWidth();
+            destRect.dy = (float32)Renderer::GetFramebufferHeight();
+        }
+
+        destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
+    }
+    DrawTextureWithoutAdjustingRects(texture, material, color, destRect, _srcRect);
 }
 
 /* TiledDrawData Implementation */

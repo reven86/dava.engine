@@ -84,8 +84,8 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     // global scene manager signals
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
 
     // convector signals
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
@@ -96,8 +96,8 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     setupImagesScrollAreas();
     setupTextureListToolbar();
     setupTextureToolbar();
-	setupTextureListFilter();
-	setupTextureProperties();
+    setupTextureListFilter();
+    setupTextureProperties();
 	setupTextureViewTabBar();
 
 	resetTextureInfo();

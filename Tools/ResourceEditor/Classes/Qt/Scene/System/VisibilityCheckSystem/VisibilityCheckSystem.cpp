@@ -44,7 +44,7 @@ VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
 
     const DAVA::uint32 renderTargetSize = 2048;
 
-    for (DAVA::uint32 i = 0; i < CubemapsCount; ++i)
+    for (DAVA::uint32 i = 0; i < CUBEMAPS_COUNT; ++i)
     {
         cubemapTarget[i] = DAVA::Texture::CreateFBO(renderTargetSize, renderTargetSize,
                                                     DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
@@ -61,7 +61,7 @@ VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
 
 VisibilityCheckSystem::~VisibilityCheckSystem()
 {
-    for (uint32 i = 0; i < CubemapsCount; ++i)
+    for (uint32 i = 0; i < CUBEMAPS_COUNT; ++i)
     {
         SafeRelease(cubemapTarget[i]);
     }
@@ -92,7 +92,7 @@ void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
     auto requiredComponent = entity->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT);
     if (requiredComponent != nullptr)
     {
-        entities.push_back(entity);
+        entitiesWithVisibilityComponent.push_back(entity);
         shouldPrerender = true;
     }
 
@@ -106,10 +106,10 @@ void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
 
 void VisibilityCheckSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    auto i = std::find(entities.begin(), entities.end(), entity);
-    if (i != entities.end())
+    auto i = std::find(entitiesWithVisibilityComponent.begin(), entitiesWithVisibilityComponent.end(), entity);
+    if (i != entitiesWithVisibilityComponent.end())
     {
-        entities.erase(i);
+        entitiesWithVisibilityComponent.erase(i);
         shouldPrerender = true;
     }
 
@@ -123,9 +123,17 @@ void VisibilityCheckSystem::RemoveEntity(DAVA::Entity* entity)
 
 void VisibilityCheckSystem::Draw()
 {
-    for (auto e : entities)
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM))
+    {
+        return;
+    }
+
+    bool shouldRenderOverlay = false;
+
+    for (auto e : entitiesWithVisibilityComponent)
     {
         auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
+
         if (!visibilityComponent->IsValid())
         {
             if (!visibilityComponent->IsPointSetValid())
@@ -141,7 +149,7 @@ void VisibilityCheckSystem::Draw()
 
     auto rs = GetScene()->GetRenderSystem();
     auto dbg = rs->GetDebugDrawer();
-    for (auto e : entities)
+    for (auto e : entitiesWithVisibilityComponent)
     {
         auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(e->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
         if (visibilityComponent->IsEnabled())
@@ -150,6 +158,7 @@ void VisibilityCheckSystem::Draw()
             DAVA::Vector3 position = worldTransform.GetTranslationVector();
             DAVA::Vector3 direction = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
             dbg->DrawCircle(position, direction, visibilityComponent->GetRadius(), 36, DAVA::Color::White, DAVA::RenderHelper::DRAW_WIRE_DEPTH);
+            shouldRenderOverlay = true;
         }
     }
 
@@ -172,15 +181,19 @@ void VisibilityCheckSystem::Draw()
 
     DAVA::Color clr(std::sqrt(1.0f / static_cast<float>(controlPoints.size() + 1)), 0.0f, 0.0f, 0.0f);
     auto fromCamera = GetScene()->GetCurrentCamera();
-    for (DAVA::uint32 cm = 0; (cm < CubemapsCount) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
+    for (DAVA::uint32 cm = 0; (cm < CUBEMAPS_COUNT) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         const auto& point = controlPoints[currentPointIndex];
         renderer.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point.point);
         renderer.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point);
     }
 
-    DAVA::Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
-    DAVA::RenderSystem2D::Instance()->DrawTexture(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, Color::White, dstRect);
+    if (shouldRenderOverlay)
+    {
+        auto rs2d = DAVA::RenderSystem2D::Instance();
+        DAVA::Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
+        rs2d->DrawTextureWithoutAdjustingRects(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, Color::White, dstRect);
+    }
 }
 
 void VisibilityCheckSystem::UpdatePointSet()
@@ -189,7 +202,7 @@ void VisibilityCheckSystem::UpdatePointSet()
 
     controlPoints.clear();
 
-    for (auto e : entities)
+    for (auto e : entitiesWithVisibilityComponent)
     {
         auto visibilityComponent = static_cast<VisibilityCheckComponent*>(e->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
         if (visibilityComponent->IsEnabled())
@@ -240,9 +253,7 @@ bool VisibilityCheckSystem::PlacePointOnLandscape(DAVA::Vector3& point, DAVA::La
 
 void VisibilityCheckSystem::Prerender()
 {
-    bool shouldCreateRenderTarget = (renderTarget == nullptr);
-
-    if (shouldCreateRenderTarget)
+    if (renderTarget == nullptr)
     {
         CreateRenderTarget();
     }
@@ -255,11 +266,7 @@ void VisibilityCheckSystem::Prerender()
 
 void VisibilityCheckSystem::CreateRenderTarget()
 {
-    if (renderTarget != nullptr)
-    {
-        SafeRelease(renderTarget);
-    }
-
+    SafeRelease(renderTarget);
     renderTarget = Texture::CreateFBO(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight(),
                                       PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
 }
@@ -301,12 +308,10 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
         return false;
     }
 
-    if (renderObjectToEntity.count(object) == 0)
-        return false;
+    auto entityIterator = renderObjectToEntity.find(object);
+    DVASSERT(entityIterator != renderObjectToEntity.end());
 
-    auto entity = renderObjectToEntity.at(object);
-
-    KeyedArchive* customProps = GetCustomPropertiesArchieve(entity);
+    KeyedArchive* customProps = GetCustomPropertiesArchieve(entityIterator->second);
     if (customProps)
     {
         DAVA::String collisionTypeString = "CollisionType";

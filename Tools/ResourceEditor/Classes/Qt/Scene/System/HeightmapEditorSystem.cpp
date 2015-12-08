@@ -98,6 +98,8 @@ LandscapeEditorDrawSystem::eErrorType HeightmapEditorSystem::EnableLandscapeEdit
 
     drawSystem->EnableCursor();
     drawSystem->SetCursorTexture(cursorTexture);
+    drawSystem->GetBaseLandscape()->SetUpdatable(true);
+
     SetBrushSize(curToolSize);
 
     enabled = true;

@@ -29,6 +29,7 @@
 #include "VisibilityCheckComponent.h"
 #include "Scene3D/Entity.h"
 #include "Render/Texture.h"
+#include "Utils/Random.h"
 
 using namespace DAVA;
 
@@ -46,23 +47,23 @@ Component* VisibilityCheckComponent::Clone(Entity* toEntity)
     return visibilityCheckComponent;
 }
 
-float VisibilityCheckComponent::GetRadius() const
+float32 VisibilityCheckComponent::GetRadius() const
 {
     return radius;
 }
 
-void VisibilityCheckComponent::SetRadius(float r)
+void VisibilityCheckComponent::SetRadius(float32 r)
 {
     radius = r;
     InvalidatePointSet();
 }
 
-float VisibilityCheckComponent::GetDistanceBetweenPoints() const
+float32 VisibilityCheckComponent::GetDistanceBetweenPoints() const
 {
     return distanceBetweenPoints;
 }
 
-void VisibilityCheckComponent::SetDistanceBetweenPoints(float d)
+void VisibilityCheckComponent::SetDistanceBetweenPoints(float32 d)
 {
     distanceBetweenPoints = d;
     InvalidatePointSet();
@@ -78,26 +79,29 @@ void VisibilityCheckComponent::InvalidatePointSet()
     shouldBuildPointSet = true;
 }
 
-inline float randomFloat(float lower, float upper)
+namespace VCCHelper
 {
-    return lower + (upper - lower) * (static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+inline float32 RandomFloat(float32 lower, float32 upper)
+{
+    return lower + (upper - lower) * (static_cast<float32>(rand()) / static_cast<float>(RAND_MAX));
+}
 }
 
 void VisibilityCheckComponent::BuildPointSet()
 {
-    auto polar = [](float angle, float distance) -> Vector3 {
+    auto polar = [](float32 angle, float32 distance) -> Vector3 {
         return Vector3(std::cos(angle) * distance, std::sin(angle) * distance, 0.0f);
     };
 
     auto canIncludePoint = [this](const Vector3& pt) -> bool {
-        float distanceFromCenter = pt.x * pt.x + pt.y * pt.y;
+        float32 distanceFromCenter = pt.x * pt.x + pt.y * pt.y;
         if (distanceFromCenter > radius * radius)
             return false;
 
         for (const auto& e : points)
         {
-            float dx = e.x - pt.x;
-            float dy = e.y - pt.y;
+            float32 dx = e.x - pt.x;
+            float32 dy = e.y - pt.y;
             if (dx * dx + dy * dy < distanceBetweenPoints * distanceBetweenPoints)
                 return false;
         }
@@ -107,8 +111,8 @@ void VisibilityCheckComponent::BuildPointSet()
 
     auto generateAroundPoint = [this, &canIncludePoint, &polar](const Vector3& src) -> bool {
         const uint32 maxAttempts = 36;
-        float angle = randomFloat(-PI, PI);
-        float da = 2.0f * PI / static_cast<float>(maxAttempts);
+        float32 angle = VCCHelper::RandomFloat(-PI, PI);
+        float32 da = 2.0f * PI / static_cast<float>(maxAttempts);
         uint32 attempts = 0;
         Vector3 newPoint;
         bool canInclude = false;
@@ -128,8 +132,8 @@ void VisibilityCheckComponent::BuildPointSet()
     };
 
     points.clear();
-    float totalSquare = radius * radius;
-    float smallSquare = distanceBetweenPoints * distanceBetweenPoints;
+    float32 totalSquare = radius * radius;
+    float32 smallSquare = distanceBetweenPoints * distanceBetweenPoints;
     uint32 pointsToGenerate = 2 * static_cast<uint32>(totalSquare / smallSquare);
     points.reserve(pointsToGenerate);
 
@@ -139,14 +143,14 @@ void VisibilityCheckComponent::BuildPointSet()
     }
     else
     {
-        auto lastPoint = polar(randomFloat(-PI, +PI), radius - distanceBetweenPoints);
+        auto lastPoint = polar(VCCHelper::RandomFloat(-PI, +PI), radius - distanceBetweenPoints);
         points.push_back(lastPoint);
 
         bool canGenerate = true;
         while (canGenerate)
         {
             canGenerate = false;
-            for (int i = static_cast<int>(points.size()) - 1; i >= 0; --i)
+            for (int32 i = static_cast<int32>(points.size()) - 1; i >= 0; --i)
             {
                 if (generateAroundPoint(points.at(i)))
                 {
@@ -161,7 +165,7 @@ void VisibilityCheckComponent::BuildPointSet()
     {
         for (auto& p : points)
         {
-            p.z = randomFloat(-verticalVariance, verticalVariance);
+            p.z = VCCHelper::RandomFloat(-verticalVariance, verticalVariance);
         }
     }
 
@@ -192,7 +196,7 @@ Color VisibilityCheckComponent::GetNormalizedColor() const
     Color normalizedColor = color;
     if (shouldNormalizeColor)
     {
-        float fpoints = static_cast<float>(points.size());
+        float32 fpoints = static_cast<float>(points.size());
         normalizedColor.r = (color.r > 0.0f) ? std::max(1.0f / 255.0f, color.r / fpoints) : 0.0f;
         normalizedColor.g = (color.g > 0.0f) ? std::max(1.0f / 255.0f, color.g / fpoints) : 0.0f;
         normalizedColor.b = (color.b > 0.0f) ? std::max(1.0f / 255.0f, color.b / fpoints) : 0.0f;
@@ -210,23 +214,23 @@ void VisibilityCheckComponent::SetValid()
     isValid = true;
 }
 
-float VisibilityCheckComponent::GetUpAngle() const
+float32 VisibilityCheckComponent::GetUpAngle() const
 {
     return upAngle;
 }
 
-void VisibilityCheckComponent::SetUpAngle(float value)
+void VisibilityCheckComponent::SetUpAngle(float32 value)
 {
     upAngle = std::max(0.0f, std::min(90.0f, value));
     isValid = false;
 }
 
-float VisibilityCheckComponent::GetDownAngle() const
+float32 VisibilityCheckComponent::GetDownAngle() const
 {
     return downAngle;
 }
 
-void VisibilityCheckComponent::SetDownAngle(float value)
+void VisibilityCheckComponent::SetDownAngle(float32 value)
 {
     downAngle = std::max(0.0f, std::min(90.0f, value));
     isValid = false;
@@ -252,23 +256,23 @@ void VisibilityCheckComponent::SetShoouldNormalizeColor(bool value)
     shouldNormalizeColor = value;
 }
 
-float VisibilityCheckComponent::GetVerticalVariance() const
+float32 VisibilityCheckComponent::GetVerticalVariance() const
 {
     return verticalVariance;
 }
 
-void VisibilityCheckComponent::SetVerticalVariance(float value)
+void VisibilityCheckComponent::SetVerticalVariance(float32 value)
 {
     verticalVariance = std::max(0.0f, value);
     shouldBuildPointSet = true;
 }
 
-float VisibilityCheckComponent::GetMaximumDistance() const
+float32 VisibilityCheckComponent::GetMaximumDistance() const
 {
     return maximumDistance;
 }
 
-void VisibilityCheckComponent::SetMaximumDistance(float value)
+void VisibilityCheckComponent::SetMaximumDistance(float32 value)
 {
     maximumDistance = std::max(0.0f, value);
 }
@@ -284,12 +288,12 @@ void VisibilityCheckComponent::SetShouldPlaceOnLandscape(bool value)
     isValid = false;
 }
 
-float VisibilityCheckComponent::GetHeightAboveLandscape() const
+float32 VisibilityCheckComponent::GetHeightAboveLandscape() const
 {
     return heightAboveLandscape;
 }
 
-void VisibilityCheckComponent::SetHeightAboveLandscape(float value)
+void VisibilityCheckComponent::SetHeightAboveLandscape(float32 value)
 {
     heightAboveLandscape = value;
     isValid = false;
