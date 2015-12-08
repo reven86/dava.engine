@@ -772,11 +772,8 @@ void EmitterLayerWidget::OnSpriteUpdateTimerExpired()
 
     if (rhi::SyncObjectSignaled(spriteUpdateTexturesStack.top().first))
     {
-        Texture *texture = spriteUpdateTexturesStack.top().second;
-        ScopedPtr<Image> image(texture->CreateImageFromMemory());
-        
-        QPixmap pixmap = QPixmap::fromImage(ImageTools::FromDavaImage(image));
-        spriteLabel->setPixmap(pixmap.scaled(SPRITE_SIZE, SPRITE_SIZE));
+        ScopedPtr<Image> image(spriteUpdateTexturesStack.top().second->CreateImageFromMemory());
+        spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
 
         while (!spriteUpdateTexturesStack.empty())
         {
@@ -976,8 +973,7 @@ void EmitterLayerWidget::UpdateLayerSprite()
 {
     if (layer->sprite)
     {
-        VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
-        Texture* renderTarget = Texture::CreateFBO(vcs->ConvertVirtualToPhysicalX(SPRITE_SIZE), vcs->ConvertVirtualToPhysicalY(SPRITE_SIZE), FORMAT_RGBA8888);
+        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
         RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
         {
             Sprite::DrawState drawState = {};
