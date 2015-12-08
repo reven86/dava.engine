@@ -52,7 +52,7 @@ void BaseTest::LoadResources( )
     scene = new Scene();
 
     Rect rect;
-    rect.x =    0.0f;
+    rect.x =        0.0f;
     rect.y =    0.0f;
     rect.dx = size.dx;
     rect.dy = size.dy;
