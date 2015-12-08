@@ -34,7 +34,6 @@ AddComponentCommand::AddComponentCommand(DAVA::Entity* _entity, DAVA::Component 
 	: Command2(CMDID_COMPONENT_ADD, "Add Component")
     , entity(_entity)
     , component(_component)
-    , backup(NULL)
 {
     DVASSERT(entity);
 	DVASSERT(component);
@@ -48,7 +47,7 @@ AddComponentCommand::~AddComponentCommand()
 void AddComponentCommand::Redo()
 {
     entity->AddComponent(component);
-    backup = NULL;
+    backup = nullptr;
 }
 
 void AddComponentCommand::Undo()
@@ -60,4 +59,9 @@ void AddComponentCommand::Undo()
 DAVA::Entity* AddComponentCommand::GetEntity() const
 {
     return entity;
+}
+
+const DAVA::Component* AddComponentCommand::GetComponent() const
+{
+    return component;
 }

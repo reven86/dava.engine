@@ -30,7 +30,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "Base/Result.h"
+
+#include "FileSystem/Logger.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
@@ -44,8 +45,9 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
-class DialogReloadSprites;
 class Document;
+class SpritesPacker;
+class LoggerOutputObject;
 class Project;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -53,30 +55,20 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
     Q_OBJECT
     
 public:
-    struct TabState{
-        TabState(QString arg = QString()) 
-            : tabText(arg)
-            , isModified(false)
-        {
-        }
-        QString tabText;
-        bool isModified;
-    };
+    struct TabState;
     explicit MainWindow(QWidget* parent = nullptr);
 
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    void OnProjectOpened(const DAVA::ResultList &resultList, const Project *project);
-    int AddTab(const DAVA::FilePath &scenePath);
-    void OnCleanChanged(int index, bool val);
-
-    DialogReloadSprites* GetDialogReloadSprites() const;
-    QCheckBox* GetCheckboxEmulation();
-    QComboBox *GetComboBoxLanguage();
+    void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
+    int AddTab(Document *document, int index);
+    void ExecDialogReloadSprites(SpritesPacker* packer);
+    bool IsInEmulationMode() const;
+    bool isPixelized() const;
+    QComboBox* GetComboBoxLanguage();
 
 protected:
-
     void closeEvent(QCloseEvent *event) override;
 
 signals:
@@ -93,15 +85,16 @@ signals:
     void RtlChanged(bool isRtl);
     void GlobalStyleClassesChanged(const QString &classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
+    void EmulationModeChanbed(bool emulationMode);
+    void PixelizationChanged(bool pixelization);
 
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
-    void OnSetupCacheSettingsForPacker();
-    void OnDocumentChanged(Document* doc);
+    void OnDocumentChanged(Document *document);
 
 private slots:
-    void OnCurrentIndexChanged(int arg);
+    void OnCleanChanged(bool val);
     void OnSaveDocument();
     void OnShowHelp();
     
@@ -116,6 +109,7 @@ private slots:
     
     void OnRtlChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
+    void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
 
 private:
     void InitLanguageBox();
@@ -123,7 +117,7 @@ private:
     void InitRtlBox();
     void InitGlobalClasses();
     void InitEmulationMode();
-	void InitMenu();
+    void InitMenu();
     void SetupViewMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);
@@ -136,11 +130,12 @@ private:
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction = nullptr;
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
-    DialogReloadSprites* dialogReloadSprites = nullptr;
-    QCheckBox* emulationBox = nullptr;
-    QComboBox *comboboxLanguage = nullptr;
-};
 
-Q_DECLARE_METATYPE(MainWindow::TabState*);
+    QCheckBox* emulationBox = nullptr;
+    LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
+    qint64 acceptableLoggerFlags = ~0; //all flags accepted
+
+    QComboBox* comboboxLanguage = nullptr;
+};
 
 #endif // MAINWINDOW_H

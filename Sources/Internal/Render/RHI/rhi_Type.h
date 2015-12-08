@@ -740,12 +740,16 @@ RenderPassConfig
     ColorBuffer
     {
         Handle texture;
+        TextureFace textureFace;
+        uint32 textureLevel;
         LoadAction loadAction;
         StoreAction storeAction;
         float clearColor[4];
 
         ColorBuffer()
             : texture(InvalidHandle)
+            , textureFace(TEXTURE_FACE_NEGATIVE_X)
+            , textureLevel(0)
             , loadAction(LOADACTION_CLEAR)
             , storeAction(STOREACTION_NONE)
         {

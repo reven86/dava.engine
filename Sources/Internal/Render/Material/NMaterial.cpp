@@ -237,6 +237,17 @@ void NMaterial::CollectLocalTextures(Set<MaterialTextureInfo*>& collection) cons
     }
 }
 
+bool NMaterial::ContainsTexture(Texture* texture) const
+{
+    for (const auto& lc : localTextures)
+    {
+        if (lc.second->texture == texture)
+            return true;
+    }
+
+    return false;
+}
+
 void NMaterial::SetFXName(const FastName& fx)
 {
     fxName = fx;
@@ -658,29 +669,35 @@ void NMaterial::RebuildBindings()
                     else
                         bufferBinding->constBuffer = rhi::CreateFragmentConstBuffer(currShader->GetPiplineState(), bufferDescr.targetSlot);
 
-                    //create bindings for this buffer
-                    for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
+                    if (bufferBinding->constBuffer != rhi::InvalidHandle)
                     {
-                        NMaterialProperty* prop = GetMaterialProperty(propDescr.uid);
-                        if ((prop != nullptr)) //has property of the same type
-                        {
-                            DVASSERT(prop->type == propDescr.type);
+                        //if const buffer is InvalidHandle this means that whole const buffer was cut by shader compiler/linker
+                        //it should not be updated but still can be shared as other shader variants can use it
 
-                            // create property binding
-
-                            bufferBinding->propBindings.emplace_back(propDescr.type,
-                                                                     propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
-                        }
-                        else
+                        //create bindings for this buffer
+                        for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
                         {
-                            //just set default property to const buffer
-                            if (propDescr.type < rhi::ShaderProp::TYPE_FLOAT4)
+                            NMaterialProperty* prop = GetMaterialProperty(propDescr.uid);
+                            if ((prop != nullptr)) //has property of the same type
                             {
-                                rhi::UpdateConstBuffer1fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.bufferRegCount, propDescr.defaultValue, ShaderDescriptor::CalculateDataSize(propDescr.type, 1));
+                                DVASSERT(prop->type == propDescr.type);
+
+                                // create property binding
+
+                                bufferBinding->propBindings.emplace_back(propDescr.type,
+                                                                         propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
                             }
                             else
                             {
-                                rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                                //just set default property to const buffer
+                                if (propDescr.type < rhi::ShaderProp::TYPE_FLOAT4)
+                                {
+                                    rhi::UpdateConstBuffer1fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.bufferRegCount, propDescr.defaultValue, ShaderDescriptor::CalculateDataSize(propDescr.type, 1));
+                                }
+                                else
+                                {
+                                    rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                                }
                             }
                         }
                     }
@@ -708,11 +725,13 @@ void NMaterial::RebuildBindings()
                 bufferHandle = currShader->GetDynamicBuffer(bufferDescr.type, bufferDescr.targetSlot);
             }
 
-            DVASSERT(bufferHandle.IsValid());
-            if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
-                currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
-            else
-                currRenderVariant->fragmentConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+            if (bufferHandle.IsValid())
+            {
+                if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
+                    currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+                else
+                    currRenderVariant->fragmentConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+            }
         }
     }
 
@@ -956,8 +975,8 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
 
     if (archive->IsKeyExists("properties"))
     {
-        const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
+        const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        for (KeyedArchive::UnderlyingMap::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
         {
             const VariantType* propVariant = it->second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
@@ -980,8 +999,8 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
 
     if (archive->IsKeyExists("textures"))
     {
-        const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
+        const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (KeyedArchive::UnderlyingMap::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
         {
             String relativePathname = it->second->AsString();
             MaterialTextureInfo* texInfo = new MaterialTextureInfo();
@@ -992,8 +1011,8 @@ void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationC
 
     if (archive->IsKeyExists("flags"))
     {
-        const Map<String, VariantType*>& flagsMap = archive->GetArchive("flags")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
+        const KeyedArchive::UnderlyingMap& flagsMap = archive->GetArchive("flags")->GetArchieveData();
+        for (KeyedArchive::UnderlyingMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
             AddFlag(FastName(it->first), it->second->AsInt32());
         }
@@ -1044,8 +1063,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
 
     if (archive->IsKeyExists("textures"))
     {
-        const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = texturesMap.begin();
+        const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (KeyedArchive::UnderlyingMap::const_iterator it = texturesMap.begin();
              it != texturesMap.end();
              ++it)
         {
@@ -1058,8 +1077,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
 
     if (archive->IsKeyExists("setFlags"))
     {
-        const Map<String, VariantType*>& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
+        const KeyedArchive::UnderlyingMap& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
+        for (KeyedArchive::UnderlyingMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
             AddFlag(FastName(it->first), it->second->AsInt32());
         }
@@ -1101,8 +1120,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
 
     if (archive->IsKeyExists("properties"))
     {
-        const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
+        const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        for (KeyedArchive::UnderlyingMap::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
         {
             const VariantType* propVariant = it->second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);

@@ -80,12 +80,12 @@ public:
 
     //Vector2 updatedCenter;		// real center of the collision polygon
     ContactManifold2 manifold;
-	
-	Polygon2 * basePolygon;
-	Polygon2 polygon;
-	AABBox2 bbox;
-	
-	uint32 updateFrameIndex;
+
+    Polygon2* basePolygon;
+    Polygon2 polygon;
+    AABBox2 bbox;
+
+    uint32 updateFrameIndex;
 	bool collisionOnLastFrame;
     
     bool forceUpdate;

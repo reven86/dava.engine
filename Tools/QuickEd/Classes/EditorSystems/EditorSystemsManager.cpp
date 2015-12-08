@@ -71,69 +71,6 @@ private:
     bool emulationMode = false;
 };
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
-{
-    DVASSERT(nullptr != left && nullptr != right);
-    PackageBaseNode* leftParent = left;
-    int depthLeft = 0;
-    while (nullptr != leftParent->GetParent())
-    {
-        leftParent = leftParent->GetParent();
-        ++depthLeft;
-    }
-    int depthRight = 0;
-    PackageBaseNode* rightParent = right;
-    while (nullptr != rightParent->GetParent())
-    {
-        rightParent = rightParent->GetParent();
-        ++depthRight;
-    }
-    leftParent = left;
-    rightParent = right;
-    while (depthLeft != depthRight)
-    {
-        if (depthLeft > depthRight)
-        {
-            leftParent = leftParent->GetParent();
-            --depthLeft;
-        }
-        else
-        {
-            rightParent = rightParent->GetParent();
-            --depthRight;
-        }
-    }
-    if (leftParent == right)
-    {
-        return false;
-    }
-    if (rightParent == left)
-    {
-        return true;
-    }
-    left = leftParent;
-    right = rightParent;
-    while (true)
-    {
-        leftParent = left->GetParent();
-        rightParent = right->GetParent();
-        if (nullptr == leftParent)
-        {
-            return false;
-        }
-        if (nullptr == rightParent)
-        {
-            return true;
-        }
-        if (leftParent == rightParent)
-        {
-            return leftParent->GetIndex(left) < leftParent->GetIndex(right);
-        }
-        left = leftParent;
-        right = rightParent;
-    }
-}
-
 EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     : rootControl(new RootControl(this))
     , scalableControl(new UIControl())
@@ -182,6 +119,7 @@ void EditorSystemsManager::Deactivate()
     {
         system->OnDeactivated();
     }
+    rootControl->RemoveFromParent();
 }
 
 void EditorSystemsManager::Activate()
@@ -211,27 +149,7 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
     rootControl->SetEmulationMode(emulationMode);
-    EmulationModeChangedSignal.Emit(std::move(emulationMode));
-}
-
-void EditorSystemsManager::CollectControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
-{
-    for (PackageBaseNode* rootControl : editingRootControls)
-    {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
-        DVASSERT(nullptr != controlNode);
-        CollectControlNodesByPosImpl(controlNodes, pos, controlNode);
-    }
-}
-
-void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
-{
-    for (PackageBaseNode* rootControl : editingRootControls)
-    {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
-        DVASSERT(nullptr != controlNode);
-        CollectControlNodesByRectImpl(controlNodes, rect, controlNode);
-    }
+    EmulationModeChangedSignal.Emit(emulationMode);
 }
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
@@ -240,34 +158,6 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     if (!selectedControlNodes.empty())
     {
         SetPreviewMode(false);
-    }
-}
-
-void EditorSystemsManager::CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
-{
-    int count = node->GetCount();
-    auto control = node->GetControl();
-    if (control->IsPointInside(pos) && control->GetSystemVisible())
-    {
-        controlNodes.push_back(node);
-    }
-    for (int i = 0; i < count; ++i)
-    {
-        CollectControlNodesByPosImpl(controlNodes, pos, node->Get(i));
-    }
-}
-
-void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
-{
-    int count = node->GetCount();
-    auto control = node->GetControl();
-    if (control->GetVisible() && control->GetVisibleForUIEditor() && rect.RectContains(control->GetGeometricData().GetAABBox()))
-    {
-        controlNodes.insert(node);
-    }
-    for (int i = 0; i < count; ++i)
-    {
-        CollectControlNodesByRectImpl(controlNodes, rect, node->Get(i));
     }
 }
 
@@ -282,7 +172,7 @@ void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContaine
         else
         {
             editingRootControls.erase(node);
-            EditingRootControlsChanged.Emit(std::move(editingRootControls));
+            EditingRootControlsChanged.Emit(editingRootControls);
         }
     }
 }
@@ -295,7 +185,7 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
         if (destination == packageControlsNode)
         {
             editingRootControls.insert(node);
-            EditingRootControlsChanged.Emit(std::move(editingRootControls));
+            EditingRootControlsChanged.Emit(editingRootControls);
         }
     }
 }

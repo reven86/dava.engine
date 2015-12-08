@@ -121,7 +121,6 @@ QWidget *PropertiesTreeItemDelegate::createEditor( QWidget * parent, const QStyl
         else
         {
             editorWidget->editWidget = editor;
-            editor->setFocusProxy(editorWidget);
             editorWidget->setFocusPolicy(Qt::WheelFocus);
 
             QHBoxLayout *horizontalLayout = new QHBoxLayout(editorWidget);
@@ -232,7 +231,22 @@ void PropertiesTreeItemDelegate::emitCloseEditor(QWidget * editor, QAbstractItem
     emit closeEditor(editor, hint);
 }
 
+void PropertiesTreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
+                                       const QModelIndex& index) const
+{
+    QStyleOptionViewItemV3 opt = option;
 
+    QStyledItemDelegate::paint(painter, opt, index);
+
+    opt.palette.setCurrentColorGroup(QPalette::Active);
+    QColor color = static_cast<QRgb>(QApplication::style()->styleHint(QStyle::SH_Table_GridLineColor, &opt));
+    painter->save();
+    painter->setPen(QPen(color));
+
+    int right = (option.direction == Qt::LeftToRight) ? option.rect.right() : option.rect.left();
+    painter->drawLine(right, option.rect.y(), right, option.rect.bottom());
+    painter->restore();
+}
 
 PropertyWidget::PropertyWidget( QWidget *parent /*= NULL*/ ) : QWidget(parent), editWidget(NULL)
 {

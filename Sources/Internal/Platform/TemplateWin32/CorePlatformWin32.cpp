@@ -315,7 +315,7 @@ namespace DAVA
         clientSize.top = 0;
         clientSize.left = 0;
         clientSize.right = dm.width;
-		clientSize.bottom = dm.height;
+        clientSize.bottom = dm.height;
         HWND hWindow = static_cast<HWND>(GetNativeView());
         AdjustWindowRect(&clientSize, GetWindowLong(hWindow, GWL_STYLE), FALSE);
 
@@ -396,12 +396,12 @@ namespace DAVA
             mode.height = dmi.dmPelsHeight;
             mode.bpp = dmi.dmBitsPerPel;
             mode.refreshRate = dmi.dmDisplayFrequency;
-			ZeroMemory (&dmi, sizeof(dmi)) ;
-			availableDisplayModes.push_back(mode);
-		}
-	}
+            ZeroMemory(&dmi, sizeof(dmi));
+            availableDisplayModes.push_back(mode);
+        }
+    }
 
-	DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
+    DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
 	{
 		DWORD iModeNum = 0;
 		DEVMODE	dmi;
@@ -522,11 +522,11 @@ namespace DAVA
         if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
         {
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
-		}
+        }
+        if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
+        {
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
+        }
 		if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
 		{
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;

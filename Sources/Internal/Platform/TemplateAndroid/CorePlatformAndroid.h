@@ -87,8 +87,8 @@ public:
     void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
 
     void OnGamepadAvailable(bool isAvailable);
-	void OnGamepadTriggersAvailable(bool isAvailable);
-    
+    void OnGamepadTriggersAvailable(bool isAvailable);
+
     bool IsMultitouchEnabled();
 
 	bool DownloadHttpFile(const String & url, const String & documentsPathname);
@@ -113,7 +113,7 @@ private:
 
 	void UpdateScreenMode();
 
-    void ResizeView(int32 w, int32 h);
+    void ProcessResizeView();
 
 private:
 	int32 width;
@@ -121,13 +121,14 @@ private:
 
 	bool wasCreated;
 	bool renderIsActive;
+    bool viewSizeChanged;
 
-	bool foreground;
+    bool foreground;
 
-	AndroidSystemDelegate *androidDelegate;
+    AndroidSystemDelegate* androidDelegate;
 
-	String externalStorage;
-	String internalStorage;
+    String externalStorage;
+    String internalStorage;
 };
 };
 #endif // #if defined(__DAVAENGINE_ANDROID__)

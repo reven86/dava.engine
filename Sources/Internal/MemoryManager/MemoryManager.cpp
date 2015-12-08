@@ -127,11 +127,14 @@ void MemoryManager::RegisterTagName(uint32 tagMask, const char8* name)
 
     const size_t index = HighestBitIndex(tagMask);
     DVASSERT(index < MAX_TAG_COUNT);
-    DVASSERT(0 == index || tagNames[index - 1].name[0] != '\0');     // Names should be registered sequentially with no gap
+
+    DVASSERT(0 == index || UNTAGGED == index || tagNames[index - 1].name[0] != '\0'); // Names should be registered sequentially with no gap
 
     strncpy(tagNames[index].name, name, MMItemName::MAX_NAME_LENGTH);
     tagNames[index].name[MMItemName::MAX_NAME_LENGTH - 1] = '\0';
-    registeredTagCount += 1;
+
+    if (UNTAGGED != index)
+        registeredTagCount += 1;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -459,6 +462,18 @@ uint32 MemoryManager::GetTrackedMemoryUsage(uint32 poolIndex) const
     return statAllocPool[poolIndex].allocByApp;
 }
 
+uint32 MemoryManager::GetTaggedMemoryUsage(uint32 tagIndex) const
+{
+    DVASSERT(tagIndex != 0 && IsPowerOf2(tagIndex));
+
+    const size_t index = HighestBitIndex(tagIndex);
+
+    DVASSERT(index < MAX_TAG_COUNT);
+
+    LockType lock(statMutex);
+    return statTag[index].allocByApp;
+}
+
 void MemoryManager::EnterTagScope(uint32 tag)
 {
     DVASSERT(tag != 0 && IsPowerOf2(tag));
@@ -586,7 +601,7 @@ void MemoryManager::RemoveBlock(MemoryBlock* block)
 
 void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
-    {   // Update memory usage reported by system 
+    { // Update memory usage reported by system
         statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
         statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
@@ -610,20 +625,28 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemory
 
     {   // Update tag statistics
         uint32 tags = statGeneral.activeTags;
-        for (size_t index = 0;tags != 0;++index, tags >>= 1)
+        if (tags != 0)
         {
-            if (tags & 0x01)
+            for (size_t index = 0; tags != 0; ++index, tags >>= 1)
             {
-                statTag[index].allocByApp += block->allocByApp;
-                statTag[index].blockCount += 1;
+                if (tags & 0x01)
+                {
+                    statTag[index].allocByApp += block->allocByApp;
+                    statTag[index].blockCount += 1;
+                }
             }
+        }
+        else
+        {
+            statTag[UNTAGGED].allocByApp += block->allocByApp;
+            statTag[UNTAGGED].blockCount += 1;
         }
     }
 }
 
 void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
-    {   // Update memory usage reported by system 
+    { // Update memory usage reported by system
         statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
         statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
@@ -640,13 +663,21 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 systemMemo
     }
     {   // Update tag statistics
         uint32 tags = block->tags;
-        for (size_t index = 0;tags != 0;++index, tags >>= 1)
+        if (tags != 0)
         {
-            if (tags & 0x01)
+            for (size_t index = 0; tags != 0; ++index, tags >>= 1)
             {
-                statTag[index].allocByApp -= block->allocByApp;
-                statTag[index].blockCount -= 1;
+                if (tags & 0x01)
+                {
+                    statTag[index].allocByApp -= block->allocByApp;
+                    statTag[index].blockCount -= 1;
+                }
             }
+        }
+        else
+        {
+            statTag[UNTAGGED].allocByApp -= block->allocByApp;
+            statTag[UNTAGGED].blockCount -= 1;
         }
     }
 }
@@ -724,7 +755,7 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
 {
     const size_t EXTRA_FRAMES = 5;
     const size_t FRAMES_COUNT = BACKTRACE_DEPTH + EXTRA_FRAMES;
-    void* frames[FRAMES_COUNT] = {nullptr};
+    void* frames[FRAMES_COUNT] = { nullptr };
     Memset(backtrace, 0, sizeof(Backtrace));
 
     Debug::GetStackFrames(frames, FRAMES_COUNT);
@@ -786,9 +817,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 
 uint32 MemoryManager::CalcStatConfigSize() const
 {
-    return sizeof(MMStatConfig)
-        + sizeof(MMItemName) * registeredAllocPoolCount
-        + sizeof(MMItemName) * registeredTagCount;
+    return sizeof(MMStatConfig) + sizeof(MMItemName) * registeredAllocPoolCount + sizeof(MMItemName) * (registeredTagCount + 1);
 }
 
 void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
@@ -799,7 +828,7 @@ void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
     MMStatConfig* config = static_cast<MMStatConfig*>(buffer);
     config->size = static_cast<uint32>(requiredSize);
     config->allocPoolCount = static_cast<uint32>(registeredAllocPoolCount);
-    config->tagCount = static_cast<uint32>(registeredTagCount);
+    config->tagCount = static_cast<uint32>(registeredTagCount + 1);
     config->bktraceDepth = BACKTRACE_DEPTH;
 
     MMItemName* names = OffsetPointer<MMItemName>(config, sizeof(MMStatConfig));
@@ -811,13 +840,12 @@ void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
     {
         *names = tagNames[i];
     }
+    *names = tagNames[UNTAGGED];
 }
 
 uint32 MemoryManager::CalcCurStatSize() const
 {
-    return sizeof(MMCurStat)
-        + sizeof(AllocPoolStat) * registeredAllocPoolCount
-        + sizeof(TagAllocStat) * registeredTagCount;
+    return sizeof(MMCurStat) + sizeof(AllocPoolStat) * registeredAllocPoolCount + sizeof(TagAllocStat) * (registeredTagCount + 1);
 }
 
 void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) const
@@ -844,6 +872,7 @@ void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) c
     {
         tags[i] = statTag[i];
     }
+    tags[registeredTagCount] = statTag[UNTAGGED];
 }
 
 bool MemoryManager::GetMemorySnapshot(uint64 timestamp, File* file, uint32* snapshotSize)
