@@ -194,8 +194,8 @@ void WinUAPXamlApp::PreStartAppSettings()
         // default orientation landscape and landscape flipped
         // will be changed in SetDisplayOrientations()
         StatusBar::GetForCurrentView()->HideAsync();
-        Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->SuppressSystemOverlays = true;
     }
+    Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
 }
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
