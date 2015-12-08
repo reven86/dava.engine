@@ -292,7 +292,7 @@ bool UpdateIpOverUsbConfig(RegKey& key)
             DVASSERT_MSG(false, "Unable to set DestinationAddress");
             return false;
         }
-        changed |= true;
+        changed = true;
     }
 
     DWORD port = key.QueryDWORD("DestinationPort");
@@ -303,7 +303,7 @@ bool UpdateIpOverUsbConfig(RegKey& key)
             DVASSERT_MSG(false, "Unable to set DestinationPort");
             return false;
         }
-        changed |= true;
+        changed = true;
     }
 
     address = key.QueryString("LocalAddress");
@@ -314,7 +314,7 @@ bool UpdateIpOverUsbConfig(RegKey& key)
             DVASSERT_MSG(false, "Unable to set LocalAddress");
             return false;
         }
-        changed |= true;
+        changed = true;
     }
 
     port = key.QueryDWORD("LocalPort");
@@ -325,7 +325,7 @@ bool UpdateIpOverUsbConfig(RegKey& key)
             DVASSERT_MSG(false, "Unable to set LocalPort");
             return false;
         }
-        changed |= true;
+        changed = true;
     }
 
     return changed;

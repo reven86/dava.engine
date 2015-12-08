@@ -111,10 +111,13 @@ bool SvcHelper::Stop()
         bool stopped = status.dwCurrentState == SERVICE_STOPPED;
         unsigned i = 0;
 
-        while (!stopped && i < 10) {
+        while (!stopped && i < 10) 
+        {
             Thread::Sleep(200);
             if (!::QueryServiceStatus(service, &status))
+            {
                 break;
+            }
 
             stopped = status.dwCurrentState == SERVICE_STOPPED;
             ++i;

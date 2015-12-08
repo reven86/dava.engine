@@ -31,7 +31,7 @@
 #define __DAVAENGINE_ICHANNEL_H__
 
 #include "Base/BaseTypes.h"
-#include "NetworkCommon.h"
+#include "Network/NetworkCommon.h"
 
 namespace DAVA
 {
