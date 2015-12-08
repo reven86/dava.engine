@@ -700,27 +700,37 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
 
-    //PointerPoint ^ pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
-
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
-
-    //     MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
-    //     if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
-    //     {
-    //         phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    //         pointerOrButtonIndex = mouseBtnChange.button;
-    //     }
-    //     else if (isLeftButtonPressed)
-    //     {
-    //         pointerOrButtonIndex = UIEvent::BUTTON_1;
-    //         phase = UIEvent::Phase::DRAG;
-    //     }
-    //     else if (isRightButtonPressed)
-    //     {
-    //         pointerOrButtonIndex = UIEvent::BUTTON_2;
-    //         phase = UIEvent::Phase::DRAG;
-    //     }
+    
+    PointerPoint ^ pointerPoint = nullptr;
+    try
+    {
+        pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
+    }
+    catch (Platform::Exception^ e)
+    {
+        Logger::FrameworkDebug("Exception in OnMouseMoved(): GetCurrentPoint %s", RTStringToString(e->Message).c_str());
+    }
+    if (nullptr != pointerPoint)
+    {
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
+        if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
+        {
+            phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+            pointerOrButtonIndex = mouseBtnChange.button;
+        }
+        else if (isLeftButtonPressed)
+        {
+            pointerOrButtonIndex = UIEvent::BUTTON_1;
+            phase = UIEvent::Phase::DRAG;
+        }
+        else if (isRightButtonPressed)
+        {
+            pointerOrButtonIndex = UIEvent::BUTTON_2;
+            phase = UIEvent::Phase::DRAG;
+        }
+    }
 
     core->RunOnMainThread([this, x, y, phase, pointerOrButtonIndex]() {
         DAVATouchEvent(phase, x, y, pointerOrButtonIndex, UIEvent::Device::MOUSE);
