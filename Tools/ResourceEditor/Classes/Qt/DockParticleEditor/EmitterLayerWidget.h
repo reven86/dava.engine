@@ -88,8 +88,8 @@ private:
 	void InitWidget(QWidget* );
 	void UpdateTooltip();
     void UpdateLayerSprite();
-	
-	void FillLayerTypes();
+
+    void FillLayerTypes();
 	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
 
 private:

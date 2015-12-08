@@ -1324,7 +1324,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
         {
             closeRequest->Cancel();
             return;
-		}
+        }
 		
 		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
 	}
