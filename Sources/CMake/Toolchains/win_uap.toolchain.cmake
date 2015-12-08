@@ -6,7 +6,7 @@ include ( GlobalVariables )
 
 #define system name and version for windows universal application
 set ( CMAKE_SYSTEM_NAME "WindowsStore" )
-set ( CMAKE_SYSTEM_VERSION "10.0" )
+set ( CMAKE_SYSTEM_VERSION "10.0.10240.0" )
 
 #project platforms
 #if concrete platform not set, project will be multiplatform
@@ -20,4 +20,4 @@ else ()
 endif ()
 
 #default target version
-set ( WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION "10.0.10240.0" )
+set ( WINDOWS_UAP_DEFAULT_TARGET_PLATFORM_VERSION ${CMAKE_SYSTEM_VERSION} )
