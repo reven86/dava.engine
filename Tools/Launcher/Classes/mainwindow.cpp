@@ -66,7 +66,7 @@ public:
 //expected format of input string: 0.8_2015-02-14_11.20.12_0000,
 //where 0.8 - DAVA version, 2015-02-14 - build date, 11.20.12 - build time and 0000 - build version
 //all blocks can be modified or empty
-auto versionListComparator = [](const QString & left, const QString & right)
+bool VersionListComparator(const QString & left, const QString & right)
 {
     QStringList leftList = left.split('_', QString::SkipEmptyParts);
     QStringList rightList = right.split('_', QString::SkipEmptyParts);
@@ -518,7 +518,7 @@ QWidget * MainWindow::CreateAppAvalibleTableItem(Application * app)
             versions.push_back(app->GetVersion(j)->id);
         }
 
-        qSort(versions.begin(), versions.end(), versionListComparator);
+        qSort(versions.begin(), versions.end(), VersionListComparator);
         
         QComboBox * comboBox = new QComboBox();
         for (int j = versCount - 1; j >= 0; --j)
