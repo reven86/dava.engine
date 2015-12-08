@@ -72,15 +72,34 @@ auto versionListComparator = [](const QString & left, const QString & right)
     int minSize = qMin(leftList.size(), rightList.size());
     for (int i = 0; i < minSize; ++i)
     {
-        const QString &leftSubStr = leftList.at(i);
-        const QString &rightSubStr = rightList.at(i);
-        if (leftSubStr < rightSubStr)
+        QString leftSubStr = leftList.at(i);
+        QString rightSubStr = rightList.at(i);
+        std::cout << leftSubStr.toUtf8().data() << " : " << rightSubStr.toUtf8().data() << std::endl;
+        bool leftOk;
+        qlonglong leftInt = leftSubStr.remove('.').remove('-').toLongLong(&leftOk);
+        bool rightOk;
+        qlonglong rightInt = rightSubStr.remove('.').remove('-').toLongLong(&rightOk);
+        if(leftOk && rightOk)
         {
-            return true;
+            if(leftInt < rightInt)
+            {
+                return true;
+            }
+            else if (leftInt > rightInt)
+            {
+                return false;
+            }
         }
-        else if (leftSubStr > rightSubStr)
+        else
         {
-            return false;
+            if (leftSubStr < rightSubStr)
+            {
+                return true;
+            }
+            else if (leftSubStr > rightSubStr)
+            {
+                return false;
+            }
         }
     }
     return false;
