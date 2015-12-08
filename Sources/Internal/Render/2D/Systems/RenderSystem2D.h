@@ -137,8 +137,6 @@ public:
     
     void Init();
 
-    void SetVirtualToPhysicalTransformEnabled(bool);
-
     void Draw(Sprite* sprite, Sprite::DrawState* drawState, const Color& color);
     void DrawStretched(Sprite* sprite, Sprite::DrawState* drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color);
     void DrawTiled(Sprite* sprite, Sprite::DrawState* drawState, const Vector2& streatchCap, const UIGeometricData& gd, TiledDrawData** pTiledData, const Color& color);
@@ -185,8 +183,6 @@ public:
     void BeginRenderTargetPass(Texture* target, bool needClear = true, const Color& clearColor = Color::Clear, int32 priority = PRIORITY_SERVICE_2D);
     void BeginRenderTargetPass(const RenderTargetPassDescriptor&);
     void EndRenderTargetPass();
-
-    void PerformRenderTargetPass(const RenderTargetPassDescriptor&, const DAVA::Function<void()>& commands);
 
     /* 2D DRAW HELPERS */
 
@@ -283,6 +279,7 @@ public:
     void DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
 private:
+    void SetVirtualToPhysicalTransformEnabled(bool);
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
     void Setup2DMatrices();
 
@@ -299,6 +296,7 @@ private:
     float32 AlignToY(float32 value);
 
 private:
+    Matrix4 currentVirtualToPhysicalMatrix;
     Matrix4 actualVirtualToPhysicalMatrix;
 
     Matrix4 projMatrix;

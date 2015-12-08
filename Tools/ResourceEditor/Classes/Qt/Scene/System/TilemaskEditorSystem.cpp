@@ -213,9 +213,9 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
             RenderSystem2D::RenderTargetPassDescriptor desc;
             desc.target = toolTexture;
             desc.shouldTransformVirtualToPhysical = false;
-            RenderSystem2D::Instance()->PerformRenderTargetPass(desc, [this, toolRect]() {
-                RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
-            });
+            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+            RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
+            RenderSystem2D::Instance()->EndRenderTargetPass();
 
             toolSpriteUpdated = true;
 
@@ -457,9 +457,9 @@ void TilemaskEditorSystem::CreateMaskTexture()
         RenderSystem2D::RenderTargetPassDescriptor desc;
         desc.target = srcTexture;
         desc.shouldTransformVirtualToPhysical = false;
-        RenderSystem2D::Instance()->PerformRenderTargetPass(desc, [this]() {
-            RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
-        });
+        RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+        RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
+        RenderSystem2D::Instance()->EndRenderTargetPass();
 
         drawSystem->SetTileMaskTexture(srcTexture);
     }

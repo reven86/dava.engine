@@ -239,9 +239,9 @@ void CustomColorsSystem::UpdateBrushTool()
     desc.target = colorTexture;
     desc.shouldClear = false;
     desc.shouldTransformVirtualToPhysical = false;
-    RenderSystem2D::Instance()->PerformRenderTargetPass(desc, [this, brushMaterial, &updatedRect]() {
-        RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
-    });
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+    RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
 void CustomColorsSystem::ResetAccumulatorRect()
@@ -364,9 +364,9 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
             desc.target = target;
             desc.shouldClear = false;
             desc.shouldTransformVirtualToPhysical = false;
-            RenderSystem2D::Instance()->PerformRenderTargetPass(desc, [this, brushMaterial]() {
-                RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
-            });
+            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+            RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
+            RenderSystem2D::Instance()->EndRenderTargetPass();
         }
     }
 

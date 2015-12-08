@@ -173,14 +173,15 @@ void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture* dstTex, i
     texture[internalHandleIndex] = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
                                                            image->GetWidth(), image->GetHeight(), false);
 
+    auto material = RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
+
     RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.target = dstTex;
     desc.shouldClear = false;
     desc.shouldTransformVirtualToPhysical = false;
-    RenderSystem2D::Instance()->PerformRenderTargetPass(desc, [this, internalHandleIndex]() {
-        auto material = RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
-        RenderSystem2D::Instance()->DrawTexture(texture[internalHandleIndex], material, Color::White, updatedRect);
-    });
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+    RenderSystem2D::Instance()->DrawTexture(texture[internalHandleIndex], material, Color::White, updatedRect);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
 SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy,

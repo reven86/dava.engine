@@ -130,6 +130,7 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL);
+    SafeRelease(DEFAULT_2D_FILL_ALPHA_MATERIAL);
 }
 
 void RenderSystem2D::BeginFrame()
@@ -174,7 +175,12 @@ void RenderSystem2D::EndFrame()
 
 void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */, int32 priority /* = PRIORITY_SERVICE_2D */)
 {
-    RenderTargetPassDescriptor desc = { target, clearColor, priority, true, needClear };
+    RenderTargetPassDescriptor desc;
+    desc.target = target;
+    desc.clearColor = clearColor;
+    desc.priority = priority;
+    desc.shouldClear = needClear;
+    desc.shouldTransformVirtualToPhysical = false;
     BeginRenderTargetPass(desc);
 }
 
@@ -232,13 +238,6 @@ void RenderSystem2D::EndRenderTargetPass()
     Setup2DMatrices();
 }
 
-void RenderSystem2D::PerformRenderTargetPass(const RenderTargetPassDescriptor& desc, const DAVA::Function<void()>& cmd)
-{
-    BeginRenderTargetPass(desc);
-    cmd();
-    EndRenderTargetPass();
-}
-
 void RenderSystem2D::SetViewMatrix(const Matrix4& _viewMatrix)
 {
     Flush();
@@ -273,11 +272,11 @@ void RenderSystem2D::Setup2DMatrices()
     {
         // Make translation by half pixel for DirectX systems
         static Matrix4 pixelMappingMatrix = Matrix4::MakeTranslation(Vector3(-0.5f, -0.5f, 0.f));
-        projMatrix = VirtualToPhysicalMatrix() * pixelMappingMatrix * projMatrix;
+        projMatrix = currentVirtualToPhysicalMatrix * pixelMappingMatrix * projMatrix;
     }
     else
     {
-        projMatrix = VirtualToPhysicalMatrix() * projMatrix;
+        projMatrix = currentVirtualToPhysicalMatrix * projMatrix;
     }
 
     projMatrixSemantic += 8; //cause eight is beautiful
@@ -296,23 +295,23 @@ void RenderSystem2D::ScreenSizeChanged()
     glScale.glScale(scale.x, scale.y, 1.0f);
 
     actualVirtualToPhysicalMatrix = glScale * glTranslate;
+    if (virtualToPhysicalTransformEnabled)
+    {
+        currentVirtualToPhysicalMatrix = actualVirtualToPhysicalMatrix;
+    }
 }
 
 void RenderSystem2D::SetVirtualToPhysicalTransformEnabled(bool value)
 {
     virtualToPhysicalTransformEnabled = value;
-}
-
-const Matrix4& RenderSystem2D::VirtualToPhysicalMatrix() const
-{
-    return virtualToPhysicalTransformEnabled ? actualVirtualToPhysicalMatrix : Matrix4::IDENTITY;
+    currentVirtualToPhysicalMatrix = value ? actualVirtualToPhysicalMatrix : Matrix4::IDENTITY;
 }
 
 float32 RenderSystem2D::AlignToX(float32 value)
 {
     if (virtualToPhysicalTransformEnabled)
     {
-        return AlignToX(value);
+        return VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(value);
     }
     else
     {
@@ -324,7 +323,7 @@ float32 RenderSystem2D::AlignToY(float32 value)
 {
     if (virtualToPhysicalTransformEnabled)
     {
-        return AlignToY(value);
+        return VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(value);
     }
     else
     {
@@ -472,7 +471,7 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
     Flush();
     if (currentClip.dx > 0.f && currentClip.dy > 0.f)
     {
-        const Rect& transformedClipRect = TransformClipRect(currentClip, VirtualToPhysicalMatrix());
+        const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
         packet.scissorRect.x = (int16)transformedClipRect.x;
         packet.scissorRect.y = (int16)transformedClipRect.y;
         packet.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
@@ -673,7 +672,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
-            const Rect& transformedClipRect = TransformClipRect(currentClip, VirtualToPhysicalMatrix());
+            const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
             currentPacket.scissorRect.x = (int16)transformedClipRect.x;
             currentPacket.scissorRect.y = (int16)transformedClipRect.y;
             currentPacket.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
