@@ -38,11 +38,11 @@ namespace DAVA
 {
 namespace Net
 {
-
-NetLogger::NetLogger(bool selfInstallFlag, size_t queueSize)
+NetLogger::NetLogger(bool selfInstallFlag, size_t queueSize, bool keepLineEndingsFlag)
     : selfInstall(selfInstallFlag)
     , isInstalled(false)
     , maxQueueSize(queueSize > 1 ? queueSize : 100)
+    , keepLineEndings(keepLineEndingsFlag)
 {
     if (selfInstall)
         Install();
@@ -114,7 +114,7 @@ void NetLogger::SendNextRecord()
         size_t n = timeStr.size() + 1 + strlen(levelStr) + 1 + record.message.size();
         char8* buf = new char8[n + 1];  // this will be deleted in OnChannelSendComplete callback
         Snprintf(buf, n + 1, "%s %s %s", timeStr.c_str(), levelStr, record.message.c_str());
-        Send(buf, n /* - 1*/); // remove trailing '\n'
+        Send(buf, keepLineEndings ? n : n - 1); // remove trailing '\n'
     }
 }
 

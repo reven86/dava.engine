@@ -297,7 +297,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         role = Net::IConnectionManager::ClientRole;
     }
     Net::Endpoint endPoint("127.0.0.1", port);
-    auto netLoggerService = std::make_unique<Net::NetLogger>();
+    auto netLoggerService = std::make_unique<Net::NetLogger>(true, 200, true);
 
     Net::SimpleNetCore* simpleNetCore = new Net::SimpleNetCore();
     const Net::SimpleNetService* service = simpleNetCore->RegisterService(

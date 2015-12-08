@@ -14,13 +14,6 @@ set ( FRAMEWORK_DEFINITIONS
 -DCURL_STATICLIB
 )
 
-if ( DAVA_NO_RENDER )
-    set ( DAVA_NO_RHI_DX9 true )
-    set ( DAVA_NO_RHI_DX11 true )
-    set ( DAVA_NO_RHI_GLES2 true )
-    set ( DAVA_NO_RHI_METAL true )
-endif ()
-
 if( DAVA_DISABLE_AUTOTESTS  )
     list( APPEND FRAMEWORK_DEFINITIONS -DDISABLE_AUTOTESTS )
 endif()
@@ -36,6 +29,8 @@ endif()
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
+
+set ( IGNORED_RHI_FOLDER "" )
 
 if( ANDROID )
     find_package( ZLIB )
@@ -76,9 +71,7 @@ if( ANDROID )
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D__ANDROID__ )
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
 
-    set ( DAVA_NO_RHI_DX9 true )
-    set ( DAVA_NO_RHI_DX11 true )
-    set ( DAVA_NO_RHI_METAL true )
+    set ( IGNORED_RHI_FOLDER "Metal" "DX9" "DX11" )
 
 elseif( MACOS )
     find_package( ZLIB )
@@ -106,9 +99,7 @@ elseif( MACOS )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )   
     
-    set ( DAVA_NO_RHI_DX9 true )
-    set ( DAVA_NO_RHI_DX11 true )
-    set ( DAVA_NO_RHI_METAL true )
+    set ( IGNORED_RHI_FOLDER "Metal" "DX9" "DX11" )
 
 elseif( IOS )  
     find_package( ZLIB )
@@ -143,22 +134,20 @@ elseif( IOS )
     file ( GLOB RESOURCE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )    
 
-    set ( DAVA_NO_RHI_DX9 true )
-    set ( DAVA_NO_RHI_DX11 true )
+    set ( IGNORED_RHI_FOLDER "DX9" "DX11" )
 
 elseif ( WINDOWS_UAP )
     add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
+
     list ( APPEND LIST_SHARED_LIBRARIES "d2d1.lib" "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "dxguid.lib" "dwrite.lib" )
-    
-    set ( DAVA_NO_RHI_DX9 true )
-    set ( DAVA_NO_RHI_GLES2 true )
-    set ( DAVA_NO_RHI_METAL true )
+    set ( IGNORED_RHI_FOLDER "DX9" "GLES2" "Metal" )
 
 elseif( WIN32 ) 
     include( FindWindowsSDK )
     include_directories   ( ${WINDOWSSDK_LATEST_DIR}/include/shared ) 
     include_directories   ( $ENV{DXSDK_DIR}/include ) 
 
+#    link_directories       ( $ENV{DXSDK_DIR}/lib/x86 )
     link_directories       ( ${WINDOWSSDK_LATEST_DIR}/lib/x86 )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
@@ -166,22 +155,13 @@ elseif( WIN32 )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" 
-                                                "delayimp.lib" )
-                                                
-    if ( NOT DAVA_NO_RHI_DX9 OR NOT DAVA_NO_RHI_DX11 )
-        list ( APPEND LIST_SHARED_LIBRARIES "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
-                                            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  
-                                            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" 
-                                            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" 
-                                            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
-                                            "dxgi.lib" )
-    endif ()
+    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" "delayimp.lib" "dxgi.lib" )
+#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
 
-    set ( DAVA_NO_RHI_METAL true )
+    set ( IGNORED_RHI_FOLDER "Metal" )
 
 endif()
 
@@ -190,28 +170,8 @@ if( ZLIB_FOUND )
     list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
 endif()
 
-#turning rhi off
-if ( DAVA_NO_RHI_DX9 )
-    list ( APPEND IGNORED_RHI_FOLDER "DX9" )
-    add_definitions ( -DDAVA_NO_RHI_DX9 )
-endif ()
-
-if ( DAVA_NO_RHI_DX11 )
-    list ( APPEND IGNORED_RHI_FOLDER "DX11" )
-    add_definitions ( -DDAVA_NO_RHI_DX11 )
-endif ()
-
-if ( DAVA_NO_RHI_GLES2 )
-    list ( APPEND IGNORED_RHI_FOLDER "GLES2" )
-    add_definitions ( -DDAVA_NO_RHI_GLES2 )
-endif ()
-
-if ( DAVA_NO_RHI_METAL )
-    list ( APPEND IGNORED_RHI_FOLDER "Metal" )
-    add_definitions ( -DDAVA_NO_RHI_METAL )
-endif ()
-
 # Define source 
+
 define_source_folders  ( SRC_ROOT "." GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}" )
 
 generate_source_groups_project ()

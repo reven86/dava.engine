@@ -30,8 +30,6 @@
 #ifndef __DAVAENGINE_LOCK_GUARD_H__
 #define __DAVAENGINE_LOCK_GUARD_H__
 
-#include "Base/Platform.h"
-
 namespace DAVA
 {
 
@@ -47,7 +45,7 @@ public:
     explicit LockGuard(MutexType& mutex);
 
     // clean up
-    ~LockGuard() DAVA_NOEXCEPT;
+    ~LockGuard();
 
     // no copy construct and assign operator
     LockGuard(const LockGuard&) = delete;
@@ -67,8 +65,8 @@ LockGuard<MutexT>::LockGuard(MutexType& mutex)
     mutex_ref.Lock();
 }
 
-template<class MutexT>
-LockGuard<MutexT>::~LockGuard() DAVA_NOEXCEPT
+template <class MutexT>
+LockGuard<MutexT>::~LockGuard()
 {
     mutex_ref.Unlock();
 }
