@@ -190,7 +190,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
     QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
     innerEmitterLabel = new QLabel("Inner Emitter", this);
-	innerEmitterPathLabel = new QLineEdit(this);
+    innerEmitterPathLabel = new QLineEdit(this);
 	innerEmitterPathLabel->setReadOnly(true);
 	innerEmitterLayout->addWidget(innerEmitterLabel);
 	innerEmitterLayout->addWidget(innerEmitterPathLabel);
@@ -1075,8 +1075,8 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     spriteFolderBtn->setVisible(!isSuperemitter);
     spriteLabel->setVisible(!isSuperemitter);
     spritePathLabel->setVisible(!isSuperemitter);
-	
-	// The same is for "Additive" flag, Color, Alpha and Frame.	
+
+    // The same is for "Additive" flag, Color, Alpha and Frame.	
 	colorRandomGradient->setVisible(!isSuperemitter);
 	colorOverLifeGradient->setVisible(!isSuperemitter);
 	alphaOverLifeTimeLine->setVisible(!isSuperemitter);

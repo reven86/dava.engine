@@ -206,7 +206,7 @@ namespace DAVA
     {
         String module = lua_tostring(L, -1);
         lua_pop(L, 1);
-		FilePath path = Instance()->Findfile(L, module.c_str(), "path");
+        FilePath path = Instance()->Findfile(L, module.c_str(), "path");
 		if (!Instance()->LoadScriptFromFile(path)) 
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
@@ -543,7 +543,7 @@ namespace DAVA
             {
                 uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), -1, str));
             }
-			break;
+            break;
 		}
 		case DVKEY_ENTER:
 		{
@@ -725,7 +725,7 @@ namespace DAVA
         touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchMove.point = point;
 
-		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
+        if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{
             touchMove.phase = UIEvent::Phase::DRAG;
             ProcessInput(touchMove);
@@ -782,7 +782,7 @@ namespace DAVA
         luaopen_Polygon2(luaState); // load the wrappered module
 
         if (!delegate)
-		{
+        {
 			return false;
 		}
 		//TODO: check if modules really loaded

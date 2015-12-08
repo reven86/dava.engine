@@ -110,7 +110,7 @@ namespace DAVA
     }
 
     float ScrollHelper::GetPosition() const
-	{
+    {
 		return position;
 	}
 	

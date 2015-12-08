@@ -129,7 +129,7 @@ public:
 
     void SetInputEnabled(bool value);
 
-	void SetRenderToTexture(bool value);
+    void SetRenderToTexture(bool value);
 	bool IsRenderToTexture() const;
 
 	// Keyboard traits.

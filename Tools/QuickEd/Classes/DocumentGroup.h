@@ -45,7 +45,7 @@ public:
     explicit DocumentGroup(QObject *parent = nullptr);
     ~DocumentGroup();
 
-    void AddDocument(Document*);
+    void InsertDocument(int index, Document*);
     void RemoveDocument(Document*);
     QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
