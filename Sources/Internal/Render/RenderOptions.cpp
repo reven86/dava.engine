@@ -85,6 +85,7 @@ RenderOptions::RenderOptions()
 	}		
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
+    options[DEBUG_ENABLE_VISIBILITY_SYSTEM] = false;
     options[LAYER_OCCLUSION_STATS] = false;
     options[REPLACE_ALBEDO_MIPMAPS] = false;
     options[REPLACE_LIGHTMAP_MIPMAPS] = false;

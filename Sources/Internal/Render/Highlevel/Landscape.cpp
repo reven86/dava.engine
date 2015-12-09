@@ -376,8 +376,10 @@ bool Landscape::GetHeightAtPoint(const Vector3& point, float& value)
     }
 
     auto hmSize = heightmap->Size();
-    int32 x = std::min(hmSize - 1, static_cast<int32>(point.x));
-    int32 y = std::min(hmSize - 1, static_cast<int32>(point.y));
+    float32 fx = static_cast<float>(hmSize) * (point.x - bbox.min.x) / (bbox.max.x - bbox.min.x);
+    float32 fy = static_cast<float>(hmSize) * (point.y - bbox.min.y) / (bbox.max.y - bbox.min.y);
+    int32 x = static_cast<int32>(fx);
+    int32 y = static_cast<int32>(fy);
     int nextX = DAVA::Min(x + 1, hmSize - 1);
     int nextY = DAVA::Min(y + 1, hmSize - 1);
     int i00 = x + y * hmSize;
@@ -388,8 +390,8 @@ bool Landscape::GetHeightAtPoint(const Vector3& point, float& value)
     float h01 = static_cast<float>(hmData[i01]);
     float h10 = static_cast<float>(hmData[i10]);
     float h11 = static_cast<float>(hmData[i11]);
-    float dx = point.x - static_cast<float>(x);
-    float dy = point.y - static_cast<float>(y);
+    float dx = fx - static_cast<float>(x);
+    float dy = fy - static_cast<float>(y);
     float h0 = h00 * (1.0f - dx) + h01 * dx;
     float h1 = h10 * (1.0f - dx) + h11 * dx;
     value = (h0 * (1.0f - dy) + h1 * dy) * GetLandscapeHeight() / static_cast<float>(Heightmap::MAX_VALUE);
