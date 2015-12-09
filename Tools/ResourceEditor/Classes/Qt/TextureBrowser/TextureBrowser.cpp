@@ -348,7 +348,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 {
     if (nullptr != curTexture && nullptr != curDescriptor)
     {
-		char tmp[1024];
+        char tmp[1024];
 
         FilePath imagePath;
         if (curDescriptor->IsCubeMap())
@@ -367,15 +367,15 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
         String formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
 
         int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
-		int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
+        int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
 
         sprintf(tmp, "Format: %s\nSize: %dx%d\nData size: %s\nFile size: %s", formatStr.c_str(), images[0].width(), images[0].height(),
                 SizeInBytesToString(datasize).c_str(),
                 SizeInBytesToString(filesize).c_str());
 
         ui->labelOriginalFormat->setText(tmp);
-	}
-	else
+    }
+    else
 	{
 		ui->labelOriginalFormat->setText("");
 	}

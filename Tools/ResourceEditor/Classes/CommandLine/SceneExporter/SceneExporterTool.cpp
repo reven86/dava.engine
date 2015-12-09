@@ -26,117 +26,109 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "CommandLine/SceneExporter/SceneExporterTool.h"
+#include "CommandLine/SceneExporter/SceneExporter.h"
 
-#include "SceneExporterTool.h"
-#include "SceneExporter.h"
+#include "Project/ProjectManager.h"
+#include "Utils/StringUtils.h"
 
-#include "CommandLine/CommandLineParser.h"
+#include "CommandLine/OptionName.h"
 
 using namespace DAVA;
 
-
-void SceneExporterTool::PrintUsage() const
+SceneExporterTool::SceneExporterTool()
+    : CommandLineTool("-sceneexporter")
 {
-    printf("\n");
-    printf("-sceneexporter [-scene|-texture] [-indir [directory]] [-outdir [directory]] [-processdir [directory]] [-processfile [directory]] [-format]\n");
-    printf("\twill export scene file from DataSource/3d to Data/3d\n");
-    printf("\t-scene - target object is scene, so we need to export *.sc2 files\n");
-    printf("\t-texture - target object is texture, so we need to export *.tex files\n");
-    printf("\t-indir - path for Poject/DataSource/3d/ folder \n");
-    printf("\t-outdir - path for Poject/Data/3d/ folder\n");
-    printf("\t-processdir - foldername from DataSource/3d/ for exporting\n");
-    printf("\t-processfile - filename from DataSource/3d/ for exporting\n");
-    printf("\t-gpu - PoverVR_iOS, PoverVR_Android, tegra, mali, adreno, origin\n");
-	printf("\t-saveNormals - disable removing of normals from vertexes\n");
-	printf("\t-quality [0-4] - quality of pvr/etc compression. default is 4 - the best quality\n");
-    printf("\t-qualitycfgpath - path for quality.yaml file\n");
+    options.AddOption(OptionName::Scene, VariantType(false), "Target object is scene, so we need to export *.sc2 files");
+    options.AddOption(OptionName::Texture, VariantType(false), "Target object is texture, so we need to export *.tex files");
 
-    printf("\n");
-    printf("Samples:\n");
-    printf("-sceneexporter -scene -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processdir Maps/objects/ -quality 3\n");
-    printf("-sceneexporter -scene -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2\n");
-    printf("-sceneexporter -texture -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processdir Maps/objects/images/ -quality 3\n");
-    printf("-sceneexporter -texture -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/objects/images/stone.tex\n");
+    options.AddOption(OptionName::InDir, VariantType(String("")), "Path for Project/DataSource/3d/ folder");
+    options.AddOption(OptionName::OutDir, VariantType(String("")), "Path for Project/Data/3d/ folder");
+    options.AddOption(OptionName::ProcessDir, VariantType(String("")), "Foldername from DataSource/3d/ for exporting");
+    options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Filename from DataSource/3d/ for exporting");
+    options.AddOption(OptionName::ProcessFileList, VariantType(String("")), "Pathname to file with filenames for exporting");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
+
+    options.AddOption(OptionName::GPU, VariantType(String("origin")), "GPU family: PoverVR_iOS, PoverVR_Android, tegra, mali, adreno, origin, dx11");
+    options.AddOption(OptionName::Quality, VariantType(static_cast<uint32>(TextureConverter::ECQ_DEFAULT)), "Quality of pvr/etc compression. Default is 4 - the best quality. Available values [0-4]");
+
+    options.AddOption(OptionName::SaveNormals, VariantType(false), "Disable removing of normals from vertexes");
+    options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
 }
 
-DAVA::String SceneExporterTool::GetCommandLineKey() const
+void SceneExporterTool::ConvertOptionsToParamsInternal()
 {
-    return "-sceneexporter";
-}
+    inFolder = options.GetOption(OptionName::InDir).AsString();
+    outFolder = options.GetOption(OptionName::OutDir).AsString();
+    filename = options.GetOption(OptionName::ProcessFile).AsString();
+    foldername = options.GetOption(OptionName::ProcessDir).AsString();
+    fileListPath = options.GetOption(OptionName::ProcessFileList).AsString();
+    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
 
-bool SceneExporterTool::InitializeFromCommandLine()
-{
-    commandAction = ACTION_NONE;
-    commandObject = OBJECT_SCENE;
-    
-    inFolder = CommandLineParser::GetCommandParam(String("-indir"));
-    outFolder = CommandLineParser::GetCommandParam(String("-outdir"));
-    if(inFolder.IsEmpty() && outFolder.IsEmpty())
-    {
-        errors.insert(Format("[SceneExporterTool] Incorrect indir (%s) or outdir (%s) parameter",inFolder.GetAbsolutePathname().c_str(), outFolder.GetAbsolutePathname().c_str()));
-        return false;
-    }
-    
-    inFolder.MakeDirectoryPathname();
-    outFolder.MakeDirectoryPathname();
-
-    
-	String qualityName = CommandLineParser::GetCommandParam(String("-quality"));
-	if(qualityName.empty())
-	{
-		quality = DAVA::TextureConverter::ECQ_DEFAULT;
-	}
-	else
-	{
-		quality = Clamp((DAVA::TextureConverter::eConvertQuality)atoi(qualityName.c_str()), DAVA::TextureConverter::ECQ_FASTEST, DAVA::TextureConverter::ECQ_VERY_HIGH);
-	}
-	
-    filename = CommandLineParser::GetCommandParam(String("-processfile"));
-    foldername = CommandLineParser::GetCommandParam(String("-processdir"));
-    qualityConfigPath = CommandLineParser::GetCommandParam(String("-qualitycfgpath"));
-
-    if(!filename.empty())
-    {
-        commandAction = ACTION_EXPORT_FILE;
-    }
-    else if(!foldername.empty())
-    {
-        commandAction = ACTION_EXPORT_FOLDER;
-    }
-    else
-    {
-        errors.insert("[SceneExporterTool] File or folder for export is not set");
-        return false;
-    }
-    
-    if(CommandLineParser::CommandIsFound("-scene"))
-    {
-        commandObject = OBJECT_SCENE;
-    }
-    else if(CommandLineParser::CommandIsFound("-texture"))
+    if (options.GetOption(OptionName::Texture).AsBool())
     {
         commandObject = OBJECT_TEXTURE;
     }
-    
-	String gpu = CommandLineParser::GetCommandParam(String("-gpu"));
-	requestedGPU = GPUFamilyDescriptor::GetGPUByName(gpu);
-	if (GPU_INVALID == requestedGPU)
-	{
-		errors.insert(Format("[SceneExporterTool] wrong gpu parameter (%s)", gpu.c_str()));
-		return false;
-	}
+    else if (options.GetOption(OptionName::Scene).AsBool() || options.GetOption(OptionName::deprecated_Export).AsBool())
+    {
+        commandObject = OBJECT_SCENE;
+    }
 
-	optimizeOnExport = (CommandLineParser::CommandIsFound(String("-saveNormals")) == false);
+    const String gpuName = options.GetOption(OptionName::GPU).AsString();
+    requestedGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
+
+    const uint32 qualityValue = options.GetOption(OptionName::Quality).AsUInt32();
+    quality = Clamp(static_cast<TextureConverter::eConvertQuality>(qualityValue), TextureConverter::ECQ_FASTEST, TextureConverter::ECQ_VERY_HIGH);
+
+    const bool saveNormals = options.GetOption(OptionName::SaveNormals).AsBool();
+    optimizeOnExport = !saveNormals;
+}
+
+bool SceneExporterTool::InitializeInternal()
+{
+    if (inFolder.IsEmpty())
+    {
+        AddError("Input folder was not selected");
+        return false;
+    }
+    inFolder.MakeDirectoryPathname();
+
+    if (outFolder.IsEmpty())
+    {
+        AddError("Output folder was not selected");
+        return false;
+    }
+
+    outFolder.MakeDirectoryPathname();
+
+    if (filename.empty() == false)
+    {
+        commandAction = ACTION_EXPORT_FILE;
+    }
+    else if (foldername.empty() == false)
+    {
+        commandAction = ACTION_EXPORT_FOLDER;
+    }
+    else if (fileListPath.IsEmpty() == false)
+    {
+        commandAction = ACTION_EXPORT_FILELIST;
+    }
+    else
+    {
+        AddError("Target for exporting was not selected");
+        return false;
+    }
+
+    if (requestedGPU == GPU_INVALID)
+    {
+        AddError("Unsupported gpu parameter was selected");
+        return false;
+    }
 
     return true;
 }
 
-void SceneExporterTool::DumpParams() const
-{
-    Logger::Info("Export started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tQuality: %d\n\tGPU: %d\n\tFilename: %s\n\tFoldername: %s", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), quality, requestedGPU, filename.c_str(), foldername.c_str());
-}
-
-void SceneExporterTool::Process()
+void SceneExporterTool::ProcessInternal()
 {
     SceneExporter exporter;
 
@@ -145,34 +137,95 @@ void SceneExporterTool::Process()
 	exporter.SetGPUForExporting(requestedGPU);
 	exporter.EnableOptimizations(optimizeOnExport);
 	exporter.SetCompressionQuality(quality);
-    
-    if(ACTION_EXPORT_FILE == commandAction)
+
+    if (commandAction == ACTION_EXPORT_FILE)
     {
-        if(OBJECT_SCENE == commandObject)
-        {
-            exporter.ExportSceneFile(filename, errors);
-        }
-        else if(OBJECT_TEXTURE == commandObject)
-        {
-            exporter.ExportTextureFile(filename, errors);
-        }
+        ExportFile(exporter);
     }
-    else if(commandAction == ACTION_EXPORT_FOLDER)
+    else if (commandAction == ACTION_EXPORT_FOLDER)
     {
-        if(OBJECT_SCENE == commandObject)
-        {
-            exporter.ExportSceneFolder(foldername, errors);
-        }
-        else if(OBJECT_TEXTURE == commandObject)
-        {
-            exporter.ExportTextureFolder(foldername, errors);
-        }
+        ExportFolder(exporter);
     }
+    if (commandAction == ACTION_EXPORT_FILELIST)
+    {
+        ExportFileList(exporter);
+    }
+}
+
+void SceneExporterTool::ExportFolder(SceneExporter& exporter)
+{
+    if (OBJECT_SCENE == commandObject)
+    {
+        exporter.ExportSceneFolder(foldername, errors);
+    }
+    else if (OBJECT_TEXTURE == commandObject)
+    {
+        exporter.ExportTextureFolder(foldername, errors);
+    }
+}
+
+void SceneExporterTool::ExportFile(SceneExporter& exporter)
+{
+    if (OBJECT_SCENE == commandObject)
+    {
+        exporter.ExportSceneFile(filename, errors);
+    }
+    else if (OBJECT_TEXTURE == commandObject)
+    {
+        exporter.ExportTextureFile(filename, errors);
+    }
+}
+
+void SceneExporterTool::ExportFileList(SceneExporter& exporter)
+{
+    ScopedPtr<File> fileWithLinks(File::Create(fileListPath, File::OPEN | File::READ));
+    if (!fileWithLinks)
+    {
+        AddError(Format("[SceneExporterTool] Can't open file %s", fileListPath.GetAbsolutePathname().c_str()));
+        return;
+    }
+
+    bool isEof = false;
+
+    do
+    {
+        String link = fileWithLinks->ReadLine();
+        if (link.empty())
+        {
+            break;
+        }
+
+        const FilePath exportedPathname = inFolder + link;
+        if (exportedPathname.IsDirectoryPathname())
+        {
+            commandObject = OBJECT_SCENE;
+            foldername = link;
+            ExportFolder(exporter);
+        }
+        else if (exportedPathname.IsEqualToExtension(".sc2"))
+        {
+            commandObject = OBJECT_SCENE;
+            filename = link;
+            ExportFile(exporter);
+        }
+        else if (exportedPathname.IsEqualToExtension(".tex"))
+        {
+            commandObject = OBJECT_TEXTURE;
+            filename = link;
+            ExportFile(exporter);
+        }
+
+        isEof = fileWithLinks->IsEof();
+    } while (!isEof);
 }
 
 
 FilePath SceneExporterTool::GetQualityConfigPath() const
 {
+    if (qualityConfigPath.IsEmpty())
+    {
+        return CreateQualityConfigPath(inFolder);
+    }
+
     return qualityConfigPath;
 }
-

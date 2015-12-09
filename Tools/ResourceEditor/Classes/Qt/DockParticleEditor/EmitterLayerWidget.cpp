@@ -193,7 +193,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     innerEmitterPathLabel = new QLineEdit(this);
     innerEmitterPathLabel->setReadOnly(true);
     innerEmitterLayout->addWidget(innerEmitterLabel);
-	innerEmitterLayout->addWidget(innerEmitterPathLabel);
+    innerEmitterLayout->addWidget(innerEmitterPathLabel);
 	mainBox->addLayout(innerEmitterLayout);
 	
 	QVBoxLayout* pivotPointLayout = new QVBoxLayout();
@@ -236,7 +236,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     //particle orieantation
     QVBoxLayout* orientationLayout = new QVBoxLayout();
     particleOrientationLabel = new QLabel("Particle Orientation");
-	orientationLayout->addWidget(particleOrientationLabel);
+    orientationLayout->addWidget(particleOrientationLabel);
 	QHBoxLayout* facingLayout = new QHBoxLayout();
 	
 	cameraFacingCheckBox = new QCheckBox("Camera Facing");
@@ -287,9 +287,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
     mainBox->addWidget(fogCheckBox);
 
-
-	lifeTimeLine = new TimeLineWidget(this);
-	InitWidget(lifeTimeLine);
+    lifeTimeLine = new TimeLineWidget(this);
+    InitWidget(lifeTimeLine);
 	numberTimeLine = new TimeLineWidget(this);
 	InitWidget(numberTimeLine);
 	sizeTimeLine = new TimeLineWidget(this);
@@ -664,7 +663,7 @@ void EmitterLayerWidget::OnValueChanged()
     if (xFacingCheckBox->isChecked())
         particleOrientation += ParticleLayer::PARTICLE_ORIENTATION_X_FACING;
     if (yFacingCheckBox->isChecked())
-		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
+        particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Y_FACING;
 	if (zFacingCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_Z_FACING;
 	if (worldAlignCheckBox->isChecked())
@@ -1078,7 +1077,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     // The same is for "Additive" flag, Color, Alpha and Frame.
     colorRandomGradient->setVisible(!isSuperemitter);
     colorOverLifeGradient->setVisible(!isSuperemitter);
-	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
+    alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
 	frameOverlifeCheckBox->setVisible(!isSuperemitter);
 	frameOverlifeFPSSpin->setVisible(!isSuperemitter);
@@ -1115,7 +1114,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     innerEmitterPathLabel->setVisible(isSuperemitter);
 
     if (isSuperemitter && this->layer->innerEmitter)
-	{
+    {
 		innerEmitterPathLabel->setText(QString::fromStdString(layer->innerEmitter->configPath.GetAbsolutePathname()));
 	}
 }

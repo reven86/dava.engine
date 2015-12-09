@@ -71,8 +71,8 @@ extern "C"
         DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, newString);
         env->ReleaseByteArrayElements(newText, bufferPtr, 0);
 
-		bufferPtr = env->GetByteArrayElements(oldText, NULL);
-		lengthOfArray = env->GetArrayLength(oldText);
+        bufferPtr = env->GetByteArrayElements(oldText, NULL);
+        lengthOfArray = env->GetArrayLength(oldText);
 		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
 		env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
 

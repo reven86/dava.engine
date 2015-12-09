@@ -72,7 +72,6 @@
 #include "Settings/SettingsDialog.h"
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/CommandLine/CommandLineManager.h"
 
 #include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
 

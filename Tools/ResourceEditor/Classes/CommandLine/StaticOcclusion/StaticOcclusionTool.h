@@ -30,29 +30,25 @@
 #ifndef __STATIC_OCCLUSION_TOOL_H__
 #define __STATIC_OCCLUSION_TOOL_H__
 
-#include "../CommandLineTool.h"
-
+#include "CommandLine/CommandLineTool.h"
 class StaticOcclusionTool: public CommandLineTool
 {
-    enum eAction
+    enum eAction : DAVA::int32
     {
         ACTION_NONE = -1,
-        
         ACTION_BUILD,
     };
 
 public:
+    StaticOcclusionTool();
 
-	DAVA::String GetCommandLineKey() const override;
-	bool InitializeFromCommandLine() override;
-	void Process() override;
-	void PrintUsage() const override;
-	void DumpParams() const override;
-	DAVA::FilePath GetQualityConfigPath() const override;
+private:
+    void ConvertOptionsToParamsInternal() override;
+    bool InitializeInternal() override;
+    void ProcessInternal() override;
+    DAVA::FilePath GetQualityConfigPath() const override;
 
-protected:
-
-    eAction commandAction;
+    eAction commandAction = ACTION_NONE;
     DAVA::FilePath scenePathname;
 };
 
