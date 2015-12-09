@@ -512,7 +512,7 @@ macro( generated_unity_sources SOURCE_FILES )
             OUTPUT_VARIABLE UNITY_TREE_HASH
         )
 
-        string(REPLACE "\n" "" UNITY_TREE_HASH ${UNITY_TREE_HASH})
+        string(REPLACE "\n" "" UNITY_TREE_HASH "${UNITY_TREE_HASH}")
 
         set( FILE_UNITY_HASH "${CMAKE_BINARY_DIR}/unity_pack/unity_hash_${PROJECT_NAME}.txt" )
         set( LAST_UNITY_TREE_HASH 0 )
