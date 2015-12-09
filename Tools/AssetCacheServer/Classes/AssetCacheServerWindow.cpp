@@ -38,9 +38,11 @@
 
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/File.h"
 #include "FileSystem/Logger.h"
 #include "Job/JobManager.h"
 #include "QtTools/FileDialog/FileDialog.h"
+
 
 #include <QFileDialog>
 #include <QMenu>
@@ -50,6 +52,7 @@
 #include <QDoubleSpinBox>
 #include <QSpinBox>
 #include <QSettings>
+#include <QXmlStreamReader>
 
 namespace
 {
@@ -161,6 +164,67 @@ void AssetCacheServerWindow::ChangeSettingsState(SettingsState newState)
     ui->applyButton->setEnabled(settingsState == EDITED);
 }
 
+void AssetCacheServerWindow::OnFirstLaunch()
+{
+    SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked());
+}
+
+void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+
+    QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+    if (toLaunchOnStartup)
+    {
+        settings.setValue("AssetCacheServer", QCoreApplication::applicationFilePath().replace('/', '\\'));
+    }
+    else
+    {
+        settings.remove("AssetCacheServer");
+    }
+    
+#elif defined(__DAVAENGINE_MACOS__)
+
+    FilePath plist("~/Library/LaunchAgents/AssetCacheServer.plist");
+    FileSystem::Instance()->DeleteFile(plist);
+
+    if (toLaunchOnStartup)
+    {
+        QByteArray buffer;
+        buffer.reserve(1024);
+        QXmlStreamWriter xml(&buffer);
+
+        xml.writeStartDocument();
+        xml.writeDTD("<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
+        xml.writeStartElement("plist");
+        xml.writeAttribute("version", "1.0");
+
+        xml.writeStartElement("dict");
+        xml.writeTextElement("key", "Label");
+        xml.writeTextElement("string", "com.davaconsulting.accetcacheserver");
+        xml.writeTextElement("key", "ProgramArguments");
+        xml.writeStartElement("array");
+        xml.writeTextElement("string", QCoreApplication::applicationFilePath());
+        xml.writeEndElement();
+        xml.writeTextElement("key", "RunAtLoad");
+        xml.writeStartElement("true");
+        xml.writeEndElement();
+        xml.writeTextElement("key", "KeepAlive");
+        xml.writeStartElement("false");
+        xml.writeEndElement();
+        xml.writeEndElement();
+
+        xml.writeEndElement();
+        xml.writeEndDocument();
+
+        ScopedPtr<File> file(File::PureCreate(plist, File::CREATE | File::WRITE));
+        DVASSERT(file);
+        file->Write(buffer.data(), buffer.size());
+    }
+    
+#endif
+}
+
 void AssetCacheServerWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason)
@@ -229,18 +293,6 @@ void AssetCacheServerWindow::OnAutoStartChanged(int)
 
 void AssetCacheServerWindow::OnSystemStartupChanged(int val)
 {
-#if defined(__DAVAENGINE_WIN32__)
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
-    if (val == Qt::Checked)
-    {
-        settings.setValue("AssetCacheServer", QCoreApplication::applicationFilePath().replace('/', '\\'));
-    }
-    else
-    {
-        settings.remove("AssetCacheServer");
-    }
-#endif
-
     VerifyData();
 }
 
@@ -328,6 +380,12 @@ void AssetCacheServerWindow::VerifyData()
 
 void AssetCacheServerWindow::OnApplyButtonClicked()
 {
+    bool toLaunchOnStartup = ui->systemStartupCheckBox->isChecked();
+    if (serverCore.Settings().IsLaunchOnSystemStartup() != toLaunchOnStartup)
+    {
+        SetupLaunchOnStartup(toLaunchOnStartup);
+    }
+
     SaveSettings();
 }
 

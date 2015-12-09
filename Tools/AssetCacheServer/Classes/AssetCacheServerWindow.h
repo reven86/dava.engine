@@ -54,6 +54,7 @@ class AssetCacheServerWindow : public QMainWindow
 public:
     explicit AssetCacheServerWindow(ServerCore& core, QWidget* parent = nullptr);
     ~AssetCacheServerWindow() override;
+    void OnFirstLaunch();
 
 protected:
     void closeEvent(QCloseEvent* e) override;
@@ -92,6 +93,8 @@ private:
 
     void AddRemoteServer(const ServerData& newServer);
     void RemoveServers();
+
+    void SetupLaunchOnStartup(bool toLaunchOnStartup);
 
     void VerifyData();
 
