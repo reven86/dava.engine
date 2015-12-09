@@ -38,6 +38,7 @@ VPROG_BEGIN
 
 #if defined(DECODE_DISTANCE)
 	float4 worldPosition = mul(position, worldMatrix);
+	worldPosition.z += 0.025;
 	VP_OUT(directionFromPoint) = worldPosition.xyz - lightPosition0.xyz;
 #endif
 
