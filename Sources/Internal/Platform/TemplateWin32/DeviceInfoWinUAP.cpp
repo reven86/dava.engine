@@ -459,7 +459,18 @@ void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpd
         Windows::Foundation::Collections::IMapView<Platform::String^, Platform::Object^>^ properties = information->Properties;
         if (properties->HasKey(L"System.Devices.InterfaceEnabled"))
         {
-            isEnabled = safe_cast<bool>(properties->Lookup(L"System.Devices.InterfaceEnabled"));
+            try
+            {
+                isEnabled = safe_cast<bool>(properties->Lookup(L"System.Devices.InterfaceEnabled"));
+            }
+            catch (Platform::InvalidCastException^ e)
+            {
+                Logger::FrameworkDebug("DeviceInfoPrivate::OnDeviceUpdated. Can't cast System.Devices.InterfaceEnabled.");
+            }
+            catch (Platform::OutOfBoundsException^ e)
+            {
+                Logger::FrameworkDebug("DeviceInfoPrivate::OnDeviceUpdated. OutOfBoundsException.");
+            }
         }
         String id = RTStringToString(information->Id);
         auto iterId = setIdDevices.find(id);
