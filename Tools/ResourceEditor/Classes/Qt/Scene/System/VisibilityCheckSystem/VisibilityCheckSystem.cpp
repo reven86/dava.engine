@@ -324,3 +324,4 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
     }
 
     return true;
+}
