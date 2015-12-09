@@ -134,12 +134,12 @@ InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetMouseCaptureMode()
 
 bool CorePlatformWinUAP::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
-    RunOnUIThreadBlocked([this, mode]() {
-        if (xamlApp->SetMouseCaptureMode(mode))
-        {
+    if (xamlApp->SetMouseCaptureMode(mode))
+    {
+        RunOnUIThread([this, mode]() {
             xamlApp->SetCursorVisible(mode != InputSystem::eMouseCaptureMode::PINING);
-        }
-    });
+        });
+    }
     return GetMouseCaptureMode() == mode;
 }
 
