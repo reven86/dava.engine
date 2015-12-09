@@ -366,14 +366,11 @@ dx9_Texture_Create(const Texture::Descriptor& desc)
 static void
 dx9_Texture_Delete(Handle tex)
 {
-    if (tex != InvalidHandle)
-    {
-        TextureDX9_t* self = TextureDX9Pool::Get(tex);
+    TextureDX9_t* self = TextureDX9Pool::Get(tex);
 
-        self->MarkRestored();
-        self->Destroy();
-        TextureDX9Pool::Free(tex);
-    }
+    self->MarkRestored();
+    self->Destroy();
+    TextureDX9Pool::Free(tex);
 }
 
 //------------------------------------------------------------------------------

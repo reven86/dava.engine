@@ -72,7 +72,6 @@
 #include "Settings/SettingsDialog.h"
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/CommandLine/CommandLineManager.h"
 
 #include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
 
@@ -1324,9 +1323,9 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
         {
             closeRequest->Cancel();
             return;
-		}
-		
-		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+        }
+
+        scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
 	}
 
     if(!SaveScene(scene))

@@ -73,6 +73,7 @@ public:
 
     EditorSystemsManager* GetSystemManager();
     const DAVA::FilePath &GetPackageFilePath() const;
+    QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack();
     PackageNode* GetPackage();
     QtModelPackageCommandExecutor* GetCommandExecutor();
@@ -103,7 +104,6 @@ private:
     QUndoStack* undoStack = nullptr;
 
     EditorSystemsManager systemManager;
-    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

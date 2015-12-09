@@ -51,8 +51,7 @@ public:
 
     void ResaveYamlFilesRecursive(const DAVA::FilePath & folder, DAVA::Set<DAVA::String> &errorLog) const;
 
-    
-protected:
+private:
     void ReleaseTextures();
 
     void CopyTextures(Scene *scene);
@@ -64,7 +63,6 @@ protected:
 
 	void CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog);
 
-protected:
     SceneUtils sceneUtils;
     TexturesMap texturesForSave;
     DAVA::Set<DAVA::FilePath> effectFolders;

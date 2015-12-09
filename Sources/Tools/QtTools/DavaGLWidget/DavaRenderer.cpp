@@ -29,8 +29,24 @@
 
 #include "DavaRenderer.h"
 
+#include "Base/BaseTypes.h"
 #include "Core/Core.h"
 #include "Platform/Qt5/QtLayer.h"
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
+
+#include <QApplication>
+
+namespace
+{
+void ApplyModifier(DAVA::KeyboardDevice& keyboard, Qt::KeyboardModifiers const& currentModifiers, Qt::KeyboardModifier qtModifier, DAVA::uint32 davaModifier)
+{
+    if (true == (currentModifiers.testFlag(qtModifier)))
+        keyboard.OnKeyPressed(davaModifier);
+    else
+        keyboard.OnKeyUnpressed(davaModifier);
+}
+}
 
 DavaRenderer::DavaRenderer()
 {
@@ -49,5 +65,11 @@ DavaRenderer::~DavaRenderer()
 
 void DavaRenderer::paint()
 {
+    Qt::KeyboardModifiers modifiers = qApp->keyboardModifiers();
+    DAVA::KeyboardDevice& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    ApplyModifier(keyboard, modifiers, Qt::AltModifier, DAVA::DVKEY_ALT);
+    ApplyModifier(keyboard, modifiers, Qt::ShiftModifier, DAVA::DVKEY_SHIFT);
+    ApplyModifier(keyboard, modifiers, Qt::ControlModifier, DAVA::DVKEY_CTRL);
+
     DAVA::QtLayer::Instance()->ProcessFrame();
 }

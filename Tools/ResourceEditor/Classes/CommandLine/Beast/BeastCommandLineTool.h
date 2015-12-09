@@ -30,26 +30,22 @@
 #ifndef __BEAST_COMMAND_LINE_TOOL_H__
 #define __BEAST_COMMAND_LINE_TOOL_H__
 
-#include "../CommandLineTool.h"
+#include "CommandLine/CommandLineTool.h"
 
 #if defined (__DAVAENGINE_BEAST__)
 
 class BeastCommandLineTool: public CommandLineTool
 {
 public:
-
 	BeastCommandLineTool();
 
-	DAVA::String GetCommandLineKey() const override;
-	bool InitializeFromCommandLine() override;
-	void Process() override;
-	void PrintUsage() const override;
-	DAVA::FilePath GetQualityConfigPath() const override;
+private:
+    void ConvertOptionsToParamsInternal() override;
+    bool InitializeInternal() override;
+    void ProcessInternal() override;
 
-    const DAVA::FilePath & GetScenePathname() const;
-    
+    DAVA::FilePath GetQualityConfigPath() const override;
 
-protected:
     DAVA::FilePath scenePathname;
     DAVA::FilePath outputPath;
 };

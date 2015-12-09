@@ -171,8 +171,8 @@ namespace DAVA
         OnTestStarted();
     }
 
-	void AutotestingSystem::OnInit()
-	{
+    void AutotestingSystem::OnInit()
+    {
 		DVASSERT(!isInit);
 		isInit = true;
 	}
@@ -506,8 +506,8 @@ namespace DAVA
         Map<int32, UIEvent>::iterator findIt = touches.find(id);
         if (findIt != touches.end())
         {
-			isFound = true;
-			touch = findIt->second;
+            isFound = true;
+            touch = findIt->second;
 		}
 		return isFound;
 	}

@@ -190,8 +190,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
     QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
     innerEmitterLabel = new QLabel("Inner Emitter", this);
-	innerEmitterPathLabel = new QLineEdit(this);
-	innerEmitterPathLabel->setReadOnly(true);
+    innerEmitterPathLabel = new QLineEdit(this);
+    innerEmitterPathLabel->setReadOnly(true);
 	innerEmitterLayout->addWidget(innerEmitterLabel);
 	innerEmitterLayout->addWidget(innerEmitterPathLabel);
 	mainBox->addLayout(innerEmitterLayout);
@@ -228,13 +228,12 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
 	pivotPointLayout->addLayout(pivotPointInnerLayout);
 	mainBox->addLayout(pivotPointLayout);
-	
 
-	frameBlendingCheckBox = new QCheckBox("Enable frame blending");
+    frameBlendingCheckBox = new QCheckBox("Enable frame blending");
     connect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
     mainBox->addWidget(frameBlendingCheckBox);
 
-	//particle orieantation
+    //particle orieantation
 	QVBoxLayout* orientationLayout = new QVBoxLayout();	
 	particleOrientationLabel = new QLabel("Particle Orientation");
 	orientationLayout->addWidget(particleOrientationLabel);
@@ -288,8 +287,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
     mainBox->addWidget(fogCheckBox);
 
-
-	lifeTimeLine = new TimeLineWidget(this);
+    lifeTimeLine = new TimeLineWidget(this);
 	InitWidget(lifeTimeLine);
 	numberTimeLine = new TimeLineWidget(this);
 	InitWidget(numberTimeLine);
@@ -745,6 +743,8 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     CommandChangeLayerMaterialProperties* updateLayerCmd = new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked());
     activeScene->Exec(updateLayerCmd);
 
+    UpdateLayerSprite();
+
     emit ValueChanged();
 }
 
@@ -813,25 +813,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
 
-    if (layer->sprite)
-    {
-        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-        RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
-        {
-            Sprite::DrawState drawState = {};
-            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
-            RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
-        }
-        RenderSystem2D::Instance()->EndRenderTargetPass();
-        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
-        spriteUpdateTimer->start(0);
-        spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
-    }
-    else
-    {
-        spriteLabel->setPixmap( QPixmap() );
-        spritePathLabel->setText("<none>");
-    }
+    UpdateLayerSprite();
 
     //particle orientation
     cameraFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
@@ -985,6 +967,29 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 	adjustSize();
 }
 
+void EmitterLayerWidget::UpdateLayerSprite()
+{
+    if (layer->sprite)
+    {
+        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
+        {
+            Sprite::DrawState drawState = {};
+            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
+            RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
+        }
+        RenderSystem2D::Instance()->EndRenderTargetPass();
+        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
+        spriteUpdateTimer->start(0);
+        spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
+    }
+    else
+    {
+        spriteLabel->setPixmap(QPixmap());
+        spritePathLabel->setText("<none>");
+    }
+}
+
 void EmitterLayerWidget::UpdateTooltip()
 {
 	QFontMetrics fm = spritePathLabel->fontMetrics();
@@ -1068,9 +1073,9 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     spriteFolderBtn->setVisible(!isSuperemitter);
     spriteLabel->setVisible(!isSuperemitter);
     spritePathLabel->setVisible(!isSuperemitter);
-	
-	// The same is for "Additive" flag, Color, Alpha and Frame.	
-	colorRandomGradient->setVisible(!isSuperemitter);
+
+    // The same is for "Additive" flag, Color, Alpha and Frame.
+    colorRandomGradient->setVisible(!isSuperemitter);
 	colorOverLifeGradient->setVisible(!isSuperemitter);
 	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
