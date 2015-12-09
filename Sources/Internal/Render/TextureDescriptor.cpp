@@ -1112,5 +1112,96 @@ uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const
     return CRC32::ForBuffer((const char8*)crcBuffer.data(), CRC_BUFFER_SIZE);
 }
 
+bool TextureDescriptor::ApplyTexturePreset(const KeyedArchive* presetArchive)
+{
+    DVASSERT(IsCompressedFile() == false);
+    DVASSERT(presetArchive);
 
+    const String object = presetArchive->GetString("object");
+    if (object != "TextureDescriptor")
+    {
+        Logger::Error("Cannot load %s archive as TextureDescriptor preset", object.c_str());
+        return false;
+    }
+
+    const int32 version = presetArchive->GetInt32("version");
+    if (version < CURRENT_VERSION)
+    {
+        Logger::Warning("Trying to load old version %d", version);
+    }
+    else if (version > CURRENT_VERSION)
+    {
+        Logger::Error("Trying to load newer version %d than have %d", version, CURRENT_VERSION);
+        return false;
+    }
+
+    const uint8 cubefaceFlags = presetArchive->GetInt32("cubefaceFlags");
+    if (cubefaceFlags != dataSettings.cubefaceFlags)
+    {
+        Logger::Error("Cannot apply preset with different cubefaceFlags");
+        return false;
+    }
+
+    drawSettings.wrapModeS = static_cast<int8>(presetArchive->GetInt32("wrapModeS", rhi::TEXADDR_WRAP));
+    drawSettings.wrapModeT = static_cast<int8>(presetArchive->GetInt32("wrapModeT", rhi::TEXADDR_WRAP));
+    drawSettings.minFilter = static_cast<int8>(presetArchive->GetInt32("minFilter", rhi::TEXFILTER_LINEAR));
+    drawSettings.magFilter = static_cast<int8>(presetArchive->GetInt32("magFilter", rhi::TEXFILTER_LINEAR));
+    drawSettings.mipFilter = static_cast<int8>(presetArchive->GetInt32("mipFilter", rhi::TEXMIPFILTER_LINEAR));
+
+    dataSettings.textureFlags = static_cast<int8>(presetArchive->GetInt32("textureFlags", TextureDescriptor::TextureDataSettings::FLAG_DEFAULT));
+
+    for (uint32 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
+    {
+        const String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
+        const KeyedArchive* compressionArchieve = presetArchive->GetArchive(gpuName);
+
+        TextureDescriptor::Compression& compressionGPU = compression[gpu];
+        if (compressionArchieve != nullptr)
+        {
+            auto format = compressionArchieve->GetInt32("format", FORMAT_INVALID);
+            auto compressToWidth = static_cast<uint32>(compressionArchieve->GetInt32("width"));
+            auto compressToHeight = static_cast<uint32>(compressionArchieve->GetInt32("height"));
+
+            if (format != compressionGPU.format ||
+                compressToWidth != compressionGPU.compressToWidth ||
+                compressToHeight != compressionGPU.compressToHeight)
+            {
+                compressionGPU.format = format;
+                compressionGPU.compressToHeight = compressToHeight;
+                compressionGPU.compressToWidth = compressToWidth;
+                compressionGPU.convertedFileCrc = 0;
+            }
+        }
+    }
+
+    return true;
+}
+
+void TextureDescriptor::ExtractTexturePreset(KeyedArchive* presetArchive) const
+{
+    DVASSERT(IsCompressedFile() == false);
+
+    presetArchive->SetString("object", "TextureDescriptor");
+    presetArchive->SetInt32("version", CURRENT_VERSION);
+
+    presetArchive->SetInt32("wrapModeS", drawSettings.wrapModeS);
+    presetArchive->SetInt32("wrapModeT", drawSettings.wrapModeT);
+    presetArchive->SetInt32("minFilter", drawSettings.minFilter);
+    presetArchive->SetInt32("magFilter", drawSettings.magFilter);
+    presetArchive->SetInt32("mipFilter", drawSettings.mipFilter);
+
+    presetArchive->SetInt32("textureFlags", dataSettings.textureFlags);
+    presetArchive->SetInt32("cubefaceFlags", dataSettings.cubefaceFlags);
+
+    for (uint8 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
+    {
+        ScopedPtr<KeyedArchive> compressionArchive(new KeyedArchive());
+        compressionArchive->SetInt32("format", compression[gpu].format);
+        compressionArchive->SetInt32("width", compression[gpu].compressToWidth);
+        compressionArchive->SetInt32("height", compression[gpu].compressToHeight);
+
+        const String gpuName = GPUFamilyDescriptor::GetGPUName(static_cast<eGPUFamily>(gpu));
+        presetArchive->SetArchive(gpuName, compressionArchive);
+    }
+}
 };
