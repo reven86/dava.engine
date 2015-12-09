@@ -258,34 +258,21 @@ namespace DAVA
 	}
 
 	// Multiplayer API
-	void AutotestingSystemLua::WriteState(const String &device, const String &state)
+	void AutotestingSystemLua::WriteState(const String &device, const String &param, const String &state)
 	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s state=%s", device.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteState(device, state);
+		Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s param=%s state=%s", device.c_str(), param.c_str(), state.c_str());
+		AutotestingDB::Instance()->WriteState(device, param, state);
 	}
 
-	void AutotestingSystemLua::WriteCommand(const String &device, const String &state)
+	String AutotestingSystemLua::ReadState(const String &device, const String &param)
 	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteCommand device=%s command=%s", device.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteCommand(device, state);
+		Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s param=%s", device.c_str(), param.c_str());
+		return AutotestingDB::Instance()->ReadState(device, param);
 	}
 
-	String AutotestingSystemLua::ReadState(const String &device)
+	void AutotestingSystemLua::InitializeDevice()
 	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s", device.c_str());
-		return AutotestingDB::Instance()->ReadState(device);
-	}
-
-	String AutotestingSystemLua::ReadCommand(const String &device)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadCommand device=%s", device.c_str());
-		return AutotestingDB::Instance()->ReadCommand(device);
-	}
-
-	void AutotestingSystemLua::InitializeDevice(const String &device)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::InitializeDevice device=%s", device.c_str());
-		AutotestingSystem::Instance()->InitializeDevice(device);
+		AutotestingSystem::Instance()->InitializeDevice();
 	}
 
 	String AutotestingSystemLua::GetPlatform()
@@ -372,18 +359,6 @@ namespace DAVA
 	void AutotestingSystemLua::Log(const String &level, const String &message)
 	{
 		AutotestingDB::Instance()->Log(level, message);
-	}
-
-	void AutotestingSystemLua::WriteString(const String & name, const String & text)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteString name=%s text=%s", name.c_str(), text.c_str());
-		AutotestingDB::Instance()->WriteString(name, text);
-	}
-
-	String AutotestingSystemLua::ReadString(const String & name)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadString name=%s", name.c_str());
-		return AutotestingDB::Instance()->ReadString(name);
 	}
 
 	bool AutotestingSystemLua::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
