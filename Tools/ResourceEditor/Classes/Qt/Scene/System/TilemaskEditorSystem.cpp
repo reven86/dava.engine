@@ -208,7 +208,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
             Vector2 toolSize = Vector2((float32)curToolSize, (float32)curToolSize);
             Vector2 toolPos = cursorPosition * landscapeSize - toolSize / 2.f;
-            Rect toolRect(toolPos, toolSize);
+            Rect toolRect(std::floor(toolPos.x), std::floor(toolPos.y), std::ceil(toolSize.x), std::ceil(toolSize.y));
 
             RenderSystem2D::RenderTargetPassDescriptor desc;
             desc.target = toolTexture;

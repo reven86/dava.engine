@@ -32,21 +32,23 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 
+namespace DAVA
+{
 class ProgramOptions
 {
 public:
     ProgramOptions(const DAVA::String& _commandName);
 
-    void AddOption(const char* optionName, const DAVA::VariantType& defaultValue, const char* description = nullptr, bool canBeMultiple = false);
-    void AddArgument(const char* argumentName, bool required = true);
+    void AddOption(const DAVA::String& optionName, const DAVA::VariantType& defaultValue, const DAVA::String& description = nullptr, bool canBeMultiple = false);
+    void AddArgument(const DAVA::String& argumentName, bool required = true);
 
-    DAVA::uint32 GetOptionsCount(const char* optionName) const;
-    DAVA::VariantType GetOption(const char* optionName, size_t pos = 0) const;
+    DAVA::uint32 GetOptionsCount(const DAVA::String& optionName) const;
+    DAVA::VariantType GetOption(const DAVA::String& optionName, size_t pos = 0) const;
 
-    DAVA::String GetArgument(const char* argumentName) const;
+    DAVA::String GetArgument(const DAVA::String& argumentName) const;
     const DAVA::String& GetCommand() const;
 
-    bool Parse(int argc, char* argv[], size_t start = 1);
+    bool Parse(int argc, char* argv[]);
     void PrintUsage() const;
 
 private:
@@ -83,4 +85,5 @@ private:
     DAVA::String commandName;
 };
 
+} //END of DAVA
 #endif //__PROGRAM_OPTIONS_H__

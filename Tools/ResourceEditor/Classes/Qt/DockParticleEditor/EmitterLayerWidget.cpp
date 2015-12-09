@@ -191,7 +191,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
     innerEmitterLabel = new QLabel("Inner Emitter", this);
     innerEmitterPathLabel = new QLineEdit(this);
-	innerEmitterPathLabel->setReadOnly(true);
+    innerEmitterPathLabel->setReadOnly(true);
 	innerEmitterLayout->addWidget(innerEmitterLabel);
 	innerEmitterLayout->addWidget(innerEmitterPathLabel);
 	mainBox->addLayout(innerEmitterLayout);
@@ -228,13 +228,12 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
 	pivotPointLayout->addLayout(pivotPointInnerLayout);
 	mainBox->addLayout(pivotPointLayout);
-	
 
-	frameBlendingCheckBox = new QCheckBox("Enable frame blending");
+    frameBlendingCheckBox = new QCheckBox("Enable frame blending");
     connect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
     mainBox->addWidget(frameBlendingCheckBox);
 
-	//particle orieantation
+    //particle orieantation
 	QVBoxLayout* orientationLayout = new QVBoxLayout();	
 	particleOrientationLabel = new QLabel("Particle Orientation");
 	orientationLayout->addWidget(particleOrientationLabel);
@@ -288,8 +287,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
     mainBox->addWidget(fogCheckBox);
 
-
-	lifeTimeLine = new TimeLineWidget(this);
+    lifeTimeLine = new TimeLineWidget(this);
 	InitWidget(lifeTimeLine);
 	numberTimeLine = new TimeLineWidget(this);
 	InitWidget(numberTimeLine);
@@ -1076,8 +1074,8 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     spriteLabel->setVisible(!isSuperemitter);
     spritePathLabel->setVisible(!isSuperemitter);
 
-    // The same is for "Additive" flag, Color, Alpha and Frame.	
-	colorRandomGradient->setVisible(!isSuperemitter);
+    // The same is for "Additive" flag, Color, Alpha and Frame.
+    colorRandomGradient->setVisible(!isSuperemitter);
 	colorOverLifeGradient->setVisible(!isSuperemitter);
 	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 

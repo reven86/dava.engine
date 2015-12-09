@@ -172,9 +172,9 @@ namespace DAVA
     }
 
     void AutotestingSystem::OnInit()
-	{
-		DVASSERT(!isInit);
-		isInit = true;
+    {
+        DVASSERT(!isInit);
+        isInit = true;
 	}
 
 	// Get test parameters from id.yaml
@@ -507,9 +507,9 @@ namespace DAVA
         if (findIt != touches.end())
         {
             isFound = true;
-			touch = findIt->second;
-		}
-		return isFound;
+            touch = findIt->second;
+        }
+        return isFound;
 	}
 
 	bool AutotestingSystem::IsTouchDown(int32 id)

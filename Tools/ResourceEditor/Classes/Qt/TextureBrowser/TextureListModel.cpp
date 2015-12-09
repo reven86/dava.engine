@@ -169,7 +169,7 @@ void TextureListModel::setScene(DAVA::Scene *scene)
             textureDescriptorsAll.push_back(descriptor);
             texturesAll[descriptor] = SafeRetain(t->second);
         }
-	}
+    }
 
 	applyFilterAndSort();
 

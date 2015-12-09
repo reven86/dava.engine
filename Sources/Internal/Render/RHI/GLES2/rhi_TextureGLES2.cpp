@@ -313,8 +313,8 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                   { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
                   { GLCommand::RESTORE_TEXTURE0, {} }
                 };
-            ExecGL(cmd3, countof(cmd3), force_immediate);
-        }
+                ExecGL(cmd3, countof(cmd3), force_immediate);
+            }
         }
         else
         {

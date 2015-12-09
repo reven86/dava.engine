@@ -267,9 +267,9 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->particleOrientation = particleOrientation;
 
     dstLayer->scaleVelocityBase = scaleVelocityBase;
-	dstLayer->scaleVelocityFactor = scaleVelocityFactor;
-    
-	dstLayer->spritePath = spritePath;
+    dstLayer->scaleVelocityFactor = scaleVelocityFactor;
+
+    dstLayer->spritePath = spritePath;
 	dstLayer->activeLODS = activeLODS;
 	dstLayer->isLong = isLong;
 
@@ -655,9 +655,9 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
     const YamlNode* isLoopedNode = node->Get("isLooped");
     if (isLoopedNode)
-		isLooped = isLoopedNode->AsBool();
-		
-	const YamlNode * deltaTimeNode = node->Get("deltaTime");
+        isLooped = isLoopedNode->AsBool();
+
+    const YamlNode * deltaTimeNode = node->Get("deltaTime");
 	if (deltaTimeNode)
 		deltaTime = deltaTimeNode->AsFloat();
 		

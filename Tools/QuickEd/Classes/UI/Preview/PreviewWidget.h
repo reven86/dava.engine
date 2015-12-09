@@ -80,7 +80,7 @@ private slots:
     void OnScaleChanged(qreal scale);
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
-    
+
     void OnGLWidgetResized(int width, int height);
 
     void OnVScrollbarMoved(int position);

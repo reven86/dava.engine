@@ -71,11 +71,11 @@ struct PackageContext : WidgetContext
 };
 
 template <typename NodeType>
-void CollectSelectedNodes(const SelectedNodes &selectedNodes, Vector<NodeType*> &nodes, bool forCopy, bool forRemove)
+void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
-    for (PackageBaseNode *node : selectedNodes)
+    for (PackageBaseNode* node : selectedNodes)
     {
-        NodeType *convertedNode = dynamic_cast<NodeType*>(node);
+        NodeType* convertedNode = dynamic_cast<NodeType*>(node);
 
         if (convertedNode && node->GetParent() != nullptr)
         {
@@ -399,8 +399,6 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, c
         clipboard->setMimeData(data);
     }
 }
-
-
 
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
