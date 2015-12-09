@@ -361,6 +361,42 @@ Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
     return res;
 };
 
+bool Landscape::GetHeightAtPoint(const Vector3& point, float& value)
+{
+    if ((point.x > bbox.max.x) || (point.x < bbox.min.x) || (point.y > bbox.max.y) || (point.y < bbox.min.y))
+    {
+        return false;
+    }
+
+    const auto hmData = heightmap->Data();
+    if (hmData == nullptr)
+    {
+        Logger::Error("[Landscape::GetHeightAtPoint] Trying to get height at point using empty heightmap data!");
+        return false;
+    }
+
+    auto hmSize = heightmap->Size();
+    int32 x = std::min(hmSize - 1, static_cast<int32>(point.x));
+    int32 y = std::min(hmSize - 1, static_cast<int32>(point.y));
+    int nextX = DAVA::Min(x + 1, hmSize - 1);
+    int nextY = DAVA::Min(y + 1, hmSize - 1);
+    int i00 = x + y * hmSize;
+    int i01 = nextX + y * hmSize;
+    int i10 = x + nextY * hmSize;
+    int i11 = nextX + nextY * hmSize;
+    float h00 = static_cast<float>(hmData[i00]);
+    float h01 = static_cast<float>(hmData[i01]);
+    float h10 = static_cast<float>(hmData[i10]);
+    float h11 = static_cast<float>(hmData[i11]);
+    float dx = point.x - static_cast<float>(x);
+    float dy = point.y - static_cast<float>(y);
+    float h0 = h00 * (1.0f - dx) + h01 * dx;
+    float h1 = h10 * (1.0f - dx) + h11 * dx;
+    value = (h0 * (1.0f - dy) + h1 * dy) * GetLandscapeHeight() / static_cast<float>(Heightmap::MAX_VALUE);
+
+    return true;
+}
+
 bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();

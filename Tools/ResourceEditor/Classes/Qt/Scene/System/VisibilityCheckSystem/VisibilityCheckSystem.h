@@ -59,8 +59,6 @@ private:
     void BuildCache();
 
     bool ShouldDrawRenderObject(DAVA::RenderObject*) override;
-    DAVA::float32 GetHeightAtHeightmapPoint(DAVA::float32 x, DAVA::float32 y, DAVA::Landscape*);
-    bool PlacePointOnLandscape(DAVA::Vector3&, DAVA::Landscape*);
 
     struct StateCache
     {

@@ -193,6 +193,7 @@ public:
 
     // TODO: Need comment here
     bool PlacePoint(const Vector3& point, Vector3& result, Vector3* normal = 0) const;
+    bool GetHeightAtPoint(const Vector3& point, float&);
     Vector3 GetPoint(int16 x, int16 y, uint16 height) const;
 
     Heightmap* GetHeightmap();

@@ -221,12 +221,12 @@ void VisibilityCheckSystem::UpdatePointSet()
             for (const auto& pt : visibilityComponent->GetPoints())
             {
                 DAVA::Vector3 transformedPoint = position + MultiplyVectorMat3x3(pt, worldTransform);
-                if (shouldSnap && (PlacePointOnLandscape(transformedPoint, landscape)))
+                if (shouldSnap && (landscape->GetHeightAtPoint(transformedPoint, transformedPoint.z)))
                 {
                     DAVA::Vector3 dxPoint = transformedPoint + Vector3(1.0f, 0.0f, 0.0f);
                     DAVA::Vector3 dyPoint = transformedPoint + Vector3(0.0f, 1.0f, 0.0f);
-                    PlacePointOnLandscape(dxPoint, landscape);
-                    PlacePointOnLandscape(dyPoint, landscape);
+                    landscape->GetHeightAtPoint(dxPoint, dxPoint.z);
+                    landscape->GetHeightAtPoint(dyPoint, dyPoint.z);
 
                     normal = (dxPoint - transformedPoint).CrossProduct(dyPoint - transformedPoint);
                     normal.Normalize();
@@ -238,17 +238,6 @@ void VisibilityCheckSystem::UpdatePointSet()
             }
         }
     }
-}
-
-bool VisibilityCheckSystem::PlacePointOnLandscape(DAVA::Vector3& point, DAVA::Landscape* landscape)
-{
-    Vector3 normalizedCoord = (point - landscape->GetBoundingBox().min) / (landscape->GetBoundingBox().max - landscape->GetBoundingBox().min);
-    if ((normalizedCoord.x < 0.0f) || (normalizedCoord.y < 0.0f) || (normalizedCoord.x >= 1.0f) || (normalizedCoord.y >= 1.0f))
-        return false;
-
-    Vector2 hmPoint = normalizedCoord.xy() * static_cast<float>(landscape->GetHeightmap()->Size());
-    point.z = GetHeightAtHeightmapPoint(hmPoint.x, hmPoint.y, landscape);
-    return true;
 }
 
 void VisibilityCheckSystem::Prerender()
@@ -335,28 +324,3 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
     }
 
     return true;
-}
-
-float VisibilityCheckSystem::GetHeightAtHeightmapPoint(DAVA::float32 fx, DAVA::float32 fy, DAVA::Landscape* landscape)
-{
-    auto hmSize = landscape->GetHeightmap()->Size();
-    const auto hmData = landscape->GetHeightmap()->Data();
-    int32 x = std::min(hmSize - 1, static_cast<int32>(fx));
-    int32 y = std::min(hmSize - 1, static_cast<int32>(fy));
-    int nextX = DAVA::Min(x + 1, hmSize - 1);
-    int nextY = DAVA::Min(y + 1, hmSize - 1);
-    int i00 = x + y * hmSize;
-    int i01 = nextX + y * hmSize;
-    int i10 = x + nextY * hmSize;
-    int i11 = nextX + nextY * hmSize;
-    float h00 = static_cast<float>(hmData[i00]);
-    float h01 = static_cast<float>(hmData[i01]);
-    float h10 = static_cast<float>(hmData[i10]);
-    float h11 = static_cast<float>(hmData[i11]);
-    float dx = fx - static_cast<float>(x);
-    float dy = fy - static_cast<float>(y);
-    float h0 = h00 * (1.0f - dx) + h01 * dx;
-    float h1 = h10 * (1.0f - dx) + h11 * dx;
-    float h = h0 * (1.0f - dy) + h1 * dy;
-    return h * landscape->GetLandscapeHeight() / static_cast<float>(Heightmap::MAX_VALUE);
-}
