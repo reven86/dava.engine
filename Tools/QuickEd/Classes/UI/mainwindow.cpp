@@ -54,13 +54,13 @@ using namespace DAVA;
 
 struct MainWindow::TabState
 {
-    TabState(Document* document_, const QString &tabText_)
+    TabState(Document* document_, const QString& tabText_)
         : document(document_)
         , tabText(tabText_)
     {
         DVASSERT(document != nullptr);
     }
-    Document *document = nullptr;
+    Document* document = nullptr;
     QString tabText;
 };
 
@@ -151,7 +151,7 @@ void MainWindow::OnDocumentChanged(Document* document)
     {
         QVariant var = tabBar->tabData(index);
         DVASSERT(var.canConvert<TabState*>());
-        TabState *tabState = var.value<TabState*>();
+        TabState* tabState = var.value<TabState*>();
         if (tabState->document == document)
         {
             tabBar->setCurrentIndex(index);
@@ -208,9 +208,9 @@ QComboBox* MainWindow::GetComboBoxLanguage()
 
 void MainWindow::OnCleanChanged(bool isClean)
 {
-    QUndoStack *undoStack = qobject_cast<QUndoStack*>(sender());
+    QUndoStack* undoStack = qobject_cast<QUndoStack*>(sender());
     DVASSERT(nullptr != undoStack);
-    Document *document = qobject_cast<Document*>(undoStack->parent());
+    Document* document = qobject_cast<Document*>(undoStack->parent());
     if (nullptr == document)
     {
         return; //undostack emit clear when destroyed
@@ -219,7 +219,7 @@ void MainWindow::OnCleanChanged(bool isClean)
     {
         QVariant var = tabBar->tabData(index);
         DVASSERT(var.canConvert<TabState*>());
-        TabState *tabState = var.value<TabState*>();
+        TabState* tabState = var.value<TabState*>();
         if (tabState->document == document)
         {
             QString tabText = tabState->tabText;
@@ -468,7 +468,7 @@ void MainWindow::RebuildRecentMenu()
     menuRecent->setEnabled(projectCount > 0);
 }
 
-int MainWindow::AddTab(Document *document, int index)
+int MainWindow::AddTab(Document* document, int index)
 {
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &MainWindow::OnCleanChanged);
 

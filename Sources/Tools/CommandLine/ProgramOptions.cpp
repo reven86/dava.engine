@@ -32,6 +32,8 @@
 
 #include "Utils/Utils.h"
 
+namespace DAVA
+{
 void ProgramOptions::Option::SetValue(const DAVA::VariantType& value)
 {
     if (multipleValuesSuported || values.size() == 0)
@@ -49,22 +51,18 @@ ProgramOptions::ProgramOptions(const DAVA::String& _commandName)
 {
 }
 
-void ProgramOptions::AddOption(const char* optionName, const DAVA::VariantType& defaultValue, const char* description, bool canBeMultiple)
+void ProgramOptions::AddOption(const DAVA::String& optionName, const DAVA::VariantType& defaultValue, const DAVA::String& description, bool canBeMultiple)
 {
     Option op;
     op.name = optionName;
     op.multipleValuesSuported = canBeMultiple;
     op.defaultValue = defaultValue;
-
-    if (nullptr != description)
-    {
         op.descr = description;
-    }
 
     options.push_back(op);
 }
 
-void ProgramOptions::AddArgument(const char* argumentName, bool required)
+void ProgramOptions::AddArgument(const DAVA::String& argumentName, bool required)
 {
     Argument ar;
     ar.name = argumentName;
@@ -73,14 +71,24 @@ void ProgramOptions::AddArgument(const char* argumentName, bool required)
     arguments.push_back(ar);
 }
 
-bool ProgramOptions::Parse(int argc, char* argv[], size_t start)
+bool ProgramOptions::Parse(int argc, char* argv[])
 {
     bool ret = true;
     size_t curParamPos = 0;
 
     argValues = argv;
     argCount = (size_t)argc;
-    argIndex = start;
+    argIndex = 1; // skip executable pathname
+
+    // if first argument equal command name we should skip it else we should stop parsing
+    if (argIndex < argCount && commandName == argv[argIndex])
+    {
+        argIndex++;
+    }
+    else
+    {
+        return false;
+    }
 
     while (ret && argIndex < argCount)
     {
@@ -168,7 +176,7 @@ void ProgramOptions::PrintUsage() const
     }
 }
 
-DAVA::uint32 ProgramOptions::GetOptionsCount(const char* optionName) const
+DAVA::uint32 ProgramOptions::GetOptionsCount(const DAVA::String& optionName) const
 {
     for (auto& opt : options)
     {
@@ -182,7 +190,7 @@ DAVA::uint32 ProgramOptions::GetOptionsCount(const char* optionName) const
     return 1; //default
 }
 
-DAVA::VariantType ProgramOptions::GetOption(const char* optionName, size_t pos) const
+DAVA::VariantType ProgramOptions::GetOption(const DAVA::String& optionName, size_t pos) const
 {
     for (auto& opt : options)
     {
@@ -205,7 +213,7 @@ DAVA::VariantType ProgramOptions::GetOption(const char* optionName, size_t pos) 
     return DAVA::VariantType();
 }
 
-DAVA::String ProgramOptions::GetArgument(const char* argumentName) const
+DAVA::String ProgramOptions::GetArgument(const DAVA::String& argumentName) const
 {
     for (auto& arg : arguments)
     {
@@ -348,3 +356,5 @@ bool ProgramOptions::ParseOption()
 
     return ret;
 }
+
+} //END of DAVA

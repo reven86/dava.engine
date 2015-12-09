@@ -30,27 +30,26 @@
 #ifndef __IMAGE_SPLITTER_TOOL_H__
 #define __IMAGE_SPLITTER_TOOL_H__
 
-#include "../CommandLineTool.h"
+#include "CommandLine/CommandLineTool.h"
 
 class ImageSplitterTool: public CommandLineTool
 {
-    enum eAction
+    enum eAction : DAVA::int32
     {
         ACTION_NONE = -1,
 
         ACTION_SPLIT,
         ACTION_MERGE
     };
-    
+
 public:
+    ImageSplitterTool();
 
-	DAVA::String GetCommandLineKey() const override;
-	bool InitializeFromCommandLine() override;
-	void Process() override;
-	void PrintUsage() const override;
+private:
+    void ConvertOptionsToParamsInternal() override;
+    bool InitializeInternal() override;
+    void ProcessInternal() override;
 
-protected:
-    
     eAction commandAction;
     DAVA::FilePath filename;
     DAVA::FilePath foldername;

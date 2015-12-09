@@ -53,7 +53,7 @@ public:
     void AddFile(const DAVA::FilePath &sourcePath);
     void CopyFiles(DAVA::Set<DAVA::String> &errorLog);
 
-protected:
+private:
     void PrepareDestination(DAVA::Set<DAVA::String> &errorLog);
 
 public:

@@ -1551,7 +1551,7 @@ QString PropertyEditor::GetDefaultFilePath()
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
         if (String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
         {
-			defaultPath = scenePath.c_str();
+            defaultPath = scenePath.c_str();
 		}
 	}
 

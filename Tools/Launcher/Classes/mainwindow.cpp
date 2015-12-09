@@ -66,7 +66,7 @@ public:
 //expected format of input string: 0.8_2015-02-14_11.20.12_0000,
 //where 0.8 - DAVA version, 2015-02-14 - build date, 11.20.12 - build time and 0000 - build version
 //all blocks can be modified or empty
-bool VersionListComparator(const QString & left, const QString & right)
+bool VersionListComparator(const QString& left, const QString& right)
 {
     QStringList leftList = left.split('_', QString::SkipEmptyParts);
     QStringList rightList = right.split('_', QString::SkipEmptyParts);
@@ -74,36 +74,36 @@ bool VersionListComparator(const QString & left, const QString & right)
     int minSize = qMin(leftList.size(), rightList.size());
     for (int i = 0; i < minSize; ++i)
     {
-        const QString &leftSubStr = leftList.at(i);
-        const QString &rightSubStr = rightList.at(i);
+        const QString& leftSubStr = leftList.at(i);
+        const QString& rightSubStr = rightList.at(i);
         QStringList leftSubList = leftSubStr.split('.', QString::SkipEmptyParts);
         QStringList rightSubList = rightSubStr.split('.', QString::SkipEmptyParts);
         int subMinSize = qMin(leftSubList.size(), rightSubList.size());
-        for(int subStrIndex = 0; subStrIndex < subMinSize; ++subStrIndex)
+        for (int subStrIndex = 0; subStrIndex < subMinSize; ++subStrIndex)
         {
             bool leftOk;
             bool rightOk;
-            const QString &leftSubSubStr = leftSubList.at(subStrIndex);
-            const QString &rightSubSubStr = rightSubList.at(subStrIndex);
+            const QString& leftSubSubStr = leftSubList.at(subStrIndex);
+            const QString& rightSubSubStr = rightSubList.at(subStrIndex);
             qlonglong leftVal = leftSubSubStr.toLongLong(&leftOk);
             qlonglong rightVal = rightSubSubStr.toLongLong(&rightOk);
-            if(leftOk && rightOk)
+            if (leftOk && rightOk)
             {
-                if(leftVal != rightVal)
+                if (leftVal != rightVal)
                 {
                     return leftVal < rightVal;
                 }
             }
             else //date format or other
             {
-                if(leftSubSubStr != rightSubSubStr)
+                if (leftSubSubStr != rightSubSubStr)
                 {
                     return leftSubSubStr < rightSubSubStr;
                 }
             }
         }
         //if version lists are equal - checking for extra subversion
-        if(leftSubList.size() != rightSubList.size())
+        if (leftSubList.size() != rightSubList.size())
         {
             return leftSubList.size() < rightSubList.size();
         }
@@ -519,7 +519,7 @@ QWidget * MainWindow::CreateAppAvalibleTableItem(Application * app)
         }
 
         qSort(versions.begin(), versions.end(), VersionListComparator);
-        
+
         QComboBox * comboBox = new QComboBox();
         for (int j = versCount - 1; j >= 0; --j)
         {

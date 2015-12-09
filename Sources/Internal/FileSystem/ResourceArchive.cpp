@@ -382,7 +382,7 @@ int32	ResourceArchive::LoadResource(const FilePath & pathName, void * data)
             lastResourceIndex = resourceIndex;
             lastResourceName = pathName;
         }
-		else
+        else
 		{
 			resourceIndex = header.fileCount;
 		}

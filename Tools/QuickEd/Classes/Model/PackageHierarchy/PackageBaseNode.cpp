@@ -143,28 +143,28 @@ bool PackageBaseNode::IsReadOnly() const
 
 namespace
 {
-    uint32 CalculateDepth(PackageBaseNode *node)
+uint32 CalculateDepth(PackageBaseNode* node)
+{
+    DVASSERT(nullptr != node);
+    uint32 depth = 0;
+    PackageBaseNode* parent = node->GetParent();
+    while (nullptr != parent)
     {
-        DVASSERT(nullptr != node);
-        uint32 depth = 0;
-        PackageBaseNode *parent = node->GetParent();
-        while (nullptr != parent)
-        {
-            ++depth;
-            parent = parent->GetParent();
-        }
-        return depth;
+        ++depth;
+        parent = parent->GetParent();
     }
+    return depth;
+}
 
-    PackageBaseNode* ReduceDepth(PackageBaseNode *node, uint32 reduceValue)
+PackageBaseNode* ReduceDepth(PackageBaseNode* node, uint32 reduceValue)
+{
+    for (uint32 i = 0; i < reduceValue; ++i)
     {
-        for (uint32 i = 0; i < reduceValue; ++i)
-        {
-            DVASSERT(node != nullptr);
-            node = node->GetParent();
-        }
-        return node;
+        DVASSERT(node != nullptr);
+        node = node->GetParent();
     }
+    return node;
+}
 } //unnamed namepace
 
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
@@ -179,7 +179,7 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
 
     PackageBaseNode* leftParent = left;
     PackageBaseNode* rightParent = right;
-   
+
     if (depthLeft > depthRight)
     {
         leftParent = ReduceDepth(leftParent, depthLeft - depthRight);
@@ -198,7 +198,7 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
         }
         right = rightParent;
     }
-    
+
     while (true)
     {
         leftParent = left->GetParent();
@@ -214,4 +214,3 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
         right = rightParent;
     }
 }
-

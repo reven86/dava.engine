@@ -172,7 +172,7 @@ namespace DAVA
     }
 
     void AutotestingSystem::OnInit()
-	{
+    {
 		DVASSERT(!isInit);
 		isInit = true;
 	}
@@ -507,7 +507,7 @@ namespace DAVA
         if (findIt != touches.end())
         {
             isFound = true;
-			touch = findIt->second;
+            touch = findIt->second;
 		}
 		return isFound;
 	}

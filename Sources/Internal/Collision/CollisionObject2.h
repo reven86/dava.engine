@@ -86,7 +86,7 @@ public:
     AABBox2 bbox;
 
     uint32 updateFrameIndex;
-	bool collisionOnLastFrame;
+    bool collisionOnLastFrame;
     
     bool forceUpdate;
 	

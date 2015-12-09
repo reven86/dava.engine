@@ -273,9 +273,9 @@ void CustomColorsPanel::LoadTexture()
     }
 
     FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION,
-												currentPath,
-												PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
-	if(!selectedPathname.IsEmpty())
+                                                currentPath,
+                                                PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
+    if(!selectedPathname.IsEmpty())
 	{
 		sceneEditor->customColorsSystem->LoadTexture(selectedPathname);
 	}

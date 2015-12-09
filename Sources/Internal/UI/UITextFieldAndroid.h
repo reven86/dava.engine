@@ -130,7 +130,7 @@ public:
     void SetInputEnabled(bool value);
 
     void SetRenderToTexture(bool value);
-	bool IsRenderToTexture() const;
+    bool IsRenderToTexture() const;
 
 	// Keyboard traits.
 	void SetAutoCapitalizationType(DAVA::int32 value);

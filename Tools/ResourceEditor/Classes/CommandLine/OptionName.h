@@ -27,54 +27,58 @@
 =====================================================================================*/
 
 
-#include "CleanFolderTool.h"
+#ifndef __OPTION_NAME_H__
+#define __OPTION_NAME_H__
 
-#include "CommandLine/CommandLineParser.h"
+#include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
 
-using namespace DAVA;
-
-void CleanFolderTool::PrintUsage() const
+//command line constants for unification of command line
+class OptionName
 {
-    printf("\n");
-    printf("-cleanfolder [-folder [directory]]\n");
-    printf("\twill delete folder with files \n");
-    printf("\t-folder - path for /Users/User/Project/Data/3d/ folder \n");
+public:
+    static const DAVA::String deprecated_forceClose;
+    static const DAVA::String deprecated_Export;
 
-    printf("\n");
-    printf("Sample:\n");
-    printf("-cleanfolder -folder /Users/User/Project/Data/3d\n");
-}
+    static const DAVA::String Output;
+    static const DAVA::String OutFile;
+    static const DAVA::String OutDir;
 
-DAVA::String CleanFolderTool::GetCommandLineKey() const
-{
-    return "-cleanfolder";
-}
+    static const DAVA::String File;
+    static const DAVA::String ProcessFile;
 
-bool CleanFolderTool::InitializeFromCommandLine()
-{
-    foldername = CommandLineParser::GetCommandParam(String("-folder"));
-    if(foldername.IsEmpty())
-    {
-        errors.insert(String("Incorrect params for cleaning folder"));
-        return false;
-    }
+    static const DAVA::String ProcessFileList;
 
-    foldername.MakeDirectoryPathname();
-    
-    return true;
-}
+    static const DAVA::String Folder;
+    static const DAVA::String InDir;
+    static const DAVA::String ProcessDir;
 
-void CleanFolderTool::Process() 
-{
-    bool ret = FileSystem::Instance()->DeleteDirectory(foldername);
-    if(!ret)
-    {
-        bool folderExists = FileSystem::Instance()->IsDirectory(foldername);
-        if(folderExists)
-        {
-            errors.insert(String(Format("[CleanFolder] ret = %d, folder = %s", ret, foldername.GetAbsolutePathname().c_str())));
-        }
-    }
-}
+    static const DAVA::String QualityConfig;
 
+    static const DAVA::String Split;
+    static const DAVA::String Merge;
+    static const DAVA::String Save;
+    static const DAVA::String Resave;
+    static const DAVA::String Build;
+    static const DAVA::String Convert;
+    static const DAVA::String Create;
 
+    static const DAVA::String Links;
+    static const DAVA::String Scene;
+    static const DAVA::String Texture;
+    static const DAVA::String Yaml;
+
+    static const DAVA::String GPU;
+    static const DAVA::String Quality;
+    static const DAVA::String Force;
+    static const DAVA::String Mipmaps;
+
+    static const DAVA::String SaveNormals;
+    static const DAVA::String CopyConverted;
+    static const DAVA::String CopyCompression;
+    static const DAVA::String SetCompression;
+
+    static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
+};
+
+#endif // __OPTION_NAME_H__

@@ -72,7 +72,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
     int retVal = UIApplicationMain(argc, argv, nil, @"iOSAppDelegate");
 
     [pool release];
-	return retVal;
+    return retVal;
 }
 
 DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
