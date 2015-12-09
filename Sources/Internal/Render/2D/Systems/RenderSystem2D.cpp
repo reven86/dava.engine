@@ -180,7 +180,7 @@ void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = 
     desc.clearColor = clearColor;
     desc.priority = priority;
     desc.shouldClear = needClear;
-    desc.shouldTransformVirtualToPhysical = false;
+    desc.shouldTransformVirtualToPhysical = true;
     BeginRenderTargetPass(desc);
 }
 
