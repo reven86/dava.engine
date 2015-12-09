@@ -269,7 +269,7 @@ void FileSystemDockWidget::onNewFile()
     }
 
     QFile file(strFile);
-    if(file.open(QIODevice::WriteOnly))
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
         QString title = tr("Can not create file");
         QMessageBox::warning(this, title, title + tr("\n%1").arg(strFile));
