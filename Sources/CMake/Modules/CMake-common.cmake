@@ -658,6 +658,9 @@ macro( generated_unity_sources SOURCE_FILES )
         message( "    OBJCPP_NUMBER_FILES_IN_PACK - ${OBJCPP_NUMBER_FILES_IN_PACK}")
         message( "    IGNORE_LIST_SIZE            - ${IGNORE_LIST_SIZE}")
 
+        message( "    LAST_UNITY_TREE_HASH        - ${LAST_UNITY_TREE_HASH}")
+        message( "    UNITY_TREE_HASH             - ${UNITY_TREE_HASH}")
+
     endif()
 endmacro ()
 
