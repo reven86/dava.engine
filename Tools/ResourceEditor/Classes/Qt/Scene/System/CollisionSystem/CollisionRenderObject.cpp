@@ -32,56 +32,50 @@
 
 CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWorld *word, DAVA::RenderObject *renderObject)
 	: CollisionBaseObject(entity, word)
-	, btTriangles(NULL)
-	, btShape(NULL)
 {
-	if(NULL != renderObject && NULL != word)
-	{
-		bool anyPolygonAdded = false;
+    if ((renderObject != nullptr) && (word != nullptr))
+    {
 		DAVA::Matrix4 curEntityTransform = entity->GetWorldTransform();
-
-		DAVA::AABBox3 commonBox;
 
         int maxVertexCount = 0;
         int bestLodIndex = 0;
         int curSwitchIndex = renderObject->GetSwitchIndex();
 
         // search for best lod index
-        for(DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+        for (DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
         {
-            int batchLodIndex;
-            int batchSwitchIndex;
-
+            int batchLodIndex = 0;
+            int batchSwitchIndex = 0;
             DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
             int vertexCount = batch->GetPolygonGroup()->GetVertexCount();
-            if(vertexCount > maxVertexCount && curSwitchIndex == batchSwitchIndex)
+            if ((vertexCount > maxVertexCount) && (curSwitchIndex == batchSwitchIndex))
             {
                 bestLodIndex = batchLodIndex;
                 maxVertexCount = vertexCount;
             }
         }
 
-		for(DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
-		{
-            int batchLodIndex;
-            int batchSwitchIndex;
-
+        bool anyPolygonAdded = false;
+        for (DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+        {
+            int batchLodIndex = 0;
+            int batchSwitchIndex = 0;
             DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
-            if(batchLodIndex == bestLodIndex && batchSwitchIndex == curSwitchIndex)
+
+            if ((batchLodIndex == bestLodIndex) && (batchSwitchIndex == curSwitchIndex))
             {
 			    DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
-
-			    if(NULL != pg)
-			    {
+                if (pg != nullptr)
+                {
 				    // is this the first polygon in cycle
-				    if(!anyPolygonAdded)
-				    {
+                    if (!anyPolygonAdded)
+                    {
 					    anyPolygonAdded = true;
 					    btTriangles = new btTriangleMesh();
 				    }
 
-				    for(int i = 0; i < pg->indexCount; i += 3 )
-				    {
+                    for (int i = 0; i < pg->indexCount; i += 3)
+                    {
 					    DAVA::uint16 index0 = pg->indexArray[i];
 					    DAVA::uint16 index1 = pg->indexArray[i+1];
 					    DAVA::uint16 index2 = pg->indexArray[i+2];
@@ -108,16 +102,15 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
             }
 		}
 
-		if(anyPolygonAdded)
-		{
-			// increase bbox a a little bit
-			boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
+        if (anyPolygonAdded)
+        {
+            // increase bbox a little bit
+            boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
 			boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
 
-			btObject = new btCollisionObject();
 			btShape = new btBvhTriangleMeshShape(btTriangles, true, true);
-
-			btObject->setCollisionShape(btShape);
+            btObject = new btCollisionObject();
+            btObject->setCollisionShape(btShape);
 			btWord->addCollisionObject(btObject);
 		}
 	}
@@ -125,11 +118,25 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 
 CollisionRenderObject::~CollisionRenderObject()
 {
-	if(NULL != btObject)
-	{
+    if (btObject != nullptr)
+    {
 		btWord->removeCollisionObject(btObject);
 		DAVA::SafeDelete(btObject);
 		DAVA::SafeDelete(btShape);
 		DAVA::SafeDelete(btTriangles);
 	}
+}
+
+CollisionBaseObject::ClassifyPlaneResult CollisionRenderObject::ClassifyToPlane(const DAVA::Plane& plane)
+{
+    if (btShape == nullptr)
+        return ClassifyPlaneResult::Behind;
+
+    btBvhTriangleMeshShape* shape = static_cast<btBvhTriangleMeshShape*>(btShape);
+    btVector3 aabbMin = shape->getLocalAabbMin();
+    btVector3 aabbMax = shape->getLocalAabbMax();
+    DAVA::AABBox3 bbox(DAVA::Vector3(aabbMin.x(), aabbMin.y(), aabbMin.z()),
+                       DAVA::Vector3(aabbMax.x(), aabbMax.y(), aabbMax.z()));
+
+    return ClassifyBoundingBoxToPlane(boundingBox, plane);
 }

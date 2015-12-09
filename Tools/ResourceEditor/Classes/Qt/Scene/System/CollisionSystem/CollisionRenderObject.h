@@ -37,11 +37,13 @@ class CollisionRenderObject : public CollisionBaseObject
 {
 public:
 	CollisionRenderObject(DAVA::Entity *entity, btCollisionWorld *word, DAVA::RenderObject *renderObject);
-	virtual ~CollisionRenderObject();
+    ~CollisionRenderObject();
+
+    CollisionBaseObject::ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) override;
 
 protected:
-	btTriangleMesh* btTriangles;
-	btCollisionShape* btShape;
+    btTriangleMesh* btTriangles = nullptr;
+    btCollisionShape* btShape = nullptr;
 };
 
 #endif // __SCENE_COLLISION_BASE_OBJECT_H__

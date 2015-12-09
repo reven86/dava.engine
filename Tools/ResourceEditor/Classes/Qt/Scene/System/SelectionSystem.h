@@ -72,9 +72,9 @@ public:
     void SetSelection(const EntityGroup &newSelection);
 	void AddSelection(DAVA::Entity *entity);
     void AddSelection(const EntityGroup &entities);
-	void RemSelection(DAVA::Entity *entity);
-    void RemSelection(const EntityGroup &entities);
-	void Clear();
+    void ExcludeSelection(DAVA::Entity* entity);
+    void ExcludeSelection(const EntityGroup& entities);
+    void Clear();
     
     bool IsEntitySelectable(DAVA::Entity *entity) const;
 
@@ -114,7 +114,7 @@ public:
     bool IsEntitySelected(DAVA::Entity *entity);
     bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
 
-protected:
+private:
     void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
 
 	void Draw();
@@ -126,24 +126,25 @@ protected:
 
 	EntityGroup GetSelecetableFromCollision(const EntityGroup *collisionEntities);
 
-private:
-    
-    bool selectionAllowed;
-    DAVA::uint64 componentMaskForSelection;
-    
-	bool applyOnPhaseEnd;
-    bool invalidSelectionBoxes;
+    void PerformSelectionAtPoint(const DAVA::Vector2&);
 
+    void PerformSelectionInCurrentBox();
+
+private:
+    DAVA::uint64 componentMaskForSelection;
 	SceneCollisionSystem *collisionSystem;
 	HoodSystem* hoodSystem;
-
-	bool selectionHasChanges;
 	EntityGroup curSelections;
 	EntityGroup curDeselections;
-
 	DAVA::Entity *lastSelection;
-
-	ST_PivotPoint curPivotPoint;
+    DAVA::Vector2 selectionStartPoint;
+    DAVA::Vector2 selectionEndPoint;
+    ST_PivotPoint curPivotPoint;
+    bool selectionAllowed;
+    bool applyOnPhaseEnd;
+    bool invalidSelectionBoxes;
+    bool selectionHasChanges;
+    bool selecting = false;
 };
 
 
