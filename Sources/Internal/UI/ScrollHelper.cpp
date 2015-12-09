@@ -110,9 +110,9 @@ namespace DAVA
     }
 
     float ScrollHelper::GetPosition() const
-	{
-		return position;
-	}
+    {
+        return position;
+    }
 	
 	void ScrollHelper::SetViewSize(float32 size)
 	{

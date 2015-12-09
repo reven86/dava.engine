@@ -361,8 +361,8 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input, jint action
     event.tid = env->GetIntField(input, gInputEventTidField);
     event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
     event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
-        event.tapCount = env->GetIntField(input, gInputEventTapCountField);
-		event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
+    event.tapCount = env->GetIntField(input, gInputEventTapCountField);
+    event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
         event.phase = GetPhase(action, source);
         if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
         {
@@ -414,8 +414,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
                     env->DeleteLocalRef(jInput);
                 }
-				if (touchIndex < activeInputsCount)
-				{
+                if (touchIndex < activeInputsCount)
+                {
 					jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
 
 					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
@@ -423,8 +423,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
                     env->DeleteLocalRef(jInput);
                 }
-			}
-			core->OnInput(action, source, activeInputs, allInputs);
+            }
+            core->OnInput(action, source, activeInputs, allInputs);
 		}
 	}
 

@@ -384,7 +384,7 @@ void PropertiesWidget::UpdateActions()
 
 void PropertiesWidget::ApplyExpanding()
 {
-    const auto &model = treeView->model();
+    const auto& model = treeView->model();
     if (nullptr == model)
     {
         return;
@@ -392,7 +392,7 @@ void PropertiesWidget::ApplyExpanding()
     QModelIndex index = model->index(0, 0);
     while (index.isValid())
     {
-        const auto &path = GetPathFromIndex(index);
+        const auto& path = GetPathFromIndex(index);
         if (path == lastTopIndexPath)
         {
             treeView->scrollTo(index, QTreeView::PositionAtTop);

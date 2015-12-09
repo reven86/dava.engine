@@ -76,9 +76,9 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
             entry.size = c_file.size;
             entry.isHidden = (_A_HIDDEN & c_file.attrib) != 0;
             entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
-			if(entry.isDirectory)
-			{
-				entry.path.MakeDirectoryPathname();
+            if (entry.isDirectory)
+            {
+                entry.path.MakeDirectoryPathname();
 			}
 
             if (!entry.isHidden || includeHidden)
@@ -91,10 +91,10 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
         _findclose(hFile);
     }
 
-    //TODO add drives
-	//entry.Name = "E:\\";
-	//entry.isDirectory = true;
-	//Files.push_back(entry);
+//TODO add drives
+//entry.Name = "E:\\";
+//entry.isDirectory = true;
+//Files.push_back(entry);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 	struct dirent **namelist;
 	FileEntry entry;

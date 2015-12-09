@@ -71,7 +71,7 @@ struct PackageContext : WidgetContext
 };
 
 template <typename NodeType>
-void CollectSelectedNodes(const SelectedNodes &selectedNodes, Vector<NodeType*> &nodes, bool forCopy, bool forRemove)
+void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
     DAVA::Set<PackageBaseNode*> sortedNodes;
     std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](const auto &node)
@@ -412,8 +412,6 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, c
     }
 }
 
-
-
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     if (nullptr == filteredPackageModel)
@@ -508,9 +506,9 @@ void PackageWidget::OnCut()
 
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, true, true);
-    
+
     CopyNodesToClipboard(controls, styles);
-    
+
     document->GetCommandExecutor()->Remove(controls, styles);
 }
 
@@ -521,7 +519,7 @@ void PackageWidget::OnDelete()
     
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, false, true);
-    
+
     if (!controls.empty() || !styles.empty())
     {
         document->GetCommandExecutor()->Remove(controls, styles);

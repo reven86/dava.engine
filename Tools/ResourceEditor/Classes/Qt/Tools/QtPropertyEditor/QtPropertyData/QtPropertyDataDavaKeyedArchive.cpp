@@ -122,8 +122,8 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
             DAVA::KeyedArchive::UnderlyingMap data = archive->GetArchieveData();
             DAVA::KeyedArchive::UnderlyingMap::iterator i = data.begin();
 
-            for(; i != data.end(); ++i)
-			{
+            for (; i != data.end(); ++i)
+            {
 				QtPropertyData *childData = ChildGet(i->first.c_str());
 
 				// this key already in items list

@@ -33,18 +33,16 @@
 
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
-extern "C"
-{
+extern "C" {
 JNIEXPORT void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject classthis, jint callsCount, jboolean releaseRef);
 }
-
 
 using namespace DAVA;
 
 namespace
 {
-Function<jboolean (jobject)> out;
-Function<jobject (void)> getObjectFromJava;
+Function<jboolean(jobject)> out;
+Function<jobject(void)> getObjectFromJava;
 }
 
 void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject classthis, jint callsCount, jboolean releaseRef)
@@ -69,7 +67,7 @@ void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject c
 DAVA_TESTCLASS(JNITest)
 {
     JNI::JavaClass jtest;
-    Function<void (jint, jint, jboolean)> askJavaToCallToC;
+    Function<void(jint, jint, jboolean)> askJavaToCallToC;
 
     JNI::JavaClass javaNotificationProvider;
     Function<void (jstring, jstring, jstring, jboolean)> showNotificationText;
@@ -87,7 +85,7 @@ DAVA_TESTCLASS(JNITest)
         askJavaToCallToC = jtest.GetStaticMethod<void, jint, jint, jboolean>("AskForCallsFromJava");
 
         // Take method to retrive some jobject
-        getObjectFromJava = jtest.GetStaticMethod<jobject> ("GetObject");
+        getObjectFromJava = jtest.GetStaticMethod<jobject>("GetObject");
     }
 
     DAVA_TEST(TestFunction)
@@ -169,13 +167,13 @@ DAVA_TESTCLASS(JNITest)
         // Call Java_com_dava_unittests_UnitTests_nativeCall from pure Java Activity.
 
         // 1024 times from java and each time 1 call from native to java - should work
-        askJavaToCallToC(1024,1, false);
+        askJavaToCallToC(1024, 1, false);
 
         // 1 call from java and 256 calls from native to java - should work - 512 calls allowed.
-        askJavaToCallToC(1,256, false);
+        askJavaToCallToC(1, 256, false);
 
         // 1 call from java and 1024 calls from native to java - should work - true - release local ref
-        askJavaToCallToC(1,1024, true);
+        askJavaToCallToC(1, 1024, true);
     }
 
     void ThreadFunc(BaseObject * caller, void * callerData, void * userData)
