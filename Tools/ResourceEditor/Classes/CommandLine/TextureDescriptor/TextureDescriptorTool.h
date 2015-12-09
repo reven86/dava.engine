@@ -30,51 +30,43 @@
 #ifndef __TEXTURE_DESCRIPTOR_TOOL_H__
 #define __TEXTURE_DESCRIPTOR_TOOL_H__
 
-#include "DAVAEngine.h"
-#include "../CommandLineTool.h"
+#include "CommandLine/CommandLineTool.h"
+
+#include "Render/TextureDescriptor.h"
 #include "TextureCompression/TextureConverter.h"
 
 class TextureDescriptorTool: public CommandLineTool
 {
-    enum eAction
+    enum eAction : DAVA::int32
     {
         ACTION_NONE = -1,
-        
+
         ACTION_RESAVE_DESCRIPTORS,
         ACTION_COPY_COMPRESSION,
         ACTION_CREATE_DESCRIPTORS,
-		ACTION_SET_COMPRESSION_FOR_FOLDER,
-		ACTION_SET_COMPRESSION_FOR_DESCRIPTOR
+        ACTION_SET_COMPRESSION_FOR_FOLDER,
+        ACTION_SET_COMPRESSION_FOR_DESCRIPTOR
     };
-    
+
 public:
+    TextureDescriptorTool();
 
-	DAVA::String GetCommandLineKey() const override;
-	bool InitializeFromCommandLine() override;
-	void Process() override;
-	void PrintUsage() const override;
+private:
+    void ConvertOptionsToParamsInternal() override;
+    bool InitializeInternal() override;
+    void ProcessInternal() override;
 
-protected:
+    eAction commandAction = ACTION_NONE;
 
-	DAVA::FilePath ReadFolderPathname() const;
-	DAVA::FilePath ReadFilePathname() const;
-
-	void ReadCompressionParams();
-
-protected:
-
-    eAction commandAction;
-    
     DAVA::FilePath folderPathname;
 	DAVA::FilePath filePathname;
 
-	bool forceModeEnabled;
-	bool convertEnabled;
-    bool generateMipMaps;
-    
-    DAVA::TextureConverter::eConvertQuality quality;
-    
-	DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
+    bool forceModeEnabled = false;
+    bool convertEnabled = false;
+    bool generateMipMaps = false;
+
+    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
+    DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
 };
 
 

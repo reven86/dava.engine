@@ -128,11 +128,11 @@ void MemoryManager::RegisterTagName(uint32 tagMask, const char8* name)
     const size_t index = HighestBitIndex(tagMask);
     DVASSERT(index < MAX_TAG_COUNT);
 
-    DVASSERT(0 == index || UNTAGGED == index || tagNames[index - 1].name[0] != '\0');     // Names should be registered sequentially with no gap
+    DVASSERT(0 == index || UNTAGGED == index || tagNames[index - 1].name[0] != '\0'); // Names should be registered sequentially with no gap
 
     strncpy(tagNames[index].name, name, MMItemName::MAX_NAME_LENGTH);
     tagNames[index].name[MMItemName::MAX_NAME_LENGTH - 1] = '\0';
-    
+
     if (UNTAGGED != index)
         registeredTagCount += 1;
 }
@@ -467,7 +467,7 @@ uint32 MemoryManager::GetTaggedMemoryUsage(uint32 tagIndex) const
     DVASSERT(tagIndex != 0 && IsPowerOf2(tagIndex));
 
     const size_t index = HighestBitIndex(tagIndex);
-    
+
     DVASSERT(index < MAX_TAG_COUNT);
 
     LockType lock(statMutex);
@@ -817,9 +817,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 
 uint32 MemoryManager::CalcStatConfigSize() const
 {
-    return sizeof(MMStatConfig)
-        + sizeof(MMItemName) * registeredAllocPoolCount
-        + sizeof(MMItemName) * (registeredTagCount + 1);
+    return sizeof(MMStatConfig) + sizeof(MMItemName) * registeredAllocPoolCount + sizeof(MMItemName) * (registeredTagCount + 1);
 }
 
 void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
@@ -847,9 +845,7 @@ void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
 
 uint32 MemoryManager::CalcCurStatSize() const
 {
-    return sizeof(MMCurStat)
-        + sizeof(AllocPoolStat) * registeredAllocPoolCount
-        + sizeof(TagAllocStat) * (registeredTagCount + 1);
+    return sizeof(MMCurStat) + sizeof(AllocPoolStat) * registeredAllocPoolCount + sizeof(TagAllocStat) * (registeredTagCount + 1);
 }
 
 void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) const

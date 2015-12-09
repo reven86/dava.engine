@@ -77,7 +77,7 @@ public:
 	void SetUpConnectionToDB();
 	RefPtr<KeyedArchive> GetIdYamlOptions();
 
-	void InitializeDevice(const String & device);
+	void InitializeDevice();
 
 	// Test organization
 	void OnTestStart(const String &testName);
@@ -127,7 +127,6 @@ public:
     
     String projectName;
     String groupName;
-	String deviceId;
 	String deviceName;
     String testsDate;
 	String runId;

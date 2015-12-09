@@ -84,8 +84,8 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 
     // global scene manager signals
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
 
     // convector signals
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor*, const TextureInfo&)));
@@ -96,8 +96,8 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     setupImagesScrollAreas();
     setupTextureListToolbar();
     setupTextureToolbar();
-	setupTextureListFilter();
-	setupTextureProperties();
+    setupTextureListFilter();
+    setupTextureProperties();
 	setupTextureViewTabBar();
 
 	resetTextureInfo();
@@ -348,7 +348,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 {
     if (nullptr != curTexture && nullptr != curDescriptor)
     {
-		char tmp[1024];
+        char tmp[1024];
 
         FilePath imagePath;
         if (curDescriptor->IsCubeMap())
@@ -367,14 +367,14 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
         String formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(info.format);
 
         int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
-		int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
+        int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
 
         sprintf(tmp, "Format: %s\nSize: %dx%d\nData size: %s\nFile size: %s", formatStr.c_str(), images[0].width(), images[0].height(),
                 SizeInBytesToString(datasize).c_str(),
                 SizeInBytesToString(filesize).c_str());
 
         ui->labelOriginalFormat->setText(tmp);
-	}
+    }
 	else
 	{
 		ui->labelOriginalFormat->setText("");

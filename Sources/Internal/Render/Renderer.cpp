@@ -79,7 +79,6 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
     PixelFormatDescriptor::SetHardwareSupportedFormats();
-    GPUFamilyDescriptor::SetupGPUParameters();
 
     ininialized = true;
 }

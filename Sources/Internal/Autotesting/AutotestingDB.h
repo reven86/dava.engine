@@ -55,6 +55,7 @@ namespace DAVA
 
 		bool ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort);
 		void CloseConnection();
+		void FailOnLocalBuild();
 
 		// Work with log object in DB
 		KeyedArchive *FindBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg);
@@ -78,19 +79,13 @@ namespace DAVA
 		String GetStringTestParameter(const String &deviceName, const String &parameter);
 		int32 GetIntTestParameter(const String &deviceName, const String &parameter);
 
-		String ReadString(const String &name);
-		void WriteString(const String &name, const String &text);
-
 		bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive);
 
 		void UploadScreenshot(const String &name, Image *image);
 
 		// multiplayer api
-		void WriteState(const String &device, const String &state);
-		void WriteCommand(const String &device, const String &state);
-
-		String ReadState(const String &device);
-		String ReadCommand(const String &device);
+		String ReadState(const String &device, const String &param);
+		void WriteState(const String &device, const String &param, const String &state);
 
 		void SetTestStarted();
 
