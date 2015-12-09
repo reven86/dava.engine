@@ -215,7 +215,6 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
     PeerDescription peer = index.data(ROLE_PEER_DESCRIPTION).value<PeerDescription>();
     {
         IPAddress addr = endp.Address();    // Use IP address from multicast packets
-        String sss = addr.ToString();
         NetConfig config = peer.NetworkConfig().Mirror(addr);
         const Vector<uint32>& servIds = config.Services();
 

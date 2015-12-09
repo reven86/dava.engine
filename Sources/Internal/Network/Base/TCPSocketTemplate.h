@@ -119,9 +119,13 @@ TCPSocketTemplate<T>::~TCPSocketTemplate()
 template <typename T>
 int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     int size = endpoint.Size();
     return uv_tcp_getsockname(&uvhandle, endpoint.CastToSockaddr(), &size);
+#else
+    return -1;
+#endif
 }
 
 template <typename T>
