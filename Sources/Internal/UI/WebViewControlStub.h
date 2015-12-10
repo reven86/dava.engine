@@ -27,75 +27,47 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_WEBVIEWCONTROL_MACOS_H__
-#define __DAVAENGINE_WEBVIEWCONTROL_MACOS_H__
+#ifndef __WEBVIEW_CONTROL_STUB_H__
+#define __WEBVIEW_CONTROL_STUB_H__
 
-#include "Base/Platform.h"
-#if defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
+#if defined __DISABLE_NATIVE_WEBVIEW__
 
-#include "UI/IWebViewControl.h"
-
-namespace DAVA {
-
-class UIWebView;
-    
-// Web View Control - MacOS version.
+namespace DAVA
+{
+// Web View Control for Win32.
 class WebViewControl : public IWebViewControl
 {
 public:
-	explicit WebViewControl(UIWebView& uiWebView);
-	virtual ~WebViewControl();
-	
-	// Initialize the control.
+    WebViewControl(UIWebView& uiWebView);
+    // Initialize the control.
     void Initialize(const Rect& rect) override;
-	
-	// Open the URL requested.
+
+    // Open the URL requested.
     void OpenURL(const String& urlToOpen) override;
-	// Load html page from string
-    void LoadHtmlString(const WideString& htlmString) override;
-	// Delete all cookies associated with target URL
+    // Load html page from string
+    void LoadHtmlString(const WideString& htmlString) override;
+    // Delete all cookies associated with target URL
     void DeleteCookies(const String& targetUrl) override;
-    // Execute javascript command, return request ID
+    // Get cookie for specific domain and name
+    String GetCookie(const String& url, const String& name) const override;
+    // Get the list of cookies for specific domain
+    Map<String, String> GetCookies(const String& url) const override;
+    // Execute javascript string in webview
     void ExecuteJScript(const String& scriptString) override;
-    
+
     void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 
-	// Size/pos/visibility changes.
+    // Size/pos/visibility changes.
     void SetRect(const Rect& rect) override;
     void SetVisible(bool isVisible, bool hierarchic) override;
 
-	void SetDelegate(DAVA::IUIWebViewDelegate *delegate,
-                     DAVA::UIWebView* webView) override;
-	void SetBackgroundTransparency(bool enabled) override;
-    
+    void SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView) override;
+
     void SetRenderToTexture(bool value) override;
-    bool IsRenderToTexture() const override {return isRenderToTexture;}
-    
-    void SetImageCache(void* ptr);
-    void* GetImageCache() const;
-
-    void RenderToTextureAndSetAsBackgroundSpriteToControl(DAVA::UIWebView&
-                                                          uiWebViewControl);
-private:
-    
-	//A pointer to MacOS WebView.
-	void* webViewPtr;
-	
-	// A pointer to the WebView delegate.
-	void* webViewDelegatePtr;
-
-	void* webViewPolicyDelegatePtr;
-    // A pointer to NSBitmapImageRep cached image of web view to texture
-    void* webImageCachePtr;
-    
-    UIWebView& uiWebViewControl;
-    
-    bool isRenderToTexture;
-    bool isVisible;
+    bool IsRenderToTexture() const override;
+};
 };
 
-};
+#endif //__DISABLE_NATIVE_WEBVIEW__
 
-#endif //defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
-
-#endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_MACOS_H__) */
+#endif //__WEBVIEW_CONTROL_STUB_H__
