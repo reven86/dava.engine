@@ -380,14 +380,14 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    core->RunOnMainThreadBlocked([]() {
+    core->RunOnMainThread([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    core->RunOnMainThreadBlocked([]() {
+    core->RunOnMainThread([]() {
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
