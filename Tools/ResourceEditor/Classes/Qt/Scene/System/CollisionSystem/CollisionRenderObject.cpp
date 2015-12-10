@@ -127,16 +127,49 @@ CollisionRenderObject::~CollisionRenderObject()
 	}
 }
 
+struct ClassifyTrianglesCallback : public btTriangleCallback
+{
+    DAVA::Plane plane;
+    CollisionBaseObject::ClassifyPlaneResult result = CollisionBaseObject::ClassifyPlaneResult::Behind;
+
+    ClassifyTrianglesCallback(const DAVA::Plane& pl)
+        : plane(pl)
+    {
+    }
+
+    void processTriangle(btVector3* triangle, int partId, int triangleIndex)
+    {
+        if (result != CollisionBaseObject::ClassifyPlaneResult::Behind)
+        {
+            return;
+        }
+
+        float d0 = plane.DistanceToPoint(DAVA::Vector3(triangle[0].x(), triangle[0].y(), triangle[0].z()));
+        float d1 = plane.DistanceToPoint(DAVA::Vector3(triangle[1].x(), triangle[1].y(), triangle[1].z()));
+        float d2 = plane.DistanceToPoint(DAVA::Vector3(triangle[2].x(), triangle[2].y(), triangle[2].z()));
+        DAVA::float32 minDistance = std::min(d0, std::min(d1, d2));
+        DAVA::float32 maxDistance = std::max(d0, std::max(d1, d2));
+
+        if ((minDistance >= 0.0f) && (maxDistance >= 0.0f))
+        {
+            result = CollisionBaseObject::ClassifyPlaneResult::InFront;
+        }
+        else if (((minDistance < 0.0f) && (maxDistance >= 0.0f)) || ((minDistance >= 0.0f) && (maxDistance < 0.0f)))
+        {
+            result = CollisionBaseObject::ClassifyPlaneResult::Intersects;
+        }
+    }
+};
+
 CollisionBaseObject::ClassifyPlaneResult CollisionRenderObject::ClassifyToPlane(const DAVA::Plane& plane)
 {
-    if (btShape == nullptr)
+    DAVA::Plane localPlane = TransformPlaneToLocalSpace(plane);
+    if ((btShape == nullptr) || (ClassifyBoundingBoxToPlane(boundingBox, localPlane) == ClassifyPlaneResult::Behind))
         return ClassifyPlaneResult::Behind;
 
     btBvhTriangleMeshShape* shape = static_cast<btBvhTriangleMeshShape*>(btShape);
-    btVector3 aabbMin = shape->getLocalAabbMin();
-    btVector3 aabbMax = shape->getLocalAabbMax();
-    DAVA::AABBox3 bbox(DAVA::Vector3(aabbMin.x(), aabbMin.y(), aabbMin.z()),
-                       DAVA::Vector3(aabbMax.x(), aabbMax.y(), aabbMax.z()));
 
-    return ClassifyBoundingBoxToPlane(boundingBox, plane);
+    ClassifyTrianglesCallback cb(plane);
+    shape->processAllTriangles(&cb, shape->getLocalAabbMin(), shape->getLocalAabbMax());
+    return cb.result;
 }

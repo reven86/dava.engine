@@ -87,6 +87,5 @@ CollisionLandscape::~CollisionLandscape()
 
 CollisionBaseObject::ClassifyPlaneResult CollisionLandscape::ClassifyToPlane(const DAVA::Plane& plane)
 {
-    DAVA::Logger::Error("Not implemented");
-    return ClassifyPlaneResult::InFront;
+    return ClassifyPlaneResult::Behind;
 }

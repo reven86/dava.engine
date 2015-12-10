@@ -90,7 +90,7 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;
 
-    const EntityGroup* ObjectsToPyramidTest(DAVA::Plane planes[5]);
+    const EntityGroup* ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes);
 
 private:
     void Draw();
@@ -116,7 +116,7 @@ private:
     DAVA::Map<btCollisionObject*, DAVA::Entity*> collisionToEntity;
     DAVA::Entity* curLandscapeEntity = nullptr;
     EntityGroup rayIntersectedEntities;
-    EntityGroup frustumSelectedEntities;
+    EntityGroup planesClippedEntities;
     btDefaultCollisionConfiguration* objectsCollConf = nullptr;
     btCollisionDispatcher* objectsCollDisp = nullptr;
     btAxisSweep3* objectsBroadphase = nullptr;

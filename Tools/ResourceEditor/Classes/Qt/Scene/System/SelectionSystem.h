@@ -130,6 +130,8 @@ private:
 
     void PerformSelectionInCurrentBox();
 
+    void ProcessSelectedGroup(const EntityGroup*);
+
 private:
     DAVA::uint64 componentMaskForSelection;
 	SceneCollisionSystem *collisionSystem;

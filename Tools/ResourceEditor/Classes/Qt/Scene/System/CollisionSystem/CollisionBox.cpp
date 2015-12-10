@@ -59,5 +59,5 @@ CollisionBox::~CollisionBox()
 
 CollisionBaseObject::ClassifyPlaneResult CollisionBox::ClassifyToPlane(const DAVA::Plane& plane)
 {
-    return ClassifyBoundingBoxToPlane(boundingBox, plane);
+    return ClassifyBoundingBoxToPlane(boundingBox, TransformPlaneToLocalSpace(plane));
 }

@@ -66,7 +66,7 @@ public:
     virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
 
     inline CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
-    inline CollisionBaseObject::ClassifyPointResult ClassifyPointToPlane(const DAVA::Vector3& point, const DAVA::Plane& plane) const;
+    inline DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;
 
     DAVA::Entity *entity;
 	DAVA::AABBox3 boundingBox;
@@ -84,7 +84,7 @@ CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBo
     DAVA::float32 maxDistance = -minDistance;
     for (DAVA::uint32 i = 0; i < 8; ++i)
     {
-        float d = plane.DistanceToPoint(corners[i] * entity->GetWorldTransform());
+        float d = plane.DistanceToPoint(corners[i]);
         minDistance = std::min(minDistance, d);
         maxDistance = std::max(maxDistance, d);
     }
@@ -98,10 +98,11 @@ CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBo
     return ClassifyPlaneResult::Intersects;
 }
 
-inline CollisionBaseObject::ClassifyPointResult CollisionBaseObject::ClassifyPointToPlane(const DAVA::Vector3& point, const DAVA::Plane& plane) const
+inline DAVA::Plane CollisionBaseObject::TransformPlaneToLocalSpace(const DAVA::Plane& plane) const
 {
-    float d = plane.DistanceToPoint(point * entity->GetWorldTransform());
-    return (d >= 0.0f) ? ClassifyPointResult::InFront : ClassifyPointResult::Behind;
+    DAVA::Matrix4 transform = entity->GetWorldTransform();
+    transform.Transpose();
+    return DAVA::Plane(DAVA::Vector4(plane.n.x, plane.n.y, plane.n.z, plane.d) * transform);
 }
 
 #endif // __SCENE_COLLISION_BASE_OBJECT_H__

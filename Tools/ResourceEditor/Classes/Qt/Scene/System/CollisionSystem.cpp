@@ -571,25 +571,21 @@ void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)
     }
 }
 
-const EntityGroup* SceneCollisionSystem::ObjectsToPyramidTest(DAVA::Plane planes[5])
+const EntityGroup* SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
 {
-    DAVA::Vector<CollisionBaseObject*> allObjects;
-    allObjects.reserve(entityToCollision.size());
-    for (const auto& etc : entityToCollision)
-    {
-        allObjects.push_back(etc.second);
-    }
+    planesClippedEntities.Clear();
 
-    frustumSelectedEntities.Clear();
-    for (auto* obj : allObjects)
+    for (const auto& object : entityToCollision)
     {
-        if (obj == nullptr)
+        if ((object.first == nullptr) || (object.second == nullptr))
+        {
             continue;
+        }
 
         bool shouldAdd = true;
-        for (uint32 p = 0; p < 5; ++p)
+        for (DAVA::uint32 p = 0; p < numPlanes; ++p)
         {
-            if (obj->ClassifyToPlane(planes[p]) == CollisionBaseObject::ClassifyPlaneResult::Behind)
+            if (object.second->ClassifyToPlane(planes[p]) == CollisionBaseObject::ClassifyPlaneResult::Behind)
             {
                 shouldAdd = false;
                 break;
@@ -598,11 +594,11 @@ const EntityGroup* SceneCollisionSystem::ObjectsToPyramidTest(DAVA::Plane planes
 
         if (shouldAdd)
         {
-            frustumSelectedEntities.Add(collisionToEntity[obj->btObject]);
+            planesClippedEntities.Add(object.first);
         }
     }
 
-    return &frustumSelectedEntities;
+    return &planesClippedEntities;
 }
 
 // -----------------------------------------------------------------------------------------------
