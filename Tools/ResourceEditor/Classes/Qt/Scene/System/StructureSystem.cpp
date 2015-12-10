@@ -67,58 +67,63 @@ bool StructureSystem::Init(const DAVA::FilePath & path)
 
 void StructureSystem::Move(const EntityGroup &entityGroup, DAVA::Entity *newParent, DAVA::Entity *newBefore)
 {
-	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL != sceneEditor && entityGroup.Size() > 0)
-	{
-		if(entityGroup.Size() > 1)
-		{
-			sceneEditor->BeginBatch("Move entities");
-		}
+    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
+    const auto& entityGroupContent = entityGroup.GetContent();
+    if ((sceneEditor == nullptr) || entityGroupContent.empty())
+    {
+        return;
+    }
+    if (entityGroup.Size() > 1)
+    {
+        sceneEditor->BeginBatch("Move entities");
+    }
 
-		for(size_t i = 0; i < entityGroup.Size(); ++i)
-		{
-			sceneEditor->Exec(new EntityParentChangeCommand(entityGroup.GetEntity(i), newParent, newBefore));
-		}
+    for (const auto& item : entityGroupContent)
+    {
+        sceneEditor->Exec(new EntityParentChangeCommand(item.first, newParent, newBefore));
+    }
 
-		if(entityGroup.Size() > 1)
-		{
-			sceneEditor->EndBatch();
-		}
+    if (entityGroup.Size() > 1)
+    {
+        sceneEditor->EndBatch();
+    }
 
-		EmitChanged();
-	}
+    EmitChanged();
 }
 
 void StructureSystem::Remove(const EntityGroup &entityGroup)
 {
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(nullptr != sceneEditor && entityGroup.Size() > 0)
-	{
-        sceneEditor->BeginBatch("Remove entities");
+    const auto& entityGroupContent = entityGroup.GetContent();
+    if ((nullptr != sceneEditor) || entityGroupContent.empty())
+    {
+        return;
+    }
 
-        for (size_t i = 0; i < entityGroup.Size(); ++i)
+    sceneEditor->BeginBatch("Remove entities");
+
+    for (const auto& item : entityGroupContent)
+    {
+        DAVA::Entity* entity = item.first;
+        if (entity->GetNotRemovable() == false)
         {
-            DAVA::Entity *entity = entityGroup.GetEntity(i);
-            if (entity->GetNotRemovable() == false)
+            for (auto delegate : delegates)
             {
-                for (auto delegate : delegates)
-                {
-                    delegate->WillRemove(entity);
-                }
+                delegate->WillRemove(entity);
+            }
 
-                sceneEditor->Exec(new EntityRemoveCommand(entity));
+            sceneEditor->Exec(new EntityRemoveCommand(entity));
 
-                for (auto delegate : delegates)
-                {
-                    delegate->DidRemoved(entity);
-                }
+            for (auto delegate : delegates)
+            {
+                delegate->DidRemoved(entity);
             }
         }
+    }
 
-        sceneEditor->EndBatch();
+    sceneEditor->EndBatch();
 
-		EmitChanged();
-	}
+    EmitChanged();
 }
 
 void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter *> &emitters, const DAVA::Vector<DAVA::ParticleEffectComponent *>& oldEffects, DAVA::ParticleEffectComponent *newEffect, int dropAfter)
@@ -249,11 +254,11 @@ void StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool saveLi
 	{
 		DAVA::Set<DAVA::FilePath> refsToReload;
 
-		for(int i = 0; i < (int)entityGroup.Size(); ++i)
-		{
-            DAVA::KeyedArchive * props = GetCustomPropertiesArchieve(entityGroup.GetEntity(i));
-			if(NULL != props)
-			{
+        for (const auto& item : entityGroup.GetContent())
+        {
+            DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(item.first);
+            if (props != nullptr)
+            {
 				DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
 				if(!pathToReload.IsEmpty())
 				{
@@ -282,14 +287,14 @@ void StructureSystem::ReloadRefs(const DAVA::FilePath &modelPath, bool saveLight
 
 void StructureSystem::ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath &newModelPath, bool saveLightmapSettings)
 {
-	if(entityGroup.Size() > 0)
-	{
-		DAVA::Set<DAVA::Entity *> entitiesToReload;
+    if (entityGroup.Size() > 0)
+    {
+        DAVA::Set<DAVA::Entity*> entitiesToReload;
 
-		for (int i = 0; i < (int)entityGroup.Size(); i++)
-		{
-			entitiesToReload.insert(entityGroup.GetEntity(i));
-		}
+        for (const auto& item : entityGroup.GetContent())
+        {
+            entitiesToReload.insert(item.first);
+        }
 
 		ReloadInternal(entitiesToReload, newModelPath, saveLightmapSettings);
 	}

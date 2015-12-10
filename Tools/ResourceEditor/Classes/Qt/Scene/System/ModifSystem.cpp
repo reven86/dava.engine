@@ -135,17 +135,16 @@ void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
 			sceneEditor->BeginBatch("Multiple transform");
 		}
 
-		for (size_t i = 0; i < entities.Size(); ++i)
-		{
-			DAVA::Entity *entity = entities.GetEntity(i);
-			if(NULL != entity)
-			{
-				sceneEditor->Exec(new TransformCommand(entity,	entity->GetLocalTransform(), zeroTransform));
-			}
+        for (const auto& item : entities.GetContent())
+        {
+            if (item.first != nullptr)
+            {
+                sceneEditor->Exec(new TransformCommand(item.first, item.first->GetLocalTransform(), zeroTransform));
+            }
 		}
 
-		if(isMultiple)
-		{
+        if (isMultiple)
+        {
 			sceneEditor->EndBatch();
 		}
 	}
@@ -335,13 +334,14 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 	// clear any priv. selection
 	EndModification();
 
-	if(entities.Size() > 0)
-	{
+    const auto& entitiesContent = entities.GetContent();
+    if (!entitiesContent.empty())
+    {
         modifEntities.reserve(entities.Size());
-		for(size_t i = 0; i < entities.Size(); ++i)
-		{
-			DAVA::Entity *en = entities.GetEntity(i);
-			if(NULL != en)
+        for (const auto& item : entitiesContent)
+        {
+            DAVA::Entity* en = item.first;
+            if(NULL != en)
 			{
 				EntityToModify etm;
 				etm.entity = en;
@@ -450,10 +450,10 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
 		bool hasLocked = false;
 
 		// check if we have some locked items in selection
-		for(size_t i = 0; i < selectedEntities.Size(); ++i)
-		{
-			if(selectedEntities.GetEntity(i)->GetLocked())
-			{
+        for (const auto& item : selectedEntities.GetContent())
+        {
+            if (item.first->GetLocked())
+            {
 				hasLocked = true;
 				break;
 			}
@@ -488,29 +488,33 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 
 			// check if one of got collision objects is intersected with selected items
 			// if so - we can start modification
-			if(collisionEntities->Size() > 0)
-			{
-				for(size_t i = 0; !modifCanStart && i < collisionEntities->Size(); ++i)
-				{
-					DAVA::Entity *collisionedEntity = collisionEntities->GetEntity(i);
-
-					for(size_t j = 0; !modifCanStart && j < selectedEntities.Size(); ++j)
-					{
-						DAVA::Entity *selectedEntity = selectedEntities.GetEntity(j);
-
-						if(selectedEntity == collisionedEntity)
-						{
+            const auto& collisionEntitiesContent = collisionEntities->GetContent();
+            if (!collisionEntitiesContent.empty())
+            {
+                for (const auto& itemI : collisionEntitiesContent)
+                {
+                    for (const auto& itemJ : selectedEntities.GetContent())
+                    {
+                        if (itemJ.first == itemI.first)
+                        {
 							modifCanStart = true;
 						}
-						else
-						{
-							if(selectedEntity->GetSolid())
-							{
-								modifCanStart = IsEntityContainRecursive(selectedEntity, collisionedEntity);
-							}
-						}
+                        else if (itemJ.first->GetSolid())
+                        {
+                            modifCanStart = IsEntityContainRecursive(itemJ.first, itemI.first);
+                        }
+
+                        if (modifCanStart)
+                        {
+                            break;
+                        }
 					}
-				}
+
+                    if (modifCanStart)
+                    {
+                        break;
+                    }
+                }
 			}
 		}
 	}
@@ -938,24 +942,26 @@ void EntityModificationSystem::MovePivotCenter(const EntityGroup &entities)
 void EntityModificationSystem::LockTransform(const EntityGroup &entities, bool lock)
 {
     SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
-	if(NULL != sceneEditor)
-	{
-		bool isMultiple = (entities.Size() > 1);
+    if (sceneEditor == nullptr)
+    {
+        return;
+    }
 
-        if(isMultiple)
-		{
-			sceneEditor->BeginBatch("Lock entities");
-		}
+    bool isMultiple = (entities.Size() > 1);
 
- 	    for(size_t i = 0; i < entities.Size(); ++i)
- 	    {
-            sceneEditor->Exec(new EntityLockCommand(entities.GetEntity(i), lock));
- 	    }
+    if (isMultiple)
+    {
+        sceneEditor->BeginBatch("Lock entities");
+    }
 
-        if(isMultiple)
-		{
-			sceneEditor->EndBatch();
-		}
+    for (const auto& item : entities.GetContent())
+    {
+        sceneEditor->Exec(new EntityLockCommand(item.first, lock));
+    }
+
+    if (isMultiple)
+    {
+        sceneEditor->EndBatch();
     }
 }
 
@@ -965,7 +971,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
 	if(NULL != sceneEditor && entities.Size() == 1)
 	{
-        DAVA::Entity *entity = entities.GetEntity(0);
+        DAVA::Entity* entity = entities.GetFirstEntity();
         DAVA::RenderObject *ro = GetRenderObject(entity);
 
         const char *commandMessage;

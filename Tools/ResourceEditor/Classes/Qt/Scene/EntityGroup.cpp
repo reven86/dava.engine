@@ -31,7 +31,8 @@
 
 
 EntityGroup::EntityGroup()
-{ }
+{
+}
 
 EntityGroup::EntityGroup(const EntityGroup &ss)
 {
@@ -39,46 +40,27 @@ EntityGroup::EntityGroup(const EntityGroup &ss)
 }
 
 EntityGroup::~EntityGroup()
-{ }
+{
+}
 
 void EntityGroup::Add(DAVA::Entity *entity, DAVA::AABBox3 entityBbox /* = DAVA::AABBox3() */)
 {
-	size_t i;
-	if(!Index(entity, i))
-	{
-		EntityGroupItem item;
-		item.entity = entity;
-		item.bbox = entityBbox;
-
-		entities.push_back(item);
-		entitiesBbox.AddAABBox(entityBbox);
+    if (entities.count(entity) == 0)
+    {
+        entities.insert({ entity, entityBbox });
+        entitiesBbox.AddAABBox(entityBbox);
 	}
 }
 
-void EntityGroup::Add(const EntityGroupItem &groupItem)
+void EntityGroup::Remove(DAVA::Entity* entity)
 {
-	Add(groupItem.entity, groupItem.bbox);
-}
+    entities.erase(entity);
 
-void EntityGroup::Rem(DAVA::Entity *entity)
-{
-	for(size_t i = 0; i < entities.size(); ++i)
-	{
-		if(entities[i].entity == entity)
-		{
-			DAVA::Vector<EntityGroupItem>::iterator it = entities.begin();
-			entities.erase(it + i);
-
-			// recalc common ab
-			entitiesBbox.Empty();
-			for(size_t j = 0; j < entities.size(); ++j)
-			{
-				entitiesBbox.AddAABBox(entities[j].bbox);
-			}
-
-			break;
-		}
-	}
+    entitiesBbox.Empty();
+    for (const auto& item : entities)
+    {
+        entitiesBbox.AddAABBox(item.second);
+    }
 }
 
 void EntityGroup::Clear()
@@ -92,72 +74,53 @@ size_t EntityGroup::Size() const
 	return entities.size();
 }
 
-DAVA::Entity* EntityGroup::GetEntity(size_t i) const
+DAVA::Entity* EntityGroup::GetFirstEntity() const
 {
-	DAVA::Entity *ret = NULL;
-
-	if(i < entities.size())
-	{
-		ret = entities[i].entity;
-	}
-
-	return ret;
+    return entities.empty() ? nullptr : entities.begin()->first;
 }
 
-EntityGroupItem* EntityGroup::GetItem(size_t i) const
+DAVA::Entity* EntityGroup::GetEntitySlow(size_t i) const
 {
-	EntityGroupItem* ret = NULL;
-
-	if(i < entities.size())
-	{
-		ret = (EntityGroupItem *) &entities[i];
-	}
-
-	return ret;
-}
-
-DAVA::AABBox3 EntityGroup::GetBbox(size_t i) const
-{
-	DAVA::AABBox3 ret;
-
-	if(i < entities.size())
-	{
-		entities[i].bbox.GetTransformedBox(entities[i].entity->GetWorldTransform(), ret);
-	}
-
-	return ret;
-}
-
-void EntityGroup::SetBbox(size_t i, const DAVA::AABBox3 &entityBbox)
-{
-	if(i < entities.size())
-	{
-        entities[i].bbox = entitiesBbox;
+    size_t index = 0;
+    for (const auto& item : entities)
+    {
+        if (index == i)
+        {
+            return item.first;
+        }
+        ++index;
     }
+    return nullptr;
+}
+
+DAVA::AABBox3 EntityGroup::GetBboxSlow(size_t i) const
+{
+    size_t index = 0;
+    for (const auto& item : entities)
+    {
+        if (index == i)
+        {
+            return TransformItemBoundingBox(item);
+        }
+        ++index;
+    }
+    return DAVA::AABBox3();
 }
 
 DAVA::AABBox3 EntityGroup::GetCommonBbox() const
 {
 	DAVA::AABBox3 ret;
-
-	for(size_t i = 0; i <entities.size(); ++i)
-	{
-		ret.AddAABBox(GetBbox(i));
-	}
-
+    for (const auto& item : entities)
+    {
+        ret.AddAABBox(item.second);
+    }
 	return ret;
 }
 
-DAVA::Vector3 EntityGroup::GetZeroPos(size_t i) const
+DAVA::Vector3 EntityGroup::GetFirstZeroPos() const
 {
-	DAVA::Vector3 ret;
-
-	if(i < entities.size())
-	{
-		ret = entities[i].entity->GetWorldTransform().GetTranslationVector();
-	}
-
-	return ret;
+    return entities.empty() ? DAVA::Vector3(0.0f, 0.0f, 0.0f) :
+                              entities.begin()->first->GetWorldTransform().GetTranslationVector();
 }
 
 DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
@@ -166,16 +129,15 @@ DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
 
 	if(entities.size() == 1)
 	{
-		ret = GetZeroPos(0);
-	}
+        ret = GetFirstZeroPos();
+    }
 	else if(entities.size() > 0)
 	{
 		DAVA::AABBox3 tmp;
-
-		for(size_t i = 0; i < entities.size(); ++i)
-		{
-			tmp.AddPoint(entities[i].entity->GetWorldTransform().GetTranslationVector());
-		}
+        for (const auto& item : entities)
+        {
+            tmp.AddPoint(item.first->GetWorldTransform().GetTranslationVector());
+        }
 
 		ret = tmp.GetCenter();
 	}
@@ -185,8 +147,7 @@ DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
 
 bool EntityGroup::ContainsEntity(DAVA::Entity *entity) const
 {
-	size_t i;
-	return Index(entity, i);
+    return entities.count(entity) > 0;
 }
 
 EntityGroup& EntityGroup::operator=( const EntityGroup &ss )
@@ -197,23 +158,18 @@ EntityGroup& EntityGroup::operator=( const EntityGroup &ss )
 
 bool EntityGroup::operator==( const EntityGroup &ss ) const
 {
-	bool ret = false;
+    if (entities.size() != ss.entities.size())
+        return false;
 
-	if(entities.size() == ss.entities.size())
-	{
-		ret = true;
-
-		for(size_t i = 0; i < entities.size(); ++i)
-		{
-			if(!ss.ContainsEntity(entities[i].entity))
-			{
-				ret = false;
-				break;
-			}
-		}
+    for (const auto& item : entities)
+    {
+        if (!ss.ContainsEntity(item.first))
+        {
+            return false;
+        }
 	}
 
-	return ret;
+    return true;
 }
 
 bool EntityGroup::operator!=( const EntityGroup &ss ) const
@@ -221,34 +177,32 @@ bool EntityGroup::operator!=( const EntityGroup &ss ) const
     return ((*this == ss) == false);
 }
 
-
-bool EntityGroup::Index(DAVA::Entity *entity, size_t &index) const
+DAVA::Entity* EntityGroup::IntersectedEntity(const EntityGroup* group) const
 {
-	for(size_t i = 0; i < entities.size(); ++i)
-	{
-		if(entities[i].entity == entity)
-		{
-			index = i;
-			return true;
-		}
+    for (const auto& item : entities)
+    {
+        if (group->ContainsEntity(item.first))
+        {
+            return item.first;
+        }
 	}
 
-	return false;
+    return nullptr;
 }
 
-DAVA::Entity* EntityGroup::IntersectedEntity(const EntityGroup *group) const
+EntityGroup::EntityMap& EntityGroup::GetContent()
 {
-	DAVA::Entity* ret = NULL;
-
-	for(size_t i = 0; i < entities.size(); ++i)
-	{
-		if(group->ContainsEntity(entities[i].entity))
-		{
-			ret = entities[i].entity;
-			break;
-		}
-	}
-
-	return ret;
+    return entities;
 }
 
+const EntityGroup::EntityMap& EntityGroup::GetContent() const
+{
+    return entities;
+}
+
+DAVA::AABBox3 EntityGroup::TransformItemBoundingBox(const EntityMap::value_type& item)
+{
+    DAVA::AABBox3 ret;
+    item.second.GetTransformedBox(item.first->GetWorldTransform(), ret);
+    return ret;
+}

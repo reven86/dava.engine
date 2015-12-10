@@ -381,7 +381,7 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
     uint32 count = entities->Size();
     while(count)
     {
-        Entity *object = entities->GetEntity(count - 1);
+        Entity* object = entities->GetEntitySlow(count - 1);
         bool needToExclude = false;
 
         KeyedArchive * customProps = GetCustomPropertiesArchieve(object);
@@ -439,7 +439,7 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 
         if(needToExclude)
         {
-            entities->Rem(object);
+            entities->Remove(object);
         }
         
         --count;

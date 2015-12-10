@@ -596,10 +596,10 @@ void SceneTree::RemoveSelection()
 		EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
         for(size_t i = 0; i < selection.Size(); ++i)
         {
-            DAVA::Entity *entity = selection.GetEntity(i);
+            DAVA::Entity* entity = selection.GetEntitySlow(i);
             if(entity->GetLocked())
             {
-                selection.Rem(entity);
+                selection.Remove(entity);
                 --i;
                 DAVA::StringStream ss;
                 ss << "Can not remove entity "
@@ -691,7 +691,7 @@ void SceneTree::ReloadModel()
 			String wrongPathes;
 			for(size_t i = 0; i < selection.Size(); ++i)
 			{
-				DAVA::Entity *entity = selection.GetEntity(i);
+                DAVA::Entity* entity = selection.GetEntitySlow(i);
                 DAVA::KeyedArchive *archive = GetCustomPropertiesArchieve(entity);
                 if(archive)
                 {
@@ -1366,8 +1366,8 @@ void SceneTree::SetEntityNameAsFilter()
 	EntityGroup selection = scene->selectionSystem->GetSelection();
 	if(selection.Size() != 1) return;
 
-	Entity *entity = selection.GetEntity(0);
-	QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(entity->GetName().c_str());
+    Entity* entity = selection.GetFirstEntity();
+    QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(entity->GetName().c_str());
 }
 
 void SceneTree::AddCameraActions(QMenu &menu)

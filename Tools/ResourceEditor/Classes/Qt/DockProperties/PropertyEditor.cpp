@@ -135,7 +135,7 @@ void PropertyEditor::SetEntities(const EntityGroup *selected)
         curNodes.reserve( nSelected );
         for ( size_t i = 0; i < selected->Size(); i++ )
         {
-            DAVA::Entity * node = SafeRetain(selected->GetEntity(i));
+            DAVA::Entity* node = SafeRetain(selected->GetEntitySlow(i));
             curNodes << node;
             // ensure that custom properties exist
             // this call will create them if they are not created yet

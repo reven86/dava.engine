@@ -106,14 +106,14 @@ void SaveEntityAsAction::Redo()
         };
 
         //reset global material because of global material :)
-        ElegantSceneGuard guard(entities->GetEntity(0)->GetScene());
+        ElegantSceneGuard guard(entities->GetFirstEntity()->GetScene());
 
         ScopedPtr<Scene> scene(new Scene());
         ScopedPtr<Entity> container(nullptr);
 
         if (count == 1) // saving of single object
         {
-            container.reset(entities->GetEntity(0)->Clone());
+            container.reset(entities->GetFirstEntity()->Clone());
             RemoveReferenceToOwner(container);
             container->SetLocalTransform(Matrix4::IDENTITY);
         }
@@ -124,7 +124,7 @@ void SaveEntityAsAction::Redo()
             const Vector3 oldZero = entities->GetCommonZeroPos();
             for (uint32 i = 0; i < count; ++i)
             {
-                ScopedPtr<Entity> clone(entities->GetEntity(i)->Clone());
+                ScopedPtr<Entity> clone(entities->GetEntitySlow(i)->Clone());
 
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
                 Matrix4 newLocalTransform = clone->GetLocalTransform();

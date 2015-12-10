@@ -32,56 +32,48 @@
 
 #include "Scene3D/Entity.h"
 
-struct EntityGroupItem 
-{
-	EntityGroupItem() : entity(NULL)
-	{ }
-
-	EntityGroupItem(DAVA::Entity *_entity, DAVA::AABBox3 _bbox) 
-		: entity(_entity), bbox(_bbox)
-	{ }
-
-	DAVA::Entity *entity;
-	DAVA::AABBox3 bbox;
-};
 
 class EntityGroup
 {
 public:
-	EntityGroup();
+    using EntityMap = DAVA::Map<DAVA::Entity*, DAVA::AABBox3>;
+
+public:
+    EntityGroup();
 	EntityGroup(const EntityGroup &ss);
 	~EntityGroup();
 
 	void Add(DAVA::Entity *entity, DAVA::AABBox3 entityBbox = DAVA::AABBox3());
-	void Add(const EntityGroupItem &groupItem);
-	void Rem(DAVA::Entity *entity);
-	void Clear();
+    void Remove(DAVA::Entity* entity);
+    void Clear();
 
-	size_t Size() const;
-	DAVA::Entity* GetEntity(size_t i) const;
-
-	EntityGroupItem* GetItem(size_t i) const;
-
-	DAVA::AABBox3 GetBbox(size_t i) const;
-	void SetBbox(size_t i, const DAVA::AABBox3 &entityBbox);
+    EntityMap& GetContent();
+    const EntityMap& GetContent() const;
 
     DAVA::AABBox3 GetCommonBbox() const;
 
-	DAVA::Vector3 GetZeroPos(size_t i) const;
-	DAVA::Vector3 GetCommonZeroPos() const;
+    DAVA::Vector3 GetFirstZeroPos() const;
+    DAVA::Vector3 GetCommonZeroPos() const;
 
 	bool ContainsEntity(DAVA::Entity *entity) const;
-	bool Index(DAVA::Entity *entity, size_t &index) const;
+    bool IndexOfEntity(DAVA::Entity* entity, size_t& index) const;
 
-	DAVA::Entity* IntersectedEntity(const EntityGroup *group) const;
+    DAVA::Entity* IntersectedEntity(const EntityGroup *group) const;
 
 	EntityGroup& operator=(const EntityGroup &ss);
 	bool operator==(const EntityGroup &ss) const;
     bool operator!=(const EntityGroup &ss) const;
 
-protected:
-	DAVA::Vector<EntityGroupItem> entities;
-	DAVA::AABBox3 entitiesBbox;
+    size_t Size() const;
+    DAVA::Entity* GetFirstEntity() const;
+    DAVA::Entity* GetEntitySlow(size_t i) const;
+    DAVA::AABBox3 GetBboxSlow(size_t i) const;
+
+    static DAVA::AABBox3 TransformItemBoundingBox(const EntityMap::value_type& item);
+
+private:
+    EntityMap entities;
+    DAVA::AABBox3 entitiesBbox;
 };
 
 #endif // __ENTITY_GROUP_H__
