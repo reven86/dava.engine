@@ -268,8 +268,8 @@ ParticleLayer * ParticleLayer::Clone()
 
     dstLayer->scaleVelocityBase = scaleVelocityBase;
     dstLayer->scaleVelocityFactor = scaleVelocityFactor;
-    
-	dstLayer->spritePath = spritePath;
+
+    dstLayer->spritePath = spritePath;
 	dstLayer->activeLODS = activeLODS;
 	dstLayer->isLong = isLong;
 
@@ -443,8 +443,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         if ((format == 0) && sprite)
         {
             float32 ny = -_pivot.x / sprite->GetWidth() * 2;
-            float32 nx=-_pivot.y/sprite->GetHeight()*2;
-			_pivot.Set(nx, ny);
+            float32 nx = -_pivot.y / sprite->GetHeight() * 2;
+            _pivot.Set(nx, ny);
 		}
 
 		SetPivotPoint(_pivot);
@@ -656,8 +656,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     const YamlNode* isLoopedNode = node->Get("isLooped");
     if (isLoopedNode)
         isLooped = isLoopedNode->AsBool();
-		
-	const YamlNode * deltaTimeNode = node->Get("deltaTime");
+
+    const YamlNode * deltaTimeNode = node->Get("deltaTime");
 	if (deltaTimeNode)
 		deltaTime = deltaTimeNode->AsFloat();
 		

@@ -27,55 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __QUICKED_FILE_SYSTEM_DIALOG_H__
-#define __QUICKED_FILE_SYSTEM_DIALOG_H__
+#include "FileSystemModel.h"
 
-#include <QDockWidget>
-#include <memory>
-
-namespace Ui {
-    class FileSystemDockWidget;
+FileSystemModel::FileSystemModel(QObject *parent)
+    : QFileSystemModel(parent)
+{
 }
 
-class QFileSystemModel;
-class QInputDialog;
-
-class FileSystemDockWidget : public QDockWidget
+Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
 {
-    Q_OBJECT
-    
-public:
-    explicit FileSystemDockWidget(QWidget *parent = nullptr);
-    ~FileSystemDockWidget();
-    
-    void SetProjectDir(const QString &path);
+    return QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+}
 
-signals:
-    void OpenPackageFile(const QString &path);
+QVariant FileSystemModel::data(const QModelIndex & index, int role) const
+{
+    QVariant data = QFileSystemModel::data(index, role);
+    if (index.isValid() && role == Qt::EditRole && !isDir(index) && data.canConvert<QString>())
+    {
+        return data.toString().remove(QRegularExpression(yamlExtensionString + "$"));
+    }
+    return data;
+}
 
-private slots:
-    void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-    void onDoubleClicked(const QModelIndex &index);
-    void setFilterFixedString(const QString &filterStr);
-    void onNewFolder();
-    void onNewFile();
-    void onDeleteFile();
-    void OnShowInExplorer();
-    void OnRename();
-    void OnOpenFile();
-
-private:
-    void RefreshActions(const QModelIndexList &indexList);
-    bool CanRemove(const QModelIndex &index) const;
-
-    std::unique_ptr<Ui::FileSystemDockWidget> ui;
-    QFileSystemModel *model = nullptr;
-    QAction *newFolderAction = nullptr;
-    QAction *newFileAction = nullptr;
-    QAction *deleteAction = nullptr;
-    QAction *showInSystemExplorerAction = nullptr;
-    QAction *renameAction = nullptr;
-    QAction *openFileAction = nullptr;
-};
-
-#endif // __QUICKED_FILE_SYSTEM_DIALOG_H__
+bool FileSystemModel::setData(const QModelIndex & idx, const QVariant & value, int role)
+{
+    if (value.canConvert<QString>())
+    {
+        QString name = value.toString();
+        if (!name.endsWith(yamlExtensionString))
+        {
+            return QFileSystemModel::setData(idx, name + yamlExtensionString, role);
+        }
+    }
+    return QFileSystemModel::setData(idx, value, role);
+}

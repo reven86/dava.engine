@@ -87,7 +87,7 @@ public:
 
     uint32 updateFrameIndex;
     bool collisionOnLastFrame;
-    
+
     bool forceUpdate;
 	
 /*	int pointsCount;

@@ -26,56 +26,69 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if defined __DISABLE_NATIVE_WEBVIEW__
 
-#ifndef __QUICKED_FILE_SYSTEM_DIALOG_H__
-#define __QUICKED_FILE_SYSTEM_DIALOG_H__
+#include "WebViewControlStub.h"
 
-#include <QDockWidget>
-#include <memory>
+using namespace DAVA;
 
-namespace Ui {
-    class FileSystemDockWidget;
+WebViewControl::WebViewControl(UIWebView&)
+{
 }
 
-class QFileSystemModel;
-class QInputDialog;
-
-class FileSystemDockWidget : public QDockWidget
+void WebViewControl::Initialize(const Rect&)
 {
-    Q_OBJECT
-    
-public:
-    explicit FileSystemDockWidget(QWidget *parent = nullptr);
-    ~FileSystemDockWidget();
-    
-    void SetProjectDir(const QString &path);
+}
 
-signals:
-    void OpenPackageFile(const QString &path);
+void WebViewControl::OpenURL(const String&)
+{
+}
 
-private slots:
-    void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-    void onDoubleClicked(const QModelIndex &index);
-    void setFilterFixedString(const QString &filterStr);
-    void onNewFolder();
-    void onNewFile();
-    void onDeleteFile();
-    void OnShowInExplorer();
-    void OnRename();
-    void OnOpenFile();
+void WebViewControl::LoadHtmlString(const WideString&)
+{
+}
 
-private:
-    void RefreshActions(const QModelIndexList &indexList);
-    bool CanRemove(const QModelIndex &index) const;
+void WebViewControl::DeleteCookies(const String&)
+{
+}
 
-    std::unique_ptr<Ui::FileSystemDockWidget> ui;
-    QFileSystemModel *model = nullptr;
-    QAction *newFolderAction = nullptr;
-    QAction *newFileAction = nullptr;
-    QAction *deleteAction = nullptr;
-    QAction *showInSystemExplorerAction = nullptr;
-    QAction *renameAction = nullptr;
-    QAction *openFileAction = nullptr;
-};
+String WebViewControl::GetCookie(const String&, const String&) const
+{
+    return String();
+}
 
-#endif // __QUICKED_FILE_SYSTEM_DIALOG_H__
+Map<String, String> WebViewControl::GetCookies(const String&) const
+{
+    return Map<String, String>();
+}
+
+void WebViewControl::ExecuteJScript(const String&)
+{
+}
+
+void WebViewControl::OpenFromBuffer(const String&, const FilePath&)
+{
+}
+
+void WebViewControl::SetRect(const Rect&)
+{
+}
+
+void WebViewControl::SetVisible(bool, bool)
+{
+}
+
+void WebViewControl::SetDelegate(IUIWebViewDelegate*, UIWebView*)
+{
+}
+
+void WebViewControl::SetRenderToTexture(bool)
+{
+}
+
+bool WebViewControl::IsRenderToTexture() const
+{
+    return false;
+}
+
+#endif //__DISABLE_NATIVE_WEBVIEW__

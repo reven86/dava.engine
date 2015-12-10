@@ -77,9 +77,9 @@ public:
 	void SetUpConnectionToDB();
 	RefPtr<KeyedArchive> GetIdYamlOptions();
 
-	void InitializeDevice();
+    void InitializeDevice();
 
-	// Test organization
+    // Test organization
 	void OnTestStart(const String &testName);
 	void OnStepStart( const String & stepName );
 	void OnStepFinished();

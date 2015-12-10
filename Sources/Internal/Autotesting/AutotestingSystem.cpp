@@ -45,45 +45,44 @@
 
 namespace DAVA
 {
-
-	AutotestingSystem::AutotestingSystem()
-        : startTimeMS(0)
-        , isInit(false)
-        , isRunning(false)
-        , isDB(true)
-        , isMaster(true)
-        , isRegistered(false)
-        , isWaiting(false)
-        , isInitMultiplayer(false)
-        , needExitApp(false)
-        , timeBeforeExit(0.0f)
-        , projectName("")
-        , groupName("default")
-        , deviceName("not-initialized")
-		, testsDate("not_found")
-		, runId("not_found")
-        , testIndex(0)
-        , stepIndex(0)
-        , logIndex(0)
-        , testDescription("")
-        , testFileName("")
-        , testFilePath("")
-		, buildDate("not_found")
-        , buildId("zero-build")
-        , branch("branch")
-        , framework("framework")
-        , branchRev("0")
-        , frameworkRev("0")
-        , needClearGroupInDB(false)
-        , requestedHelpers(0)
-        , masterId("")
-        , masterTask("")
-        , masterRunId(0)
-        , multiplayerName("")
-        , waitTimeLeft(0.0f)
-        , waitCheckTimeLeft(0.0f)
-        , luaSystem(nullptr)
-	{
+AutotestingSystem::AutotestingSystem()
+    : startTimeMS(0)
+    , isInit(false)
+    , isRunning(false)
+    , isDB(true)
+    , isMaster(true)
+    , isRegistered(false)
+    , isWaiting(false)
+    , isInitMultiplayer(false)
+    , needExitApp(false)
+    , timeBeforeExit(0.0f)
+    , projectName("")
+    , groupName("default")
+    , deviceName("not-initialized")
+    , testsDate("not_found")
+    , runId("not_found")
+    , testIndex(0)
+    , stepIndex(0)
+    , logIndex(0)
+    , testDescription("")
+    , testFileName("")
+    , testFilePath("")
+    , buildDate("not_found")
+    , buildId("zero-build")
+    , branch("branch")
+    , framework("framework")
+    , branchRev("0")
+    , frameworkRev("0")
+    , needClearGroupInDB(false)
+    , requestedHelpers(0)
+    , masterId("")
+    , masterTask("")
+    , masterRunId(0)
+    , multiplayerName("")
+    , waitTimeLeft(0.0f)
+    , waitCheckTimeLeft(0.0f)
+    , luaSystem(nullptr)
+    {
 		new AutotestingDB();
 	}
 
@@ -172,7 +171,7 @@ namespace DAVA
 
     void AutotestingSystem::OnInit()
     {
-		DVASSERT(!isInit);
+        DVASSERT(!isInit);
 		isInit = true;
 	}
 
@@ -265,15 +264,15 @@ namespace DAVA
 	}
 
 	// Multiplayer API
-	void AutotestingSystem::InitializeDevice()
-	{
-		Logger::Info("AutotestingSystem::InitializeDevice");
-		if (!isDB)
-		{
-			OnError("Couldn't use multiplayer test in local mode.");
-		}
-		isInitMultiplayer = true;
-	}
+    void AutotestingSystem::InitializeDevice()
+    {
+        Logger::Info("AutotestingSystem::InitializeDevice");
+        if (!isDB)
+        {
+            OnError("Couldn't use multiplayer test in local mode.");
+        }
+        isInitMultiplayer = true;
+    }
 
 	String AutotestingSystem::GetCurrentTimeString()
 	{
@@ -368,10 +367,10 @@ namespace DAVA
 
         AutotestingDB::Instance()->Log("ERROR", screenShotName);
 
-		if (isDB && isInitMultiplayer)
-		{
+        if (isDB && isInitMultiplayer)
+        {
             AutotestingDB::Instance()->WriteState(deviceName, "State", "error");
-		}
+        }
 
 		ExitApp();
 	}
@@ -423,10 +422,10 @@ namespace DAVA
 		// Mark last step as SUCCESS
 		OnStepFinished();
 
-		if (isDB && isInitMultiplayer)
-		{
-			AutotestingDB::Instance()->WriteState(deviceName, "State", "finished");
-		}
+        if (isDB && isInitMultiplayer)
+        {
+            AutotestingDB::Instance()->WriteState(deviceName, "State", "finished");
+        }
 
 		// Mark test as SUCCESS
 		AutotestingDB::Instance()->Log("INFO", "Test finished.");
@@ -511,7 +510,7 @@ namespace DAVA
         {
             isFound = true;
             touch = findIt->second;
-		}
+        }
 		return isFound;
 	}
 
