@@ -131,6 +131,7 @@ void SceneSelectionSystem::ForceEmitSignals()
 	if (selectionHasChanges)
 	{
 		// emit signals
+        // TODO : enable it
         // SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2 *) GetScene(), &curSelections, &curDeselections);
 
         selectionHasChanges = false;
