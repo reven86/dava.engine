@@ -43,6 +43,9 @@
 #endif
 #endif
 
+// Temporal flag to disable network for testing purpose
+#define DAVA_NETWORK_DISABLE
+
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations 
 
 //#define ENABLE_CONTROL_EDIT //allows to drug'n'drop controls for position editing
