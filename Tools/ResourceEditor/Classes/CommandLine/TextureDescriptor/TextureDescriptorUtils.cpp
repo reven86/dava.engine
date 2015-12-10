@@ -88,7 +88,7 @@ void CreateDescriptorsForFolder(const FilePath &folder, const FilePath& presetPa
         {
             CreateDescriptorsForFolder(pathname, presetPath);
         }
-        else if (TextureDescriptor::IsDescriptorExtension(pathname.GetExtension()))
+        else if (TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
         {
             CreateDescriptorIfNeed(pathname, presetPath);
         }
