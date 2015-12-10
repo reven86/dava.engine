@@ -127,7 +127,7 @@ CollisionRenderObject::~CollisionRenderObject()
 	}
 }
 
-struct ClassifyTrianglesCallback : public btTriangleCallback
+struct ClassifyTrianglesCallback : public btInternalTriangleIndexCallback
 {
     DAVA::Plane plane;
     CollisionBaseObject::ClassifyPlaneResult result = CollisionBaseObject::ClassifyPlaneResult::Behind;
@@ -137,7 +137,7 @@ struct ClassifyTrianglesCallback : public btTriangleCallback
     {
     }
 
-    void processTriangle(btVector3* triangle, int partId, int triangleIndex)
+    void internalProcessTriangleIndex(btVector3* triangle, int partId, int triangleIndex) override
     {
         if (result != CollisionBaseObject::ClassifyPlaneResult::Behind)
         {
@@ -170,6 +170,6 @@ CollisionBaseObject::ClassifyPlaneResult CollisionRenderObject::ClassifyToPlane(
     btBvhTriangleMeshShape* shape = static_cast<btBvhTriangleMeshShape*>(btShape);
 
     ClassifyTrianglesCallback cb(plane);
-    shape->processAllTriangles(&cb, shape->getLocalAabbMin(), shape->getLocalAabbMax());
+    btTriangles->InternalProcessAllTriangles(&cb, shape->getLocalAabbMin(), shape->getLocalAabbMax());
     return cb.result;
 }

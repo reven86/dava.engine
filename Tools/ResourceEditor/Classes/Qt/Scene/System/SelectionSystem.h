@@ -138,7 +138,8 @@ private:
 	HoodSystem* hoodSystem;
 	EntityGroup curSelections;
 	EntityGroup curDeselections;
-	DAVA::Entity *lastSelection;
+    EntityGroup lastGroupSelection;
+    DAVA::Entity *lastSelection;
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     ST_PivotPoint curPivotPoint;
