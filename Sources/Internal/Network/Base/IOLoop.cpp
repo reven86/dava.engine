@@ -37,10 +37,7 @@ namespace DAVA
 namespace Net
 {
 
-IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
-                                      , actualLoop(NULL)
-                                      , quitFlag(false)
-                                      , uvasync()
+IOLoop::IOLoop(bool useDefaultIOLoop)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     if (useDefaultIOLoop)
