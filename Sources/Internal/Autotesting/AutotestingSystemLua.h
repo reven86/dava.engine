@@ -136,12 +136,12 @@ public:
     int32 GetServerQueueState(const String &serverName);
     bool SetServerQueueState(const String &serverName, int32 state);
 
-	String ReadState(const String &device, const String &param);
-	void WriteState(const String &device,const String &param, const String &state);
+    String ReadState(const String& device, const String& param);
+    void WriteState(const String& device, const String& param, const String& state);
 
-	void InitializeDevice();
+    void InitializeDevice();
 
-	String GetDeviceName();
+    String GetDeviceName();
 	String GetPlatform();
 
 	bool IsPhoneScreen();

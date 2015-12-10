@@ -301,8 +301,8 @@ public:
     inline const Vector4& operator+=(const Vector4& _v);
     inline const Vector4& operator-=(const Vector4& _v);
     inline const Vector4& operator*=(float32 f);
-    inline const Vector4 & operator /= (float32 f);
-	inline Vector4 operator -() const;
+    inline const Vector4& operator/=(float32 f);
+    inline Vector4 operator -() const;
 
 	//! Comparison operators
 	inline bool operator == (const Vector4 & _v) const;

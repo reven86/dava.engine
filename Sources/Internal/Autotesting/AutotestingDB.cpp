@@ -42,9 +42,9 @@ namespace DAVA
 {
 
 	const String AutotestingDB::DB_ERROR_STR_VALUE = "not_found";
-	const String MULTIPLAYER_ARCHIVE = "multiplayer";
+    const String MULTIPLAYER_ARCHIVE = "multiplayer";
 
-	AutotestingDB::AutotestingDB()
+    AutotestingDB::AutotestingDB()
 		: dbClient(nullptr)
 		, logFilePath(FilePath(""))
 		, logsFolder(FilePath(""))
@@ -131,17 +131,17 @@ namespace DAVA
 		return result;
 	}
 
-	void AutotestingDB::FailOnLocalBuild()
-	{
-		if (dbClient == nullptr)
-			autoSys->OnError("Could not work with BD on local build");
-	}
+    void AutotestingDB::FailOnLocalBuild()
+    {
+        if (dbClient == nullptr)
+            autoSys->OnError("Could not work with BD on local build");
+    }
 
-	// BUILD Level
-	KeyedArchive *AutotestingDB::FindBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &archiveName)
-	{
-		if (archiveName.empty())
-		{
+    // BUILD Level
+    KeyedArchive* AutotestingDB::FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& archiveName)
+    {
+        if (archiveName.empty())
+        {
 			autoSys->ForceQuit("Archive name is empty.");
 		}
 		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
@@ -152,9 +152,9 @@ namespace DAVA
 		return dbUpdateObject->GetData();
 	}
 
-	KeyedArchive *AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &archiveName)
-	{
-		if (archiveName.empty())
+    KeyedArchive* AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& archiveName)
+    {
+        if (archiveName.empty())
         {
             autoSys->ForceQuit("Archive name is empty.");
         }
@@ -260,40 +260,38 @@ namespace DAVA
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
-	String AutotestingDB::ReadState(const String &device, const String &param)
-	{
-		FailOnLocalBuild();
+    String AutotestingDB::ReadState(const String& device, const String& param)
+    {
+        FailOnLocalBuild();
 
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
+        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        KeyedArchive* multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
 
-		
-		
-		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, nullptr);
-		String result = DB_ERROR_STR_VALUE;
+        KeyedArchive* deviceArchive = multiplayerArchive->GetArchive(device, nullptr);
+        String result = DB_ERROR_STR_VALUE;
         if (deviceArchive != nullptr)
         {
             result = deviceArchive->GetString(param, DB_ERROR_STR_VALUE);
         }
-		
-		Logger::Info("AutotestingDB::ReadState device=%s: %s='%s'", device.c_str(), param.c_str(), result.c_str());
-		SafeRelease(dbUpdateObject);
-		return result;
-	}
 
-	void AutotestingDB::WriteState(const String &device, const String &param, const String &state)
-	{
-		Logger::Info("AutotestingDB::WriteState device=%s %s=%s", device.c_str(), param.c_str(), state.c_str());
-		FailOnLocalBuild();
+        Logger::Info("AutotestingDB::ReadState device=%s: %s='%s'", device.c_str(), param.c_str(), result.c_str());
+        SafeRelease(dbUpdateObject);
+        return result;
+    }
 
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
-		ScopedPtr<KeyedArchive> emptyKeyedArchive(new KeyedArchive());
-		KeyedArchive *deviceArchive = multiplayerArchive->GetArchive(device, emptyKeyedArchive);
-		
-		deviceArchive->SetString(param, state);
-		multiplayerArchive->SetArchive(device, deviceArchive);
-		SaveToDB(dbUpdateObject);
+    void AutotestingDB::WriteState(const String& device, const String& param, const String& state)
+    {
+        Logger::Info("AutotestingDB::WriteState device=%s %s=%s", device.c_str(), param.c_str(), state.c_str());
+        FailOnLocalBuild();
+
+        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        KeyedArchive* multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
+        ScopedPtr<KeyedArchive> emptyKeyedArchive(new KeyedArchive());
+        KeyedArchive* deviceArchive = multiplayerArchive->GetArchive(device, emptyKeyedArchive);
+
+        deviceArchive->SetString(param, state);
+        multiplayerArchive->SetArchive(device, deviceArchive);
+        SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
 	}
 
