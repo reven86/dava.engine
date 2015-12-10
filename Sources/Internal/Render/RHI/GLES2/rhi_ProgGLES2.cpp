@@ -232,10 +232,11 @@ void ProgGLES2::GetProgParams(unsigned progUid)
 
         for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
         {
-            char n[16];
+            char n[16], n2[16];
             sprintf(n, "%s_Buffer%u[0]", (type == PROG_VERTEX) ? "VP" : "FP", i);
+            sprintf(n2, "%s_Buffer%u", (type == PROG_VERTEX) ? "VP" : "FP", i);
 
-            if (!strcmp(name, n))
+            if (!strcmp(name, n) || !strcmp(name, n2))
             {
                 int loc;
                 GLCommand cmd3 = { GLCommand::GET_UNIFORM_LOCATION, { progUid, uint64(name) } };
