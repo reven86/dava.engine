@@ -27,55 +27,18 @@
 =====================================================================================*/
 
 
-#ifndef __QUICKED_FILE_SYSTEM_DIALOG_H__
-#define __QUICKED_FILE_SYSTEM_DIALOG_H__
+#ifndef __QUICKED_FILE_SYSTEM_MODEL_H__
+#define __QUICKED_FILE_SYSTEM_MODEL_H__
 
-#include <QDockWidget>
-#include <memory>
+#include <QFileSystemModel>
 
-namespace Ui {
-    class FileSystemDockWidget;
-}
-
-class QFileSystemModel;
-class QInputDialog;
-
-class FileSystemDockWidget : public QDockWidget
+class FileSystemModel : public QFileSystemModel
 {
-    Q_OBJECT
-    
 public:
-    explicit FileSystemDockWidget(QWidget *parent = nullptr);
-    ~FileSystemDockWidget();
-    
-    void SetProjectDir(const QString &path);
-
-signals:
-    void OpenPackageFile(const QString &path);
-
-private slots:
-    void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-    void onDoubleClicked(const QModelIndex &index);
-    void setFilterFixedString(const QString &filterStr);
-    void onNewFolder();
-    void onNewFile();
-    void onDeleteFile();
-    void OnShowInExplorer();
-    void OnRename();
-    void OnOpenFile();
-
-private:
-    void RefreshActions(const QModelIndexList &indexList);
-    bool CanRemove(const QModelIndex &index) const;
-
-    std::unique_ptr<Ui::FileSystemDockWidget> ui;
-    QFileSystemModel *model = nullptr;
-    QAction *newFolderAction = nullptr;
-    QAction *newFileAction = nullptr;
-    QAction *deleteAction = nullptr;
-    QAction *showInSystemExplorerAction = nullptr;
-    QAction *renameAction = nullptr;
-    QAction *openFileAction = nullptr;
+    FileSystemModel(QObject *parent = nullptr);
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex & idx, const QVariant & value, int role = Qt::EditRole) override;
 };
 
-#endif // __QUICKED_FILE_SYSTEM_DIALOG_H__
+#endif //__QUICKED_FILE_SYSTEM_MODEL_H__
