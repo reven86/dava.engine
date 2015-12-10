@@ -168,7 +168,13 @@ Create(const Descriptor& desc)
 
 void Delete(Handle vb)
 {
-    return (*_Impl.impl_VertexBuffer_Delete)(vb);
+    if (vb != rhi::InvalidHandle)
+    {
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_VERTEX);        
+        #endif
+        (*_Impl.impl_VertexBuffer_Delete)(vb);
+    }
 }
 
 bool Update(Handle vb, const void* data, uint32 offset, uint32 size)
@@ -203,9 +209,15 @@ Create(const Descriptor& desc)
     return (*_Impl.impl_IndexBuffer_Create)(desc);
 }
 
-void Delete(Handle vb)
+void Delete(Handle ib)
 {
-    return (*_Impl.impl_IndexBuffer_Delete)(vb);
+    if (ib != InvalidHandle)
+    {
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(ib, DAVA::ALLOC_GPU_RDO_INDEX);        
+        #endif
+        (*_Impl.impl_IndexBuffer_Delete)(ib);
+    }
 }
 
 bool Update(Handle vb, const void* data, uint32 offset, uint32 size)
@@ -273,7 +285,13 @@ Create(const Texture::Descriptor& desc)
 
 void Delete(Handle tex)
 {
-    return (*_Impl.impl_Texture_Delete)(tex);
+    if (tex != InvalidHandle)
+    {
+        #if defined(DAVA_MEMORY_PROFILING_ENABLE)
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(tex, DAVA::ALLOC_GPU_TEXTURE);    
+        #endif
+        (*_Impl.impl_Texture_Delete)(tex);
+    }
 }
 
 void* Map(Handle tex, unsigned level, TextureFace face)
@@ -382,7 +400,8 @@ bool SetConst(Handle cb, uint32 constIndex, uint32 constSubIndex, const float* d
 
 void Delete(Handle cb)
 {
-    return (*_Impl.impl_ConstBuffer_Delete)(cb);
+    if (cb != InvalidHandle)
+        (*_Impl.impl_ConstBuffer_Delete)(cb);
 }
 
 } // namespace ConstBuffer
