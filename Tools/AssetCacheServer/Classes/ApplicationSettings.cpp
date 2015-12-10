@@ -64,7 +64,7 @@ bool ServerData::operator<(const ServerData& right) const
     return ip < right.ip;
 }
 
-const String ApplicationSettings::DEFAULT_FOLDER = "";
+const String ApplicationSettings::DEFAULT_FOLDER = "~doc:/AssetServer/AssetCacheStorage";
 const float64 ApplicationSettings::DEFAULT_CACHE_SIZE_GB = 5.0;
 
 void ApplicationSettings::Save() const

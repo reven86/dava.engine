@@ -116,7 +116,7 @@ private:
     void Deserialize(DAVA::KeyedArchive* archieve);
 
 public:
-    FilePath folder;
+    FilePath folder = DEFAULT_FOLDER;
     float64 cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
     uint32 filesCount = DEFAULT_FILES_COUNT;
     uint32 autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
