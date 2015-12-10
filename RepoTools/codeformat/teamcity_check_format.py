@@ -4,6 +4,12 @@ import fnmatch
 import os
 import subprocess
 import errno
+import sys
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-t", "--teamcity-notify", help="print list of non-formatted files in Teamcity format", action="store_true")
+args = parser.parse_args()
 
 formatOK = True
 cwd = os.getcwd()
@@ -17,6 +23,8 @@ for source in sources:
 		for ext in ['cpp', 'h', 'c', 'mm']:
 			for filename in fnmatch.filter(filenames, '*.'+ext):
 				try:
+					if args.teamcity_notify:
+						print "surprise"
 					proc = subprocess.Popen([cwd+'/'+execName, '-output-replacements-xml', '--style=file', os.path.join(root, filename)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 				except OSError as e:
 					if e.errno == errno.ENOENT:
