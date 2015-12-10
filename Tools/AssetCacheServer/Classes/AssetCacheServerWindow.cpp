@@ -43,7 +43,6 @@
 #include "Job/JobManager.h"
 #include "QtTools/FileDialog/FileDialog.h"
 
-
 #include <QFileDialog>
 #include <QMenu>
 #include <QCloseEvent>
@@ -51,8 +50,12 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
+
+#if defined(__DAVAENGINE_WINDOWS__)
 #include <QSettings>
+#elif defined(__DAVAENGINE_MACOS__)
 #include <QXmlStreamReader>
+#endif
 
 namespace
 {
