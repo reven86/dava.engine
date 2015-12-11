@@ -169,6 +169,7 @@ void AssetCacheServerWindow::ChangeSettingsState(SettingsState newState)
 
 void AssetCacheServerWindow::OnFirstLaunch()
 {
+    show();
     SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked());
 }
 
@@ -179,7 +180,7 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup)
     QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     if (toLaunchOnStartup)
     {
-        settings.setValue("AssetCacheServer", QCoreApplication::applicationFilePath().replace('/', '\\'));
+        settings.setValue("AssetCacheServer", QDir::toNativeSeparators(QCoreApplication::applicationFilePath()));
     }
     else
     {
@@ -204,10 +205,10 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup)
 
         xml.writeStartElement("dict");
         xml.writeTextElement("key", "Label");
-        xml.writeTextElement("string", "com.davaconsulting.accetcacheserver");
+        xml.writeTextElement("string", "com.davaconsulting.assetcacheserver");
         xml.writeTextElement("key", "ProgramArguments");
         xml.writeStartElement("array");
-        xml.writeTextElement("string", QCoreApplication::applicationFilePath());
+        xml.writeTextElement("string", QDir::toNativeSeparators(QCoreApplication::applicationFilePath()));
         xml.writeEndElement();
         xml.writeTextElement("key", "RunAtLoad");
         xml.writeStartElement("true");
