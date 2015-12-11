@@ -307,9 +307,9 @@ void WebViewControl::SetRect(const Rect& rect)
     
     VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
 
-    Rect convertedRect = rect; //TODO: check when release platform MAC OS: Rect convertedRct = VCS.ConvertVirtualToPhysical(rect);
-    
-	webViewRect.size.width = convertedRect.dx;
+    Rect convertedRect = VCS.ConvertVirtualToPhysical(rect);
+
+    webViewRect.size.width = convertedRect.dx;
 	webViewRect.size.height = convertedRect.dy;
 
     NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
@@ -337,10 +337,9 @@ void WebViewControl::SetRect(const Rect& rect)
     webImageCachePtr = imageRep;
 
     [imageRep retain];
-    float width = [imageRep size].width;
-    float height = [imageRep size].height;
-    DVASSERT(FLOAT_EQUAL(width, ceilf(webViewRect.size.width)) &&
-             FLOAT_EQUAL(height, ceilf(webViewRect.size.height)));
+
+    DVASSERT(FLOAT_EQUAL((float)[imageRep size].width, ceilf(webViewRect.size.width)) &&
+             FLOAT_EQUAL((float)[imageRep size].height, ceilf(webViewRect.size.height)));
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
