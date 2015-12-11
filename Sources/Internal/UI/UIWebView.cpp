@@ -32,7 +32,9 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__DISABLE_NATIVE_WEBVIEW__)
+#include "WebViewControlStub.h"
+#elif defined(__DAVAENGINE_MACOS__)
 #include "Platform/TemplateMacOS/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Platform/TemplateiOS/WebViewControliOS.h"
@@ -190,10 +192,7 @@ void UIWebView::UpdateControlRect()
 
 void UIWebView::SetRenderToTexture(bool value)
 {
-#ifndef ENABLE_WEB_VIEW_RENDER_TO_TEXTURE
-    // for now disable this functionality
     value = false;
-#endif //ENABLE_WEB_VIEW_RENDER_TO_TEXTURE
     webViewControl->SetRenderToTexture(value);
 }
 

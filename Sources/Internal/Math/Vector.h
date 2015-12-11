@@ -305,7 +305,7 @@ public:
     inline Vector4 operator-() const;
 
     //! Comparison operators
-	inline bool operator == (const Vector4 & _v) const;
+    inline bool operator == (const Vector4 & _v) const;
 	inline bool operator != (const Vector4 & _v) const;	
 };
 
