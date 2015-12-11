@@ -2,7 +2,7 @@
 set START_DIR=%CD%
 set SCRIPT_DIR=%~dp0
 set SOURCE_DIR=%1/
-set CMAKE_DIR=%~dp0cmake_prebuilt\bin\Release
+set CMAKE_DIR=%~dp0cmake_prebuilt\bin
 
 echo START_DIR=%START_DIR%
 echo SCRIPT_DIR=%SCRIPT_DIR%
