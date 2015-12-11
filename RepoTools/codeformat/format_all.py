@@ -4,6 +4,25 @@ import fnmatch
 import os
 import subprocess
 import errno
+import sys
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-t", "--teamcity-notify", help="print list of non-formatted files in Teamcity format", action="store_true")
+args = parser.parse_args()
+formatOK = True
+
+
+def check_format(file):
+	proc = subprocess.Popen([cwd+'/'+execName, '-output-replacements-xml', '--style=file', file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	stdout, stderr = proc.communicate()
+	if stdout.find("<replacement ") > -1:
+		formatOK = False
+		errorMsg = "##teamcity[message text=\'" + "%s not formatted" % file + "\' errorDetails=\'\' status=\'" + "ERROR" + "\']\n"
+		print errorMsg
+
+def format(file):
+	proc = subprocess.Popen([cwd+'/'+execName, '-i', '--style=file', file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 cwd = os.getcwd()
 if os.name == 'nt':
@@ -15,10 +34,12 @@ for source in sources:
 	for root, dirnames, filenames in os.walk(source):
 		for ext in ['cpp', 'h', 'c', 'mm']:
 			for filename in fnmatch.filter(filenames, '*.'+ext):
-				try:
-					proc = subprocess.Popen([cwd+'/'+execName, '-i', '--style=file', os.path.join(root, filename)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-				except OSError as e:
-					if e.errno == errno.ENOENT:
-						exit('cannot find executable clang-format')
-					else:
-						raise
+				file = os.path.join(root, filename)
+				if args.teamcity_notify:
+					check_format(file)
+				else:
+					format(file)
+if formatOK:
+	print "##teamcity[message text=\'" + "format OK" + "\' errorDetails=\'\' status=\'" + "NORMAL" + "\']\n"
+else:
+	exit("not all files formatted")
