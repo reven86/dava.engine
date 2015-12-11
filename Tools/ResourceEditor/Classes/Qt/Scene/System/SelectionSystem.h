@@ -126,6 +126,11 @@ private:
 
     void ProcessSelectedGroup(EntityGroup::EntityVector);
 
+    void UpdateGroupSelectionMode();
+
+    void UpdateSelectionGroup(const EntityGroup& newSelection);
+    void FinishSelection();
+
     void DrawItem(DAVA::Entity* item, const DAVA::AABBox3& bbox, DAVA::int32 drawMode,
                   DAVA::RenderHelper::eDrawType wireDrawType, DAVA::RenderHelper::eDrawType solidDrawType,
                   const DAVA::Color& color);

@@ -70,6 +70,23 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 ev
     }
 }
 
+void SceneSelectionSystem::UpdateGroupSelectionMode()
+{
+    Qt::KeyboardModifiers curKeyModifiers = QApplication::keyboardModifiers();
+    if (curKeyModifiers & Qt::ControlModifier)
+    {
+        groupSelectionMode = GroupSelectionMode::Add;
+    }
+    else if (curKeyModifiers & Qt::AltModifier)
+    {
+        groupSelectionMode = GroupSelectionMode::Remove;
+    }
+    else
+    {
+        groupSelectionMode = GroupSelectionMode::Replace;
+    }
+}
+
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 {
 	ForceEmitSignals();
@@ -90,7 +107,8 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
         invalidSelectionBoxes = false;
     }
 
-	UpdateHoodPos();
+    UpdateGroupSelectionMode();
+    UpdateHoodPos();
 }
 
 void SceneSelectionSystem::ForceEmitSignals()
@@ -172,6 +190,8 @@ void SceneSelectionSystem::PerformSelectionAtPoint(const DAVA::Vector2& point)
 
 void SceneSelectionSystem::PerformSelectionInCurrentBox()
 {
+    UpdateGroupSelectionMode();
+
     const float32 minSelectionSize = 2.0f;
 
     Vector2 selectionSize = selectionEndPoint - selectionStartPoint;
@@ -213,12 +233,7 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
         }
     }
 
-    objectsToSelect.Exclude(lastGroupSelection);
-    if (selectedObjects.Size() > 0)
-    {
-        objectsToSelect.Join(selectedObjects);
-    }
-    lastGroupSelection = selectedObjects;
+    UpdateSelectionGroup(selectedObjects);
     applyOnPhaseEnd = true;
 }
 
@@ -252,8 +267,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
     {
         if (applyOnPhaseEnd)
         {
-            SetSelection(objectsToSelect);
-            objectsToSelect.Clear();
+            FinishSelection();
         }
         applyOnPhaseEnd = false;
         selecting = false;
@@ -315,9 +329,19 @@ void SceneSelectionSystem::Draw()
         DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
     }
 
+    DAVA::Color drawColor = DAVA::Color::White;
+    if (groupSelectionMode == GroupSelectionMode::Add)
+    {
+        drawColor = DAVA::Color(0.5f, 1.0f, 0.5f, 1.0f);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Remove)
+    {
+        drawColor = DAVA::Color(1.0f, 0.5f, 0.5f, 1.0f);
+    }
+
     for (const auto& item : objectsToSelect.GetContent())
     {
-        DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
+        DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, drawColor);
     }
 }
 
@@ -599,7 +623,7 @@ DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(int index) const
 
 DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity) const
 {
-    return GetSelectionAABox(entity, entity->GetWorldTransform());
+    return GetSelectionAABox(entity, DAVA::Matrix4::IDENTITY);
 }
 
 DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity, const DAVA::Matrix4 &transform) const
@@ -662,4 +686,57 @@ void SceneSelectionSystem::Activate()
 void SceneSelectionSystem::Deactivate()
 {
     SetLocked(true);
+}
+
+void SceneSelectionSystem::UpdateSelectionGroup(const EntityGroup& newSelection)
+{
+    objectsToSelect.Exclude(lastGroupSelection);
+
+    if (groupSelectionMode == GroupSelectionMode::Replace)
+    {
+        objectsToSelect.Join(newSelection);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Add)
+    {
+        for (const auto& item : newSelection.GetContent())
+        {
+            if (!curSelections.ContainsEntity(item.first))
+            {
+                objectsToSelect.Add(item.first, item.second);
+            }
+        }
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Remove)
+    {
+        for (const auto& item : newSelection.GetContent())
+        {
+            if (curSelections.ContainsEntity(item.first))
+            {
+                objectsToSelect.Add(item.first, item.second);
+            }
+        }
+    }
+
+    lastGroupSelection = newSelection;
+}
+
+void SceneSelectionSystem::FinishSelection()
+{
+    if (groupSelectionMode == GroupSelectionMode::Replace)
+    {
+        SetSelection(objectsToSelect);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Add)
+    {
+        objectsToSelect.Join(curSelections);
+        SetSelection(objectsToSelect);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Remove)
+    {
+        EntityGroup newSelection;
+        newSelection.Join(curSelections);
+        newSelection.Exclude(objectsToSelect);
+        SetSelection(newSelection);
+    }
+    objectsToSelect.Clear();
 }
