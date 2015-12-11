@@ -349,8 +349,7 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
             {
                 target.z = baseZ + heightValues[layerIndex];
 
-                const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint, target);
-                EntityGroup entityGroup(*intersectedObjects);
+                EntityGroup entityGroup(collisionSystem->ObjectsRayTest(sourcePoint, target));
                 ExcludeEntities(&entityGroup);
 
                 if (entityGroup.Size() == 0)

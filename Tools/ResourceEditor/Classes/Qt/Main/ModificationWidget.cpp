@@ -125,8 +125,8 @@ void ModificationWidget::ReloadValues()
 
 	if (nullptr != curScene)
 	{
-		auto selection = curScene->selectionSystem->GetSelection();
-		if(selection.Size() > 0 && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
+        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+        if(selection.Size() > 0 && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
 		{
 			xAxisModify->setEnabled(true);
 			yAxisModify->setEnabled(true);
@@ -268,7 +268,7 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 
 	if(NULL != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
+        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
         const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
 
 		if(selection.Size() > 1)
@@ -345,9 +345,9 @@ void ModificationWidget::ApplyRotateValues(ST_Axis axis)
 
 	if(NULL != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
+        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
 
-		if(selection.Size() > 1)
+        if(selection.Size() > 1)
 		{
 			curScene->BeginBatch("Multiple transform");
 		}
@@ -440,9 +440,9 @@ void ModificationWidget::ApplyScaleValues(ST_Axis axis)
 
 	if(NULL != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
+        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
 
-		if(selection.Size() > 1)
+        if(selection.Size() > 1)
 		{
 			curScene->BeginBatch("Multiple transform");
 		}
@@ -525,7 +525,7 @@ void ModificationWidget::OnSnapToLandscapeChanged()
     if ( curScene == nullptr )
         return;
 
-    auto selection = curScene->selectionSystem->GetSelection();
+    const EntityGroup& selection = curScene->selectionSystem->GetSelection();
     if ( selection.Size() == 0 )
         return;
 

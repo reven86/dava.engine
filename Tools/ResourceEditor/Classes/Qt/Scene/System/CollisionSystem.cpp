@@ -117,68 +117,58 @@ int SceneCollisionSystem::GetDrawMode() const
 	return drawMode;
 }
 
-const EntityGroup* SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to)
+const EntityGroup::EntityVector& SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to)
 {
 	// check if cache is available 
 	if(rayIntersectCached && lastRayFrom == from && lastRayTo == to)
 	{
-		return &rayIntersectedEntities;
-	}
+        return rayIntersectedEntities;
+    }
 
 	// no cache. start ray new ray test
 	lastRayFrom = from;
 	lastRayTo = to;
-	rayIntersectedEntities.Clear();
+    rayIntersectedEntities.clear();
 
-	btVector3 btFrom(from.x, from.y, from.z);
+    btVector3 btFrom(from.x, from.y, from.z);
 	btVector3 btTo(to.x, to.y, to.z);
 
 	btCollisionWorld::AllHitsRayResultCallback btCallback(btFrom, btTo);
 	objectsCollWorld->rayTest(btFrom, btTo, btCallback);
 
-	if(btCallback.hasHit()) 
-	{
-		int foundCount = btCallback.m_collisionObjects.size();
-		if(foundCount > 0)
-		{
-			for(int i = 0; i < foundCount; ++i)
-			{
-				DAVA::float32 lowestFraction = 1.0f;
-				DAVA::Entity *lowestEntity = NULL;
+    int collidedObjects = btCallback.m_collisionObjects.size();
+    if (btCallback.hasHit() && (collidedObjects > 0))
+    {
+        // TODO: sort values inside btCallback, instead of creating separate vector for them
+        using Hits = DAVA::Vector<std::pair<btCollisionObject*, btScalar>>;
+        Hits hits(collidedObjects);
+        btCallback.m_collisionObjects.size();
+        for (int i = 0; i < collidedObjects; ++i)
+        {
+            hits[i].first = btCallback.m_collisionObjects[i];
+            hits[i].second = btCallback.m_hitFractions[i];
+        }
+        std::sort(hits.begin(), hits.end(), [&btFrom](const Hits::value_type& l, const Hits::value_type& r) {
+            return l.second < r.second;
+        });
 
-				for(int j = 0; j < foundCount; ++j)
-				{
-					if(btCallback.m_hitFractions[j] < lowestFraction)
-					{
-						btCollisionObject *btObj = btCallback.m_collisionObjects[j];
-                        DAVA::Entity* entity = collisionToEntity[btObj];
-
-                        if(!rayIntersectedEntities.ContainsEntity(entity))
-						{
-							lowestFraction = btCallback.m_hitFractions[j];
-							lowestEntity = entity;
-						}
-					}
-				}
-
-				if(NULL != lowestEntity)
-				{
-					rayIntersectedEntities.Add(lowestEntity, GetBoundingBox(lowestEntity));
-				}
-			}
-		}
+        for (const auto& hit : hits)
+        {
+            auto entity = collisionToEntity[hit.first];
+            rayIntersectedEntities.emplace_back(entity, GetBoundingBox(entity));
+        }
 	}
 
 	rayIntersectCached = true;
-	return &rayIntersectedEntities;
+    return rayIntersectedEntities;
 }
 
-const EntityGroup* SceneCollisionSystem::ObjectsRayTestFromCamera()
+const EntityGroup::EntityVector& SceneCollisionSystem::ObjectsRayTestFromCamera()
 {
     DAVA::Vector3 traceFrom;
     DAVA::Vector3 traceTo;
 
-    SceneCameraSystem *cameraSystem = ((SceneEditor2 *) GetScene())->cameraSystem;
+    SceneCameraSystem* cameraSystem = ((SceneEditor2*)GetScene())->cameraSystem;
     cameraSystem->GetRayTo2dPoint(lastMousePos, 1000.0f, traceFrom, traceTo);
 
 	return ObjectsRayTest(traceFrom, traceTo);
@@ -571,10 +561,9 @@ void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)
     }
 }
 
-const EntityGroup* SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
+const EntityGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
 {
-    planesClippedEntities.Clear();
-
+    planeClippedObjects.Clear();
     for (const auto& object : entityToCollision)
     {
         if ((object.first == nullptr) || (object.second == nullptr))
@@ -594,11 +583,11 @@ const EntityGroup* SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes
 
         if (shouldAdd)
         {
-            planesClippedEntities.Add(object.first);
+            planeClippedObjects.Add(object.first, DAVA::AABBox3());
         }
     }
 
-    return &planesClippedEntities;
+    return planeClippedObjects;
 }
 
 // -----------------------------------------------------------------------------------------------

@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "DockSceneTree/SceneTree.h"
 #include "Main/mainwindow.h"
 #include "StringConstants.h"
@@ -60,7 +59,7 @@
 #include "FileSystem/VariantType.h"
 
 #include "Tools/LazyUpdater/LazyUpdater.h"
-
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	: QTreeView(parent)
@@ -432,15 +431,15 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
             
             if((camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
-                contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+                contextMenu.addAction(QSharedIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
             }
         }
 		else
 		{
 			// look at
-			contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Look at", this, SLOT(LookAtSelection()));
+            contextMenu.addAction(QSharedIcon(":/QtIcons/zoom.png"), "Look at", this, SLOT(LookAtSelection()));
 
-			// look from
+            // look from
 			if(NULL != camera)
 			{
                 AddCameraActions(contextMenu);
@@ -450,14 +449,14 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 			contextMenu.addSeparator();
             if(entity->GetLocked() == false && (camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
-			    contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+                contextMenu.addAction(QSharedIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
             }
 
 			// lock/unlock
  			contextMenu.addSeparator();
- 			QAction *lockAction = contextMenu.addAction(QIcon(":/QtIcons/lock_add.png"), "Lock", QtMainWindow::Instance(), SLOT(OnLockTransform()));
- 			QAction *unlockAction = contextMenu.addAction(QIcon(":/QtIcons/lock_delete.png"), "Unlock", QtMainWindow::Instance(), SLOT(OnUnlockTransform()));
- 			if(entity->GetLocked())
+            QAction* lockAction = contextMenu.addAction(QSharedIcon(":/QtIcons/lock_add.png"), "Lock", QtMainWindow::Instance(), SLOT(OnLockTransform()));
+            QAction* unlockAction = contextMenu.addAction(QSharedIcon(":/QtIcons/lock_delete.png"), "Unlock", QtMainWindow::Instance(), SLOT(OnUnlockTransform()));
+            if(entity->GetLocked())
  			{
  				lockAction->setDisabled(true);
  			}
@@ -469,9 +468,9 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 			// show save as/reload/edit for regular entity
 			// save model as
 			contextMenu.addSeparator();
-			contextMenu.addAction(QIcon(":/QtIcons/save_as.png"), "Save Entity As...", this, SLOT(SaveEntityAs()));
+            contextMenu.addAction(QSharedIcon(":/QtIcons/save_as.png"), "Save Entity As...", this, SLOT(SaveEntityAs()));
 
-			DAVA::KeyedArchive *customProp = GetCustomPropertiesArchieve(entity);
+            DAVA::KeyedArchive *customProp = GetCustomPropertiesArchieve(entity);
 			if(NULL != customProp)
 			{
 				DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
@@ -495,20 +494,20 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 				contextMenu.addSeparator();
 				QMenu *particleEffectMenu = contextMenu.addMenu("Particle Effect");
 
-				particleEffectMenu->addAction(QIcon(":/QtIcons/emitter_particle.png"), "Add Emitter", this, SLOT(AddEmitter()));
-                particleEffectMenu->addAction(QIcon(":/QtIcons/savescene.png"), "Save Effect Emitters", this, SLOT(SaveEffectEmitters()));
-                particleEffectMenu->addAction(QIcon(":/QtIcons/savescene.png"), "Save Effect Emitters As...", this, SLOT(SaveEffectEmittersAs()));
-				particleEffectMenu->addSeparator();
-				particleEffectMenu->addAction(QIcon(":/QtIcons/play.png"), "Start", this, SLOT(StartEffect()));
-				particleEffectMenu->addAction(QIcon(":/QtIcons/stop.png"), "Stop", this, SLOT(StopEffect()));
-				particleEffectMenu->addAction(QIcon(":/QtIcons/restart.png"), "Restart", this, SLOT(RestartEffect()));
-			}
+                particleEffectMenu->addAction(QSharedIcon(":/QtIcons/emitter_particle.png"), "Add Emitter", this, SLOT(AddEmitter()));
+                particleEffectMenu->addAction(QSharedIcon(":/QtIcons/savescene.png"), "Save Effect Emitters", this, SLOT(SaveEffectEmitters()));
+                particleEffectMenu->addAction(QSharedIcon(":/QtIcons/savescene.png"), "Save Effect Emitters As...", this, SLOT(SaveEffectEmittersAs()));
+                particleEffectMenu->addSeparator();
+                particleEffectMenu->addAction(QSharedIcon(":/QtIcons/play.png"), "Start", this, SLOT(StartEffect()));
+                particleEffectMenu->addAction(QSharedIcon(":/QtIcons/stop.png"), "Stop", this, SLOT(StopEffect()));
+                particleEffectMenu->addAction(QSharedIcon(":/QtIcons/restart.png"), "Restart", this, SLOT(RestartEffect()));
+            }
 
 			if(selectionSize == 1)
 			{
 				contextMenu.addSeparator();
-				contextMenu.addAction(QIcon(":/QtIconsTextureDialog/filter.png"), "Set name as filter",this, SLOT(SetEntityNameAsFilter()));
-			}
+                contextMenu.addAction(QSharedIcon(":/QtIconsTextureDialog/filter.png"), "Set name as filter", this, SLOT(SetEntityNameAsFilter()));
+            }
 		}
 
 		contextMenu.exec(pos);
@@ -526,12 +525,12 @@ void SceneTree::ShowContextMenuLayer(DAVA::ParticleEmitter *emitter, DAVA::Parti
 	}
 
 	QMenu contextMenu;
-	contextMenu.addAction(QIcon(":/QtIcons/clone.png"), "Clone Layer", this, SLOT(CloneLayer()));
-	contextMenu.addAction(QIcon(":/QtIcons/remove_layer.png"), "Remove Layer", this, SLOT(RemoveLayer()));
-	contextMenu.addSeparator();
-	contextMenu.addAction(QIcon(":/QtIcons/force.png"), "Add Force", this, SLOT(AddForce()));
+    contextMenu.addAction(QSharedIcon(":/QtIcons/clone.png"), "Clone Layer", this, SLOT(CloneLayer()));
+    contextMenu.addAction(QSharedIcon(":/QtIcons/remove_layer.png"), "Remove Layer", this, SLOT(RemoveLayer()));
+    contextMenu.addSeparator();
+    contextMenu.addAction(QSharedIcon(":/QtIcons/force.png"), "Add Force", this, SLOT(AddForce()));
 
-	contextMenu.exec(pos);
+    contextMenu.exec(pos);
 }
 
 void SceneTree::ShowContextMenuForce(DAVA::ParticleLayer* layer, DAVA::ParticleForce *force, const QPoint &pos)
@@ -540,8 +539,8 @@ void SceneTree::ShowContextMenuForce(DAVA::ParticleLayer* layer, DAVA::ParticleF
 	this->selectedForce = force;
 
 	QMenu contextMenu;
-	contextMenu.addAction(QIcon(":/QtIcons/remove_force.png"), "Remove Force", this, SLOT(RemoveForce()));
-	contextMenu.exec(pos);
+    contextMenu.addAction(QSharedIcon(":/QtIcons/remove_force.png"), "Remove Force", this, SLOT(RemoveForce()));
+    contextMenu.exec(pos);
 }
 
 void SceneTree::ShowContextMenuEmitter(DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, const QPoint &pos)
@@ -549,16 +548,16 @@ void SceneTree::ShowContextMenuEmitter(DAVA::ParticleEffectComponent *effect, DA
 	selectedEffect = effect;
 	selectedEmitter = emitter;
 	
-	QMenu contextMenu;			
-	contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove emitter", this, SLOT(RemoveEmitter()));				
-	contextMenu.addSeparator();			
-	contextMenu.addAction(QIcon(":/QtIcons/layer_particle.png"), "Add Layer", this, SLOT(AddLayer()));
-	contextMenu.addSeparator();
-	contextMenu.addAction(QIcon(":/QtIcons/openscene.png"), "Load Emitter from Yaml", this, SLOT(LoadEmitterFromYaml()));
-	contextMenu.addAction(QIcon(":/QtIcons/savescene.png"), "Save Emitter to Yaml", this, SLOT(SaveEmitterToYaml()));
-	contextMenu.addAction(QIcon(":/QtIcons/save_as.png"), "Save Emitter to Yaml As...", this, SLOT(SaveEmitterToYamlAs()));		
+	QMenu contextMenu;
+    contextMenu.addAction(QSharedIcon(":/QtIcons/remove.png"), "Remove emitter", this, SLOT(RemoveEmitter()));
+    contextMenu.addSeparator();
+    contextMenu.addAction(QSharedIcon(":/QtIcons/layer_particle.png"), "Add Layer", this, SLOT(AddLayer()));
+    contextMenu.addSeparator();
+    contextMenu.addAction(QSharedIcon(":/QtIcons/openscene.png"), "Load Emitter from Yaml", this, SLOT(LoadEmitterFromYaml()));
+    contextMenu.addAction(QSharedIcon(":/QtIcons/savescene.png"), "Save Emitter to Yaml", this, SLOT(SaveEmitterToYaml()));
+    contextMenu.addAction(QSharedIcon(":/QtIcons/save_as.png"), "Save Emitter to Yaml As...", this, SLOT(SaveEmitterToYamlAs()));
 
-	contextMenu.exec(pos);
+    contextMenu.exec(pos);
 }
 
 void SceneTree::ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer *parentLayer, const QPoint &pos)
@@ -566,13 +565,13 @@ void SceneTree::ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent *effec
 	selectedEffect = effect;
 	selectedEmitter = emitter;
 	selectedLayer = parentLayer;
-	QMenu contextMenu;		
-	contextMenu.addAction(QIcon(":/QtIcons/layer_particle.png"), "Add Layer", this, SLOT(AddLayer()));
-	contextMenu.addSeparator();
-	contextMenu.addAction(QIcon(":/QtIcons/openscene.png"), "Load Emitter from Yaml", this, SLOT(LoadInnerEmitterFromYaml()));
-	contextMenu.addAction(QIcon(":/QtIcons/savescene.png"), "Save Emitter to Yaml", this, SLOT(SaveInnerEmitterToYaml()));
-	contextMenu.addAction(QIcon(":/QtIcons/save_as.png"), "Save Emitter to Yaml As...", this, SLOT(SaveInnerEmitterToYamlAs()));
-	contextMenu.exec(pos);
+	QMenu contextMenu;
+    contextMenu.addAction(QSharedIcon(":/QtIcons/layer_particle.png"), "Add Layer", this, SLOT(AddLayer()));
+    contextMenu.addSeparator();
+    contextMenu.addAction(QSharedIcon(":/QtIcons/openscene.png"), "Load Emitter from Yaml", this, SLOT(LoadInnerEmitterFromYaml()));
+    contextMenu.addAction(QSharedIcon(":/QtIcons/savescene.png"), "Save Emitter to Yaml", this, SLOT(SaveInnerEmitterToYaml()));
+    contextMenu.addAction(QSharedIcon(":/QtIcons/save_as.png"), "Save Emitter to Yaml As...", this, SLOT(SaveInnerEmitterToYamlAs()));
+    contextMenu.exec(pos);
 }
 
 void SceneTree::LookAtSelection()
@@ -580,9 +579,9 @@ void SceneTree::LookAtSelection()
 	SceneEditor2* sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
-		if(selection.Size() > 0)
-		{
+        const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+        if (selection.Size() > 0)
+        {
 			sceneEditor->cameraSystem->LookAt(selection.GetCommonBbox());
 		}
 	}
@@ -593,26 +592,29 @@ void SceneTree::RemoveSelection()
 	SceneEditor2* sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
-        for(size_t i = 0; i < selection.Size(); ++i)
+        const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+
+        EntityGroup objectToRemove;
+        for (const auto& item : selection.GetContent())
         {
-            DAVA::Entity* entity = selection.GetEntitySlow(i);
-            if(entity->GetLocked())
+            if (item.first->GetLocked())
             {
-                selection.Remove(entity);
-                --i;
                 DAVA::StringStream ss;
                 ss << "Can not remove entity "
-                    << entity->GetName().c_str()
-                    << ": entity is locked!"
-                    << PointerSerializer::FromPointer(entity);
+                   << item.first->GetName().c_str()
+                   << ": entity is locked!"
+                   << PointerSerializer::FromPointer(item.first);
                 Logger::Warning("%s", ss.str().c_str());
             }
+            else
+            {
+                objectToRemove.Add(item.first, item.second);
+            }
         }
-        
-        if (selection.Size())
+
+        if (objectToRemove.Size())
         {
-            sceneEditor->structureSystem->Remove(selection);
+            sceneEditor->structureSystem->Remove(objectToRemove);
         }
     }
 }
@@ -687,8 +689,8 @@ void SceneTree::ReloadModel()
 
 		if(QDialog::Accepted == dlg->exec())
 		{
-			EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
-			String wrongPathes;
+            const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+            String wrongPathes;
 			for(size_t i = 0; i < selection.Size(); ++i)
 			{
                 DAVA::Entity* entity = selection.GetEntitySlow(i);
@@ -751,8 +753,8 @@ void SceneTree::SaveEntityAs()
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
-		if(selection.Size() > 0)
+        const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+        if(selection.Size() > 0)
 		{
 			DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
             if (!FileSystem::Instance()->Exists(scenePath) || !sceneEditor->IsLoaded())
@@ -832,38 +834,42 @@ void SceneTree::TreeItemExpanded(const QModelIndex &index)
 
 void SceneTree::SyncSelectionToTree()
 {
-	if(!isInSync)
-	{
-		isInSync = true;
+    SceneEditor2* curScene = treeModel->GetScene();
+    if (isInSync || (curScene == nullptr))
+    {
+        return;
+    }
 
-		SceneEditor2* curScene = treeModel->GetScene();
-		if(NULL != curScene)
-		{
-			QModelIndex lastValidIndex;
+    isInSync = true;
 
-			selectionModel()->clear();
+    const auto& selection = curScene->selectionSystem->GetSelection();
 
-			SceneSelectionSystem *ss = curScene->selectionSystem;
-			for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
-			{
-				QModelIndex sIndex = treeModel->GetIndex(ss->GetSelectionEntity(i));
-				sIndex = filteringProxyModel->mapFromSource(sIndex);
-
-				if(sIndex.isValid())
-				{
-					lastValidIndex = sIndex;
-					selectionModel()->select(sIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-				}
-			}
-
-			if(lastValidIndex.isValid())
-			{
-				scrollTo(lastValidIndex, QAbstractItemView::PositionAtCenter);
-			}
-		}
-
-		isInSync = false;
+    QModelIndex lastValidIndex;
+    DAVA::Vector<QModelIndex> toSelect;
+    toSelect.reserve(selection.Size());
+    for (const auto& item : selection.GetContent())
+    {
+        QModelIndex sIndex = filteringProxyModel->mapFromSource(treeModel->GetIndex(item.first));
+        if (sIndex.isValid())
+        {
+            lastValidIndex = sIndex;
+            toSelect.push_back(sIndex);
+        }
 	}
+
+    if (!toSelect.empty())
+    {
+        selectionModel()->clear();
+        bool wasBlocked = selectionModel()->blockSignals(true);
+        for (const auto& index : toSelect)
+        {
+            selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        }
+        selectionModel()->blockSignals(wasBlocked);
+        scrollTo(lastValidIndex, QAbstractItemView::PositionAtCenter);
+    }
+
+    isInSync = false;
 }
 
 void SceneTree::SyncSelectionFromTree()
@@ -882,8 +888,10 @@ void SceneTree::SyncSelectionFromTree()
 			for (int i = 0; i < indexList.size(); ++i)
 			{
 				DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
-				group.Add(entity);
-			}
+                DAVA::AABBox3 entityBbox;
+                curScene->collisionSystem->GetBoundingBox(entity).GetTransformedBox(entity->GetWorldTransform(), entityBbox);
+                group.Add(entity, entityBbox);
+            }
 
 			curScene->selectionSystem->SetSelection(group);
 
@@ -1363,8 +1371,8 @@ void SceneTree::SetEntityNameAsFilter()
 	SceneEditor2 *scene = treeModel->GetScene();
 	if(!scene) return;
 
-	EntityGroup selection = scene->selectionSystem->GetSelection();
-	if(selection.Size() != 1) return;
+    const EntityGroup& selection = scene->selectionSystem->GetSelection();
+    if(selection.Size() != 1) return;
 
     Entity* entity = selection.GetFirstEntity();
     QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(entity->GetName().c_str());
@@ -1372,8 +1380,8 @@ void SceneTree::SetEntityNameAsFilter()
 
 void SceneTree::AddCameraActions(QMenu &menu)
 {
-    menu.addAction(QIcon(":/QtIcons/eye.png"), "Look from", this, SLOT(SetCurrentCamera()));
-    menu.addAction(QIcon(":/QtIcons/camera.png"), "Set custom draw camera", this, SLOT(SetCustomDrawCamera()));
+    menu.addAction(QSharedIcon(":/QtIcons/eye.png"), "Look from", this, SLOT(SetCurrentCamera()));
+    menu.addAction(QSharedIcon(":/QtIcons/camera.png"), "Set custom draw camera", this, SLOT(SetCustomDrawCamera()));
 }
 
 void SceneTree::ExpandFilteredItems()

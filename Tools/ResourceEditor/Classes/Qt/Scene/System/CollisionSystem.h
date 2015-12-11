@@ -76,10 +76,10 @@ public:
 
 	DAVA::AABBox3 GetBoundingBox(DAVA::Entity *entity);
 
-	const EntityGroup* ObjectsRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to);
-	const EntityGroup* ObjectsRayTestFromCamera();
+    const EntityGroup::EntityVector& ObjectsRayTest(const DAVA::Vector3& from, const DAVA::Vector3& to);
+    const EntityGroup::EntityVector& ObjectsRayTestFromCamera();
 
-	bool LandRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to, DAVA::Vector3& intersectionPoint);
+    bool LandRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to, DAVA::Vector3& intersectionPoint);
 	bool LandRayTestFromCamera(DAVA::Vector3& intersectionPoint);
 
 	DAVA::Landscape* GetLandscape() const;
@@ -90,7 +90,7 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;
 
-    const EntityGroup* ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes);
+    const EntityGroup& ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes);
 
 private:
     void Draw();
@@ -115,8 +115,8 @@ private:
     DAVA::Map<DAVA::Entity*, CollisionBaseObject*> entityToCollision;
     DAVA::Map<btCollisionObject*, DAVA::Entity*> collisionToEntity;
     DAVA::Entity* curLandscapeEntity = nullptr;
-    EntityGroup rayIntersectedEntities;
-    EntityGroup planesClippedEntities;
+    EntityGroup::EntityVector rayIntersectedEntities;
+    EntityGroup planeClippedObjects;
     btDefaultCollisionConfiguration* objectsCollConf = nullptr;
     btCollisionDispatcher* objectsCollDisp = nullptr;
     btAxisSweep3* objectsBroadphase = nullptr;

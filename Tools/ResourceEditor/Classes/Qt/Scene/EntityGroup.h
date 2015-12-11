@@ -36,18 +36,24 @@
 class EntityGroup
 {
 public:
-    using EntityMap = DAVA::Map<DAVA::Entity*, DAVA::AABBox3>;
+    using EntityWithBbox = std::pair<DAVA::Entity*, DAVA::AABBox3>;
+
+    using EntityMap = DAVA::Map<EntityWithBbox::first_type, EntityWithBbox::second_type>;
+    using EntityVector = DAVA::Vector<EntityWithBbox>;
+
+    static DAVA::AABBox3 TransformItemBoundingBox(const EntityWithBbox& item);
 
 public:
     EntityGroup();
-	EntityGroup(const EntityGroup &ss);
-	~EntityGroup();
+    EntityGroup(const EntityVector& ss);
+    EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
+    ~EntityGroup();
 
-	void Add(DAVA::Entity *entity, DAVA::AABBox3 entityBbox = DAVA::AABBox3());
+    void Add(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
     void Remove(DAVA::Entity* entity);
     void Clear();
 
-    EntityMap& GetContent();
+    EntityMap& GetMutableContent();
     const EntityMap& GetContent() const;
 
     DAVA::AABBox3 GetCommonBbox() const;
@@ -59,17 +65,24 @@ public:
     bool IndexOfEntity(DAVA::Entity* entity, size_t& index) const;
 
     DAVA::Entity* IntersectedEntity(const EntityGroup *group) const;
+    DAVA::Entity* IntersectedEntity(const EntityVector& group) const;
 
-	EntityGroup& operator=(const EntityGroup &ss);
-	bool operator==(const EntityGroup &ss) const;
-    bool operator!=(const EntityGroup &ss) const;
+    EntityGroup& operator=(const EntityGroup&);
+    bool operator==(const EntityGroup& ss) const;
+    bool operator!=(const EntityGroup& ss) const;
 
     size_t Size() const;
     DAVA::Entity* GetFirstEntity() const;
     DAVA::Entity* GetEntitySlow(size_t i) const;
     DAVA::AABBox3 GetBboxSlow(size_t i) const;
 
-    static DAVA::AABBox3 TransformItemBoundingBox(const EntityMap::value_type& item);
+    void Join(const EntityGroup&);
+    void Exclude(const EntityGroup&);
+    void RebuildBoundingBox();
+
+private:
+    EntityGroup(const EntityGroup& ss) = delete;
+    EntityGroup(EntityGroup&& ss) = delete;
 
 private:
     EntityMap entities;

@@ -95,7 +95,7 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
 {
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
     const auto& entityGroupContent = entityGroup.GetContent();
-    if ((nullptr != sceneEditor) || entityGroupContent.empty())
+    if ((nullptr == sceneEditor) || entityGroupContent.empty())
     {
         return;
     }

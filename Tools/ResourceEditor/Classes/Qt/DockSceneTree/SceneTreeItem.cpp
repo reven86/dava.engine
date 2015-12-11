@@ -33,6 +33,7 @@
 
 // framework
 #include "Scene3d/Components/ComponentHelpers.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 SceneTreeItem::SceneTreeItem(eItemType _type)
 	: type(_type)
@@ -82,8 +83,8 @@ int SceneTreeItem::ItemType() const
 
 QIcon SceneTreeItem::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/node.png");
-	return icon;
+    static QIcon icon = QSharedIcon(":/QtIcons/node.png");
+    return icon;
 }
 
 bool SceneTreeItem::IsAcceptedByFilter() const
@@ -516,8 +517,8 @@ QVariant SceneTreeItemParticleEmitter::ItemData() const
 
 QIcon SceneTreeItemParticleEmitter::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/emitter_particle.png");
-	return icon;
+    static QIcon icon = QSharedIcon(":/QtIcons/emitter_particle.png");
+    return icon;
 }
 
 // =========================================================================================
@@ -630,8 +631,8 @@ void SceneTreeItemParticleLayer::DoSync(QStandardItem *rootItem, DAVA::ParticleL
 
 QIcon SceneTreeItemParticleLayer::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/layer_particle.png");
-	return icon;
+    static QIcon icon = QSharedIcon(":/QtIcons/layer_particle.png");
+    return icon;
 }
 
 // =========================================================================================
@@ -672,8 +673,8 @@ QVariant SceneTreeItemParticleForce::ItemData() const
 
 QIcon SceneTreeItemParticleForce::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/force.png");
-	return icon;
+    static QIcon icon = QSharedIcon(":/QtIcons/force.png");
+    return icon;
 }
 
 

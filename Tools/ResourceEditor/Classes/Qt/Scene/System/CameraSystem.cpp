@@ -644,7 +644,7 @@ void SceneCameraSystem::MoveToSelection()
     if ( sceneEditor == nullptr )
         return;
 
-    auto selection = sceneEditor->selectionSystem->GetSelection();
+    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if ( selection.Size() > 0 )
     {
         sceneEditor->cameraSystem->LookAt( selection.GetCommonBbox() );

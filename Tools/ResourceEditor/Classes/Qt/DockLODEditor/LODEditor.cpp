@@ -49,6 +49,7 @@
 #include "Commands2/RemoveComponentCommand.h"
 
 #include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 using namespace DAVA;
 
@@ -412,7 +413,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
     bool visible = frame->isVisible();
     frame->setVisible(!visible);
 
-    QIcon icon = (frame->isVisible()) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+    QIcon icon = (frame->isVisible()) ? QSharedIcon(":/QtIcons/advanced.png") : QSharedIcon(":/QtIcons/play.png");
     frameButton->setIcon(icon);
 }
 
@@ -430,11 +431,11 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
     }
     else
     {
-        QIcon viewIcon = (frameViewVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+        QIcon viewIcon = (frameViewVisible) ? QSharedIcon(":/QtIcons/advanced.png") : QSharedIcon(":/QtIcons/play.png");
         ui->viewLODButton->setIcon(viewIcon);
         ui->frameViewLOD->setVisible(frameViewVisible);
 
-        QIcon editIcon = (frameEditVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+        QIcon editIcon = (frameEditVisible) ? QSharedIcon(":/QtIcons/advanced.png") : QSharedIcon(":/QtIcons/play.png");
         ui->editLODButton->setIcon(editIcon);
         ui->frameEditLOD->setVisible(frameEditVisible);
     }

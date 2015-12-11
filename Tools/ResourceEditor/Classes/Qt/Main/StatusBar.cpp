@@ -146,17 +146,16 @@ void StatusBar::OnSceneGeometryChaged(int width, int height, int dpr)
 
 void StatusBar::UpdateSelectionBoxSize(SceneEditor2 *scene)
 {
-    EntityGroup selection;
-    if(scene)
+    if (scene == nullptr)
     {
-        selection = scene->selectionSystem->GetSelection();
+        return;
     }
 
+    const EntityGroup& selection = scene->selectionSystem->GetSelection();
     if(selection.Size())
     {
         DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
         selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
-
         selectionBoxSize->setVisible(true);
     }
     else

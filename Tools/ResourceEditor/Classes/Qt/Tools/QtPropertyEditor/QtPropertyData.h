@@ -212,11 +212,11 @@ protected:
 	QtPropertyData *parent;
 	UserData* userData;
 
-	QList<QString> childrenNames;
-	QList<QtPropertyData*> childrenData;
-    QList<QtPropertyData*> mergedData;
-	
-	QWidget *optionalButtonsViewport;
+    QVector<QString> childrenNames;
+    QVector<QtPropertyData*> childrenData;
+    QVector<QtPropertyData*> mergedData;
+
+    QWidget *optionalButtonsViewport;
 	QVector<QtPropertyToolButton *> optionalButtons;
     
     QtPropertyDataValidator* validator;

@@ -179,7 +179,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 	{
 		// current selected entities
 		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-		EntityGroup selectedEntities = selectionSystem->GetSelection();
+        const EntityGroup& selectedEntities = selectionSystem->GetSelection();
 
         DAVA::Camera *camera = cameraSystem->GetCurCamera();
 
@@ -270,9 +270,9 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 					}
 
 					// say to selection system, that selected items were modified
-					selectionSystem->SelectedItemsWereModified();
+                    selectionSystem->CancelSelection();
 
-					// lock hood, so it wont process ui events, wont calc. scale depending on it current position
+                    // lock hood, so it wont process ui events, wont calc. scale depending on it current position
 					hoodSystem->LockScale(true);
 					hoodSystem->SetModifOffset(moveOffset);
 					hoodSystem->SetModifRotate(rotateAngle);
@@ -484,14 +484,13 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 		else if(!modificationByGizmoOnly)
 		{
 			// send this ray to collision system and get collision objects
-			const EntityGroup *collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
+            const EntityGroup::EntityVector& collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 
-			// check if one of got collision objects is intersected with selected items
+            // check if one of got collision objects is intersected with selected items
 			// if so - we can start modification
-            const auto& collisionEntitiesContent = collisionEntities->GetContent();
-            if (!collisionEntitiesContent.empty())
+            if (!collisionEntities.empty())
             {
-                for (const auto& itemI : collisionEntitiesContent)
+                for (const auto& itemI : collisionEntities)
                 {
                     for (const auto& itemJ : selectedEntities.GetContent())
                     {

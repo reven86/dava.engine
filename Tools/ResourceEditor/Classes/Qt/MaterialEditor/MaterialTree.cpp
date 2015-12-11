@@ -32,6 +32,7 @@
 #include "Main/mainwindow.h"
 #include "Scene/SceneSignals.h"
 #include "MaterialEditor/MaterialAssignSystem.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QDragMoveEvent>
 #include <QDragEnterEvent>
@@ -72,9 +73,8 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
 
 	if(NULL != sceneEditor)
 	{
-		EntityGroup curSelection = sceneEditor->selectionSystem->GetSelection();
-        OnSelectionChanged( sceneEditor, &curSelection, NULL );
-	}
+        OnSelectionChanged(sceneEditor, &sceneEditor->selectionSystem->GetSelection(), NULL);
+    }
 	else
 	{
 		treeModel->SetSelection(NULL);
@@ -153,7 +153,7 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
 { 
 	QMenu contextMenu(this);
 
-	contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
+    contextMenu.addAction(QSharedIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
 
     emit ContextMenuPrepare(&contextMenu);
 	contextMenu.exec(mapToGlobal(pos));

@@ -45,6 +45,7 @@
 
 #include "Project/ProjectManager.h"
 #include "Preset/Preset.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -339,9 +340,9 @@ void TextureListDelegate::drawPreviewSmall(QPainter *painter, const QStyleOption
 
 int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor) const
 {
-	static QIcon errorIcon = QIcon(":/QtIcons/error.png");
+    static QIcon errorIcon = QSharedIcon(":/QtIcons/error.png");
 
-	int ret = 0;
+    int ret = 0;
 	QRect r = rect;
 
 	if(nullptr != descriptor && nullptr != texture)

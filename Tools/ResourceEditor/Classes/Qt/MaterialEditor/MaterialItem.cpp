@@ -37,6 +37,7 @@
 #include "MaterialModel.h"
 #include "Main/QtUtils.h"
 #include "TextureBrowser/TextureCache.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace
 {

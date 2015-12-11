@@ -40,6 +40,8 @@
 #include <QLabel>
 #include <QEvent>
 
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
 TileTexturePreviewWidget::TileTexturePreviewWidget(QWidget* parent)
 :	QTreeWidget(parent)
 ,	selectedTexture(0)
@@ -207,9 +209,7 @@ void TileTexturePreviewWidget::UpdateImage(int32 number)
 	}
 
 	QImage previewImage = qimg.copy(0, 0, size.width(), size.height());
-	QIcon icon = QIcon(QPixmap::fromImage(previewImage));
-
-	item->setIcon(0, icon);
+    item->setIcon(0, QIcon(QPixmap::fromImage(previewImage)));
 }
 
 void TileTexturePreviewWidget::UpdateColor(int32 number)
