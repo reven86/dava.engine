@@ -2,14 +2,14 @@
 set START_DIR=%CD%
 set SCRIPT_DIR=%~dp0
 set SOURCE_DIR=%1/
-set CMAKE_DIR=%~dp0cmake_build\bin\Release
+set CMAKE_DIR=%~dp0cmake_prebuilt\bin\Release
 
 echo START_DIR=%START_DIR%
 echo SCRIPT_DIR=%SCRIPT_DIR%
 echo SOURCE_DIR=%SOURCE_DIR%
 echo CMAKE_DIR=%CMAKE_DIR%
 
-if not exist %CMAKE_DIR%\cmake.exe ( (cd /D %~dp0) & (call rebuild_cmake.bat) & (cd /D %START_DIR%) )
+if not exist %CMAKE_DIR%\cmake.exe ( (cd /D %~dp0) & (call make_prebuilt.bat) & (cd /D %START_DIR%) )
 
 if not exist %CMAKE_DIR%\cmake.exe (echo "Can't find cmake.exe in %CMAKE_DIR%") & (exit /B)
 
