@@ -95,6 +95,12 @@ void DeviceListController::ShowView()
 
 void DeviceListController::OnDeviceDiscover(const QString& addr)
 {
+    if (!NetCore::IsNetworkEnabled())
+    {
+        Logger::Warning("[DeviceListController] Network is disabled in this build");
+        return;
+    }
+
     // addr should be in form ipaddress:port, port is optional and by default is 9999
 
     uint16 port = NetCore::DEFAULT_TCP_ANNOUNCE_PORT;
@@ -281,6 +287,12 @@ void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
 
 void DeviceListController::OnConnectButtonPressed()
 {
+    if (!NetCore::IsNetworkEnabled())
+    {
+        Logger::Warning("[DeviceListController] Network is disabled in this build");
+        return;
+    }
+
     // 'Connect' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)
@@ -296,6 +308,12 @@ void DeviceListController::OnConnectButtonPressed()
 
 void DeviceListController::OnDisconnectButtonPressed()
 {
+    if (!NetCore::IsNetworkEnabled())
+    {
+        Logger::Warning("[DeviceListController] Network is disabled in this build");
+        return;
+    }
+
     // 'Disconnect' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)
@@ -309,6 +327,12 @@ void DeviceListController::OnDisconnectButtonPressed()
 
 void DeviceListController::OnShowLogButtonPressed()
 {
+    if (!NetCore::IsNetworkEnabled())
+    {
+        Logger::Warning("[DeviceListController] Network is disabled in this build");
+        return;
+    }
+
     // 'Show log' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)

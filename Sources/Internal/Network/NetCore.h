@@ -98,6 +98,8 @@ public:
 
     Vector<IfAddress> InstalledInterfaces() const;
 
+    static bool IsNetworkEnabled();
+
 private:
     void DoStart(IController* ctrl);
     void DoRestart();
@@ -119,7 +121,9 @@ private:
     bool isFinishing;
     volatile bool allStopped;                       // Flag indicating that all controllers are stopped; used in DestroyAllControllersBlocked
 
+#if !defined(DAVA_NETWORK_DISABLE)
     TrackId discovererId = INVALID_TRACK_ID;
+#endif
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -161,6 +165,15 @@ inline int32 NetCore::Run()
 inline int32 NetCore::Poll()
 {
     return loop.Run(IOLoop::RUN_NOWAIT);
+}
+
+inline bool NetCore::IsNetworkEnabled()
+{
+#if defined(DAVA_NETWORK_DISABLE)
+    return false;
+#else
+    return true;
+#endif
 }
 
 inline NetCore::TrackId NetCore::ObjectToTrackId(const IController* obj) const
