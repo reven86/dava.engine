@@ -72,7 +72,6 @@
 #include "Settings/SettingsDialog.h"
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/CommandLine/CommandLineManager.h"
 
 #include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
 
@@ -1323,11 +1322,11 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
             !FileSystem::Instance()->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
         {
             closeRequest->Cancel();
-			return;
-		}
-		
-		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
-	}
+            return;
+        }
+
+        scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+    }
 
     if(!SaveScene(scene))
     {
@@ -2672,7 +2671,7 @@ bool QtMainWindow::OpenScene( const QString & path )
                                                                               argumentPath.GetAbsolutePathname().c_str()));
         }
         else
-		{
+        {
             int needCloseIndex = -1;
 			SceneEditor2 *scene = ui->sceneTabWidget->GetCurrentScene();
 			if(scene && (ui->sceneTabWidget->GetTabCount() == 1))

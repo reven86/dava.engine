@@ -40,6 +40,7 @@ ScenePreviewDialog::ScenePreviewDialog()
     , clickableBackgound(nullptr)
 {
     UpdateSize();
+    GetBackground()->color = Color(2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f, 1.0f);
 
     clickableBackgound.reset(new UIControl());
     clickableBackgound->SetInputEnabled(true, true);

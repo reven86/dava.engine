@@ -47,8 +47,8 @@ void DAEConvertAction::Redo()
     if (FileSystem::Instance()->Exists(daePath) && daePath.IsEqualToExtension(".dae"))
     {
         eColladaErrorCodes code = ConvertDaeToSce(daePath);
-		if(code == COLLADA_OK)
-		{
+        if (code == COLLADA_OK)
+        {
             ConvertFromSceToSc2();
 			FileSystem::Instance()->DeleteFile(FilePath::CreateWithNewExtension(daePath, ".sce"));
         }

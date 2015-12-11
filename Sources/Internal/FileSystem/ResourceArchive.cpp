@@ -380,11 +380,11 @@ int32	ResourceArchive::LoadResource(const FilePath & pathName, void * data)
         {
             resourceIndex = nodeMap.find(pathName.GetAbsolutePathname())->second; //FindPathnameIndex(pathName);
             lastResourceIndex = resourceIndex;
-			lastResourceName = pathName;
-		}
-		else
-		{
-			resourceIndex = header.fileCount;
+            lastResourceName = pathName;
+        }
+        else
+        {
+            resourceIndex = header.fileCount;
 		}
 	}
 	return LoadResource(resourceIndex, data);

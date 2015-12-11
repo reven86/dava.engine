@@ -53,14 +53,14 @@ GameCore::GameCore()
     new GridVisualizer();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	new AutotestingSystem();
+    new AutotestingSystem();
 #endif
 
-	// Unpack the help data, if needed.
-	UnpackHelp();
+    // Unpack the help data, if needed.
+    UnpackHelp();
 
-	//Initialize internal resources of application
-	ResourcesManageHelper::InitInternalResources();
+    //Initialize internal resources of application
+    ResourcesManageHelper::InitInternalResources();
     UIControlSystem::Instance()->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 }
 
@@ -71,9 +71,8 @@ GameCore::~GameCore()
     EditorSettings::Instance()->Release();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	AutotestingSystem::Instance()->Release();
+    AutotestingSystem::Instance()->Release();
 #endif
-
 }
 
 void GameCore::OnAppStarted()

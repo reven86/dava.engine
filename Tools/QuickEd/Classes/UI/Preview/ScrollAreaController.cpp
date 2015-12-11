@@ -39,20 +39,20 @@ ScrollAreaController::ScrollAreaController(QObject* parent)
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
-    UIScreenManager::Instance()->RegisterScreen(0,  davaUIScreen);
+    UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
     UIScreenManager::Instance()->SetFirst(0);
-    
+
     UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
 }
 
 void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
 {
-    if(nullptr != nestedControl)
+    if (nullptr != nestedControl)
     {
         backgroundControl->RemoveControl(nestedControl);
     }
     nestedControl = arg;
-    if(nullptr != nestedControl)
+    if (nullptr != nestedControl)
     {
         backgroundControl->AddControl(nestedControl);
         UpdateCanvasContentSize();
@@ -72,7 +72,7 @@ void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
 {
     newScale = fmax(minScale, newScale);
     newScale = fmin(maxScale, newScale); //crop scale to 800
-    if(scale == newScale)
+    if (scale == newScale)
     {
         return;
     }
@@ -81,18 +81,17 @@ void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
     scale = newScale;
     UpdateCanvasContentSize();
     emit ScaleChanged(scale);
-    
-    if(oldScale == 0 || viewSize.width() <= 0 || viewSize.height() <= 0)
+
+    if (oldScale == 0 || viewSize.width() <= 0 || viewSize.height() <= 0)
     {
         SetPosition(QPoint(0, 0));
         return;
     }
-    
+
     QPoint absPosition = oldPos / oldScale;
     QPointF deltaMousePos = mousePos * (1 - newScale / oldScale);
-    QPoint newPosition(absPosition.x() * scale - deltaMousePos.x()
-                  , absPosition.y() * scale - deltaMousePos.y());
-    
+    QPoint newPosition(absPosition.x() * scale - deltaMousePos.x(), absPosition.y() * scale - deltaMousePos.y());
+
     newPosition.setX(qBound(0, newPosition.x(), (canvasSize - viewSize).width()));
     newPosition.setY(qBound(0, newPosition.y(), (canvasSize - viewSize).height()));
     SetPosition(newPosition);
@@ -147,7 +146,7 @@ void ScrollAreaController::UpdateCanvasContentSize()
 
 void ScrollAreaController::SetScale(qreal arg)
 {
-    if(scale != arg)
+    if (scale != arg)
     {
         AdjustScale(arg, QPoint(viewSize.width() / 2, viewSize.height() / 2)); //like cursor at center of view
     }
@@ -180,12 +179,12 @@ void ScrollAreaController::UpdatePosition()
     if (nullptr != movableControl)
     {
         QSize offset = (canvasSize - viewSize) / 2;
-        
-        if(offset.width() > 0)
+
+        if (offset.width() > 0)
         {
             offset.setWidth(position.x());
         }
-        if(offset.height() > 0)
+        if (offset.height() > 0)
         {
             offset.setHeight(position.y());
         }
