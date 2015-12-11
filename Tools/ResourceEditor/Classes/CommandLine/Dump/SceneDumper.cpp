@@ -39,8 +39,8 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 
-#include "Qt/Main/QtUtils.h"
-#include "CommandLine/CommandLineTool.h"
+#include "Main/QtUtils.h"
+#include "Project/ProjectManager.h"
 
 #include "StringConstants.h"
 
@@ -114,7 +114,7 @@ void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive *properties, SceneLink
     String pathname = properties->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
     if (!pathname.empty())
     {
-        FilePath projectPath = CommandLineTool::CreateProjectPathFromPath(scenePathname);
+        FilePath projectPath = ProjectManager::CreateProjectPathFromPath(scenePathname);
         links.emplace(projectPath + pathname);
     }
 }
@@ -233,7 +233,7 @@ void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links)
         {
             links.insert(flagsTXT);
         }
-	}
+    }
 }
 
 void SceneDumper::DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const

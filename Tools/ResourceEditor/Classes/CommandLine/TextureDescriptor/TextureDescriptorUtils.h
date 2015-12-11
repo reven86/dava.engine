@@ -30,12 +30,8 @@
 #ifndef __TEXTURE_DESCRIPTOR_UTILS_H__
 #define __TEXTURE_DESCRIPTOR_UTILS_H__
 
-#include "DAVAEngine.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
-
-
-//using namespace DAVA;
 
 class TextureDescriptorUtils
 {

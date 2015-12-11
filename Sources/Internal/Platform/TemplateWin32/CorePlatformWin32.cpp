@@ -402,8 +402,8 @@ namespace DAVA
     }
 
     DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
-	{
-		DWORD iModeNum = 0;
+    {
+        DWORD iModeNum = 0;
 		DEVMODE	dmi;
 		ZeroMemory (&dmi, sizeof(dmi)) ;
 		dmi.dmSize = sizeof(dmi);
@@ -527,8 +527,8 @@ namespace DAVA
         {
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
         }
-		if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
-		{
+        if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
+        {
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
 		}
 		if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)

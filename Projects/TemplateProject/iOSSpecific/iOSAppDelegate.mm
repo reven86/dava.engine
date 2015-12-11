@@ -35,25 +35,25 @@
 
 @synthesize window;
 
-- (void)applicationDidFinishLaunching:(UIApplication *)application 
-{    
-    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-	[window makeKeyAndVisible];
-	window.backgroundColor = [UIColor redColor];
-	
-	[super applicationDidFinishLaunching:application];
-}
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+- (void)applicationDidFinishLaunching:(UIApplication*)application
 {
     window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-	[window makeKeyAndVisible];
-	window.backgroundColor = [UIColor redColor];
-	
-	return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    [window makeKeyAndVisible];
+    window.backgroundColor = [UIColor redColor];
+
+    [super applicationDidFinishLaunching:application];
 }
 
-- (void)dealloc 
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+{
+    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    [window makeKeyAndVisible];
+    window.backgroundColor = [UIColor redColor];
+
+    return [super application:application didFinishLaunchingWithOptions:launchOptions];
+}
+
+- (void)dealloc
 {
     [window release];
     [super dealloc];

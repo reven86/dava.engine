@@ -60,8 +60,8 @@ public slots:
     void OnModelChanged();
 
 private slots:
-    void OnExpanded(const QModelIndex &index);
-    void OnCollapsed(const QModelIndex &index);
+    void OnExpanded(const QModelIndex& index);
+    void OnCollapsed(const QModelIndex& index);
 
 private:
     QAction *CreateAddComponentAction();
@@ -75,7 +75,7 @@ private:
     
     void UpdateSelection();
     void UpdateActions();
-    
+
     void ApplyExpanding();
 
     Document* document = nullptr;

@@ -57,9 +57,9 @@ public:
 
 private slots:
     void OnReloadSprites();
-    void OnFilesChanged(const QStringList &changedFiles);
-    void OnFilesRemoved(const QStringList &removedFiles);
-    
+    void OnFilesChanged(const QStringList& changedFiles);
+    void OnFilesRemoved(const QStringList& removedFiles);
+
     void OnOpenPackageFile(const QString &path);
     void OnProjectPathChanged(const QString &path);
     void OnGLWidgedInitialized();
@@ -79,18 +79,18 @@ private slots:
     void OnGlobalStyleClassesChanged(const QString &classesStr);
 
     void OnApplicationStateChanged(Qt::ApplicationState state);
-    void OnFileChanged(const QString & path);
+    void OnFileChanged(const QString& path);
 
 private:
     void ApplyFileChanges();
-    Document* GetDocument(const QString &path) const;
+    Document* GetDocument(const QString& path) const;
     void OpenProject(const QString &path);
     bool CloseProject();
-    int CreateDocument(int index, PackageNode *package);
+    int CreateDocument(int index, PackageNode* package);
     void SaveDocument(Document *document);
 
     void CloseDocument(int index);
-    int GetIndexByPackagePath(const DAVA::FilePath &davaPath) const;
+    int GetIndexByPackagePath(const DAVA::FilePath& davaPath) const;
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     Project* project = nullptr;
@@ -98,7 +98,7 @@ private:
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
     DAVA::UIControl* rootControl = nullptr;
-    QFileSystemWatcher *fileSystemWatcher = nullptr;
+    QFileSystemWatcher* fileSystemWatcher = nullptr;
     QSet<QString> changedFiles;
 };
 

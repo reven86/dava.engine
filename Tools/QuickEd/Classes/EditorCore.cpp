@@ -157,11 +157,10 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
 {
     bool yesToAll = false;
     bool noToAll = false;
-    int changedCount = std::count_if(documents.begin(), documents.end(), [changedFiles](Document *document)
-    {
+    int changedCount = std::count_if(documents.begin(), documents.end(), [changedFiles](Document* document) {
         return !document->GetUndoStack()->isClean() && changedFiles.contains(document->GetPackageAbsolutePath());
     });
-    for (Document *document : documents)
+    for (Document* document : documents)
     {
         QString path = document->GetPackageAbsolutePath();
         if (changedFiles.contains(path))
@@ -180,14 +179,10 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
                 {
                     QFileInfo fileInfo(path);
                     button = QMessageBox::warning(
-                        qApp->activeWindow()
-                        , tr("File %1 changed").arg(fileInfo.fileName())
-                        , tr("%1\n\nThis file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath())
-                        , changedCount > 1 ?
-                        QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll
-                        : QMessageBox::Yes | QMessageBox::No
-                        , QMessageBox::Yes
-                        );
+                    qApp->activeWindow(), tr("File %1 changed").arg(fileInfo.fileName()), tr("%1\n\nThis file has been modified outside of the editor. Do you want to reload it?").arg(fileInfo.absoluteFilePath()), changedCount > 1 ?
+                    QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll :
+                    QMessageBox::Yes | QMessageBox::No,
+                    QMessageBox::Yes);
                     yesToAll = button == QMessageBox::YesToAll;
                     noToAll = button == QMessageBox::NoToAll;
                 }
@@ -214,7 +209,7 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
 
 void EditorCore::OnFilesRemoved(const QStringList& removedFiles)
 {
-    for (Document *document : documents)
+    for (Document* document : documents)
     {
         QString path = document->GetPackageAbsolutePath();
         if (removedFiles.contains(path))
@@ -224,12 +219,7 @@ void EditorCore::OnFilesRemoved(const QStringList& removedFiles)
             QMessageBox::StandardButton button = QMessageBox::No;
             QFileInfo fileInfo(path);
             button = QMessageBox::warning(
-                qApp->activeWindow()
-                , tr("File %1 is renamed or deleted").arg(fileInfo.fileName())
-                , tr("%1\n\nThis file has been renamed or deleted outside of the editor. Do you want to close it?").arg(fileInfo.absoluteFilePath())
-                , QMessageBox::Yes | QMessageBox::No
-                , QMessageBox::No
-                );
+            qApp->activeWindow(), tr("File %1 is renamed or deleted").arg(fileInfo.fileName()), tr("%1\n\nThis file has been renamed or deleted outside of the editor. Do you want to close it?").arg(fileInfo.absoluteFilePath()), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
             if (button == QMessageBox::Yes)
             {
                 CloseDocument(documents.indexOf(document));
@@ -438,7 +428,7 @@ void EditorCore::ApplyFileChanges()
 {
     QStringList changed;
     QStringList removed;
-    for (const QString &filePath : changedFiles)
+    for (const QString& filePath : changedFiles)
     {
         if (QFileInfo::exists(filePath))
         {
@@ -460,7 +450,7 @@ void EditorCore::ApplyFileChanges()
     }
 }
 
-Document* EditorCore::GetDocument(const QString &path) const
+Document* EditorCore::GetDocument(const QString& path) const
 {
     FilePath davaPath(path.toStdString().c_str());
     for (Document* document : documents)
@@ -542,10 +532,9 @@ void EditorCore::CloseDocument(int index)
     documentGroup->SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
     documentGroup->RemoveDocument(detached);
     delete detached; //some widgets hold this document inside :(
-
 }
 
-int EditorCore::CreateDocument(int index, PackageNode *package)
+int EditorCore::CreateDocument(int index, PackageNode* package)
 {
     Document *document = new Document(package, this);
     documents.insert(index, document);
@@ -556,7 +545,7 @@ int EditorCore::CreateDocument(int index, PackageNode *package)
     if (!fileSystemWatcher->addPath(path))
     {
         DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
-    }    
+    }
     return index;
 }
 
@@ -577,7 +566,7 @@ void EditorCore::SaveDocument(Document *document)
     }
 }
 
-int EditorCore::GetIndexByPackagePath(const FilePath &davaPath) const
+int EditorCore::GetIndexByPackagePath(const FilePath& davaPath) const
 {
     for (int index = 0; index < documents.size(); ++index)
     {

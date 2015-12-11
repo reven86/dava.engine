@@ -63,7 +63,6 @@ private:
 	void DumpEffect(DAVA::ParticleEffectComponent *effect, SceneLinks &links) const;
 	void DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const;
 
-private:
 	DAVA::Scene *scene = nullptr;
     DAVA::FilePath scenePathname;
 };

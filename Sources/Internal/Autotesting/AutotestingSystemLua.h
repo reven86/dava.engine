@@ -133,18 +133,15 @@ public:
 	String GetText(UIControl* control);
 
 	// multiplayer api
-	void WriteState(const String &device, const String &state);
-	void WriteCommand(const String &device, const String &state);
     int32 GetServerQueueState(const String &serverName);
     bool SetServerQueueState(const String &serverName, int32 state);
 
+    String ReadState(const String& device, const String& param);
+    void WriteState(const String& device, const String& param, const String& state);
 
-	String ReadState(const String &device);
-	String ReadCommand(const String &device);
+    void InitializeDevice();
 
-	void InitializeDevice(const String &device);
-
-	String GetDeviceName();
+    String GetDeviceName();
 	String GetPlatform();
 
 	bool IsPhoneScreen();
@@ -153,9 +150,6 @@ public:
 	bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive* archive);
 
 	String GetTestParameter(const String &device);
-
-	void WriteString(const String &name, const String &text);
-	String ReadString(const String &name);
 
 	String MakeScreenshot();
 
