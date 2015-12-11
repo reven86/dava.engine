@@ -104,11 +104,10 @@ void QtLayer::ProcessFrame()
     rhi::InvalidateCache(); //as QT itself can break gl states
     Core::Instance()->SystemProcessFrame();
 }
-    
 
-void QtLayer::Resize(int32 width, int32 height)
+void QtLayer::Resize(int32 width, int32 height, int32 currentScreen)
 {
-    float64 screenScale = DPIHelper::GetDpiScaleFactor(0);
+    float64 screenScale = DPIHelper::GetDpiScaleFactor(currentScreen);
     int32 realWidth = static_cast<int32>(width * screenScale);
     int32 realHeight = static_cast<int32>(height * screenScale);
     rhi::ResetParam resetParams;
@@ -122,9 +121,9 @@ void QtLayer::Resize(int32 width, int32 height)
     vcs->SetInputScreenAreaSize(realWidth, realHeight);
     
     vcs->UnregisterAllAvailableResourceSizes();
-    vcs->RegisterAvailableResourceSize(realWidth, realHeight, "Gfx");
-    vcs->RegisterAvailableResourceSize(realWidth, realHeight, "Gfx2");
-    
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx");
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx2");
+
     vcs->SetPhysicalScreenSize(realWidth, realHeight);
     vcs->SetVirtualScreenSize(width, height);
     vcs->ScreenSizeChanged();

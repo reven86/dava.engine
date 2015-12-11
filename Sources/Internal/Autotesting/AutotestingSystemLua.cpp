@@ -210,8 +210,8 @@ namespace DAVA
         if (!Instance()->LoadScriptFromFile(path))
         {
             AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
-		}
-		lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
+        }
+        lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
 		if (!Instance()->RunScript())
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
@@ -522,8 +522,8 @@ namespace DAVA
         }
         case DVKEY_ENTER:
         {
-			uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
-			break;
+            uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
+            break;
 		}
 		case DVKEY_ESCAPE:
 		{
@@ -761,8 +761,8 @@ namespace DAVA
             return false;
         }
         //TODO: check if modules really loaded
-		return delegate->LoadWrappedLuaObjects(luaState);
-	}
+        return delegate->LoadWrappedLuaObjects(luaState);
+    }
 
 	bool AutotestingSystemLua::LoadScript(const String &luaScript)
 	{

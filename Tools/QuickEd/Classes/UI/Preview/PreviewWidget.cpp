@@ -310,7 +310,7 @@ void PreviewWidget::OnScaleByComboText()
     scrollAreaController->SetScale(scale / 100.0f);
 }
 
-void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
+void PreviewWidget::OnGLWidgetResized(int width, int height)
 {
     scrollAreaController->SetViewSize(QSize(width, height));
     UpdateScrollArea();

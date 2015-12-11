@@ -271,7 +271,7 @@ ParticleLayer * ParticleLayer::Clone()
 
     dstLayer->spritePath = spritePath;
     dstLayer->activeLODS = activeLODS;
-	dstLayer->isLong = isLong;
+    dstLayer->isLong = isLong;
 
 	return dstLayer;
 }
@@ -659,7 +659,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
     const YamlNode* deltaTimeNode = node->Get("deltaTime");
     if (deltaTimeNode)
-		deltaTime = deltaTimeNode->AsFloat();
+        deltaTime = deltaTimeNode->AsFloat();
 		
 	const YamlNode * deltaVariationNode = node->Get("deltaVariation");
 	if (deltaVariationNode)

@@ -192,9 +192,9 @@ void UIWebView::UpdateControlRect()
 
 void UIWebView::SetRenderToTexture(bool value)
 {
-#ifdef ENABLE_WEB_VIEW_RENDER_TO_TEXTURE
+    // for now disable this functionality
+    value = false;
     webViewControl->SetRenderToTexture(value);
-#endif //ENABLE_WEB_VIEW_RENDER_TO_TEXTURE
 }
 
 bool UIWebView::IsRenderToTexture() const
