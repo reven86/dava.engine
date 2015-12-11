@@ -30,11 +30,12 @@
 #ifndef __UI_EDITOR_UI_PACKAGE_WIDGET__
 #define __UI_EDITOR_UI_PACKAGE_WIDGET__
 
-#include <QWidget>
-#include <QDockWidget>
 #include "EditorSystems/SelectionContainer.h"
 #include "Base/BaseTypes.h"
 #include "ui_PackageWidget.h"
+#include <QWidget>
+#include <QDockWidget>
+#include <QModelIndex>
 
 class Document;
 class ControlNode;

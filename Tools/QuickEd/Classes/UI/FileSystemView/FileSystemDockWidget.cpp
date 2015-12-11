@@ -27,28 +27,25 @@
 =====================================================================================*/
 
 
+#include "Debug/DVAssert.h"
+#include "FileSystem/Logger.h"
+
 #include "FileSystemDockWidget.h"
 #include "ValidatedTextInputDialog.h"
 #include "FileSystemModel.h"
-
-#include "FileSystem/Logger.h"
 
 #include "ui_FileSystemDockWidget.h"
 #include <QMenu>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QProcess>
+#include <QModelIndex>
 #include <QDialogButtonBox>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QDirIterator>
 
 #include "QtTools/FileDialog/FileDialog.h"
-
-namespace
-{
-const QString yamlExtensionString = ".yaml";
-} //unnamed namespace
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -63,7 +60,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     
     model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
     QStringList filters;
-    filters << "*" + yamlExtensionString;
+    filters << "*" + FileSystemModel::GetYamlExtensionString();
     model->setNameFilters(filters);
     model->setNameFilterDisables(false);
     model->setReadOnly(false);
@@ -168,7 +165,7 @@ bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
     QDirIterator dirIterator(dir, QDirIterator::Subdirectories);
     while (dirIterator.hasNext())
     {
-        if (dirIterator.next().endsWith(yamlExtensionString))
+        if (dirIterator.next().endsWith(FileSystemModel::GetYamlExtensionString()))
         {
             return false;
         }
@@ -193,7 +190,7 @@ void FileSystemDockWidget::onDoubleClicked(const QModelIndex &index)
 void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
 {
     QStringList filters;
-    filters << QString("*%1*" + yamlExtensionString).arg(filterStr);
+    filters << QString("*%1*" + FileSystemModel::GetYamlExtensionString()).arg(filterStr);
     model->setNameFilters(filters);
 }
 
@@ -258,14 +255,14 @@ void FileSystemDockWidget::onNewFile()
     QModelIndex currIndex = selectedIndexes.empty() ? ui->treeView->rootIndex() : selectedIndexes.front();
 
     QString folderPath = model->filePath(currIndex);
-    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*" + yamlExtensionString);
+    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*" + FileSystemModel::GetYamlExtensionString());
     if (strFile.isEmpty())
     {
         return;
     }
-    if (!strFile.endsWith(yamlExtensionString))
+    if (!strFile.endsWith(FileSystemModel::GetYamlExtensionString()))
     {
-        strFile += yamlExtensionString;
+        strFile += FileSystemModel::GetYamlExtensionString();
     }
 
     QFile file(strFile);
