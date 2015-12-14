@@ -89,3 +89,8 @@ CollisionBaseObject::ClassifyPlaneResult CollisionLandscape::ClassifyToPlane(con
 {
     return ClassifyPlaneResult::Behind;
 }
+
+CollisionBaseObject::ClassifyPlanesResult CollisionLandscape::ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes)
+{
+    return ClassifyPlanesResult::Outside;
+}

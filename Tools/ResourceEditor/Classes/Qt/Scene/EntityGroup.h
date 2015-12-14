@@ -56,7 +56,7 @@ public:
     EntityMap& GetMutableContent();
     const EntityMap& GetContent() const;
 
-    DAVA::AABBox3 GetCommonBbox() const;
+    const DAVA::AABBox3& GetCommonBbox() const;
 
     DAVA::Vector3 GetFirstZeroPos() const;
     DAVA::Vector3 GetCommonZeroPos() const;

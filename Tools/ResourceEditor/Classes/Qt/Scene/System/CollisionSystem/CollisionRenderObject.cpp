@@ -80,21 +80,21 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 					    DAVA::uint16 index1 = pg->indexArray[i+1];
 					    DAVA::uint16 index2 = pg->indexArray[i+2];
 
-					    DAVA::Vector3 v;
-					    pg->GetCoord(index0, v);
-					    v = v * curEntityTransform;
-					    btVector3 vertex0(v.x, v.y, v.z);
+                        DAVA::Vector3 v0;
+                        DAVA::Vector3 v1;
+                        DAVA::Vector3 v2;
+                        pg->GetCoord(index0, v0);
+                        pg->GetCoord(index1, v1);
+                        pg->GetCoord(index2, v2);
 
-					    pg->GetCoord(index1, v);
-					    v = v * curEntityTransform;
-					    btVector3 vertex1(v.x, v.y, v.z);
+                        v0 = v0 * curEntityTransform;
+                        v1 = v1 * curEntityTransform;
+                        v2 = v2 * curEntityTransform;
 
-					    pg->GetCoord(index2, v);
-					    v = v * curEntityTransform;
-					    btVector3 vertex2(v.x, v.y, v.z);
-
-					    btTriangles->addTriangle(vertex0, vertex1, vertex2, false);
-				    }
+                        btTriangles->addTriangle(btVector3(v0.x, v0.y, v0.z),
+                                                 btVector3(v1.x, v1.y, v1.z),
+                                                 btVector3(v2.x, v2.y, v2.z), false);
+                    }
 
 				    // save original bbox
 				    boundingBox.AddAABBox(pg->GetBoundingBox());
@@ -127,49 +127,107 @@ CollisionRenderObject::~CollisionRenderObject()
 	}
 }
 
-struct ClassifyTrianglesCallback : public btInternalTriangleIndexCallback
+struct ClassifyTrianglesToSinglePlaneCallback : public btInternalTriangleIndexCallback
 {
     DAVA::Plane plane;
     CollisionBaseObject::ClassifyPlaneResult result = CollisionBaseObject::ClassifyPlaneResult::Behind;
 
-    ClassifyTrianglesCallback(const DAVA::Plane& pl)
+    ClassifyTrianglesToSinglePlaneCallback(const DAVA::Plane& pl)
         : plane(pl)
     {
     }
 
     void internalProcessTriangleIndex(btVector3* triangle, int partId, int triangleIndex) override
     {
-        if (result != CollisionBaseObject::ClassifyPlaneResult::Behind)
+        if (result == CollisionBaseObject::ClassifyPlaneResult::Behind)
         {
-            return;
+            float d0 = plane.DistanceToPoint(DAVA::Vector3(triangle[0].x(), triangle[0].y(), triangle[0].z()));
+            float d1 = plane.DistanceToPoint(DAVA::Vector3(triangle[1].x(), triangle[1].y(), triangle[1].z()));
+            float d2 = plane.DistanceToPoint(DAVA::Vector3(triangle[2].x(), triangle[2].y(), triangle[2].z()));
+            DAVA::float32 minDistance = std::min(d0, std::min(d1, d2));
+            DAVA::float32 maxDistance = std::max(d0, std::max(d1, d2));
+            if ((minDistance >= 0.0f) && (maxDistance >= 0.0f))
+            {
+                result = CollisionBaseObject::ClassifyPlaneResult::InFront;
+            }
+            else if (((minDistance < 0.0f) && (maxDistance >= 0.0f)) || ((minDistance >= 0.0f) && (maxDistance < 0.0f)))
+            {
+                result = CollisionBaseObject::ClassifyPlaneResult::Intersects;
+            }
         }
+    }
+};
 
-        float d0 = plane.DistanceToPoint(DAVA::Vector3(triangle[0].x(), triangle[0].y(), triangle[0].z()));
-        float d1 = plane.DistanceToPoint(DAVA::Vector3(triangle[1].x(), triangle[1].y(), triangle[1].z()));
-        float d2 = plane.DistanceToPoint(DAVA::Vector3(triangle[2].x(), triangle[2].y(), triangle[2].z()));
-        DAVA::float32 minDistance = std::min(d0, std::min(d1, d2));
-        DAVA::float32 maxDistance = std::max(d0, std::max(d1, d2));
+inline bool CROLocal_FloatIsNegative(float& value)
+{
+    return (reinterpret_cast<DAVA::uint32&>(value) & 0x80000000) == 0x80000000;
+}
 
-        if ((minDistance >= 0.0f) && (maxDistance >= 0.0f))
+inline const DAVA::Vector3& CROLocal_btVectorToDava(const btVector3* v)
+{
+    return *(reinterpret_cast<const DAVA::Vector3*>(v));
+}
+
+struct ClassifyTrianglesToMultiplePlanesCallback : public btInternalTriangleIndexCallback
+{
+    DAVA::Plane* planes = nullptr;
+    size_t numPlanes = 0;
+    int numTriangles = 0;
+    int trianglesBehind = 0;
+
+    ClassifyTrianglesToMultiplePlanesCallback(DAVA::Plane* pl, size_t np, int nt)
+        : planes(pl)
+        , numPlanes(np)
+        , numTriangles(nt)
+    {
+    }
+
+    void internalProcessTriangleIndex(btVector3* triangle, int partId, int triangleIndex) override
+    {
+        for (size_t i = 0; i < numPlanes; ++i)
         {
-            result = CollisionBaseObject::ClassifyPlaneResult::InFront;
-        }
-        else if (((minDistance < 0.0f) && (maxDistance >= 0.0f)) || ((minDistance >= 0.0f) && (maxDistance < 0.0f)))
-        {
-            result = CollisionBaseObject::ClassifyPlaneResult::Intersects;
+            float d0 = planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle));
+            float d1 = planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle + 1));
+            float d2 = planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle + 2));
+            DAVA::float32 minDistance = std::min(d0, std::min(d1, d2));
+            DAVA::float32 maxDistance = std::max(d0, std::max(d1, d2));
+            if (CROLocal_FloatIsNegative(minDistance) && CROLocal_FloatIsNegative(maxDistance))
+            {
+                ++trianglesBehind;
+                break;
+            }
         }
     }
 };
 
 CollisionBaseObject::ClassifyPlaneResult CollisionRenderObject::ClassifyToPlane(const DAVA::Plane& plane)
 {
-    DAVA::Plane localPlane = TransformPlaneToLocalSpace(plane);
-    if ((btShape == nullptr) || (ClassifyBoundingBoxToPlane(boundingBox, localPlane) == ClassifyPlaneResult::Behind))
+    if ((btShape == nullptr) || (ClassifyBoundingBoxToPlane(boundingBox, plane) == ClassifyPlaneResult::Behind))
         return ClassifyPlaneResult::Behind;
 
     btBvhTriangleMeshShape* shape = static_cast<btBvhTriangleMeshShape*>(btShape);
 
-    ClassifyTrianglesCallback cb(plane);
+    ClassifyTrianglesToSinglePlaneCallback cb(plane);
     btTriangles->InternalProcessAllTriangles(&cb, shape->getLocalAabbMin(), shape->getLocalAabbMax());
     return cb.result;
+}
+
+CollisionBaseObject::ClassifyPlanesResult CollisionRenderObject::ClassifyToPlanes(DAVA::Plane* planes, size_t numPlanes)
+{
+    if (btShape == nullptr)
+        return CollisionBaseObject::ClassifyPlanesResult::Outside;
+
+    for (size_t i = 0; i < numPlanes; ++i)
+    {
+        if (ClassifyBoundingBoxToPlane(boundingBox, TransformPlaneToLocalSpace(planes[i])) == ClassifyPlaneResult::Behind)
+        {
+            return CollisionBaseObject::ClassifyPlanesResult::Outside;
+        }
+    }
+
+    btBvhTriangleMeshShape* shape = static_cast<btBvhTriangleMeshShape*>(btShape);
+    ClassifyTrianglesToMultiplePlanesCallback cb(planes, numPlanes, btTriangles->getNumTriangles());
+    btTriangles->InternalProcessAllTriangles(&cb, shape->getLocalAabbMin(), shape->getLocalAabbMax());
+    return (cb.trianglesBehind == btTriangles->getNumTriangles()) ? CollisionBaseObject::ClassifyPlanesResult::Outside :
+                                                                    CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects;
 }

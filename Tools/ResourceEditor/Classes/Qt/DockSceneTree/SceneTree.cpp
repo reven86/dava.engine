@@ -855,17 +855,15 @@ void SceneTree::SyncSelectionToTree()
             lastValidIndex = sIndex;
             toSelect.push_back(sIndex);
         }
-	}
+    }
 
     if (!toSelect.empty())
     {
         selectionModel()->clear();
-        bool wasBlocked = selectionModel()->blockSignals(true);
         for (const auto& index : toSelect)
         {
             selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
         }
-        selectionModel()->blockSignals(wasBlocked);
         scrollTo(lastValidIndex, QAbstractItemView::PositionAtCenter);
     }
 

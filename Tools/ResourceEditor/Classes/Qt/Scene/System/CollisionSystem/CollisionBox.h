@@ -39,6 +39,7 @@ public:
     ~CollisionBox();
 
     CollisionBaseObject::ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) override;
+    CollisionBaseObject::ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) override;
 
 private:
     btCollisionShape* btShape = nullptr;

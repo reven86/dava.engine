@@ -54,6 +54,12 @@ public:
         Behind
     };
 
+    enum class ClassifyPlanesResult
+    {
+        ContainsOrIntersects,
+        Outside
+    };
+
 public:
     CollisionBaseObject(DAVA::Entity* ent, btCollisionWorld* word)
         : entity(ent)
@@ -64,6 +70,7 @@ public:
 	{ }
 
     virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
+    virtual ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) = 0;
 
     inline CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
     inline DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;

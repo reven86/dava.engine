@@ -107,14 +107,9 @@ DAVA::AABBox3 EntityGroup::GetBboxSlow(size_t i) const
     return DAVA::AABBox3();
 }
 
-DAVA::AABBox3 EntityGroup::GetCommonBbox() const
+const DAVA::AABBox3& EntityGroup::GetCommonBbox() const
 {
-    DAVA::AABBox3 ret;
-    for (const auto& item : entities)
-    {
-        ret.AddAABBox(item.second);
-    }
-    return ret;
+    return entitiesBbox;
 }
 
 DAVA::Vector3 EntityGroup::GetFirstZeroPos() const

@@ -566,22 +566,8 @@ const EntityGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes
     planeClippedObjects.Clear();
     for (const auto& object : entityToCollision)
     {
-        if ((object.first == nullptr) || (object.second == nullptr))
-        {
-            continue;
-        }
-
-        bool shouldAdd = true;
-        for (DAVA::uint32 p = 0; p < numPlanes; ++p)
-        {
-            if (object.second->ClassifyToPlane(planes[p]) == CollisionBaseObject::ClassifyPlaneResult::Behind)
-            {
-                shouldAdd = false;
-                break;
-            }
-        }
-
-        if (shouldAdd)
+        if ((object.first != nullptr) && (object.second != nullptr) &&
+            (object.second->ClassifyToPlanes(planes, numPlanes) == CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects))
         {
             planeClippedObjects.Add(object.first, DAVA::AABBox3());
         }

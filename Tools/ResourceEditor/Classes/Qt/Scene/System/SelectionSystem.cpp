@@ -102,7 +102,7 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
     {
         for (auto& item : curSelections.GetMutableContent())
         {
-            item.second = GetSelectionAABox(item.first);
+            item.second = GetSelectionAABox(item.first, item.first->GetWorldTransform());
         }
         invalidSelectionBoxes = false;
     }

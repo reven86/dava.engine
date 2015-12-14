@@ -42,6 +42,7 @@ public:
 	virtual ~CollisionLandscape();
 
     CollisionBaseObject::ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) override;
+    CollisionBaseObject::ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) override;
 
 protected:
 	btHeightfieldTerrainShape* btTerrain;

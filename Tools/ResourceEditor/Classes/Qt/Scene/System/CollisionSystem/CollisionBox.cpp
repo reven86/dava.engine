@@ -61,3 +61,15 @@ CollisionBaseObject::ClassifyPlaneResult CollisionBox::ClassifyToPlane(const DAV
 {
     return ClassifyBoundingBoxToPlane(boundingBox, TransformPlaneToLocalSpace(plane));
 }
+
+CollisionBaseObject::ClassifyPlanesResult CollisionBox::ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes)
+{
+    for (size_t i = 0; i < numPlanes; ++i)
+    {
+        if (ClassifyToPlane(plane[i]) == CollisionBaseObject::ClassifyPlaneResult::Behind)
+        {
+            return CollisionBaseObject::ClassifyPlanesResult::Outside;
+        }
+    }
+    return CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects;
+}
