@@ -90,7 +90,7 @@ private:
     void UpdateLayerSprite();
 
     void FillLayerTypes();
-	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
+    int32 LayerTypeToIndex(ParticleLayer::eType layerType);
 
 private:
 	struct LayerTypeMap

@@ -242,3 +242,15 @@ void ProjectManager::UpdateInternalValues()
         workspacePath = "~doc:/ResourceEditor/" + projectPath.GetLastDirectoryName() + "/";
     }
 }
+
+DAVA::FilePath ProjectManager::CreateProjectPathFromPath(const DAVA::FilePath& pathname)
+{
+    DAVA::String fullPath = pathname.GetAbsolutePathname();
+    DAVA::String::size_type pos = fullPath.find("/Data");
+    if (pos != DAVA::String::npos)
+    {
+        return fullPath.substr(0, pos + 1);
+    }
+
+    return DAVA::FilePath();
+}

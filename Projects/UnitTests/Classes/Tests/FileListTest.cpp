@@ -177,21 +177,45 @@ DAVA_TESTCLASS(FileListTest)
     }
 
 #if defined(__DAVAENGINE_WINDOWS__)
-    void RunWindowsExtensionTest(const String& location)
+    DAVA_TEST(FileListTestWindowsExtensions)
     {
-        ScopedPtr<FileList> fileList(new FileList(location + "TestData/FileListTestWindowsExtension/"));
+        FileSystem* fs = FileSystem::Instance();
+        const String fileContent = "Hello :)";
+        const FilePath extPath = "~doc:/TestData/FileListTestWindowsExtension/";
 
-        TEST_VERIFY(fileList->GetDirectoryCount() == 1);
-        TEST_VERIFY(fileList->GetFileCount() == 0);
+        //extract cyrillic path from file
+        String cyrillicPathString;
+        RefPtr<File> cyrillicPathFile(File::Create(extPath + "path.txt", File::OPEN | File::READ));
+        TEST_VERIFY(cyrillicPathFile != nullptr);
+
+        cyrillicPathFile->ReadString(cyrillicPathString);
+        TEST_VERIFY(!cyrillicPathString.empty());
+
+        //create path and file
+        const FilePath cyrillicPath = extPath + cyrillicPathString;
+        fs->CreateDirectoryW(cyrillicPath.GetDirectory());
+        RefPtr<File> cyrillicFile(File::Create(cyrillicPath, File::CREATE | File::WRITE));
+        TEST_VERIFY(cyrillicFile != nullptr);
+        cyrillicFile->WriteString(fileContent);
+        cyrillicFile = nullptr;
+
+        //explore created path
+        String upperLevel = cyrillicPath.GetDirectory().GetAbsolutePathname();
+        upperLevel.pop_back();
+        RefPtr<FileList> fileList(new FileList(FilePath(upperLevel).GetDirectory()));
+        TEST_VERIFY(fileList->GetDirectoryCount() == 1); //cyrillic directory
+        TEST_VERIFY(fileList->GetFileCount() == 1); //file with cyrillic path definition
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
-            if (fileList->IsNavigationDirectory(ifo))
+            if (fileList->IsNavigationDirectory(ifo) || !fileList->IsDirectory(ifo))
+            {
                 continue;
+            }
 
             String filename = fileList->GetFilename(ifo);
             FilePath pathname = fileList->GetPathname(ifo);
-            ScopedPtr<FileList> files(new FileList(pathname));
+            RefPtr<FileList> files(new FileList(pathname));
             TEST_VERIFY(files->GetDirectoryCount() == 0);
 
             TEST_VERIFY(files->GetFileCount() == 1);
@@ -205,18 +229,11 @@ DAVA_TESTCLASS(FileListTest)
                 continue;
             }
 
-            const String expectedContent = "Hello :)";
             String content;
             file->ReadString(content);
 
-            TEST_VERIFY(content == expectedContent);
+            TEST_VERIFY(content == fileContent);
         }
-    }
-
-    DAVA_TEST(FileListTestWindowsExtensions)
-    {
-        RunWindowsExtensionTest("~res:/");
-        RunWindowsExtensionTest("~doc:/");
     }
 #endif // __DAVAENGINE_WINDOWS__
 

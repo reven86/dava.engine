@@ -36,15 +36,9 @@
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
-
 ScenePreviewControl::ScenePreviewControl(const Rect & rect)
     :   UI3DView(rect)
 {
-    needSetCamera = false;
-    editorScene = NULL;
-    rotationSystem = NULL;
-    RecreateScene();
-    
     SetInputEnabled(true, true);
 }
     
@@ -53,7 +47,7 @@ ScenePreviewControl::~ScenePreviewControl()
     ReleaseScene();
 
     SafeRelease(editorScene);
-    rotationSystem = NULL;
+    rotationSystem = nullptr;
 }
 
 void ScenePreviewControl::Input(DAVA::UIEvent *event)
@@ -63,17 +57,15 @@ void ScenePreviewControl::Input(DAVA::UIEvent *event)
 
 void ScenePreviewControl::RecreateScene()
 {
-    if(editorScene)
-    {
-        SetScene(NULL);
-        ReleaseScene();
-    }
-    
+    DVASSERT(editorScene == nullptr);
+
     editorScene = new Scene();
+    editorScene->GetMainPassConfig().priority = DAVA::PRIORITY_MAIN_2D - 5;
 
     rotationSystem = new RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);
-    editorScene->AddSystem(rotationSystem, (MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT)), Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+    editorScene->AddSystem(rotationSystem, (MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT)),
+                           Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
     SetScene(editorScene);
 }
@@ -134,25 +126,37 @@ void ScenePreviewControl::Update(float32 timeElapsed)
 
 void ScenePreviewControl::CreateCamera()
 {
-    needSetCamera = true;
+    auto sceneBox = editorScene->GetWTMaximumBoundingBoxSlow();
 
-    Camera * cam = new Camera();
-    //cam->SetDebugFlags(Entity::DEBUG_DRAW_ALL);
-    cam->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-    cam->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
-    cam->SetTarget(Vector3(0.0f, 1.0f, 0.0f));
+    ScopedPtr<Camera> camera(new Camera());
+    ScopedPtr<Entity> cameraNode(new Entity());
+    camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
+    camera->SetPosition(sceneBox.max * std::sqrt(3.0f));
+    camera->SetTarget(sceneBox.min);
+    camera->SetupPerspective(70.0f, 1.0f, 1.0f, 5000.0f);
+    cameraNode->SetName("preview-camera");
+    cameraNode->AddComponent(new CameraComponent(camera));
+    cameraNode->AddComponent(new RotationControllerComponent());
 
-    cam->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
+    ScopedPtr<Light> light(new Light());
+    ScopedPtr<Entity> lightNode(new Entity());
+    light->SetIntensity(300.0f);
+    light->SetDiffuseColor(Color::White);
+    light->SetAmbientColor(Color::White);
+    light->SetPosition(Vector3(0.0f, 0.0f, sceneBox.max.z + std::abs(sceneBox.max.z)));
+    light->SetType(Light::TYPE_POINT);
+    light->AddFlag(Light::IS_DYNAMIC);
+    light->AddFlag(Light::CAST_SHADOW);
+    lightNode->SetName("preview-light");
+    lightNode->AddComponent(new LightComponent(light));
+    lightNode->SetLocalTransform(Matrix4::MakeTranslation(light->GetPosition()));
 
-    ScopedPtr<Entity> node(new Entity());
-    node->SetName("preview-camera");
-    node->AddComponent(new CameraComponent(cam));
-    node->AddComponent(new DAVA::RotationControllerComponent());
-    editorScene->AddNode(node);
-    editorScene->AddCamera(cam);
-    editorScene->SetCurrentCamera(cam);
+    editorScene->AddNode(cameraNode);
+    editorScene->AddNode(lightNode);
 
-    SafeRelease(cam);
+    editorScene->AddCamera(camera);
+    editorScene->SetCurrentCamera(camera);
+    editorScene->Update(0.01f);
 }
 
 void ScenePreviewControl::SetupCamera()

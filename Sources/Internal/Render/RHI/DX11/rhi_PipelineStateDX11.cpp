@@ -684,10 +684,12 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     ID3D10Blob* fp_code = nullptr;
     ID3D10Blob* fp_err = nullptr;
 
-    //Logger::Info("create PS");
-    //Logger::Info("  vprog= %s",desc.vprogUid.c_str());
-    //Logger::Info("  fprog= %s",desc.vprogUid.c_str());
-    //desc.vertexLayout.Dump();
+#if 0
+    Logger::Info("create PS");
+    Logger::Info("  vprog= %s", desc.vprogUid.c_str());
+    Logger::Info("  fprog= %s", desc.vprogUid.c_str());
+    desc.vertexLayout.Dump();
+#endif
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
@@ -699,13 +701,9 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     NULL, // no macros
     NULL, // no includes
     "vp_main",
-        #if RHI_DX11__FORCE_9X_PROFILE
-    "vs_4_0_level_9_1",
-        #else
-    "vs_4_0",
-        #endif
+    (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "vs_4_0" : "vs_4_0_level_9_1",
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
-    0, // no effect-compile flags
+    0, // no effect compile flags
     &vp_code,
     &vp_err);
 
@@ -774,11 +772,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     NULL, // no macros
     NULL, // no includes
     "fp_main",
-        #if RHI_DX11__FORCE_9X_PROFILE
-    "ps_4_0_level_9_1",
-        #else
-    "ps_4_0",
-        #endif
+    (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "ps_4_0" : "ps_4_0_level_9_1",
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
     0, // no effect compile flags
     &fp_code,
