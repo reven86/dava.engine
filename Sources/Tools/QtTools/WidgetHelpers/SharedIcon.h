@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef QTTOOLS_WIDGETSTATEHELPER_H
-#define QTTOOLS_WIDGETSTATEHELPER_H
+#ifndef __DAVAENGINE_SHAREDICON_H__
+#define __DAVAENGINE_SHAREDICON_H__
 
 #include <QIcon>
 
