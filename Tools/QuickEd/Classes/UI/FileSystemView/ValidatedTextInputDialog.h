@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __QUICKED_VALIDATED_TEXT_INPUT_DIALOG_H__
 
 #include <QInputDialog>
+#include <functional>
 
 class QLineEdit;
 class QPushButton;

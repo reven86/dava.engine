@@ -31,6 +31,7 @@
 #define __QUICKED_FILE_SYSTEM_DIALOG_H__
 
 #include <QDockWidget>
+#include <QModelIndex>
 #include <memory>
 
 namespace Ui {
@@ -39,6 +40,7 @@ namespace Ui {
 
 class QFileSystemModel;
 class QInputDialog;
+class QItemSelection;
 
 class FileSystemDockWidget : public QDockWidget
 {
