@@ -72,5 +72,5 @@ const DAVA::String OptionName::SetCompression("-setcompression");
 
 const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
 {
-    return ("-" + GPUFamilyDescriptor::GetGPUName(gpuFamily));
+    return ("-" + DAVA::GPUFamilyDescriptor::GetGPUName(gpuFamily));
 }
