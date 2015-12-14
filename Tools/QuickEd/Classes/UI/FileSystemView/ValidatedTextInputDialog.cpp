@@ -27,7 +27,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
+#include "Debug/DVAssert.h"
 #include "ValidatedTextInputDialog.h"
+#include <QPushButton>
+#include <QDialogButtonBox>
 
 ValidatedTextInputDialog::ValidatedTextInputDialog(QWidget* parent)
     : QInputDialog(parent)
