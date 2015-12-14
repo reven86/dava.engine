@@ -297,7 +297,7 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
     YamlParser* parser = YamlParser::Create(filename);
     if (!parser)
     {
-		Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetAbsolutePathname().c_str());
+        Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -307,21 +307,20 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
 
     const YamlNode* emitterNode = rootNode->Get("emitter");
     if (emitterNode)
-	{
-	
-		const YamlNode * lifeTimeNode = emitterNode->Get("life");
-		if (lifeTimeNode)
-		{
-			lifeTime = lifeTimeNode->AsFloat();
-		}else
-		{
-			lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
-		}
-		
+    {
+        const YamlNode* lifeTimeNode = emitterNode->Get("life");
+        if (lifeTimeNode)
+        {
+            lifeTime = lifeTimeNode->AsFloat();
+        }
+        else
+        {
+            lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
+        }
 
-		const YamlNode * nameNode = emitterNode->Get("name");
-		if (nameNode)		
-			name = FastName(nameNode->AsString().c_str());
+        const YamlNode* nameNode = emitterNode->Get("name");
+        if (nameNode)
+            name = FastName(nameNode->AsString().c_str());
 		if (emitterNode->Get("emissionAngle"))
 			emissionAngle = PropertyLineYamlReader::CreatePropertyLine<float32>(emitterNode->Get("emissionAngle"));
         if (emitterNode->Get("emissionAngleVariation"))

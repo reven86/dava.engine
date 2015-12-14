@@ -90,6 +90,9 @@ public:
 
     void InitFromQualitySettings();
 
+    void SetDebugMode(bool debug = true);
+    bool IsDebugModeOn() const;
+
 protected:
     void ParseSFXConfig(const FilePath & configPath);
 

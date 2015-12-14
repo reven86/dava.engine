@@ -49,13 +49,13 @@ namespace rhi
 typedef ResourcePool<ProgGLES2::ConstBuf, RESOURCE_CONST_BUFFER, ProgGLES2::ConstBuf::Desc, false> ConstBufGLES2Pool;
 RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf, RESOURCE_CONST_BUFFER, ProgGLES2::ConstBuf::Desc, false, 12 * 1024);
 
-static RingBuffer DefaultConstRingBuffer;
+static RingBuffer _GLES2_DefaultConstRingBuffer;
 uint32 ProgGLES2::ConstBuf::CurFrame = 0;
 
 //==============================================================================
 
 static void
-DumpShaderText(const char* code, unsigned code_sz)
+DumpShaderTextGLES2(const char* code, unsigned code_sz)
 {
     char src[64 * 1024];
     char* src_line[1024];
@@ -118,7 +118,7 @@ ProgGLES2::ProgGLES2(ProgType t)
 {
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
     {
-        cbuf[i].location = InvalidIndex;
+        cbuf[i].location = DAVA::InvalidIndex;
         cbuf[i].count = 0;
     }
 
@@ -164,8 +164,8 @@ bool ProgGLES2::Construct(const char* srcCode)
         else
         {
             Logger::Error("%sprog-compile failed:", (type == PROG_VERTEX) ? "v" : "f");
-            Logger::Info(info);
-            DumpShaderText(srcCode, strlen(srcCode));
+            Logger::Error(info);
+            DumpShaderTextGLES2(srcCode, strlen(srcCode));
         }
 
         memset(cbufLastBoundData, 0, sizeof(cbufLastBoundData));
@@ -203,7 +203,7 @@ void ProgGLES2::GetProgParams(unsigned progUid)
         }
         else
         {
-            cbuf[i].location = InvalidIndex;
+            cbuf[i].location = DAVA::InvalidIndex;
             cbuf[i].count = 0;
         }
     }
@@ -211,7 +211,7 @@ void ProgGLES2::GetProgParams(unsigned progUid)
 
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
     {
-        cbuf[i].location = InvalidIndex;
+        cbuf[i].location = DAVA::InvalidIndex;
         cbuf[i].count = 0;
     }
 
@@ -278,7 +278,7 @@ void ProgGLES2::GetProgParams(unsigned progUid)
         {
             int loc = cmd[i].retval;
 
-            texunitLoc[i] = (loc != -1) ? loc : InvalidIndex;
+            texunitLoc[i] = (loc != -1) ? loc : DAVA::InvalidIndex;
 
             if (loc != -1)
                 ++texunitCount;
@@ -314,9 +314,9 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
 
     DVASSERT(bufIndex < countof(cbuf));
     DVASSERT(prog != 0)
-    //    DVASSERT(cbuf[bufIndex].location != InvalidIndex);
+    //    DVASSERT(cbuf[bufIndex].location != DAVA::InvalidIndex);
 
-    if (bufIndex < countof(cbuf) && cbuf[bufIndex].location != InvalidIndex)
+    if (bufIndex < countof(cbuf) && cbuf[bufIndex].location != DAVA::InvalidIndex)
     {
         handle = ConstBufGLES2Pool::Alloc();
 
@@ -436,9 +436,18 @@ bool ProgGLES2::ConstBuf::SetConst(unsigned const_i, unsigned const_count, const
 {
     bool success = false;
 
-    if (const_i + const_count <= count)
+    float* d = data + const_i * 4;
+    float* d_end = (data + const_i * 4 + const_count * 4);
+    float* end = data + count * 4;
+
+    // this is workaround against too clever GLSL-compilers (Tegra),
+    // when actual cbuf-array size is smaller that declared due to unused last elements
+    if (d_end >= end)
+        d_end = end;
+
+    if (d < d_end)
     {
-        memcpy(data + const_i * 4, cdata, const_count * 4 * sizeof(float));
+        memcpy(d, cdata, (d_end - d) * sizeof(float));
         ReallocIfneeded();
         success = true;
     }
@@ -452,7 +461,7 @@ bool ProgGLES2::ConstBuf::SetConst(unsigned const_i, unsigned const_sub_i, const
 {
     bool success = false;
 
-    if (const_i <= count && const_sub_i < 4)
+    if (const_i < count && const_sub_i < 4)
     {
         memcpy(data + const_i * 4 + const_sub_i, cdata, data_count * sizeof(float));
         ReallocIfneeded();
@@ -502,7 +511,7 @@ ProgGLES2::ConstBuf::Instance() const
         {
 #endif
         //SCOPED_NAMED_TIMING("gl.cb-inst");
-        inst = DefaultConstRingBuffer.Alloc(count * 4);
+        inst = _GLES2_DefaultConstRingBuffer.Alloc(count * 4);
         memcpy(inst, data, 4 * count * sizeof(float));
 #if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
         }
@@ -556,7 +565,7 @@ ProgGLES2::ShaderUid() const
 void ProgGLES2::InvalidateAllConstBufferInstances()
 {
     ConstBuf::AdvanceFrame();
-    DefaultConstRingBuffer.Reset();
+    _GLES2_DefaultConstRingBuffer.Reset();
 
 #if RHI_GL__DEBUG_CONST_BUFFERS
     unsigned staticCnt = 0;
@@ -685,7 +694,7 @@ void SetupDispatch(Dispatch* dispatch)
 
 void InitializeRingBuffer(uint32 size)
 {
-    DefaultConstRingBuffer.Initialize(size);
+    _GLES2_DefaultConstRingBuffer.Initialize(size);
 }
 
 void SetToRHI(const Handle cb, uint32 progUid, const void* instData)

@@ -157,6 +157,9 @@ enum eDefaultPassPriority
 
     PRIORITY_SERVICE_3D = 30,
     PRIORITY_SERVICE_2D = 40,
+
+    PRIORITY_SCREENSHOT_2D = 50,
+    PRIORITY_SCREENSHOT_3D = 60
 };
 
 // TODO: we have same structs & functions in PolygonGroup -- we should find a right place for them

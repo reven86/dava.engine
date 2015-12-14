@@ -153,8 +153,6 @@ ParticleLayer::ParticleLayer()
 
 ParticleLayer::~ParticleLayer()
 {
-	
-	SafeRelease(sprite);
 	SafeRelease(innerEmitter);
 	
 	CleanupForces();
@@ -246,31 +244,29 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->enableFrameBlend = enableFrameBlend;
     dstLayer->inheritPosition = inheritPosition;
     dstLayer->startTime = startTime;
-	dstLayer->endTime = endTime;
-	
-	
-	dstLayer->isLooped = isLooped;
-	dstLayer->deltaTime = deltaTime;
-	dstLayer->deltaVariation = deltaVariation;
-	dstLayer->loopVariation = loopVariation;
-	dstLayer->loopEndTime = loopEndTime;
-	
-	dstLayer->isDisabled = isDisabled;
+    dstLayer->endTime = endTime;
 
-	dstLayer->type = type;
+    dstLayer->isLooped = isLooped;
+    dstLayer->deltaTime = deltaTime;
+    dstLayer->deltaVariation = deltaVariation;
+    dstLayer->loopVariation = loopVariation;
+    dstLayer->loopEndTime = loopEndTime;
+
+    dstLayer->isDisabled = isDisabled;
+
+    dstLayer->type = type;
     dstLayer->degradeStrategy = degradeStrategy;
-	SafeRelease(dstLayer->sprite);
-	dstLayer->sprite = SafeRetain(sprite);
-	dstLayer->layerPivotPoint = layerPivotPoint;	
-	dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
+    dstLayer->sprite = sprite;
+    dstLayer->layerPivotPoint = layerPivotPoint;
+    dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
 
-	dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
-	dstLayer->frameOverLifeFPS = frameOverLifeFPS;
-	dstLayer->randomFrameOnStart = randomFrameOnStart;
-	dstLayer->loopSpriteAnimation = loopSpriteAnimation;
-	dstLayer->particleOrientation = particleOrientation;
+    dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
+    dstLayer->frameOverLifeFPS = frameOverLifeFPS;
+    dstLayer->randomFrameOnStart = randomFrameOnStart;
+    dstLayer->loopSpriteAnimation = loopSpriteAnimation;
+    dstLayer->particleOrientation = particleOrientation;
 
-	dstLayer->scaleVelocityBase = scaleVelocityBase;
+    dstLayer->scaleVelocityBase = scaleVelocityBase;
 	dstLayer->scaleVelocityFactor = scaleVelocityFactor;
     
 	dstLayer->spritePath = spritePath;
@@ -378,17 +374,14 @@ void ParticleLayer::UpdateLayerTime(float32 startTime, float32 endTime)
 	UpdatePropertyLineKeys(PropertyLineHelper::GetValueLine(angleVariation).Get(), startTime, translateTime, endTime);
 }
 
+void ParticleLayer::SetSprite(const FilePath& path)
+{
+    spritePath = path;
 
-
-void ParticleLayer::SetSprite(Sprite * _sprite)
-{    
-	SafeRelease(sprite);
-	sprite = SafeRetain(_sprite);
-
-	if(sprite)
-	{
-		spritePath = sprite->GetRelativePathname();
-	}
+    if (type != TYPE_SUPEREMITTER_PARTICLES)
+    {
+        sprite.reset(Sprite::Create(spritePath));
+    }
 }
 
 void ParticleLayer::SetPivotPoint(Vector2 pivot)
@@ -437,25 +430,18 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
 	const YamlNode * pivotPointNode = node->Get("pivotPoint");
 	
-    SetSprite(NULL);
 	const YamlNode * spriteNode = node->Get("sprite");
 	if (spriteNode && !spriteNode->AsString().empty())
 	{
 		// Store the absolute path to sprite.
-		spritePath = FilePath(configPath.GetDirectory(), spriteNode->AsString());
-
-        if (type != TYPE_SUPEREMITTER_PARTICLES)
+        FilePath spritePath = configPath.GetDirectory() + spriteNode->AsString();
+        SetSprite(spritePath);
+    }
+    if (pivotPointNode)
+    {
+        Vector2 _pivot = pivotPointNode->AsPoint();
+        if ((format == 0) && sprite)
         {
-		    Sprite * _sprite = Sprite::Create(spritePath);
-		    SetSprite(_sprite);
-            SafeRelease(_sprite);
-        }
-	}	
-	if(pivotPointNode)
-	{
-		Vector2 _pivot = pivotPointNode->AsPoint();
-		if ((format == 0)&&sprite)
-		{
 			
 			float32 ny=-_pivot.x/sprite->GetWidth()*2;
 			float32 nx=-_pivot.y/sprite->GetHeight()*2;
@@ -607,7 +593,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (blend)
     {
         if (blend->AsString() == "alpha")
-		{
+        {
             blending = BLENDING_ALPHABLEND;
         }
         if (blend->AsString() == "add")
@@ -645,31 +631,31 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (fogNode)
     {
         enableFog = fogNode->AsBool();
-	}
+    }
 
-	const YamlNode * frameBlendNode = node->Get("enableFrameBlend");	
-	if (frameBlendNode)
-	{
+    const YamlNode* frameBlendNode = node->Get("enableFrameBlend");
+    if (frameBlendNode)
+    {
         enableFrameBlend = frameBlendNode->AsBool();
     }
 
     startTime = 0.0f;
     endTime = 100000000.0f;
-    const YamlNode * startTimeNode = node->Get("startTime");
-	if (startTimeNode)
-		startTime = startTimeNode->AsFloat();
+    const YamlNode* startTimeNode = node->Get("startTime");
+    if (startTimeNode)
+        startTime = startTimeNode->AsFloat();
 
-	const YamlNode * endTimeNode = node->Get("endTime");
-	if (endTimeNode)
-		endTime = endTimeNode->AsFloat();
-		
-	isLooped = false;	
-	deltaTime = 0.0f;
-	deltaVariation = 0.0f;
-	loopVariation = 0.0f;
-	
-	const YamlNode * isLoopedNode = node->Get("isLooped");
-	if (isLoopedNode)
+    const YamlNode* endTimeNode = node->Get("endTime");
+    if (endTimeNode)
+        endTime = endTimeNode->AsFloat();
+
+    isLooped = false;
+    deltaTime = 0.0f;
+    deltaVariation = 0.0f;
+    loopVariation = 0.0f;
+
+    const YamlNode* isLoopedNode = node->Get("isLooped");
+    if (isLoopedNode)
 		isLooped = isLoopedNode->AsBool();
 		
 	const YamlNode * deltaTimeNode = node->Get("deltaTime");

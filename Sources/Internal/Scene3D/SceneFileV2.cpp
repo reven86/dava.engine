@@ -345,9 +345,8 @@ bool SceneFileV2::ReadVersionTags(VersionInfo::SceneVersion& _version, File * fi
 
         if (loaded)
         {
-            using KeyedTagsMap = Map<String, VariantType*>;
-            const KeyedTagsMap& keyedTags = tagsArchive->GetArchieveData();
-            for (KeyedTagsMap::const_iterator it = keyedTags.begin(); it != keyedTags.end(); it++)
+            const KeyedArchive::UnderlyingMap& keyedTags = tagsArchive->GetArchieveData();
+            for (KeyedArchive::UnderlyingMap::const_iterator it = keyedTags.begin(); it != keyedTags.end(); it++)
             {
                 const String& tag = it->first;
                 const uint32 ver = it->second->AsUInt32();
@@ -503,7 +502,9 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
 
         serializationContext.ResolveMaterialBindings();
     }
-    
+
+    ApplyFogQuality();
+
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
 
@@ -529,6 +530,44 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
     
     SafeRelease(file);
     return GetError();
+}
+
+void SceneFileV2::ApplyFogQuality()
+{
+    //RHI_COMPLETE: performance issues with fog
+
+    if (!serializationContext.GetScene())
+        return;
+
+    NMaterial* globalMaterial = serializationContext.GetScene()->GetGlobalMaterial();
+    if (globalMaterial)
+    {
+        QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
+
+        if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION))
+            globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION, 1);
+
+        if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING))
+            globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 1);
+
+        bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
+        bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
+
+        if (removeVertexFog || removeHalfSpaceFog)
+        {
+            Vector<NMaterial*> materials;
+            serializationContext.GetDataNodes(materials);
+
+            for (NMaterial* material : materials)
+            {
+                if (removeVertexFog && material->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
+                    material->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
+
+                if (removeHalfSpaceFog && material->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+                    material->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
+            }
+        }
+    }
 }
 
 SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
@@ -1034,9 +1073,9 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
                 if(currentProperties)
                 {
                     KeyedArchive * newProperties = GetOrCreateCustomProperties(childNode)->GetArchive();
-                    const Map<String, VariantType*> & oldMap = currentProperties->GetArchieveData();
-                    Map<String, VariantType*>::const_iterator itEnd = oldMap.end();
-                    for(Map<String, VariantType*>::const_iterator it = oldMap.begin(); it != itEnd; ++it)
+                    const KeyedArchive::UnderlyingMap& oldMap = currentProperties->GetArchieveData();
+                    KeyedArchive::UnderlyingMap::const_iterator itEnd = oldMap.end();
+                    for (KeyedArchive::UnderlyingMap::const_iterator it = oldMap.begin(); it != itEnd; ++it)
                     {
                         newProperties->SetVariant(it->first, *it->second);
                     }

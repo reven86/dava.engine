@@ -68,9 +68,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent * event) override;
     
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    void wheelEvent(QWheelEvent *) override;
+    void wheelEvent(QWheelEvent* event) override;
     void handleDragMoveEvent(QDragMoveEvent * event);
-    
+
 private:
     ControlMapper* controlMapper = nullptr;
 };

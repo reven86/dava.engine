@@ -279,9 +279,6 @@
     <ClInclude Include="..\..\Sources\Internal\Core\Core.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.h">
-      <Filter>Internal\Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
@@ -559,15 +556,6 @@
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManager.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhone.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhoneImpl.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerMacOS.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenTransition.h">
@@ -1729,6 +1717,11 @@
     <ClInclude Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_DX11.h">
       <Filter>Internal\Render\RHI\DX11</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h">
+      <Filter>Internal\Debug</Filter>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -1789,9 +1782,6 @@
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp">
-      <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.cpp">
       <Filter>Internal\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp">
@@ -1987,9 +1977,6 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreen.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerMacOS.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreenTransition.cpp">
@@ -3081,6 +3068,11 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_VertexBufferDX11.cpp">
       <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp">
+      <Filter>Internal\Debug</Filter>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.cpp">
+      <Filter>Internal\UI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

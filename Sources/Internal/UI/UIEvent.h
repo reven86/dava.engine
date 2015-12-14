@@ -92,20 +92,6 @@ public:
         BUTTON_3
     };
 
-    enum eJoystickAxisID : int32
-    {
-        JOYSTICK_AXIS_X = 0,
-        JOYSTICK_AXIS_Y,
-        JOYSTICK_AXIS_Z,
-        JOYSTICK_AXIS_RX,
-        JOYSTICK_AXIS_RY,
-        JOYSTICK_AXIS_RZ,
-        JOYSTICK_AXIS_LTRIGGER,
-        JOYSTICK_AXIS_RTRIGGER,
-        JOYSTICK_AXIS_HAT_X,
-        JOYSTICK_AXIS_HAT_Y
-    };
-
     enum class Device : uint32
     {
         UNKNOWN = 0,
@@ -132,6 +118,7 @@ public:
 
     uint32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
     Vector2 point; // point of pressure in virtual coordinates
+    Vector2 scrollDelta; // scroll delta in mouse wheel clicks (or lines)
     Vector2 physPoint; // point of pressure in physical coordinates
     float64 timestamp = 0.0; //(TODO not all platforms) time stemp of the event occurrence
     Phase phase = Phase::BEGAN; // began, ended, moved. See Phase

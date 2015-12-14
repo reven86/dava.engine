@@ -3,9 +3,19 @@
 // next find "User CDT Settings Entries"
 // ${ANDROID_NDK}/sources/android/support/include
 // ${ANDROID_NDK}/platforms/android-14/arch-arm/usr/include
+
+// For Clang libc++
 // ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libcxx/include
 // ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
 // ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++abi/include
+
+// For GCC libstdc++
+// ${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.8/include 
+// ${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi/include
+// some time add ${ANDROID_NDK}/platforms/android-14/arch-arm/usr/include
+// on windows may add:
+// ${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.8/prebuilt/windows-x86_64/lib/gcc/arm-linux-androideabi/4.8/include
+// ${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.8/prebuilt/windows-x86_64/lib/gcc/arm-linux-androideabi/4.8/include-fixed
 
 // C:/Users/l_chayka/job/dava.framework/Sources/Internal/.
 // C:/Users/l_chayka/job/dava.framework/Sources/Internal
@@ -25,7 +35,7 @@
 #define OC_NEW_STYLE_INCLUDES
 #define OC_FACTOR_INTO_H_AND_CC
 #define _GLIBCXX_PERMIT_BACKWARD_HASH
-#define size_t unsigned int
+//#define size_t unsigned int
 
 // auto generated from clang for android-arm
 #define _GNU_SOURCE 1

@@ -80,7 +80,7 @@ DAVA::Entity* ConvertToShadowCommand::GetEntity() const
 
 bool ConvertToShadowCommand::CanConvertBatchToShadow(DAVA::RenderBatch *renderBatch)
 {
-    if(renderBatch && renderBatch->GetMaterial())
+    if (renderBatch && renderBatch->GetMaterial() && renderBatch->GetPolygonGroup())
     {
         return renderBatch->GetMaterial()->GetEffectiveFXName() != DAVA::NMaterialName::SHADOW_VOLUME;
     }

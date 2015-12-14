@@ -33,7 +33,7 @@
 
 #include <cassert>
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
 #include <dbghelp.h>
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
@@ -43,10 +43,13 @@
 #include <unwind.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#else
+#error "Unknown platform"
 #endif
 
 #include "Base/Hash.h"
 #include "Debug/DVAssert.h"
+#include "Debug/Backtrace.h"
 #include "Concurrency/Thread.h"
 #include "Math/MathHelpers.h"
 
@@ -124,11 +127,14 @@ void MemoryManager::RegisterTagName(uint32 tagMask, const char8* name)
 
     const size_t index = HighestBitIndex(tagMask);
     DVASSERT(index < MAX_TAG_COUNT);
-    DVASSERT(0 == index || tagNames[index - 1].name[0] != '\0');     // Names should be registered sequentially with no gap
+
+    DVASSERT(0 == index || UNTAGGED == index || tagNames[index - 1].name[0] != '\0'); // Names should be registered sequentially with no gap
 
     strncpy(tagNames[index].name, name, MMItemName::MAX_NAME_LENGTH);
     tagNames[index].name[MMItemName::MAX_NAME_LENGTH - 1] = '\0';
-    registeredTagCount += 1;
+
+    if (UNTAGGED != index)
+        registeredTagCount += 1;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,12 +150,18 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_BULLET, "bullet");
     RegisterAllocPoolName(ALLOC_POOL_BASEOBJECT, "base object");
     RegisterAllocPoolName(ALLOC_POOL_POLYGONGROUP, "polygon group");
-    RegisterAllocPoolName(ALLOC_POOL_RENDERDATAOBJECT, "render dataobj");
     RegisterAllocPoolName(ALLOC_POOL_COMPONENT, "component");
     RegisterAllocPoolName(ALLOC_POOL_ENTITY, "entity");
     RegisterAllocPoolName(ALLOC_POOL_LANDSCAPE, "landscape");
     RegisterAllocPoolName(ALLOC_POOL_IMAGE, "image");
     RegisterAllocPoolName(ALLOC_POOL_TEXTURE, "texture");
+    RegisterAllocPoolName(ALLOC_POOL_NMATERIAL, "nmaterial");
+
+    RegisterAllocPoolName(ALLOC_POOL_RHI_BUFFER, "rhi buffer");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_VERTEX_MAP, "rhi vertex map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_INDEX_MAP, "rhi index map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_TEXTURE_MAP, "rhi texture map");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_RESOURCE_POOL, "rhi res pool");
 }
 
 MemoryManager* MemoryManager::Instance()
@@ -204,6 +216,8 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         block->bktraceHash = 0;
+        if (0 == block->allocTotal)
+            block->allocTotal = totalSize;
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -221,8 +235,9 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             InsertBlock(block);
         }
         {
+            uint32 systemMemoryUsage = GetSystemMemoryUsage();
             LockType lock(statMutex);
-            UpdateStatAfterAlloc(block);
+            UpdateStatAfterAlloc(block, systemMemoryUsage);
         }
         if (!lightWeightMode)
         {
@@ -270,6 +285,8 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         block->bktraceHash = 0;
+        if (0 == block->allocTotal)
+            block->allocTotal = totalSize;
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -287,8 +304,9 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
             InsertBlock(block);
         }
         {
+            uint32 systemMemoryUsage = GetSystemMemoryUsage();
             LockType lock(statMutex);
-            UpdateStatAfterAlloc(block);
+            UpdateStatAfterAlloc(block, systemMemoryUsage);
         }
         if (!lightWeightMode)
         {
@@ -344,8 +362,9 @@ void MemoryManager::Deallocate(void* ptr)
                 RemoveBlock(block);
             }
             {
+                uint32 systemMemoryUsage = GetSystemMemoryUsage();
                 LockType lock(statMutex);
-                UpdateStatAfterDealloc(block);
+                UpdateStatAfterDealloc(block, systemMemoryUsage);
             }
             if (!lightWeightMode)
             {
@@ -380,6 +399,8 @@ void* MemoryManager::InternalAllocate(size_t size)
         block->mark = INTERNAL_BLOCK_MARK;
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block));
+        if (0 == block->allocTotal)
+            block->allocTotal = totalSize;
 
         // Update stat
         {
@@ -425,6 +446,10 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
         return static_cast<uint32>(info.resident_size);
     }
 #elif defined(__DAVAENGINE_ANDROID__)
+    // http://stackoverflow.com/questions/17109284/how-to-find-memory-usage-of-my-android-application-written-c-using-ndk
+    // http://androidxref.com/source/xref/frameworks/base/core/jni/android_os_Debug.cpp (Jelly Bean 4.2)
+    struct mallinfo info = mallinfo();
+    return static_cast<uint32>(info.uordblks);
 #endif
     return 0;
 }
@@ -435,6 +460,18 @@ uint32 MemoryManager::GetTrackedMemoryUsage(uint32 poolIndex) const
 
     LockType lock(statMutex);
     return statAllocPool[poolIndex].allocByApp;
+}
+
+uint32 MemoryManager::GetTaggedMemoryUsage(uint32 tagIndex) const
+{
+    DVASSERT(tagIndex != 0 && IsPowerOf2(tagIndex));
+
+    const size_t index = HighestBitIndex(tagIndex);
+
+    DVASSERT(index < MAX_TAG_COUNT);
+
+    LockType lock(statMutex);
+    return statTag[index].allocByApp;
 }
 
 void MemoryManager::EnterTagScope(uint32 tag)
@@ -562,11 +599,11 @@ void MemoryManager::RemoveBlock(MemoryBlock* block)
         head = head->next;
 }
 
-void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block)
+void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
-    {   // Update memory usage reported by system 
-        statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = GetSystemMemoryUsage();
-        statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = statAllocPool[ALLOC_POOL_SYSTEM].allocByApp;
+    { // Update memory usage reported by system
+        statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
+        statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
     {   // Update total statistics
         statAllocPool[ALLOC_POOL_TOTAL].allocByApp += block->allocByApp;
@@ -588,22 +625,30 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block)
 
     {   // Update tag statistics
         uint32 tags = statGeneral.activeTags;
-        for (size_t index = 0;tags != 0;++index, tags >>= 1)
+        if (tags != 0)
         {
-            if (tags & 0x01)
+            for (size_t index = 0; tags != 0; ++index, tags >>= 1)
             {
-                statTag[index].allocByApp += block->allocByApp;
-                statTag[index].blockCount += 1;
+                if (tags & 0x01)
+                {
+                    statTag[index].allocByApp += block->allocByApp;
+                    statTag[index].blockCount += 1;
+                }
             }
+        }
+        else
+        {
+            statTag[UNTAGGED].allocByApp += block->allocByApp;
+            statTag[UNTAGGED].blockCount += 1;
         }
     }
 }
 
-void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block)
+void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 systemMemoryUsage)
 {
-    {   // Update memory usage reported by system 
-        statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = GetSystemMemoryUsage();
-        statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = statAllocPool[ALLOC_POOL_SYSTEM].allocByApp;
+    { // Update memory usage reported by system
+        statAllocPool[ALLOC_POOL_SYSTEM].allocByApp = systemMemoryUsage;
+        statAllocPool[ALLOC_POOL_SYSTEM].allocTotal = systemMemoryUsage;
     }
     {   // Update total statistics
         statAllocPool[ALLOC_POOL_TOTAL].allocByApp -= block->allocByApp;
@@ -618,13 +663,21 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block)
     }
     {   // Update tag statistics
         uint32 tags = block->tags;
-        for (size_t index = 0;tags != 0;++index, tags >>= 1)
+        if (tags != 0)
         {
-            if (tags & 0x01)
+            for (size_t index = 0; tags != 0; ++index, tags >>= 1)
             {
-                statTag[index].allocByApp -= block->allocByApp;
-                statTag[index].blockCount -= 1;
+                if (tags & 0x01)
+                {
+                    statTag[index].allocByApp -= block->allocByApp;
+                    statTag[index].blockCount -= 1;
+                }
             }
+        }
+        else
+        {
+            statTag[UNTAGGED].allocByApp -= block->allocByApp;
+            statTag[UNTAGGED].blockCount -= 1;
         }
     }
 }
@@ -698,56 +751,47 @@ void MemoryManager::RemoveBacktrace(uint32 hash)
     }
 }
 
-#if defined(__DAVAENGINE_ANDROID__)
-namespace
-{
-
-struct BacktraceState
-{
-    void** current;
-    void** end;
-};
-
-_Unwind_Reason_Code UnwindCallback(struct _Unwind_Context* context, void* arg)
-{
-    BacktraceState* state = static_cast<BacktraceState*>(arg);
-    uintptr_t pc = _Unwind_GetIP(context);
-    if (pc != 0)
-    {
-        if (state->current == state->end)
-        {
-            return _URC_END_OF_STACK;
-        }
-        else
-        {
-            *state->current++ = reinterpret_cast<void*>(pc);
-        }
-    }
-    return _URC_NO_REASON;
-}
-
-}   // unnamed namespace
-#endif
-
 DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t nskip)
 {
     const size_t EXTRA_FRAMES = 5;
     const size_t FRAMES_COUNT = BACKTRACE_DEPTH + EXTRA_FRAMES;
-    void* frames[FRAMES_COUNT] = {nullptr};
+    void* frames[FRAMES_COUNT] = { nullptr };
     Memset(backtrace, 0, sizeof(Backtrace));
-#if defined(__DAVAENGINE_WINDOWS__)
-    CaptureStackBackTrace(0, FRAMES_COUNT, frames, nullptr);
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    ::backtrace(frames, FRAMES_COUNT);
-#elif defined(__DAVAENGINE_ANDROID__)
-    BacktraceState state = {frames, frames + FRAMES_COUNT};
-    _Unwind_Backtrace(&UnwindCallback, &state);
-#endif
+
+    Debug::GetStackFrames(frames, FRAMES_COUNT);
+
+    auto PointerToString = [](void* ptr, char* buf) -> size_t {
+        auto hex = [](uint8 n) -> char { return n < 10 ? n + '0' : n - 10 + 'A'; };
+
+        uintptr_t v = reinterpret_cast<uintptr_t>(ptr);
+        for (size_t i = 0; i < sizeof(uintptr_t); ++i)
+        {
+            uint8 byte = static_cast<uint8>(v);
+            *buf = hex(byte & 0x0F);
+            buf += 1;
+            *buf = hex(byte >> 4);
+            buf += 1;
+            v >>= 8;
+        }
+        return sizeof(uintptr_t) * 2;
+    };
+
+    // Convert backtrace to string and compute that string's hash to greatly decrease hash collision
+    // TODO: think about another method of backtrace identification
+    const size_t MAX_BACKTRACE_STRING_LENGTH = sizeof(void*) * 2 * BACKTRACE_DEPTH;
+    char8 bktraceString[MAX_BACKTRACE_STRING_LENGTH];
+    char8* strPtr = bktraceString;
+    size_t bktraceStringLength = 0;
+
     for (size_t idst = 0, isrc = nskip + 1;idst < BACKTRACE_DEPTH;++idst, ++isrc)
     {
         backtrace->frames[idst] = frames[isrc];
+
+        size_t n = PointerToString(frames[isrc], strPtr);
+        strPtr += n;
+        bktraceStringLength += n;
     }
-    backtrace->hash = HashValue_N(reinterpret_cast<const char*>(backtrace->frames.data()), static_cast<uint32>(backtrace->frames.size()));
+    backtrace->hash = HashValue_N(bktraceString, static_cast<uint32>(bktraceStringLength));
     backtrace->nref = 1;
     backtrace->symbolsCollected = false;
 }
@@ -756,65 +800,24 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 {
     if (nullptr == symbolMap)
     {
-        static uint8 bufferFoMap[sizeof(SymbolMap)];
-        symbolMap = new (bufferFoMap) SymbolMap;
+        static uint8 bufferForMap[sizeof(SymbolMap)];
+        symbolMap = new (bufferForMap) SymbolMap;
     }
 
-    const size_t NAME_BUFFER_SIZE = 4 * 1024;
-    static Array<char8, NAME_BUFFER_SIZE> nameBuffer;
-    
-#if defined(__DAVAENGINE_WINDOWS__)
-    HANDLE hprocess = GetCurrentProcess();
-
-    static bool symInited = false;
-    if (!symInited)
-    {
-        SymInitialize(hprocess, nullptr, TRUE);
-        symInited = true;
-    }
-
-    SYMBOL_INFO* symInfo = reinterpret_cast<SYMBOL_INFO*>(nameBuffer.data());
-    symInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
-    symInfo->MaxNameLen = NAME_BUFFER_SIZE - sizeof(SYMBOL_INFO);
-
-    for (size_t i = 0;i < backtrace->frames.size();++i)
+    for (size_t i = 0; i < backtrace->frames.size(); ++i)
     {
         if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
         {
-            if (SymFromAddr(hprocess, reinterpret_cast<DWORD64>(backtrace->frames[i]), 0, symInfo))
-            {
-                symbolMap->emplace(backtrace->frames[i], InternalString(symInfo->Name));
-            }
+            String symbol = Debug::GetSymbolFromAddr(backtrace->frames[i], true);
+            if (!symbol.empty())
+                symbolMap->emplace(backtrace->frames[i], InternalString(symbol.c_str()));
         }
     }
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    for (size_t i = 0;i < backtrace->frames.size();++i)
-    {
-        if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
-        {
-            /*
-             https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/dladdr.3.html#//apple_ref/doc/man/3/dladdr
-             If an image containing addr cannot be found, dladdr() returns 0.  On success, a non-zero value is returned.
-             If the image containing addr is found, but no nearest symbol was found, the dli_sname and dli_saddr fields are set to NULL.
-            */
-            Dl_info dlinfo;
-            if (dladdr(backtrace->frames[i], &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
-            {
-                int status = 0;
-                size_t n = nameBuffer.size();
-                abi::__cxa_demangle(dlinfo.dli_sname, nameBuffer.data(), &n, &status);
-                symbolMap->emplace(backtrace->frames[i], 0 == status ? InternalString(nameBuffer.data()) : InternalString(dlinfo.dli_sname));
-            }
-        }
-    }
-#endif
 }
 
 uint32 MemoryManager::CalcStatConfigSize() const
 {
-    return sizeof(MMStatConfig)
-        + sizeof(MMItemName) * registeredAllocPoolCount
-        + sizeof(MMItemName) * registeredTagCount;
+    return sizeof(MMStatConfig) + sizeof(MMItemName) * registeredAllocPoolCount + sizeof(MMItemName) * (registeredTagCount + 1);
 }
 
 void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
@@ -825,7 +828,7 @@ void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
     MMStatConfig* config = static_cast<MMStatConfig*>(buffer);
     config->size = static_cast<uint32>(requiredSize);
     config->allocPoolCount = static_cast<uint32>(registeredAllocPoolCount);
-    config->tagCount = static_cast<uint32>(registeredTagCount);
+    config->tagCount = static_cast<uint32>(registeredTagCount + 1);
     config->bktraceDepth = BACKTRACE_DEPTH;
 
     MMItemName* names = OffsetPointer<MMItemName>(config, sizeof(MMStatConfig));
@@ -837,13 +840,12 @@ void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
     {
         *names = tagNames[i];
     }
+    *names = tagNames[UNTAGGED];
 }
 
 uint32 MemoryManager::CalcCurStatSize() const
 {
-    return sizeof(MMCurStat)
-        + sizeof(AllocPoolStat) * registeredAllocPoolCount
-        + sizeof(TagAllocStat) * registeredTagCount;
+    return sizeof(MMCurStat) + sizeof(AllocPoolStat) * registeredAllocPoolCount + sizeof(TagAllocStat) * (registeredTagCount + 1);
 }
 
 void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) const
@@ -870,6 +872,7 @@ void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) c
     {
         tags[i] = statTag[i];
     }
+    tags[registeredTagCount] = statTag[UNTAGGED];
 }
 
 bool MemoryManager::GetMemorySnapshot(uint64 timestamp, File* file, uint32* snapshotSize)

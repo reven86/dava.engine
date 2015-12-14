@@ -232,10 +232,12 @@ void SceneTree::SceneDeactivated(SceneEditor2 *scene)
 
 void SceneTree::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	if(scene == treeModel->GetScene())
-	{
-		SyncSelectionToTree();
-	}
+    if (scene == treeModel->GetScene())
+    {
+        bool blocked = selectionModel()->blockSignals(true);
+        SyncSelectionToTree();
+        selectionModel()->blockSignals(blocked);
+    }
 }
 
 void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
@@ -647,11 +649,11 @@ void SceneTree::EditModel()
 			if(archive)
 			{
 				DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-				if(entityRefPath.Exists())
-				{
-					QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
-				}
-				else
+                if (FileSystem::Instance()->Exists(entityRefPath))
+                {
+                    QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
+                }
+                else
 				{
 					ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
 				}
@@ -694,7 +696,7 @@ void SceneTree::ReloadModel()
                 if(archive)
                 {
                     DAVA::FilePath pathToReload(archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-                    if(!pathToReload.Exists())
+                    if (!FileSystem::Instance()->Exists(pathToReload))
                     {
                         wrongPathes += Format("\r\n%s : %s",entity->GetName().c_str(),
                                               pathToReload.GetAbsolutePathname().c_str());
@@ -725,22 +727,22 @@ void SceneTree::ReloadModelAs()
 			if(ownerPath.empty())
 			{
 				FilePath p = sceneEditor->GetScenePath().GetDirectory();
-				if(p.Exists() && sceneEditor->IsLoaded())
-				{
-					ownerPath = p.GetAbsolutePathname();
-				}
-				else
+                if (FileSystem::Instance()->Exists(p) && sceneEditor->IsLoaded())
+                {
+                    ownerPath = p.GetAbsolutePathname();
+                }
+                else
 				{
                     ownerPath = ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname();
                 }
             }
 
-			QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
-			if(!filePath.isEmpty())
-			{
-				sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
-			}
-		}
+            QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
+            if (!filePath.isEmpty())
+            {
+                sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+            }
+        }
 	}
 }
 
@@ -753,18 +755,18 @@ void SceneTree::SaveEntityAs()
 		if(selection.Size() > 0)
 		{
 			DAVA::FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
-			if(!scenePath.Exists() || !sceneEditor->IsLoaded())
-			{
+            if (!FileSystem::Instance()->Exists(scenePath) || !sceneEditor->IsLoaded())
+            {
                 scenePath = ProjectManager::Instance()->GetDataSourcePath();
             }
 
             QString filePath = FileDialog::getSaveFileName(NULL, QString("Save scene file"), QString(scenePath.GetDirectory().GetAbsolutePathname().c_str()), QString("DAVA SceneV2 (*.sc2)"));
-			if(!filePath.isEmpty())
-			{
-				sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
-			}
-		}
-	}
+            if (!filePath.isEmpty())
+            {
+                sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
+            }
+        }
+    }
 }
 
 void SceneTree::CollapseAll()
@@ -794,10 +796,12 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
 	bool needSync = false;
 
-	// if selected items were inside collapsed item, remove them from selection
-	QModelIndexList indexList = selectionModel()->selection().indexes();
-	for (int i = 0; i < indexList.size(); ++i)
-	{
+    bool blocked = selectionModel()->blockSignals(true);
+
+    // if selected items were inside collapsed item, remove them from selection
+    QModelIndexList indexList = selectionModel()->selection().indexes();
+    for (int i = 0; i < indexList.size(); ++i)
+    {
 		QModelIndex childIndex = indexList[i];
 		QModelIndex childParent = childIndex.parent();
 		while(childParent.isValid())
@@ -813,10 +817,12 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 		}
 	}
 
-	if(needSync)
-	{
-		SyncSelectionFromTree();
-	}
+    selectionModel()->blockSignals(blocked);
+
+    if (needSync)
+    {
+        TreeSelectionChanged(selectionModel()->selection(), QItemSelection());
+    }
 }
 
 void SceneTree::TreeItemExpanded(const QModelIndex &index)
@@ -1171,17 +1177,17 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
 	FilePath yamlPath = selectedEmitter->configPath;
 	if (forceAskFileName)
 	{
-        QString projectPath = ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str();
+        QString particlesConfigPath = ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str();
         QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter YAML file"),
-                                                       projectPath, QString("YAML File (*.yaml)"));
+                                                       particlesConfigPath, QString("YAML File (*.yaml)"));
 
         if (filePath.isEmpty())
-		{
-			return;
-		}
+        {
+            return;
+        }
 
-		yamlPath = FilePath(filePath.toStdString());
-	}		
+        yamlPath = FilePath(filePath.toStdString());
+    }
 
     selectedLayer->innerEmitterPath = yamlPath;
     CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(selectedEmitter, yamlPath);
@@ -1293,7 +1299,7 @@ void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileNa
     if (forceAskFileName)
     {
         FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-        QString particlesPath = defaultPath.IsEmpty() ? ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str() : defaultPath.GetAbsolutePathname().c_str();
+        QString particlesPath = defaultPath.IsEmpty() ? ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str() : defaultPath.GetAbsolutePathname().c_str();
 
         FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
         
@@ -1341,7 +1347,7 @@ void SceneTree::PerformSaveEffectEmitters(bool forceAskFileName)
 
 QString SceneTree::GetParticlesConfigPath()
 {
-    return ProjectManager::Instance()->GetParticlesPath().GetAbsolutePathname().c_str();
+    return ProjectManager::Instance()->GetParticlesConfigPath().GetAbsolutePathname().c_str();
 }
 
 void SceneTree::CleanupParticleEditorSelectedItems()

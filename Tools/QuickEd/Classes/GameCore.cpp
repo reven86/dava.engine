@@ -36,8 +36,11 @@
 #include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/ResourceArchive.h"
-#include "Autotesting/AutotestingSystem.h"
 #include "Version.h"
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
 
 #include "UI/Layouts/UILayoutSystem.h"
 
@@ -48,10 +51,13 @@ GameCore::GameCore()
 {
     new GridVisualizer();
     new RulerController();
-    new AutotestingSystem();
 
-	// Unpack the help data, if needed.
-	UnpackHelp();
+#ifdef __DAVAENGINE_AUTOTESTING__
+    new AutotestingSystem();
+#endif
+
+    // Unpack the help data, if needed.
+    UnpackHelp();
 
 	//Initialize internal resources of application
 	ResourcesManageHelper::InitInternalResources();
@@ -64,8 +70,10 @@ GameCore::~GameCore()
     GridVisualizer::Instance()->Release();
 
     EditorSettings::Instance()->Release();
-        
+
+#ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();
+#endif
 }
 
 void GameCore::OnAppStarted()
@@ -119,7 +127,7 @@ void GameCore::UnpackHelp()
 	//Unpack Help to Documents.
     String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
 	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
-    if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
+    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
     {
         ResourceArchive* helpRA = new ResourceArchive();
         if (helpRA->Open("~res:/Help.docs"))

@@ -413,12 +413,6 @@
 		028C0ED71BD66A6000B2266F /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AB1BD66A5E00B2266F /* CoreMacOS.cpp */; };
 		028C0ED81BD66A6000B2266F /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AB1BD66A5E00B2266F /* CoreMacOS.cpp */; };
 		028C0ED91BD66A6000B2266F /* CoreMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AB1BD66A5E00B2266F /* CoreMacOS.cpp */; };
-		028C0EDA1BD66A6000B2266F /* CoreMacOS_CarbonWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AC1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.cpp */; };
-		028C0EDB1BD66A6000B2266F /* CoreMacOS_CarbonWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AC1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.cpp */; };
-		028C0EDC1BD66A6000B2266F /* CoreMacOS_CarbonWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AC1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.cpp */; };
-		028C0EDD1BD66A6000B2266F /* CoreMacOS_CarbonWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C08AD1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.h */; };
-		028C0EDE1BD66A6000B2266F /* CoreMacOS_CarbonWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C08AD1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.h */; };
-		028C0EDF1BD66A6000B2266F /* CoreMacOS_CarbonWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C08AD1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.h */; };
 		028C0EE01BD66A6000B2266F /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AE1BD66A5E00B2266F /* CoreMacOS_OpenGL.cpp */; };
 		028C0EE11BD66A6000B2266F /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AE1BD66A5E00B2266F /* CoreMacOS_OpenGL.cpp */; };
 		028C0EE21BD66A6000B2266F /* CoreMacOS_OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08AE1BD66A5E00B2266F /* CoreMacOS_OpenGL.cpp */; };
@@ -2798,12 +2792,6 @@
 		028C1AB01BD66A6100B2266F /* UIScreenManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CEE1BD66A5F00B2266F /* UIScreenManager.h */; };
 		028C1AB11BD66A6100B2266F /* UIScreenManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CEE1BD66A5F00B2266F /* UIScreenManager.h */; };
 		028C1AB21BD66A6100B2266F /* UIScreenManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CEE1BD66A5F00B2266F /* UIScreenManager.h */; };
-		028C1AC51BD66A6100B2266F /* UIScreenManagerMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CF51BD66A5F00B2266F /* UIScreenManagerMacOS.cpp */; };
-		028C1AC61BD66A6100B2266F /* UIScreenManagerMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CF51BD66A5F00B2266F /* UIScreenManagerMacOS.cpp */; };
-		028C1AC71BD66A6100B2266F /* UIScreenManagerMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CF51BD66A5F00B2266F /* UIScreenManagerMacOS.cpp */; };
-		028C1AC81BD66A6100B2266F /* UIScreenManagerMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CF61BD66A5F00B2266F /* UIScreenManagerMacOS.h */; };
-		028C1AC91BD66A6100B2266F /* UIScreenManagerMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CF61BD66A5F00B2266F /* UIScreenManagerMacOS.h */; };
-		028C1ACA1BD66A6100B2266F /* UIScreenManagerMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0CF61BD66A5F00B2266F /* UIScreenManagerMacOS.h */; };
 		028C1ACB1BD66A6100B2266F /* UIScreenshoter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CF71BD66A5F00B2266F /* UIScreenshoter.cpp */; };
 		028C1ACC1BD66A6100B2266F /* UIScreenshoter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CF71BD66A5F00B2266F /* UIScreenshoter.cpp */; };
 		028C1ACD1BD66A6100B2266F /* UIScreenshoter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0CF71BD66A5F00B2266F /* UIScreenshoter.cpp */; };
@@ -2987,6 +2975,12 @@
 		620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
 		6246724A18EEA50E00046586 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
 		72C84EB31B29C220003A52E0 /* libwebp_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB21B29C220003A52E0 /* libwebp_macos.a */; };
+		7CCE26A41C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */; };
+		7CCE26A51C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */; };
+		7CCE26A61C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */; };
+		7CCE26A71C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */; };
+		7CCE26A81C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */; };
+		7CCE26A91C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */; };
 		B77953CC1A07D528001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CD1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CE1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
@@ -3185,8 +3179,6 @@
 		028C08A91BD66A5E00B2266F /* Core.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Core.cpp; sourceTree = "<group>"; };
 		028C08AA1BD66A5E00B2266F /* Core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Core.h; sourceTree = "<group>"; };
 		028C08AB1BD66A5E00B2266F /* CoreMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS.cpp; sourceTree = "<group>"; };
-		028C08AC1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS_CarbonWindow.cpp; sourceTree = "<group>"; };
-		028C08AD1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreMacOS_CarbonWindow.h; sourceTree = "<group>"; };
 		028C08AE1BD66A5E00B2266F /* CoreMacOS_OpenGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOS_OpenGL.cpp; sourceTree = "<group>"; };
 		028C08AF1BD66A5E00B2266F /* CoreMacOS_OpenGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreMacOS_OpenGL.h; sourceTree = "<group>"; };
 		028C08B01BD66A5E00B2266F /* DisplayMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DisplayMode.h; sourceTree = "<group>"; };
@@ -3983,8 +3975,6 @@
 		028C0CEC1BD66A5F00B2266F /* UIScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreen.cpp; sourceTree = "<group>"; };
 		028C0CED1BD66A5F00B2266F /* UIScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreen.h; sourceTree = "<group>"; };
 		028C0CEE1BD66A5F00B2266F /* UIScreenManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManager.h; sourceTree = "<group>"; };
-		028C0CF51BD66A5F00B2266F /* UIScreenManagerMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreenManagerMacOS.cpp; sourceTree = "<group>"; };
-		028C0CF61BD66A5F00B2266F /* UIScreenManagerMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManagerMacOS.h; sourceTree = "<group>"; };
 		028C0CF71BD66A5F00B2266F /* UIScreenshoter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreenshoter.cpp; sourceTree = "<group>"; };
 		028C0CF81BD66A5F00B2266F /* UIScreenshoter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenshoter.h; sourceTree = "<group>"; };
 		028C0CF91BD66A5F00B2266F /* UIScreenTransition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreenTransition.cpp; sourceTree = "<group>"; };
@@ -4055,6 +4045,8 @@
 		5C97965914E3F09F00FFFA14 /* libyaml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_macos.a; path = ../../Libs/libs/libyaml_macos.a; sourceTree = "<group>"; };
 		627AFA6C18E964E300F2A52A /* libjpeg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_macos.a; path = ../../Libs/libs/libjpeg_macos.a; sourceTree = "<group>"; };
 		72C84EB21B29C220003A52E0 /* libwebp_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_macos.a; path = ../../Libs/libs/libwebp_macos.a; sourceTree = "<group>"; };
+		7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScreenManagerDefault.cpp; sourceTree = "<group>"; };
+		7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManagerDefault.h; sourceTree = "<group>"; };
 		B77953CB1A07D528001FB673 /* libunibreak_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_macos.a; path = ../../Libs/libs/libunibreak_macos.a; sourceTree = "<group>"; };
 		B7D6C98319CAC6980095250A /* libfribidi_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_macos.a; path = ../../Libs/libs/libfribidi_macos.a; sourceTree = "<group>"; };
 		C151B18B16D37DD400E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -4336,8 +4328,6 @@
 				028C08A91BD66A5E00B2266F /* Core.cpp */,
 				028C08AA1BD66A5E00B2266F /* Core.h */,
 				028C08AB1BD66A5E00B2266F /* CoreMacOS.cpp */,
-				028C08AC1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.cpp */,
-				028C08AD1BD66A5E00B2266F /* CoreMacOS_CarbonWindow.h */,
 				028C08AE1BD66A5E00B2266F /* CoreMacOS_OpenGL.cpp */,
 				028C08AF1BD66A5E00B2266F /* CoreMacOS_OpenGL.h */,
 				028C08B01BD66A5E00B2266F /* DisplayMode.h */,
@@ -5470,8 +5460,8 @@
 				028C0CEC1BD66A5F00B2266F /* UIScreen.cpp */,
 				028C0CED1BD66A5F00B2266F /* UIScreen.h */,
 				028C0CEE1BD66A5F00B2266F /* UIScreenManager.h */,
-				028C0CF51BD66A5F00B2266F /* UIScreenManagerMacOS.cpp */,
-				028C0CF61BD66A5F00B2266F /* UIScreenManagerMacOS.h */,
+				7CCE26A21C10456E00A07C88 /* UIScreenManagerDefault.cpp */,
+				7CCE26A31C10456E00A07C88 /* UIScreenManagerDefault.h */,
 				028C0CF71BD66A5F00B2266F /* UIScreenshoter.cpp */,
 				028C0CF81BD66A5F00B2266F /* UIScreenshoter.h */,
 				028C0CF91BD66A5F00B2266F /* UIScreenTransition.cpp */,
@@ -5926,7 +5916,6 @@
 				028C17551BD66A6000B2266F /* GameObjectManager.h in Headers */,
 				028C180F1BD66A6000B2266F /* WaypointComponent.h in Headers */,
 				028C1AD01BD66A6100B2266F /* UIScreenshoter.h in Headers */,
-				028C0EDF1BD66A6000B2266F /* CoreMacOS_CarbonWindow.h in Headers */,
 				028C172E1BD66A6000B2266F /* Shader.h in Headers */,
 				028C1AB21BD66A6100B2266F /* UIScreenManager.h in Headers */,
 				028C17F71BD66A6000B2266F /* UserComponent.h in Headers */,
@@ -6083,6 +6072,7 @@
 				028C0D9E1BD66A6000B2266F /* MongodbUpdateObject.h in Headers */,
 				028C1AFA1BD66A6100B2266F /* UIStaticText.h in Headers */,
 				028C10B31BD66A6000B2266F /* Matrix2.h in Headers */,
+				7CCE26A91C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */,
 				028C10471BD66A6000B2266F /* Functional.h in Headers */,
 				028C10BC1BD66A6000B2266F /* Matrix4.h in Headers */,
 				028C13D11BD66A6000B2266F /* OpenGLView.h in Headers */,
@@ -6200,7 +6190,6 @@
 				028C10C51BD66A6000B2266F /* OOBBox.h in Headers */,
 				028C153C1BD66A6000B2266F /* SpriteObject.h in Headers */,
 				028C12001BD66A6000B2266F /* LocalNotificationImpl.h in Headers */,
-				028C1ACA1BD66A6100B2266F /* UIScreenManagerMacOS.h in Headers */,
 				028C0EE51BD66A6000B2266F /* CoreMacOS_OpenGL.h in Headers */,
 				028C15C31BD66A6000B2266F /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				028C10F81BD66A6000B2266F /* AllocatorBridge.h in Headers */,
@@ -6600,7 +6589,6 @@
 				028C150D1BD66A6000B2266F /* RenderPass.h in Headers */,
 				028C17B91BD66A6000B2266F /* ParticleEffectComponent.h in Headers */,
 				028C18EE1BD66A6000B2266F /* ParticleEffectSystem.h in Headers */,
-				028C1AC81BD66A6100B2266F /* UIScreenManagerMacOS.h in Headers */,
 				028C10AE1BD66A6000B2266F /* MathHelpers.h in Headers */,
 				028C16481BD66A6000B2266F /* RegExp.h in Headers */,
 				028C12581BD66A6000B2266F /* OpenUDIDApple.h in Headers */,
@@ -6757,6 +6745,7 @@
 				028C17A71BD66A6000B2266F /* DebugRenderComponent.h in Headers */,
 				028C0D3C1BD66A6000B2266F /* Animation.h in Headers */,
 				028C11561BD66A6000B2266F /* TCPSocketTemplate.h in Headers */,
+				7CCE26A71C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */,
 				C7FBCFB816CD1FE5006F1B3F /* AutotestingSystemYaml.h in Headers */,
 				028C0EEC1BD66A6000B2266F /* PerformanceSettings.h in Headers */,
 				028C0F8E1BD66A6000B2266F /* PatchFile.h in Headers */,
@@ -6787,7 +6776,6 @@
 				028C15B51BD66A6000B2266F /* NMaterialNames.h in Headers */,
 				028C18D01BD66A6000B2266F /* EventSystem.h in Headers */,
 				028C17531BD66A6000B2266F /* GameObjectManager.h in Headers */,
-				028C0EDD1BD66A6000B2266F /* CoreMacOS_CarbonWindow.h in Headers */,
 				028C10AB1BD66A6000B2266F /* MathDefines.h in Headers */,
 				028C19751BD66A6000B2266F /* UIControlFamily.h in Headers */,
 				028C19061BD66A6000B2266F /* SoundUpdateSystem.h in Headers */,
@@ -6822,6 +6810,7 @@
 				028C0D791BD66A6000B2266F /* AutotestingSystemConfig.h in Headers */,
 				028C16521BD66A6000B2266F /* rhi_Impl.h in Headers */,
 				028C17F01BD66A6000B2266F /* UpdatableComponent.h in Headers */,
+				7CCE26A81C10456E00A07C88 /* UIScreenManagerDefault.h in Headers */,
 				028C18141BD66A6000B2266F /* WindComponent.h in Headers */,
 				028C17C01BD66A6000B2266F /* QualitySettingsComponent.h in Headers */,
 				028C10881BD66A6000B2266F /* AABBox2.h in Headers */,
@@ -6996,7 +6985,6 @@
 				028C17541BD66A6000B2266F /* GameObjectManager.h in Headers */,
 				028C180E1BD66A6000B2266F /* WaypointComponent.h in Headers */,
 				028C1ACF1BD66A6100B2266F /* UIScreenshoter.h in Headers */,
-				028C0EDE1BD66A6000B2266F /* CoreMacOS_CarbonWindow.h in Headers */,
 				028C172D1BD66A6000B2266F /* Shader.h in Headers */,
 				028C1AB11BD66A6100B2266F /* UIScreenManager.h in Headers */,
 				028C17F61BD66A6000B2266F /* UserComponent.h in Headers */,
@@ -7269,7 +7257,6 @@
 				028C10C41BD66A6000B2266F /* OOBBox.h in Headers */,
 				028C153B1BD66A6000B2266F /* SpriteObject.h in Headers */,
 				028C11FF1BD66A6000B2266F /* LocalNotificationImpl.h in Headers */,
-				028C1AC91BD66A6100B2266F /* UIScreenManagerMacOS.h in Headers */,
 				028C0EE41BD66A6000B2266F /* CoreMacOS_OpenGL.h in Headers */,
 				028C15C21BD66A6000B2266F /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				028C10F71BD66A6000B2266F /* AllocatorBridge.h in Headers */,
@@ -7547,6 +7534,7 @@
 				028C19741BD66A6000B2266F /* UIControlFamily.cpp in Sources */,
 				028C0F3F1BD66A6000B2266F /* Profiler.cpp in Sources */,
 				028C18FF1BD66A6000B2266F /* SkeletonSystem.cpp in Sources */,
+				7CCE26A61C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */,
 				028C10741BD66A6000B2266F /* JobManager.cpp in Sources */,
 				028C19051BD66A6000B2266F /* SoundUpdateSystem.cpp in Sources */,
 				028C14971BD66A6000B2266F /* PolygonGroup.cpp in Sources */,
@@ -7711,7 +7699,6 @@
 				028C18181BD66A6000B2266F /* LodToLod2Converter.cpp in Sources */,
 				02141409181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
 				028C1B811BD66D3300B2266F /* NPAPICorePlatformMacOS.cpp in Sources */,
-				028C1AC71BD66A6100B2266F /* UIScreenManagerMacOS.cpp in Sources */,
 				028C15151BD66A6000B2266F /* RenderSystem.cpp in Sources */,
 				028C0D7D1BD66A6000B2266F /* AutotestingSystemLua.cpp in Sources */,
 				028C0F1E1BD66A6000B2266F /* Backtrace.cpp in Sources */,
@@ -7852,7 +7839,6 @@
 				028C15571BD66A6000B2266F /* VegetationPropertyNames.cpp in Sources */,
 				028C17AC1BD66A6000B2266F /* LightComponent.cpp in Sources */,
 				028C0E2B1BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
-				028C0EDC1BD66A6000B2266F /* CoreMacOS_CarbonWindow.cpp in Sources */,
 				028C0F6F1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
 				028C183F1BD66A6000B2266F /* LodNode.cpp in Sources */,
 				028C175E1BD66A6000B2266F /* AnimationData.cpp in Sources */,
@@ -8178,7 +8164,6 @@
 				028C19C61BD66A6000B2266F /* UILinearLayoutComponent.cpp in Sources */,
 				028C18161BD66A6000B2266F /* LodToLod2Converter.cpp in Sources */,
 				02141407181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
-				028C1AC51BD66A6100B2266F /* UIScreenManagerMacOS.cpp in Sources */,
 				028C15131BD66A6000B2266F /* RenderSystem.cpp in Sources */,
 				028C0D7B1BD66A6000B2266F /* AutotestingSystemLua.cpp in Sources */,
 				028C0F1C1BD66A6000B2266F /* Backtrace.cpp in Sources */,
@@ -8215,6 +8200,7 @@
 				028C14891BD66A6000B2266F /* EdgeAdjacency.cpp in Sources */,
 				028C11831BD66A6000B2266F /* PeerDesriptionSerialize.cpp in Sources */,
 				028C180A1BD66A6000B2266F /* WaypointComponent.cpp in Sources */,
+				7CCE26A41C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */,
 				028C14E61BD66A6000B2266F /* Mesh.cpp in Sources */,
 				028C1A021BD66A6000B2266F /* UIStyleSheetYamlLoader.cpp in Sources */,
 				028C174A1BD66A6000B2266F /* GameObjectAnimations.cpp in Sources */,
@@ -8317,7 +8303,6 @@
 				028C15551BD66A6000B2266F /* VegetationPropertyNames.cpp in Sources */,
 				028C17AA1BD66A6000B2266F /* LightComponent.cpp in Sources */,
 				028C0E291BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
-				028C0EDA1BD66A6000B2266F /* CoreMacOS_CarbonWindow.cpp in Sources */,
 				028C0F6D1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
 				028C183D1BD66A6000B2266F /* LodNode.cpp in Sources */,
 				028C175C1BD66A6000B2266F /* AnimationData.cpp in Sources */,
@@ -8643,7 +8628,6 @@
 				028C19C71BD66A6000B2266F /* UILinearLayoutComponent.cpp in Sources */,
 				028C18171BD66A6000B2266F /* LodToLod2Converter.cpp in Sources */,
 				02141408181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
-				028C1AC61BD66A6100B2266F /* UIScreenManagerMacOS.cpp in Sources */,
 				028C15141BD66A6000B2266F /* RenderSystem.cpp in Sources */,
 				028C0D7C1BD66A6000B2266F /* AutotestingSystemLua.cpp in Sources */,
 				028C0F1D1BD66A6000B2266F /* Backtrace.cpp in Sources */,
@@ -8680,6 +8664,7 @@
 				028C148A1BD66A6000B2266F /* EdgeAdjacency.cpp in Sources */,
 				028C11841BD66A6000B2266F /* PeerDesriptionSerialize.cpp in Sources */,
 				028C180B1BD66A6000B2266F /* WaypointComponent.cpp in Sources */,
+				7CCE26A51C10456E00A07C88 /* UIScreenManagerDefault.cpp in Sources */,
 				028C14E71BD66A6000B2266F /* Mesh.cpp in Sources */,
 				028C1A031BD66A6000B2266F /* UIStyleSheetYamlLoader.cpp in Sources */,
 				028C174B1BD66A6000B2266F /* GameObjectAnimations.cpp in Sources */,
@@ -8782,7 +8767,6 @@
 				028C15561BD66A6000B2266F /* VegetationPropertyNames.cpp in Sources */,
 				028C17AB1BD66A6000B2266F /* LightComponent.cpp in Sources */,
 				028C0E2A1BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
-				028C0EDB1BD66A6000B2266F /* CoreMacOS_CarbonWindow.cpp in Sources */,
 				028C0F6E1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
 				028C183E1BD66A6000B2266F /* LodNode.cpp in Sources */,
 				028C175D1BD66A6000B2266F /* AnimationData.cpp in Sources */,

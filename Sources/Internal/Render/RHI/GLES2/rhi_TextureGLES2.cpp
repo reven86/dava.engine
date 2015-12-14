@@ -73,6 +73,8 @@ public:
     {
         Handle color;
         Handle depthStencil;
+        TextureFace face;
+        uint32_t level;
 
         GLuint frameBuffer;
     };
@@ -110,21 +112,58 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
     if (is_depth)
     {
-        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(uid) } };
+        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), (uint64)(uid) } };
 
         ExecGL(&cmd1, 1);
 
         if (cmd1.status == GL_NO_ERROR)
         {
-            GLCommand cmd2[] =
+            if (_GLES2_IsGlDepth24Stencil8Supported)
             {
-              { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-              { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
-              { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
-            };
-            ExecGL(cmd2, countof(cmd2), force_immediate);
+                GLCommand d24s8cmd[] =
+                {
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+                };
+                ExecGL(d24s8cmd, countof(d24s8cmd), force_immediate);
 
-            uid[1] = uid[0];
+                // Store depth/stencil buffer index as secondary stencil index for iOS/Android
+                uid[1] = uid[0];
+            }
+            else
+            {
+                GLCommand depthCmd;
+#if defined(__DAVAENGINE_ANDROID__)
+                if (_GLES2_IsGlDepthNvNonLinearSupported)
+                {
+                    depthCmd = { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, desc.width, desc.height } };
+                }
+                else
+#endif
+                {
+                    depthCmd = { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } };
+                }
+                GLCommand d16s8cmd[] =
+                {
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                  depthCmd,
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+                };
+                ExecGL(d16s8cmd, countof(d16s8cmd), force_immediate);
+            }
+
+            /*
+            if( !need_stencil )
+            {
+                cmd2[3].func = GLCommand::NOP;
+                cmd2[4].func = GLCommand::NOP;
+                cmd2[5].func = GLCommand::NOP;
+            }
+*/
         }
     }
     else
@@ -193,9 +232,9 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                             cmd->arg[10] = compressed;
 
                             if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                                _FlipRGBA4_ABGR4(desc.initialData[m], data_sz);
+                                _FlipRGBA4_ABGR4(data, data_sz);
                             else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                                _RGBA5551toABGR1555(desc.initialData[m], data_sz);
+                                _RGBA5551toABGR1555(data, data_sz);
 
                             ++cmd2_cnt;
                         }
@@ -291,11 +330,13 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         cmd[0].arg[0] = 1;
         cmd[0].arg[1] = uint64(&(uid));
 
-        if (uid2)
+        if (uid2 && uid2 != uid)
         {
             cmd[1].func = GLCommand::DELETE_RENDERBUFFERS;
             cmd[1].arg[0] = 1;
             cmd[1].arg[1] = uint64(&(uid2));
+
+            ++cmd_cnt;
         }
     }
     else
@@ -665,7 +706,7 @@ void SetToRHI(Handle hstate)
 //==============================================================================
 
 static GLenum
-_TextureFilter(TextureFilter filter)
+_TextureFilterGLES2(TextureFilter filter)
 {
     GLenum f = GL_LINEAR;
 
@@ -685,7 +726,7 @@ _TextureFilter(TextureFilter filter)
 //------------------------------------------------------------------------------
 
 static GLenum
-_TextureMipFilter(TextureMipFilter filter)
+_TextureMipFilterGLES2(TextureMipFilter filter)
 {
     GLenum f = GL_LINEAR_MIPMAP_LINEAR;
 
@@ -708,7 +749,7 @@ _TextureMipFilter(TextureMipFilter filter)
 //------------------------------------------------------------------------------
 
 static GLenum
-_AddrMode(TextureAddrMode mode)
+_AddrModeGLES2(TextureAddrMode mode)
 {
     GLenum m = GL_REPEAT;
 
@@ -750,8 +791,8 @@ void SetupDispatch(Dispatch* dispatch)
 void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-    bool fragment = base_i != InvalidIndex;
-    uint32 sampler_i = (base_i == InvalidIndex) ? unit_i : base_i + unit_i;
+    bool fragment = base_i != DAVA::InvalidIndex;
+    uint32 sampler_i = (base_i == DAVA::InvalidIndex) ? unit_i : base_i + unit_i;
     GLenum target = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
     const SamplerState::Descriptor::Sampler* sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
@@ -775,31 +816,31 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
     {
         if (sampler->mipFilter != TEXMIPFILTER_NONE)
         {
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMipFilter(TextureMipFilter(sampler->mipFilter))));
+            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMipFilterGLES2(TextureMipFilter(sampler->mipFilter))));
         }
         else
         {
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureFilter(TextureFilter(sampler->minFilter))));
+            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureFilterGLES2(TextureFilter(sampler->minFilter))));
         }
 
-        GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilter(TextureFilter(sampler->magFilter))));
+        GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilterGLES2(TextureFilter(sampler->magFilter))));
 
-        GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrMode(TextureAddrMode(sampler->addrU))));
-        GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_T, _AddrMode(TextureAddrMode(sampler->addrV))));
+        GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrModeGLES2(TextureAddrMode(sampler->addrU))));
+        GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_T, _AddrModeGLES2(TextureAddrMode(sampler->addrV))));
 
         self->samplerState = *sampler;
         self->forceSetSamplerState = false;
     }
 }
 
-void SetAsRenderTarget(Handle tex, Handle depth)
+void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned level)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
     GLuint fb = 0;
     DVASSERT(self->isRenderTarget || self->isRenderBuffer);
     for (unsigned i = 0; i != self->fbo.size(); ++i)
     {
-        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth)
+        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth && self->fbo[i].face == face && self->fbo[i].level == level)
         {
             fb = self->fbo[i].frameBuffer;
             break;
@@ -813,9 +854,35 @@ void SetAsRenderTarget(Handle tex, Handle depth)
         if (fb)
         {
             TextureGLES2_t* ds = (depth != InvalidHandle && depth != DefaultDepthBuffer) ? TextureGLES2Pool::Get(depth) : nullptr;
+            GLenum target = GL_TEXTURE_2D;
+
+            if (self->isCubeMap)
+            {
+                switch (face)
+                {
+                case TEXTURE_FACE_POSITIVE_X:
+                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+                    break;
+                case TEXTURE_FACE_NEGATIVE_X:
+                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+                    break;
+                case TEXTURE_FACE_POSITIVE_Y:
+                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+                    break;
+                case TEXTURE_FACE_NEGATIVE_Y:
+                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+                    break;
+                case TEXTURE_FACE_POSITIVE_Z:
+                    target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+                    break;
+                case TEXTURE_FACE_NEGATIVE_Z:
+                    target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+                    break;
+                }
+            }
 
             glBindFramebuffer(GL_FRAMEBUFFER, fb);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, self->uid, level);
             if (ds)
             {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -827,19 +894,24 @@ void SetAsRenderTarget(Handle tex, Handle depth)
 #endif
             }
 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
-            #else
+#else
             GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
 
             glDrawBuffers(1, b);
-            #endif
+#endif
 
             int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             if (status == GL_FRAMEBUFFER_COMPLETE)
             {
-                TextureGLES2_t::fbo_t fbo = { tex, depth, fb };
+                TextureGLES2_t::fbo_t fbo;
 
+                fbo.color = tex;
+                fbo.depthStencil = depth;
+                fbo.face = face;
+                fbo.level = level;
+                fbo.frameBuffer = fb;
                 self->fbo.push_back(fbo);
             }
             else

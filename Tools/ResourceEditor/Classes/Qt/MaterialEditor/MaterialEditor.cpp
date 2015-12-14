@@ -627,13 +627,13 @@ void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
     FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
 
     // calculate appropriate default path
-    if (dataSourcePath.Exists())
+    if (FileSystem::Instance()->Exists(dataSourcePath))
     {
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
     }
 
     SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
-    if ((nullptr != editor) && editor->GetScenePath().Exists())
+    if ((nullptr != editor) && FileSystem::Instance()->Exists(editor->GetScenePath()))
     {
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
         if (String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))

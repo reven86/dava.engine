@@ -69,14 +69,17 @@ public:
     struct TextureDrawSettings : public InspBase
     {
     public:
-		TextureDrawSettings() { SetDefaultValues(); }
-		void SetDefaultValues();
+        TextureDrawSettings()
+        {
+            SetDefaultValues();
+        }
+        void SetDefaultValues();
 
-		int8 wrapModeS;
-		int8 wrapModeT;
+        int8 wrapModeS;
+        int8 wrapModeT;
 
-		int8 minFilter;
-		int8 magFilter;
+        int8 minFilter;
+        int8 magFilter;
         int8 mipFilter;
 
         INTROSPECTION(TextureDrawSettings,
@@ -105,8 +108,8 @@ public:
         }
         void SetDefaultValues();
 
-        void SetGenerateMipmaps(const bool & generateMipmaps);
-		bool GetGenerateMipMaps() const;
+        void SetGenerateMipmaps(const bool& generateMipmaps);
+        bool GetGenerateMipMaps() const;
 
         void SetIsNormalMap(const bool & isNormalMap);
         bool GetIsNormalMap() const;

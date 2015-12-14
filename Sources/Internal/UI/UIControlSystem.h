@@ -71,10 +71,10 @@ extern const FastName FRAME_QUERY_UI_DRAW;
 
 class UIControlSystem : public Singleton<UIControlSystem>
 {
-	friend void Core::CreateSingletons();
-	
-	int frameSkip;
-	int transitionType;
+    friend void Core::CreateSingletons();
+
+    int frameSkip;
+    int transitionType;
 
     Vector<UIEvent> touchEvents;
 
@@ -298,6 +298,7 @@ public:
     UIScreenshoter* GetScreenshoter();
 
     void SetClearColor(const Color& clearColor);
+    void SetUseClearPass(bool use);
 
 private:
 	/**
@@ -327,8 +328,8 @@ private:
     int32 screenLockCount;
 
     bool removeCurrentScreen;
-	
-	UIControl *exclusiveInputLocker;
+
+    UIControl* exclusiveInputLocker;
     UIControl *hovered;
     
     UIControl *focusedControl;
@@ -342,6 +343,7 @@ private:
 	
 	UIGeometricData baseGeometricData;
 
+    bool useClearPass = true;
     Color clearColor;
 
     friend class UIScreenTransition;

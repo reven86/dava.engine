@@ -473,6 +473,8 @@ Descriptor
     uint32 isRenderTarget : 1;
     uint32 autoGenMipmaps : 1;
     uint32 needRestore : 1;
+    uint32 cpuAccessRead : 1;
+    uint32 cpuAccessWrite : 1;
 
     Descriptor(uint32 w, uint32 h, TextureFormat fmt)
         : type(TEXTURE_TYPE_2D)
@@ -483,6 +485,8 @@ Descriptor
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
+        , cpuAccessRead(false)
+        , cpuAccessWrite(true)
     {
         memset(initialData, 0, sizeof(initialData));
     }
@@ -495,6 +499,8 @@ Descriptor
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
+        , cpuAccessRead(false)
+        , cpuAccessWrite(true)
     {
         memset(initialData, 0, sizeof(initialData));
     }
@@ -737,12 +743,16 @@ RenderPassConfig
     ColorBuffer
     {
         Handle texture;
+        TextureFace textureFace;
+        uint32 textureLevel;
         LoadAction loadAction;
         StoreAction storeAction;
         float clearColor[4];
 
         ColorBuffer()
             : texture(InvalidHandle)
+            , textureFace(TEXTURE_FACE_NEGATIVE_X)
+            , textureLevel(0)
             , loadAction(LOADACTION_CLEAR)
             , storeAction(STOREACTION_NONE)
         {
@@ -874,7 +884,6 @@ nonaliased_cast(src x)
 
     return tmp.d;
 }
-
 
 #define countof(array) (sizeof(array) / sizeof(array[0]))
 #define L_ALIGNED_SIZE(size, align) (((size) + ((align)-1)) & (~((align)-1)))

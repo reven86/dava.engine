@@ -76,6 +76,8 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv* env, jobject classthis, jboolean isAvailable);
     JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv * env, jobject classthis);
     JNIEXPORT int JNICALL Java_com_dava_framework_JNIActivity_nativeGetDesiredFPS(JNIEnv* env, jobject classthis);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 
     //JNISurfaceView
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
@@ -87,9 +89,6 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
 
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeReset(JNIEnv* env, jobject classthis, jint w, jint h);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject classthis);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 };
 
 namespace 
@@ -172,13 +171,12 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
         else
         {
             LOGE("[InitApplication] Can't allocate space for CoreAndroidPlatform");
-		}
-	}
-	else
-	{
-		DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
-	}
-   
+        }
+    }
+    else
+    {
+        DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
+    }
 }
 
 void DeinitApplication()
@@ -226,7 +224,7 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     gInputEventXField = env->GetFieldID(*gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventYField = env->GetFieldID(*gInputEventClass, "y", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
-	gInputEventTapCountField = env->GetFieldID(*gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
+    gInputEventTapCountField = env->GetFieldID(*gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
 
     DAVA::Logger::Info("finish OnCreateApplication");
 }
@@ -335,49 +333,36 @@ DAVA::UIEvent::Phase GetPhase(DAVA::int32 action, DAVA::int32 source)
 {
     DAVA::UIEvent::Phase phase = DAVA::UIEvent::Phase::DRAG;
     switch (action)
-        {
-			case 5: //ACTION_POINTER_DOWN
-			case 0://ACTION_DOWN
+    {
+    case 5: //ACTION_POINTER_DOWN
+    case 0: //ACTION_DOWN
                 phase = DAVA::UIEvent::Phase::BEGAN;
                 break;
 
-            case 6://ACTION_POINTER_UP
-			case 1://ACTION_UP
+    case 6: //ACTION_POINTER_UP
+    case 1: //ACTION_UP
                 phase = DAVA::UIEvent::Phase::ENDED;
                 break;
 
-            case 2://ACTION_MOVE
-			{
-				if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
-				{
-                    phase = DAVA::UIEvent::Phase::JOYSTICK;
-                }
-                else //Touches
-                {
-                    phase = DAVA::UIEvent::Phase::DRAG;
-                }
-            }
-            break;
-
-			case 3://ACTION_CANCEL
+    case 3: //ACTION_CANCEL
                 phase = DAVA::UIEvent::Phase::CANCELLED;
                 break;
 
-            case 4://ACTION_OUTSIDE
-			break;
-		}
+    case 4: //ACTION_OUTSIDE
+        break;
+    }
 
-		return phase;
-	}
+    return phase;
+}
 
-	DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv * env, jobject input, jint action, jint source)
-	{
-		DAVA::UIEvent event;
-		event.tid = env->GetIntField(input, gInputEventTidField);
-		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
-		event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
-		event.tapCount = env->GetIntField(input, gInputEventTapCountField);
-		event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
+DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input, jint action, jint source)
+{
+    DAVA::UIEvent event;
+    event.tid = env->GetIntField(input, gInputEventTidField);
+    event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
+    event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
+    event.tapCount = env->GetIntField(input, gInputEventTapCountField);
+        event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
         event.phase = GetPhase(action, source);
         if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
         {
@@ -426,15 +411,19 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
 					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
 					allInputs.push_back(event);
-				}
-				if (touchIndex < activeInputsCount)
+
+                    env->DeleteLocalRef(jInput);
+                }
+                if (touchIndex < activeInputsCount)
 				{
 					jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
 
 					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
 					activeInputs.push_back(event);
-				}
-			}
+
+                    env->DeleteLocalRef(jInput);
+                }
+            }
 			core->OnInput(action, source, activeInputs, allInputs);
 		}
 	}
@@ -497,7 +486,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
 
         if (core)
         {
-            core->SetNativeWindow(nativeWindow);
+            core->SetNativeWindow(nullptr);
+            core->RenderReset(0, 0);
         }
     }
 }
@@ -510,16 +500,7 @@ void Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobj
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeReset(JNIEnv* env, jobject classthis, jint w, jint h)
-{
-	if(core)
-	{
-        LOGI("__ NATIVE RESET ___ %d, %d", w, h);
-        core->RenderReset(w, h);
-    }
-}
-
-void Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject classthis)
+void Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis)
 {
     if (core)
     {
@@ -527,7 +508,7 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnResume(JNIEnv* env, jobject 
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock)
+void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock)
 {
 	if(core)
 	{

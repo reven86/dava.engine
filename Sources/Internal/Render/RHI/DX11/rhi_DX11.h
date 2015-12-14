@@ -35,6 +35,7 @@
 #include "../Common/rhi_Impl.h"
 
 struct ID3D11DeviceContext;
+struct ID3D11Buffer;
 
 namespace rhi
 {
@@ -78,6 +79,7 @@ namespace PipelineStateDX11
 {
 void SetupDispatch(Dispatch* dispatch);
 unsigned VertexLayoutStride(Handle ps);
+void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount);
 void SetToRHI(Handle ps, uint32 layoutUID, ID3D11DeviceContext* context);
 }
 
@@ -86,8 +88,9 @@ namespace ConstBufferDX11
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
-void SetToRHI(Handle cb, ID3D11DeviceContext* context);
-#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer);
+#else
 void SetToRHI(Handle cb, const void* instData);
 const void* Instance(Handle cb);
 void InvalidateAllInstances();
@@ -100,7 +103,7 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHIFragment(Handle tex, unsigned unitIndex, ID3D11DeviceContext* context);
 void SetToRHIVertex(Handle tex, unsigned unitIndex, ID3D11DeviceContext* context);
-void SetRenderTarget(Handle color, Handle depthstencil, ID3D11DeviceContext* context);
+void SetRenderTarget(Handle color, Handle depthstencil, unsigned level, TextureFace face, ID3D11DeviceContext* context);
 Size2i Size(Handle tex);
 }
 
@@ -136,7 +139,8 @@ DX11Command
 
         MAP = 1,
         UNMAP = 2,
-        UPDATE_SUBRESOURCE = 3
+        UPDATE_SUBRESOURCE = 3,
+        COPY_RESOURCE = 4
     };
 
     Func func;

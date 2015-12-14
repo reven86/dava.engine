@@ -34,7 +34,7 @@
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
-#include "Render/RHI/rhi_Type.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {
@@ -52,7 +52,7 @@ namespace DAVA
         struct PolygonGroupLoadInfo
         {
             uint32 filePos = 0;
-            int32 requestedFormat = 0;
+            int32 requestedFormat = EVF_VERTEX; //vertex position loading is required as all code assumes it is there
             bool onScene = false;
         };
 	
@@ -122,10 +122,10 @@ namespace DAVA
 			Map<uint64, DataNode*>::iterator it = dataBlocks.find(blockId);
 			return (it != dataBlocks.end()) ? it->second : NULL;
 		}
-		
-		inline void AddBinding(uint64 parentKey, NMaterial* material)
-		{
-			MaterialBinding binding;
+
+        inline void AddBinding(uint64 parentKey, NMaterial* material)
+        {
+            MaterialBinding binding;
             binding.childMaterial = material;
             binding.parentKey = parentKey;
 
@@ -149,24 +149,27 @@ namespace DAVA
 
         inline uint32 GetLastError()
         {
-			return lastError;
-		}
-		
-		inline void SetDefaultMaterialQuality(const FastName& quality)
-		{
-			defaultMaterialQuality = quality;
-		}
-		
-		inline const FastName& GetDefaultMaterialQuality() const
-		{
-			return defaultMaterialQuality;
-		}
-		
-		void ResolveMaterialBindings();
+            return lastError;
+        }
+
+        inline void SetDefaultMaterialQuality(const FastName& quality)
+        {
+            defaultMaterialQuality = quality;
+        }
+
+        inline const FastName& GetDefaultMaterialQuality() const
+        {
+            return defaultMaterialQuality;
+        }
+
+        void ResolveMaterialBindings();
 
         void AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos);
         void AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format);
         void LoadPolygonGroupData(File *file);
+
+        template <template <typename, typename> class Container, class T, class A>
+        void GetDataNodes(Container<T, A>& container);
 
     private:
         struct MaterialBinding
@@ -190,6 +193,20 @@ namespace DAVA
 
         bool debugLogEnabled = false;
     };
+
+    template <template <typename, typename> class Container, class T, class A>
+    void SerializationContext::GetDataNodes(Container<T, A>& container)
+    {
+        Map<uint64, DataNode*>::const_iterator end = dataBlocks.end();
+        for (Map<uint64, DataNode*>::iterator t = dataBlocks.begin(); t != end; ++t)
+        {
+            DataNode* obj = t->second;
+
+            T res = dynamic_cast<T>(obj);
+            if (res)
+                container.push_back(res);
+        }
+    }
 };
 
 #endif

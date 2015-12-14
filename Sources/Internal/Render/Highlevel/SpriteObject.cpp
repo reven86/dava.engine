@@ -107,13 +107,10 @@ void SpriteObject::Restore()
     if (batch == nullptr)
         return;
 
-    rhi::HVertexBuffer vBuffer = batch->vertexBuffer;
-    rhi::HIndexBuffer iBuffer = batch->indexBuffer;
-
-    if (rhi::NeedRestoreVertexBuffer(vBuffer) || rhi::NeedRestoreIndexBuffer(iBuffer))
-        UpdateBufferData(vBuffer, iBuffer);
+    UpdateBufferData(batch);
 }
-void SpriteObject::UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffer iBuffer)
+
+void SpriteObject::UpdateBufferData(RenderBatch* batch)
 {
     uint32 framesCount = sprite->GetFrameCount();
     uint32 vxCount = framesCount * 4;
@@ -172,8 +169,37 @@ void SpriteObject::UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffe
         *indicesPtr = i * 4 + 3;
         ++indicesPtr;
     }
-    rhi::UpdateVertexBuffer(vBuffer, verticies.data(), 0, vxCount * (3 + 2) * sizeof(float32));
-    rhi::UpdateIndexBuffer(iBuffer, indices.data(), 0, indCount * sizeof(uint16));
+
+    uint32 vertexBufferSize = vxCount * (3 + 2) * sizeof(float32);
+    uint32 indexBufferSize = indCount * sizeof(uint16);
+
+    if (batch->vertexBuffer == rhi::InvalidHandle)
+    {
+        rhi::VertexBuffer::Descriptor vDesc;
+        vDesc.size = vertexBufferSize;
+        vDesc.initialData = verticies.data();
+        vDesc.usage = rhi::USAGE_STATICDRAW;
+
+        batch->vertexBuffer = rhi::CreateVertexBuffer(vDesc);
+    }
+    else if (rhi::NeedRestoreVertexBuffer(batch->vertexBuffer))
+    {
+        rhi::UpdateVertexBuffer(batch->vertexBuffer, verticies.data(), 0, vertexBufferSize);
+    }
+
+    if (batch->indexBuffer == rhi::InvalidHandle)
+    {
+        rhi::IndexBuffer::Descriptor iDesc;
+        iDesc.size = indexBufferSize;
+        iDesc.initialData = indices.data();
+        iDesc.usage = rhi::USAGE_STATICDRAW;
+
+        batch->indexBuffer = rhi::CreateIndexBuffer(iDesc);
+    }
+    else if (rhi::NeedRestoreIndexBuffer(batch->indexBuffer))
+    {
+        rhi::UpdateIndexBuffer(batch->indexBuffer, indices.data(), 0, indexBufferSize);
+    }
 }
 
 void SpriteObject::SetupRenderBatch()
@@ -193,9 +219,7 @@ void SpriteObject::SetupRenderBatch()
     RenderBatch* batch = new RenderBatch();
     batch->SetMaterial(material);
 
-    batch->vertexBuffer = rhi::CreateVertexBuffer(vxCount * (3 + 2) * sizeof(float32));
-    batch->indexBuffer = rhi::CreateIndexBuffer(indCount * sizeof(uint16));
-    UpdateBufferData(batch->vertexBuffer, batch->indexBuffer);
+    UpdateBufferData(batch);
 
     batch->vertexBase = 0;
     batch->vertexCount = vxCount;
@@ -223,14 +247,14 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
         newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
     }
 
-	SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
+    SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
 
-	spriteObject->flags = flags;
-	spriteObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
-	spriteObject->debugFlags = debugFlags;
-	spriteObject->ownerDebugInfo = ownerDebugInfo;
+    spriteObject->flags = flags;
+    spriteObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
+    spriteObject->debugFlags = debugFlags;
+    spriteObject->ownerDebugInfo = ownerDebugInfo;
 
-	return spriteObject;
+    return spriteObject;
 }
 
 
