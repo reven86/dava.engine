@@ -47,9 +47,9 @@ class FileSystemDockWidget : public QDockWidget
     Q_OBJECT
     
 public:
-    explicit FileSystemDockWidget(QWidget *parent = nullptr);
+    explicit FileSystemDockWidget(QWidget* parent = nullptr);
     ~FileSystemDockWidget();
-    
+
     void SetProjectDir(const QString &path);
 
 signals:
@@ -67,17 +67,17 @@ private slots:
     void OnOpenFile();
 
 private:
-    void RefreshActions(const QModelIndexList &indexList);
-    bool CanRemove(const QModelIndex &index) const;
+    void RefreshActions(const QModelIndexList& indexList);
+    bool CanRemove(const QModelIndex& index) const;
 
     std::unique_ptr<Ui::FileSystemDockWidget> ui;
-    QFileSystemModel *model = nullptr;
-    QAction *newFolderAction = nullptr;
-    QAction *newFileAction = nullptr;
-    QAction *deleteAction = nullptr;
-    QAction *showInSystemExplorerAction = nullptr;
-    QAction *renameAction = nullptr;
-    QAction *openFileAction = nullptr;
+    QFileSystemModel* model = nullptr;
+    QAction* newFolderAction = nullptr;
+    QAction* newFileAction = nullptr;
+    QAction* deleteAction = nullptr;
+    QAction* showInSystemExplorerAction = nullptr;
+    QAction* renameAction = nullptr;
+    QAction* openFileAction = nullptr;
 };
 
 #endif // __QUICKED_FILE_SYSTEM_DIALOG_H__
