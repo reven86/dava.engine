@@ -45,6 +45,8 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
+#define DAVA_WINUAP_MOUSE_HACK
+
 namespace DAVA
 {
 
@@ -218,6 +220,11 @@ private:
     Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
     Windows::Foundation::EventRegistrationToken token;
 
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+    BOOL (WINAPI* SetCursorPos)(int X, int Y);
+
+    bool skipMouseMoveEvent = false;
+#endif
 };
 
 //////////////////////////////////////////////////////////////////////////
