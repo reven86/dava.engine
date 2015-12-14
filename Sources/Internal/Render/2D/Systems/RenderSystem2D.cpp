@@ -40,11 +40,16 @@
 
 namespace DAVA
 {
-static const uint32 MAX_VERTICES = 1024;
-static const uint32 MAX_INDECES = MAX_VERTICES * 2;
-static const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
-static const uint32 VBO_STRIDE = GetVertexSize(VBO_FORMAT);
-static const float32 SEGMENT_LENGTH = 15.0f;
+namespace
+{
+const bool virtualToPhysicalTransformEnabledDefaultValue = true;
+
+const uint32 MAX_VERTICES = 1024;
+const uint32 MAX_INDECES = MAX_VERTICES * 2;
+const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
+const uint32 VBO_STRIDE = GetVertexSize(VBO_FORMAT);
+const float32 SEGMENT_LENGTH = 15.0f;
+}
 
 const FastName RenderSystem2D::RENDER_PASS_NAME("2d");
 const FastName RenderSystem2D::FLAG_COLOR_OP("COLOR_OP");
@@ -233,7 +238,7 @@ void RenderSystem2D::EndRenderTargetPass()
     renderTargetWidth = 0;
     renderTargetHeight = 0;
 
-    SetVirtualToPhysicalTransformEnabled(true);
+    SetVirtualToPhysicalTransformEnabled(virtualToPhysicalTransformEnabledDefaultValue);
     ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
@@ -1844,10 +1849,9 @@ void StretchDrawData::GenerateStretchData()
 
     VirtualCoordinatesSystem * vcs = VirtualCoordinatesSystem::Instance();
 
-    const Vector2 uvSize = vcs->ConvertVirtualToResource(Vector2(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
-                                                                 sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)),
-                                                         sprite->GetResourceSizeIndex()) /
-    textureSize;
+    Vector2 value(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
+                  sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
+    const Vector2 uvSize = vcs->ConvertVirtualToResource(value, sprite->GetResourceSizeIndex()) / textureSize;
     const Vector2 uvLeftTopCap = vcs->ConvertVirtualToResource(xyRealLeftTopCap, sprite->GetResourceSizeIndex()) / textureSize;
     const Vector2 uvRightBottomCap = vcs->ConvertVirtualToResource(xyRealRightBottomCap, sprite->GetResourceSizeIndex()) / textureSize;
 
