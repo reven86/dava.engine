@@ -229,6 +229,8 @@ public:
     virtual void CopyDataFrom(UIControl *srcControl);
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
+    
+    bool GetNeedRefresh();
 
 protected:
     void InitAfterYaml();
@@ -276,5 +278,11 @@ public:
         PROPERTY("aggregatorPath", "Aggregator Path", GetAggregatorPath, SetAggregatorPath, I_SAVE | I_VIEW | I_EDIT)
         );
 };
+
+inline bool UIList::GetNeedRefresh()
+{
+    return needRefresh;
+}
+
 };
 #endif
