@@ -32,6 +32,8 @@
 
 #if defined __DISABLE_NATIVE_WEBVIEW__
 
+#include "UI/IWebViewControl.h"
+
 namespace DAVA
 {
 // Web View Control for Win32.

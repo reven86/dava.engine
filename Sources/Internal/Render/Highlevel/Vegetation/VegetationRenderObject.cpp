@@ -416,10 +416,8 @@ bool VegetationRenderObject::IsDataLoadNeeded()
     shouldLoadData = shouldLoadData && qualityAllowsVegetation;
 
     Renderer::GetOptions()->SetOption(RenderOptions::VEGETATION_DRAW, shouldLoadData);
-    
-#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WINDOWS__)
-    shouldLoadData = true;
-#endif
+
+    shouldLoadData |= QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
 
     return shouldLoadData;
 }
