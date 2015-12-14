@@ -52,7 +52,7 @@ QVariant FileSystemModel::data(const QModelIndex & index, int role) const
 
 bool FileSystemModel::setData(const QModelIndex & idx, const QVariant & value, int role)
 {
-    if (value.canConvert<QString>())
+    if (idx.isValid() && !isDir(idx) && value.canConvert<QString>())
     {
         QString name = value.toString();
         if (!name.endsWith(GetYamlExtensionString()))
