@@ -230,8 +230,8 @@ void WinUAPXamlApp::PreStartAppSettings()
         // default orientation landscape and landscape flipped
         // will be changed in SetDisplayOrientations()
         StatusBar::GetForCurrentView()->HideAsync();
-        Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->SuppressSystemOverlays = true;
     }
+    Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
 }
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
@@ -380,14 +380,14 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    core->RunOnMainThreadBlocked([]() {
+    core->RunOnMainThread([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    core->RunOnMainThreadBlocked([]() {
+    core->RunOnMainThread([]() {
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
