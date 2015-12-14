@@ -355,6 +355,7 @@ dx11_Texture_Delete(Handle tex)
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
     if (self->tex2d_srv)
+    {
         self->tex2d_srv->Release();
         self->tex2d_srv = nullptr;
     }
