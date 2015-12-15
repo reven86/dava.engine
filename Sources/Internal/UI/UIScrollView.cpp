@@ -82,8 +82,7 @@ void UIScrollView::SetSize(const DAVA::Vector2 &newSize)
 
     if (scrollContainer)
     {
-        DAVA::Vector2 curContainerSize = scrollContainer->GetSize();
-        scrollContainer->SetSize(curContainerSize);
+        scrollContainer->ApplySizeChanges();
     }
 }
 
