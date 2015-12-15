@@ -36,7 +36,7 @@
 #include "Network/NetService.h"
 #include "Network/NetCore.h"
 
-#ifndef __DAVAENGINE_WIN_UAP__
+#if !defined(DAVA_NETWORK_DISABLE)
 
 using namespace DAVA;
 using namespace DAVA::Net;
@@ -244,7 +244,7 @@ DAVA_TESTCLASS(NetworkTest)
 
     enum eServiceTypes
     {
-        SERVICE_ECHO
+        SERVICE_ECHO = 1000
     };
 
     enum
@@ -400,8 +400,4 @@ DAVA_TESTCLASS(NetworkTest)
     }
 };
 
-#else
-
-__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-
-#endif //  !__DAVAENGINE_WIN_UAP__
+#endif // !DAVA_NETWORK_DISABLE

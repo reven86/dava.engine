@@ -33,6 +33,8 @@
 #include <Network/Base/UDPSocket.h>
 #include <Network/Base/DeadlineTimer.h>
 
+#include "Network/Base/TCPSocket.h"
+
 #include <Network/IController.h>
 
 namespace DAVA
@@ -51,21 +53,22 @@ public:
     virtual ~Discoverer();
 
     // IController
-    virtual void Start();
-    virtual void Stop(Function<void (IController*)> callback);
-    virtual void Restart();
+    void Start() override;
+    void Stop(Function<void(IController*)> callback) override;
+    void Restart() override;
+
+    bool TryDiscoverDevice(const Endpoint& endpoint);
 
 private:
     void DoStart();
     void DoStop();
     void DoObjectClose();
     void DoBye();
+    void DiscoverDevice();
 
-    void TimerHandleClose(DeadlineTimer* timer);
-    void TimerHandleDelay(DeadlineTimer* timer);
-
-    void SocketHandleClose(UDPSocket* socket);
     void SocketHandleReceive(UDPSocket* socket, int32 error, size_t nread, const Endpoint& endpoint, bool partial);
+
+    void TcpSocketHandleRead(TCPSocket* socket, int32 error, size_t nread);
 
 private:
     IOLoop* loop;
@@ -77,7 +80,11 @@ private:
     size_t runningObjects;
     Function<void (IController*)> stopCallback;
     Function<void (size_t, const void*, const Endpoint&)> dataCallback;
-    uint8 inbuf[64 * 1024];
+    uint8 inbuf[4 * 1024];
+
+    Endpoint tcpEndpoint; // IP address of remote announcer
+    TCPSocket tcpSocket; // TCP socket for direct connection to remote announcer
+    char tcpInbuf[4 * 1024];
 };
 
 }   // namespace Net

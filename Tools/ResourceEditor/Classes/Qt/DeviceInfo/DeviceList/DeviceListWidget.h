@@ -50,9 +50,11 @@ signals:
     void connectClicked();
     void disconnectClicked();
     void showLogClicked();
+    void deviceDiscoverClicked(const QString& addr);
 
 public slots:
     void OnViewDump();
+    void OnDeviceDiscover();
 
 public:
     explicit DeviceListWidget( QWidget *parent = NULL );

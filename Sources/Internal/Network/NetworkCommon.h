@@ -54,8 +54,9 @@ enum eMiscConst
     DEFAULT_READ_TIMEOUT = 5 * 1000,        // Timeout in ms
 #else
     // Increase read timeout when memory profiling enabled to reduce connection breaks on timeout
-    DEFAULT_READ_TIMEOUT = 120 * 1000
+    DEFAULT_READ_TIMEOUT = 120 * 1000,
 #endif
+    DEFAULT_ANNOUNCE_TIME_PERIOD = 5
 };
 
 }   // namespace Net
