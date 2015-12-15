@@ -85,5 +85,5 @@ private:
 
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__ && !__DISABLE_NATIVE_WEBVIEW__
+#endif // __DAVAENGINE_WIN_UAP__ && !__DISABLE_NATIVE_WEBVIEW__
 #endif  // __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__

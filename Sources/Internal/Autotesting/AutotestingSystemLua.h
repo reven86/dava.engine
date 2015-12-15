@@ -142,7 +142,7 @@ public:
     void InitializeDevice();
 
     String GetDeviceName();
-	String GetPlatform();
+    String GetPlatform();
 
 	bool IsPhoneScreen();
 

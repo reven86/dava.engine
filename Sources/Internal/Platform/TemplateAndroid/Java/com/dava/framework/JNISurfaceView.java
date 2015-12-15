@@ -35,7 +35,11 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     private native void nativeProcessFrame();
 	
-	private Surface surface = null;
+    // Make surface member as static due to JNISurfaceView's lifecycle
+    // System can create new JNISurfaceView instance before deleting previous instance
+    // So use surface as current surface
+    // TODO: work with surface in SDL way 
+	static private Surface surface = null;
 	private int surfaceWidth = 0, surfaceHeight = 0;
 	
 	private boolean isMultitouchEnabled = true;
@@ -386,6 +390,18 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void surfaceCreated(SurfaceHolder holder)
     {
+    	if (surface != null)
+    	{
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated: previous surface is alive, call nativeSurfaceDestroyed");
+    		queueEvent(new Runnable() {
+    			public void run() {
+                    Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable in: call nativeSurfaceDestroyed");
+    		    	nativeSurfaceDestroyed();
+                    Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable out: call nativeSurfaceDestroyed");
+    			}
+    		});
+    	}
+    	
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated in");
     	surface = holder.getSurface();
     	surfaceWidth = surfaceHeight = 0;
@@ -403,6 +419,12 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
+    	if (surface != holder.getSurface())
+    	{
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged for previous object! Do nothing");
+    		return;
+    	}
+    	
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged in");
 
         // while we always in landscape mode, but some devices
@@ -451,6 +473,12 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     
     public void surfaceDestroyed(SurfaceHolder holder)
     {
+    	if (surface != holder.getSurface())
+    	{
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed for previous object! Do nothing");
+    		return;
+    	}
+    	
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed in");
     	queueEvent(new Runnable() {
 			public void run() {

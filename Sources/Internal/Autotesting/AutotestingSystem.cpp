@@ -82,8 +82,8 @@ AutotestingSystem::AutotestingSystem()
     , waitTimeLeft(0.0f)
     , waitCheckTimeLeft(0.0f)
     , luaSystem(nullptr)
-    {
-		new AutotestingDB();
+{
+        new AutotestingDB();
 	}
 
 	AutotestingSystem::~AutotestingSystem()
@@ -172,8 +172,8 @@ AutotestingSystem::AutotestingSystem()
     void AutotestingSystem::OnInit()
     {
         DVASSERT(!isInit);
-		isInit = true;
-	}
+        isInit = true;
+    }
 
 	// Get test parameters from id.yaml
 	void AutotestingSystem::FetchParametersFromIdYaml()
@@ -274,7 +274,7 @@ AutotestingSystem::AutotestingSystem()
         isInitMultiplayer = true;
     }
 
-	String AutotestingSystem::GetCurrentTimeString()
+    String AutotestingSystem::GetCurrentTimeString()
 	{
 		DateTime time = DateTime::Now();
 		return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
@@ -372,7 +372,7 @@ AutotestingSystem::AutotestingSystem()
             AutotestingDB::Instance()->WriteState(deviceName, "State", "error");
         }
 
-		ExitApp();
+        ExitApp();
 	}
 
 	void AutotestingSystem::ForceQuit(const String &errorMessage)
@@ -427,7 +427,7 @@ AutotestingSystem::AutotestingSystem()
             AutotestingDB::Instance()->WriteState(deviceName, "State", "finished");
         }
 
-		// Mark test as SUCCESS
+        // Mark test as SUCCESS
 		AutotestingDB::Instance()->Log("INFO", "Test finished.");
 
 		ExitApp();
@@ -511,8 +511,8 @@ AutotestingSystem::AutotestingSystem()
             isFound = true;
             touch = findIt->second;
         }
-		return isFound;
-	}
+        return isFound;
+    }
 
 	bool AutotestingSystem::IsTouchDown(int32 id)
 	{

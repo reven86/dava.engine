@@ -104,7 +104,6 @@ void DocumentGroup::SetActiveDocument(Document* document)
 
         active->SetScale(scale);
         active->SetEmulationMode(emulationMode);
-        active->SetDPR(dpr);
         active->SetPixelization(hasPixalization);
     }
     emit ActiveDocumentChanged(document);
@@ -147,15 +146,6 @@ void DocumentGroup::SetScale(float arg)
     if (nullptr != active)
     {
         active->SetScale(arg);
-    }
-}
-
-void DocumentGroup::SetDPR(qreal arg)
-{
-    dpr = arg;
-    if (nullptr != active)
-    {
-        active->SetDPR(static_cast<double>(dpr));
     }
 }
 

@@ -720,4 +720,3 @@ void WebViewControl::WillDraw()
 } // end namespace DAVA
 
 #endif //defined(__DAVAENGINE_IPHONE__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
-

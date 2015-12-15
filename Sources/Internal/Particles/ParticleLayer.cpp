@@ -445,7 +445,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
             float32 ny = -_pivot.x / sprite->GetWidth() * 2;
             float32 nx = -_pivot.y / sprite->GetHeight() * 2;
             _pivot.Set(nx, ny);
-		}
+        }
 
 		SetPivotPoint(_pivot);
 	}

@@ -41,12 +41,10 @@ public:
     explicit ControlContainer(const HUDAreaInfo::eArea area);
     HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
-    void SetDPR(DAVA::float32 arg);
 
 protected:
     ~ControlContainer() = default;
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
-    DAVA::float32 dpr = 1.0f;
 };
 
 class HUDContainer : public ControlContainer

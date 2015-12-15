@@ -41,19 +41,19 @@ class ValidatedTextInputDialog : public QInputDialog
     Q_OBJECT
 
 public:
-    ValidatedTextInputDialog(QWidget *parent = nullptr);
+    ValidatedTextInputDialog(QWidget* parent = nullptr);
     void SetValidator(std::function<bool(const QString&)> validator);
-    void SetWarningMessage(const QString &message);
-    void setLabelText(const QString &labelText);
+    void SetWarningMessage(const QString& message);
+    void setLabelText(const QString& labelText);
 private slots:
-    void OnTextChanged(const QString &text);
+    void OnTextChanged(const QString& text);
 
 private:
     using QInputDialog::setLabelText;
     void ExtractInternalWidgets();
 
-    QLineEdit *lineEdit = nullptr;
-    QPushButton *buttonOk = nullptr;
+    QLineEdit* lineEdit = nullptr;
+    QPushButton* buttonOk = nullptr;
     std::function<bool(const QString&)> validateFunction;
     QString warningMessage;
     QString labelText;
