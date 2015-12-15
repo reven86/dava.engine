@@ -130,22 +130,24 @@ PropertyEditor::~PropertyEditor()
 void PropertyEditor::SetEntities(const EntityGroup *selected)
 {
     ClearCurrentNodes();
-    if(NULL != selected && selected->Size() > 0)
+    SCOPE_EXIT
     {
-        const int nSelected = selected->Size();
-        curNodes.reserve( nSelected );
-        for ( size_t i = 0; i < selected->Size(); i++ )
-        {
-            DAVA::Entity* node = SafeRetain(selected->GetEntitySlow(i));
-            curNodes << node;
-            // ensure that custom properties exist
-            // this call will create them if they are not created yet
-            GetOrCreateCustomProperties(node);
-        }
-    }
+        ResetProperties();
+        SaveScheme("~doc:/PropEditorDefault.scheme");
+    };
 
-    ResetProperties();
-    SaveScheme("~doc:/PropEditorDefault.scheme");
+    if (selected == nullptr || selected->Size() == 0)
+        return;
+
+    curNodes.reserve(selected->Size());
+    for (const EntityGroup::EntityMap::value_type & mapNode : selected->GetContent())
+    {
+        DAVA::Entity* node = SafeRetain(mapNode.first);
+        curNodes << node;
+        // ensure that custom properties exist
+        // this call will create them if they are not created yet
+        GetOrCreateCustomProperties(node);
+    }
 }
 
 void PropertyEditor::SetViewMode(eViewMode mode)
@@ -262,15 +264,13 @@ void PropertyEditor::ResetProperties()
 		ApplyModeFilter(favoriteGroup);
 		ApplyCustomExtensions(root);
 
-		// add not empty rows from root
-		while(0 != root->ChildCount())
-		{
-			QtPropertyData *row = root->ChildGet(0);
-			root->ChildExtract(row);
-
-            AppendProperty(row->GetName(), row);
+        QVector<QtPropertyData *> properies;
+        root->ChildrenExtract(properies);
+        AppendProperties(properies);
+        foreach(QtPropertyData * row, properies)
+        {
             ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
-		}
+        }
 
 		delete root;
 	}

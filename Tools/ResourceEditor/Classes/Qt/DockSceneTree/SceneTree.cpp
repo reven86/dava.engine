@@ -841,33 +841,67 @@ void SceneTree::SyncSelectionToTree()
     }
 
     isInSync = true;
+    SCOPE_EXIT
+    {
+        isInSync = false;
+    };
 
     const auto& selection = curScene->selectionSystem->GetSelection();
 
     QModelIndex lastValidIndex;
-    DAVA::Vector<QModelIndex> toSelect;
-    toSelect.reserve(selection.Size());
+    using TSelectionMap = DAVA::Map < QModelIndex, DAVA::Vector<QModelIndex> > ;
+    TSelectionMap toSelect;
     for (const auto& item : selection.GetContent())
     {
         QModelIndex sIndex = filteringProxyModel->mapFromSource(treeModel->GetIndex(item.first));
         if (sIndex.isValid())
         {
             lastValidIndex = sIndex;
-            toSelect.push_back(sIndex);
+            toSelect[sIndex.parent()].push_back(sIndex);
         }
     }
 
-    if (!toSelect.empty())
+    if (toSelect.empty())
+        return;
+
+    QItemSelectionModel * selectModel = selectionModel();
+    selectModel->clear();
+
+    for (TSelectionMap::value_type & selectionNode : toSelect)
     {
-        selectionModel()->clear();
-        for (const auto& index : toSelect)
+        DAVA::Vector<QModelIndex> & indexes = selectionNode.second;
+        sort(indexes.begin(), indexes.end(), [](const QModelIndex & left, const QModelIndex & right)
         {
-            selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+            DVASSERT(left.parent() == right.parent());
+            return left.row() < right.row();
+        });
+
+        int startIndex = 0;
+        int lastIndex = startIndex;
+        int lastRow = indexes[lastIndex].row();
+        for (size_t i = 1; i < indexes.size(); ++i)
+        {
+            int currentRow = indexes[i].row();
+            if (currentRow - lastRow < 2)
+            {
+                DVASSERT(currentRow - lastRow > 0);
+                lastRow = currentRow;
+                lastIndex = i;
+            }
+            else
+            {
+                QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
+                selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+                startIndex = i;
+                lastIndex = startIndex;
+                lastRow = indexes[lastIndex].row();
+            }
         }
-        scrollTo(lastValidIndex, QAbstractItemView::PositionAtCenter);
+        QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
+        selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
     }
 
-    isInSync = false;
+    scrollTo(lastValidIndex, QAbstractItemView::PositionAtCenter);
 }
 
 void SceneTree::SyncSelectionFromTree()
