@@ -120,7 +120,6 @@ public:
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
-    DAVA::Signal<DAVA::float32> DPRChanged;
     DAVA::Signal<> CanvasSizeChanged;
     DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;

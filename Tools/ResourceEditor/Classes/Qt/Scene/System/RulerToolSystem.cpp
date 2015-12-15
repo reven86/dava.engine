@@ -276,7 +276,10 @@ void RulerToolSystem::DrawPoints()
 
     Texture* targetTexture = drawSystem->GetRulerToolProxy()->GetTexture();
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(targetTexture);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = targetTexture;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
 
     Vector<Vector2> points;
     points.reserve(linePoints.size() + 1);

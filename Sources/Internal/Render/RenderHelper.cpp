@@ -102,6 +102,11 @@ std::array<DAVA::uint16, 18> gSolidArrowIndexes = {
 namespace DAVA
 {
 RenderHelper::RenderHelper()
+    : drawLineCommand(COMMAND_DRAW_LINE)
+    , drawIcosahedronCommand(COMMAND_DRAW_ICOSA)
+    , drawArrowCommand(COMMAND_DRAW_ARROW)
+    , drawCircleCommand(COMMAND_DRAW_CIRCLE)
+    , drawBoxCommand(COMMAND_DRAW_BOX)
     {
         rhi::VertexLayout layout;
         layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
@@ -118,6 +123,12 @@ RenderHelper::RenderHelper()
 
         for (NMaterial* material : materials)
             material->PreBuildMaterial(PASS_FORWARD);
+
+        drawLineCommand.params.resize(10);
+        drawIcosahedronCommand.params.resize(8);
+        drawArrowCommand.params.resize(10);
+        drawCircleCommand.params.resize(12);
+        drawBoxCommand.params.resize(16);
     }
 
     void RenderHelper::InvalidateMaterials()
@@ -163,7 +174,7 @@ RenderHelper::RenderHelper()
 
     void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatrix, const Matrix4* projectionMatrix)
     {
-        if (!commandQueue.size())
+        if (commandQueue.empty())
             return;
 
         rhi::Packet packet[DRAW_TYPE_COUNT];
@@ -308,12 +319,12 @@ RenderHelper::RenderHelper()
 
     bool RenderHelper::IsEmpty()
     {
-        return (commandQueue.size() == 0);
+        return commandQueue.empty();
     }
 
-    void RenderHelper::QueueCommand(const DrawCommand&& command)
+    void RenderHelper::QueueCommand(const DrawCommand& command)
     {
-        commandQueue.emplace_back(std::move(command));
+        commandQueue.emplace_back(command);
 
         uint32 vertexCount = 0, indexCount = 0;
         GetRequestedVertexCount(commandQueue.back(), vertexCount, indexCount);
@@ -393,14 +404,30 @@ RenderHelper::RenderHelper()
     void RenderHelper::DrawLine(const Vector3& pt1, const Vector3& pt2, const Color& color, eDrawType drawType /*  = DRAW_WIRE_DEPTH */)
     {
         DVASSERT((drawType & FLAG_DRAW_SOLID) == 0);
-        QueueCommand(DrawCommand{ COMMAND_DRAW_LINE, drawType, { color.r, color.g, color.b, color.a, pt1.x, pt1.y, pt1.z, pt2.x, pt2.y, pt2.z } });
+
+        drawLineCommand.drawType = drawType;
+
+        drawLineCommand.params[0] = color.r;
+        drawLineCommand.params[1] = color.g;
+        drawLineCommand.params[2] = color.b;
+        drawLineCommand.params[3] = color.a;
+
+        drawLineCommand.params[4] = pt1.x;
+        drawLineCommand.params[5] = pt1.y;
+        drawLineCommand.params[6] = pt1.z;
+
+        drawLineCommand.params[7] = pt2.x;
+        drawLineCommand.params[8] = pt2.y;
+        drawLineCommand.params[9] = pt2.z;
+
+        QueueCommand(drawLineCommand);
     }
     void RenderHelper::DrawPolygon(const Polygon3& polygon, const Color& color, eDrawType drawType)
     {
         Vector<float32> args(4 + polygon.pointCount * 3);
         Memcpy(args.data(), color.color, sizeof(Color));
         Memcpy(args.data() + 4, polygon.points.data(), sizeof(Vector3) * polygon.pointCount);
-        QueueCommand(DrawCommand{ COMMAND_DRAW_POLYGON, drawType, args });
+        QueueCommand(DrawCommand(COMMAND_DRAW_POLYGON, drawType, std::forward<Vector<float32>&&>(args)));
     }
     void RenderHelper::DrawAABox(const AABBox3& box, const Color& color, eDrawType drawType)
     {
@@ -423,16 +450,62 @@ RenderHelper::RenderHelper()
         Vector3 direction = to - from;
         Vector3 lineEnd = to - (direction * arrowLength / direction.Length());
 
-        QueueCommand(DrawCommand{ COMMAND_DRAW_ARROW, drawType, { color.r, color.g, color.b, color.a, lineEnd.x, lineEnd.y, lineEnd.z, to.x, to.y, to.z } });
+        drawArrowCommand.drawType = drawType;
+
+        drawArrowCommand.params[0] = color.r;
+        drawArrowCommand.params[1] = color.g;
+        drawArrowCommand.params[2] = color.b;
+        drawArrowCommand.params[3] = color.a;
+
+        drawArrowCommand.params[4] = lineEnd.x;
+        drawArrowCommand.params[5] = lineEnd.y;
+        drawArrowCommand.params[6] = lineEnd.z;
+
+        drawArrowCommand.params[7] = to.x;
+        drawArrowCommand.params[8] = to.y;
+        drawArrowCommand.params[9] = to.z;
+
+        QueueCommand(drawArrowCommand);
         DrawLine(from, lineEnd, color, eDrawType(drawType & FLAG_DRAW_NO_DEPTH));
     }
     void RenderHelper::DrawIcosahedron(const Vector3& position, float32 radius, const Color& color, eDrawType drawType)
     {
-        QueueCommand(DrawCommand{ COMMAND_DRAW_ICOSA, drawType, { color.r, color.g, color.b, color.a, position.x, position.y, position.z, radius } });
+        drawIcosahedronCommand.drawType = drawType;
+
+        drawIcosahedronCommand.params[0] = color.r;
+        drawIcosahedronCommand.params[1] = color.g;
+        drawIcosahedronCommand.params[2] = color.b;
+        drawIcosahedronCommand.params[3] = color.a;
+
+        drawIcosahedronCommand.params[4] = position.x;
+        drawIcosahedronCommand.params[5] = position.y;
+        drawIcosahedronCommand.params[6] = position.z;
+
+        drawIcosahedronCommand.params[7] = radius;
+
+        QueueCommand(drawIcosahedronCommand);
     }
     void RenderHelper::DrawCircle(const Vector3& center, const Vector3& direction, float32 radius, uint32 segmentCount, const Color& color, eDrawType drawType)
     {
-        QueueCommand(DrawCommand{ COMMAND_DRAW_CIRCLE, drawType, { color.r, color.g, color.b, color.a, center.x, center.y, center.z, direction.x, direction.y, direction.z, radius, (float32)(segmentCount) } });
+        drawCircleCommand.drawType = drawType;
+
+        drawCircleCommand.params[0] = color.r;
+        drawCircleCommand.params[1] = color.g;
+        drawCircleCommand.params[2] = color.b;
+        drawCircleCommand.params[3] = color.a;
+
+        drawCircleCommand.params[4] = center.x;
+        drawCircleCommand.params[5] = center.y;
+        drawCircleCommand.params[6] = center.z;
+
+        drawCircleCommand.params[7] = direction.x;
+        drawCircleCommand.params[8] = direction.y;
+        drawCircleCommand.params[9] = direction.z;
+
+        drawCircleCommand.params[10] = radius;
+        drawCircleCommand.params[11] = static_cast<float32>(segmentCount);
+
+        QueueCommand(drawCircleCommand);
     }
     void RenderHelper::DrawBSpline(BezierSpline3* bSpline, int segments, float ts, float te, const Color& color, eDrawType drawType)
     {
@@ -475,9 +548,31 @@ RenderHelper::RenderHelper()
             zAxis = MultiplyVectorMat3x3(zAxis, *matrix);
         }
 
-        QueueCommand(DrawCommand{ commandID, drawType, {
-                                                       color.r, color.g, color.b, color.a, minPt.x, minPt.y, minPt.z, xAxis.x, xAxis.y, xAxis.z, yAxis.x, yAxis.y, yAxis.z, zAxis.x, zAxis.y, zAxis.z,
-                                                       } });
+        drawBoxCommand.id = commandID;
+        drawBoxCommand.drawType = drawType;
+
+        drawBoxCommand.params[0] = color.r;
+        drawBoxCommand.params[1] = color.g;
+        drawBoxCommand.params[2] = color.b;
+        drawBoxCommand.params[3] = color.a;
+
+        drawBoxCommand.params[4] = minPt.x;
+        drawBoxCommand.params[5] = minPt.y;
+        drawBoxCommand.params[6] = minPt.z;
+
+        drawBoxCommand.params[7] = xAxis.x;
+        drawBoxCommand.params[8] = xAxis.y;
+        drawBoxCommand.params[9] = xAxis.z;
+
+        drawBoxCommand.params[10] = yAxis.x;
+        drawBoxCommand.params[11] = yAxis.y;
+        drawBoxCommand.params[12] = yAxis.z;
+
+        drawBoxCommand.params[13] = zAxis.x;
+        drawBoxCommand.params[14] = zAxis.y;
+        drawBoxCommand.params[15] = zAxis.z;
+
+        QueueCommand(drawBoxCommand);
     }
 
     void RenderHelper::FillBoxVBuffer(ColoredVertex* buffer, const Vector3& basePoint, const Vector3& xAxis, const Vector3& yAxis, const Vector3& zAxis, uint32 nativeColor)

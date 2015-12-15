@@ -61,7 +61,7 @@ Font::Font()
 
 Font::~Font()
 {
-	FontManager::Instance()->UnregisterFont(this);
+    FontManager::Instance()->UnregisterFont(this);
 }
 
 

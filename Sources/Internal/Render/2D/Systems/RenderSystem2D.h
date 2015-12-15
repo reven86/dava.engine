@@ -36,6 +36,7 @@
 #include "Render/2D/Sprite.h"
 
 #include "UI/UIControlBackground.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -102,6 +103,15 @@ public:
         rhi::HSamplerState samplerStateHandle;
         rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
         Matrix4* worldMatrix = nullptr;
+    };
+
+    struct RenderTargetPassDescriptor
+    {
+        Texture* target = nullptr;
+        Color clearColor = Color::Clear;
+        int32 priority = PRIORITY_SERVICE_2D;
+        bool shouldTransformVirtualToPhysical = true;
+        bool shouldClear = true;
     };
 
     enum ColorOperations
@@ -172,6 +182,7 @@ public:
     void SetSpriteClipping(bool clipping);
 
     void BeginRenderTargetPass(Texture* target, bool needClear = true, const Color& clearColor = Color::Clear, int32 priority = PRIORITY_SERVICE_2D);
+    void BeginRenderTargetPass(const RenderTargetPassDescriptor&);
     void EndRenderTargetPass();
 
     /* 2D DRAW HELPERS */
@@ -273,6 +284,7 @@ public:
                                           const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
 private:
+    void SetVirtualToPhysicalTransformEnabled(bool);
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
     void Setup2DMatrices();
 
@@ -283,7 +295,18 @@ private:
         return (currentPacketListHandle != packetList2DHandle);
     };
 
-    Matrix4 virtualToPhysicalMatrix;
+    const Matrix4& VirtualToPhysicalMatrix() const;
+
+    float32 AlignToX(float32 value);
+    float32 AlignToY(float32 value);
+
+private:
+    Matrix4 currentVirtualToPhysicalMatrix;
+    Vector2 currentPhysicalToVirtualScale;
+
+    Matrix4 actualVirtualToPhysicalMatrix;
+    Vector2 actualPhysicalToVirtualScale;
+
     Matrix4 projMatrix;
     Matrix4 viewMatrix;
     uint32 projMatrixSemantic;
@@ -338,6 +361,7 @@ private:
 
     int32 renderTargetWidth;
     int32 renderTargetHeight;
+    bool virtualToPhysicalTransformEnabled = true;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
