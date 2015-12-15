@@ -98,6 +98,23 @@ WinUAPXamlApp::WinUAPXamlApp()
     }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
+
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+    if (!isPhoneApiDetected)
+    {
+        // Here land of black magic and fire-spitting dragons begins
+        MEMORY_BASIC_INFORMATION bi;
+        VirtualQuery(static_cast<void*>(&GetModuleFileNameA), &bi, sizeof(bi));
+        HMODULE hkernel = reinterpret_cast<HMODULE>(bi.AllocationBase);
+
+        HMODULE(WINAPI * LoadLibraryW)
+        (LPCWSTR lpLibFileName);
+        LoadLibraryW = reinterpret_cast<decltype(LoadLibraryW)>(GetProcAddress(hkernel, "LoadLibraryW"));
+
+        HMODULE huser = LoadLibraryW(L"user32.dll");
+        SetCursorPos = reinterpret_cast<decltype(SetCursorPos)>(GetProcAddress(huser, "SetCursorPos"));
+    }
+#endif
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
@@ -172,6 +189,24 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
     if (isVisible != isMouseCursorShown)
     {
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+        if (!isVisible)
+        {
+            Window::Current->CoreWindow->PointerCursor = nullptr;
+
+            Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
+            float32 centerX = rc.Width / 2.0f;
+            float32 centerY = rc.Height / 2.0f;
+
+            float32 scale = DeviceInfo::GetScreenInfo().scale;
+            SetCursorPos(static_cast<int>((centerX + rc.X) * scale), static_cast<int>((centerY + rc.Y) * scale));
+            skipMouseMoveEvent = true;
+        }
+        else
+        {
+            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+        }
+#else
         if (isVisible)
         {
             MouseDevice::GetForCurrentView()->MouseMoved -= token;
@@ -182,6 +217,7 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
             token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
             Window::Current->CoreWindow->PointerCursor = nullptr;
         }
+#endif
         isMouseCursorShown = isVisible;
     }
     return true;
@@ -194,8 +230,8 @@ void WinUAPXamlApp::PreStartAppSettings()
         // default orientation landscape and landscape flipped
         // will be changed in SetDisplayOrientations()
         StatusBar::GetForCurrentView()->HideAsync();
-        Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->SuppressSystemOverlays = true;
     }
+    Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
 }
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
@@ -344,14 +380,14 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    core->RunOnMainThreadBlocked([]() {
+    core->RunOnMainThread([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    core->RunOnMainThreadBlocked([]() {
+    core->RunOnMainThread([]() {
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
@@ -504,6 +540,55 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
 {
     if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING || !isMouseCursorShown)
     {
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+        PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
+        PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
+        if (!isPhoneApiDetected && PointerDeviceType::Mouse == deviceType)
+        {
+            if (skipMouseMoveEvent)
+            {
+                skipMouseMoveEvent = false;
+                return;
+            }
+
+            UIEvent::Phase phase = UIEvent::Phase::MOVE;
+            int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
+            MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
+            if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
+            {
+                phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+                pointerOrButtonIndex = mouseBtnChange.button;
+            }
+            else if (isLeftButtonPressed)
+            {
+                pointerOrButtonIndex = UIEvent::BUTTON_1;
+                phase = UIEvent::Phase::DRAG;
+            }
+            else if (isRightButtonPressed)
+            {
+                pointerOrButtonIndex = UIEvent::BUTTON_2;
+                phase = UIEvent::Phase::DRAG;
+            }
+
+            Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
+            float32 centerX = rc.Width / 2.0f;
+            float32 centerY = rc.Height / 2.0f;
+
+            float32 x = pointerPoint->Position.X;
+            float32 y = pointerPoint->Position.Y;
+
+            float32 deltaX = x - centerX;
+            float32 deltaY = y - centerY;
+
+            core->RunOnMainThread([this, deltaX, deltaY, phase, pointerOrButtonIndex]() {
+                DAVATouchEvent(phase, deltaX, deltaY, pointerOrButtonIndex, UIEvent::Device::MOUSE);
+            });
+
+            float32 scale = DeviceInfo::GetScreenInfo().scale;
+            SetCursorPos(static_cast<int>((centerX + rc.X) * scale), static_cast<int>((centerY + rc.Y) * scale));
+            skipMouseMoveEvent = true;
+        }
+#endif
         return;
     }
 
@@ -700,27 +785,37 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
 
-    //PointerPoint ^ pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
-
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
-
-    //     MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
-    //     if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
-    //     {
-    //         phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    //         pointerOrButtonIndex = mouseBtnChange.button;
-    //     }
-    //     else if (isLeftButtonPressed)
-    //     {
-    //         pointerOrButtonIndex = UIEvent::BUTTON_1;
-    //         phase = UIEvent::Phase::DRAG;
-    //     }
-    //     else if (isRightButtonPressed)
-    //     {
-    //         pointerOrButtonIndex = UIEvent::BUTTON_2;
-    //         phase = UIEvent::Phase::DRAG;
-    //     }
+    
+    PointerPoint ^ pointerPoint = nullptr;
+    try
+    {
+        pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
+    }
+    catch (Platform::Exception^ e)
+    {
+        Logger::FrameworkDebug("Exception in WinUAPXamlApp::OnMouseMoved: 0x%08X - %s", e->HResult, RTStringToString(e->Message).c_str());
+    }
+    if (nullptr != pointerPoint)
+    {
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
+        if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
+        {
+            phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+            pointerOrButtonIndex = mouseBtnChange.button;
+        }
+        else if (isLeftButtonPressed)
+        {
+            pointerOrButtonIndex = UIEvent::BUTTON_1;
+            phase = UIEvent::Phase::DRAG;
+        }
+        else if (isRightButtonPressed)
+        {
+            pointerOrButtonIndex = UIEvent::BUTTON_2;
+            phase = UIEvent::Phase::DRAG;
+        }
+    }
 
     core->RunOnMainThread([this, x, y, phase, pointerOrButtonIndex]() {
         DAVATouchEvent(phase, x, y, pointerOrButtonIndex, UIEvent::Device::MOUSE);

@@ -55,10 +55,10 @@ namespace DAVA
 
 		bool ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort);
 		void CloseConnection();
-		void FailOnLocalBuild();
+        void FailOnLocalBuild();
 
-		// Work with log object in DB
-		KeyedArchive *FindBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg);
+        // Work with log object in DB
+        KeyedArchive *FindBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg);
 		KeyedArchive *FindOrInsertBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg);
 
 		KeyedArchive *FindOrInsertGroupArchive(KeyedArchive *buildArchive, const String &groupId);
@@ -84,12 +84,12 @@ namespace DAVA
 		void UploadScreenshot(const String &name, Image *image);
 
 		// multiplayer api
-		String ReadState(const String &device, const String &param);
-		void WriteState(const String &device, const String &param, const String &state);
+        String ReadState(const String& device, const String& param);
+        void WriteState(const String& device, const String& param, const String& state);
 
-		void SetTestStarted();
+        void SetTestStarted();
 
-		FilePath logsFolder;
+        FilePath logsFolder;
 
 	protected:
 		MongodbClient *dbClient;

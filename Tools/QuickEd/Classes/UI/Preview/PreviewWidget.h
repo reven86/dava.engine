@@ -57,12 +57,10 @@ public:
     DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
     float GetScale() const;
-    qreal GetDPR() const;
     ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
 
 signals:
     void ScaleChanged(float scale);
-    void DPRChanged(qreal dpr);
     void DeleteRequested();
     void ImportRequested();
     void CutRequested();
@@ -83,13 +81,11 @@ private slots:
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
 
-    void OnGLWidgetResized(int width, int height, int dpr);
+    void OnGLWidgetResized(int width, int height);
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
     
-    void OnMonitorChanged();
-
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
 
@@ -100,13 +96,11 @@ private:
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
-    void SetDPR(qreal dpr);
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
 
     QPoint lastMousePos;
-    qreal dpr = 1.0f;
     Document* document = nullptr;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;

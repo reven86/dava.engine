@@ -75,8 +75,8 @@ void Clear()
 
     for (auto& it : shaderSourceCodes)
     {
-        SafeDelete(it.second.vertexProgText);
-        SafeDelete(it.second.fragmentProgText);
+        SafeDeleteArray(it.second.vertexProgText);
+        SafeDeleteArray(it.second.fragmentProgText);
     }
     shaderSourceCodes.clear();
 }
@@ -292,8 +292,8 @@ void RelaoadShaders()
     //clear cached source files
     for (auto& it : shaderSourceCodes)
     {
-        SafeDelete(it.second.vertexProgText);
-        SafeDelete(it.second.fragmentProgText);
+        SafeDeleteArray(it.second.vertexProgText);
+        SafeDeleteArray(it.second.fragmentProgText);
     }
     shaderSourceCodes.clear();
 

@@ -207,10 +207,10 @@ namespace DAVA
         String module = lua_tostring(L, -1);
         lua_pop(L, 1);
         FilePath path = Instance()->Findfile(L, module.c_str(), "path");
-        if (!Instance()->LoadScriptFromFile(path)) 
-		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
-		}
+        if (!Instance()->LoadScriptFromFile(path))
+        {
+            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
+        }
 		lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
 		if (!Instance()->RunScript())
 		{
@@ -258,24 +258,24 @@ namespace DAVA
 	}
 
 	// Multiplayer API
-	void AutotestingSystemLua::WriteState(const String &device, const String &param, const String &state)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s param=%s state=%s", device.c_str(), param.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteState(device, param, state);
-	}
+    void AutotestingSystemLua::WriteState(const String& device, const String& param, const String& state)
+    {
+        Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s param=%s state=%s", device.c_str(), param.c_str(), state.c_str());
+        AutotestingDB::Instance()->WriteState(device, param, state);
+    }
 
-	String AutotestingSystemLua::ReadState(const String &device, const String &param)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s param=%s", device.c_str(), param.c_str());
-		return AutotestingDB::Instance()->ReadState(device, param);
-	}
+    String AutotestingSystemLua::ReadState(const String& device, const String& param)
+    {
+        Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s param=%s", device.c_str(), param.c_str());
+        return AutotestingDB::Instance()->ReadState(device, param);
+    }
 
-	void AutotestingSystemLua::InitializeDevice()
-	{
-		AutotestingSystem::Instance()->InitializeDevice();
-	}
+    void AutotestingSystemLua::InitializeDevice()
+    {
+        AutotestingSystem::Instance()->InitializeDevice();
+    }
 
-	String AutotestingSystemLua::GetPlatform()
+    String AutotestingSystemLua::GetPlatform()
 	{
 		return DeviceInfo::GetPlatformString();
 	}
@@ -520,9 +520,9 @@ namespace DAVA
             }
             break;
         }
-		case DVKEY_ENTER:
-		{
-			uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
+        case DVKEY_ENTER:
+        {
+            uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
 			break;
 		}
 		case DVKEY_ESCAPE:
@@ -759,9 +759,9 @@ namespace DAVA
         if (!delegate)
         {
             return false;
-		}
-		//TODO: check if modules really loaded
-		return delegate->LoadWrappedLuaObjects(luaState);
+        }
+        //TODO: check if modules really loaded
+        return delegate->LoadWrappedLuaObjects(luaState);
 	}
 
 	bool AutotestingSystemLua::LoadScript(const String &luaScript)

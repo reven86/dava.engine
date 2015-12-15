@@ -30,6 +30,7 @@
 #  A macro used to find executable programs on the host system, not within the iOS environment.
 #  Thanks to the android-cmake project for providing the command
 
+find_package( PythonInterp   )
 
 # Standard settings
 set (CMAKE_SYSTEM_NAME Darwin)
