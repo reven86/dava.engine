@@ -324,9 +324,13 @@ void SceneSelectionSystem::Draw()
     DAVA::RenderHelper::DRAW_SOLID_DEPTH :
     DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH;
 
-    for (const auto& item : curSelections.GetContent())
+    bool replacingSelection = selecting && (groupSelectionMode == GroupSelectionMode::Replace);
+    if (!replacingSelection)
     {
-        DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
+        for (const auto& item : curSelections.GetContent())
+        {
+            DrawItem(item.first, item.second, drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
+        }
     }
 
     DAVA::Color drawColor = DAVA::Color::White;
