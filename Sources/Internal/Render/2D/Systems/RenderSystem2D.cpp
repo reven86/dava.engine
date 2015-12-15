@@ -1573,26 +1573,6 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2& polygon, bool closed
 void RenderSystem2D::DrawTextureWithoutAdjustingRects(Texture* texture, NMaterial* material, const Color& color,
                                                       const Rect& destRect, const Rect& _srcRect)
 {
-    Rect destRect(_dstRect);
-    if (destRect.dx < 0.f || destRect.dy < 0.f)
-    {
-        if (IsRenderTargetPass())
-        {
-            destRect.dx = (float32)renderTargetWidth;
-            destRect.dy = (float32)renderTargetHeight;
-        }
-        else
-        {
-            destRect.dx = (float32)Renderer::GetFramebufferWidth();
-            destRect.dy = (float32)Renderer::GetFramebufferHeight();
-        }
-
-        if (virtualToPhysicalTransformEnabled)
-        {
-            destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
-        }
-    }
-
     spriteTempVertices[0] = spriteTempVertices[4] = destRect.x; //x1
     spriteTempVertices[5] = spriteTempVertices[7] = destRect.y; //y2
     spriteTempVertices[1] = spriteTempVertices[3] = destRect.y + destRect.dy; //y1
