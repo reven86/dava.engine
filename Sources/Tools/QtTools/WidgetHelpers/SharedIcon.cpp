@@ -29,16 +29,21 @@
 #include "SharedIcon.h"
 #include "Base/BaseTypes.h"
 
+#include <qcoreapplication.h>
+
 const QIcon& QSharedIcon(const char* path)
 {
     static DAVA::UnorderedMap<DAVA::String, QIcon> sharedMap;
+    qAddPostRoutine([]() {
+        sharedMap.clear();
+    });
 
     DAVA::String spath(path);
     auto i = sharedMap.find(spath);
     if (i == sharedMap.end())
     {
-        sharedMap[spath] = QIcon(path);
-        return sharedMap[spath];
+        sharedMap.insert({ spath, QIcon(path) });
+        return sharedMap.at(spath);
     }
     else
     {

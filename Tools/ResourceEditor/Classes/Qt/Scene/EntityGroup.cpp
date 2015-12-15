@@ -79,34 +79,6 @@ DAVA::Entity* EntityGroup::GetFirstEntity() const
     return entities.empty() ? nullptr : entities.begin()->first;
 }
 
-DAVA::Entity* EntityGroup::GetEntitySlow(size_t i) const
-{
-    size_t index = 0;
-    for (const auto& item : entities)
-    {
-        if (index == i)
-        {
-            return item.first;
-        }
-        ++index;
-    }
-    return nullptr;
-}
-
-DAVA::AABBox3 EntityGroup::GetBboxSlow(size_t i) const
-{
-    size_t index = 0;
-    for (const auto& item : entities)
-    {
-        if (index == i)
-        {
-            return TransformItemBoundingBox(item);
-        }
-        ++index;
-    }
-    return DAVA::AABBox3();
-}
-
 const DAVA::AABBox3& EntityGroup::GetCommonBbox() const
 {
     return entitiesBbox;

@@ -62,7 +62,6 @@ public:
     DAVA::Vector3 GetCommonZeroPos() const;
 
 	bool ContainsEntity(DAVA::Entity *entity) const;
-    bool IndexOfEntity(DAVA::Entity* entity, size_t& index) const;
 
     DAVA::Entity* IntersectedEntity(const EntityGroup *group) const;
     DAVA::Entity* IntersectedEntity(const EntityVector& group) const;
@@ -73,8 +72,6 @@ public:
 
     size_t Size() const;
     DAVA::Entity* GetFirstEntity() const;
-    DAVA::Entity* GetEntitySlow(size_t i) const;
-    DAVA::AABBox3 GetBboxSlow(size_t i) const;
 
     void Join(const EntityGroup&);
     void Exclude(const EntityGroup&);

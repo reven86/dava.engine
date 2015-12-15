@@ -134,9 +134,9 @@ void PropertyEditor::SetEntities(const EntityGroup *selected)
     {
         const int nSelected = selected->Size();
         curNodes.reserve( nSelected );
-        for ( size_t i = 0; i < selected->Size(); i++ )
+        for (const auto& item : selected->GetContent())
         {
-            DAVA::Entity* node = SafeRetain(selected->GetEntitySlow(i));
+            DAVA::Entity* node = SafeRetain(item.first);
             curNodes << node;
             // ensure that custom properties exist
             // this call will create them if they are not created yet
@@ -861,9 +861,6 @@ void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
 
 void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    static QIcon favIcon = QSharedIcon(":/QtIcons/star.png");
-    static QIcon nfavIcon = QSharedIcon(":/QtIcons/star_empty.png");
-
     // custom draw for favorites edit mode
 	QStyleOptionViewItemV4 opt = option;
 	if(index.parent().isValid() && favoritesEditMode)
@@ -875,12 +872,12 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
 			{
 				if(IsFavorite(data))
 				{
-					favIcon.paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
-				}
+                    QSharedIcon(":/QtIcons/star.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
+                }
 				else
 				{
-					nfavIcon.paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
-				}
+                    QSharedIcon(":/QtIcons/star_empty.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
+                }
 			}
 		}
 	}

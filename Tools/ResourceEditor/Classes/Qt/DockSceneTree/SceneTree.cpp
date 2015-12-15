@@ -643,12 +643,10 @@ void SceneTree::EditModel()
 	if(NULL != sceneEditor)
 	{
 		SceneSelectionSystem *ss = sceneEditor->selectionSystem;
-
-		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
-		{
-			DAVA::Entity *entity = ss->GetSelectionEntity(i);
-            DAVA::KeyedArchive *archive = GetCustomPropertiesArchieve(entity);
-			if(archive)
+        for (const auto& item : ss->GetSelection().GetContent())
+        {
+            DAVA::KeyedArchive* archive = GetCustomPropertiesArchieve(item.first);
+            if(archive)
 			{
 				DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
                 if (FileSystem::Instance()->Exists(entityRefPath))
@@ -691,11 +689,11 @@ void SceneTree::ReloadModel()
 		{
             const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
             String wrongPathes;
-			for(size_t i = 0; i < selection.Size(); ++i)
-			{
-                DAVA::Entity* entity = selection.GetEntitySlow(i);
+            for (const auto& item : selection.GetContent())
+            {
+                DAVA::Entity* entity = item.first;
                 DAVA::KeyedArchive *archive = GetCustomPropertiesArchieve(entity);
-                if(archive)
+                if (archive)
                 {
                     DAVA::FilePath pathToReload(archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
                     if (!FileSystem::Instance()->Exists(pathToReload))
@@ -721,7 +719,7 @@ void SceneTree::ReloadModelAs()
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		DAVA::Entity *entity = sceneEditor->selectionSystem->GetSelectionEntity(0);
+        DAVA::Entity* entity = sceneEditor->selectionSystem->GetFirstSelectionEntity();
         DAVA::KeyedArchive *archive = GetCustomPropertiesArchieve(entity);
 		if(NULL != archive)
 		{
@@ -1012,14 +1010,14 @@ void SceneTree::StartEffect()
 	if (nullptr != sceneEditor)
 	{
 		SceneSelectionSystem *ss = sceneEditor->selectionSystem;
-		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
-		{
-			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
-			if (nullptr != effect)
+        for (const auto& item : ss->GetSelection().GetContent())
+        {
+            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(item.first);
+            if (nullptr != effect)
 			{
 				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-				CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(ss->GetSelectionEntity(i), true);
-				sceneEditor->Exec(command);
+                CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(item.first, true);
+                sceneEditor->Exec(command);
 			}
 		}
 	}
@@ -1031,14 +1029,14 @@ void SceneTree::StopEffect()
 	if (nullptr != sceneEditor)
 	{
 		SceneSelectionSystem *ss = sceneEditor->selectionSystem;
-		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
-		{
-			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
-			if (nullptr != effect)
+        for (const auto& item : ss->GetSelection().GetContent())
+        {
+            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(item.first);
+            if (nullptr != effect)
 			{
 				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-				CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(ss->GetSelectionEntity(i), false);
-				sceneEditor->Exec(command);
+                CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(item.first, false);
+                sceneEditor->Exec(command);
 			}
 		}
 	}
@@ -1050,14 +1048,14 @@ void SceneTree::RestartEffect()
 	if(nullptr != sceneEditor)
 	{
 		SceneSelectionSystem *ss = sceneEditor->selectionSystem;
-		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
-		{
-			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
-			if (nullptr != effect)
+        for (const auto& item : ss->GetSelection().GetContent())
+        {
+            DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(item.first);
+            if (nullptr != effect)
 			{
 				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-				CommandRestartParticleEffect* command = new CommandRestartParticleEffect(ss->GetSelectionEntity(i));
-				sceneEditor->Exec(command);
+                CommandRestartParticleEffect* command = new CommandRestartParticleEffect(item.first);
+                sceneEditor->Exec(command);
 			}
 		}
 	}
@@ -1413,8 +1411,8 @@ void SceneTree::SetCurrentCamera()
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		DAVA::Camera *camera = GetCamera(sceneEditor->selectionSystem->GetSelectionEntity(0));
-		if(NULL != camera)
+        DAVA::Camera* camera = GetCamera(sceneEditor->selectionSystem->GetFirstSelectionEntity());
+        if(NULL != camera)
 		{
 			sceneEditor->SetCurrentCamera(camera);
 		}
@@ -1426,8 +1424,8 @@ void SceneTree::SetCustomDrawCamera()
     SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		DAVA::Camera *camera = GetCamera(sceneEditor->selectionSystem->GetSelectionEntity(0));
-		if(NULL != camera)
+        DAVA::Camera* camera = GetCamera(sceneEditor->selectionSystem->GetFirstSelectionEntity());
+        if(NULL != camera)
 		{
 			sceneEditor->SetCustomDrawCamera(camera);
 		}

@@ -61,7 +61,7 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
 
     if (currentScene->selectionSystem->GetSelectionCount() == 1)
     {
-        Entity * entity = currentScene->selectionSystem->GetSelectionEntity(0);
+        Entity* entity = currentScene->selectionSystem->GetFirstSelectionEntity();
 
         const Matrix4 & matrix = entity->GetLocalTransform();
 

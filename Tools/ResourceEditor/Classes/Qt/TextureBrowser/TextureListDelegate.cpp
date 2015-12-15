@@ -340,8 +340,6 @@ void TextureListDelegate::drawPreviewSmall(QPainter *painter, const QStyleOption
 
 int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor) const
 {
-    static QIcon errorIcon = QSharedIcon(":/QtIcons/error.png");
-
     int ret = 0;
 	QRect r = rect;
 
@@ -380,8 +378,8 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
 		if(texture->width != texture->height)
 		{
 			r.moveLeft(r.x() - 16);
-			errorIcon.paint(painter, r.x(), r.y(), 16, 16);
-		}
+            QSharedIcon(":/QtIcons/error.png").paint(painter, r.x(), r.y(), 16, 16);
+        }
 
 		ret = rect.width() - (r.x() - rect.x());
 	}

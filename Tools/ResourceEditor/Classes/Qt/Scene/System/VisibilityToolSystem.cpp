@@ -376,14 +376,14 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
 void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 {
     if (!entities || (entities->Size() == 0)) return;
-    
-    uint32 count = entities->Size();
-    while(count)
-    {
-        Entity* object = entities->GetEntitySlow(count - 1);
-        bool needToExclude = false;
 
-        KeyedArchive * customProps = GetCustomPropertiesArchieve(object);
+    DAVA::Vector<DAVA::Entity*> entitiesToRemove;
+    entitiesToRemove.reserve(entities->Size());
+
+    for (const auto& item : entities->GetContent())
+    {
+        bool needToExclude = false;
+        KeyedArchive* customProps = GetCustomPropertiesArchieve(item.first);
         if(customProps)
         {   // exclude not collised by bullet objects
             const int32 collisiontype = customProps->GetInt32( "CollisionType", 0 );
@@ -400,7 +400,7 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
         
         if(!needToExclude)
         {
-            RenderObject *ro = GetRenderObject(object);
+            RenderObject* ro = GetRenderObject(item.first);
             if(ro)
             {
                 switch (ro->GetType())
@@ -423,7 +423,7 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
         {   // exclude sky
 
             Set<NMaterial*> materials;
-            SceneHelper::EnumerateMaterials(object, materials);
+            SceneHelper::EnumerateMaterials(item.first, materials);
 
             const uint32 matCount = materials.size();
             for (const auto& material : materials)
@@ -438,10 +438,13 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 
         if(needToExclude)
         {
-            entities->Remove(object);
+            entitiesToRemove.push_back(item.first);
         }
-        
-        --count;
+    }
+
+    for (const auto& item : entitiesToRemove)
+    {
+        entities->Remove(item);
     }
 }
 

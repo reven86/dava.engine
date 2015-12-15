@@ -348,16 +348,16 @@ void SceneCollisionSystem::Draw()
 		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
 		if(NULL != selectionSystem)
 		{
-			for (size_t i = 0; i < selectionSystem->GetSelectionCount(); i++)
-			{
+            for (const auto& item : selectionSystem->GetSelection().GetContent())
+            {
 				// get collision object for solid selected entity
-                CollisionBaseObject* cObj = entityToCollision[selectionSystem->GetSelectionEntity(i)];
+                CollisionBaseObject* cObj = entityToCollision[item.first];
 
                 // if no collision object for solid selected entity,
 				// try to get collision object for real selected entity
 				if(NULL == cObj)
 				{
-                    cObj = entityToCollision[selectionSystem->GetSelectionEntity(i)];
+                    cObj = entityToCollision[item.first];
                 }
 
 				if(NULL != cObj && NULL != cObj->btObject)

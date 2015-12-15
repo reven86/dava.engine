@@ -40,8 +40,6 @@
 #include <QLabel>
 #include <QEvent>
 
-#include "QtTools/WidgetHelpers/SharedIcon.h"
-
 TileTexturePreviewWidget::TileTexturePreviewWidget(QWidget* parent)
 :	QTreeWidget(parent)
 ,	selectedTexture(0)
