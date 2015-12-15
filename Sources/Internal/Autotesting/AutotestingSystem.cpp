@@ -84,9 +84,9 @@ AutotestingSystem::AutotestingSystem()
     , luaSystem(nullptr)
 {
     new AutotestingDB();
-    }
+}
 
-	AutotestingSystem::~AutotestingSystem()
+    AutotestingSystem::~AutotestingSystem()
 	{
 		SafeRelease(luaSystem);
 		if (AutotestingDB::Instance())
@@ -176,7 +176,7 @@ AutotestingSystem::AutotestingSystem()
     }
 
     // Get test parameters from id.yaml
-	void AutotestingSystem::FetchParametersFromIdYaml()
+    void AutotestingSystem::FetchParametersFromIdYaml()
 	{
 		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
 		RefPtr<KeyedArchive> option = GetIdYamlOptions();
@@ -276,7 +276,7 @@ AutotestingSystem::AutotestingSystem()
 
     String AutotestingSystem::GetCurrentTimeString()
     {
-		DateTime time = DateTime::Now();
+        DateTime time = DateTime::Now();
 		return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
 	}
 
@@ -375,7 +375,7 @@ AutotestingSystem::AutotestingSystem()
         ExitApp();
     }
 
-	void AutotestingSystem::ForceQuit(const String &errorMessage)
+    void AutotestingSystem::ForceQuit(const String &errorMessage)
 	{
 		DVASSERT_MSG(false, errorMessage.c_str())
 		Core::Instance()->Quit();
@@ -430,7 +430,7 @@ AutotestingSystem::AutotestingSystem()
         // Mark test as SUCCESS
         AutotestingDB::Instance()->Log("INFO", "Test finished.");
 
-		ExitApp();
+        ExitApp();
 	}
 
 	void AutotestingSystem::OnInput(const UIEvent &input)
@@ -515,7 +515,7 @@ AutotestingSystem::AutotestingSystem()
     }
 
     bool AutotestingSystem::IsTouchDown(int32 id)
-	{
+    {
 		return (touches.find(id) != touches.end());
 	}
 

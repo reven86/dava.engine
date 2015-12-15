@@ -408,7 +408,7 @@ namespace DAVA
         ZeroMemory(&dmi, sizeof(dmi));
         dmi.dmSize = sizeof(dmi);
 
-		DisplayMode mode;
+        DisplayMode mode;
 		if(EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
 		{
 			mode.width = dmi.dmPelsWidth;
@@ -532,7 +532,7 @@ namespace DAVA
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
         }
         if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)
-		{
+        {
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_5_DOWN;
 		}
 	}

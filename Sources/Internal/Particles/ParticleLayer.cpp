@@ -448,7 +448,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         }
 
         SetPivotPoint(_pivot);
-	}
+    }
 
 	const YamlNode *lodsNode = node->Get("activeLODS");
 	if (lodsNode)

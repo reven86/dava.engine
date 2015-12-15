@@ -166,6 +166,7 @@ public:
 	QtPropertyData *Parent() const;
 	void ChildAdd(const QString &key, QtPropertyData *data);
 	void ChildAdd(const QString &key, const QVariant &value);
+    void ChildrenAdd(const QVector<QtPropertyData *> & data);
 	void ChildInsert(const QString &key, QtPropertyData *data, int pos);
 	void ChildInsert(const QString &key, const QVariant &value, int pos);
 	int ChildCount() const;
@@ -173,10 +174,12 @@ public:
 	QtPropertyData* ChildGet(const QString &key) const;
 	int ChildIndex(QtPropertyData *data) const;
 	void ChildExtract(QtPropertyData *data);
+    void ChildrenExtract(QVector<QtPropertyData *> & children);
 	void ChildRemove(QtPropertyData *data);
 	void ChildRemove(const QString &key);
 	void ChildRemove(int i);
 	void ChildRemoveAll();
+    void ResetChildren();
 
 	// Optional widgets
 	int GetButtonsCount() const;
@@ -213,7 +216,7 @@ protected:
 	UserData* userData;
 
     QList<QString> childrenNames;
-    QList<QtPropertyData*> childrenData;
+    QVector<QtPropertyData*> childrenData;
     QVector<QtPropertyData*> mergedData;
 
     QWidget *optionalButtonsViewport;

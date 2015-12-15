@@ -51,7 +51,7 @@ namespace DAVA
         , autoSys(nullptr)
     {
         autoSys = AutotestingSystem::Instance();
-	}
+    }
 
 	AutotestingDB::~AutotestingDB()
 	{
@@ -144,7 +144,7 @@ namespace DAVA
         {
             autoSys->ForceQuit("Archive name is empty.");
         }
-		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
+        if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
             return nullptr;
 		}
@@ -295,7 +295,7 @@ namespace DAVA
         SafeRelease(dbUpdateObject);
     }
 
-	// auxiliary methods
+    // auxiliary methods
 	void AutotestingDB::SetTestStarted()
 	{
 		Logger::Info("AutotestingSystem::SetTestStarted for test: %s", autoSys->testFileName.c_str());

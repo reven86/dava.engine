@@ -146,7 +146,7 @@ public:
 
     bool IsPhoneScreen();
 
-	// DB storing
+    // DB storing
 	bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive* archive);
 
 	String GetTestParameter(const String &device);

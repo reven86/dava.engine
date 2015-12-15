@@ -76,7 +76,7 @@ public:
     virtual const QIcon& ItemIcon() const;
 
     virtual QString ItemName() const = 0;
-	virtual QVariant ItemData() const = 0;
+    virtual QVariant ItemData() const = 0;
 
     bool IsAcceptedByFilter() const;
     void SetAcceptByFilter(bool state);
@@ -103,7 +103,7 @@ public:
     QVariant ItemData() const override;
     const QIcon& ItemIcon() const override;
 
-    DAVA::Entity *entity;
+    DAVA::Entity* entity;
 };
 
 class SceneTreeItemParticleEmitter : public SceneTreeItem
@@ -120,8 +120,8 @@ public:
     QVariant ItemData() const override;
     const QIcon& ItemIcon() const override;
 
-    DAVA::ParticleEffectComponent *effect;
-	DAVA::ParticleEmitter *emitter;
+    DAVA::ParticleEffectComponent* effect;
+    DAVA::ParticleEmitter *emitter;
 	
 };
 
@@ -138,8 +138,8 @@ public:
     QVariant ItemData() const override;
     const QIcon& ItemIcon() const override;
 
-    DAVA::ParticleEffectComponent *effect;
-	DAVA::ParticleEmitter *emitter;
+    DAVA::ParticleEffectComponent* effect;
+    DAVA::ParticleEmitter *emitter;
 	DAVA::ParticleLayer *layer;
 	bool hasInnerEmmiter;
 };
@@ -156,8 +156,8 @@ public:
     QVariant ItemData() const override;
     const QIcon& ItemIcon() const override;
 
-    DAVA::ParticleLayer *layer;
-	DAVA::ParticleForce *force;
+    DAVA::ParticleLayer* layer;
+    DAVA::ParticleForce *force;
 };
 
 class SceneTreeItemParticleInnerEmitter : public SceneTreeItemParticleEmitter

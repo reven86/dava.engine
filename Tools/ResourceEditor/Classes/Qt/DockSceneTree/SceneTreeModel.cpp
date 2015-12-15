@@ -157,13 +157,13 @@ QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex &index) const
             ret.push_back(QSharedIcon(":/QtIcons/locked.png"));
         }
 
-		if(NULL != GetCamera(entity))
+        if(NULL != GetCamera(entity))
 		{
 			if(curScene->GetCurrentCamera() == GetCamera(entity))
 			{
                 ret.push_back(QSharedIcon(":/QtIcons/eye.png"));
             }
-		}
+        }
 	}
 
 	return ret;

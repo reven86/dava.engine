@@ -307,7 +307,7 @@ public:
 
     //! Comparison operators
     inline bool operator==(const Vector4& _v) const;
-    inline bool operator != (const Vector4 & _v) const;
+    inline bool operator!=(const Vector4& _v) const;
 
     inline Vector3& GetXYZ();
     inline const Vector3& GetXYZ() const;

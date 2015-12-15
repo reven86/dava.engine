@@ -350,7 +350,7 @@ void SceneCollisionSystem::Draw()
 		{
             for (const auto& item : selectionSystem->GetSelection().GetContent())
             {
-				// get collision object for solid selected entity
+                // get collision object for solid selected entity
                 CollisionBaseObject* cObj = entityToCollision[item.first];
 
                 // if no collision object for solid selected entity,

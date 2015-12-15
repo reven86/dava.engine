@@ -82,7 +82,7 @@ public:
     DAVA::Entity* GetFirstSelectionEntity() const;
 
     void SetPivotPoint(ST_PivotPoint pp);
-	ST_PivotPoint GetPivotPoint() const;
+    ST_PivotPoint GetPivotPoint() const;
 
     void ResetSelectionComponentMask();
     void SetSelectionComponentMask(DAVA::uint64 mask);

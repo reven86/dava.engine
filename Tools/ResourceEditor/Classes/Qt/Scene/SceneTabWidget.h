@@ -98,7 +98,7 @@ public slots:
     void OnDavaGLWidgetResized(int width, int height);
 
     // scene signals
-	void MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup *entities);
+    void MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup *entities);
 	void SceneSaved(SceneEditor2 *scene);
 	void SceneModifyStatusChanged(SceneEditor2 *scene, bool modified);
     
