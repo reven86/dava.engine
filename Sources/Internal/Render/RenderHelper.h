@@ -102,10 +102,15 @@ private:
     };
     struct DrawCommand
     {
-        DrawCommand(eDrawCommandID _id, eDrawType _drawType, const Vector<float32>& _params)
+        DrawCommand(eDrawCommandID _id)
+            : id(_id)
+        {
+        }
+
+        DrawCommand(eDrawCommandID _id, eDrawType _drawType, Vector<float32>&& _params)
             : id(_id)
             , drawType(_drawType)
-            , params(_params)
+            , params(std::move(_params))
         {
         }
 
@@ -136,7 +141,7 @@ private:
         }
     };
 
-    void QueueCommand(const DrawCommand&& command);
+    void QueueCommand(const DrawCommand& command);
     void GetRequestedVertexCount(const DrawCommand& command, uint32& vertexCount, uint32& indexCount);
     bool PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr);
 
@@ -156,8 +161,14 @@ private:
     uint32 coloredVertexLayoutUID;
 
     Vector<DrawCommand> commandQueue;
-    std::array<std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
+    Array<std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
     NMaterial* materials[DRAW_TYPE_COUNT];
+
+    DrawCommand drawLineCommand;
+    DrawCommand drawIcosahedronCommand;
+    DrawCommand drawArrowCommand;
+    DrawCommand drawCircleCommand;
+    DrawCommand drawBoxCommand;
 };
 }
 
