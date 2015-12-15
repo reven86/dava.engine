@@ -74,19 +74,18 @@ template <typename NodeType>
 void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
     DAVA::Set<PackageBaseNode*> sortedNodes;
-    std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](typename SelectedNodes::value_type node)
-       {
-           return (dynamic_cast<NodeType*>(node) != nullptr);
-       });
-    for (PackageBaseNode *node : sortedNodes)
+    std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](typename SelectedNodes::value_type node) {
+        return (dynamic_cast<NodeType*>(node) != nullptr);
+    });
+    for (PackageBaseNode* node : sortedNodes)
     {
         DVASSERT(nullptr != node);
-        if(node->GetParent() != nullptr)
+        if (node->GetParent() != nullptr)
         {
             if ((!forCopy || node->CanCopy()) &&
                 (!forRemove || node->CanRemove()))
             {
-                PackageBaseNode *parent = node->GetParent();
+                PackageBaseNode* parent = node->GetParent();
                 while (nullptr != parent && sortedNodes.find(parent) == sortedNodes.end())
                 {
                     parent = parent->GetParent();

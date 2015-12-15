@@ -64,11 +64,6 @@ HUDAreaInfo::eArea ControlContainer::GetArea() const
     return area;
 }
 
-void ControlContainer::SetDPR(float32 arg)
-{
-    dpr = arg;
-}
-
 HUDContainer::HUDContainer(UIControl* container)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , control(container)
@@ -185,7 +180,7 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
 
 void FrameRectControl::InitFromGD(const UIGeometricData& geometricData)
 {
-    Rect rect(Vector2(), FRAME_RECT_SIZE * dpr);
+    Rect rect(Vector2(), FRAME_RECT_SIZE);
     rect.SetCenter(GetPos(geometricData));
 
     UIControl* parent = GetParent();
@@ -234,7 +229,7 @@ PivotPointControl::PivotPointControl()
 
 void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
 {
-    Rect rect(Vector2(), PIVOT_CONTROL_SIZE * dpr);
+    Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
     const Rect& controlRect = geometricData.GetUnrotatedRect();
     rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
 
@@ -256,7 +251,7 @@ RotateControl::RotateControl()
 
 void RotateControl::InitFromGD(const UIGeometricData& geometricData)
 {
-    Rect rect(Vector2(), ROTATE_CONTROL_SIZE * dpr);
+    Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
     Rect controlRect = geometricData.GetUnrotatedRect();
     rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
 

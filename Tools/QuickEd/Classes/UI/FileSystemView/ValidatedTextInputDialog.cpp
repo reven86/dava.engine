@@ -51,7 +51,7 @@ void ValidatedTextInputDialog::SetWarningMessage(const QString& message)
     warningMessage = message;
 }
 
-void ValidatedTextInputDialog::setLabelText(const QString &arg)
+void ValidatedTextInputDialog::setLabelText(const QString& arg)
 {
     labelText = arg;
     QInputDialog::setLabelText(arg);
@@ -81,9 +81,8 @@ void ValidatedTextInputDialog::ExtractInternalWidgets()
 {
     okButtonText(); //force ensure layout of dialog
 
-    const QObjectList &children = this->children();
-    auto iter = std::find_if(children.begin(), children.end(), [](const QObject* obj)
-    {
+    const QObjectList& children = this->children();
+    auto iter = std::find_if(children.begin(), children.end(), [](const QObject* obj) {
         return qobject_cast<const QLineEdit*>(obj) != nullptr;
     });
     if (iter == children.end())
@@ -92,8 +91,7 @@ void ValidatedTextInputDialog::ExtractInternalWidgets()
         return;
     }
     lineEdit = qobject_cast<QLineEdit*>(*iter);
-    iter = std::find_if(children.begin(), children.end(), [](const QObject* obj)
-    {
+    iter = std::find_if(children.begin(), children.end(), [](const QObject* obj) {
         return qobject_cast<const QDialogButtonBox*>(obj) != nullptr;
     });
     if (iter == children.end())
@@ -101,6 +99,6 @@ void ValidatedTextInputDialog::ExtractInternalWidgets()
         DVASSERT(false && "ValidatedTextInputDialog: can not find button box");
         return;
     }
-    QDialogButtonBox *buttonBox = qobject_cast<QDialogButtonBox*>(*iter);
+    QDialogButtonBox* buttonBox = qobject_cast<QDialogButtonBox*>(*iter);
     buttonOk = buttonBox->button(QDialogButtonBox::Ok);
 }

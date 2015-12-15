@@ -45,12 +45,12 @@ namespace DAVA
     const String MULTIPLAYER_ARCHIVE = "multiplayer";
 
     AutotestingDB::AutotestingDB()
-		: dbClient(nullptr)
-		, logFilePath(FilePath(""))
-		, logsFolder(FilePath(""))
-		, autoSys(nullptr)
-	{
-		autoSys = AutotestingSystem::Instance();
+        : dbClient(nullptr)
+        , logFilePath(FilePath(""))
+        , logsFolder(FilePath(""))
+        , autoSys(nullptr)
+    {
+        autoSys = AutotestingSystem::Instance();
 	}
 
 	AutotestingDB::~AutotestingDB()
@@ -142,8 +142,8 @@ namespace DAVA
     {
         if (archiveName.empty())
         {
-			autoSys->ForceQuit("Archive name is empty.");
-		}
+            autoSys->ForceQuit("Archive name is empty.");
+        }
 		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
             return nullptr;
@@ -264,7 +264,7 @@ namespace DAVA
     {
         FailOnLocalBuild();
 
-        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
         KeyedArchive* multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
 
         KeyedArchive* deviceArchive = multiplayerArchive->GetArchive(device, nullptr);
@@ -284,7 +284,7 @@ namespace DAVA
         Logger::Info("AutotestingDB::WriteState device=%s %s=%s", device.c_str(), param.c_str(), state.c_str());
         FailOnLocalBuild();
 
-        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
         KeyedArchive* multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
         ScopedPtr<KeyedArchive> emptyKeyedArchive(new KeyedArchive());
         KeyedArchive* deviceArchive = multiplayerArchive->GetArchive(device, emptyKeyedArchive);
@@ -292,8 +292,8 @@ namespace DAVA
         deviceArchive->SetString(param, state);
         multiplayerArchive->SetArchive(device, deviceArchive);
         SaveToDB(dbUpdateObject);
-		SafeRelease(dbUpdateObject);
-	}
+        SafeRelease(dbUpdateObject);
+    }
 
 	// auxiliary methods
 	void AutotestingDB::SetTestStarted()

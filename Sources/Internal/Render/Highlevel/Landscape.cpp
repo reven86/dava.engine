@@ -402,8 +402,8 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
     Vector3 p1(x1, y1, 0);
     p1.z = data[(int32)p1.y * imW + (int32)p1.x];
 
-	Vector3 p2(x2, y2, 0);
-	p2.z = data[(int32)p2.y * imW + (int32)p2.x];
+    Vector3 p2(x2, y2, 0);
+    p2.z = data[(int32)p2.y * imW + (int32)p2.x];
 
 	Vector3 p3;
 	if (x - x1 >= y - y1)

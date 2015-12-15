@@ -139,7 +139,7 @@ void StatusBar::UpdateByTimer()
 	UpdateDistanceToCamera();
 }
 
-void StatusBar::OnSceneGeometryChaged(int width, int height, int dpr)
+void StatusBar::OnSceneGeometryChaged(int width, int height)
 {
 	sceneGeometry->setText(QString::fromStdString(DAVA::Format("%d x %d", width, height)));
 }

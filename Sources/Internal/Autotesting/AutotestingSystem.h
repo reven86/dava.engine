@@ -80,8 +80,8 @@ public:
     void InitializeDevice();
 
     // Test organization
-	void OnTestStart(const String &testName);
-	void OnStepStart( const String & stepName );
+    void OnTestStart(const String& testName);
+    void OnStepStart( const String & stepName );
 	void OnStepFinished();
 	void OnTestStarted();
     void OnError(const String & errorMessage = "");
