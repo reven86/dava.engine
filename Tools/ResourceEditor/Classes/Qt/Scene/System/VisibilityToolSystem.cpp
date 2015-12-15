@@ -376,14 +376,14 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
 void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 {
     if (!entities || (entities->Size() == 0)) return;
-    
-    uint32 count = entities->Size();
-    while(count)
-    {
-        Entity* object = entities->GetEntitySlow(count - 1);
-        bool needToExclude = false;
 
-        KeyedArchive * customProps = GetCustomPropertiesArchieve(object);
+    DAVA::Vector<DAVA::Entity*> entitiesToRemove;
+    entitiesToRemove.reserve(entities->Size());
+
+    for (const auto& item : entities->GetContent())
+    {
+        bool needToExclude = false;
+        KeyedArchive* customProps = GetCustomPropertiesArchieve(item.first);
         if(customProps)
         {   // exclude not collised by bullet objects
             const int32 collisiontype = customProps->GetInt32( "CollisionType", 0 );
@@ -400,7 +400,7 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
         
         if(!needToExclude)
         {
-            RenderObject *ro = GetRenderObject(object);
+            RenderObject* ro = GetRenderObject(item.first);
             if(ro)
             {
                 switch (ro->GetType())
@@ -423,7 +423,7 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
         {   // exclude sky
 
             Set<NMaterial*> materials;
-            SceneHelper::EnumerateMaterials(object, materials);
+            SceneHelper::EnumerateMaterials(item.first, materials);
 
             const uint32 matCount = materials.size();
             for (const auto& material : materials)
@@ -438,10 +438,13 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 
         if(needToExclude)
         {
-            entities->Remove(object);
+            entitiesToRemove.push_back(item.first);
         }
-        
-        --count;
+    }
+
+    for (const auto& item : entitiesToRemove)
+    {
+        entities->Remove(item);
     }
 }
 
@@ -452,7 +455,11 @@ void VisibilityToolSystem::RenderVisibilityPoint(bool clearTarget)
 
     const Vector2 curSize(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), clearTarget);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = visibilityToolProxy->GetTexture();
+    desc.shouldClear = clearTarget;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White,
                                             Rect(visibilityPoint * landscapeSize - curSize / 2.f, curSize));
     RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -474,10 +481,14 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 
     static const float32 pointSize = 6.f;
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityAreaTexture, false);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = visibilityAreaTexture;
+    desc.shouldClear = false;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     for (uint32 i = 0; i < points.size(); ++i)
     {
-		uint32 colorIndex = (uint32)points[i].z;
+        uint32 colorIndex = (uint32)points[i].z;
         Rect rect(points[i].x - pointSize / 2.f, points[i].y - pointSize / 2.f, pointSize, pointSize);
         RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
     }

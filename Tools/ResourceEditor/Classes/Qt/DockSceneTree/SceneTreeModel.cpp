@@ -146,9 +146,6 @@ bool SceneTreeModel::GetLocked(const QModelIndex &index) const
 
 QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex &index) const
 {
-    static QIcon lockedIcon = QSharedIcon(":/QtIcons/locked.png");
-    static QIcon eyeIcon = QSharedIcon(":/QtIcons/eye.png");
-
     QVector<QIcon> ret;
 	SceneTreeItem *item = GetItem(index);
 
@@ -157,16 +154,16 @@ QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex &index) const
 	{
 		if(entity->GetLocked())
 		{
-			ret.push_back(lockedIcon);
-		}
+            ret.push_back(QSharedIcon(":/QtIcons/locked.png"));
+        }
 
-		if(NULL != GetCamera(entity))
+        if(NULL != GetCamera(entity))
 		{
 			if(curScene->GetCurrentCamera() == GetCamera(entity))
 			{
-				ret.push_back(eyeIcon);
-			}
-		}
+                ret.push_back(QSharedIcon(":/QtIcons/eye.png"));
+            }
+        }
 	}
 
 	return ret;

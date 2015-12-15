@@ -79,10 +79,10 @@ public:
     const EntityGroup& GetSelection() const;
 
     size_t GetSelectionCount() const;
-	DAVA::Entity* GetSelectionEntity(int index) const;
+    DAVA::Entity* GetFirstSelectionEntity() const;
 
-	void SetPivotPoint(ST_PivotPoint pp);
-	ST_PivotPoint GetPivotPoint() const;
+    void SetPivotPoint(ST_PivotPoint pp);
+    ST_PivotPoint GetPivotPoint() const;
 
     void ResetSelectionComponentMask();
     void SetSelectionComponentMask(DAVA::uint64 mask);
@@ -93,7 +93,6 @@ public:
 
     void SetLocked(bool lock) override;
 
-    DAVA::AABBox3 GetSelectionAABox(int index) const;
 	DAVA::AABBox3 GetSelectionAABox(DAVA::Entity *entity) const;
 	DAVA::AABBox3 GetSelectionAABox(DAVA::Entity *entity, const DAVA::Matrix4 &transform) const;
 

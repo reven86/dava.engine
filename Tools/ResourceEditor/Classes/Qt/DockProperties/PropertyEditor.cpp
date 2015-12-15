@@ -861,9 +861,6 @@ void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
 
 void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    static QIcon favIcon = QSharedIcon(":/QtIcons/star.png");
-    static QIcon nfavIcon = QSharedIcon(":/QtIcons/star_empty.png");
-
     // custom draw for favorites edit mode
 	QStyleOptionViewItemV4 opt = option;
 	if(index.parent().isValid() && favoritesEditMode)
@@ -875,13 +872,13 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
 			{
 				if(IsFavorite(data))
 				{
-					favIcon.paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
-				}
-				else
+                    QSharedIcon(":/QtIcons/star.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
+                }
+                else
 				{
-					nfavIcon.paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
-				}
-			}
+                    QSharedIcon(":/QtIcons/star_empty.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
+                }
+            }
 		}
 	}
 

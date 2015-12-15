@@ -671,8 +671,8 @@ void QtMainWindow::SetupStatusBar()
     CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
     CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
-    
-	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
+
+    QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
 }
 
 

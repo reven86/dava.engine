@@ -30,13 +30,17 @@
 #include "LODEditor.h"
 #include "ui_LODEditor.h"
 
-#include "Scene/System/EditorLODSystem.h"
 #include "DistanceSlider.h"
-
+#include "Scene/System/EditorLODSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Classes/Qt/Scene/SceneSignals.h"
 #include "Classes/Qt/PlaneLODDialog/PlaneLODDialog.h"
 #include "Classes/Qt/Main/mainwindow.h"
+#include "Commands2/AddComponentCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
+#include "Tools/LazyUpdater/LazyUpdater.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QLabel>
 #include <QWidget>
@@ -45,11 +49,6 @@
 #include <QFrame>
 #include <QPushButton>
 
-#include "Commands2/AddComponentCommand.h"
-#include "Commands2/RemoveComponentCommand.h"
-
-#include "Tools/LazyUpdater/LazyUpdater.h"
-#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 using namespace DAVA;
 
@@ -431,12 +430,10 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
     }
     else
     {
-        QIcon viewIcon = (frameViewVisible) ? QSharedIcon(":/QtIcons/advanced.png") : QSharedIcon(":/QtIcons/play.png");
-        ui->viewLODButton->setIcon(viewIcon);
+        const QIcon& icon = (frameViewVisible) ? QSharedIcon(":/QtIcons/advanced.png") : QSharedIcon(":/QtIcons/play.png");
+        ui->viewLODButton->setIcon(icon);
+        ui->editLODButton->setIcon(icon);
         ui->frameViewLOD->setVisible(frameViewVisible);
-
-        QIcon editIcon = (frameEditVisible) ? QSharedIcon(":/QtIcons/advanced.png") : QSharedIcon(":/QtIcons/play.png");
-        ui->editLODButton->setIcon(editIcon);
         ui->frameEditLOD->setVisible(frameEditVisible);
     }
 }

@@ -142,11 +142,11 @@ public:
     void InitializeDevice();
 
     String GetDeviceName();
-	String GetPlatform();
+    String GetPlatform();
 
-	bool IsPhoneScreen();
+    bool IsPhoneScreen();
 
-	// DB storing
+    // DB storing
 	bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive* archive);
 
 	String GetTestParameter(const String &device);

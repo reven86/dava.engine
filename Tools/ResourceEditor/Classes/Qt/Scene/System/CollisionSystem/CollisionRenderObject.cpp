@@ -158,14 +158,24 @@ struct ClassifyTrianglesToSinglePlaneCallback : public btInternalTriangleIndexCa
     }
 };
 
-inline bool CROLocal_FloatIsNegative(float& value)
+inline int CROLocal_FloatsIsNegative(float& v1, float& v2)
 {
-    return (reinterpret_cast<DAVA::uint32&>(value) & 0x80000000) == 0x80000000;
+    return ((reinterpret_cast<uint32_t&>(v1) & 0x80000000) & (reinterpret_cast<uint32_t&>(v2) & 0x80000000)) >> 31;
 }
 
 inline const DAVA::Vector3& CROLocal_btVectorToDava(const btVector3* v)
 {
     return *(reinterpret_cast<const DAVA::Vector3*>(v));
+}
+
+inline void CROLocal_Sort(float values[3])
+{
+    if (values[1] > values[0])
+        std::swap(values[1], values[0]);
+    if (values[2] > values[1])
+        std::swap(values[2], values[1]);
+    if (values[1] > values[0])
+        std::swap(values[1], values[0]);
 }
 
 struct ClassifyTrianglesToMultiplePlanesCallback : public btInternalTriangleIndexCallback
@@ -186,12 +196,14 @@ struct ClassifyTrianglesToMultiplePlanesCallback : public btInternalTriangleInde
     {
         for (size_t i = 0; i < numPlanes; ++i)
         {
-            float d0 = planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle));
-            float d1 = planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle + 1));
-            float d2 = planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle + 2));
-            DAVA::float32 minDistance = std::min(d0, std::min(d1, d2));
-            DAVA::float32 maxDistance = std::max(d0, std::max(d1, d2));
-            if (CROLocal_FloatIsNegative(minDistance) && CROLocal_FloatIsNegative(maxDistance))
+            float distances[3] =
+            {
+              planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle)),
+              planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle + 1)),
+              planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle + 2))
+            };
+            CROLocal_Sort(distances);
+            if (CROLocal_FloatsIsNegative(distances[0], distances[2]))
             {
                 ++trianglesBehind;
                 break;

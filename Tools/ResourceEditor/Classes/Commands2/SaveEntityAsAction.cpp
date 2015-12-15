@@ -122,9 +122,9 @@ void SaveEntityAsAction::Redo()
             container.reset(new Entity());
 
             const Vector3 oldZero = entities->GetCommonZeroPos();
-            for (uint32 i = 0; i < count; ++i)
+            for (const auto& item : entities->GetContent())
             {
-                ScopedPtr<Entity> clone(entities->GetEntitySlow(i)->Clone());
+                ScopedPtr<Entity> clone(item.first->Clone());
 
                 const Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
                 Matrix4 newLocalTransform = clone->GetLocalTransform();

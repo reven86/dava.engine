@@ -209,10 +209,10 @@ namespace DAVA
         FilePath path = Instance()->Findfile(L, module.c_str(), "path");
         if (!Instance()->LoadScriptFromFile(path))
         {
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
-		}
-		lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
-		if (!Instance()->RunScript())
+            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
+        }
+        lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
+        if (!Instance()->RunScript())
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
 		}
@@ -275,9 +275,9 @@ namespace DAVA
         AutotestingSystem::Instance()->InitializeDevice();
     }
 
-	String AutotestingSystemLua::GetPlatform()
-	{
-		return DeviceInfo::GetPlatformString();
+    String AutotestingSystemLua::GetPlatform()
+    {
+        return DeviceInfo::GetPlatformString();
 	}
 
 	String AutotestingSystemLua::GetDeviceName()
@@ -521,10 +521,10 @@ namespace DAVA
             break;
         }
         case DVKEY_ENTER:
-		{
-			uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
-			break;
-		}
+        {
+            uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
+            break;
+        }
 		case DVKEY_ESCAPE:
 		{
 			uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
@@ -760,11 +760,11 @@ namespace DAVA
         {
             return false;
         }
-		//TODO: check if modules really loaded
-		return delegate->LoadWrappedLuaObjects(luaState);
-	}
+        //TODO: check if modules really loaded
+        return delegate->LoadWrappedLuaObjects(luaState);
+    }
 
-	bool AutotestingSystemLua::LoadScript(const String &luaScript)
+    bool AutotestingSystemLua::LoadScript(const String &luaScript)
 	{
 		if (!luaState)
 		{
