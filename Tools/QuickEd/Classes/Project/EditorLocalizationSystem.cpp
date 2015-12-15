@@ -114,13 +114,10 @@ QString EditorLocalizationSystem::GetCurrentLocale() const
 void EditorLocalizationSystem::SetCurrentLocale(const QString& locale)
 {
     DVASSERT(!locale.isEmpty());
-    if (currentLocale != locale)
-    {
-        currentLocale = locale;
-        DVASSERT(availableLocales.contains(locale));
-        LocalizationSystem::Instance()->SetCurrentLocale(availableLocales[locale].toStdString());
-        LocalizationSystem::Instance()->Init();
+    currentLocale = locale;
+    DVASSERT(availableLocales.contains(locale));
+    LocalizationSystem::Instance()->SetCurrentLocale(availableLocales[locale].toStdString());
+    LocalizationSystem::Instance()->Init();
 
-        emit CurrentLocaleChanged(currentLocale);
-    }
+    emit CurrentLocaleChanged(currentLocale);
 }
