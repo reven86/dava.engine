@@ -99,6 +99,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     connect(&serverCore, &ServerCore::ServerStateChanged, this, &AssetCacheServerWindow::OnServerStateChanged);
     LoadSettings();
+    SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked());
     OnServerStateChanged(&serverCore);
 }
 
@@ -170,7 +171,6 @@ void AssetCacheServerWindow::ChangeSettingsState(SettingsState newState)
 void AssetCacheServerWindow::OnFirstLaunch()
 {
     show();
-    SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked());
 }
 
 void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup)
