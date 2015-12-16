@@ -71,5 +71,8 @@ void DavaRenderer::paint()
     ApplyModifier(keyboard, modifiers, Qt::ShiftModifier, DAVA::DVKEY_SHIFT);
     ApplyModifier(keyboard, modifiers, Qt::ControlModifier, DAVA::DVKEY_CTRL);
 
-    DAVA::QtLayer::Instance()->ProcessFrame();
+    if (!DAVA::DVAssertMessage::IsMessageDisplayed())
+    {
+        DAVA::QtLayer::Instance()->ProcessFrame();
+    }
 }
