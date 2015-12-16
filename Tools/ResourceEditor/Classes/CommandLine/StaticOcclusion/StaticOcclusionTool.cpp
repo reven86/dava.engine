@@ -38,6 +38,7 @@ StaticOcclusionTool::StaticOcclusionTool()
 {
     options.AddOption(OptionName::Build, VariantType(false), "Enables build of static occlusion");
     options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Full pathname to scene file *.sc2");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
 void StaticOcclusionTool::ConvertOptionsToParamsInternal()
@@ -48,6 +49,7 @@ void StaticOcclusionTool::ConvertOptionsToParamsInternal()
     }
 
     scenePathname = options.GetOption(OptionName::ProcessFile).AsString();
+    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
 }
 
 bool StaticOcclusionTool::InitializeInternal()
@@ -97,6 +99,11 @@ void StaticOcclusionTool::ProcessInternal()
 
 DAVA::FilePath StaticOcclusionTool::GetQualityConfigPath() const
 {
-    return CreateQualityConfigPath(scenePathname);
+    if (qualityConfigPath.IsEmpty())
+    {
+        return CreateQualityConfigPath(scenePathname);
+    }
+
+    return qualityConfigPath;
 }
 
