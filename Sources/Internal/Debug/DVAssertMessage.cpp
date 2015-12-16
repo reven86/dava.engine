@@ -71,7 +71,7 @@ bool DVAssertMessage::ShowMessage(eModalType /*modalType*/, const char8 * /*text
 
 #endif	// ENABLE_ASSERT_MESSAGE
 
-bool DVAssertMessage::IsMessageDisplayed()
+bool DVAssertMessage::IsHidden()
 {
-    return messageDisplayed.Get() > 0;
+    return messageDisplayed.Get() == 0;
 }
