@@ -173,6 +173,7 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
         {
             return QModelIndex();
         }
+        DVASSERT(nullptr != parent->GetParent());
         return createIndex(parent->GetParent()->GetIndex(parent), 0, parent);
     }
     return QModelIndex();

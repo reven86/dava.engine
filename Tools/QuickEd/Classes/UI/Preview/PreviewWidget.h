@@ -46,7 +46,7 @@ class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
 class RulerController;
-
+class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
 

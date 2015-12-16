@@ -38,13 +38,7 @@
 
 namespace DAVA {
     class InspInfo;
-    enum ItemDataRole
-    {
-        ResetRole = Qt::UserRole +1,
-    };
 }
-
-class QTimer;
 
 class AbstractProperty;
 class PackageBaseNode;
@@ -58,6 +52,10 @@ class PropertiesModel : public QAbstractItemModel, private PropertyListener
     Q_OBJECT
     
 public:
+    enum
+    {
+        ResetRole = Qt::UserRole + 1
+    };
     PropertiesModel(QObject* parent = nullptr);
     virtual ~PropertiesModel();
     void Reset(PackageBaseNode* node_, std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor_);
@@ -111,7 +109,6 @@ private:
     AbstractProperty *rootProperty = nullptr;
     std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
     QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
-    QTimer* updatePropertyTimer = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

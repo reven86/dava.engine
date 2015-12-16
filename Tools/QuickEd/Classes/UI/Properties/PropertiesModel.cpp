@@ -59,10 +59,6 @@ using namespace DAVA;
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
-    updatePropertyTimer = new QTimer(this);
-    updatePropertyTimer->setSingleShot(true);
-    updatePropertyTimer->setInterval(30);
-    connect(updatePropertyTimer, &QTimer::timeout, this, &PropertiesModel::UpdateAllChangedProperties, Qt::QueuedConnection);
 }
 
 PropertiesModel::~PropertiesModel()
@@ -266,7 +262,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
         }
         break;
 
-    case DAVA::ResetRole:
+    case ResetRole:
         {
             ResetProperty(property);
             return true;
@@ -313,7 +309,7 @@ void PropertiesModel::PropertyChanged(AbstractProperty *property)
     QModelIndex nameIndex = indexByProperty(property, 0);
     QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
-    updatePropertyTimer->start();
+    UpdateAllChangedProperties();
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)

@@ -70,6 +70,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
 {
+    qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
                 << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
