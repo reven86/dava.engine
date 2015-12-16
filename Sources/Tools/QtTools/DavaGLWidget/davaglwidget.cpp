@@ -116,7 +116,6 @@ void DavaGLView::keyReleaseEvent(QKeyEvent* e)
 void DavaGLView::mouseMoveEvent(QMouseEvent* e)
 {
     controlMapper->mouseMoveEvent(e);
-    emit mouseMoved(e->pos());
 }
 
 void DavaGLView::mousePressEvent(QMouseEvent* e)
@@ -192,8 +191,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     connect(davaGLView, &QQuickWindow::sceneGraphInvalidated, this, &DavaGLWidget::OnCleanup);
     connect(davaGLView, &DavaGLView::mouseScrolled, this, &DavaGLWidget::mouseScrolled);
     connect(davaGLView, &DavaGLView::OnDrop, this, &DavaGLWidget::OnDrop);
-    connect(davaGLView, &DavaGLView::mouseMoved, this, &DavaGLWidget::mouseMoved);
-
     auto layout = new QBoxLayout(QBoxLayout::TopToBottom, this);
     layout->setMargin(0);
     setLayout(layout);

@@ -56,7 +56,6 @@ public:
 signals:
     void mouseScrolled(int ofs);
     void OnDrop( const QMimeData *mimeData );
-    void mouseMoved(QPoint pos);
 
 protected:
     bool event(QEvent *event) override;
@@ -94,7 +93,6 @@ signals:
     void Resized(int width, int height);
     void Initialized();
     void OnDrop(const QMimeData* mimeData);
-    void mouseMoved(QPoint pos);
 
 public slots:
     void OnSync();

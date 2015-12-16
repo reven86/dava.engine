@@ -90,7 +90,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 
     connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
-    connect(davaGLWidget, &DavaGLWidget::mouseMoved, rulerController, &RulerController::UpdateRulerMarkers);
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
@@ -422,6 +421,7 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
+    rulerController->UpdateRulerMarkers(event->pos());
     if (event->buttons() & Qt::MiddleButton)
     {
         QPoint delta(event->pos() - lastMousePos);
