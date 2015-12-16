@@ -93,17 +93,33 @@ WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {
-    deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY) {
+    deferredSizeScaleEvents.reset(new DeferredScreenMetricEvents(isPhoneApiDetected, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY) {
         MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
-    });
+    }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
+
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+    if (!isPhoneApiDetected)
+    {
+        // Here land of black magic and fire-spitting dragons begins
+        MEMORY_BASIC_INFORMATION bi;
+        VirtualQuery(static_cast<void*>(&GetModuleFileNameA), &bi, sizeof(bi));
+        HMODULE hkernel = reinterpret_cast<HMODULE>(bi.AllocationBase);
+
+        HMODULE(WINAPI * LoadLibraryW)
+        (LPCWSTR lpLibFileName);
+        LoadLibraryW = reinterpret_cast<decltype(LoadLibraryW)>(GetProcAddress(hkernel, "LoadLibraryW"));
+
+        HMODULE huser = LoadLibraryW(L"user32.dll");
+        SetCursorPos = reinterpret_cast<decltype(SetCursorPos)>(GetProcAddress(huser, "SetCursorPos"));
+    }
+#endif
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
 {
     AllowDisplaySleep(true);
-    delete deferredSizeScaleEvents;
 }
 
 DisplayOrientations WinUAPXamlApp::GetDisplayOrientation()
@@ -139,16 +155,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 
     if (mouseCaptureMode != newMode)
     {
-        static Windows::Foundation::EventRegistrationToken token;
-
-        // Uninstall old capture mode
-        switch (mouseCaptureMode)
-        {
-        case DAVA::InputSystem::eMouseCaptureMode::PINING:
-            MouseDevice::GetForCurrentView()->MouseMoved -= token;
-            break;
-        }
-
         // Setup new capture mode
         switch (newMode)
         {
@@ -161,7 +167,6 @@ bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
             Logger::Error("Unsupported cursor capture mode");
             break;
         case DAVA::InputSystem::eMouseCaptureMode::PINING:
-            token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
             mouseCaptureMode = newMode;
             break;
         default:
@@ -184,7 +189,35 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
     if (isVisible != isMouseCursorShown)
     {
-        Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+        if (!isVisible)
+        {
+            Window::Current->CoreWindow->PointerCursor = nullptr;
+
+            Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
+            float32 centerX = rc.Width / 2.0f;
+            float32 centerY = rc.Height / 2.0f;
+
+            float32 scale = DeviceInfo::GetScreenInfo().scale;
+            SetCursorPos(static_cast<int>((centerX + rc.X) * scale), static_cast<int>((centerY + rc.Y) * scale));
+            skipMouseMoveEvent = true;
+        }
+        else
+        {
+            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+        }
+#else
+        if (isVisible)
+        {
+            MouseDevice::GetForCurrentView()->MouseMoved -= token;
+            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+        }
+        else
+        {
+            token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
+            Window::Current->CoreWindow->PointerCursor = nullptr;
+        }
+#endif
         isMouseCursorShown = isVisible;
     }
     return true;
@@ -197,23 +230,28 @@ void WinUAPXamlApp::PreStartAppSettings()
         // default orientation landscape and landscape flipped
         // will be changed in SetDisplayOrientations()
         StatusBar::GetForCurrentView()->HideAsync();
-        Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->SuppressSystemOverlays = true;
     }
+    Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->FullScreenSystemOverlayMode = FullScreenSystemOverlayMode::Minimal;
 }
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
-    // If renderLoopWorker is null then app performing cold start
+    // If mainLoopThreadStarted is false then app performing cold start
     // else app is restored from background or resumed from suspended state
-    if (nullptr == renderLoopWorker)
+    if (!mainLoopThreadStarted)
     {
         PreStartAppSettings();
         uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
 
         CreateBaseXamlUI();
 
-        WorkItemHandler ^ workItemHandler = ref new WorkItemHandler([this, args](Windows::Foundation::IAsyncAction ^ action) { Run(args); });
-        renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+        Thread* mainLoopThread = Thread::Create([this, args]() { Run(args); });
+        mainLoopThread->Start();
+        mainLoopThread->BindToProcessor(0);
+        mainLoopThread->SetPriority(Thread::PRIORITY_HIGH);
+        mainLoopThread->Release();
+
+        mainLoopThreadStarted = true;
     }
     else
     {
@@ -279,6 +317,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         PrepareScreenSize();
         SetTitleName();
         SetDisplayOrientations();
+        TrackWindowMinimumSize();
 
         float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
         float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
@@ -341,14 +380,14 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    core->RunOnMainThreadBlocked([]() {
+    core->RunOnMainThread([]() {
         Core::Instance()->GetApplicationCore()->OnSuspend();
     });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    core->RunOnMainThreadBlocked([]() {
+    core->RunOnMainThread([]() {
         Core::Instance()->GetApplicationCore()->OnResume();
     });
 }
@@ -422,6 +461,7 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
         ResetRender();
         ReInitCoordinatesSystem();
         UIScreenManager::Instance()->ScreenSizeChanged();
+        UIControlSystem::Instance()->ScreenSizeChanged();
     });
 }
 
@@ -500,6 +540,55 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
 {
     if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING || !isMouseCursorShown)
     {
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+        PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
+        PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
+        if (!isPhoneApiDetected && PointerDeviceType::Mouse == deviceType)
+        {
+            if (skipMouseMoveEvent)
+            {
+                skipMouseMoveEvent = false;
+                return;
+            }
+
+            UIEvent::Phase phase = UIEvent::Phase::MOVE;
+            int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
+            MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
+            if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
+            {
+                phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+                pointerOrButtonIndex = mouseBtnChange.button;
+            }
+            else if (isLeftButtonPressed)
+            {
+                pointerOrButtonIndex = UIEvent::BUTTON_1;
+                phase = UIEvent::Phase::DRAG;
+            }
+            else if (isRightButtonPressed)
+            {
+                pointerOrButtonIndex = UIEvent::BUTTON_2;
+                phase = UIEvent::Phase::DRAG;
+            }
+
+            Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
+            float32 centerX = rc.Width / 2.0f;
+            float32 centerY = rc.Height / 2.0f;
+
+            float32 x = pointerPoint->Position.X;
+            float32 y = pointerPoint->Position.Y;
+
+            float32 deltaX = x - centerX;
+            float32 deltaY = y - centerY;
+
+            core->RunOnMainThread([this, deltaX, deltaY, phase, pointerOrButtonIndex]() {
+                DAVATouchEvent(phase, deltaX, deltaY, pointerOrButtonIndex, UIEvent::Device::MOUSE);
+            });
+
+            float32 scale = DeviceInfo::GetScreenInfo().scale;
+            SetCursorPos(static_cast<int>((centerX + rc.X) * scale), static_cast<int>((centerY + rc.Y) * scale));
+            skipMouseMoveEvent = true;
+        }
+#endif
         return;
     }
 
@@ -696,26 +785,36 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
 
-    PointerPoint ^ pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
-
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
-
-    MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
-    if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
+    
+    PointerPoint ^ pointerPoint = nullptr;
+    try
     {
-        phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-        pointerOrButtonIndex = mouseBtnChange.button;
+        pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
     }
-    else if (isLeftButtonPressed)
+    catch (Platform::Exception^ e)
     {
-        pointerOrButtonIndex = UIEvent::BUTTON_1;
-        phase = UIEvent::Phase::DRAG;
+        Logger::FrameworkDebug("Exception in WinUAPXamlApp::OnMouseMoved: 0x%08X - %s", e->HResult, RTStringToString(e->Message).c_str());
     }
-    else if (isRightButtonPressed)
+    if (nullptr != pointerPoint)
     {
-        pointerOrButtonIndex = UIEvent::BUTTON_2;
-        phase = UIEvent::Phase::DRAG;
+        MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
+        if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
+        {
+            phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+            pointerOrButtonIndex = mouseBtnChange.button;
+        }
+        else if (isLeftButtonPressed)
+        {
+            pointerOrButtonIndex = UIEvent::BUTTON_1;
+            phase = UIEvent::Phase::DRAG;
+        }
+        else if (isRightButtonPressed)
+        {
+            pointerOrButtonIndex = UIEvent::BUTTON_2;
+            phase = UIEvent::Phase::DRAG;
+        }
     }
 
     core->RunOnMainThread([this, x, y, phase, pointerOrButtonIndex]() {
@@ -749,14 +848,19 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->Activated += ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
-    auto slowSize = ref new SizeChangedEventHandler([this](Object ^ sender, SizeChangedEventArgs ^ e) {
-        deferredSizeScaleEvents->UpdateSize(sender, e);
+    auto coreWindowSizeChanged = ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>([this](CoreWindow ^ coreWindow, WindowSizeChangedEventArgs ^ arg) {
+        deferredSizeScaleEvents->CoreWindowSizeChanged(coreWindow, arg);
     });
-    auto slowScale = ref new TypedEventHandler<SwapChainPanel ^, Object ^>([this](SwapChainPanel ^ panel, Object ^ args) {
-        deferredSizeScaleEvents->UpdateScale(panel, args);
+    coreWindow->SizeChanged += coreWindowSizeChanged;
+
+    auto swapChainPanelSizeChanged = ref new SizeChangedEventHandler([this](Object ^ sender, SizeChangedEventArgs ^ e) {
+        deferredSizeScaleEvents->SwapChainPanelSizeChanged(sender, e);
     });
-    swapChainPanel->SizeChanged += slowSize;
-    swapChainPanel->CompositionScaleChanged += slowScale;
+    auto swapChainCompositionScaleChanged = ref new TypedEventHandler<SwapChainPanel ^, Object ^>([this](SwapChainPanel ^ panel, Object ^ args) {
+        deferredSizeScaleEvents->SwapChainPanelCompositionScaleChanged(panel, args);
+    });
+    swapChainPanel->SizeChanged += swapChainPanelSizeChanged;
+    swapChainPanel->CompositionScaleChanged += swapChainCompositionScaleChanged;
 
     // Receive mouse events from SwapChainPanel, not CoreWindow, to not handle native controls' events
     swapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerPressed);
@@ -767,9 +871,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
 
     coreWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WinUAPXamlApp::OnAcceleratorKeyActivated);
-
     coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WinUAPXamlApp::OnChar);
-    MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
 
     if (isPhoneApiDetected)
     {
@@ -849,6 +951,25 @@ void WinUAPXamlApp::SetDisplayOrientations()
         break;
     }
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
+}
+
+void WinUAPXamlApp::TrackWindowMinimumSize()
+{
+    if (!isPhoneApiDetected)
+    {
+        const KeyedArchive* options = core->GetOptions();
+        int32 minWidth = options->GetInt32("min-width", 0);
+        int32 minHeight = options->GetInt32("min-height", 0);
+        if (minWidth > 0 && minHeight > 0)
+        {
+            // Note: the largest allowed minimum size is 500 x 500 effective pixels
+            // https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.viewmanagement.applicationview.setpreferredminsize.aspx
+            Size size(static_cast<float32>(minWidth), static_cast<float32>(minHeight));
+            ApplicationView::GetForCurrentView()->SetPreferredMinSize(size);
+
+            deferredSizeScaleEvents->TrackWindowMinimumSize(minWidth, minHeight);
+        }
+    }
 }
 
 void WinUAPXamlApp::ResetScreen()

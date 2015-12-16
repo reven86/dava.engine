@@ -39,29 +39,28 @@
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
 
-
 namespace
 {
-    QPixmap CreateIcon(const QColor &color)
+QPixmap CreateIcon(const QColor& color)
+{
+    QPixmap pix(16, 16);
+    QPainter p(&pix);
+    p.setPen(QColor(0, 0, 0, 0));
+
+    if (color.alpha() < 255)
     {
-        QPixmap pix(16, 16);
-        QPainter p(&pix);
-        p.setPen(QColor(0, 0, 0, 0));
-
-        if (color.alpha() < 255)
-        {
-            p.setBrush(QColor(250, 250, 250));
-            p.drawRect(QRect(0, 0, 15, 15));
-            p.setPen(QColor(200, 200, 200));
-            p.setBrush(QColor(150, 150, 150));
-            p.drawRect(QRect(0, 0, 7, 7));
-            p.drawRect(QRect(8, 8, 15, 15));
-        }
-
-        p.setBrush(QBrush(color));
+        p.setBrush(QColor(250, 250, 250));
         p.drawRect(QRect(0, 0, 15, 15));
-        return pix;
+        p.setPen(QColor(200, 200, 200));
+        p.setBrush(QColor(150, 150, 150));
+        p.drawRect(QRect(0, 0, 7, 7));
+        p.drawRect(QRect(8, 8, 15, 15));
     }
+
+    p.setBrush(QBrush(color));
+    p.drawRect(QRect(0, 0, 15, 15));
+    return pix;
+}
 }
 
 ColorPropertyDelegate::ColorPropertyDelegate(PropertiesTreeItemDelegate *delegate)
@@ -74,11 +73,11 @@ ColorPropertyDelegate::~ColorPropertyDelegate()
 
 }
 
-QWidget *ColorPropertyDelegate::createEditor( QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index )
+QWidget* ColorPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
     lineEdit = new QLineEdit(parent); //will be deleted outside this class
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    QRegExpValidator *validator = new QRegExpValidator();
+    QRegExpValidator* validator = new QRegExpValidator();
     validator->setRegExp(QRegExp("#?([A-F0-9]{8}|[A-F0-9]{6})", Qt::CaseInsensitive));
     lineEdit->setValidator(validator);
 
@@ -87,7 +86,7 @@ QWidget *ColorPropertyDelegate::createEditor( QWidget * parent, const QStyleOpti
     return lineEdit;
 }
 
-void ColorPropertyDelegate::enumEditorActions( QWidget *parent, const QModelIndex &index, QList<QAction *> &actions)
+void ColorPropertyDelegate::enumEditorActions(QWidget* parent, const QModelIndex& index, QList<QAction*>& actions)
 {
     BasePropertyDelegate::enumEditorActions(parent, index, actions);
 
@@ -121,7 +120,7 @@ bool ColorPropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel *
 void ColorPropertyDelegate::OnChooseColorClicked()
 {
     DVASSERT(nullptr != lineEdit);
-    QWidget *editor = lineEdit->parentWidget();
+    QWidget* editor = lineEdit->parentWidget();
     DVASSERT(nullptr != editor)
 
     QColorDialog dlg(editor);

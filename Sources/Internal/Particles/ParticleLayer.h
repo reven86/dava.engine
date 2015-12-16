@@ -113,7 +113,7 @@ struct ParticleLayer : public BaseObject
 
     FilePath spritePath;
     bool isLooped;
-	bool isLong;
+    bool isLong;
     eBlending blending;
     bool enableFog;
     bool enableFrameBlend;
@@ -135,12 +135,12 @@ struct ParticleLayer : public BaseObject
     RefPtr<PropertyLine<float32>> numberVariation; // variation part of number that added to particle count during generation of the particle
 
     RefPtr<PropertyLine<Vector2>> size; // size of particles in pixels
-    RefPtr< PropertyLine<Vector2> > sizeVariation;		// size variation in pixels
-	RefPtr< PropertyLine<Vector2> > sizeOverLifeXY;	
-	
-	RefPtr< PropertyLine<float32> > velocity;			// velocity in pixels
-	RefPtr< PropertyLine<float32> > velocityVariation;	
-	RefPtr< PropertyLine<float32> > velocityOverLife;
+    RefPtr<PropertyLine<Vector2>> sizeVariation; // size variation in pixels
+    RefPtr<PropertyLine<Vector2>> sizeOverLifeXY;
+
+    RefPtr<PropertyLine<float32>> velocity; // velocity in pixels
+    RefPtr<PropertyLine<float32>> velocityVariation;
+    RefPtr< PropertyLine<float32> > velocityOverLife;
 	
 	Vector<ParticleForce*> forces;
 	

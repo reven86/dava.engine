@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -50,52 +49,49 @@ subject to the following restrictions:
 struct btBroadphaseProxy;
 class btConvexShape;
 
-class  btTriangleRaycastCallback: public btTriangleCallback
+class btTriangleRaycastCallback : public btTriangleCallback
 {
 public:
+    //input
+    btVector3 m_from;
+    btVector3 m_to;
 
-	//input
-	btVector3 m_from;
-	btVector3 m_to;
+    //@BP Mod - allow backface filtering and unflipped normals
+    enum EFlags
+    {
+        kF_None = 0,
+        kF_FilterBackfaces = 1 << 0,
+        kF_KeepUnflippedNormal = 1 << 1, // Prevents returned face normal getting flipped when a ray hits a back-facing triangle
 
-   //@BP Mod - allow backface filtering and unflipped normals
-   enum EFlags
-   {
-      kF_None                 = 0,
-      kF_FilterBackfaces      = 1 << 0,
-      kF_KeepUnflippedNormal  = 1 << 1,   // Prevents returned face normal getting flipped when a ray hits a back-facing triangle
+        kF_Terminator = 0xFFFFFFFF
+    };
+    unsigned int m_flags;
 
-      kF_Terminator        = 0xFFFFFFFF
-   };
-   unsigned int m_flags;
+    btScalar m_hitFraction;
 
-	btScalar	m_hitFraction;
+    btTriangleRaycastCallback(const btVector3& from, const btVector3& to, unsigned int flags = 0);
 
-	btTriangleRaycastCallback(const btVector3& from,const btVector3& to, unsigned int flags=0);
-	
-	virtual void processTriangle(btVector3* triangle, int partId, int triangleIndex);
+    virtual void processTriangle(btVector3* triangle, int partId, int triangleIndex);
 
-	virtual btScalar reportHit(const btVector3& hitNormalLocal, btScalar hitFraction, int partId, int triangleIndex ) = 0;
-	
+    virtual btScalar reportHit(const btVector3& hitNormalLocal, btScalar hitFraction, int partId, int triangleIndex) = 0;
 };
 
 class btTriangleConvexcastCallback : public btTriangleCallback
 {
 public:
-	const btConvexShape* m_convexShape;
-	btTransform m_convexShapeFrom;
-	btTransform m_convexShapeTo;
-	btTransform m_triangleToWorld;
-	btScalar m_hitFraction;
-	btScalar m_triangleCollisionMargin;
-	btScalar m_allowedPenetration;
+    const btConvexShape* m_convexShape;
+    btTransform m_convexShapeFrom;
+    btTransform m_convexShapeTo;
+    btTransform m_triangleToWorld;
+    btScalar m_hitFraction;
+    btScalar m_triangleCollisionMargin;
+    btScalar m_allowedPenetration;
 
-	btTriangleConvexcastCallback (const btConvexShape* convexShape, const btTransform& convexShapeFrom, const btTransform& convexShapeTo, const btTransform& triangleToWorld, const btScalar triangleCollisionMargin);
+    btTriangleConvexcastCallback(const btConvexShape* convexShape, const btTransform& convexShapeFrom, const btTransform& convexShapeTo, const btTransform& triangleToWorld, const btScalar triangleCollisionMargin);
 
-	virtual void processTriangle (btVector3* triangle, int partId, int triangleIndex);
+    virtual void processTriangle(btVector3* triangle, int partId, int triangleIndex);
 
-	virtual btScalar reportHit (const btVector3& hitNormalLocal, const btVector3& hitPointLocal, btScalar hitFraction, int partId, int triangleIndex) = 0;
+    virtual btScalar reportHit(const btVector3& hitNormalLocal, const btVector3& hitPointLocal, btScalar hitFraction, int partId, int triangleIndex) = 0;
 };
 
 #endif //BT_RAYCAST_TRI_CALLBACK_H
-

@@ -790,6 +790,15 @@ static const char* _ShaderHeader_DX11 =
 "#define STEP(edge,x) step( (edge), (x) )\n";
 
 static const char* _ShaderDefine_DX11 =
+#if !defined(__DAVAENGINE_WIN_UAP__)
+"#define float1                 float\n"
+"#define half1                  half\n"
+"#define min10float             half\n"
+"#define min10float1            half\n"
+"#define min10float2            half2\n"
+"#define min10float3            half3\n"
+"#define min10float4            half4\n"
+#endif
 "#define VPROG_IN_BEGIN                 struct VP_Input {\n"
 "#define VPROG_IN_POSITION              float3 position : POSITION;\n"
 "#define VPROG_IN_NORMAL                float3 normal : NORMAL;\n"

@@ -83,10 +83,10 @@ int main(int argc, char *argv[])
 {
     int ret = 0;
 
-    ProgramOptions writeOptions("write");
-    ProgramOptions listOptions("list");
-    ProgramOptions applyOptions("apply");
-    ProgramOptions applyAllOptions("apply-all");
+    DAVA::ProgramOptions writeOptions("write");
+    DAVA::ProgramOptions listOptions("list");
+    DAVA::ProgramOptions applyOptions("apply");
+    DAVA::ProgramOptions applyAllOptions("apply-all");
 
     writeOptions.AddOption("-a", DAVA::VariantType(false), "Append patch to existing file.");
     writeOptions.AddOption("-nc", DAVA::VariantType(false), "Generate uncompressed patch.");
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
         const char *command = argv[1];
         if (command == writeOptions.GetCommand())
         {
-            paramsOk = writeOptions.Parse(argc, argv, 2);
+            paramsOk = writeOptions.Parse(argc, argv);
             if(paramsOk)
             {
                 DAVA::PatchFileWriter::WriterMode writeMode = DAVA::PatchFileWriter::WRITE;
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
         }
         else if (command == listOptions.GetCommand())
         {
-            paramsOk = listOptions.Parse(argc, argv, 2);
+            paramsOk = listOptions.Parse(argc, argv);
             if(paramsOk)
             {
                 DAVA::uint32 index = 0;
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
         }
         else if (command == applyOptions.GetCommand())
         {
-            paramsOk = applyOptions.Parse(argc, argv, 2);
+            paramsOk = applyOptions.Parse(argc, argv);
             if(paramsOk)
             {
                 DAVA::uint32 indexToApply = 0;
@@ -300,7 +300,7 @@ int main(int argc, char *argv[])
         }
         else if (command == applyAllOptions.GetCommand())
         {
-            paramsOk = applyAllOptions.Parse(argc, argv, 2);
+            paramsOk = applyAllOptions.Parse(argc, argv);
             if(paramsOk)
             {
                 DAVA::FilePath patchPath = applyAllOptions.GetArgument("PatchFile");

@@ -33,6 +33,7 @@
     #include "rhi_DX11.h"
 
     #include "Debug/DVAssert.h"
+    #include "Debug/Profiler.h"
     #include "FileSystem/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
@@ -333,7 +334,7 @@ public:
 
     bool SetConst(unsigned const_i, unsigned count, const float* data);
     bool SetConst(unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount);
-    void SetToRHI(ID3D11DeviceContext* context) const;
+    void SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const;
 
 private:
     void _EnsureMapped();
@@ -343,6 +344,7 @@ private:
     mutable float* value;
     unsigned buf_i;
     unsigned regCount;
+    mutable uint32 updatePending : 1;
 };
 
 static RingBuffer _DefConstRingBuf;
@@ -419,6 +421,7 @@ void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
         value = (float*)(malloc(regCnt * 4 * sizeof(float)));
         buf_i = bufIndex;
         regCount = regCnt;
+        updatePending = true;
     }
     else
     {
@@ -464,6 +467,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_count, const float*
     if (const_i + const_count <= regCount)
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
+        updatePending = true;
         success = true;
     }
 
@@ -479,6 +483,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
     if (const_i <= regCount && const_sub_i < 4)
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
+        updatePending = true;
         success = true;
     }
 
@@ -487,16 +492,15 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
 
 //------------------------------------------------------------------------------
 
-void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context) const
+void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const
 {
-    context->UpdateSubresource(buf, 0, NULL, value, regCount * 4 * sizeof(float), 0);
+    if (updatePending)
+    {
+        context->UpdateSubresource(buf, 0, NULL, value, regCount * 4 * sizeof(float), 0);
+        updatePending = false;
+    }
 
-    ID3D11Buffer* cb[1] = { buf };
-
-    if (progType == PROG_VERTEX)
-        context->VSSetConstantBuffers(buf_i, 1, &buf);
-    else
-        context->PSSetConstantBuffers(buf_i, 1, &buf);
+    buffer[buf_i] = buf;
 }
 
 //==============================================================================
@@ -627,10 +631,12 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     ID3D10Blob* fp_code = nullptr;
     ID3D10Blob* fp_err = nullptr;
 
+#if 0
     Logger::Info("create PS");
     Logger::Info("  vprog= %s", desc.vprogUid.c_str());
     Logger::Info("  fprog= %s", desc.vprogUid.c_str());
     desc.vertexLayout.Dump();
+#endif
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
@@ -642,11 +648,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     NULL, // no macros
     NULL, // no includes
     "vp_main",
-        #if RHI__FORCE_DX11_91
-    "vs_4_0_level_9_1",
-        #else
-    "vs_4_0",
-        #endif
+    (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "vs_4_0" : "vs_4_0_level_9_1",
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
     0, // no effect compile flags
     &vp_code,
@@ -717,11 +719,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     NULL, // no macros
     NULL, // no includes
     "fp_main",
-        #if RHI__FORCE_DX11_91
-    "ps_4_0_level_9_1",
-        #else
-    "ps_4_0",
-        #endif
+    (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "ps_4_0" : "ps_4_0_level_9_1",
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
     0, // no effect compile flags
     &fp_code,
@@ -976,6 +974,14 @@ VertexLayoutStride(Handle ps)
     return ps11->vertexLayout.Stride();
 }
 
+void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount)
+{
+    PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
+
+    *vertexBufCount = ps11->vertexBufCount;
+    *fragmentBufCount = ps11->fragmentBufCount;
+}
+
 } // namespace PipelineStateDX11
 
 namespace ConstBufferDX11
@@ -992,11 +998,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ConstBuffer_Delete = &dx11_ConstBuffer_Delete;
 }
 
-void SetToRHI(Handle cb, ID3D11DeviceContext* context)
+void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer)
 {
     ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
 
-    cb11->SetToRHI(context);
+    cb11->SetToRHI(context, buffer);
 }
 
 void InitializeRingBuffer(uint32 size)

@@ -158,11 +158,18 @@ void DispatcherWinUAP::ProcessTasks()
     }
 }
 
-void DispatcherWinUAP::ScheduleTask(std::function<void()>&& task)
+void DispatcherWinUAP::ScheduleTask(std::function<void()>&& task, bool scheduleFirst)
 {
     {
         LockGuard<Mutex> guard(mutex);
-        taskQueue.emplace_back(std::move(task));
+        if (scheduleFirst)
+        {
+            taskQueue.emplace_front(std::move(task));
+        }
+        else
+        {
+            taskQueue.emplace_back(std::move(task));
+        }
     }
     cv.NotifyAll();
 }
@@ -175,7 +182,18 @@ void DispatcherWinUAP::ScheduleTaskAndWait(std::function<void()>&& task)
 
     blockingCall.test_and_set();
     TaskWrapper taskWrapper(std::move(task));
-    ScheduleTask(std::function<void()>([&taskWrapper]() { taskWrapper.RunTask(); }));
+    // To avoid some deadlock place blocking calls to main thread first in queue
+    // How deadlock appears:
+    //  1. WinUAPXamlApp::OnWindowVisibilityChanged occurs which calls main thread and makes blocking call back to UI
+    //  2. PrivateTextFieldWinUAP::OnTextChanged occurs which ask delegate and blocks UI thread
+    //  3. now main thread's dispatcher begins executing tasks
+    //    3.1 execute task placed at step 1 which makes blocking call back to UI thread
+    //    3.2 but UI thread already blocked in step 2
+    //    3.3 ta-dam - and here is deadlock
+    // !!! We MUST avoid interthread blocking calls !!!
+    // Placing blocking call first in queue allows task in step 2 run before task 1
+    // but such shuffling leads to violating task order, ups
+    ScheduleTask(std::function<void()>([&taskWrapper]() { taskWrapper.RunTask(); }), true);
     taskWrapper.WaitTaskComplete();
     blockingCall.clear();
 }

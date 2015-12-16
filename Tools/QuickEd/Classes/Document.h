@@ -73,6 +73,7 @@ public:
 
     EditorSystemsManager* GetSystemManager();
     const DAVA::FilePath &GetPackageFilePath() const;
+    QString GetPackageAbsolutePath() const;
     QUndoStack* GetUndoStack();
     PackageNode* GetPackage();
     QtModelPackageCommandExecutor* GetCommandExecutor();
@@ -90,7 +91,6 @@ public slots:
     void SetScale(float scale);
     void SetEmulationMode(bool emulationMode);
     void SetPixelization(bool hasPixelization);
-    void SetDPR(qreal dpr);
     void RefreshAllControlProperties();
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
@@ -103,7 +103,6 @@ private:
     QUndoStack* undoStack = nullptr;
 
     EditorSystemsManager systemManager;
-    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

@@ -434,12 +434,12 @@ void VariantType::SetVariant(const VariantType& var)
             SetKeyedArchive(var.AsKeyedArchive());
         }
         break;
-	case TYPE_INT64:
-		{
-			SetInt64(var.AsInt64());
-		}
-		break;
-	case TYPE_UINT64:
+        case TYPE_INT64:
+        {
+            SetInt64(var.AsInt64());
+        }
+        break;
+    case TYPE_UINT64:
 		{
 			SetUInt64(var.AsUInt64());
 		}
@@ -1332,12 +1332,12 @@ bool VariantType::operator==(const VariantType& other) const
                     {
                         isEqual = true;
                         if(keyedArchive != otherKeyedArchive)
-                        {                                
-                            const Map<String, VariantType*> &data = keyedArchive->GetArchieveData();
-                            const Map<String, VariantType*> &otherData = otherKeyedArchive->GetArchieveData();
+                        {
+                            const KeyedArchive::UnderlyingMap& data = keyedArchive->GetArchieveData();
+                            const KeyedArchive::UnderlyingMap& otherData = otherKeyedArchive->GetArchieveData();
                             for(const auto &obj : data)
                             {
-                                Map<String, VariantType*>::const_iterator findIt = otherData.find(obj.first);
+                                KeyedArchive::UnderlyingMap::const_iterator findIt = otherData.find(obj.first);
                                 if(findIt != otherData.end())
                                 {
                                     if(obj.second != findIt->second)
@@ -1490,12 +1490,12 @@ void* VariantType::MetaObject()
         break;
     case TYPE_KEYED_ARCHIVE:
         ret = &pointerValue;
-		break;
-	default:
-		{
-			//DVASSERT(0 && "Something went wrong with VariantType");
-		}
-	}
+        break;
+    default:
+    {
+        //DVASSERT(0 && "Something went wrong with VariantType");
+    }
+    }
 
 	return (void *) ret;
 }
@@ -1553,13 +1553,13 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetUInt64(*((DAVA::uint64*)src));
         break;
     case TYPE_VECTOR2:
-        v.SetVector2(*((DAVA::Vector2 *) src));
-		break;
-	case TYPE_VECTOR3:
-		v.SetVector3(*((DAVA::Vector3 *) src));
-		break;
-	case TYPE_VECTOR4:
-		v.SetVector4(*((DAVA::Vector4 *) src));
+        v.SetVector2(*((DAVA::Vector2*)src));
+        break;
+    case TYPE_VECTOR3:
+        v.SetVector3(*((DAVA::Vector3*)src));
+        break;
+    case TYPE_VECTOR4:
+        v.SetVector4(*((DAVA::Vector4 *) src));
 		break;
 	case TYPE_MATRIX2:
 		v.SetMatrix2(*((DAVA::Matrix2 *) src));
@@ -1685,12 +1685,12 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
         case TYPE_UINT64:
             *((DAVA::uint64*)dst) = val.AsUInt64();
             break;
-		case TYPE_VECTOR2:
-			*((DAVA::Vector2 *) dst) = val.AsVector2();
-			break;
-		case TYPE_VECTOR3:
-			*((DAVA::Vector3 *) dst) = val.AsVector3();
-			break;
+        case TYPE_VECTOR2:
+            *((DAVA::Vector2*)dst) = val.AsVector2();
+            break;
+        case TYPE_VECTOR3:
+            *((DAVA::Vector3*)dst) = val.AsVector3();
+            break;
 		case TYPE_VECTOR4:
 			*((DAVA::Vector4 *) dst) = val.AsVector4();
 			break;
@@ -1777,12 +1777,12 @@ VariantType VariantType::FromType(int type)
     case TYPE_UINT64:
         v.SetUInt64(0);
         break;
-	case TYPE_VECTOR2:
-		v.SetVector2(Vector2());
-		break;
-	case TYPE_VECTOR3:
-		v.SetVector3(Vector3());
-		break;
+    case TYPE_VECTOR2:
+        v.SetVector2(Vector2());
+        break;
+    case TYPE_VECTOR3:
+        v.SetVector3(Vector3());
+        break;
 	case TYPE_VECTOR4:
 		v.SetVector4(Vector4());
 		break;

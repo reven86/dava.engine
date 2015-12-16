@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -54,21 +53,19 @@ struct btCollisionAlgorithmConstructionInfo;
 ///Used by the btCollisionDispatcher to register and create instances for btCollisionAlgorithm
 struct btCollisionAlgorithmCreateFunc
 {
-	bool m_swapped;
-	
-	btCollisionAlgorithmCreateFunc()
-		:m_swapped(false)
-	{
-	}
-	virtual ~btCollisionAlgorithmCreateFunc(){};
+    bool m_swapped;
 
-	virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& , btCollisionObject* body0,btCollisionObject* body1)
-	{
-		
-		(void)body0;
-		(void)body1;
-		return 0;
-	}
+    btCollisionAlgorithmCreateFunc()
+        : m_swapped(false)
+    {
+    }
+    virtual ~btCollisionAlgorithmCreateFunc(){};
+
+    virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo&, btCollisionObject* body0, btCollisionObject* body1)
+    {
+        (void)body0;
+        (void)body1;
+        return 0;
+    }
 };
 #endif //BT_COLLISION_CREATE_FUNC
-
