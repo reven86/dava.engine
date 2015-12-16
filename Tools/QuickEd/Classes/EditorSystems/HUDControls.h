@@ -39,10 +39,12 @@ public:
     explicit ControlContainer(const HUDAreaInfo::eArea area);
     HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
+    void SetSystemVisible(bool visible);
 
 protected:
     ~ControlContainer() = default;
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
+    bool systemVisible = true;
 };
 
 class HUDContainer : public ControlContainer

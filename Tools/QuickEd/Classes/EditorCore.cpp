@@ -81,8 +81,6 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::SaveDocument, this, static_cast<void (EditorCore::*)(int)>(&EditorCore::SaveDocument));
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-    connect(mainWindow.get(), &MainWindow::EmulationModeChanbed, documentGroup, &DocumentGroup::SetEmulationMode);
-    connect(mainWindow.get(), &MainWindow::PixelizationChanged, documentGroup, &DocumentGroup::SetPixelization);
     QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
     EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
     connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
@@ -92,40 +90,26 @@ EditorCore::EditorCore(QObject* parent)
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->propertiesWidget, &PropertiesWidget::SetSelectedNodes);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->packageWidget, &PackageWidget::SetSelectedNodes);
-    connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, documentGroup, &DocumentGroup::SetSelectedNodes);
 
     auto previewWidget = mainWindow->previewWidget;
-    auto scrollAreaController = previewWidget->GetScrollAreaController();
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::DocumentActivated, previewWidget, &PreviewWidget::OnDocumentActivated);
-    connect(documentGroup, &DocumentGroup::DocumentDeactivated, previewWidget, &PreviewWidget::OnDocumentDeactivated);
-    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, previewWidget, &PreviewWidget::SetSelectedNodes);
-
-    connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
-
-    connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
-    connect(previewWidget, &PreviewWidget::FocusNextChild, documentGroup, &DocumentGroup::FocusNextChild);
-    connect(previewWidget, &PreviewWidget::FocusPreviousChild, documentGroup, &DocumentGroup::FocusPreviousChild);
-    connect(previewWidget, &PreviewWidget::SelectAllRequested, documentGroup, &DocumentGroup::OnSelectAllRequested);
+    connect(mainWindow.get(), &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
 
     auto packageWidget = mainWindow->packageWidget;
+    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
     connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
     connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
     connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
     connect(previewWidget, &PreviewWidget::CopyRequested, packageWidget, &PackageWidget::OnCopy);
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
+    connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::SetSelectedNodes);
+    connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(documentGroup, &DocumentGroup::RootControlPositionChanged, previewWidget, &PreviewWidget::OnRootControlPositionChanged);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
-
-    documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
-    documentGroup->SetPixelization(mainWindow->isPixelized());
-    documentGroup->SetScale(previewWidget->GetScrollAreaController()->GetScale());
 }
 
 EditorCore::~EditorCore() = default;
@@ -196,11 +180,11 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
             {
                 DAVA::FilePath davaPath = document->GetPackageFilePath();
                 CloseDocument(index);
-                RefPtr<PackageNode> package = project->OpenPackage(davaPath);
+                std::shared_ptr<PackageNode> package = project->OpenPackage(davaPath);
                 DVASSERT(nullptr != package);
                 if (nullptr != package)
                 {
-                    index = CreateDocument(index, package.Get());
+                    index = CreateDocument(index, package);
                 }
             }
         }
@@ -246,10 +230,10 @@ void EditorCore::OnOpenPackageFile(const QString &path)
         int index = GetIndexByPackagePath(davaPath);
         if (index == -1)
         {
-            RefPtr<PackageNode> package = project->OpenPackage(davaPath);
+            std::shared_ptr<PackageNode> package = project->OpenPackage(davaPath);
             if (nullptr != package)
             {
-                index = CreateDocument(documents.size(), package.Get());
+                index = CreateDocument(documents.size(), package);
             }
         }
         mainWindow->SetCurrentTab(index);
@@ -534,7 +518,7 @@ void EditorCore::CloseDocument(int index)
     delete detached; //some widgets hold this document inside :(
 }
 
-int EditorCore::CreateDocument(int index, PackageNode* package)
+int EditorCore::CreateDocument(int index, std::shared_ptr<PackageNode> package)
 {
     Document *document = new Document(package, this);
     documents.insert(index, document);

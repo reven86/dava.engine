@@ -42,9 +42,6 @@ public:
     explicit BaseEditorSystem(EditorSystemsManager* parent);
     virtual ~BaseEditorSystem() = 0;
 
-    virtual void OnActivated();
-    virtual void OnDeactivated();
-
     virtual bool OnInput(DAVA::UIEvent* currentInput);
 
 protected:

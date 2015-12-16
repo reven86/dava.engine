@@ -207,25 +207,31 @@ bool Project::CheckAndUnlockProject(const QString& projectPath)
     return true;
 }
 
-RefPtr<PackageNode> Project::OpenPackage(const FilePath& packagePath)
+std::shared_ptr<PackageNode> Project::OpenPackage(const FilePath& packagePath)
 {
     EditorUIPackageBuilder builder;
 
     bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
     if (!packageLoaded)
+    {
         packageLoaded = LegacyEditorUIPackageLoader(legacyData).LoadPackage(packagePath, &builder);
-
+    }
     if (packageLoaded)
-        return builder.BuildPackage();
-    
-    return RefPtr<PackageNode>();
+    {
+        PackageNode* node = SafeRetain(builder.BuildPackage().Get());
+        return std::shared_ptr<PackageNode>(node, [](BaseObject* obj) { obj->Release(); });
+    }
+
+    return nullptr;
 }
 
-bool Project::SavePackage(PackageNode *package)
+bool Project::SavePackage(std::weak_ptr<PackageNode> package)
 {
+    auto packagePtr = package.lock();
+    DVASSERT(nullptr != packagePtr);
     YamlPackageSerializer serializer;
-    serializer.SerializePackage(package);
-    serializer.WriteToFile(package->GetPath());
+    serializer.SerializePackage(packagePtr.get());
+    serializer.WriteToFile(packagePtr->GetPath());
     return true;
 }
 

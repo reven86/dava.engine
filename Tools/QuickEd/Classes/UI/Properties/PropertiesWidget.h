@@ -39,6 +39,8 @@ class ControlNode;
 class StyleSheetNode;
 class Document;
 class PackageBaseNode;
+class PropertiesModel;
+class QtModelPackageCommandExecutor;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
@@ -47,8 +49,8 @@ public:
     PropertiesWidget(QWidget* parent = nullptr);
 
 public slots:
+    void UpdateModel(PackageBaseNode* node);
     void OnDocumentChanged(Document* doc);
-    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     void OnAddComponent(QAction *action);
     void OnAddStyleProperty(QAction *action);
@@ -70,10 +72,6 @@ private:
     QAction *CreateRemoveAction();
     QAction *CreateSeparator();
 
-    ControlNode *GetSelectedControlNode() const;
-    StyleSheetNode *GetSelectedStyleSheetNode() const;
-    
-    void UpdateSelection();
     void UpdateActions();
 
     void ApplyExpanding();
@@ -84,11 +82,15 @@ private:
     QAction* addStyleSelectorAction = nullptr;
     QAction* removeAction = nullptr;
 
+    PropertiesModel* propertiesModel = nullptr;
+
     DAVA::Map<DAVA::String, bool> itemsState;
 
     SelectionContainer selectionContainer;
 
     DAVA::String lastTopIndexPath;
+    std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
+    PackageBaseNode* selectedNode = nullptr; //node used to build model
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

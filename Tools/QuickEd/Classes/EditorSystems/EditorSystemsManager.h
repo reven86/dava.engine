@@ -35,7 +35,6 @@
 #include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
 #include "Math/Vector.h"
-#include "Model/PackageHierarchy/PackageListener.h"
 
 namespace DAVA
 {
@@ -93,21 +92,16 @@ class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
-class EditorSystemsManager : PackageListener
+class EditorSystemsManager
 {
 public:
     using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
 
-    explicit EditorSystemsManager(PackageNode* package);
+    explicit EditorSystemsManager();
     ~EditorSystemsManager();
-
-    PackageNode* GetPackage();
 
     DAVA::UIControl* GetRootControl();
     DAVA::UIControl* GetScalableControl();
-
-    void Deactivate();
-    void Activate();
 
     bool OnInput(DAVA::UIEvent* currentInput);
 
@@ -129,6 +123,7 @@ public:
     DAVA::Signal<DAVA::Vector2 /*new position*/> RootControlPositionChanged;
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
+    DAVA::Signal<std::weak_ptr<PackageNode> /*node*/> PackageNodeChanged;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
@@ -139,19 +134,22 @@ private:
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const;
 
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
-    void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
+    void OnPackageNodeChanged(std::weak_ptr<PackageNode> node);
+    void OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
+    void OnControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
     void SetPreviewMode(bool mode);
+
     DAVA::RefPtr<RootControl> rootControl;
     DAVA::RefPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
-    PackageNode* package = nullptr;
+    std::weak_ptr<PackageNode> package;
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
     bool previewMode = true;
     SelectionContainer selectionContainer;
+    DAVA::TrackedObject signalsTracker;
 };
 
 template <class OutIt, class Predicate>

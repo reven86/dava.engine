@@ -34,6 +34,7 @@
 #include "ui_LibraryWidget.h"
 
 class Document;
+class LibraryModel;
 
 class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 {
@@ -45,8 +46,8 @@ public slots:
     void OnDocumentChanged(Document* document);
 
 private:
-    void LoadContext();
     Document* document = nullptr;
+    LibraryModel* libraryModel;
 };
 
 #endif // __QUICKED_LIBRARY_WIDGET_H__

@@ -41,8 +41,6 @@ public:
     explicit CursorSystem(EditorSystemsManager* doc);
     ~CursorSystem() override = default;
 
-    void OnDeactivated() override;
-
 private:
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 

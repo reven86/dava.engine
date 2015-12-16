@@ -108,7 +108,6 @@ MainWindow::MainWindow(QWidget* parent)
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
 
-    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
     OnDocumentChanged(nullptr);
 }
 
@@ -125,11 +124,6 @@ void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
 
     mainToolbar->addAction(undoAction);
     mainToolbar->addAction(redoAction);
-}
-
-void MainWindow::OnProjectIsOpenChanged(bool arg)
-{
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 }
 
 void MainWindow::OnCountChanged(int count)
@@ -503,6 +497,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
         FillComboboxLanguages(project);
+        this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
     else
     {
@@ -512,6 +507,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
             errors << QString::fromStdString(result.message);
         }
         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
+        this->setWindowTitle("QuickEd");
     }
 }
 
@@ -546,12 +542,11 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
 
-void MainWindow::OnPixelizationStateChanged()
+void MainWindow::OnPixelizationStateChanged(bool isPixelized)
 {
-    bool isPixelized = actionPixelized->isChecked();
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
-    emit PixelizationChanged(isPixelized);
+    Texture::SetPixelization(isPixelized);
 }
 
 void MainWindow::OnRtlChanged(int arg)

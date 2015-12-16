@@ -27,12 +27,12 @@
 =====================================================================================*/
 
 
-#ifndef __UI_EDITOR_PACKAGE_NODE_H__
-#define __UI_EDITOR_PACKAGE_NODE_H__
+#ifndef __QUICKED_PACKAGE_NODE_H__
+#define __QUICKED_PACKAGE_NODE_H__
 
-#include "PackageBaseNode.h"
-
+#include "Functional/Signal.h"
 #include "FileSystem/VariantType.h"
+#include "PackageBaseNode.h"
 
 class ImportedPackagesNode;
 class PackageControlsNode;
@@ -42,7 +42,6 @@ class StyleSheetsNode;
 class StyleSheetNode;
 class StyleSheetProperty;
 class StyleSheetSelectorProperty;
-class PackageListener;
 class AbstractProperty;
 class ComponentPropertiesSection;
 
@@ -55,7 +54,6 @@ class PackageNode : public PackageBaseNode
 {
 public:
     PackageNode(const DAVA::FilePath &path);
-private:
     virtual ~PackageNode();
     
 public:
@@ -82,9 +80,6 @@ public:
     PackageNode *FindImportedPackage(const DAVA::FilePath &path) const;
     bool FindPackageInImportedPackagesRecursively(const PackageNode *node) const;
     bool FindPackageInImportedPackagesRecursively(const DAVA::FilePath &path) const;
-
-    void AddListener(PackageListener *listener);
-    void RemoveListener(PackageListener *listener);
     
     void SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetControlProperty(ControlNode *node, AbstractProperty *property);
@@ -113,6 +108,28 @@ public:
     void RebuildStyleSheets();
     void RefreshPackageStylesAndLayout(bool includeImportedPackages = false);
 
+    //signals
+    DAVA::Signal<ControlNode* /*node*/, AbstractProperty* /*property*/> ControlPropertyWasChanged;
+    DAVA::Signal<StyleSheetNode* /*node*/, AbstractProperty* /*property*/> StylePropertyWasChanged;
+
+    DAVA::Signal<ControlNode* /*node*/, ControlsContainerNode* /*destination*/, int /*index*/> ControlWillBeAdded;
+    DAVA::Signal<ControlNode* /*node*/, ControlsContainerNode* /*destination*/, int /*index*/> ControlWasAdded;
+
+    DAVA::Signal<ControlNode* /*node*/, ControlsContainerNode* /*from*/> ControlWillBeRemoved;
+    DAVA::Signal<ControlNode* /*node*/, ControlsContainerNode* /*from*/> ControlWasRemoved;
+
+    DAVA::Signal<StyleSheetNode* /*node*/, StyleSheetsNode* /*destination*/, int /*index*/> StyleWillBeAdded;
+    DAVA::Signal<StyleSheetNode* /*node*/, StyleSheetsNode* /*destination*/, int /*index*/> StyleWasAdded;
+
+    DAVA::Signal<StyleSheetNode* /*node*/, StyleSheetsNode* /*from*/> StyleWillBeRemoved;
+    DAVA::Signal<StyleSheetNode* /*node*/, StyleSheetsNode* /*from*/> StyleWasRemoved;
+
+    DAVA::Signal<PackageNode* /*node*/, ImportedPackagesNode* /*to*/, int /*index*/> ImportedPackageWillBeAdded;
+    DAVA::Signal<PackageNode* /*node*/, ImportedPackagesNode* /*to*/, int /*index*/> ImportedPackageWasAdded;
+
+    DAVA::Signal<PackageNode* /*node*/, ImportedPackagesNode* /*from*/> ImportedPackageWillBeRemoved;
+    DAVA::Signal<PackageNode* /*node*/, ImportedPackagesNode* /*from*/> ImportedPackageWasRemoved;
+
 private:
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
 
@@ -139,7 +156,6 @@ private:
     PackageControlsNode *packageControlsNode = nullptr;
     StyleSheetsNode *styleSheets = nullptr;
     DAVA::UIControlPackageContext *packageContext = nullptr;
-    DAVA::Vector<PackageListener*> listeners;
 };
 
-#endif // __UI_EDITOR_PACKAGE_NODE_H__
+#endif // __QUICKED_PACKAGE_NODE_H__

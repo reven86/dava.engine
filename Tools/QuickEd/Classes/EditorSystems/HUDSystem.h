@@ -39,9 +39,6 @@ public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
 
-    void OnActivated() override;
-    void OnDeactivated() override;
-
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:

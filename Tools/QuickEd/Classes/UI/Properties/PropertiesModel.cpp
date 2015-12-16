@@ -56,46 +56,39 @@
 using namespace std::chrono;
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode* _controlNode, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
+PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , commandExecutor(SafeRetain(_commandExecutor))
-{
-    controlNode = SafeRetain(_controlNode);
-    controlNode->GetRootProperty()->AddListener(this);
-    rootProperty = SafeRetain(controlNode->GetRootProperty());
-    Init();
-}
-
-PropertiesModel::PropertiesModel(StyleSheetNode *aStyleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
-    : QAbstractItemModel(parent)
-    , commandExecutor(SafeRetain(_commandExecutor))
-{
-    styleSheet = SafeRetain(aStyleSheet);
-    styleSheet->GetRootProperty()->AddListener(this);
-    rootProperty = SafeRetain(styleSheet->GetRootProperty());
-    Init();
-}
-
-PropertiesModel::~PropertiesModel()
-{
-    if (controlNode)
-        controlNode->GetRootProperty()->RemoveListener(this);
-    
-    if (styleSheet)
-        styleSheet->GetRootProperty()->RemoveListener(this);
-    
-    SafeRelease(commandExecutor);
-    SafeRelease(controlNode);
-    SafeRelease(rootProperty);
-    SafeRelease(styleSheet);
-}
-
-void PropertiesModel::Init()
 {
     updatePropertyTimer = new QTimer(this);
     updatePropertyTimer->setSingleShot(true);
     updatePropertyTimer->setInterval(30);
     connect(updatePropertyTimer, &QTimer::timeout, this, &PropertiesModel::UpdateAllChangedProperties, Qt::QueuedConnection);
+}
+
+PropertiesModel::~PropertiesModel()
+{
+    CleanUp();
+}
+
+void PropertiesModel::Reset(PackageBaseNode* node_, std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor_)
+{
+    beginResetModel();
+    CleanUp();
+    commandExecutor = commandExecutor_;
+    controlNode = dynamic_cast<ControlNode*>(node_);
+    if (nullptr != controlNode)
+    {
+        controlNode->GetRootProperty()->AddListener(this);
+        rootProperty = controlNode->GetRootProperty();
+    }
+
+    styleSheet = dynamic_cast<StyleSheetNode*>(node_);
+    if (nullptr != styleSheet)
+    {
+        styleSheet->GetRootProperty()->AddListener(this);
+        rootProperty = styleSheet->GetRootProperty();
+    }
+    endResetModel();
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const
@@ -138,7 +131,7 @@ int PropertiesModel::rowCount(const QModelIndex &parent) const
     return static_cast<AbstractProperty*>(parent.internalPointer())->GetCount();
 }
 
-int PropertiesModel::columnCount(const QModelIndex &parent) const
+int PropertiesModel::columnCount(const QModelIndex&) const
 {
     return 2;
 }
@@ -392,31 +385,41 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection *sectio
 
 void PropertiesModel::ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value)
 {
-    if (controlNode)
+    auto commandExecutorPtr = commandExecutor.lock();
+    DVASSERT(nullptr != commandExecutorPtr);
+    if (nullptr != commandExecutorPtr)
     {
-        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-        size_t usCount = static_cast<size_t>(us.count());
-        commandExecutor->ChangeProperty(controlNode, property, value, usCount);
-    }
-    else if (styleSheet)
-    {
-        commandExecutor->ChangeProperty(styleSheet, property, value);
-    }
-    else
-    {
-        DVASSERT(false);
+        if (nullptr != controlNode)
+        {
+            microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+            size_t usCount = static_cast<size_t>(us.count());
+            commandExecutorPtr->ChangeProperty(controlNode, property, value, usCount);
+        }
+        else if (styleSheet)
+        {
+            commandExecutorPtr->ChangeProperty(styleSheet, property, value);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
     }
 }
 
 void PropertiesModel::ResetProperty(AbstractProperty *property)
 {
-    if (controlNode)
+    auto commandExecutorPtr = commandExecutor.lock();
+    DVASSERT(nullptr != commandExecutorPtr);
+    if (nullptr != commandExecutorPtr)
     {
-        commandExecutor->ResetProperty(controlNode, property);
-    }
-    else
-    {
-        DVASSERT(false);
+        if (nullptr != controlNode)
+        {
+            commandExecutorPtr->ResetProperty(controlNode, property);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
     }
 }
 
@@ -585,4 +588,19 @@ void PropertiesModel::initVariantType(DAVA::VariantType &var, const QVariant &va
             DVASSERT(false);
             break;
     }
+}
+
+void PropertiesModel::CleanUp()
+{
+    if (nullptr != controlNode)
+    {
+        controlNode->GetRootProperty()->RemoveListener(this);
+    }
+    if (nullptr != styleSheet)
+    {
+        styleSheet->GetRootProperty()->RemoveListener(this);
+    }
+    controlNode = nullptr;
+    styleSheet = nullptr;
+    rootProperty = nullptr;
 }

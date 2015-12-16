@@ -33,48 +33,22 @@
 
 #include "UI/UIControl.h"
 
-namespace
-{
-struct LibraryContext : WidgetContext
-{
-    LibraryContext(Document* document)
-    {
-        DVASSERT(nullptr != document);
-        libraryModel = new LibraryModel(document->GetPackage(), document);
-    }
-    ~LibraryContext() override = default;
-    LibraryModel* libraryModel;
-};
-} //unnamed namespace
-
 LibraryWidget::LibraryWidget(QWidget* parent)
     : QDockWidget(parent)
     , document(nullptr)
+    , libraryModel(new LibraryModel(this))
 {
     setupUi(this);
+    treeView->setModel(libraryModel);
+    treeView->expandToDepth(0);
 }
 
 void LibraryWidget::OnDocumentChanged(Document* arg)
 {
     document = arg;
-    LoadContext();
-}
-
-void LibraryWidget::LoadContext()
-{
-    if (nullptr == document)
+    if (nullptr != document)
     {
-        treeView->setModel(nullptr);
-    }
-    else
-    {
-        LibraryContext* context = static_cast<LibraryContext*>(document->GetContext(this));
-        if (nullptr == context)
-        {
-            context = new LibraryContext(document);
-            document->SetContext(this, context);
-        }
-        treeView->setModel(context->libraryModel);
+        libraryModel->SetPackageNode(document->GetPackage());
         treeView->expandToDepth(0);
     }
 }

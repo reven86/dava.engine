@@ -41,6 +41,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Document.h"
+#include "EditorSystems/EditorSystemsManager.h"
 
 #include "EditorSystems/CanvasSystem.h"
 #include "EditorSystems/HUDSystem.h"
@@ -59,11 +60,13 @@ QString ScaleStringFromReal(qreal scale)
 struct PreviewContext : WidgetContext
 {
     QPoint canvasPosition;
+    SelectedNodes selection;
 };
 }
 
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
+    , davaGLWidget(new DavaGLWidget(this))
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
 {
@@ -72,7 +75,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
                 << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
     setupUi(this);
 
-    connect(this, &PreviewWidget::ScaleChanged, rulerController, &RulerController::SetScale);
     connect(rulerController, &RulerController::HorisontalRulerSettingsChanged, horizontalRuler, &RulerWidget::OnRulerSettingsChanged);
     connect(rulerController, &RulerController::VerticalRulerSettingsChanged, verticalRuler, &RulerWidget::OnRulerSettingsChanged);
 
@@ -81,14 +83,13 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 
     connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
 
-
     verticalRuler->SetRulerOrientation(Qt::Vertical);
-    davaGLWidget = new DavaGLWidget();
     frame->layout()->addWidget(davaGLWidget);
     davaGLWidget->GetGLView()->installEventFilter(this);
 
     davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 
+    connect(davaGLWidget, &DavaGLWidget::Initialized, this, &PreviewWidget::OnGLInitialized);
     connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
     // Setup the Scale Combo.
     for (auto percentage : percentages)
@@ -111,54 +112,11 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
+    CreateActions();
+}
 
-    QAction* importPackageAction = new QAction(tr("Import package"), this);
-    importPackageAction->setShortcut(QKeySequence::New);
-    importPackageAction->setShortcutContext(Qt::WindowShortcut);
-    connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
-    davaGLWidget->addAction(importPackageAction);
-
-    QAction* cutAction = new QAction(tr("Cut"), this);
-    cutAction->setShortcut(QKeySequence::Cut);
-    cutAction->setShortcutContext(Qt::WindowShortcut);
-    connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
-    davaGLWidget->addAction(cutAction);
-
-    QAction* copyAction = new QAction(tr("Copy"), this);
-    copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setShortcutContext(Qt::WindowShortcut);
-    connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
-    davaGLWidget->addAction(copyAction);
-
-    QAction* pasteAction = new QAction(tr("Paste"), this);
-    pasteAction->setShortcut(QKeySequence::Paste);
-    pasteAction->setShortcutContext(Qt::WindowShortcut);
-    connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
-    davaGLWidget->addAction(pasteAction);
-
-    QAction* deleteAction = new QAction(tr("Delete"), this);
-    deleteAction->setShortcut(QKeySequence::Delete);
-    deleteAction->setShortcutContext(Qt::WindowShortcut); //widget shortcut is not working for davaGLWidget
-    connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
-    davaGLWidget->addAction(deleteAction);
-
-    QAction* selectAllAction = new QAction(tr("Select all"), this);
-    selectAllAction->setShortcut(QKeySequence::SelectAll);
-    selectAllAction->setShortcutContext(Qt::WindowShortcut);
-    connect(selectAllAction, &QAction::triggered, this, &PreviewWidget::SelectAllRequested);
-    davaGLWidget->addAction(selectAllAction);
-
-    QAction* focusNextChildAction = new QAction(tr("Focus next child"), this);
-    focusNextChildAction->setShortcut(Qt::Key_Tab);
-    focusNextChildAction->setShortcutContext(Qt::WindowShortcut);
-    connect(focusNextChildAction, &QAction::triggered, this, &PreviewWidget::FocusNextChild);
-    davaGLWidget->addAction(focusNextChildAction);
-
-    QAction* focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
-    focusPreviousChildAction->setShortcut(Qt::ShiftModifier + Qt::Key_Tab);
-    focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
-    connect(focusPreviousChildAction, &QAction::triggered, this, &PreviewWidget::FocusPreviousChild);
-    davaGLWidget->addAction(focusPreviousChildAction);
+PreviewWidget::~PreviewWidget()
+{
 }
 
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
@@ -210,51 +168,83 @@ ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& no
     return nullptr;
 }
 
+void PreviewWidget::CreateActions()
+{
+    QAction* importPackageAction = new QAction(tr("Import package"), this);
+    importPackageAction->setShortcut(QKeySequence::New);
+    importPackageAction->setShortcutContext(Qt::WindowShortcut);
+    connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
+    davaGLWidget->addAction(importPackageAction);
+
+    QAction* cutAction = new QAction(tr("Cut"), this);
+    cutAction->setShortcut(QKeySequence::Cut);
+    cutAction->setShortcutContext(Qt::WindowShortcut);
+    connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
+    davaGLWidget->addAction(cutAction);
+
+    QAction* copyAction = new QAction(tr("Copy"), this);
+    copyAction->setShortcut(QKeySequence::Copy);
+    copyAction->setShortcutContext(Qt::WindowShortcut);
+    connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
+    davaGLWidget->addAction(copyAction);
+
+    QAction* pasteAction = new QAction(tr("Paste"), this);
+    pasteAction->setShortcut(QKeySequence::Paste);
+    pasteAction->setShortcutContext(Qt::WindowShortcut);
+    connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
+    davaGLWidget->addAction(pasteAction);
+
+    QAction* deleteAction = new QAction(tr("Delete"), this);
+    deleteAction->setShortcut(QKeySequence::Delete);
+    deleteAction->setShortcutContext(Qt::WindowShortcut); //widget shortcut is not working for davaGLWidget
+    connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
+    davaGLWidget->addAction(deleteAction);
+
+    selectAllAction = new QAction(tr("Select all"), this);
+    selectAllAction->setShortcut(QKeySequence::SelectAll);
+    selectAllAction->setShortcutContext(Qt::WindowShortcut);
+    davaGLWidget->addAction(selectAllAction);
+
+    focusNextChildAction = new QAction(tr("Focus next child"), this);
+    focusNextChildAction->setShortcut(Qt::Key_Tab);
+    focusNextChildAction->setShortcutContext(Qt::WindowShortcut);
+    davaGLWidget->addAction(focusNextChildAction);
+
+    focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
+    focusPreviousChildAction->setShortcut(Qt::ShiftModifier + Qt::Key_Tab);
+    focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
+    davaGLWidget->addAction(focusPreviousChildAction);
+}
+
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
+    DVASSERT(nullptr != systemManager);
+    SaveContext();
     document = arg;
+    std::weak_ptr<PackageNode> packagePtr;
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
+        systemManager->SelectionChanged.Emit(SelectedNodes(), deselected);
+    }
     if (nullptr != document)
     {
-        EditorSystemsManager* systemManager = document->GetSystemManager();
-        scrollAreaController->SetNestedControl(systemManager->GetRootControl());
-        scrollAreaController->SetMovableControl(systemManager->GetScalableControl());
+        packagePtr = document->GetPackage();
     }
-    else
+    systemManager->PackageNodeChanged.Emit(packagePtr);
+    LoadContext();
+    if (!selectionContainer.selectedNodes.empty())
     {
-        scrollAreaController->SetMovableControl(nullptr);
-        scrollAreaController->SetNestedControl(nullptr);
+        systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
     }
 }
 
-void PreviewWidget::OnDocumentActivated(Document* document)
+void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
-    if (nullptr == context)
-    {
-        context = new PreviewContext();
-        document->SetContext(this, context);
-        QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
-        scrollAreaController->SetPosition(position);
-        document->GetSystemManager()->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
-    }
-    else
-    {
-        scrollAreaController->SetPosition(context->canvasPosition);
-    }
+    systemManager->SelectionChanged.Emit(selected, deselected);
 }
 
-void PreviewWidget::OnDocumentDeactivated(Document* document)
-{
-    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
-    context->canvasPosition = scrollAreaController->GetPosition();
-}
-
-void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    selectionContainer.MergeSelection(selected, deselected);
-}
-
-void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
+void PreviewWidget::OnRootControlPositionChanged(DAVA::Vector2 pos)
 {
     rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
     ApplyPosChanges();
@@ -264,6 +254,11 @@ void PreviewWidget::OnNestedControlPositionChanged(const QPoint &pos)
 {
     canvasPos = pos;
     ApplyPosChanges();
+}
+
+void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
+{
+    systemManager->SetEmulationMode(emulationMode);
 }
 
 void PreviewWidget::ApplyPosChanges()
@@ -290,10 +285,30 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
     verticalScrollBar->setSliderPosition(position.y());
 }
 
+void PreviewWidget::OnGLInitialized()
+{
+    systemManager.reset(new EditorSystemsManager());
+    systemManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
+    scrollAreaController->SetNestedControl(systemManager->GetRootControl());
+    scrollAreaController->SetMovableControl(systemManager->GetScalableControl());
+    systemManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
+    systemManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
+    systemManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
+    systemManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
+    connect(focusNextChildAction, &QAction::triggered, [this]() { systemManager->FocusNextChild.Emit(); });
+    connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemManager->FocusPreviousChild.Emit(); });
+    connect(selectAllAction, &QAction::triggered, [this]() { systemManager->SelectAllControls.Emit(); });
+}
+
 void PreviewWidget::OnScaleChanged(qreal scale)
 {
     scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
-    emit ScaleChanged(scale);
+    rulerController->SetScale(scale);
+    DAVA::float32 realScale = static_cast<DAVA::float32>(scale);
+    if (systemManager)
+    {
+        systemManager->GetScalableControl()->SetScale(Vector2(realScale, realScale));
+    }
 }
 
 void PreviewWidget::OnScaleByComboIndex(int index)
@@ -350,6 +365,39 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         }
     }
     return QWidget::eventFilter(obj, event);
+}
+
+void PreviewWidget::LoadContext()
+{
+    if (nullptr == document)
+    {
+        selectionContainer.selectedNodes.clear();
+        return;
+    }
+    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
+    if (nullptr == context)
+    {
+        context = new PreviewContext();
+        document->SetContext(this, context);
+        QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
+        scrollAreaController->SetPosition(position);
+    }
+    else
+    {
+        scrollAreaController->SetPosition(context->canvasPosition);
+        selectionContainer.selectedNodes = context->selection;
+    }
+}
+
+void PreviewWidget::SaveContext()
+{
+    if (nullptr == document)
+    {
+        return;
+    }
+    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
+    context->canvasPosition = scrollAreaController->GetPosition();
+    context->selection = selectionContainer.selectedNodes;
 }
 
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
@@ -463,6 +511,20 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
     ticksCount = std::min(distance, ticksCount);
     std::advance(iter, ticksCount);
     return iter != percentages.end() ? *iter : percentages.last();
+}
+
+void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    selectionContainer.MergeSelection(selected, deselected);
+    emit SelectionChanged(selected, deselected);
+}
+
+void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
+{
+    DVASSERT(nullptr != document);
+    auto commandExecutor = document->GetCommandExecutor().lock();
+    DVASSERT(nullptr != commandExecutor);
+    commandExecutor->ChangeProperty(properties, hash);
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const

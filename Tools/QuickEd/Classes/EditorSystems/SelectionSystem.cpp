@@ -43,39 +43,15 @@ using namespace DAVA;
 SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
-    systemManager->GetPackage()->AddListener(this);
+    systemManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
+    systemManager->PackageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
     systemManager->SelectAllControls.Connect(this, &SelectionSystem::SelectAllControls);
     systemManager->FocusNextChild.Connect(this, &SelectionSystem::FocusNextChild);
     systemManager->FocusPreviousChild.Connect(this, &SelectionSystem::FocusPreviousChild);
 }
 
-SelectionSystem::~SelectionSystem()
-{
-    PackageNode* package = systemManager->GetPackage();
-    if (nullptr != package)
-    {
-        systemManager->GetPackage()->RemoveListener(this);
-    }
-}
-
-void SelectionSystem::OnActivated()
-{
-    if (!selectionContainer.selectedNodes.empty())
-    {
-        systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
-    }
-    connectionID = systemManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
-}
-
-void SelectionSystem::OnDeactivated()
-{
-    systemManager->SelectionChanged.Disconnect(connectionID);
-    if (!selectionContainer.selectedNodes.empty())
-    {
-        systemManager->SelectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
-    }
-}
+SelectionSystem::~SelectionSystem() = default;
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
 {
@@ -97,7 +73,27 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode*)
+void SelectionSystem::OnPackageNodeChanged(std::weak_ptr<PackageNode> packageNode_)
+{
+    {
+        auto packageNodePtr = packageNode.lock();
+        if (nullptr != packageNodePtr)
+        {
+            packageNodePtr->ControlWasRemoved.Disconnect(&connectionsTracker);
+        }
+    }
+    packageNode = packageNode_;
+    {
+        auto packageNodePtr = packageNode.lock();
+        if (nullptr != packageNodePtr)
+        {
+            auto id = packageNodePtr->ControlWasRemoved.Connect(this, &SelectionSystem::OnControlWasRemoved);
+            packageNodePtr->ControlWasRemoved.Track(id, &connectionsTracker);
+        }
+    }
+}
+
+void SelectionSystem::OnControlWasRemoved(ControlNode* node, ControlsContainerNode*)
 {
     SelectedNodes deselected;
     deselected.insert(node);
@@ -194,7 +190,12 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
         auto node = nodesUnderPoint.back();
         if (buttonID == UIEvent::BUTTON_2)
         {
-            ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPoint, point);
+            Vector<ControlNode*> nodesUnderPointForMenu;
+            auto predicateForMenu = [point](const UIControl* control) -> bool {
+                return control->GetVisibleForUIEditor() && control->IsPointInside(point);
+            };
+            systemManager->CollectControlNodes(std::back_inserter(nodesUnderPointForMenu), predicateForMenu);
+            ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPointForMenu, point);
             if (nullptr != selectedNode)
             {
                 node = selectedNode;

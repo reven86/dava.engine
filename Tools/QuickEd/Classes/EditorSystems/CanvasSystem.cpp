@@ -262,40 +262,45 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
 {
-    systemManager->GetPackage()->AddListener(this);
-
     controlsCanvas->SetName("controls canvas");
+    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
     systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
+    systemManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
 }
 
 CanvasSystem::~CanvasSystem()
 {
-    PackageNode* package = systemManager->GetPackage();
-    if (nullptr != package)
-    {
-        systemManager->GetPackage()->RemoveListener(this);
-    }
     systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
 }
 
-void CanvasSystem::OnActivated()
+void CanvasSystem::OnPackageNodeChanged(std::weak_ptr<PackageNode> package_)
 {
-    systemManager->GetScalableControl()->AddControl(controlsCanvas.Get());
-    for (auto& iter : gridControls)
     {
-        iter->AdjustToNestedControl();
+        auto lastNode = package.lock();
+        if (nullptr != lastNode)
+        {
+            lastNode->ControlWasRemoved.Disconnect(&signalsTracker);
+            lastNode->ControlWasAdded.Disconnect(&signalsTracker);
+            lastNode->ControlPropertyWasChanged.Disconnect(&signalsTracker);
+        }
+    }
+    package = package_;
+    {
+        auto newNode = package.lock();
+        if (nullptr != newNode)
+        {
+            auto id = newNode->ControlWasRemoved.Connect(this, &CanvasSystem::OnControlWasRemoved);
+            newNode->ControlWasRemoved.Track(id, &signalsTracker);
+            id = newNode->ControlWasAdded.Connect(this, &CanvasSystem::OnControlWasAdded);
+            newNode->ControlWasAdded.Track(id, &signalsTracker);
+            id = newNode->ControlPropertyWasChanged.Connect(this, &CanvasSystem::OnControlPropertyWasChanged);
+            newNode->ControlPropertyWasChanged.Track(id, &signalsTracker);
+        }
     }
 }
 
-void CanvasSystem::OnDeactivated()
-{
-    systemManager->GetScalableControl()->RemoveControl(controlsCanvas.Get());
-    systemManager->GetScalableControl()->SetSize(Vector2());
-    systemManager->CanvasSizeChanged.Emit();
-}
-
-void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void CanvasSystem::OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
@@ -307,7 +312,7 @@ void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* f
     }
 }
 
-void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
+void CanvasSystem::OnControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
@@ -319,7 +324,7 @@ void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* des
     }
 }
 
-void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+void CanvasSystem::OnControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     if (nullptr == controlsCanvas->GetParent())
     {

@@ -36,6 +36,7 @@
 #include <QWidget>
 #include <QDockWidget>
 #include <QModelIndex>
+#include <QStack>
 
 class Document;
 class ControlNode;
@@ -44,7 +45,9 @@ class PackageNode;
 class PackageBaseNode;
 class FilteredPackageModel;
 class PackageModel;
+class PackageNode;
 class QItemSelection;
+class QtModelPackageCommandExecutor;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
@@ -57,6 +60,7 @@ public:
 
 signals:
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void CurrentIndexChanged(PackageBaseNode* node);
 
 public slots:
     void OnDocumentChanged(Document* context);
@@ -78,6 +82,7 @@ private slots:
     void OnMoveRight();
     void OnBeforeNodesMoved(const SelectedNodes& nodes);
     void OnNodesMoved(const SelectedNodes& nodes);
+    void OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex& previous);
 
 private:
     void CollectExpandedIndexes(PackageBaseNode* node);
@@ -97,6 +102,9 @@ private:
 
     ExpandedIndexes GetExpandedIndexes() const;
     void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
+
+    std::shared_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
+    std::shared_ptr<PackageNode> GetPackageNode() const;
 
     Document* document = nullptr;
     QAction* importPackageAction = nullptr;
@@ -119,6 +127,7 @@ private:
     ExpandedIndexes expandedIndexes;
     SelectionContainer selectionContainer;
     SelectedNodes expandedNodes;
+    QStack<QModelIndex> currentIndexes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

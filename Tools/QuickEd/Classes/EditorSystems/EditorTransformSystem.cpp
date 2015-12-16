@@ -139,7 +139,7 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 
         DVASSERT(parentGeometricData.scale.x > 0.0f && parentGeometricData.scale.y > 0.0f);
         DVASSERT(controlGeometricData.scale.x > 0.0f && controlGeometricData.scale.y > 0.0f);
-        DVASSERT(controlGeometricData.size.x > 0.0f && controlGeometricData.size.y > 0.0f);
+        DVASSERT(controlGeometricData.size.x >= 0.0f && controlGeometricData.size.y >= 0.0f);
 
         RootProperty* rootProperty = activeControlNode->GetRootProperty();
         sizeProperty = rootProperty->FindPropertyByName("Size");
@@ -329,13 +329,14 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
 namespace
 {
 List<MagnetLineСontrol> CreateMagnetPairs(const Rect& box, const UIGeometricData* parentGD, const Vector<UIControl*>& neighbours, Vector2::eAxis axis)
-{
-    List<MagnetLineСontrol> magnets;
-
-    Rect parentBox(Vector2(), parentGD->size);
-
-    if (parentBox.GetSize()[axis] > 0.0f)
     {
+        List<MagnetLineСontrol> magnets;
+
+        Rect parentBox(Vector2(), parentGD->size);
+        if (parentBox.GetSize()[axis] <= 0.0f)
+        {
+            return magnets;
+        }
         magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
         magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
         magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
@@ -350,29 +351,31 @@ List<MagnetLineСontrol> CreateMagnetPairs(const Rect& box, const UIGeometricDat
             magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
             magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
         }
+
+        for (UIControl* neighbour : neighbours)
+        {
+            Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
+
+            magnets.emplace_back(0.0f, box, 0.0f, neighbourBox, axis);
+            magnets.emplace_back(0.0f, box, 0.5f, neighbourBox, axis);
+            magnets.emplace_back(0.5f, box, 0.5f, neighbourBox, axis);
+            magnets.emplace_back(1.0f, box, 0.5f, neighbourBox, axis);
+            magnets.emplace_back(1.0f, box, 1.0f, neighbourBox, axis);
+            magnets.emplace_back(0.0f, box, 1.0f, neighbourBox, axis);
+            magnets.emplace_back(1.0f, box, 0.0f, neighbourBox, axis);
+
+            const float32 neighbourSpacing = indentOfControlToManget[axis];
+            const float32 neighbourSpacingShare = neighbourSpacing / neighbourBox.GetSize()[axis];
+            magnets.emplace_back(1.0f, box, -neighbourSpacingShare, neighbourBox, axis);
+            magnets.emplace_back(0.0f, box, 1.0f + neighbourSpacingShare, neighbourBox, axis);
+        }
+
+        return magnets;
     }
-
-    for (UIControl* neighbour : neighbours)
-    {
-        Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
-
-        magnets.emplace_back(0.0f, box, 0.0f, neighbourBox, axis);
-        magnets.emplace_back(0.0f, box, 0.5f, neighbourBox, axis);
-        magnets.emplace_back(0.5f, box, 0.5f, neighbourBox, axis);
-        magnets.emplace_back(1.0f, box, 0.5f, neighbourBox, axis);
-        magnets.emplace_back(1.0f, box, 1.0f, neighbourBox, axis);
-        magnets.emplace_back(0.0f, box, 1.0f, neighbourBox, axis);
-        magnets.emplace_back(1.0f, box, 0.0f, neighbourBox, axis);
-
-        const float32 neighbourSpacing = indentOfControlToManget[axis];
-        const float32 neighbourSpacingShare = neighbourSpacing / neighbourBox.GetSize()[axis];
-        magnets.emplace_back(1.0f, box, -neighbourSpacingShare, neighbourBox, axis);
-        magnets.emplace_back(0.0f, box, 1.0f + neighbourSpacingShare, neighbourBox, axis);
-    }
-
-    return magnets;
 }
 
+namespace
+{
 //get all magneted lines
 void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLineСontrol>& magnetLines, const UIControl* control, Vector2::eAxis axis)
 {
@@ -485,10 +488,10 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
         }
     }
     //modify rateably
-    if (rateably)
+    const Vector2& size = control->GetSize();
+    if (rateably && size.x > 0.0f && size.y > 0.0f)
     {
         //calculate proportion of control
-        const Vector2& size = activeControlNode->GetControl()->GetSize();
         float proportion = size.y != 0.0f ? size.x / size.y : 0.0f;
         if (proportion != 0.0f)
         {
@@ -672,7 +675,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
                 for (MagnetLineСontrol& line : magnetLines)
                 {
                     float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
-                    line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare / directions[line.axis];
+                    line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare * directions[line.axis];
                 }
                 ExtractMatchedLines(magnets, magnetLines, control, axis);
             }
@@ -726,7 +729,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
 
     const Rect ur(controlGeometricData.GetUnrotatedRect());
     const Vector2 controlSize(ur.GetSize());
-
+    DVASSERT(controlSize.x > 0.0f && controlSize.y > 0.0f);
     const Vector2 rotatedDeltaPivot(RotateVector(delta, -controlGeometricData.angle));
     Vector2 deltaPivot(rotatedDeltaPivot / controlSize);
 

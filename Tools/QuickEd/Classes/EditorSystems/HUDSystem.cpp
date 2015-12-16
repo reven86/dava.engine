@@ -120,6 +120,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     , selectionRectControl(CreateContainerWithBorders<SelectionRect>())
     , sortedControlList(CompareByLCA)
 {
+    systemManager->GetRootControl()->AddControl(hudControl.Get());
     hudControl->AddControl(selectionRectControl.Get());
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
@@ -131,18 +132,6 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
 HUDSystem::~HUDSystem()
 {
     systemManager->GetRootControl()->RemoveControl(hudControl.Get());
-}
-
-void HUDSystem::OnActivated()
-{
-    systemManager->GetRootControl()->AddControl(hudControl.Get());
-}
-
-void HUDSystem::OnDeactivated()
-{
-    systemManager->GetRootControl()->RemoveControl(hudControl.Get());
-    canDrawRect = false;
-    selectionRectControl->SetSize(Vector2());
 }
 
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
@@ -188,6 +177,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     case UIEvent::Phase::BEGAN:
     {
         ProcessCursor(currentInput->point, searchOrder);
+        pressedPoint = currentInput->point;
         if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->tid != UIEvent::BUTTON_1)
         {
             return true;
@@ -197,14 +187,12 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         Vector<ControlNode*> nodesUnderPoint;
         Vector2 point = currentInput->point;
         auto predicate = [point](const UIControl* control) -> bool {
-            return control->GetSystemVisible() && control->IsPointInside(point);
+            return control->GetVisibleForUIEditor() && control->IsPointInside(point);
         };
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-        const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
-        bool noHudableControls = nodes.empty() || (nodes.size() == 1 && nodes.front()->GetParent() == packageNode);
+        bool noHudableControls = nodes.empty();
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         SetCanDrawRect(hotKeyDetected || noHudableControls);
-        pressedPoint = currentInput->point;
         return canDrawRect;
     }
     case UIEvent::Phase::DRAG:
@@ -232,9 +220,9 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     {
         ProcessCursor(currentInput->point, searchOrder);
         selectionRectControl->SetSize(Vector2());
-        bool retVal = dragRequested;
         SetCanDrawRect(false);
         dragRequested = false;
+        bool retVal = (pressedPoint - currentInput->point).Length() > 0;
         return retVal;
     }
     default:
@@ -312,14 +300,14 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             auto findIter = hudMap.find(node);
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
-            if (hud->container->GetSystemVisible())
+            if (hud->container->GetVisible())
             {
                 HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
                 auto hudControlsIter = hud->hudControls.find(area);
                 if (hudControlsIter != hud->hudControls.end())
                 {
                     const auto& controlContainer = hudControlsIter->second;
-                    if (controlContainer->GetSystemVisible() && controlContainer->IsPointInside(pos))
+                    if (controlContainer->GetVisibleForUIEditor() && controlContainer->IsPointInside(pos))
                     {
                         return HUDAreaInfo(hud->node, area);
                     }
@@ -373,7 +361,7 @@ void HUDSystem::UpdateAreasVisibility()
             if (hudControlsIter != hud->hudControls.end())
             {
                 const auto& controlContainer = hudControlsIter->second;
-                controlContainer->SetVisible(showAreas);
+                controlContainer->SetSystemVisible(showAreas);
             }
         }
     }

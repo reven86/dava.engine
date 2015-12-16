@@ -33,14 +33,6 @@ BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
 {
 }
 
-void BaseEditorSystem::OnActivated()
-{
-}
-
-void BaseEditorSystem::OnDeactivated()
-{
-}
-
 bool BaseEditorSystem::OnInput(DAVA::UIEvent* /*currentInput*/)
 {
     return false;
