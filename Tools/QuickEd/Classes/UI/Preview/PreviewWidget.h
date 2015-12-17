@@ -50,6 +50,8 @@ class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
 class QDragMoveEvent;
+class QDragLeaveEvent;
+class QDropEvent;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -105,6 +107,8 @@ private:
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
     void OnDragMoveEvent(QDragMoveEvent* event);
+    void OnDragLeaveEvent(QDragLeaveEvent* event);
+    void OnDropEvent(QDropEvent* event);
     
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;

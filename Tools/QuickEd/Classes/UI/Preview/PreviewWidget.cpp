@@ -366,8 +366,12 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         case QEvent::DragMove:
             OnDragMoveEvent(DynamicTypeCheck<QDragMoveEvent*>(event));
             return true;
-            case QEvent::DragEnter:
-                break;
+        case QEvent::DragLeave:
+            OnDragLeaveEvent(DynamicTypeCheck<QDragLeaveEvent*>(event));
+            break;
+        case QEvent::Drop:
+            OnDropEvent(DynamicTypeCheck<QDropEvent*>(event));
+            break;
         default:
             break;
         }
@@ -495,6 +499,13 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 
 void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
 {
+    DVASSERT(nullptr != document);
+    auto mimeData = event->mimeData();
+    if(!mimeData->hasFormat("text/plain") || !mimeData->hasText())
+    {
+        event->ignore();
+        return;
+    }
     DAVA::Vector2 pos(event->pos().x(), event->pos().y());
     auto node = systemManager->ControlNodeUnderPoint(pos);
     systemManager->NodesHovered.Emit({node});
@@ -506,6 +517,30 @@ void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
     {
         event->ignore();
     }
+}
+
+void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent* event)
+{
+    systemManager->NodesHovered.Emit({nullptr});
+}
+
+void PreviewWidget::OnDropEvent(QDropEvent *event)
+{
+    auto mimeData = event->mimeData();
+    DVASSERT(mimeData->hasFormat("text/plain") && mimeData->hasText());
+    DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+    auto node = systemManager->ControlNodeUnderPoint(pos);
+    DVASSERT(nullptr != node);
+    DVASSERT(nullptr != node->GetParent());
+    
+    String string = mimeData->text().toStdString();
+    DVASSERT(nullptr != document);
+    auto commandExecutorPtr = document->GetCommandExecutor().lock();
+    DVASSERT(nullptr != commandExecutorPtr);
+    auto packagePtr = document->GetPackage().lock();
+    DVASSERT(nullptr != packagePtr);
+    int index = node->GetParent()->GetIndex(node);
+    commandExecutorPtr->Paste(packagePtr.get(), node, index + 1, string);
 }
 
 qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
