@@ -94,6 +94,7 @@ private:
     void SaveContext();
     void RefreshActions();
 
+    void DeselectNodeImpl(PackageBaseNode* node);
     void SelectNodeImpl(PackageBaseNode* node);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
@@ -127,7 +128,7 @@ private:
     ExpandedIndexes expandedIndexes;
     SelectionContainer selectionContainer;
     SelectedNodes expandedNodes;
-    QStack<QModelIndex> currentIndexes;
+    QStack<QPersistentModelIndex> currentIndexes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

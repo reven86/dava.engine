@@ -137,7 +137,8 @@ private:
     void OnPackageNodeChanged(std::weak_ptr<PackageNode> node);
     void OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
     void OnControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
-    void SetPreviewMode(bool mode);
+    void SetPreviewMode(bool mode, bool forceUpdate = false);
+    void RefreshRootControls();
 
     DAVA::RefPtr<RootControl> rootControl;
     DAVA::RefPtr<DAVA::UIControl> scalableControl;

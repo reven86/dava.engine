@@ -147,7 +147,7 @@ void EditorSystemsManager::OnPackageNodeChanged(std::weak_ptr<PackageNode> packa
         }
     }
     package = package_;
-    SetPreviewMode(true);
+    SetPreviewMode(true, true);
     {
         auto newNode = package.lock();
         if (nullptr != newNode)
@@ -194,9 +194,22 @@ void EditorSystemsManager::OnControlWasAdded(ControlNode* node, ControlsContaine
     }
 }
 
-void EditorSystemsManager::SetPreviewMode(bool mode)
+void EditorSystemsManager::SetPreviewMode(bool mode, bool forceUpdate)
 {
+    if (previewMode == mode)
+    {
+        if (forceUpdate)
+        {
+            RefreshRootControls();
+        }
+        return;
+    }
     previewMode = mode;
+    RefreshRootControls();
+}
+
+void EditorSystemsManager::RefreshRootControls()
+{
     editingRootControls.clear();
     if (previewMode)
     {
