@@ -26,6 +26,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+#include <numeric>
 #include "HUDSystem.h"
 
 #include "UI/UIControl.h"
@@ -81,7 +83,7 @@ struct HUDSystem::HUD
     RefPtr<HUDContainer> container;
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
-#include <numeric>
+
 HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     : node(node_)
     , control(node_->GetControl())
@@ -135,6 +137,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemManager->NodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
     systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
@@ -260,6 +263,40 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
     }
 }
 
+void HUDSystem::OnNodesHovered(Vector<ControlNode*> nodes)
+{
+    for(const auto &node : nodes)
+    {
+        if(hoveredNodes.find(node) == hoveredNodes.end() && node != nullptr)
+        {
+            UIControl *control = new UIControl();
+            UIControl *targetControl = node->GetControl();
+            auto gd = targetControl->GetGeometricData();
+            const Rect& ur = gd.GetUnrotatedRect();
+            control->SetPivot(targetControl->GetPivot());
+            control->SetRect(ur);
+            control->SetAngle(gd.angle);
+            control->SetDebugDraw(true);
+            hudControl->AddControl(control);
+            hoveredNodes[node] = control;
+        }
+    }
+    for (auto it = hoveredNodes.begin(); it != hoveredNodes.end();)
+    {
+        if(std::find(nodes.begin(), nodes.end(), it->first) == nodes.end())
+        {
+            UIControl *control = it->second.Get();
+            hoveredNodes.erase(it++);
+            hudControl->RemoveControl(control);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+}
+
 void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 {
     static const float32 axtraSizeValue = 50.0f;
@@ -287,7 +324,9 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         lineSize *= gd->scale;
         Vector2 gdPos = gd->position - RotateVector(gd->pivotPoint * gd->scale, gd->angle);
 
-        MagnetLineControl* lineControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
+        UIControl* lineControl = new UIControl(Rect(linePos + gdPos, lineSize));
+        lineControl->SetDebugDraw(true);
+        lineControl->SetName("magnet line control");
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         lineControl->SetSize(lineControl->GetSize() + extraSize);
         lineControl->SetPivotPoint(extraSize / 2.0f);
@@ -302,7 +341,9 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         linePos *= gd->scale;
         lineSize *= gd->scale;
 
-        MagnetLineControl* rectControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
+        UIControl* rectControl = new UIControl(Rect(linePos + gdPos, lineSize));
+        rectControl->SetName("rect of target control which we magnet to");
+        rectControl->SetDebugDraw(true);
         rectControl->SetAngle(line.gd->angle);
         hudControl->AddControl(rectControl);
         magnetTargetControls.emplace_back(rectControl);

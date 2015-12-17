@@ -133,6 +133,16 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     EmulationModeChangedSignal.Emit(emulationMode);
 }
 
+ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2 &point)
+{
+    Vector<ControlNode*> nodesUnderPoint;
+    auto predicate = [point](const UIControl* control) -> bool {
+        return control->GetSystemVisible() && control->IsPointInside(point);
+    };
+    CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
+    return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
+}
+
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);

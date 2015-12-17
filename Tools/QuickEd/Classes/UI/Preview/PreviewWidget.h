@@ -49,6 +49,7 @@ class RulerController;
 class AbstractProperty;
 class QWheelEvent;
 class QNativeGestureEvent;
+class QDragMoveEvent;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -103,12 +104,15 @@ private:
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
+    void OnDragMoveEvent(QDragMoveEvent* event);
+    
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
+    
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
-
+    
     QPoint lastMousePos;
     Document* document = nullptr;
     DavaGLWidget* davaGLWidget = nullptr;

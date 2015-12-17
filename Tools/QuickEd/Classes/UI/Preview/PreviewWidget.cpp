@@ -359,8 +359,15 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             break;
         case QEvent::MouseMove:
             OnMoveEvent(DynamicTypeCheck<QMouseEvent*>(event));
+            break;
         case QEvent::MouseButtonPress:
             lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
+            break;
+        case QEvent::DragMove:
+            OnDragMoveEvent(DynamicTypeCheck<QDragMoveEvent*>(event));
+            return true;
+            case QEvent::DragEnter:
+                break;
         default:
             break;
         }
@@ -483,6 +490,21 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
         int verticalScrollBarValue = verticalScrollBar->value();
         verticalScrollBarValue -= delta.y();
         verticalScrollBar->setValue(verticalScrollBarValue);
+    }
+}
+
+void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
+{
+    DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+    auto node = systemManager->ControlNodeUnderPoint(pos);
+    systemManager->NodesHovered.Emit({node});
+    if(nullptr != node)
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
     }
 }
 

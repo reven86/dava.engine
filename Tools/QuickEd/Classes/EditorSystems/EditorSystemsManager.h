@@ -111,6 +111,8 @@ public:
 
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate) const;
+    
+    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2 &point);
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
@@ -126,6 +128,7 @@ public:
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
     DAVA::Signal<std::weak_ptr<PackageNode> /*node*/> PackageNodeChanged;
+    DAVA::Signal<Vector<ControlNode*>> NodesHovered;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 

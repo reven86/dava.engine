@@ -275,12 +275,3 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
     }
     UIControl::Draw(geometricData);
 }
-
-MagnetLineControl::MagnetLineControl(const DAVA::Rect& rect)
-    : UIControl(rect)
-{
-    SetName("Magnet Line");
-    SetDebugDraw(true);
-    //this code saved to replace debugDraw //background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
-    //background->SetDrawType(UIControlBackground::DRAW_TILED);
-}

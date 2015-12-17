@@ -52,6 +52,7 @@ private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
+    void OnNodesHovered(DAVA::Vector<ControlNode*> node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
 
@@ -77,6 +78,7 @@ private:
     bool dragRequested = false;
     bool hudVisible = false;
     SelectionContainer selectionContainer;
+    DAVA::Map<ControlNode*, DAVA::RefPtr<DAVA::UIControl>> hoveredNodes;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

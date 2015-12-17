@@ -131,15 +131,6 @@ class SelectionRect : public FrameControl
     void Draw(const DAVA::UIGeometricData& geometricData) override;
 };
 
-class MagnetLineControl : public DAVA::UIControl
-{
-public:
-    MagnetLineControl(const DAVA::Rect& rect);
-
-private:
-    ~MagnetLineControl() = default;
-};
-
 template <typename T>
 T* CreateContainerWithBorders()
 {
