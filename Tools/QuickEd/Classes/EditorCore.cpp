@@ -30,6 +30,7 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "UI/mainwindow.h"
 #include "UI/Preview/ScrollAreaController.h"
+#include "UI/Preview/Ruler/RulerController.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
@@ -119,6 +120,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
+    connect(documentGroup, &DocumentGroup::RootControlPositionChanged, previewWidget, &PreviewWidget::OnRootControlPositionChanged);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());

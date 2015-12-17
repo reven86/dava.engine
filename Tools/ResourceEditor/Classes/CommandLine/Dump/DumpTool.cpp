@@ -35,7 +35,6 @@
 
 using namespace DAVA;
 
-
 DumpTool::DumpTool()
     : CommandLineTool("-dump")
 {

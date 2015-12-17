@@ -124,7 +124,7 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 
             for (; i != data.end(); ++i)
             {
-				QtPropertyData *childData = ChildGet(i->first.c_str());
+                QtPropertyData *childData = ChildGet(i->first.c_str());
 
 				// this key already in items list
 				if(NULL != childData)

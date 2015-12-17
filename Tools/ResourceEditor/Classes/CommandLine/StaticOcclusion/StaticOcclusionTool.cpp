@@ -33,7 +33,6 @@
 
 using namespace DAVA;
 
-
 StaticOcclusionTool::StaticOcclusionTool()
     : CommandLineTool("-staticocclusion")
 {
@@ -78,7 +77,7 @@ void StaticOcclusionTool::ProcessInternal()
     if (commandAction == ACTION_BUILD)
     {
         ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-        if(scene->Load(scenePathname))
+        if (scene->Load(scenePathname))
         {
             scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
             scene->staticOcclusionBuildSystem->Build();
