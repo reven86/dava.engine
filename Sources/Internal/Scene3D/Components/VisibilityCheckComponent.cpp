@@ -55,7 +55,8 @@ float32 VisibilityCheckComponent::GetRadius() const
 void VisibilityCheckComponent::SetRadius(float32 r)
 {
     radius = r;
-    InvalidatePointSet();
+    isValid = false;
+    shouldRebuildPointSet = true;
 }
 
 float32 VisibilityCheckComponent::GetDistanceBetweenPoints() const
@@ -66,116 +67,8 @@ float32 VisibilityCheckComponent::GetDistanceBetweenPoints() const
 void VisibilityCheckComponent::SetDistanceBetweenPoints(float32 d)
 {
     distanceBetweenPoints = d;
-    InvalidatePointSet();
-}
-
-bool VisibilityCheckComponent::IsPointSetValid() const
-{
-    return (shouldBuildPointSet == false);
-}
-
-void VisibilityCheckComponent::InvalidatePointSet()
-{
-    shouldBuildPointSet = true;
-}
-
-namespace VCCHelper
-{
-inline float32 RandomFloat(float32 lower, float32 upper)
-{
-    return lower + (upper - lower) * (static_cast<float32>(rand()) / static_cast<float>(RAND_MAX));
-}
-}
-
-void VisibilityCheckComponent::BuildPointSet()
-{
-    auto polar = [](float32 angle, float32 distance) -> Vector3 {
-        return Vector3(std::cos(angle) * distance, std::sin(angle) * distance, 0.0f);
-    };
-
-    auto canIncludePoint = [this](const Vector3& pt) -> bool {
-        float32 distanceFromCenter = pt.x * pt.x + pt.y * pt.y;
-        if (distanceFromCenter > radius * radius)
-            return false;
-
-        for (const auto& e : points)
-        {
-            float32 dx = e.x - pt.x;
-            float32 dy = e.y - pt.y;
-            if (dx * dx + dy * dy < distanceBetweenPoints * distanceBetweenPoints)
-                return false;
-        }
-
-        return true;
-    };
-
-    auto generateAroundPoint = [this, &canIncludePoint, &polar](const Vector3& src) -> bool {
-        const uint32 maxAttempts = 36;
-        float32 angle = VCCHelper::RandomFloat(-PI, PI);
-        float32 da = 2.0f * PI / static_cast<float>(maxAttempts);
-        uint32 attempts = 0;
-        Vector3 newPoint;
-        bool canInclude = false;
-        do
-        {
-            newPoint = src + polar(angle, 2.0f * distanceBetweenPoints);
-            canInclude = canIncludePoint(newPoint);
-            angle += da;
-        } while ((++attempts < maxAttempts) && !canInclude);
-
-        if (canInclude)
-        {
-            points.push_back(newPoint);
-        }
-
-        return canInclude;
-    };
-
-    points.clear();
-    float32 totalSquare = radius * radius;
-    float32 smallSquare = distanceBetweenPoints * distanceBetweenPoints;
-    uint32 pointsToGenerate = 2 * static_cast<uint32>(totalSquare / smallSquare);
-    points.reserve(pointsToGenerate);
-
-    if (pointsToGenerate < 2)
-    {
-        points.emplace_back(0.0f, 0.0f, 0.0f);
-    }
-    else
-    {
-        auto lastPoint = polar(VCCHelper::RandomFloat(-PI, +PI), radius - distanceBetweenPoints);
-        points.push_back(lastPoint);
-
-        bool canGenerate = true;
-        while (canGenerate)
-        {
-            canGenerate = false;
-            for (int32 i = static_cast<int32>(points.size()) - 1; i >= 0; --i)
-            {
-                if (generateAroundPoint(points.at(i)))
-                {
-                    canGenerate = true;
-                    break;
-                }
-            }
-        }
-    }
-
-    if (verticalVariance > 0.0f)
-    {
-        for (auto& p : points)
-        {
-            p.z = VCCHelper::RandomFloat(-verticalVariance, verticalVariance);
-        }
-    }
-
-    shouldBuildPointSet = false;
-}
-
-const Vector<Vector3>& VisibilityCheckComponent::GetPoints() const
-{
-    DVASSERT(points.size() > 0);
-    return points;
+    isValid = false;
+    shouldRebuildPointSet = true;
 }
 
 const Color& VisibilityCheckComponent::GetColor() const
@@ -185,33 +78,25 @@ const Color& VisibilityCheckComponent::GetColor() const
 
 void VisibilityCheckComponent::SetColor(const Color& clr)
 {
-    DVASSERT(!points.empty());
     color = clr;
     color.a = 1.0f;
     isValid = false;
 }
 
-Color VisibilityCheckComponent::GetNormalizedColor() const
+bool VisibilityCheckComponent::ShouldRebuildPoints() const
 {
-    Color normalizedColor = color;
-    if (shouldNormalizeColor)
-    {
-        float32 fpoints = static_cast<float>(points.size());
-        normalizedColor.r = (color.r > 0.0f) ? std::max(1.0f / 255.0f, color.r / fpoints) : 0.0f;
-        normalizedColor.g = (color.g > 0.0f) ? std::max(1.0f / 255.0f, color.g / fpoints) : 0.0f;
-        normalizedColor.b = (color.b > 0.0f) ? std::max(1.0f / 255.0f, color.b / fpoints) : 0.0f;
-    }
-    return normalizedColor;
+    return shouldRebuildPointSet;
 }
 
 bool VisibilityCheckComponent::IsValid() const
 {
-    return isValid && !shouldBuildPointSet;
+    return isValid;
 }
 
 void VisibilityCheckComponent::SetValid()
 {
     isValid = true;
+    shouldRebuildPointSet = false;
 }
 
 float32 VisibilityCheckComponent::GetUpAngle() const
@@ -244,14 +129,15 @@ bool VisibilityCheckComponent::IsEnabled() const
 void VisibilityCheckComponent::SetEnabled(bool value)
 {
     isEnabled = value;
+    shouldRebuildPointSet = true;
 }
 
-bool VisibilityCheckComponent::ShoouldNormalizeColor() const
+bool VisibilityCheckComponent::ShouldNormalizeColor() const
 {
     return shouldNormalizeColor;
 }
 
-void VisibilityCheckComponent::SetShoouldNormalizeColor(bool value)
+void VisibilityCheckComponent::SetShouldNormalizeColor(bool value)
 {
     shouldNormalizeColor = value;
 }
@@ -264,7 +150,8 @@ float32 VisibilityCheckComponent::GetVerticalVariance() const
 void VisibilityCheckComponent::SetVerticalVariance(float32 value)
 {
     verticalVariance = std::max(0.0f, value);
-    shouldBuildPointSet = true;
+    isValid = false;
+    shouldRebuildPointSet = true;
 }
 
 float32 VisibilityCheckComponent::GetMaximumDistance() const
@@ -319,7 +206,6 @@ void VisibilityCheckComponent::Serialize(DAVA::KeyedArchive* archive, DAVA::Seri
 void VisibilityCheckComponent::Deserialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext)
 {
     isValid = false;
-    shouldBuildPointSet = true;
     color = archive->GetColor("vsc.color");
     radius = archive->GetFloat("vsc.radius");
     distanceBetweenPoints = archive->GetFloat("vsc.distanceBetweenPoints");

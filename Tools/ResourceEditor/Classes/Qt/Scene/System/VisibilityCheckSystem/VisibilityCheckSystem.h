@@ -31,6 +31,7 @@
 
 #include "VisibilityCheckRenderer.h"
 #include "Entity/SceneSystem.h"
+#include <qobjectdefs.h>
 
 namespace DAVA
 {
@@ -49,8 +50,15 @@ public:
     void RemoveEntity(DAVA::Entity* entity) override;
 
     void Draw();
+    void InvalidateMaterials();
 
 private:
+    using EntityMap = DAVA::Map<DAVA::Entity*, DAVA::Vector<DAVA::Vector3>>;
+
+    void BuildPointSetForEntity(EntityMap::value_type& item);
+    void BuildIndexSet();
+    DAVA::Color GetNormalizedColorForEntity(const EntityMap::value_type& item) const;
+
     void UpdatePointSet();
     void Prerender();
     void CreateRenderTarget();
@@ -70,11 +78,14 @@ private:
     static const DAVA::uint32 CUBEMAPS_COUNT = 1;
 
 private:
-    DAVA::Vector<DAVA::Entity*> entitiesWithVisibilityComponent;
+    EntityMap entitiesWithVisibilityComponent;
     DAVA::Texture* cubemapTarget[CUBEMAPS_COUNT];
     DAVA::Texture* renderTarget = nullptr;
     DAVA::Vector<VisibilityCheckRenderer::VisbilityPoint> controlPoints;
+    DAVA::Vector<DAVA::uint32> controlPointIndices;
     DAVA::Map<DAVA::RenderObject*, DAVA::Entity*> renderObjectToEntity;
+    QMetaObject::Connection commandExecutedConnection;
+    QMetaObject::Connection nonModifyingEventEmittedConnection;
     VisibilityCheckRenderer renderer;
     StateCache stateCache;
     size_t currentPointIndex = 0;

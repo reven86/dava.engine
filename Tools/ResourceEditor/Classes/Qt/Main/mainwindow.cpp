@@ -43,6 +43,7 @@
 #include "Project/ProjectManager.h"
 #include "Scene/SceneHelper.h"
 #include "Scene/LandscapeThumbnails.h"
+#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "SpritesPacker/SpritePackerHelper.h"
 
 #include "TextureBrowser/TextureBrowser.h"
@@ -3027,8 +3028,9 @@ void QtMainWindow::OnReloadShaders()
         }
 
         sceneEditor->renderSystem->GetDebugDrawer()->InvalidateMaterials();
-
         sceneEditor->renderSystem->SetForceUpdateLights();
+
+        sceneEditor->visibilityCheckSystem->InvalidateMaterials();
     }
 
 #define INVALIDATE_2D_MATERIAL(material) \
@@ -3040,6 +3042,8 @@ void QtMainWindow::OnReloadShaders()
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_FILL_ALPHA_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL)
 
 #undef INVALIDATE_2D_MATERIAL
 }

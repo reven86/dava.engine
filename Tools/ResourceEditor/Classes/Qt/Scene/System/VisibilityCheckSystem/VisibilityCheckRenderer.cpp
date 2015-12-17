@@ -274,6 +274,16 @@ void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* 
     {
         visibilityMaterial->AddProperty(props, propValue.data, rhi::ShaderProp::TYPE_FLOAT3);
     }
+
+    const DAVA::FastName cubemapCenter("cubemapCenter");
+    if (visibilityMaterial->HasLocalProperty(cubemapCenter))
+    {
+        visibilityMaterial->SetPropertyValue(cubemapCenter, vp.point.data);
+    }
+    else
+    {
+        visibilityMaterial->AddProperty(cubemapCenter, vp.point.data, rhi::ShaderProp::Type::TYPE_FLOAT3);
+    }
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
@@ -284,20 +294,31 @@ void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* rend
     UpdateVisibilityMaterialProperties(cubemap, vp);
     CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
 
-    DAVA::Vector4 pointLocation(vp.point.x, vp.point.y, vp.point.z, 0.0f);
-
     visibilityConfig.colorBuffer[0].texture = renderTarget->handle;
     visibilityConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
     RenderPassScope pass(visibilityConfig);
     for (auto batch : renderBatches)
     {
         batch->GetRenderObject()->BindDynamicParameters(fromCamera);
-        DAVA::Renderer::GetDynamicBindings().SetDynamicParam(DAVA::DynamicBindings::PARAM_LIGHT0_POSITION, &pointLocation,
-                                                             reinterpret_cast<DAVA::pointer_size>(&pointLocation));
         rhi::Packet packet;
         batch->BindGeometryData(packet);
         visibilityMaterial->BindParams(packet);
         packet.depthStencilState = visibilityDepthStencilState;
         rhi::AddPacket(pass.packetList, packet);
     }
+}
+
+void VisibilityCheckRenderer::InvalidateMaterials()
+{
+    distanceMaterial->InvalidateRenderVariants();
+    distanceMaterial->InvalidateBufferBindings();
+    distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+
+    visibilityMaterial->InvalidateRenderVariants();
+    visibilityMaterial->InvalidateBufferBindings();
+    visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+
+    prerenderMaterial->InvalidateRenderVariants();
+    prerenderMaterial->InvalidateBufferBindings();
+    prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }

@@ -47,8 +47,8 @@ public:
     bool IsEnabled() const;
     void SetEnabled(bool);
 
-    bool ShoouldNormalizeColor() const;
-    void SetShoouldNormalizeColor(bool);
+    bool ShouldNormalizeColor() const;
+    void SetShouldNormalizeColor(bool);
 
     float32 GetRadius() const;
     void SetRadius(float32);
@@ -71,20 +71,13 @@ public:
     float32 GetDownAngle() const;
     void SetDownAngle(float32);
 
-    Color GetNormalizedColor() const;
-
     bool ShouldPlaceOnLandscape() const;
     void SetShouldPlaceOnLandscape(bool);
 
     float32 GetHeightAboveLandscape() const;
     void SetHeightAboveLandscape(float32);
 
-    bool IsPointSetValid() const;
-    void InvalidatePointSet();
-    void BuildPointSet();
-
-    const Vector<Vector3>& GetPoints() const;
-
+    bool ShouldRebuildPoints() const;
     bool IsValid() const;
     void SetValid();
 
@@ -92,7 +85,6 @@ public:
     void Deserialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext) override;
 
 private:
-    Vector<Vector3> points;
     Color color = Color(1.0f, 0.0f, 0.0f, 1.0f);
     float32 radius = 20.0f;
     float32 distanceBetweenPoints = 4.0f;
@@ -101,11 +93,11 @@ private:
     float32 verticalVariance = 0.0f;
     float32 maximumDistance = 250.0f;
     float32 heightAboveLandscape = 3.0f;
-    bool shouldBuildPointSet = true;
     bool isValid = false;
     bool isEnabled = true;
     bool shouldNormalizeColor = true;
     bool shouldPlaceOnLandscape = true;
+    bool shouldRebuildPointSet = true;
 
 public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
@@ -117,7 +109,7 @@ public:
                          PROPERTY("Down Angle", "Down Angle", GetDownAngle, SetDownAngle, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Vertical Variance", "Vertical Variance", GetVerticalVariance, SetVerticalVariance, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Normalize Color", "If enabled scales overlay's color to match current color.", ShoouldNormalizeColor, SetShoouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Normalize Color", "If enabled scales overlay's color to match current color.", ShouldNormalizeColor, SetShouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Place on Landscape", "Snaps each point to landscape", ShouldPlaceOnLandscape, SetShouldPlaceOnLandscape, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Height Above the Landscape", "Distance from landscape to each point", GetHeightAboveLandscape, SetHeightAboveLandscape, I_SAVE | I_VIEW | I_EDIT))
 };

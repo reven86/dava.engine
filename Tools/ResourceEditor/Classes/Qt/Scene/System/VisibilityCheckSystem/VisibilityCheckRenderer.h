@@ -29,6 +29,7 @@
 #ifndef __VISIBILITYCHECKRENDERER_H__
 #define __VISIBILITYCHECKRENDERER_H__
 
+#include "Base/Noncopyable.h"
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
@@ -41,7 +42,7 @@ struct VisibilityCheckRendererDelegate
     virtual bool ShouldDrawRenderObject(DAVA::RenderObject*) = 0;
 };
 
-class VisibilityCheckRenderer
+class VisibilityCheckRenderer : public DAVA::Noncopyable
 {
 public:
     struct VisbilityPoint
@@ -76,6 +77,8 @@ public:
 
     void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* cubemap,
                                    DAVA::Texture* renderTarget, const VisbilityPoint& vp);
+
+    void InvalidateMaterials();
 
 private:
     void SetupCameraToRenderFromPointToFaceIndex(const DAVA::Vector3& point, DAVA::uint32 faceIndex);

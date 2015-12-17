@@ -20,12 +20,14 @@ VPROG_OUT_BEGIN
 VPROG_OUT_END
 
 property float4x4 worldViewProjMatrix : dynamic,a : ;
+property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
 property float4x4 viewProjMatrix : dynamic,a : ;
 property float3 cameraPosition : dynamic,a : ;
 
 #if defined(DECODE_DISTANCE)
-property float4 lightPosition0 : dynamic,a : ;
+property float3 cubemapCenter : static,a : ;
+#define MAGIC_OFFSET 0.025
 #endif
 
 VPROG_BEGIN
@@ -37,9 +39,9 @@ VPROG_BEGIN
 #endif
 
 #if defined(DECODE_DISTANCE)
-	float4 worldPosition = mul(position, worldMatrix);
-	worldPosition.z += 0.025;
-	VP_OUT(directionFromPoint) = worldPosition.xyz - lightPosition0.xyz;
+	float4 n = normalize(mul(float4(VP_IN_NORMAL, 0.0), worldViewInvTransposeMatrix));
+	float4 worldPosition = mul(position, worldMatrix) + MAGIC_OFFSET * n;
+	VP_OUT(directionFromPoint) = worldPosition.xyz - cubemapCenter;
 #endif
 
 	VP_OUT_POSITION = mul(position, worldViewProjMatrix);
