@@ -473,7 +473,7 @@ void NMaterial::SetParent(NMaterial* _parent)
     }
 
     parent = _parent;
-    sortingKey = static_cast<uint32>(reinterpret_cast<uint64>(parent) & MATERIAL_SORTING_KEY_MASK);
+    sortingKey = (uint32)((uint64)parent);
 
     if (parent)
     {
