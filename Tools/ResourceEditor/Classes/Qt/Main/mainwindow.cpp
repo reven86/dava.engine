@@ -1325,7 +1325,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
         }
 
         scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
-	}
+    }
 
     if(!SaveScene(scene))
     {
@@ -3116,7 +3116,7 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
                     }
                 }
 
-                if (entityGroup.Size() > 0)
+                if (!entityGroup.IsEmpty())
                 {
                     currentScene->selectionSystem->SetSelection(entityGroup);
 					currentScene->cameraSystem->LookAt(entityGroup.GetCommonBbox());

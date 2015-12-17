@@ -126,8 +126,8 @@ void ModificationWidget::ReloadValues()
 	if (nullptr != curScene)
 	{
         const EntityGroup& selection = curScene->selectionSystem->GetSelection();
-        if(selection.Size() > 0 && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
-		{
+        if (!selection.IsEmpty() && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
+        {
 			xAxisModify->setEnabled(true);
 			yAxisModify->setEnabled(true);
 			zAxisModify->setEnabled(true);
@@ -526,7 +526,7 @@ void ModificationWidget::OnSnapToLandscapeChanged()
         return;
 
     const EntityGroup& selection = curScene->selectionSystem->GetSelection();
-    if ( selection.Size() == 0 )
+    if (selection.IsEmpty())
         return;
 
     const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();

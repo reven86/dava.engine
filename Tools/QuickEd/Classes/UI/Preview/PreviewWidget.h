@@ -44,6 +44,7 @@ class DavaGLWidget;
 class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
+class RulerController;
 
 class QWheelEvent;
 class QNativeGestureEvent;
@@ -57,6 +58,7 @@ public:
     DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
     float GetScale() const;
+    RulerController* GetRulerController();
     ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
 
 signals:
@@ -75,6 +77,8 @@ public slots:
     void OnDocumentActivated(Document* document);
     void OnDocumentDeactivated(Document* document);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnRootControlPositionChanged(const DAVA::Vector2& pos);
+    void OnNestedControlPositionChanged(const QPoint& pos);
 
 private slots:
     void OnScaleChanged(qreal scale);
@@ -93,6 +97,7 @@ protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
+    void ApplyPosChanges();
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
@@ -107,6 +112,9 @@ private:
     QList<qreal> percentages;
 
     SelectionContainer selectionContainer;
+    RulerController* rulerController = nullptr;
+    QPoint rootControlPos;
+    QPoint canvasPos;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget()

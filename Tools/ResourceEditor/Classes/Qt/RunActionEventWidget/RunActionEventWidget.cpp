@@ -187,9 +187,6 @@ void RunActionEventWidget::sceneSelectionChanged(SceneEditor2 *_scene, const Ent
         }
     }
 
-    const QStringList& nameList = nameSet.toList();
-    autocompleteModel->setStringList(nameList);
-
-    const bool enable = selection.Size() > 0;
-    setEnabled(enable);
+    autocompleteModel->setStringList(nameSet.toList());
+    setEnabled(!selection.IsEmpty());
 }

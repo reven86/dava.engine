@@ -152,16 +152,16 @@ void StatusBar::UpdateSelectionBoxSize(SceneEditor2 *scene)
     }
 
     const EntityGroup& selection = scene->selectionSystem->GetSelection();
-    if(selection.Size())
+    if (selection.IsEmpty())
+    {
+        selectionBoxSize->setText("");
+        selectionBoxSize->setVisible(false);
+    }
+    else
     {
         DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
         selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
         selectionBoxSize->setVisible(true);
-    }
-    else
-    {
-        selectionBoxSize->setText("");
-        selectionBoxSize->setVisible(false);
     }
 }
 

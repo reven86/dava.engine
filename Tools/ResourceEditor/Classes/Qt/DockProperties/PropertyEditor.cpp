@@ -136,7 +136,7 @@ void PropertyEditor::SetEntities(const EntityGroup *selected)
         SaveScheme("~doc:/PropEditorDefault.scheme");
     };
 
-    if (selected == nullptr || selected->Size() == 0)
+    if (selected == nullptr || selected->IsEmpty())
         return;
 
     curNodes.reserve(selected->Size());
@@ -240,7 +240,7 @@ void PropertyEditor::ResetProperties()
 
                         if (isRemovable)
                         {
-                            QtPropertyToolButton* deleteButton = CreateButton(componentData, QSharedIcon(":/QtIcons/remove.png"), "Remove Component");
+                            QtPropertyToolButton* deleteButton = CreateButton(componentData, SharedIcon(":/QtIcons/remove.png"), "Remove Component");
                             deleteButton->setObjectName("RemoveButton");
                             deleteButton->setEnabled(true);
 				            QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(OnRemoveComponent()));
@@ -378,20 +378,20 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
 			{
 				// Add optional button to edit action component
-                QtPropertyToolButton* editActions = CreateButton(data, QSharedIcon(":/QtIcons/settings.png"), "Edit action component");
+                QtPropertyToolButton* editActions = CreateButton(data, SharedIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
 				QObject::connect(editActions, SIGNAL(clicked()), this, SLOT(ActionEditComponent()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
-                QtPropertyToolButton* editSound = CreateButton(data, QSharedIcon(":/QtIcons/settings.png"), "Edit sound component");
+                QtPropertyToolButton* editSound = CreateButton(data, SharedIcon(":/QtIcons/settings.png"), "Edit sound component");
                 editSound->setAutoRaise(true);
                 QObject::connect(editSound, SIGNAL(clicked()), this, SLOT(ActionEditSoundComponent()));
             }
             else if(DAVA::MetaInfo::Instance<DAVA::WaveComponent>() == meta)
             {
                 QtPropertyToolButton *triggerWave = data->AddButton();
-                triggerWave->setIcon(QSharedIcon(":/QtIcons/clone.png"));
+                triggerWave->setIcon(SharedIcon(":/QtIcons/clone.png"));
                 triggerWave->setAutoRaise(true);
 
                 QObject::connect(triggerWave, SIGNAL(clicked()), this, SLOT(OnTriggerWaveComponent()));
@@ -404,7 +404,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                     DAVA::RenderObject *renderObject = (DAVA::RenderObject *) introData->object;
                     if(SceneValidator::IsObjectHasDifferentLODsCount(renderObject))
                     {
-                        QtPropertyToolButton* cloneBatches = CreateButton(data, QSharedIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
+                        QtPropertyToolButton* cloneBatches = CreateButton(data, SharedIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
                         cloneBatches->setEnabled(isSingleSelection);
                         QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
@@ -412,7 +412,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderBatch>() == meta)
 			{
-                QtPropertyToolButton* deleteButton = CreateButton(data, QSharedIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
+                QtPropertyToolButton* deleteButton = CreateButton(data, SharedIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
                 deleteButton->setEnabled(isSingleSelection);
 				QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteRenderBatch()));
 
@@ -425,7 +425,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					    DAVA::RenderObject *ro = batch->GetRenderObject();
 					    if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch))
 					    {
-                            QtPropertyToolButton* convertButton = CreateButton(data, QSharedIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
+                            QtPropertyToolButton* convertButton = CreateButton(data, SharedIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
                             convertButton->setEnabled(isSingleSelection);
 						    connect(convertButton, SIGNAL(clicked()), this, SLOT(ConvertToShadow()));
 					    }
@@ -440,7 +440,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 
                             if (isRebuildTsEnabled)
                             {
-                                QtPropertyToolButton* rebuildTangentButton = CreateButton(data, QSharedIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                                QtPropertyToolButton* rebuildTangentButton = CreateButton(data, SharedIcon(":/QtIcons/external.png"), "Rebuild tangent space");
                                 rebuildTangentButton->setEnabled(isSingleSelection);
                                 connect(rebuildTangentButton, SIGNAL(clicked()), this, SLOT(RebuildTangentSpace()));
                             }
@@ -450,7 +450,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
-                QtPropertyToolButton* goToMaterialButton = CreateButton(data, QSharedIcon(":/QtIcons/3d.png"), "Edit material");
+                QtPropertyToolButton* goToMaterialButton = CreateButton(data, SharedIcon(":/QtIcons/3d.png"), "Edit material");
                 goToMaterialButton->setEnabled(isSingleSelection);
 				QObject::connect(goToMaterialButton, SIGNAL(clicked()), this, SLOT(ActionEditMaterial()));
 			}
@@ -872,11 +872,11 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
 			{
 				if(IsFavorite(data))
 				{
-                    QSharedIcon(":/QtIcons/star.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
+                    SharedIcon(":/QtIcons/star.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
                 }
                 else
 				{
-                    QSharedIcon(":/QtIcons/star_empty.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
+                    SharedIcon(":/QtIcons/star_empty.png").paint(painter, opt.rect.x(), opt.rect.y(), 16, opt.rect.height());
                 }
             }
 		}
@@ -1549,8 +1549,8 @@ QString PropertyEditor::GetDefaultFilePath()
         if (String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
         {
             defaultPath = scenePath.c_str();
-		}
-	}
+        }
+    }
 
 	return defaultPath;
 }

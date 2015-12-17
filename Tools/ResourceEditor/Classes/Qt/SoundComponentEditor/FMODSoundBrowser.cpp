@@ -206,12 +206,12 @@ void FMODSoundBrowser::FillEventsTree(const DAVA::Vector<DAVA::String> & names)
 
                 if(isEvent)
                 {
-                    findedItem->setIcon(0, QSharedIcon(":/QtIcons/sound.png"));
+                    findedItem->setIcon(0, SharedIcon(":/QtIcons/sound.png"));
                     findedItem->setData(0, Qt::UserRole, QString(eventPath.c_str()));
                 }
                 else
                 {
-                    findedItem->setIcon(0, QSharedIcon(":/QtIcons/sound_group.png"));
+                    findedItem->setIcon(0, SharedIcon(":/QtIcons/sound_group.png"));
                 }
             }
             currentItem = findedItem;

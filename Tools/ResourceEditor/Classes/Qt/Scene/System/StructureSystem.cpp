@@ -250,8 +250,8 @@ void StructureSystem::RemoveForce(const DAVA::Vector<DAVA::ParticleForce *> &for
 
 void StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool saveLightmapSettings)
 {
-	if(entityGroup.Size() > 0)
-	{
+    if (!entityGroup.IsEmpty())
+    {
 		DAVA::Set<DAVA::FilePath> refsToReload;
 
         for (const auto& item : entityGroup.GetContent())
@@ -287,7 +287,7 @@ void StructureSystem::ReloadRefs(const DAVA::FilePath &modelPath, bool saveLight
 
 void StructureSystem::ReloadEntitiesAs(const EntityGroup& entityGroup, const DAVA::FilePath &newModelPath, bool saveLightmapSettings)
 {
-    if (entityGroup.Size() > 0)
+    if (!entityGroup.IsEmpty())
     {
         DAVA::Set<DAVA::Entity*> entitiesToReload;
 

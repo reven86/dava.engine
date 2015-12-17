@@ -412,7 +412,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
     bool visible = frame->isVisible();
     frame->setVisible(!visible);
 
-    QIcon icon = (frame->isVisible()) ? QSharedIcon(":/QtIcons/advanced.png") : QSharedIcon(":/QtIcons/play.png");
+    QIcon icon = (frame->isVisible()) ? SharedIcon(":/QtIcons/advanced.png") : SharedIcon(":/QtIcons/play.png");
     frameButton->setIcon(icon);
 }
 
@@ -430,7 +430,7 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
     }
     else
     {
-        const QIcon& icon = (frameViewVisible) ? QSharedIcon(":/QtIcons/advanced.png") : QSharedIcon(":/QtIcons/play.png");
+        const QIcon& icon = (frameViewVisible) ? SharedIcon(":/QtIcons/advanced.png") : SharedIcon(":/QtIcons/play.png");
         ui->viewLODButton->setIcon(icon);
         ui->editLODButton->setIcon(icon);
         ui->frameViewLOD->setVisible(frameViewVisible);

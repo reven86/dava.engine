@@ -31,6 +31,6 @@
 
 #include <QIcon>
 
-const QIcon& QSharedIcon(const char*);
+const QIcon& SharedIcon(const char*);
 
 #endif

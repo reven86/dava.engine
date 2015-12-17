@@ -445,8 +445,8 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
 {
 	bool modifCanStart = false;
 
-	if(selectedEntities.Size() > 0)
-	{
+    if (!selectedEntities.IsEmpty())
+    {
 		bool hasLocked = false;
 
 		// check if we have some locked items in selection
@@ -490,17 +490,17 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 			// if so - we can start modification
             if (!collisionEntities.empty())
             {
-                for (const auto& itemI : collisionEntities)
+                for (const auto& collisionItem : collisionEntities)
                 {
-                    for (const auto& itemJ : selectedEntities.GetContent())
+                    for (const auto& selectedItem : selectedEntities.GetContent())
                     {
-                        if (itemJ.first == itemI.first)
+                        if (selectedItem.first == collisionItem.first)
                         {
 							modifCanStart = true;
 						}
-                        else if (itemJ.first->GetSolid())
+                        else if (selectedItem.first->GetSolid())
                         {
-                            modifCanStart = IsEntityContainRecursive(itemJ.first, itemI.first);
+                            modifCanStart = IsEntityContainRecursive(selectedItem.first, collisionItem.first);
                         }
 
                         if (modifCanStart)

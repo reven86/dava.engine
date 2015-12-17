@@ -97,9 +97,9 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     setupTextureToolbar();
     setupTextureListFilter();
     setupTextureProperties();
-	setupTextureViewTabBar();
+    setupTextureViewTabBar();
 
-	resetTextureInfo();
+    resetTextureInfo();
 
 	// let textures list show images-view by default
 	ui->actionViewImagesList->trigger();
@@ -374,8 +374,8 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 
         ui->labelOriginalFormat->setText(tmp);
     }
-	else
-	{
+    else
+    {
 		ui->labelOriginalFormat->setText("");
 	}
 }

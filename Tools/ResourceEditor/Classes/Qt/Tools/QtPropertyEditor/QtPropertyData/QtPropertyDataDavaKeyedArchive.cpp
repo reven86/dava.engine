@@ -58,7 +58,7 @@ QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(DAVA::KeyedArchive 
 
 	// add optional widget (button) to add new key
 	QToolButton *addButton = AddButton();
-    addButton->setIcon(QSharedIcon(":/QtIcons/keyplus.png"));
+    addButton->setIcon(SharedIcon(":/QtIcons/keyplus.png"));
     addButton->setToolTip("Add keyed archive member");
 	addButton->setIconSize(QSize(12, 12));
 	//addButton->setAutoRaise(true);
@@ -126,9 +126,9 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 
             for (; i != data.end(); ++i)
             {
-				QtPropertyData *childData = ChildGet(i->first.c_str());
+                QtPropertyData* childData = ChildGet(i->first.c_str());
 
-				// this key already in items list
+                // this key already in items list
 				if(NULL != childData)
 				{
 					// remove deleting mark
@@ -170,7 +170,7 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const QString &key, DAVA::Varian
 
 	// add optional widget (button) to remove this key
 	QToolButton *remButton = childData->AddButton();
-    remButton->setIcon(QSharedIcon(":/QtIcons/keyminus.png"));
+    remButton->setIcon(SharedIcon(":/QtIcons/keyminus.png"));
     remButton->setToolTip("Remove keyed archive member");
 	remButton->setIconSize(QSize(12, 12));
 

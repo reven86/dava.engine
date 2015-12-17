@@ -50,9 +50,8 @@ EntityGroup::~EntityGroup()
 
 void EntityGroup::Add(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox)
 {
-    if (entities.count(entity) == 0)
+    if (entities.insert({ entity, entityBbox }).second)
     {
-        entities.insert({ entity, entityBbox });
         entitiesBbox.AddAABBox(entityBbox);
     }
 }
@@ -69,19 +68,9 @@ void EntityGroup::Clear()
     entitiesBbox.Empty();
 }
 
-size_t EntityGroup::Size() const
-{
-    return entities.size();
-}
-
 DAVA::Entity* EntityGroup::GetFirstEntity() const
 {
     return entities.empty() ? nullptr : entities.begin()->first;
-}
-
-const DAVA::AABBox3& EntityGroup::GetCommonBbox() const
-{
-    return entitiesBbox;
 }
 
 DAVA::Vector3 EntityGroup::GetFirstZeroPos() const
@@ -110,11 +99,6 @@ DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
     }
 
     return ret;
-}
-
-bool EntityGroup::ContainsEntity(DAVA::Entity* entity) const
-{
-    return entities.count(entity) > 0;
 }
 
 EntityGroup& EntityGroup::operator=(const EntityGroup& ss)
@@ -167,16 +151,6 @@ DAVA::Entity* EntityGroup::IntersectedEntity(const EntityGroup::EntityVector& gr
         }
     }
     return nullptr;
-}
-
-EntityGroup::EntityMap& EntityGroup::GetMutableContent()
-{
-    return entities;
-}
-
-const EntityGroup::EntityMap& EntityGroup::GetContent() const
-{
-    return entities;
 }
 
 void EntityGroup::Join(const EntityGroup& group)

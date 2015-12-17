@@ -352,7 +352,7 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
                 EntityGroup entityGroup(collisionSystem->ObjectsRayTest(sourcePoint, target));
                 ExcludeEntities(&entityGroup);
 
-                if (entityGroup.Size() == 0)
+                if (entityGroup.IsEmpty())
                 {
                     Vector3 p;
                     bool occludedWithLandscape = collisionSystem->LandRayTest(sourcePoint, target, p);
@@ -375,7 +375,8 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
 
 void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 {
-    if (!entities || (entities->Size() == 0)) return;
+    if (!entities || (entities->IsEmpty()))
+        return;
 
     DAVA::Vector<DAVA::Entity*> entitiesToRemove;
     entitiesToRemove.reserve(entities->Size());

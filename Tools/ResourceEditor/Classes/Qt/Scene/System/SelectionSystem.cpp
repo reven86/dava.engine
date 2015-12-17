@@ -184,7 +184,10 @@ void SceneSelectionSystem::PerformSelectionAtPoint(const DAVA::Vector2& point)
     DAVA::Vector3 traceFrom;
     DAVA::Vector3 traceTo;
     SceneCameraSystem* cameraSystem = ((SceneEditor2*)GetScene())->cameraSystem;
-    cameraSystem->GetRayTo2dPoint(point, 1000.0f, traceFrom, traceTo);
+    if (cameraSystem->GetCurCamera() != nullptr)
+    {
+        cameraSystem->GetRayTo2dPoint(point, cameraSystem->GetCurCamera()->GetZFar(), traceFrom, traceTo);
+    }
     ProcessSelectedGroup(collisionSystem->ObjectsRayTest(traceFrom, traceTo));
 }
 

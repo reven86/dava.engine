@@ -49,8 +49,8 @@ SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget *parent
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
 
-    ui->playButton->setIcon(QSharedIcon(":/QtIcons/play.png"));
-    ui->stopButton->setIcon(QSharedIcon(":/QtIcons/stop.png"));
+    ui->playButton->setIcon(SharedIcon(":/QtIcons/play.png"));
+    ui->stopButton->setIcon(SharedIcon(":/QtIcons/stop.png"));
 
     ui->playButton->setDisabled(true);
     ui->stopButton->setDisabled(true);

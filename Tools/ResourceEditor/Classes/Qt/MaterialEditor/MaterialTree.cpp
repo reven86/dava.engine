@@ -153,7 +153,7 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
 { 
 	QMenu contextMenu(this);
 
-    contextMenu.addAction(QSharedIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
+    contextMenu.addAction(SharedIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
 
     emit ContextMenuPrepare(&contextMenu);
 	contextMenu.exec(mapToGlobal(pos));

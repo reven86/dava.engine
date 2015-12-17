@@ -19,10 +19,10 @@ LogWidget::LogWidget(QWidget* parent)
     , ui(new Ui::LogWidget)
 {
     ui->setupUi(this);
-    ui->toolButton_clearFilter->setIcon(QSharedIcon(":/QtTools/Icons/reset.png"));
+    ui->toolButton_clearFilter->setIcon(SharedIcon(":/QtTools/Icons/reset.png"));
     ui->toolButton_clearFilter->setToolTip(tr("Clear filter string"));
 
-    ui->toolButton_clearConsole->setIcon(QSharedIcon(":/QtTools/Icons/clear.png"));
+    ui->toolButton_clearConsole->setIcon(SharedIcon(":/QtTools/Icons/clear.png"));
     ui->toolButton_clearConsole->setToolTip(tr("Clear console window"));
 
     logModel = new LogModel(this);

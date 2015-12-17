@@ -83,7 +83,7 @@ int SceneTreeItem::ItemType() const
 
 const QIcon& SceneTreeItem::ItemIcon() const
 {
-    return QSharedIcon(":/QtIcons/node.png");
+    return SharedIcon(":/QtIcons/node.png");
 }
 
 bool SceneTreeItem::IsAcceptedByFilter() const
@@ -157,51 +157,51 @@ const QIcon& SceneTreeItemEntity::ItemIcon() const
     {
         if (nullptr != entity->GetComponent(DAVA::Component::STATIC_OCCLUSION_COMPONENT))
         {
-            return QSharedIcon(":/QtIcons/so.png");
+            return SharedIcon(":/QtIcons/so.png");
         }
         if (nullptr != DAVA::GetEffectComponent(entity))
         {
-            return QSharedIcon(":/QtIcons/effect.png");
+            return SharedIcon(":/QtIcons/effect.png");
         }
         else if (nullptr != DAVA::GetLandscape(entity))
         {
-            return QSharedIcon(":/QtIcons/heightmapeditor.png");
+            return SharedIcon(":/QtIcons/heightmapeditor.png");
         }
         else if (nullptr != GetLodComponent(entity))
         {
-            return QSharedIcon(":/QtIcons/lod_object.png");
+            return SharedIcon(":/QtIcons/lod_object.png");
         }
         else if (nullptr != GetSwitchComponent(entity))
         {
-            return QSharedIcon(":/QtIcons/switch.png");
+            return SharedIcon(":/QtIcons/switch.png");
         }
         else if (nullptr != DAVA::GetVegetation(entity))
         {
-            return QSharedIcon(":/QtIcons/grass.png");
+            return SharedIcon(":/QtIcons/grass.png");
         }
         else if (nullptr != DAVA::GetRenderObject(entity))
         {
-            return QSharedIcon(":/QtIcons/render_object.png");
+            return SharedIcon(":/QtIcons/render_object.png");
         }
         else if (nullptr != entity->GetComponent(DAVA::Component::USER_COMPONENT))
         {
-            return QSharedIcon(":/QtIcons/user_object.png");
+            return SharedIcon(":/QtIcons/user_object.png");
         }
         else if (nullptr != DAVA::GetCamera(entity))
         {
-            return QSharedIcon(":/QtIcons/camera.png");
+            return SharedIcon(":/QtIcons/camera.png");
         }
         else if (nullptr != DAVA::GetLight(entity))
         {
-            return QSharedIcon(":/QtIcons/light.png");
+            return SharedIcon(":/QtIcons/light.png");
         }
         else if (nullptr != DAVA::GetWindComponent(entity))
         {
-            return QSharedIcon(":/QtIcons/wind.png");
+            return SharedIcon(":/QtIcons/wind.png");
         }
         else if (nullptr != DAVA::GetPathComponent(entity))
         {
-            return QSharedIcon(":/QtIcons/path.png");
+            return SharedIcon(":/QtIcons/path.png");
         }
 	}
 
@@ -492,7 +492,7 @@ QVariant SceneTreeItemParticleEmitter::ItemData() const
 
 const QIcon& SceneTreeItemParticleEmitter::ItemIcon() const
 {
-    return QSharedIcon(":/QtIcons/emitter_particle.png");
+    return SharedIcon(":/QtIcons/emitter_particle.png");
 }
 
 // =========================================================================================
@@ -605,7 +605,7 @@ void SceneTreeItemParticleLayer::DoSync(QStandardItem *rootItem, DAVA::ParticleL
 
 const QIcon& SceneTreeItemParticleLayer::ItemIcon() const
 {
-    return QSharedIcon(":/QtIcons/layer_particle.png");
+    return SharedIcon(":/QtIcons/layer_particle.png");
 }
 
 // =========================================================================================
@@ -646,7 +646,7 @@ QVariant SceneTreeItemParticleForce::ItemData() const
 
 const QIcon& SceneTreeItemParticleForce::ItemIcon() const
 {
-    return QSharedIcon(":/QtIcons/force.png");
+    return SharedIcon(":/QtIcons/force.png");
 }
 
 

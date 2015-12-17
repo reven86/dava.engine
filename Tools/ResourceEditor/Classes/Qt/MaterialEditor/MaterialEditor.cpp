@@ -690,7 +690,7 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
         if (memberFlags & DAVA::I_EDIT)
         {
             editEnabled = true;
-            addRemoveButton->setIcon(QSharedIcon(":/QtIcons/cminus.png"));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
             addRemoveButton->setToolTip("Remove property");
 
             // isn't set in parent or shader
@@ -704,7 +704,7 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
         {
             editEnabled = false;
             bgColor = QBrush(QColor(0, 0, 0, 25));
-            addRemoveButton->setIcon(QSharedIcon(":/QtIcons/cplus.png"));
+            addRemoveButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
             addRemoveButton->setToolTip("Add property");
         }
 
@@ -751,7 +751,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
             ui->templateBox->setCurrentIndex(-1);
             ui->templateBox->setEnabled(false);
             ui->templateButton->setEnabled(false);
-            ui->templateButton->setIcon(QSharedIcon(":/QtIcons/cplus.png"));
+            ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
         }
         else
         {
@@ -794,11 +794,11 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
 
                 if (hasLocalFxName)
                 {
-                    ui->templateButton->setIcon(QSharedIcon(":/QtIcons/cminus.png"));
+                    ui->templateButton->setIcon(SharedIcon(":/QtIcons/cminus.png"));
                 }
                 else
                 {
-                    ui->templateButton->setIcon(QSharedIcon(":/QtIcons/cplus.png"));
+                    ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
                 }
 
                 if (parentMaterial == nullptr || parentMaterial == globalMaterial)
@@ -819,7 +819,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
         ui->templateBox->setCurrentIndex(-1);
         ui->templateBox->setEnabled(false);
         ui->templateButton->setEnabled(false);
-        ui->templateButton->setIcon(QSharedIcon(":/QtIcons/cplus.png"));
+        ui->templateButton->setIcon(SharedIcon(":/QtIcons/cplus.png"));
     }
 }
 

@@ -64,22 +64,22 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent) 
 	mainLayout->addWidget(effectPlaybackSpeed);
 	
 	QHBoxLayout *playerBox = new QHBoxLayout();
-    playBtn = new QPushButton(QSharedIcon(":/QtIcons/play.png"), "");
+    playBtn = new QPushButton(SharedIcon(":/QtIcons/play.png"), "");
     playBtn->setToolTip("Play");
 	playerBox->addWidget(playBtn);
-    stopBtn = new QPushButton(QSharedIcon(":/QtIcons/stop.png"), "");
+    stopBtn = new QPushButton(SharedIcon(":/QtIcons/stop.png"), "");
     stopBtn->setToolTip("Stop");
 	playerBox->addWidget(stopBtn);
-    stopAndDeleteBtn = new QPushButton(QSharedIcon(":/QtIcons/stop_clear.png"), "");
+    stopAndDeleteBtn = new QPushButton(SharedIcon(":/QtIcons/stop_clear.png"), "");
     stopAndDeleteBtn->setToolTip("Stop and delete particles");
 	playerBox->addWidget(stopAndDeleteBtn);
-    pauseBtn = new QPushButton(QSharedIcon(":/QtIcons/pause.png"), "");
+    pauseBtn = new QPushButton(SharedIcon(":/QtIcons/pause.png"), "");
     pauseBtn->setToolTip("Pause");
 	playerBox->addWidget(pauseBtn);
-    restartBtn = new QPushButton(QSharedIcon(":/QtIcons/restart.png"), "");
+    restartBtn = new QPushButton(SharedIcon(":/QtIcons/restart.png"), "");
     restartBtn->setToolTip("Restart");
 	playerBox->addWidget(restartBtn);
-    stepForwardBtn = new QPushButton(QSharedIcon(":/QtIcons/step_forward.png"), "");
+    stepForwardBtn = new QPushButton(SharedIcon(":/QtIcons/step_forward.png"), "");
     stepForwardBtn->setToolTip("Step forward");
 	playerBox->addWidget(stepForwardBtn);	
 	stepForwardFPSSpin = new QSpinBox(this);
@@ -106,10 +106,10 @@ ParticleEffectPropertiesWidget::ParticleEffectPropertiesWidget(QWidget* parent) 
 	effectTree->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(effectTree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenuForEffectTree(const QPoint&)));
 	connect(effectTree, SIGNAL(itemDoubleClicked (QTreeWidgetItem*, int)), this, SLOT(OnTreeItemDoubleClck(QTreeWidgetItem*, int)));
-    iconEmitter = QSharedIcon(":/QtIcons/emitter_particle.png");
-    iconLayer = QSharedIcon(":/QtIcons/layer_particle.png");
-    iconForce = QSharedIcon(":/QtIcons/force.png");
-    iconExternal = QSharedIcon(":/QtIcons/external.png");
+    iconEmitter = SharedIcon(":/QtIcons/emitter_particle.png");
+    iconLayer = SharedIcon(":/QtIcons/layer_particle.png");
+    iconForce = SharedIcon(":/QtIcons/force.png");
+    iconExternal = SharedIcon(":/QtIcons/external.png");
 
     mainLayout->addWidget(new QLabel("Effect Variables"));
 	effectVariables = new QTableWidget(this);

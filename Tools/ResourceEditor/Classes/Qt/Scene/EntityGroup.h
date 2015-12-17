@@ -61,7 +61,10 @@ public:
     DAVA::Vector3 GetFirstZeroPos() const;
     DAVA::Vector3 GetCommonZeroPos() const;
 
-	bool ContainsEntity(DAVA::Entity *entity) const;
+    bool IsEmpty() const;
+    bool ContainsEntity(DAVA::Entity *entity) const;
+
+    size_t Size() const;
 
     DAVA::Entity* IntersectedEntity(const EntityGroup *group) const;
     DAVA::Entity* IntersectedEntity(const EntityVector& group) const;
@@ -70,7 +73,6 @@ public:
     bool operator==(const EntityGroup& ss) const;
     bool operator!=(const EntityGroup& ss) const;
 
-    size_t Size() const;
     DAVA::Entity* GetFirstEntity() const;
 
     void Join(const EntityGroup&);
@@ -85,5 +87,35 @@ private:
     EntityMap entities;
     DAVA::AABBox3 entitiesBbox;
 };
+
+inline const DAVA::AABBox3& EntityGroup::GetCommonBbox() const
+{
+    return entitiesBbox;
+}
+
+inline bool EntityGroup::ContainsEntity(DAVA::Entity* entity) const
+{
+    return entities.count(entity) > 0;
+}
+
+inline EntityGroup::EntityMap& EntityGroup::GetMutableContent()
+{
+    return entities;
+}
+
+inline const EntityGroup::EntityMap& EntityGroup::GetContent() const
+{
+    return entities;
+}
+
+inline bool EntityGroup::IsEmpty() const
+{
+    return entities.empty();
+}
+
+inline size_t EntityGroup::Size() const
+{
+    return entities.size();
+}
 
 #endif // __ENTITY_GROUP_H__

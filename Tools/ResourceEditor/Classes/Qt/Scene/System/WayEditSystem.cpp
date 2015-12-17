@@ -299,7 +299,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
             
             ProcessSelection();
 
-            if(selectedWaypoints.Size() != 0)
+            if (!selectedWaypoints.IsEmpty())
             {
                 if(selectedWaypoints.Size() == 1 && !cloneJustDone)
                 {
@@ -332,7 +332,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                 {
                     EntityGroup validPrevPoints;
                     FilterPrevSelection(currentWayParent, validPrevPoints);
-                    if (!validPrevPoints.Size())
+                    if (validPrevPoints.IsEmpty())
                     {
                         if (currentWayParent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT) > 0)
                         {
@@ -345,8 +345,8 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
 
                     Entity *newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
                     sceneEditor->Exec(new EntityAddCommand(newWaypoint, currentWayParent));
-                    
-                    if(validPrevPoints.Size())
+
+                    if (!validPrevPoints.IsEmpty())
                     {
                         AddEdges(validPrevPoints, newWaypoint);
                     }
@@ -460,7 +460,7 @@ void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 
 void WayEditSystem::Draw()
 {
-    const EntityGroup & selectionGroup = (currentSelection.Size()) ? currentSelection : prevSelectedWaypoints;
+    const EntityGroup& selectionGroup = (currentSelection.IsEmpty()) ? prevSelectedWaypoints : currentSelection;
 
     const uint32 count = waypointEntities.size();
     for(uint32 i = 0; i < count; ++i)

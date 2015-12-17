@@ -461,7 +461,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 	case DAVA::VariantType::TYPE_COLOR:
 		{
 			QToolButton *colorBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
-            colorBtn->setIcon(QSharedIcon(":/QtIcons/color.png"));
+            colorBtn->setIcon(SharedIcon(":/QtIcons/color.png"));
             colorBtn->setIconSize(QSize(12, 12));
 			colorBtn->setAutoRaise(true);
             colorBtn->setObjectName("colorButton");
@@ -489,7 +489,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 	case DAVA::VariantType::TYPE_FILEPATH:
 		{
 			QToolButton *filePathBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
-            filePathBtn->setIcon(QSharedIcon(":/QtIcons/openscene.png"));
+            filePathBtn->setIcon(SharedIcon(":/QtIcons/openscene.png"));
             filePathBtn->setIconSize(QSize(14, 14));
 			filePathBtn->setAutoRaise(true);
 			connect(filePathBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::FilePathOWPressed);
@@ -498,7 +498,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
     case DAVA::VariantType::TYPE_STRING:
         {
             QToolButton *editMultiline = AddButton( QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED );
-            editMultiline->setIcon(QSharedIcon(":/QtIcons/pencil.png"));
+            editMultiline->setIcon(SharedIcon(":/QtIcons/pencil.png"));
             editMultiline->setIconSize( QSize( 14, 14 ) );
             editMultiline->setAutoRaise( true );
             editMultiline->setToolTip( "Open multiline editor" );

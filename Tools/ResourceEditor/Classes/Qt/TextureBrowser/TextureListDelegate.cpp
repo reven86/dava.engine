@@ -378,7 +378,7 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
 		if(texture->width != texture->height)
 		{
 			r.moveLeft(r.x() - 16);
-            QSharedIcon(":/QtIcons/error.png").paint(painter, r.x(), r.y(), 16, 16);
+            SharedIcon(":/QtIcons/error.png").paint(painter, r.x(), r.y(), 16, 16);
         }
 
         ret = rect.width() - (r.x() - rect.x());
