@@ -456,8 +456,10 @@ void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty *property)
 
 void PackageSerializer::AcceptChildren(AbstractProperty *property)
 {
-    for (int32 i = 0; i < property->GetCount(); i++)
+    for (uint32 i = 0; i < property->GetCount(); i++)
+    {
         property->GetProperty(i)->Accept(this);
+    }
 }
 
 void PackageSerializer::PutValueProperty(const DAVA::String &name, ValueProperty *property)

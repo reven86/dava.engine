@@ -42,6 +42,13 @@
 
 using namespace DAVA;
 
+Vector2 RotateVector(const Vector2& in, float32 angle)
+{
+    DAVA::Matrix3 rotateMatrix;
+    rotateMatrix.BuildRotation(angle);
+    return in * rotateMatrix;
+}
+
 class EditorSystemsManager::RootControl : public UIControl
 {
 public:
@@ -147,7 +154,7 @@ void EditorSystemsManager::OnPackageNodeChanged(std::weak_ptr<PackageNode> packa
         }
     }
     package = package_;
-    SetPreviewMode(true, true);
+    SetPreviewMode(true);
     {
         auto newNode = package.lock();
         if (nullptr != newNode)
@@ -194,23 +201,16 @@ void EditorSystemsManager::OnControlWasAdded(ControlNode* node, ControlsContaine
     }
 }
 
-void EditorSystemsManager::SetPreviewMode(bool mode, bool forceUpdate)
+void EditorSystemsManager::SetPreviewMode(bool mode)
 {
-    if (previewMode == mode)
-    {
-        if (forceUpdate)
-        {
-            RefreshRootControls();
-        }
-        return;
-    }
     previewMode = mode;
     RefreshRootControls();
 }
 
 void EditorSystemsManager::RefreshRootControls()
 {
-    editingRootControls.clear();
+    SortedPackageBaseNodeSet newRootControls(CompareByLCA);
+
     if (previewMode)
     {
         auto packagePtr = package.lock();
@@ -219,7 +219,7 @@ void EditorSystemsManager::RefreshRootControls()
             PackageControlsNode* controlsNode = packagePtr->GetPackageControlsNode();
             for (int index = 0; index < controlsNode->GetCount(); ++index)
             {
-                editingRootControls.insert(controlsNode->Get(index));
+                newRootControls.insert(controlsNode->Get(index));
             }
         }
     }
@@ -234,9 +234,13 @@ void EditorSystemsManager::RefreshRootControls()
             }
             if (nullptr != root)
             {
-                editingRootControls.insert(root);
+                newRootControls.insert(root);
             }
         }
     }
-    EditingRootControlsChanged.Emit(editingRootControls);
+    if (editingRootControls != newRootControls)
+    {
+        editingRootControls = newRootControls;
+        EditingRootControlsChanged.Emit(editingRootControls);
+    }
 }

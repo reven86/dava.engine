@@ -107,7 +107,7 @@ void ComponentPropertiesSection::DetachPrototypeSection(ComponentPropertiesSecti
     if (prototypeSection == section)
     {
         prototypeSection = nullptr; // weak
-        for (int i = 0; i < GetCount(); i++)
+        for (uint32 i = 0; i < GetCount(); i++)
         {
             ValueProperty *value = GetProperty(i);
             if (value->GetPrototypeProperty())

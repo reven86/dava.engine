@@ -77,13 +77,15 @@ struct HUDAreaInfo
 
 struct MagnetLineInfo
 {
-    MagnetLineInfo(const DAVA::Rect& rect_, const DAVA::UIGeometricData* gd_, DAVA::Vector2::eAxis axis_)
-        : absoluteRect(rect_)
+    MagnetLineInfo(const DAVA::Rect& targetRect_, const DAVA::Rect& rect_, const DAVA::UIGeometricData* gd_, DAVA::Vector2::eAxis axis_)
+        : targetRect(targetRect_)
+        , rect(rect_)
         , gd(gd_)
         , axis(axis_)
     {
     }
-    DAVA::Rect absoluteRect;
+    DAVA::Rect targetRect;
+    DAVA::Rect rect;
     const DAVA::UIGeometricData* gd;
     const DAVA::Vector2::eAxis axis;
 };
@@ -137,7 +139,7 @@ private:
     void OnPackageNodeChanged(std::weak_ptr<PackageNode> node);
     void OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
     void OnControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
-    void SetPreviewMode(bool mode, bool forceUpdate = false);
+    void SetPreviewMode(bool mode);
     void RefreshRootControls();
 
     DAVA::RefPtr<RootControl> rootControl;
@@ -179,5 +181,7 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
         CollectControlNodesImpl(destination, predicate, node->Get(i));
     }
 }
+
+extern DAVA::Vector2 RotateVector(const DAVA::Vector2& in, DAVA::float32 angle);
 
 #endif // __QUICKED_SYSTEMS_MANAGER_H__

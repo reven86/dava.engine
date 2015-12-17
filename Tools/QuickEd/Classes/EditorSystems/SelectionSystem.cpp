@@ -179,6 +179,10 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
 {
     SelectedNodes selected;
     SelectedNodes deselected;
+    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
+    {
+        deselected = selectionContainer.selectedNodes;
+    }
     Vector<ControlNode*> nodesUnderPoint;
     auto predicate = [point](const UIControl* control) -> bool {
         return control->GetSystemVisible() && control->IsPointInside(point);
@@ -205,10 +209,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
                 return true; //selection was required but cancelled
             }
         }
-        if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
-        {
-            deselected = selectionContainer.selectedNodes;
-        }
+
         if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && selectionContainer.IsSelected(node))
         {
             deselected.insert(node);

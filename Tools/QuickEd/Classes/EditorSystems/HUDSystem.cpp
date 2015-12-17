@@ -64,9 +64,7 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
         return new FrameRectControl(area);
     case HUDAreaInfo::FRAME_AREA:
-
         return CreateContainerWithBorders<FrameControl>();
-
     default:
         DVASSERT(!"unacceptable value of area");
         return nullptr;
@@ -83,7 +81,7 @@ struct HUDSystem::HUD
     RefPtr<HUDContainer> container;
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
-
+#include <numeric>
 HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     : node(node_)
     , control(node_->GetControl())
@@ -91,16 +89,27 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     , container(new HUDContainer(control))
 {
     container->SetName("Container for HUD controls of node " + node_->GetName());
-    uint32 begin = HUDAreaInfo::AREAS_BEGIN;
-    uint32 end = HUDAreaInfo::AREAS_COUNT;
+    DAVA::Vector<HUDAreaInfo::eArea> areas(HUDAreaInfo::AREAS_COUNT);
+    int begin = HUDAreaInfo::AREAS_BEGIN;
+    std::generate(areas.begin(), areas.end(), [begin]() mutable {
+        return static_cast<HUDAreaInfo::eArea>(begin++);
+    });
     if (node->GetParent() == nullptr || node->GetParent()->GetControl() == nullptr)
     {
-        begin = HUDAreaInfo::CORNERS_BEGIN;
-        end = HUDAreaInfo::CORNERS_COUNT;
+        //custom areas
+        areas.clear();
+        areas.push_back(HUDAreaInfo::TOP_LEFT_AREA);
+        areas.push_back(HUDAreaInfo::TOP_CENTER_AREA);
+        areas.push_back(HUDAreaInfo::TOP_RIGHT_AREA);
+        areas.push_back(HUDAreaInfo::CENTER_LEFT_AREA);
+        areas.push_back(HUDAreaInfo::CENTER_RIGHT_AREA);
+        areas.push_back(HUDAreaInfo::BOTTOM_LEFT_AREA);
+        areas.push_back(HUDAreaInfo::BOTTOM_CENTER_AREA);
+        areas.push_back(HUDAreaInfo::BOTTOM_RIGHT_AREA);
+        areas.push_back(HUDAreaInfo::FRAME_AREA);
     }
-    for (uint32 i = begin; i < end; ++i)
+    for (HUDAreaInfo::eArea area : areas)
     {
-        HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
         ControlContainer* controlContainer = CreateControlContainer(area);
         container->AddChild(controlContainer);
         hudControls[area] = controlContainer;
@@ -120,6 +129,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     , selectionRectControl(CreateContainerWithBorders<SelectionRect>())
     , sortedControlList(CompareByLCA)
 {
+    InvalidatePressedPoint();
     systemManager->GetRootControl()->AddControl(hudControl.Get());
     hudControl->AddControl(selectionRectControl.Get());
     hudControl->SetName("hudControl");
@@ -223,6 +233,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         SetCanDrawRect(false);
         dragRequested = false;
         bool retVal = (pressedPoint - currentInput->point).Length() > 0;
+        InvalidatePressedPoint();
         return retVal;
     }
     default:
@@ -258,19 +269,43 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     }
     magnetControls.clear();
 
+    for (auto& magnetTargetControl : magnetTargetControls)
+    {
+        hudControl->RemoveControl(magnetTargetControl.Get());
+    }
+    magnetTargetControls.clear();
+
     for (const MagnetLineInfo& line : magnetLines)
     {
-        MagnetLine* control = new MagnetLine();
+        const auto& gd = line.gd;
 
-        Rect lineRect = line.absoluteRect;
+        auto linePos = line.rect.GetPosition();
+        auto lineSize = line.rect.GetSize();
 
-        control->SetRect(lineRect);
+        linePos = RotateVector(linePos, gd->angle);
+        linePos *= gd->scale;
+        lineSize *= gd->scale;
+        Vector2 gdPos = gd->position - RotateVector(gd->pivotPoint * gd->scale, gd->angle);
+
+        MagnetLineControl* lineControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
-        control->SetSize(control->GetSize() + extraSize);
-        control->SetPivotPoint(extraSize / 2.0f);
-        control->SetAngle(line.gd->angle);
-        hudControl->AddControl(control);
-        magnetControls.emplace_back(control);
+        lineControl->SetSize(lineControl->GetSize() + extraSize);
+        lineControl->SetPivotPoint(extraSize / 2.0f);
+        lineControl->SetAngle(line.gd->angle);
+        hudControl->AddControl(lineControl);
+        magnetControls.emplace_back(lineControl);
+
+        linePos = line.targetRect.GetPosition();
+        lineSize = line.targetRect.GetSize();
+
+        linePos = RotateVector(linePos, gd->angle);
+        linePos *= gd->scale;
+        lineSize *= gd->scale;
+
+        MagnetLineControl* rectControl = new MagnetLineControl(Rect(linePos + gdPos, lineSize));
+        rectControl->SetAngle(line.gd->angle);
+        hudControl->AddControl(rectControl);
+        magnetTargetControls.emplace_back(rectControl);
     }
 }
 
@@ -365,4 +400,9 @@ void HUDSystem::UpdateAreasVisibility()
             }
         }
     }
+}
+
+void HUDSystem::InvalidatePressedPoint()
+{
+    pressedPoint.Set(std::numeric_limits<float32>::max(), std::numeric_limits<float32>::max());
 }

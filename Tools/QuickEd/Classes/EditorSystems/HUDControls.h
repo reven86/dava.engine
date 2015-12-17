@@ -131,13 +131,13 @@ class SelectionRect : public FrameControl
     void Draw(const DAVA::UIGeometricData& geometricData) override;
 };
 
-class MagnetLine : public DAVA::UIControl
+class MagnetLineControl : public DAVA::UIControl
 {
 public:
-    MagnetLine();
+    MagnetLineControl(const DAVA::Rect& rect);
 
 private:
-    ~MagnetLine() = default;
+    ~MagnetLineControl() = default;
 };
 
 template <typename T>
