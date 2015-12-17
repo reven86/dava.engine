@@ -103,6 +103,8 @@ class NMaterial : public DataNode
 
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_NMATERIAL)
 
+    const static uint32 MATERIAL_SORTING_KEY_MASK = 0xffff;
+
 public:
     NMaterial();
     ~NMaterial();
