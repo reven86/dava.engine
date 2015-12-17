@@ -42,7 +42,7 @@ VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
 {
     renderer.SetDelegate(this);
 
-    const DAVA::uint32 renderTargetSize = 2048;
+    const DAVA::uint32 renderTargetSize = 1024;
 
     for (DAVA::uint32 i = 0; i < CUBEMAPS_COUNT; ++i)
     {

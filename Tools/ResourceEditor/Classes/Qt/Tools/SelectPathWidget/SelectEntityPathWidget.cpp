@@ -134,9 +134,9 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
 
         DAVA::Entity* entity = sceneEditor->structureSystem->Load(filePath);
 
-        if(NULL != entity)
-		{
-			retList.push_back(entity);
+        if (NULL != entity)
+        {
+            retList.push_back(entity);
 		}
 	}
 	// for just created entities no need to increase refCouner

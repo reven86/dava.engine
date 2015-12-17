@@ -237,7 +237,7 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     QVBoxLayout* orientationLayout = new QVBoxLayout();
     particleOrientationLabel = new QLabel("Particle Orientation");
     orientationLayout->addWidget(particleOrientationLabel);
-	QHBoxLayout* facingLayout = new QHBoxLayout();
+    QHBoxLayout* facingLayout = new QHBoxLayout();
 	
 	cameraFacingCheckBox = new QCheckBox("Camera Facing");
 	facingLayout->addWidget(cameraFacingCheckBox);

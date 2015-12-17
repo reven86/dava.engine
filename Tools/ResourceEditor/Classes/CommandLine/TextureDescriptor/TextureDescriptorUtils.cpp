@@ -153,8 +153,8 @@ bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPath
         {
             descriptor->dataSettings.sourceFileFormat = sourceFormat;
             descriptor->dataSettings.sourceFileExtension = extension;
-		}
-        
+        }
+
         descriptor->Save(descriptorPathname);
 		return true;
     }

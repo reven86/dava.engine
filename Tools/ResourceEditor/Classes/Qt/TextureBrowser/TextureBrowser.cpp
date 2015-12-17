@@ -98,9 +98,9 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     setupTextureToolbar();
     setupTextureListFilter();
     setupTextureProperties();
-	setupTextureViewTabBar();
+    setupTextureViewTabBar();
 
-	resetTextureInfo();
+    resetTextureInfo();
 
 	// let textures list show images-view by default
 	ui->actionViewImagesList->trigger();

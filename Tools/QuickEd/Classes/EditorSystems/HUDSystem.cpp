@@ -225,7 +225,6 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
                 size.y *= -1.0f;
             }
             selectionRectControl->SetRect(Rect(point, size));
-            FixPositionForScroll(selectionRectControl.Get());
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
@@ -284,8 +283,6 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         control->SetAngle(line.gd->angle);
         hudControl->AddControl(control);
         magnetControls.emplace_back(control);
-
-        FixPositionForScroll(control);
     }
 }
 
