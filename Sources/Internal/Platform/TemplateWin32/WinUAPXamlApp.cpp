@@ -401,11 +401,27 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
         {
         case CoreWindowActivationState::CodeActivated:
         case CoreWindowActivationState::PointerActivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->FocusReceived();
+            if (isPhoneApiDetected)
+            {
+                Core::Instance()->SetIsActive(true);
+            }
+            else
+            {
+                Core::Instance()->FocusReceived();
+            }
+            isActivated = true;
             break;
         case CoreWindowActivationState::Deactivated:
-            isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->FocusLost();
+            if (isPhoneApiDetected)
+            {
+                Core::Instance()->SetIsActive(false);
+            }
+            else
+            {
+                Core::Instance()->FocusLost();
+            }
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            isActivated = false;
             break;
         default:
             break;
@@ -538,6 +554,11 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
 
 void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
+    if (!isActivated)
+    {
+        return;
+    }
+
     if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING || !isMouseCursorShown)
     {
 #if defined(DAVA_WINUAP_MOUSE_HACK)

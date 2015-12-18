@@ -203,6 +203,7 @@ private:
     bool isRightButtonPressed = false;
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
+    bool isActivated = true;
 
     float32 viewScaleX = 1.f;
     float32 viewScaleY = 1.f;
