@@ -78,6 +78,9 @@ protected:
     void SetupCube();
     void SetupRT();
 
+    void SetupInstancedCube();
+    void DrawInstancedCube();
+
     void SetupTank();
     void DrawTank();
 
@@ -122,6 +125,7 @@ protected:
     Object
     {
         rhi::HVertexBuffer vb;
+        rhi::HVertexBuffer vb2;
         uint32 vb_layout;
         uint32 v_cnt;
         rhi::HIndexBuffer ib;
@@ -138,6 +142,10 @@ protected:
     Object cube;
     uint64 cube_t0;
     float cube_angle;
+
+    Object icube;
+    uint64 icube_t0;
+    float icube_angle;
 
     Object rtQuad;
     rhi::Packet rtQuadBatch;

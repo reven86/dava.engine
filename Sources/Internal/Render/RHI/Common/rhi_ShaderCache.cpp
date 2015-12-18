@@ -977,6 +977,9 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
             src_len += sprintf(src + src_len, "#define %s %i \n", vattr[i].name, vattr[i].value);
     }
 
+    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_VERTEX \n");
+    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_INSTANCE \n");
+
     switch (targetApi)
     {
     case RHI_DX9:

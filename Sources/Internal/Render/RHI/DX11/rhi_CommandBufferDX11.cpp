@@ -101,8 +101,9 @@ public:
     uint32 isComplete : 1;
 
     D3D11_PRIMITIVE_TOPOLOGY cur_topo;
-    Handle cur_vb;
-    uint32 cur_vb_stride;
+    Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
+    uint32 cur_vb_stride[MAX_VERTEX_STREAM_COUNT];
+    uint32 cur_stream_count;
     Handle cur_pipelinestate;
     uint32 cur_stride;
     Handle cur_query_buf;
@@ -112,8 +113,8 @@ public:
     ID3D11RasterizerState* cur_rs;
 
     ID3D11RasterizerState* last_rs;
-    Handle last_vb;
-    uint32 last_vb_stride;
+    Handle last_vb[MAX_VERTEX_STREAM_COUNT];
+    uint32 last_vb_stride[MAX_VERTEX_STREAM_COUNT];
     Handle last_ps;
     uint32 last_vdecl;
 
@@ -429,7 +430,9 @@ dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
     const VertexLayout* vdecl = (vdeclUID == VertexLayout::InvalidUID) ? nullptr : VertexLayout::Get(vdeclUID);
 
     cb->cur_pipelinestate = ps;
-    cb->cur_vb_stride = (vdecl) ? vdecl->Stride() : 0;
+    cb->cur_stream_count = PipelineStateDX11::VertexLayoutStreamCount(ps);
+    for (unsigned i = 0; i != cb->cur_stream_count; ++i)
+        cb->cur_vb_stride[i] = (vdecl) ? vdecl->Stride(i) : 0;
 
     if (ps != cb->last_ps || vdeclUID != cb->last_vdecl)
     {
@@ -524,8 +527,9 @@ dx11_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
-    cb->cur_vb = vb;
-    cb->cur_vb_stride = (cb->cur_vb_stride) ? cb->cur_vb_stride : PipelineStateDX11::VertexLayoutStride(cb->cur_pipelinestate);
+    cb->cur_vb[streamIndex] = vb;
+    if (!cb->cur_vb_stride[streamIndex])
+        cb->cur_vb_stride[streamIndex] = PipelineStateDX11::VertexLayoutStride(cb->cur_pipelinestate, streamIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -650,22 +654,6 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
         QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
-    /*
-    switch (topo)
-    {
-    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
-        StatSet::IncStat(stat_DTL, 1);
-        break;
-    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
-        StatSet::IncStat(stat_DTS, 1);
-        break;
-    case D3D11_PRIMITIVE_TOPOLOGY_LINELIST:
-        StatSet::IncStat(stat_DLL, 1);
-        break;
-    default:
-        break;
-    }
-*/
 }
 
 //------------------------------------------------------------------------------
@@ -691,22 +679,57 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
-    /*
-    switch (topo)
-    {
-    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
-        StatSet::IncStat(stat_DTL, 1);
-        break;
-    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
-        StatSet::IncStat(stat_DTS, 1);
-        break;
-    case D3D11_PRIMITIVE_TOPOLOGY_LINELIST:
-        StatSet::IncStat(stat_DLL, 1);
-        break;
-    default:
-        break;
-    }
-*/
+}
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+{
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
+    ID3D11DeviceContext* ctx = cb->context;
+    unsigned vertexCount = 0;
+    INT baseVertex = 0;
+
+    cb->_ApplyTopology(type, count, &vertexCount);
+    cb->_ApplyVertexData();
+    cb->_ApplyRasterizerState();
+    cb->_ApplyConstBuffers();
+
+    if (cb->cur_query_i != DAVA::InvalidIndex)
+        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
+
+    ctx->DrawInstanced(vertexCount, instCount, baseVertex, 0);
+
+    if (cb->cur_query_i != DAVA::InvalidIndex)
+        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
+
+    StatSet::IncStat(stat_DIP, 1);
+}
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
+{
+    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
+    ID3D11DeviceContext* ctx = cb->context;
+    unsigned indexCount = 0;
+
+    cb->_ApplyTopology(type, count, &indexCount);
+    cb->_ApplyVertexData();
+    cb->_ApplyRasterizerState();
+    cb->_ApplyConstBuffers();
+
+    if (cb->cur_query_i != DAVA::InvalidIndex)
+        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
+
+    ctx->DrawIndexed(indexCount, startIndex, firstVertex);
+
+    if (cb->cur_query_i != DAVA::InvalidIndex)
+        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
+
+    StatSet::IncStat(stat_DIP, 1);
 }
 
 //------------------------------------------------------------------------------
@@ -1164,8 +1187,11 @@ CommandBufferDX11_t::~CommandBufferDX11_t()
 void CommandBufferDX11_t::Reset()
 {
     cur_topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    cur_vb = InvalidHandle;
-    cur_vb_stride = 0;
+    for (unsigned i = 0; i != MAX_VERTEX_STREAM_COUNT; ++i)
+    {
+        cur_vb[i] = InvalidHandle;
+        cur_vb_stride[i] = 0;
+    }
     cur_pipelinestate = InvalidHandle;
     cur_stride = 0;
     cur_query_buf = InvalidHandle;
@@ -1177,8 +1203,11 @@ void CommandBufferDX11_t::Reset()
     rs_param.wireframe = false;
 
     last_rs = nullptr;
-    last_vb = InvalidHandle;
-    last_vb_stride = 0;
+    for (unsigned i = 0; i != MAX_VERTEX_STREAM_COUNT; ++i)
+    {
+        last_vb[i] = InvalidHandle;
+        last_vb_stride[i] = 0;
+    }
     last_ps = InvalidHandle;
     last_vdecl = VertexLayout::InvalidUID;
 
@@ -1225,12 +1254,15 @@ void CommandBufferDX11_t::_ApplyTopology(PrimitiveType primType, uint32 primCoun
 
 void CommandBufferDX11_t::_ApplyVertexData()
 {
-    if (cur_vb != last_vb || cur_vb_stride != last_vb_stride)
+    for (unsigned i = 0; i != cur_stream_count; ++i)
     {
-        VertexBufferDX11::SetToRHI(cur_vb, 0, 0, cur_vb_stride, context);
-        StatSet::IncStat(stat_SET_VB, 1);
-        last_vb = cur_vb;
-        last_vb_stride = cur_vb_stride;
+        if (cur_vb[i] != last_vb[i] || cur_vb_stride[i] != last_vb_stride[i])
+        {
+            VertexBufferDX11::SetToRHI(cur_vb[i], i, 0, cur_vb_stride[i], context);
+            StatSet::IncStat(stat_SET_VB, 1);
+            last_vb[i] = cur_vb[i];
+            last_vb_stride[i] = cur_vb_stride[i];
+        }
     }
 }
 
@@ -1328,6 +1360,8 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetSamplerState = &dx11_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive = &dx11_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive = &dx11_CommandBuffer_DrawIndexedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedPrimitive = &dx11_CommandBuffer_DrawInstancedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedIndexedPrimitive = &dx11_CommandBuffer_DrawInstancedIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker = &dx11_CommandBuffer_SetMarker;
 
     dispatch->impl_SyncObject_Create = &dx11_SyncObject_Create;
