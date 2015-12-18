@@ -35,11 +35,6 @@ using namespace DAVA;
 InputTest::InputTest()
     : BaseScreen("InputTest")
 {
-    for(auto i = 0; i < DeviceInfo::eHIDType::HID_COUNT_TYPE; ++i)
-    {
-        input[i] = false;
-    }
-
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_MOUSE_TYPE).Connect(this, &InputTest::OnInputChanged);
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_KEYBOARD_TYPE).Connect(this, &InputTest::OnInputChanged);
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_POINTER_TYPE).Connect(this, &InputTest::OnInputChanged);
