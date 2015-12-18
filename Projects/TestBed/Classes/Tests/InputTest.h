@@ -54,7 +54,7 @@ private:
     UIButton* mouse;
     UIButton* touch;
     UIButton* keyboard;
-    bool input[DeviceInfo::eHIDType::HID_COUNT_TYPE] = { false, false, false, false, false, false, false, false };
+    bool input[DeviceInfo::eHIDType::HID_COUNT_TYPE];
 };
 
 #endif //__INPUTTEST_TEST_H__
