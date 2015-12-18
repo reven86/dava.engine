@@ -363,15 +363,17 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         case QEvent::MouseButtonPress:
             lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
             break;
+        case QEvent::DragEnter:
+            return true;
         case QEvent::DragMove:
             OnDragMoveEvent(DynamicTypeCheck<QDragMoveEvent*>(event));
             return true;
         case QEvent::DragLeave:
             OnDragLeaveEvent(DynamicTypeCheck<QDragLeaveEvent*>(event));
-            break;
+            return true;
         case QEvent::Drop:
             OnDropEvent(DynamicTypeCheck<QDropEvent*>(event));
-            break;
+            return true;
         default:
             break;
         }
@@ -457,6 +459,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 {
+    DVASSERT(nullptr != event);
     if (document == nullptr)
     {
         return;
@@ -481,6 +484,7 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
+    DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
     if (event->buttons() & Qt::MiddleButton)
     {
@@ -499,48 +503,68 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 
 void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
 {
-    DVASSERT(nullptr != document);
+    DVASSERT(nullptr != event);
+    ProcessDragMoveEvent(event) ? event->accept() : event->ignore();
+}
+
+bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
+{
+    DVASSERT(nullptr != event);
     auto mimeData = event->mimeData();
-    if(!mimeData->hasFormat("text/plain") || !mimeData->hasText())
+    if (mimeData->hasFormat("text/uri-list"))
     {
-        event->ignore();
-        return;
+        QStringList strList = mimeData->text().split("\n");
+        for (const auto& str : strList)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                return true;
+            }
+        }
     }
-    DAVA::Vector2 pos(event->pos().x(), event->pos().y());
-    auto node = systemManager->ControlNodeUnderPoint(pos);
-    systemManager->NodesHovered.Emit({node});
-    if(nullptr != node)
+    else if (mimeData->hasFormat("text/plain"))
     {
-        event->accept();
-    }
-    else
-    {
-        event->ignore();
+        DVASSERT(nullptr != document);
+        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        auto node = systemManager->ControlNodeUnderPoint(pos);
+        systemManager->NodesHovered.Emit({ node });
+        return nullptr != node && (!mimeData->hasFormat(PackageMimeData::MIME_TYPE) || !node->IsReadOnly());
     }
 }
 
-void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent* event)
+void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
 {
     systemManager->NodesHovered.Emit({nullptr});
 }
 
 void PreviewWidget::OnDropEvent(QDropEvent *event)
 {
+    systemManager->NodesHovered.Emit({ nullptr });
+    DVASSERT(nullptr != event);
     auto mimeData = event->mimeData();
-    DVASSERT(mimeData->hasFormat("text/plain") && mimeData->hasText());
-    DAVA::Vector2 pos(event->pos().x(), event->pos().y());
-    auto node = systemManager->ControlNodeUnderPoint(pos);
-    DVASSERT(nullptr != node);
-    DVASSERT(nullptr != node->GetParent());
-    
-    String string = mimeData->text().toStdString();
-    DVASSERT(nullptr != document);
-    auto commandExecutorPtr = document->GetCommandExecutor().lock();
-    DVASSERT(nullptr != commandExecutorPtr);
-    auto packagePtr = document->GetPackage().lock();
-    DVASSERT(nullptr != packagePtr);
-    int index = node->GetParent()->GetIndex(node);
-    commandExecutorPtr->Paste(packagePtr.get(), node, index + 1, string);
+    if (mimeData->hasFormat("text/plain"))
+    {
+        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        auto node = systemManager->ControlNodeUnderPoint(pos);
+        DVASSERT(nullptr != node);
+        String string = mimeData->text().toStdString();
+        auto action = event->dropAction();
+        emit DropRequested(mimeData, action, node, node->GetCount(), pos);
+    }
+    else if (mimeData->hasFormat("text/uri-list"))
+    {
+        QStringList list = mimeData->text().split("\n");
+        Vector<FilePath> packages;
+        for (const QString& str : list)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                emit OpenPackageFile(url.toLocalFile());
+            }
+        }
+    }
 }
 
 qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const

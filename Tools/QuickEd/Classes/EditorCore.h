@@ -52,7 +52,6 @@ public:
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project *GetProject() const;
-    SpritesPacker* GetSpritesPacker() const;
     void Start();
 
 private slots:

@@ -184,6 +184,11 @@ PackageWidget::PackageWidget(QWidget *parent)
     PlaceActions();
 }
 
+PackageModel* PackageWidget::GetPackageModel() const
+{
+    return packageModel;
+}
+
 void PackageWidget::OnDocumentChanged(Document* arg)
 {
     bool isUpdatesEnabled = treeView->updatesEnabled();

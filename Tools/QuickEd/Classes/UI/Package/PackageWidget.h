@@ -54,8 +54,8 @@ class PackageWidget : public QDockWidget, public Ui::PackageWidget
     Q_OBJECT
 public:
     explicit PackageWidget(QWidget *parent = 0);
-    ~PackageWidget() = default;
 
+    PackageModel* GetPackageModel() const;
     using ExpandedIndexes = QModelIndexList ;
 
 signals:

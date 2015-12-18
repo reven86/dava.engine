@@ -454,93 +454,71 @@ int PackageModel::GetRowIndex(int row, const QModelIndex& parent) const
     return rowCount(parent);
 }
 
-bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int /*column*/, const QModelIndex& parent)
+{
+    int rowIndex = GetRowIndex(row, parent);
+    PackageBaseNode* destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
+    OnDropMimeData(data, action, destNode, rowIndex, Vector2(-1.0f, -1.0f));
+    return true; //if we can drop - we must drop. Otherwise CanDropMimeData must return false;
+}
+
+void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* destNode, int destIndex, const DAVA::Vector2& pos)
 {
     auto commandExecutorPtr = commandExecutor.lock();
     DVASSERT(nullptr != commandExecutorPtr);
-    if (nullptr == commandExecutorPtr)
-    {
-        return false;
-    }
 
     auto packagePtr = package.lock();
     DVASSERT(nullptr != packagePtr);
-    if (nullptr == packagePtr)
-    {
-        return false;
-    }
-    if (action == Qt::IgnoreAction)
-    {
-        return true;
-    }
 
-    int rowIndex = GetRowIndex(row, parent);
-
-    PackageBaseNode *destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
-    
     ControlsContainerNode *destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
     StyleSheetsNode *destStylesContainer = dynamic_cast<StyleSheetsNode*>(destNode);
-    
+
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
-        if (nullptr == controlMimeData)
-        {
-            return false;
-        }
+        DVASSERT(nullptr != controlMimeData);
 
         const Vector<ControlNode *> &srcControls = controlMimeData->GetControls();
-        if (srcControls.empty())
+        DVASSERT(!srcControls.empty());
+
+        switch (action)
         {
-            return false;
-        }
-        if (action == Qt::CopyAction)
-        {
-            commandExecutorPtr->CopyControls(srcControls, destControlContainer, rowIndex);
-        }
-        else if (action == Qt::MoveAction)
-        {
+        case Qt::CopyAction:
+            commandExecutorPtr->CopyControls(srcControls, destControlContainer, destIndex, pos);
+            break;
+        case Qt::MoveAction:
             emit BeforeNodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
-            commandExecutorPtr->MoveControls(srcControls, destControlContainer, rowIndex);
+            commandExecutorPtr->MoveControls(srcControls, destControlContainer, destIndex, pos);
             emit NodesMoved(SelectedNodes(srcControls.begin(), srcControls.end()));
+            break;
+        case Qt::LinkAction:
+            commandExecutorPtr->InsertInstances(srcControls, destControlContainer, destIndex, pos);
+            break;
+        default:
+            DVASSERT(false && "unrecognised action!");
         }
-        else if (action == Qt::LinkAction)
-        {
-            commandExecutorPtr->InsertInstances(srcControls, destControlContainer, rowIndex);
-        }
-        else
-        {
-            return false;
-        }
-        return true;
     }
     else if (destStylesContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *mimeData = dynamic_cast<const PackageMimeData*>(data);
-        if (nullptr == mimeData)
-        {
-            return false;
-        }
+        DVASSERT(nullptr != mimeData)
+
         const Vector<StyleSheetNode *> &srcStyles = mimeData->GetStyles();
-        if (srcStyles.empty())
+        DVASSERT(!srcStyles.empty());
+
+        switch (action)
         {
-            return false;
-        }
-        if (action == Qt::CopyAction)
-        {
-            commandExecutorPtr->CopyStyles(srcStyles, destStylesContainer, rowIndex);
-        }
-        else if (action == Qt::MoveAction)
-        {
+        case Qt::CopyAction:
+            commandExecutorPtr->CopyStyles(srcStyles, destStylesContainer, destIndex);
+            break;
+        case Qt::MoveAction:
             emit BeforeNodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
-            commandExecutorPtr->MoveStyles(srcStyles, destStylesContainer, rowIndex);
+            commandExecutorPtr->MoveStyles(srcStyles, destStylesContainer, destIndex);
             emit NodesMoved(SelectedNodes(srcStyles.begin(), srcStyles.end()));
+            break;
+        default:
+            DVASSERT(false && "unrecognised action!");
         }
-        else
-        {
-            return false;
-        }
-        return true;
     }
     else if (data->hasFormat("text/uri-list") && data->hasText())
     {
@@ -562,11 +540,8 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     else if (destNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        commandExecutorPtr->Paste(packagePtr.get(), destNode, rowIndex, string);
-        return true;
+        commandExecutorPtr->Paste(packagePtr.get(), destNode, destIndex, string, pos);
     }
-
-    return false;
 }
 
 void PackageModel::OnControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)

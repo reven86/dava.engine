@@ -72,6 +72,8 @@ signals:
     void CopyRequested();
     void PasteRequested();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OpenPackageFile(QString path);
+    void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, int destIndex, const DAVA::Vector2& pos);
 
 public slots:
     void OnDocumentChanged(Document* document);
@@ -107,6 +109,7 @@ private:
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
     void OnDragMoveEvent(QDragMoveEvent* event);
+    bool ProcessDragMoveEvent(QDropEvent* event);
     void OnDragLeaveEvent(QDragLeaveEvent* event);
     void OnDropEvent(QDropEvent* event);
     

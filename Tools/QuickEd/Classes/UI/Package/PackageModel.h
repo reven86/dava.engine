@@ -73,6 +73,9 @@ signals:
     void BeforeNodesMoved(const SelectedNodes& nodes);
     void NodesMoved(const SelectedNodes& nodes);
 
+public slots:
+    void OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, int destIndex, const DAVA::Vector2& pos);
+
 private: // PackageListener
     void OnControlPropertyWasChanged(ControlNode* node, AbstractProperty* property);
     void OnStylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property);

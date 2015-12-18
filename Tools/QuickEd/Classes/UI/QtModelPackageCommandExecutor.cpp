@@ -88,6 +88,16 @@ namespace
         
         return list;
     }
+
+    void SetAbsoulutePosToControlNode(ControlNode* node, const DAVA::Vector2& pos)
+    {
+        DVASSERT(nullptr != node);
+        DVASSERT(nullptr != node->GetControl());
+        auto control = node->GetControl();
+        control->SetAbsolutePosition(pos);
+        auto relativePos = control->GetPosition();
+        node->GetRootProperty()->FindPropertyByName("Position")->SetValue(VariantType(relativePos));
+    }
 }
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
@@ -289,7 +299,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Co
     return resultList;
 }
 
-void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex)
+void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*>& controls, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos)
 {
     Vector<ControlNode*> nodesToInsert;
     for (ControlNode *node : controls)
@@ -307,6 +317,10 @@ void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNo
         {
             ControlNode *copy = ControlNode::CreateFromPrototype(node);
             InsertControlImpl(copy, dest, index);
+            if (pos.x != -1.0f && pos.y != -1.0f)
+            {
+                SetAbsoulutePosToControlNode(copy, pos);
+            }
             SafeRelease(copy);
             index++;
         }
@@ -316,7 +330,7 @@ void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNo
 
 }
 
-void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex)
+void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos)
 {
     Vector<ControlNode*> nodesToCopy;
     for (ControlNode *node : nodes)
@@ -334,6 +348,10 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
         {
             ControlNode *copy = node->Clone();
             InsertControlImpl(copy, dest, index);
+            if (pos.x != -1.0f && pos.y != -1.0f)
+            {
+                SetAbsoulutePosToControlNode(copy, pos);
+            }
             SafeRelease(copy);
             index++;
         }
@@ -342,7 +360,7 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
     }
 }
 
-void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex)
+void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos)
 {
     Vector<ControlNode*> nodesToMove;
     for (ControlNode *node : nodes)
@@ -368,7 +386,13 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
                 node->Retain();
                 RemoveControlImpl(node);
                 if (IsNodeInHierarchy(dest))
+                {
                     InsertControlImpl(node, dest, index);
+                    if (pos.x != -1.0f && pos.y != -1.0f)
+                    {
+                        SetAbsoulutePosToControlNode(node, pos);
+                    }
+                }
                 node->Release();
                 
                 index++;
@@ -510,7 +534,7 @@ void QtModelPackageCommandExecutor::Remove(const Vector<ControlNode*> &controls,
     }
 }
 
-bool QtModelPackageCommandExecutor::Paste(PackageNode *root, PackageBaseNode *dest, int32 destIndex, const DAVA::String &data)
+bool QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* dest, int32 destIndex, const DAVA::String& data, const DAVA::Vector2& pos)
 {
     if (dest->IsReadOnly())
         return false;
@@ -588,6 +612,10 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, PackageBaseNode *de
                     for (ControlNode *control : acceptedControls)
                     {
                         InsertControl(control, controlsDest, index);
+                        if (pos.x != -1.0f && pos.y != -1.0f)
+                        {
+                            SetAbsoulutePosToControlNode(control, pos);
+                        }
                         index++;
                     }
                     

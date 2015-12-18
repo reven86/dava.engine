@@ -49,6 +49,7 @@
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+#include "UI/Package/PackageModel.h"
 
 using namespace DAVA;
 
@@ -96,9 +97,10 @@ EditorCore::EditorCore(QObject* parent)
     auto previewWidget = mainWindow->previewWidget;
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
     connect(mainWindow.get(), &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
+    connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
 
     auto packageWidget = mainWindow->packageWidget;
-    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
+    connect(previewWidget, &PreviewWidget::DropRequested, packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData);
     connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
     connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
     connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
@@ -106,6 +108,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
     connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::SetSelectedNodes, Qt::QueuedConnection);
     connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
+    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(documentGroup, &DocumentGroup::RootControlPositionChanged, previewWidget, &PreviewWidget::OnRootControlPositionChanged);

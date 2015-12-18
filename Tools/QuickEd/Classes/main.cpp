@@ -62,7 +62,6 @@ void messageOutput(QtMsgType type, const QMessageLogContext& context, const QStr
         break;
     case QtFatalMsg:
         DAVA::Logger::Error("Qt Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        abort();
         break;
     default:
         DAVA::Logger::Info("Qt Unknown: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);

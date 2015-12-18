@@ -76,16 +76,16 @@ public:
     void RemoveStyleSelector(StyleSheetNode *node, DAVA::int32 selectorIndex);
 
     DAVA::ResultList InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
-    void InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex);
-    void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
-    void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
+    void InsertInstances(const DAVA::Vector<ControlNode*>& controls, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos = DAVA::Vector2(-1.0f, -1.0f));
+    void CopyControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos = DAVA::Vector2(-1.0f, -1.0f));
+    void MoveControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex, const DAVA::Vector2& pos = DAVA::Vector2(-1.0f, -1.0f));
 
     DAVA::ResultList InsertStyle(StyleSheetNode *node, StyleSheetsNode *dest, DAVA::int32 destIndex);
     void CopyStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex);
     void MoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex);
 
     void Remove(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
-    bool Paste(PackageNode *root, PackageBaseNode *dest, DAVA::int32 destIndex, const DAVA::String &data);
+    bool Paste(PackageNode* root, PackageBaseNode* dest, DAVA::int32 destIndex, const DAVA::String& data, const DAVA::Vector2& pos = DAVA::Vector2(-1.0f, -1.0f));
 
 private:
     void AddImportedPackageIntoPackageImpl(PackageNode *importedPackage, PackageNode *package);
