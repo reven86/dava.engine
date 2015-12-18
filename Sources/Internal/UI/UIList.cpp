@@ -38,6 +38,7 @@
 
 namespace DAVA
 {
+static const int32 INVALID_INDEX = -1;
 
 float32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
 {
@@ -223,7 +224,7 @@ void UIList::ResetScrollPosition()
 
 void UIList::FullRefresh()
 {
-    scrollContainer->RemoveAllControls();
+    RemoveAllCells();
     if(!delegate)
     {
         return;
@@ -375,7 +376,7 @@ void UIList::Update(float32 timeElapsed)
     }
     for(it = removeList.begin(); it != removeList.end(); it++)
     {
-        scrollContainer->RemoveControl((*it));
+        RemoveCell((*it));
     }
 
     if (!scrollList.empty())
@@ -612,6 +613,27 @@ void UIList::OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerDat
     }
 }
 
+void UIList::RemoveCell(UIControl* control)
+{
+    UIListCell* cellToRemove = DynamicTypeCheck<UIListCell*>(control);
+    DVASSERT(cellToRemove->cellStore == this);
+    DVASSERT(cellToRemove->GetParent() == scrollContainer);
+    scrollContainer->RemoveControl(cellToRemove);
+    cellToRemove->SetIndex(INVALID_INDEX);
+}
+
+void UIList::RemoveAllCells()
+{
+    scrollContainer->RemoveAllControls();
+    for (const auto& mapPair : cellStore)
+    {
+        for (UIListCell* cell : *mapPair.second)
+        {
+            cell->SetIndex(INVALID_INDEX);
+        }
+    }
+}
+
 void UIList::AddCellAtPos(UIListCell *cell, float32 pos, float32 size, int32 index)
 {
     DVASSERT(cell);
@@ -629,7 +651,7 @@ void UIList::AddCellAtPos(UIListCell *cell, float32 pos, float32 size, int32 ind
         }
         store->push_back(cell);
     }
-    cell->currentIndex = index;
+    cell->SetIndex(index);
     Rect r = cell->GetRect();
     if(orientation == ORIENTATION_HORIZONTAL)
     {
@@ -673,7 +695,7 @@ UIListCell* UIList::GetReusableCell(const String &cellIdentifier)
 
     for(Vector<UIListCell*>::iterator it = store->begin(); it != store->end(); it++)
     {
-        if((*it)->GetIndex() == -1)
+        if ((*it)->GetIndex() == INVALID_INDEX)
         {
             return (*it);
         }
