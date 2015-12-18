@@ -248,7 +248,7 @@ protected:
 
     void OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerData);
 
-    void RemoveCell(UIControl* control);
+    void RemoveCell(UIListCell* cell);
     void RemoveAllCells();
 
     UIListDelegate *delegate;

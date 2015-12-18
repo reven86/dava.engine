@@ -353,30 +353,32 @@ void UIList::Update(float32 timeElapsed)
     List<UIControl*>::const_iterator it;
     Rect viewRect = GetGeometricData().GetUnrotatedRect();
     const List<UIControl*> &scrollList = scrollContainer->GetChildren();
-    List<UIControl*> removeList;
+    List<UIListCell*> removeList;
 
     //removing invisible elements
     for(it = scrollList.begin(); it != scrollList.end(); it++)
     {
-        Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();
+        UIListCell* cell = DynamicTypeCheck<UIListCell*>(*it);
+
+        Rect crect = cell->GetGeometricData().GetUnrotatedRect();
         if(orientation == ORIENTATION_HORIZONTAL)
         {
             if(crect.x + crect.dx < viewRect.x - viewRect.dx || crect.x > viewRect.x + viewRect.dx*2)
             {
-                removeList.push_back(*it);
+                removeList.push_back(cell);
             }
         }
         else
         {
             if(crect.y + crect.dy < viewRect.y - viewRect.dy || crect.y > viewRect.y + viewRect.dy*2)
             {
-                removeList.push_back(*it);
+                removeList.push_back(cell);
             }
         }
     }
-    for(it = removeList.begin(); it != removeList.end(); it++)
+    for (UIListCell* cell : removeList)
     {
-        RemoveCell((*it));
+        RemoveCell(cell);
     }
 
     if (!scrollList.empty())
@@ -613,13 +615,12 @@ void UIList::OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerDat
     }
 }
 
-void UIList::RemoveCell(UIControl* control)
+void UIList::RemoveCell(UIListCell* cell)
 {
-    UIListCell* cellToRemove = DynamicTypeCheck<UIListCell*>(control);
-    DVASSERT(cellToRemove->cellStore == this);
-    DVASSERT(cellToRemove->GetParent() == scrollContainer);
-    scrollContainer->RemoveControl(cellToRemove);
-    cellToRemove->SetIndex(INVALID_INDEX);
+    DVASSERT(cell->cellStore == this);
+    DVASSERT(cell->GetParent() == scrollContainer);
+    scrollContainer->RemoveControl(cell);
+    cell->SetIndex(INVALID_INDEX);
 }
 
 void UIList::RemoveAllCells()
