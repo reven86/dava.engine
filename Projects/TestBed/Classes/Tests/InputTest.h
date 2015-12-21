@@ -33,8 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <DAVAEngine.h>
 #include "Infrastructure/BaseScreen.h"
 
-#include <bitset>
-
 using namespace DAVA;
 
 class InputTest : public BaseScreen
@@ -56,7 +54,7 @@ private:
     UIButton* mouse;
     UIButton* touch;
     UIButton* keyboard;
-    std::bitset<DeviceInfo::eHIDType::HID_COUNT_TYPE> input;
+    Bitset<DeviceInfo::eHIDType::HID_COUNT_TYPE> input;
 };
 
 #endif //__INPUTTEST_TEST_H__

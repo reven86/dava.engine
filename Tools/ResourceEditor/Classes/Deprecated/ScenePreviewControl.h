@@ -55,23 +55,19 @@ public:
     int32 OpenScene(const FilePath &pathToFile);
     void ReleaseScene();
     void RecreateScene();
-    
-protected:
 
+private:
     void CreateCamera();
     void SetupCamera();
-    
+
+private:
     //scene controls
-    Scene * editorScene;
-    RotationControllerSystem * rotationSystem;
-    
-	Camera * activeCamera;
-    UI3DView * scene3dView;
-    
+    Scene* editorScene = nullptr;
+    RotationControllerSystem* rotationSystem = nullptr;
+    Camera* activeCamera = nullptr;
+    UI3DView* scene3dView = nullptr;
     FilePath currentScenePath;
-    bool needSetCamera;
+    bool needSetCamera = false;
 };
-
-
 
 #endif // __SCENE_PREVIEW_CONTROL_H__

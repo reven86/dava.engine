@@ -73,6 +73,8 @@ public:
     {
         Handle color;
         Handle depthStencil;
+        TextureFace face;
+        uint32_t level;
 
         GLuint frameBuffer;
     };
@@ -284,16 +286,35 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             GetGLTextureFormat(format, &int_fmt, &fmt, &type, &compressed);
             DVASSERT(!compressed);
 
-            GLCommand cmd3[] =
+            if (isCubeMap)
             {
-              { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&(this->uid)) } },
-              { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
-              { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
-              { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
-              { GLCommand::RESTORE_TEXTURE0, {} }
-            };
-
-            ExecGL(cmd3, countof(cmd3), force_immediate);
+                GLCommand cmd3[] =
+                {
+                  { GLCommand::BIND_TEXTURE, { GL_TEXTURE_CUBE_MAP, uint64(&(this->uid)) } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                  { GLCommand::RESTORE_TEXTURE0, {} }
+                };
+                ExecGL(cmd3, countof(cmd3), force_immediate);
+            }
+            else
+            {
+                GLCommand cmd3[] =
+                {
+                  { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&(this->uid)) } },
+                  { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0 } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
+                  { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                  { GLCommand::RESTORE_TEXTURE0, {} }
+                };
+                ExecGL(cmd3, countof(cmd3), force_immediate);
+            }
         }
         else
         {
@@ -375,14 +396,11 @@ RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 static void
 gles2_Texture_Delete(Handle tex)
 {
-    if (tex != InvalidHandle)
-    {
-        TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
+    TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
 
-        self->MarkRestored();
-        self->Destroy();
-        TextureGLES2Pool::Free(tex);
-    }
+    self->MarkRestored();
+    self->Destroy();
+    TextureGLES2Pool::Free(tex);
 }
 
 //------------------------------------------------------------------------------
@@ -845,7 +863,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
     DVASSERT(self->isRenderTarget || self->isRenderBuffer);
     for (unsigned i = 0; i != self->fbo.size(); ++i)
     {
-        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth)
+        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth && self->fbo[i].face == face && self->fbo[i].level == level)
         {
             fb = self->fbo[i].frameBuffer;
             break;
@@ -910,8 +928,13 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
 
             if (status == GL_FRAMEBUFFER_COMPLETE)
             {
-                TextureGLES2_t::fbo_t fbo = { tex, depth, fb };
+                TextureGLES2_t::fbo_t fbo;
 
+                fbo.color = tex;
+                fbo.depthStencil = depth;
+                fbo.face = face;
+                fbo.level = level;
+                fbo.frameBuffer = fb;
                 self->fbo.push_back(fbo);
             }
             else

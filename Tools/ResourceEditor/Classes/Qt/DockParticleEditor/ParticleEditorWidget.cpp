@@ -286,6 +286,7 @@ void ParticleEditorWidget::OnParticleLayerValueChanged(SceneEditor2* /*scene*/, 
 	// Notify the Emitter Layer widget about its inner layer value is changed and
 	// the widget needs to be resynchronized with its values.
 	emitterLayerWidget->OnLayerValueChanged();
+    emitterLayerWidget->Update(false);
 }
 
 void ParticleEditorWidget::OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)

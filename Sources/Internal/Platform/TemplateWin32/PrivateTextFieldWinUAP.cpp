@@ -1138,7 +1138,10 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             {
                 core->RunOnUIThread([this, self]() {
                     waitRenderToTextureComplete = false;
-                    SetNativePositionAndSize(rectInWindowSpace, true);
+                    if (!HasFocus())
+                    { // Do not hide control if it has gained focus while rendering to texture
+                        SetNativePositionAndSize(rectInWindowSpace, true);
+                    }
                 });
             }
         }); }).then([this, self](task<void> t) {
