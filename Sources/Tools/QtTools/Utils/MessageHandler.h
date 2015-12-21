@@ -26,78 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVA_SIGNAL_BASE_H__
-#define __DAVA_SIGNAL_BASE_H__
 
-#include "Base/BaseTypes.h"
-#include "Concurrency/Atomic.h"
+#ifndef __QT_TOOLS_MESSAGE_HANDLER_H__
+#define __QT_TOOLS_MESSAGE_HANDLER_H__
 
-namespace DAVA {
+#include "Debug/DVAssert.h"
 
-using SigConnectionID = size_t;
-
-class TrackedObject;
-class SignalBase
+void DAVAMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-public:
-    virtual ~SignalBase() = default;
-    virtual void Disconnect(TrackedObject*) = 0;
-
-    static SigConnectionID GetUniqueConnectionID()
+    QByteArray localMsg = msg.toLocal8Bit();
+    switch (type)
     {
-        static Atomic<SigConnectionID> counter = { static_cast<SigConnectionID>(0) };
-        return ++counter;
+    case QtDebugMsg:
+        DAVA::Logger::Debug("Qt debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtWarningMsg:
+        DAVA::Logger::Warning("Qt Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtCriticalMsg:
+        DAVA::Logger::Error("Qt Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        DVASSERT(false);
+        break;
+    case QtFatalMsg:
+        DAVA::Logger::Error("Qt Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        DVASSERT(false);
+        break;
+    default:
+        DAVA::Logger::Info("Qt Unknown: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
     }
-};
+}
 
-class TrackedObject
-{
-public:
-    ~TrackedObject()
-    {
-        while (!trackedSignals.empty())
-        {
-            auto it = trackedSignals.begin();
-            (*it)->Disconnect(this);
-        }
-    }
-
-    void Track(SignalBase *signal)
-    {
-        trackedSignals.insert(signal);
-    }
-
-    void Untrack(SignalBase *signal)
-    {
-        trackedSignals.erase(signal);
-    }
-    
-    template<typename T>
-    static TrackedObject* Cast(T *t)
-    {
-        return Detail<std::is_base_of<TrackedObject, T>::value>::Cast(t);
-    }
-
-protected:
-    Set<SignalBase*> trackedSignals;
-
-    template <bool is_derived_from_tracked_obj>
-    struct Detail;
-};
-    
-template<>
-struct TrackedObject::Detail<false>
-{
-    static TrackedObject* Cast(void* t) { return nullptr; }
-};
-
-template<>
-struct TrackedObject::Detail<true>
-{
-    template<typename T>
-    static TrackedObject* Cast(T* t) { return static_cast<TrackedObject *>(t); }
-};
-
-} // namespace DAVA
-
-#endif // __DAVA_SIGNAL_BASE_H__
+#endif // __QT_TOOLS_MESSAGE_HANDLER_H__

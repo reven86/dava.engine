@@ -27,69 +27,46 @@
 =====================================================================================*/
 
 
-#ifndef __QUICKED_PROPERTIES_WIDGET_H__
-#define __QUICKED_PROPERTIES_WIDGET_H__
+#ifndef __QUICKED_PACKAGE_LISTENER_H__
+#define __QUICKED_PACKAGE_LISTENER_H__
 
-#include <QDockWidget>
-#include "Base/BaseTypes.h"
-#include "ui_PropertiesWidget.h"
-#include "EditorSystems/SelectionContainer.h"
-
+class PackageNode;
 class ControlNode;
+class ControlsContainerNode;
 class StyleSheetNode;
-class Document;
-class PackageBaseNode;
-class PropertiesModel;
-class QtModelPackageCommandExecutor;
+class StyleSheetsNode;
+class PackageControlsNode;
+class AbstractProperty;
+class ImportedPackagesNode;
 
-class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
+class PackageListener
 {
-    Q_OBJECT
 public:
-    PropertiesWidget(QWidget* parent = nullptr);
+    virtual ~PackageListener() = 0;
+    virtual void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property){};
+    virtual void StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property){};
 
-public slots:
-    void UpdateModel(PackageBaseNode* node);
-    void OnDocumentChanged(Document* doc);
+    virtual void ControlWillBeAdded(ControlNode* node, ControlsContainerNode* destination, int index){};
+    virtual void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index){};
 
-    void OnAddComponent(QAction *action);
-    void OnAddStyleProperty(QAction *action);
-    void OnAddStyleSelector();
-    void OnRemove();
-    
-    void OnSelectionChanged(const QItemSelection &selected,
-                            const QItemSelection &deselected);
-    void OnModelUpdated();
+    virtual void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from){};
+    virtual void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from){};
 
-private slots:
-    void OnExpanded(const QModelIndex& index);
-    void OnCollapsed(const QModelIndex& index);
+    virtual void StyleWillBeAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index){};
+    virtual void StyleWasAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index){};
 
-private:
-    QAction *CreateAddComponentAction();
-    QAction *CreateAddStyleSelectorAction();
-    QAction *CreateAddStylePropertyAction();
-    QAction *CreateRemoveAction();
-    QAction *CreateSeparator();
+    virtual void StyleWillBeRemoved(StyleSheetNode* node, StyleSheetsNode* from){};
+    virtual void StyleWasRemoved(StyleSheetNode* node, StyleSheetsNode* from){};
 
-    void UpdateActions();
+    virtual void ImportedPackageWillBeAdded(PackageNode* node, ImportedPackagesNode* to, int index){};
+    virtual void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index){};
 
-    void ApplyExpanding();
-
-    QAction* addComponentAction = nullptr;
-    QAction* addStylePropertyAction = nullptr;
-    QAction* addStyleSelectorAction = nullptr;
-    QAction* removeAction = nullptr;
-
-    PropertiesModel* propertiesModel = nullptr;
-
-    DAVA::Map<DAVA::String, bool> itemsState;
-
-    SelectionContainer selectionContainer;
-
-    DAVA::String lastTopIndexPath;
-    std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
-    PackageBaseNode* selectedNode = nullptr; //node used to build model
+    virtual void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from){};
+    virtual void ImportedPackageWasRemoved(PackageNode* node, ImportedPackagesNode* from){};
 };
 
-#endif //__QUICKED_PROPERTIES_WIDGET_H__
+inline PackageListener::~PackageListener()
+{
+}
+
+#endif // __QUICKED_PACKAGE_LISTENER_H__

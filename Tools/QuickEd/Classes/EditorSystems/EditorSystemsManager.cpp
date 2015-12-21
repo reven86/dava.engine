@@ -158,9 +158,7 @@ void EditorSystemsManager::OnPackageNodeChanged(std::weak_ptr<PackageNode> packa
         auto lastNode = package.lock();
         if (nullptr != lastNode)
         {
-            lastNode->ControlWasRemoved.Disconnect(&signalsTracker);
-            lastNode->ControlWasAdded.Disconnect(&signalsTracker);
-            lastNode->ControlPropertyWasChanged.Disconnect(&signalsTracker);
+            lastNode->RemoveListener(this);
         }
     }
     package = package_;
@@ -169,15 +167,12 @@ void EditorSystemsManager::OnPackageNodeChanged(std::weak_ptr<PackageNode> packa
         auto newNode = package.lock();
         if (nullptr != newNode)
         {
-            auto id = newNode->ControlWasRemoved.Connect(this, &EditorSystemsManager::OnControlWasRemoved);
-            newNode->ControlWasRemoved.Track(id, &signalsTracker);
-            id = newNode->ControlWasAdded.Connect(this, &EditorSystemsManager::OnControlWasAdded);
-            newNode->ControlWasAdded.Track(id, &signalsTracker);
+            newNode->AddListener(this);
         }
     }
 }
 
-void EditorSystemsManager::OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
@@ -193,7 +188,7 @@ void EditorSystemsManager::OnControlWasRemoved(ControlNode* node, ControlsContai
     }
 }
 
-void EditorSystemsManager::OnControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int)
+void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int)
 {
     if (previewMode)
     {

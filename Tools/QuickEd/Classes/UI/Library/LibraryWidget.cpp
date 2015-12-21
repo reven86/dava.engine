@@ -46,7 +46,7 @@ LibraryWidget::LibraryWidget(QWidget* parent)
 void LibraryWidget::OnDocumentChanged(Document* arg)
 {
     document = arg;
-    if (nullptr != document)
+    if (!document.isNull())
     {
         libraryModel->SetPackageNode(document->GetPackage());
         treeView->expandToDepth(0);

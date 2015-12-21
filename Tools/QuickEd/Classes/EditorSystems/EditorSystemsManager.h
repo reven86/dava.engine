@@ -32,6 +32,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
 #include "Functional/Signal.h"
+#include "Model/PackageHierarchy/PackageListener.h"
 #include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
 #include "Math/Vector.h"
@@ -94,7 +95,7 @@ class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
-class EditorSystemsManager
+class EditorSystemsManager : PackageListener
 {
 public:
     using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
@@ -140,8 +141,8 @@ private:
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const;
 
     void OnPackageNodeChanged(std::weak_ptr<PackageNode> node);
-    void OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
-    void OnControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void SetPreviewMode(bool mode);
     void RefreshRootControls();
 

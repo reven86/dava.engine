@@ -37,6 +37,7 @@
 #include <QDockWidget>
 #include <QModelIndex>
 #include <QStack>
+#include <QPointer>
 
 class Document;
 class ControlNode;
@@ -54,6 +55,7 @@ class PackageWidget : public QDockWidget, public Ui::PackageWidget
     Q_OBJECT
 public:
     explicit PackageWidget(QWidget *parent = 0);
+    ~PackageWidget();
 
     PackageModel* GetPackageModel() const;
     using ExpandedIndexes = QModelIndexList ;
@@ -107,7 +109,7 @@ private:
     std::shared_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
     std::shared_ptr<PackageNode> GetPackageNode() const;
 
-    Document* document = nullptr;
+    QPointer<Document> document;
     QAction* importPackageAction = nullptr;
     QAction* copyAction = nullptr;
     QAction* pasteAction = nullptr;

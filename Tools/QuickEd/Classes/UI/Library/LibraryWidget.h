@@ -46,7 +46,7 @@ public slots:
     void OnDocumentChanged(Document* document);
 
 private:
-    Document* document = nullptr;
+    QPointer<Document> document = nullptr;
     LibraryModel* libraryModel;
 };
 

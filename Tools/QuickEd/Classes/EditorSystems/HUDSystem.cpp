@@ -93,13 +93,15 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     container->SetName("Container for HUD controls of node " + node_->GetName());
     DAVA::Vector<HUDAreaInfo::eArea> areas(HUDAreaInfo::AREAS_COUNT);
     int begin = HUDAreaInfo::AREAS_BEGIN;
-    std::generate(areas.begin(), areas.end(), [begin]() mutable {
-        return static_cast<HUDAreaInfo::eArea>(begin++);
-    });
-    if (node->GetParent() == nullptr || node->GetParent()->GetControl() == nullptr)
+    if (node->GetParent() != nullptr && node->GetParent()->GetControl() != nullptr)
+    {
+        std::generate(areas.begin(), areas.end(), [begin]() mutable {
+            return static_cast<HUDAreaInfo::eArea>(begin++);
+        });
+    }
+    else
     {
         //custom areas
-        areas.clear();
         areas.push_back(HUDAreaInfo::TOP_LEFT_AREA);
         areas.push_back(HUDAreaInfo::TOP_CENTER_AREA);
         areas.push_back(HUDAreaInfo::TOP_RIGHT_AREA);
@@ -306,7 +308,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     }
     magnetControls.clear();
 
-    for (auto& magnetTargetControl : magnetTargetControls)
+    for (const auto& magnetTargetControl : magnetTargetControls)
     {
         hudControl->RemoveControl(magnetTargetControl.Get());
     }

@@ -73,7 +73,8 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-    bool valid_ = control->GetVisibleForUIEditor() && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool contolIsInValidState = gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool valid_ = control->GetVisibleForUIEditor() && contolIsInValidState;
     SetValid(valid_);
     if (valid)
     {

@@ -184,6 +184,11 @@ PackageWidget::PackageWidget(QWidget *parent)
     PlaceActions();
 }
 
+PackageWidget::~PackageWidget()
+{
+    DVASSERT(currentIndexes.empty());
+}
+
 PackageModel* PackageWidget::GetPackageModel() const
 {
     return packageModel;
@@ -198,7 +203,7 @@ void PackageWidget::OnDocumentChanged(Document* arg)
     document = arg;
     std::weak_ptr<PackageNode> package;
     std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
-    if (nullptr != document)
+    if (!document.isNull())
     {
         package = document->GetPackage();
         commandExecutor = document->GetCommandExecutor();
@@ -290,7 +295,7 @@ void PackageWidget::PlaceActions()
 
 void PackageWidget::LoadContext()
 {
-    if (nullptr != document)
+    if (!document.isNull())
     {
         //restore context
         PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
@@ -308,7 +313,7 @@ void PackageWidget::LoadContext()
 
 void PackageWidget::SaveContext()
 {
-    if (nullptr == document)
+    if (document.isNull())
     {
         return;
     }
@@ -636,7 +641,7 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
 
 void PackageWidget::filterTextChanged(const QString &filterText)
 {
-    if (nullptr != document)
+    if (!document.isNull())
     {
         if (lastFilterText.isEmpty())
         {
@@ -726,6 +731,7 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
     QModelIndex srcIndex = packageModel->indexByNode(node);
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
     treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
+    DVASSERT(!currentIndexes.empty());
     currentIndexes.pop();
     if (!currentIndexes.empty())
     {
@@ -735,6 +741,10 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
             treeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
             treeView->scrollTo(index);
         }
+    }
+    else
+    {
+        treeView->selectionModel()->setCurrentIndex(QModelIndex(), QItemSelectionModel::NoUpdate);
     }
 }
 
@@ -767,7 +777,7 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     selectionContainer.MergeSelection(selected, deselected);
 
     RefreshActions();
-    if (nullptr == document)
+    if (document.isNull())
     {
         return;
     }
@@ -789,7 +799,7 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
 
 std::shared_ptr<QtModelPackageCommandExecutor> PackageWidget::GetCommandExecutor() const
 {
-    DVASSERT(nullptr != document);
+    DVASSERT(!document.isNull());
     auto commandExecutorPtr = document->GetCommandExecutor().lock();
     DVASSERT(nullptr != commandExecutorPtr);
     return commandExecutorPtr;
@@ -797,7 +807,7 @@ std::shared_ptr<QtModelPackageCommandExecutor> PackageWidget::GetCommandExecutor
 
 std::shared_ptr<PackageNode> PackageWidget::GetPackageNode() const
 {
-    DVASSERT(nullptr != document);
+    DVASSERT(!document.isNull());
     auto packageNodePtr = document->GetPackage().lock();
     DVASSERT(nullptr != packageNodePtr);
     return packageNodePtr;

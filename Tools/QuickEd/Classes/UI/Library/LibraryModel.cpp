@@ -188,11 +188,7 @@ void LibraryModel::SetPackageNode(std::weak_ptr<PackageNode> package_)
         auto lastNode = package.lock();
         if (nullptr != lastNode)
         {
-            lastNode->ControlPropertyWasChanged.Disconnect(&signalsTracker);
-            lastNode->ControlWasAdded.Disconnect(&signalsTracker);
-            lastNode->ControlWillBeRemoved.Disconnect(&signalsTracker);
-            lastNode->ImportedPackageWasAdded.Disconnect(&signalsTracker);
-            lastNode->ImportedPackageWillBeRemoved.Disconnect(&signalsTracker);
+            lastNode->RemoveListener(this);
         }
     }
     package = package_;
@@ -200,16 +196,7 @@ void LibraryModel::SetPackageNode(std::weak_ptr<PackageNode> package_)
         auto newNode = package.lock();
         if (nullptr != newNode)
         {
-            auto id = newNode->ControlPropertyWasChanged.Connect(this, &LibraryModel::OnControlPropertyWasChanged);
-            newNode->ControlPropertyWasChanged.Track(id, &signalsTracker);
-            id = newNode->ControlWasAdded.Connect(this, &LibraryModel::OnControlWasAdded);
-            newNode->ControlWasAdded.Track(id, &signalsTracker);
-            id = newNode->ControlWillBeRemoved.Connect(this, &LibraryModel::OnControlWillBeRemoved);
-            newNode->ControlWillBeRemoved.Track(id, &signalsTracker);
-            id = newNode->ImportedPackageWasAdded.Connect(this, &LibraryModel::OnImportedPackageWasAdded);
-            newNode->ImportedPackageWasAdded.Track(id, &signalsTracker);
-            id = newNode->ImportedPackageWillBeRemoved.Connect(this, &LibraryModel::OnImportedPackageWillBeRemoved);
-            newNode->ImportedPackageWillBeRemoved.Track(id, &signalsTracker);
+            newNode->AddListener(this);
         }
     }
     if (nullptr != controlsRootItem)
@@ -338,7 +325,7 @@ void LibraryModel::CreateImportPackagesRootItem()
     }
 }
 
-void LibraryModel::OnControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+void LibraryModel::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     if (property->GetName() == "Name")
     {
@@ -364,7 +351,7 @@ void LibraryModel::OnControlPropertyWasChanged(ControlNode* node, AbstractProper
     }
 }
 
-void LibraryModel::OnControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row)
+void LibraryModel::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row)
 {
     Q_UNUSED(destination);
     Q_UNUSED(row);
@@ -383,7 +370,7 @@ void LibraryModel::OnControlWasAdded(ControlNode* node, ControlsContainerNode* d
     }
 }
 
-void LibraryModel::OnControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
+void LibraryModel::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     Q_UNUSED(from);
     DVASSERT(nullptr != node);
@@ -401,7 +388,7 @@ void LibraryModel::OnControlWillBeRemoved(ControlNode* node, ControlsContainerNo
     }
 }
 
-void LibraryModel::OnImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index)
+void LibraryModel::ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index)
 {
     Q_UNUSED(to);
     Q_UNUSED(index);
@@ -420,7 +407,7 @@ void LibraryModel::OnImportedPackageWasAdded(PackageNode* node, ImportedPackages
     }
 }
 
-void LibraryModel::OnImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from)
+void LibraryModel::ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from)
 {
     Q_UNUSED(from);
     DVASSERT(nullptr != node);

@@ -280,9 +280,7 @@ void CanvasSystem::OnPackageNodeChanged(std::weak_ptr<PackageNode> package_)
         auto lastNode = package.lock();
         if (nullptr != lastNode)
         {
-            lastNode->ControlWasRemoved.Disconnect(&signalsTracker);
-            lastNode->ControlWasAdded.Disconnect(&signalsTracker);
-            lastNode->ControlPropertyWasChanged.Disconnect(&signalsTracker);
+            lastNode->RemoveListener(this);
         }
     }
     package = package_;
@@ -290,17 +288,12 @@ void CanvasSystem::OnPackageNodeChanged(std::weak_ptr<PackageNode> package_)
         auto newNode = package.lock();
         if (nullptr != newNode)
         {
-            auto id = newNode->ControlWasRemoved.Connect(this, &CanvasSystem::OnControlWasRemoved);
-            newNode->ControlWasRemoved.Track(id, &signalsTracker);
-            id = newNode->ControlWasAdded.Connect(this, &CanvasSystem::OnControlWasAdded);
-            newNode->ControlWasAdded.Track(id, &signalsTracker);
-            id = newNode->ControlPropertyWasChanged.Connect(this, &CanvasSystem::OnControlPropertyWasChanged);
-            newNode->ControlPropertyWasChanged.Track(id, &signalsTracker);
+            newNode->AddListener(this);
         }
     }
 }
 
-void CanvasSystem::OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
@@ -312,7 +305,7 @@ void CanvasSystem::OnControlWasRemoved(ControlNode* node, ControlsContainerNode*
     }
 }
 
-void CanvasSystem::OnControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
+void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
@@ -324,7 +317,7 @@ void CanvasSystem::OnControlWasAdded(ControlNode* node, ControlsContainerNode* d
     }
 }
 
-void CanvasSystem::OnControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     if (nullptr == controlsCanvas->GetParent())
     {
