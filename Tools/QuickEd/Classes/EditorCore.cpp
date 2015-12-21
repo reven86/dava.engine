@@ -551,11 +551,7 @@ int EditorCore::CreateDocument(int index, PackageNode* package)
 
 void EditorCore::SaveDocument(Document *document)
 {
-    DVASSERT(document);
-    if (document->GetUndoStack()->isClean())
-    {
-        return;
-    }
+    DVASSERT(nullptr != document);
     QString path = document->GetPackageAbsolutePath();
     fileSystemWatcher->removePath(path);
     DVVERIFY(project->SavePackage(document->GetPackage())); //TODO:log here
