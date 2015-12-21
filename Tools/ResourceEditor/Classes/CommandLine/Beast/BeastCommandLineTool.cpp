@@ -38,18 +38,19 @@ using namespace DAVA;
 
 #if defined (__DAVAENGINE_BEAST__)
 
-
 BeastCommandLineTool::BeastCommandLineTool()
     : CommandLineTool("-beast")
 {
     options.AddOption(OptionName::File, VariantType(String("")), "Full pathname of scene for beasting");
     options.AddOption(OptionName::Output, VariantType(String("")), "Full path for output folder for beasting");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
 void BeastCommandLineTool::ConvertOptionsToParamsInternal()
 {
     scenePathname = options.GetOption(OptionName::File).AsString();
     outputPath = options.GetOption(OptionName::Output).AsString();
+    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
 }
 
 bool BeastCommandLineTool::InitializeInternal()
@@ -84,7 +85,12 @@ void BeastCommandLineTool::ProcessInternal()
 
 DAVA::FilePath BeastCommandLineTool::GetQualityConfigPath() const
 {
-    return CreateQualityConfigPath(scenePathname);
+    if (qualityConfigPath.IsEmpty())
+    {
+        return CreateQualityConfigPath(scenePathname);
+    }
+
+    return qualityConfigPath;
 }
 
 

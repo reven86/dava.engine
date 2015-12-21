@@ -1257,6 +1257,7 @@ protected:
     bool styleSheetDirty : 1;
     bool styleSheetInitialized : 1;
     bool layoutDirty : 1;
+    bool layoutPositionDirty : 1;
 
     int32 inputProcessorsCount;
 
@@ -1356,6 +1357,9 @@ public:
 
     void SetLayoutDirty();
     void ResetLayoutDirty();
+
+    void SetLayoutPositionDirty();
+    void ResetLayoutPositionDirty();
 
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
