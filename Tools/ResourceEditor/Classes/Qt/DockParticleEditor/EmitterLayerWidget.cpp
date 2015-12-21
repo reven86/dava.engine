@@ -29,6 +29,8 @@
 
 #include "EmitterLayerWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
+#include "Commands2/ParticleLayerCommands.h"
+
 #include "TextureBrowser/TextureConvertor.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
@@ -188,9 +190,9 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
     QVBoxLayout* innerEmitterLayout = new QVBoxLayout();
     innerEmitterLabel = new QLabel("Inner Emitter", this);
-	innerEmitterPathLabel = new QLineEdit(this);
-	innerEmitterPathLabel->setReadOnly(true);
-	innerEmitterLayout->addWidget(innerEmitterLabel);
+    innerEmitterPathLabel = new QLineEdit(this);
+    innerEmitterPathLabel->setReadOnly(true);
+    innerEmitterLayout->addWidget(innerEmitterLabel);
 	innerEmitterLayout->addWidget(innerEmitterPathLabel);
 	mainBox->addLayout(innerEmitterLayout);
 	
@@ -226,14 +228,13 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
 	pivotPointLayout->addLayout(pivotPointInnerLayout);
 	mainBox->addLayout(pivotPointLayout);
-	
 
-	frameBlendingCheckBox = new QCheckBox("Enable frame blending");	
-	connect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	mainBox->addWidget(frameBlendingCheckBox);
+    frameBlendingCheckBox = new QCheckBox("Enable frame blending");
+    connect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
+    mainBox->addWidget(frameBlendingCheckBox);
 
-	//particle orieantation
-	QVBoxLayout* orientationLayout = new QVBoxLayout();	
+    //particle orieantation
+    QVBoxLayout* orientationLayout = new QVBoxLayout();	
 	particleOrientationLabel = new QLabel("Particle Orientation");
 	orientationLayout->addWidget(particleOrientationLabel);
 	QHBoxLayout* facingLayout = new QHBoxLayout();
@@ -280,15 +281,14 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     blendLayout->addLayout(presetLayout);
     mainBox->addLayout(blendLayout);
 
-    connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+    connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
 
     fogCheckBox = new QCheckBox("Enable fog");
-    connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
-	mainBox->addWidget(fogCheckBox);
+    connect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnLayerMaterialValueChanged()));
+    mainBox->addWidget(fogCheckBox);
 
-
-	lifeTimeLine = new TimeLineWidget(this);
-	InitWidget(lifeTimeLine);
+    lifeTimeLine = new TimeLineWidget(this);
+    InitWidget(lifeTimeLine);
 	numberTimeLine = new TimeLineWidget(this);
 	InitWidget(numberTimeLine);
 	sizeTimeLine = new TimeLineWidget(this);
@@ -656,7 +656,6 @@ void EmitterLayerWidget::OnValueChanged()
 
 	ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
 
-    eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
 
     int32 particleOrientation = 0;
     if (cameraFacingCheckBox->isChecked())
@@ -673,8 +672,6 @@ void EmitterLayerWidget::OnValueChanged()
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    FilePath spritePath(spritePathLabel->text().toStdString());
-
     CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
@@ -685,10 +682,6 @@ void EmitterLayerWidget::OnValueChanged()
                          scaleVelocityBaseSpinBox->value(),
                          scaleVelocityFactorSpinBox->value(),
                          isLoopedCheckBox->isChecked(),
-                         spritePath,
-                         blending,
-                         fogCheckBox->isChecked(),
-                         frameBlendingCheckBox->isChecked(),
                          particleOrientation,
                          propLife.GetPropLine(),
                          propLifeVariation.GetPropLine(),
@@ -736,6 +729,23 @@ void EmitterLayerWidget::OnValueChanged()
             effect->Restart(true);
     }	
 	emit ValueChanged();
+}
+
+void EmitterLayerWidget::OnLayerMaterialValueChanged()
+{
+    if (blockSignals)
+        return;
+
+    const eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
+    const FilePath spritePath(spritePathLabel->text().toStdString());
+
+    DVASSERT(activeScene);
+    CommandChangeLayerMaterialProperties* updateLayerCmd = new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked());
+    activeScene->Exec(updateLayerCmd);
+
+    UpdateLayerSprite();
+
+    emit ValueChanged();
 }
 
 void EmitterLayerWidget::OnLodsChanged()
@@ -803,25 +813,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
 
-    if (layer->sprite)
-    {
-        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-        RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
-        {
-            Sprite::DrawState drawState = {};
-            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
-            RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
-        }
-        RenderSystem2D::Instance()->EndRenderTargetPass();
-        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
-        spriteUpdateTimer->start(0);
-        spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
-    }
-    else
-    {
-        spriteLabel->setPixmap( QPixmap() );
-        spritePathLabel->setText("<none>");
-    }
+    UpdateLayerSprite();
 
     //particle orientation
     cameraFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
@@ -975,6 +967,33 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 	adjustSize();
 }
 
+void EmitterLayerWidget::UpdateLayerSprite()
+{
+    if (layer->sprite)
+    {
+        RenderSystem2D::RenderTargetPassDescriptor desc;
+        desc.target = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        desc.shouldClear = true;
+        desc.shouldTransformVirtualToPhysical = false;
+        desc.clearColor = Color::Clear;
+        RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+        {
+            Sprite::DrawState drawState = {};
+            drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
+            RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
+        }
+        RenderSystem2D::Instance()->EndRenderTargetPass();
+        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), desc.target });
+        spriteUpdateTimer->start(0);
+        spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
+    }
+    else
+    {
+        spriteLabel->setPixmap(QPixmap());
+        spritePathLabel->setText("<none>");
+    }
+}
+
 void EmitterLayerWidget::UpdateTooltip()
 {
 	QFontMetrics fm = spritePathLabel->fontMetrics();
@@ -1025,7 +1044,7 @@ void EmitterLayerWidget::OnSpritePathEdited(const QString& text)
         msgBox.exec();
     }
 
-    OnValueChanged();
+    OnLayerMaterialValueChanged();
 }
 
 void EmitterLayerWidget::FillLayerTypes()
@@ -1058,10 +1077,10 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     spriteFolderBtn->setVisible(!isSuperemitter);
     spriteLabel->setVisible(!isSuperemitter);
     spritePathLabel->setVisible(!isSuperemitter);
-	
-	// The same is for "Additive" flag, Color, Alpha and Frame.	
-	colorRandomGradient->setVisible(!isSuperemitter);
-	colorOverLifeGradient->setVisible(!isSuperemitter);
+
+    // The same is for "Additive" flag, Color, Alpha and Frame.
+    colorRandomGradient->setVisible(!isSuperemitter);
+    colorOverLifeGradient->setVisible(!isSuperemitter);
 	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
 	frameOverlifeCheckBox->setVisible(!isSuperemitter);

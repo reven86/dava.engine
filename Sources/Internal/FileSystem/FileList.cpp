@@ -28,6 +28,7 @@
 
 
 #include "FileSystem/FileList.h"
+#include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
@@ -55,46 +56,45 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
 
 #if defined(__DAVAENGINE_WINDOWS__)
 
-	struct _finddata_t c_file;
-	intptr_t hFile;
-	FileEntry entry;
+    struct _wfinddata_t c_file;
+    intptr_t hFile;
+    FileEntry entry;
 
-    String searchPath = path.GetAbsolutePathname();
-    if (searchPath.back() == '\\' || searchPath.back() == '/')
-        searchPath += '*';
+    WideString searchPath = path.GetNativeAbsolutePathname();
+    if (searchPath.back() == L'\\' || searchPath.back() == L'/')
+        searchPath += L'*';
     else
-        searchPath += "/*";
+        searchPath += L"/*";
 
-	if( (hFile = _findfirst(searchPath.c_str(), &c_file)) != -1L )
-	{
-		do
-		{
+    if ((hFile = _wfindfirst(searchPath.c_str(), &c_file)) != -1L)
+    {
+        do
+        {
             //TODO: need to check for Win32
-			entry.path = filepath + c_file.name;
-			entry.name = c_file.name;
-			entry.size = c_file.size;
-			entry.isHidden = (_A_HIDDEN & c_file.attrib) != 0;
-			entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
-			if(entry.isDirectory)
-			{
-				entry.path.MakeDirectoryPathname();
-			}
+            entry.name = UTF8Utils::EncodeToUTF8(c_file.name);
+            entry.path = filepath + entry.name;
+            entry.size = c_file.size;
+            entry.isHidden = (_A_HIDDEN & c_file.attrib) != 0;
+            entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
+            if (entry.isDirectory)
+            {
+                entry.path.MakeDirectoryPathname();
+            }
 
             if (!entry.isHidden || includeHidden)
             {
                 fileList.push_back(entry);
             }
 			//Logger::FrameworkDebug("filelist: %s %s", filepath.c_str(), entry.name.c_str());
-		}
-		while( _findnext( hFile, &c_file ) == 0 );
+        } while (_wfindnext(hFile, &c_file) == 0);
 
-		_findclose( hFile );
-	}
+        _findclose(hFile);
+    }
 
-	//TODO add drives
-	//entry.Name = "E:\\";
-	//entry.isDirectory = true;
-	//Files.push_back(entry);
+//TODO add drives
+//entry.Name = "E:\\";
+//entry.isDirectory = true;
+//Files.push_back(entry);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 	struct dirent **namelist;
 	FileEntry entry;

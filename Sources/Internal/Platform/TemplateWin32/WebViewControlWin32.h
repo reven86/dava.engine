@@ -30,7 +30,8 @@
 #ifndef __WEBVIEWCONTROL_WIN32_H__
 #define __WEBVIEWCONTROL_WIN32_H__
 
-#if defined __DAVAENGINE_WIN32__
+#include "Base/Platform.h"
+#if defined __DAVAENGINE_WIN32__ && !defined __DISABLE_NATIVE_WEBVIEW__
 
 #pragma warning(push)
 #pragma warning(disable: 4005)//prevent 'macros redefinition' warning in winerror.h vs dxgitype.h
@@ -205,6 +206,6 @@ inline bool WebViewControl::IsRenderToTexture() const
 
 };
 
-#endif //__DAVAENGINE_WIN32__
+#endif //__DAVAENGINE_WIN32__ && !__DISABLE_NATIVE_WEBVIEW__
 
 #endif //__WEBVIEWCONTROL_WIN32_H__

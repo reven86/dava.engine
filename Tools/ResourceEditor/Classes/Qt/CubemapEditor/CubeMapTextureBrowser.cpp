@@ -310,9 +310,9 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
                 if (FileSystem::Instance()->Exists(fp))
                 {
                     DAVA::Vector<DAVA::FilePath> faceNames;
-					CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
-					for(size_t faceIndex = 0; faceIndex < faceNames.size(); ++faceIndex)
-					{
+                    CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
+                    for (size_t faceIndex = 0; faceIndex < faceNames.size(); ++faceIndex)
+                    {
                         if (faceNames[faceIndex].IsEmpty())
                             continue;
 

@@ -72,7 +72,6 @@
 #include "Settings/SettingsDialog.h"
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/CommandLine/CommandLineManager.h"
 
 #include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
 
@@ -420,12 +419,12 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         DAVA::Texture::SetDefaultGPU(gpu);
 
         DAVA::TexturesMap allScenesTextures;
-        DAVA::Vector<DAVA::NMaterial*> allSceneMaterials;
+        DAVA::Set<DAVA::NMaterial*> allSceneMaterials;
         for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
         {
             SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-            SceneHelper::EnumerateMaterialInstances(scene, allSceneMaterials);
+            SceneHelper::EnumerateMaterials(scene, allSceneMaterials);
         }
 
         if (!allScenesTextures.empty())
@@ -672,8 +671,8 @@ void QtMainWindow::SetupStatusBar()
     CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
     CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
-    
-	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
+
+    QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
 }
 
 
@@ -1323,11 +1322,11 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
             !FileSystem::Instance()->Exists(colorSystemTexturePath) && !SelectCustomColorsTexturePath())
         {
             closeRequest->Cancel();
-			return;
-		}
-		
-		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
-	}
+            return;
+        }
+
+        scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
+    }
 
     if(!SaveScene(scene))
     {

@@ -175,9 +175,17 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad* quad)
         }
     }
 
-    uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
-    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(vBufferSize);
-    rhi::UpdateVertexBuffer(vertexBuffer, landscapeVertices, 0, vBufferSize);
+    uint32 vBufferSize = static_cast<uint32>(verticesCount * sizeof(LandscapeVertex));
+
+    rhi::VertexBuffer::Descriptor desc;
+    desc.size = vBufferSize;
+    desc.initialData = landscapeVertices;
+    if (updatable)
+        desc.usage = rhi::USAGE_DYNAMICDRAW;
+    else
+        desc.usage = rhi::USAGE_STATICDRAW;
+
+    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(desc);
     vertexBuffers.push_back(vertexBuffer);
     
 #if defined(__DAVAENGINE_IPHONE__)
@@ -388,13 +396,13 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
     if (y1 == y2)
         y2 += 1.0f;
 
-	uint16 * data = heightmap->Data();
-	int32 imW = heightmap->Size();
+    uint16* data = heightmap->Data();
+    int32 imW = heightmap->Size();
 
-	Vector3 p1(x1, y1, 0);
-	p1.z = data[(int32)p1.y * imW + (int32)p1.x];
+    Vector3 p1(x1, y1, 0);
+    p1.z = data[(int32)p1.y * imW + (int32)p1.x];
 
-	Vector3 p2(x2, y2, 0);
+    Vector3 p2(x2, y2, 0);
 	p2.z = data[(int32)p2.y * imW + (int32)p2.x];
 
 	Vector3 p3;
@@ -943,10 +951,10 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
             indices[indexIndex++] = x + (y + step) * quadWidth;
 
             indices[indexIndex++] = (x + step) + y * quadWidth;
-			indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
-			indices[indexIndex++] = x + (y + step) * quadWidth;     
-		}
-	}
+            indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
+            indices[indexIndex++] = x + (y + step) * quadWidth;
+        }
+    }
 
     return true;
 }
@@ -1274,5 +1282,14 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
 void Landscape::SetForceFirstLod(bool force)
 {
     forceFirstLod = force;
+}
+
+void Landscape::SetUpdatable(bool isUpdatable)
+{
+    if (updatable != isUpdatable)
+    {
+        updatable = isUpdatable;
+        BuildLandscape();
+    }
 }
 }

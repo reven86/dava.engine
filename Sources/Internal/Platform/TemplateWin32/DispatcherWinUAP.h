@@ -109,7 +109,7 @@ public:
     bool InBlockingCall() const;
 
 private:
-    void ScheduleTask(std::function<void()>&& task);
+    void ScheduleTask(std::function<void()>&& task, bool scheduleFirst);
     void ScheduleTaskAndWait(std::function<void()>&& task);
 
 private:
@@ -129,7 +129,7 @@ inline Thread::Id DispatcherWinUAP::BoundThreadId() const
 template<typename T>
 void DispatcherWinUAP::RunAsync(T&& task)
 {
-    ScheduleTask(std::function<void()>(std::forward<T>(task)));
+    ScheduleTask(std::function<void()>(std::forward<T>(task)), false);
 }
 
 template<typename T>

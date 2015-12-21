@@ -45,6 +45,8 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
+#define DAVA_WINUAP_MOUSE_HACK
+
 namespace DAVA
 {
 
@@ -149,6 +151,7 @@ private:
 
     void SetTitleName();
     void SetDisplayOrientations();
+    void TrackWindowMinimumSize();
 
     void ResetRender();
 
@@ -174,7 +177,7 @@ private:
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
-    Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
+    bool mainLoopThreadStarted = false;
 
     volatile bool quitFlag = false;
 
@@ -209,12 +212,19 @@ private:
     int32 physicalHeight = static_cast<int32>(viewHeight * viewScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
-    DeferredScreenMetricEvents* deferredSizeScaleEvents;
+    std::unique_ptr<DeferredScreenMetricEvents> deferredSizeScaleEvents;
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
     Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
+    Windows::Foundation::EventRegistrationToken token;
+
+#if defined(DAVA_WINUAP_MOUSE_HACK)
+    BOOL (WINAPI* SetCursorPos)(int X, int Y);
+
+    bool skipMouseMoveEvent = false;
+#endif
 };
 
 //////////////////////////////////////////////////////////////////////////

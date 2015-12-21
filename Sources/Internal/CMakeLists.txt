@@ -139,7 +139,15 @@ elseif( IOS )
 elseif ( WINDOWS_UAP )
     add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
 
-    list ( APPEND LIST_SHARED_LIBRARIES "d2d1.lib" "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "dxguid.lib" "dwrite.lib" )
+    # list each library on its own line to ease library addition
+    list ( APPEND LIST_SHARED_LIBRARIES
+            "d2d1.lib"
+            "d3d11.lib"
+            "d3dcompiler.lib"
+            "dxgi.lib"
+            "dxguid.lib"
+            "dwrite.lib"
+    )
     set ( IGNORED_RHI_FOLDER "DX9" "GLES2" "Metal" )
 
 elseif( WIN32 ) 
@@ -155,8 +163,27 @@ elseif( WIN32 )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" "delayimp.lib" )
-#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
+    # list each library on its own line to ease library addition
+    list ( APPEND LIST_SHARED_LIBRARIES
+            "Wininet.lib"
+            "opengl32.lib"
+            "ws2_32.lib"
+            "winmm.lib"
+            "wldap32.lib"
+            "iphlpapi.lib"
+            "Gdi32.lib"
+            "glu32.lib"
+            "psapi.lib"
+            "dbghelp.lib"
+            "userenv.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"
+            "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib"
+            "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib"
+            "delayimp.lib"
+            "dxgi.lib"
+    )
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )

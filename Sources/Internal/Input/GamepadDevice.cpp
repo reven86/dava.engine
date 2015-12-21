@@ -73,19 +73,18 @@ void GamepadDevice::InitInternal()
     keyTranslator[0x14] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_DOWN
     keyTranslator[0x15] = (uint8)GAMEPAD_ELEMENT_DPAD_X;       //DPAD_LEFT
     keyTranslator[0x16] = (uint8)GAMEPAD_ELEMENT_DPAD_X;       //DPAD_RIGHT
-    
-    axisTranslator[0x11] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_LTRIGGER
-    axisTranslator[0x12] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_RTRIGGER
-    axisTranslator[0x17] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_BRAKE
-    axisTranslator[0x16] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_GAS
-    
-    axisTranslator[0x00] = (uint8)GAMEPAD_ELEMENT_AXIS_LX;      //AXIS_X
-    axisTranslator[0x01] = (uint8)GAMEPAD_ELEMENT_AXIS_LY;      //AXIS_Y
-    axisTranslator[0x0B] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_Z
-    axisTranslator[0x0E] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RZ
-    axisTranslator[0x0C] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_RX
-    axisTranslator[0x0D] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RY
+
+    axisTranslator[17] = (uint8)GAMEPAD_ELEMENT_LT; //AXIS_LTRIGGER
+    axisTranslator[18] = (uint8)GAMEPAD_ELEMENT_RT; //AXIS_RTRIGGER
+    axisTranslator[23] = (uint8)GAMEPAD_ELEMENT_LT; //AXIS_BRAKE
+    axisTranslator[22] = (uint8)GAMEPAD_ELEMENT_RT; //AXIS_GAS
+
+    axisTranslator[0] = (uint8)GAMEPAD_ELEMENT_AXIS_LX; //AXIS_X
+    axisTranslator[1] = (uint8)GAMEPAD_ELEMENT_AXIS_LY; //AXIS_Y
+    axisTranslator[11] = (uint8)GAMEPAD_ELEMENT_AXIS_RX; //AXIS_Z
+    axisTranslator[14] = (uint8)GAMEPAD_ELEMENT_AXIS_RY; //AXIS_RZ
+    axisTranslator[12] = (uint8)GAMEPAD_ELEMENT_AXIS_RX; //AXIS_RX
+    axisTranslator[13] = (uint8)GAMEPAD_ELEMENT_AXIS_RY; //AXIS_RY
 }
 #endif
-
 }

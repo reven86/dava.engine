@@ -128,9 +128,11 @@ private:
     void updateInfoConverted();
     void updatePropertiesWarning();
 
-    void reloadTextureToScene(DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu);
+    void reloadTextureToScene(DAVA::Texture* texture, const DAVA::TextureDescriptor* descriptor, DAVA::eGPUFamily gpu);
 
     void ConvertMultipleTextures(eTextureConvertMode convertMode);
+
+    void UpdateSceneMaterialsWithTexture(DAVA::Texture* texture);
 
 private slots:
 	void textureListViewImages(bool checked);

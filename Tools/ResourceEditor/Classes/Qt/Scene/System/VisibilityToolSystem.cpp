@@ -422,24 +422,17 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
 
         if(!needToExclude)
         {   // exclude sky
-            
-            Vector<NMaterial *> materials;
-            SceneHelper::EnumerateMaterialInstances(object, materials);
-            
-            const uint32 matCount = materials.size();
-            for(uint32 m = 0; m < matCount; ++m)
-            {
-                NMaterial* material = materials[m];
-                while (material && !material->GetEffectiveFXName().IsValid())
-                    material = material->GetParent();
 
-                if (material)
+            Set<NMaterial*> materials;
+            SceneHelper::EnumerateMaterials(object, materials);
+
+            const uint32 matCount = materials.size();
+            for (const auto& material : materials)
+            {
+                if ((NMaterialName::SKYOBJECT == material->GetEffectiveFXName()))
                 {
-                    if ((NMaterialName::SKYOBJECT == material->GetEffectiveFXName()))
-                    {
-                        needToExclude = true;
-                        break;
-                    }
+                    needToExclude = true;
+                    break;
                 }
             }
         }
@@ -460,7 +453,11 @@ void VisibilityToolSystem::RenderVisibilityPoint(bool clearTarget)
 
     const Vector2 curSize(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolProxy->GetTexture(), clearTarget);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = visibilityToolProxy->GetTexture();
+    desc.shouldClear = clearTarget;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White,
                                             Rect(visibilityPoint * landscapeSize - curSize / 2.f, curSize));
     RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -482,10 +479,14 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 
     static const float32 pointSize = 6.f;
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityAreaTexture, false);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = visibilityAreaTexture;
+    desc.shouldClear = false;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     for (uint32 i = 0; i < points.size(); ++i)
     {
-		uint32 colorIndex = (uint32)points[i].z;
+        uint32 colorIndex = (uint32)points[i].z;
         Rect rect(points[i].x - pointSize / 2.f, points[i].y - pointSize / 2.f, pointSize, pointSize);
         RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
     }

@@ -47,8 +47,8 @@ void DAEConvertAction::Redo()
     if (FileSystem::Instance()->Exists(daePath) && daePath.IsEqualToExtension(".dae"))
     {
         eColladaErrorCodes code = ConvertDaeToSc2(daePath);
-		if(code == COLLADA_OK)
-		{
+        if (code == COLLADA_OK)
+        {
             return;
         }
 		else if(code == COLLADA_ERROR_OF_ROOT_NODE)

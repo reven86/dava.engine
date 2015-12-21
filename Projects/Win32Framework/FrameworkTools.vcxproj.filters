@@ -125,5 +125,8 @@
     <ClCompile Include="..\..\Sources\Tools\CommandLine\CommandLineParser.cpp">
       <Filter>Source Files\CommandLine</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\CommandLine\ProgramOptions.cpp">
+      <Filter>Source Files\CommandLine</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

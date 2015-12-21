@@ -65,12 +65,6 @@ class DeviceListController : public QObject
 {
     Q_OBJECT
 
-    enum
-    {
-        SERVICE_LOG = 0,
-        SERVICE_MEMPROF = 1
-    };
-
     enum DeviceDataRole
     {
         // Roles for each item in QStandardItemModel
@@ -79,9 +73,6 @@ class DeviceListController : public QObject
         ROLE_PEER_DESCRIPTION,                  // Store device description recieved from announce
         ROLE_PEER_SERVICES                      // Store network services to communicate with remote device
     };
-
-    static const DAVA::uint16 ANNOUNCE_PORT = 9999;
-    static const DAVA::char8 announceMulticastGroup[];
 
 public:
     explicit DeviceListController(QObject *parent = NULL);
@@ -99,6 +90,7 @@ private slots:
     void OnConnectButtonPressed();
     void OnDisconnectButtonPressed();
     void OnShowLogButtonPressed();
+    void OnDeviceDiscover(const QString& addr);
 
 private:
     void ConnectDeviceInternal(QModelIndex& index, size_t ifIndex);
@@ -119,7 +111,7 @@ private:
     QPointer<DeviceListWidget> view;
 
 private:
-    static QStandardItem *CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);
+    static QStandardItem* CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);
 };
 
 
