@@ -31,13 +31,13 @@
 
 #include "VisibilityCheckRenderer.h"
 #include "Entity/SceneSystem.h"
-#include <qobjectdefs.h>
 
 namespace DAVA
 {
 class Landscape;
 }
 
+class Command2;
 class VisibilityCheckSystem : public DAVA::SceneSystem, VisibilityCheckRendererDelegate
 {
 public:
@@ -49,8 +49,12 @@ public:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
+    void Process(DAVA::float32 timeElapsed);
     void Draw();
+
     void InvalidateMaterials();
+
+    void ProcessCommand(const Command2* command, bool redo);
 
 private:
     using EntityMap = DAVA::Map<DAVA::Entity*, DAVA::Vector<DAVA::Vector3>>;
@@ -75,17 +79,17 @@ private:
         DAVA::Camera* camera = nullptr;
     };
 
-    static const DAVA::uint32 CUBEMAPS_COUNT = 1;
+    static const DAVA::uint32 CUBEMAPS_COUNT = 4;
+    static const DAVA::uint32 CUBEMAP_SIZE = 512;
 
 private:
     EntityMap entitiesWithVisibilityComponent;
-    DAVA::Texture* cubemapTarget[CUBEMAPS_COUNT];
+    DAVA::Landscape* landscape = nullptr;
     DAVA::Texture* renderTarget = nullptr;
     DAVA::Vector<VisibilityCheckRenderer::VisbilityPoint> controlPoints;
     DAVA::Vector<DAVA::uint32> controlPointIndices;
     DAVA::Map<DAVA::RenderObject*, DAVA::Entity*> renderObjectToEntity;
-    QMetaObject::Connection commandExecutedConnection;
-    QMetaObject::Connection nonModifyingEventEmittedConnection;
+    DAVA::Array<DAVA::Texture*, CUBEMAPS_COUNT> cubemapTarget;
     VisibilityCheckRenderer renderer;
     StateCache stateCache;
     size_t currentPointIndex = 0;

@@ -29,6 +29,11 @@
 #include "VisibilityCheckRenderer.h"
 #include "Render/ShaderCache.h"
 
+const DAVA::FastName MaterialParamCubemap("cubemap");
+const DAVA::FastName MaterialParamTransformedNormal("transformedNormal");
+const DAVA::FastName MaterialParamPointProperties("pointProperties");
+const DAVA::FastName MaterialParamCubemapCenter("cubemapCenter");
+
 struct RenderPassScope
 {
     rhi::HRenderPass renderPass;
@@ -85,6 +90,10 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
 
     visibilityMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/CompareDistance.Opaque.material"));
     visibilityMaterial->AddFlag(DAVA::NMaterialFlagName::FLAG_BLENDING, DAVA::BLENDING_ADDITIVE);
+    visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, DAVA::Vector4().data, rhi::ShaderProp::TYPE_FLOAT4);
+    visibilityMaterial->AddProperty(MaterialParamTransformedNormal, DAVA::Vector3().data, rhi::ShaderProp::TYPE_FLOAT3);
+    visibilityMaterial->AddProperty(MaterialParamPointProperties, DAVA::Vector3().data, rhi::ShaderProp::TYPE_FLOAT3);
+    visibilityMaterial->AddProperty(MaterialParamCubemapCenter, DAVA::Vector3().data, rhi::ShaderProp::Type::TYPE_FLOAT3);
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
@@ -174,7 +183,7 @@ void VisibilityCheckRenderer::CollectRenderBatches(DAVA::RenderSystem* renderSys
         {
             if (renderObject->GetFlags() & DAVA::RenderObject::CUSTOM_PREPARE_TO_RENDER)
             {
-                renderObject->PrepareToRender(lodCamera);
+                renderObject->PrepareToRender(fromCamera);
             }
 
             DAVA::uint32 batchCount = renderObject->GetActiveRenderBatchCount();
@@ -235,55 +244,19 @@ void VisibilityCheckRenderer::RenderWithCurrentSettings(DAVA::RenderSystem* rend
 
 void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const VisbilityPoint& vp)
 {
-    DAVA::FastName fnCubemap("cubemap");
-    if (visibilityMaterial->HasLocalTexture(fnCubemap))
+    if (visibilityMaterial->HasLocalTexture(MaterialParamCubemap))
     {
-        visibilityMaterial->SetTexture(fnCubemap, cubemapTexture);
+        visibilityMaterial->SetTexture(MaterialParamCubemap, cubemapTexture);
     }
     else
     {
-        visibilityMaterial->AddTexture(fnCubemap, cubemapTexture);
+        visibilityMaterial->AddTexture(MaterialParamCubemap, cubemapTexture);
     }
 
-    if (visibilityMaterial->HasLocalProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR))
-    {
-        visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, vp.color.color);
-    }
-    else
-    {
-        visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, vp.color.color, rhi::ShaderProp::TYPE_FLOAT4);
-    }
-
-    DAVA::FastName tNormal("transformedNormal");
-    if (visibilityMaterial->HasLocalProperty(tNormal))
-    {
-        visibilityMaterial->SetPropertyValue(tNormal, vp.normal.data);
-    }
-    else
-    {
-        visibilityMaterial->AddProperty(tNormal, vp.normal.data, rhi::ShaderProp::TYPE_FLOAT3);
-    }
-
-    DAVA::FastName props("pointProperties");
     DAVA::Vector3 propValue(vp.downAngleCosine, vp.upAngleCosine, vp.maxDistance);
-    if (visibilityMaterial->HasLocalProperty(props))
-    {
-        visibilityMaterial->SetPropertyValue(props, propValue.data);
-    }
-    else
-    {
-        visibilityMaterial->AddProperty(props, propValue.data, rhi::ShaderProp::TYPE_FLOAT3);
-    }
-
-    const DAVA::FastName cubemapCenter("cubemapCenter");
-    if (visibilityMaterial->HasLocalProperty(cubemapCenter))
-    {
-        visibilityMaterial->SetPropertyValue(cubemapCenter, vp.point.data);
-    }
-    else
-    {
-        visibilityMaterial->AddProperty(cubemapCenter, vp.point.data, rhi::ShaderProp::Type::TYPE_FLOAT3);
-    }
+    visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, vp.color.color);
+    visibilityMaterial->SetPropertyValue(MaterialParamPointProperties, propValue.data);
+    visibilityMaterial->SetPropertyValue(MaterialParamCubemapCenter, vp.point.data);
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 

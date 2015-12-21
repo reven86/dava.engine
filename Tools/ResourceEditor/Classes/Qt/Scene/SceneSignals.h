@@ -102,8 +102,6 @@ signals:
 
     void EditorLightEnabled(bool enabled);
 
-    void NonModifyingEventEmitted();
-
 public:
     void EmitOpened(SceneEditor2 *scene) { emit Opened(scene); }
     void EmitClosed(SceneEditor2 *scene) { emit Closed(scene); }
@@ -201,11 +199,6 @@ public:
     void EmitSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape)
     {
         emit SnapToLandscapeChanged(scene, isSpanToLandscape);
-    }
-
-    void EmitNonModifyingEvent()
-    {
-        emit NonModifyingEventEmitted();
     }
 };
 

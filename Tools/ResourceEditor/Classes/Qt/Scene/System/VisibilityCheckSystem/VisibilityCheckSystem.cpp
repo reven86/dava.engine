@@ -27,14 +27,21 @@
 =====================================================================================*/
 
 #include "VisibilityCheckSystem.h"
-#include "../../SceneSignals.h"
 
+#include "Constants.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/VisibilityCheckComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Math/MathHelpers.h"
+#include "Utils/Random.h"
+
+#include "Render/Renderer.h"
 #include "Render/Highlevel/RenderSystem.h"
+#include "Render/Highlevel/Landscape.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
 VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
@@ -42,32 +49,23 @@ VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
 {
     renderer.SetDelegate(this);
 
-    const DAVA::uint32 renderTargetSize = 1024;
-
     for (DAVA::uint32 i = 0; i < CUBEMAPS_COUNT; ++i)
     {
-        cubemapTarget[i] = DAVA::Texture::CreateFBO(renderTargetSize, renderTargetSize,
-                                                    DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
+        cubemapTarget[i] = DAVA::Texture::CreateFBO(CUBEMAP_SIZE, CUBEMAP_SIZE, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_CUBE);
     }
-
-    commandExecutedConnection = QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, [this](Scene*, const Command2*, bool) {
-        shouldPrerender = true;
-    });
-
-    nonModifyingEventEmittedConnection = QObject::connect(SceneSignals::Instance(), &SceneSignals::NonModifyingEventEmitted, [this]() {
-        shouldPrerender = true;
-    });
 }
 
 VisibilityCheckSystem::~VisibilityCheckSystem()
 {
-    QObject::disconnect(commandExecutedConnection);
-    QObject::disconnect(nonModifyingEventEmittedConnection);
-
-    for (uint32 i = 0; i < CUBEMAPS_COUNT; ++i)
+    for (DAVA::uint32 i = 0; i < CUBEMAPS_COUNT; ++i)
     {
         SafeRelease(cubemapTarget[i]);
     }
+}
+
+void VisibilityCheckSystem::ProcessCommand(const Command2*, bool)
+{
+    shouldPrerender = true;
 }
 
 void VisibilityCheckSystem::RegisterEntity(DAVA::Entity* entity)
@@ -103,6 +101,10 @@ void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
     if (renderComponent != nullptr)
     {
         auto ro = renderComponent->GetRenderObject();
+        if (ro->GetType() == DAVA::RenderObject::TYPE_LANDSCAPE)
+        {
+            landscape = static_cast<DAVA::Landscape*>(ro);
+        }
         renderObjectToEntity[ro] = entity;
     }
 }
@@ -123,24 +125,27 @@ void VisibilityCheckSystem::RemoveEntity(DAVA::Entity* entity)
     if (renderComponent != nullptr)
     {
         auto ro = renderComponent->GetRenderObject();
+        if (ro->GetType() == DAVA::RenderObject::TYPE_LANDSCAPE)
+        {
+            landscape = nullptr;
+        }
         renderObjectToEntity.erase(ro);
     }
 }
 
-void VisibilityCheckSystem::Draw()
+void VisibilityCheckSystem::Process(DAVA::float32 timeElapsed)
 {
-    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM))
+    if (!DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM))
     {
         return;
     }
 
-    bool shouldRenderOverlay = false;
     bool shouldRebuildIndices = false;
 
     for (auto& mapItem : entitiesWithVisibilityComponent)
     {
-        auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(mapItem.first->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
-        if (!visibilityComponent->IsValid())
+        auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(mapItem.first->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
+        if (visibilityComponent->IsEnabled() && !visibilityComponent->IsValid())
         {
             if (visibilityComponent->ShouldRebuildPoints())
             {
@@ -157,7 +162,16 @@ void VisibilityCheckSystem::Draw()
         BuildIndexSet();
     }
     UpdatePointSet();
+}
 
+void VisibilityCheckSystem::Draw()
+{
+    if (!DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM))
+    {
+        return;
+    }
+
+    bool shouldRenderOverlay = false;
     auto rs = GetScene()->GetRenderSystem();
     auto dbg = rs->GetDebugDrawer();
     for (const auto& mapItem : entitiesWithVisibilityComponent)
@@ -187,14 +201,14 @@ void VisibilityCheckSystem::Draw()
     for (const auto& point : controlPoints)
     {
         dbg->DrawIcosahedron(point.point, 0.1f, DAVA::Color(1.0f, 1.0f, 0.5f, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
-        dbg->DrawLine(point.point, point.point + 2.0f * point.normal, Color(0.25f, 1.0f, 0.25f, 1.0f));
+        dbg->DrawLine(point.point, point.point + 2.0f * point.normal, DAVA::Color(0.25f, 1.0f, 0.25f, 1.0f));
     }
 
     DAVA::Color clr(std::sqrt(1.0f / static_cast<float>(controlPoints.size() + 1)), 0.0f, 0.0f, 0.0f);
     auto fromCamera = GetScene()->GetCurrentCamera();
     for (DAVA::uint32 cm = 0; (cm < CUBEMAPS_COUNT) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
-        uint32 pointIndex = controlPointIndices[currentPointIndex];
+        DAVA::uint32 pointIndex = controlPointIndices[currentPointIndex];
         const auto& point = controlPoints[pointIndex];
         renderer.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point.point);
         renderer.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point);
@@ -203,8 +217,18 @@ void VisibilityCheckSystem::Draw()
     if (shouldRenderOverlay)
     {
         auto rs2d = DAVA::RenderSystem2D::Instance();
-        DAVA::Rect dstRect(0.0f, Renderer::GetFramebufferHeight(), Renderer::GetFramebufferWidth(), -Renderer::GetFramebufferHeight());
-        rs2d->DrawTextureWithoutAdjustingRects(renderTarget, RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, Color::White, dstRect);
+        DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
+        DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
+        if ((currentPointIndex == controlPoints.size()))
+        {
+            DAVA::Rect dstRect(0.0f, height, width, -height);
+            rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+        }
+        else
+        {
+            float ratio = static_cast<float>(currentPointIndex) / static_cast<float>(controlPoints.size());
+            rs2d->FillRect(DAVA::Rect(0.0f, 0.0f, ratio * width, 5.0f), DAVA::Color::White);
+        }
     }
 }
 
@@ -215,36 +239,34 @@ void VisibilityCheckSystem::InvalidateMaterials()
 
 void VisibilityCheckSystem::UpdatePointSet()
 {
-    DAVA::Landscape* landscape = DAVA::FindLandscape(GetScene());
-
     controlPoints.clear();
 
     for (const auto& mapItem : entitiesWithVisibilityComponent)
     {
         auto entity = mapItem.first;
-        auto visibilityComponent = static_cast<VisibilityCheckComponent*>(entity->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
+        auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(entity->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
         if (visibilityComponent->IsEnabled())
         {
             auto worldTransform = entity->GetWorldTransform();
             DAVA::Vector3 position = worldTransform.GetTranslationVector();
             DAVA::Vector3 normal = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
             normal.Normalize();
-            float upAngle = std::cos((90.0f - visibilityComponent->GetUpAngle()) * PI / 180.0f);
-            float dnAngle = -std::cos((90.0f - visibilityComponent->GetDownAngle()) * PI / 180.0f);
+            float upAngle = std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetUpAngle()));
+            float dnAngle = -std::cos(DAVA::DegToRad(90.0f - visibilityComponent->GetDownAngle()));
             float maxDist = visibilityComponent->GetMaximumDistance();
 
-            bool shouldSnap = visibilityComponent->ShouldPlaceOnLandscape();
+            bool shouldSnap = (landscape != nullptr) && visibilityComponent->ShouldPlaceOnLandscape();
             float snapHeight = visibilityComponent->GetHeightAboveLandscape();
 
             for (const auto& pt : mapItem.second)
             {
                 DAVA::Vector3 transformedPoint = position + MultiplyVectorMat3x3(pt, worldTransform);
-                if (shouldSnap && (landscape->GetHeightAtPoint(transformedPoint, transformedPoint.z)))
+                if (shouldSnap && (landscape->PlacePoint(transformedPoint, transformedPoint)))
                 {
-                    DAVA::Vector3 dxPoint = transformedPoint + Vector3(1.0f, 0.0f, 0.0f);
-                    DAVA::Vector3 dyPoint = transformedPoint + Vector3(0.0f, 1.0f, 0.0f);
-                    landscape->GetHeightAtPoint(dxPoint, dxPoint.z);
-                    landscape->GetHeightAtPoint(dyPoint, dyPoint.z);
+                    DAVA::Vector3 dxPoint = transformedPoint + DAVA::Vector3(1.0f, 0.0f, 0.0f);
+                    DAVA::Vector3 dyPoint = transformedPoint + DAVA::Vector3(0.0f, 1.0f, 0.0f);
+                    landscape->PlacePoint(dxPoint, dxPoint);
+                    landscape->PlacePoint(dyPoint, dyPoint);
 
                     normal = (dxPoint - transformedPoint).CrossProduct(dyPoint - transformedPoint);
                     normal.Normalize();
@@ -260,7 +282,7 @@ void VisibilityCheckSystem::UpdatePointSet()
 
 void VisibilityCheckSystem::Prerender()
 {
-    if (renderTarget == nullptr)
+    if ((renderTarget == nullptr) || (renderTarget->GetWidth() != stateCache.viewportSize.dx) || (renderTarget->GetHeight() != stateCache.viewportSize.dy))
     {
         CreateRenderTarget();
     }
@@ -274,13 +296,13 @@ void VisibilityCheckSystem::Prerender()
 void VisibilityCheckSystem::CreateRenderTarget()
 {
     SafeRelease(renderTarget);
-    renderTarget = Texture::CreateFBO(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight(),
-                                      PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
+    renderTarget = DAVA::Texture::CreateFBO(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight(),
+                                            DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
 }
 
 bool VisibilityCheckSystem::CacheIsValid()
 {
-    Size2i vpSize(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight());
+    DAVA::Size2i vpSize(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());
     if (vpSize != stateCache.viewportSize)
         return false;
 
@@ -289,7 +311,7 @@ bool VisibilityCheckSystem::CacheIsValid()
         return false;
 
     auto currentMatrix = cam->GetViewProjMatrix();
-    if (memcmp(currentMatrix.data, stateCache.viewprojMatrix.data, sizeof(Matrix4)) != 0)
+    if (Memcmp(currentMatrix.data, stateCache.viewprojMatrix.data, sizeof(DAVA::Matrix4)) != 0)
         return false;
 
     return true;
@@ -297,8 +319,10 @@ bool VisibilityCheckSystem::CacheIsValid()
 
 void VisibilityCheckSystem::BuildCache()
 {
-    stateCache.viewportSize = Size2i(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight());
     stateCache.camera = GetScene()->GetCurrentCamera();
+    DVASSERT(stateCache.camera != nullptr)
+
+    stateCache.viewportSize = DAVA::Size2i(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());
     stateCache.viewprojMatrix = stateCache.camera->GetViewProjMatrix();
 }
 
@@ -319,7 +343,7 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
     if (entityIterator == renderObjectToEntity.end())
         return false;
 
-    KeyedArchive* customProps = GetCustomPropertiesArchieve(entityIterator->second);
+    DAVA::KeyedArchive* customProps = GetCustomPropertiesArchieve(entityIterator->second);
     if (customProps)
     {
         DAVA::String collisionTypeString = "CollisionType";
@@ -328,7 +352,7 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
             collisionTypeString = "CollisionTypeCrashed";
         }
 
-        const int32 collisiontype = customProps->GetInt32(collisionTypeString, 0);
+        const DAVA::int32 collisiontype = customProps->GetInt32(collisionTypeString, 0);
 
         if ((ResourceEditor::ESOT_NO_COLISION == collisiontype) ||
             (ResourceEditor::ESOT_TREE == collisiontype) ||
@@ -346,27 +370,17 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
 
 namespace VCSLocal
 {
-inline float32 RandomFloat(float32 lower, float32 upper)
-{
-    return lower + (upper - lower) * (static_cast<float32>(rand()) / static_cast<float>(RAND_MAX));
-}
-
-inline DAVA::Vector3 Polar(float32 angle, float32 distance)
-{
-    return Vector3(std::cos(angle) * distance, std::sin(angle) * distance, 0.0f);
-};
-
 inline bool DistanceFromPointToAnyPointFromSetGreaterThan(const DAVA::Vector3& pt,
-                                                          const DAVA::Vector<DAVA::Vector3>& points, float32 distanceSquared, float32 radiusSquared)
+                                                          const DAVA::Vector<DAVA::Vector3>& points, DAVA::float32 distanceSquared, DAVA::float32 radiusSquared)
 {
-    float32 distanceFromCenter = pt.x * pt.x + pt.y * pt.y;
+    DAVA::float32 distanceFromCenter = pt.x * pt.x + pt.y * pt.y;
     if (distanceFromCenter > radiusSquared)
         return false;
 
     for (const auto& e : points)
     {
-        float32 dx = e.x - pt.x;
-        float32 dy = e.y - pt.y;
+        DAVA::float32 dx = e.x - pt.x;
+        DAVA::float32 dy = e.y - pt.y;
         if (dx * dx + dy * dy < distanceSquared)
             return false;
     }
@@ -374,20 +388,20 @@ inline bool DistanceFromPointToAnyPointFromSetGreaterThan(const DAVA::Vector3& p
     return true;
 }
 
-bool TryToGenerateAroundPoint(const Vector3& src, float32 distanceBetweenPoints, float32 radius, DAVA::Vector<DAVA::Vector3>& points)
+bool TryToGenerateAroundPoint(const DAVA::Vector3& src, DAVA::float32 distanceBetweenPoints, DAVA::float32 radius, DAVA::Vector<DAVA::Vector3>& points)
 {
-    const uint32 maxAttempts = 36;
-    float distanceSquared = distanceBetweenPoints * distanceBetweenPoints;
-    float32 radiusSquared = radius * radius;
+    const DAVA::uint32 maxAttempts = 36;
 
-    float32 angle = VCSLocal::RandomFloat(-PI, PI);
-    float32 da = 2.0f * PI / static_cast<float>(maxAttempts);
-    uint32 attempts = 0;
-    Vector3 newPoint;
+    DAVA::float32 distanceSquared = distanceBetweenPoints * distanceBetweenPoints;
+    DAVA::float32 radiusSquared = radius * radius;
+    DAVA::float32 angle = DAVA::Random::Instance()->RandFloat32InBounds(-DAVA::PI, DAVA::PI);
+    DAVA::float32 da = 2.0f * DAVA::PI / static_cast<float>(maxAttempts);
+    DAVA::uint32 attempts = 0;
+    DAVA::Vector3 newPoint;
     bool canInclude = false;
     do
     {
-        newPoint = src + VCSLocal::Polar(angle, 2.0f * distanceBetweenPoints);
+        newPoint = src + DAVA::Polar(angle, 2.0f * distanceBetweenPoints);
         if (DistanceFromPointToAnyPointFromSetGreaterThan(newPoint, points, distanceSquared, radiusSquared))
         {
             points.push_back(newPoint);
@@ -402,14 +416,14 @@ bool TryToGenerateAroundPoint(const Vector3& src, float32 distanceBetweenPoints,
 
 void VisibilityCheckSystem::BuildPointSetForEntity(EntityMap::value_type& item)
 {
-    auto component = static_cast<VisibilityCheckComponent*>(item.first->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
+    auto component = static_cast<DAVA::VisibilityCheckComponent*>(item.first->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
 
-    float32 radius = component->GetRadius();
-    float32 radiusSquared = radius * radius;
-    float32 distanceBetweenPoints = component->GetDistanceBetweenPoints();
-    float32 distanceSquared = distanceBetweenPoints * distanceBetweenPoints;
+    DAVA::float32 radius = component->GetRadius();
+    DAVA::float32 radiusSquared = radius * radius;
+    DAVA::float32 distanceBetweenPoints = component->GetDistanceBetweenPoints();
+    DAVA::float32 distanceSquared = distanceBetweenPoints * distanceBetweenPoints;
 
-    uint32 pointsToGenerate = 2 * static_cast<uint32>(radiusSquared / distanceSquared);
+    DAVA::uint32 pointsToGenerate = 2 * static_cast<DAVA::uint32>(radiusSquared / distanceSquared);
     item.second.clear();
     item.second.reserve(pointsToGenerate);
 
@@ -419,13 +433,13 @@ void VisibilityCheckSystem::BuildPointSetForEntity(EntityMap::value_type& item)
     }
     else
     {
-        item.second.push_back(VCSLocal::Polar(VCSLocal::RandomFloat(-PI, +PI), radius - distanceBetweenPoints));
+        item.second.push_back(DAVA::Polar(DAVA::Random::Instance()->RandFloat32InBounds(-DAVA::PI, +DAVA::PI), radius - distanceBetweenPoints));
 
         bool canGenerate = true;
         while (canGenerate)
         {
             canGenerate = false;
-            for (int32 i = static_cast<int32>(item.second.size()) - 1; i >= 0; --i)
+            for (DAVA::int32 i = static_cast<DAVA::int32>(item.second.size()) - 1; i >= 0; --i)
             {
                 if (VCSLocal::TryToGenerateAroundPoint(item.second.at(i), distanceBetweenPoints, radius, item.second))
                 {
@@ -436,12 +450,12 @@ void VisibilityCheckSystem::BuildPointSetForEntity(EntityMap::value_type& item)
         }
     }
 
-    float32 verticalVariance = component->GetVerticalVariance();
+    DAVA::float32 verticalVariance = component->GetVerticalVariance();
     if (verticalVariance > 0.0f)
     {
         for (auto& p : item.second)
         {
-            p.z = VCSLocal::RandomFloat(-verticalVariance, verticalVariance);
+            p.z = DAVA::Random::Instance()->RandFloat32InBounds(-verticalVariance, verticalVariance);
         }
     }
 }
@@ -467,11 +481,11 @@ void VisibilityCheckSystem::BuildIndexSet()
 
 DAVA::Color VisibilityCheckSystem::GetNormalizedColorForEntity(const EntityMap::value_type& item) const
 {
-    auto component = static_cast<VisibilityCheckComponent*>(item.first->GetComponent(Component::VISIBILITY_CHECK_COMPONENT));
-    Color normalizedColor = component->GetColor();
+    auto component = static_cast<DAVA::VisibilityCheckComponent*>(item.first->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
+    DAVA::Color normalizedColor = component->GetColor();
     if (component->ShouldNormalizeColor())
     {
-        float32 fpoints = static_cast<float>(item.second.size());
+        DAVA::float32 fpoints = static_cast<float>(item.second.size());
         normalizedColor.r = (normalizedColor.r > 0.0f) ? std::max(1.0f / 255.0f, normalizedColor.r / fpoints) : 0.0f;
         normalizedColor.g = (normalizedColor.g > 0.0f) ? std::max(1.0f / 255.0f, normalizedColor.g / fpoints) : 0.0f;
         normalizedColor.b = (normalizedColor.b > 0.0f) ? std::max(1.0f / 255.0f, normalizedColor.b / fpoints) : 0.0f;

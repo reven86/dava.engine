@@ -47,6 +47,7 @@
 
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/UpdateViewCommand.h"
 
 #include "Tools/LazyUpdater/LazyUpdater.h"
 
@@ -365,7 +366,7 @@ void LODEditor::ForceLayerActivated(int index)
 {
     int layer = ui->forceLayer->itemData(index).toInt();
     GetCurrentEditorLODSystem()->SetForceLayer(layer);
-    SceneSignals::Instance()->EmitNonModifyingEvent();
+    QtMainWindow::Instance()->GetCurrentScene()->Exec(new UpdateViewCommand());
 }
 
 void LODEditor::CreateForceLayerValues(int layersCount)

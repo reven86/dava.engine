@@ -30,6 +30,8 @@
 #include "Scene/System/GridSystem.h"
 #include "Qt/Settings/SettingsManager.h"
 
+#include "Render/Highlevel/RenderSystem.h"
+
 #define LOWEST_GRID_STEP 0.1f
 #define LOWEST_GRID_SIZE 1.0f
 

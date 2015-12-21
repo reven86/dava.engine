@@ -87,6 +87,7 @@
 #include "Classes/Commands2/TilemaskEditorCommands.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Classes/Commands2/UpdateViewCommand.h"
 
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
 
@@ -2503,7 +2504,7 @@ void QtMainWindow::OnForceFirstLod(bool enabled)
     }
 
     landscape->SetForceFirstLod(enabled);
-    SceneSignals::Instance()->EmitNonModifyingEvent();
+    scene->Exec(new UpdateViewCommand());
 }
 
 void QtMainWindow::OnNotPassableTerrain()

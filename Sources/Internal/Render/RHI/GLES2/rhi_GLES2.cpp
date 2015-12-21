@@ -76,7 +76,6 @@ static bool EAC_Supported = false;
 static bool DXT_Supported = false;
 static bool Float_Supported = false;
 static bool Half_Supported = false;
-static bool Seamless_Cubemap_Supported = false;
 
 static RenderDeviceCaps _GLES2_DeviceCaps = {};
 
@@ -186,7 +185,6 @@ gles_check_GL_extensions()
         DXT_Supported = (strstr(ext, "GL_EXT_texture_compression_s3tc") != nullptr) || (strstr(ext, "GL_NV_texture_compression_s3tc") != nullptr);
         Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
         Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
-        Seamless_Cubemap_Supported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
 
         _GLES2_DeviceCaps.is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
         _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
@@ -501,12 +499,7 @@ void gles2_Initialize(const InitParam& param)
 
 #endif
 
-#if defined(GL_ARB_seamless_cube_map) && defined(GL_TEXTURE_CUBE_MAP_SEAMLESS)
-        if (Seamless_Cubemap_Supported)
-        {
-            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-        }
-#endif
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -611,12 +604,7 @@ void gles2_Initialize(const InitParam& param)
     glDebugMessageCallback(&_OGLErrorCallback, 0);
     #endif
 
-#if defined(GL_ARB_seamless_cube_map) && defined(GL_TEXTURE_CUBE_MAP_SEAMLESS)
-    if (Seamless_Cubemap_Supported)
-    {
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    }
-#endif
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
