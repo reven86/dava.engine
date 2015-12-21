@@ -59,7 +59,7 @@ public slots:
     
     void OnSelectionChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
-    void OnModelChanged();
+    void OnModelUpdated();
 
 private slots:
     void OnExpanded(const QModelIndex& index);

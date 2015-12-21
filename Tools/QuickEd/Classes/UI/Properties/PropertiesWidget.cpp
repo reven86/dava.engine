@@ -94,8 +94,8 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 
     connect(treeView, &QTreeView::expanded, this, &PropertiesWidget::OnExpanded);
     connect(treeView, &QTreeView::collapsed, this, &PropertiesWidget::OnCollapsed);
-
-    UpdateModel(selectedNode);
+    DVASSERT(nullptr == selectedNode);
+    UpdateModel(nullptr);
 }
 
 void PropertiesWidget::OnDocumentChanged(Document* document)
@@ -108,8 +108,7 @@ void PropertiesWidget::OnDocumentChanged(Document* document)
     {
         commandExecutor.reset();
     }
-    selectedNode = nullptr;
-    UpdateModel(selectedNode);
+    UpdateModel(nullptr); //SelectionChanged will invoke by Queued Connection, so selectedNode have invalid value
 }
 
 void PropertiesWidget::OnAddComponent(QAction *action)
@@ -283,7 +282,7 @@ QAction *PropertiesWidget::CreateSeparator()
     return separator;
 }
 
-void PropertiesWidget::OnModelChanged()
+void PropertiesWidget::OnModelUpdated()
 {
     bool blocked = treeView->blockSignals(true);
     treeView->expandToDepth(0);
@@ -304,12 +303,16 @@ void PropertiesWidget::OnCollapsed(const QModelIndex& index)
 
 void PropertiesWidget::UpdateModel(PackageBaseNode* node)
 {
-    selectedNode = node;
+    if (node == selectedNode)
+    {
+        return;
+    }
     if (nullptr != selectedNode)
     {
         auto index = treeView->indexAt(QPoint(0, 0));
         lastTopIndexPath = GetPathFromIndex(index);
     }
+    selectedNode = node;
     propertiesModel->Reset(selectedNode, commandExecutor);
     bool isControl = dynamic_cast<ControlNode*>(selectedNode) != nullptr;
     bool isStyle = dynamic_cast<StyleSheetNode*>(selectedNode) != nullptr;
@@ -320,7 +323,7 @@ void PropertiesWidget::UpdateModel(PackageBaseNode* node)
     removeAction->setEnabled(false);
     
     //delay long time work with view
-    QMetaObject::invokeMethod(this, "OnModelChanged", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "OnModelUpdated", Qt::QueuedConnection);
 }
 
 void PropertiesWidget::UpdateActions()

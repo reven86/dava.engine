@@ -34,6 +34,7 @@
 
 #include "Platform/Qt5/QtLayer.h"
 #include "TextureCompression/PVRConverter.h"
+#include "QtTools/Utils/MessageHandler.h"
 #include <QtGlobal>
 
 void InitPVRTexTool()
@@ -46,33 +47,9 @@ void InitPVRTexTool()
     DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 }
 
-void messageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
-{
-    QByteArray localMsg = msg.toLocal8Bit();
-    switch (type)
-    {
-    case QtDebugMsg:
-        DAVA::Logger::Debug("Qt debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        break;
-    case QtWarningMsg:
-        DAVA::Logger::Warning("Qt Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        break;
-    case QtCriticalMsg:
-        DAVA::Logger::Error("Qt Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        break;
-    case QtFatalMsg:
-        DAVA::Logger::Error("Qt Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        abort();
-        break;
-    default:
-        DAVA::Logger::Info("Qt Unknown: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        break;
-    }
-}
-
 int main(int argc, char *argv[])
 {
-    qInstallMessageHandler(messageOutput);
+    qInstallMessageHandler(DAVAMessageHandler);
 
     QApplication a(argc, argv);
     a.setOrganizationName("DAVA");

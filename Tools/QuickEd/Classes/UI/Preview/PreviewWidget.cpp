@@ -222,21 +222,25 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     DVASSERT(nullptr != systemManager);
     SaveContext();
     document = arg;
-    std::weak_ptr<PackageNode> packagePtr;
     if (!selectionContainer.selectedNodes.empty())
     {
         SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
         systemManager->SelectionChanged.Emit(SelectedNodes(), deselected);
+        DVASSERT(selectionContainer.selectedNodes.empty());
     }
     if (nullptr != document)
     {
-        packagePtr = document->GetPackage();
+        std::weak_ptr<PackageNode> packagePtr = document->GetPackage();
+        systemManager->PackageNodeChanged.Emit(packagePtr);
+        LoadContext();
+        if (!selectionContainer.selectedNodes.empty())
+        {
+            systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+        }
     }
-    systemManager->PackageNodeChanged.Emit(packagePtr);
-    LoadContext();
-    if (!selectionContainer.selectedNodes.empty())
+    else
     {
-        systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+        systemManager->PackageNodeChanged.Emit(std::weak_ptr<PackageNode>());
     }
 }
 
@@ -288,6 +292,7 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
 
 void PreviewWidget::OnGLInitialized()
 {
+    DVASSERT(nullptr == systemManager);
     systemManager.reset(new EditorSystemsManager());
     systemManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
     scrollAreaController->SetNestedControl(systemManager->GetRootControl());
@@ -370,11 +375,6 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
 
 void PreviewWidget::LoadContext()
 {
-    if (nullptr == document)
-    {
-        selectionContainer.selectedNodes.clear();
-        return;
-    }
     PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
     if (nullptr == context)
     {

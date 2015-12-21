@@ -184,6 +184,11 @@ PackageWidget::PackageWidget(QWidget *parent)
     PlaceActions();
 }
 
+PackageWidget::~PackageWidget()
+{
+    DVASSERT(currentIndexes.empty());
+}
+
 void PackageWidget::OnDocumentChanged(Document* arg)
 {
     bool isUpdatesEnabled = treeView->updatesEnabled();
@@ -721,6 +726,7 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
     QModelIndex srcIndex = packageModel->indexByNode(node);
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
     treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
+    DVASSERT(!currentIndexes.empty());
     currentIndexes.pop();
     if (!currentIndexes.empty())
     {
@@ -730,6 +736,10 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
             treeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
             treeView->scrollTo(index);
         }
+    }
+    else
+    {
+        treeView->selectionModel()->setCurrentIndex(QModelIndex(), QItemSelectionModel::NoUpdate);
     }
 }
 

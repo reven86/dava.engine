@@ -321,58 +321,55 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
 
 namespace
 {
-List<MagnetLine> CreateMagnetPairs(UIControl* parent, const Rect& box, const UIGeometricData* parentGD, const Vector<UIControl*>& neighbours, Vector2::eAxis axis)
+Vector<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* parentGD, const Vector<UIControl*>& neighbours, Vector2::eAxis axis)
+{
+    DVASSERT(nullptr != parentGD);
+    Vector<MagnetLine> magnets;
+
+    Rect parentBox(Vector2(), parentGD->size);
+    if (parentBox.GetSize()[axis] <= 0.0f)
     {
-        DVASSERT(nullptr != parentGD);
-        List<MagnetLine> magnets;
-
-        Rect parentBox(Vector2(), parentGD->size);
-        if (parentBox.GetSize()[axis] <= 0.0f)
-        {
-            return magnets;
-        }
-        magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
-        magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
-        magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
-        magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
-        magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
-
-        const float32 border = borderInParentToMagnet[axis];
-        float32 requiredSizeToMagnetToBorders = 5 * border;
-        if (parentGD->GetUnrotatedRect().GetSize()[axis] > requiredSizeToMagnetToBorders)
-        {
-            const float32 borderShare = border / parentBox.GetSize()[axis];
-            magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
-            magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
-        }
-
-        for (UIControl* neighbour : neighbours)
-        {
-            DVASSERT(nullptr != neighbour);
-            Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
-
-            magnets.emplace_back(0.0f, box, 0.0f, neighbourBox, axis);
-            magnets.emplace_back(0.0f, box, 0.5f, neighbourBox, axis);
-            magnets.emplace_back(0.5f, box, 0.5f, neighbourBox, axis);
-            magnets.emplace_back(1.0f, box, 0.5f, neighbourBox, axis);
-            magnets.emplace_back(1.0f, box, 1.0f, neighbourBox, axis);
-            magnets.emplace_back(0.0f, box, 1.0f, neighbourBox, axis);
-            magnets.emplace_back(1.0f, box, 0.0f, neighbourBox, axis);
-
-            const float32 neighbourSpacing = indentOfControlToManget[axis];
-            const float32 neighbourSpacingShare = neighbourSpacing / neighbourBox.GetSize()[axis];
-            magnets.emplace_back(1.0f, box, -neighbourSpacingShare, neighbourBox, axis);
-            magnets.emplace_back(0.0f, box, 1.0f + neighbourSpacingShare, neighbourBox, axis);
-        }
-
         return magnets;
     }
+    magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
+    magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
+    magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
+    magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
+    magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
+
+    const float32 border = borderInParentToMagnet[axis];
+    float32 requiredSizeToMagnetToBorders = 5 * border;
+    if (parentGD->GetUnrotatedRect().GetSize()[axis] > requiredSizeToMagnetToBorders)
+    {
+        const float32 borderShare = border / parentBox.GetSize()[axis];
+        magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
+        magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
+    }
+
+    for (UIControl* neighbour : neighbours)
+    {
+        DVASSERT(nullptr != neighbour);
+        Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
+
+        magnets.emplace_back(0.0f, box, 0.0f, neighbourBox, axis);
+        magnets.emplace_back(0.0f, box, 0.5f, neighbourBox, axis);
+        magnets.emplace_back(0.5f, box, 0.5f, neighbourBox, axis);
+        magnets.emplace_back(1.0f, box, 0.5f, neighbourBox, axis);
+        magnets.emplace_back(1.0f, box, 1.0f, neighbourBox, axis);
+        magnets.emplace_back(0.0f, box, 1.0f, neighbourBox, axis);
+        magnets.emplace_back(1.0f, box, 0.0f, neighbourBox, axis);
+
+        const float32 neighbourSpacing = indentOfControlToManget[axis];
+        const float32 neighbourSpacingShare = neighbourSpacing / neighbourBox.GetSize()[axis];
+        magnets.emplace_back(1.0f, box, -neighbourSpacingShare, neighbourBox, axis);
+        magnets.emplace_back(0.0f, box, 1.0f + neighbourSpacingShare, neighbourBox, axis);
+    }
+
+    return magnets;
 }
 
-namespace
-{
 //get all magneted lines
-void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>& magnetLines, const UIControl* control, Vector2::eAxis axis)
+void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const Vector<MagnetLine>& magnetLines, const UIControl* control, Vector2::eAxis axis)
 {
     UIControl* parent = control->GetParent();
     const UIGeometricData* parentGD = &parent->GetGeometricData();
@@ -412,7 +409,7 @@ Vector2 EditorTransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<M
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        List<MagnetLine> magnetLines = CreateMagnetPairs(control->GetParent(), box, parentGD, neighbours, axis);
+        Vector<MagnetLine> magnetLines = CreateMagnetPairs(box, parentGD, neighbours, axis);
 
         //get nearest magnet line
         std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [](const MagnetLine& left, const MagnetLine& right) -> bool {
@@ -620,7 +617,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
         if (directions[axis] != NO_DIRECTION)
         {
-            List<MagnetLine> magnetLines = CreateMagnetPairs(control->GetParent(), box, &parentGeometricData, neighbours, axis);
+            Vector<MagnetLine> magnetLines = CreateMagnetPairs(box, &parentGeometricData, neighbours, axis);
 
             std::function<bool(const MagnetLine&)> removePredicate = [directions, transformPosition](const MagnetLine& line) -> bool {
                 bool needRemove = true;
@@ -634,7 +631,7 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
                 }
                 return needRemove;
             };
-            magnetLines.remove_if(removePredicate);
+            magnetLines.erase(std::remove_if(magnetLines.begin(), magnetLines.end(), removePredicate));
 
             if (!magnetLines.empty())
             {
