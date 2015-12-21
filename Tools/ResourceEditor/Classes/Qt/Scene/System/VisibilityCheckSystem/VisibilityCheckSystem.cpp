@@ -95,6 +95,7 @@ void VisibilityCheckSystem::AddEntity(DAVA::Entity* entity)
     {
         entitiesWithVisibilityComponent.insert({ entity, DAVA::Vector<DAVA::Vector3>() });
         shouldPrerender = true;
+        forceRebuildPoints = true;
     }
 
     auto renderComponent = DAVA::GetRenderComponent(entity);
@@ -119,6 +120,7 @@ void VisibilityCheckSystem::RemoveEntity(DAVA::Entity* entity)
     {
         entitiesWithVisibilityComponent.erase(i);
         shouldPrerender = true;
+        forceRebuildPoints = true;
     }
 
     auto renderComponent = DAVA::GetRenderComponent(entity);
@@ -145,7 +147,7 @@ void VisibilityCheckSystem::Process(DAVA::float32 timeElapsed)
     for (auto& mapItem : entitiesWithVisibilityComponent)
     {
         auto visibilityComponent = static_cast<DAVA::VisibilityCheckComponent*>(mapItem.first->GetComponent(DAVA::Component::VISIBILITY_CHECK_COMPONENT));
-        if (visibilityComponent->IsEnabled() && !visibilityComponent->IsValid())
+        if (!visibilityComponent->IsValid())
         {
             if (visibilityComponent->ShouldRebuildPoints())
             {
@@ -157,7 +159,7 @@ void VisibilityCheckSystem::Process(DAVA::float32 timeElapsed)
         }
     }
 
-    if (shouldRebuildIndices)
+    if (shouldRebuildIndices || forceRebuildPoints)
     {
         BuildIndexSet();
     }
@@ -477,6 +479,7 @@ void VisibilityCheckSystem::BuildIndexSet()
         controlPointIndices[i] = i;
     }
     std::random_shuffle(controlPointIndices.begin() + 1, controlPointIndices.end());
+    forceRebuildPoints = false;
 }
 
 DAVA::Color VisibilityCheckSystem::GetNormalizedColorForEntity(const EntityMap::value_type& item) const

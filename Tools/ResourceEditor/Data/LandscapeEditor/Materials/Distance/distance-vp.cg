@@ -27,7 +27,6 @@ property float3 cameraPosition : dynamic,a : ;
 
 #if defined(DECODE_DISTANCE)
 property float3 cubemapCenter : static,a : ;
-#define MAGIC_OFFSET (0.0)
 #endif
 
 VPROG_BEGIN
@@ -39,7 +38,7 @@ VPROG_BEGIN
 #endif
 
 #if defined(DECODE_DISTANCE)
-	float4 worldPosition = mul(position + float4(normalize(VP_IN_NORMAL) * MAGIC_OFFSET, 0.0), worldMatrix);
+	float4 worldPosition = mul(position, worldMatrix);
 	VP_OUT(directionFromPoint) = worldPosition.xyz - cubemapCenter;
 #endif
 

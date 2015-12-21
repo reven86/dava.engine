@@ -80,6 +80,7 @@ public:
     bool ShouldRebuildPoints() const;
     bool IsValid() const;
     void SetValid();
+    void Invalidate();
 
     void Serialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext) override;
     void Deserialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext) override;

@@ -94,6 +94,7 @@ private:
     StateCache stateCache;
     size_t currentPointIndex = 0;
     bool shouldPrerender = true;
+    bool forceRebuildPoints = true;
 };
 
 #endif

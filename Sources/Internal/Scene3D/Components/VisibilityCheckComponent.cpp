@@ -41,10 +41,24 @@ VisibilityCheckComponent::VisibilityCheckComponent()
 
 Component* VisibilityCheckComponent::Clone(Entity* toEntity)
 {
-    auto visibilityCheckComponent = new VisibilityCheckComponent();
-    visibilityCheckComponent->SetEntity(toEntity);
+    auto result = new VisibilityCheckComponent();
+    result->SetEntity(toEntity);
 
-    return visibilityCheckComponent;
+    result->color = color;
+    result->radius = radius;
+    result->distanceBetweenPoints = distanceBetweenPoints;
+    result->upAngle = upAngle;
+    result->downAngle = downAngle;
+    result->verticalVariance = verticalVariance;
+    result->maximumDistance = maximumDistance;
+    result->heightAboveLandscape = heightAboveLandscape;
+    result->isEnabled = isEnabled;
+    result->shouldNormalizeColor = shouldNormalizeColor;
+    result->shouldPlaceOnLandscape = shouldPlaceOnLandscape;
+    result->shouldRebuildPointSet = true;
+    result->isValid = false;
+
+    return result;
 }
 
 float32 VisibilityCheckComponent::GetRadius() const
@@ -55,8 +69,8 @@ float32 VisibilityCheckComponent::GetRadius() const
 void VisibilityCheckComponent::SetRadius(float32 r)
 {
     radius = r;
-    isValid = false;
     shouldRebuildPointSet = true;
+    Invalidate();
 }
 
 float32 VisibilityCheckComponent::GetDistanceBetweenPoints() const
@@ -67,8 +81,8 @@ float32 VisibilityCheckComponent::GetDistanceBetweenPoints() const
 void VisibilityCheckComponent::SetDistanceBetweenPoints(float32 d)
 {
     distanceBetweenPoints = d;
-    isValid = false;
     shouldRebuildPointSet = true;
+    Invalidate();
 }
 
 const Color& VisibilityCheckComponent::GetColor() const
@@ -80,7 +94,7 @@ void VisibilityCheckComponent::SetColor(const Color& clr)
 {
     color = clr;
     color.a = 1.0f;
-    isValid = false;
+    Invalidate();
 }
 
 bool VisibilityCheckComponent::ShouldRebuildPoints() const
@@ -99,6 +113,11 @@ void VisibilityCheckComponent::SetValid()
     shouldRebuildPointSet = false;
 }
 
+void VisibilityCheckComponent::Invalidate()
+{
+    isValid = false;
+}
+
 float32 VisibilityCheckComponent::GetUpAngle() const
 {
     return upAngle;
@@ -107,7 +126,7 @@ float32 VisibilityCheckComponent::GetUpAngle() const
 void VisibilityCheckComponent::SetUpAngle(float32 value)
 {
     upAngle = std::max(0.0f, std::min(90.0f, value));
-    isValid = false;
+    Invalidate();
 }
 
 float32 VisibilityCheckComponent::GetDownAngle() const
@@ -118,7 +137,7 @@ float32 VisibilityCheckComponent::GetDownAngle() const
 void VisibilityCheckComponent::SetDownAngle(float32 value)
 {
     downAngle = std::max(0.0f, std::min(90.0f, value));
-    isValid = false;
+    Invalidate();
 }
 
 bool VisibilityCheckComponent::IsEnabled() const
@@ -130,6 +149,7 @@ void VisibilityCheckComponent::SetEnabled(bool value)
 {
     isEnabled = value;
     shouldRebuildPointSet = true;
+    Invalidate();
 }
 
 bool VisibilityCheckComponent::ShouldNormalizeColor() const
@@ -150,8 +170,8 @@ float32 VisibilityCheckComponent::GetVerticalVariance() const
 void VisibilityCheckComponent::SetVerticalVariance(float32 value)
 {
     verticalVariance = std::max(0.0f, value);
-    isValid = false;
     shouldRebuildPointSet = true;
+    Invalidate();
 }
 
 float32 VisibilityCheckComponent::GetMaximumDistance() const
@@ -172,7 +192,7 @@ bool VisibilityCheckComponent::ShouldPlaceOnLandscape() const
 void VisibilityCheckComponent::SetShouldPlaceOnLandscape(bool value)
 {
     shouldPlaceOnLandscape = value;
-    isValid = false;
+    Invalidate();
 }
 
 float32 VisibilityCheckComponent::GetHeightAboveLandscape() const
@@ -183,7 +203,7 @@ float32 VisibilityCheckComponent::GetHeightAboveLandscape() const
 void VisibilityCheckComponent::SetHeightAboveLandscape(float32 value)
 {
     heightAboveLandscape = value;
-    isValid = false;
+    Invalidate();
 }
 
 void VisibilityCheckComponent::Serialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext)
@@ -205,7 +225,6 @@ void VisibilityCheckComponent::Serialize(DAVA::KeyedArchive* archive, DAVA::Seri
 
 void VisibilityCheckComponent::Deserialize(DAVA::KeyedArchive* archive, DAVA::SerializationContext* serializationContext)
 {
-    isValid = false;
     color = archive->GetColor("vsc.color");
     radius = archive->GetFloat("vsc.radius");
     distanceBetweenPoints = archive->GetFloat("vsc.distanceBetweenPoints");
@@ -217,4 +236,6 @@ void VisibilityCheckComponent::Deserialize(DAVA::KeyedArchive* archive, DAVA::Se
     isEnabled = archive->GetBool("vsc.isEnabled");
     shouldNormalizeColor = archive->GetBool("vsc.shouldNormalizeColor");
     shouldPlaceOnLandscape = archive->GetBool("vsc.shouldPlaceOnLandscape");
+    shouldRebuildPointSet = true;
+    Invalidate();
 }
