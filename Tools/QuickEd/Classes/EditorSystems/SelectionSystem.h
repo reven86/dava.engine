@@ -34,6 +34,7 @@
 #include "Math/Rect.h"
 #include "UI/UIEvent.h"
 #include <Functional/SignalBase.h>
+#include "Model/PackageHierarchy/PackageListener.h"
 
 class EditorSystemsManager;
 class ControlNode;
@@ -44,7 +45,7 @@ namespace DAVA
 class Vector2;
 }
 
-class SelectionSystem final : public BaseEditorSystem
+class SelectionSystem final : public BaseEditorSystem, PackageListener
 {
 public:
     SelectionSystem(EditorSystemsManager* doc);
@@ -54,7 +55,7 @@ public:
 
 private:
     void OnPackageNodeChanged(std::weak_ptr<PackageNode> packageNode);
-    void OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
     void SelectAllControls();
     void FocusNextChild();
@@ -67,7 +68,6 @@ private:
     bool mousePressed = false;
     SelectionContainer selectionContainer;
     std::weak_ptr<PackageNode> packageNode;
-    DAVA::TrackedObject connectionsTracker;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

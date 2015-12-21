@@ -69,20 +69,7 @@ void PackageModel::Reset(std::weak_ptr<PackageNode> package_, std::weak_ptr<QtMo
         auto packagePtr = package.lock();
         if (nullptr != packagePtr)
         {
-            packagePtr->ControlPropertyWasChanged.Disconnect(&connectionTracker);
-            packagePtr->StylePropertyWasChanged.Disconnect(&connectionTracker);
-            packagePtr->ControlWillBeAdded.Disconnect(&connectionTracker);
-            packagePtr->ControlWasAdded.Disconnect(&connectionTracker);
-            packagePtr->ControlWillBeRemoved.Disconnect(&connectionTracker);
-            packagePtr->ControlWasRemoved.Disconnect(&connectionTracker);
-            packagePtr->StyleWillBeAdded.Disconnect(&connectionTracker);
-            packagePtr->StyleWasAdded.Disconnect(&connectionTracker);
-            packagePtr->StyleWillBeRemoved.Disconnect(&connectionTracker);
-            packagePtr->StyleWasRemoved.Disconnect(&connectionTracker);
-            packagePtr->ImportedPackageWillBeAdded.Disconnect(&connectionTracker);
-            packagePtr->ImportedPackageWasAdded.Disconnect(&connectionTracker);
-            packagePtr->ImportedPackageWillBeRemoved.Disconnect(&connectionTracker);
-            packagePtr->ImportedPackageWasRemoved.Disconnect(&connectionTracker);
+            packagePtr->RemoveListener(this);
         }
     }
     package = package_;
@@ -91,34 +78,7 @@ void PackageModel::Reset(std::weak_ptr<PackageNode> package_, std::weak_ptr<QtMo
         auto packagePtr = package.lock();
         if (nullptr != packagePtr)
         {
-            auto id = packagePtr->ControlPropertyWasChanged.Connect(this, &PackageModel::OnControlPropertyWasChanged);
-            packagePtr->ControlPropertyWasChanged.Track(id, &connectionTracker);
-            id = packagePtr->StylePropertyWasChanged.Connect(this, &PackageModel::OnStylePropertyWasChanged);
-            packagePtr->StylePropertyWasChanged.Track(id, &connectionTracker);
-            id = packagePtr->ControlWillBeAdded.Connect(this, &PackageModel::OnControlWillBeAdded);
-            packagePtr->ControlWillBeAdded.Track(id, &connectionTracker);
-            id = packagePtr->ControlWasAdded.Connect(this, &PackageModel::OnControlWasAdded);
-            packagePtr->ControlWasAdded.Track(id, &connectionTracker);
-            id = packagePtr->ControlWillBeRemoved.Connect(this, &PackageModel::OnControlWillBeRemoved);
-            packagePtr->ControlWillBeRemoved.Track(id, &connectionTracker);
-            id = packagePtr->ControlWasRemoved.Connect(this, &PackageModel::OnControlWasRemoved);
-            packagePtr->ControlWasRemoved.Track(id, &connectionTracker);
-            id = packagePtr->StyleWillBeAdded.Connect(this, &PackageModel::OnStyleWillBeAdded);
-            packagePtr->StyleWillBeAdded.Track(id, &connectionTracker);
-            id = packagePtr->StyleWasAdded.Connect(this, &PackageModel::OnStyleWasAdded);
-            packagePtr->StyleWasAdded.Track(id, &connectionTracker);
-            id = packagePtr->StyleWillBeRemoved.Connect(this, &PackageModel::OnStyleWillBeRemoved);
-            packagePtr->StyleWillBeRemoved.Track(id, &connectionTracker);
-            id = packagePtr->StyleWasRemoved.Connect(this, &PackageModel::OnStyleWasRemoved);
-            packagePtr->StyleWasRemoved.Track(id, &connectionTracker);
-            id = packagePtr->ImportedPackageWillBeAdded.Connect(this, &PackageModel::OnImportedPackageWillBeAdded);
-            packagePtr->ImportedPackageWillBeAdded.Track(id, &connectionTracker);
-            id = packagePtr->ImportedPackageWasAdded.Connect(this, &PackageModel::OnImportedPackageWasAdded);
-            packagePtr->ImportedPackageWasAdded.Track(id, &connectionTracker);
-            id = packagePtr->ImportedPackageWillBeRemoved.Connect(this, &PackageModel::OnImportedPackageWillBeRemoved);
-            packagePtr->ImportedPackageWillBeRemoved.Track(id, &connectionTracker);
-            id = packagePtr->ImportedPackageWasRemoved.Connect(this, &PackageModel::OnImportedPackageWasRemoved);
-            packagePtr->ImportedPackageWasRemoved.Track(id, &connectionTracker);
+            packagePtr->AddListener(this);
         }
     }
     endResetModel();
@@ -569,7 +529,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     return false;
 }
 
-void PackageModel::OnControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+void PackageModel::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     if (property->GetName() == "Name")
     {
@@ -584,7 +544,7 @@ void PackageModel::OnControlPropertyWasChanged(ControlNode* node, AbstractProper
     }
 }
 
-void PackageModel::OnStylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property)
+void PackageModel::StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property)
 {
     if (property->GetName() == "Name")
     {
@@ -593,71 +553,71 @@ void PackageModel::OnStylePropertyWasChanged(StyleSheetNode* node, AbstractPrope
     }
 }
 
-void PackageModel::OnControlWillBeAdded(ControlNode* node, ControlsContainerNode* destination, int row)
+void PackageModel::ControlWillBeAdded(ControlNode* /*node*/, ControlsContainerNode* destination, int row)
 {
     QModelIndex destIndex = indexByNode(destination);
     beginInsertRows(destIndex, row, row);
 }
 
-void PackageModel::OnControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row)
+void PackageModel::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* /*destination*/, int /*row*/)
 {
     endInsertRows();
 }
 
-void PackageModel::OnControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
+void PackageModel::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     QModelIndex parentIndex = indexByNode(from);
     int index = from->GetIndex(node);
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PackageModel::OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void PackageModel::ControlWasRemoved(ControlNode* /*node*/, ControlsContainerNode* /*from*/)
 {
     endRemoveRows();
 }
 
-void PackageModel::OnStyleWillBeAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index)
+void PackageModel::StyleWillBeAdded(StyleSheetNode* /*node*/, StyleSheetsNode* destination, int index)
 {
     QModelIndex destIndex = indexByNode(destination);
     beginInsertRows(destIndex, index, index);
 }
 
-void PackageModel::OnStyleWasAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index)
+void PackageModel::StyleWasAdded(StyleSheetNode* /*node*/, StyleSheetsNode* /*destination*/, int /*index*/)
 {
     endInsertRows();
 }
 
-void PackageModel::OnStyleWillBeRemoved(StyleSheetNode* node, StyleSheetsNode* from)
+void PackageModel::StyleWillBeRemoved(StyleSheetNode* node, StyleSheetsNode* from)
 {
     QModelIndex parentIndex = indexByNode(from);
     int index = from->GetIndex(node);
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PackageModel::OnStyleWasRemoved(StyleSheetNode* node, StyleSheetsNode* from)
+void PackageModel::StyleWasRemoved(StyleSheetNode* /*node*/, StyleSheetsNode* /*from*/)
 {
     endRemoveRows();
 }
 
-void PackageModel::OnImportedPackageWillBeAdded(PackageNode* node, ImportedPackagesNode* to, int index)
+void PackageModel::ImportedPackageWillBeAdded(PackageNode* /*node*/, ImportedPackagesNode* to, int index)
 {
     QModelIndex destIndex = indexByNode(to);
     beginInsertRows(destIndex, index, index);
 }
 
-void PackageModel::OnImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index)
+void PackageModel::ImportedPackageWasAdded(PackageNode* /*node*/, ImportedPackagesNode* /*to*/, int /*index*/)
 {
     endInsertRows();
 }
 
-void PackageModel::OnImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from)
+void PackageModel::ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from)
 {
     QModelIndex parentIndex = indexByNode(from);
     int index = from->GetIndex(node);
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PackageModel::OnImportedPackageWasRemoved(PackageNode* node, ImportedPackagesNode* from)
+void PackageModel::ImportedPackageWasRemoved(PackageNode* /*node*/, ImportedPackagesNode* /*from*/)
 {
     endRemoveRows();
 }

@@ -228,7 +228,7 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
         systemManager->SelectionChanged.Emit(SelectedNodes(), deselected);
         DVASSERT(selectionContainer.selectedNodes.empty());
     }
-    if (nullptr != document)
+    if (!document.isNull())
     {
         std::weak_ptr<PackageNode> packagePtr = document->GetPackage();
         systemManager->PackageNodeChanged.Emit(packagePtr);
@@ -392,7 +392,7 @@ void PreviewWidget::LoadContext()
 
 void PreviewWidget::SaveContext()
 {
-    if (nullptr == document)
+    if (document.isNull())
     {
         return;
     }
@@ -403,7 +403,7 @@ void PreviewWidget::SaveContext()
 
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 {
-    if (document == nullptr)
+    if (document.isNull())
     {
         return;
     }
@@ -446,7 +446,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 {
-    if (document == nullptr)
+    if (document.isNull())
     {
         return;
     }
@@ -522,7 +522,7 @@ void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, c
 
 void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
 {
-    DVASSERT(nullptr != document);
+    DVASSERT(!document.isNull());
     auto commandExecutor = document->GetCommandExecutor().lock();
     DVASSERT(nullptr != commandExecutor);
     commandExecutor->ChangeProperty(properties, hash);

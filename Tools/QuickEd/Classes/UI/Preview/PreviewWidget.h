@@ -110,7 +110,7 @@ private:
     void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
 
     QPoint lastMousePos;
-    Document* document = nullptr;
+    QPointer<Document> document = nullptr;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
     QList<qreal> percentages;

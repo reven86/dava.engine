@@ -30,10 +30,10 @@
 #ifndef __QUICKED_PACKAGE_MODEL_H__
 #define __QUICKED_PACKAGE_MODEL_H__
 
-#include "Functional/SignalBase.h"
 #include <QAbstractItemModel>
 #include <QMimeData>
 #include "EditorSystems/SelectionContainer.h"
+#include "Model/PackageHierarchy/PackageListener.h"
 
 class AbstractProperty;
 class PackageNode;
@@ -45,7 +45,7 @@ class ControlsContainerNode;
 class ImportedPackagesNode;
 class QtModelPackageCommandExecutor;
 
-class PackageModel : public QAbstractItemModel
+class PackageModel : public QAbstractItemModel, PackageListener
 {
     Q_OBJECT
 
@@ -74,32 +74,31 @@ signals:
     void NodesMoved(const SelectedNodes& nodes);
 
 private: // PackageListener
-    void OnControlPropertyWasChanged(ControlNode* node, AbstractProperty* property);
-    void OnStylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property);
+    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
+    void StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property) override;
 
-    void OnControlWillBeAdded(ControlNode* node, ControlsContainerNode* destination, int row);
-    void OnControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row);
+    void ControlWillBeAdded(ControlNode* node, ControlsContainerNode* destination, int row) override;
+    void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row) override;
 
-    void OnControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from);
-    void OnControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
+    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
 
-    void OnStyleWillBeAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index);
-    void OnStyleWasAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index);
+    void StyleWillBeAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index) override;
+    void StyleWasAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index) override;
 
-    void OnStyleWillBeRemoved(StyleSheetNode* node, StyleSheetsNode* from);
-    void OnStyleWasRemoved(StyleSheetNode* node, StyleSheetsNode* from);
+    void StyleWillBeRemoved(StyleSheetNode* node, StyleSheetsNode* from) override;
+    void StyleWasRemoved(StyleSheetNode* node, StyleSheetsNode* from) override;
 
-    void OnImportedPackageWillBeAdded(PackageNode* node, ImportedPackagesNode* to, int index);
-    void OnImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index);
+    void ImportedPackageWillBeAdded(PackageNode* node, ImportedPackagesNode* to, int index) override;
+    void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index) override;
 
-    void OnImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from);
-    void OnImportedPackageWasRemoved(PackageNode* node, ImportedPackagesNode* from);
+    void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from) override;
+    void ImportedPackageWasRemoved(PackageNode* node, ImportedPackagesNode* from) override;
 
     int GetRowIndex(int row, const QModelIndex& parent) const;
 
     std::weak_ptr<PackageNode> package;
     std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
-    DAVA::TrackedObject connectionTracker;
 };
 
 #endif // __QUICKED_PACKAGE_MODEL_H__

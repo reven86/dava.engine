@@ -79,7 +79,7 @@ void SelectionSystem::OnPackageNodeChanged(std::weak_ptr<PackageNode> packageNod
         auto packageNodePtr = packageNode.lock();
         if (nullptr != packageNodePtr)
         {
-            packageNodePtr->ControlWasRemoved.Disconnect(&connectionsTracker);
+            packageNodePtr->RemoveListener(this);
         }
     }
     packageNode = packageNode_;
@@ -87,13 +87,12 @@ void SelectionSystem::OnPackageNodeChanged(std::weak_ptr<PackageNode> packageNod
         auto packageNodePtr = packageNode.lock();
         if (nullptr != packageNodePtr)
         {
-            auto id = packageNodePtr->ControlWasRemoved.Connect(this, &SelectionSystem::OnControlWasRemoved);
-            packageNodePtr->ControlWasRemoved.Track(id, &connectionsTracker);
+            packageNodePtr->AddListener(this);
         }
     }
 }
 
-void SelectionSystem::OnControlWasRemoved(ControlNode* node, ControlsContainerNode*)
+void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode*)
 {
     SelectedNodes deselected;
     deselected.insert(node);

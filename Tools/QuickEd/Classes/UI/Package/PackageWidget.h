@@ -37,6 +37,7 @@
 #include <QDockWidget>
 #include <QModelIndex>
 #include <QStack>
+#include <QPointer>
 
 class Document;
 class ControlNode;
@@ -107,7 +108,7 @@ private:
     std::shared_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
     std::shared_ptr<PackageNode> GetPackageNode() const;
 
-    Document* document = nullptr;
+    QPointer<Document> document;
     QAction* importPackageAction = nullptr;
     QAction* copyAction = nullptr;
     QAction* pasteAction = nullptr;

@@ -30,9 +30,9 @@
 #ifndef __UI_EDITOR_LIBRARY_MODEL_H__
 #define __UI_EDITOR_LIBRARY_MODEL_H__
 
-#include <QStandardItemModel>
 #include "Base/BaseTypes.h"
-#include "Functional/SignalBase.h"
+#include "Model/PackageHierarchy/PackageListener.h"
+#include <QStandardItemModel>
 
 class PackageNode;
 class PackageBaseNode;
@@ -41,7 +41,7 @@ class ControlNode;
 class ControlsContainerNode;
 class ImportedPackagesNode;
 
-class LibraryModel : public QStandardItemModel
+class LibraryModel : public QStandardItemModel, PackageListener
 {
     Q_OBJECT
     enum
@@ -67,16 +67,15 @@ private:
     void CreateImportPackagesRootItem();
 
     //Package Signals
-    void OnControlPropertyWasChanged(ControlNode* node, AbstractProperty* property);
-    void OnControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row);
-    void OnControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from);
-    void OnImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index);
-    void OnImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from);
+    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
+    void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row) override;
+    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index) override;
+    void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from) override;
 
     std::weak_ptr<PackageNode> package;
     QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
     DAVA::Vector<ControlNode*> defaultControls;
-    DAVA::TrackedObject signalsTracker;
 };
 
 #endif // __UI_EDITOR_LIBRARY_MODEL_H__
