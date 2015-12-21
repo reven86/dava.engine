@@ -71,14 +71,14 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
     setSortingEnabled(false);
 	treeModel->SetScene(sceneEditor);
 
-	if(NULL != sceneEditor)
-	{
-        OnSelectionChanged(sceneEditor, &sceneEditor->selectionSystem->GetSelection(), NULL);
+    if (nullptr != sceneEditor)
+    {
+        OnSelectionChanged(sceneEditor, &sceneEditor->selectionSystem->GetSelection(), nullptr);
     }
 	else
 	{
-		treeModel->SetSelection(NULL);
-	}
+        treeModel->SetSelection(nullptr);
+    }
 
     sortByColumn(0);
     setSortingEnabled(true);
@@ -106,7 +106,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
 {
 	SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
 
-    if (NULL != curScene && materials.size() > 0)
+    if (nullptr != curScene && materials.size() > 0)
     {
         std::function<void(DAVA::NMaterial*)> fn = [&fn, &curScene](DAVA::NMaterial* material) {
             DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
@@ -269,7 +269,7 @@ void MaterialTree::OnSelectEntities()
     for (int i = 0; i < selection.size(); i++)
     {
         DAVA::NMaterial * material = treeModel->GetMaterial(selection.at(i));
-        if ( material != NULL )
+        if (material != nullptr)
             materials << material;
     }
 

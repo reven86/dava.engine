@@ -57,6 +57,7 @@ public:
     const EntityMap& GetContent() const;
 
     const DAVA::AABBox3& GetCommonBbox() const;
+    const DAVA::AABBox3& GetBoundingBoxForEntity(DAVA::Entity*) const;
 
     DAVA::Vector3 GetFirstZeroPos() const;
     DAVA::Vector3 GetCommonZeroPos() const;
@@ -80,8 +81,8 @@ public:
     void RebuildBoundingBox();
 
 private:
-    EntityGroup(const EntityGroup& ss) = delete;
-    EntityGroup(EntityGroup&& ss) = delete;
+    EntityGroup(const EntityGroup&) = delete;
+    EntityGroup(EntityGroup&&) = delete;
 
 private:
     EntityMap entities;

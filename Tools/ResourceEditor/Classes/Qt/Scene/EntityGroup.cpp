@@ -185,3 +185,9 @@ DAVA::AABBox3 EntityGroup::TransformItemBoundingBox(const EntityGroup::EntityWit
     item.second.GetTransformedBox(item.first->GetWorldTransform(), ret);
     return ret;
 }
+
+const DAVA::AABBox3& EntityGroup::GetBoundingBoxForEntity(DAVA::Entity* entity) const
+{
+    DVASSERT(ContainsEntity(entity));
+    return entities.at(entity);
+}

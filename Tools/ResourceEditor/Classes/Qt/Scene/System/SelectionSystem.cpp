@@ -72,12 +72,12 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 ev
 
 void SceneSelectionSystem::UpdateGroupSelectionMode()
 {
-    Qt::KeyboardModifiers curKeyModifiers = QApplication::keyboardModifiers();
-    if (curKeyModifiers & Qt::ControlModifier)
+    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    if (keyboard.IsKeyPressed(DVKEY_CTRL))
     {
         groupSelectionMode = GroupSelectionMode::Add;
     }
-    else if (curKeyModifiers & Qt::AltModifier)
+    else if (keyboard.IsKeyPressed(DVKEY_ALT))
     {
         groupSelectionMode = GroupSelectionMode::Remove;
     }
@@ -150,12 +150,12 @@ void SceneSelectionSystem::ProcessSelectedGroup(EntityGroup::EntityVector collis
         }
     }
 
-    Qt::KeyboardModifiers curKeyModifiers = QApplication::keyboardModifiers();
-    if (curKeyModifiers & Qt::ControlModifier)
+    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    if (keyboard.IsKeyPressed(DVKEY_CTRL))
     {
         AddSelection(firstEntity);
     }
-    else if (curKeyModifiers & Qt::AltModifier)
+    else if (keyboard.IsKeyPressed(DVKEY_ALT))
     {
         ExcludeSelection(firstEntity);
     }
@@ -444,10 +444,9 @@ void SceneSelectionSystem::ExcludeSelection(DAVA::Entity* entity)
 {
     if (!IsLocked())
     {
-        const auto& content = curSelections.GetContent();
-        if (content.count(entity) > 0)
+        if (curSelections.ContainsEntity(entity))
         {
-            curDeselections.Add(entity, content.at(entity));
+            curDeselections.Add(entity, curSelections.GetBoundingBoxForEntity(entity));
             curSelections.Remove(entity);
 			selectionHasChanges = true;
 		}

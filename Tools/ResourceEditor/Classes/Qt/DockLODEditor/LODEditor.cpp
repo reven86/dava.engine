@@ -430,9 +430,10 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
     }
     else
     {
-        const QIcon& icon = (frameViewVisible) ? SharedIcon(":/QtIcons/advanced.png") : SharedIcon(":/QtIcons/play.png");
-        ui->viewLODButton->setIcon(icon);
-        ui->editLODButton->setIcon(icon);
+        const auto& advIcon = SharedIcon(":/QtIcons/advanced.png");
+        const auto& playIcon = SharedIcon(":/QtIcons/play.png");
+        ui->viewLODButton->setIcon(frameViewVisible ? advIcon : playIcon);
+        ui->editLODButton->setIcon(frameEditVisible ? advIcon : playIcon);
         ui->frameViewLOD->setVisible(frameViewVisible);
         ui->frameEditLOD->setVisible(frameEditVisible);
     }
