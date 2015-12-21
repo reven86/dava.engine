@@ -89,14 +89,17 @@ namespace
         return list;
     }
 
-    void SetAbsoulutePosToControlNode(ControlNode* node, const DAVA::Vector2& pos)
+    void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, const DAVA::Vector2& pos)
     {
         DVASSERT(nullptr != node);
         DVASSERT(nullptr != node->GetControl());
         auto control = node->GetControl();
         control->SetAbsolutePosition(pos);
         auto relativePos = control->GetPosition();
-        node->GetRootProperty()->FindPropertyByName("Position")->SetValue(VariantType(relativePos));
+
+        auto rootProperty = node->GetRootProperty();
+        auto positionProperty = rootProperty->FindPropertyByName("Position");
+        package->SetControlProperty(node, positionProperty, VariantType(relativePos));
     }
 }
 
@@ -319,7 +322,7 @@ void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNo
             InsertControlImpl(copy, dest, index);
             if (pos.x != -1.0f && pos.y != -1.0f)
             {
-                SetAbsoulutePosToControlNode(copy, pos);
+                SetAbsoulutePosToControlNode(GetPackageNode(), copy, pos);
             }
             SafeRelease(copy);
             index++;
@@ -350,7 +353,7 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
             InsertControlImpl(copy, dest, index);
             if (pos.x != -1.0f && pos.y != -1.0f)
             {
-                SetAbsoulutePosToControlNode(copy, pos);
+                SetAbsoulutePosToControlNode(GetPackageNode(), copy, pos);
             }
             SafeRelease(copy);
             index++;
@@ -390,7 +393,7 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
                     InsertControlImpl(node, dest, index);
                     if (pos.x != -1.0f && pos.y != -1.0f)
                     {
-                        SetAbsoulutePosToControlNode(node, pos);
+                        SetAbsoulutePosToControlNode(GetPackageNode(), node, pos);
                     }
                 }
                 node->Release();
@@ -614,7 +617,7 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* de
                         InsertControl(control, controlsDest, index);
                         if (pos.x != -1.0f && pos.y != -1.0f)
                         {
-                            SetAbsoulutePosToControlNode(control, pos);
+                            SetAbsoulutePosToControlNode(GetPackageNode(), control, pos);
                         }
                         index++;
                     }
