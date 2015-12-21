@@ -147,7 +147,7 @@ private:
     void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive,
                                           const DAVA::FilePath& scenePath);
 
-    QtPropertyData* AddSection(const QString& sectionName);
+    QtPropertyData* AddSection(const DAVA::FastName& sectionName);
 
     void AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName);
     bool HasMaterialProperty(NMaterial* material, const FastName& paramName);

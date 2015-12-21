@@ -50,11 +50,11 @@ public:
 	QModelIndex indexFromItem(QtPropertyData *data) const
 	{ return mapFromSource(propModel->indexFromItem(data)); }
 
-	QModelIndex AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent = QModelIndex())
-	{ return mapFromSource(propModel->AppendProperty(name, data, mapToSource(parent))); }
+	QModelIndex AppendProperty(TPropertyPtr && data, const QModelIndex &parent = QModelIndex())
+	{ return mapFromSource(propModel->AppendProperty(std::move(data), mapToSource(parent))); }
 
-	QModelIndex InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent = QModelIndex())
-	{ return mapFromSource(propModel->InsertProperty(name, data, row, mapToSource(parent))); }
+    QModelIndex InsertProperty(TPropertyPtr && data, int row, const QModelIndex &parent = QModelIndex())
+	{ return mapFromSource(propModel->InsertProperty(std::move(data), row, mapToSource(parent))); }
 
 	bool GetEditTracking()
 	{ return propModel->GetEditTracking(); }

@@ -42,7 +42,6 @@
 QtPropertyItemDelegate::QtPropertyItemDelegate(QAbstractItemView *_view, QtPropertyModel *_model, QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
 	, model(_model)
-	, lastHoverData(nullptr)
     , view(_view)
     , editorDataWasSet(false)
 {
@@ -63,7 +62,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
         drawOptionalButtons(painter, opt, index);
     }
 
-    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    auto *data = dynamic_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
     if (
         (data != nullptr) &&
         (data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING) &&
@@ -81,7 +80,7 @@ QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const
     static const int baseText = 17;
     static const int extra = 5;
 
-    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    auto *data = dynamic_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
     if ( data != nullptr )
     {
         if ( data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING )
@@ -351,37 +350,43 @@ void QtPropertyItemDelegate::showButtons(QtPropertyData *data)
 {
 	if(data != lastHoverData)
 	{
-	    showOptionalButtons(lastHoverData, false);
-	    showOptionalButtons(data, true);
+        hideButtons();
+	    showOptionalButtons(data);
 
-	    lastHoverData = data;
+        lastHoverData = data;
 	}
 }
 
-void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data, bool show)
+void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data)
 {
+    DVASSERT(visibleButtons.empty());
 	if(nullptr != data)
 	{
+        int buttonCount = data->GetButtonsCount();
+        visibleButtons.reserve(buttonCount);
+
 		for(int i = 0; i < data->GetButtonsCount(); ++i)
 		{
-			if(show)
-			{
-				data->GetButton(i)->show();
-			}
-			else
-			{
-				data->GetButton(i)->hide();
-			}
+            QPointer<QtPropertyToolButton> button = data->GetButton(i);
+            visibleButtons.push_back(button);
+            button->show();
 		}
 	}
 }
 
+void QtPropertyItemDelegate::hideButtons()
+{
+    for (QPointer<QtPropertyToolButton> & button : visibleButtons)
+    {
+        if (button != nullptr)
+            button->hide();
+    }
+
+    visibleButtons.clear();
+}
+
 void QtPropertyItemDelegate::invalidateButtons()
 {
-	if(nullptr != lastHoverData)
-	{
-		showOptionalButtons(lastHoverData, false);
-		lastHoverData = nullptr;
-	}
+    hideButtons();
 }
 

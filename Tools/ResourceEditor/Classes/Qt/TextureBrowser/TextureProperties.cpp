@@ -31,7 +31,6 @@
 #include "Render/TextureDescriptor.h"
 
 #include "TextureProperties.h"
-#include "Tools/QtPropertyEditor/QtPropertyItem.h"
 #include "Tools/LazyUpdater/LazyUpdater.h"
 
 namespace PropertyItemName
@@ -207,8 +206,8 @@ void TextureProperties::ReloadProperties()
         headerIndex = AppendHeader(GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(curGPU));
         propFormat = AddPropertyItem(PropertyItemName::Format, compressionSettings, headerIndex);
 
-        propSizes = new QtPropertyDataMetaObject(&curSizeLevelObject, DAVA::MetaInfo::Instance<int>());
-        AppendProperty("Size", propSizes, headerIndex);
+        propSizes = new QtPropertyDataMetaObject(DAVA::FastName("Size"), &curSizeLevelObject, DAVA::MetaInfo::Instance<int>());
+        AppendProperty(TPropertyPtr(propSizes), headerIndex);
         LoadCurSizeToProp();
 
         ReloadEnumFormats();
@@ -300,8 +299,8 @@ QtPropertyDataInspMember* TextureProperties::AddPropertyItem(const DAVA::FastNam
         const DAVA::InspMember* member = info->Member(name);
         if (nullptr != member)
         {
-            ret = new QtPropertyDataInspMember(object, member);
-            AppendProperty(member->Name().c_str(), ret, parent);
+            ret = new QtPropertyDataInspMember(member->Name(), object, member);
+            AppendProperty(TPropertyPtr(ret), parent);
         }
 	}
 

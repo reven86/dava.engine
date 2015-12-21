@@ -32,10 +32,10 @@
 #include "Deprecated/EditorConfig.h"
 #include "Main/QtUtils.h"
 
-QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key)
-	: QtPropertyDataDavaVariant(DAVA::VariantType())
-	, archive(_archive)
-	, key(_key)
+QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(const DAVA::FastName& name, DAVA::KeyedArchive* archive_, const DAVA::String& key_)
+	: QtPropertyDataDavaVariant(name, DAVA::VariantType())
+    , archive(archive_)
+    , key(key_.c_str())
 	, lastCommand(NULL)
 {
     CheckAndFillPresetValues();

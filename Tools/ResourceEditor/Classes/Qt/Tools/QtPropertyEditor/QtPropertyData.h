@@ -30,16 +30,21 @@
 #ifndef __QT_PROPERTY_DATA_H__
 #define __QT_PROPERTY_DATA_H__
 
-#include <QStyledItemDelegate>
-#include <QHash>
-#include <QIcon>
-#include <QEvent>
+#include "Base/BaseTypes.h"
+#include "Base/FastName.h"
+#include "Base/Meta.h"
+
+#include "Functional/Signal.h"
+
 #include <QToolButton>
-#include <QList>
+#include <QVariant>
 
-#include "QtPropertyModel.h"
+#include <functional>
 
-// model class
+class QEvent;
+class QIcon;
+class QStyleOptionViewItem;
+
 class QtPropertyModel;
 class QtPropertyData;
 class QtPropertyDataValidator;
@@ -77,11 +82,11 @@ protected:
     void UpdateState(bool itemIsEnabled, bool itemIsEditable);
 };
 
-// PropertyData class
-class QtPropertyData : public QObject
-{
-	Q_OBJECT
+class QtPropertyData;
+using TPropertyPtr = std::unique_ptr<QtPropertyData>;
 
+class QtPropertyData
+{
 	friend class QtPropertyModel;
 	friend class QtPropertyItemDelegate;
 
@@ -95,17 +100,18 @@ public:
 	};
 
 	struct UserData
-	{ };
+	{ 
+        virtual ~UserData() {}
+    };
 
-	QtPropertyData();
-	QtPropertyData(const QVariant &value, Qt::ItemFlags flags = (Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable));
+	QtPropertyData(const DAVA::FastName& name);
+    QtPropertyData(const DAVA::FastName& name, const QVariant& value);
 	virtual ~QtPropertyData();
 
 	QVariant data(int role) const;
 	bool setData(const QVariant & value, int role);
 
-	QString GetName() const;
-	void SetName(const QString &name);
+	const DAVA::FastName & GetName() const;
 
 	QString GetPath() const;
 
@@ -136,7 +142,7 @@ public:
     virtual void SetToolTip(const QVariant& toolTip);
     virtual QVariant GetToolTip() const;
 
-	virtual const DAVA::MetaInfo* MetaInfo() const;
+    virtual const DAVA::MetaInfo* MetaInfo() const;;
 
 	// reset background/foreground/font settings
 	void ResetStyle();
@@ -164,28 +170,22 @@ public:
 
 	// childs
 	QtPropertyData *Parent() const;
-	void ChildAdd(const QString &key, QtPropertyData *data);
-	void ChildAdd(const QString &key, const QVariant &value);
-    void ChildrenAdd(const QVector<QtPropertyData *> & data);
-	void ChildInsert(const QString &key, QtPropertyData *data, int pos);
-	void ChildInsert(const QString &key, const QVariant &value, int pos);
+    void ChildAdd(TPropertyPtr && data);
+    void ChildrenAdd(DAVA::Vector<TPropertyPtr> && data);
+    void ChildInsert(TPropertyPtr && data, int pos);
 	int ChildCount() const;
-	QtPropertyData* ChildGet(int i) const;
-	QtPropertyData* ChildGet(const QString &key) const;
-	int ChildIndex(QtPropertyData *data) const;
-	void ChildExtract(QtPropertyData *data);
-    void ChildrenExtract(QVector<QtPropertyData *> & children);
-	void ChildRemove(QtPropertyData *data);
-	void ChildRemove(const QString &key);
-	void ChildRemove(int i);
-	void ChildRemoveAll();
+    const TPropertyPtr & ChildGet(int i) const;
+    QtPropertyData * ChildGet(const DAVA::FastName & key) const;
+    int ChildIndex(const QtPropertyData * data) const;
+    void ChildrenExtract(DAVA::Vector<TPropertyPtr> & children);
+    void ChildRemove(const QtPropertyData * data);
+    void ChildRemoveAll();
     void ResetChildren();
 
 	// Optional widgets
 	int GetButtonsCount() const;
 	QtPropertyToolButton* GetButton(int index = 0);
 	QtPropertyToolButton* AddButton(QtPropertyToolButton::StateVariant stateVariant = QtPropertyToolButton::ACTIVE_ALWAYS);
-	void RemButton(int index);
 	void RemButton(QtPropertyToolButton *button);
 
 	void EmitDataChanged(ValueChangeReason reason);
@@ -195,34 +195,74 @@ public:
 
     // Merging
     bool IsMergedDataEqual() const;
-    QtPropertyData * GetMergedData(int idx) const;
-    int GetMergedCount() const;
-    void Merge(QtPropertyData *data);
-    void MergeChild(QtPropertyData *data, const QString& key = QString());
+    void ForeachMergedItem(std::function<bool(TPropertyPtr const &)> const & functor) const;
+    bool HasMergedData() const;
+    void Merge(TPropertyPtr && data);
+    void MergeChild(TPropertyPtr && data);
     virtual bool IsMergable() const;
 
 protected:
 	mutable QVariant curValue;
-    mutable bool isValuesMerged;
+    mutable bool isValuesMerged = true;
 
-	QString curName;
-	Qt::ItemFlags curFlags;
+    DAVA::FastName name;
+    Qt::ItemFlags curFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+    bool valueDependsOnChildren = false;
 
 	QMap<int, QVariant> style;
-	bool updatingValue;
+	bool updatingValue = false;
 
-	QtPropertyModel *model;
-	QtPropertyData *parent;
-	UserData* userData;
+	QtPropertyModel *model = nullptr;
+	QtPropertyData *parent = nullptr;
+    std::unique_ptr<UserData> userData;
 
-    QList<QString> childrenNames;
-    QVector<QtPropertyData*> childrenData;
-    QVector<QtPropertyData*> mergedData;
+    struct ChildKey
+    {
+        ChildKey() = default;
+        ChildKey(const DAVA::FastName & childName_, const DAVA::MetaInfo * childMeta_, bool isChildEnabled_)
+            : childName(childName_)
+            , childMeta(childMeta_)
+            , isChildEnabled(isChildEnabled_)
+        {
+        }
 
-    QWidget *optionalButtonsViewport;
+        bool operator == (const ChildKey & other) const
+        {
+            return childName == other.childName &&
+                childMeta == other.childMeta &&
+                isChildEnabled == other.isChildEnabled;
+        }
+
+        bool operator != (const ChildKey & other) const
+        {
+            return !(*this == other);
+        }
+
+        bool operator < (const ChildKey & other) const
+        {
+            if (childName != other.childName)
+                return childName < other.childName;
+
+            if (childMeta != other.childMeta)
+                return childMeta < other.childMeta;
+
+            return isChildEnabled < other.isChildEnabled;
+        }
+
+        DAVA::FastName childName;
+        const DAVA::MetaInfo * childMeta = nullptr;
+        bool isChildEnabled = false;
+    };
+
+    using TChildMap = DAVA::Map<ChildKey, size_t>;
+    TChildMap keyToDataMap;
+    DAVA::Vector<TPropertyPtr> childrenData;
+    DAVA::Vector<TPropertyPtr> mergedData;
+
+    QWidget *optionalButtonsViewport = nullptr;
 	QVector<QtPropertyToolButton *> optionalButtons;
     
-    QtPropertyDataValidator* validator;
+    std::unique_ptr<QtPropertyDataValidator> validator;
     
     QVariant tooltipValue;
 
@@ -252,7 +292,7 @@ protected:
     // optional widgets state update
     void UpdateOWState();
 
-	void ChildRemoveInternal(int i, bool del);
+    void RefillSearchIndex();
 };
 
 #endif // __QT_PROPERTY_DATA_H__

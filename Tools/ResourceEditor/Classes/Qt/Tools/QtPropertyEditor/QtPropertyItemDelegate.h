@@ -63,11 +63,13 @@ public slots:
 private:
     bool eventFilter(QObject *obj, QEvent *event);
 	void drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &option, const QModelIndex &index) const;
-	void showOptionalButtons(QtPropertyData *data, bool show);
+	void showOptionalButtons(QtPropertyData *data);
+    void hideButtons();
     void DrawButton(QPainter* painter, QStyleOptionViewItem& opt, QtPropertyToolButton* btn) const;
 
-	QtPropertyModel *model;
-	QPointer<QtPropertyData> lastHoverData;
+	QtPropertyModel *model = nullptr;
+    QtPropertyData * lastHoverData = nullptr;
+    DAVA::Vector<QPointer<QtPropertyToolButton>> visibleButtons;
     QPointer<QAbstractItemView> view;
     mutable QPointer<QWidget> activeEditor;
     mutable bool editorDataWasSet;

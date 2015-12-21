@@ -57,7 +57,7 @@ protected:
 class QtPropertyDataSettingsNode : public QtPropertyDataDavaVariant
 {
 public:
-    QtPropertyDataSettingsNode(DAVA::FastName path);
+    QtPropertyDataSettingsNode(const DAVA::FastName & path);
     ~QtPropertyDataSettingsNode();
 
 private:

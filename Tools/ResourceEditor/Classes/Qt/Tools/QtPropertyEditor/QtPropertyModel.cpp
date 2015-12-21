@@ -27,16 +27,15 @@
 =====================================================================================*/
 
 
-#include <QCoreApplication>
 #include "QtPropertyModel.h"
-#include "QtPropertyData.h"
+#include <QCoreApplication>
 
 QtPropertyModel::QtPropertyModel(QWidget *viewport, QObject* parent /* = 0 */)
 	: QAbstractItemModel(parent)
 	, trackEdit(false)
     , needRefresh(false)
 { 
-	root = new QtPropertyData();
+	root = new QtPropertyData(DAVA::FastName("root"));
 	root->SetModel(this);
 	root->SetOWViewport(viewport);
 }
@@ -107,7 +106,7 @@ QVariant QtPropertyModel::data(const QModelIndex & index, int role /* = Qt::Disp
 			{
 			case Qt::DisplayRole:
             case Qt::ToolTipRole:
-				ret = data->GetName();
+				ret = QString(data->GetName().c_str());
 				break;
 			case Qt::FontRole:
 			case Qt::BackgroundRole:
@@ -210,7 +209,7 @@ QtPropertyData* QtPropertyModel::itemFromIndex(const QModelIndex & index) const
 		QtPropertyData *parent = static_cast<QtPropertyData *>(index.internalPointer());
 		if(NULL != parent)
 		{
-			ret = parent->ChildGet(index.row());
+			ret = parent->ChildGet(index.row()).get();
 		}
 	}
 
@@ -253,7 +252,7 @@ QModelIndex QtPropertyModel::indexFromItem(QtPropertyData *data) const
 	return ret;
 }
 
-void QtPropertyModel::AppendProperties(const QVector<QtPropertyData *>& properties, const QModelIndex& parent /*= QModelIndex()*/)
+void QtPropertyModel::AppendProperties(DAVA::Vector<TPropertyPtr> && properties, const QModelIndex& parent /*= QModelIndex()*/)
 {
     if (properties.empty())
         return;
@@ -261,48 +260,49 @@ void QtPropertyModel::AppendProperties(const QVector<QtPropertyData *>& properti
     QtPropertyData *parentData = itemFromIndexInternal(parent);
     if (parentData != nullptr)
     {
-        parentData->ChildrenAdd(properties);
+        parentData->ChildrenAdd(std::move(properties));
     }
 }
 
-QModelIndex QtPropertyModel::AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent /* = QModelIndex() */)
+QModelIndex QtPropertyModel::AppendProperty(TPropertyPtr && data, const QModelIndex &parent /* = QModelIndex() */)
 {
+    QtPropertyData * item = data.get();
 	if(NULL != data)
 	{
 		QtPropertyData *parentData = itemFromIndexInternal(parent);
 		if(NULL != parentData)
 		{
-			parentData->ChildAdd(name, data);
+			parentData->ChildAdd(std::move(data));
 		}
 	}
 
-	return indexFromItem(data);
+	return indexFromItem(item);
 }
 
-void QtPropertyModel::MergeProperty(QtPropertyData* data, QModelIndex const& parent)
+void QtPropertyModel::MergeProperty(TPropertyPtr && data, QModelIndex const& parent)
 {
 	if(NULL != data)
 	{
 		QtPropertyData *parentData = itemFromIndexInternal(parent);
 		if(NULL != parentData)
 		{
-            parentData->MergeChild(data);
+            parentData->MergeChild(std::move(data));
 		}
 	}
 }
 
-QModelIndex QtPropertyModel::InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent /* = QModelIndex() */)
+QModelIndex QtPropertyModel::InsertProperty(TPropertyPtr && data, int row, const QModelIndex &parent /* = QModelIndex() */)
 {
+    QtPropertyData * item = data.get();
 	if(NULL != data)
 	{
 		QtPropertyData *parentData = itemFromIndexInternal(parent);
 		if(NULL != parentData)
 		{
-			parentData->ChildInsert(name, data, row);
+			parentData->ChildInsert(std::move(data), row);
 		}
 	}
-
-	return indexFromItem(data);
+    return indexFromItem(item);
 }
 
 
