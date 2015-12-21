@@ -148,7 +148,7 @@ Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
 bool WinUAPXamlApp::SetMouseCaptureMode(InputSystem::eMouseCaptureMode newMode)
 {
     // should be started on UI thread
-    if (isPhoneApiDetected)
+    if (isPhoneApiDetected || !isActivated)
     {
         return false;
     }
