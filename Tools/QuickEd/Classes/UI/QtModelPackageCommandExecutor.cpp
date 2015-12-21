@@ -96,6 +96,7 @@ namespace
         auto control = node->GetControl();
         control->SetAbsolutePosition(pos);
         auto relativePos = control->GetPosition();
+        relativePos -= control->GetSize() / 2;
 
         auto rootProperty = node->GetRootProperty();
         auto positionProperty = rootProperty->FindPropertyByName("Position");
