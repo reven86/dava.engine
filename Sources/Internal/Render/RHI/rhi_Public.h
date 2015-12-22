@@ -354,6 +354,7 @@ Packet
     PrimitiveType primitiveType;
     uint32 primitiveCount;
     uint32 instanceCount;
+    uint32 baseInstance;
     uint32 queryIndex;
     uint32 options;
     const char* debugMarker;
@@ -371,6 +372,7 @@ Packet
         , fragmentConstCount(0)
         , primitiveCount(0)
         , instanceCount(0)
+        , baseInstance(0)
         , queryIndex(DAVA::InvalidIndex)
         , options(0)
         , debugMarker(nullptr)

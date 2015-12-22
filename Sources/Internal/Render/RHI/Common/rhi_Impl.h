@@ -131,7 +131,7 @@ Dispatch
     void (*impl_CommandBuffer_DrawPrimitive)(Handle, PrimitiveType, uint32);
     void (*impl_CommandBuffer_DrawIndexedPrimitive)(Handle, PrimitiveType, uint32, uint32, uint32, uint32);
     void (*impl_CommandBuffer_DrawInstancedPrimitive)(Handle, PrimitiveType, uint32, uint32);
-    void (*impl_CommandBuffer_DrawInstancedIndexedPrimitive)(Handle, PrimitiveType, uint32, uint32, uint32, uint32, uint32);
+    void (*impl_CommandBuffer_DrawInstancedIndexedPrimitive)(Handle, PrimitiveType, uint32, uint32, uint32, uint32, uint32, uint32);
     void (*impl_CommandBuffer_SetMarker)(Handle, const char*);
     void (*impl_CommandBuffer_SetSync)(Handle, Handle);
 };

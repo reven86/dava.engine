@@ -710,7 +710,7 @@ dx11_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uin
 //------------------------------------------------------------------------------
 
 static void
-dx11_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
+dx11_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
     ID3D11DeviceContext* ctx = cb->context;
@@ -724,7 +724,7 @@ dx11_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType ty
     if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
-    ctx->DrawIndexed(indexCount, startIndex, firstVertex);
+    ctx->DrawIndexedInstanced(indexCount, instCount, startIndex, firstVertex, baseInstance);
 
     if (cb->cur_query_i != DAVA::InvalidIndex)
         QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);

@@ -459,12 +459,12 @@ gles2_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, ui
 //------------------------------------------------------------------------------
 
 static void
-gles2_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex)
+gles2_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
 {
     unsigned v_cnt = 0;
     int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
 
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE, uint32(mode), instCount, v_cnt, firstVertex, startIndex);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE, uint32(mode), instCount, v_cnt, firstVertex, startIndex, baseInstance);
 }
 
 //------------------------------------------------------------------------------
@@ -1243,6 +1243,7 @@ void CommandBufferGLES2_t::Execute()
             unsigned instCount = int(arg[1]);
             uint32 firstVertex = uint32(arg[3]);
             uint32 startIndex = uint32(arg[4]);
+            uint32 baseInst = uint32(arg[5]);
 
             if (last_ps != cur_ps)
             {
@@ -1285,7 +1286,10 @@ void CommandBufferGLES2_t::Execute()
             #if defined(__DAVAENGINE_IPHONE__)
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #else
-            GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            //            if( baseInst )
+            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+//            else
+//                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #endif
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
@@ -1306,7 +1310,7 @@ void CommandBufferGLES2_t::Execute()
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
 
-            c += 5;
+            c += 6;
         }
         break;
 
