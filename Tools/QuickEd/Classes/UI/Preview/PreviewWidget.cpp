@@ -37,6 +37,7 @@
 #include <QShortCut>
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
