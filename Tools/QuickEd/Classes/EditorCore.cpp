@@ -38,6 +38,7 @@
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/FileDialog/FileDialog.h"
 #include "EditorSettings.h"
 
 #include <QSettings>
@@ -49,6 +50,7 @@
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
+#include "UI/FileSystemView/FileSystemModel.h"
 
 using namespace DAVA;
 
@@ -551,7 +553,26 @@ int EditorCore::CreateDocument(int index, PackageNode* package)
 
 void EditorCore::SaveDocument(Document *document)
 {
-    DVASSERT(nullptr != document);
+    DVASSERT(document);
+    QFileInfo fileInfo(document->GetPackageAbsolutePath());
+    if (!fileInfo.exists())
+    {
+        QString saveFileName = FileDialog::getSaveFileName(mainWindow.get(), tr("Save document as"), document->GetPackageAbsolutePath(), "*" + FileSystemModel::GetYamlExtensionString());
+        if (!saveFileName.isEmpty())
+        {
+            FilePath projectPath(saveFileName.toStdString().c_str());
+
+            document->GetPackage()->SetPath(projectPath);
+        }
+        else
+        {
+            return;
+        }
+    }
+    else if (document->GetUndoStack()->isClean())
+    {
+        return;
+    }
     QString path = document->GetPackageAbsolutePath();
     fileSystemWatcher->removePath(path);
     DVVERIFY(project->SavePackage(document->GetPackage())); //TODO:log here
