@@ -39,6 +39,7 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #include "DebugTools/DebugTools.h"
 
@@ -380,8 +381,31 @@ void MainWindow::SetupViewMenu()
     menuView->addSeparator();
     menuView->addAction(mainToolbar->toggleViewAction());
     
+    menuView->addSeparator();
+    QMenu *appStyleMenu = new QMenu(tr("Application style"), menuView);
+    menuView->addMenu(appStyleMenu);
+    QSignalMapper *signalMapper = new QSignalMapper(this);
+    QActionGroup *actionGroup = new QActionGroup(this);
+    for(const QString &theme : ThemesFactory::Themes())
+    {
+        QAction *action = new QAction(theme, menuView);
+        actionGroup->addAction(action);
+        action->setCheckable(true);
+        if(theme == ThemesFactory::currentTheme)
+        {
+            action->setChecked(true);
+        }
+        appStyleMenu->addAction(action);
+        connect(action, SIGNAL(triggered()), signalMapper, SLOT(map()));
+        signalMapper->setMapping(action, theme);
+    }
+    
+    connect(signalMapper, static_cast<void(QSignalMapper::*)(const QString&)>(&QSignalMapper::mapped), [](const QString &theme) {
+        ThemesFactory::SetTheme(theme);
+    });
+    
     // Setup the Background Color menu.
-    QMenu* setBackgroundColorMenu = new QMenu("Background Color", this);
+    QMenu* setBackgroundColorMenu = new QMenu(tr("Background Color"), menuView);
     menuView->addSeparator();
     menuView->addMenu(setBackgroundColorMenu);
 

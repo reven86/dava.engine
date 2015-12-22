@@ -33,6 +33,7 @@
 #include <QApplication>
 #include <QDrag>
 #include <QMimeData>
+#include <QPalette>
 #include <cmath>
 #include <sstream>
 
@@ -77,18 +78,19 @@ void RulerWidget::paintEvent(QPaintEvent* /*event*/)
     }
 
     // Draw the marker.
-    QPen pen(Qt::black, 1);
-    pen.setStyle(Qt::DashLine);
-    painter.setPen(pen);
-
-    if (orientation == Qt::Horizontal)
-    {
-        painter.drawLine(markerPosition, 0, markerPosition, rect().height());
-    }
-    else
-    {
-        painter.drawLine(0, markerPosition, rect().width(), markerPosition);
-    }
+//    QColor textColor(QPalette::Text);
+//    QPen pen(textColor, 1);
+//    pen.setStyle(Qt::DashLine);
+//    painter.setPen(pen);
+//
+//    if (orientation == Qt::Horizontal)
+//    {
+//        painter.drawLine(markerPosition, 0, markerPosition, rect().height());
+//    }
+//    else
+//    {
+//        painter.drawLine(0, markerPosition, rect().width(), markerPosition);
+//    }
 }
 
 QSize RulerWidget::minimumSizeHint() const
@@ -178,9 +180,10 @@ void RulerWidget::UpdateDoubleBufferImage()
 {
     doubleBuffer = QPixmap(size());
     doubleBuffer.fill();
-
-    static const QColor rulerBackgroundColor = QColor(0xFF, 0xFF, 0xFF);
-    static const QColor rulerTicksColor = QColor(0x00, 0x00, 0x00);
+    
+    QPalette palette = qApp->palette();
+    const QColor rulerBackgroundColor = palette.window().color();
+    const QColor rulerTicksColor = palette.windowText().color();
 
     static const int rulerFontSize = 10;
 
