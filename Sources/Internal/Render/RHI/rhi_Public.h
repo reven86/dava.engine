@@ -132,6 +132,8 @@ RenderDeviceCaps
     bool isUpperLeftRTOrigin = false;
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
+
+    bool instancingSupported = false;
 };
 
 void Initialize(Api api, const InitParam& param);

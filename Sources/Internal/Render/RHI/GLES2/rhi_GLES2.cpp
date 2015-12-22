@@ -212,6 +212,7 @@ gles_check_GL_extensions()
                 {
                     _GLES2_DeviceCaps.is32BitIndicesSupported = true;
                     _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
+                    _GLES2_DeviceCaps.instancingSupported = true;
                 }
             }
         }
@@ -220,6 +221,7 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = true;
+            _GLES2_DeviceCaps.instancingSupported = true;
         }
     }
 }
