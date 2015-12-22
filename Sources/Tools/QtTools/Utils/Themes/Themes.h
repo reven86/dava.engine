@@ -34,16 +34,19 @@
 #include <QStringList>
 #include <QPalette>
 
-namespace ThemesFactory
+class ThemesFactory
 {
-    void InitFromQApplication();
-    QStringList Themes();
-    void SetTheme(const QString &theme);
+public:
+    static void InitFromQApplication();
+    static QStringList Themes();
+    static void SetCurrentTheme(const QString& theme);
+    static const QString& GetCurrentTheme();
 
-    QPalette defaultPalette;
-    QString defaultStyleSheet;
-    QString currentTheme;
-    bool initialized = false;
+private:
+    static QPalette defaultPalette;
+    static QString defaultStyleSheet;
+    static QString currentTheme;
+    static bool themesInitialized;
 };
 
 #endif // __QT_TOOLS_THEMES_H__

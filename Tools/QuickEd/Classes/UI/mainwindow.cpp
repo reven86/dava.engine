@@ -391,7 +391,7 @@ void MainWindow::SetupViewMenu()
         QAction *action = new QAction(theme, menuView);
         actionGroup->addAction(action);
         action->setCheckable(true);
-        if(theme == ThemesFactory::currentTheme)
+        if (theme == ThemesFactory::GetCurrentTheme())
         {
             action->setChecked(true);
         }
@@ -399,11 +399,11 @@ void MainWindow::SetupViewMenu()
         connect(action, SIGNAL(triggered()), signalMapper, SLOT(map()));
         signalMapper->setMapping(action, theme);
     }
-    
-    connect(signalMapper, static_cast<void(QSignalMapper::*)(const QString&)>(&QSignalMapper::mapped), [](const QString &theme) {
-        ThemesFactory::SetTheme(theme);
+
+    connect(signalMapper, static_cast<void (QSignalMapper::*)(const QString&)>(&QSignalMapper::mapped), [](const QString& theme) {
+        ThemesFactory::SetCurrentTheme(theme);
     });
-    
+
     // Setup the Background Color menu.
     QMenu* setBackgroundColorMenu = new QMenu(tr("Background Color"), menuView);
     menuView->addSeparator();

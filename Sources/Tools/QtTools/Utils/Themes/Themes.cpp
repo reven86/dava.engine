@@ -40,9 +40,14 @@ const QString themeSettingsGroup = "QtTools/Themes";
 const QString themeSettingsKey = "ThemeName";
 }
 
+QPalette ThemesFactory::defaultPalette;
+QString ThemesFactory::defaultStyleSheet;
+QString ThemesFactory::currentTheme;
+bool ThemesFactory::themesInitialized = false;
+
 void ThemesFactory::InitFromQApplication()
 {
-    initialized = true;
+    themesInitialized = true;
     defaultStyleSheet = qApp->styleSheet();
     defaultPalette = qApp->palette();
     qAddPostRoutine([](){
@@ -56,7 +61,7 @@ void ThemesFactory::InitFromQApplication()
     auto value = settings.value(themeSettingsKey);
     currentTheme = value.canConvert<QString>() ? value.toString() : "classic";
     settings.endGroup();
-    SetTheme(currentTheme);
+    SetCurrentTheme(currentTheme);
 }
 
 QStringList ThemesFactory::Themes()
@@ -66,14 +71,14 @@ QStringList ThemesFactory::Themes()
         << "dark";
 }
 
-void ThemesFactory::SetTheme(const QString &theme)
+void ThemesFactory::SetCurrentTheme(const QString& theme)
 {
     if(!Themes().contains(theme))
     {
         qWarning("Invalid theme passed to SetTheme");
         return;
     }
-    if(!initialized)
+    if (!themesInitialized)
     {
         qWarning("ThemesFactiry uninitialized");
         return;
@@ -116,6 +121,7 @@ void ThemesFactory::SetTheme(const QString &theme)
     currentTheme = theme;
 }
 
-
-
-
+const QString& ThemesFactory::GetCurrentTheme()
+{
+    return currentTheme;
+}
