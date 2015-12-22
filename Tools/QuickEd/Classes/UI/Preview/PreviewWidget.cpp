@@ -250,7 +250,7 @@ void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const Sele
     systemManager->SelectionChanged.Emit(selected, deselected);
 }
 
-void PreviewWidget::OnRootControlPositionChanged(DAVA::Vector2 pos)
+void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2 &pos)
 {
     rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
     ApplyPosChanges();

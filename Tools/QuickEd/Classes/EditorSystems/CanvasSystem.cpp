@@ -78,7 +78,7 @@ public:
     void AdjustToNestedControl();
 
     DAVA::Signal<> ContentSizeChanged;
-    DAVA::Signal<DAVA::Vector2> RootControlPosChanged;
+    DAVA::Signal<const DAVA::Vector2&> RootControlPosChanged;
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
@@ -333,7 +333,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
-    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<DAVA::Vector2>::Emit);
+    backgroundController->RootControlPosChanged.Connect(&systemManager->RootControlPositionChanged, &DAVA::Signal<const DAVA::Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }
