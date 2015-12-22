@@ -70,7 +70,7 @@ private:
     bool canDrawRect = false; //selection rect state
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
-    DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
+    DAVA::UIControl* selectionRectControl = nullptr;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;

@@ -128,12 +128,10 @@ HUDSystem::HUD::~HUD()
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , hudControl(new UIControl())
-    , selectionRectControl(CreateContainerWithBorders<SelectionRect>())
     , sortedControlList(CompareByLCA)
 {
     InvalidatePressedPoint();
     systemManager->GetRootControl()->AddControl(hudControl.Get());
-    hudControl->AddControl(selectionRectControl.Get());
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
@@ -144,6 +142,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
 HUDSystem::~HUDSystem()
 {
     systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+    SetCanDrawRect(false);
 }
 
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
@@ -231,7 +230,6 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     case UIEvent::Phase::ENDED:
     {
         ProcessCursor(currentInput->point, searchOrder);
-        selectionRectControl->SetSize(Vector2());
         SetCanDrawRect(false);
         dragRequested = false;
         bool retVal = (pressedPoint - currentInput->point).Length() > 0;
@@ -369,9 +367,17 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
     if (canDrawRect != canDrawRect_)
     {
         canDrawRect = canDrawRect_;
-        if (!canDrawRect)
+        if(canDrawRect)
         {
-            selectionRectControl->SetSize(Vector2());
+            DVASSERT(nullptr == selectionRectControl);
+            selectionRectControl = CreateContainerWithBorders<SelectionRect>();
+            hudControl->AddControl(selectionRectControl);
+        }
+        else
+        {
+            DVASSERT(nullptr != selectionRectControl);
+            hudControl->RemoveControl(selectionRectControl);
+            SafeRelease(selectionRectControl);
         }
     }
 }
