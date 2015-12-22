@@ -42,7 +42,6 @@
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/Landscape.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
 
 VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
@@ -212,24 +211,19 @@ void VisibilityCheckSystem::Draw()
     {
         DAVA::uint32 pointIndex = controlPointIndices[currentPointIndex];
         const auto& point = controlPoints[pointIndex];
-        renderer.RenderToCubemapFromPoint(rs, fromCamera, cubemapTarget[cm], point.point);
-        renderer.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], renderTarget, point);
+        renderer.RenderToCubemapFromPoint(rs, fromCamera, point.point, cubemapTarget[cm]);
+        renderer.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], point);
     }
 
     if (shouldRenderOverlay)
     {
-        auto rs2d = DAVA::RenderSystem2D::Instance();
-        DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
-        DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
-        if ((currentPointIndex == controlPoints.size()))
+        if (currentPointIndex == controlPoints.size())
         {
-            DAVA::Rect dstRect(0.0f, height, width, -height);
-            rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+            renderer.RenderCurrentOverlayTexture();
         }
         else
         {
-            float ratio = static_cast<float>(currentPointIndex) / static_cast<float>(controlPoints.size());
-            rs2d->FillRect(DAVA::Rect(0.0f, 0.0f, ratio * width, 5.0f), DAVA::Color::White);
+            renderer.RenderProgress(static_cast<float>(currentPointIndex) / static_cast<float>(controlPoints.size()));
         }
     }
 }
@@ -284,22 +278,11 @@ void VisibilityCheckSystem::UpdatePointSet()
 
 void VisibilityCheckSystem::Prerender()
 {
-    if ((renderTarget == nullptr) || (renderTarget->GetWidth() != stateCache.viewportSize.dx) || (renderTarget->GetHeight() != stateCache.viewportSize.dy))
-    {
-        CreateRenderTarget();
-    }
-
-    renderer.PreRenderScene(GetScene()->GetRenderSystem(), GetScene()->GetCurrentCamera(), renderTarget);
+    renderer.CreateOrUpdateRenderTarget(stateCache.viewportSize);
+    renderer.PreRenderScene(GetScene()->GetRenderSystem(), GetScene()->GetCurrentCamera());
 
     currentPointIndex = 0;
     shouldPrerender = false;
-}
-
-void VisibilityCheckSystem::CreateRenderTarget()
-{
-    SafeRelease(renderTarget);
-    renderTarget = DAVA::Texture::CreateFBO(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight(),
-                                            DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
 }
 
 bool VisibilityCheckSystem::CacheIsValid()

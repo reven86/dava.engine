@@ -1,0 +1,13 @@
+#include "common.cgh"
+#include "blending.cgh"
+
+FPROG_IN_BEGIN
+FPROG_IN_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+FPROG_BEGIN
+	FP_OUT_COLOR = float4(0.5, 0.75, 0.5, 1.0);
+FPROG_END

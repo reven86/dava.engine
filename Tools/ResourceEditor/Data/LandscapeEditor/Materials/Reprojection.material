@@ -2,17 +2,17 @@ RenderTechnique:
     Layers: ["OpaqueRenderLayer"]
     RenderPass:
         Name: "ForwardPass"
-        Shader: "~res:/LandscapeEditor/Materials/Distance/Distance"
-        UniqueDefines: ["ENCODE_DISTANCE"]
+        Shader: "~res:/LandscapeEditor/Materials/VisibilityCheckTool/Reprojection"
+        UniqueDefines: ["DECODE_DISTANCE"]
         RenderState:
             alphaFunc: "CMP_ALWAYS"
             alphaFuncCmpValue: 0.0000
-            blendDest: "BLEND_ONE"
+            blendDest: "BLEND_ZERO"
             blendSrc: "BLEND_ONE"
             cullMode: "FACE_BACK"
             depthFunc: "CMP_LESS"
             fillMode: "FILLMODE_SOLID"
-            state: "STATE_DEPTH_WRITE | STATE_DEPTH_TEST | STATE_COLORMASK_RED | STATE_COLORMASK_GREEN | STATE_COLORMASK_BLUE | STATE_COLORMASK_ALPHA"
+            state: "STATE_BLEND | STATE_COLORMASK_RED | STATE_COLORMASK_GREEN | STATE_COLORMASK_BLUE | STATE_COLORMASK_ALPHA"
             stencil:
                 failBack: "STENCILOP_KEEP"
                 failFront: "STENCILOP_KEEP"

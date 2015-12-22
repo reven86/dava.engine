@@ -85,7 +85,7 @@ private:
 private:
     EntityMap entitiesWithVisibilityComponent;
     DAVA::Landscape* landscape = nullptr;
-    DAVA::Texture* renderTarget = nullptr;
+    // DAVA::Texture* renderTarget = nullptr;
     DAVA::Vector<VisibilityCheckRenderer::VisbilityPoint> controlPoints;
     DAVA::Vector<DAVA::uint32> controlPointIndices;
     DAVA::Map<DAVA::RenderObject*, DAVA::Entity*> renderObjectToEntity;

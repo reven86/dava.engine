@@ -71,14 +71,22 @@ public:
 
     void SetDelegate(VisibilityCheckRendererDelegate*);
 
-    void PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* renderTarget);
+    void PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera);
 
-    void RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* renderTarget, const DAVA::Vector3& point);
+    void RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera,
+                                  const DAVA::Vector3& point, DAVA::Texture* cubemapTarget);
 
-    void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* cubemap,
-                                   DAVA::Texture* renderTarget, const VisbilityPoint& vp);
+    void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* cubemap, const VisbilityPoint& vp);
+
+    void RenderCurrentOverlayTexture();
+    void RenderProgress(float);
 
     void InvalidateMaterials();
+
+    void FixFrame();
+    void ReleaseFrame();
+
+    void CreateOrUpdateRenderTarget(const DAVA::Size2i&);
 
 private:
     void SetupCameraToRenderFromPointToFaceIndex(const DAVA::Vector3& point, DAVA::uint32 faceIndex);
@@ -97,10 +105,14 @@ private:
     DAVA::ScopedPtr<DAVA::NMaterial> distanceMaterial;
     DAVA::ScopedPtr<DAVA::NMaterial> visibilityMaterial;
     DAVA::ScopedPtr<DAVA::NMaterial> prerenderMaterial;
+    DAVA::ScopedPtr<DAVA::NMaterial> reprojectionMaterial;
     rhi::HDepthStencilState visibilityDepthStencilState;
     rhi::RenderPassConfig renderTargetConfig;
     rhi::RenderPassConfig visibilityConfig;
     rhi::RenderPassConfig prerenderConfig;
+    DAVA::Matrix4 fixedFrameMatrix;
+    DAVA::Texture* renderTarget = nullptr;
+    bool frameFixed = false;
 };
 
 

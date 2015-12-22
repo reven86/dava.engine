@@ -28,6 +28,7 @@
 
 #include "VisibilityCheckRenderer.h"
 #include "Render/ShaderCache.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 const DAVA::FastName MaterialParamCubemap("cubemap");
 const DAVA::FastName MaterialParamTransformedNormal("transformedNormal");
@@ -58,6 +59,7 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     , distanceMaterial(new DAVA::NMaterial())
     , visibilityMaterial(new DAVA::NMaterial())
     , prerenderMaterial(new DAVA::NMaterial())
+    , reprojectionMaterial(new DAVA::NMaterial())
 {
     cubemapCamera->SetupPerspective(90.0f, 1.0f, 1.0f, 5000.0f);
 
@@ -82,13 +84,16 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     visibilityConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
     visibilityConfig.priority = DAVA::PRIORITY_SERVICE_3D - 5;
 
-    distanceMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Opaque.material"));
-    distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+    reprojectionMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Reprojection.material"));
+    reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     prerenderMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Prerender.material"));
     prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
-    visibilityMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/CompareDistance.Opaque.material"));
+    distanceMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Encode.material"));
+    distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+
+    visibilityMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Decode.material"));
     visibilityMaterial->AddFlag(DAVA::NMaterialFlagName::FLAG_BLENDING, DAVA::BLENDING_ADDITIVE);
     visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, DAVA::Vector4().data, rhi::ShaderProp::TYPE_FLOAT4);
     visibilityMaterial->AddProperty(MaterialParamTransformedNormal, DAVA::Vector3().data, rhi::ShaderProp::TYPE_FLOAT3);
@@ -107,12 +112,12 @@ void VisibilityCheckRenderer::SetDelegate(VisibilityCheckRendererDelegate* de)
 }
 
 void VisibilityCheckRenderer::RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera,
-                                                       DAVA::Texture* renderTarget, const DAVA::Vector3& point)
+                                                       const DAVA::Vector3& point, DAVA::Texture* cubemapTarget)
 {
-    renderTargetConfig.colorBuffer[0].texture = renderTarget->handle;
-    renderTargetConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
-    renderTargetConfig.viewport.width = renderTarget->GetWidth();
-    renderTargetConfig.viewport.height = renderTarget->GetHeight();
+    renderTargetConfig.colorBuffer[0].texture = cubemapTarget->handle;
+    renderTargetConfig.depthStencilBuffer.texture = cubemapTarget->handleDepthStencil;
+    renderTargetConfig.viewport.width = cubemapTarget->GetWidth();
+    renderTargetConfig.viewport.height = cubemapTarget->GetHeight();
 
     cubemapCamera->SetPosition(point);
     for (DAVA::uint32 i = 0; i < 6; ++i)
@@ -207,7 +212,7 @@ void VisibilityCheckRenderer::CollectRenderBatches(DAVA::RenderSystem* renderSys
     }
 }
 
-void VisibilityCheckRenderer::PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Texture* renderTarget)
+void VisibilityCheckRenderer::PreRenderScene(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
     CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
@@ -260,8 +265,7 @@ void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* 
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
-void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Texture* cubemap,
-                                                        DAVA::Texture* renderTarget, const VisbilityPoint& vp)
+void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera, DAVA::Texture* cubemap, const VisbilityPoint& vp)
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
     UpdateVisibilityMaterialProperties(cubemap, vp);
@@ -294,4 +298,37 @@ void VisibilityCheckRenderer::InvalidateMaterials()
     prerenderMaterial->InvalidateRenderVariants();
     prerenderMaterial->InvalidateBufferBindings();
     prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+}
+
+void VisibilityCheckRenderer::FixFrame()
+{
+}
+
+void VisibilityCheckRenderer::ReleaseFrame()
+{
+}
+
+void VisibilityCheckRenderer::CreateOrUpdateRenderTarget(const DAVA::Size2i& sz)
+{
+    if ((renderTarget == nullptr) || (renderTarget->GetWidth() != sz.dx) || (renderTarget->GetHeight() != sz.dy))
+    {
+        SafeRelease(renderTarget);
+        renderTarget = DAVA::Texture::CreateFBO(sz.dx, sz.dy, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
+    }
+}
+
+void VisibilityCheckRenderer::RenderCurrentOverlayTexture()
+{
+    auto rs2d = DAVA::RenderSystem2D::Instance();
+    DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
+    DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
+    DAVA::Rect dstRect(0.0f, height, width, -height);
+    rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+}
+
+void VisibilityCheckRenderer::RenderProgress(float ratio)
+{
+    auto rs2d = DAVA::RenderSystem2D::Instance();
+    DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
+    rs2d->FillRect(DAVA::Rect(0.0f, 0.0f, ratio * width, 5.0f), DAVA::Color::White);
 }

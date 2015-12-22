@@ -17,26 +17,14 @@ FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
-const float encX = 1.0;
-const float encY = 1.0 / 255.0;
-const float encZ = 1.0 / 65025.0;
-const float encW = 1.0 / 16581375.0;
-
 #if defined(ENCODE_DISTANCE)
 float4 EncodeFloatRGBA(float v) 
 {
 	float4 result;
-	result.x = fract(v);
-	v = (v - result.x) / 255.0;
-
-	result.y = fract(v);
-	v = (v - result.y) / 255.0;
-
-	result.z = fract(v);
-	v = (v - result.z) / 255.0;
-
-	result.w = fract(v);
-
+	result.x = modf(v, v); 
+	result.y = modf(v / 255.0, v);
+	result.z = modf(v / 255.0, v);
+	result.w = modf(v / 255.0, v);
 	return result;
 }
 #endif
@@ -44,16 +32,15 @@ float4 EncodeFloatRGBA(float v)
 #if defined(DECODE_DISTANCE)
 DECL_FP_SAMPLERCUBE(cubemap)
 
+const float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
+
 float DecodeFloatRGBA(float4 encoded)
 {
-	return encoded.x + 
-		encoded.y * 255.0 + 
-		encoded.z * 255.0 * 255.0 +
-		encoded.w * 255.0 * 255.0 * 255.0;
+	return dot(encoded, decodeVector);
 }
 #endif
 
-#define MAGIC_TRESHOLD 1.0001
+#define MAGIC_TRESHOLD 1.001
 
 FPROG_BEGIN
 
