@@ -205,8 +205,8 @@ void VisibilityCheckSystem::Draw()
         dbg->DrawLine(point.point, point.point + 2.0f * point.normal, DAVA::Color(0.25f, 1.0f, 0.25f, 1.0f));
     }
 
-    DAVA::Color clr(std::sqrt(1.0f / static_cast<float>(controlPoints.size() + 1)), 0.0f, 0.0f, 0.0f);
     auto fromCamera = GetScene()->GetCurrentCamera();
+
     for (DAVA::uint32 cm = 0; (cm < CUBEMAPS_COUNT) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         DAVA::uint32 pointIndex = controlPointIndices[currentPointIndex];
@@ -217,11 +217,12 @@ void VisibilityCheckSystem::Draw()
 
     if (shouldRenderOverlay)
     {
-        if (currentPointIndex == controlPoints.size())
+        if ((currentPointIndex == controlPoints.size()) || renderer.FrameFixed())
         {
-            renderer.RenderCurrentOverlayTexture();
+            renderer.RenderCurrentOverlayTexture(fromCamera);
         }
-        else
+
+        if (currentPointIndex < controlPoints.size())
         {
             renderer.RenderProgress(static_cast<float>(currentPointIndex) / static_cast<float>(controlPoints.size()));
         }
@@ -477,4 +478,14 @@ DAVA::Color VisibilityCheckSystem::GetNormalizedColorForEntity(const EntityMap::
         normalizedColor.b = (normalizedColor.b > 0.0f) ? std::max(1.0f / 255.0f, normalizedColor.b / fpoints) : 0.0f;
     }
     return normalizedColor;
+}
+
+void VisibilityCheckSystem::FixCurrentFrame()
+{
+    renderer.FixFrame();
+}
+
+void VisibilityCheckSystem::ReleaseFixedFrame()
+{
+    renderer.ReleaseFrame();
 }

@@ -780,6 +780,9 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
     QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(toggled(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
 
+    QObject::connect(ui->actionFixCurrentFrame, SIGNAL(triggered()), this, SLOT(OnFixVisibilityFrame()));
+    QObject::connect(ui->actionReleaseCurrentFrame, SIGNAL(triggered()), this, SLOT(OnReleaseVisibilityFrame()));
+
     QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
     
 	// scene undo/redo
@@ -1447,6 +1450,16 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
 {
     Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM, enabled);
+}
+
+void QtMainWindow::OnFixVisibilityFrame()
+{
+    GetCurrentScene()->visibilityCheckSystem->FixCurrentFrame();
+}
+
+void QtMainWindow::OnReleaseVisibilityFrame()
+{
+    GetCurrentScene()->visibilityCheckSystem->ReleaseFixedFrame();
 }
 
 void QtMainWindow::OnEnableDisableShadows(bool enable)

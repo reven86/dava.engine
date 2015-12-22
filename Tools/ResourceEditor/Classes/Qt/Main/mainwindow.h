@@ -120,6 +120,8 @@ public slots:
 	void OnAllowOnSceneSelectionToggle(bool allow);
     void OnShowStaticOcclusionToggle(bool show);
     void OnEnableVisibilitySystemToggle(bool enabled);
+    void OnFixVisibilityFrame();
+    void OnReleaseVisibilityFrame();
 
     void OnEnableDisableShadows(bool enable);
 

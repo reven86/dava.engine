@@ -411,6 +411,15 @@
      <addaction name="actionSpeedTree"/>
      <addaction name="actionUndefinedCollision"/>
     </widget>
+    <widget class="QMenu" name="menuVisibility_Check_System">
+     <property name="title">
+      <string>Visibility Check System</string>
+     </property>
+     <addaction name="actionEnableVisibilitySystem"/>
+     <addaction name="separator"/>
+     <addaction name="actionFixCurrentFrame"/>
+     <addaction name="actionReleaseCurrentFrame"/>
+    </widget>
     <addaction name="actionEnableCameraLight"/>
     <addaction name="actionReloadSprites"/>
     <addaction name="actionReloadShader"/>
@@ -428,6 +437,7 @@
     <addaction name="actionBuildStaticOcclusion"/>
     <addaction name="actionInvalidateStaticOcclusion"/>
     <addaction name="actionBeastAndSave"/>
+    <addaction name="menuVisibility_Check_System"/>
     <addaction name="separator"/>
     <addaction name="menuObjectTypes"/>
     <addaction name="actionHangingObjects"/>
@@ -863,7 +873,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>91</height>
+          <height>94</height>
          </rect>
         </property>
        </widget>
@@ -2207,6 +2217,22 @@
    </property>
    <property name="shortcut">
     <string>Alt+Shift+V</string>
+   </property>
+  </action>
+  <action name="actionFixCurrentFrame">
+   <property name="text">
+    <string>Fix Current Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+V</string>
+   </property>
+  </action>
+  <action name="actionReleaseCurrentFrame">
+   <property name="text">
+    <string>Release Fixed Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+V</string>
    </property>
   </action>
  </widget>

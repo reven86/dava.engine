@@ -78,7 +78,7 @@ public:
 
     void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* cubemap, const VisbilityPoint& vp);
 
-    void RenderCurrentOverlayTexture();
+    void RenderCurrentOverlayTexture(DAVA::Camera* camera);
     void RenderProgress(float);
 
     void InvalidateMaterials();
@@ -87,6 +87,8 @@ public:
     void ReleaseFrame();
 
     void CreateOrUpdateRenderTarget(const DAVA::Size2i&);
+
+    bool FrameFixed() const;
 
 private:
     void SetupCameraToRenderFromPointToFaceIndex(const DAVA::Vector3& point, DAVA::uint32 faceIndex);
@@ -112,8 +114,14 @@ private:
     rhi::RenderPassConfig prerenderConfig;
     DAVA::Matrix4 fixedFrameMatrix;
     DAVA::Texture* renderTarget = nullptr;
+    DAVA::Texture* fixedFrame = nullptr;
     bool frameFixed = false;
+    bool shouldFixFrame = false;
 };
 
+inline bool VisibilityCheckRenderer::FrameFixed() const
+{
+    return frameFixed;
+}
 
 #endif

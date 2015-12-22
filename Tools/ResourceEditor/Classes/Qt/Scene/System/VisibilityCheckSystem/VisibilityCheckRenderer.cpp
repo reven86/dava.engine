@@ -34,6 +34,10 @@ const DAVA::FastName MaterialParamCubemap("cubemap");
 const DAVA::FastName MaterialParamTransformedNormal("transformedNormal");
 const DAVA::FastName MaterialParamPointProperties("pointProperties");
 const DAVA::FastName MaterialParamCubemapCenter("cubemapCenter");
+const DAVA::FastName MaterialParamFixedFrameMatrix("fixedFrameMatrix");
+const DAVA::FastName MaterialParamCurrentFrameMatrix("currentFrameMatrix");
+const DAVA::FastName MaterialParamCurrentFrameMatrixInverse("currentFrameMatrixInverse");
+const DAVA::FastName MaterialParamFixedFrameTexture("fixedFrame");
 
 struct RenderPassScope
 {
@@ -85,6 +89,10 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     visibilityConfig.priority = DAVA::PRIORITY_SERVICE_3D - 5;
 
     reprojectionMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Reprojection.material"));
+    reprojectionMaterial->AddFlag(DAVA::NMaterialFlagName::FLAG_BLENDING, DAVA::BLENDING_ADDITIVE);
+    reprojectionMaterial->AddProperty(MaterialParamCurrentFrameMatrix, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
+    reprojectionMaterial->AddProperty(MaterialParamCurrentFrameMatrixInverse, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
+    reprojectionMaterial->AddProperty(MaterialParamFixedFrameMatrix, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
     reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     prerenderMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Prerender.material"));
@@ -298,14 +306,21 @@ void VisibilityCheckRenderer::InvalidateMaterials()
     prerenderMaterial->InvalidateRenderVariants();
     prerenderMaterial->InvalidateBufferBindings();
     prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+
+    reprojectionMaterial->InvalidateRenderVariants();
+    reprojectionMaterial->InvalidateBufferBindings();
+    reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
 void VisibilityCheckRenderer::FixFrame()
 {
+    shouldFixFrame = true;
 }
 
 void VisibilityCheckRenderer::ReleaseFrame()
 {
+    frameFixed = false;
+    shouldFixFrame = false;
 }
 
 void VisibilityCheckRenderer::CreateOrUpdateRenderTarget(const DAVA::Size2i& sz)
@@ -317,13 +332,58 @@ void VisibilityCheckRenderer::CreateOrUpdateRenderTarget(const DAVA::Size2i& sz)
     }
 }
 
-void VisibilityCheckRenderer::RenderCurrentOverlayTexture()
+void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::Camera* camera)
 {
     auto rs2d = DAVA::RenderSystem2D::Instance();
     DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
     DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
     DAVA::Rect dstRect(0.0f, height, width, -height);
-    rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+
+    const DAVA::Matrix4& currentMatrix = camera->GetViewProjMatrix();
+    if (frameFixed)
+    {
+        DAVA::Matrix4 invVPMatrix;
+        currentMatrix.GetInverse(invVPMatrix);
+        reprojectionMaterial->SetPropertyValue(MaterialParamCurrentFrameMatrix, currentMatrix.data);
+        reprojectionMaterial->SetPropertyValue(MaterialParamCurrentFrameMatrixInverse, invVPMatrix.data);
+        reprojectionMaterial->SetPropertyValue(MaterialParamFixedFrameMatrix, fixedFrameMatrix.data);
+        if (reprojectionMaterial->HasLocalTexture(MaterialParamFixedFrameTexture))
+        {
+            reprojectionMaterial->SetTexture(MaterialParamFixedFrameTexture, fixedFrame);
+        }
+        else
+        {
+            reprojectionMaterial->AddTexture(MaterialParamFixedFrameTexture, fixedFrame);
+        }
+        reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+        rs2d->DrawTextureWithoutAdjustingRects(fixedFrame, reprojectionMaterial, DAVA::Color::White, dstRect);
+    }
+    else
+    {
+        rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+    }
+
+    if (shouldFixFrame)
+    {
+        fixedFrameMatrix = currentMatrix;
+
+        DAVA::SafeRelease(fixedFrame);
+        fixedFrame = DAVA::Texture::CreateFBO(renderTarget->GetWidth(), renderTarget->GetHeight(),
+                                              DAVA::PixelFormat::FORMAT_RGBA8888, false, rhi::TextureType::TEXTURE_TYPE_2D, false);
+
+        dstRect = DAVA::Rect(0.0f, 0.0f, width, height);
+        DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
+        desc.clearColor = DAVA::Color::Clear;
+        desc.target = fixedFrame;
+        desc.shouldClear = true;
+        desc.shouldTransformVirtualToPhysical = false;
+        rs2d->BeginRenderTargetPass(desc);
+        rs2d->DrawTexture(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+        rs2d->EndRenderTargetPass();
+
+        shouldFixFrame = false;
+        frameFixed = true;
+    }
 }
 
 void VisibilityCheckRenderer::RenderProgress(float ratio)

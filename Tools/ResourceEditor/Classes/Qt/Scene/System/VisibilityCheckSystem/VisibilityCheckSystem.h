@@ -56,6 +56,9 @@ public:
 
     void ProcessCommand(const Command2* command, bool redo);
 
+    void FixCurrentFrame();
+    void ReleaseFixedFrame();
+
 private:
     using EntityMap = DAVA::Map<DAVA::Entity*, DAVA::Vector<DAVA::Vector3>>;
 
