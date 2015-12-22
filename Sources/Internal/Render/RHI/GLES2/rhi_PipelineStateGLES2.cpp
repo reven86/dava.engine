@@ -290,7 +290,11 @@ VertexDeclGLES2
 
                 if (!VAttrCacheValid && vattr[idx].divisor != elem[i].attrDivisor)
                 {
+                    #if defined(__DAVAENGINE_IPHONE__)
+                    glVertexAttribDivisorEXT(idx, elem[i].attrDivisor);
+                    #else
                     glVertexAttribDivisor(idx, elem[i].attrDivisor);
+                    #endif
                     vattr[idx].divisor = elem[i].attrDivisor;
                 }
             }

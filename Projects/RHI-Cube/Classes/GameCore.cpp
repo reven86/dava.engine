@@ -1403,8 +1403,8 @@ void GameCore::Draw()
         return;
 
     //    sceneRenderTest->Render();
-    //    rhiDraw();
-    //    manticoreDraw();
+//        rhiDraw();
+        manticoreDraw();
     DrawInstancedCube();
     //    rtDraw();
     //    visibilityTestDraw();
@@ -1533,7 +1533,7 @@ void GameCore::rhiDraw()
 void GameCore::manticoreDraw()
 {
     SCOPED_NAMED_TIMING("app-draw");
-    #define USE_SECOND_CB 0
+    #define USE_SECOND_CB 1
 
     rhi::RenderPassConfig pass_desc;
     float clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
@@ -1654,7 +1654,7 @@ void GameCore::manticoreDraw()
 
     #if USE_SECOND_CB
     {
-        packet.options |= rhi::Packet::OPT_WIREFRAME;
+//        packet.options |= rhi::Packet::OPT_WIREFRAME;
         const unsigned row_cnt = 200;
         const unsigned col_cnt = 12;
         //const unsigned  row_cnt = 1;
