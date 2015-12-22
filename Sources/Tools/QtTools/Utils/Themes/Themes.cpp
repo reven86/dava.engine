@@ -88,7 +88,7 @@ void ThemesFactory::SetCurrentTheme(const QString& theme)
 #ifdef Q_OS_MAC
         QString styleName = "macintosh";
 #else
-        QString styleName = "windows";
+        QString styleName = "windowsVista";
 #endif //Q_OS_MAC
         qApp->setStyle(QStyleFactory::create(styleName));
         qApp->setPalette(defaultPalette);
