@@ -126,7 +126,7 @@ public:
     DAVA::Signal<DAVA::Vector2 /*new position*/> RootControlPositionChanged;
     DAVA::Signal<> FocusNextChild;
     DAVA::Signal<> FocusPreviousChild;
-    DAVA::Signal<std::weak_ptr<PackageNode> /*node*/> PackageNodeChanged;
+    DAVA::Signal<const std::weak_ptr<PackageNode> &/*node*/> PackageNodeChanged;
 
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
@@ -137,7 +137,7 @@ private:
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const;
 
-    void OnPackageNodeChanged(std::weak_ptr<PackageNode> node);
+    void OnPackageNodeChanged(const std::weak_ptr<PackageNode> &node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void SetPreviewMode(bool mode);

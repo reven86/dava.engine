@@ -54,7 +54,7 @@ public:
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
-    void OnPackageNodeChanged(std::weak_ptr<PackageNode> packageNode);
+    void OnPackageNodeChanged(const std::weak_ptr<PackageNode> &packageNode);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
     void SelectAllControls();

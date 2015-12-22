@@ -142,7 +142,7 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
-void EditorSystemsManager::OnPackageNodeChanged(std::weak_ptr<PackageNode> package_)
+void EditorSystemsManager::OnPackageNodeChanged(const std::weak_ptr<PackageNode> &package_)
 {
     {
         auto lastNode = package.lock();

@@ -48,7 +48,7 @@ public:
 
 private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_);
-    void OnPackageNodeChanged(std::weak_ptr<PackageNode> node);
+    void OnPackageNodeChanged(const std::weak_ptr<PackageNode> &node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;

@@ -73,7 +73,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void SelectionSystem::OnPackageNodeChanged(std::weak_ptr<PackageNode> packageNode_)
+void SelectionSystem::OnPackageNodeChanged(const std::weak_ptr<PackageNode> &packageNode_)
 {
     {
         auto packageNodePtr = packageNode.lock();
