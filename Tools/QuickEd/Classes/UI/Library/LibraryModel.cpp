@@ -363,7 +363,7 @@ void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPacka
     Q_UNUSED(from);
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != importedPackageRootItem);
-    
+
     QModelIndex parentIndex = indexByNode(node, importedPackageRootItem);
     if (parentIndex.isValid())
     {

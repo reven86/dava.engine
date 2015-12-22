@@ -133,9 +133,9 @@ void SaveEntityAsAction::Redo()
 
                 container->AddNode(clone);
                 RemoveReferenceToOwner(clone);
-			}
+            }
 
-			container->SetName(sc2Path.GetFilename().c_str());
+            container->SetName(sc2Path.GetFilename().c_str());
 		}
         DVASSERT(container);
 

@@ -118,8 +118,8 @@ DAVA::Image * ImageSplitterDialogNormal::CreateMergedImage(DAVA::Image *firstIma
 
     for (uint32 i = 0; i < size; ++i)
     {
-        auto offset = i * pixelSize;
-        
+        uint32 offset = i * pixelSize;
+
         mergedImage->data[offset + RED] = firstImage->data[offset + RED];
         mergedImage->data[offset + GREEN] = firstImage->data[offset + GREEN];
 

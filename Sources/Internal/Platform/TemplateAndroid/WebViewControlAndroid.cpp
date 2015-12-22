@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_ANDROID__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
+
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
@@ -386,3 +389,5 @@ void WebViewControl::WillDraw()
 }
 
 }//namespace DAVA
+
+#endif //defined(__DAVAENGINE_ANDROID__) && !defined(__DISABLE_NATIVE_WEBVIEW__)

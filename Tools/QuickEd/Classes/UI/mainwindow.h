@@ -62,7 +62,7 @@ public:
     int CloseTab(int index);
     void SetCurrentTab(int index);
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
-    int AddTab(Document *document, int index);
+    int AddTab(Document* document, int index);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
     bool isPixelized() const;
@@ -91,7 +91,7 @@ signals:
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
-    void OnDocumentChanged(Document *document);
+    void OnDocumentChanged(Document* document);
 
 private slots:
     void OnCleanChanged(bool val);

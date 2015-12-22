@@ -134,8 +134,8 @@ void SceneUtils::CopyFiles(Set<String> &errorLog)
             retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
         }
 
-		if(!retCopy)
-		{
+        if (!retCopy)
+        {
 			errorLog.insert(String(Format("Can't copy %s to %s",
 				it->first.GetAbsolutePathname().c_str(),
 				it->second.GetAbsolutePathname().c_str())));

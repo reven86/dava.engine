@@ -436,11 +436,11 @@ void VariantType::SetVariant(const VariantType& var)
         break;
         case TYPE_INT64:
         {
-			SetInt64(var.AsInt64());
-		}
-		break;
-	case TYPE_UINT64:
-		{
+            SetInt64(var.AsInt64());
+        }
+        break;
+        case TYPE_UINT64:
+        {
 			SetUInt64(var.AsUInt64());
 		}
 		break;
@@ -1492,12 +1492,12 @@ void* VariantType::MetaObject()
         ret = &pointerValue;
         break;
     default:
-		{
-			//DVASSERT(0 && "Something went wrong with VariantType");
-		}
-	}
+    {
+        //DVASSERT(0 && "Something went wrong with VariantType");
+    }
+    }
 
-	return (void *) ret;
+    return (void *) ret;
 }
 
 VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
@@ -1556,11 +1556,11 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetVector2(*((DAVA::Vector2*)src));
         break;
     case TYPE_VECTOR3:
-		v.SetVector3(*((DAVA::Vector3 *) src));
-		break;
-	case TYPE_VECTOR4:
-		v.SetVector4(*((DAVA::Vector4 *) src));
-		break;
+        v.SetVector3(*((DAVA::Vector3*)src));
+        break;
+    case TYPE_VECTOR4:
+        v.SetVector4(*((DAVA::Vector4*)src));
+        break;
 	case TYPE_MATRIX2:
 		v.SetMatrix2(*((DAVA::Matrix2 *) src));
 		break;
@@ -1686,12 +1686,12 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
             *((DAVA::uint64*)dst) = val.AsUInt64();
             break;
         case TYPE_VECTOR2:
-            *((DAVA::Vector2 *) dst) = val.AsVector2();
-			break;
-		case TYPE_VECTOR3:
-			*((DAVA::Vector3 *) dst) = val.AsVector3();
-			break;
-		case TYPE_VECTOR4:
+            *((DAVA::Vector2*)dst) = val.AsVector2();
+            break;
+        case TYPE_VECTOR3:
+            *((DAVA::Vector3*)dst) = val.AsVector3();
+            break;
+        case TYPE_VECTOR4:
 			*((DAVA::Vector4 *) dst) = val.AsVector4();
 			break;
 		case TYPE_MATRIX2:
@@ -1779,11 +1779,11 @@ VariantType VariantType::FromType(int type)
         break;
     case TYPE_VECTOR2:
         v.SetVector2(Vector2());
-		break;
-	case TYPE_VECTOR3:
-		v.SetVector3(Vector3());
-		break;
-	case TYPE_VECTOR4:
+        break;
+    case TYPE_VECTOR3:
+        v.SetVector3(Vector3());
+        break;
+    case TYPE_VECTOR4:
 		v.SetVector4(Vector4());
 		break;
 	case TYPE_MATRIX2:

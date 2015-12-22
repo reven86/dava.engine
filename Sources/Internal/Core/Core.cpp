@@ -501,14 +501,12 @@ void Core::SystemProcessFrame()
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
-#ifndef __DAVAENGINE_WIN_UAP__
+#if !defined(DAVA_NETWORK_DISABLE)
     // Poll for network I/O events here, not depending on Core active flag
     Net::NetCore::Instance()->Poll();
+#endif
     // Give memory profiler chance to notify its subscribers about new frame
     DAVA_MEMORY_PROFILER_UPDATE();
-#else
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#endif
 
     if (!core)
     {

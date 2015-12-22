@@ -44,13 +44,8 @@ IPAddress::IPAddress(const char8* address) : addr(0)
 
 bool IPAddress::ToString(char8* buffer, size_t size) const
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return false;
-#else
     DVASSERT(buffer != NULL && size > 0);
     return 0 == uv_ip4_name(Endpoint(*this, 0).CastToSockaddrIn(), buffer, size);
-#endif
 }
 
 String IPAddress::ToString() const
@@ -79,6 +74,11 @@ IPAddress IPAddress::FromString(const char8* addr)
     return IPAddress();
 
 #endif
+}
+
+IPAddress IPAddress::FromString(const String& addr)
+{
+    return FromString(addr.c_str());
 }
 
 }   // namespace Net

@@ -38,11 +38,10 @@ namespace Net
 
 const char8* ErrorToString(int32 error)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return "";
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     return uv_strerror(error);
+#else
+    return "DAVA network is disabled";
 #endif
 }
 
