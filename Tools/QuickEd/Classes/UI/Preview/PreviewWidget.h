@@ -31,6 +31,7 @@
 #define __QUICKED_PREVIEW_WIDGET_H__
 
 #include <QWidget>
+#include <QPointer>
 #include "ui_PreviewWidget.h"
 #include "EditorSystems/SelectionContainer.h"
 #include <UI/UIControl.h>
@@ -110,7 +111,7 @@ private:
     void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
 
     QPoint lastMousePos;
-    QPointer<Document> document = nullptr;
+    QPointer<Document> document;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
     QList<qreal> percentages;

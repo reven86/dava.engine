@@ -31,6 +31,7 @@
 #define __QUICKED_LIBRARY_WIDGET_H__
 
 #include <QDockWidget>
+#include <QPointer>
 #include "ui_LibraryWidget.h"
 
 class Document;
@@ -46,7 +47,7 @@ public slots:
     void OnDocumentChanged(Document* document);
 
 private:
-    QPointer<Document> document = nullptr;
+    QPointer<Document> document;
     LibraryModel* libraryModel;
 };
 
