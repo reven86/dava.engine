@@ -319,16 +319,30 @@ void QtPropertyModel::RemoveProperty(const QModelIndex &index)
 	}
 }
 
+#include "Timer/RawTimer.h"
+
 void QtPropertyModel::RemovePropertyAll()
 {
+    DAVA::RawTimer timer;
+    timer.Start();
     beginResetModel();
+    DAVA::Logger::Info("Begin reset : %d", timer.GetElapsed());
+    timer.Start();
     root->ResetChildren();
+    DAVA::Logger::Info("Reset : %d", timer.GetElapsed());
+    timer.Start();
     endResetModel();
+    DAVA::Logger::Info("End reset : %d", timer.GetElapsed());
 }
 
 void QtPropertyModel::UpdateStructure(const QModelIndex &parent /* = QModelIndex */)
 {
 	UpdateStructureInternal(parent);
+}
+
+void QtPropertyModel::FinishTreeCreation()
+{
+    root->FinishTreeCreation();
 }
 
 void QtPropertyModel::UpdateStructureInternal(const QModelIndex &i)

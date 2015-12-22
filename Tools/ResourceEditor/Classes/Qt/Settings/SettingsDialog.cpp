@@ -122,6 +122,7 @@ void SettingsDialog::InitProperties()
         }
     }
 
+    editor->GetRootProperty()->FinishTreeCreation();
     editor->expandToDepth(0);
 }
 

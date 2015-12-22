@@ -278,6 +278,7 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     FillDynamic(propertiesRoot, NMaterialSectionName::LocalProperties);
     FillDynamic(texturesRoot, NMaterialSectionName::LocalTextures);
     FillTemplates(materials);
+    FinishCreation();
 
     // Restore back the tree view state from the shared storage.
     if (!treeStateHelper->IsTreeStateStorageEmpty())
@@ -1371,4 +1372,13 @@ void MaterialEditor::RefreshMaterialProperties()
 {
     SetCurMaterial(curMaterials);
     UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+}
+
+void MaterialEditor::FinishCreation()
+{
+    baseRoot->FinishTreeCreation();
+    flagsRoot->FinishTreeCreation();
+    illuminationRoot->FinishTreeCreation();
+    propertiesRoot->FinishTreeCreation();
+    texturesRoot->FinishTreeCreation();
 }

@@ -210,6 +210,7 @@ void TextureProperties::ReloadProperties()
         AppendProperty(TPropertyPtr(propSizes), headerIndex);
         LoadCurSizeToProp();
 
+        FinishTreeCreation();
         ReloadEnumFormats();
 		ReloadEnumWrap();
 		ReloadEnumFilters();

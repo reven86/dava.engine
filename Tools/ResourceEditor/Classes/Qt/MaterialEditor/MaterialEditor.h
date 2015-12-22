@@ -91,6 +91,7 @@ protected:
     void FillDynamic(QtPropertyData *root, const FastName& dynamicName);
     void FillIllumination();
     void FillTemplates(const QList<DAVA::NMaterial *>& materials);
+    void FinishCreation();
 
     void FillDynamicMember(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, const FastName& memberName);
     void FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::InspInfoDynamic::DynamicData& ddata, const FastName& memberName);

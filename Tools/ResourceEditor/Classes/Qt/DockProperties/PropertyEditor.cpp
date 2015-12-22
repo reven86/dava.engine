@@ -294,6 +294,7 @@ void PropertyEditor::ResetProperties()
             ApplyStyle(item.get(), QtPropertyEditor::HEADER_STYLE);
         }
         AppendProperties(std::move(properies));
+        FinishTreeCreation();
 	}
     
 	// Restore back the tree view state from the shared storage.

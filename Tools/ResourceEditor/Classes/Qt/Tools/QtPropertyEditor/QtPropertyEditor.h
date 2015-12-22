@@ -62,6 +62,8 @@ public:
 
 	QtPropertyData * GetProperty(const QModelIndex &index) const;
 	QtPropertyData * GetRootProperty() const;
+
+    void FinishTreeCreation();
 	
 	bool GetEditTracking() const;
 	void SetEditTracking(bool enabled);

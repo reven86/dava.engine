@@ -50,6 +50,8 @@ public:
 	virtual const DAVA::MetaInfo * MetaInfo() const;
 	virtual void* CreateLastCommand() const;
 
+    void FinishTreeCreation() override;
+
 	DAVA::KeyedArchive* archive;
 
 protected:

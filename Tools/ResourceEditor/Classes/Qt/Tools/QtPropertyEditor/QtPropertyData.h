@@ -182,6 +182,8 @@ public:
     void ChildRemoveAll();
     void ResetChildren();
 
+    virtual void FinishTreeCreation();
+
 	// Optional widgets
 	int GetButtonsCount() const;
 	QtPropertyToolButton* GetButton(int index = 0);

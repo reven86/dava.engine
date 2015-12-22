@@ -56,18 +56,6 @@ QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(const DAVA::FastNam
 	}
 
 	SetEnabled(false);
-
-	// add optional widget (button) to add new key
-	QToolButton *addButton = AddButton();
-    addButton->setIcon(SharedIcon(":/QtIcons/keyplus.png"));
-    addButton->setToolTip("Add keyed archive member");
-	addButton->setIconSize(QSize(12, 12));
-    connections.AddConnection(addButton, &QToolButton::clicked, [this, addButton]()
-    {
-        AddKeyedArchiveField(addButton);
-    });
-
-	UpdateValue();
 }
 
 QtPropertyDataDavaKeyedArcive::~QtPropertyDataDavaKeyedArcive()
@@ -275,7 +263,24 @@ void* QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
 	return command;
 }
 
-KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive *_arch, int defaultType, QWidget *parent /* = NULL */) 
+void QtPropertyDataDavaKeyedArcive::FinishTreeCreation()
+{
+    // add optional widget (button) to add new key
+    QToolButton *addButton = AddButton();
+    addButton->setIcon(SharedIcon(":/QtIcons/keyplus.png"));
+    addButton->setToolTip("Add keyed archive member");
+    addButton->setIconSize(QSize(12, 12));
+    connections.AddConnection(addButton, &QToolButton::clicked, [this, addButton]()
+    {
+        AddKeyedArchiveField(addButton);
+    });
+
+    UpdateValue();
+
+    QtPropertyData::FinishTreeCreation();
+}
+
+KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive *_arch, int defaultType, QWidget *parent /* = NULL */)
 	: QWidget(parent)
 	, arch(_arch)
 	, presetWidget(NULL)

@@ -71,6 +71,7 @@ public:
 	void RemovePropertyAll();
 
 	void UpdateStructure(const QModelIndex &parent = QModelIndex());
+    void FinishTreeCreation();
 
 signals:
 	void PropertyEdited(const QModelIndex &index);

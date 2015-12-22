@@ -111,6 +111,11 @@ QtPropertyData * QtPropertyEditor::GetRootProperty() const
 	return curModel->rootItem();
 }
 
+void QtPropertyEditor::FinishTreeCreation()
+{
+    curModel->FinishTreeCreation();
+}
+
 void QtPropertyEditor::RemoveProperty(const QModelIndex &index)
 {
 	curModel->RemoveProperty(index);

@@ -715,6 +715,14 @@ void QtPropertyData::ResetChildren()
     keyToDataMap.clear();
 }
 
+void QtPropertyData::FinishTreeCreation()
+{
+    for (TPropertyPtr & child : childrenData)
+    {
+        child->FinishTreeCreation();
+    }
+}
+
 int QtPropertyData::GetButtonsCount() const
 {
 	return optionalButtons.size();
