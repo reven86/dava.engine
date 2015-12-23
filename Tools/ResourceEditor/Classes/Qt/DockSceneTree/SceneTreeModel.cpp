@@ -687,9 +687,8 @@ void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString&
     if (!item->IsAcceptedByFilter())
     {
         const bool match = (text.isEmpty() || name.contains(text, Qt::CaseInsensitive) || text == QString::number(id));
-        const bool isChild = _index.parent().isValid();
 
-        item->SetAcceptByFilter(isChild || match);
+        item->SetAcceptByFilter(match);
         item->SetHighlight(match);
         
         if (match)
