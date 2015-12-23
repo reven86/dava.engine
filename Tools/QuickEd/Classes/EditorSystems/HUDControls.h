@@ -55,7 +55,6 @@ public:
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
     void SetVisibleInSystems(bool arg);
-    void SetValid(bool arg);
 
 private:
     ~HUDContainer() = default;
