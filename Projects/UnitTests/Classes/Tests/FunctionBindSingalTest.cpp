@@ -404,7 +404,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             auto shrd = std::make_shared<int>(v);
             std::weak_ptr<int> w = shrd;
 
-            auto test_fn = [](int& v, std::weak_ptr<int> ptr)
+            auto test_weakptr = [](int& v, std::weak_ptr<int> ptr)
             {
                 if(!ptr.expired()) {
                     std::shared_ptr<int> shared = ptr.lock();
@@ -419,8 +419,8 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             Signal<int&, std::weak_ptr<int>> sig;
 
             // connect twice to the same slot
-            sig.Connect(&test_fn);
-            sig.Connect(&test_fn);
+            sig.Connect(test_weakptr);
+            sig.Connect(test_weakptr);
             
             int res = 0;
             
