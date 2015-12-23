@@ -36,9 +36,6 @@
 #include "Scene/SceneEditor2.h"
 #include "Settings/SettingsManager.h"
 
-#include "Sound/SoundSystem.h"
-DAVA::SoundEvent* confirmSound = nullptr;
-
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
 	ENUM_ADD(SS_DRAW_SHAPE);
@@ -53,10 +50,6 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, hoodSystem(hoodSys)
 {
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-    if (confirmSound == nullptr)
-    {
-        confirmSound = DAVA::SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sound/selection.wav", FastName("ResourceEditor"));
-    }
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -742,9 +735,4 @@ void SceneSelectionSystem::FinishSelection()
         SetSelection(newSelection);
     }
     objectsToSelect.Clear();
-
-    if (curSelections.Size() > 33)
-    {
-        confirmSound->Trigger();
-    }
 }
