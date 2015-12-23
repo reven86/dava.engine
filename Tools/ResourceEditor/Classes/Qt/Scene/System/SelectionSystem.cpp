@@ -121,12 +121,19 @@ void SceneSelectionSystem::ForceEmitSignals()
 	}
 }
 
-void SceneSelectionSystem::ProcessSelectedGroup(EntityGroup::EntityVector collisionEntities)
+void SceneSelectionSystem::ProcessSelectedGroup(const EntityGroup::EntityVector& allObjects)
 {
-    auto i = collisionEntities.begin();
-    while (i != collisionEntities.end())
+    EntityGroup::EntityVector collisionEntities;
+    collisionEntities.reserve(allObjects.size());
+
+    auto i = allObjects.begin();
+    for (const auto& item : allObjects)
     {
-        i = (componentMaskForSelection & i->first->GetAvailableComponentFlags()) ? (i + 1) : collisionEntities.erase(i);
+        if (componentMaskForSelection & i->first->GetAvailableComponentFlags())
+        {
+            auto selectableEntity = GetSelectableEntity(item.first);
+            collisionEntities.emplace_back(selectableEntity, GetSelectionAABox(selectableEntity));
+        }
     }
 
     DAVA::Entity* firstEntity = collisionEntities.empty() ? nullptr : collisionEntities.front().first;
@@ -232,7 +239,11 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
     {
         if (componentMaskForSelection & item.first->GetAvailableComponentFlags())
         {
-            selectedObjects.Add(item.first, GetSelectionAABox(item.first));
+            auto selectableEntity = GetSelectableEntity(item.first);
+            if (!selectableEntity->GetLocked())
+            {
+                selectedObjects.Add(selectableEntity, GetSelectionAABox(selectableEntity));
+            }
         }
     }
 
@@ -595,31 +606,16 @@ void SceneSelectionSystem::UpdateHoodPos() const
 
 DAVA::Entity* SceneSelectionSystem::GetSelectableEntity(DAVA::Entity* entity)
 {
-    DAVA::Entity* selectableEntity = nullptr;
-
-    if (nullptr != entity)
+    DAVA::Entity* parent = entity;
+    while (nullptr != parent)
     {
-		// find most top solid entity
-		DAVA::Entity *parent = entity;
-        while (nullptr != parent)
+        if (parent->GetSolid())
         {
-			if(parent->GetSolid())
-			{
-				selectableEntity = parent;
-			}
-
-			parent = parent->GetParent();
-		}
-
-		// still not found?
-		if(NULL == selectableEntity)
-		{
-			// let it current entity to be tread as solid
-			selectableEntity = entity;
-		}
-	}
-
-	return selectableEntity;
+            entity = parent;
+        }
+        parent = parent->GetParent();
+    }
+    return entity;
 }
 
 DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity) const

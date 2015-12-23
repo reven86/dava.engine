@@ -123,7 +123,7 @@ private:
 
     void PerformSelectionInCurrentBox();
 
-    void ProcessSelectedGroup(EntityGroup::EntityVector);
+    void ProcessSelectedGroup(const EntityGroup::EntityVector&);
 
     void UpdateGroupSelectionMode();
 

@@ -521,22 +521,15 @@ void StructureSystem::RemoveEntity(DAVA::Entity * entity)
 
 void StructureSystem::CheckAndMarkSolid(DAVA::Entity *entity)
 {
-	if(NULL != entity)
-	{
-		if(entity->GetChildrenCount() > 0)
-		{
-			entity->SetSolid(true);
-
-			for(DAVA::int32 i = 0; i < entity->GetChildrenCount(); ++i)
-			{
-				CheckAndMarkSolid(entity->GetChild(i));
-			}
-		}
-		else
-		{
-			entity->SetSolid(false);
-		}
-	}
+    if (nullptr != entity)
+    {
+        DAVA::int32 numChildren = entity->GetChildrenCount();
+        for (DAVA::int32 i = 0; i < numChildren; ++i)
+        {
+            CheckAndMarkSolid(entity->GetChild(i));
+        }
+        entity->SetSolid(numChildren > 0);
+    }
 }
 
 DAVA::Entity* StructureSystem::Load(const DAVA::FilePath& sc2path)
