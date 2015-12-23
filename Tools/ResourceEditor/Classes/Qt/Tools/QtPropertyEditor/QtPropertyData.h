@@ -97,7 +97,7 @@ public:
 
 	struct UserData
 	{ 
-        virtual ~UserData() = 0 {}
+        virtual ~UserData() {}
     };
 
 	QtPropertyData(const DAVA::FastName& name);

@@ -54,11 +54,12 @@ public:
     void setEditorData(QWidget *editor, const QModelIndex &index) const;
 	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
 	void updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const;
+    
+    void showButtons(QtPropertyData *data);
+    void invalidateButtons();
 
 public slots:
 	bool helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index);
-    void showButtons(QtPropertyData *data);
-	void invalidateButtons();
 
 private:
     bool eventFilter(QObject *obj, QEvent *event);
