@@ -173,10 +173,10 @@ AutotestingSystem::AutotestingSystem()
     {
         DVASSERT(!isInit);
         isInit = true;
-	}
+    }
 
-	// Get test parameters from id.yaml
-	void AutotestingSystem::FetchParametersFromIdYaml()
+    // Get test parameters from id.yaml
+    void AutotestingSystem::FetchParametersFromIdYaml()
 	{
 		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
 		RefPtr<KeyedArchive> option = GetIdYamlOptions();
@@ -512,10 +512,10 @@ AutotestingSystem::AutotestingSystem()
             touch = findIt->second;
         }
         return isFound;
-	}
+    }
 
-	bool AutotestingSystem::IsTouchDown(int32 id)
-	{
+    bool AutotestingSystem::IsTouchDown(int32 id)
+    {
 		return (touches.find(id) != touches.end());
 	}
 

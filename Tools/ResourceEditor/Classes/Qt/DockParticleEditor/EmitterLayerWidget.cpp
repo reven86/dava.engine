@@ -234,8 +234,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addWidget(frameBlendingCheckBox);
 
     //particle orieantation
-	QVBoxLayout* orientationLayout = new QVBoxLayout();	
-	particleOrientationLabel = new QLabel("Particle Orientation");
+    QVBoxLayout* orientationLayout = new QVBoxLayout();
+    particleOrientationLabel = new QLabel("Particle Orientation");
 	orientationLayout->addWidget(particleOrientationLabel);
 	QHBoxLayout* facingLayout = new QHBoxLayout();
 	
@@ -288,8 +288,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addWidget(fogCheckBox);
 
     lifeTimeLine = new TimeLineWidget(this);
-	InitWidget(lifeTimeLine);
-	numberTimeLine = new TimeLineWidget(this);
+    InitWidget(lifeTimeLine);
+    numberTimeLine = new TimeLineWidget(this);
 	InitWidget(numberTimeLine);
 	sizeTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeTimeLine);
@@ -971,15 +971,19 @@ void EmitterLayerWidget::UpdateLayerSprite()
 {
     if (layer->sprite)
     {
-        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-        RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
+        RenderSystem2D::RenderTargetPassDescriptor desc;
+        desc.target = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        desc.shouldClear = true;
+        desc.shouldTransformVirtualToPhysical = false;
+        desc.clearColor = Color::Clear;
+        RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         {
             Sprite::DrawState drawState = {};
             drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
             RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
         }
         RenderSystem2D::Instance()->EndRenderTargetPass();
-        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
+        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), desc.target });
         spriteUpdateTimer->start(0);
         spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
     }

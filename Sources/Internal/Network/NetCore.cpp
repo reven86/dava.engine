@@ -39,6 +39,7 @@ namespace DAVA
 {
 namespace Net
 {
+const char8 NetCore::defaultAnnounceMulticastGroup[] = "239.192.100.1";
 
 NetCore::NetCore()
     : loop(true)
@@ -54,6 +55,7 @@ NetCore::~NetCore()
 
 NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* context, uint32 readTimeout)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing && true == config.Validate());
     NetController* ctrl = new NetController(&loop, registrar, context, readTimeout);
     if (true == ctrl->ApplyConfig(config))
@@ -66,33 +68,52 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* contex
         delete ctrl;
         return INVALID_TRACK_ID;
     }
+#else
+    return INVALID_TRACK_ID;
+#endif
 }
 
-NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback)
+NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndpoint)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
-    Announcer* ctrl = new Announcer(&loop, endpoint, sendPeriod, needDataCallback);
+    Announcer* ctrl = new Announcer(&loop, endpoint, sendPeriod, needDataCallback, tcpEndpoint);
     loop.Post(Bind(&NetCore::DoStart, this, ctrl));
     return ObjectToTrackId(ctrl);
+#else
+    return INVALID_TRACK_ID;
+#endif
 }
 
 NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
     Discoverer* ctrl = new Discoverer(&loop, endpoint, dataReadyCallback);
+    discovererId = ObjectToTrackId(ctrl);
     loop.Post(Bind(&NetCore::DoStart, this, ctrl));
-    return ObjectToTrackId(ctrl);
+    return discovererId;
+#else
+    return INVALID_TRACK_ID;
+#endif
 }
 
 void NetCore::DestroyController(TrackId id)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
     DVASSERT(GetTrackedObject(id) != NULL);
-	loop.Post(Bind(&NetCore::DoDestroy, this, id, nullptr));
+    if (id == discovererId)
+    {
+        discovererId = INVALID_TRACK_ID;
+    }
+    loop.Post(Bind(&NetCore::DoDestroy, this, id, nullptr));
+#endif
 }
 
 void NetCore::DestroyControllerBlocked(TrackId id)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
     DVASSERT(GetTrackedObject(id) != NULL);
 
@@ -103,18 +124,22 @@ void NetCore::DestroyControllerBlocked(TrackId id)
     do {
         Poll();
     } while (!oneStopped);
+#endif
 }
 
 void NetCore::DestroyAllControllers(Function<void ()> callback)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing && controllersStoppedCallback == nullptr);
 
     controllersStoppedCallback = callback;
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
+#endif
 }
 
 void NetCore::DestroyAllControllersBlocked()
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing && false == allStopped && controllersStoppedCallback == nullptr);
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
 
@@ -123,20 +148,45 @@ void NetCore::DestroyAllControllersBlocked()
         Poll();
     } while(false == allStopped);
     allStopped = false;
+#endif
 }
 
 void NetCore::RestartAllControllers()
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     // Restart controllers on mobile devices
     loop.Post(MakeFunction(this, &NetCore::DoRestart));
+#endif
 }
 
 void NetCore::Finish(bool runOutLoop)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     isFinishing = true;
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
     if (runOutLoop)
         loop.Run(IOLoop::RUN_DEFAULT);
+#endif
+}
+
+bool NetCore::TryDiscoverDevice(const Endpoint& endpoint)
+{
+#if !defined(DAVA_NETWORK_DISABLE)
+    if (discovererId != INVALID_TRACK_ID)
+    {
+        auto it = trackedObjects.find(TrackIdToObject(discovererId));
+        if (it != trackedObjects.end())
+        {
+            // Variable is named in honor of big fan and donater of tanks - Sergey Demidov
+            // And this man assures that cast below is valid, so do not worry, guys
+            Discoverer* SergeyDemidov = static_cast<Discoverer*>(*it);
+            return SergeyDemidov->TryDiscoverDevice(endpoint);
+        }
+    }
+    return false;
+#else
+    return true;
+#endif
 }
 
 void NetCore::DoStart(IController* ctrl)
