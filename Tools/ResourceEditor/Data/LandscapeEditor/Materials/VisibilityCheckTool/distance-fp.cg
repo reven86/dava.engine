@@ -17,11 +17,13 @@ FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
+const float encodeDecodeScale = 255.0;
+
 #if defined(ENCODE_DISTANCE)
 float4 EncodeFloatRGBA(float v) 
 {
 	float4 result;
-	result.x = modf(v, v); 
+	result.x = modf(v * encodeDecodeScale, v); 
 	result.y = modf(v / 255.0, v);
 	result.z = modf(v / 255.0, v);
 	result.w = modf(v / 255.0, v);
@@ -36,7 +38,7 @@ const float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
 
 float DecodeFloatRGBA(float4 encoded)
 {
-	return dot(encoded, decodeVector);
+	return dot(encoded, decodeVector) / encodeDecodeScale;
 }
 #endif
 
