@@ -230,7 +230,7 @@ void _InitDX11()
     }
 
 
-    #if 1
+    #if 0
     flags |= D3D11_CREATE_DEVICE_DEBUG;
     flags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
     #endif
