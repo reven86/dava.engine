@@ -1,36 +1,6 @@
 macro( generated_unity_sources SOURCE_FILES )  
 
     list( REMOVE_DUPLICATES ${SOURCE_FILES} )
-    set( UPDATE_PACKAGES true )
-    find_package( PythonInterp   )
-
-    if( PYTHONINTERP_FOUND AND UNITY_BUILD AND NOT UNITY_BUILDS_CLEANING )
-        set( SRC_LIST ${${SOURCE_FILES}} )
-
-        string(REPLACE ";" " " SRC_LIST "${SRC_LIST}" )
-        string(REPLACE "\"" "" SRC_LIST "${SRC_LIST}" ) #"
-
-        EXECUTE_PROCESS(
-            COMMAND ${PYTHON_EXECUTABLE} "${DAVA_SCRIPTS_FILES_PATH}/file_tree_hash.py" ${SRC_LIST} "--file_mode"
-            OUTPUT_VARIABLE UNITY_TREE_HASH
-        )
-
-        string(REPLACE "\n" "" UNITY_TREE_HASH "${UNITY_TREE_HASH}")
-
-        set( FILE_UNITY_HASH "${CMAKE_BINARY_DIR}/unity_pack/unity_hash_${PROJECT_NAME}.txt" )
-        set( LAST_UNITY_TREE_HASH 0 )
-        if( EXISTS ${FILE_UNITY_HASH} )
-            file( STRINGS ${FILE_UNITY_HASH} LAST_UNITY_TREE_HASH )
-        endif()
-
-        if( "${LAST_UNITY_TREE_HASH}" STREQUAL "${UNITY_TREE_HASH}" )
-            set( UPDATE_PACKAGES ) 
-        endif()
-
-        file(WRITE ${FILE_UNITY_HASH} ${UNITY_TREE_HASH} ) 
-
-    endif()  
-
 
     if( UNITY_BUILD )
         message( ">>> Unity packages ${PROJECT_NAME} info" )
@@ -140,10 +110,8 @@ macro( generated_unity_sources SOURCE_FILES )
                 set ( ${PTYPE}_NAME ${CMAKE_BINARY_DIR}/unity_pack/${PROJECT_NAME}_${index_pack}.${${PTYPE}_PACK_EXP} )
                 
                 list( APPEND ${PTYPE}_PACK_LIST ${${PTYPE}_NAME} )
-                if( UPDATE_PACKAGES )
-                    file( WRITE ${${PTYPE}_NAME} ${HEADERS_LIST})
-                    message( "generated pack     - ${${PTYPE}_NAME}")
-                endif()
+                file( WRITE ${${PTYPE}_NAME} ${HEADERS_LIST})
+                message( "generated pack     - ${${PTYPE}_NAME}")
                 
             endforeach()
 
