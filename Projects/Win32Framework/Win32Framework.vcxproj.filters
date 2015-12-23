@@ -3073,5 +3073,14 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreenManagerDefault.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX9\rhi_PerfQuerySetDX9.cpp">
+      <Filter>Internal\Render\RHI\DX9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\DX11\rhi_PerfQuerySetDX11.cpp">
+      <Filter>Internal\Render\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\RHI\GLES2\rhi_PerfQuerySetGLES2.cpp">
+      <Filter>Internal\Render\RHI\GLES2</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
