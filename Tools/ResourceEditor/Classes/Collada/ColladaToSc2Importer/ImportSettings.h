@@ -26,38 +26,22 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_IMPORT_SETTINGS_H
+#define __DAVAENGINE_IMPORT_SETTINGS_H
 
-#include "DAEConvertAction.h"
-#include "Collada/ColladaConvert.h"
+#include "Base/FastName.h"
+#include "Base/BaseTypes.h"
 
-#include "Deprecated/SceneValidator.h"
-
-#include "Scene/SceneHelper.h"
-#include "Commands2/ConvertToShadowCommand.h"
-
-using namespace DAVA;
-
-DAEConvertAction::DAEConvertAction(const DAVA::FilePath &path)
-	: CommandAction(CMDID_DAE_CONVERT, "DAE to SC2 Convert")
-	, daePath(path)
-{ }
-
-void DAEConvertAction::Redo()
+namespace DAVA
 {
-    if (FileSystem::Instance()->Exists(daePath) && daePath.IsEqualToExtension(".dae"))
-    {
-        eColladaErrorCodes code = ConvertDaeToSc2(daePath);
-        if (code == COLLADA_OK)
-        {
-            return;
-        }
-		else if(code == COLLADA_ERROR_OF_ROOT_NODE)
-		{
-			Logger::Error("Can't convert from DAE. Looks like one of materials has same name as root node.");
-		}
-		else
-		{
-            Logger::Error("[DAE to SC2] Can't convert from DAE.");
-        }
-	}
+    
+namespace ImportSettings
+{
+static const String shadowNamePattern("_shadow");
+static const String normalMapPattern("_NM");
+static const FastName shadowMaterialName("Shadow_Material");
 }
+
+}
+
+#endif //IMPORT_SETTINGS_H

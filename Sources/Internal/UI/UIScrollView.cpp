@@ -79,6 +79,11 @@ void UIScrollView::SetSize(const DAVA::Vector2 &newSize)
 
 	scrollHorizontal->SetViewSize(newSize.x);
 	scrollVertical->SetViewSize(newSize.y);
+
+    if (scrollContainer)
+    {
+        scrollContainer->ApplySizeChanges();
+    }
 }
 
 void UIScrollView::AddControl(UIControl *control)
