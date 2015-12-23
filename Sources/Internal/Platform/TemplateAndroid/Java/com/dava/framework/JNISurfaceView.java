@@ -161,10 +161,18 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) 
 	{
-		//YZ rewrite size parameter from fill parent to fixed size
-		LayoutParams params = getLayoutParams();
-		params.height = h;
-		params.width = w;
+        // On some devices (e.g. Samsung SM-G900F with Android 5) when
+        // starting app from notification label on lock screen
+        // method onSizeChanged is called with dimension like
+        // in portrait mode despite of landscape orientation in AndroidManifest.xml.
+		// So tell superclass of our expected and desired width and height, hehe
+        // See also method surfaceChanged
+		if (w < h)
+		{
+			int temp = w;
+			w = h;
+			h = temp;
+		}
 		super.onSizeChanged(w, h, oldw, oldh);
 	}
 	
@@ -440,7 +448,19 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         // on nexus 5 w == h == 1080
         // if you have any trouble here you should first check
         // res/layout/activity_main.xml and root layout is FrameLayout!
-        if (width > height)
+        
+        // On some devices (e.g. Samsung SM-G900F with Android 5) when
+        // starting app from notification label on lock screen
+        // method surfaceChanged is called only once with dimension like
+        // in portrait mode despite of landscape orientation in AndroidManifest.xml.
+        // See also method onSizeChanged
+        if (width < height)
+        {
+            int temp = width;
+            width = height;
+            height = temp;
+        }
+        
         {
             if (width != surfaceWidth || height != surfaceHeight)
             {
