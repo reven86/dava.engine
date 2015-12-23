@@ -316,7 +316,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x31] = Key::SPACE;
 
     // from SDL2 scancodes_darwin.h
-    //keyTranslator[10] = Key::NON_US_BACKSLASH;
+    keyTranslator[10] = Key::NON_US_BACKSLASH;
     keyTranslator[24] = Key::EQUALS;
     keyTranslator[27] = Key::MINUS;
     keyTranslator[47] = Key::PERIOD;
@@ -394,10 +394,19 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x6F] = Key::F12;
 
     // numeric keys at numpad
-    for(auto i = 0; i < 10; ++i)
+    for (unsigned i = 0; i < 8; ++i)
     {
-        keyTranslator[0x52 + i] = Key::KEY_0 + i;
+        keyTranslator[0x52 + i] = static_cast<Key>(static_cast<unsigned>(Key::NUMPAD0) + i);
     }
+    keyTranslator[91] = Key::NUMPAD8;
+    keyTranslator[92] = Key::NUMPAD9;
+
+    keyTranslator[71] = Key::NUMLOCK;
+    keyTranslator[76] = Key::NUMPADENTER;
+    keyTranslator[65] = Key::DECIMAL;
+    keyTranslator[110] = Key::APPS;
+    keyTranslator[107] = Key::SCROLLLOCK;
+    keyTranslator[105] = Key::PRINTSCREEN;
 #endif
     
 #if defined(__DAVAENGINE_ANDROID__)

@@ -178,13 +178,22 @@ public:
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
+#ifdef __DAVAENGINE_WIN_UAP_
     friend ref class WinUAPXamlApp;
+#endif
     ~KeyboardDevice();
     KeyboardDevice();
 
+#ifdef __DAVAENGINE_MACOS__
+public:
+#endif
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
+
+#ifdef __DAVAENGINE_MACOS__
+private:
+#endif
     void OnFinishFrame();
     void ClearAllKeys();
 
@@ -195,6 +204,7 @@ private:
     static const int MAX_KEYS = 512;
     Array<Key, MAX_KEYS> keyTranslator;
 };
-};
+
+}; // end DAVA namespace
 
 #endif
