@@ -56,6 +56,7 @@ public:
 	virtual void GetDataNodes(Set<DataNode*> & dataNodes);
 
 	void SetAnimation(AnimationData* animation);
+    AnimationData * GetAnimation() const;
 
  	bool GetIsPlaying() const;
  	void SetIsPlaying(bool value);
@@ -94,6 +95,10 @@ public:
 	);
 };
 
+inline AnimationData * AnimationComponent::GetAnimation() const
+{
+    return animation;
+}
 
 
 };

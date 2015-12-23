@@ -38,16 +38,7 @@ class DAEConvertAction: public CommandAction
 public:
 	DAEConvertAction(const DAVA::FilePath &path);
 
-	virtual void Redo();
-
-protected:
-    
-    void ConvertFromSceToSc2() const;
-    void FixLODFarDistance(DAVA::Scene *scene) const;
-    
-    DAVA::Scene * CreateSceneFromSce() const;
-    
-    DAVA::int32 FindMaxLodLevel(DAVA::Entity *entity) const;
+    void Redo() override;
     
 protected:
 	DAVA::FilePath daePath;
