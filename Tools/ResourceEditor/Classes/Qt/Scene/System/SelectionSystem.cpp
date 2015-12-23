@@ -272,7 +272,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
         if (!hoodSystem->IsVisible() || (ST_MODIF_OFF == hoodSystem->GetModifMode()) || (ST_AXIS_NONE == hoodSystem->GetPassingAxis()))
         {
             selecting = true;
-            selectionStartPoint = event->physPoint;
+            selectionStartPoint = event->point;
             selectionEndPoint = selectionStartPoint;
             lastGroupSelection.Clear();
             PerformSelectionAtPoint(selectionStartPoint);
@@ -280,7 +280,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 	}
     else if (selecting && (DAVA::UIEvent::Phase::DRAG == event->phase))
     {
-        selectionEndPoint = event->physPoint;
+        selectionEndPoint = event->point;
         PerformSelectionInCurrentBox();
     }
     else if (DAVA::UIEvent::Phase::ENDED == event->phase)
