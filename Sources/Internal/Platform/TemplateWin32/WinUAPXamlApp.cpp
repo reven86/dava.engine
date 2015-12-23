@@ -881,10 +881,17 @@ void WinUAPXamlApp::SetupEventHandlers()
 
 void WinUAPXamlApp::CreateBaseXamlUI()
 {
+    using Windows::UI::Xaml::Markup::XamlReader;
+    Platform::Object^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
+    WebView^ webview = dynamic_cast<WebView^>(obj);
+    webview->Visibility = Visibility::Collapsed;
+
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();
     swapChainPanel->Children->Append(canvas);
     Window::Current->Content = swapChainPanel;
+
+    AddUIElement(webview);
 
     // Windows UAP doesn't allow to unfocus UI control programmatically
     // It only permits to set focus at another control
@@ -1192,6 +1199,14 @@ const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
         </Setter>
     </Style>
 </ResourceDictionary>
+)";
+
+const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
+<WebView x:Name="xamlWebView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App2">
+</WebView>
 )";
 
 }   // namespace DAVA
