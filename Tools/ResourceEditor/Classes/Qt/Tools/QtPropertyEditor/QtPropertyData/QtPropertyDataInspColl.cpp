@@ -51,13 +51,13 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(const DAVA::FastName & name, void
 
 				if(NULL != itemInfo && NULL != itemObject)
 				{
-                    TPropertyPtr childData(new QtPropertyDataIntrospection(childName, itemObject, itemInfo));
+                    std::unique_ptr<QtPropertyData> childData(new QtPropertyDataIntrospection(childName, itemObject, itemInfo));
 					ChildAdd(std::move(childData));
 				}
 				else
 				{
 					QString s;
-					TPropertyPtr childData(new QtPropertyData(childName, s.sprintf("[%p] Pointer", itemObject)));
+					std::unique_ptr<QtPropertyData> childData(new QtPropertyData(childName, s.sprintf("[%p] Pointer", itemObject)));
 					childData->SetEnabled(false);
 					ChildAdd(std::move(childData));
 				}
@@ -66,7 +66,7 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(const DAVA::FastName & name, void
 			{
 				if(!valueType->IsPointer())
 				{
-                    TPropertyPtr childData(new QtPropertyDataMetaObject(childName, collection->ItemPointer(i), valueType));
+                    std::unique_ptr<QtPropertyData> childData(new QtPropertyDataMetaObject(childName, collection->ItemPointer(i), valueType));
 					ChildAdd(std::move(childData));
 				}
 				else
@@ -78,7 +78,7 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(const DAVA::FastName & name, void
                     }
 
 					QString s;
-					TPropertyPtr childData(new QtPropertyData(localChildName, s.sprintf("[%p] Pointer", collection->ItemData(i))));
+					std::unique_ptr<QtPropertyData> childData(new QtPropertyData(localChildName, s.sprintf("[%p] Pointer", collection->ItemData(i))));
 					childData->SetEnabled(false);
 					ChildAdd(std::move(childData));
 				}

@@ -50,10 +50,10 @@ public:
 	QModelIndex indexFromItem(QtPropertyData *data) const
 	{ return mapFromSource(propModel->indexFromItem(data)); }
 
-	QModelIndex AppendProperty(TPropertyPtr && data, const QModelIndex &parent = QModelIndex())
+	QModelIndex AppendProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex())
 	{ return mapFromSource(propModel->AppendProperty(std::move(data), mapToSource(parent))); }
 
-    QModelIndex InsertProperty(TPropertyPtr && data, int row, const QModelIndex &parent = QModelIndex())
+    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData> && data, int row, const QModelIndex &parent = QModelIndex())
 	{ return mapFromSource(propModel->InsertProperty(std::move(data), row, mapToSource(parent))); }
 
 	bool GetEditTracking()

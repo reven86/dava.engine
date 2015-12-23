@@ -59,10 +59,10 @@ public:
 	QtPropertyData* itemFromIndex(const QModelIndex & index) const;
 	QModelIndex indexFromItem(QtPropertyData *data) const;
 
-    void AppendProperties(DAVA::Vector<TPropertyPtr> && properties, const QModelIndex& parent = QModelIndex());
-    QModelIndex AppendProperty(TPropertyPtr && data, const QModelIndex &parent = QModelIndex());
-    void MergeProperty(TPropertyPtr && data, const QModelIndex &parent = QModelIndex());
-    QModelIndex InsertProperty(TPropertyPtr && data, int row, const QModelIndex &parent = QModelIndex());
+    void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>> && properties, const QModelIndex& parent = QModelIndex());
+    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
+    void MergeProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
+    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData> && data, int row, const QModelIndex &parent = QModelIndex());
 
 	bool GetEditTracking();
 	void SetEditTracking(bool enabled);
@@ -79,7 +79,7 @@ signals:
 protected:
     enum
     {
-        DataRefreshRequared = QEvent::User + 1
+        DataRefreshRequired = QEvent::User + 1
     };
 
     friend class QtPropertyData;
@@ -91,18 +91,8 @@ protected:
     class InsertionGuard
     {
     public:
-        InsertionGuard(QtPropertyModel* model_, QtPropertyData * parent, int first, int last)
-            : model(model_)
-        {
-            if (model != nullptr)
-                model->DataAboutToBeAdded(parent, first, last);
-        }
-
-        ~InsertionGuard()
-        {
-            if (model != nullptr)
-                model->DataAdded();
-        }
+        InsertionGuard(QtPropertyModel* model_, QtPropertyData * parent, int first, int last);
+        ~InsertionGuard();
 
     private:
         QtPropertyModel* model;
@@ -111,18 +101,8 @@ protected:
     class DeletionGuard
     {
     public:
-        DeletionGuard(QtPropertyModel * model_, QtPropertyData * parent, int first, int last)
-            : model(model_)
-        {
-            if (model != nullptr)
-                model->DataAboutToBeRemoved(parent, first, last);
-        }
-
-        ~DeletionGuard()
-        {
-            if (model != nullptr)
-                model->DataRemoved();
-        }
+        DeletionGuard(QtPropertyModel * model_, QtPropertyData * parent, int first, int last);
+        ~DeletionGuard();
 
     private:
         QtPropertyModel * model;

@@ -128,7 +128,7 @@ protected:
 	QSet<QString> scheme;
 
 	QtPropertyData * favoriteGroup;
-	DAVA::Vector<TPropertyPtr> favoriteList;
+	DAVA::Vector<std::unique_ptr<QtPropertyData>> favoriteList;
 
 	QVector<DAVA::Entity *> curNodes;
 	PropertyEditorStateHelper treeStateHelper;

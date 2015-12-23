@@ -392,7 +392,7 @@ void QtPropertyDataDavaVariant::SetValueInternal(const QVariant &value)
 
 void QtPropertyDataDavaVariant::SubValueAdd(const DAVA::FastName& key, const DAVA::VariantType &subvalue)
 {
-    ChildAdd(TPropertyPtr(new QtPropertyDataDavaVariantSubValue(key, this, subvalue)));
+    ChildAdd(std::unique_ptr<QtPropertyData>(new QtPropertyDataDavaVariantSubValue(key, this, subvalue)));
 }
 
 void QtPropertyDataDavaVariant::SubValueSetToMe(const DAVA::FastName& key, const QVariant &subvalue)

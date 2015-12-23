@@ -101,7 +101,7 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 		// at first step of sync we mark (placing to vector) items to remove
 		for(int i = 0; i < ChildCount(); ++i)
 		{
-			QtPropertyData * child = ChildGet(i).get();
+			QtPropertyData * child = ChildGet(i);
             DVASSERT(child != nullptr);
             dataToRemove.insert(child);
 		}
@@ -156,7 +156,7 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const DAVA::FastName& name, DAVA
         childData = new QtPropertyKeyedArchiveMember(name, archive, name.c_str());
 	}
 
-	ChildAdd(TPropertyPtr(childData));
+	ChildAdd(std::unique_ptr<QtPropertyData>(childData));
 
 	// add optional widget (button) to remove this key
 	QToolButton *remButton = childData->AddButton();
@@ -201,7 +201,7 @@ void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton * button)
 		// search for child data with such button
 		for(int i = 0; i < ChildCount(); ++i)
 		{
-			QtPropertyData *childData = ChildGet(i).get();
+			QtPropertyData *childData = ChildGet(i);
             DVASSERT(childData != nullptr);
 			// search btn thought this child optional widgets
 			for (int j = 0; j < childData->GetButtonsCount(); j++)

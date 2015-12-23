@@ -186,7 +186,7 @@ Qt::ItemFlags QtPropertyModel::flags(const QModelIndex & index) const
 
 bool QtPropertyModel::event(QEvent * e)
 {
-    if(e->type() == DataRefreshRequared)
+    if(e->type() == DataRefreshRequired)
     {
 		emit dataChanged(QModelIndex(), QModelIndex());
         needRefresh = false;
@@ -209,7 +209,7 @@ QtPropertyData* QtPropertyModel::itemFromIndex(const QModelIndex & index) const
 		QtPropertyData *parent = static_cast<QtPropertyData *>(index.internalPointer());
 		if(NULL != parent)
 		{
-			ret = parent->ChildGet(index.row()).get();
+			ret = parent->ChildGet(index.row());
 		}
 	}
 
@@ -252,7 +252,7 @@ QModelIndex QtPropertyModel::indexFromItem(QtPropertyData *data) const
 	return ret;
 }
 
-void QtPropertyModel::AppendProperties(DAVA::Vector<TPropertyPtr> && properties, const QModelIndex& parent /*= QModelIndex()*/)
+void QtPropertyModel::AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>> && properties, const QModelIndex& parent /*= QModelIndex()*/)
 {
     if (properties.empty())
         return;
@@ -264,7 +264,7 @@ void QtPropertyModel::AppendProperties(DAVA::Vector<TPropertyPtr> && properties,
     }
 }
 
-QModelIndex QtPropertyModel::AppendProperty(TPropertyPtr && data, const QModelIndex &parent /* = QModelIndex() */)
+QModelIndex QtPropertyModel::AppendProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent /* = QModelIndex() */)
 {
     QtPropertyData * item = data.get();
 	if(NULL != data)
@@ -279,7 +279,7 @@ QModelIndex QtPropertyModel::AppendProperty(TPropertyPtr && data, const QModelIn
 	return indexFromItem(item);
 }
 
-void QtPropertyModel::MergeProperty(TPropertyPtr && data, QModelIndex const& parent)
+void QtPropertyModel::MergeProperty(std::unique_ptr<QtPropertyData> && data, QModelIndex const& parent)
 {
 	if(NULL != data)
 	{
@@ -291,7 +291,7 @@ void QtPropertyModel::MergeProperty(TPropertyPtr && data, QModelIndex const& par
 	}
 }
 
-QModelIndex QtPropertyModel::InsertProperty(TPropertyPtr && data, int row, const QModelIndex &parent /* = QModelIndex() */)
+QModelIndex QtPropertyModel::InsertProperty(std::unique_ptr<QtPropertyData> && data, int row, const QModelIndex &parent /* = QModelIndex() */)
 {
     QtPropertyData * item = data.get();
 	if(NULL != data)
@@ -319,20 +319,11 @@ void QtPropertyModel::RemoveProperty(const QModelIndex &index)
 	}
 }
 
-#include "Timer/RawTimer.h"
-
 void QtPropertyModel::RemovePropertyAll()
 {
-    DAVA::RawTimer timer;
-    timer.Start();
     beginResetModel();
-    DAVA::Logger::Info("Begin reset : %d", timer.GetElapsed());
-    timer.Start();
     root->ResetChildren();
-    DAVA::Logger::Info("Reset : %d", timer.GetElapsed());
-    timer.Start();
     endResetModel();
-    DAVA::Logger::Info("End reset : %d", timer.GetElapsed());
 }
 
 void QtPropertyModel::UpdateStructure(const QModelIndex &parent /* = QModelIndex */)
@@ -372,7 +363,7 @@ void QtPropertyModel::DataChanged(QtPropertyData *data, int reason)
             if(!needRefresh)
             {
                 needRefresh = true;
-                QCoreApplication::postEvent(this, new QEvent((QEvent::Type) DataRefreshRequared));
+                QCoreApplication::postEvent(this, new QEvent((QEvent::Type) DataRefreshRequired));
             }
 		}
         else if(trackEdit)
@@ -384,25 +375,19 @@ void QtPropertyModel::DataChanged(QtPropertyData *data, int reason)
 
 void QtPropertyModel::DataAboutToBeAdded(QtPropertyData *parent, int first, int last)
 {
-	//if(NULL != parent)
-	{
-		QModelIndex index = indexFromItem(parent);
-		beginInsertRows(index, first, last);
-	}
+    QModelIndex index = indexFromItem(parent);
+    beginInsertRows(index, first, last);
 }
 
 void QtPropertyModel::DataAdded()
 {
-	endInsertRows();
+    endInsertRows();
 }
 
 void QtPropertyModel::DataAboutToBeRemoved(QtPropertyData *parent, int first, int last)
 {
-	//if(NULL != parent)
-	{
-		QModelIndex index = indexFromItem(parent);
-		beginRemoveRows(index, first, last);
-	}
+    QModelIndex index = indexFromItem(parent);
+    beginRemoveRows(index, first, last);
 }
 
 void QtPropertyModel::DataRemoved()
@@ -418,4 +403,28 @@ void QtPropertyModel::SetEditTracking(bool enabled)
 bool QtPropertyModel::GetEditTracking()
 {
 	return trackEdit;
+}
+
+QtPropertyModel::InsertionGuard::InsertionGuard(QtPropertyModel* model_, QtPropertyData * parent, int first, int last) : model(model_)
+{
+    if (model != nullptr)
+        model->DataAboutToBeAdded(parent, first, last);
+}
+
+QtPropertyModel::InsertionGuard::~InsertionGuard()
+{
+    if (model != nullptr)
+        model->DataAdded();
+}
+
+QtPropertyModel::DeletionGuard::DeletionGuard(QtPropertyModel * model_, QtPropertyData * parent, int first, int last) : model(model_)
+{
+    if (model != nullptr)
+        model->DataAboutToBeRemoved(parent, first, last);
+}
+
+QtPropertyModel::DeletionGuard::~DeletionGuard()
+{
+    if (model != nullptr)
+        model->DataRemoved();
 }

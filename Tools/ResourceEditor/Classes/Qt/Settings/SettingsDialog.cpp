@@ -106,7 +106,7 @@ void SettingsDialog::InitProperties()
 				    prop->SetBackground(QBrush(QColor(Qt::lightGray)));
                     prop->SetEnabled(false);
 
-                    parent->ChildAdd(TPropertyPtr(prop));
+                    parent->ChildAdd(std::unique_ptr<QtPropertyData>(prop));
                 }
 
                 parent = prop;
@@ -117,7 +117,7 @@ void SettingsDialog::InitProperties()
                 QtPropertyDataSettingsNode *settingProp = new QtPropertyDataSettingsNode(name);
                 settingProp->SetInspDescription(node->desc);
 
-                parent->ChildAdd(TPropertyPtr(settingProp));
+                parent->ChildAdd(std::unique_ptr<QtPropertyData>(settingProp));
             }
         }
     }

@@ -111,19 +111,14 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
     UpdateHoodPos();
 }
 
-#include "Timer/RawTimer.h"
-
 void SceneSelectionSystem::ForceEmitSignals()
 {
-	if (selectionHasChanges)
-	{
-        DAVA::RawTimer timer;
-        timer.Start();
+    if (selectionHasChanges)
+    {
         SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), &curSelections, &curDeselections);
-        DAVA::Logger::Info("Selection signal : %d", timer.GetElapsed());
         selectionHasChanges = false;
-		curDeselections.Clear();
-	}
+        curDeselections.Clear();
+    }
 }
 
 void SceneSelectionSystem::ProcessSelectedGroup(EntityGroup::EntityVector collisionEntities)

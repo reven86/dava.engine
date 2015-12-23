@@ -95,6 +95,8 @@ void ExecuteCommands(DAVA::Vector<Command2 *> && commands, const DAVA::String & 
     {
         scene->EndBatch();
     }
+
+    commands.clear();
 }
 }
 
@@ -220,14 +222,14 @@ void PropertyEditor::ResetProperties()
     if(nNodes > 0)
 	{
 		// create data tree, but don't add it to the property editor
-		TPropertyPtr root(new QtPropertyData(DAVA::FastName("root")));
+		std::unique_ptr<QtPropertyData> root(new QtPropertyData(DAVA::FastName("root")));
 
 		// add info about current entities
         for (int i = 0; i < nNodes; i++)
         {
             DAVA::Entity *node = curNodes.at(i);
             const DAVA::InspInfo * inspInfo = node->GetTypeInfo();
-            TPropertyPtr curEntityData(CreateInsp(inspInfo->Name(), node, inspInfo));
+            std::unique_ptr<QtPropertyData> curEntityData(CreateInsp(inspInfo->Name(), node, inspInfo));
 
             PropEditorUserData* userData = GetUserData(curEntityData.get());
             userData->entity = node;
@@ -244,7 +246,7 @@ void PropertyEditor::ResetProperties()
 			        if (component)
 			        {
                         const DAVA::InspInfo * componentInspInfo = component->GetTypeInfo();
-				        TPropertyPtr componentData(CreateInsp(componentInspInfo->Name(), component, componentInspInfo));
+				        std::unique_ptr<QtPropertyData> componentData(CreateInsp(componentInspInfo->Name(), component, componentInspInfo));
                         PropEditorUserData* userData = GetUserData(componentData.get());
                         userData->entity = node;
 
@@ -287,9 +289,9 @@ void PropertyEditor::ResetProperties()
         ApplyModeFilter(favoriteGroup);
         ApplyCustomExtensions(root.get());
 
-        DAVA::Vector<TPropertyPtr> properies;
+        DAVA::Vector<std::unique_ptr<QtPropertyData>> properies;
         root->ChildrenExtract(properies);
-        for (TPropertyPtr & item : properies)
+        for (std::unique_ptr<QtPropertyData> & item : properies)
         {
             ApplyStyle(item.get(), QtPropertyEditor::HEADER_STYLE);
         }
@@ -317,7 +319,7 @@ void PropertyEditor::ApplyModeFilter(QtPropertyData * parent)
 		{
 			bool toBeRemove = false;
 			bool scanChilds = true;
-			const TPropertyPtr & data = parent->ChildGet(i);
+			QtPropertyData * data = parent->ChildGet(i);
 
 			// show only editable items and favorites
 			if(viewMode == VIEW_NORMAL)
@@ -336,7 +338,7 @@ void PropertyEditor::ApplyModeFilter(QtPropertyData * parent)
 			else if(viewMode == VIEW_FAVORITES_ONLY)
 			{
 				QtPropertyData *favorite = NULL;
-				PropEditorUserData *userData = GetUserData(data.get());
+				PropEditorUserData *userData = GetUserData(data);
 
 				if(userData->type == PropEditorUserData::ORIGINAL)
 				{
@@ -345,7 +347,7 @@ void PropertyEditor::ApplyModeFilter(QtPropertyData * parent)
 				}
 				else if(userData->type == PropEditorUserData::COPY)
 				{
-					favorite = data.get();
+					favorite = data;
 					scanChilds = false;
 				}
 
@@ -359,13 +361,13 @@ void PropertyEditor::ApplyModeFilter(QtPropertyData * parent)
 
 			if(toBeRemove)
 			{
-				parent->ChildRemove(data.get());
+				parent->ChildRemove(data);
 				i--;
 			}
 			else if(scanChilds)
 			{
 				// apply mode to data childs
-				ApplyModeFilter(data.get());
+				ApplyModeFilter(data);
 			}
 		}
 	}
@@ -383,7 +385,7 @@ void PropertyEditor::ApplyFavorite(QtPropertyData* data)
 		// go through childs
 		for(int i = 0; i < data->ChildCount(); ++i)
 		{
-			ApplyFavorite(data->ChildGet(i).get());
+			ApplyFavorite(data->ChildGet(i));
 		}
 	}
 }
@@ -393,7 +395,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
 	if(NULL != data)
 	{
 		const DAVA::MetaInfo *meta = data->MetaInfo();
-        const bool isSingleSelection = data->HasMergedData();
+        const bool isSingleSelection = data->GetMergedItemCount();
 
         if(NULL != meta)
 		{
@@ -559,7 +561,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
 		// go through childs
 		for(int i = 0; i < data->ChildCount(); ++i)
 		{
-			ApplyCustomExtensions(data->ChildGet(i).get());
+			ApplyCustomExtensions(data->ChildGet(i));
 		}
 	}
 }
@@ -596,7 +598,7 @@ QtPropertyData* PropertyEditor::CreateInsp(const DAVA::FastName& name, void *obj
 				{
 					const DAVA::InspMember *member = baseInfo->Member(i);
 
-                    TPropertyPtr memberData(CreateInspMember(member->Name(), object, member));
+                    std::unique_ptr<QtPropertyData> memberData(CreateInspMember(member->Name(), object, member));
 					ret->ChildAdd(std::move(memberData));
 				}
 
@@ -655,14 +657,14 @@ QtPropertyData* PropertyEditor::CreateInspCollection(const DAVA::FastName& name,
 				void * itemObject = collection->ItemData(i);
 				const DAVA::InspInfo *itemInfo = valueType->GetIntrospection(itemObject);
 
-                TPropertyPtr inspData(CreateInsp(childName, itemObject, itemInfo));
+                std::unique_ptr<QtPropertyData> inspData(CreateInsp(childName, itemObject, itemInfo));
 				ret->ChildAdd(std::move(inspData));
 			}
 			else
 			{
 				if(!valueType->IsPointer())
 				{
-                    TPropertyPtr childData(new QtPropertyDataMetaObject(childName, collection->ItemPointer(i), valueType));
+                    std::unique_ptr<QtPropertyData> childData(new QtPropertyDataMetaObject(childName, collection->ItemPointer(i), valueType));
 					ret->ChildAdd(std::move(childData));
 				}
 				else
@@ -673,7 +675,7 @@ QtPropertyData* PropertyEditor::CreateInspCollection(const DAVA::FastName& name,
                         localChildName = *reinterpret_cast<const DAVA::FastName *>(collection->ItemKeyData(i));
                     }
 					QString s;
-                    TPropertyPtr childData(new QtPropertyData(localChildName, s.sprintf("[%p] Pointer", collection->ItemData(i))));
+                    std::unique_ptr<QtPropertyData> childData(new QtPropertyData(localChildName, s.sprintf("[%p] Pointer", collection->ItemData(i))));
 					childData->SetEnabled(false);
 					ret->ChildAdd(std::move(childData));
 				}
@@ -802,14 +804,14 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
 
 	if(NULL != propData)
 	{
-        bool useBatch = propData->HasMergedData();
+        bool useBatch = propData->GetMergedItemCount() > 0;
         if (useBatch)
         {
             curScene->BeginBatch("");
         }
         
         curScene->Exec(reinterpret_cast<Command2 *>(propData->CreateLastCommand()));
-        propData->ForeachMergedItem([&curScene](const TPropertyPtr & item)
+        propData->ForeachMergedItem([&curScene](QtPropertyData* item)
         {
             curScene->Exec(reinterpret_cast<Command2 *>(item->CreateLastCommand()));
             return true;
@@ -928,10 +930,11 @@ void PropertyEditor::ConvertToShadow()
         if(NULL != data && NULL != curScene)
         {
             DAVA::Vector<Command2 *> commands;
+            commands.reserve(data->GetMergedItemCount() + 1);
             commands.push_back(new ConvertToShadowCommand(reinterpret_cast<DAVA::RenderBatch *>(data->object)));
-            data->ForeachMergedItem([&commands](const TPropertyPtr & item)
+            data->ForeachMergedItem([&commands](QtPropertyData* item)
             {
-                QtPropertyDataIntrospection * dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(item.get());
+                QtPropertyDataIntrospection * dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(item);
                 if (dynamicData != nullptr)
                 {
                     commands.push_back(new ConvertToShadowCommand(reinterpret_cast<DAVA::RenderBatch *>(dynamicData->object)));
@@ -969,35 +972,38 @@ void PropertyEditor::DeleteRenderBatch()
 	{
 		QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        Entity *node = curNodes.at(0);
 
-		if(NULL != data && NULL != curScene)
+		if(data != nullptr && curScene != nullptr && node != nullptr)
 		{
             DAVA::Vector<Command2 *> commands;
-            commands.push_back(new ConvertToShadowCommand(reinterpret_cast<DAVA::RenderBatch *>(data->object)));
-            data->ForeachMergedItem([&commands, this](const TPropertyPtr & item)
+            commands.reserve(data->GetMergedItemCount() + 1);
+            
+            auto createCommand = [&node, &commands](QtPropertyDataIntrospection * dynamicData)
             {
-                QtPropertyDataIntrospection * dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(item.get());
+                DAVA::RenderBatch *batch = reinterpret_cast<DAVA::RenderBatch *>(dynamicData->object);
+                DAVA::RenderObject *ro = batch->GetRenderObject();
+                DVASSERT(ro);
+
+                DAVA::uint32 count = ro->GetRenderBatchCount();
+                for (DAVA::uint32 i = 0; i < count; ++i)
+                {
+                    DAVA::RenderBatch* b = ro->GetRenderBatch(i);
+                    if (b == batch)
+                    {
+                        commands.push_back(new DeleteRenderBatchCommand(node, batch->GetRenderObject(), i));
+                        break;
+                    }
+                }
+            };
+
+            createCommand(data);
+            data->ForeachMergedItem([&createCommand, this](QtPropertyData* item)
+            {
+                QtPropertyDataIntrospection * dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(item);
                 if (dynamicData != nullptr)
                 {
-                    Entity *node = curNodes.at(0);
-
-                    if (node)
-                    {
-                        DAVA::RenderBatch *batch = reinterpret_cast<DAVA::RenderBatch *>(dynamicData->object);
-                        DAVA::RenderObject *ro = batch->GetRenderObject();
-                        DVASSERT(ro);
-
-                        DAVA::uint32 count = ro->GetRenderBatchCount();
-                        for (DAVA::uint32 i = 0; i < count; ++i)
-                        {
-                            DAVA::RenderBatch* b = ro->GetRenderBatch(i);
-                            if (b == batch)
-                            {
-                                commands.push_back(new DeleteRenderBatchCommand(node, batch->GetRenderObject(), i));
-                                break;
-                            }
-                        }
-                    }
+                    createCommand(dynamicData);
                 }
 
                 return true;
@@ -1128,10 +1134,10 @@ void PropertyEditor::SetFavorite(QtPropertyData *data, bool favorite)
 
 						if(canBeAdded)
 						{
-                            TPropertyPtr favorite(CreateClone(data));
-                            data->ForeachMergedItem([&favorite, this](const TPropertyPtr & item)
+                            std::unique_ptr<QtPropertyData> favorite(CreateClone(data));
+                            data->ForeachMergedItem([&favorite, this](QtPropertyData* item)
                             {
-                                TPropertyPtr mergedClone(CreateClone(item.get()));
+                                std::unique_ptr<QtPropertyData> mergedClone(CreateClone(item));
                                 favorite->Merge(std::move(mergedClone));
                                 return true;
                             });
@@ -1201,14 +1207,14 @@ void PropertyEditor::AddFavoriteChilds(QtPropertyData *data)
 		// go through childs
 		for(int i = 0; i < data->ChildCount(); ++i)
 		{
-            const TPropertyPtr & child = data->ChildGet(i);
+            QtPropertyData* child = data->ChildGet(i);
 			if(scheme.contains(child->GetPath()))
 			{
-				SetFavorite(child.get(), true);
+				SetFavorite(child, true);
 			}
 			else
 			{
-				AddFavoriteChilds(child.get());
+				AddFavoriteChilds(child);
 			}
 		}
 	}
@@ -1223,8 +1229,8 @@ void PropertyEditor::RemFavoriteChilds(QtPropertyData *data)
 			// go through childs
 			for(int i = 0; i < data->ChildCount(); ++i)
 			{
-                const TPropertyPtr & child = data->ChildGet(i);
-				PropEditorUserData *userData = GetUserData(child.get());
+                QtPropertyData* child = data->ChildGet(i);
+				PropEditorUserData *userData = GetUserData(child);
 				if(NULL != userData->associatedData)
 				{
 					favoriteGroup->ChildRemove(userData->associatedData);
@@ -1234,7 +1240,7 @@ void PropertyEditor::RemFavoriteChilds(QtPropertyData *data)
 				}
 				else
 				{
-					RemFavoriteChilds(child.get());
+					RemFavoriteChilds(child);
 				}
 			}
 		}
@@ -1463,18 +1469,20 @@ void PropertyEditor::OnRemoveComponent()
 		if(NULL != data && NULL != curScene)
 		{
             DAVA::Vector<Command2 *> commands;
-            commands.push_back(new ConvertToShadowCommand(reinterpret_cast<DAVA::RenderBatch *>(data->object)));
-            data->ForeachMergedItem([&commands, this](const TPropertyPtr & item)
+            commands.reserve(data->GetMergedItemCount() + 1);
+            
+            Component *component = (Component *)data->object;
+            PropEditorUserData* userData = GetUserData(data);
+            commands.push_back(new RemoveComponentCommand(userData->entity, component));
+
+            data->ForeachMergedItem([&commands, this](QtPropertyData* item)
             {
-                QtPropertyDataIntrospection * dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(item.get());
+                QtPropertyDataIntrospection * dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(item);
                 if (dynamicData != nullptr)
                 {
                     Component *component = (Component *)dynamicData->object;
                     PropEditorUserData* userData = GetUserData(dynamicData);
-                    DVASSERT(userData);
-                    Entity *node = userData->entity;
-
-                    commands.push_back(new RemoveComponentCommand(node, component));
+                    commands.push_back(new RemoveComponentCommand(userData->entity, component));
                 }
 
                 return true;

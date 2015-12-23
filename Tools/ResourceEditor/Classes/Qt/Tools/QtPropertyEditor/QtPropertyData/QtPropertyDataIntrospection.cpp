@@ -131,7 +131,7 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(const DAVA::FastN
 								dynamicMember->SetEnabled(false);
 							}
 
-							retData->ChildAdd(TPropertyPtr(dynamicMember));
+							retData->ChildAdd(std::unique_ptr<QtPropertyData>(dynamicMember));
 						}
 					}
 				}
@@ -169,7 +169,7 @@ void QtPropertyDataIntrospection::AddMember(const DAVA::InspMember *member)
 		const DAVA::MetaInfo *memberMetaInfo = member->Type();
 		const DAVA::InspInfo *memberIntrospection = memberMetaInfo->GetIntrospection(memberObject);
 	
-		ChildAdd(TPropertyPtr(data));
+		ChildAdd(std::unique_ptr<QtPropertyData>(data));
 		//condition for variant
 		if((!memberMetaInfo->IsPointer()) && (!member->Collection()) && 
 			(NULL == memberIntrospection || (memberIntrospection->Type() != DAVA::MetaInfo::Instance<DAVA::KeyedArchive>())))

@@ -35,11 +35,10 @@
 #include "Base/Meta.h"
 
 #include "Functional/Signal.h"
+#include "Functional/Function.h"
 
 #include <QToolButton>
 #include <QVariant>
-
-#include <functional>
 
 class QEvent;
 class QIcon;
@@ -82,9 +81,6 @@ protected:
     void UpdateState(bool itemIsEnabled, bool itemIsEditable);
 };
 
-class QtPropertyData;
-using TPropertyPtr = std::unique_ptr<QtPropertyData>;
-
 class QtPropertyData
 {
 	friend class QtPropertyModel;
@@ -101,7 +97,7 @@ public:
 
 	struct UserData
 	{ 
-        virtual ~UserData() {}
+        virtual ~UserData() = 0 {}
     };
 
 	QtPropertyData(const DAVA::FastName& name);
@@ -142,7 +138,7 @@ public:
     virtual void SetToolTip(const QVariant& toolTip);
     virtual QVariant GetToolTip() const;
 
-    virtual const DAVA::MetaInfo* MetaInfo() const;;
+    virtual const DAVA::MetaInfo* MetaInfo() const;
 
 	// reset background/foreground/font settings
 	void ResetStyle();
@@ -170,14 +166,14 @@ public:
 
 	// childs
 	QtPropertyData *Parent() const;
-    void ChildAdd(TPropertyPtr && data);
-    void ChildrenAdd(DAVA::Vector<TPropertyPtr> && data);
-    void ChildInsert(TPropertyPtr && data, int pos);
+    void ChildAdd(std::unique_ptr<QtPropertyData> && data);
+    void ChildrenAdd(DAVA::Vector<std::unique_ptr<QtPropertyData>> && data);
+    void ChildInsert(std::unique_ptr<QtPropertyData> && data, int pos);
 	int ChildCount() const;
-    const TPropertyPtr & ChildGet(int i) const;
+    QtPropertyData * ChildGet(int i) const;
     QtPropertyData * ChildGet(const DAVA::FastName & key) const;
     int ChildIndex(const QtPropertyData * data) const;
-    void ChildrenExtract(DAVA::Vector<TPropertyPtr> & children);
+    void ChildrenExtract(DAVA::Vector<std::unique_ptr<QtPropertyData>> & children);
     void ChildRemove(const QtPropertyData * data);
     void ChildRemoveAll();
     void ResetChildren();
@@ -197,10 +193,10 @@ public:
 
     // Merging
     bool IsMergedDataEqual() const;
-    void ForeachMergedItem(std::function<bool(TPropertyPtr const &)> const & functor) const;
-    bool HasMergedData() const;
-    void Merge(TPropertyPtr && data);
-    void MergeChild(TPropertyPtr && data);
+    void ForeachMergedItem(DAVA::Function<bool(QtPropertyData *)> const & functor) const;
+    int GetMergedItemCount() const;
+    void Merge(std::unique_ptr<QtPropertyData> && data);
+    void MergeChild(std::unique_ptr<QtPropertyData> && data);
     virtual bool IsMergable() const;
 
 protected:
@@ -221,35 +217,11 @@ protected:
     struct ChildKey
     {
         ChildKey() = default;
-        ChildKey(const DAVA::FastName & childName_, const DAVA::MetaInfo * childMeta_, bool isChildEnabled_)
-            : childName(childName_)
-            , childMeta(childMeta_)
-            , isChildEnabled(isChildEnabled_)
-        {
-        }
+        ChildKey(const DAVA::FastName & childName_, const DAVA::MetaInfo * childMeta_, bool isChildEnabled_);
 
-        bool operator == (const ChildKey & other) const
-        {
-            return childName == other.childName &&
-                childMeta == other.childMeta &&
-                isChildEnabled == other.isChildEnabled;
-        }
-
-        bool operator != (const ChildKey & other) const
-        {
-            return !(*this == other);
-        }
-
-        bool operator < (const ChildKey & other) const
-        {
-            if (childName != other.childName)
-                return childName < other.childName;
-
-            if (childMeta != other.childMeta)
-                return childMeta < other.childMeta;
-
-            return isChildEnabled < other.isChildEnabled;
-        }
+        bool operator == (const ChildKey & other) const;
+        bool operator != (const ChildKey & other) const;
+        bool operator < (const ChildKey & other) const;
 
         DAVA::FastName childName;
         const DAVA::MetaInfo * childMeta = nullptr;
@@ -258,8 +230,8 @@ protected:
 
     using TChildMap = DAVA::Map<ChildKey, size_t>;
     TChildMap keyToDataMap;
-    DAVA::Vector<TPropertyPtr> childrenData;
-    DAVA::Vector<TPropertyPtr> mergedData;
+    DAVA::Vector<std::unique_ptr<QtPropertyData>> childrenData;
+    DAVA::Vector<std::unique_ptr<QtPropertyData>> mergedData;
 
     QWidget *optionalButtonsViewport = nullptr;
 	QVector<QtPropertyToolButton *> optionalButtons;

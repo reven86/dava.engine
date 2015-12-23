@@ -53,10 +53,10 @@ public:
 	QtPropertyEditor(QWidget *parent = 0);
 	~QtPropertyEditor();
 
-    void AppendProperties(DAVA::Vector<TPropertyPtr> && properties, const QModelIndex& parent = QModelIndex());
-    QModelIndex AppendProperty(TPropertyPtr && data, const QModelIndex &parent = QModelIndex());
-    void MergeProperty(TPropertyPtr && data, const QModelIndex &parent = QModelIndex());
-    QModelIndex InsertProperty(TPropertyPtr && data, int row, const QModelIndex &parent = QModelIndex());
+    void AppendProperties(DAVA::Vector<std::unique_ptr<QtPropertyData>> && properties, const QModelIndex& parent = QModelIndex());
+    QModelIndex AppendProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
+    void MergeProperty(std::unique_ptr<QtPropertyData> && data, const QModelIndex &parent = QModelIndex());
+    QModelIndex InsertProperty(std::unique_ptr<QtPropertyData> && data, int row, const QModelIndex &parent = QModelIndex());
 	QModelIndex AppendHeader(const QString &text);
 	QModelIndex InsertHeader(const QString &text, int row);
 

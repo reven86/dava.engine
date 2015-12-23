@@ -207,7 +207,7 @@ void TextureProperties::ReloadProperties()
         propFormat = AddPropertyItem(PropertyItemName::Format, compressionSettings, headerIndex);
 
         propSizes = new QtPropertyDataMetaObject(DAVA::FastName("Size"), &curSizeLevelObject, DAVA::MetaInfo::Instance<int>());
-        AppendProperty(TPropertyPtr(propSizes), headerIndex);
+        AppendProperty(std::unique_ptr<QtPropertyData>(propSizes), headerIndex);
         LoadCurSizeToProp();
 
         FinishTreeCreation();
@@ -301,7 +301,7 @@ QtPropertyDataInspMember* TextureProperties::AddPropertyItem(const DAVA::FastNam
         if (nullptr != member)
         {
             ret = new QtPropertyDataInspMember(member->Name(), object, member);
-            AppendProperty(TPropertyPtr(ret), parent);
+            AppendProperty(std::unique_ptr<QtPropertyData>(ret), parent);
         }
 	}
 

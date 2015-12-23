@@ -31,6 +31,36 @@
 #include "QtPropertyModel.h"
 #include "QtPropertyDataValidator.h"
 
+QtPropertyData::ChildKey::ChildKey(const DAVA::FastName & childName_, const DAVA::MetaInfo * childMeta_, bool isChildEnabled_) : childName(childName_)
+, childMeta(childMeta_)
+, isChildEnabled(isChildEnabled_)
+{
+
+}
+
+bool QtPropertyData::ChildKey::operator<(const ChildKey & other) const
+{
+    if (childName != other.childName)
+        return childName < other.childName;
+
+    if (childMeta != other.childMeta)
+        return childMeta < other.childMeta;
+
+    return isChildEnabled < other.isChildEnabled;
+}
+
+bool QtPropertyData::ChildKey::operator!=(const ChildKey & other) const
+{
+    return !(*this == other);
+}
+
+bool QtPropertyData::ChildKey::operator==(const ChildKey & other) const
+{
+    return childName == other.childName &&
+        childMeta == other.childMeta &&
+        isChildEnabled == other.isChildEnabled;
+}
+
 QtPropertyData::QtPropertyData(const DAVA::FastName & name_)
     : name(name_)
 {
@@ -143,9 +173,9 @@ void QtPropertyData::BuildCurrentValue()
     bool isAllEqual = true;
 
     isValuesMerged = false;
-    ForeachMergedItem([&master, &isAllEqual](const TPropertyPtr & item)
+    ForeachMergedItem([&master, &isAllEqual](QtPropertyData * item)
     {
-        isAllEqual = master == item->GetValue();
+        isAllEqual = (master == item->GetValue());
         return isAllEqual;
     });
 
@@ -185,18 +215,18 @@ bool QtPropertyData::IsMergedDataEqual() const
     return isValuesMerged;
 }
 
-void QtPropertyData::ForeachMergedItem(std::function<bool(TPropertyPtr const &)> const & functor) const
+void QtPropertyData::ForeachMergedItem(DAVA::Function<bool(QtPropertyData *)> const & functor) const
 {
-    for (const TPropertyPtr & item : mergedData)
+    for (const std::unique_ptr<QtPropertyData> & item : mergedData)
     {
-        if (functor(item) == false)
+        if (functor(item.get()) == false)
             break;
     }
 }
 
-bool QtPropertyData::HasMergedData() const
+int QtPropertyData::GetMergedItemCount() const
 {
-    return !mergedData.empty();
+    return static_cast<int>(!mergedData.empty());
 }
 
 void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
@@ -210,7 +240,7 @@ void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
             updatingValue = false;
         };
 
-        auto setValueFunctor = [value, reason](const TPropertyPtr & item)
+        auto setValueFunctor = [value, reason](QtPropertyData* item)
         {
             QtPropertyDataValidator *mergedValidator = item->GetValidator();
             QVariant validatedValue = value;
@@ -227,17 +257,7 @@ void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
         };
 
         ForeachMergedItem(setValueFunctor);
-
-        QtPropertyDataValidator *mergedValidator = GetValidator();
-        QVariant validatedValue = value;
-
-        if (reason == VALUE_EDITED && NULL != mergedValidator)
-        {
-            if (mergedValidator->Validate(validatedValue))
-            {
-                SetValueInternal(validatedValue);
-            }
-        }
+        setValueFunctor(this);
     }
 
 	// and get what was really set
@@ -467,7 +487,7 @@ QtPropertyModel* QtPropertyData::GetModel() const
 	return model;
 }
 
-void QtPropertyData::Merge(TPropertyPtr && data)
+void QtPropertyData::Merge(std::unique_ptr<QtPropertyData> && data)
 {
     DVASSERT(data);
 
@@ -479,11 +499,11 @@ void QtPropertyData::Merge(TPropertyPtr && data)
 
     data->parent = nullptr;
     
-    DAVA::Vector<TPropertyPtr> children;
+    DAVA::Vector<std::unique_ptr<QtPropertyData>> children;
     data->ChildrenExtract(children);
     mergedData.emplace_back(std::move(data));
 
-    for (TPropertyPtr & item : children)
+    for (std::unique_ptr<QtPropertyData> & item : children)
     {
         MergeChild(std::move(item));
     }
@@ -492,7 +512,7 @@ void QtPropertyData::Merge(TPropertyPtr && data)
     UpdateValue(true);
 }
 
-void QtPropertyData::MergeChild(TPropertyPtr && data)
+void QtPropertyData::MergeChild(std::unique_ptr<QtPropertyData> && data)
 {
     DVASSERT(data);
 
@@ -520,7 +540,7 @@ void QtPropertyData::SetModel(QtPropertyModel* model_)
 {
     model = model_;
 
-    for (TPropertyPtr & child : childrenData)
+    for (std::unique_ptr<QtPropertyData> & child : childrenData)
     {
         DVASSERT(child != nullptr);
         child->SetModel(model);
@@ -571,7 +591,7 @@ void QtPropertyData::UpdateUp()
 
 void QtPropertyData::UpdateDown()
 {
-    for (TPropertyPtr & child : childrenData)
+    for (std::unique_ptr<QtPropertyData> & child : childrenData)
     {
         DVASSERT(child != nullptr);
         child->UpdateValue();
@@ -584,7 +604,7 @@ QtPropertyData* QtPropertyData::Parent() const
 	return parent;
 }
 
-void QtPropertyData::ChildAdd(TPropertyPtr && data)
+void QtPropertyData::ChildAdd(std::unique_ptr<QtPropertyData> && data)
 {
     if (data == nullptr)
         return;
@@ -598,7 +618,7 @@ void QtPropertyData::ChildAdd(TPropertyPtr && data)
     childrenData.push_back(std::move(data));
 }
 
-void QtPropertyData::ChildrenAdd(DAVA::Vector<TPropertyPtr> && data)
+void QtPropertyData::ChildrenAdd(DAVA::Vector<std::unique_ptr<QtPropertyData>> && data)
 {
     if (data.empty())
         return;
@@ -609,7 +629,7 @@ void QtPropertyData::ChildrenAdd(DAVA::Vector<TPropertyPtr> && data)
     
     childrenData.reserve(newSize);
 
-    for (TPropertyPtr & item : data)
+    for (std::unique_ptr<QtPropertyData> & item : data)
     {
         DVASSERT(item != nullptr);
         item->parent = this;
@@ -622,7 +642,7 @@ void QtPropertyData::ChildrenAdd(DAVA::Vector<TPropertyPtr> && data)
     data.clear();
 }
 
-void QtPropertyData::ChildInsert(TPropertyPtr && data, int pos)
+void QtPropertyData::ChildInsert(std::unique_ptr<QtPropertyData> && data, int pos)
 {
     if (data == nullptr)
         return;
@@ -652,15 +672,15 @@ int QtPropertyData::ChildCount() const
 	return childrenData.size();
 }
 
-const TPropertyPtr & QtPropertyData::ChildGet(int i) const
+QtPropertyData* QtPropertyData::ChildGet(int i) const
 {
     DVASSERT(static_cast<size_t>(i) < childrenData.size());
-    return childrenData[static_cast<size_t>(i)];
+    return childrenData[static_cast<size_t>(i)].get();
 }
 
-QtPropertyData *  QtPropertyData::ChildGet(const DAVA::FastName & key) const
+QtPropertyData*  QtPropertyData::ChildGet(const DAVA::FastName & key) const
 {
-    for (const TPropertyPtr & item : childrenData)
+    for (const std::unique_ptr<QtPropertyData> & item : childrenData)
     {
         if (item->name == key)
             return item.get();
@@ -669,7 +689,7 @@ QtPropertyData *  QtPropertyData::ChildGet(const DAVA::FastName & key) const
     return nullptr;
 }
 
-int QtPropertyData::ChildIndex(const QtPropertyData * data) const
+int QtPropertyData::ChildIndex(const QtPropertyData* data) const
 {
     TChildMap::const_iterator iter = keyToDataMap.find(ChildKey(data->name, data->MetaInfo(), data->IsEnabled()));
     if (iter != keyToDataMap.end())
@@ -678,7 +698,7 @@ int QtPropertyData::ChildIndex(const QtPropertyData * data) const
     return -1;
 }
 
-void QtPropertyData::ChildrenExtract(DAVA::Vector<TPropertyPtr> & children)
+void QtPropertyData::ChildrenExtract(DAVA::Vector<std::unique_ptr<QtPropertyData>> & children)
 {
     if (childrenData.empty())
         return;
@@ -717,7 +737,7 @@ void QtPropertyData::ResetChildren()
 
 void QtPropertyData::FinishTreeCreation()
 {
-    for (TPropertyPtr & child : childrenData)
+    for (std::unique_ptr<QtPropertyData> & child : childrenData)
     {
         child->FinishTreeCreation();
     }
@@ -825,9 +845,9 @@ void QtPropertyData::SetTempValue(const QVariant &value)
         }
     };
 
-    ForeachMergedItem([&setValueFunctor, &value](const TPropertyPtr & item)
+    ForeachMergedItem([&setValueFunctor, &value](QtPropertyData* item)
     {
-        setValueFunctor(item.get(), value);
+        setValueFunctor(item, value);
         return true;
     });
 
@@ -949,7 +969,7 @@ void QtPropertyData::RefillSearchIndex()
     keyToDataMap.clear();
     for (size_t i = 0; i < childrenData.size(); ++i)
     {
-        const TPropertyPtr & data = childrenData[i];
+        const std::unique_ptr<QtPropertyData> & data = childrenData[i];
         DVVERIFY(keyToDataMap.emplace(ChildKey(data->name, data->MetaInfo(), data->IsEnabled()), i).second);
     }
 }

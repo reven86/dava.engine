@@ -171,7 +171,7 @@ MaterialEditor::~MaterialEditor()
 QtPropertyData* MaterialEditor::AddSection(const DAVA::FastName& sectionName)
 {
     QtPropertyData* section = new QtPropertyData(sectionName);
-    ui->materialProperty->AppendProperty(TPropertyPtr(section));
+    ui->materialProperty->AppendProperty(std::unique_ptr<QtPropertyData>(section));
     ui->materialProperty->ApplyStyle(section, QtPropertyEditor::HEADER_STYLE);
     return section;
 }
@@ -489,7 +489,7 @@ void MaterialEditor::FillBase()
         const DAVA::InspMember* nameMember = info->Member(DAVA::FastName("materialName"));
         if (nullptr != nameMember)
         {
-            baseRoot->MergeChild(TPropertyPtr(new QtPropertyDataInspMember(UIName::Name, material, nameMember)));
+            baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(new QtPropertyDataInspMember(UIName::Name, material, nameMember)));
         }
 
         // fill material group, only for material type
@@ -497,7 +497,7 @@ void MaterialEditor::FillBase()
         if ((nullptr != groupMember) && (globalMaterial != material))
         {
             QtPropertyDataInspMember* group = new QtPropertyDataInspMember(UIName::Group, material, groupMember);
-            baseRoot->MergeChild(TPropertyPtr(group));
+            baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(group));
 
             // Add unknown value:
             group->AddAllowedValue(VariantType(String()), "Unknown");
@@ -619,7 +619,7 @@ void MaterialEditor::FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspI
     UpdateAddRemoveButtonState(dynamicData);
 
     // merge created dynamic data into specified root
-    root->MergeChild(TPropertyPtr(dynamicData));
+    root->MergeChild(std::unique_ptr<QtPropertyData>(dynamicData));
 }
 
 void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
@@ -729,7 +729,7 @@ void MaterialEditor::UpdateAllAddRemoveButtons(QtPropertyData *root)
 
     for (int i = 0; i < root->ChildCount(); ++i)
     {
-        UpdateAllAddRemoveButtons(root->ChildGet(i).get());
+        UpdateAllAddRemoveButtons(root->ChildGet(i));
     }
 }
 
@@ -914,7 +914,8 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
         if (nullptr != propData)
         {
             DAVA::Vector<Command2 *> commands;
-            propData->ForeachMergedItem([&commands](const TPropertyPtr & item)
+            commands.reserve(propData->GetMergedItemCount());
+            propData->ForeachMergedItem([&commands](QtPropertyData* item)
             {
                 Command2 *command = reinterpret_cast<Command2 *>(item->CreateLastCommand());
                 if (command != nullptr)
