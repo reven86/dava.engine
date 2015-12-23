@@ -918,9 +918,12 @@ void SceneTree::SyncSelectionFromTree()
 			for (int i = 0; i < indexList.size(); ++i)
 			{
 				DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
-                DAVA::AABBox3 entityBbox;
-                curScene->collisionSystem->GetBoundingBox(entity).GetTransformedBox(entity->GetWorldTransform(), entityBbox);
-                group.Add(entity, entityBbox);
+                if (entity != nullptr) // it could be emitter, etc
+                {
+                    DAVA::AABBox3 entityBbox;
+                    curScene->collisionSystem->GetBoundingBox(entity).GetTransformedBox(entity->GetWorldTransform(), entityBbox);
+                    group.Add(entity, entityBbox);
+                }
             }
 
 			curScene->selectionSystem->SetSelection(group);
