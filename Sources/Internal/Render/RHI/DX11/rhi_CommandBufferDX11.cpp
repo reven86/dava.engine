@@ -1153,7 +1153,7 @@ _ExecuteQueuedCommandsDX11()
         {
             RenderPassDX11_t* pp = *p;
 
-            if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending && pp->perfQueryIndex0 != InvalidIndex)
+            if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending && pp->perfQueryIndex0 != DAVA::InvalidIndex)
                 PerfQuerySetDX11::IssueTimestampQuery(perfQuerySet, pp->perfQueryIndex0, _D3D11_ImmediateContext);
 
             for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
@@ -1179,7 +1179,7 @@ _ExecuteQueuedCommandsDX11()
                 CommandBufferPoolDX11::Free(cb_h);
             }
 
-            if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending && pp->perfQueryIndex1 != InvalidIndex)
+            if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending && pp->perfQueryIndex1 != DAVA::InvalidIndex)
                 PerfQuerySetDX11::IssueTimestampQuery(perfQuerySet, pp->perfQueryIndex1, _D3D11_ImmediateContext);
         }
 
@@ -1913,13 +1913,12 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetView };
 
     cur_topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    //    cur_ib = InvalidIndex;
-    cur_vb = InvalidIndex;
+    cur_vb = InvalidHandle;
     cur_vb_stride = 0;
     cur_pipelinestate = InvalidHandle;
     cur_stride = 0;
     cur_query_buf = InvalidHandle;
-    cur_query_i = InvalidIndex;
+    cur_query_i = DAVA::InvalidIndex;
     cur_rs = nullptr;
 
     rs_param.cullMode = CULL_NONE;

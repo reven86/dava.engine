@@ -1487,7 +1487,7 @@ void CommandBufferGLES2_t::Execute()
             c += 2;
             #endif
 
-            TextureGLES2::SetToRHI(tex, unit_i, InvalidIndex);
+            TextureGLES2::SetToRHI(tex, unit_i, DAVA::InvalidIndex);
             StatSet::IncStat(stat_SET_TEX, 1);
         }
         break;

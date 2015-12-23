@@ -38,8 +38,6 @@ namespace DAVA
 class File;
 }
 
-const unsigned InvalidIndex = (unsigned)(-1);
-
 namespace rhi
 {
 using DAVA::uint8;
@@ -797,8 +795,8 @@ RenderPassConfig
         : queryBuffer(InvalidHandle)
         , priority(0)
         , invertCulling(0)
-        , PerfQueryIndex0(InvalidIndex)
-        , PerfQueryIndex1(InvalidIndex)
+        , PerfQueryIndex0(DAVA::InvalidIndex)
+        , PerfQueryIndex1(DAVA::InvalidIndex)
     {
     }
 };
