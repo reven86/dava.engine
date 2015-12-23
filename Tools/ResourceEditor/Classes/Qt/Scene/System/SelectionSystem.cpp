@@ -33,10 +33,11 @@
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/SceneEditor2.h"
 #include "Settings/SettingsManager.h"
 
-#include <QApplication>
-#include "Scene/SceneEditor2.h"
+#include "Sound/SoundSystem.h"
+DAVA::SoundEvent* confirmSound = nullptr;
 
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
@@ -52,6 +53,10 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, hoodSystem(hoodSys)
 {
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    if (confirmSound == nullptr)
+    {
+        confirmSound = DAVA::SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sound/selection.wav", FastName("ResourceEditor"));
+    }
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -168,9 +173,10 @@ void SceneSelectionSystem::ProcessSelectedGroup(const EntityGroup::EntityVector&
     }
     else
     {
+        bool selectOnClick = SettingsManager::GetValue(Settings::Scene_SelectionOnClick).AsBool();
         // if new selection is NULL or is one of already selected items
         // we should change current selection only on phase end
-        if ((nextEntity == nullptr) || (curSelections.IntersectedEntity(collisionEntities) != nullptr))
+        if (selectOnClick || (nextEntity == nullptr) || (curSelections.IntersectedEntity(collisionEntities) != nullptr))
         {
             applyOnPhaseEnd = true;
             objectsToSelect.Clear();
@@ -736,4 +742,9 @@ void SceneSelectionSystem::FinishSelection()
         SetSelection(newSelection);
     }
     objectsToSelect.Clear();
+
+    if (curSelections.Size() > 33)
+    {
+        confirmSound->Trigger();
+    }
 }
