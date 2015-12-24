@@ -45,6 +45,9 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
+#include "Network/PeerDesription.h"
+#include "Network/Services/NetLogger.h"
+
 #define DAVA_WINUAP_MOUSE_HACK
 
 namespace DAVA
@@ -166,6 +169,8 @@ private:
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
 
+    size_t AnnounceDataSupplier(size_t length, void* buffer);
+
 private:
     CorePlatformWinUAP* core = nullptr;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
@@ -220,6 +225,10 @@ private:
     static const wchar_t* xamlTextBoxStyles;
     Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
     Windows::Foundation::EventRegistrationToken token;
+
+    bool loggerInUse = false;
+    DAVA::Net::NetLogger netLogger;
+    DAVA::Net::PeerDescription peerDescr;
 
 #if defined(DAVA_WINUAP_MOUSE_HACK)
     BOOL (WINAPI* SetCursorPos)(int X, int Y);
