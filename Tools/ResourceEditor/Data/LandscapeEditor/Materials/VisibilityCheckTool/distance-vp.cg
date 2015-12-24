@@ -30,17 +30,16 @@ property float3 cubemapCenter : static,a : ;
 #endif
 
 VPROG_BEGIN
-	float4 position = float4(VP_IN_POSITION, 1.0);    
 
 #if defined(ENCODE_DISTANCE)
-	float4 worldPosition = mul(position, worldMatrix);
+	float4 worldPosition = mul(VP_IN_POSITION, worldMatrix);
 	VP_OUT(distanceToCamera) = length(worldPosition.xyz - cameraPosition);
 #endif
 
 #if defined(DECODE_DISTANCE)
-	float4 worldPosition = mul(position, worldMatrix);
+	float4 worldPosition = mul(VP_IN_POSITION, worldMatrix);
 	VP_OUT(directionFromPoint) = worldPosition.xyz - cubemapCenter;
 #endif
 
-	VP_OUT_POSITION = mul(position, worldViewProjMatrix);
+	VP_OUT_POSITION = mul(VP_IN_POSITION, worldViewProjMatrix);
 VPROG_END
