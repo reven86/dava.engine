@@ -348,6 +348,7 @@ void VisibilityCheckRenderer::CreateOrUpdateRenderTarget(const DAVA::Size2i& sz)
     {
         SafeRelease(renderTarget);
         renderTarget = DAVA::Texture::CreateFBO(sz.dx, sz.dy, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
+        renderTarget->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
     }
 }
 
@@ -368,29 +369,28 @@ inline void PutTexture(DAVA::NMaterial* mat, const DAVA::FastName& slot, DAVA::T
 
 void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
 {
+    DAVA::SafeRelease(fixedFrame);
+    DAVA::SafeRelease(reprojectionTexture);
+    DAVA::SafeRelease(distanceRenderTarget);
+
     auto rs2d = DAVA::RenderSystem2D::Instance();
     DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
     DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
-
-    DAVA::SafeRelease(fixedFrame);
-    DAVA::SafeRelease(reprojectionTexture);
-    SafeRelease(distanceRenderTarget);
-
     DAVA::uint32 w = renderTarget->GetWidth();
     DAVA::uint32 h = renderTarget->GetHeight();
 
     fixedFrame = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, false, rhi::TextureType::TEXTURE_TYPE_2D, false);
+    fixedFrame->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
     fixedFrameMatrix = fromCamera->GetViewProjMatrix();
     fixedFrameCameraPosition = fromCamera->GetPosition();
 
-    DAVA::Rect dstRect = DAVA::Rect(0.0f, 0.0f, width, height);
     DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.clearColor = DAVA::Color::Clear;
     desc.target = fixedFrame;
     desc.shouldClear = true;
     desc.shouldTransformVirtualToPhysical = false;
     rs2d->BeginRenderTargetPass(desc);
-    rs2d->DrawTexture(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+    rs2d->DrawTexture(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, DAVA::Rect(0.0f, 0.0f, width, height));
     rs2d->EndRenderTargetPass();
 
     reprojectionTexture = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TextureType::TEXTURE_TYPE_2D, false);
@@ -398,6 +398,7 @@ void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::C
     reprojectionConfig.depthStencilBuffer.texture = reprojectionTexture->handleDepthStencil;
 
     distanceRenderTarget = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
+    distanceRenderTarget->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_NEAREST, rhi::TextureFilter::TEXFILTER_NEAREST, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
     distanceMapConfig.colorBuffer[0].texture = distanceRenderTarget->handle;
     distanceMapConfig.depthStencilBuffer.texture = distanceRenderTarget->handleDepthStencil;
     RenderToDistanceMapFromCamera(renderSystem, fromCamera);
@@ -449,11 +450,11 @@ void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::RenderSystem* re
     }
 }
 
-void VisibilityCheckRenderer::RenderProgress(float ratio)
+void VisibilityCheckRenderer::RenderProgress(float ratio, const DAVA::Color& clr)
 {
     auto rs2d = DAVA::RenderSystem2D::Instance();
     DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
-    rs2d->FillRect(DAVA::Rect(0.0f, 0.0f, ratio * width, 5.0f), DAVA::Color::White);
+    rs2d->FillRect(DAVA::Rect(0.0f, 0.0f, ratio * width, 5.0f), clr);
 }
 
 void VisibilityCheckRenderer::RenderWithReprojection(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)

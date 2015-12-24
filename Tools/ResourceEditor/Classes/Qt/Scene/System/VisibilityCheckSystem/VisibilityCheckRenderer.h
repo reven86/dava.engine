@@ -79,7 +79,7 @@ public:
     void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* cubemap, const VisbilityPoint& vp);
 
     void RenderCurrentOverlayTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera);
-    void RenderProgress(float);
+    void RenderProgress(float, const DAVA::Color&);
 
     void InvalidateMaterials();
 

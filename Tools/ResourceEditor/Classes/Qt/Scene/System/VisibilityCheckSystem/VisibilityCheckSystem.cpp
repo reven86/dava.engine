@@ -207,12 +207,19 @@ void VisibilityCheckSystem::Draw()
 
     auto fromCamera = GetScene()->GetCurrentCamera();
 
+    DAVA::uint32 previousPointIndex = currentPointIndex;
     for (DAVA::uint32 cm = 0; (cm < CUBEMAPS_COUNT) && (currentPointIndex < controlPoints.size()); ++cm, ++currentPointIndex)
     {
         DAVA::uint32 pointIndex = controlPointIndices[currentPointIndex];
         const auto& point = controlPoints[pointIndex];
         renderer.RenderToCubemapFromPoint(rs, fromCamera, point.point, cubemapTarget[cm]);
         renderer.RenderVisibilityToTexture(rs, fromCamera, cubemapTarget[cm], point);
+    }
+
+    if (shouldFixFrame && (currentPointIndex == controlPoints.size()) && (previousPointIndex < controlPoints.size()))
+    {
+        renderer.FixFrame();
+        shouldFixFrame = false;
     }
 
     if (shouldRenderOverlay)
@@ -224,7 +231,8 @@ void VisibilityCheckSystem::Draw()
 
         if (currentPointIndex < controlPoints.size())
         {
-            renderer.RenderProgress(static_cast<float>(currentPointIndex) / static_cast<float>(controlPoints.size()));
+            float progress = static_cast<float>(currentPointIndex) / static_cast<float>(controlPoints.size());
+            renderer.RenderProgress(progress, shouldFixFrame ? DAVA::Color(0.25f, 0.5f, 1.0f, 1.0f) : DAVA::Color::White);
         }
     }
 }
@@ -487,10 +495,18 @@ DAVA::Color VisibilityCheckSystem::GetNormalizedColorForEntity(const EntityMap::
 
 void VisibilityCheckSystem::FixCurrentFrame()
 {
-    renderer.FixFrame();
+    if (currentPointIndex == controlPoints.size())
+    {
+        renderer.FixFrame();
+    }
+    else
+    {
+        shouldFixFrame = true;
+    }
 }
 
 void VisibilityCheckSystem::ReleaseFixedFrame()
 {
     renderer.ReleaseFrame();
+    shouldFixFrame = false;
 }

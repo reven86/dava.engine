@@ -1450,6 +1450,11 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
 {
     Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM, enabled);
+    if (enabled)
+    {
+        ui->actionForceFirstLODonLandscape->setChecked(true);
+        OnForceFirstLod(true);
+    }
 }
 
 void QtMainWindow::OnFixVisibilityFrame()
