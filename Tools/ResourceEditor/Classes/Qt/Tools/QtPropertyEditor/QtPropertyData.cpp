@@ -245,14 +245,15 @@ void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
             QtPropertyDataValidator *mergedValidator = item->GetValidator();
             QVariant validatedValue = value;
 
-            if (reason == VALUE_EDITED && NULL != mergedValidator)
+            if (reason == VALUE_EDITED && mergedValidator != nullptr)
             {
-                if (mergedValidator->Validate(validatedValue))
+                if (!mergedValidator->Validate(validatedValue))
                 {
-                    item->SetValueInternal(validatedValue);
+                    return true;
                 }
             }
 
+            item->SetValueInternal(validatedValue);
             return true;
         };
 
