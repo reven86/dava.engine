@@ -26,38 +26,48 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef  __DAVAENGINE_IMPORT_LIBRARY_H
+#define __DAVAENGINE_IMPORT_LIBRARY_H
 
-#include "DAEConvertAction.h"
-#include "Collada/ColladaConvert.h"
+#include "Base/FastName.h"
 
-#include "Deprecated/SceneValidator.h"
-
-#include "Scene/SceneHelper.h"
-#include "Commands2/ConvertToShadowCommand.h"
-
-using namespace DAVA;
-
-DAEConvertAction::DAEConvertAction(const DAVA::FilePath &path)
-	: CommandAction(CMDID_DAE_CONVERT, "DAE to SC2 Convert")
-	, daePath(path)
-{ }
-
-void DAEConvertAction::Redo()
+namespace DAVA
 {
-    if (FileSystem::Instance()->Exists(daePath) && daePath.IsEqualToExtension(".dae"))
-    {
-        eColladaErrorCodes code = ConvertDaeToSc2(daePath);
-        if (code == COLLADA_OK)
-        {
-            return;
-        }
-		else if(code == COLLADA_ERROR_OF_ROOT_NODE)
-		{
-			Logger::Error("Can't convert from DAE. Looks like one of materials has same name as root node.");
-		}
-		else
-		{
-            Logger::Error("[DAE to SC2] Can't convert from DAE.");
-        }
-	}
+
+class NMaterial;
+class PolygonGroup;
+class ColladaPolygonGroupInstance;
+class AnimationData;
+class ColladaMaterial;
+class SceneNodeAnimation;
+    
+class ImportLibrary
+{
+public:
+    ~ImportLibrary();
+    
+    PolygonGroup * GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI);
+    NMaterial* CreateMaterialInstance(ColladaPolygonGroupInstance* colladaPolyGroupInst, const bool isShadow);
+    NMaterial * GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow);
+    AnimationData * GetOrCreateAnimation(SceneNodeAnimation * colladaSceneNode);
+    
+private:
+    Texture* GetTextureForPath(const FilePath& imagePath) const;
+    void InitPolygon(PolygonGroup* davaPolygon, uint32 vertexFormat, Vector<ColladaVertex>& vertices) const;
+    bool GetTextureTypeAndPathFromCollada(ColladaMaterial* material, FastName& type, FilePath& path) const;
+    FilePath GetNormalMapTexturePath(const FilePath& originalTexturePath) const;
+    inline void FlipTexCoords(Vector2& v) const;
+
+    Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
+    Map<FastName, NMaterial *> materialParents;
+    Map<SceneNodeAnimation *, AnimationData *> animations;
+};
+
+inline void ImportLibrary::FlipTexCoords(Vector2& v) const
+{
+    v.y = 1.0f - v.y;
 }
+    
+}
+
+#endif //IMPORT_LIBRARY_H
