@@ -1199,7 +1199,7 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedValuesEditor(QWidget *parent) c
 		}
 
         using TActivateSignal = void(QComboBox::*)(int);
-        connections.AddConnection(allowedWidget, static_cast<TActivateSignal>(&QComboBox::activated), [&allowedWidget](int)
+        connections.AddConnection(allowedWidget, static_cast<TActivateSignal>(&QComboBox::activated), [allowedWidget](int)
         {
             QCoreApplication::postEvent(allowedWidget, new QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier));
         });
