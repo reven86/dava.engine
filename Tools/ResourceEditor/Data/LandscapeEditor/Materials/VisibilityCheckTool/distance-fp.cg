@@ -5,10 +5,12 @@ FPROG_IN_BEGIN
 
 #if defined(ENCODE_DISTANCE)
     FPROG_IN_TEXCOORD0(distanceToCamera,1)
-#endif
-
-#if defined(DECODE_DISTANCE)
+#elif defined(DECODE_DISTANCE)
     FPROG_IN_TEXCOORD1(directionFromPoint,3)
+#elif defined(REPROJECTION)
+	FPROG_IN_TEXCOORD1(reprojectedCoords,4)
+    FPROG_IN_TEXCOORD2(distanceToOrigin,1)
+    FPROG_IN_TEXCOORD3(viewportCoords,4)
 #endif
 
 FPROG_IN_END
@@ -17,9 +19,11 @@ FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
+const float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
 const float encodeDecodeScale = 255.0;
+const float MAGIC_TRESHOLD_2 = 1.0 / encodeDecodeScale;
+const float MAGIC_TRESHOLD_1 = 1.0 + MAGIC_TRESHOLD_2;
 
-#if defined(ENCODE_DISTANCE)
 float4 EncodeFloatRGBA(float v) 
 {
 	float4 result;
@@ -29,48 +33,68 @@ float4 EncodeFloatRGBA(float v)
 	result.w = modf(v / 255.0, v);
 	return result;
 }
-#endif
-
-#if defined(DECODE_DISTANCE)
-DECL_FP_SAMPLERCUBE(cubemap)
-
-const float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
 
 float DecodeFloatRGBA(float4 encoded)
 {
 	return dot(encoded, decodeVector) / encodeDecodeScale;
 }
-#endif
 
-#define MAGIC_TRESHOLD 1.001
+#if defined(DECODE_DISTANCE)
+
+DECL_FP_SAMPLERCUBE(cubemap)
+
+property float4 flatColor : static,a : ;
+property float3 transformedNormal : static,a : ;
+property float3 pointProperties : static,a : ;
+
+#elif defined(REPROJECTION)
+
+DECL_FP_SAMPLER2D(fixedFrame)
+DECL_FP_SAMPLER2D(fixedFrameDistances)
+
+property float2 viewportSize : static,a : ;
+
+#endif
 
 FPROG_BEGIN
 
-#if defined(DECODE_DISTANCE)
-	property float4 flatColor : static,a : ;
-	property float3 transformedNormal : static,a : ;
-	property float3 pointProperties : static,a : ;
-#endif
+#if defined(PRERENDER)
 
-#if defined(ENCODE_DISTANCE)
+	FP_OUT_COLOR = float4(0.0, 0.0, 0.0, 0.0);
+
+#elif defined(ENCODE_DISTANCE)
+
 	FP_OUT_COLOR = EncodeFloatRGBA(FP_IN(distanceToCamera));
-#endif
 
-#if defined(DECODE_DISTANCE)
+#elif defined(DECODE_DISTANCE)
+
 	float4 sampledDistance = FP_TEXTURECUBE(cubemap, FP_IN(directionFromPoint));
 	float decodedDistance = DecodeFloatRGBA(sampledDistance);
 	float actualDistance = length(FP_IN(directionFromPoint));
-	float occluded = float(actualDistance / decodedDistance <= MAGIC_TRESHOLD);
+	float occluded = float(actualDistance / decodedDistance <= MAGIC_TRESHOLD_1);
 	
 	float3 nDir = normalize(FP_IN(directionFromPoint));
 	float DdotN = dot(nDir, transformedNormal);
 	float angleLimit = float(clamp(DdotN, pointProperties.x, pointProperties.y) == DdotN);
 	float distanceLimit = step(actualDistance, pointProperties.z);
 	FP_OUT_COLOR = flatColor * (distanceLimit * occluded * angleLimit);
-#endif
 
-#if defined(PRERENDER)
-	FP_OUT_COLOR = float4(0.0, 0.0, 0.0, 0.0);
+#elif defined(REPROJECTION)
+
+	float3 reprojectedUVW = 0.5 + 0.5 * FP_IN(reprojectedCoords).xyz / FP_IN(reprojectedCoords).w;
+	float4 sampledDistance = FP_TEXTURE2D(fixedFrameDistances, reprojectedUVW.xy);
+	float4 sampledColor = FP_TEXTURE2D(fixedFrame, reprojectedUVW.xy);
+	float decodedDistance = DecodeFloatRGBA(sampledDistance);
+	float actualDistance = FP_IN(distanceToOrigin);
+	float occluded = float(abs(actualDistance / decodedDistance - 1.0) > MAGIC_TRESHOLD_2);
+	float outside = float(any(notEqual(reprojectedUVW, clamp(reprojectedUVW, float3(0.0), float3(1.0)))));
+	float2 vp = viewportSize * (0.5 + 0.5 * FP_IN(viewportCoords).xy / FP_IN(viewportCoords).w);
+	float checkboard = float((int(vp.x) / 2 + (int(vp.y) / 2) % 2) % 2);
+	float4 reprojectedColor = mix(sampledColor, float4(0.25 * checkboard), occluded);
+	FP_OUT_COLOR = mix(reprojectedColor, float4(0.1 * (1.0 - checkboard)), outside);
+
+#else
+#	error Undefined
 #endif
 
 FPROG_END

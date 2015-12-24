@@ -78,7 +78,7 @@ public:
 
     void RenderVisibilityToTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera, DAVA::Texture* cubemap, const VisbilityPoint& vp);
 
-    void RenderCurrentOverlayTexture(DAVA::Camera* camera);
+    void RenderCurrentOverlayTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera);
     void RenderProgress(float);
 
     void InvalidateMaterials();
@@ -101,6 +101,11 @@ private:
 
     void UpdateVisibilityMaterialProperties(DAVA::Texture* cubemapTexture, const VisbilityPoint& vp);
 
+    void RenderToDistanceMapFromCamera(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera);
+    void RenderWithReprojection(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera);
+
+    void FixFrame(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera);
+
 private:
     VisibilityCheckRendererDelegate* renderDelegate = nullptr;
     DAVA::ScopedPtr<DAVA::Camera> cubemapCamera;
@@ -109,12 +114,18 @@ private:
     DAVA::ScopedPtr<DAVA::NMaterial> prerenderMaterial;
     DAVA::ScopedPtr<DAVA::NMaterial> reprojectionMaterial;
     rhi::HDepthStencilState visibilityDepthStencilState;
+    rhi::HDepthStencilState reprojectionDepthStencilState;
     rhi::RenderPassConfig renderTargetConfig;
     rhi::RenderPassConfig visibilityConfig;
     rhi::RenderPassConfig prerenderConfig;
+    rhi::RenderPassConfig reprojectionConfig;
+    rhi::RenderPassConfig distanceMapConfig;
     DAVA::Matrix4 fixedFrameMatrix;
     DAVA::Texture* renderTarget = nullptr;
+    DAVA::Texture* distanceRenderTarget = nullptr;
     DAVA::Texture* fixedFrame = nullptr;
+    DAVA::Texture* reprojectionTexture = nullptr;
+    DAVA::Vector3 fixedFrameCameraPosition;
     bool frameFixed = false;
     bool shouldFixFrame = false;
 };

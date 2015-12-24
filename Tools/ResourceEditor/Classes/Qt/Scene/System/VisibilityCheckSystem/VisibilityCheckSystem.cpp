@@ -219,7 +219,7 @@ void VisibilityCheckSystem::Draw()
     {
         if ((currentPointIndex == controlPoints.size()) || renderer.FrameFixed())
         {
-            renderer.RenderCurrentOverlayTexture(fromCamera);
+            renderer.RenderCurrentOverlayTexture(rs, fromCamera);
         }
 
         if (currentPointIndex < controlPoints.size())
@@ -462,7 +462,12 @@ void VisibilityCheckSystem::BuildIndexSet()
     {
         controlPointIndices[i] = i;
     }
-    std::random_shuffle(controlPointIndices.begin() + 1, controlPointIndices.end());
+
+    if (totalPoints > 0)
+    {
+        std::random_shuffle(controlPointIndices.begin() + 1, controlPointIndices.end());
+    }
+
     forceRebuildPoints = false;
 }
 

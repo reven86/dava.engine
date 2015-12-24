@@ -33,11 +33,13 @@
 const DAVA::FastName MaterialParamCubemap("cubemap");
 const DAVA::FastName MaterialParamTransformedNormal("transformedNormal");
 const DAVA::FastName MaterialParamPointProperties("pointProperties");
-const DAVA::FastName MaterialParamCubemapCenter("cubemapCenter");
+const DAVA::FastName MaterialParamOrigin("origin");
 const DAVA::FastName MaterialParamFixedFrameMatrix("fixedFrameMatrix");
 const DAVA::FastName MaterialParamCurrentFrameMatrix("currentFrameMatrix");
 const DAVA::FastName MaterialParamCurrentFrameMatrixInverse("currentFrameMatrixInverse");
 const DAVA::FastName MaterialParamFixedFrameTexture("fixedFrame");
+const DAVA::FastName MaterialParamFixedFrameDistancesTexture("fixedFrameDistances");
+const DAVA::FastName MaterialParamViewportSize("viewportSize");
 
 struct RenderPassScope
 {
@@ -70,7 +72,7 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     prerenderConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     prerenderConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     prerenderConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
-    prerenderConfig.priority = DAVA::PRIORITY_SERVICE_3D + 5;
+    prerenderConfig.priority = DAVA::PRIORITY_SERVICE_3D + 1;
 
     renderTargetConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     renderTargetConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
@@ -83,16 +85,33 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     dsDesc.depthWriteEnabled = 0;
     visibilityDepthStencilState = rhi::AcquireDepthStencilState(dsDesc);
 
+    dsDesc.depthFunc = rhi::CMP_LESS;
+    dsDesc.depthTestEnabled = 1;
+    dsDesc.depthWriteEnabled = 1;
+    reprojectionDepthStencilState = rhi::AcquireDepthStencilState(dsDesc);
+
     visibilityConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     visibilityConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_LOAD;
     visibilityConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
-    visibilityConfig.priority = DAVA::PRIORITY_SERVICE_3D - 5;
+    visibilityConfig.priority = DAVA::PRIORITY_SERVICE_3D - 1;
 
-    reprojectionMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Reprojection.material"));
-    reprojectionMaterial->AddFlag(DAVA::NMaterialFlagName::FLAG_BLENDING, DAVA::BLENDING_ADDITIVE);
+    reprojectionConfig.priority = DAVA::PRIORITY_SERVICE_3D - 2;
+    reprojectionConfig.colorBuffer[0].clearColor[3] = 1.0f;
+
+    distanceMapConfig.priority = DAVA::PRIORITY_SERVICE_3D - 1;
+    distanceMapConfig.colorBuffer[0].clearColor[0] = 1.0f;
+    distanceMapConfig.colorBuffer[0].clearColor[1] = 1.0f;
+    distanceMapConfig.colorBuffer[0].clearColor[2] = 1.0f;
+    distanceMapConfig.colorBuffer[0].clearColor[3] = 1.0f;
+    distanceMapConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    distanceMapConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+
+    reprojectionMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Reprojection.material"));
     reprojectionMaterial->AddProperty(MaterialParamCurrentFrameMatrix, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
     reprojectionMaterial->AddProperty(MaterialParamCurrentFrameMatrixInverse, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
     reprojectionMaterial->AddProperty(MaterialParamFixedFrameMatrix, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
+    reprojectionMaterial->AddProperty(MaterialParamOrigin, DAVA::Vector3().data, rhi::ShaderProp::Type::TYPE_FLOAT3);
+    reprojectionMaterial->AddProperty(MaterialParamViewportSize, DAVA::Vector2().data, rhi::ShaderProp::Type::TYPE_FLOAT2);
     reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     prerenderMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Prerender.material"));
@@ -106,7 +125,7 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, DAVA::Vector4().data, rhi::ShaderProp::TYPE_FLOAT4);
     visibilityMaterial->AddProperty(MaterialParamTransformedNormal, DAVA::Vector3().data, rhi::ShaderProp::TYPE_FLOAT3);
     visibilityMaterial->AddProperty(MaterialParamPointProperties, DAVA::Vector3().data, rhi::ShaderProp::TYPE_FLOAT3);
-    visibilityMaterial->AddProperty(MaterialParamCubemapCenter, DAVA::Vector3().data, rhi::ShaderProp::Type::TYPE_FLOAT3);
+    visibilityMaterial->AddProperty(MaterialParamOrigin, DAVA::Vector3().data, rhi::ShaderProp::Type::TYPE_FLOAT3);
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
@@ -267,9 +286,9 @@ void VisibilityCheckRenderer::UpdateVisibilityMaterialProperties(DAVA::Texture* 
     }
 
     DAVA::Vector3 propValue(vp.downAngleCosine, vp.upAngleCosine, vp.maxDistance);
-    visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, vp.color.color);
     visibilityMaterial->SetPropertyValue(MaterialParamPointProperties, propValue.data);
-    visibilityMaterial->SetPropertyValue(MaterialParamCubemapCenter, vp.point.data);
+    visibilityMaterial->SetPropertyValue(MaterialParamOrigin, vp.point.data);
+    visibilityMaterial->SetPropertyValue(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, vp.color.color);
     visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
@@ -332,7 +351,81 @@ void VisibilityCheckRenderer::CreateOrUpdateRenderTarget(const DAVA::Size2i& sz)
     }
 }
 
-void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::Camera* camera)
+namespace VCRLocal
+{
+inline void PutTexture(DAVA::NMaterial* mat, const DAVA::FastName& slot, DAVA::Texture* tex)
+{
+    if (mat->HasLocalTexture(slot))
+    {
+        mat->SetTexture(slot, tex);
+    }
+    else
+    {
+        mat->AddTexture(slot, tex);
+    }
+}
+}
+
+void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
+{
+    auto rs2d = DAVA::RenderSystem2D::Instance();
+    DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
+    DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
+
+    DAVA::SafeRelease(fixedFrame);
+    DAVA::SafeRelease(reprojectionTexture);
+    SafeRelease(distanceRenderTarget);
+
+    DAVA::uint32 w = renderTarget->GetWidth();
+    DAVA::uint32 h = renderTarget->GetHeight();
+
+    fixedFrame = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, false, rhi::TextureType::TEXTURE_TYPE_2D, false);
+    fixedFrameMatrix = fromCamera->GetViewProjMatrix();
+    fixedFrameCameraPosition = fromCamera->GetPosition();
+
+    DAVA::Rect dstRect = DAVA::Rect(0.0f, 0.0f, width, height);
+    DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.clearColor = DAVA::Color::Clear;
+    desc.target = fixedFrame;
+    desc.shouldClear = true;
+    desc.shouldTransformVirtualToPhysical = false;
+    rs2d->BeginRenderTargetPass(desc);
+    rs2d->DrawTexture(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+    rs2d->EndRenderTargetPass();
+
+    reprojectionTexture = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TextureType::TEXTURE_TYPE_2D, false);
+    reprojectionConfig.colorBuffer[0].texture = reprojectionTexture->handle;
+    reprojectionConfig.depthStencilBuffer.texture = reprojectionTexture->handleDepthStencil;
+
+    distanceRenderTarget = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TEXTURE_TYPE_2D, false);
+    distanceMapConfig.colorBuffer[0].texture = distanceRenderTarget->handle;
+    distanceMapConfig.depthStencilBuffer.texture = distanceRenderTarget->handleDepthStencil;
+    RenderToDistanceMapFromCamera(renderSystem, fromCamera);
+
+    VCRLocal::PutTexture(reprojectionMaterial, MaterialParamFixedFrameTexture, fixedFrame);
+    VCRLocal::PutTexture(reprojectionMaterial, MaterialParamFixedFrameDistancesTexture, distanceRenderTarget);
+
+    shouldFixFrame = false;
+    frameFixed = true;
+}
+
+void VisibilityCheckRenderer::RenderToDistanceMapFromCamera(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
+{
+    DAVA::Vector<DAVA::RenderBatch*> renderBatches;
+    CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
+
+    RenderPassScope pass(distanceMapConfig);
+    for (auto batch : renderBatches)
+    {
+        rhi::Packet packet;
+        batch->GetRenderObject()->BindDynamicParameters(fromCamera);
+        batch->BindGeometryData(packet);
+        distanceMaterial->BindParams(packet);
+        rhi::AddPacket(pass.packetList, packet);
+    }
+}
+
+void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::RenderSystem* renderSystem, DAVA::Camera* camera)
 {
     auto rs2d = DAVA::RenderSystem2D::Instance();
     DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
@@ -342,21 +435,8 @@ void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::Camera* camera)
     const DAVA::Matrix4& currentMatrix = camera->GetViewProjMatrix();
     if (frameFixed)
     {
-        DAVA::Matrix4 invVPMatrix;
-        currentMatrix.GetInverse(invVPMatrix);
-        reprojectionMaterial->SetPropertyValue(MaterialParamCurrentFrameMatrix, currentMatrix.data);
-        reprojectionMaterial->SetPropertyValue(MaterialParamCurrentFrameMatrixInverse, invVPMatrix.data);
-        reprojectionMaterial->SetPropertyValue(MaterialParamFixedFrameMatrix, fixedFrameMatrix.data);
-        if (reprojectionMaterial->HasLocalTexture(MaterialParamFixedFrameTexture))
-        {
-            reprojectionMaterial->SetTexture(MaterialParamFixedFrameTexture, fixedFrame);
-        }
-        else
-        {
-            reprojectionMaterial->AddTexture(MaterialParamFixedFrameTexture, fixedFrame);
-        }
-        reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
-        rs2d->DrawTextureWithoutAdjustingRects(fixedFrame, reprojectionMaterial, DAVA::Color::White, dstRect);
+        RenderWithReprojection(renderSystem, camera);
+        rs2d->DrawTextureWithoutAdjustingRects(reprojectionTexture, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
     }
     else
     {
@@ -365,24 +445,7 @@ void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::Camera* camera)
 
     if (shouldFixFrame)
     {
-        fixedFrameMatrix = currentMatrix;
-
-        DAVA::SafeRelease(fixedFrame);
-        fixedFrame = DAVA::Texture::CreateFBO(renderTarget->GetWidth(), renderTarget->GetHeight(),
-                                              DAVA::PixelFormat::FORMAT_RGBA8888, false, rhi::TextureType::TEXTURE_TYPE_2D, false);
-
-        dstRect = DAVA::Rect(0.0f, 0.0f, width, height);
-        DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
-        desc.clearColor = DAVA::Color::Clear;
-        desc.target = fixedFrame;
-        desc.shouldClear = true;
-        desc.shouldTransformVirtualToPhysical = false;
-        rs2d->BeginRenderTargetPass(desc);
-        rs2d->DrawTexture(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
-        rs2d->EndRenderTargetPass();
-
-        shouldFixFrame = false;
-        frameFixed = true;
+        FixFrame(renderSystem, camera);
     }
 }
 
@@ -391,4 +454,28 @@ void VisibilityCheckRenderer::RenderProgress(float ratio)
     auto rs2d = DAVA::RenderSystem2D::Instance();
     DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
     rs2d->FillRect(DAVA::Rect(0.0f, 0.0f, ratio * width, 5.0f), DAVA::Color::White);
+}
+
+void VisibilityCheckRenderer::RenderWithReprojection(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
+{
+    DAVA::Vector<DAVA::RenderBatch*> renderBatches;
+    CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
+
+    reprojectionMaterial->SetPropertyValue(MaterialParamOrigin, fixedFrameCameraPosition.data);
+    reprojectionMaterial->SetPropertyValue(MaterialParamFixedFrameMatrix, fixedFrameMatrix.data);
+    reprojectionMaterial->SetPropertyValue(MaterialParamViewportSize, DAVA::Vector2(static_cast<float>(reprojectionTexture->GetWidth()),
+                                                                                    static_cast<float>(reprojectionTexture->GetHeight()))
+                                                                      .data);
+    reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+
+    RenderPassScope pass(reprojectionConfig);
+    for (auto batch : renderBatches)
+    {
+        rhi::Packet packet;
+        batch->GetRenderObject()->BindDynamicParameters(fromCamera);
+        batch->BindGeometryData(packet);
+        reprojectionMaterial->BindParams(packet);
+        packet.depthStencilState = reprojectionDepthStencilState;
+        rhi::AddPacket(pass.packetList, packet);
+    }
 }
