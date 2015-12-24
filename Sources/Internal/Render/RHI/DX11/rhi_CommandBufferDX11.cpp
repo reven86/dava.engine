@@ -1408,7 +1408,7 @@ void DiscardAll()
                 f->cmdList = nullptr;
             }
 
-            _DX11_Frame.erase(f);
+            f = _DX11_Frame.erase(f);
         }
         else
         {

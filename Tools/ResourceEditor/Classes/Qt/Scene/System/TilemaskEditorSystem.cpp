@@ -208,9 +208,12 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
             Vector2 toolSize = Vector2((float32)curToolSize, (float32)curToolSize);
             Vector2 toolPos = cursorPosition * landscapeSize - toolSize / 2.f;
-            Rect toolRect(toolPos, toolSize);
+            Rect toolRect(std::floor(toolPos.x), std::floor(toolPos.y), std::ceil(toolSize.x), std::ceil(toolSize.y));
 
-            RenderSystem2D::Instance()->BeginRenderTargetPass(toolTexture);
+            RenderSystem2D::RenderTargetPassDescriptor desc;
+            desc.target = toolTexture;
+            desc.shouldTransformVirtualToPhysical = false;
+            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
             RenderSystem2D::Instance()->EndRenderTargetPass();
 
@@ -451,7 +454,10 @@ void TilemaskEditorSystem::CreateMaskTexture()
     {
         landscapeTilemaskTexture = SafeRetain(tilemask);
 
-        RenderSystem2D::Instance()->BeginRenderTargetPass(srcTexture);
+        RenderSystem2D::RenderTargetPassDescriptor desc;
+        desc.target = srcTexture;
+        desc.shouldTransformVirtualToPhysical = false;
+        RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
         RenderSystem2D::Instance()->EndRenderTargetPass();
 

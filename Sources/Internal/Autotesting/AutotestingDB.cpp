@@ -42,14 +42,15 @@ namespace DAVA
 {
 
 	const String AutotestingDB::DB_ERROR_STR_VALUE = "not_found";
+    const String MULTIPLAYER_ARCHIVE = "multiplayer";
 
-	AutotestingDB::AutotestingDB()
-		: dbClient(nullptr)
-		, logFilePath(FilePath(""))
-		, logsFolder(FilePath(""))
-		, autoSys(nullptr)
-	{
-		autoSys = AutotestingSystem::Instance();
+    AutotestingDB::AutotestingDB()
+        : dbClient(nullptr)
+        , logFilePath(FilePath(""))
+        , logsFolder(FilePath(""))
+        , autoSys(nullptr)
+    {
+        autoSys = AutotestingSystem::Instance();
 	}
 
 	AutotestingDB::~AutotestingDB()
@@ -130,14 +131,19 @@ namespace DAVA
 		return result;
 	}
 
-	// BUILD Level
-	KeyedArchive *AutotestingDB::FindBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg)
-	{
-		if (auxArg.length() == 0)
-		{
-			autoSys->ForceQuit("Archive name is empty.");
-		}
-		String archiveName = Format("%s", auxArg.c_str());
+    void AutotestingDB::FailOnLocalBuild()
+    {
+        if (dbClient == nullptr)
+            autoSys->OnError("Could not work with BD on local build");
+    }
+
+    // BUILD Level
+    KeyedArchive* AutotestingDB::FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& archiveName)
+    {
+        if (archiveName.empty())
+        {
+            autoSys->ForceQuit("Archive name is empty.");
+        }
 		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
             return nullptr;
@@ -146,13 +152,12 @@ namespace DAVA
 		return dbUpdateObject->GetData();
 	}
 
-	KeyedArchive *AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg)
-	{
-        if (auxArg.length() == 0)
+    KeyedArchive* AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& archiveName)
+    {
+        if (archiveName.empty())
         {
             autoSys->ForceQuit("Archive name is empty.");
         }
-        String archiveName = Format("%s", auxArg.c_str());
 		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
 			dbUpdateObject->SetObjectName(archiveName);
@@ -221,55 +226,6 @@ namespace DAVA
 		WriteLog(textLog.c_str());
 	}
 
-	// DEPRECATED: Rewrite for new DB conception
-	String AutotestingDB::ReadCommand(const String &device)
-	{
-		Logger::Info("AutotestingDB::ReadCommand device=%s", device.c_str());
-
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
-
-		String result;
-		result = currentRunArchive->GetString(device + "_command", DB_ERROR_STR_VALUE);
-
-		SafeRelease(dbUpdateObject);
-
-		Logger::Info("AutotestingDB::ReadCommand device=%s: '%s'", device.c_str(), result.c_str());
-		return result;
-	}
-
-	// DEPRECATED: Rewrite for new DB conception
-	String AutotestingDB::ReadState(const String &device)
-	{
-		Logger::Info("AutotestingDB::ReadState device=%s", device.c_str());
-
-
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
-		String result;
-
-		result = currentRunArchive->GetString(device, DB_ERROR_STR_VALUE);
-		SafeRelease(dbUpdateObject);
-		Logger::Info("AutotestingDB::ReadState device=%s: '%s'", device.c_str(), result.c_str());
-		return result;
-	}
-
-	// DEPRECATED: Rewrite for new DB conception
-	String AutotestingDB::ReadString(const String &name)
-	{
-		Logger::Info("AutotestingSystem::ReadString name=%s", name.c_str());
-
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_aux");
-		String result;
-
-		result = currentRunArchive->GetString(name, DB_ERROR_STR_VALUE);
-
-		SafeRelease(dbUpdateObject);
-		Logger::Info("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());
-		return result;
-	}
-
 	bool AutotestingDB::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
 	{
 		String fileName = Format("/%s_%s_%s_%d_%s.yaml", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex, archiveName.c_str());
@@ -304,48 +260,40 @@ namespace DAVA
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
-	void AutotestingDB::WriteCommand(const String &device, const String &command)
-	{
-		Logger::Info("AutotestingDB::WriteCommand device=%s command=%s", device.c_str(), command.c_str());
+    String AutotestingDB::ReadState(const String& device, const String& param)
+    {
+        FailOnLocalBuild();
 
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
+        MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
+        KeyedArchive* multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
 
-		currentRunArchive->SetString(device + "_command", command);
+        KeyedArchive* deviceArchive = multiplayerArchive->GetArchive(device, nullptr);
+        String result = DB_ERROR_STR_VALUE;
+        if (deviceArchive != nullptr)
+        {
+            result = deviceArchive->GetString(param, DB_ERROR_STR_VALUE);
+        }
 
-		SaveToDB(dbUpdateObject);
-		SafeRelease(dbUpdateObject);
-	}
+        Logger::Info("AutotestingDB::ReadState device=%s: %s='%s'", device.c_str(), param.c_str(), result.c_str());
+        SafeRelease(dbUpdateObject);
+        return result;
+    }
 
-	// DEPRECATED: Rewrite for new DB conception
-	void AutotestingDB::WriteState(const String &device, const String &state)
-	{
-		Logger::Info("AutotestingDB::WriteState device=%s state=%s", device.c_str(), state.c_str());
+    void AutotestingDB::WriteState(const String& device, const String& param, const String& state)
+    {
+        Logger::Info("AutotestingDB::WriteState device=%s %s=%s", device.c_str(), param.c_str(), state.c_str());
+        FailOnLocalBuild();
 
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
+        MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
+        KeyedArchive* multiplayerArchive = FindOrInsertBuildArchive(dbUpdateObject, MULTIPLAYER_ARCHIVE);
+        ScopedPtr<KeyedArchive> emptyKeyedArchive(new KeyedArchive());
+        KeyedArchive* deviceArchive = multiplayerArchive->GetArchive(device, emptyKeyedArchive);
 
-		currentRunArchive->SetString(device, state);
-
-		SaveToDB(dbUpdateObject);
-		SafeRelease(dbUpdateObject);
-	}
-
-	// DEPRECATED: Rewrite for new DB conception
-	void AutotestingDB::WriteString(const String &name, const String &text)
-	{
-		Logger::Info("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());
-
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_aux");
-
-		currentRunArchive->SetString(name, text);
-
-		SaveToDB(dbUpdateObject);
-		SafeRelease(dbUpdateObject);
-
-		Logger::Info("AutotestingSystem::WriteString finish");
-	}
+        deviceArchive->SetString(param, state);
+        multiplayerArchive->SetArchive(device, deviceArchive);
+        SaveToDB(dbUpdateObject);
+        SafeRelease(dbUpdateObject);
+    }
 
 	// auxiliary methods
 	void AutotestingDB::SetTestStarted()

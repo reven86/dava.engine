@@ -51,7 +51,6 @@ private:
     DAVA::UIButton* mouse = nullptr;
     DAVA::UIButton* touch = nullptr;
     DAVA::UIButton* keyboard = nullptr;
-    std::bitset<DAVA::DeviceInfo::eHIDType::HID_COUNT_TYPE> input;
+    DAVA::Bitset<DAVA::DeviceInfo::eHIDType::HID_COUNT_TYPE> input;
 };
-
 #endif //__INPUTTEST_TEST_H__

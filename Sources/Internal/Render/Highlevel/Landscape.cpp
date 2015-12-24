@@ -180,7 +180,10 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad* quad)
     rhi::VertexBuffer::Descriptor desc;
     desc.size = vBufferSize;
     desc.initialData = landscapeVertices;
-    desc.usage = rhi::USAGE_STATICDRAW;
+    if (updatable)
+        desc.usage = rhi::USAGE_DYNAMICDRAW;
+    else
+        desc.usage = rhi::USAGE_STATICDRAW;
 
     rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(desc);
     vertexBuffers.push_back(vertexBuffer);
@@ -397,10 +400,10 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
     int32 imW = heightmap->Size();
 
     Vector3 p1(x1, y1, 0);
-	p1.z = data[(int32)p1.y * imW + (int32)p1.x];
+    p1.z = data[(int32)p1.y * imW + (int32)p1.x];
 
-	Vector3 p2(x2, y2, 0);
-	p2.z = data[(int32)p2.y * imW + (int32)p2.x];
+    Vector3 p2(x2, y2, 0);
+    p2.z = data[(int32)p2.y * imW + (int32)p2.x];
 
 	Vector3 p3;
 	if (x - x1 >= y - y1)
@@ -951,7 +954,7 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
             indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
             indices[indexIndex++] = x + (y + step) * quadWidth;
         }
-	}
+    }
 
     return true;
 }
@@ -1279,5 +1282,14 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
 void Landscape::SetForceFirstLod(bool force)
 {
     forceFirstLod = force;
+}
+
+void Landscape::SetUpdatable(bool isUpdatable)
+{
+    if (updatable != isUpdatable)
+    {
+        updatable = isUpdatable;
+        BuildLandscape();
+    }
 }
 }

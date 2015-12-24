@@ -52,6 +52,7 @@ public:
     ControlLayoutData(UIControl* control_);
 
     void ApplyLayoutToControl();
+    void ApplyOnlyPositionLayoutToControl();
 
     UIControl* GetControl() const;
 

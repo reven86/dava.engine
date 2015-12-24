@@ -207,12 +207,12 @@ namespace DAVA
         String module = lua_tostring(L, -1);
         lua_pop(L, 1);
         FilePath path = Instance()->Findfile(L, module.c_str(), "path");
-        if (!Instance()->LoadScriptFromFile(path)) 
-		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
-		}
-		lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
-		if (!Instance()->RunScript())
+        if (!Instance()->LoadScriptFromFile(path))
+        {
+            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
+        }
+        lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
+        if (!Instance()->RunScript())
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
 		}
@@ -258,38 +258,25 @@ namespace DAVA
 	}
 
 	// Multiplayer API
-	void AutotestingSystemLua::WriteState(const String &device, const String &state)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s state=%s", device.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteState(device, state);
-	}
+    void AutotestingSystemLua::WriteState(const String& device, const String& param, const String& state)
+    {
+        Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s param=%s state=%s", device.c_str(), param.c_str(), state.c_str());
+        AutotestingDB::Instance()->WriteState(device, param, state);
+    }
 
-	void AutotestingSystemLua::WriteCommand(const String &device, const String &state)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteCommand device=%s command=%s", device.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteCommand(device, state);
-	}
+    String AutotestingSystemLua::ReadState(const String& device, const String& param)
+    {
+        Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s param=%s", device.c_str(), param.c_str());
+        return AutotestingDB::Instance()->ReadState(device, param);
+    }
 
-	String AutotestingSystemLua::ReadState(const String &device)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s", device.c_str());
-		return AutotestingDB::Instance()->ReadState(device);
-	}
+    void AutotestingSystemLua::InitializeDevice()
+    {
+        AutotestingSystem::Instance()->InitializeDevice();
+    }
 
-	String AutotestingSystemLua::ReadCommand(const String &device)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadCommand device=%s", device.c_str());
-		return AutotestingDB::Instance()->ReadCommand(device);
-	}
-
-	void AutotestingSystemLua::InitializeDevice(const String &device)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::InitializeDevice device=%s", device.c_str());
-		AutotestingSystem::Instance()->InitializeDevice(device);
-	}
-
-	String AutotestingSystemLua::GetPlatform()
-	{
+    String AutotestingSystemLua::GetPlatform()
+    {
 		return DeviceInfo::GetPlatformString();
 	}
 
@@ -372,18 +359,6 @@ namespace DAVA
 	void AutotestingSystemLua::Log(const String &level, const String &message)
 	{
 		AutotestingDB::Instance()->Log(level, message);
-	}
-
-	void AutotestingSystemLua::WriteString(const String & name, const String & text)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteString name=%s text=%s", name.c_str(), text.c_str());
-		AutotestingDB::Instance()->WriteString(name, text);
-	}
-
-	String AutotestingSystemLua::ReadString(const String & name)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadString name=%s", name.c_str());
-		return AutotestingDB::Instance()->ReadString(name);
 	}
 
 	bool AutotestingSystemLua::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
@@ -525,18 +500,17 @@ namespace DAVA
 			return;
 		}
 
-        // TODO fix this bad code, if some one use it
         UIEvent keyPress;
         keyPress.keyChar = keyChar;
-        keyPress.phase = UIEvent::Phase::KEY_DOWN;
+        keyPress.phase = UIEvent::Phase::CHAR;
         keyPress.tapCount = 1;
         keyPress.keyChar = keyChar;
 
         Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.key, keyPress.phase,
                                keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
-        switch (keyPress.key)
+        switch (keyPress.keyChar)
         {
-        case Key::BACKSPACE:
+        case '\b':
         {
             //TODO: act the same way on iPhone
             WideString str = L"";
@@ -546,14 +520,14 @@ namespace DAVA
             }
             break;
         }
-        case Key::ENTER:
+        case '\n':
         {
-			uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
-			break;
-		}
-        case Key::ESCAPE:
+            uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
+            break;
+        }
+        case 27: // ESCAPE
         {
-			uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
+            uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
 			break;
 		}
 		default:
@@ -563,9 +537,9 @@ namespace DAVA
 				break;
 			}
 			WideString str;
-            str += static_cast<wchar_t>(keyPress.keyChar);
+            str += keyPress.keyChar;
             if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
-			{
+            {
 				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
 			}
 			break;
@@ -785,12 +759,12 @@ namespace DAVA
         if (!delegate)
         {
             return false;
-		}
-		//TODO: check if modules really loaded
-		return delegate->LoadWrappedLuaObjects(luaState);
-	}
+        }
+        //TODO: check if modules really loaded
+        return delegate->LoadWrappedLuaObjects(luaState);
+    }
 
-	bool AutotestingSystemLua::LoadScript(const String &luaScript)
+    bool AutotestingSystemLua::LoadScript(const String &luaScript)
 	{
 		if (!luaState)
 		{

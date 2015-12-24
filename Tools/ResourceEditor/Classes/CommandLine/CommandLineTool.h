@@ -30,53 +30,43 @@
 #ifndef __COMMAND_LINE_TOOL_H__
 #define __COMMAND_LINE_TOOL_H__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
+
+#include "CommandLine/ProgramOptions.h"
 
 class CommandLineTool
 {    
 public:
-    
-	CommandLineTool();
-    virtual ~CommandLineTool() {};
+    CommandLineTool(const DAVA::String& toolName);
+    virtual ~CommandLineTool() = default;
 
-	virtual DAVA::String GetCommandLineKey() const = 0;
-    
-    virtual bool InitializeFromCommandLine() = 0;
+    DAVA::String GetToolKey() const;
 
-	virtual void PrintUsage() const = 0;
-
-    virtual void Process() = 0;
-
-    virtual DAVA::FilePath GetQualityConfigPath() const {return DAVA::FilePath(); };
-    
-	virtual void DumpParams() const {};
-
-    inline const DAVA::Set<DAVA::String> & GetErrorList() const;
-    
-	inline bool IsOneFrameCommand() const;
-
-    static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath & pathname);
+    bool ParseCommandLine(int argc, char* argv[]);
+    void PrintUsage() const;
+    void Process();
 
 protected:
-    
-    DAVA::FilePath CreateQualityConfigPath(const DAVA::FilePath & path) const;
-    
-    
+    void AddError(const DAVA::String& errorMessage); //need to aggregate errors in output
+
+    virtual void ConvertOptionsToParamsInternal() = 0;
+    virtual bool InitializeInternal() = 0;
+    virtual void ProcessInternal() = 0;
+
+    virtual DAVA::FilePath GetQualityConfigPath() const;
+    DAVA::FilePath CreateQualityConfigPath(const DAVA::FilePath& path) const;
+
+private:
+    void PrepareEnvironment() const;
+    void PrepareQualitySystem() const;
+    bool Initialize();
+    void PrintResults() const;
+
+protected:
     DAVA::Set<DAVA::String> errors;
-	bool oneFrameCommand;
+    DAVA::ProgramOptions options;
 };
-
-
-inline const DAVA::Set<DAVA::String> & CommandLineTool::GetErrorList() const
-{
-    return errors;
-}
-
-inline bool CommandLineTool::IsOneFrameCommand() const
-{
-	return oneFrameCommand;
-}
-
 
 #endif // __COMMAND_LINE_TOOL_H__
 

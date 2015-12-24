@@ -402,13 +402,13 @@ namespace DAVA
 	}
 
 	DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
-	{
-		DWORD iModeNum = 0;
-		DEVMODE	dmi;
-		ZeroMemory (&dmi, sizeof(dmi)) ;
-		dmi.dmSize = sizeof(dmi);
+    {
+        DWORD iModeNum = 0;
+        DEVMODE dmi;
+        ZeroMemory(&dmi, sizeof(dmi));
+        dmi.dmSize = sizeof(dmi);
 
-		DisplayMode mode;
+        DisplayMode mode;
 		if(EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
 		{
 			mode.width = dmi.dmPelsWidth;

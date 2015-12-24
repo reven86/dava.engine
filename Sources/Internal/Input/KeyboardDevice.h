@@ -178,7 +178,7 @@ public:
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
-#ifdef __DAVAENGINE_WIN_UAP_
+#ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
 #endif
     ~KeyboardDevice();

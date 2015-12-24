@@ -290,7 +290,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_MULTIPLY] = Key::MULTIPLY;
     keyTranslator[256 + VK_DIVIDE] = Key::DIVIDE; // extended key
     keyTranslator[VK_DECIMAL] = Key::DECIMAL;
-
 #endif
 
 #if defined(__DAVAENGINE_MACOS__)

@@ -143,20 +143,17 @@ dx11_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 static void
 dx11_VertexBuffer_Delete(Handle vb)
 {
-    if (vb != InvalidHandle)
+    VertexBufferDX11_t* self = VertexBufferDX11Pool::Get(vb);
+
+    if (self->buffer)
     {
-        VertexBufferDX11_t* self = VertexBufferDX11Pool::Get(vb);
-
-        if (self->buffer)
-        {
-            self->buffer->Release();
-            self->buffer = nullptr;
-        }
-
-        self->size = 0;
-
-        VertexBufferDX11Pool::Free(vb);
+        self->buffer->Release();
+        self->buffer = nullptr;
     }
+
+    self->size = 0;
+
+    VertexBufferDX11Pool::Free(vb);
 }
 
 //------------------------------------------------------------------------------

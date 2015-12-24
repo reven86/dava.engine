@@ -80,11 +80,13 @@ private:
     static void HandleAsyncThunk(uv_async_t* handle);
 
 private:
-    uv_loop_t uvloop;                   // libuv loop handle itself
-    uv_loop_t* actualLoop;
+    uv_loop_t* actualLoop = nullptr;
+#if !defined(DAVA_NETWORK_DISABLE)
+    uv_loop_t uvloop; // libuv loop handle itself
 
-    bool quitFlag;
+    bool quitFlag = false;
     uv_async_t uvasync;                     // libuv handle for calling callback from different threads
+#endif
     Vector<UserHandlerType> queuedHandlers; // List of queued user handlers
     Vector<UserHandlerType> execHandlers;   // List of executing user handlers
     Mutex mutex;

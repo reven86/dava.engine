@@ -29,8 +29,7 @@
 
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
-#include "../Qt/Settings/SettingsManager.h"
-#include "CommandLine/CommandLineManager.h"
+#include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 
 #include "Main/QtUtils.h"

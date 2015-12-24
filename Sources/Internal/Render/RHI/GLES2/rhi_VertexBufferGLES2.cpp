@@ -173,14 +173,10 @@ gles2_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 
 void gles2_VertexBuffer_Delete(Handle vb)
 {
-    if (vb != InvalidHandle)
-    {
-        VertexBufferGLES2_t* self = VertexBufferGLES2Pool::Get(vb);
-
-        self->MarkRestored();
-        self->Destroy();
-        VertexBufferGLES2Pool::Free(vb);
-    }
+    VertexBufferGLES2_t* self = VertexBufferGLES2Pool::Get(vb);
+    self->MarkRestored();
+    self->Destroy();
+    VertexBufferGLES2Pool::Free(vb);
 }
 
 //------------------------------------------------------------------------------

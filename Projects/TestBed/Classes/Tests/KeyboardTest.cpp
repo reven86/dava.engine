@@ -317,7 +317,7 @@ private:
             break;
         case UIEvent::Phase::CHAR:
             ++numChar;
-            lastChar = currentInput->keyChar;
+            lastChar = static_cast<wchar_t>(currentInput->keyChar);
             break;
         case UIEvent::Phase::CHAR_REPEAT:
             ++numCharRepeat;

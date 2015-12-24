@@ -44,6 +44,7 @@ class DavaGLWidget;
 class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
+class RulerController;
 
 class QWheelEvent;
 class QNativeGestureEvent;
@@ -57,12 +58,11 @@ public:
     DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
     float GetScale() const;
-    qreal GetDPR() const;
+    RulerController* GetRulerController();
     ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
 
 signals:
     void ScaleChanged(float scale);
-    void DPRChanged(qreal dpr);
     void DeleteRequested();
     void ImportRequested();
     void CutRequested();
@@ -77,19 +77,19 @@ public slots:
     void OnDocumentActivated(Document* document);
     void OnDocumentDeactivated(Document* document);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnRootControlPositionChanged(const DAVA::Vector2& pos);
+    void OnNestedControlPositionChanged(const QPoint& pos);
 
 private slots:
     void OnScaleChanged(qreal scale);
     void OnScaleByComboIndex(int value);
-	void OnScaleByComboText();
-    
-    void OnGLWidgetResized(int width, int height, int dpr);
+    void OnScaleByComboText();
+
+    void OnGLWidgetResized(int width, int height);
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
     
-    void OnMonitorChanged();
-
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
 
@@ -97,22 +97,24 @@ protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
+    void ApplyPosChanges();
     void OnWheelEvent(QWheelEvent* event);
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnMoveEvent(QMouseEvent* event);
-    void SetDPR(qreal dpr);
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
 
     QPoint lastMousePos;
-    qreal dpr = 1.0f;
     Document* document = nullptr;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
     QList<qreal> percentages;
 
     SelectionContainer selectionContainer;
+    RulerController* rulerController = nullptr;
+    QPoint rootControlPos;
+    QPoint canvasPos;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget()

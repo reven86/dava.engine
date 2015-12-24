@@ -132,11 +132,11 @@ public:
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
 
-	// Keyboard traits.
-	void SetAutoCapitalizationType(DAVA::int32 value);
-	void SetAutoCorrectionType(DAVA::int32 value);
-	void SetSpellCheckingType(DAVA::int32 value);
-	void SetKeyboardAppearanceType(DAVA::int32 value);
+    // Keyboard traits.
+    void SetAutoCapitalizationType(DAVA::int32 value);
+    void SetAutoCorrectionType(DAVA::int32 value);
+    void SetSpellCheckingType(DAVA::int32 value);
+    void SetKeyboardAppearanceType(DAVA::int32 value);
 	void SetKeyboardType(DAVA::int32 value);
 	void SetReturnKeyType(DAVA::int32 value);
 	void SetEnableReturnKeyAutomatically(bool value);

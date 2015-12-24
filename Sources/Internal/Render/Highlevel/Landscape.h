@@ -210,6 +210,7 @@ public:
 
     // RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i& rect);
+    void SetUpdatable(bool isUpdatable);
 
     void SetForceFirstLod(bool force);
 
@@ -289,6 +290,7 @@ private:
     uint32 drawIndices = 0;
     int16 queueRdoQuad = 0;
     bool forceFirstLod = false;
+    bool updatable = false;
 
 public:
     INTROSPECTION_EXTEND(Landscape, RenderObject,

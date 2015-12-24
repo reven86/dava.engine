@@ -90,10 +90,10 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	QObject::connect(tabBar, SIGNAL(tabCloseRequested(int)), this, SLOT(TabBarCloseRequest(int)));
 	QObject::connect(tabBar, SIGNAL(OnDrop(const QMimeData *)), this, SLOT(TabBarDataDropped(const QMimeData *)));
 	QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData *)), this, SLOT(DAVAWidgetDataDropped(const QMimeData *)));
-    QObject::connect(davaWidget, SIGNAL(Resized(int, int, int)), this, SLOT(OnDavaGLWidgetResized(int, int, int)));
+    QObject::connect(davaWidget, SIGNAL(Resized(int, int)), this, SLOT(OnDavaGLWidgetResized(int, int)));
 
-	QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2 *, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2 *, bool)));
 
 	SetCurrentTab(0);
@@ -474,13 +474,10 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2 *scene, bool modified
 	}
 }
 
-void SceneTabWidget::OnDavaGLWidgetResized(int width, int height, int dpr)
+void SceneTabWidget::OnDavaGLWidgetResized(int width, int height)
 {
-    int scaledWidth = width * dpr;
-    int scaledHeight = height * dpr;
-    
-    davaUIScreen->SetSize(DAVA::Vector2(scaledWidth, scaledHeight));
-    dava3DView->SetSize(DAVA::Vector2(scaledWidth - 2 * dava3DViewMargin, scaledHeight - 2 * dava3DViewMargin));
+    davaUIScreen->SetSize(DAVA::Vector2(width, height));
+    dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
 
     SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
     if(NULL != scene)

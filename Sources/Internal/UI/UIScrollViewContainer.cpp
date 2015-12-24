@@ -74,10 +74,15 @@ void UIScrollViewContainer::CopyDataFrom(UIControl *srcControl)
 void UIScrollViewContainer::SetSize(const Vector2& size)
 {
     UIControl::SetSize(size);
+    ApplySizeChanges();
+}
 
+void UIScrollViewContainer::ApplySizeChanges()
+{
     UIControl* parent = GetParent();
     if (parent)
     {
+        const Vector2& size = GetSize();
         const Vector2& parentSize = parent->GetSize();
         // We should not allow scrolling when content rect is less than or is equal ScrollView "window"
         enableHorizontalScroll = size.dx > parentSize.dx;
@@ -99,7 +104,7 @@ void UIScrollViewContainer::SetSize(const Vector2& size)
                     {
                         if (scrollView->IsCenterContent())
                         {
-                            relativePosition.data[axis] = (scrollView->GetSize().data[axis] - GetSize().data[axis]) / 2;
+                            relativePosition.data[axis] = (parentSize.data[axis] - size.data[axis]) / 2;
                         }
                         else
                         {

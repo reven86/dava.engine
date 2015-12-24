@@ -54,7 +54,7 @@ bool AssetCacheClient::ParseCommandLine(int argc, char* argv[])
             if (r->options.GetCommand() == command)
             {
                 activeRequest = r.get();
-                auto commandLineIsOk = r->options.Parse(argc, argv, 2);
+                auto commandLineIsOk = r->options.Parse(argc, argv);
                 if (commandLineIsOk)
                 {
                     exitCode = activeRequest->CheckOptions();
