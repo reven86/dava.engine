@@ -823,7 +823,7 @@ void CommandBufferGLES2_t::Execute()
         case GLES2__SET_VERTEX_DATA:
         {
             Handle vb = (Handle)(arg[0]);
-            unsigned stream_i = arg[1];
+            unsigned stream_i = uint32(arg[1]);
 
             if (cur_vb[stream_i] != vb)
             {
