@@ -292,6 +292,8 @@ VertexDeclGLES2
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
                     glVertexAttribDivisorEXT(idx, elem[i].attrDivisor);
+                    #elif defined(__DAVAENGINE_MACOS__)
+                    glVertexAttribDivisorARB(idx, elem[i].attrDivisor);
                     #else
                     glVertexAttribDivisor(idx, elem[i].attrDivisor);
                     #endif
