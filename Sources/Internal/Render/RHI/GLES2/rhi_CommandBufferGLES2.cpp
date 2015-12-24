@@ -755,13 +755,15 @@ void CommandBufferGLES2_t::Execute()
 
                     flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 }
+                
+                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
 
                 if (flags)
                 {
                     glClear(flags);
                 }
 
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+                
             }
         }
         break;
