@@ -1207,6 +1207,8 @@ void CommandBufferGLES2_t::Execute()
 
             #if defined(__DAVAENGINE_IPHONE__)
             GL_CALL(glDrawArraysInstancedEXT(mode, 0, v_cnt, instCount));
+            #elif defined(__DAVAENGINE_MACOS__)
+            GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
             #else
             GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
             #endif
@@ -1285,6 +1287,8 @@ void CommandBufferGLES2_t::Execute()
 
             #if defined(__DAVAENGINE_IPHONE__)
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            #elif defined(__DAVAENGINE_MACOS__)
+            GL_CALL(glDrawElementsInstancedARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #else
             //            if( baseInst )
             GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
