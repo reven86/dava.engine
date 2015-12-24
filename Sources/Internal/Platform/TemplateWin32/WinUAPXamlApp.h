@@ -45,7 +45,7 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
-#define DAVA_WINUAP_MOUSE_HACK
+//#define DAVA_WINUAP_MOUSE_HACK
 
 namespace DAVA
 {
