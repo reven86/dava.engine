@@ -99,8 +99,8 @@ int main(int argc, char *argv[])
     QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
     CommandLineManager cmdLine(argc, argv);
-    if(cmdLine.IsEnabled())
-	{
+    if (cmdLine.IsEnabled())
+    {
         RunConsole( argc, argv, cmdLine );
 	}
     else

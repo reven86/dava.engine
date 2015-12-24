@@ -175,7 +175,7 @@ AutotestingSystem::AutotestingSystem()
         isInit = true;
     }
 
-	// Get test parameters from id.yaml
+    // Get test parameters from id.yaml
 	void AutotestingSystem::FetchParametersFromIdYaml()
 	{
 		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
@@ -514,7 +514,7 @@ AutotestingSystem::AutotestingSystem()
         return isFound;
     }
 
-	bool AutotestingSystem::IsTouchDown(int32 id)
+    bool AutotestingSystem::IsTouchDown(int32 id)
 	{
 		return (touches.find(id) != touches.end());
 	}

@@ -171,7 +171,7 @@ void TextureListModel::setScene(DAVA::Scene *scene)
         }
     }
 
-	applyFilterAndSort();
+    applyFilterAndSort();
 
 	endResetModel();
 }

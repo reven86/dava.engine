@@ -57,6 +57,7 @@ private:
     
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
+    DAVA::FilePath qualityConfigPath;
 
     bool copyConverted = false;
 };

@@ -43,7 +43,7 @@ property float4   lightPosition0               : dynamic,a : ;
 
 VPROG_BEGIN
 
-    float3 in_pos      = VP_IN_POSITION;
+    float3 in_pos      = VP_IN_POSITION.xyz;
     float2 in_texcoord = VP_IN_TEXCOORD;
     
     VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
@@ -56,7 +56,7 @@ VPROG_BEGIN
 	
 #if VERTEX_FOG
 	
-	float3 view_position = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz;
+	float3 view_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewMatrix ).xyz;
 	#define FOG_view_position view_position
 	
 #if FOG_ATMOSPHERE
@@ -65,7 +65,7 @@ VPROG_BEGIN
 #endif
 	
 #if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
-	float3 world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
+	float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
 	#define FOG_world_position world_position
 #endif
 
