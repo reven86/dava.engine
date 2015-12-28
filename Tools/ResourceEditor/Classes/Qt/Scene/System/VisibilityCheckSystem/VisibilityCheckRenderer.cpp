@@ -39,7 +39,9 @@ const DAVA::FastName MaterialParamCurrentFrameMatrix("currentFrameMatrix");
 const DAVA::FastName MaterialParamCurrentFrameMatrixInverse("currentFrameMatrixInverse");
 const DAVA::FastName MaterialParamFixedFrameTexture("fixedFrame");
 const DAVA::FastName MaterialParamFixedFrameDistancesTexture("fixedFrameDistances");
+const DAVA::FastName MaterialParamCurrentFrameTexture("currentFrame");
 const DAVA::FastName MaterialParamViewportSize("viewportSize");
+const DAVA::FastName MaterialParamCurrentFrameCompleteness("currentFrameCompleteness");
 
 struct RenderPassScope
 {
@@ -112,13 +114,11 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     reprojectionMaterial->AddProperty(MaterialParamFixedFrameMatrix, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
     reprojectionMaterial->AddProperty(MaterialParamOrigin, DAVA::Vector3().data, rhi::ShaderProp::Type::TYPE_FLOAT3);
     reprojectionMaterial->AddProperty(MaterialParamViewportSize, DAVA::Vector2().data, rhi::ShaderProp::Type::TYPE_FLOAT2);
-    reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+    reprojectionMaterial->AddProperty(MaterialParamCurrentFrameCompleteness, &frameCompleteness, rhi::ShaderProp::Type::TYPE_FLOAT1);
 
     prerenderMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Prerender.material"));
-    prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     distanceMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Encode.material"));
-    distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     visibilityMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Decode.material"));
     visibilityMaterial->AddFlag(DAVA::NMaterialFlagName::FLAG_BLENDING, DAVA::BLENDING_ADDITIVE);
@@ -126,7 +126,6 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     visibilityMaterial->AddProperty(MaterialParamTransformedNormal, DAVA::Vector3().data, rhi::ShaderProp::TYPE_FLOAT3);
     visibilityMaterial->AddProperty(MaterialParamPointProperties, DAVA::Vector3().data, rhi::ShaderProp::TYPE_FLOAT3);
     visibilityMaterial->AddProperty(MaterialParamOrigin, DAVA::Vector3().data, rhi::ShaderProp::Type::TYPE_FLOAT3);
-    visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
 VisibilityCheckRenderer::~VisibilityCheckRenderer()
@@ -244,6 +243,8 @@ void VisibilityCheckRenderer::PreRenderScene(DAVA::RenderSystem* renderSystem, D
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
     CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
 
+    prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
+
     prerenderConfig.colorBuffer[0].texture = renderTarget->handle;
     prerenderConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
     RenderPassScope pass(prerenderConfig);
@@ -261,6 +262,8 @@ void VisibilityCheckRenderer::RenderWithCurrentSettings(DAVA::RenderSystem* rend
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
     CollectRenderBatches(renderSystem, cubemapCamera, sceneCamera, renderBatches);
+
+    distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     RenderPassScope pass(renderTargetConfig);
     for (auto batch : renderBatches)
@@ -300,6 +303,7 @@ void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* rend
 
     visibilityConfig.colorBuffer[0].texture = renderTarget->handle;
     visibilityConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
+
     RenderPassScope pass(visibilityConfig);
     for (auto batch : renderBatches)
     {
@@ -316,19 +320,15 @@ void VisibilityCheckRenderer::InvalidateMaterials()
 {
     distanceMaterial->InvalidateRenderVariants();
     distanceMaterial->InvalidateBufferBindings();
-    distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     visibilityMaterial->InvalidateRenderVariants();
     visibilityMaterial->InvalidateBufferBindings();
-    visibilityMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     prerenderMaterial->InvalidateRenderVariants();
     prerenderMaterial->InvalidateBufferBindings();
-    prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     reprojectionMaterial->InvalidateRenderVariants();
     reprojectionMaterial->InvalidateBufferBindings();
-    reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
 void VisibilityCheckRenderer::FixFrame()
@@ -383,6 +383,7 @@ void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::C
     fixedFrame->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureFilter::TEXFILTER_LINEAR, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
     fixedFrameMatrix = fromCamera->GetViewProjMatrix();
     fixedFrameCameraPosition = fromCamera->GetPosition();
+    frameCompleteness = 1.0f;
 
     DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.clearColor = DAVA::Color::Clear;
@@ -390,7 +391,8 @@ void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::C
     desc.shouldClear = true;
     desc.shouldTransformVirtualToPhysical = false;
     rs2d->BeginRenderTargetPass(desc);
-    rs2d->DrawTexture(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, DAVA::Rect(0.0f, 0.0f, width, height));
+    rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White,
+                                           DAVA::Rect(0.0f, 0.0f, width, height), DAVA::Rect(0.0f, 0.0f, 1.0f, 1.0f));
     rs2d->EndRenderTargetPass();
 
     reprojectionTexture = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TextureType::TEXTURE_TYPE_2D, false);
@@ -401,10 +403,8 @@ void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::C
     distanceRenderTarget->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_NEAREST, rhi::TextureFilter::TEXFILTER_NEAREST, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
     distanceMapConfig.colorBuffer[0].texture = distanceRenderTarget->handle;
     distanceMapConfig.depthStencilBuffer.texture = distanceRenderTarget->handleDepthStencil;
-    RenderToDistanceMapFromCamera(renderSystem, fromCamera);
 
-    VCRLocal::PutTexture(reprojectionMaterial, MaterialParamFixedFrameTexture, fixedFrame);
-    VCRLocal::PutTexture(reprojectionMaterial, MaterialParamFixedFrameDistancesTexture, distanceRenderTarget);
+    RenderToDistanceMapFromCamera(renderSystem, fromCamera);
 
     shouldFixFrame = false;
     frameFixed = true;
@@ -414,6 +414,8 @@ void VisibilityCheckRenderer::RenderToDistanceMapFromCamera(DAVA::RenderSystem* 
 {
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
     CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
+
+    distanceMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     RenderPassScope pass(distanceMapConfig);
     for (auto batch : renderBatches)
@@ -433,15 +435,16 @@ void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::RenderSystem* re
     DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
     DAVA::Rect dstRect(0.0f, height, width, -height);
 
-    const DAVA::Matrix4& currentMatrix = camera->GetViewProjMatrix();
     if (frameFixed)
     {
         RenderWithReprojection(renderSystem, camera);
-        rs2d->DrawTextureWithoutAdjustingRects(reprojectionTexture, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+        rs2d->DrawTextureWithoutAdjustingRects(reprojectionTexture, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL,
+                                               DAVA::Color::White, dstRect, DAVA::Rect(0.0f, 0.0f, 1.0f, 1.0f));
     }
     else
     {
-        rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL, DAVA::Color::White, dstRect);
+        rs2d->DrawTextureWithoutAdjustingRects(renderTarget, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL,
+                                               DAVA::Color::White, dstRect, DAVA::Rect(0.0f, 0.0f, 1.0f, 1.0f));
     }
 
     if (shouldFixFrame)
@@ -452,9 +455,10 @@ void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::RenderSystem* re
 
 void VisibilityCheckRenderer::RenderProgress(float ratio, const DAVA::Color& clr)
 {
+    frameCompleteness = ratio;
     auto rs2d = DAVA::RenderSystem2D::Instance();
     DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
-    rs2d->FillRect(DAVA::Rect(0.0f, 0.0f, ratio * width, 5.0f), clr);
+    rs2d->FillRect(DAVA::Rect(0.0f, 0.0f, frameCompleteness * width, 5.0f), clr);
 }
 
 void VisibilityCheckRenderer::RenderWithReprojection(DAVA::RenderSystem* renderSystem, DAVA::Camera* fromCamera)
@@ -462,11 +466,14 @@ void VisibilityCheckRenderer::RenderWithReprojection(DAVA::RenderSystem* renderS
     DAVA::Vector<DAVA::RenderBatch*> renderBatches;
     CollectRenderBatches(renderSystem, fromCamera, fromCamera, renderBatches);
 
+    DAVA::Vector2 vpSize(static_cast<float>(reprojectionTexture->GetWidth()), static_cast<float>(reprojectionTexture->GetHeight()));
     reprojectionMaterial->SetPropertyValue(MaterialParamOrigin, fixedFrameCameraPosition.data);
     reprojectionMaterial->SetPropertyValue(MaterialParamFixedFrameMatrix, fixedFrameMatrix.data);
-    reprojectionMaterial->SetPropertyValue(MaterialParamViewportSize, DAVA::Vector2(static_cast<float>(reprojectionTexture->GetWidth()),
-                                                                                    static_cast<float>(reprojectionTexture->GetHeight()))
-                                                                      .data);
+    reprojectionMaterial->SetPropertyValue(MaterialParamViewportSize, vpSize.data);
+    reprojectionMaterial->SetPropertyValue(MaterialParamCurrentFrameCompleteness, &frameCompleteness);
+    VCRLocal::PutTexture(reprojectionMaterial, MaterialParamFixedFrameTexture, fixedFrame);
+    VCRLocal::PutTexture(reprojectionMaterial, MaterialParamFixedFrameDistancesTexture, distanceRenderTarget);
+    VCRLocal::PutTexture(reprojectionMaterial, MaterialParamCurrentFrameTexture, renderTarget);
     reprojectionMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
     RenderPassScope pass(reprojectionConfig);

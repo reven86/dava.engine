@@ -65,6 +65,10 @@ VisibilityCheckSystem::~VisibilityCheckSystem()
 void VisibilityCheckSystem::ProcessCommand(const Command2*, bool)
 {
     shouldPrerender = true;
+    if (renderer.FrameFixed())
+    {
+        shouldFixFrame = true;
+    }
 }
 
 void VisibilityCheckSystem::RegisterEntity(DAVA::Entity* entity)

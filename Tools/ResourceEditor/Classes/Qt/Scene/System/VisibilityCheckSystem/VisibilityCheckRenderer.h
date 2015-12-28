@@ -126,6 +126,7 @@ private:
     DAVA::Texture* fixedFrame = nullptr;
     DAVA::Texture* reprojectionTexture = nullptr;
     DAVA::Vector3 fixedFrameCameraPosition;
+    float frameCompleteness = 0.0f;
     bool frameFixed = false;
     bool shouldFixFrame = false;
 };

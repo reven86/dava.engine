@@ -3054,7 +3054,10 @@ void QtMainWindow::OnReloadShaders()
 
 #define INVALIDATE_2D_MATERIAL(material) \
     if (RenderSystem2D::material)        \
-        RenderSystem2D::material->InvalidateRenderVariants();
+	{ \
+        RenderSystem2D::material->InvalidateRenderVariants(); \
+		RenderSystem2D::material->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME); \
+	}
 
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)

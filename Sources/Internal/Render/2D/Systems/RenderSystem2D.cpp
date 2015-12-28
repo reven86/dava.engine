@@ -91,7 +91,7 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL = new NMaterial();
-    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Additive.material"));
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alphablend.material"));
     DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ADDITIVE);
     DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
@@ -171,7 +171,6 @@ void RenderSystem2D::BeginFrame()
     rhi::BeginRenderPass(pass2DHandle);
     rhi::BeginPacketList(currentPacketListHandle);
 
-    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -227,7 +226,6 @@ void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& des
     renderTargetWidth = desc.target->GetWidth();
     renderTargetHeight = desc.target->GetHeight();
 
-    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -246,7 +244,6 @@ void RenderSystem2D::EndRenderTargetPass()
     renderTargetHeight = 0;
 
     SetVirtualToPhysicalTransformEnabled(virtualToPhysicalTransformEnabledDefaultValue);
-    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -260,6 +257,7 @@ void RenderSystem2D::SetViewMatrix(const Matrix4& _viewMatrix)
 
 void RenderSystem2D::Setup2DMatrices()
 {
+    ShaderDescriptorCache::ClearDynamicBindigs();
     if (IsRenderTargetPass())
     {
         if (rhi::DeviceCaps().isUpperLeftRTOrigin)
@@ -1571,18 +1569,12 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2& polygon, bool closed
 }
 
 void RenderSystem2D::DrawTextureWithoutAdjustingRects(Texture* texture, NMaterial* material, const Color& color,
-                                                      const Rect& destRect, const Rect& _srcRect)
+                                                      const Rect& destRect, const Rect& srcRect)
 {
     spriteTempVertices[0] = spriteTempVertices[4] = destRect.x; //x1
     spriteTempVertices[5] = spriteTempVertices[7] = destRect.y; //y2
     spriteTempVertices[1] = spriteTempVertices[3] = destRect.y + destRect.dy; //y1
     spriteTempVertices[2] = spriteTempVertices[6] = destRect.x + destRect.dx; //x2
-
-    Rect srcRect;
-    srcRect.x = _srcRect.x;
-    srcRect.y = _srcRect.y;
-    srcRect.dx = (_srcRect.dx < 0.f) ? 1.f : _srcRect.dx;
-    srcRect.dy = (_srcRect.dy < 0.f) ? 1.f : _srcRect.dy;
 
     float32 texCoords[8];
     texCoords[0] = texCoords[4] = srcRect.x; //x1
@@ -1625,7 +1617,14 @@ void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Co
 
         destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
     }
-    DrawTextureWithoutAdjustingRects(texture, material, color, destRect, _srcRect);
+
+    Rect srcRect;
+    srcRect.x = _srcRect.x;
+    srcRect.y = _srcRect.y;
+    srcRect.dx = (_srcRect.dx < 0.f) ? 1.f : _srcRect.dx;
+    srcRect.dy = (_srcRect.dy < 0.f) ? 1.f : _srcRect.dy;
+
+    DrawTextureWithoutAdjustingRects(texture, material, color, destRect, srcRect);
 }
 
 /* TiledDrawData Implementation */
