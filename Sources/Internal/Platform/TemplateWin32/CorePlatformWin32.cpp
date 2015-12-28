@@ -572,19 +572,21 @@ namespace DAVA
         // no break
         case WM_KEYUP:
         {
-            uint32 system_key_code = static_cast<uint32>(wParam);
-            uint32 extended_key_info = static_cast<uint32>(lParam);
-            uint32 add_256_if_right_extended_key = ((1 << 24) & extended_key_info) > 0 ? 256 : 0;
-            uint32 scan_code = (extended_key_info & 0xFF0000) >> 16;
-            if (VK_SHIFT == system_key_code && scan_code == 0x36) // is right shift key
+            uint32 systemKeyCode = static_cast<uint32>(wParam);
+            uint32 extendedKeyInfo = static_cast<uint32>(lParam);
+            if ((1 << 24) & extendedKeyInfo)
             {
-                add_256_if_right_extended_key = 256;
+                systemKeyCode |= 0x100;
             }
-            system_key_code += add_256_if_right_extended_key;
+            uint32 scanCode = (extendedKeyInfo & 0xFF0000) >> 16;
+            if (VK_SHIFT == systemKeyCode && scanCode == 0x36) // is right shift key
+            {
+                systemKeyCode |= 0x100;
+            }
 
             UIEvent ev;
             ev.phase = UIEvent::Phase::KEY_UP;
-            ev.key = keyboard.GetDavaKeyForSystemKey(system_key_code);
+            ev.key = keyboard.GetDavaKeyForSystemKey(systemKeyCode);
             ev.device = UIEvent::Device::KEYBOARD;
             ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
@@ -598,15 +600,17 @@ namespace DAVA
         // no break;
         case WM_KEYDOWN:
         {
-            uint32 system_key_code = static_cast<int32>(wParam);
-            uint32 extended_key_info = static_cast<uint32>(lParam);
-            uint32 add_256_if_right_extended_key = ((1 << 24) & extended_key_info) > 0 ? 256 : 0;
-            uint32 scan_code = (extended_key_info & 0xFF0000) >> 16;
-            if (VK_SHIFT == system_key_code && scan_code == 0x36) // is right shift key
+            uint32 systemKeyCode = static_cast<uint32>(wParam);
+            uint32 extendedKeyInfo = static_cast<uint32>(lParam);
+            if ((1 << 24) & extendedKeyInfo)
             {
-                add_256_if_right_extended_key = 256;
+                systemKeyCode |= 0x100;
             }
-            system_key_code += add_256_if_right_extended_key;
+            uint32 scanCode = (extendedKeyInfo & 0xFF0000) >> 16;
+            if (VK_SHIFT == systemKeyCode && scanCode == 0x36) // is right shift key
+            {
+                systemKeyCode |= 0x100;
+            }
 
             UIEvent ev;
             if ((HIWORD(lParam) & KF_REPEAT) == 0)
@@ -617,7 +621,7 @@ namespace DAVA
             {
                 ev.phase = UIEvent::Phase::KEY_DOWN_REPEAT;
             }
-            ev.key = keyboard.GetDavaKeyForSystemKey(system_key_code);
+            ev.key = keyboard.GetDavaKeyForSystemKey(systemKeyCode);
             ev.device = UIEvent::Device::KEYBOARD;
             ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 

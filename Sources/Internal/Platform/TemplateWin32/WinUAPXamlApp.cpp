@@ -767,15 +767,15 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, B
 
 void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs)
 {
-    int32 key = static_cast<uint32>(keyEventArgs->VirtualKey);
+    uint32 key = static_cast<uint32>(keyEventArgs->VirtualKey);
 
     if (key == VK_SHIFT && keyEventArgs->KeyStatus.ScanCode == 0x36) // right shift scan code(on windows)
     {
-        key += 256;
+        key |= 0x100;
     }
     if (keyEventArgs->KeyStatus.IsExtendedKey)
     {
-        key += 256;
+        key |= 0x100;
     }
 
     UIEvent::Phase phase;
