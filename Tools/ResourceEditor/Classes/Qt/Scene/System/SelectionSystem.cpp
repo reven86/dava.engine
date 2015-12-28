@@ -28,13 +28,9 @@
 
 
 #include "Scene/System/SelectionSystem.h"
-#include "Scene/System/CameraSystem.h"
-#include "Scene/System/CollisionSystem.h"
-#include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"
+#include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
-#include "Scene/SceneEditor2.h"
-#include "Settings/SettingsManager.h"
 
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
@@ -262,7 +258,12 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
         // we can select only if mouse isn't over hood axis
 		// or if hood is invisible now
 		// or if current mode is NORMAL (no modification)
-        if (!hoodSystem->IsVisible() || (ST_MODIF_OFF == hoodSystem->GetModifMode()) || (ST_AXIS_NONE == hoodSystem->GetPassingAxis()))
+
+        auto modifSystem = ((SceneEditor2*)GetScene())->modifSystem;
+        bool modificationAllowed = (modifSystem->GetModifMode() != ST_ModifMode::ST_MODIF_OFF) && modifSystem->ModifCanStartByMouse(curSelections);
+        bool selectionAllowed = !hoodSystem->IsVisible() || (ST_MODIF_OFF == hoodSystem->GetModifMode()) || (ST_AXIS_NONE == hoodSystem->GetPassingAxis());
+
+        if (selectionAllowed && !modificationAllowed)
         {
             selecting = true;
             selectionStartPoint = event->point;
