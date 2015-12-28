@@ -100,11 +100,32 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
         return;
     }
 
-    sceneEditor->BeginBatch("Remove entities");
-
+    DAVA::Vector<DAVA::Entity*> entitiesToRemove;
+    entitiesToRemove.reserve(entityGroupContent.size());
     for (const auto& item : entityGroupContent)
     {
-        DAVA::Entity* entity = item.first;
+        entitiesToRemove.push_back(item.first);
+    }
+    std::sort(entitiesToRemove.begin(), entitiesToRemove.end(), [](DAVA::Entity* l, DAVA::Entity* r) {
+        // sort objects by parents (even if parent == nullptr), in order to remove children first
+        if (l->GetParent() == r)
+        {
+            return true;
+        }
+        else if (l == r->GetParent())
+        {
+            return false;
+        }
+        else
+        {
+            return reinterpret_cast<uintptr_t>(l->GetParent()) > reinterpret_cast<uintptr_t>(r->GetParent());
+        }
+    });
+
+    sceneEditor->BeginBatch("Remove entities");
+
+    for (auto entity : entitiesToRemove)
+    {
         if (entity->GetNotRemovable() == false)
         {
             for (auto delegate : delegates)
