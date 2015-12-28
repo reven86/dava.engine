@@ -120,9 +120,9 @@ inline GamepadDevice::eDavaGamepadProfile GamepadDevice::GetProfile() const
     return profile;
 }
 
-inline void GamepadDevice::SystemProcessElement(GamepadDevice::eDavaGamepadElement element, float32 value)
+inline void GamepadDevice::SystemProcessElement(eDavaGamepadElement element, float32 value)
 {
-    if (element >= 0 && element < GAMEPAD_ELEMENT_COUNT)
+    if (element < GAMEPAD_ELEMENT_COUNT)
     {
         elementValues[element] = value;
     }
@@ -132,9 +132,9 @@ inline void GamepadDevice::SystemProcessElement(GamepadDevice::eDavaGamepadEleme
     }
 }
 
-inline float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement element) const
+inline float32 GamepadDevice::GetElementState(eDavaGamepadElement element) const
 {
-    if (element >= 0 && element < GAMEPAD_ELEMENT_COUNT)
+    if (element < GAMEPAD_ELEMENT_COUNT)
     {
         return elementValues[element];
     }

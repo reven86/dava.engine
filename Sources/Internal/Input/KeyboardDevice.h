@@ -178,6 +178,7 @@ public:
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
+    friend class CorePlatformAndroid;
 #ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
 #endif
