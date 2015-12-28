@@ -130,6 +130,8 @@ private:
     void UpdateSelectionGroup(const EntityGroup& newSelection);
     void FinishSelection();
 
+    void ExcludeSingleItem(DAVA::Entity*);
+
     void DrawItem(DAVA::Entity* item, const DAVA::AABBox3& bbox, DAVA::int32 drawMode,
                   DAVA::RenderHelper::eDrawType wireDrawType, DAVA::RenderHelper::eDrawType solidDrawType,
                   const DAVA::Color& color);

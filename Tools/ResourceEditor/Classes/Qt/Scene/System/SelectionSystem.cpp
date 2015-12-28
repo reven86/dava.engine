@@ -450,50 +450,57 @@ bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity) const
     return false;
 }
 
+void SceneSelectionSystem::ExcludeSingleItem(DAVA::Entity* entity)
+{
+    auto& selectionContent = curSelections.GetMutableContent();
+
+    auto i = selectionContent.find(entity);
+    if (i != selectionContent.end())
+    {
+        curDeselections.Add(i->first, i->second);
+        selectionContent.erase(i);
+        selectionHasChanges = true;
+    }
+
+    if (objectsToSelect.ContainsEntity(entity))
+    {
+        objectsToSelect.Remove(entity);
+    }
+}
+
 void SceneSelectionSystem::ExcludeSelection(DAVA::Entity* entity)
 {
     if (!IsLocked())
     {
-        if (curSelections.ContainsEntity(entity))
-        {
-            curDeselections.Add(entity, curSelections.GetBoundingBoxForEntity(entity));
-            curSelections.Remove(entity);
-			selectionHasChanges = true;
-		}
-
-		UpdateHoodPos();
+        ExcludeSingleItem(entity);
+        curSelections.RebuildBoundingBox();
+        UpdateHoodPos();
 	}
 }
 
 void SceneSelectionSystem::ExcludeSelection(const EntityGroup& entities)
 {
-    if (IsLocked())
+    if (!IsLocked())
     {
-        return;
-    }
-
-    for (const auto& item : entities.GetContent())
-    {
-        if (curSelections.ContainsEntity(item.first))
+        for (const auto& item : entities.GetContent())
         {
-            curSelections.Remove(item.first);
-            curDeselections.Add(item.first, item.second);
-            selectionHasChanges = true;
+            ExcludeSingleItem(item.first);
         }
+        curSelections.RebuildBoundingBox();
+        UpdateHoodPos();
     }
-    UpdateHoodPos();
 }
 
 void SceneSelectionSystem::Clear()
 {
-	if(!IsLocked())
-	{
-        for (const auto& item : curSelections.GetContent())
+    if (!IsLocked())
+    {
+        auto allItems = curSelections.CopyContentToVector();
+        for (const auto& item : allItems)
         {
-            curDeselections.Add(item.first, GetSelectionAABox(item.first));
-            selectionHasChanges = true;
-		}
-        curSelections.Clear();
+            ExcludeSingleItem(item.first);
+        }
+        curSelections.RebuildBoundingBox();
         UpdateHoodPos();
 	}
 }

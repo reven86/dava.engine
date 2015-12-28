@@ -75,6 +75,7 @@ public:
     bool operator!=(const EntityGroup& ss) const;
 
     DAVA::Entity* GetFirstEntity() const;
+    EntityVector CopyContentToVector() const;
 
     void Join(const EntityGroup&);
     void Exclude(const EntityGroup&);

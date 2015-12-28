@@ -191,3 +191,14 @@ const DAVA::AABBox3& EntityGroup::GetBoundingBoxForEntity(DAVA::Entity* entity) 
     DVASSERT(ContainsEntity(entity));
     return entities.at(entity);
 }
+
+EntityGroup::EntityVector EntityGroup::CopyContentToVector() const
+{
+    EntityGroup::EntityVector result;
+    result.reserve(entities.size());
+    for (const auto& item : entities)
+    {
+        result.push_back(item);
+    }
+    return result;
+}
