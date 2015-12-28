@@ -160,6 +160,7 @@ static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames 
 KeyboardDevice::KeyboardDevice()
 {
     static_assert(static_cast<size_t>(Key::TOTAL_KEYS_COUNT) < MAX_KEYS, "check array size");
+    DVASSERT(static_cast<size_t>(Key::TOTAL_KEYS_COUNT) == keyNames.size(), "check name array size");
 
     ClearAllKeys();
     PrepareKeyTranslator();

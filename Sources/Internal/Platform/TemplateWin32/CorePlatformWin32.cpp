@@ -243,23 +243,19 @@ namespace DAVA
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
-        //isRightButtonPressed = false;
-        //isLeftButtonPressed = false;
-        //isMiddleButtonPressed = false;
-
         return true;
 	}
 
 	void CoreWin32Platform::Run()
 	{
-		Core::Instance()->SystemAppStarted();
+        Instance()->SystemAppStarted();
 
-		MSG msg;
+        MSG msg;
 		while(1)
 		{
-            DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+            uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
-			// process messages
+            // process messages
 			willQuit = false;
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 			{
@@ -268,8 +264,8 @@ namespace DAVA
 
 				if(msg.message == WM_QUIT)
 				{
-					ApplicationCore * appCore = Core::Instance()->GetApplicationCore();
-					if(appCore && appCore->OnQuit())
+                    ApplicationCore* appCore = Instance()->GetApplicationCore();
+                    if(appCore && appCore->OnQuit())
 					{
 						exit(0);
 					}
@@ -280,7 +276,7 @@ namespace DAVA
 				}
 			}
 
-            Core::SystemProcessFrame();
+            SystemProcessFrame();
 
             uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
             int32 sleepMs = 1;
@@ -435,139 +431,6 @@ namespace DAVA
         SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
     }
 
-    //  UIEvent::Phase CoreWin32Platform::MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, UIEvent& outTouch)
-    //  {
-    //      int button = 0;
-    //      UIEvent::Phase phase = UIEvent::Phase::ERROR;
-
-    //      if (LOWORD(wParam))
-    //      {
-    //          phase = UIEvent::Phase::MOVE;
-    //      }
-
-    //      if(isLeftButtonPressed)
-    //          button = 1;
-    //      else if(isRightButtonPressed)
-    //          button = 2;
-    //      else if(isMiddleButtonPressed)
-    //          button = 3;
-
-    //if(buttsFlags & RI_MOUSE_LEFT_BUTTON_DOWN || buttsFlags & RI_MOUSE_RIGHT_BUTTON_DOWN || buttsFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
-    //{
-    //          phase = UIEvent::Phase::BEGAN;
-    //          if(buttsFlags & RI_MOUSE_LEFT_BUTTON_DOWN)
-    //          {
-    //              isLeftButtonPressed = true;
-    //              button = 1;
-    //          }
-    //          if(buttsFlags & RI_MOUSE_RIGHT_BUTTON_DOWN)
-    //          {
-    //              isRightButtonPressed = true;
-    //              button = 2;
-    //          }
-    //          if(buttsFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
-    //          {
-    //              isMiddleButtonPressed = true;
-    //              button = 3;
-    //          }
-    //}
-    //else if(buttsFlags & RI_MOUSE_LEFT_BUTTON_UP || buttsFlags & RI_MOUSE_RIGHT_BUTTON_UP || buttsFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
-    //{
-    //          phase = UIEvent::Phase::ENDED;
-    //          if(buttsFlags & RI_MOUSE_LEFT_BUTTON_UP)
-    //          {
-    //              isLeftButtonPressed = false;
-    //              button = 1;
-    //          }
-    //          if(buttsFlags & RI_MOUSE_RIGHT_BUTTON_UP)
-    //          {
-    //              isRightButtonPressed = false;
-    //              button = 2;
-    //          }
-    //          if(buttsFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
-    //          {
-    //              isMiddleButtonPressed = false;
-    //              button = 3;
-    //          }
-    //}
-    //      else if (button && phase == UIEvent::Phase::MOVE)
-    //      {
-    //          phase = UIEvent::Phase::DRAG;
-    //      }
-
-    //      if (phase == UIEvent::Phase::ERROR)
-    //      {
-    //          return phase;
-    //      }
-
-    //      outTouch.mouseButton = static_cast<UIEvent::MouseButton>(button);
-    //      outTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
-    //      outTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
-    //      outTouch.phase = phase;
-    //      outTouch.device = deviceId;
-    //      outTouch.tapCount = 1;
-    //      outTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-
-    //      return phase;
-    //  }
-
-    //   static bool mouseCursorShown = true;
-    //   static USHORT mouseButtonsDownMask = 0;
-
-    //   void HandleMouseButtonsPressed(USHORT buttsFlags)
-    //   {
-    //       if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
-    //       {
-    //           mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
-    //       }
-    //       if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
-    //       {
-    //           mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
-    //       }
-    //       if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
-    //       {
-    //		mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
-    //	}
-    //	if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
-    //	{
-    //		mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
-    //	}
-    //	if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)
-    //	{
-    //		mouseButtonsDownMask |= RI_MOUSE_BUTTON_5_DOWN;
-    //	}
-    //}
-
-    //void HandleMouseButtonsReleased(USHORT buttsFlags)
-    //{
-    //	if (mouseButtonsDownMask == 0)
-    //	{
-    //		return;
-    //	}
-
-    //	// Reset the mouse buttons mask, release capture if mask is empty (all buttons released).
-    //	if (buttsFlags & RI_MOUSE_BUTTON_1_UP)
-    //	{
-    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_1_DOWN;
-    //	}
-    //	if (buttsFlags & RI_MOUSE_BUTTON_2_UP)
-    //	{
-    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_2_DOWN;
-    //	}
-    //	if (buttsFlags & RI_MOUSE_BUTTON_3_UP)
-    //	{
-    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_3_DOWN;
-    //	}
-    //	if (buttsFlags & RI_MOUSE_BUTTON_4_UP)
-    //	{
-    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_4_DOWN;
-    //	}
-    //	if (buttsFlags & RI_MOUSE_BUTTON_5_UP)
-    //	{
-    //		mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_5_DOWN;
-    //	}
-    //}
-
     struct MouseButtonChange
     {
         UIEvent::MouseButton button;
@@ -675,43 +538,6 @@ namespace DAVA
         UIControlSystem::Instance()->OnInput(&e);
     }
 
-    //  void CoreWin32Platform::OnMouseEvent(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
-    //  {
-    //      UIEvent newTouch;
-
-    //      if (HIWORD(wParam) || mouseButtonsDownMask > 0) // isPoint inside window or some clicks already captured
-    //      {
-    //          HandleMouseButtonsPressed(buttsFlags);
-    //      }
-
-    //      if(buttsFlags & RI_MOUSE_WHEEL)
-    //      {
-    //          newTouch.phase = UIEvent::Phase::WHEEL;
-
-    //          newTouch.mouseButton = UIEvent::MouseButton::None;
-    //          newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
-    //          newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
-    //          newTouch.scrollDelta.y = static_cast<int16>(buttonData) / static_cast<float32>(WHEEL_DELTA);
-    //          newTouch.phase = UIEvent::Phase::WHEEL;
-    //          newTouch.device = deviceId;
-    //          newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-    //      }
-    //      else
-    //{
-    //          if(HIWORD(wParam) || mouseButtonsDownMask > 0) // HIWORD(wParam) - isPoint inside window
-    //	{
-    //              newTouch.phase = MoveTouchsToVector(deviceId, buttsFlags, wParam, lParam, newTouch);
-    //          }
-    //      }
-
-    //      if (newTouch.phase != UIEvent::Phase::ERROR)
-    //      {
-    //          UIControlSystem::Instance()->OnInput(&newTouch);
-    //      }
-
-    //      HandleMouseButtonsReleased(buttsFlags);
-    //  }
-
     void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure)
     {
         UIEvent newTouch;
@@ -725,32 +551,6 @@ namespace DAVA
 
         UIControlSystem::Instance()->OnInput(&newTouch);
     }
-
-    //struct MouseDevice
-    //{
-    //    uint32 which; // mouse index
-    //    String name; // name for debug
-    //};
-
-    //struct TouchDevice
-    //{
-    //    uint32 which; // surface index
-    //    String name; // name for debug
-    //};
-
-    //String CoreWin32Platform::GetDeviceName(HANDLE hDevice)
-    //{
-    //    std::array<char, 1024> buffer;
-    //    UINT size = static_cast<UINT>(buffer.size());
-    //    int resultSize = GetRawInputDeviceInfoA(hDevice, RIDI_DEVICENAME, &buffer[0], &size);
-    //    if (resultSize > 0)
-    //    {
-    //        return String(buffer.data(), static_cast<size_t>(resultSize));
-    //    }
-
-    //    DVASSERT(false && "Failed to get device name");
-    //    return String();
-    //}
 
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
@@ -959,13 +759,6 @@ namespace DAVA
             CloseTouchInputHandle(h_touch_input);
             return 0;
         }
-        //case WM_NCMOUSEMOVE:
-        //    if (!mouseCursorShown)
-        //    {
-        //        ShowCursor(true);
-        //        mouseCursorShown = true;
-        //    }
-        //    break;
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
