@@ -1323,7 +1323,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         if (clipContents)
         { //WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
             RenderSystem2D::Instance()->PushClip();
-            RenderSystem2D::Instance()->IntersectClipRect(drawData.GetAABBox());
+            RenderSystem2D::Instance()->IntersectClipRect(unrotatedRect); //anyway it doesn't work with rotation
         }
 
         Draw(drawData);
