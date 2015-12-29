@@ -29,10 +29,6 @@
 
 #include "Scene/EntityGroup.h"
 
-EntityGroup::EntityGroup()
-{
-}
-
 EntityGroup::EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox)
 {
     entities.insert({ entity, entityBbox });
@@ -42,10 +38,6 @@ EntityGroup::EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox)
 EntityGroup::EntityGroup(const EntityVector& ss)
 {
     entities.insert(ss.begin(), ss.end());
-}
-
-EntityGroup::~EntityGroup()
-{
 }
 
 void EntityGroup::Add(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox)
@@ -73,32 +65,20 @@ DAVA::Entity* EntityGroup::GetFirstEntity() const
     return entities.empty() ? nullptr : entities.begin()->first;
 }
 
-DAVA::Vector3 EntityGroup::GetFirstZeroPos() const
+DAVA::Vector3 EntityGroup::GetAnyEntityTranslationVector() const
 {
     return entities.empty() ? DAVA::Vector3(0.0f, 0.0f, 0.0f) :
                               entities.begin()->first->GetWorldTransform().GetTranslationVector();
 }
 
-DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
+DAVA::Vector3 EntityGroup::GetCommonTranslationVector() const
 {
-    DAVA::Vector3 ret;
-
-    if (entities.size() == 1)
+    DAVA::AABBox3 tmp;
+    for (const auto& item : entities)
     {
-        ret = GetFirstZeroPos();
+        tmp.AddPoint(item.first->GetWorldTransform().GetTranslationVector());
     }
-    else if (entities.size() > 0)
-    {
-        DAVA::AABBox3 tmp;
-        for (const auto& item : entities)
-        {
-            tmp.AddPoint(item.first->GetWorldTransform().GetTranslationVector());
-        }
-
-        ret = tmp.GetCenter();
-    }
-
-    return ret;
+    return tmp.GetCenter();
 }
 
 EntityGroup& EntityGroup::operator=(const EntityGroup& ss)

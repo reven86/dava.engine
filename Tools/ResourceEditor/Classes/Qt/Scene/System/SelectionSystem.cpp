@@ -216,10 +216,10 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
     Vector3 p3;
     Vector3 p4;
     SceneCameraSystem* cameraSystem = ((SceneEditor2*)GetScene())->cameraSystem;
-    cameraSystem->GetRayTo2dPoint(Vector2(minX, minY), 1000.0f, p0, p1);
-    cameraSystem->GetRayTo2dPoint(Vector2(maxX, minY), 1000.0f, p0, p2);
-    cameraSystem->GetRayTo2dPoint(Vector2(minX, maxY), 1000.0f, p0, p4);
-    cameraSystem->GetRayTo2dPoint(Vector2(maxX, maxY), 1000.0f, p0, p3);
+    cameraSystem->GetRayTo2dPoint(Vector2(minX, minY), 1.0f, p0, p1);
+    cameraSystem->GetRayTo2dPoint(Vector2(maxX, minY), 1.0f, p0, p2);
+    cameraSystem->GetRayTo2dPoint(Vector2(minX, maxY), 1.0f, p0, p4);
+    cameraSystem->GetRayTo2dPoint(Vector2(maxX, maxY), 1.0f, p0, p3);
 
     Plane planes[4];
     planes[0] = Plane(p2, p1, p0);
@@ -583,12 +583,12 @@ void SceneSelectionSystem::UpdateHoodPos() const
 		switch (curPivotPoint)
 		{
 		case ST_PIVOT_ENTITY_CENTER:
-            p = curSelections.GetFirstZeroPos();
+            p = curSelections.GetAnyEntityTranslationVector();
             break;
 
         default:
-			p = curSelections.GetCommonZeroPos();
-			break;
+            p = curSelections.GetCommonTranslationVector();
+            break;
 		}
 
 		// check if we have locked entities in selection group

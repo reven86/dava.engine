@@ -121,7 +121,7 @@ void SaveEntityAsAction::Redo()
         {
             container.reset(new Entity());
 
-            const Vector3 oldZero = entities->GetCommonZeroPos();
+            const Vector3 oldZero = entities->GetCommonTranslationVector();
             for (const auto& item : entities->GetContent())
             {
                 ScopedPtr<Entity> clone(item.first->Clone());

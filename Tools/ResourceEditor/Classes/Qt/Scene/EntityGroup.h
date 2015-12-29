@@ -44,10 +44,9 @@ public:
     static DAVA::AABBox3 TransformItemBoundingBox(const EntityWithBbox& item);
 
 public:
-    EntityGroup();
+    EntityGroup() = default;
     EntityGroup(const EntityVector& ss);
     EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
-    ~EntityGroup();
 
     void Add(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
     void Remove(DAVA::Entity* entity);
@@ -59,8 +58,8 @@ public:
     const DAVA::AABBox3& GetCommonBbox() const;
     const DAVA::AABBox3& GetBoundingBoxForEntity(DAVA::Entity*) const;
 
-    DAVA::Vector3 GetFirstZeroPos() const;
-    DAVA::Vector3 GetCommonZeroPos() const;
+    DAVA::Vector3 GetAnyEntityTranslationVector() const;
+    DAVA::Vector3 GetCommonTranslationVector() const;
 
     bool IsEmpty() const;
     bool ContainsEntity(DAVA::Entity *entity) const;

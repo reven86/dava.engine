@@ -309,8 +309,8 @@ public:
     inline bool operator==(const Vector4& _v) const;
     inline bool operator!=(const Vector4& _v) const;
 
-    inline Vector3& GetXYZ();
-    inline const Vector3& GetXYZ() const;
+    inline Vector3& GetVector3();
+    inline const Vector3& GetVector3() const;
 };
 
 //! operators
@@ -1058,12 +1058,12 @@ inline bool Vector4::operator != (const Vector4 & _v) const
 	return ((x != _v.x) || (y != _v.y) || (z != _v.z) || (w != _v.w));
 }
 
-inline const Vector3& Vector4::GetXYZ() const
+inline const Vector3& Vector4::GetVector3() const
 {
     return *(reinterpret_cast<const Vector3*>(data));
 }
 
-inline Vector3& Vector4::GetXYZ()
+inline Vector3& Vector4::GetVector3()
 {
     return *(reinterpret_cast<Vector3*>(data));
 }
