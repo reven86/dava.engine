@@ -147,6 +147,7 @@ elseif ( WINDOWS_UAP )
             "dxgi.lib"
             "dxguid.lib"
             "dwrite.lib"
+            "iphlpapi.lib"
     )
     set ( IGNORED_RHI_FOLDER "DX9" "GLES2" "Metal" )
 
