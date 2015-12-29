@@ -32,10 +32,6 @@
 
 #include "Base/BaseObject.h"
 
-#ifdef DELETE
-#undef DELETE
-#endif
-
 /**
 	\defgroup inputsystem	Input System
 */
