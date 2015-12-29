@@ -45,7 +45,7 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
-#define DAVA_WINUAP_MOUSE_HACK
+//#define DAVA_WINUAP_MOUSE_HACK
 
 namespace DAVA
 {
@@ -217,6 +217,7 @@ private:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
+    static const wchar_t* xamlWebView;
     Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
     Windows::Foundation::EventRegistrationToken token;
 
