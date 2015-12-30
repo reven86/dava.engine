@@ -69,8 +69,6 @@ public:
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData &geometricData) override;
 	
-	void Input(UIEvent * touch) override;
-
 private:
     void Cancel(BaseObject *obj, void *data, void *callerData);
     void Restart(BaseObject *obj, void *data, void *callerData);

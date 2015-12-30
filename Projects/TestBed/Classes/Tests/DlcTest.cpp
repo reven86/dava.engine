@@ -179,25 +179,6 @@ void DlcTest::WillAppear()
     dlc->Start();
 }
 
-void DlcTest::Input(UIEvent * event)
-{
-    if (event->phase == UIEvent::Phase::KEY_DOWN)
-	{
-		if (event->keyChar == '1')
-		{
-            if (nullptr != dlc)
-            {
-                dlc->Cancel();
-            }
-		}
-        if (event->keyChar == '2')
-        {
-            Message m(this, &DlcTest::Cancel);
-            m(this);
-        }
-	}
-}
-
 void DlcTest::Update(float32 timeElapsed)
 {
     BaseScreen::Update(timeElapsed);
