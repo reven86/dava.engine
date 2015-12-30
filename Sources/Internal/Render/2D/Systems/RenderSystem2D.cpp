@@ -467,10 +467,10 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
     if (currentClip.dx > 0.f && currentClip.dy > 0.f)
     {
         const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
-        packet.scissorRect.x = (int16)transformedClipRect.x;
-        packet.scissorRect.y = (int16)transformedClipRect.y;
-        packet.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
-        packet.scissorRect.height = (int16)ceilf(transformedClipRect.dy);
+        packet.scissorRect.x = static_cast<int16>(transformedClipRect.x + 0.5f);
+        packet.scissorRect.y = static_cast<int16>(transformedClipRect.y + 0.5f);
+        packet.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
+        packet.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
         packet.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
     }
     rhi::AddPacket(currentPacketListHandle, packet);
@@ -668,10 +668,10 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
             const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
-            currentPacket.scissorRect.x = (int16)transformedClipRect.x;
-            currentPacket.scissorRect.y = (int16)transformedClipRect.y;
-            currentPacket.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
-            currentPacket.scissorRect.height = (int16)ceilf(transformedClipRect.dy);
+            currentPacket.scissorRect.x = static_cast<int16>(transformedClipRect.x + 0.5f);
+            currentPacket.scissorRect.y = static_cast<int16>(transformedClipRect.y + 0.5f);
+            currentPacket.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
+            currentPacket.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
             currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
         }
         else

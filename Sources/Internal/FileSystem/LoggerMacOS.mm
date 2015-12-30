@@ -30,7 +30,7 @@
 #include "FileSystem/Logger.h"
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-#import <Foundation/Foundation.h>
+#include <iostream>
 
 namespace DAVA 
 {
@@ -39,7 +39,7 @@ namespace DAVA
 	
 void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
-	NSLog(@"[%s] %s", GetLogLevelString(ll), text);
+    std::cout << "[" << GetLogLevelString(ll) << "] " << text << std::endl;
 }
 
 }
