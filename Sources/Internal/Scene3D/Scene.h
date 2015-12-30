@@ -200,11 +200,6 @@ public:
         \brief Overloaded GetScene returns this, instead of normal functionality.
      */
     virtual Scene * GetScene();
-    
-	void AddAnimatedMesh(AnimatedMesh * mesh);
-	void RemoveAnimatedMesh(AnimatedMesh * mesh);
-	AnimatedMesh * GetAnimatedMesh(int32 index);
-	inline int32	GetAnimatedMeshCount();
 
     virtual void HandleEvent(Observable * observable); //Handle RenderOptions
 	
@@ -282,7 +277,6 @@ protected:
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
 
-	Vector<AnimatedMesh*> animatedMeshes;
 	Vector<Camera*> cameras;
     
     NMaterial* sceneGlobalMaterial;
@@ -295,12 +289,6 @@ protected:
 
     friend class Entity;
 };
-
-
-int32 Scene::GetAnimatedMeshCount()
-{
-    return (int32)animatedMeshes.size();
-}
 
 int32 Scene::GetCameraCount()
 {

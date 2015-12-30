@@ -31,7 +31,6 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/MeshInstanceNode.h"
 #include "Render/Texture.h"
-#include "Render/3D/AnimatedMesh.h"
 #include "Scene3D/PathManip.h"
 #include "Scene3D/SkeletonNode.h"
 #include "Scene3D/BoneNode.h"

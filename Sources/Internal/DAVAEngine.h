@@ -198,7 +198,6 @@
 #include "Particles/Particle.h"
 
 // 3D core classes
-#include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
@@ -237,7 +236,6 @@
 #include "Scene3D/UserNode.h"
 #include "Scene3D/Systems/LodSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
-#include "Scene3D/BillboardNode.h"
 #include "Scene3D/BoneNode.h"
 #include "Scene3D/SkeletonNode.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
