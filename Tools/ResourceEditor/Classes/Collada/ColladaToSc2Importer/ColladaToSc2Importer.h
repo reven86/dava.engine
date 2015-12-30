@@ -27,37 +27,40 @@
 =====================================================================================*/
 
 
-#include "DAEConvertAction.h"
-#include "Collada/ColladaConvert.h"
+#ifndef __COLLADA_TO_SC2_IMPORTER_H__
+#define __COLLADA_TO_SC2_IMPORTER_H__
 
-#include "Deprecated/SceneValidator.h"
+#include "Collada/ColladaToSc2Importer/ImportLibrary.h"
+#include "Collada/ColladaErrorCodes.h"
 
-#include "Scene/SceneHelper.h"
-#include "Commands2/ConvertToShadowCommand.h"
-
-using namespace DAVA;
-
-DAEConvertAction::DAEConvertAction(const DAVA::FilePath &path)
-	: CommandAction(CMDID_DAE_CONVERT, "DAE to SC2 Convert")
-	, daePath(path)
-{ }
-
-void DAEConvertAction::Redo()
+namespace DAVA
 {
-    if (FileSystem::Instance()->Exists(daePath) && daePath.IsEqualToExtension(".dae"))
-    {
-        eColladaErrorCodes code = ConvertDaeToSc2(daePath);
-        if (code == COLLADA_OK)
-        {
-            return;
-        }
-		else if(code == COLLADA_ERROR_OF_ROOT_NODE)
-		{
-			Logger::Error("Can't convert from DAE. Looks like one of materials has same name as root node.");
-		}
-		else
-		{
-            Logger::Error("[DAE to SC2] Can't convert from DAE.");
-        }
-	}
-}
+
+class Entity;
+class ColladaSceneNode;
+class ImportLibrary;
+
+class ColladaToSc2Importer
+{
+public:
+    eColladaErrorCodes SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath);
+
+private:
+    void ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity);
+    void LoadMaterialParents(ColladaScene * colladaScene);
+    void LoadAnimations(ColladaScene * colladaScene);
+    eColladaErrorCodes VerifyDavaMesh(RenderObject* mesh, const FastName name);
+    eColladaErrorCodes ImportMeshes(const Vector<ColladaMeshInstance*>& meshInstances, Entity* node);
+    eColladaErrorCodes BuildSceneAsCollada(Entity* root, ColladaSceneNode* colladaNode);
+    Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);
+
+
+    ImportLibrary library;
+
+    void ReportError(const String& errMessage);
+    Set<String> errorLogs;
+};
+
+};
+
+#endif 
