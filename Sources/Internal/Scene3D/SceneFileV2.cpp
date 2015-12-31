@@ -31,7 +31,6 @@
 #include "Scene3D/Entity.h"
 #include "Render/Texture.h"
 #include "Scene3D/PathManip.h"
-#include "Scene3D/SwitchNode.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Mesh.h"
 #include "Render/3D/MeshUtils.h"
@@ -43,15 +42,11 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Systems/EventSystem.h"
-#include "Scene3D/ParticleEmitterNode.h"
-#include "Scene3D/ParticleEffectNode.h"
 #include "Scene3D/Components/CameraComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/UserComponent.h"
-#include "Scene3D/ShadowVolumeNode.h"
-#include "Scene3D/UserNode.h"
 
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
@@ -89,9 +84,6 @@ SceneFileV2::SceneFileV2()
 	
 	serializationContext.SetDebugLogEnabled(isDebugLogEnabled);
 	serializationContext.SetLastError(lastError);
-
-	UserNode *n = new UserNode();
-	n->Release();
 }
 
 SceneFileV2::~SceneFileV2()
@@ -920,31 +912,6 @@ Entity * SceneFileV2::LoadLight(Scene * scene, KeyedArchive * archive)
     
     return lightEntity;
 }
-
-
-void SceneFileV2::ConvertShadows(Entity * currentNode)
-{
-	for(int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
-	{
-		Entity * childNode = currentNode->GetChild(c);
-		if(String::npos != childNode->GetName().find("_shadow"))
-		{
-			DVASSERT(childNode->GetChildrenCount() == 1);
-			Entity * svn = childNode->FindByName(FastName("dynamicshadow.shadowvolume"));
-			if(!svn)
-			{
-				MeshInstanceNode * mi = dynamic_cast<MeshInstanceNode*>(childNode->GetChild(0));
-				DVASSERT(mi);
-				mi->ConvertToShadowVolume();
-				childNode->RemoveNode(mi);
-			}
-		}
-		else
-		{
-			ConvertShadows(childNode);
-		}
-	}
-}
     
 bool SceneFileV2::RemoveEmptySceneNodes(DAVA::Entity * currentNode)
 {
@@ -1238,7 +1205,6 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     removedNodeCount = 0;
     rootNode->BakeTransforms();
     
-	//ConvertShadows(rootNode);
     RemoveEmptySceneNodes(rootNode);
 	RemoveEmptyHierarchy(rootNode);
 

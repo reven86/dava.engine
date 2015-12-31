@@ -171,7 +171,6 @@ public:
     void OptimizeScene(Entity * rootNode);    
     bool RemoveEmptySceneNodes(Entity * rootNode);
     bool RemoveEmptyHierarchy(Entity * currentNode);
-	void ConvertShadows(Entity * rootNode);
     void RebuildTangentSpace(Entity *entity);
     void ConvertShadowVolumes(Entity * rootNode, NMaterial * shadowMaterialParent);
     void RemoveDeprecatedMaterialFlags(Entity * rootNode);
