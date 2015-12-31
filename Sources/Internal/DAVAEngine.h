@@ -214,7 +214,6 @@
 // 3D scene management
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/MeshInstanceNode.h"
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Highlevel/Landscape.h"
@@ -228,7 +227,6 @@
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "Scene3D/AnimationData.h"
-#include "Scene3D/ShadowVolumeNode.h"
 #include "Scene3D/ParticleEmitterNode.h"
 #include "Scene3D/ParticleEffectNode.h"
 #include "Scene3D/SwitchNode.h"

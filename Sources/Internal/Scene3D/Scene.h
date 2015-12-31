@@ -53,7 +53,6 @@ class StaticMesh;
 class AnimatedMesh;
 class SceneNodeAnimationList;
 class DataNode;
-class ShadowVolumeNode;
 class Light;
 class ShadowRect;
 class QuadTree;
