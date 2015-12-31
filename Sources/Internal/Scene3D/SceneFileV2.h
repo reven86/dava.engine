@@ -217,10 +217,6 @@ private:
     Entity * LoadLight(Scene * scene, KeyedArchive * archive);
 
     void ApplyFogQuality();
-
-    bool ReplaceNodeAfterLoad(Entity * node);
-
-	void ReplaceOldNodes(Entity * currentNode);
 		
 	void WriteDescriptor(File* file, const Descriptor& descriptor) const;
 	void ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);
