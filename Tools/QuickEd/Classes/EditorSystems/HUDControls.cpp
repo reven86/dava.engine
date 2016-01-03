@@ -73,8 +73,18 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-    bool contolIsInValidState = gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
-    bool valid = control->GetVisibleForUIEditor() && contolIsInValidState;
+    if(HUDAreaInfo::FRAME_AREA)
+    {
+        static Rect rect;
+        Rect rect2 = GetGeometricData().GetUnrotatedRect();
+        if(rect != rect2)
+        {
+            rect = rect2;
+            DAVA::Logger::Debug("new rect: %f %f %f %f", rect.x, rect.y, rect.dx, rect.dy);
+        }
+    }
+    bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool valid = contolIsInValidState && control->GetVisibleForUIEditor();
     if(valid)
     {
         auto parent = control->GetParent();
@@ -84,7 +94,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
             parent = parent->GetParent();
         }
     }
-    SetVisible(valid && visibleInSystems);
+    SetVisible(valid);
     if (valid)
     {
         for (auto child : childs)
@@ -98,12 +108,6 @@ void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
 {
     InitFromGD(control->GetGeometricData());
     UIControl::SystemDraw(geometricData);
-}
-
-void HUDContainer::SetVisibleInSystems(bool arg)
-{
-    visibleInSystems = arg;
-    SetVisible(valid && visibleInSystems);
 }
 
 void FrameControl::Init()

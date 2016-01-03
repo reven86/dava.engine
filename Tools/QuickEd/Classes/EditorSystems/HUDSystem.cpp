@@ -194,14 +194,13 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             return true;
         }
         //check that we can draw rect
-        Vector<ControlNode*> nodes;
         Vector<ControlNode*> nodesUnderPoint;
         Vector2 point = currentInput->point;
         auto predicate = [point](const UIControl* control) -> bool {
             return control->GetVisibleForUIEditor() && control->IsPointInside(point);
         };
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-        bool noHudableControls = nodes.empty();
+        bool noHudableControls = nodesUnderPoint.empty();
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         SetCanDrawRect(hotKeyDetected || noHudableControls);
         return canDrawRect;
@@ -244,8 +243,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
 
 void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
 {
-    hudVisible = rootControls.size() == 1;
-    UpdateAreasVisibility();
+    OnEmulationModeChanged(rootControls.size() == 1);
 }
 
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)
@@ -384,11 +382,6 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
 
 void HUDSystem::UpdateAreasVisibility()
 {
-    for (auto& pair : hudMap)
-    {
-        pair.second->container->SetVisibleInSystems(hudVisible);
-    }
-
     bool showAreas = sortedControlList.size() == 1;
 
     for (const auto& iter : sortedControlList)

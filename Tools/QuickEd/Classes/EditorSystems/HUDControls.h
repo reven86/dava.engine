@@ -54,14 +54,11 @@ public:
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
-    void SetVisibleInSystems(bool arg);
 
 private:
     ~HUDContainer() = default;
     DAVA::UIControl* control = nullptr;
     DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
-    bool valid = false;
-    bool visibleInSystems = true;
 };
 
 template <typename T>
