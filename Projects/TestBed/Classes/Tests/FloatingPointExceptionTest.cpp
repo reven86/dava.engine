@@ -38,72 +38,75 @@ FloatingPointExceptionTest::FloatingPointExceptionTest ()
 
 void DoFloatingPointException(DAVA::BaseObject*, void*, void*)
 {
-    DAVA::Logger::Debug("start floating point test");
-    
-    DAVA::float32 max_value = std::numeric_limits<float>::max();
-    DAVA::float32 min_value = std::numeric_limits<float>::min();
-    DAVA::float32 inf = std::numeric_limits<float>::infinity();
+    using namespace DAVA;
+    Logger::Debug("start floating point test");
+
+    float32 max_value = std::numeric_limits<float>::max();
+    float32 min_value = std::numeric_limits<float>::min();
+    float32 inf = std::numeric_limits<float>::infinity();
     try
     {
-        DAVA::float32 value = max_value / 0.f;
-        DAVA::Logger::Debug("value: max_value / 0.f == %f", value);
+        float32 value = max_value / 0.f;
+        Logger::Debug("value: max_value / 0.f == %f", value);
     } catch (std::exception& ex)
     {
-        DAVA::Logger::Debug("catch floating point exception: %s", ex.what());
+        Logger::Debug("catch floating point exception: %s", ex.what());
     }
 
     try
     {
-        DAVA::float32 value = max_value * max_value;
-        DAVA::Logger::Debug("value: max_value * max_value == %f", value);
+        float32 value = max_value * max_value;
+        Logger::Debug("value: max_value * max_value == %f", value);
     }
     catch (std::exception& ex)
     {
-        DAVA::Logger::Debug("catch floating point exception: %s", ex.what());
+        Logger::Debug("catch floating point exception: %s", ex.what());
     }
 
     try
     {
-        DAVA::float32 value = min_value / max_value;
-        DAVA::Logger::Debug("value: min_value / max_value == %f", value);
+        float32 value = min_value / max_value;
+        Logger::Debug("value: min_value / max_value == %f", value);
     }
     catch (std::exception& ex)
     {
-        DAVA::Logger::Debug("catch floating point exception: %s", ex.what());
+        Logger::Debug("catch floating point exception: %s", ex.what());
     }
 
     try
     {
-        DAVA::float32 value = inf * 0.f;
-        DAVA::Logger::Debug("value: inf * 0.f == %f", value);
+        float32 value = inf * 0.f;
+        Logger::Debug("value: inf * 0.f == %f", value);
     }
     catch (std::exception& ex)
     {
-        DAVA::Logger::Debug("catch floating point exception: %s", ex.what());
+        Logger::Debug("catch floating point exception: %s", ex.what());
     }
 
-    DAVA::Logger::Debug("finish floating point test");
+    Logger::Debug("finish floating point test");
 }
 
 void FloatingPointExceptionTest::LoadResources()
 {
+    using namespace DAVA;
     BaseScreen::LoadResources();
-    
-    DAVA::ScopedPtr<DAVA::FTFont> font(DAVA::FTFont::Create("~res:/Fonts/korinna.ttf"));
 
-    DAVA::UIButton* resetButton = new DAVA::UIButton(DAVA::Rect(420, 30, 200, 30));
+    ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
+
+    UIButton* resetButton = new UIButton(Rect(420, 30, 200, 30));
     resetButton->SetDebugDraw(true);
     resetButton->SetStateFont(0xFF, font);
-    resetButton->SetStateFontColor(0xFF, DAVA::Color::White);
+    resetButton->SetStateFontColor(0xFF, Color::White);
     resetButton->SetStateText(0xFF, L"Generate Floating point exception");
-    resetButton->AddEvent(DAVA::UIButton::EVENT_TOUCH_DOWN, DAVA::Message(&DoFloatingPointException));
+    resetButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(&DoFloatingPointException));
     AddControl(resetButton);
 
 }
 
 void FloatingPointExceptionTest::UnloadResources()
 {
+    RemoveAllControls();
+
     BaseScreen::UnloadResources();
-    //TODO: Release resources here
 }
 

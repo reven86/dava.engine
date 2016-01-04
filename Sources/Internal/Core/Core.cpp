@@ -115,13 +115,13 @@ Core::~Core()
     SafeRelease(core);
 }
 
-namespace debug_details
+namespace fpu_exceptions
 {
 #ifdef __DAVAENGINE_DEBUG__
 #ifdef __DAVAENGINE_WINDOWS__
-void (*defaultStructuredExceptionFunc)(unsigned int, PEXCEPTION_POINTERS) = nullptr;
+void (*SEFuncPtr)(unsigned int, PEXCEPTION_POINTERS) = nullptr;
 
-void structuredExceptionHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
+void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
 {
     switch (exceptionCode)
     {
@@ -137,38 +137,40 @@ void structuredExceptionHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS 
     case STATUS_FLOAT_MULTIPLE_FAULTS:
     {
         _clearfp();
-        std::stringstream ss;
+        StringStream ss;
         ss << "floating-point structured exception: 0x" << std::hex << exceptionCode
            << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
         throw std::runtime_error(ss.str());
     }
     default:
-        if (defaultStructuredExceptionFunc != nullptr)
+        if (SEFuncPtr != nullptr)
         {
-            defaultStructuredExceptionFunc(exceptionCode, pExpInfo);
+            SEFuncPtr(exceptionCode, pExpInfo);
         }
         else
         {
-            std::stringstream ss;
+            StringStream ss;
             ss << "structured exception: 0x" << std::hex << exceptionCode
                << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
             throw std::runtime_error(ss.str());
         }
-    };
+    }
 };
 
 void EnableFloatingPointExceptions()
 {
-    debug_details::defaultStructuredExceptionFunc = _set_se_translator(&debug_details::structuredExceptionHandler); // https://msdn.microsoft.com/en-us/library/5z4bw5h5.aspx
+    // https://msdn.microsoft.com/en-us/library/5z4bw5h5.aspx
+    fpu_exceptions::SEFuncPtr = _set_se_translator(&fpu_exceptions::SEHandler);
 
-    unsigned int fe_value = ~(_EM_INVALID | /*_EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW /* | _EM_INEXACT*/);
+    unsigned int feValue = ~(_EM_INVALID | /*_EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW /* | _EM_INEXACT*/);
     unsigned int mask = _MCW_EM;
     unsigned int currentWord = 0;
     errno_t err = _controlfp_s(&currentWord, 0, 0);
     DVASSERT(err == 0);
-    err = _controlfp_s(&currentWord, fe_value, mask); // https://msdn.microsoft.com/en-us/library/c9676k6h.aspx
+    // https://msdn.microsoft.com/en-us/library/c9676k6h.aspx
+    err = _controlfp_s(&currentWord, feValue, mask);
     DVASSERT(err == 0);
-    Logger::Info("FPU exceptions enabled");
+    Logger::FrameworkDebug("FPU exceptions enabled");
 }
 #else // __DAVAENGINE_WINDOWS__
 void EnableFloatingPointExceptions()
@@ -178,14 +180,14 @@ void EnableFloatingPointExceptions()
 // on iOS better in debug add flag -fsanitize=undefined
 #ifdef __DAVAENGINE_ANDROID__
 #ifndef FE_NOMASK_ENV
-    Logger::Info("FPU exceptions not supported");
+    Logger::FrameworkDebug("FPU exceptions not supported");
     // still try
     int result = feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
     DVASSERT(result != -1);
 #else
     int result = feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
     DVASSERT(result != -1);
-    Logger::Info("FPU exceptions enabled");
+    Logger::FrameworkDebug("FPU exceptions enabled");
 #endif
 #endif // __DAVAENGINE_ANDROID__
 }
@@ -199,7 +201,7 @@ void DisableFloatingPointExceptions()
 #else // non __DAVAENGINE_WINDOWS__
 void DisableFloatingPointExceptions()
 {
-    Logger::Info("disable FPU exceptions");
+    Logger::FrameworkDebug("disable FPU exceptions");
 #ifdef __DAVAENGINE_ANDROID__
     int result = fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW /* | FE_INEXACT */);
     DVASSERT(result != -1);
@@ -217,9 +219,9 @@ void Core::CreateSingletons()
     new Logger();
     
 #ifdef __DAVAENGINE_DEBUG__
-    debug_details::EnableFloatingPointExceptions();
+    fpu_exceptions::EnableFloatingPointExceptions();
 #else
-    debug_details::DisableFloatingPointExceptions();
+    fpu_exceptions::DisableFloatingPointExceptions();
 #endif // __DAVAENGINE_DEBUG__
 
     new AllocatorFactory();
