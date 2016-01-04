@@ -310,7 +310,7 @@ void WebViewControl::SetRect(const Rect& rect)
     Rect convertedRect = VCS.ConvertVirtualToPhysical(rect);
 
     webViewRect.size.width = convertedRect.dx;
-	webViewRect.size.height = convertedRect.dy;
+    webViewRect.size.height = convertedRect.dy;
 
     NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
     DVASSERT(openGLView);

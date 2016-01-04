@@ -42,6 +42,11 @@
 
 #include "Document.h"
 
+#include "EditorSystems/CanvasSystem.h"
+#include "EditorSystems/HUDSystem.h"
+#include "Ruler/RulerWidget.h"
+#include "Ruler/RulerController.h"
+
 using namespace DAVA;
 
 namespace
@@ -60,11 +65,24 @@ struct PreviewContext : WidgetContext
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
     , scrollAreaController(new ScrollAreaController(this))
+    , rulerController(new RulerController(this))
 {
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
                 << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
     setupUi(this);
+
+    connect(this, &PreviewWidget::ScaleChanged, rulerController, &RulerController::SetScale);
+    connect(rulerController, &RulerController::HorisontalRulerSettingsChanged, horizontalRuler, &RulerWidget::OnRulerSettingsChanged);
+    connect(rulerController, &RulerController::VerticalRulerSettingsChanged, verticalRuler, &RulerWidget::OnRulerSettingsChanged);
+
+    connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
+    connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
+
+    connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
+
+
+    verticalRuler->SetRulerOrientation(Qt::Vertical);
     davaGLWidget = new DavaGLWidget();
     frame->layout()->addWidget(davaGLWidget);
     davaGLWidget->GetGLView()->installEventFilter(this);
@@ -72,7 +90,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 
     connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
-
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
@@ -149,6 +166,11 @@ ScrollAreaController* PreviewWidget::GetScrollAreaController()
     return scrollAreaController;
 }
 
+RulerController* PreviewWidget::GetRulerController()
+{
+    return rulerController;
+}
+
 float PreviewWidget::GetScale() const
 {
     // Firstly verify whether the value is already set.
@@ -194,12 +216,12 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     if (nullptr != document)
     {
         EditorSystemsManager* systemManager = document->GetSystemManager();
-        UIControl* root = systemManager->GetRootControl();
-        DVASSERT(nullptr != root);
-        scrollAreaController->SetNestedControl(root);
+        scrollAreaController->SetNestedControl(systemManager->GetRootControl());
+        scrollAreaController->SetMovableControl(systemManager->GetScalableControl());
     }
     else
     {
+        scrollAreaController->SetMovableControl(nullptr);
         scrollAreaController->SetNestedControl(nullptr);
     }
 }
@@ -230,6 +252,24 @@ void PreviewWidget::OnDocumentDeactivated(Document* document)
 void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     selectionContainer.MergeSelection(selected, deselected);
+}
+
+void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
+{
+    rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
+    ApplyPosChanges();
+}
+
+void PreviewWidget::OnNestedControlPositionChanged(const QPoint &pos)
+{
+    canvasPos = pos;
+    ApplyPosChanges();
+}
+
+void PreviewWidget::ApplyPosChanges()
+{
+    QPoint viewPos = canvasPos + rootControlPos;
+    rulerController->SetViewPos(-viewPos);
 }
 
 void PreviewWidget::UpdateScrollArea()
@@ -381,6 +421,7 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
+    rulerController->UpdateRulerMarkers(event->pos());
     if (event->buttons() & Qt::MiddleButton)
     {
         QPoint delta(event->pos() - lastMousePos);

@@ -98,7 +98,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
     setupTextureToolbar();
     setupTextureListFilter();
     setupTextureProperties();
-	setupTextureViewTabBar();
+    setupTextureViewTabBar();
 
 	resetTextureInfo();
 
@@ -375,7 +375,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 
         ui->labelOriginalFormat->setText(tmp);
     }
-	else
+    else
 	{
 		ui->labelOriginalFormat->setText("");
 	}

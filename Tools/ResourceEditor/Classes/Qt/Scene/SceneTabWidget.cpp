@@ -92,7 +92,7 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData *)), this, SLOT(DAVAWidgetDataDropped(const QMimeData *)));
     QObject::connect(davaWidget, SIGNAL(Resized(int, int)), this, SLOT(OnDavaGLWidgetResized(int, int)));
 
-	QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2 *, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2 *, bool)));
 
@@ -475,7 +475,7 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2 *scene, bool modified
 }
 
 void SceneTabWidget::OnDavaGLWidgetResized(int width, int height)
-{   
+{
     davaUIScreen->SetSize(DAVA::Vector2(width, height));
     dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
 

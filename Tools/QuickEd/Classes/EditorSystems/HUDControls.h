@@ -33,8 +33,6 @@
 #include "UI/UIControl.h"
 #include "EditorSystemsManager.h"
 
-extern void FixPositionForScroll(DAVA::UIControl* controlInHud);
-
 class ControlContainer : public DAVA::UIControl
 {
 public:

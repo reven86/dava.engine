@@ -38,7 +38,6 @@ using namespace DAVA;
 
 #if defined (__DAVAENGINE_BEAST__)
 
-
 BeastCommandLineTool::BeastCommandLineTool()
     : CommandLineTool("-beast")
 {

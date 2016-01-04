@@ -132,7 +132,7 @@ void SelectPathWidgetBase::OpenClicked()
     }
     this->blockSignals(true);
     DAVA::String retString = FileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
-	this->blockSignals(false);
+    this->blockSignals(false);
 
     if(retString.empty())
     {
@@ -190,7 +190,7 @@ DAVA::String SelectPathWidgetBase::ConvertToRelativPath(const DAVA::String& path
     }
     else
     {
-		return path;
+        return path;
 	}
 }
 
@@ -224,7 +224,7 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
     }
     else
     {
-		setText(itemName);
+        setText(itemName);
 	}
 	
     event->setDropAction(Qt::LinkAction);

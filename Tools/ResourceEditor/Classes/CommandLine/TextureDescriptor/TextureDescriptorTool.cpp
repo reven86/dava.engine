@@ -34,7 +34,6 @@
 
 using namespace DAVA;
 
-
 TextureDescriptorTool::TextureDescriptorTool()
     : CommandLineTool("-texdescriptor")
 {

@@ -38,7 +38,7 @@ void TextureDescriptorUtils::ResaveDescriptorsForFolder(const FilePath &folderPa
 {
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
-	{
+    {
 		const FilePath &pathname = fileList->GetPathname(fi);
 		if(IsCorrectDirectory(fileList, fi))
 		{
@@ -62,7 +62,7 @@ void TextureDescriptorUtils::CopyCompressionParamsForFolder(const FilePath &fold
 {
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
-	{
+    {
 		const FilePath &pathname = fileList->GetPathname(fi);
 		if(IsCorrectDirectory(fileList, fi))
 		{
@@ -127,7 +127,7 @@ void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPa
 {
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
-	{
+    {
 		const FilePath &pathname = fileList->GetPathname(fi);
 		if(IsCorrectDirectory(fileList, fi))
 		{
@@ -153,7 +153,7 @@ bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPath
         {
             descriptor->dataSettings.sourceFileFormat = sourceFormat;
             descriptor->dataSettings.sourceFileExtension = extension;
-		}
+        }
         
         descriptor->Save(descriptorPathname);
 		return true;
@@ -178,7 +178,7 @@ void TextureDescriptorUtils::SetCompressionParamsForFolder( const FilePath &fold
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
 
     for (int32 fi = 0; fi < fileList->GetCount(); ++fi)
-	{
+    {
 		const FilePath &pathname = fileList->GetPathname(fi);
 		if(IsCorrectDirectory(fileList, fi))
 		{
@@ -201,7 +201,7 @@ void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPat
 
     DVASSERT(descriptor->compression);
 
-	auto endIt = compressionParams.end();
+    auto endIt = compressionParams.end();
 	for(auto it = compressionParams.begin(); it != endIt; ++it)
 	{
 		eGPUFamily gpu = it->first;

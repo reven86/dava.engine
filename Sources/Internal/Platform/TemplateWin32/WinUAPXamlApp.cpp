@@ -98,23 +98,6 @@ WinUAPXamlApp::WinUAPXamlApp()
     }));
     displayRequest = ref new Windows::System::Display::DisplayRequest;
     AllowDisplaySleep(false);
-
-#if defined(DAVA_WINUAP_MOUSE_HACK)
-    if (!isPhoneApiDetected)
-    {
-        // Here land of black magic and fire-spitting dragons begins
-        MEMORY_BASIC_INFORMATION bi;
-        VirtualQuery(static_cast<void*>(&GetModuleFileNameA), &bi, sizeof(bi));
-        HMODULE hkernel = reinterpret_cast<HMODULE>(bi.AllocationBase);
-
-        HMODULE(WINAPI * LoadLibraryW)
-        (LPCWSTR lpLibFileName);
-        LoadLibraryW = reinterpret_cast<decltype(LoadLibraryW)>(GetProcAddress(hkernel, "LoadLibraryW"));
-
-        HMODULE huser = LoadLibraryW(L"user32.dll");
-        SetCursorPos = reinterpret_cast<decltype(SetCursorPos)>(GetProcAddress(huser, "SetCursorPos"));
-    }
-#endif
 }
 
 WinUAPXamlApp::~WinUAPXamlApp()
@@ -189,24 +172,6 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
     if (isVisible != isMouseCursorShown)
     {
-#if defined(DAVA_WINUAP_MOUSE_HACK)
-        if (!isVisible)
-        {
-            Window::Current->CoreWindow->PointerCursor = nullptr;
-
-            Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
-            float32 centerX = rc.Width / 2.0f;
-            float32 centerY = rc.Height / 2.0f;
-
-            float32 scale = DeviceInfo::GetScreenInfo().scale;
-            SetCursorPos(static_cast<int>((centerX + rc.X) * scale), static_cast<int>((centerY + rc.Y) * scale));
-            skipMouseMoveEvent = true;
-        }
-        else
-        {
-            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
-        }
-#else
         if (isVisible)
         {
             MouseDevice::GetForCurrentView()->MouseMoved -= token;
@@ -217,7 +182,6 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
             token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
             Window::Current->CoreWindow->PointerCursor = nullptr;
         }
-#endif
         isMouseCursorShown = isVisible;
     }
     return true;
@@ -540,55 +504,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
 {
     if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING || !isMouseCursorShown)
     {
-#if defined(DAVA_WINUAP_MOUSE_HACK)
-        PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
-        PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
-        if (!isPhoneApiDetected && PointerDeviceType::Mouse == deviceType)
-        {
-            if (skipMouseMoveEvent)
-            {
-                skipMouseMoveEvent = false;
-                return;
-            }
-
-            UIEvent::Phase phase = UIEvent::Phase::MOVE;
-            int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
-            MouseButtonState mouseBtnChange = UpdateMouseButtonsState(pointerPoint->Properties);
-            if (UIEvent::BUTTON_NONE != mouseBtnChange.button)
-            {
-                phase = mouseBtnChange.isPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-                pointerOrButtonIndex = mouseBtnChange.button;
-            }
-            else if (isLeftButtonPressed)
-            {
-                pointerOrButtonIndex = UIEvent::BUTTON_1;
-                phase = UIEvent::Phase::DRAG;
-            }
-            else if (isRightButtonPressed)
-            {
-                pointerOrButtonIndex = UIEvent::BUTTON_2;
-                phase = UIEvent::Phase::DRAG;
-            }
-
-            Windows::Foundation::Rect rc = Window::Current->CoreWindow->Bounds;
-            float32 centerX = rc.Width / 2.0f;
-            float32 centerY = rc.Height / 2.0f;
-
-            float32 x = pointerPoint->Position.X;
-            float32 y = pointerPoint->Position.Y;
-
-            float32 deltaX = x - centerX;
-            float32 deltaY = y - centerY;
-
-            core->RunOnMainThread([this, deltaX, deltaY, phase, pointerOrButtonIndex]() {
-                DAVATouchEvent(phase, deltaX, deltaY, pointerOrButtonIndex, UIEvent::Device::MOUSE);
-            });
-
-            float32 scale = DeviceInfo::GetScreenInfo().scale;
-            SetCursorPos(static_cast<int>((centerX + rc.X) * scale), static_cast<int>((centerY + rc.Y) * scale));
-            skipMouseMoveEvent = true;
-        }
-#endif
         return;
     }
 
@@ -881,10 +796,17 @@ void WinUAPXamlApp::SetupEventHandlers()
 
 void WinUAPXamlApp::CreateBaseXamlUI()
 {
+    using Windows::UI::Xaml::Markup::XamlReader;
+    Platform::Object^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
+    WebView^ webview = dynamic_cast<WebView^>(obj);
+    webview->Visibility = Visibility::Collapsed;
+
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();
     swapChainPanel->Children->Append(canvas);
     Window::Current->Content = swapChainPanel;
+
+    AddUIElement(webview);
 
     // Windows UAP doesn't allow to unfocus UI control programmatically
     // It only permits to set focus at another control
@@ -1103,8 +1025,7 @@ void WinUAPXamlApp::AllowDisplaySleep(bool sleep)
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:App2">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="dava_custom_textbox" TargetType="TextBox">
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="0" />
@@ -1192,6 +1113,13 @@ const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
         </Setter>
     </Style>
 </ResourceDictionary>
+)";
+
+const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
+<WebView x:Name="xamlWebView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+</WebView>
 )";
 
 }   // namespace DAVA

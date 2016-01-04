@@ -439,8 +439,8 @@ void VariantType::SetVariant(const VariantType& var)
             SetInt64(var.AsInt64());
         }
         break;
-    case TYPE_UINT64:
-		{
+        case TYPE_UINT64:
+        {
 			SetUInt64(var.AsUInt64());
 		}
 		break;
@@ -1497,7 +1497,7 @@ void* VariantType::MetaObject()
     }
     }
 
-	return (void *) ret;
+    return (void *) ret;
 }
 
 VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
@@ -1559,8 +1559,8 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetVector3(*((DAVA::Vector3*)src));
         break;
     case TYPE_VECTOR4:
-        v.SetVector4(*((DAVA::Vector4 *) src));
-		break;
+        v.SetVector4(*((DAVA::Vector4*)src));
+        break;
 	case TYPE_MATRIX2:
 		v.SetMatrix2(*((DAVA::Matrix2 *) src));
 		break;
@@ -1691,7 +1691,7 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
         case TYPE_VECTOR3:
             *((DAVA::Vector3*)dst) = val.AsVector3();
             break;
-		case TYPE_VECTOR4:
+        case TYPE_VECTOR4:
 			*((DAVA::Vector4 *) dst) = val.AsVector4();
 			break;
 		case TYPE_MATRIX2:
@@ -1783,7 +1783,7 @@ VariantType VariantType::FromType(int type)
     case TYPE_VECTOR3:
         v.SetVector3(Vector3());
         break;
-	case TYPE_VECTOR4:
+    case TYPE_VECTOR4:
 		v.SetVector4(Vector4());
 		break;
 	case TYPE_MATRIX2:
