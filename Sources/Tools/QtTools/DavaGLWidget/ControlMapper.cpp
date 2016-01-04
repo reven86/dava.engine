@@ -39,6 +39,29 @@
 #include <QDragMoveEvent>
 #include <QDebug>
 
+namespace DAVA
+{
+class DavaQtKeyboard
+{
+public:
+    static void OnKeyPressed(Key k)
+    {
+        InputSystem::Instance()->GetKeyboard().OnKeyPressed(k);
+    }
+    static void OnKeyUnpressed(Key k)
+    {
+        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(k);
+    }
+    static Key GetDavaKeyForSystemKey(uint32 virtualKey)
+    {
+        return InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(virtualKey);
+    }
+    static void ClearAllKeys()
+    {
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+    }
+};
+} // end namespace DAVA
 
 ControlMapper::ControlMapper( QWindow *w )
     : window(w)
@@ -47,19 +70,20 @@ ControlMapper::ControlMapper( QWindow *w )
 
 void ControlMapper::keyPressEvent(QKeyEvent *e)
 {
+    using namespace DAVA;
     switch (e->key())
     {
         case Qt::Key_Alt:
-            DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DAVA::DVKEY_ALT );
+            DavaQtKeyboard::OnKeyPressed(Key::LALT);
             return;
         case Qt::Key_Control:
-            DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DAVA::DVKEY_CTRL );
+            DavaQtKeyboard::OnKeyPressed(Key::LCTRL);
             return;
         case Qt::Key_Shift:
-            DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DAVA::DVKEY_SHIFT );
+            DavaQtKeyboard::OnKeyPressed(Key::LSHIFT);
             return;
         case Qt::Key_CapsLock:
-            DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DAVA::DVKEY_CAPSLOCK );
+            DavaQtKeyboard::OnKeyPressed(Key::CAPSLOCK);
             return;
         case Qt::Key_Meta:
             // Ignore Win key on windows, Ctrl key on OSX
@@ -76,29 +100,30 @@ void ControlMapper::keyPressEvent(QKeyEvent *e)
         return;
     }
 #endif
-    
-    const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
-    if (davaKey != DAVA::DVKEY_UNKNOWN)
+
+    const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(e->nativeVirtualKey());
+    if (davaKey != Key::UNKNOWN)
     {
-        DAVA::QtLayer::Instance()->KeyPressed( davaKey, e->count(), e->timestamp() );
+        QtLayer::Instance()->KeyPressed(davaKey, e->count(), e->timestamp());
     }
 }
 
 void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 {
+    using namespace DAVA;
     switch (e->key())
     {
         case Qt::Key_Alt:
-            DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DAVA::DVKEY_ALT );
+            DavaQtKeyboard::OnKeyUnpressed(Key::LALT);
             return;
         case Qt::Key_Control:
-            DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DAVA::DVKEY_CTRL );
+            DavaQtKeyboard::OnKeyUnpressed(Key::LCTRL);
             return;
         case Qt::Key_Shift:
-            DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DAVA::DVKEY_SHIFT );
+            DavaQtKeyboard::OnKeyUnpressed(Key::LSHIFT);
             return;
         case Qt::Key_CapsLock:
-            DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DAVA::DVKEY_CAPSLOCK );
+            DavaQtKeyboard::OnKeyUnpressed(Key::CAPSLOCK);
             return;
         case Qt::Key_Meta:
             // Ignore Win key on windows, Ctrl key on OSX
@@ -106,11 +131,11 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
         default:
             break;
     }
-    
-    const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
-    if (davaKey != DAVA::DVKEY_UNKNOWN)
+
+    const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(e->nativeVirtualKey());
+    if (davaKey != Key::UNKNOWN)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(davaKey);
+        DavaQtKeyboard::OnKeyUnpressed(davaKey);
     }
 }
 
@@ -153,7 +178,8 @@ void ControlMapper::wheelEvent(QWheelEvent *event)
     const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
 
     DAVA::UIEvent davaEvent;
-    davaEvent.point = DAVA::Vector2( event->pixelDelta().x(), event->pixelDelta().y() );
+    davaEvent.wheelDelta.x = event->pixelDelta().x();
+    davaEvent.wheelDelta.y = event->pixelDelta().y();
     davaEvent.timestamp = 0;
     davaEvent.phase = DAVA::UIEvent::Phase::WHEEL;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
@@ -168,7 +194,7 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
 
     davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
+    davaEvent.mouseButton = MapQtButtonToDAVA(Qt::LeftButton);
     davaEvent.timestamp = 0;
     davaEvent.tapCount = 1;
     davaEvent.phase = DAVA::UIEvent::Phase::MOVE;
@@ -179,7 +205,7 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
 
 void ControlMapper::releaseKeyboard()
 {
-    DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+    DAVA::DavaQtKeyboard::ClearAllKeys();
 }
 
 DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button, ulong timestamp )
@@ -189,29 +215,32 @@ DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::M
     
     int currentDPR = window->devicePixelRatio();
     davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.tid = davaButton;
+    davaEvent.mouseButton = davaButton;
     davaEvent.timestamp = timestamp;
     davaEvent.tapCount = 1;
-    
+    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
+
     return davaEvent;
 }
 
-DAVA::UIEvent::eButtonID ControlMapper::MapQtButtonToDAVA(const Qt::MouseButton button) const
+DAVA::UIEvent::MouseButton ControlMapper::MapQtButtonToDAVA(const Qt::MouseButton button) const
 {
+    using namespace DAVA;
     switch (button)
     {
         case Qt::LeftButton:
-            return DAVA::UIEvent::BUTTON_1;
-            
+            return UIEvent::MouseButton::LEFT;
         case Qt::RightButton:
-            return DAVA::UIEvent::BUTTON_2;
-            
+            return UIEvent::MouseButton::RIGHT;
         case Qt::MiddleButton:
-            return DAVA::UIEvent::BUTTON_3;
-            
+            return UIEvent::MouseButton::MIDDLE;
+        case Qt::XButton1:
+            return UIEvent::MouseButton::EXTENDED1;
+        case Qt::XButton2:
+            return UIEvent::MouseButton::EXTENDED2;
         default:
             break;
     }
-    
-    return DAVA::UIEvent::BUTTON_NONE;
+
+    return DAVA::UIEvent::MouseButton::NONE;
 }
