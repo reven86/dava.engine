@@ -341,12 +341,12 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     {
         // touchpad or other precise device
         // sends integer values (-3, -1, 0, 1, 40 etc)
-        ev.scrollDelta.y = rawScrollDelta / rawScrollCoefficient;
+        ev.wheelDelta.y = rawScrollDelta / rawScrollCoefficient;
     }
     else
     {
         // simple mouse - sends float values from 0.1 for one wheel tick
-        ev.scrollDelta.y = rawScrollDelta * rawScrollCoefficient;
+        ev.wheelDelta.y = rawScrollDelta * rawScrollCoefficient;
     }
 
     NSPoint posInWindow = [theEvent locationInWindow];

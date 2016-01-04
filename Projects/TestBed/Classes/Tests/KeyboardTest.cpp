@@ -293,7 +293,7 @@ private:
             break;
         case UIEvent::Phase::WHEEL: //!<Mouse wheel event. MacOS & Win32 only
             ++numMouseWheel;
-            lastWheel = currentInput->scrollDelta.y;
+            lastWheel = currentInput->wheelDelta.y;
             break;
         case UIEvent::Phase::CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
             ++numMouseCancel;
