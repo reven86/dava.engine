@@ -487,7 +487,7 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2 *_editor)
 
 void SceneEditor2::EditorCommandNotify::Notify(const Command2 *command, bool redo)
 {
-	if(NULL != editor)
+    if (nullptr != editor)
 	{
 		editor->EditorCommandProcess(command, redo);
 		SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
@@ -496,7 +496,7 @@ void SceneEditor2::EditorCommandNotify::Notify(const Command2 *command, bool red
 
 void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 {
-	if(NULL != editor)
+	if(nullptr != editor)
 	{
 		SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
 	}

@@ -31,28 +31,29 @@
 #define __COMMAND_BATCH_H__
 
 #include "Commands2/Base/Command2.h"
-#include "Commands2/Base/CommandNotify.h"
 
-class CommandBatch : public Command2
+class CommandBatch final: public Command2
 {
 public:
-    CommandBatch();
-    ~CommandBatch();
+    CommandBatch(DAVA::uint32 commandsCount = 1);
+    ~CommandBatch() override;
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+
+    DAVA_DEPRECATED(DAVA::Entity* GetEntity() const override);
 
     void AddAndExec(Command2* command);
-    int Size() const;
-    Command2* GetCommand(int index) const;
+    void RemoveCommands(DAVA::int32 commandId);
 
-    void Clear(int commandId);
+    DAVA::uint32 Size() const;
 
-    bool ContainsCommand(int commandId) const;
+    Command2* GetCommand(DAVA::uint32 index) const;
+    bool ContainsCommand(DAVA::int32 commandId) const;
 
 protected:
-    std::vector<Command2*> commandList;
+
+    DAVA::Vector<Command2*> commandList;
 };
 
 #endif // __COMMAND_BATCH_H__

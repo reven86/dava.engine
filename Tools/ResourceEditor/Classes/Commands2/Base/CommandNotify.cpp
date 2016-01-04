@@ -29,19 +29,6 @@
 
 #include "Commands2/Base/CommandNotify.h"
 
-CommandNotify::CommandNotify()
-{
-}
-
-CommandNotify::~CommandNotify()
-{
-}
-
-CommandNotifyProvider::CommandNotifyProvider()
-    : curNotify(NULL)
-{
-}
-
 CommandNotifyProvider::~CommandNotifyProvider()
 {
     SafeRelease(curNotify);
@@ -49,9 +36,11 @@ CommandNotifyProvider::~CommandNotifyProvider()
 
 void CommandNotifyProvider::SetNotify(CommandNotify* notify)
 {
-    SafeRelease(curNotify);
-    curNotify = notify;
-    SafeRetain(curNotify);
+    if (curNotify != notify)
+    {
+        SafeRelease(curNotify);
+        curNotify = SafeRetain(notify);
+    }
 }
 
 CommandNotify* CommandNotifyProvider::GetNotify() const
@@ -61,7 +50,7 @@ CommandNotify* CommandNotifyProvider::GetNotify() const
 
 void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
 {
-    if (NULL != curNotify)
+    if (nullptr != curNotify)
     {
         curNotify->Notify(command, redo);
     }
@@ -69,7 +58,7 @@ void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
 
 void CommandNotifyProvider::EmitCleanChanged(bool clean)
 {
-    if (NULL != curNotify)
+    if (nullptr != curNotify)
     {
         curNotify->CleanChanged(clean);
     }

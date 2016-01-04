@@ -31,7 +31,7 @@
 #define __COMMAND2_H__
 
 #include "Base/BaseTypes.h"
-#include "Scene3D/Scene.h"
+#include "Scene3D/Entity.h"
 
 #include "Commands2/CommandID.h"
 #include "Commands2/Base/CommandNotify.h"
@@ -39,9 +39,9 @@
 class Command2 : public CommandNotifyProvider
 {
 public:
-    Command2(int _id, const DAVA::String& _text = "");
+    Command2(DAVA::int32 _id, const DAVA::String& _text = "");
 
-    int GetId() const;
+    DAVA::int32 GetId() const;
 
     virtual void Undo() = 0;
     virtual void Redo() = 0;
@@ -49,15 +49,32 @@ public:
 
     virtual bool MergeWith(const Command2* command);
 
-    DAVA::String GetText() const;
+    const DAVA::String & GetText() const;
     void SetText(const DAVA::String& text);
 
 protected:
-    int id;
-    DAVA::String text;
-
     void UndoInternalCommand(Command2* command);
     void RedoInternalCommand(Command2* command);
+
+    DAVA::String text;
+    DAVA::int32 id;
 };
+
+
+inline DAVA::int32 Command2::GetId() const
+{
+    return id;
+}
+
+inline const DAVA::String & Command2::GetText() const
+{
+    return text;
+}
+
+inline void Command2::SetText(const DAVA::String& _text)
+{
+    text = _text;
+}
+
 
 #endif // __COMMAND2_H__

@@ -29,22 +29,19 @@
 
 #include "Commands2/Base/CommandBatch.h"
 
-CommandBatch::CommandBatch()
+CommandBatch::CommandBatch(DAVA::uint32 commandsCount /*=1*/)
     : Command2(CMDID_BATCH)
 {
+    DVASSERT(commandsCount > 0);
+    commandList.reserve(commandsCount);
 }
 
 CommandBatch::~CommandBatch()
 {
-    std::vector<Command2*>::iterator i = commandList.begin();
-    std::vector<Command2*>::iterator end = commandList.end();
-
-    for (; i != end; i++)
+    for (auto &command : commandList)
     {
-        if (NULL != *i)
-        {
-            delete *i;
-        }
+        DVASSERT(command != nullptr);
+        delete command;
     }
 
     commandList.clear();
@@ -52,8 +49,8 @@ CommandBatch::~CommandBatch()
 
 void CommandBatch::Undo()
 {
-    std::vector<Command2*>::reverse_iterator i = commandList.rbegin();
-    std::vector<Command2*>::reverse_iterator end = commandList.rend();
+    DAVA::Vector<Command2*>::reverse_iterator i = commandList.rbegin();
+    DAVA::Vector<Command2*>::reverse_iterator end = commandList.rend();
 
     for (; i != end; i++)
     {
@@ -63,8 +60,8 @@ void CommandBatch::Undo()
 
 void CommandBatch::Redo()
 {
-    std::vector<Command2*>::iterator i = commandList.begin();
-    std::vector<Command2*>::iterator end = commandList.end();
+    DAVA::Vector<Command2*>::iterator i = commandList.begin();
+    DAVA::Vector<Command2*>::iterator end = commandList.end();
 
     for (; i != end; i++)
     {
@@ -74,39 +71,37 @@ void CommandBatch::Redo()
 
 DAVA::Entity* CommandBatch::GetEntity() const
 {
-    return NULL;
+    return nullptr;
 }
 
 void CommandBatch::AddAndExec(Command2* command)
 {
-    if (NULL != command)
-    {
-        commandList.push_back(command);
-        RedoInternalCommand(command);
-    }
+    DVASSERT(command != nullptr);
+
+    commandList.push_back(command);
+    RedoInternalCommand(command);
 }
 
-int CommandBatch::Size() const
+DAVA::uint32 CommandBatch::Size() const
 {
-    return commandList.size();
+    return static_cast<DAVA::uint32>(commandList.size());
 }
 
-Command2* CommandBatch::GetCommand(int index) const
+Command2* CommandBatch::GetCommand(DAVA::uint32 index) const
 {
-    if (index >= 0 && index < (int)commandList.size())
+    if (index < static_cast<DAVA::uint32>(commandList.size()))
         return commandList[index];
 
-    return NULL;
+    return nullptr;
 }
 
-void CommandBatch::Clear(int commandId)
+void CommandBatch::RemoveCommands(DAVA::int32 commandId)
 {
-    std::vector<Command2*>::iterator i = commandList.begin();
-
+    auto i = commandList.begin();
     while (i != commandList.end())
     {
         Command2* command = *i;
-        if (NULL != command && command->GetId() == commandId)
+        if (nullptr != command && command->GetId() == commandId)
         {
             delete command;
             i = commandList.erase(i);
@@ -118,9 +113,9 @@ void CommandBatch::Clear(int commandId)
     }
 }
 
-bool CommandBatch::ContainsCommand(int commandId) const
+bool CommandBatch::ContainsCommand(DAVA::int32 commandId) const
 {
-    for (auto command : commandList)
+    for (const auto & command : commandList)
     {
         if (command->GetId() == commandId)
             return true;

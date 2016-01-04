@@ -216,13 +216,14 @@ protected:
 private:
 	friend struct EditorCommandNotify;
 
-	struct EditorCommandNotify : public CommandNotify
+    class EditorCommandNotify : public CommandNotify
 	{
-		SceneEditor2* editor;
-
+    public:
 		EditorCommandNotify(SceneEditor2 *_editor);
-		virtual void Notify(const Command2 *command, bool redo);
-		virtual void CleanChanged(bool clean);
+		void Notify(const Command2 *command, bool redo) override;
+        void CleanChanged(bool clean) override;
+    private:
+        SceneEditor2* editor = nullptr;
 	};
 };
 

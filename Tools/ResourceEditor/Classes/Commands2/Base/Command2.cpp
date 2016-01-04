@@ -29,7 +29,7 @@
 
 #include "Commands2/Base/Command2.h"
 
-Command2::Command2(int _id, const DAVA::String& _text)
+Command2::Command2(DAVA::int32 _id, const DAVA::String& _text)
     : id(_id)
     , text(_text)
 {
@@ -40,35 +40,19 @@ bool Command2::MergeWith(const Command2* command)
     return false;
 }
 
-int Command2::GetId() const
-{
-    return id;
-}
-
-DAVA::String Command2::GetText() const
-{
-    return text;
-}
-
-void Command2::SetText(const DAVA::String& _text)
-{
-    text = _text;
-}
 
 void Command2::UndoInternalCommand(Command2* command)
 {
-    if (NULL != command)
-    {
-        command->Undo();
-        EmitNotify(command, false);
-    }
+    DVASSERT(command != nullptr);
+
+    command->Undo();
+    EmitNotify(command, false);
 }
 
 void Command2::RedoInternalCommand(Command2* command)
 {
-    if (NULL != command)
-    {
-        command->Redo();
-        EmitNotify(command, true);
-    }
+    DVASSERT(command != nullptr);
+
+    command->Redo();
+    EmitNotify(command, true);
 }

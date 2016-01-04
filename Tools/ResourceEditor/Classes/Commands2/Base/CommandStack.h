@@ -34,11 +34,10 @@
 #include "Commands2/Base/Command2.h"
 #include "Commands2/Base/CommandBatch.h"
 
-struct CommandStackNotify;
-
+class CommandStackNotify;
 class CommandStack : public CommandNotifyProvider
 {
-    friend struct CommandStackNotify;
+    friend class CommandStackNotify;
 
 public:
     CommandStack();
@@ -92,12 +91,15 @@ protected:
     void CommandExecuted(const Command2* command, bool redo);
 };
 
-struct CommandStackNotify : public CommandNotify
+class CommandStackNotify final : public CommandNotify
 {
-    CommandStack* stack;
-
+public:
     CommandStackNotify(CommandStack* _stack);
-    virtual void Notify(const Command2* command, bool redo);
+    void Notify(const Command2* command, bool redo) override;
+
+private:
+    CommandStack* stack = nullptr;
 };
+
 
 #endif // __COMMAND_STACK_H__

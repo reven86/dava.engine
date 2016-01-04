@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Scene3D/Scene.h"
 
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"

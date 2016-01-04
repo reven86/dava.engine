@@ -105,7 +105,7 @@ void CommandStack::Clear(int commandId)
         {
             CommandBatch* batch = (CommandBatch*)cmd;
 
-            batch->Clear(commandId);
+            batch->RemoveCommands(commandId);
             if (batch->Size() == 0)
             {
                 // clear empty batch
@@ -368,7 +368,7 @@ CommandStackNotify::CommandStackNotify(CommandStack* _stack)
 
 void CommandStackNotify::Notify(const Command2* command, bool redo)
 {
-    if (NULL != stack)
+    if (nullptr != stack)
     {
         stack->CommandExecuted(command, redo);
     }
