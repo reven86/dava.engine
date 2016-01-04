@@ -204,17 +204,9 @@ private:
 
     Vector<MouseButtonChange> mouseButtonChanges;
 
-    bool GetMouseButtonState(UIEvent::MouseButton button)
-    {
-        unsigned index = static_cast<unsigned>(button) - 1;
-        return mouseButtonsState[index];
-    }
+    bool GetMouseButtonState(UIEvent::MouseButton button);
 
-    void SetMouseButtonState(UIEvent::MouseButton button, bool value)
-    {
-        unsigned index = static_cast<unsigned>(button) - 1;
-        mouseButtonsState[index] = value;
-    }
+    void SetMouseButtonState(UIEvent::MouseButton button, bool value);
 
     float32 viewScaleX = 1.f;
     float32 viewScaleY = 1.f;
@@ -235,6 +227,19 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+
+inline bool WinUAPXamlApp::GetMouseButtonState(UIEvent::MouseButton button)
+{
+    unsigned index = static_cast<unsigned>(button) - 1;
+    return mouseButtonsState[index];
+}
+
+inline void WinUAPXamlApp::SetMouseButtonState(UIEvent::MouseButton button, bool value)
+{
+    unsigned index = static_cast<unsigned>(button) - 1;
+    mouseButtonsState[index] = value;
+}
+
 inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::UIThreadDispatcher()
 {
     return uiThreadDispatcher;
