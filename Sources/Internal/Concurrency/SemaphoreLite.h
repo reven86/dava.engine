@@ -42,9 +42,9 @@ namespace DAVA
 */
 class SemaphoreLite final
 {
+public:
     static const uint32 defaultSpinCount = 4000;
 
-public:
     SemaphoreLite(uint32 count = 0, uint32 spinCount_ = defaultSpinCount)
         : spinCount(spinCount_)
     {
