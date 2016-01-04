@@ -42,9 +42,6 @@ static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames 
   "LSHIFT",
   "LCTRL",
   "LALT",
-  "RSHIFT",
-  "RCTRL",
-  "RALT",
 
   "LWIN",
   "RWIN",
@@ -133,7 +130,6 @@ static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames 
   "ADD",
   "SUBTRACT",
   "DECIMAL",
-  "NUMPADENTER",
 
   "F1",
   "F2",
@@ -148,13 +144,15 @@ static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames 
   "F11",
   "F12",
 
-  //Android keys
   "BACK",
   "MENU",
 
-  // exist on some keyboards
-  "NON_US_BACKSLASH",
-  "PRINTSCREEN"
+  "NONUSBACKSLASH",
+  "NUMPADENTER",
+  "PRINTSCREEN",
+  "RSHIFT",
+  "RCTRL",
+  "RALT",
 };
 
 KeyboardDevice::KeyboardDevice()
@@ -264,7 +262,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_OEM_6] = Key::RBRACKET;
     keyTranslator[VK_OEM_7] = Key::APOSTROPHE;
 
-    keyTranslator[VK_OEM_102] = Key::NON_US_BACKSLASH;
+    keyTranslator[VK_OEM_102] = Key::NONUSBACKSLASH;
 
     const unsigned numFuncKeys = static_cast<unsigned>(Key::F12) - static_cast<unsigned>(Key::F1);
     for (unsigned i = 0; i <= numFuncKeys; i++)
@@ -316,7 +314,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x31] = Key::SPACE;
 
     // from SDL2 scancodes_darwin.h
-    keyTranslator[10] = Key::NON_US_BACKSLASH;
+    keyTranslator[10] = Key::NONUSBACKSLASH;
     keyTranslator[24] = Key::EQUALS;
     keyTranslator[27] = Key::MINUS;
     keyTranslator[47] = Key::PERIOD;

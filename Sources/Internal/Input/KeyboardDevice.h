@@ -45,12 +45,10 @@ enum class Key : uint32
     TAB,
     ENTER,
     SPACE,
+
     LSHIFT,
     LCTRL,
     LALT,
-    RSHIFT,
-    RCTRL,
-    RALT,
 
     LWIN,
     RWIN,
@@ -139,7 +137,6 @@ enum class Key : uint32
     ADD,
     SUBTRACT,
     DECIMAL,
-    NUMPADENTER,
 
     F1,
     F2,
@@ -154,13 +151,15 @@ enum class Key : uint32
     F11,
     F12,
 
-    //Android keys
-    BACK,
-    MENU,
+    BACK, // Android key
+    MENU, // Android key
 
-    // exist on some keyboards
-    NON_US_BACKSLASH,
+    NONUSBACKSLASH, // exist on some keyboards
+    NUMPADENTER,
     PRINTSCREEN,
+    RSHIFT,
+    RCTRL,
+    RALT,
 
     TOTAL_KEYS_COUNT
 };
