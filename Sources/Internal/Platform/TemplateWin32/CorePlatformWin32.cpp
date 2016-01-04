@@ -401,14 +401,14 @@ namespace DAVA
         }
     }
 
-	DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
-	{
-		DWORD iModeNum = 0;
-		DEVMODE	dmi;
-		ZeroMemory (&dmi, sizeof(dmi)) ;
-		dmi.dmSize = sizeof(dmi);
+    DisplayMode CoreWin32Platform::GetCurrentDisplayMode()
+    {
+        DWORD iModeNum = 0;
+        DEVMODE dmi;
+        ZeroMemory(&dmi, sizeof(dmi));
+        dmi.dmSize = sizeof(dmi);
 
-		DisplayMode mode;
+        DisplayMode mode;
 		if(EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
 		{
 			mode.width = dmi.dmPelsWidth;
@@ -526,13 +526,13 @@ namespace DAVA
         if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
         {
             mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
-		{
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
-		}
-		if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)
-		{
+        }
+        if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
+        {
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
+        }
+        if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)
+        {
 			mouseButtonsDownMask |= RI_MOUSE_BUTTON_5_DOWN;
 		}
 	}

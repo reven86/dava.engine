@@ -30,7 +30,6 @@
 #include "GameCore.h"
 
 #include "Grid/GridVisualizer.h"
-#include "Ruler/RulerController.h"
 
 //#include "ScreenManager.h"
 #include "EditorSettings.h"
@@ -44,37 +43,36 @@
 
 #include "UI/Layouts/UILayoutSystem.h"
 
+#include <QString>
+
 using namespace DAVA;
 
 GameCore::GameCore()
     : cursor(nullptr)
 {
     new GridVisualizer();
-    new RulerController();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	new AutotestingSystem();
+    new AutotestingSystem();
 #endif
 
-	// Unpack the help data, if needed.
-	UnpackHelp();
+    // Unpack the help data, if needed.
+    UnpackHelp();
 
-	//Initialize internal resources of application
-	ResourcesManageHelper::InitInternalResources();
+    //Initialize internal resources of application
+    ResourcesManageHelper::InitInternalResources();
     UIControlSystem::Instance()->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 }
 
 GameCore::~GameCore()
 {
-    RulerController::Instance()->Release();
     GridVisualizer::Instance()->Release();
 
     EditorSettings::Instance()->Release();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	AutotestingSystem::Instance()->Release();
+    AutotestingSystem::Instance()->Release();
 #endif
-
 }
 
 void GameCore::OnAppStarted()
@@ -110,11 +108,6 @@ void GameCore::BeginFrame()
 
 void GameCore::Update(float32 timeElapsed)
 {	
-//	if (!cursor)
-//	{
-//		cursor = Cursor::Create("~res:/Cursor/cursor1.png", Vector2(6, 0));
-//		RenderManager::Instance()->SetCursor(cursor);
-//	}
 	ApplicationCore::Update(timeElapsed);
 }
 

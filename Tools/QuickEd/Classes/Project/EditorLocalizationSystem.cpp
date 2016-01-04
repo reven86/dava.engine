@@ -39,7 +39,6 @@ using namespace DAVA;
 EditorLocalizationSystem::EditorLocalizationSystem(QObject* parent)
     : QObject(parent)
 {
-
 }
 
 QStringList EditorLocalizationSystem::GetAvailableLocaleNames() const
@@ -52,11 +51,11 @@ QStringList EditorLocalizationSystem::GetAvailableLocaleValues() const
     return availableLocales.values();
 }
 
-void EditorLocalizationSystem::SetDirectory(const QDir &directoryPath)
+void EditorLocalizationSystem::SetDirectory(const QDir& directoryPath)
 {
     Cleanup();
 
-    LocalizationSystem *localizationSystem = LocalizationSystem::Instance();
+    LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
     DVASSERT(nullptr != localizationSystem);
 
     FilePath directoryFilePath(directoryPath.absolutePath().toStdString() + "/"); //absolutePath doesn't contains with '/' symbol at end
@@ -91,7 +90,7 @@ void EditorLocalizationSystem::Cleanup()
     LocalizationSystem::Instance()->Cleanup();
 }
 
-QString EditorLocalizationSystem::GetLocaleNameFromStr(const QString &localeStr)
+QString EditorLocalizationSystem::GetLocaleNameFromStr(const QString& localeStr)
 {
     QLocale locale(localeStr);
     switch (locale.script())
@@ -115,13 +114,10 @@ QString EditorLocalizationSystem::GetCurrentLocale() const
 void EditorLocalizationSystem::SetCurrentLocale(const QString& locale)
 {
     DVASSERT(!locale.isEmpty());
-    if (currentLocale != locale)
-    {
-        currentLocale = locale;
-        DVASSERT(availableLocales.contains(locale));
-        LocalizationSystem::Instance()->SetCurrentLocale(availableLocales[locale].toStdString());
-        LocalizationSystem::Instance()->Init();
+    currentLocale = locale;
+    DVASSERT(availableLocales.contains(locale));
+    LocalizationSystem::Instance()->SetCurrentLocale(availableLocales[locale].toStdString());
+    LocalizationSystem::Instance()->Init();
 
-        emit CurrentLocaleChanged(currentLocale);
-    }
+    emit CurrentLocaleChanged(currentLocale);
 }

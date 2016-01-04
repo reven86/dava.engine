@@ -119,21 +119,24 @@ TCPSocketTemplate<T>::~TCPSocketTemplate()
 template <typename T>
 int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     int size = endpoint.Size();
     return uv_tcp_getsockname(&uvhandle, endpoint.CastToSockaddr(), &size);
+#else
+    return -1;
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     int size = static_cast<int>(endpoint.Size());
     return uv_tcp_getpeername(&uvhandle, endpoint.CastToSockaddr(), &size);
+#else
+    return -1;
 #endif
 }
 
@@ -158,10 +161,7 @@ bool TCPSocketTemplate<T>::IsClosing() const
 template <typename T>
 int32 TCPSocketTemplate<T>::DoOpen()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isOpen && false == isClosing);
     int32 error = uv_tcp_init(loop->Handle(), &uvhandle);
     if (0 == error)
@@ -173,16 +173,15 @@ int32 TCPSocketTemplate<T>::DoOpen()
         uvshutdown.data = this;
     }
     return error;
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
@@ -190,28 +189,26 @@ int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
     if (0 == error)
         error = uv_tcp_connect(&uvconnect, &uvhandle, endpoint.CastToSockaddr(), &HandleConnectThunk);
     return error;
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoStartRead()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     return uv_read_start(reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleAllocThunk, &HandleReadThunk);
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
     DVASSERT(0 == writeBufferCount);    // Next write is allowed only after previous write completion
@@ -224,27 +221,26 @@ int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
     }
 
     return uv_write(&uvwrite, reinterpret_cast<uv_stream_t*>(&uvhandle), writeBuffers, static_cast<unsigned int>(writeBufferCount), &HandleWriteThunk);
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoShutdown()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return -1;
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     return uv_shutdown(&uvshutdown, reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleShutdownThunk);
+#else
+    return -1;
 #endif
 }
 
 template <typename T>
 void TCPSocketTemplate<T>::DoClose()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-#else
+#if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;

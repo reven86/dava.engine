@@ -87,9 +87,10 @@ protected slots:
 private:
 	void InitWidget(QWidget* );
 	void UpdateTooltip();
-	
-	void FillLayerTypes();
-	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
+    void UpdateLayerSprite();
+
+    void FillLayerTypes();
+    int32 LayerTypeToIndex(ParticleLayer::eType layerType);
 
 private:
 	struct LayerTypeMap

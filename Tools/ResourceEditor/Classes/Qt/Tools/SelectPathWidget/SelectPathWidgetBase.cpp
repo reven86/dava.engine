@@ -129,10 +129,10 @@ void SelectPathWidgetBase::OpenClicked()
     if (DAVA::FileSystem::Instance()->Exists(presentPath.GetDirectory())) //check if file text box clean
     {
         dialogString = presentPath.GetDirectory();
-	}
-	this->blockSignals(true);
-	DAVA::String retString = FileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
-	this->blockSignals(false);
+    }
+    this->blockSignals(true);
+    DAVA::String retString = FileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
+    this->blockSignals(false);
 
     if(retString.empty())
     {
@@ -159,8 +159,8 @@ void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
     setText(name);
 
     DAVA::List<DAVA::FilePath> urls;
-	urls.push_back(fullPath);
-	DAVA::MimeDataHelper::ConvertToMimeData(urls, &mimeData);
+    urls.push_back(fullPath);
+    DAVA::MimeDataHelper::ConvertToMimeData(urls, &mimeData);
 }
 
 void SelectPathWidgetBase::setText(const QString& filePath)
@@ -187,11 +187,11 @@ DAVA::String SelectPathWidgetBase::ConvertToRelativPath(const DAVA::String& path
     if (DAVA::FileSystem::Instance()->Exists(fullPath))
     {
         return fullPath.GetRelativePathname(relativePath);
-	}
-	else
-	{
-		return path;
-	}
+    }
+    else
+    {
+        return path;
+    }
 }
 
 void SelectPathWidgetBase::dropEvent(QDropEvent* event)
@@ -221,11 +221,11 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
     if (DAVA::FileSystem::Instance()->Exists(filePath)) // check is it item form scene tree or file system
     {
         setText(filePath.GetAbsolutePathname());
-	}
-	else
-	{
-		setText(itemName);
-	}
+    }
+    else
+    {
+        setText(itemName);
+    }
 	
     event->setDropAction(Qt::LinkAction);
     event->accept();

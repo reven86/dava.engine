@@ -59,6 +59,10 @@ public slots:
                             const QItemSelection &deselected);
     void OnModelChanged();
 
+private slots:
+    void OnExpanded(const QModelIndex& index);
+    void OnCollapsed(const QModelIndex& index);
+
 private:
     QAction *CreateAddComponentAction();
     QAction *CreateAddStyleSelectorAction();
@@ -72,13 +76,19 @@ private:
     void UpdateSelection();
     void UpdateActions();
 
+    void ApplyExpanding();
+
     Document* document = nullptr;
     QAction* addComponentAction = nullptr;
     QAction* addStylePropertyAction = nullptr;
     QAction* addStyleSelectorAction = nullptr;
     QAction* removeAction = nullptr;
 
+    DAVA::Map<DAVA::String, bool> itemsState;
+
     SelectionContainer selectionContainer;
+
+    DAVA::String lastTopIndexPath;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

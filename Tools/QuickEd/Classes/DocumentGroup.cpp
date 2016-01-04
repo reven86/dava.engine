@@ -43,15 +43,16 @@ DocumentGroup::~DocumentGroup()
 {
 }
 
-void DocumentGroup::AddDocument(Document* document)
+void DocumentGroup::InsertDocument(int index, Document* document)
 {
     DVASSERT(nullptr != document);
     undoGroup->addStack(document->GetUndoStack());
     if (documentList.contains(document))
     {
+        DVASSERT(false && "document already exists in document group");
         return;
     }
-    documentList.append(document);
+    documentList.insert(index, document);
 }
 
 void DocumentGroup::RemoveDocument(Document* document)
@@ -85,6 +86,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         active->Deactivate();
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
+        disconnect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::CanvasSizeChanged);
         DocumentDeactivated(active);
     }
     
@@ -98,12 +100,12 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
+        connect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::RootControlPositionChanged);
 
         undoGroup->setActiveStack(active->GetUndoStack());
 
         active->SetScale(scale);
         active->SetEmulationMode(emulationMode);
-        active->SetDPR(dpr);
         active->SetPixelization(hasPixalization);
     }
     emit ActiveDocumentChanged(document);
@@ -146,15 +148,6 @@ void DocumentGroup::SetScale(float arg)
     if (nullptr != active)
     {
         active->SetScale(arg);
-    }
-}
-
-void DocumentGroup::SetDPR(qreal arg)
-{
-    dpr = arg;
-    if (nullptr != active)
-    {
-        active->SetDPR(static_cast<double>(dpr));
     }
 }
 

@@ -1549,11 +1549,11 @@ QString PropertyEditor::GetDefaultFilePath()
     if (NULL != editor && FileSystem::Instance()->Exists(editor->GetScenePath()))
     {
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
-		if(String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
-		{
-			defaultPath = scenePath.c_str();
-		}
-	}
+        if (String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
+        {
+            defaultPath = scenePath.c_str();
+        }
+    }
 
 	return defaultPath;
 }

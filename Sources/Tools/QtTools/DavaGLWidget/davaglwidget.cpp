@@ -218,11 +218,6 @@ void DavaGLWidget::MakeInvisible()
     move( 0, 0 );
 }
 
-qreal DavaGLWidget::GetDevicePixelRatio() const
-{
-    return davaGLView->devicePixelRatio();
-}
-
 QQuickWindow* DavaGLWidget::GetGLView()
 {
     return davaGLView;
@@ -232,9 +227,10 @@ void DavaGLWidget::OnResize()
 {
     if (nullptr != renderer)
     {
-        int currentDPR = davaGLView->devicePixelRatio();
-        DAVA::QtLayer::Instance()->Resize(width() * currentDPR, height() * currentDPR);
-        emit Resized(width(), height(), currentDPR);
+        int screenIndex = qApp->screens().indexOf(davaGLView->screen());
+        DVASSERT(-1 != screenIndex);
+        DAVA::QtLayer::Instance()->Resize(width(), height(), screenIndex);
+        emit Resized(width(), height());
     }
 }
 

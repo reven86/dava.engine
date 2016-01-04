@@ -126,11 +126,11 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
                 if (FileSystem::Instance()->Exists(texPath) && !descriptor->IsCompressedTextureActual(gpu))
                 {
                     markedGPUs.push_back(gpu);
-					retValue++;
-				}
-			}
-		}
-		if(markedGPUs.size() > 0)
+                    retValue++;
+                }
+            }
+        }
+        if(markedGPUs.size() > 0)
 		{
 			textures[texture] = markedGPUs;
 		}

@@ -206,13 +206,13 @@ namespace DAVA
     {
         String module = lua_tostring(L, -1);
         lua_pop(L, 1);
-		FilePath path = Instance()->Findfile(L, module.c_str(), "path");
-		if (!Instance()->LoadScriptFromFile(path)) 
-		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
-		}
-		lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
-		if (!Instance()->RunScript())
+        FilePath path = Instance()->Findfile(L, module.c_str(), "path");
+        if (!Instance()->LoadScriptFromFile(path))
+        {
+            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
+        }
+        lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
+        if (!Instance()->RunScript())
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
 		}
@@ -258,38 +258,25 @@ namespace DAVA
 	}
 
 	// Multiplayer API
-	void AutotestingSystemLua::WriteState(const String &device, const String &state)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s state=%s", device.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteState(device, state);
-	}
+    void AutotestingSystemLua::WriteState(const String& device, const String& param, const String& state)
+    {
+        Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s param=%s state=%s", device.c_str(), param.c_str(), state.c_str());
+        AutotestingDB::Instance()->WriteState(device, param, state);
+    }
 
-	void AutotestingSystemLua::WriteCommand(const String &device, const String &state)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteCommand device=%s command=%s", device.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteCommand(device, state);
-	}
+    String AutotestingSystemLua::ReadState(const String& device, const String& param)
+    {
+        Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s param=%s", device.c_str(), param.c_str());
+        return AutotestingDB::Instance()->ReadState(device, param);
+    }
 
-	String AutotestingSystemLua::ReadState(const String &device)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s", device.c_str());
-		return AutotestingDB::Instance()->ReadState(device);
-	}
+    void AutotestingSystemLua::InitializeDevice()
+    {
+        AutotestingSystem::Instance()->InitializeDevice();
+    }
 
-	String AutotestingSystemLua::ReadCommand(const String &device)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadCommand device=%s", device.c_str());
-		return AutotestingDB::Instance()->ReadCommand(device);
-	}
-
-	void AutotestingSystemLua::InitializeDevice(const String &device)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::InitializeDevice device=%s", device.c_str());
-		AutotestingSystem::Instance()->InitializeDevice(device);
-	}
-
-	String AutotestingSystemLua::GetPlatform()
-	{
+    String AutotestingSystemLua::GetPlatform()
+    {
 		return DeviceInfo::GetPlatformString();
 	}
 
@@ -372,18 +359,6 @@ namespace DAVA
 	void AutotestingSystemLua::Log(const String &level, const String &message)
 	{
 		AutotestingDB::Instance()->Log(level, message);
-	}
-
-	void AutotestingSystemLua::WriteString(const String & name, const String & text)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::WriteString name=%s text=%s", name.c_str(), text.c_str());
-		AutotestingDB::Instance()->WriteString(name, text);
-	}
-
-	String AutotestingSystemLua::ReadString(const String & name)
-	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ReadString name=%s", name.c_str());
-		return AutotestingDB::Instance()->ReadString(name);
 	}
 
 	bool AutotestingSystemLua::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
@@ -543,13 +518,13 @@ namespace DAVA
             {
                 uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), -1, str));
             }
-			break;
-		}
-		case DVKEY_ENTER:
-		{
-			uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
-			break;
-		}
+            break;
+        }
+        case DVKEY_ENTER:
+        {
+            uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
+            break;
+        }
 		case DVKEY_ESCAPE:
 		{
 			uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
@@ -725,8 +700,8 @@ namespace DAVA
         touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchMove.point = point;
 
-		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
-		{
+        if (AutotestingSystem::Instance()->IsTouchDown(touchId))
+        {
             touchMove.phase = UIEvent::Phase::DRAG;
             ProcessInput(touchMove);
         }
@@ -782,14 +757,14 @@ namespace DAVA
         luaopen_Polygon2(luaState); // load the wrappered module
 
         if (!delegate)
-		{
-			return false;
-		}
-		//TODO: check if modules really loaded
-		return delegate->LoadWrappedLuaObjects(luaState);
-	}
+        {
+            return false;
+        }
+        //TODO: check if modules really loaded
+        return delegate->LoadWrappedLuaObjects(luaState);
+    }
 
-	bool AutotestingSystemLua::LoadScript(const String &luaScript)
+    bool AutotestingSystemLua::LoadScript(const String &luaScript)
 	{
 		if (!luaState)
 		{

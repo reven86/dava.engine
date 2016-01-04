@@ -28,7 +28,7 @@
 
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(__DISABLE_NATIVE_WEBVIEW__)
 
 #include "Utils/Utils.h"
 
@@ -176,4 +176,4 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
 
 }   // namespace DAVA
 
-#endif // defined(__DAVAENGINE_WIN_UAP__)
+#endif // (__DAVAENGINE_WIN_UAP__) && !(__DISABLE_NATIVE_WEBVIEW__)

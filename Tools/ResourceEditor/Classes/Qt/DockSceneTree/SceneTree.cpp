@@ -652,11 +652,11 @@ void SceneTree::EditModel()
                 if (FileSystem::Instance()->Exists(entityRefPath))
                 {
                     QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
-				}
-				else
-				{
-					ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
-				}
+                }
+                else
+                {
+                    ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
+                }
 			}
 		}
 	}
@@ -730,9 +730,9 @@ void SceneTree::ReloadModelAs()
                 if (FileSystem::Instance()->Exists(p) && sceneEditor->IsLoaded())
                 {
                     ownerPath = p.GetAbsolutePathname();
-				}
-				else
-				{
+                }
+                else
+                {
                     ownerPath = ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname();
                 }
             }
@@ -741,9 +741,9 @@ void SceneTree::ReloadModelAs()
             if (!filePath.isEmpty())
             {
                 sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
-			}
-		}
-	}
+            }
+        }
+    }
 }
 
 void SceneTree::SaveEntityAs()
@@ -765,8 +765,8 @@ void SceneTree::SaveEntityAs()
             {
                 sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
             }
-		}
-	}
+        }
+    }
 }
 
 void SceneTree::CollapseAll()
@@ -800,11 +800,11 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
     // if selected items were inside collapsed item, remove them from selection
     QModelIndexList indexList = selectionModel()->selection().indexes();
-	for (int i = 0; i < indexList.size(); ++i)
-	{
-		QModelIndex childIndex = indexList[i];
-		QModelIndex childParent = childIndex.parent();
-		while(childParent.isValid())
+    for (int i = 0; i < indexList.size(); ++i)
+    {
+        QModelIndex childIndex = indexList[i];
+        QModelIndex childParent = childIndex.parent();
+        while(childParent.isValid())
 		{
 			if(childParent == index)
 			{
@@ -1187,7 +1187,7 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
         }
 
         yamlPath = FilePath(filePath.toStdString());
-	}		
+    }
 
     selectedLayer->innerEmitterPath = yamlPath;
     CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(selectedEmitter, yamlPath);
