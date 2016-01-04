@@ -31,7 +31,7 @@
 #define __SOUND_COMPONENT_COMMANDS_H__
 
 #include "DAVAEngine.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class AddSoundEventCommand : public Command2
 {

@@ -30,7 +30,7 @@
 #ifndef __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
 #define __RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__
 
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/CommandAction.h"
 #include "DAVAEngine.h"
 
 using namespace DAVA;

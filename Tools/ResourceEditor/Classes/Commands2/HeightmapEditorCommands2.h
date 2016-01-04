@@ -30,8 +30,8 @@
 #ifndef __RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__
 #define __RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__
 
-#include "Commands2/Command2.h"
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandAction.h"
 #include "DAVAEngine.h"
 
 using namespace DAVA;

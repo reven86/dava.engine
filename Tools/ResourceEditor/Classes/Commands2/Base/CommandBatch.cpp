@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Commands2/CommandBatch.h"
+#include "Commands2/Base/CommandBatch.h"
 
 CommandBatch::CommandBatch()
     : Command2(CMDID_BATCH)

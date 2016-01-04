@@ -33,7 +33,7 @@
 #include <QMap>
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 // bullet
 #include "bullet/btBulletCollisionCommon.h"

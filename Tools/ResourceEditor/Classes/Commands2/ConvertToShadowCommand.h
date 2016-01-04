@@ -30,7 +30,7 @@
 #ifndef __CONVERT_TO_SHADOW_COMMAND_H__
 #define __CONVERT_TO_SHADOW_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "DAVAEngine.h"
 
 class ConvertToShadowCommand : public Command2

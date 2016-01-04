@@ -30,7 +30,7 @@
 #ifndef __META_OBJ_MODIFY_COMMAND_H__
 #define __META_OBJ_MODIFY_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class MetaObjModifyCommand : public Command2
 {

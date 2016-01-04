@@ -32,7 +32,7 @@
 
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 // framework
 #include "Entity/SceneSystem.h"

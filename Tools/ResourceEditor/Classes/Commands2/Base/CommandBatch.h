@@ -30,8 +30,8 @@
 #ifndef __COMMAND_BATCH_H__
 #define __COMMAND_BATCH_H__
 
-#include "Commands2/Command2.h"
-#include "Commands2/CommandNotify.h"
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandNotify.h"
 
 class CommandBatch : public Command2
 {

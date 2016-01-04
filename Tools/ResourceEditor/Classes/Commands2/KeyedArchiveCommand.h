@@ -30,7 +30,7 @@
 #ifndef __KEYEDARCHIVE_COMMAND_H__
 #define __KEYEDARCHIVE_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class KeyedArchiveAddValueCommand : public Command2
 {

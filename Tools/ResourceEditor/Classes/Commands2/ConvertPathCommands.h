@@ -31,7 +31,8 @@
 #define __CONVERT_PATH_COMMANDS_H__
 
 #include "FileSystem/KeyedArchive.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
+
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"

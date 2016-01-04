@@ -30,8 +30,8 @@
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 #define __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 
-#include "Commands2/Command2.h"
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandAction.h"
 #include "DAVAEngine.h"
 
 #include "Render/UniqueStateSet.h"

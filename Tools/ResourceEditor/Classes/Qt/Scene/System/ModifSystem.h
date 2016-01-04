@@ -30,7 +30,7 @@
 #ifndef __ENTITY_MODIFICATION_SYSTEM_H__
 #define __ENTITY_MODIFICATION_SYSTEM_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 #include "Entity/SceneSystem.h"
 #include "Scene3D/Entity.h"

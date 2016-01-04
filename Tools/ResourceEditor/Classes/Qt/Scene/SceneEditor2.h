@@ -37,7 +37,7 @@
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
-#include "Commands2/CommandStack.h"
+#include "Commands2/Base/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
 //TODO: move all includes to .cpp file

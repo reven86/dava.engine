@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Commands2/CommandNotify.h"
+#include "Commands2/Base/CommandNotify.h"
 
 CommandNotify::CommandNotify()
 {

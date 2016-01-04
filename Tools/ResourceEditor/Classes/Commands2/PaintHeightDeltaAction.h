@@ -30,7 +30,7 @@
 #ifndef __PAINT_HEIGHT_DELTA_ACTION_H__
 #define __PAINT_HEIGHT_DELTA_ACTION_H__
 
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/CommandAction.h"
 #include "DAVAEngine.h"
 
 class PaintHeightDeltaAction : public CommandAction

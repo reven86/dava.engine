@@ -30,7 +30,7 @@
 #ifndef __INSP_MEMEBER_MODIFY_COMMAND_H__
 #define __INSP_MEMEBER_MODIFY_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class InspMemberModifyCommand : public Command2
 {

@@ -30,7 +30,7 @@
 #ifndef __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEMACTIONS__
 #define __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEMACTIONS__
 
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/CommandAction.h"
 #include "DAVAEngine.h"
 
 using namespace DAVA;

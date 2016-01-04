@@ -30,7 +30,7 @@
 #ifndef __REBUILD_TANGENT_SPACE_COMMAND_H__
 #define __REBUILD_TANGENT_SPACE_COMMAND_H__
 
-#include "Command2.h"
+#include "Commands2/Base/Command2.h"
 
 #include "Render/Highlevel/RenderBatch.h"
 

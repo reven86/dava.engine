@@ -30,8 +30,7 @@
 #ifndef __RESOURCEEDITORQT__LANDSCAPESETTEXTURESCOMMANDS2__
 #define __RESOURCEEDITORQT__LANDSCAPESETTEXTURESCOMMANDS2__
 
-#include "Commands2/Command2.h"
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/Command2.h"
 #include "DAVAEngine.h"
 
 using namespace DAVA;

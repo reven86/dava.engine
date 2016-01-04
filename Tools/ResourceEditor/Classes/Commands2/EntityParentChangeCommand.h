@@ -30,7 +30,7 @@
 #ifndef __ENTITY_PARENT_CHANGE_COMMAND_H__
 #define __ENTITY_PARENT_CHANGE_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class EntityParentChangeCommand : public Command2
 {

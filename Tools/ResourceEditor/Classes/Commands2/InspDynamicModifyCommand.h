@@ -30,7 +30,7 @@
 #ifndef __INSP_DYNAMIC_MODIFY_COMMAND_H__
 #define __INSP_DYNAMIC_MODIFY_COMMAND_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class InspDynamicModifyCommand : public Command2
 {

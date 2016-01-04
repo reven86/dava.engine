@@ -34,7 +34,7 @@
 #include "Scene3D/Scene.h"
 
 #include "Commands2/CommandID.h"
-#include "Commands2/CommandNotify.h"
+#include "Commands2/Base/CommandNotify.h"
 
 class Command2 : public CommandNotifyProvider
 {

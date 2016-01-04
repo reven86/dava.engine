@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#include "Commands2/CommandStack.h"
-#include "Commands2/CommandAction.h"
+#include "Commands2/Base/CommandStack.h"
+#include "Commands2/Base/CommandAction.h"
 
 CommandStack::CommandStack()
     : commandListLimit(0)

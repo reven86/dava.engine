@@ -30,7 +30,7 @@
 #ifndef __PARTICLE_LAYER_COMMANDS_H__
 #define __PARTICLE_LAYER_COMMANDS_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Render/RenderBase.h"
 
 namespace DAVA

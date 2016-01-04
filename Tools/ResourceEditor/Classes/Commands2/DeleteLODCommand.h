@@ -30,7 +30,8 @@
 #ifndef __DELETE_LOD_COMMAND_H__
 #define __DELETE_LOD_COMMAND_H__
 
-#include "Command2.h"
+#include "Commands2/Base/Command2.h"
+
 #include "Render/Highlevel/RenderBatch.h"
 #include "Scene3D/Components/LodComponent.h"
 

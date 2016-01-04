@@ -30,8 +30,9 @@
 #ifndef __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 #define __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 
-#include "Commands2/Command2.h"
-#include "CommandAction.h"
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandAction.h"
+
 #include "DAVAEngine.h"
 #include "Main/Request.h"
 

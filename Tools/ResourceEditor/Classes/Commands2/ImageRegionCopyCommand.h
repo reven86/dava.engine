@@ -31,7 +31,7 @@
 #define __IMAGE_REGION_COPY_COMMAND_H__
 
 #include "Render/Image/Image.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 
 class ImageRegionCopyCommand : public Command2
 {

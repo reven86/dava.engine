@@ -30,7 +30,7 @@
 #ifndef __SCENE_STRUCTURE_SYSTEM_H__
 #define __SCENE_STRUCTURE_SYSTEM_H__
 
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
 #include "Scene/EntityGroup.h"
 #include "StringConstants.h"
 

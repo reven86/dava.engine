@@ -31,8 +31,8 @@
 #define __COMMAND_STACK_H__
 
 #include "Base/BaseTypes.h"
-#include "Commands2/Command2.h"
-#include "Commands2/CommandBatch.h"
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandBatch.h"
 
 struct CommandStackNotify;
 
