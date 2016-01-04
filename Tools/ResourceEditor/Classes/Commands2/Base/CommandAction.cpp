@@ -30,7 +30,7 @@
 #include "CommandAction.h"
 
 CommandAction::CommandAction(int _id, const DAVA::String& _text)
-:	Command2(_id, _text)
+    : Command2(_id, _text)
 {
 }
 
@@ -42,7 +42,7 @@ void CommandAction::Undo()
 {
 }
 
-DAVA::Entity*  CommandAction::GetEntity() const
+DAVA::Entity* CommandAction::GetEntity() const
 {
-	return NULL;
+    return NULL;
 }

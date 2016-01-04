@@ -27,38 +27,77 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND_NOTIFY_H__
-#define __COMMAND_NOTIFY_H__
+#ifndef __COMMAND_STACK_H__
+#define __COMMAND_STACK_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
+#include "Commands2/Command2.h"
+#include "Commands2/CommandBatch.h"
 
-class Command2;
+struct CommandStackNotify;
 
-class CommandNotify : public DAVA::BaseObject
+class CommandStack : public CommandNotifyProvider
 {
+    friend struct CommandStackNotify;
+
 public:
-	CommandNotify();
-	~CommandNotify();
+    CommandStack();
+    ~CommandStack();
 
-	virtual void Notify(const Command2 *command, bool redo) = 0;
-	virtual void CleanChanged(bool clean) { };
-};
+    bool CanRedo() const;
+    bool CanUndo() const;
 
-class CommandNotifyProvider
-{
-public:
-	CommandNotifyProvider();
-	virtual ~CommandNotifyProvider();
+    void Clear();
+    void Clear(int commandId);
 
-	void SetNotify(CommandNotify *notify);
-	CommandNotify* GetNotify() const;
+    void Undo();
+    void Redo();
+    void Exec(Command2* command);
 
-	void EmitNotify(const Command2 *command, bool redo);
-	void EmitCleanChanged(bool clean);
+    void BeginBatch(const DAVA::String& text);
+    void EndBatch();
+    bool IsBatchStarted() const;
+
+    bool IsClean() const;
+    void SetClean(bool clean);
+
+    size_t GetCleanIndex() const;
+    size_t GetNextIndex() const;
+
+    size_t GetUndoLimit() const;
+    void SetUndoLimit(size_t limit);
+
+    size_t GetCount() const;
+    const Command2* GetCommand(size_t index) const;
 
 protected:
-	CommandNotify* curNotify;
+    DAVA::List<Command2*> commandList;
+    size_t commandListLimit;
+    size_t nextCommandIndex;
+    size_t cleanCommandIndex;
+    bool lastCheckCleanState;
+
+    DAVA::uint32 nestedBatchesCounter;
+    CommandBatch* curBatchCommand;
+    CommandStackNotify* stackCommandsNotify;
+
+    void ExecInternal(Command2* command, bool runCommand);
+    Command2* GetCommandInternal(size_t index) const;
+
+    void ClearRedoCommands();
+    void ClearLimitedCommands();
+    void ClearCommand(size_t index);
+
+    void CleanCheck();
+    void CommandExecuted(const Command2* command, bool redo);
 };
 
-#endif // __COMMAND_NOTIFY_H__
+struct CommandStackNotify : public CommandNotify
+{
+    CommandStack* stack;
+
+    CommandStackNotify(CommandStack* _stack);
+    virtual void Notify(const Command2* command, bool redo);
+};
+
+#endif // __COMMAND_STACK_H__

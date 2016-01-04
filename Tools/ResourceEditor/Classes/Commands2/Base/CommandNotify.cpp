@@ -30,44 +30,47 @@
 #include "Commands2/CommandNotify.h"
 
 CommandNotify::CommandNotify()
-{ }
+{
+}
 
 CommandNotify::~CommandNotify()
-{ }
+{
+}
 
 CommandNotifyProvider::CommandNotifyProvider()
-	: curNotify(NULL)
-{ }
+    : curNotify(NULL)
+{
+}
 
 CommandNotifyProvider::~CommandNotifyProvider()
 {
-	SafeRelease(curNotify);
+    SafeRelease(curNotify);
 }
 
-void CommandNotifyProvider::SetNotify(CommandNotify *notify)
+void CommandNotifyProvider::SetNotify(CommandNotify* notify)
 {
-	SafeRelease(curNotify);
-	curNotify = notify;
-	SafeRetain(curNotify);
+    SafeRelease(curNotify);
+    curNotify = notify;
+    SafeRetain(curNotify);
 }
 
 CommandNotify* CommandNotifyProvider::GetNotify() const
 {
-	return curNotify;
+    return curNotify;
 }
 
-void CommandNotifyProvider::EmitNotify(const Command2 *command, bool redo)
+void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
 {
-	if(NULL != curNotify)
-	{
-		curNotify->Notify(command, redo);
-	}
+    if (NULL != curNotify)
+    {
+        curNotify->Notify(command, redo);
+    }
 }
 
 void CommandNotifyProvider::EmitCleanChanged(bool clean)
 {
-	if(NULL != curNotify)
-	{
-		curNotify->CleanChanged(clean);
-	}
+    if (NULL != curNotify)
+    {
+        curNotify->CleanChanged(clean);
+    }
 }

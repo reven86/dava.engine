@@ -32,15 +32,15 @@
 
 #include "Command2.h"
 
-class CommandAction: public Command2
+class CommandAction : public Command2
 {
 public:
-	CommandAction(int _id, const DAVA::String& _text = "");
-	virtual ~CommandAction();
+    CommandAction(int _id, const DAVA::String& _text = "");
+    virtual ~CommandAction();
 
-	virtual void Redo() = 0;
-	virtual void Undo();
-	virtual DAVA::Entity* GetEntity() const;
+    virtual void Redo() = 0;
+    virtual void Undo();
+    virtual DAVA::Entity* GetEntity() const;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */

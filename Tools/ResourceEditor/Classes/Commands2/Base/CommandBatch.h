@@ -27,77 +27,32 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND_STACK_H__
-#define __COMMAND_STACK_H__
+#ifndef __COMMAND_BATCH_H__
+#define __COMMAND_BATCH_H__
 
-#include "Base/BaseTypes.h"
 #include "Commands2/Command2.h"
-#include "Commands2/CommandBatch.h"
+#include "Commands2/CommandNotify.h"
 
-struct CommandStackNotify;
-
-class CommandStack : public CommandNotifyProvider
+class CommandBatch : public Command2
 {
-	friend struct CommandStackNotify;
-
 public:
-	CommandStack();
-	~CommandStack();
+    CommandBatch();
+    ~CommandBatch();
 
-	bool CanRedo() const;
-	bool CanUndo() const;
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const;
 
-	void Clear();
-	void Clear(int commandId);
-	
-	void Undo();
-	void Redo();
-	void Exec(Command2 *command);
+    void AddAndExec(Command2* command);
+    int Size() const;
+    Command2* GetCommand(int index) const;
 
-	void BeginBatch(const DAVA::String &text);
-	void EndBatch();
-    bool IsBatchStarted() const;
+    void Clear(int commandId);
 
-	bool IsClean() const;
-	void SetClean(bool clean);
-
-	size_t GetCleanIndex() const;
-	size_t GetNextIndex() const;
-
-	size_t GetUndoLimit() const;
-	void SetUndoLimit(size_t limit);
-
-	size_t GetCount() const;
-	const Command2* GetCommand(size_t index) const;
+    bool ContainsCommand(int commandId) const;
 
 protected:
-	DAVA::List<Command2 *> commandList;
-	size_t commandListLimit;
-	size_t nextCommandIndex;
-	size_t cleanCommandIndex;
-	bool lastCheckCleanState;
-
-    DAVA::uint32 nestedBatchesCounter;
-	CommandBatch* curBatchCommand;
-	CommandStackNotify *stackCommandsNotify;
-
-	void ExecInternal(Command2 *command, bool runCommand);
-	Command2* GetCommandInternal(size_t index) const;
-
-	void ClearRedoCommands();
-	void ClearLimitedCommands();
-	void ClearCommand(size_t index);
-
-	void CleanCheck();
-	void CommandExecuted(const Command2 *command, bool redo);
+    std::vector<Command2*> commandList;
 };
 
-struct CommandStackNotify : public CommandNotify
-{
-	CommandStack* stack;
-
-	CommandStackNotify(CommandStack *_stack);
-	virtual void Notify(const Command2 *command, bool redo);
-};
-
-#endif // __COMMAND_STACK_H__
+#endif // __COMMAND_BATCH_H__

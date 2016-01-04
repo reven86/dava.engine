@@ -27,37 +27,48 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND2_H__
-#define __COMMAND2_H__
+#include "Commands2/Command2.h"
 
-#include "Base/BaseTypes.h"
-#include "Scene3D/Scene.h"
-
-#include "Commands2/CommandID.h"
-#include "Commands2/CommandNotify.h"
-
-class Command2 : public CommandNotifyProvider
+Command2::Command2(int _id, const DAVA::String& _text)
+    : id(_id)
+    , text(_text)
 {
-public:
-	Command2(int _id, const DAVA::String& _text = "");
+}
 
-	int GetId() const;
+bool Command2::MergeWith(const Command2* command)
+{
+    return false;
+}
 
-	virtual void Undo() = 0;
-	virtual void Redo() = 0;
-	virtual DAVA::Entity* GetEntity() const = 0;
+int Command2::GetId() const
+{
+    return id;
+}
 
-	virtual bool MergeWith(const Command2* command);
+DAVA::String Command2::GetText() const
+{
+    return text;
+}
 
-	DAVA::String GetText() const;
-	void SetText(const DAVA::String &text);
+void Command2::SetText(const DAVA::String& _text)
+{
+    text = _text;
+}
 
-protected:
-	int id;
-	DAVA::String text;
+void Command2::UndoInternalCommand(Command2* command)
+{
+    if (NULL != command)
+    {
+        command->Undo();
+        EmitNotify(command, false);
+    }
+}
 
-	void UndoInternalCommand(Command2 *command);
-	void RedoInternalCommand(Command2 *command);
-};
-
-#endif // __COMMAND2_H__
+void Command2::RedoInternalCommand(Command2* command)
+{
+    if (NULL != command)
+    {
+        command->Redo();
+        EmitNotify(command, true);
+    }
+}

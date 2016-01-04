@@ -27,32 +27,38 @@
 =====================================================================================*/
 
 
-#ifndef __COMMAND_BATCH_H__
-#define __COMMAND_BATCH_H__
+#ifndef __COMMAND_NOTIFY_H__
+#define __COMMAND_NOTIFY_H__
 
-#include "Commands2/Command2.h"
-#include "Commands2/CommandNotify.h"
+#include "Base/BaseTypes.h"
+#include "Base/BaseObject.h"
 
-class CommandBatch : public Command2
+class Command2;
+
+class CommandNotify : public DAVA::BaseObject
 {
 public:
-	CommandBatch();
-	~CommandBatch();
+    CommandNotify();
+    ~CommandNotify();
 
-	virtual void Undo();
-	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const;
-
-	void AddAndExec(Command2 *command);
-	int Size() const;
-	Command2 *GetCommand(int index) const;
-
-	void Clear(int commandId);
-    
-    bool ContainsCommand(int commandId) const;
-
-protected:
-	std::vector<Command2 *> commandList;
+    virtual void Notify(const Command2* command, bool redo) = 0;
+    virtual void CleanChanged(bool clean){};
 };
 
-#endif // __COMMAND_BATCH_H__
+class CommandNotifyProvider
+{
+public:
+    CommandNotifyProvider();
+    virtual ~CommandNotifyProvider();
+
+    void SetNotify(CommandNotify* notify);
+    CommandNotify* GetNotify() const;
+
+    void EmitNotify(const Command2* command, bool redo);
+    void EmitCleanChanged(bool clean);
+
+protected:
+    CommandNotify* curNotify;
+};
+
+#endif // __COMMAND_NOTIFY_H__
