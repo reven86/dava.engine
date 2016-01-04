@@ -502,7 +502,7 @@ void UIList::Input(UIEvent *currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-        newScroll += currentInput->scrollDelta.y * GetWheelSensitivity();
+        newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
     }
     else
     {

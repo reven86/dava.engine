@@ -155,6 +155,7 @@ private:
     void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
+    void SendDragEventsIfMouseButtonDown(float32 x, float32 y, UIEvent::Device type);
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -191,7 +192,7 @@ private:
     InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::Extended2)> mouseButtonsState;
+    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
 
     struct MouseButtonChange
     {

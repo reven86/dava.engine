@@ -130,7 +130,7 @@ void UIScrollViewContainer::Input(UIEvent *currentTouch)
 {
     if (UIEvent::Phase::WHEEL == currentTouch->phase)
     {
-        newScroll += currentTouch->scrollDelta.y * GetWheelSensitivity();
+        newScroll += currentTouch->wheelDelta.y * GetWheelSensitivity();
     }
 
     if (currentTouch->touchId == mainTouch)

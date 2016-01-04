@@ -72,7 +72,7 @@ private:
 
     bool willQuit;
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::Extended2)> mouseButtonState;
+    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
 };
 

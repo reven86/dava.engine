@@ -433,42 +433,42 @@ void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProp
 {
     out.clear();
 
-    if (GetMouseButtonState(UIEvent::MouseButton::Left) != pointProperties->IsLeftButtonPressed)
+    if (GetMouseButtonState(UIEvent::MouseButton::LEFT) != pointProperties->IsLeftButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::Left;
+        change.button = UIEvent::MouseButton::LEFT;
         change.beginOrEnd = pointProperties->IsLeftButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::Right) != pointProperties->IsRightButtonPressed)
+    if (GetMouseButtonState(UIEvent::MouseButton::RIGHT) != pointProperties->IsRightButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::Right;
+        change.button = UIEvent::MouseButton::RIGHT;
         change.beginOrEnd = pointProperties->IsRightButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::Middle) != pointProperties->IsMiddleButtonPressed)
+    if (GetMouseButtonState(UIEvent::MouseButton::MIDDLE) != pointProperties->IsMiddleButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::Middle;
+        change.button = UIEvent::MouseButton::MIDDLE;
         change.beginOrEnd = pointProperties->IsMiddleButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::Extended1) != pointProperties->IsXButton1Pressed)
+    if (GetMouseButtonState(UIEvent::MouseButton::EXTENDED1) != pointProperties->IsXButton1Pressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::Extended1;
+        change.button = UIEvent::MouseButton::EXTENDED1;
         change.beginOrEnd = pointProperties->IsXButton1Pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::Extended2) != pointProperties->IsXButton2Pressed)
+    if (GetMouseButtonState(UIEvent::MouseButton::EXTENDED2) != pointProperties->IsXButton2Pressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::Extended2;
+        change.button = UIEvent::MouseButton::EXTENDED2;
         change.beginOrEnd = pointProperties->IsXButton2Pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
@@ -572,24 +572,12 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
                 phase = UIEvent::Phase::MOVE;
 
                 core->RunOnMainThread([this, phase, x, y, type]() {
-                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::None), ToDavaDeviceId(type));
+                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::NONE), ToDavaDeviceId(type));
                 });
             }
             else
             {
-                for (unsigned i = static_cast<unsigned>(UIEvent::MouseButton::Left);
-                     i <= static_cast<unsigned>(UIEvent::MouseButton::Extended2);
-                     ++i)
-                {
-                    UIEvent::MouseButton button = static_cast<UIEvent::MouseButton>(i);
-                    if (GetMouseButtonState(button))
-                    {
-                        phase = UIEvent::Phase::DRAG;
-                        core->RunOnMainThread([this, phase, x, y, button, type]() {
-                            DAVATouchEvent(phase, x, y, static_cast<int32>(button), ToDavaDeviceId(type));
-                        });
-                    }
-                }
+                SendDragEventsIfMouseButtonDown(x, y, ToDavaDeviceId(type));
             }
         }
     }
@@ -646,7 +634,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     core->RunOnMainThread([this, wheelDelta, physPoint, type]() {
         UIEvent ev;
 
-        ev.scrollDelta.y = wheelDelta / static_cast<float32>(WHEEL_DELTA);
+        ev.wheelDelta.y = wheelDelta / static_cast<float32>(WHEEL_DELTA);
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;
@@ -755,6 +743,24 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
     });
 }
 
+void WinUAPXamlApp::SendDragEventsIfMouseButtonDown(float32 x, float32 y, UIEvent::Device device)
+{
+    auto SendDragOnButtonChange = [this, x, y, device](UIEvent::MouseButton button) {
+        if (GetMouseButtonState(button))
+        {
+            core->RunOnMainThread([this, x, y, button, device]() {
+                DAVATouchEvent(UIEvent::Phase::DRAG, x, y, static_cast<int32>(button), device);
+            });
+        }
+    };
+
+    SendDragOnButtonChange(UIEvent::MouseButton::LEFT);
+    SendDragOnButtonChange(UIEvent::MouseButton::RIGHT);
+    SendDragOnButtonChange(UIEvent::MouseButton::MIDDLE);
+    SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED1);
+    SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED2);
+}
+
 void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 {
     if (mouseCaptureMode != InputSystem::eMouseCaptureMode::PINING || isMouseCursorShown)
@@ -798,24 +804,12 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
                 phase = UIEvent::Phase::MOVE;
 
                 core->RunOnMainThread([this, phase, x, y]() {
-                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::None), UIEvent::Device::MOUSE);
+                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE);
                 });
             }
             else
             {
-                for (unsigned i = static_cast<unsigned>(UIEvent::MouseButton::Left);
-                     i <= static_cast<unsigned>(UIEvent::MouseButton::Extended2);
-                     ++i)
-                {
-                    UIEvent::MouseButton button = static_cast<UIEvent::MouseButton>(i);
-                    if (GetMouseButtonState(button))
-                    {
-                        phase = UIEvent::Phase::DRAG;
-                        core->RunOnMainThread([this, phase, x, y, button]() {
-                            DAVATouchEvent(phase, x, y, static_cast<int32>(button), UIEvent::Device::MOUSE);
-                        });
-                    }
-                }
+                SendDragEventsIfMouseButtonDown(x, y, UIEvent::Device::MOUSE);
             }
         }
     }

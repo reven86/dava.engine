@@ -444,43 +444,43 @@ namespace DAVA
         out.clear();
         if (mouseButtonFlags & RI_MOUSE_BUTTON_1_UP)
         {
-            out.push_back({ UIEvent::MouseButton::Left, UIEvent::Phase::ENDED });
+            out.push_back({ UIEvent::MouseButton::LEFT, UIEvent::Phase::ENDED });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_2_UP)
         {
-            out.push_back({ UIEvent::MouseButton::Right, UIEvent::Phase::ENDED });
+            out.push_back({ UIEvent::MouseButton::RIGHT, UIEvent::Phase::ENDED });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_3_UP)
         {
-            out.push_back({ UIEvent::MouseButton::Middle, UIEvent::Phase::ENDED });
+            out.push_back({ UIEvent::MouseButton::MIDDLE, UIEvent::Phase::ENDED });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_4_UP)
         {
-            out.push_back({ UIEvent::MouseButton::Extended1, UIEvent::Phase::ENDED });
+            out.push_back({ UIEvent::MouseButton::EXTENDED1, UIEvent::Phase::ENDED });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_5_UP)
         {
-            out.push_back({ UIEvent::MouseButton::Extended2, UIEvent::Phase::ENDED });
+            out.push_back({ UIEvent::MouseButton::EXTENDED2, UIEvent::Phase::ENDED });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_1_DOWN)
         {
-            out.push_back({ UIEvent::MouseButton::Left, UIEvent::Phase::BEGAN });
+            out.push_back({ UIEvent::MouseButton::LEFT, UIEvent::Phase::BEGAN });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_2_DOWN)
         {
-            out.push_back({ UIEvent::MouseButton::Right, UIEvent::Phase::BEGAN });
+            out.push_back({ UIEvent::MouseButton::RIGHT, UIEvent::Phase::BEGAN });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_3_DOWN)
         {
-            out.push_back({ UIEvent::MouseButton::Middle, UIEvent::Phase::BEGAN });
+            out.push_back({ UIEvent::MouseButton::MIDDLE, UIEvent::Phase::BEGAN });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_4_DOWN)
         {
-            out.push_back({ UIEvent::MouseButton::Extended1, UIEvent::Phase::BEGAN });
+            out.push_back({ UIEvent::MouseButton::EXTENDED1, UIEvent::Phase::BEGAN });
         }
         if (mouseButtonFlags & RI_MOUSE_BUTTON_5_DOWN)
         {
-            out.push_back({ UIEvent::MouseButton::Extended2, UIEvent::Phase::BEGAN });
+            out.push_back({ UIEvent::MouseButton::EXTENDED2, UIEvent::Phase::BEGAN });
         }
     }
 
@@ -493,8 +493,8 @@ namespace DAVA
 
         if (mouseButtonState.any())
         {
-            for (unsigned buttonIndex = static_cast<unsigned>(UIEvent::MouseButton::Left);
-                 buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::Extended2);
+            for (unsigned buttonIndex = static_cast<unsigned>(UIEvent::MouseButton::LEFT);
+                 buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::EXTENDED2);
                  ++buttonIndex)
             {
                 unsigned bitIndex = buttonIndex - 1;
@@ -508,7 +508,7 @@ namespace DAVA
         }
         else
         {
-            e.mouseButton = UIEvent::MouseButton::None;
+            e.mouseButton = UIEvent::MouseButton::NONE;
             e.phase = UIEvent::Phase::MOVE;
             UIControlSystem::Instance()->OnInput(&e);
         }
@@ -519,7 +519,7 @@ namespace DAVA
         UIEvent e;
         e.physPoint = Vector2(x, y);
         e.device = UIEvent::Device::MOUSE;
-        e.scrollDelta.y = wheelDelta;
+        e.wheelDelta.y = wheelDelta;
         e.phase = UIEvent::Phase::WHEEL;
         e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 

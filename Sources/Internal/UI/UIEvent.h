@@ -87,12 +87,14 @@ public:
 
     enum class MouseButton : uint32
     {
-        None = 0,
-        Left = 1,
-        Right = 2,
-        Middle = 3,
-        Extended1 = 4,
-        Extended2 = 5
+        NONE = 0,
+        LEFT = 1,
+        RIGHT = 2,
+        MIDDLE = 3,
+        EXTENDED1 = 4,
+        EXTENDED2 = 5,
+
+        NUM_BUTTONS = EXTENDED2
     };
 
     enum class Device : uint32
@@ -129,7 +131,7 @@ public:
         {
             float32 x;
             float32 y;
-        } scrollDelta; // scroll delta in mouse wheel clicks (or lines)
+        } wheelDelta; // scroll delta in mouse wheel clicks (or lines)
     };
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates
