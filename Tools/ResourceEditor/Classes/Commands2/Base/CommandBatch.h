@@ -35,22 +35,6 @@
 #include "Commands2/Base/Command2.h"
 #include "Commands2/Base/CommandNotify.h"
 
-class CommandBatchNotify final : public CommandNotify
-{
-public:
-    CommandBatchNotify(CommandNotify* commandNotify);
-    ~CommandBatchNotify() override;
-
-    void Notify(const Command2* command, bool redo) override;
-
-    void DispatchNotifications();
-
-private:
-    CommandNotify* commandNotify = nullptr;
-    DAVA::UnorderedMap<const Command2*, bool> notifiedCommands;
-};
-
-
 class CommandBatch final: public Command2
 {
 public:
@@ -70,10 +54,14 @@ public:
 
     Command2* GetCommand(DAVA::uint32 index) const;
     bool ContainsCommand(DAVA::int32 commandId) const;
+    
+    bool IsMultiCommandBatch() const;
 
 protected:
 
-    DAVA::Vector<Command2*> commandList;
+    using CommandsContainer = DAVA::Vector<Command2*>;
+    CommandsContainer commandList;
+    DAVA::UnorderedSet<DAVA::int32> commandIDs;
 };
 
 #endif // __COMMAND_BATCH_H__

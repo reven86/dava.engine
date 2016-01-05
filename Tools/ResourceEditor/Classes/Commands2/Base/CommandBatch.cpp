@@ -32,36 +32,6 @@
 #include "Debug/DVAssert.h"
 
 
-CommandBatchNotify::CommandBatchNotify(CommandNotify* commandNotify_)
-    : commandNotify(SafeRetain(commandNotify_))
-{
-}
-
-CommandBatchNotify::~CommandBatchNotify()
-{
-    SafeRelease(commandNotify);
-}
-
-
-void CommandBatchNotify::Notify(const Command2* command, bool redo)
-{
-    DVASSERT(notifiedCommands.count(command) == 0);
-
-    notifiedCommands[command] = redo;
-}
-
-void CommandBatchNotify::DispatchNotifications()
-{
-    DVASSERT(commandNotify != nullptr);
-    DVASSERT(notifiedCommands.empty() == false);
-
-    for (const auto & notify : notifiedCommands)
-    {
-        commandNotify->Notify(notify.first, notify.second);
-    }
-}
-
-
 CommandBatch::CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
     : Command2(CMDID_BATCH, text)
 {
@@ -78,29 +48,27 @@ CommandBatch::~CommandBatch()
     }
 
     commandList.clear();
-}
-
-void CommandBatch::Undo()
-{
-    DAVA::Vector<Command2*>::reverse_iterator i = commandList.rbegin();
-    DAVA::Vector<Command2*>::reverse_iterator end = commandList.rend();
-
-    for (; i != end; i++)
-    {
-        UndoInternalCommand(*i);
-    }
+    commandIDs.clear();
 }
 
 void CommandBatch::Redo()
 {
-    DAVA::Vector<Command2*>::iterator i = commandList.begin();
-    DAVA::Vector<Command2*>::iterator end = commandList.end();
-
-    for (; i != end; i++)
+    for (CommandsContainer::iterator i = commandList.begin(), end = commandList.end(); i != end; i++)
     {
-        RedoInternalCommand(*i);
+        (*i)->Redo();
     }
+    DVASSERT(false && "Need Notify about batch REDO");
 }
+
+void CommandBatch::Undo()
+{
+    for (CommandsContainer::reverse_iterator i = commandList.rbegin(), end = commandList.rend(); i != end; i++)
+    {
+        (*i)->Undo();
+    }
+    DVASSERT(false && "Need Notify about batch UNDO");
+}
+
 
 DAVA::Entity* CommandBatch::GetEntity() const
 {
@@ -112,7 +80,10 @@ void CommandBatch::AddAndExec(Command2* command)
     DVASSERT(command != nullptr);
 
     commandList.push_back(command);
-    RedoInternalCommand(command);
+    commandIDs.insert(command->GetId());
+
+    command->Redo();
+    DVASSERT(false && "Need notify about batch REDO");
 }
 
 bool CommandBatch::Empty() const
@@ -139,7 +110,7 @@ void CommandBatch::RemoveCommands(DAVA::int32 commandId)
     while (i != commandList.end())
     {
         Command2* command = *i;
-        if (nullptr != command && command->GetId() == commandId)
+        if (command->GetId() == commandId)
         {
             delete command;
             i = commandList.erase(i);
@@ -149,15 +120,16 @@ void CommandBatch::RemoveCommands(DAVA::int32 commandId)
             i++;
         }
     }
+
+    commandIDs.erase(commandId);
 }
 
 bool CommandBatch::ContainsCommand(DAVA::int32 commandId) const
 {
-    for (const auto & command : commandList)
-    {
-        if (command->GetId() == commandId)
-            return true;
-    }
+    return commandIDs.count(commandId) > 0;
+}
 
-    return false;
+bool CommandBatch::IsMultiCommandBatch() const
+{
+    return (commandIDs.size() > 1);
 }

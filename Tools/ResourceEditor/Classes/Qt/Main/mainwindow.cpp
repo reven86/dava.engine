@@ -2891,14 +2891,8 @@ bool QtMainWindow::IsTilemaskModificationCommand(const Command2* cmd)
 
 	if (cmd->GetId() == CMDID_BATCH)
 	{
-		CommandBatch* batch = (CommandBatch*)cmd;
-		for (int32 i = 0; i < batch->Size(); ++i)
-		{
-			if (IsTilemaskModificationCommand(batch->GetCommand(i)))
-			{
-				return true;
-			}
-		}
+        const CommandBatch* batch = static_cast<const CommandBatch*>(cmd);
+        return batch->ContainsCommand(CMDID_TILEMASK_MODIFY);
 	}
 
 	return false;

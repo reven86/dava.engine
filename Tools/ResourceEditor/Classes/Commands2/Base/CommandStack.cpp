@@ -67,27 +67,42 @@ void CommandStack::Clear()
 
 void CommandStack::RemoveCommands(DAVA::int32 commandId)
 {
-    for (DAVA::uint32 i = 0, count = static_cast<DAVA::uint32>(commandList.size()); i < count; i++)
+    DAVA::int32 index = 0;
+    for (auto it = commandList.begin(), endIt = commandList.end(); it != endIt; )
     {
-        Command2* cmd = GetCommandInternal(i);
-        if (cmd->GetId() == commandId)
-        {
-            RemoveCommand(i);
-            i--; // check command with same index on next step
-        }
-        else if (cmd->GetId() == CMDID_BATCH)
-        {
-            CommandBatch* batch = static_cast<CommandBatch *> (cmd);
+        Command2 *command = *it;
+        DVASSERT(command != nullptr);
 
+        bool needRemoveCommand = (command->GetId() == commandId);
+        if (!needRemoveCommand && (command->GetId() == CMDID_BATCH))
+        {
+            CommandBatch* batch = static_cast<CommandBatch *> (command);
             batch->RemoveCommands(commandId);
-            if (batch->Size() == 0)
+            needRemoveCommand = batch->Empty();
+        }
+
+        if (needRemoveCommand)
+        {
+            delete command;
+            it = commandList.erase(it);
+
+            if (nextCommandIndex > 0)
             {
-                // clear empty batch
-                RemoveCommand(i);
-                i--; // check command with same index on next step
+                nextCommandIndex--;
+            }
+            if (cleanCommandIndex > 0 && index < cleanCommandIndex)
+            {
+                cleanCommandIndex--;
             }
         }
+        else
+        {
+            ++index;
+            ++it;
+        }
     }
+
+    CleanCheck();
 }
 
 void CommandStack::Undo()
@@ -172,15 +187,15 @@ void CommandStack::EndBatch()
         if (nestedBatchesCounter > 0)
             return;
 
-        if (curBatchCommand->Size() > 0)
+        if (curBatchCommand->Empty())
+        {
+            delete curBatchCommand;
+        }
+        else
         {
             // all command were already executed in batch
             // so just add them to stack without calling redo
             ExecInternal(curBatchCommand, false);
-        }
-        else
-        {
-            delete curBatchCommand;
         }
 
         curBatchCommand = nullptr;
@@ -296,6 +311,7 @@ void CommandStack::ClearLimitedCommands()
         RemoveCommand(0);
     }
 }
+
 
 void CommandStack::RemoveCommand(DAVA::int32 index)
 {

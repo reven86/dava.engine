@@ -69,6 +69,9 @@ public:
     const Command2* GetCommand(DAVA::int32 index) const;
 
 protected:
+
+    using CommandsContainer = DAVA::List<Command2*>;
+
     void ExecInternal(Command2* command, bool runCommand);
     Command2* GetCommandInternal(DAVA::int32 index) const;
 
@@ -79,7 +82,7 @@ protected:
     void CleanCheck();
     void CommandExecuted(const Command2* command, bool redo);
 
-    DAVA::List<Command2*> commandList;
+    CommandsContainer commandList;
 
     CommandBatch* curBatchCommand = nullptr;
     CommandStackNotify* stackCommandsNotify = nullptr;
