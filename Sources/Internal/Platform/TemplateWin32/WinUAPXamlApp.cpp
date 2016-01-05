@@ -538,11 +538,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
 
 void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
-    if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING || !isMouseCursorShown)
-    {
-        return;
-    }
-
     UIEvent::Phase phase = UIEvent::Phase::DRAG;
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
@@ -555,17 +550,15 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
     {
         UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
 
-        if (!mouseButtonChanges.empty())
+        for (auto& change : mouseButtonChanges)
         {
-            for (auto& change : mouseButtonChanges)
-            {
-                auto fn = [this, x, y, change, type]() {
-                    DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type));
-                };
-                core->RunOnMainThread(fn);
-            }
+            auto fn = [this, x, y, change, type]() {
+                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type));
+            };
+            core->RunOnMainThread(fn);
         }
-        else
+
+        if (mouseCaptureMode != InputSystem::eMouseCaptureMode::PINING)
         {
             if (mouseButtonsState.none())
             {
@@ -763,13 +756,8 @@ void WinUAPXamlApp::SendDragEventsIfMouseButtonDown(float32 x, float32 y, UIEven
 
 void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 {
-    if (mouseCaptureMode != InputSystem::eMouseCaptureMode::PINING || isMouseCursorShown)
-    {
-        return;
-    }
-
-    float32 x = static_cast<float32>(args->MouseDelta.X);
-    float32 y = static_cast<float32>(args->MouseDelta.Y);
+    float32 dx = static_cast<float32>(args->MouseDelta.X);
+    float32 dy = static_cast<float32>(args->MouseDelta.Y);
 
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
 
@@ -787,29 +775,29 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     {
         UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
 
-        if (!mouseButtonChanges.empty())
+        float window_x = pointerPoint->Position.X;
+        float window_y = pointerPoint->Position.Y;
+        for (auto& change : mouseButtonChanges)
         {
-            for (auto& change : mouseButtonChanges)
-            {
-                auto fn = [this, x, y, change]() {
-                    DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), UIEvent::Device::MOUSE);
-                };
-                core->RunOnMainThread(fn);
-            }
+            auto fn = [this, window_x, window_y, change]() {
+                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE);
+            };
+            core->RunOnMainThread(fn);
         }
-        else
+
+        if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING && (dx != 0.f || dy != 0.f))
         {
             if (mouseButtonsState.none())
             {
                 phase = UIEvent::Phase::MOVE;
 
-                core->RunOnMainThread([this, phase, x, y]() {
-                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE);
+                core->RunOnMainThread([this, phase, dx, dy]() {
+                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE);
                 });
             }
             else
             {
-                SendDragEventsIfMouseButtonDown(x, y, UIEvent::Device::MOUSE);
+                SendDragEventsIfMouseButtonDown(dx, dy, UIEvent::Device::MOUSE);
             }
         }
     }

@@ -1693,10 +1693,13 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 if(!current->isUpdated)
                 {
                     current->Retain();
-                    if(current->inputProcessorsCount > 0 && current->SystemInput(currentInput))
+                    if (current->inputProcessorsCount > 0)
                     {
-                        current->Release();
-                        return true;
+                        if (current->SystemInput(currentInput))
+                        {
+                            current->Release();
+                            return true;
+                        }
                     }
                     current->Release();
                     if(isIteratorCorrupted)
