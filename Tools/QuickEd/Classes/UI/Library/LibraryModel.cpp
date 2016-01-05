@@ -127,8 +127,10 @@ Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
     Vector<ControlNode*> controls;
     Vector<StyleSheetNode*> styles;
     PackageBaseNode *node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
-    if (node && node->GetControl() != nullptr)
+    if (nullptr != node && node->GetControl() != nullptr)
+    {
         result |= Qt::ItemIsDragEnabled;
+    }
     return result;
 }
 
@@ -209,7 +211,10 @@ void LibraryModel::SetPackageNode(std::weak_ptr<PackageNode> package_)
         removeRow(importedPackageRootItem->row());
         importedPackageRootItem = nullptr;
     }
-    BuildModel();
+    if(!package.expired())
+    {
+        BuildModel();
+    }
 }
 
 QModelIndex LibraryModel::indexByNode(const void *node, const QStandardItem *item) const
