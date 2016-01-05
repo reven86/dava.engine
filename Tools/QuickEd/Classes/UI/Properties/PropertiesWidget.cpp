@@ -222,7 +222,7 @@ QAction *PropertiesWidget::CreateAddComponentAction()
 
     QAction *action = new QAction(tr("Add Component"), this);
     action->setMenu(addComponentMenu);
-    
+    addComponentMenu->setEnabled(false);
     return action;
 }
 
@@ -230,6 +230,7 @@ QAction *PropertiesWidget::CreateAddStyleSelectorAction()
 {
     QAction *action = new QAction(tr("Add Style Selector"), this);
     connect(action, &QAction::triggered, this, &PropertiesWidget::OnAddStyleSelector);
+    action->setEnabled(false);
     return action;
 }
 
@@ -264,7 +265,7 @@ QAction *PropertiesWidget::CreateAddStylePropertyAction()
 
     QAction *action = new QAction(tr("Add Style Property"), this);
     action->setMenu(propertiesMenu);
-    
+    propertiesMenu->setEnabled(false);
     return action;
 }
 
@@ -272,6 +273,7 @@ QAction *PropertiesWidget::CreateRemoveAction()
 {
     QAction *action = new QAction(tr("Remove"), this);
     connect(action, &QAction::triggered, this, &PropertiesWidget::OnRemove);
+    action->setEnabled(false);
     return action;
 }
 
@@ -319,7 +321,6 @@ void PropertiesWidget::UpdateModel(PackageBaseNode* node)
     addComponentAction->menu()->setEnabled(isControl);
     addStylePropertyAction->menu()->setEnabled(isStyle);
     addStyleSelectorAction->setEnabled(isStyle);
-
     removeAction->setEnabled(false);
     
     //delay long time work with view

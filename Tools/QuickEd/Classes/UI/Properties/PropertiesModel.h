@@ -46,6 +46,7 @@ class ControlNode;
 class StyleSheetNode;
 class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
+class LazyUpdater;
 
 class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
@@ -109,6 +110,7 @@ private:
     AbstractProperty *rootProperty = nullptr;
     std::weak_ptr<QtModelPackageCommandExecutor> commandExecutor;
     QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
+    LazyUpdater *lazyUpdater = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

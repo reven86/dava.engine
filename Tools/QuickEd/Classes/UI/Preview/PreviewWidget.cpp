@@ -276,13 +276,14 @@ void PreviewWidget::ApplyPosChanges()
 void PreviewWidget::UpdateScrollArea()
 {
     QSize areaSize = scrollAreaController->GetViewSize();
-    QSize contentSize = scrollAreaController->GetCanvasSize();
 
     verticalScrollBar->setPageStep(areaSize.height());
     horizontalScrollBar->setPageStep(areaSize.width());
 
-    verticalScrollBar->setRange(0, contentSize.height() - areaSize.height());
-    horizontalScrollBar->setRange(0, contentSize.width() - areaSize.width());
+    QPoint minPos = scrollAreaController->GetMinimumPos();
+    QPoint maxPos = scrollAreaController->GetMaximumPos();
+    horizontalScrollBar->setRange(minPos.x(), maxPos.x());
+    verticalScrollBar->setRange(minPos.y(), maxPos.y());
 }
 
 void PreviewWidget::OnPositionChanged(const QPoint& position)
@@ -420,13 +421,10 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 #endif //Q_OS_WIN
         //scroll view up and down
         static const qreal wheelDelta = 0.002f;
-        int horizontalScrollBarValue = horizontalScrollBar->value();
-        horizontalScrollBarValue -= delta.x() * horizontalScrollBar->pageStep() * wheelDelta;
-        horizontalScrollBar->setValue(horizontalScrollBarValue);
-
-        int verticalScrollBarValue = verticalScrollBar->value();
-        verticalScrollBarValue -= delta.y() * verticalScrollBar->pageStep() * wheelDelta;
-        verticalScrollBar->setValue(verticalScrollBarValue);
+        QPoint position = scrollAreaController->GetPosition();
+        QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
+                             (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
+        scrollAreaController->SetPosition(position - additionalPos);
     }
 #ifdef Q_OS_WIN
     else

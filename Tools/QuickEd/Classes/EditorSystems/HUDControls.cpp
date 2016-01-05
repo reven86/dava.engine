@@ -73,16 +73,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
-    if(HUDAreaInfo::FRAME_AREA)
-    {
-        static Rect rect;
-        Rect rect2 = GetGeometricData().GetUnrotatedRect();
-        if(rect != rect2)
-        {
-            rect = rect2;
-            DAVA::Logger::Debug("new rect: %f %f %f %f", rect.x, rect.y, rect.dx, rect.dy);
-        }
-    }
+
     bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
     bool valid = contolIsInValidState && control->GetVisibleForUIEditor();
     if(valid)

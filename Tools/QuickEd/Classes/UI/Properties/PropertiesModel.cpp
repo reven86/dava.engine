@@ -51,6 +51,8 @@
 
 #include "UI/UIControl.h"
 
+#include "QtTools/LazyUpdater/LazyUpdater.h"
+
 #include <chrono>
 
 using namespace std::chrono;
@@ -58,6 +60,7 @@ using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
+    , lazyUpdater(new LazyUpdater(std::bind(&PropertiesModel::UpdateAllChangedProperties, this)))
 {
 }
 
@@ -302,6 +305,7 @@ void PropertiesModel::UpdateAllChangedProperties()
     {
         emit dataChanged(pair.first, pair.second, QVector<int>() << Qt::DisplayRole);
     }
+    changedIndexes.clear();
 }
 
 void PropertiesModel::PropertyChanged(AbstractProperty *property)
@@ -309,7 +313,7 @@ void PropertiesModel::PropertyChanged(AbstractProperty *property)
     QModelIndex nameIndex = indexByProperty(property, 0);
     QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
-    UpdateAllChangedProperties();
+    lazyUpdater->Update();
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)

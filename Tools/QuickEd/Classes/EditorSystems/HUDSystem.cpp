@@ -243,7 +243,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
 
 void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
 {
-    OnEmulationModeChanged(rootControls.size() == 1);
+    OnEmulationModeChanged(rootControls.size() != 1);
 }
 
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)

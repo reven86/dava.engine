@@ -127,6 +127,17 @@ qreal ScrollAreaController::GetMaxScale() const
     return maxScale;
 }
 
+QPoint ScrollAreaController::GetMinimumPos() const
+{
+    return QPoint(0, 0);
+}
+
+QPoint ScrollAreaController::GetMaximumPos() const
+{
+    QSize maxSize = canvasSize - viewSize;
+    return QPoint(maxSize.width(), maxSize.height());
+}
+
 void ScrollAreaController::UpdateCanvasContentSize()
 {
     Vector2 contentSize;
@@ -166,6 +177,10 @@ void ScrollAreaController::SetViewSize(QSize viewSize_)
 
 void ScrollAreaController::SetPosition(QPoint position_)
 {
+    QPoint minPos = GetMinimumPos();
+    QPoint maxPos = GetMaximumPos();
+    position_.setX(qBound(minPos.x(), position_.x(), maxPos.x()));
+    position_.setY(qBound(minPos.y(), position_.y(), maxPos.y()));
     if (position_ != position)
     {
         position = position_;
