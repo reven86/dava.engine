@@ -57,4 +57,10 @@ protected:
     CommandNotify* curNotify = nullptr;
 };
 
+inline CommandNotify* CommandNotifyProvider::GetNotify() const
+{
+    return curNotify;
+}
+
+
 #endif // __COMMAND_NOTIFY_H__

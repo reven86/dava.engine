@@ -35,11 +35,6 @@ Command2::Command2(DAVA::int32 _id, const DAVA::String& _text)
 {
 }
 
-bool Command2::MergeWith(const Command2* command)
-{
-    return false;
-}
-
 
 void Command2::UndoInternalCommand(Command2* command)
 {

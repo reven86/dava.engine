@@ -35,7 +35,7 @@
 class CommandBatch final: public Command2
 {
 public:
-    CommandBatch(DAVA::uint32 commandsCount = 1);
+    CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount);
     ~CommandBatch() override;
 
     void Undo() override;

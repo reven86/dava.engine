@@ -31,12 +31,6 @@
 #include "Commands2/Base/CommandAction.h"
 
 CommandStack::CommandStack()
-    : commandListLimit(0)
-    , nextCommandIndex(0)
-    , cleanCommandIndex(0)
-    , lastCheckCleanState(true)
-    , nestedBatchesCounter(0)
-    , curBatchCommand(NULL)
 {
     stackCommandsNotify = new CommandStackNotify(this);
 }
@@ -49,26 +43,12 @@ CommandStack::~CommandStack()
 
 bool CommandStack::CanUndo() const
 {
-    bool ret = false;
-
-    if (commandList.size() > 0 && nextCommandIndex > 0)
-    {
-        ret = true;
-    }
-
-    return ret;
+    return (commandList.size() > 0 && nextCommandIndex > 0);
 }
 
 bool CommandStack::CanRedo() const
 {
-    bool ret = false;
-
-    if (nextCommandIndex < commandList.size())
-    {
-        ret = true;
-    }
-
-    return ret;
+    return (nextCommandIndex < static_cast<DAVA::int32>(commandList.size()));
 }
 
 void CommandStack::Clear()
@@ -76,25 +56,20 @@ void CommandStack::Clear()
     nextCommandIndex = 0;
     cleanCommandIndex = 0;
 
-    std::list<Command2*>::iterator i = commandList.begin();
-    std::list<Command2*>::iterator end = commandList.end();
-
-    for (; i != end; ++i)
+    for (auto & command : commandList)
     {
-        delete *i;
+        delete command;
     }
-
     commandList.clear();
 
     CleanCheck();
 }
 
-void CommandStack::Clear(int commandId)
+void CommandStack::Clear(DAVA::int32 commandId)
 {
-    for (size_t i = 0; i < commandList.size(); i++)
+    for (DAVA::uint32 i = 0, count = static_cast<DAVA::uint32>(commandList.size()); i < count; i++)
     {
         Command2* cmd = GetCommandInternal(i);
-
         if (cmd->GetId() == commandId)
         {
             ClearCommand(i);
@@ -103,7 +78,7 @@ void CommandStack::Clear(int commandId)
         }
         else if (cmd->GetId() == CMDID_BATCH)
         {
-            CommandBatch* batch = (CommandBatch*)cmd;
+            CommandBatch* batch = static_cast<CommandBatch *> (cmd);
 
             batch->RemoveCommands(commandId);
             if (batch->Size() == 0)
@@ -124,7 +99,7 @@ void CommandStack::Undo()
         nextCommandIndex--;
         Command2* commandToUndo = GetCommandInternal(nextCommandIndex);
 
-        if (NULL != commandToUndo)
+        if (nullptr != commandToUndo)
         {
             commandToUndo->Undo();
             EmitNotify(commandToUndo, false);
@@ -141,7 +116,7 @@ void CommandStack::Redo()
         Command2* commandToRedo = GetCommandInternal(nextCommandIndex);
         nextCommandIndex++;
 
-        if (NULL != commandToRedo)
+        if (nullptr != commandToRedo)
         {
             commandToRedo->Redo();
             EmitNotify(commandToRedo, true);
@@ -153,42 +128,45 @@ void CommandStack::Redo()
 
 void CommandStack::Exec(Command2* command)
 {
-    if (NULL != command)
+    DVASSERT(command != nullptr);
+
+    CommandAction* action = dynamic_cast<CommandAction*>(command);
+    if (action != nullptr)
     {
-        CommandAction* action = dynamic_cast<CommandAction*>(command);
-        if (!action)
+        action->Redo();
+        EmitNotify(command, true);
+        delete action;
+    }
+    else
+    {   //command
+        if (nullptr != curBatchCommand)
         {
-            if (NULL != curBatchCommand)
-            {
-                curBatchCommand->AddAndExec(command);
-            }
-            else
-            {
-                ExecInternal(command, true);
-            }
+            curBatchCommand->AddAndExec(command);
         }
         else
         {
-            action->Redo();
-            EmitNotify(command, true);
-            delete action;
+            ExecInternal(command, true);
         }
     }
 }
 
-void CommandStack::BeginBatch(const DAVA::String& text)
+void CommandStack::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount/* = 1*/)
 {
     if (nestedBatchesCounter++ == 0)
     {
-        curBatchCommand = new CommandBatch();
-        curBatchCommand->SetText(text);
+        curBatchCommand = new CommandBatch(text, commandsCount);
         curBatchCommand->SetNotify(stackCommandsNotify);
+    }
+    else
+    {
+        DVASSERT(curBatchCommand != nullptr);
+        DAVA::Logger::Error("Begin batch(%s) is called inside other batch(&s)", text.c_str(), curBatchCommand->GetText().c_str());
     }
 }
 
 void CommandStack::EndBatch()
 {
-    if (NULL != curBatchCommand)
+    if (nullptr != curBatchCommand)
     {
         --nestedBatchesCounter;
         DVASSERT(nestedBatchesCounter >= 0);
@@ -207,13 +185,13 @@ void CommandStack::EndBatch()
             delete curBatchCommand;
         }
 
-        curBatchCommand = NULL;
+        curBatchCommand = nullptr;
     }
 }
 
 bool CommandStack::IsBatchStarted() const
 {
-    return (curBatchCommand != NULL);
+    return (curBatchCommand != nullptr);
 }
 
 bool CommandStack::IsClean() const
@@ -235,52 +213,54 @@ void CommandStack::SetClean(bool clean)
     CleanCheck();
 }
 
-size_t CommandStack::GetCleanIndex() const
+DAVA::int32 CommandStack::GetCleanIndex() const
 {
     return cleanCommandIndex;
 }
 
-size_t CommandStack::GetNextIndex() const
+DAVA::int32 CommandStack::GetNextIndex() const
 {
     return nextCommandIndex;
 }
 
-size_t CommandStack::GetUndoLimit() const
+DAVA::int32 CommandStack::GetUndoLimit() const
 {
     return commandListLimit;
 }
 
-void CommandStack::SetUndoLimit(size_t limit)
+void CommandStack::SetUndoLimit(DAVA::int32 limit)
 {
     commandListLimit = limit;
 }
 
-size_t CommandStack::GetCount() const
+DAVA::uint32 CommandStack::GetCount() const
 {
-    return commandList.size();
+    return static_cast<DAVA::uint32>(commandList.size());
 }
 
-const Command2* CommandStack::GetCommand(size_t index) const
+const Command2* CommandStack::GetCommand(DAVA::int32 index) const
 {
     return GetCommandInternal(index);
 }
 
-Command2* CommandStack::GetCommandInternal(size_t index) const
+Command2* CommandStack::GetCommandInternal(DAVA::int32 index) const
 {
-    Command2* command = NULL;
-
-    if (index < commandList.size())
+    if (index < static_cast<DAVA::int32>(commandList.size()))
     {
         std::list<Command2*>::const_iterator i = commandList.begin();
         std::advance(i, index);
 
         if (i != commandList.end())
         {
-            command = *i;
+            return (*i);
         }
     }
+    else
+    {
+        DAVA::Logger::Error("In %s requested wrong index %d from %d", __FUNCTION__, index, commandList.size());
+    }
 
-    return command;
+    return nullptr;
 }
 
 void CommandStack::ExecInternal(Command2* command, bool runCommand)
@@ -318,16 +298,16 @@ void CommandStack::ClearRedoCommands()
 
 void CommandStack::ClearLimitedCommands()
 {
-    while (commandListLimit > 0 && commandList.size() > commandListLimit)
+    while ((commandListLimit > 0) && (static_cast<DAVA::int32>(commandList.size()) > commandListLimit))
     {
         ClearCommand(0);
     }
 }
 
-void CommandStack::ClearCommand(size_t index)
+void CommandStack::ClearCommand(DAVA::int32 index)
 {
     const Command2* command = GetCommand(index);
-    if (NULL != command)
+    if (nullptr != command)
     {
         commandList.remove((Command2*)command);
 

@@ -41,54 +41,55 @@ class CommandStack : public CommandNotifyProvider
 
 public:
     CommandStack();
-    ~CommandStack();
+    ~CommandStack() override;
 
     bool CanRedo() const;
     bool CanUndo() const;
 
     void Clear();
-    void Clear(int commandId);
+    void Clear(DAVA::int32 commandId);
 
     void Undo();
     void Redo();
     void Exec(Command2* command);
 
-    void BeginBatch(const DAVA::String& text);
+    void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
     void EndBatch();
     bool IsBatchStarted() const;
 
     bool IsClean() const;
     void SetClean(bool clean);
 
-    size_t GetCleanIndex() const;
-    size_t GetNextIndex() const;
+    DAVA::int32 GetCleanIndex() const;
+    DAVA::int32 GetNextIndex() const;
 
-    size_t GetUndoLimit() const;
-    void SetUndoLimit(size_t limit);
+    DAVA::int32 GetUndoLimit() const;
+    void SetUndoLimit(DAVA::int32 limit);
 
-    size_t GetCount() const;
-    const Command2* GetCommand(size_t index) const;
+    DAVA::uint32 GetCount() const;
+    const Command2* GetCommand(DAVA::int32 index) const;
 
 protected:
-    DAVA::List<Command2*> commandList;
-    size_t commandListLimit;
-    size_t nextCommandIndex;
-    size_t cleanCommandIndex;
-    bool lastCheckCleanState;
-
-    DAVA::uint32 nestedBatchesCounter;
-    CommandBatch* curBatchCommand;
-    CommandStackNotify* stackCommandsNotify;
-
     void ExecInternal(Command2* command, bool runCommand);
-    Command2* GetCommandInternal(size_t index) const;
+    Command2* GetCommandInternal(DAVA::int32 index) const;
 
     void ClearRedoCommands();
     void ClearLimitedCommands();
-    void ClearCommand(size_t index);
+    void ClearCommand(DAVA::int32 index);
 
     void CleanCheck();
     void CommandExecuted(const Command2* command, bool redo);
+
+    DAVA::List<Command2*> commandList;
+
+    CommandBatch* curBatchCommand = nullptr;
+    CommandStackNotify* stackCommandsNotify = nullptr;
+
+    DAVA::uint32 nestedBatchesCounter = 0;
+    DAVA::int32 commandListLimit = 0;
+    DAVA::int32 nextCommandIndex = 0;
+    DAVA::int32 cleanCommandIndex = 0;
+    bool lastCheckCleanState = true;
 };
 
 class CommandStackNotify final : public CommandNotify

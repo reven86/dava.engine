@@ -29,8 +29,8 @@
 
 #include "Commands2/Base/CommandBatch.h"
 
-CommandBatch::CommandBatch(DAVA::uint32 commandsCount /*=1*/)
-    : Command2(CMDID_BATCH)
+CommandBatch::CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
+    : Command2(CMDID_BATCH, text)
 {
     DVASSERT(commandsCount > 0);
     commandList.reserve(commandsCount);

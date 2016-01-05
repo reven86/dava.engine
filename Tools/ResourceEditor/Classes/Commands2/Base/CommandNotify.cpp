@@ -43,11 +43,6 @@ void CommandNotifyProvider::SetNotify(CommandNotify* notify)
     }
 }
 
-CommandNotify* CommandNotifyProvider::GetNotify() const
-{
-    return curNotify;
-}
-
 void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
 {
     if (nullptr != curNotify)

@@ -39,18 +39,16 @@
 class Command2 : public CommandNotifyProvider
 {
 public:
-    Command2(DAVA::int32 _id, const DAVA::String& _text = "");
+    Command2(DAVA::int32 id, const DAVA::String& text = "");
 
     DAVA::int32 GetId() const;
 
     virtual void Undo() = 0;
     virtual void Redo() = 0;
-    virtual DAVA::Entity* GetEntity() const = 0;
 
-    virtual bool MergeWith(const Command2* command);
+    DAVA_DEPRECATED(virtual DAVA::Entity* GetEntity() const = 0);
 
     const DAVA::String & GetText() const;
-    void SetText(const DAVA::String& text);
 
 protected:
     void UndoInternalCommand(Command2* command);
@@ -69,11 +67,6 @@ inline DAVA::int32 Command2::GetId() const
 inline const DAVA::String & Command2::GetText() const
 {
     return text;
-}
-
-inline void Command2::SetText(const DAVA::String& _text)
-{
-    text = _text;
 }
 
 
