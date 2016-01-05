@@ -589,6 +589,11 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
     return textBlock->GetStringSizes();
 }
     
+void UIStaticText::SetForceBiDiSupportEnabled(bool value)
+{
+    textBlock->SetForceBiDiSupportEnabled(value);
+}
+
 void UIStaticText::PrepareSprite()
 {
     if (textBlock->IsSpriteReady())
