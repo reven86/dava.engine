@@ -187,6 +187,22 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
     return true;
 }
 
+void WinUAPXamlApp::StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
+{
+    PreStartAppSettings();
+    uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
+
+    CreateBaseXamlUI();
+
+    Thread* mainLoopThread = Thread::Create([this, args]() { Run(args); });
+    mainLoopThread->Start();
+    mainLoopThread->BindToProcessor(0);
+    mainLoopThread->SetPriority(Thread::PRIORITY_HIGH);
+    mainLoopThread->Release();
+
+    mainLoopThreadStarted = true;
+}
+
 void WinUAPXamlApp::PreStartAppSettings()
 {
     if (isPhoneApiDetected)
@@ -204,18 +220,7 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
     // else app is restored from background or resumed from suspended state
     if (!mainLoopThreadStarted)
     {
-        PreStartAppSettings();
-        uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
-
-        CreateBaseXamlUI();
-
-        Thread* mainLoopThread = Thread::Create([this, args]() { Run(args); });
-        mainLoopThread->Start();
-        mainLoopThread->BindToProcessor(0);
-        mainLoopThread->SetPriority(Thread::PRIORITY_HIGH);
-        mainLoopThread->Release();
-
-        mainLoopThreadStarted = true;
+        StartMainLoopThread(args);
     }
     else
     {
@@ -223,6 +228,23 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
     }
 
     Window::Current->Activate();
+}
+
+void WinUAPXamlApp::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
+{
+    using ::Windows::ApplicationModel::Activation::ActivationKind;
+
+    if (args->Kind == ActivationKind::Protocol)
+    {
+        if (!mainLoopThreadStarted)
+        {
+            StartMainLoopThread(nullptr);
+        }
+
+        Window::Current->Activate();
+    }
+
+    Application::OnActivated(args);
 }
 
 void WinUAPXamlApp::AddUIElement(Windows::UI::Xaml::UIElement^ uiElement)
@@ -301,7 +323,10 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     Core::Instance()->SetIsActive(true);
     Core::Instance()->SystemAppStarted();
 
-    EmitPushNotification(args);
+    if (args)
+    {
+        EmitPushNotification(args);
+    }
 
     SystemTimer* sysTimer = SystemTimer::Instance();
     while (!quitFlag)

@@ -101,6 +101,7 @@ public:
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
+    void OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args) override;
 
 private:
     void Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
@@ -142,6 +143,7 @@ private:
 
     MouseButtonState UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties);
 
+    void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
 
     void SetupEventHandlers();
