@@ -89,10 +89,11 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     , container(new HUDContainer(control))
 {
     container->SetName("Container for HUD controls of node " + node_->GetName());
-    DAVA::Vector<HUDAreaInfo::eArea> areas(HUDAreaInfo::AREAS_COUNT);
+    DAVA::Vector<HUDAreaInfo::eArea> areas;
     int begin = HUDAreaInfo::AREAS_BEGIN;
     if (node->GetParent() != nullptr && node->GetParent()->GetControl() != nullptr)
     {
+        areas.resize(HUDAreaInfo::AREAS_COUNT);
         std::generate(areas.begin(), areas.end(), [begin]() mutable {
             return static_cast<HUDAreaInfo::eArea>(begin++);
         });
@@ -100,15 +101,17 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     else
     {
         //custom areas
-        areas.push_back(HUDAreaInfo::TOP_LEFT_AREA);
-        areas.push_back(HUDAreaInfo::TOP_CENTER_AREA);
-        areas.push_back(HUDAreaInfo::TOP_RIGHT_AREA);
-        areas.push_back(HUDAreaInfo::CENTER_LEFT_AREA);
-        areas.push_back(HUDAreaInfo::CENTER_RIGHT_AREA);
-        areas.push_back(HUDAreaInfo::BOTTOM_LEFT_AREA);
-        areas.push_back(HUDAreaInfo::BOTTOM_CENTER_AREA);
-        areas.push_back(HUDAreaInfo::BOTTOM_RIGHT_AREA);
-        areas.push_back(HUDAreaInfo::FRAME_AREA);
+        areas = {
+            HUDAreaInfo::TOP_LEFT_AREA,
+            HUDAreaInfo::TOP_CENTER_AREA,
+            HUDAreaInfo::TOP_RIGHT_AREA,
+            HUDAreaInfo::CENTER_LEFT_AREA,
+            HUDAreaInfo::CENTER_RIGHT_AREA,
+            HUDAreaInfo::BOTTOM_LEFT_AREA,
+            HUDAreaInfo::BOTTOM_CENTER_AREA,
+            HUDAreaInfo::BOTTOM_RIGHT_AREA,
+            HUDAreaInfo::FRAME_AREA
+        };
     }
     for (HUDAreaInfo::eArea area : areas)
     {
