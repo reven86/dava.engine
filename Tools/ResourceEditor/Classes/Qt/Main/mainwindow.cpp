@@ -2988,7 +2988,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 			// clear all tilemask commands in commandStack because they will be
 			// invalid after tilemask reloading
-			tabEditor->ClearCommands(CMDID_TILEMASK_MODIFY);
+			tabEditor->RemoveCommands(CMDID_TILEMASK_MODIFY);
 		}
 	}
 

@@ -30,7 +30,26 @@
 #ifndef __COMMAND_BATCH_H__
 #define __COMMAND_BATCH_H__
 
+#include "Base/BaseTypes.h"
+
 #include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandNotify.h"
+
+class CommandBatchNotify final : public CommandNotify
+{
+public:
+    CommandBatchNotify(CommandNotify* commandNotify);
+    ~CommandBatchNotify() override;
+
+    void Notify(const Command2* command, bool redo) override;
+
+    void DispatchNotifications();
+
+private:
+    CommandNotify* commandNotify = nullptr;
+    DAVA::UnorderedMap<const Command2*, bool> notifiedCommands;
+};
+
 
 class CommandBatch final: public Command2
 {
@@ -46,6 +65,7 @@ public:
     void AddAndExec(Command2* command);
     void RemoveCommands(DAVA::int32 commandId);
 
+    bool Empty() const;
     DAVA::uint32 Size() const;
 
     Command2* GetCommand(DAVA::uint32 index) const;

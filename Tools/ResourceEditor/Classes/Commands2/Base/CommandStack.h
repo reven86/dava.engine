@@ -47,15 +47,14 @@ public:
     bool CanUndo() const;
 
     void Clear();
-    void Clear(DAVA::int32 commandId);
+    void RemoveCommands(DAVA::int32 commandId);
 
     void Undo();
     void Redo();
     void Exec(Command2* command);
 
-    void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
+    void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount);
     void EndBatch();
-    bool IsBatchStarted() const;
 
     bool IsClean() const;
     void SetClean(bool clean);
@@ -75,7 +74,7 @@ protected:
 
     void ClearRedoCommands();
     void ClearLimitedCommands();
-    void ClearCommand(DAVA::int32 index);
+    void RemoveCommand(DAVA::int32 index);
 
     void CleanCheck();
     void CommandExecuted(const Command2* command, bool redo);

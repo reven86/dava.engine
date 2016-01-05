@@ -140,14 +140,15 @@ public:
 	void Undo();
 	void Redo();
 
-	void BeginBatch(const DAVA::String &text);
+    void BeginBatch(const DAVA::String &text, DAVA::uint32 commandsCount = 1);
 	void EndBatch();
-    bool IsBatchStarted() const;
 
 	void Exec(Command2 *command);
-	void ClearCommands(int commandId);
+	void RemoveCommands(DAVA::int32 commandId);
     void ClearAllCommands();
 	const CommandStack* GetCommandStack() const;
+
+
 
 	// checks whether the scene changed since the last save
 	bool IsLoaded() const;

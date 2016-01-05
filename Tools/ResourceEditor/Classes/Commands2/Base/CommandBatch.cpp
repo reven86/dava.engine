@@ -29,6 +29,39 @@
 
 #include "Commands2/Base/CommandBatch.h"
 
+#include "Debug/DVAssert.h"
+
+
+CommandBatchNotify::CommandBatchNotify(CommandNotify* commandNotify_)
+    : commandNotify(SafeRetain(commandNotify_))
+{
+}
+
+CommandBatchNotify::~CommandBatchNotify()
+{
+    SafeRelease(commandNotify);
+}
+
+
+void CommandBatchNotify::Notify(const Command2* command, bool redo)
+{
+    DVASSERT(notifiedCommands.count(command) == 0);
+
+    notifiedCommands[command] = redo;
+}
+
+void CommandBatchNotify::DispatchNotifications()
+{
+    DVASSERT(commandNotify != nullptr);
+    DVASSERT(notifiedCommands.empty() == false);
+
+    for (const auto & notify : notifiedCommands)
+    {
+        commandNotify->Notify(notify.first, notify.second);
+    }
+}
+
+
 CommandBatch::CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
     : Command2(CMDID_BATCH, text)
 {
@@ -80,6 +113,11 @@ void CommandBatch::AddAndExec(Command2* command)
 
     commandList.push_back(command);
     RedoInternalCommand(command);
+}
+
+bool CommandBatch::Empty() const
+{
+    return commandList.empty();
 }
 
 DAVA::uint32 CommandBatch::Size() const

@@ -65,15 +65,14 @@ void CommandStack::Clear()
     CleanCheck();
 }
 
-void CommandStack::Clear(DAVA::int32 commandId)
+void CommandStack::RemoveCommands(DAVA::int32 commandId)
 {
     for (DAVA::uint32 i = 0, count = static_cast<DAVA::uint32>(commandList.size()); i < count; i++)
     {
         Command2* cmd = GetCommandInternal(i);
         if (cmd->GetId() == commandId)
         {
-            ClearCommand(i);
-
+            RemoveCommand(i);
             i--; // check command with same index on next step
         }
         else if (cmd->GetId() == CMDID_BATCH)
@@ -84,8 +83,7 @@ void CommandStack::Clear(DAVA::int32 commandId)
             if (batch->Size() == 0)
             {
                 // clear empty batch
-                ClearCommand(i);
-
+                RemoveCommand(i);
                 i--; // check command with same index on next step
             }
         }
@@ -150,7 +148,7 @@ void CommandStack::Exec(Command2* command)
     }
 }
 
-void CommandStack::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount/* = 1*/)
+void CommandStack::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
 {
     if (nestedBatchesCounter++ == 0)
     {
@@ -187,11 +185,6 @@ void CommandStack::EndBatch()
 
         curBatchCommand = nullptr;
     }
-}
-
-bool CommandStack::IsBatchStarted() const
-{
-    return (curBatchCommand != nullptr);
 }
 
 bool CommandStack::IsClean() const
@@ -300,16 +293,16 @@ void CommandStack::ClearLimitedCommands()
 {
     while ((commandListLimit > 0) && (static_cast<DAVA::int32>(commandList.size()) > commandListLimit))
     {
-        ClearCommand(0);
+        RemoveCommand(0);
     }
 }
 
-void CommandStack::ClearCommand(DAVA::int32 index)
+void CommandStack::RemoveCommand(DAVA::int32 index)
 {
     const Command2* command = GetCommand(index);
     if (nullptr != command)
     {
-        commandList.remove((Command2*)command);
+        commandList.remove(const_cast<Command2 *>(command));
 
         if (nextCommandIndex > 0)
         {

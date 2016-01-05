@@ -327,9 +327,9 @@ void SceneEditor2::Redo()
 	commandStack.Redo();
 }
 
-void SceneEditor2::BeginBatch(const DAVA::String &text)
+void SceneEditor2::BeginBatch(const DAVA::String &text, DAVA::uint32 commandsCount /*= 1*/)
 {
-	commandStack.BeginBatch(text);
+	commandStack.BeginBatch(text, commandsCount);
 }
 
 void SceneEditor2::EndBatch()
@@ -337,19 +337,14 @@ void SceneEditor2::EndBatch()
 	commandStack.EndBatch();
 }
 
-bool SceneEditor2::IsBatchStarted() const
-{
-    return commandStack.IsBatchStarted();
-}
-
 void SceneEditor2::Exec(Command2 *command)
 {
 	commandStack.Exec(command);
 }
 
-void SceneEditor2::ClearCommands(int commandId)
+void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
 {
-	commandStack.Clear(commandId);
+    commandStack.RemoveCommands(commandId);
 }
 
 void SceneEditor2::ClearAllCommands()
