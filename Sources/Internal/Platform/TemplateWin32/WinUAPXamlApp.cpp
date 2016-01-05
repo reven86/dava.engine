@@ -243,8 +243,10 @@ void WinUAPXamlApp::OnActivated(::Windows::ApplicationModel::Activation::IActiva
 
         Window::Current->Activate();
     }
-
-    Application::OnActivated(args);
+    else
+    {
+        Application::OnActivated(args);
+    }
 }
 
 void WinUAPXamlApp::AddUIElement(Windows::UI::Xaml::UIElement^ uiElement)
