@@ -325,7 +325,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     Core::Instance()->SetIsActive(true);
     Core::Instance()->SystemAppStarted();
 
-    if (args)
+    if (args != nullptr)
     {
         EmitPushNotification(args);
     }
