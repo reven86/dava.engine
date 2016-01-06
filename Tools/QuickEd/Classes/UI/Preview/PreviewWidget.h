@@ -74,8 +74,8 @@ signals:
 public slots:
     void OnDocumentChanged(Document* document);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnRootControlPositionChanged(const DAVA::Vector2 &pos);
-    void OnNestedControlPositionChanged(const QPoint &pos);
+    void OnRootControlPositionChanged(const DAVA::Vector2& pos);
+    void OnNestedControlPositionChanged(const QPoint& pos);
     void OnEmulationModeChanged(bool emulationMode);
 
 private slots:

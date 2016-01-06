@@ -256,7 +256,7 @@ void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2 &pos)
     ApplyPosChanges();
 }
 
-void PreviewWidget::OnNestedControlPositionChanged(const QPoint &pos)
+void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
 {
     canvasPos = pos;
     ApplyPosChanges();

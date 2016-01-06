@@ -179,7 +179,7 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
     } //unnamed namespace
 
-void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
+    void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
