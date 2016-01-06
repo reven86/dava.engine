@@ -203,7 +203,6 @@ void PackageWidget::OnDocumentChanged(Document* arg)
         package = document->GetPackage();
         commandExecutor = document->GetCommandExecutor();
     }
-    selectionContainer.selectedNodes.clear();
     packageModel->Reset(package, commandExecutor);
     treeView->expandToDepth(0);
     LoadContext();
@@ -781,11 +780,7 @@ void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
 void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     DVASSERT(!selected.empty() || !deselected.empty());
-    SelectedNodes reallySelected;
-    SelectedNodes reallyDeselected;
-    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionContainer.GetNotExistedItems(selected, reallySelected);
-    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
+    selectionContainer.MergeSelection(selected, deselected);
 
     RefreshActions();
     if (document.isNull())
@@ -793,11 +788,11 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
         return;
     }
     disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
-    for (const auto& node : reallyDeselected)
+    for (const auto& node : deselected)
     {
         DeselectNodeImpl(node);
     }
-    for (const auto& node : reallySelected)
+    for (const auto& node : selected)
     {
         SelectNodeImpl(node);
     }
