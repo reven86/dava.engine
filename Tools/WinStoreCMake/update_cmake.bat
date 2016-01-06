@@ -2,9 +2,7 @@
 set WORK_DIR_REPO=cmake_repo
 if exist %WORK_DIR_REPO% (
 cd %WORK_DIR_REPO%
-git stash
 git pull https://github.com/Microsoft/cmake feature/Win10MultiPlatform
-git stash pop
 git status
 cd ..
 ) else (
