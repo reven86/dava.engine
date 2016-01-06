@@ -45,19 +45,19 @@ bool TextBlock::isBiDiSupportEnabled = false;    //!< Enable BiDi support by def
 static Set<TextBlock*> registredTextBlocks;
 static Mutex textblockListMutex;
 
-static void RegisterTextBlock(TextBlock *tbl)
+void RegisterTextBlock(TextBlock *tbl)
 {
     LockGuard<Mutex> lock(textblockListMutex);
     registredTextBlocks.insert(tbl);
 }
 
-static void UnregisterTextBlock(TextBlock *tbl)
+void UnregisterTextBlock(TextBlock *tbl)
 {
     LockGuard<Mutex> lock(textblockListMutex);
     registredTextBlocks.erase(tbl);
 }
 
-static void InvalidateAllTextBlocks()
+void InvalidateAllTextBlocks()
 {
     Logger::FrameworkDebug("Invalidate all text blocks");
     LockGuard<Mutex> lock(textblockListMutex);
