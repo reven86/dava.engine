@@ -48,6 +48,7 @@
 #include "Tests/ClipTest.h"
 #include "Tests/InputTest.h"
 #include "Tests/FloatingPointExceptionTest.h"
+#include "Tests/DlcTest.h"
 //$UNITTEST_INCLUDE
 
 #include "MemoryManager/MemoryProfiler.h"
@@ -64,6 +65,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new DlcTest();
     new UIScrollViewTest();
     new NotificationScreen();
     new SpeedLoadImagesTest();

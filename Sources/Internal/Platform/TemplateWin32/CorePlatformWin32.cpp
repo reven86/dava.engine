@@ -409,10 +409,10 @@ namespace DAVA
         dmi.dmSize = sizeof(dmi);
 
         DisplayMode mode;
-		if(EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
-		{
-			mode.width = dmi.dmPelsWidth;
-			mode.height = dmi.dmPelsHeight;
+        if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmi))
+        {
+            mode.width = dmi.dmPelsWidth;
+            mode.height = dmi.dmPelsHeight;
 			mode.bpp = dmi.dmBitsPerPel;
 			mode.refreshRate = dmi.dmDisplayFrequency;
 			ZeroMemory (&dmi, sizeof(dmi)) ;
@@ -533,11 +533,11 @@ namespace DAVA
         }
         if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)
         {
-			mouseButtonsDownMask |= RI_MOUSE_BUTTON_5_DOWN;
-		}
-	}
+            mouseButtonsDownMask |= RI_MOUSE_BUTTON_5_DOWN;
+        }
+    }
 
-	void HandleMouseButtonsReleased(USHORT buttsFlags)
+    void HandleMouseButtonsReleased(USHORT buttsFlags)
 	{
 		if (mouseButtonsDownMask == 0)
 		{

@@ -66,6 +66,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("bpp", 32);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(screenWidth, screenHeight);
     
 #elif defined (__DAVAENGINE_WIN_UAP__)
     screenWidth = DeviceInfo::GetScreenInfo().width;
@@ -93,7 +94,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
     appOptions->SetInt32("width", screenWidth);
     appOptions->SetInt32("height", screenHeight);
-    
+
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(screenWidth, screenHeight);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(screenWidth, screenHeight, "Gfx");
 
