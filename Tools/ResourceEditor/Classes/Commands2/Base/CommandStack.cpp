@@ -141,8 +141,6 @@ void CommandStack::Exec(std::unique_ptr<Command2> command)
     {
         action->Redo();
         EmitNotify(command.get(), true);
-
-        DVASSERT(false && "check deletion of command");
     }
     else
     {   //command

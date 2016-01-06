@@ -107,6 +107,8 @@ public:
 	void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent *event) override;
 
+    void RemoveEntity(DAVA::Entity * entity) override;
+
     void Activate() override;
     void Deactivate() override;
     

@@ -429,6 +429,8 @@ void SceneEditor2::Draw()
 
 void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 {
+    DVASSERT(command != nullptr);
+
 	if(collisionSystem)
 		collisionSystem->ProcessCommand(command, redo);
 
@@ -439,9 +441,6 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 
 	particlesSystem->ProcessCommand(command, redo);
 
-	if(editorLightSystem)
-		editorLightSystem->ProcessCommand(command, redo);
-	
 	if(ownersSignatureSystem)
 		ownersSignatureSystem->ProcessCommand(command, redo);
 

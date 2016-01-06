@@ -390,63 +390,75 @@ void SceneCollisionSystem::Draw()
 
 void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-	if(NULL != command)
-	{
-		DAVA::Entity *entity = command->GetEntity();
-		switch(command->GetId())
-		{
-		case CMDID_TRANSFORM:
-			UpdateCollisionObject(entity);
-			break;
-		case CMDID_ENTITY_CHANGE_PARENT:
-			{
-				EntityParentChangeCommand *cmd = (EntityParentChangeCommand *) command;
-				if(redo)
-				{
-					if(NULL != cmd->newParent)
-					{
-						UpdateCollisionObject(entity);
-					}
-				}
-				else
-				{
-					if(NULL != cmd->oldParent)
-					{
-						UpdateCollisionObject(entity);
-					}
-					else
-					{
-						RemoveCollisionObject(entity);
-					}
-				}
-			}
-			break;
-		case CMDID_LANDSCAPE_SET_HEIGHTMAP:
-		case CMDID_HEIGHTMAP_MODIFY:
-			UpdateCollisionObject(curLandscapeEntity);
-			break;
+    const int32 commandID = command->GetId();
+    if (commandID == CMDID_BATCH)
+    {
+        const CommandBatch *batch = static_cast<const CommandBatch *> (command);
 
-        case CMDID_LOD_CREATE_PLANE:
-        case CMDID_LOD_DELETE:
+
+    }
+    else
+    {
+
+    }
+
+
+
+
+    DAVA::Entity *entity = command->GetEntity();
+    switch (command->GetId())
+    {
+    case CMDID_TRANSFORM:
+        UpdateCollisionObject(entity);
+        break;
+    case CMDID_ENTITY_CHANGE_PARENT:
+    {
+        EntityParentChangeCommand *cmd = (EntityParentChangeCommand *)command;
+        if (redo)
+        {
+            if (NULL != cmd->newParent)
             {
-                UpdateCollisionObject(command->GetEntity());
-                break;
+                UpdateCollisionObject(entity);
             }
-
-        case CMDID_INSP_MEMBER_MODIFY:
+        }
+        else
+        {
+            if (NULL != cmd->oldParent)
             {
-                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-                if (String("heightmapPath") == cmd->member->Name().c_str())
-                {
-                    UpdateCollisionObject(curLandscapeEntity);
-                }
+                UpdateCollisionObject(entity);
             }
-            break;
+            else
+            {
+                RemoveCollisionObject(entity);
+            }
+        }
+    }
+    break;
+    case CMDID_LANDSCAPE_SET_HEIGHTMAP:
+    case CMDID_HEIGHTMAP_MODIFY:
+        UpdateCollisionObject(curLandscapeEntity);
+        break;
 
-		default:
-			break;
-		}
-	}
+    case CMDID_LOD_CREATE_PLANE:
+    case CMDID_LOD_DELETE:
+    {
+        UpdateCollisionObject(command->GetEntity());
+        break;
+    }
+
+    case CMDID_INSP_MEMBER_MODIFY:
+    {
+        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+        if (String("heightmapPath") == cmd->member->Name().c_str())
+        {
+            UpdateCollisionObject(curLandscapeEntity);
+        }
+    }
+    break;
+
+    default:
+        break;
+    }
 }
 
 void SceneCollisionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)

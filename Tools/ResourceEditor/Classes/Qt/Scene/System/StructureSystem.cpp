@@ -379,8 +379,39 @@ void StructureSystem::RemoveDelegate(StructureSystemDelegate *delegate)
     delegates.remove(delegate);
 }
 
+void StructureSystem::AddEntity(DAVA::Entity * entity)
+{
+    auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
+    if (autoSelectionEnabled)
+    {
+        //check the situation with change parent: may be we will reset selection
+        entitiesForSelection.push_back(entity);
+    }
+
+    EmitChanged();
+}
+
+void StructureSystem::RemoveEntity(DAVA::Entity * entity)
+{
+    EmitChanged();
+}
+
 void StructureSystem::Process(DAVA::float32 timeElapsed)
 {
+    if (!entitiesForSelection.empty())
+    {
+        SceneEditor2 * sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+        SceneSelectionSystem * selectionSystem = sceneEditor->selectionSystem;
+
+        selectionSystem->Clear();
+        for (auto & entity : entitiesForSelection)
+        {
+            selectionSystem->AddSelection(entity);
+        }
+        
+        entitiesForSelection.clear();
+    }
+
 	if(structureChanged)
 	{
 		SceneSignals::Instance()->EmitStructureChanged((SceneEditor2 *) GetScene(), nullptr);
@@ -388,89 +419,33 @@ void StructureSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-
 void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-	if(NULL != command)
-	{
-        switch(command->GetId())
-        {
-            case CMDID_PARTICLE_LAYER_REMOVE:
-            case CMDID_PARTICLE_LAYER_MOVE:
-            case CMDID_PARTICLE_FORCE_REMOVE:
-            case CMDID_PARTICLE_FORCE_MOVE:
-                EmitChanged();
-                break;
-
-            default:
-                break;
-        }
-        
-        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
-        if(autoSelectionEnabled)
-        {
-            ProcessAutoSelection(command, redo);
-        }
-    }
-}
-
-void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) const
-{
-    const int32 commandId = command->GetId();
-
-    SceneEditor2 * sceneEditor = static_cast<SceneEditor2 *>(GetScene());
-    SceneSelectionSystem * selectionSystem = sceneEditor->selectionSystem;
-    
-    if(CMDID_BATCH == commandId)
+    switch (command->GetId())
     {
-        const CommandBatch * batch = static_cast<const CommandBatch *>(command);
-
-        const bool entityAddCommand = batch->ContainsCommand(CMDID_ENTITY_ADD);
-        const bool entityRemoveCommand = batch->ContainsCommand(CMDID_ENTITY_REMOVE);
-        if (entityAddCommand || entityRemoveCommand)
-        {
-            DVASSERT(batch->IsMultiCommandBatch() == false);
-
-            selectionSystem->Clear();
-            auto needAddEntity = ((entityAddCommand && redo) || (entityRemoveCommand && !redo));
-            if (needAddEntity)
-            {
-                uint32 count = batch->Size();
-                for (uint32 i = 0; i < count; ++i)
-                {
-                    Command2 * cmd = batch->GetCommand(i);
-                    selectionSystem->AddSelection(cmd->GetEntity());
-                }
-            }
-        }
-    }
-    else if (commandId == CMDID_ENTITY_ADD)
+    case CMDID_BATCH:
     {
-        selectionSystem->Clear();
-        if(redo)
+        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
+        if (batch->ContainsCommand(CMDID_PARTICLE_LAYER_REMOVE)
+            || batch->ContainsCommand(CMDID_PARTICLE_LAYER_MOVE)
+            || batch->ContainsCommand(CMDID_PARTICLE_FORCE_REMOVE)
+            || batch->ContainsCommand(CMDID_PARTICLE_FORCE_MOVE))
         {
-            selectionSystem->AddSelection(command->GetEntity());
+            EmitChanged();
         }
+        return;
     }
-    else if (commandId == CMDID_ENTITY_REMOVE)
-    {
-        selectionSystem->Clear();
-        if (!redo)
-        {
-            selectionSystem->AddSelection(command->GetEntity());
-        }
+
+    case CMDID_PARTICLE_LAYER_REMOVE:
+    case CMDID_PARTICLE_LAYER_MOVE:
+    case CMDID_PARTICLE_FORCE_REMOVE:
+    case CMDID_PARTICLE_FORCE_MOVE:
+        EmitChanged();
+        return;
+
+    default:
+        break;
     }
-}
-
-
-void StructureSystem::AddEntity(DAVA::Entity * entity)
-{
-	EmitChanged();
-}
-
-void StructureSystem::RemoveEntity(DAVA::Entity * entity)
-{
-	EmitChanged();
 }
 
 void StructureSystem::CheckAndMarkSolid(DAVA::Entity *entity)

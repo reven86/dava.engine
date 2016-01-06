@@ -246,21 +246,26 @@ void SceneSelectionSystem::Draw()
     }
 }
 
+void SceneSelectionSystem::RemoveEntity(Entity * entity)
+{
+    //check the situation with change parent: may be we will reset selection
+    RemSelection(entity);
+}
+
 void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-	if(NULL != command)
-	{
-        auto commandId = command->GetId();
-        
-		if((CMDID_ENTITY_REMOVE == commandId))
-		{
-			// remove from selection entity that was removed by command
-			RemSelection(command->GetEntity());
-		}
-		else if((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
-		{
+    const int32 commandId = command->GetId();
+    if (commandId == CMDID_BATCH)
+    {
+        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
+        if (batch->ContainsCommand(CMDID_ENTITY_CHANGE_PARENT) || batch->ContainsCommand(CMDID_TRANSFORM))
+        {
             invalidSelectionBoxes = true;
         }
+    }
+    else if ((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
+    {
+        invalidSelectionBoxes = true;
     }
 }
 
@@ -368,9 +373,8 @@ void SceneSelectionSystem::RemSelection(DAVA::Entity *entity)
 			curDeselections.Add(entity);
 
 			selectionHasChanges = true;
-		}
-
-		UpdateHoodPos();
+            UpdateHoodPos();
+        }
 	}
 }
 

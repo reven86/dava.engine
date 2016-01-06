@@ -42,8 +42,8 @@ public:
 	EditorLightSystem(DAVA::Scene * scene);
 	virtual ~EditorLightSystem();
 
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+    void AddEntity(DAVA::Entity * entity) override;
+	void RemoveEntity(DAVA::Entity * entity) override;
 
 	void SetCameraLightEnabled(bool enabled);
 	inline bool GetCameraLightEnabled();
@@ -51,22 +51,18 @@ public:
 	virtual void Process(DAVA::float32 timeElapsed);
 
 protected:
-	void ProcessCommand(const Command2 *command, bool redo);
-
 	void UpdateCameraLightState();
 
 	void UpdateCameraLightPosition();
 	void AddCameraLightOnScene();
 	void RemoveCameraLightFromScene();
 
-	DAVA::int32 CountLightsForEntityRecursive(DAVA::Entity *entity);
-
 protected:
+
+    DAVA::List<DAVA::Entity*> lightEntities;
 
 	bool isEnabled;
 	DAVA::Entity *cameraLight;
-
-	DAVA::int32 lightCountOnScene;    
 };
 
 

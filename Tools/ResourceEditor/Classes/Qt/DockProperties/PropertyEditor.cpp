@@ -975,7 +975,7 @@ void PropertyEditor::DeleteRenderBatch()
 
             uint32 count = dataList.size();
             curScene->BeginBatch("DeleteRenderBatch", count);
-            for (int j = 0; j < count; j++)
+            for (uint32 j = 0; j < count; j++)
             {
                 QtPropertyDataIntrospection *item = dataList.at(j);
 
@@ -1474,7 +1474,7 @@ void PropertyEditor::OnRemoveComponent()
 
             uint32 count = dataList.size();
             curScene->BeginBatch("Remove Component", count);
-            for (int i = 0; i < count; i++)
+            for (uint32 i = 0; i < count; i++)
             {
                 QtPropertyDataIntrospection *data = dataList.at(i);
                 Component *component = (Component *)data->object;
