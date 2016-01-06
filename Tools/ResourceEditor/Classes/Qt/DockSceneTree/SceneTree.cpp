@@ -59,7 +59,7 @@
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
 
-#include "Tools/LazyUpdater/LazyUpdater.h"
+#include "QtTools/LazyUpdater/LazyUpdater.h"
 
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
