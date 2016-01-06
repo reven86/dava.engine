@@ -763,7 +763,7 @@ void SceneTree::SaveEntityAs()
             QString filePath = FileDialog::getSaveFileName(NULL, QString("Save scene file"), QString(scenePath.GetDirectory().GetAbsolutePathname().c_str()), QString("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-                sceneEditor->Exec(new SaveEntityAsAction(&selection, filePath.toStdString()));
+                sceneEditor->Exec(std::unique_ptr<Command2>(new SaveEntityAsAction(&selection, filePath.toStdString())));
             }
         }
     }
@@ -982,8 +982,7 @@ void SceneTree::AddEmitter()
 		DAVA::Entity *curEntity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(realIndex));
 		if (nullptr != curEntity && DAVA::GetEffectComponent(curEntity))
 		{
-			CommandAddParticleEmitter* command = new CommandAddParticleEmitter(curEntity);
-			sceneEditor->Exec(command);
+            sceneEditor->Exec(std::unique_ptr<Command2>(new CommandAddParticleEmitter(curEntity)));
 			sceneEditor->MarkAsChanged();
 			treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 		}
@@ -1011,9 +1010,7 @@ void SceneTree::StartEffect()
 			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
 			if (nullptr != effect)
 			{
-				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-				CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(ss->GetSelectionEntity(i), true);
-				sceneEditor->Exec(command);
+                sceneEditor->Exec(std::unique_ptr<Command2>(new CommandStartStopParticleEffect(ss->GetSelectionEntity(i), true)));
 			}
 		}
 	}
@@ -1030,9 +1027,7 @@ void SceneTree::StopEffect()
 			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
 			if (nullptr != effect)
 			{
-				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-				CommandStartStopParticleEffect* command = new CommandStartStopParticleEffect(ss->GetSelectionEntity(i), false);
-				sceneEditor->Exec(command);
+                sceneEditor->Exec(std::unique_ptr<Command2>(new CommandStartStopParticleEffect(ss->GetSelectionEntity(i), false)));
 			}
 		}
 	}
@@ -1049,9 +1044,7 @@ void SceneTree::RestartEffect()
 			DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(ss->GetSelectionEntity(i));
 			if (nullptr != effect)
 			{
-				// TODO, Yuri Coder, 2013/07/24. Think about CommandAction's batching.
-				CommandRestartParticleEffect* command = new CommandRestartParticleEffect(ss->GetSelectionEntity(i));
-				sceneEditor->Exec(command);
+                sceneEditor->Exec(std::unique_ptr<Command2>(new CommandRestartParticleEffect(ss->GetSelectionEntity(i))));
 			}
 		}
 	}
@@ -1071,8 +1064,7 @@ void SceneTree::RemoveEmitter()
 		return;
 	}
 
-	CommandRemoveParticleEmitter* command = new CommandRemoveParticleEmitter(selectedEffect, selectedEmitter);
-	sceneEditor->Exec(command);
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandRemoveParticleEmitter(selectedEffect, selectedEmitter)));
 	sceneEditor->MarkAsChanged();
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 
@@ -1092,8 +1084,7 @@ void SceneTree::AddLayer()
 		}		
 		if (curEmitter)
 		{
-			CommandAddParticleEmitterLayer* command = new CommandAddParticleEmitterLayer(curEmitter);
-			sceneEditor->Exec(command);
+            sceneEditor->Exec(std::unique_ptr<Command2>(new CommandAddParticleEmitterLayer(curEmitter)));
 			sceneEditor->MarkAsChanged();
 			treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 		}
@@ -1115,8 +1106,7 @@ void SceneTree::LoadEmitterFromYaml()
 		return;
 	}
 
-	CommandLoadParticleEmitterFromYaml* command = new CommandLoadParticleEmitterFromYaml(selectedEmitter, filePath.toStdString());
-	sceneEditor->Exec(command);
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandLoadParticleEmitterFromYaml(selectedEmitter, filePath.toStdString())));
 	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
@@ -1149,8 +1139,7 @@ void SceneTree::LoadInnerEmitterFromYaml()
 	}		
 
 	selectedLayer->innerEmitterPath = filePath.toStdString();	
-	CommandLoadParticleEmitterFromYaml* command = new CommandLoadParticleEmitterFromYaml(selectedEmitter, filePath.toStdString());
-	sceneEditor->Exec(command);			
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandLoadParticleEmitterFromYaml(selectedEmitter, filePath.toStdString())));
 	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
@@ -1190,8 +1179,7 @@ void SceneTree::PerformSaveInnerEmitter(bool forceAskFileName)
     }
 
     selectedLayer->innerEmitterPath = yamlPath;
-    CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(selectedEmitter, yamlPath);
-	sceneEditor->Exec(command);	
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandSaveParticleEmitterToYaml(selectedEmitter, yamlPath)));
     if (forceAskFileName)
     {
         sceneEditor->MarkAsChanged();
@@ -1213,8 +1201,7 @@ void SceneTree::CloneLayer()
 		return;
 	}
 
-	CommandCloneParticleEmitterLayer* command = new CommandCloneParticleEmitterLayer(selectedEmitter, selectedLayer);
-	sceneEditor->Exec(command);
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandCloneParticleEmitterLayer(selectedEmitter, selectedLayer)));
 	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
@@ -1234,8 +1221,7 @@ void SceneTree::RemoveLayer()
 		return;
 	}
 	
-	CommandRemoveParticleEmitterLayer* command = new CommandRemoveParticleEmitterLayer(selectedEmitter, selectedLayer);
-	sceneEditor->Exec(command);
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandRemoveParticleEmitterLayer(selectedEmitter, selectedLayer)));
 	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
@@ -1255,8 +1241,7 @@ void SceneTree::AddForce()
 		return;
 	}
 	
-	CommandAddParticleEmitterForce* command = new CommandAddParticleEmitterForce(selectedLayer);
-	sceneEditor->Exec(command);
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandAddParticleEmitterForce(selectedLayer)));
 	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
@@ -1276,8 +1261,7 @@ void SceneTree::RemoveForce()
 		return;
 	}
 
-	CommandRemoveParticleEmitterForce* command = new CommandRemoveParticleEmitterForce(selectedLayer, selectedForce);
-	sceneEditor->Exec(command);
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandRemoveParticleEmitterForce(selectedLayer, selectedForce)));
 	sceneEditor->MarkAsChanged();
 
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
@@ -1317,8 +1301,7 @@ void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileNa
         SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPath.GetDirectory()));
 	}
 	
-    CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(emitter, yamlPath);
-    sceneEditor->Exec(command);
+    sceneEditor->Exec(std::unique_ptr<Command2>(new CommandSaveParticleEmitterToYaml(emitter, yamlPath)));
     if (forceAskFileName)
     {
         sceneEditor->MarkAsChanged();

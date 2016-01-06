@@ -485,7 +485,7 @@ bool MaterialModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 			MaterialItem *sourceMaterialItem = itemFromIndex(GetIndex(materials[i]));
 			if (NULL != sourceMaterialItem)
 			{
-				curScene->Exec(new MaterialSwitchParentCommand(materials[i], targetMaterial));
+				curScene->Exec(std::unique_ptr<Command2>(new MaterialSwitchParentCommand(materials[i], targetMaterial)));
 			}
 		}
 

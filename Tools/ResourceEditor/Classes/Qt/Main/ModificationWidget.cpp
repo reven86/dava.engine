@@ -327,7 +327,7 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 			DAVA::Matrix4 newMatrix = origMatrix;
 			newMatrix.SetTranslationVector(newPos);
 
-			curScene->Exec(new TransformCommand(entity,	origMatrix, newMatrix));
+            curScene->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
 		}
 
 		if(selection.Size() > 1)
@@ -408,7 +408,7 @@ void ModificationWidget::ApplyRotateValues(ST_Axis axis)
 				newMatrix = origMatrix * moveToZeroPos * rotationMatrix * moveFromZeroPos;
 				newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-				curScene->Exec(new TransformCommand(entity,	origMatrix, newMatrix));
+                curScene->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
 			}
 		}
 
@@ -486,7 +486,7 @@ void ModificationWidget::ApplyScaleValues(ST_Axis axis)
 				newMatrix = origMatrix * moveToZeroPos * scaleMatrix * moveFromZeroPos;
 				newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-				curScene->Exec(new TransformCommand(entity,	origMatrix, newMatrix));
+                curScene->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
 			}
 		}
 

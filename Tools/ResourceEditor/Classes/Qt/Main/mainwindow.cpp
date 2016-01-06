@@ -1703,31 +1703,29 @@ void QtMainWindow::UnmodalDialogFinished(int)
 
 void QtMainWindow::OnAddLandscape()
 {
-    Entity* entityToProcess = new Entity();
-    entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
-    entityToProcess->SetLocked(true);
-    
-    Landscape* newLandscape = new Landscape();
-
-    RenderComponent* component = new RenderComponent();
-    component->SetRenderObject(newLandscape);
-	newLandscape->Release();
-    entityToProcess->AddComponent(component);
-
-    AABBox3 bboxForLandscape;
-    float32 defaultLandscapeSize = 600.0f;
-    float32 defaultLandscapeHeight = 50.0f;
-    
-    bboxForLandscape.AddPoint(Vector3(-defaultLandscapeSize/2.f, -defaultLandscapeSize/2.f, 0.f));
-    bboxForLandscape.AddPoint(Vector3(defaultLandscapeSize/2.f, defaultLandscapeSize/2.f, defaultLandscapeHeight));
-    newLandscape->BuildLandscapeFromHeightmapImage("", bboxForLandscape);
-
     SceneEditor2* sceneEditor = GetCurrentScene();
-    if(sceneEditor)
+    if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(entityToProcess, sceneEditor));
+        ScopedPtr<Entity> entityToProcess(new Entity());
+        entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
+        entityToProcess->SetLocked(true);
+    
+        ScopedPtr<Landscape> newLandscape(new Landscape());
+
+        RenderComponent* component = new RenderComponent();
+        component->SetRenderObject(newLandscape);
+        entityToProcess->AddComponent(component);
+
+        AABBox3 bboxForLandscape;
+        float32 defaultLandscapeSize = 600.0f;
+        float32 defaultLandscapeHeight = 50.0f;
+    
+        bboxForLandscape.AddPoint(Vector3(-defaultLandscapeSize/2.f, -defaultLandscapeSize/2.f, 0.f));
+        bboxForLandscape.AddPoint(Vector3(defaultLandscapeSize/2.f, defaultLandscapeSize/2.f, defaultLandscapeHeight));
+        newLandscape->BuildLandscapeFromHeightmapImage("", bboxForLandscape);
+
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(entityToProcess, sceneEditor)));
     }
-    SafeRelease(entityToProcess);
 }
 
 
@@ -1736,113 +1734,105 @@ void QtMainWindow::OnAddVegetation()
     SceneEditor2* sceneEditor = GetCurrentScene();
     if(sceneEditor)
     {
-        DAVA::VegetationRenderObject* vro = new DAVA::VegetationRenderObject();
+        ScopedPtr<VegetationRenderObject> vro(new DAVA::VegetationRenderObject());
         RenderComponent* rc = new RenderComponent();
         rc->SetRenderObject(vro);
-        SafeRelease(vro);
 
-        Entity* vegetationNode = new Entity();
+        ScopedPtr<Entity> vegetationNode(new Entity());
         vegetationNode->AddComponent(rc);
         vegetationNode->SetName(ResourceEditor::VEGETATION_NODE_NAME);
         vegetationNode->SetLocked(true);
 
-        sceneEditor->Exec(new EntityAddCommand(vegetationNode, sceneEditor));
-
-        SafeRelease(vegetationNode);
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(vegetationNode, sceneEditor)));
     }
 }
 
 void QtMainWindow::OnLightDialog()
 {
-	Entity* sceneNode = new Entity();
-	sceneNode->AddComponent(new LightComponent(ScopedPtr<Light>(new Light)));
-	sceneNode->SetName(ResourceEditor::LIGHT_NODE_NAME);
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(sceneEditor)
 	{
-		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        ScopedPtr<Entity> sceneNode(new Entity());
+        sceneNode->AddComponent(new LightComponent(ScopedPtr<Light>(new Light)));
+        sceneNode->SetName(ResourceEditor::LIGHT_NODE_NAME);
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
 	}
-	SafeRelease(sceneNode);
 }
 
 void QtMainWindow::OnCameraDialog()
 {
-	Entity* sceneNode = new Entity();
-	Camera * camera = new Camera();
+    SceneEditor2* sceneEditor = GetCurrentScene();
+    if (sceneEditor)
+    {
+        ScopedPtr<Entity> sceneNode(new Entity());
+	    ScopedPtr<Camera> camera(new Camera());
 
-	camera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
-	camera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
-	camera->SetTarget(DAVA::Vector3(1.0f, 0.0f, 0.0f));
-	camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
-	camera->SetAspect(1.0f);
-    camera->RebuildCameraFromValues();
+	    camera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
+	    camera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
+	    camera->SetTarget(DAVA::Vector3(1.0f, 0.0f, 0.0f));
+	    camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
+	    camera->SetAspect(1.0f);
+        camera->RebuildCameraFromValues();
 
-	sceneNode->AddComponent(new CameraComponent(camera));
-    sceneNode->AddComponent(new WASDControllerComponent());
-    sceneNode->AddComponent(new RotationControllerComponent());
+	    sceneNode->AddComponent(new CameraComponent(camera));
+        sceneNode->AddComponent(new WASDControllerComponent());
+        sceneNode->AddComponent(new RotationControllerComponent());
     
-	sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(sceneEditor)
-	{
-		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+	    sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
+
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
 	}
-	SafeRelease(sceneNode);
-	SafeRelease(camera);
 }
 
 void QtMainWindow::OnUserNodeDialog()
 {
-	Entity* sceneNode = new Entity();
-	sceneNode->AddComponent(new UserComponent());
-	sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(sceneEditor)
-	{
-		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+    SceneEditor2* sceneEditor = GetCurrentScene();
+    if (sceneEditor)
+    {
+        ScopedPtr<Entity> sceneNode(new Entity());
+	    sceneNode->AddComponent(new UserComponent());
+	    sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
 	}
-	SafeRelease(sceneNode);
 }
 
 void QtMainWindow::OnParticleEffectDialog()
 {
-	Entity* sceneNode = new Entity();
-	sceneNode->AddComponent(new ParticleEffectComponent());
-    sceneNode->AddComponent(new LodComponent());
-	sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(sceneEditor)
-	{
-		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+    SceneEditor2* sceneEditor = GetCurrentScene();
+    if (sceneEditor)
+    {
+        ScopedPtr<Entity> sceneNode(new Entity());
+	    sceneNode->AddComponent(new ParticleEffectComponent());
+        sceneNode->AddComponent(new LodComponent());
+	    sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
 	}
-	SafeRelease(sceneNode);
 }
 
 void QtMainWindow::On2DCameraDialog()
 {
-    Entity* sceneNode = new Entity();
-    Camera * camera = new Camera();
-    
-    float32 w = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
-    float32 h = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
-    float32 aspect = w / h;
-    camera->SetupOrtho(w, aspect, 1, 1000);        
-    camera->SetPosition(Vector3(0,0, -10000));
-    camera->SetZFar(10000);
-    camera->SetTarget(Vector3(0, 0, 0));  
-    camera->SetUp(Vector3(0, -1, 0));
-    camera->RebuildCameraFromValues();        
-
-    sceneNode->AddComponent(new CameraComponent(camera));
-    sceneNode->SetName("Camera 2D");
     SceneEditor2* sceneEditor = GetCurrentScene();
-    if(sceneEditor)
+    if (sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        ScopedPtr<Entity> sceneNode(new Entity());
+        ScopedPtr<Camera> camera(new Camera());
+    
+        float32 w = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
+        float32 h = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
+        float32 aspect = w / h;
+        camera->SetupOrtho(w, aspect, 1, 1000);        
+        camera->SetPosition(Vector3(0,0, -10000));
+        camera->SetZFar(10000);
+        camera->SetTarget(Vector3(0, 0, 0));  
+        camera->SetUp(Vector3(0, -1, 0));
+        camera->RebuildCameraFromValues();        
+
+        sceneNode->AddComponent(new CameraComponent(camera));
+        sceneNode->SetName("Camera 2D");
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
     }
-    SafeRelease(sceneNode);
-    SafeRelease(camera);
 }
+
 void QtMainWindow::On2DSpriteDialog()
 {
     FilePath projectPath = ProjectManager::Instance()->GetProjectPath();
@@ -1869,7 +1859,7 @@ void QtMainWindow::On2DSpriteDialog()
     SceneEditor2* sceneEditor = GetCurrentScene();
     if(sceneEditor)
     {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(sceneNode, sceneEditor)));
     }
     SafeRelease(sceneNode);
     SafeRelease(spriteObject);
@@ -2237,7 +2227,7 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
 	if(!scene) return;
 
     const DAVA::FilePath path = outputPath.toStdString();
-    scene->Exec(new BeastAction(scene, path, mode, beastWaitDialog));
+    scene->Exec(std::unique_ptr<Command2>(new BeastAction(scene, path, mode, beastWaitDialog)));
 
     if(mode == BeastProxy::MODE_LIGHTMAPS)
     {
@@ -2321,7 +2311,7 @@ void QtMainWindow::OnCustomColorsEditor()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableCustomColors(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new ActionEnableCustomColors(sceneEditor)));
 		}
 		else
 		{
@@ -2387,7 +2377,7 @@ void QtMainWindow::OnHeightmapEditor()
     
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableHeightmapEditor(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new ActionDisableHeightmapEditor(sceneEditor)));
 	}
 	else
 	{
@@ -2400,7 +2390,7 @@ void QtMainWindow::OnHeightmapEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-			sceneEditor->Exec(new ActionEnableHeightmapEditor(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new ActionEnableHeightmapEditor(sceneEditor)));
 		}
 		else
 		{
@@ -2419,7 +2409,7 @@ void QtMainWindow::OnRulerTool()
 
 	if (sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableRulerTool(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new ActionDisableRulerTool(sceneEditor)));
 	}
 	else
 	{
@@ -2432,7 +2422,7 @@ void QtMainWindow::OnRulerTool()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableRulerTool(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new ActionEnableRulerTool(sceneEditor)));
 		}
 		else
 		{
@@ -2452,7 +2442,7 @@ void QtMainWindow::OnTilemaskEditor()
     
 	if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableTilemaskEditor(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new ActionDisableTilemaskEditor(sceneEditor)));
 	}
 	else
 	{
@@ -2465,7 +2455,7 @@ void QtMainWindow::OnTilemaskEditor()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableTilemaskEditor(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new ActionEnableTilemaskEditor(sceneEditor)));
 		}
 		else
 		{
@@ -2484,7 +2474,7 @@ void QtMainWindow::OnVisibilityTool()
     
 	if (sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableVisibilityTool(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new ActionDisableVisibilityTool(sceneEditor)));
 	}
 	else
 	{
@@ -2497,7 +2487,7 @@ void QtMainWindow::OnVisibilityTool()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableVisibilityTool(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new ActionEnableVisibilityTool(sceneEditor)));
 		}
 		else
 		{
@@ -2516,7 +2506,7 @@ void QtMainWindow::OnNotPassableTerrain()
 	
 	if (sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
 	{
-		sceneEditor->Exec(new ActionDisableNotPassable(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new ActionDisableNotPassable(sceneEditor)));
 	}
 	else
 	{
@@ -2529,7 +2519,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
         if (LoadAppropriateTextureFormat())
 		{
-			sceneEditor->Exec(new ActionEnableNotPassable(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new ActionEnableNotPassable(sceneEditor)));
 		}
 		else
 		{
@@ -2820,12 +2810,10 @@ void QtMainWindow::OnEmptyEntity()
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
 
-	Entity* newEntity = new Entity();
+	ScopedPtr<Entity> newEntity(new Entity());
 	newEntity->SetName(ResourceEditor::ENTITY_NAME);
 
-	scene->Exec(new EntityAddCommand(newEntity, scene));
-
-	newEntity->Release();
+    scene->Exec(std::unique_ptr<Command2>(new EntityAddCommand(newEntity, scene)));
 }
 
 void QtMainWindow::OnAddWindEntity()
@@ -2833,18 +2821,15 @@ void QtMainWindow::OnAddWindEntity()
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
 
-	Entity * windEntity = new Entity();
+	ScopedPtr<Entity> windEntity(new Entity());
 	windEntity->SetName(ResourceEditor::WIND_NODE_NAME);
 
 	Matrix4 ltMx = Matrix4::MakeTranslation(Vector3(0.f, 0.f, 20.f));
 	GetTransformComponent(windEntity)->SetLocalTransform(&ltMx);
 
-	WindComponent * wind = new WindComponent();
-	windEntity->AddComponent(wind);
+    windEntity->AddComponent(new WindComponent());
 
-	scene->Exec(new EntityAddCommand(windEntity, scene));
-
-	windEntity->Release();
+    scene->Exec(std::unique_ptr<Command2>(new EntityAddCommand(windEntity, scene)));
 }
 
 
@@ -2853,14 +2838,12 @@ void QtMainWindow::OnAddPathEntity()
     SceneEditor2* scene = GetCurrentScene();
     if(!scene) return;
 
-    Entity * pathEntity = new Entity();
+    ScopedPtr<Entity> pathEntity(new Entity());
     pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
     DAVA::PathComponent *pc = scene->pathSystem->CreatePathComponent();
 
     pathEntity->AddComponent(pc);
-    scene->Exec(new EntityAddCommand(pathEntity, scene));
-    
-    pathEntity->Release();
+    scene->Exec(std::unique_ptr<Command2>(new EntityAddCommand(pathEntity, scene)));
 }
 
 
@@ -2916,7 +2899,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 		if(nullptr != tabEditor)
 		{
 			const CommandStack *cmdStack = tabEditor->GetCommandStack();
-			for(size_t j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
+			for(DAVA::int32 j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
 			{
 				const Command2 *cmd = cmdStack->GetCommand(j);
 				if(IsTilemaskModificationCommand(cmd))

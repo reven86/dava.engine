@@ -39,17 +39,7 @@ CommandBatch::CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
     commandList.reserve(commandsCount);
 }
 
-CommandBatch::~CommandBatch()
-{
-    for (auto &command : commandList)
-    {
-        DVASSERT(command != nullptr);
-        delete command;
-    }
-
-    commandList.clear();
-    commandIDs.clear();
-}
+CommandBatch::~CommandBatch() = default;
 
 void CommandBatch::Redo()
 {
@@ -75,11 +65,11 @@ DAVA::Entity* CommandBatch::GetEntity() const
     return nullptr;
 }
 
-void CommandBatch::AddAndExec(Command2* command)
+void CommandBatch::AddAndExec(std::unique_ptr<Command2> command)
 {
-    DVASSERT(command != nullptr);
+    DVASSERT(command);
 
-    commandList.push_back(command);
+    commandList.emplace_back(std::move(command));
     commandIDs.insert(command->GetId());
 
     command->Redo();
@@ -99,27 +89,17 @@ DAVA::uint32 CommandBatch::Size() const
 Command2* CommandBatch::GetCommand(DAVA::uint32 index) const
 {
     if (index < static_cast<DAVA::uint32>(commandList.size()))
-        return commandList[index];
+        return commandList[index].get();
 
     return nullptr;
 }
 
 void CommandBatch::RemoveCommands(DAVA::int32 commandId)
 {
-    auto i = commandList.begin();
-    while (i != commandList.end())
+    std::remove_if(commandList.begin(), commandList.end(), [commandId](const std::unique_ptr<Command2> &cmd)
     {
-        Command2* command = *i;
-        if (command->GetId() == commandId)
-        {
-            delete command;
-            i = commandList.erase(i);
-        }
-        else
-        {
-            i++;
-        }
-    }
+        return cmd->GetId() == commandId;
+    });
 
     commandIDs.erase(commandId);
 }

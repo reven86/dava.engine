@@ -35,6 +35,8 @@ Command2::Command2(DAVA::int32 _id, const DAVA::String& _text)
 {
 }
 
+Command2::~Command2() = default;
+
 
 void Command2::UndoInternalCommand(Command2* command)
 {

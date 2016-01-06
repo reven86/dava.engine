@@ -174,7 +174,7 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     renderComponent->SetRenderObject(skinnedMesh);
     entity->AddComponent(renderComponent);
 
-    currentScene->Exec(new EntityAddCommand(entity, currentScene));
+    currentScene->Exec(std::unique_ptr<Command2>(new EntityAddCommand(entity, currentScene)));
 }
 
 void DeveloperTools::OnImageSplitterNormals()

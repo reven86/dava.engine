@@ -77,7 +77,7 @@ void BeastCommandLineTool::ProcessInternal()
     if (scene->Load(scenePathname))
     {
         scene->Update(0.1f);
-        scene->Exec(new BeastAction(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr));
+        scene->Exec(std::unique_ptr<Command2>(new BeastAction(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr)));
         scene->Save();
     }
     RenderObjectsFlusher::Flush();

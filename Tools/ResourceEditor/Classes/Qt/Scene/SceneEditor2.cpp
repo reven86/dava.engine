@@ -337,9 +337,9 @@ void SceneEditor2::EndBatch()
 	commandStack.EndBatch();
 }
 
-void SceneEditor2::Exec(Command2 *command)
+void SceneEditor2::Exec(std::unique_ptr<Command2> command)
 {
-	commandStack.Exec(command);
+	commandStack.Exec(std::move(command));
 }
 
 void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
@@ -506,32 +506,32 @@ void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 {
 	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR )
 	{
-		Exec(new ActionDisableCustomColors(this, saveChanges));
+        Exec(std::unique_ptr<Command2>(new ActionDisableCustomColors(this, saveChanges)));
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_VISIBILITY)
 	{
-		Exec(new ActionDisableVisibilityTool(this));
+        Exec(std::unique_ptr<Command2>(new ActionDisableVisibilityTool(this)));
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
 	{
-		Exec(new ActionDisableHeightmapEditor(this));
+        Exec(std::unique_ptr<Command2>(new ActionDisableHeightmapEditor(this)));
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
 	{
-		Exec(new ActionDisableTilemaskEditor(this));
+        Exec(std::unique_ptr<Command2>(new ActionDisableTilemaskEditor(this)));
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_RULER)
 	{
-		Exec(new ActionDisableRulerTool(this));
+        Exec(std::unique_ptr<Command2>(new ActionDisableRulerTool(this)));
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
 	{
-		Exec(new ActionDisableNotPassable(this));
+        Exec(std::unique_ptr<Command2>(new ActionDisableNotPassable(this)));
 	}
 }
 

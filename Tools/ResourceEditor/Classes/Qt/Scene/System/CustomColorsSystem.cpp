@@ -301,7 +301,7 @@ void CustomColorsSystem::CreateUndoPoint()
 		SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
 		DVASSERT(scene);
 
-        scene->Exec(new ModifyCustomColorsCommand(originalImage, ScopedPtr<Image>(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory()), drawSystem->GetCustomColorsProxy(), updatedRect));
+        scene->Exec(std::unique_ptr<Command2>(new ModifyCustomColorsCommand(originalImage, ScopedPtr<Image>(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory()), drawSystem->GetCustomColorsProxy(), updatedRect)));
     }
 
     SafeRelease(originalImage);
@@ -345,8 +345,7 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 
             scene->BeginBatch("Load custom colors texture");
             StoreSaveFileName(filePath);
-            scene->Exec(new ModifyCustomColorsCommand(originalImage, image,
-                                                      drawSystem->GetCustomColorsProxy(), GetUpdatedRect()));
+            scene->Exec(std::unique_ptr<Command2>(new ModifyCustomColorsCommand(originalImage, image,drawSystem->GetCustomColorsProxy(), GetUpdatedRect())));
             scene->EndBatch();
 
             SafeRelease(originalImage);
@@ -405,35 +404,33 @@ bool CustomColorsSystem::CouldApplyImage(Image* image, const String& imageName) 
 
 void CustomColorsSystem::StoreSaveFileName(const FilePath& filePath)
 {
-	Command2* command = CreateSaveFileNameCommand(GetRelativePathToProjectPath(filePath));
+    std::unique_ptr<Command2> command = CreateSaveFileNameCommand(GetRelativePathToProjectPath(filePath));
 	if (command)
 	{
-		((SceneEditor2*)GetScene())->Exec(command);
+        SceneEditor2 *sc = static_cast<SceneEditor2 *>(GetScene());
+		sc->Exec(std::move(command));
 	}
 }
 
-Command2* CustomColorsSystem::CreateSaveFileNameCommand(const String& filePath)
+std::unique_ptr<Command2> CustomColorsSystem::CreateSaveFileNameCommand(const String& filePath)
 {
 	KeyedArchive* customProps = drawSystem->GetLandscapeCustomProperties();
 	bool keyExists = customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 
-	Command2* command = NULL;
 	if (keyExists)
 	{
 		String curPath = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 		if (curPath != filePath)
 		{
-			command = new KeyeadArchiveSetValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,
-													   VariantType(filePath));
+            return std::unique_ptr<Command2>(new KeyeadArchiveSetValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, VariantType(filePath)));
 		}
 	}
 	else
 	{
-		command = new KeyedArchiveAddValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,
-												  VariantType(filePath));
+        return std::unique_ptr<Command2>(new KeyedArchiveAddValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, VariantType(filePath)));
 	}
 
-	return command;
+    return std::unique_ptr<Command2>();
 }
 
 FilePath CustomColorsSystem::GetCurrentSaveFileName()

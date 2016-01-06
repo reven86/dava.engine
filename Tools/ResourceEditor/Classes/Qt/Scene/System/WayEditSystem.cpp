@@ -107,7 +107,7 @@ void WayEditSystem::DidRemoved(DAVA::Entity *removedPoint)
         edge = FindEdgeComponent(waypoint, removedPoint);
         if (edge)
         {
-            sceneEditor->Exec(new RemoveComponentCommand(waypoint, edge));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new RemoveComponentCommand(waypoint, edge)));
             srcPoints.push_back(waypoint);
         }
     }
@@ -152,7 +152,7 @@ void WayEditSystem::DidRemoved(DAVA::Entity *removedPoint)
             DAVA::EdgeComponent *newEdge = new DAVA::EdgeComponent();
             newEdge->SetNextEntity(breachPoint);
 
-            sceneEditor->Exec(new AddComponentCommand(srcPoint, newEdge));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new AddComponentCommand(srcPoint, newEdge)));
         }
     }
 }
@@ -166,7 +166,7 @@ void WayEditSystem::RemoveEdge(DAVA::Entity* srcWaypoint, DAVA::EdgeComponent* e
     DAVA::Set<DAVA::Entity*> passedPoints;
     if (IsAccessible(startPoint, breachPoint, nullptr/*no excluding point*/, edgeComponent, passedPoints))
     {
-        sceneEditor->Exec(new RemoveComponentCommand(srcWaypoint, edgeComponent));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new RemoveComponentCommand(srcWaypoint, edgeComponent)));
     }
 }
 
@@ -344,7 +344,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                     sceneEditor->BeginBatch("Add Waypoint");
 
                     Entity *newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
-                    sceneEditor->Exec(new EntityAddCommand(newWaypoint, currentWayParent));
+                    sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(newWaypoint, currentWayParent)));
                     
                     if(validPrevPoints.Size())
                     {
@@ -413,7 +413,7 @@ void WayEditSystem::AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity
         DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
         edge->SetNextEntity(nextEntity);
         
-        sceneEditor->Exec(new AddComponentCommand(entity, edge));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new AddComponentCommand(entity, edge)));
     }
 }
 
@@ -551,6 +551,6 @@ void WayEditSystem::DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEnt
         DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
         edge->SetNextEntity(newEntity);
 
-        sceneEditor->Exec(new AddComponentCommand(originalEntity, edge));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new AddComponentCommand(originalEntity, edge)));
     }
 }

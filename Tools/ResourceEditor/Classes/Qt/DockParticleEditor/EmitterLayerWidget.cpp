@@ -672,7 +672,7 @@ void EmitterLayerWidget::OnValueChanged()
     ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
-    CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
+    std::unique_ptr<CommandUpdateParticleLayer> updateLayerCmd(new CommandUpdateParticleLayer(emitter, layer));
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,
@@ -719,7 +719,7 @@ void EmitterLayerWidget::OnValueChanged()
                          (float32)pivotPointYSpinBox->value());
 
     DVASSERT(activeScene);
-    activeScene->Exec(updateLayerCmd);
+    activeScene->Exec(std::move(updateLayerCmd));
 	activeScene->MarkAsChanged();
 
     Update(false);
@@ -740,8 +740,7 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     const FilePath spritePath(spritePathLabel->text().toStdString());
 
     DVASSERT(activeScene);
-    CommandChangeLayerMaterialProperties* updateLayerCmd = new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked());
-    activeScene->Exec(updateLayerCmd);
+    activeScene->Exec(std::unique_ptr<Command2>(new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked())));
 
     UpdateLayerSprite();
 
@@ -758,8 +757,8 @@ void EmitterLayerWidget::OnLodsChanged()
 	{
 		lods[i] = layerLodsCheckBox[i]->isChecked();
 	}
-	CommandUpdateParticleLayerLods * updateLodsCmd = new CommandUpdateParticleLayerLods(layer, lods);
-	activeScene->Exec(updateLodsCmd);
+
+    activeScene->Exec(std::unique_ptr<Command2>(new CommandUpdateParticleLayerLods(layer, lods)));
 	activeScene->MarkAsChanged();
 	emit ValueChanged();
 }

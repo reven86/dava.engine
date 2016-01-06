@@ -47,8 +47,8 @@ public:
 	QtPropertyDataDavaKeyedArcive(DAVA::KeyedArchive *archive);
 	virtual ~QtPropertyDataDavaKeyedArcive();
 
-	virtual const DAVA::MetaInfo * MetaInfo() const;
-	virtual void* CreateLastCommand() const;
+	const DAVA::MetaInfo * MetaInfo() const override;
+    std::unique_ptr<Command2> CreateLastCommand() const override;
 
 	DAVA::KeyedArchive* archive;
 

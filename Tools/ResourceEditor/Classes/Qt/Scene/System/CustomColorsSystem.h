@@ -98,7 +98,7 @@ protected:
 
 	void FinishEditing();
 
-	Command2* CreateSaveFileNameCommand(const String& filePath);
+    std::unique_ptr<Command2> CreateSaveFileNameCommand(const String& filePath);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */

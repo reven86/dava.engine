@@ -834,8 +834,8 @@ void MaterialEditor::OnTemplateChanged(int index)
 
             if (nullptr != templateMember)
             {
-                QtMainWindow::Instance()->GetCurrentScene()->Exec(new InspMemberModifyCommand(templateMember, material, 
-                    DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str()))));
+                QtMainWindow::Instance()->GetCurrentScene()->Exec(std::unique_ptr<Command2>(new InspMemberModifyCommand(templateMember, material,
+                    DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str())))));
             }
         }
     }
@@ -852,19 +852,19 @@ void MaterialEditor::OnTemplateButton()
 
         if (nullptr != templateMember)
         {
-            Command2* cmd = nullptr;
+            SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+            DVASSERT(scene != nullptr);
             if (material->HasLocalFXName())
             {
                 // has local fxname, so button shoud remove it (by setting empty value)
-                cmd = new InspMemberModifyCommand(templateMember, material, DAVA::VariantType(DAVA::FastName()));
+                scene->Exec(std::unique_ptr<Command2>(new InspMemberModifyCommand(templateMember, material, DAVA::VariantType(DAVA::FastName()))));
             }
             else
             {
                 // no local fxname, so button should add it
-                cmd = new InspMemberModifyCommand(templateMember, material, DAVA::VariantType(material->GetEffectiveFXName()));
+                scene->Exec(std::unique_ptr<Command2>(new InspMemberModifyCommand(templateMember, material, DAVA::VariantType(material->GetEffectiveFXName()))));
             }
 
-            QtMainWindow::Instance()->GetCurrentScene()->Exec(cmd);
             RefreshMaterialProperties();
         }
     }
@@ -917,40 +917,19 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
                 propDatList << propData->GetMergedData(i);
             propDatList << propData;
 
-            QList<Command2 *> commands;
-            foreach (QtPropertyData* data, propDatList)
-            {
-                Command2 *command = (Command2 *) data->CreateLastCommand();
-                if (command)
-                {
-                    commands << command;
-                }
-            }
-            const bool usebatch = (commands.count() > 1);
-
             SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
             if (curScene)
             {
-                if (usebatch)
+                curScene->BeginBatch("Property multiedit");
+                foreach (QtPropertyData* data, propDatList)
                 {
-                    QObject::disconnect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
-                    curScene->BeginBatch("Property multiedit");
+                    std::unique_ptr<Command2> command = data->CreateLastCommand();
+                    if (command)
+                    {
+                        curScene->Exec(std::move(command));
+                    }
                 }
-
-                for (int i = 0; i < commands.size(); i++)
-                {
-                    Command2* cmd = commands.at(i);
-                    curScene->Exec(cmd);
-                }
-
-                if (usebatch)
-                {
-                    curScene->EndBatch();
-                    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2 *, const Command2 *, bool)));
-
-                    // emulate that only one signal was emited, after batch of commands executed
-                    commandExecuted(curScene, commands.last(), true);
-                }
+                curScene->EndBatch();
             }
         }
     }
@@ -964,7 +943,7 @@ void MaterialEditor::OnMaterialAddGlobal(bool checked)
         ScopedPtr<DAVA::NMaterial> global(new DAVA::NMaterial());
 
         global->SetMaterialName(FastName("Scene_Global_Material"));
-        curScene->Exec(new MaterialGlobalSetCommand(curScene, global));
+        curScene->Exec(std::unique_ptr<Command2>(new MaterialGlobalSetCommand(curScene, global)));
 
         sceneActivated(curScene);
         SelectMaterial(curScene->GetGlobalMaterial());
@@ -976,7 +955,7 @@ void MaterialEditor::OnMaterialRemoveGlobal(bool checked)
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != curScene)
     {
-        curScene->Exec(new MaterialGlobalSetCommand(curScene, nullptr));
+        curScene->Exec(std::unique_ptr<Command2>(new MaterialGlobalSetCommand(curScene, nullptr)));
         sceneActivated(curScene);
     }
 }

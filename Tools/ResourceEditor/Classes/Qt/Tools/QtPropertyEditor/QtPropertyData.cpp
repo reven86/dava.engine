@@ -30,6 +30,8 @@
 #include "QtPropertyData.h"
 #include "QtPropertyDataValidator.h"
 
+#include "Commands2/Base/Command2.h"
+
 QtPropertyData::QtPropertyData()
 	: isValuesMerged( true )
 	, curFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable)
@@ -900,11 +902,11 @@ void QtPropertyData::SetOWViewport(QWidget *viewport)
 	}
 }
 
-void* QtPropertyData::CreateLastCommand() const
+std::unique_ptr<Command2> QtPropertyData::CreateLastCommand() const
 {
 	// can be re-implemented by sub-class
 
-	return NULL;
+    return std::unique_ptr<Command2>();
 }
 
 QVariant QtPropertyData::GetValueInternal() const

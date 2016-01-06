@@ -125,30 +125,18 @@ void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
 
 	if(NULL != sceneEditor && ModifCanStart(entities))
 	{
-		bool isMultiple = (entities.Size() > 1);
-		
 		DAVA::Matrix4 zeroTransform;
 		zeroTransform.Identity();
 
-		if(isMultiple)
-		{
-			sceneEditor->BeginBatch("Multiple transform");
-		}
-
-		for (size_t i = 0; i < entities.Size(); ++i)
+        sceneEditor->BeginBatch("Multiple transform", entities.Size());
+        for (size_t i = 0; i < entities.Size(); ++i)
 		{
 			DAVA::Entity *entity = entities.GetEntity(i);
-			if(NULL != entity)
-			{
-				sceneEditor->Exec(new TransformCommand(entity,	entity->GetLocalTransform(), zeroTransform));
-			}
-		}
-
-		if(isMultiple)
-		{
-			sceneEditor->EndBatch();
-		}
-	}
+            DVASSERT(entity != nullptr);
+            sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, entity->GetLocalTransform(), zeroTransform)));
+        }
+        sceneEditor->EndBatch();
+    }
 }
 
 bool EntityModificationSystem::InModifState() const
@@ -536,22 +524,12 @@ void EntityModificationSystem::ApplyModification()
 
 		if(transformChanged)
 		{
-			bool isMultiple = (modifEntities.size() > 1);
-
-			if(isMultiple)
+            sceneEditor->BeginBatch("Multiple transform", modifEntities.size());
+            for (size_t i = 0; i < modifEntities.size(); ++i)
 			{
-				sceneEditor->BeginBatch("Multiple transform");
+                sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(modifEntities[i].entity, modifEntities[i].originalTransform, modifEntities[i].entity->GetLocalTransform())));
 			}
-
-			for (size_t i = 0; i < modifEntities.size(); ++i)
-			{
-				sceneEditor->Exec(new TransformCommand(modifEntities[i].entity,	modifEntities[i].originalTransform, modifEntities[i].entity->GetLocalTransform()));
-			}
-
-			if(isMultiple)
-			{
-				sceneEditor->EndBatch();
-			}
+            sceneEditor->EndBatch();
 		}
 	}
 }
@@ -871,7 +849,7 @@ void EntityModificationSystem::CloneEnd()
 		SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
 		SceneSelectionSystem *selectionSystem = sceneEditor->selectionSystem;
 
-		sceneEditor->BeginBatch("Clone");
+        sceneEditor->BeginBatch("Clone", modifEntities.size());
 
 		// we just moved original objects. Now we should return them back
 		// to there original positions and move cloned object to the new positions
@@ -889,16 +867,15 @@ void EntityModificationSystem::CloneEnd()
 
 			// remove entity from scene
 			DAVA::Entity *cloneParent = clonedEntities[i]->GetParent();
-
             if (cloneParent)
             {
                 cloneParent->RemoveNode(clonedEntities[i]);
 
                 // and add it once again with command
-                sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
+                sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(clonedEntities[i], cloneParent)));
             }
 
-			// make cloned entiti selected
+			// make cloned entity selected
 			SafeRelease(clonedEntities[i]);
 		}
 
@@ -938,31 +915,20 @@ void EntityModificationSystem::MovePivotCenter(const EntityGroup &entities)
 void EntityModificationSystem::LockTransform(const EntityGroup &entities, bool lock)
 {
     SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
-	if(NULL != sceneEditor)
+	if(nullptr != sceneEditor)
 	{
-		bool isMultiple = (entities.Size() > 1);
-
-        if(isMultiple)
-		{
-			sceneEditor->BeginBatch("Lock entities");
-		}
-
- 	    for(size_t i = 0; i < entities.Size(); ++i)
+        sceneEditor->BeginBatch("Lock entities", entities.Size());
+        for (size_t i = 0; i < entities.Size(); ++i)
  	    {
-            sceneEditor->Exec(new EntityLockCommand(entities.GetEntity(i), lock));
+            sceneEditor->Exec(std::unique_ptr<Command2>(new EntityLockCommand(entities.GetEntity(i), lock)));
  	    }
-
-        if(isMultiple)
-		{
-			sceneEditor->EndBatch();
-		}
+        sceneEditor->EndBatch();
     }
 }
 
 void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMode mode)
 {
 	SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
-
 	if(NULL != sceneEditor && entities.Size() == 1)
 	{
         DAVA::Entity *entity = entities.GetEntity(0);
@@ -1004,7 +970,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
                 sceneEditor->BeginBatch(commandMessage);
 
                 // bake render object
-                sceneEditor->Exec(new BakeGeometryCommand(ro, bakeTransform));
+                sceneEditor->Exec(std::unique_ptr<Command2>(new BakeGeometryCommand(ro, bakeTransform)));
 
                 // inverse bake to be able to move object on same place
                 // after it geometry was baked
@@ -1020,7 +986,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
                     DAVA::Matrix4 origTransform = en->GetLocalTransform();
                     DAVA::Matrix4 newTransform = afterBakeTransform * origTransform;
                     
-                    sceneEditor->Exec(new TransformCommand(en, origTransform, newTransform));
+                    sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(en, origTransform, newTransform)));
 
                     // also modify childs transform to make them be at
                     // right position after parent entity changed
@@ -1031,7 +997,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
                         DAVA::Matrix4 childOrigTransform = childEntity->GetLocalTransform();
                         DAVA::Matrix4 childNewTransform = childOrigTransform * bakeTransform;
 
-                        sceneEditor->Exec(new TransformCommand(childEntity, childOrigTransform, childNewTransform));
+                        sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(childEntity, childOrigTransform, childNewTransform)));
                     }
                 }
 
@@ -1061,14 +1027,14 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
                 // transform parent entity
                 transform.SetTranslationVector(newPivotPos - entity->GetLocalTransform().GetTranslationVector());
-                sceneEditor->Exec(new TransformCommand(entity, entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
+                sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, entity->GetLocalTransform(), entity->GetLocalTransform() * transform)));
 
                 // transform child entities with inversed parent transformation
                 transform.Inverse();
                 for(size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
                 {
                     DAVA::Entity *childEntity = entity->GetChild(i);
-                    sceneEditor->Exec(new TransformCommand(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
+                    sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform)));
                 }
 
 		        sceneEditor->EndBatch();

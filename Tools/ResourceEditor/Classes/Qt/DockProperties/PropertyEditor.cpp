@@ -775,11 +775,11 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
 	QtPropertyEditor::OnItemEdited(index);
 
 	SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    if (curScene == NULL)
-        return ;
-	QtPropertyData *propData = GetProperty(index);
+    if (curScene == nullptr)
+        return;
 
-	if(NULL != propData)
+	QtPropertyData *propData = GetProperty(index);
+    if (nullptr != propData)
 	{
         const int nMerged = propData->GetMergedCount();
         QList<QtPropertyData *> dataList;
@@ -790,24 +790,17 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
             dataList << propData->GetMergedData(i);
         }
 
-        const bool useBatch = dataList.size() > 1;
-
-        if (useBatch)
-        {
-            curScene->BeginBatch("");
-        }
-
+        curScene->BeginBatch("Edit properties", dataList.size());
         for (int i = 0; i < dataList.size(); i++)
         {
-            Command2 *command = (Command2 *)dataList.at(i)->CreateLastCommand();
-            curScene->Exec(command);
+            std::unique_ptr<Command2> command = dataList.at(i)->CreateLastCommand();
+            if (command)
+            {
+                curScene->Exec(std::move(command));
+            }
         }
-
-        if (useBatch)
-        {
-            curScene->EndBatch();
-        }
-	}
+        curScene->EndBatch();
+    }
 
     // this code it used to reload QualitySettingComponent field, when some changes made by user
     // because of QualitySettingComponent->requiredQuality directly depends from QualitySettingComponent->requiredGroup
@@ -938,7 +931,7 @@ void PropertyEditor::ConvertToShadow()
             for ( int i = 0; i < dataList.size(); i++ )
             {
 		        DAVA::RenderBatch *batch = (DAVA::RenderBatch *)dataList.at(i)->object;
-		        curScene->Exec(new ConvertToShadowCommand(batch));
+		        curScene->Exec(std::unique_ptr<Command2>(new ConvertToShadowCommand(batch)));
             }
 
             if (usebatch)
@@ -952,15 +945,14 @@ void PropertyEditor::ConvertToShadow()
 void PropertyEditor::RebuildTangentSpace()
 {
     QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
-
-    if(NULL != btn)
+    if(nullptr != btn)
     {
         QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-        if(NULL != data && NULL != curScene)
+        if(nullptr != data && nullptr != curScene)
         {            
-                RenderBatch *batch = (RenderBatch *)data->object;
-            curScene->Exec(new RebuildTangentSpaceCommand(batch, true));
+            RenderBatch *batch = (RenderBatch *)data->object;
+            curScene->Exec(std::unique_ptr<Command2>(new RebuildTangentSpaceCommand(batch, true)));
         }
     }
 }
@@ -1013,7 +1005,7 @@ void PropertyEditor::DeleteRenderBatch()
 					    DAVA::RenderBatch *b = ro->GetRenderBatch(i);
 					    if(b == batch)
 					    {
-						    curScene->Exec(new DeleteRenderBatchCommand(node, batch->GetRenderObject(), i));
+                            curScene->Exec(std::unique_ptr<Command2>(new DeleteRenderBatchCommand(node, batch->GetRenderObject(), i)));
                             break;
 					    }
 				    }
@@ -1343,18 +1335,17 @@ QtPropertyToolButton * PropertyEditor::CreateButton( QtPropertyData *data, const
 void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 {
     QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
-
-    if(NULL != btn)
+    if(nullptr != btn)
     {
         QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        if(NULL != data)
+        if(nullptr != data)
         {
             DAVA::RenderObject *renderObject = (DAVA::RenderObject *)data->object;
 
             SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
             if(curScene && renderObject)
             {
-                curScene->Exec(new CloneLastBatchCommand(renderObject));
+                curScene->Exec(std::unique_ptr<Command2>(new CloneLastBatchCommand(renderObject)));
             }
         }
     }
@@ -1371,7 +1362,7 @@ void PropertyEditor::OnAddComponent(Component::eType type)
         for(int i = 0; i < size; ++i)
         {
             Component *c = Component::CreateByType(type);
-            curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
+            curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(curNodes.at(i), c)));
         }
 
         curScene->EndBatch();
@@ -1396,7 +1387,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component *component)
             if (node->GetComponentCount(component->GetType()) == 0)
             {
                 Component *c = component->Clone(node);
-                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
+                curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(curNodes.at(i), c)));
             }
         }
         
@@ -1448,7 +1439,7 @@ void PropertyEditor::OnAddPathComponent()
              && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
             {
                 PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
-                curScene->Exec(new AddComponentCommand(node, pathComponent));
+                curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(node, pathComponent)));
             }
         }
 
@@ -1514,7 +1505,7 @@ void PropertyEditor::OnRemoveComponent()
                 DVASSERT(userData);
                 Entity *node = userData->entity;
 
-		        curScene->Exec(new RemoveComponentCommand(node, component));
+		        curScene->Exec(std::unique_ptr<Command2>(new RemoveComponentCommand(node, component)));
             }
 
             if (usebatch)
@@ -1546,7 +1537,7 @@ QString PropertyEditor::GetDefaultFilePath()
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
     }
     SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
-    if (NULL != editor && FileSystem::Instance()->Exists(editor->GetScenePath()))
+    if (nullptr != editor && FileSystem::Instance()->Exists(editor->GetScenePath()))
     {
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
         if (String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))

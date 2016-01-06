@@ -92,7 +92,7 @@ PathSystem::~PathSystem()
 void PathSystem::AddPath(DAVA::Entity * entity)
 {
     sceneEditor->BeginBatch("Add path at scene");
-    sceneEditor->Exec(new EntityAddCommand(entity, sceneEditor));
+    sceneEditor->Exec(std::unique_ptr<Command2>(new EntityAddCommand(entity, sceneEditor)));
 
     if (isEditingEnabled)
         ExpandPathEntity(entity);
@@ -370,8 +370,8 @@ void PathSystem::EnablePathEdit(bool enable)
 {
     if (enable)
     {
-        sceneEditor->BeginBatch("Enable waypoints edit");
-        sceneEditor->Exec(new EnableWayEditCommand);
+        sceneEditor->BeginBatch("Enable waypoints edit", pathes.size() + 1);
+        sceneEditor->Exec(std::unique_ptr<Command2>(new EnableWayEditCommand));
 
         for (auto path : pathes)
         {
@@ -382,8 +382,8 @@ void PathSystem::EnablePathEdit(bool enable)
     }
     else
     {
-        sceneEditor->BeginBatch("Disable waypoints edit");
-        sceneEditor->Exec(new DisableWayEditCommand);
+        sceneEditor->BeginBatch("Disable waypoints edit", pathes.size() + 1);
+        sceneEditor->Exec(std::unique_ptr<Command2>(new DisableWayEditCommand));
 
         for (auto path : pathes)
         {
@@ -397,23 +397,30 @@ void PathSystem::EnablePathEdit(bool enable)
 void PathSystem::ExpandPathEntity(const DAVA::Entity* pathEntity)
 {
     DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+
+    sceneEditor->BeginBatch("Expand path components", pathComponentCount);
     for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(new ExpandPathCommand(pathComponent));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new ExpandPathCommand(pathComponent)));
     }
+
+    sceneEditor->EndBatch();
 }
 
 void PathSystem::CollapsePathEntity(const DAVA::Entity* pathEntity)
 {
     DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+    sceneEditor->BeginBatch("Collapse path components", pathComponentCount);
     for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(new CollapsePathCommand(pathComponent));
+        sceneEditor->Exec(std::unique_ptr<Command2>(new CollapsePathCommand(pathComponent)));
     }
+
+    sceneEditor->EndBatch();
 }
 
 DAVA::PathComponent* PathSystem::CreatePathComponent()

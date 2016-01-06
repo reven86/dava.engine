@@ -47,7 +47,7 @@
 
 void MaterialAssignSystem::AssignMaterial(SceneEditor2 *scene, DAVA::NMaterial *instance, DAVA::NMaterial *newMaterialParent)
 {
-    scene->Exec(new MaterialSwitchParentCommand(instance, newMaterialParent));
+    scene->Exec(std::unique_ptr<Command2>(new MaterialSwitchParentCommand(instance, newMaterialParent)));
 }
 
 DAVA::NMaterial * MaterialAssignSystem::SelectMaterial(const DAVA::Set<DAVA::NMaterial *> & materials)

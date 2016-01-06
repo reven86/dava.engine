@@ -40,6 +40,7 @@ class Command2 : public CommandNotifyProvider
 {
 public:
     Command2(DAVA::int32 id, const DAVA::String& text = "");
+    ~Command2() override;
 
     DAVA::int32 GetId() const;
 

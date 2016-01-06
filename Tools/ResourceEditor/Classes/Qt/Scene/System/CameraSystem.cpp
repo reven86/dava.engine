@@ -150,7 +150,7 @@ DAVA::uint32 SceneCameraSystem::GetActiveSpeedIndex()
 
 void SceneCameraSystem::SetMoveSpeedArrayIndex(DAVA::uint32 index)
 {
-	DVASSERT(index < 4);
+	DVASSERT(index < 4u);
 	activeSpeedIndex = index;
 }
 
@@ -621,12 +621,12 @@ bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
             snapComponent = static_cast<SnapToLandscapeControllerComponent *>(Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
             snapComponent->SetHeightOnLandscape(height);
 
-            scene->Exec(new AddComponentCommand(entity, snapComponent));
+            scene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(entity, snapComponent)));
         }
     }
     else if(snapComponent)
     {
-        scene->Exec(new RemoveComponentCommand(entity, snapComponent));
+        scene->Exec(std::unique_ptr<Command2>(new RemoveComponentCommand(entity, snapComponent)));
     }
     
     return true;

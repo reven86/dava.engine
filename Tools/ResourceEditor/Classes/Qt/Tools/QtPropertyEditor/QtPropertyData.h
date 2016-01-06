@@ -43,6 +43,7 @@
 class QtPropertyModel;
 class QtPropertyData;
 class QtPropertyDataValidator;
+class Command2;
 
 class QtPropertyToolButton : public QToolButton
 {
@@ -188,7 +189,7 @@ public:
 	void EmitDataChanged(ValueChangeReason reason);
 
 	// edit command
-	virtual void* CreateLastCommand() const;
+	virtual std::unique_ptr<Command2> CreateLastCommand() const;
 
     // Merging
     bool IsMergedDataEqual() const;
