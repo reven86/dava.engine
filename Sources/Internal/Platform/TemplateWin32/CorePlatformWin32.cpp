@@ -669,6 +669,10 @@ namespace DAVA
                     bool isMove = x || y;
                     bool isInside = false;
 
+                    POINT p;
+                    GetCursorPos(&p);
+                    ScreenToClient(hWnd, &p);
+
                     if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
                     {
                         SetCursorPosCenterInternal(hWnd);
@@ -676,9 +680,6 @@ namespace DAVA
                     }
                     else
                     {
-                        POINT p;
-                        GetCursorPos(&p);
-                        ScreenToClient(hWnd, &p);
                         x += p.x;
                         y += p.y;
 
@@ -709,7 +710,7 @@ namespace DAVA
                             GetMouseButtonChanges(input.data.mouse.usButtonFlags, mouseButtonChanges);
                             for (auto& change : mouseButtonChanges)
                             {
-                                core->OnMouseButtonChange(change.beginOrEnd, change.button, x_pos, y_pos);
+                                core->OnMouseButtonChange(change.beginOrEnd, change.button, static_cast<float32>(p.x), static_cast<float32>(p.y));
                                 bool isButtonDown = (change.beginOrEnd == UIEvent::Phase::BEGAN);
                                 unsigned buttonIndex = static_cast<unsigned>(change.button) - 1;
                                 core->mouseButtonState[buttonIndex] = isButtonDown;
