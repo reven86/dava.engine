@@ -49,6 +49,8 @@ Vector2 RotateVector(const Vector2& in, float32 angle)
     return in * rotateMatrix;
 }
 
+EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](DAVA::UIControl* ) {return false;};
+
 class EditorSystemsManager::RootControl : public UIControl
 {
 public:

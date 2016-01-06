@@ -97,6 +97,8 @@ class PackageNode;
 
 class EditorSystemsManager : PackageListener
 {
+    using StopPredicate = std::function<bool(DAVA::UIControl*)>;
+    static StopPredicate defaultStopPredicate;
 public:
     using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
 
@@ -111,7 +113,7 @@ public:
     void SetEmulationMode(bool emulationMode);
 
     template <class OutIt, class Predicate>
-    void CollectControlNodes(OutIt destination, Predicate predicate) const;
+    void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
@@ -134,7 +136,7 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     template <class OutIt, class Predicate>
-    void CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const;
+    void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
     void OnPackageNodeChanged(const std::weak_ptr<PackageNode> &node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
@@ -156,18 +158,18 @@ private:
 };
 
 template <class OutIt, class Predicate>
-void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate predicate) const
+void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate) const
 {
     for (PackageBaseNode* rootControl : editingRootControls)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
         DVASSERT(nullptr != controlNode);
-        CollectControlNodesImpl(destination, predicate, controlNode);
+        CollectControlNodesImpl(destination, predicate, stopPredicate, controlNode);
     }
 }
 
 template <class OutIt, class Predicate>
-void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const
+void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const
 {
     auto control = node->GetControl();
     if (predicate(control))
@@ -175,10 +177,13 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
         *destination++ = node;
     }
 
-    int count = node->GetCount();
-    for (int i = 0; i < count; ++i)
+    if(!stopPredicate(control))
     {
-        CollectControlNodesImpl(destination, predicate, node->Get(i));
+        int count = node->GetCount();
+        for (int i = 0; i < count; ++i)
+        {
+            CollectControlNodesImpl(destination, predicate, stopPredicate, node->Get(i));
+        }
     }
 }
 
