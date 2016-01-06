@@ -212,10 +212,10 @@ namespace DAVA
             AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
         }
         lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
-		if (!Instance()->RunScript())
-		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
-		}
+        if (!Instance()->RunScript())
+        {
+            AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
+        }
 		lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
 		lua_pushstring(L, path.GetBasename().c_str());
 		return 2;
@@ -276,11 +276,11 @@ namespace DAVA
     }
 
     String AutotestingSystemLua::GetPlatform()
-	{
-		return DeviceInfo::GetPlatformString();
-	}
+    {
+        return DeviceInfo::GetPlatformString();
+    }
 
-	String AutotestingSystemLua::GetDeviceName()
+    String AutotestingSystemLua::GetDeviceName()
 	{
 		String deviceName;
 		if (DeviceInfo::GetPlatformString() == "Android")
@@ -524,10 +524,10 @@ namespace DAVA
         {
             uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
             break;
-		}
-		case DVKEY_ESCAPE:
-		{
-			uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
+        }
+        case DVKEY_ESCAPE:
+        {
+            uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
 			break;
 		}
 		default:
@@ -764,10 +764,10 @@ namespace DAVA
         return delegate->LoadWrappedLuaObjects(luaState);
     }
 
-	bool AutotestingSystemLua::LoadScript(const String &luaScript)
-	{
-		if (!luaState)
-		{
+    bool AutotestingSystemLua::LoadScript(const String& luaScript)
+    {
+        if (!luaState)
+        {
 			return false;
 		}
 		if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
