@@ -141,31 +141,42 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 
 void ControlMapper::mouseMoveEvent(QMouseEvent * event)
 {
-    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
-    const auto dragWasApplied = event->buttons() != Qt::NoButton;
+    auto mouseButtons = MapMouseEventToDAVA(event->pos(), event->buttons(), event->timestamp());
 
-    davaEvent.phase = dragWasApplied ? DAVA::UIEvent::Phase::DRAG : DAVA::UIEvent::Phase::MOVE;
-    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
-
-    DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
+    for (auto& ev : mouseButtons)
+    {
+        if (ev.mouseButton != DAVA::UIEvent::MouseButton::NONE)
+        {
+            ev.phase = DAVA::UIEvent::Phase::DRAG;
+        }
+        else
+        {
+            ev.phase = DAVA::UIEvent::Phase::MOVE;
+        }
+        DAVA::QtLayer::Instance()->MouseEvent(ev);
+    }
 }
 
 void ControlMapper::mousePressEvent(QMouseEvent * event)
 {
-    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
-    davaEvent.phase = DAVA::UIEvent::Phase::BEGAN;
-    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
+    auto mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
 
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    for (auto& ev : mouseButtons)
+    {
+        ev.phase = DAVA::UIEvent::Phase::BEGAN;
+        DAVA::QtLayer::Instance()->MouseEvent(ev);
+    }
 }
 
 void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
 {
-    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
-    davaEvent.phase = DAVA::UIEvent::Phase::ENDED;
-    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
+    auto mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
 
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    for (auto& ev : mouseButtons)
+    {
+        ev.phase = DAVA::UIEvent::Phase::ENDED;
+        DAVA::QtLayer::Instance()->MouseEvent(ev);
+    }
 }
 
 void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
@@ -193,8 +204,8 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     auto pos = event->pos();
     const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
 
-    davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.mouseButton = MapQtButtonToDAVA(Qt::LeftButton);
+    davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
+    davaEvent.mouseButton = DAVA::UIEvent::MouseButton::LEFT;
     davaEvent.timestamp = 0;
     davaEvent.tapCount = 1;
     davaEvent.phase = DAVA::UIEvent::Phase::MOVE;
@@ -208,39 +219,66 @@ void ControlMapper::releaseKeyboard()
     DAVA::DavaQtKeyboard::ClearAllKeys();
 }
 
-DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button, ulong timestamp )
+DAVA::Vector<DAVA::UIEvent> ControlMapper::MapMouseEventToDAVA(const QPoint& pos, const Qt::MouseButtons buttons, ulong timestamp)
 {
-    DAVA::UIEvent davaEvent;
-    auto davaButton = MapQtButtonToDAVA( button );
-    
+    using namespace DAVA;
+    static Vector<UIEvent> events;
+
+    events.clear();
+
+    auto davaButtons = MapQtButtonToDAVA(buttons);
+
     int currentDPR = window->devicePixelRatio();
-    davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.mouseButton = davaButton;
+
+    UIEvent davaEvent;
+    davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.timestamp = timestamp;
     davaEvent.tapCount = 1;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
-    return davaEvent;
+    if (davaButtons.empty())
+    {
+        davaEvent.mouseButton = UIEvent::MouseButton::NONE;
+        events.push_back(davaEvent);
+    }
+    else
+    {
+        for (auto btn : davaButtons)
+        {
+            davaEvent.mouseButton = btn;
+            events.push_back(davaEvent);
+        }
+    }
+    return events;
 }
 
-DAVA::UIEvent::MouseButton ControlMapper::MapQtButtonToDAVA(const Qt::MouseButton button) const
+DAVA::Vector<DAVA::UIEvent::MouseButton> ControlMapper::MapQtButtonToDAVA(const Qt::MouseButtons button) const
 {
     using namespace DAVA;
-    switch (button)
+    static Vector<UIEvent::MouseButton> mouseButtons;
+
+    mouseButtons.clear();
+
+    if (button.testFlag(Qt::LeftButton))
     {
-        case Qt::LeftButton:
-            return UIEvent::MouseButton::LEFT;
-        case Qt::RightButton:
-            return UIEvent::MouseButton::RIGHT;
-        case Qt::MiddleButton:
-            return UIEvent::MouseButton::MIDDLE;
-        case Qt::XButton1:
-            return UIEvent::MouseButton::EXTENDED1;
-        case Qt::XButton2:
-            return UIEvent::MouseButton::EXTENDED2;
-        default:
-            break;
+        mouseButtons.push_back(UIEvent::MouseButton::LEFT);
+    }
+    if (button.testFlag(Qt::RightButton))
+    {
+        mouseButtons.push_back(UIEvent::MouseButton::RIGHT);
+    }
+    if (button.testFlag(Qt::MiddleButton))
+    {
+        mouseButtons.push_back(UIEvent::MouseButton::MIDDLE);
+    }
+    if (button.testFlag(Qt::XButton1))
+    {
+        mouseButtons.push_back(UIEvent::MouseButton::EXTENDED1);
+    }
+    if (button.testFlag(Qt::XButton2))
+    {
+        mouseButtons.push_back(UIEvent::MouseButton::EXTENDED2);
     }
 
-    return DAVA::UIEvent::MouseButton::NONE;
+    return mouseButtons;
 }
