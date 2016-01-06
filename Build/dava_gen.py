@@ -13,6 +13,7 @@ g_ios_toolchain = "ios.toolchain.cmake"
 g_android_toolchain = "android.toolchain.cmake"
 
 g_cmake_file_path = ""
+g_generation_dir = ""
 g_supported_platforms = ["macos", "ios", "android", "windows"]
 g_supported_additional_parameters = ["console", "uap"]
 g_is_console = False
@@ -113,6 +114,7 @@ def main():
     parser.add_argument('platform_name', help='One of ' + str(g_supported_platforms))
     parser.add_argument('additional_params', nargs='*', help= 'One of ' + str(g_supported_additional_parameters))
     parser.add_argument('cmake_path', help='relative path to cmake list')
+    parser.add_argument('--generation_dir', default="", help="path to generation cmake list" )
 
     options = parser.parse_args()
 
@@ -141,6 +143,12 @@ def main():
     toolchain = get_toolchain(destination_platform)
 
     g_cmake_file_path = options.cmake_path
+    g_generation_dir  = options.generation_dir
+
+    if len(g_generation_dir) :
+        if not os.path.exists(g_generation_dir):
+            os.makedirs(g_generation_dir)
+        os.chdir( g_generation_dir )
 
     call_string = ['cmake', '-G', project_type, toolchain, g_cmake_file_path]
 
