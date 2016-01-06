@@ -381,13 +381,6 @@ void StructureSystem::RemoveDelegate(StructureSystemDelegate *delegate)
 
 void StructureSystem::AddEntity(DAVA::Entity * entity)
 {
-    auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
-    if (autoSelectionEnabled)
-    {
-        //check the situation with change parent: may be we will reset selection
-        entitiesForSelection.push_back(entity);
-    }
-
     EmitChanged();
 }
 
@@ -398,20 +391,6 @@ void StructureSystem::RemoveEntity(DAVA::Entity * entity)
 
 void StructureSystem::Process(DAVA::float32 timeElapsed)
 {
-    if (!entitiesForSelection.empty())
-    {
-        SceneEditor2 * sceneEditor = static_cast<SceneEditor2 *>(GetScene());
-        SceneSelectionSystem * selectionSystem = sceneEditor->selectionSystem;
-
-        selectionSystem->Clear();
-        for (auto & entity : entitiesForSelection)
-        {
-            selectionSystem->AddSelection(entity);
-        }
-        
-        entitiesForSelection.clear();
-    }
-
 	if(structureChanged)
 	{
 		SceneSignals::Instance()->EmitStructureChanged((SceneEditor2 *) GetScene(), nullptr);

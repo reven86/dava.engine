@@ -107,6 +107,7 @@ public:
 	void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent *event) override;
 
+    void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity * entity) override;
 
     void Activate() override;
@@ -117,11 +118,9 @@ public:
     bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
 
 protected:
-    void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
+    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
 
-	void Draw();
-
-	void ProcessCommand(const Command2 *command, bool redo);
+    void Draw();
 
 	void UpdateHoodPos() const;
 	void SelectedItemsWereModified();
@@ -129,23 +128,24 @@ protected:
 	EntityGroup GetSelecetableFromCollision(const EntityGroup *collisionEntities);
 
 private:
-    
-    bool selectionAllowed;
-    DAVA::uint64 componentMaskForSelection;
-    
-	bool applyOnPhaseEnd;
-    bool invalidSelectionBoxes;
+    bool selectionAllowed = true;
+    DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
 
-	SceneCollisionSystem *collisionSystem;
-	HoodSystem* hoodSystem;
+    bool applyOnPhaseEnd = false;
+    bool invalidSelectionBoxes = false;
 
-	bool selectionHasChanges;
-	EntityGroup curSelections;
+    SceneCollisionSystem* collisionSystem = nullptr;
+    HoodSystem* hoodSystem = nullptr;
+
+    bool selectionHasChanges = false;
+    EntityGroup curSelections;
 	EntityGroup curDeselections;
 
-	DAVA::Entity *lastSelection;
+    DAVA::Entity* lastSelection = nullptr;
 
-	ST_PivotPoint curPivotPoint;
+    ST_PivotPoint curPivotPoint;
+
+    DAVA::List<DAVA::Entity*> entitiesForSelection;
 };
 
 

@@ -49,7 +49,11 @@ EditorLightSystem::EditorLightSystem(DAVA::Scene * scene)
 	cameraLight->AddComponent(new LightComponent(light));
 
 	SetRequiredComponents(MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT));
-	isEnabled = true;
+
+    if (isEnabled)
+    {
+        AddCameraLightOnScene();
+    }
 }
 
 EditorLightSystem::~EditorLightSystem()
@@ -59,12 +63,12 @@ EditorLightSystem::~EditorLightSystem()
 
 void EditorLightSystem::UpdateCameraLightState()
 {
-    if (isEnabled && lightEntities.empty())
-	{
+    if (isEnabled && lightEntities == 0)
+    {
 		AddCameraLightOnScene();
 	}
-    else if (!isEnabled && !lightEntities.empty())
-	{
+    else if (!isEnabled || lightEntities != 0)
+    {
 		RemoveCameraLightFromScene();
 	}
 }
@@ -113,41 +117,38 @@ void EditorLightSystem::RemoveCameraLightFromScene()
 	}
 }
 
+void EditorLightSystem::SceneDidLoaded()
+{
+    if (isEnabled)
+    {
+        AddCameraLightOnScene();
+    }
+}
 
 void EditorLightSystem::AddEntity( DAVA::Entity * entity )
 {
     DVASSERT(GetLightComponent(entity) != nullptr);
-    lightEntities.push_back(entity);
-
     if(entity == cameraLight)
 	{
-        isEnabled = true;
 		return;
 	}
-    else if (lightEntities.size() > 1)
-    {
-        RemoveCameraLightFromScene();
-    }
+
+    ++lightEntities;
+    RemoveCameraLightFromScene();
 }
 
 void EditorLightSystem::RemoveEntity( DAVA::Entity * entity )
 {
-    lightEntities.remove(entity);
     if (entity == cameraLight)
 	{
-        if (lightEntities.empty())
-        {
-            isEnabled = false;
-        }
 		return;
 	}
 
-    if (isEnabled)
+    --lightEntities;
+
+    if (isEnabled && lightEntities == 0)
     {
-        if (lightEntities.empty())
-        {
-            AddCameraLightOnScene();
-        }
+        AddCameraLightOnScene();
     }
 }
 
@@ -155,7 +156,6 @@ void EditorLightSystem::Process(float32 timeElapsed)
 {
 	if(isEnabled)
 	{
-        UpdateCameraLightState();
         UpdateCameraLightPosition();
 	}
 }

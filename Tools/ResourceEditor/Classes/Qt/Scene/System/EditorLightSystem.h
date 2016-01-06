@@ -33,41 +33,39 @@
 #include "DAVAEngine.h"
 
 class Command2;
-class EditorLightSystem : public DAVA::SceneSystem
+class EditorLightSystem final : public DAVA::SceneSystem
 {
 	friend class SceneEditor2;
 	friend class EditorScene;
 
 public:
 	EditorLightSystem(DAVA::Scene * scene);
-	virtual ~EditorLightSystem();
+    ~EditorLightSystem() override;
 
     void AddEntity(DAVA::Entity * entity) override;
 	void RemoveEntity(DAVA::Entity * entity) override;
 
-	void SetCameraLightEnabled(bool enabled);
-	inline bool GetCameraLightEnabled();
+    void SceneDidLoaded() override;
 
-	virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
 
-protected:
-	void UpdateCameraLightState();
+    void SetCameraLightEnabled(bool enabled);
+    bool GetCameraLightEnabled() const;
 
+private:
+    void UpdateCameraLightState();
 	void UpdateCameraLightPosition();
-	void AddCameraLightOnScene();
-	void RemoveCameraLightFromScene();
 
-protected:
+    void AddCameraLightOnScene();
+    void RemoveCameraLightFromScene();
 
-    DAVA::List<DAVA::Entity*> lightEntities;
-
-	bool isEnabled;
-	DAVA::Entity *cameraLight;
+private:
+    DAVA::Entity* cameraLight = nullptr;
+    DAVA::uint32 lightEntities = 0;
+    bool isEnabled = true;
 };
 
-
-
-inline bool EditorLightSystem::GetCameraLightEnabled()
+inline bool EditorLightSystem::GetCameraLightEnabled() const
 {
 	return isEnabled;
 }

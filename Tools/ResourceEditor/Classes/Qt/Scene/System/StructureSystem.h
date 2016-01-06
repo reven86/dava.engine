@@ -104,7 +104,6 @@ protected:
     
 private:
     DAVA::List<StructureSystemDelegate *> delegates;
-    DAVA::List<DAVA::Entity *> entitiesForSelection;
 };
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__

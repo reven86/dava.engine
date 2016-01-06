@@ -434,8 +434,6 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 	if(collisionSystem)
 		collisionSystem->ProcessCommand(command, redo);
 
-	selectionSystem->ProcessCommand(command, redo);
-	
 	if(structureSystem)
 		structureSystem->ProcessCommand(command, redo);
 

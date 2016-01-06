@@ -48,16 +48,15 @@ ENUM_DECLARE(SelectionSystemDrawMode)
 
 SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys)
 	: DAVA::SceneSystem(scene)
-	, selectionAllowed(true)
 	, componentMaskForSelection(ALL_COMPONENTS_MASK)
-	, applyOnPhaseEnd(false)
-	, invalidSelectionBoxes(false)
 	, collisionSystem(collSys)
 	, hoodSystem(hoodSys)
-	, selectionHasChanges(false)
 	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
 {
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::ANIMATION_TRANSFORM_CHANGED);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -68,31 +67,43 @@ SceneSelectionSystem::~SceneSelectionSystem()
 	}
 }
 
-void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
+void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
-    if(EventSystem::SWITCH_CHANGED == event)
+    switch (event)
     {
-        for(DAVA::uint32 i = 0; i < curSelections.Size(); i++)
-        {
-            DAVA::Entity *selectedEntity = curSelections.GetEntity(i);
-
-            // if switched entity selected - update it bounding box
-            if(selectedEntity == entity)
+    case EventSystem::SWITCH_CHANGED:
+    case EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case EventSystem::TRANSFORM_PARENT_CHANGED:
+    case EventSystem::ANIMATION_TRANSFORM_CHANGED:
+        if (curSelections.ContainsEntity(component->GetEntity()))
             {
                 invalidSelectionBoxes = true;
             }
-        }
+            break;
+    default:
+        break;
     }
 }
 
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 {
-	ForceEmitSignals();
+    if (IsLocked())
+    {
+        return;
+    }
 
-	if (IsLocked())
-	{
-		return;
-	}
+    if (!entitiesForSelection.empty())
+    {
+        Clear();
+        for (auto& entity : entitiesForSelection)
+        {
+            AddSelection(entity);
+        }
+
+        entitiesForSelection.clear();
+    }
+
+    ForceEmitSignals();
 
     // if boxes are invalid we should request them from collision system
     // and store them in selection entityGroup
@@ -246,27 +257,26 @@ void SceneSelectionSystem::Draw()
     }
 }
 
-void SceneSelectionSystem::RemoveEntity(Entity * entity)
+void SceneSelectionSystem::AddEntity(DAVA::Entity* entity)
 {
-    //check the situation with change parent: may be we will reset selection
-    RemSelection(entity);
+    auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
+    if (autoSelectionEnabled && !IsLocked())
+    {
+        //check the situation with change parent: may be we will reset selection
+        entitiesForSelection.push_back(entity);
+    }
 }
 
-void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
+void SceneSelectionSystem::RemoveEntity(Entity* entity)
 {
-    const int32 commandId = command->GetId();
-    if (commandId == CMDID_BATCH)
+    //check the situation with change parent: may be we will reset selection
+    if (!entitiesForSelection.empty())
     {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_ENTITY_CHANGE_PARENT) || batch->ContainsCommand(CMDID_TRANSFORM))
-        {
-            invalidSelectionBoxes = true;
-        }
+        entitiesForSelection.remove(entity);
     }
-    else if ((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
-    {
-        invalidSelectionBoxes = true;
-    }
+
+    RemSelection(entity);
+    invalidSelectionBoxes = true;
 }
 
 void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
