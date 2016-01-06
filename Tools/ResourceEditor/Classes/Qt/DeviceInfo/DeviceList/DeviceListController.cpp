@@ -363,9 +363,9 @@ QStandardItem *DeviceListController::CreateDeviceItem(const Endpoint& endp, cons
     // Item text in the form of <name> - <platform> - <ip address>
     // E.g., 9f5656fd - Android - 192.168.0.24
     const QString caption = QString("%1 - %2 - %3")
-        .arg(peerDescr.GetName().c_str())
-        .arg(peerDescr.GetPlatformString().c_str())
-        .arg(endp.Address().ToString().c_str());
+                            .arg(peerDescr.GetName().c_str())
+                            .arg(peerDescr.GetPlatformString().c_str())
+                            .arg(endp.Address().ToString().c_str());
     QStandardItem *item = new QStandardItem();
     item->setText(caption);
 

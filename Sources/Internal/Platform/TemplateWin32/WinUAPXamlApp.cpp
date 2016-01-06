@@ -702,13 +702,13 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
-    
+
     PointerPoint ^ pointerPoint = nullptr;
     try
     {
         pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
     }
-    catch (Platform::Exception^ e)
+    catch (Platform::Exception ^ e)
     {
         Logger::FrameworkDebug("Exception in WinUAPXamlApp::OnMouseMoved: 0x%08X - %s", e->HResult, RTStringToString(e->Message).c_str());
     }

@@ -117,9 +117,9 @@ void QtLayer::Resize(int32 width, int32 height, int32 currentScreen)
 
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
     DVASSERT(nullptr != vcs)
-    
+
     vcs->SetInputScreenAreaSize(realWidth, realHeight);
-    
+
     vcs->UnregisterAllAvailableResourceSizes();
     vcs->RegisterAvailableResourceSize(width, height, "Gfx");
     vcs->RegisterAvailableResourceSize(width, height, "Gfx2");
