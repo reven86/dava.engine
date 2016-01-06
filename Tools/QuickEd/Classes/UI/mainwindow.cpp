@@ -313,17 +313,10 @@ void MainWindow::InitGlobalClasses()
 
 void MainWindow::InitEmulationMode()
 {
-    emulationBox = new QCheckBox();
+    emulationBox = new QCheckBox("Emulation", this);
     emulationBox->setCheckState(Qt::Unchecked);
-    QLabel *label = new QLabel(tr("Emulation"));
-    label->setBuddy(emulationBox);
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(emulationBox);
-    QWidget *wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
+    toolBarPlugins->addWidget(emulationBox);
 }
 
 void MainWindow::InitMenu()
