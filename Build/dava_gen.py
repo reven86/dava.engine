@@ -46,7 +46,7 @@ def setup_framework_env():
     global g_cmake_file_path
 
     # take current path and make it easier understandable
-    path = os.getcwd()
+    path = os.path.realpath(sys.argv[0])
     path = path.replace('\\', '/')
     path = os.path.normpath(path)
     path = path if path.endswith('/') else path + '/'
@@ -64,7 +64,8 @@ def setup_framework_env():
     if "" == g_framework_path:
         return False
 
-    g_toolchains_full_path = g_framework_path + g_toolchains_relative_framework_path
+    g_toolchains_full_path = os.path.realpath( g_framework_path + g_toolchains_relative_framework_path )
+    g_toolchains_full_path = g_toolchains_full_path + '/'
 
     return True
 
@@ -142,7 +143,7 @@ def main():
 
     toolchain = get_toolchain(destination_platform)
 
-    g_cmake_file_path = options.cmake_path
+    g_cmake_file_path = os.path.realpath(options.cmake_path)
     g_generation_dir  = options.generation_dir
 
     if len(g_generation_dir) :
