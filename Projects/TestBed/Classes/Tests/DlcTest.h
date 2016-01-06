@@ -26,44 +26,75 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __TEST_SCREEN_H__
+#define __TEST_SCREEN_H__
 
-#ifndef __DAVAENGINE_DEFINITION_FILE_H__
-#define __DAVAENGINE_DEFINITION_FILE_H__
+#include "DAVAEngine.h"
+#include "DLC/DLC.h"
+#include "Infrastructure/BaseScreen.h"
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
-#include "Math/Math2D.h"
+using namespace DAVA;
 
-namespace DAVA
+struct DLCCrashTest
 {
- 
-class DefinitionFile 
+    uint64 cancelTimeout;
+    uint64 exitTimeout;
+    uint32 retryCount;
+
+    DAVA::FilePath testingFileFlag;
+    DAVA::String dbObjectId;
+
+    bool forceExit;
+    bool inExitMode;
+
+    Thread* exitThread;
+
+    void Init(const DAVA::FilePath& workingDir, const DAVA::FilePath& destinationDir);
+    void Update(float32 timeElapsed, DLC* dlc);
+
+    void ExitThread(BaseObject* caller, void* callerData, void* userData);
+};
+
+class DlcTest : public BaseScreen
 {
 public:
-    bool Load(const FilePath& filename);
-    bool LoadPNGDef(const FilePath& filename, const FilePath& pathToProcess);
+    DlcTest();
 
-    DefinitionFile();
-    ~DefinitionFile();
+protected:
+    ~DlcTest()
+    {
+    }
 
-    void ClearPackedFrames();
-    void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
+public:
+    void LoadResources() override;
+    void UnloadResources() override;
+    void WillAppear() override;
 
-    Size2i GetFrameSize(int frame) const;
-    int GetFrameWidth(int frame) const;
-    int GetFrameHeight(int frame) const;
+    void Update(float32 timeElapsed) override;
+    void Draw(const UIGeometricData& geometricData) override;
 
-    FilePath filename;
-    int frameCount;
-    int			spriteWidth;
-	int			spriteHeight;
-	Rect2i		* frameRects;
+private:
+    void Cancel(BaseObject* obj, void* data, void* callerData);
+    void Restart(BaseObject* obj, void* data, void* callerData);
 
-	Vector<String> pathsInfo;
-    Vector<String> frameNames;
+protected:
+    DAVA::FilePath workingDir;
+    DAVA::FilePath sourceDir;
+    DAVA::FilePath destinationDir;
+
+    UIButton* returnButton;
+    UIButton* restartButton;
+
+    UIStaticText* staticText;
+    UIControl* animControl;
+    UIControl* progressControl;
+
+    float32 angle;
+    float32 lastUpdateTime;
+    uint32 lastDLCState;
+
+    DLC* dlc;
+    DLCCrashTest crashTest;
 };
 
-};
-
-
-#endif // __DAVAENGINE_DEFINITION_FILE_H__
+#endif

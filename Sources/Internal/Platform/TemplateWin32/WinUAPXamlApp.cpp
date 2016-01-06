@@ -639,23 +639,13 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, BackPressedEventArgs ^ args)
 {
-    core->RunOnMainThread([this]() {
-        UIEvent ev;
-        ev.keyChar = 0;
-        ev.tapCount = 1;
-        ev.phase = UIEvent::Phase::KEY_DOWN;
-        ev.key = DAVA::Key::BACK;
-        ev.device = UIEvent::Device::KEYBOARD;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    SendBackKeyEvents();
+    args->Handled = true;
+}
 
-        UIControlSystem::Instance()->OnInput(&ev);
-        InputSystem::Instance()->GetKeyboard().OnKeyPressed(DAVA::Key::BACK);
-
-        ev.phase = UIEvent::Phase::KEY_UP;
-
-        UIControlSystem::Instance()->OnInput(&ev);
-        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(DAVA::Key::BACK);
-    });
+void WinUAPXamlApp::OnBackRequested(Platform::Object ^ /*sender*/, BackRequestedEventArgs ^ args)
+{
+    SendBackKeyEvents();
     args->Handled = true;
 }
 
@@ -858,6 +848,8 @@ void WinUAPXamlApp::SetupEventHandlers()
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
     }
+
+    SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs ^>(this, &WinUAPXamlApp::OnBackRequested);
 }
 
 void WinUAPXamlApp::CreateBaseXamlUI()
@@ -1086,6 +1078,27 @@ void WinUAPXamlApp::AllowDisplaySleep(bool sleep)
     {
         displayRequest->RequestActive();
     }
+}
+
+void WinUAPXamlApp::SendBackKeyEvents()
+{
+    core->RunOnMainThread([this]() {
+        UIEvent ev;
+        ev.keyChar = 0;
+        ev.tapCount = 1;
+        ev.phase = UIEvent::Phase::KEY_DOWN;
+        ev.key = Key::BACK;
+        ev.device = UIEvent::Device::KEYBOARD;
+        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+
+        UIControlSystem::Instance()->OnInput(&ev);
+        InputSystem::Instance()->GetKeyboard().OnKeyPressed(Key::BACK);
+
+        ev.phase = UIEvent::Phase::KEY_UP;
+
+        UIControlSystem::Instance()->OnInput(&ev);
+        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(Key::BACK);
+    });
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
