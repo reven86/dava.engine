@@ -311,14 +311,6 @@ void EntityModificationSystem::RemoveDelegate(EntityModificationSystemDelegate *
     delegates.remove(delegate);
 }
 
-void EntityModificationSystem::Draw()
-{ }
-
-void EntityModificationSystem::ProcessCommand(const Command2 *command, bool redo)
-{
-
-}
-
 void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 {
 	// clear any priv. selection

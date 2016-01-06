@@ -95,10 +95,6 @@ protected:
 	SceneCameraSystem *cameraSystem;
 	HoodSystem* hoodSystem;
 
-	void Draw();
-
-	void ProcessCommand(const Command2 *command, bool redo);
-
 protected:
 	struct EntityToModify
 	{

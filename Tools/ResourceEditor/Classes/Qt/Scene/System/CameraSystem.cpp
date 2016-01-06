@@ -395,10 +395,6 @@ void SceneCameraSystem::Draw()
 	}
 }
 
-void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)
-{
-}
-
 void SceneCameraSystem::AddEntity(DAVA::Entity * entity)
 {
 	DAVA::Camera *camera = GetCamera(entity);

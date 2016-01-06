@@ -85,7 +85,6 @@ protected:
 	bool structureChanged;
 
 	void Process(DAVA::float32 timeElapsed) override;
-	void Draw();
 
 	void ProcessCommand(const Command2 *command, bool redo);
 

@@ -388,10 +388,6 @@ void StructureSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void StructureSystem::Draw()
-{
-
-}
 
 void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
@@ -523,8 +519,8 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             // sceneFileV2 will remove empty nodes only
             // if there is parent for such nodes. 
             {
-                SceneFileV2* tmpSceneFile = new SceneFileV2();
-                Entity* tmpParent = new Entity();
+                ScopedPtr<SceneFileV2> tmpSceneFile(new SceneFileV2());
+                ScopedPtr<Entity> tmpParent(new Entity());
                 Entity* tmpEntity = loadedEntity;
 
                 tmpParent->AddNode(tmpEntity);
@@ -533,8 +529,6 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
                 loadedEntity = SafeRetain(tmpParent->GetChild(0));
 
                 SafeRelease(tmpEntity);
-                SafeRelease(tmpParent);
-                SafeRelease(tmpSceneFile);
             }
 
             KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();

@@ -98,8 +98,6 @@ protected:
 
 	void Draw();
 
-	void ProcessCommand(const Command2 *command, bool redo);
-
 	void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
 	void RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects);
 

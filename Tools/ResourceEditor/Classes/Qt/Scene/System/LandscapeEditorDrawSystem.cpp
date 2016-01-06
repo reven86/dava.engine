@@ -677,11 +677,6 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 
 void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    if (command == NULL)
-    {
-        return;
-    }
-
     switch(command->GetId())
     {
         case CMDID_INSP_MEMBER_MODIFY:

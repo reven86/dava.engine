@@ -407,11 +407,6 @@ void SceneEditor2::Draw()
 
         if (collisionSystem)
             collisionSystem->Draw();
-
-		modifSystem->Draw();
-
-		if(structureSystem)
-			structureSystem->Draw();
 	}
  
 	tilemaskEditorSystem->Draw();
@@ -434,15 +429,10 @@ void SceneEditor2::Draw()
 
 void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 {
-	gridSystem->ProcessCommand(command, redo);
-	cameraSystem->ProcessCommand(command, redo);
-
 	if(collisionSystem)
 		collisionSystem->ProcessCommand(command, redo);
 
 	selectionSystem->ProcessCommand(command, redo);
-	hoodSystem->ProcessCommand(command, redo);
-	modifSystem->ProcessCommand(command, redo);
 	
 	if(structureSystem)
 		structureSystem->ProcessCommand(command, redo);

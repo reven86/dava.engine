@@ -85,7 +85,3 @@ void SceneGridSystem::Draw()
     }
 }
 
-void SceneGridSystem::ProcessCommand(const Command2 *command, bool redo)
-{
-
-}
