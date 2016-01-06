@@ -19,6 +19,26 @@ g_supported_additional_parameters = ["console", "uap"]
 g_is_console = False
 g_is_uap = False
 
+def search_program(program):
+    import os
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        folders = os.environ["PATH"].split(os.pathsep)
+        folders.append("/Applications/CMake.app/Contents/bin")
+        for path in folders:
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return False
+
 def parse_additional_params(additional):
     global g_is_console
     global g_is_uap
@@ -130,7 +150,7 @@ def main():
         parser.print_help()
         exit();
     else:
-        destination_platform = options.platform_name
+        destination_platform = options.platform_name.lower()
 
     project_type = get_project_type(destination_platform, g_is_console)
     if project_type == "":
@@ -151,12 +171,19 @@ def main():
             os.makedirs(g_generation_dir)
         os.chdir( g_generation_dir )
 
-    call_string = ['cmake', '-G', project_type, toolchain, g_cmake_file_path]
+    cmake_program = search_program("cmake")
 
-    print call_string
+    if False == cmake_program:
+        print "cmake command not found."
+        exit()
+
+    call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path]
 
     subprocess.check_output(call_string)
-    subprocess.check_output(call_string)
+    
+    if "android" == destination_platform:
+        subprocess.check_output(call_string)
+
 
 if __name__ == '__main__':
     main()
