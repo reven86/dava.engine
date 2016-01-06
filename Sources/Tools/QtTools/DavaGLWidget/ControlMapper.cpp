@@ -100,8 +100,24 @@ void ControlMapper::keyPressEvent(QKeyEvent *e)
         return;
     }
 #endif
-
+    
+#ifdef Q_OS_WIN
+    uint32 nativeModif = e->nativeModifiers();
+    uint32 nativeScanCode = e->nativeScanCode();
+    uint32 virtKey = e->nativeVirtualKey();
+    if ((1 << 24) & nativeModif)
+    {
+        virtKey |= 0x100;
+    }
+    if (VK_SHIFT == virtKey && nativeScanCode == 0x36) // is right shift key
+    {
+        virtKey |= 0x100;
+    }
+    const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
+#else
     const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(e->nativeVirtualKey());
+#endif
+
     if (davaKey != Key::UNKNOWN)
     {
         QtLayer::Instance()->KeyPressed(davaKey, e->count(), e->timestamp());
