@@ -43,13 +43,12 @@ public:
     ~Command2() override;
 
     DAVA::int32 GetId() const;
+    const DAVA::String & GetText() const;
 
     virtual void Undo() = 0;
     virtual void Redo() = 0;
 
     DAVA_DEPRECATED(virtual DAVA::Entity* GetEntity() const = 0);
-
-    const DAVA::String & GetText() const;
 
 protected:
     void UndoInternalCommand(Command2* command);

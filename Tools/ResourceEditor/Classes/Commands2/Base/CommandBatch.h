@@ -65,4 +65,25 @@ protected:
     DAVA::UnorderedSet<DAVA::int32> commandIDs;
 };
 
+inline bool CommandBatch::Empty() const
+{
+    return commandList.empty();
+}
+
+inline DAVA::uint32 CommandBatch::Size() const
+{
+    return static_cast<DAVA::uint32>(commandList.size());
+}
+
+inline bool CommandBatch::ContainsCommand(DAVA::int32 commandId) const
+{
+    return commandIDs.count(commandId) > 0;
+}
+
+inline bool CommandBatch::IsMultiCommandBatch() const
+{
+    return (commandIDs.size() > 1);
+}
+
+
 #endif // __COMMAND_BATCH_H__

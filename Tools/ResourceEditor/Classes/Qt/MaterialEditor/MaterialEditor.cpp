@@ -920,7 +920,7 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
             SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
             if (curScene)
             {
-                curScene->BeginBatch("Property multiedit");
+                curScene->BeginBatch("Property multiedit", propDatList.size());
                 foreach (QtPropertyData* data, propDatList)
                 {
                     std::unique_ptr<Command2> command = data->CreateLastCommand();

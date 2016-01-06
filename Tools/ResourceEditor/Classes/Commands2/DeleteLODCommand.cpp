@@ -149,7 +149,7 @@ void DeleteLODCommand::Undo()
     }
     deletedBatches.clear();
 
-    //restore lodlayers and disatnces
+    //restore lodlayers and distances
     lodComponent->lodLayersArray = savedDistances;
 }
 

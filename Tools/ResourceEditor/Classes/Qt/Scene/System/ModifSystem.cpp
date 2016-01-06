@@ -128,8 +128,9 @@ void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
 		DAVA::Matrix4 zeroTransform;
 		zeroTransform.Identity();
 
-        sceneEditor->BeginBatch("Multiple transform", entities.Size());
-        for (size_t i = 0; i < entities.Size(); ++i)
+        uint32 count = static_cast<uint32>(entities.Size());
+        sceneEditor->BeginBatch("Multiple transform", count);
+        for (size_t i = 0; i < count; ++i)
 		{
 			DAVA::Entity *entity = entities.GetEntity(i);
             DVASSERT(entity != nullptr);
@@ -524,8 +525,9 @@ void EntityModificationSystem::ApplyModification()
 
 		if(transformChanged)
 		{
-            sceneEditor->BeginBatch("Multiple transform", modifEntities.size());
-            for (size_t i = 0; i < modifEntities.size(); ++i)
+            uint32 count = static_cast<uint32>(modifEntities.size());
+            sceneEditor->BeginBatch("Multiple transform", count);
+            for (size_t i = 0; i < count; ++i)
 			{
                 sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(modifEntities[i].entity, modifEntities[i].originalTransform, modifEntities[i].entity->GetLocalTransform())));
 			}
@@ -849,12 +851,13 @@ void EntityModificationSystem::CloneEnd()
 		SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
 		SceneSelectionSystem *selectionSystem = sceneEditor->selectionSystem;
 
-        sceneEditor->BeginBatch("Clone", modifEntities.size());
+        uint32 count = static_cast<uint32>(modifEntities.size());
+        sceneEditor->BeginBatch("Clone", count);
 
 		// we just moved original objects. Now we should return them back
 		// to there original positions and move cloned object to the new positions
 		// and only after that perform "add cloned entities to scene" commands
-		for(size_t i = 0; i < modifEntities.size(); ++i)
+		for(size_t i = 0; i < count; ++i)
 		{
 			// remember new transform
 			Matrix4 newLocalTransform = modifEntities[i].entity->GetLocalTransform();
@@ -917,8 +920,9 @@ void EntityModificationSystem::LockTransform(const EntityGroup &entities, bool l
     SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
 	if(nullptr != sceneEditor)
 	{
-        sceneEditor->BeginBatch("Lock entities", entities.Size());
-        for (size_t i = 0; i < entities.Size(); ++i)
+        uint32 count = static_cast<uint32>(entities.Size());
+        sceneEditor->BeginBatch("Lock entities", count);
+        for (size_t i = 0; i < count; ++i)
  	    {
             sceneEditor->Exec(std::unique_ptr<Command2>(new EntityLockCommand(entities.GetEntity(i), lock)));
  	    }
@@ -1023,7 +1027,8 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
                         break;
                 }
 
-                sceneEditor->BeginBatch(commandMessage);
+                uint32 count = static_cast<uint32>(entity->GetChildrenCount());
+                sceneEditor->BeginBatch(commandMessage, count + 1);
 
                 // transform parent entity
                 transform.SetTranslationVector(newPivotPos - entity->GetLocalTransform().GetTranslationVector());
@@ -1031,7 +1036,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
                 // transform child entities with inversed parent transformation
                 transform.Inverse();
-                for(size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
+                for (uint32 i = 0; i < count; ++i)
                 {
                     DAVA::Entity *childEntity = entity->GetChild(i);
                     sceneEditor->Exec(std::unique_ptr<Command2>(new TransformCommand(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform)));

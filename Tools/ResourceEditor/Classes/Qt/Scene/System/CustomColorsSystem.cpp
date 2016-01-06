@@ -339,11 +339,12 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 
         if (createUndo)
         {
+            DVASSERT(originalImage == nullptr);
             originalImage = drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory();
 
-            SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+            SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
 
-            scene->BeginBatch("Load custom colors texture");
+            scene->BeginBatch("Load custom colors texture", 2);
             StoreSaveFileName(filePath);
             scene->Exec(std::unique_ptr<Command2>(new ModifyCustomColorsCommand(originalImage, image,drawSystem->GetCustomColorsProxy(), GetUpdatedRect())));
             scene->EndBatch();
@@ -353,7 +354,6 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
         else
         {
             SafeRelease(loadedTexture);
-
             loadedTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false);
 
             Texture* target = drawSystem->GetCustomColorsProxy()->GetTexture();

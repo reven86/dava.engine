@@ -68,10 +68,11 @@ bool StructureSystem::Init(const DAVA::FilePath & path)
 void StructureSystem::Move(const EntityGroup &entityGroup, DAVA::Entity *newParent, DAVA::Entity *newBefore)
 {
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL != sceneEditor && entityGroup.Size() > 0)
+    uint32 count = entityGroup.Size();
+    if (NULL != sceneEditor && count > 0)
 	{
-        sceneEditor->BeginBatch("Move entities", entityGroup.Size());
-        for (size_t i = 0; i < entityGroup.Size(); ++i)
+        sceneEditor->BeginBatch("Move entities", count);
+        for (size_t i = 0; i < count; ++i)
 		{
             sceneEditor->Exec(std::unique_ptr<Command2>(new EntityParentChangeCommand(entityGroup.GetEntity(i), newParent, newBefore)));
 		}
@@ -84,10 +85,11 @@ void StructureSystem::Move(const EntityGroup &entityGroup, DAVA::Entity *newPare
 void StructureSystem::Remove(const EntityGroup &entityGroup)
 {
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(nullptr != sceneEditor && entityGroup.Size() > 0)
+    uint32 count = entityGroup.Size();
+	if(nullptr != sceneEditor && count > 0)
 	{
-        sceneEditor->BeginBatch("Remove entities", entityGroup.Size());
-        for (size_t i = 0; i < entityGroup.Size(); ++i)
+        sceneEditor->BeginBatch("Remove entities", count);
+        for (uint32 i = 0; i < count; ++i)
         {
             DAVA::Entity *entity = entityGroup.GetEntity(i);
             if (entity->GetNotRemovable() == false)
@@ -117,9 +119,9 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitter *> &e
     SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
     if(NULL != sceneEditor)
     {
-        DAVA::uint32 count = static_cast<DAVA::uint32>(emitters.size());
+        uint32 count = static_cast<uint32>(emitters.size());
         sceneEditor->BeginBatch("Move particle emitter", count);
-        for (size_t i = 0; i < count; ++i)
+        for (uint32 i = 0; i < count; ++i)
         {		
             sceneEditor->Exec(std::unique_ptr<Command2>(new ParticleEmitterMoveCommand(oldEffects[i], emitters[i], newEffect, dropAfter++)));
         }
@@ -134,9 +136,9 @@ void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer *> &layer
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(NULL != sceneEditor)
 	{
-        DAVA::uint32 count = static_cast<DAVA::uint32>(layers.size());
+        uint32 count = static_cast<uint32>(layers.size());
 		sceneEditor->BeginBatch("Move particle layers", count);
-		for(size_t i = 0; i < count; ++i)
+		for(uint32 i = 0; i < count; ++i)
 		{		
             sceneEditor->Exec(std::unique_ptr<Command2>(new ParticleLayerMoveCommand(oldEmitters[i], layers[i], newEmitter, newBefore)));
 		}
@@ -152,9 +154,9 @@ void StructureSystem::RemoveLayer(const DAVA::Vector<DAVA::ParticleLayer *> &lay
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(NULL != sceneEditor)
 	{
-        DAVA::uint32 count = static_cast<DAVA::uint32>(layers.size());
+        uint32 count = static_cast<uint32>(layers.size());
         sceneEditor->BeginBatch("Remove particle layers", count);
-		for(size_t i = 0; i < count; ++i)
+		for(uint32 i = 0; i < count; ++i)
 		{
             sceneEditor->Exec(std::unique_ptr<Command2>(new ParticleLayerRemoveCommand(oldEmitters[i], layers[i])));
 		}
@@ -169,9 +171,9 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce *> &force
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(NULL != sceneEditor)
 	{
-        DAVA::uint32 count = static_cast<DAVA::uint32>(forces.size());
+        uint32 count = static_cast<uint32>(forces.size());
         sceneEditor->BeginBatch("Move particle layers", count);
-        for (size_t i = 0; i < count; ++i)
+        for (uint32 i = 0; i < count; ++i)
 		{
             sceneEditor->Exec(std::unique_ptr<Command2>(new ParticleForceMoveCommand(forces[i], oldLayers[i], newLayer)));
 		}
@@ -187,9 +189,9 @@ void StructureSystem::RemoveForce(const DAVA::Vector<DAVA::ParticleForce *> &for
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(NULL != sceneEditor)
 	{
-        DAVA::uint32 count = static_cast<DAVA::uint32>(forces.size());
+        uint32 count = static_cast<uint32>(forces.size());
         sceneEditor->BeginBatch("Remove particle layers", count);
-        for (DAVA::uint32 i = 0; i < count; ++i)
+        for (uint32 i = 0; i < count; ++i)
 		{
             sceneEditor->Exec(std::unique_ptr<Command2>(new ParticleForceRemoveCommand(forces[i], layers[i])));
 		}
@@ -426,12 +428,13 @@ void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) c
     if(CMDID_BATCH == commandId)
     {
         const CommandBatch * batch = static_cast<const CommandBatch *>(command);
-        DVASSERT(batch->IsMultiCommandBatch() == false);
 
         const bool entityAddCommand = batch->ContainsCommand(CMDID_ENTITY_ADD);
         const bool entityRemoveCommand = batch->ContainsCommand(CMDID_ENTITY_REMOVE);
         if (entityAddCommand || entityRemoveCommand)
         {
+            DVASSERT(batch->IsMultiCommandBatch() == false);
+
             selectionSystem->Clear();
             auto needAddEntity = ((entityAddCommand && redo) || (entityRemoveCommand && !redo));
             if (needAddEntity)

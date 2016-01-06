@@ -141,7 +141,6 @@ void CommandStack::Exec(std::unique_ptr<Command2> command)
     {
         action->Redo();
         EmitNotify(command.get(), true);
-        delete action;
 
         DVASSERT(false && "check deletion of command");
     }
@@ -268,16 +267,18 @@ void CommandStack::ExecInternal(std::unique_ptr<Command2> command, bool runComma
 {
     ClearRedoCommands();
 
+    Command2 *actualCommand = command.get();
+
     commandList.emplace_back(std::move(command));
     nextCommandIndex++;
 
     if (runCommand)
     {
-        command->SetNotify(stackCommandsNotify);
-        command->Redo();
+        actualCommand->SetNotify(stackCommandsNotify);
+        actualCommand->Redo();
     }
 
-    EmitNotify(command.get(), true);
+    EmitNotify(actualCommand, true);
     ClearLimitedCommands();
 
     CleanCheck();
@@ -300,31 +301,22 @@ void CommandStack::ClearLimitedCommands()
 {
     while ((commandListLimit > 0) && (static_cast<DAVA::int32>(commandList.size()) > commandListLimit))
     {
-        RemoveCommand(0);
-    }
-}
+        commandList.pop_front();
 
+        if (nextCommandIndex > 0)
+        {
+            nextCommandIndex--;
+        }
 
-void CommandStack::RemoveCommand(DAVA::uint32 index)
-{
-    DVASSERT(index < commandList.size())
-
-    CommandsContainer::iterator i = commandList.begin();
-    std::advance(i, index);
-    commandList.erase(i);
-
-    if (nextCommandIndex > 0)
-    {
-        nextCommandIndex--;
-    }
-
-    if (cleanCommandIndex > 0 && index < cleanCommandIndex)
-    {
-        cleanCommandIndex--;
+        if (cleanCommandIndex > 0)
+        {
+            cleanCommandIndex--;
+        }
     }
 
     CleanCheck();
 }
+
 
 void CommandStack::CleanCheck()
 {

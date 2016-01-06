@@ -30,7 +30,7 @@
 #include "Commands2/Base/CommandBatch.h"
 
 #include "Debug/DVAssert.h"
-
+#include "Utils/StringFormat.h"
 
 CommandBatch::CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
     : Command2(CMDID_BATCH, text)
@@ -47,7 +47,6 @@ void CommandBatch::Redo()
     {
         (*i)->Redo();
     }
-    DVASSERT(false && "Need Notify about batch REDO");
 }
 
 void CommandBatch::Undo()
@@ -56,7 +55,6 @@ void CommandBatch::Undo()
     {
         (*i)->Undo();
     }
-    DVASSERT(false && "Need Notify about batch UNDO");
 }
 
 
@@ -69,28 +67,20 @@ void CommandBatch::AddAndExec(std::unique_ptr<Command2> command)
 {
     DVASSERT(command);
 
+    Command2 *actualCommand = command.get();
     commandList.emplace_back(std::move(command));
-    commandIDs.insert(command->GetId());
-
-    command->Redo();
-    DVASSERT(false && "Need notify about batch REDO");
-}
-
-bool CommandBatch::Empty() const
-{
-    return commandList.empty();
-}
-
-DAVA::uint32 CommandBatch::Size() const
-{
-    return static_cast<DAVA::uint32>(commandList.size());
+    commandIDs.insert(actualCommand->GetId());
+    actualCommand->Redo();
 }
 
 Command2* CommandBatch::GetCommand(DAVA::uint32 index) const
 {
     if (index < static_cast<DAVA::uint32>(commandList.size()))
+    {
         return commandList[index].get();
+    }
 
+    DVASSERT_MSG(false, DAVA::Format("index %u, size %u", index, static_cast<DAVA::uint32>(commandList.size())).c_str());
     return nullptr;
 }
 
@@ -104,12 +94,3 @@ void CommandBatch::RemoveCommands(DAVA::int32 commandId)
     commandIDs.erase(commandId);
 }
 
-bool CommandBatch::ContainsCommand(DAVA::int32 commandId) const
-{
-    return commandIDs.count(commandId) > 0;
-}
-
-bool CommandBatch::IsMultiCommandBatch() const
-{
-    return (commandIDs.size() > 1);
-}

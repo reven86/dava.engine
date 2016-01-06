@@ -77,7 +77,6 @@ protected:
 
     void ClearRedoCommands();
     void ClearLimitedCommands();
-    void RemoveCommand(DAVA::uint32 index);
 
     void CleanCheck();
     void CommandExecuted(const Command2* command, bool redo);

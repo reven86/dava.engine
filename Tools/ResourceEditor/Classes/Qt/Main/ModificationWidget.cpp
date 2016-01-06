@@ -271,12 +271,9 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 		EntityGroup selection = curScene->selectionSystem->GetSelection();
         const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
 
-		if(selection.Size() > 1)
-		{
-			curScene->BeginBatch("Multiple transform");
-		}
-
-		for (size_t i = 0; i < selection.Size(); ++i)
+        uint32 count = static_cast<uint32>(selection.Size());
+        curScene->BeginBatch("Multiple transform", count);
+		for (uint32 i = 0; i < count; ++i)
 		{
 			DAVA::Entity *entity = selection.GetEntity(i);
 			DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
@@ -329,12 +326,8 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 
             curScene->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
 		}
-
-		if(selection.Size() > 1)
-		{
-			curScene->EndBatch();
-		}
-	}
+        curScene->EndBatch();
+    }
 }
 
 void ModificationWidget::ApplyRotateValues(ST_Axis axis)
@@ -346,13 +339,9 @@ void ModificationWidget::ApplyRotateValues(ST_Axis axis)
 	if(NULL != curScene)
 	{
 		EntityGroup selection = curScene->selectionSystem->GetSelection();
-
-		if(selection.Size() > 1)
-		{
-			curScene->BeginBatch("Multiple transform");
-		}
-
-		for (size_t i = 0; i < selection.Size(); ++i)
+        uint32 count = static_cast<uint32>(selection.Size());
+        curScene->BeginBatch("Multiple transform", count);
+		for (size_t i = 0; i < count; ++i)
 		{
 			DAVA::Entity *entity = selection.GetEntity(i);
 			DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
@@ -411,12 +400,8 @@ void ModificationWidget::ApplyRotateValues(ST_Axis axis)
                 curScene->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
 			}
 		}
-
-		if(selection.Size() > 1)
-		{
-			curScene->EndBatch();
-		}
-	}
+        curScene->EndBatch();
+    }
 }
 
 void ModificationWidget::ApplyScaleValues(ST_Axis axis)
@@ -442,12 +427,9 @@ void ModificationWidget::ApplyScaleValues(ST_Axis axis)
 	{
 		EntityGroup selection = curScene->selectionSystem->GetSelection();
 
-		if(selection.Size() > 1)
-		{
-			curScene->BeginBatch("Multiple transform");
-		}
-
-		for (size_t i = 0; i < selection.Size(); ++i)
+        uint32 count = static_cast<uint32>(selection.Size());
+        curScene->BeginBatch("Multiple transform", count);
+        for (uint32 i = 0; i < count; ++i)
 		{
 			DAVA::Entity *entity = selection.GetEntity(i);
 			DAVA::Matrix4 origMatrix = entity->GetLocalTransform();
@@ -489,12 +471,8 @@ void ModificationWidget::ApplyScaleValues(ST_Axis axis)
                 curScene->Exec(std::unique_ptr<Command2>(new TransformCommand(entity, origMatrix, newMatrix)));
 			}
 		}
-
-		if(selection.Size() > 1)
-		{
-			curScene->EndBatch();
-		}
-	}
+        curScene->EndBatch();
+    }
 }
 
 void ModificationWidget::OnSceneCommand(SceneEditor2 *scene, const Command2* command, bool redo)
