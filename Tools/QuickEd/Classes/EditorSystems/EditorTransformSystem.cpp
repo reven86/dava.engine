@@ -692,23 +692,17 @@ namespace
 {
 void CreateMagnetLinesForPivot(Vector<MagnetLineInfo>& magnetLines, Vector2 target, const UIGeometricData& controlGeometricData)
 {
-    const Rect ur(controlGeometricData.GetUnrotatedRect());
-    Vector2 offset = ur.GetSize() * target;
-    Vector2 positionOffset = controlGeometricData.pivotPoint * controlGeometricData.scale;
-    positionOffset = RotateVector(positionOffset, controlGeometricData.angle);
-    Vector2 position = controlGeometricData.position - positionOffset;
+    const Vector2 targetSize(controlGeometricData.GetUnrotatedRect().GetSize());
+    Vector2 offset = targetSize * target;
     Vector2 horizontalLinePos(0.0f, offset.y);
-    horizontalLinePos = RotateVector(horizontalLinePos, controlGeometricData.angle);
-    horizontalLinePos += position;
 
     Vector2 verticalLinePos(offset.x, 0.0f);
-    verticalLinePos = RotateVector(verticalLinePos, controlGeometricData.angle);
-    verticalLinePos += position;
 
-    Rect horizontalRect(horizontalLinePos, Vector2(ur.GetSize().x, 0.0f));
-    Rect verticalRect(verticalLinePos, Vector2(0.0f, ur.GetSize().y));
-    magnetLines.emplace_back(ur, horizontalRect, &controlGeometricData, Vector2::AXIS_X);
-    magnetLines.emplace_back(ur, verticalRect, &controlGeometricData, Vector2::AXIS_Y);
+    Rect horizontalRect(horizontalLinePos, Vector2(targetSize.x, 0.0f));
+    Rect verticalRect(verticalLinePos, Vector2(0.0f, targetSize.y));
+    Rect targetBox(Vector2(0.0f, 0.0f), targetSize);
+    magnetLines.emplace_back(targetBox, horizontalRect, &controlGeometricData, Vector2::AXIS_X);
+    magnetLines.emplace_back(targetBox, verticalRect, &controlGeometricData, Vector2::AXIS_Y);
 }
 }; //unnamed namespace
 
