@@ -85,6 +85,9 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
     landCollWorld->setDebugDrawer(landDebugDrawer);
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::ANIMATION_TRANSFORM_CHANGED);
 }
 
 SceneCollisionSystem::~SceneCollisionSystem()
@@ -390,50 +393,8 @@ void SceneCollisionSystem::Draw()
 
 void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    const int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
-    {
-        const CommandBatch *batch = static_cast<const CommandBatch *> (command);
-
-
-    }
-    else
-    {
-
-    }
-
-
-
-
-    DAVA::Entity *entity = command->GetEntity();
     switch (command->GetId())
     {
-    case CMDID_TRANSFORM:
-        UpdateCollisionObject(entity);
-        break;
-    case CMDID_ENTITY_CHANGE_PARENT:
-    {
-        EntityParentChangeCommand *cmd = (EntityParentChangeCommand *)command;
-        if (redo)
-        {
-            if (NULL != cmd->newParent)
-            {
-                UpdateCollisionObject(entity);
-            }
-        }
-        else
-        {
-            if (NULL != cmd->oldParent)
-            {
-                UpdateCollisionObject(entity);
-            }
-            else
-            {
-                RemoveCollisionObject(entity);
-            }
-        }
-    }
-    break;
     case CMDID_LANDSCAPE_SET_HEIGHTMAP:
     case CMDID_HEIGHTMAP_MODIFY:
         UpdateCollisionObject(curLandscapeEntity);
@@ -461,42 +422,45 @@ void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
     }
 }
 
-void SceneCollisionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
+void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
-    if(EventSystem::SWITCH_CHANGED == event)
+    switch (event)
     {
-        UpdateCollisionObject(entity);
+    case EventSystem::SWITCH_CHANGED:
+    case EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case EventSystem::TRANSFORM_PARENT_CHANGED:
+    case EventSystem::ANIMATION_TRANSFORM_CHANGED:
+    {
+        UpdateCollisionObject(component->GetEntity());
+        break;
+    }
+    default:
+        break;
     }
 }
 
 void SceneCollisionSystem::AddEntity(DAVA::Entity * entity)
 {
-	if(NULL != entity)
-	{
-		entitiesToRemove.erase(entity);
-		entitiesToAdd.insert(entity);
+    entitiesToRemove.erase(entity);
+    entitiesToAdd.insert(entity);
 
-		// build collision object for entity childs
-		for(int i = 0; i < entity->GetChildrenCount(); ++i)
-		{
-			AddEntity(entity->GetChild(i));
-		}
-	}
+    // build collision object for entity childs
+    for (int i = 0; i < entity->GetChildrenCount(); ++i)
+    {
+        AddEntity(entity->GetChild(i));
+    }
 }
 
 void SceneCollisionSystem::RemoveEntity(DAVA::Entity * entity)
 {
-	if(NULL != entity)
-	{
-		entitiesToAdd.erase(entity);
-		entitiesToRemove.insert(entity);
+    entitiesToAdd.erase(entity);
+    entitiesToRemove.insert(entity);
 
-		// destroy collision object for entities childs
-		for(int i = 0; i < entity->GetChildrenCount(); ++i)
-		{
-			RemoveEntity(entity->GetChild(i));
-		}
-	}
+    // destroy collision object for entities childs
+    for (int i = 0; i < entity->GetChildrenCount(); ++i)
+    {
+        RemoveEntity(entity->GetChild(i));
+    }
 }
 
 CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity)

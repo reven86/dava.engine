@@ -75,11 +75,13 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
     case EventSystem::LOCAL_TRANSFORM_CHANGED:
     case EventSystem::TRANSFORM_PARENT_CHANGED:
     case EventSystem::ANIMATION_TRANSFORM_CHANGED:
+    {
         if (curSelections.ContainsEntity(component->GetEntity()))
             {
                 invalidSelectionBoxes = true;
             }
             break;
+    }
     default:
         break;
     }
@@ -94,13 +96,13 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 
     if (!entitiesForSelection.empty())
     {
+        DAVA::List<DAVA::Entity*> tmpEntities = entitiesForSelection;
+
         Clear();
-        for (auto& entity : entitiesForSelection)
+        for (auto& entity : tmpEntities)
         {
             AddSelection(entity);
         }
-
-        entitiesForSelection.clear();
     }
 
     ForceEmitSignals();
@@ -411,7 +413,8 @@ void SceneSelectionSystem::Clear()
 {
 	if(!IsLocked())
 	{
-		while(curSelections.Size() > 0)
+        entitiesForSelection.clear();
+        while(curSelections.Size() > 0)
 		{
 			DAVA::Entity *entity = curSelections.GetEntity(0);
 
