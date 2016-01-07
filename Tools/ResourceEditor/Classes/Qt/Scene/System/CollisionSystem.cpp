@@ -269,11 +269,6 @@ void SceneCollisionSystem::UpdateCollisionObject(DAVA::Entity *entity)
 	AddEntity(entity);
 }
 
-void SceneCollisionSystem::RemoveCollisionObject(DAVA::Entity *entity)
-{
-	RemoveEntity(entity);
-}
-
 DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::Entity *entity)
 {
 	DAVA::AABBox3 aabox;

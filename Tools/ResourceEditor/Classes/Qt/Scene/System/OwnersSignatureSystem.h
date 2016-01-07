@@ -37,23 +37,12 @@
 
 class OwnersSignatureSystem: public DAVA::SceneSystem
 {
-
 public:
 
 	OwnersSignatureSystem(DAVA::Scene* scene);
-	~OwnersSignatureSystem();
-	
-	void ProcessCommand(const Command2 *command, bool redo);
-	
-private:
-	
-	bool IsCommandIdValid(int _id);
-	
-	void UpdateEntityOwner(DAVA::KeyedArchive *customProperties);
-	
-	DAVA::String GetCurrentTime();
 
-	static const DAVA::int32 validIDs[] ;
+    void AddEntity(DAVA::Entity* entity) override;
+    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
 };
 
 

@@ -250,11 +250,6 @@ void EditorParticlesSystem::RestartParticleEffects()
 
 void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-	if (!command)
-	{
-		return;
-	}
-
 	// Notify that the Particles-related value is changed.
 	SceneEditor2* activeScene = (SceneEditor2 *) GetScene();
 	switch (command->GetId())

@@ -86,7 +86,6 @@ public:
 	DAVA::Landscape* GetLandscape() const;
 
 	void UpdateCollisionObject(DAVA::Entity *entity);
-	void RemoveCollisionObject(DAVA::Entity *entity);
 
 	virtual void Process(DAVA::float32 timeElapsed);
     virtual void Input(DAVA::UIEvent *event);

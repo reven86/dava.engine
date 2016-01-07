@@ -430,17 +430,15 @@ void SceneEditor2::Draw()
 void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 {
     DVASSERT(command != nullptr);
+    Logger::Info("[%s] command is %d, action is %d", __FUNCTION__, command->GetId(), redo);
 
-	if(collisionSystem)
+    if(collisionSystem)
 		collisionSystem->ProcessCommand(command, redo);
 
 	if(structureSystem)
 		structureSystem->ProcessCommand(command, redo);
 
 	particlesSystem->ProcessCommand(command, redo);
-
-	if(ownersSignatureSystem)
-		ownersSignatureSystem->ProcessCommand(command, redo);
 
 	materialSystem->ProcessCommand(command, redo);
 

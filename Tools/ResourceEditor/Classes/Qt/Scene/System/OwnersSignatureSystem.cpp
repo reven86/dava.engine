@@ -29,60 +29,76 @@
 
 #include "OwnersSignatureSystem.h"
 #include "Classes/StringConstants.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "Scene/SceneSignals.h"
 
-const DAVA::int32 OwnersSignatureSystem::validIDs[] =
+namespace OwnersSignatureSystemInternal
 {
-	CMDID_ENTITY_ADD,
-	CMDID_ENTITY_CHANGE_PARENT,
-	CMDID_TRANSFORM
+static const DAVA::Array<DAVA::int32, 2> validIDs =
+{
+  { CMDID_ENTITY_ADD, CMDID_ENTITY_CHANGE_PARENT }
 };
 
-OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene):SceneSystem(scene)
-{}
-
-OwnersSignatureSystem::~OwnersSignatureSystem()
-{}
-
-void OwnersSignatureSystem::ProcessCommand(const Command2 *command, bool redo)
+bool IsCommandIdValid(DAVA::int32 _id)
 {
-	if(IsCommandIdValid(command->GetId()))
-	{
-		KeyedArchive* properties = GetCustomPropertiesArchieve(command->GetEntity());
-		if(NULL != properties)
-		{
-			UpdateEntityOwner(properties);
-		}
-	}
-}
-
-bool OwnersSignatureSystem::IsCommandIdValid(int _id)
-{
-    for (size_t i = 0; i < COUNT_OF(validIDs); ++i)
+    DAVA::uint32 count = static_cast<DAVA::uint32>(validIDs.size());
+    for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        if(validIDs[i] == _id)
-		{
-			return true;
-		}
-	}
-	return false;
+        if (validIDs[i] == _id)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
-DAVA::String OwnersSignatureSystem::GetCurrentTime()
+DAVA::String GetCurrentTime()
 {
-	time_t now = time(0);
+    time_t now = time(0);
     tm* utcTime = localtime(&now);
-	
-	DAVA::String timeString = Format("%04d.%02d.%02d_%02d_%02d_%02d",
-							   utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
-							   utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
-	
-	return timeString;
+
+    DAVA::String timeString = Format("%04d.%02d.%02d_%02d_%02d_%02d",
+                                     utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
+                                     utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
+
+    return timeString;
 }
 
-void OwnersSignatureSystem::UpdateEntityOwner(DAVA::KeyedArchive *customProperties)
+void UpdateOwner(DAVA::Entity* entity)
 {
-	customProperties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, SettingsManager::GetValue(Settings::General_DesinerName).AsString());
-	customProperties->SetString(ResourceEditor::SCENE_NODE_MODIFICATION_DATA_PROPERTY_NAME, GetCurrentTime());
+    KeyedArchive* properties = GetCustomPropertiesArchieve(entity);
+    if (nullptr != properties)
+    {
+        properties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, SettingsManager::GetValue(Settings::General_DesinerName).AsString());
+        properties->SetString(ResourceEditor::SCENE_NODE_MODIFICATION_DATA_PROPERTY_NAME, GetCurrentTime());
+    }
+}
+}
+OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene)
+    : SceneSystem(scene)
+{
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::ANIMATION_TRANSFORM_CHANGED);
+}
+
+void OwnersSignatureSystem::AddEntity(DAVA::Entity* entity)
+{
+    OwnersSignatureSystemInternal::UpdateOwner(entity);
+}
+
+void OwnersSignatureSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
+{
+    switch (event)
+    {
+    case EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case EventSystem::TRANSFORM_PARENT_CHANGED:
+    case EventSystem::ANIMATION_TRANSFORM_CHANGED:
+    {
+        OwnersSignatureSystemInternal::UpdateOwner(component->GetEntity());
+        break;
+    }
+    default:
+        break;
+    }
 }
