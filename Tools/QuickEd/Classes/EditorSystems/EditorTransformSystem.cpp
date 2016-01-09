@@ -618,7 +618,10 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
         if (directions[axis] != NO_DIRECTION)
         {
             Vector<MagnetLine> magnetLines = CreateMagnetPairs(box, &parentGeometricData, neighbours, axis);
-
+            if(magnetLines.empty())
+            {
+                continue;
+            }
             std::function<bool(const MagnetLine&)> removePredicate = [directions, transformPosition](const MagnetLine& line) -> bool {
                 bool needRemove = true;
                 if (directions[line.axis] == POSITIVE_DIRECTION)
@@ -633,41 +636,42 @@ DAVA::Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vec
             };
             magnetLines.erase(std::remove_if(magnetLines.begin(), magnetLines.end(), removePredicate));
 
-            if (!magnetLines.empty())
+            if(magnetLines.empty())
             {
-                std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
-                    float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
-                    float32 shareRight = right.controlSharePos - transformPoint[right.axis];
-                    float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
-                    float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
-                    return fabs(distanceLeft) < fabs(distanceRight);
-                };
-
-                MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
-                float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
-                float32 rangeForPosition = magnetRange[axis] * share;
-                float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
-                float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
-
-                Vector2 oldDeltaSize(deltaSize);
-
-                if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
-                {
-                    float32 interval = nearestLine.interval * directions[axis] * -1;
-                    DVASSERT(share > 0.0f);
-                    interval /= share;
-                    float32 scaledDistance = interval / controlGD.scale[axis];
-                    deltaSize[axis] += scaledDistance;
-                    extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
-                }
-
-                for (MagnetLine& line : magnetLines)
-                {
-                    float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
-                    line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare * directions[line.axis];
-                }
-                ExtractMatchedLines(magnets, magnetLines, control, axis);
+                continue;
             }
+            std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
+                float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
+                float32 shareRight = right.controlSharePos - transformPoint[right.axis];
+                float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
+                float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
+                return fabs(distanceLeft) < fabs(distanceRight);
+            };
+
+            MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
+            float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
+            float32 rangeForPosition = magnetRange[axis] * share;
+            float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
+            float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
+
+            Vector2 oldDeltaSize(deltaSize);
+
+            if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
+            {
+                float32 interval = nearestLine.interval * directions[axis] * -1;
+                DVASSERT(share > 0.0f);
+                interval /= share;
+                float32 scaledDistance = interval / controlGD.scale[axis];
+                deltaSize[axis] += scaledDistance;
+                extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
+            }
+
+            for (MagnetLine& line : magnetLines)
+            {
+                float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
+                line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare * directions[line.axis];
+            }
+            ExtractMatchedLines(magnets, magnetLines, control, axis);
         }
     }
     return deltaSize;
