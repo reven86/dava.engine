@@ -70,9 +70,9 @@ public:
     QUndoStack* GetUndoStack() const;
     std::weak_ptr<PackageNode> GetPackage() const;
     std::weak_ptr<QtModelPackageCommandExecutor> GetCommandExecutor() const;
-    WidgetContext* GetContext(QObject* requester) const;
+    WidgetContext* GetContext(void* requester) const;
 
-    void SetContext(QObject* requester, WidgetContext* widgetContext);
+    void SetContext(void* requester, WidgetContext* widgetContext);
     void RefreshLayout();
 
 signals:
@@ -81,7 +81,7 @@ public slots:
     void RefreshAllControlProperties();
 
 private:
-    DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
+    DAVA::UnorderedMap<void*, WidgetContext*> contexts;
 
     std::shared_ptr<PackageNode> package;
     std::shared_ptr<QtModelPackageCommandExecutor> commandExecutor;

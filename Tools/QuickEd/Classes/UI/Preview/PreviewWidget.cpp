@@ -61,6 +61,10 @@ QString ScaleStringFromReal(qreal scale)
 struct PreviewContext : WidgetContext
 {
     QPoint canvasPosition;
+};
+    
+struct SystemsContext : WidgetContext
+{
     SelectedNodes selection;
 };
 }
@@ -220,34 +224,61 @@ void PreviewWidget::CreateActions()
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
-    DVASSERT(nullptr != systemManager);
+    DVASSERT(nullptr != systemsManager);
     SaveContext();
     document = arg;
-    if (!selectionContainer.selectedNodes.empty())
-    {
-        SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
-        systemManager->SelectionChanged.Emit(SelectedNodes(), deselected);
-        DVASSERT(selectionContainer.selectedNodes.empty());
-    }
     if (!document.isNull())
     {
         std::weak_ptr<PackageNode> packagePtr = document->GetPackage();
-        systemManager->PackageNodeChanged.Emit(packagePtr);
+        systemsManager->PackageNodeChanged.Emit(packagePtr);
         LoadContext();
-        if (!selectionContainer.selectedNodes.empty())
-        {
-            systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
-        }
     }
     else
     {
-        systemManager->PackageNodeChanged.Emit(std::weak_ptr<PackageNode>());
+        systemsManager->PackageNodeChanged.Emit(std::weak_ptr<PackageNode>());
+    }
+}
+
+void PreviewWidget::SaveSystemsContextAndClear()
+{
+    if(!document.isNull())
+    {
+        SystemsContext *systemsContext = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
+        systemsContext->selection = selectionContainer.selectedNodes;
+    }
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        DVASSERT(!document.isNull());
+        SelectedNodes deselected = selectionContainer.selectedNodes; //this signal will remove current selectedNodes too!
+        systemsManager->SelectionChanged.Emit(SelectedNodes(), deselected);
+        DVASSERT(selectionContainer.selectedNodes.empty());
+    }
+}
+
+void PreviewWidget::LoadSystemsContext()
+{
+    if(document.isNull())
+    {
+        return;
+    }
+    SystemsContext* context = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
+    if(nullptr == context)
+    {
+        document->SetContext(systemsManager.get(), new SystemsContext());
+    }
+    else
+    {
+        selectionContainer.selectedNodes = context->selection;
+        if(!selectionContainer.selectedNodes.empty())
+        {
+            systemsManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+        }
     }
 }
 
 void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    systemManager->SelectionChanged.Emit(selected, deselected);
+    systemsManager->SelectionChanged.Emit(selected, deselected);
 }
 
 void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2 &pos)
@@ -264,7 +295,7 @@ void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
 
 void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 {
-    systemManager->SetEmulationMode(emulationMode);
+    systemsManager->SetEmulationMode(emulationMode);
 }
 
 void PreviewWidget::ApplyPosChanges()
@@ -294,18 +325,18 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
 
 void PreviewWidget::OnGLInitialized()
 {
-    DVASSERT(nullptr == systemManager);
-    systemManager.reset(new EditorSystemsManager());
-    systemManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
-    scrollAreaController->SetNestedControl(systemManager->GetRootControl());
-    scrollAreaController->SetMovableControl(systemManager->GetScalableControl());
-    systemManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
-    systemManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
-    systemManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
-    systemManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
-    connect(focusNextChildAction, &QAction::triggered, [this]() { systemManager->FocusNextChild.Emit(); });
-    connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemManager->FocusPreviousChild.Emit(); });
-    connect(selectAllAction, &QAction::triggered, [this]() { systemManager->SelectAllControls.Emit(); });
+    DVASSERT(nullptr == systemsManager);
+    systemsManager.reset(new EditorSystemsManager());
+    systemsManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
+    scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
+    scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
+    systemsManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
+    systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
+    systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
+    systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
+    connect(focusNextChildAction, &QAction::triggered, [this]() { systemsManager->FocusNextChild.Emit(); });
+    connect(focusPreviousChildAction, &QAction::triggered, [this]() { systemsManager->FocusPreviousChild.Emit(); });
+    connect(selectAllAction, &QAction::triggered, [this]() { systemsManager->SelectAllControls.Emit(); });
 }
 
 void PreviewWidget::OnScaleChanged(qreal scale)
@@ -313,9 +344,9 @@ void PreviewWidget::OnScaleChanged(qreal scale)
     scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
     rulerController->SetScale(scale);
     DAVA::float32 realScale = static_cast<DAVA::float32>(scale);
-    if (systemManager)
+    if (systemsManager)
     {
-        systemManager->GetScalableControl()->SetScale(Vector2(realScale, realScale));
+        systemsManager->GetScalableControl()->SetScale(Vector2(realScale, realScale));
     }
 }
 
@@ -388,7 +419,6 @@ void PreviewWidget::LoadContext()
     else
     {
         scrollAreaController->SetPosition(context->canvasPosition);
-        selectionContainer.selectedNodes = context->selection;
     }
 }
 
@@ -400,7 +430,6 @@ void PreviewWidget::SaveContext()
     }
     PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
     context->canvasPosition = scrollAreaController->GetPosition();
-    context->selection = selectionContainer.selectedNodes;
 }
 
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)

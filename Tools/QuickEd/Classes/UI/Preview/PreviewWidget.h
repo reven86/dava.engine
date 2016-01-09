@@ -73,6 +73,8 @@ signals:
 
 public slots:
     void OnDocumentChanged(Document* document);
+    void SaveSystemsContextAndClear();
+    void LoadSystemsContext();
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnRootControlPositionChanged(const DAVA::Vector2& pos);
     void OnNestedControlPositionChanged(const QPoint& pos);
@@ -125,7 +127,7 @@ private:
     QAction* focusNextChildAction = nullptr;
     QAction* focusPreviousChildAction = nullptr;
 
-    std::unique_ptr<EditorSystemsManager> systemManager;
+    std::unique_ptr<EditorSystemsManager> systemsManager;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget()

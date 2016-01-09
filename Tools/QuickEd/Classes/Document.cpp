@@ -82,7 +82,7 @@ std::weak_ptr<QtModelPackageCommandExecutor> Document::GetCommandExecutor() cons
     return commandExecutor;
 }
 
-WidgetContext* Document::GetContext(QObject* requester) const
+WidgetContext* Document::GetContext(void* requester) const
 {
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
@@ -92,7 +92,7 @@ WidgetContext* Document::GetContext(QObject* requester) const
     return nullptr;
 }
 
-void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
+void Document::SetContext(void* requester, WidgetContext* widgetContext)
 {
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
@@ -101,7 +101,7 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
         delete iter->second;
         contexts.erase(iter);
     }
-    contexts.insert(std::pair<QObject*, WidgetContext*>(requester, widgetContext));
+    contexts.emplace(requester, widgetContext);
 }
 
 void Document::RefreshLayout()
