@@ -76,15 +76,11 @@ public:
     void RefreshLayout();
 
 signals:
-    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void CanvasSizeChanged();
-    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
     void RefreshAllControlProperties();
 
 private:
-    void OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash);
     DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
 
     std::shared_ptr<PackageNode> package;

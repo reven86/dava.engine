@@ -51,7 +51,6 @@ public:
 
 signals:
     void ActiveDocumentChanged(Document*);
-    void RootControlPositionChanged(DAVA::Vector2 position);
 
 public slots:
     void SetActiveDocument(Document* document);

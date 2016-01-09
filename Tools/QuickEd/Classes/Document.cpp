@@ -113,8 +113,3 @@ void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
 }
-
-void Document::OnPropertiesChanged(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash)
-{
-    commandExecutor->ChangeProperty(properties, hash);
-}

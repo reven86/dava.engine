@@ -89,7 +89,6 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     else
     {
-        connect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::RootControlPositionChanged);
         undoGroup->setActiveStack(active->GetUndoStack());
     }
     emit ActiveDocumentChanged(document);
