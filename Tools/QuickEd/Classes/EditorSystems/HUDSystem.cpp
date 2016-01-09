@@ -109,8 +109,7 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
             HUDAreaInfo::CENTER_RIGHT_AREA,
             HUDAreaInfo::BOTTOM_LEFT_AREA,
             HUDAreaInfo::BOTTOM_CENTER_AREA,
-            HUDAreaInfo::BOTTOM_RIGHT_AREA,
-            HUDAreaInfo::FRAME_AREA
+            HUDAreaInfo::BOTTOM_RIGHT_AREA
         };
     }
     for (HUDAreaInfo::eArea area : areas)
