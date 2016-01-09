@@ -103,7 +103,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
     connect(previewWidget, &PreviewWidget::CopyRequested, packageWidget, &PackageWidget::OnCopy);
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
-    connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::SetSelectedNodes);
+    connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::OnSelectionChanged);
     connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);

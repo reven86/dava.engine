@@ -177,7 +177,7 @@ PackageWidget::PackageWidget(QWidget *parent)
     connect(packageModel, &PackageModel::BeforeNodesMoved, this, &PackageWidget::OnBeforeNodesMoved);
     connect(packageModel, &PackageModel::NodesMoved, this, &PackageWidget::OnNodesMoved);
     connect(treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, &PackageWidget::OnCurrentIndexChanged);
-    connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
+    connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
 
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
     CreateActions();
@@ -418,7 +418,7 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, c
     }
 }
 
-void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
+void PackageWidget::OnSelectionChangedFromView(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     if (nullptr == filteredPackageModel)
     {
@@ -777,17 +777,24 @@ void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
     }
 }
 
+void PackageWidget::OnSelectionChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
+{
+    disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
+    SetSelectedNodes(selected, deselected);
+    connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
+}
+
 void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     DVASSERT(!selected.empty() || !deselected.empty());
     selectionContainer.MergeSelection(selected, deselected);
 
     RefreshActions();
+    DVASSERT(!document.isNull());
     if (document.isNull())
     {
         return;
     }
-    disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
     for (const auto& node : deselected)
     {
         DeselectNodeImpl(node);
@@ -796,7 +803,6 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     {
         SelectNodeImpl(node);
     }
-    connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
 }
 
 std::shared_ptr<QtModelPackageCommandExecutor> PackageWidget::GetCommandExecutor() const

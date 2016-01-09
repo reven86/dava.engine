@@ -65,7 +65,7 @@ signals:
 
 public slots:
     void OnDocumentChanged(Document* context);
-    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnCopy();
     void OnPaste();
     void OnCut();
@@ -73,7 +73,7 @@ public slots:
     void OnImport();
 
 private slots:
-    void OnSelectionChanged(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
+    void OnSelectionChangedFromView(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
     void filterTextChanged(const QString&);
     void OnRename();
     void OnAddStyle();
@@ -86,6 +86,7 @@ private slots:
     void OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex& previous);
 
 private:
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CollectExpandedIndexes(PackageBaseNode* node);
     void MoveNodeUpDown(bool up);
     void MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex);
