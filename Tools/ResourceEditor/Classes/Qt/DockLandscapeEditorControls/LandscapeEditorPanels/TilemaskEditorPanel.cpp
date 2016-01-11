@@ -596,19 +596,29 @@ void TilemaskEditorPanel::OnTileColorChanged(int32 tileNumber, Color color)
 
 void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
-	if (scene != GetActiveScene() || !GetEditorEnabled() || command->GetId() != CMDID_SET_TILE_COLOR)
+    SceneEditor2* sceneEditor = GetActiveScene();
+    if (scene != sceneEditor || !GetEditorEnabled())
 	{
 		return;
 	}
 
-	SceneEditor2* sceneEditor = GetActiveScene();
-	int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
+    const int32 commandID = command->GetId();
+    bool needUpdateColors = (commandID == CMDID_SET_TILE_COLOR);
+    if (commandID == CMDID_BATCH)
+    {
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        needUpdateColors = batch->ContainsCommand(CMDID_SET_TILE_COLOR);
+    }
 
-	for (int32 i = 0; i < count; ++i)
-	{
-		Color color = sceneEditor->tilemaskEditorSystem->GetTileColor(i);
-		tileTexturePreviewWidget->UpdateColor(i, color);
-	}
+    if (needUpdateColors)
+    {
+        uint32 count = sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
+        for (uint32 i = 0; i < count; ++i)
+        {
+            Color color = sceneEditor->tilemaskEditorSystem->GetTileColor(i);
+            tileTexturePreviewWidget->UpdateColor(i, color);
+        }
+    }
 }
 
 void TilemaskEditorPanel::SetNormalDrawing()

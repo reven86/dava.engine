@@ -419,14 +419,14 @@ Texture* TilemaskEditorSystem::GetTileTexture()
     return drawSystem->GetLandscapeProxy()->GetLandscapeTexture(Landscape::TEXTURE_TILE);
 }
 
-Color TilemaskEditorSystem::GetTileColor(int32 index)
+Color TilemaskEditorSystem::GetTileColor(uint32 index)
 {
-	if (index < 0 || index >= (int32)GetTileTextureCount())
+	if (index < GetTileTextureCount())
 	{
-		return Color::Black;
-	}
+        return drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
+    }
 
-    return drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(TILECOLOR_PARAM_NAMES[index]);
+    return Color::Black;
 }
 
 void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)

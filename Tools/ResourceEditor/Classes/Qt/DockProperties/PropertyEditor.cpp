@@ -735,39 +735,92 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2 *scene, const EntityGrou
 
 void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
-	int cmdId = command->GetId();
+    static const Vector<int32> idsForUpdate = 
+    {{
+        CMDID_COMPONENT_ADD,
+        CMDID_COMPONENT_REMOVE,
+        CMDID_CONVERT_TO_SHADOW,
+        CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
+        CMDID_SOUND_ADD_EVENT,
+        CMDID_SOUND_REMOVE_EVENT,
+        CMDID_DELETE_RENDER_BATCH,
+        CMDID_CLONE_LAST_BATCH,
+        CMDID_EXPAND_PATH,
+        CMDID_COLLAPSE_PATH,
+    }};
 
-	switch (cmdId)
-	{
-	case CMDID_COMPONENT_ADD:
-	case CMDID_COMPONENT_REMOVE:
-	case CMDID_CONVERT_TO_SHADOW:
-	case CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML:
-    case CMDID_SOUND_ADD_EVENT:
-    case CMDID_SOUND_REMOVE_EVENT:
-	case CMDID_DELETE_RENDER_BATCH:
-	case CMDID_CLONE_LAST_BATCH:
-    case CMDID_EXPAND_PATH:
-    case CMDID_COLLAPSE_PATH:
+    bool resetPropertyPanel = false;
+
+	int32 commandID = command->GetId();
+    if (commandID == CMDID_BATCH)
+    {
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        const uint32 count = batch->Size();
+        for (uint32 i = 0; !resetPropertyPanel && i < count; ++i)
         {
-            bool doReset = (command->GetEntity() == NULL);
-            for ( int i = 0; !doReset && i < curNodes.size(); i++ )
+            const Command2 *cmd = batch->GetCommand(i);
+            commandID = cmd->GetId();
+            for (const auto id : idsForUpdate)
             {
-                if (command->GetEntity() == curNodes.at(i))
+                if (id == commandID)
                 {
-                    doReset = true;
+                    Entity *entity = command->GetEntity();
+                    if (entity == nullptr)
+                    {
+                        resetPropertyPanel == true;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < curNodes.size(); ++i)
+                        {
+                            if (entity == curNodes.at(i))
+                            {
+                                resetPropertyPanel = true;
+                                break;
+                            }
+                        }
+                    }
+                    break;
                 }
             }
-            if (doReset)
-            {
-				propertiesUpdater->Update();
-            }
-            break;
         }
-	default:
-		OnUpdateTimeout();
-		break;
-	}
+    }
+    else
+    {
+        for (const auto id : idsForUpdate)
+        {
+            if (id == commandID)
+            {
+                Entity *entity = command->GetEntity();
+                if (entity == nullptr)
+                {
+                    resetPropertyPanel == true;
+                }
+                else
+                {
+                    for (int i = 0; i < curNodes.size(); ++i)
+                    {
+                        if (entity == curNodes.at(i))
+                        {
+                            resetPropertyPanel = true;
+                            break;
+                        }
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+
+    if (resetPropertyPanel)
+    {
+        propertiesUpdater->Update();
+    }
+    else
+    {
+        OnUpdateTimeout();
+    }
 }
 
 void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/redo

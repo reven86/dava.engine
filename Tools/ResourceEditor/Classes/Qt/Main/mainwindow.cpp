@@ -1109,31 +1109,67 @@ void QtMainWindow::UpdateModificationActionsState()
 
 void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
 {
-    int commandId = command->GetId();
-    if(CMDID_ENABLE_WAYEDIT == commandId)
+    const int32 commandId = command->GetId();
+    if (commandId == CMDID_BATCH)
     {
-		SetActionCheckedSilently(ui->actionWayEditor, redo);
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        if (batch->ContainsCommand(CMDID_ENABLE_WAYEDIT))
+        {
+            DVASSERT(batch->ContainsCommand(CMDID_DISABLE_WAYEDIT) == false);
+            SetActionCheckedSilently(ui->actionWayEditor, redo);
+        }
+        else if (batch->ContainsCommand(CMDID_DISABLE_WAYEDIT))
+        {
+            DVASSERT(batch->ContainsCommand(CMDID_ENABLE_WAYEDIT) == false);
+            SetActionCheckedSilently(ui->actionWayEditor, !redo);
+        }
+    }
+    else if(CMDID_ENABLE_WAYEDIT == commandId)
+    {
+        SetActionCheckedSilently(ui->actionWayEditor, redo);
     }
     else if(CMDID_DISABLE_WAYEDIT == commandId)
     {
-		SetActionCheckedSilently(ui->actionWayEditor, !redo);
+        SetActionCheckedSilently(ui->actionWayEditor, !redo);
     }
 }
 
 
 void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
-	if(scene == GetCurrentScene())
-	{
-		LoadUndoRedoState(scene);
+    if(scene == GetCurrentScene())
+    {
+        LoadUndoRedoState(scene);
         UpdateModificationActionsState();
-        
-        Entity *entity = command->GetEntity();
-        if(entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
+
+        auto UpdateCameraState = [this, scene](const Entity *entity)
         {
-			SetActionCheckedSilently(ui->actionSnapCameraToLandscape, scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+            if (entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
+            {
+                SetActionCheckedSilently(ui->actionSnapCameraToLandscape, scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+                return true;
+            }
+            return false;
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                const Command2 *cmd = batch->GetCommand(i);
+                if (UpdateCameraState(cmd->GetEntity()))
+                {
+                    break;
+                }
+            }
         }
-        
+        else
+        {
+            UpdateCameraState(command->GetEntity());
+        }
+
         UpdateWayEditor(command, redo);
 	}
 }

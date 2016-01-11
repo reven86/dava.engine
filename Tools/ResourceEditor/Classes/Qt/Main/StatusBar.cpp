@@ -113,17 +113,16 @@ void StatusBar::SceneSelectionChanged( SceneEditor2 *scene, const EntityGroup *s
 
 void StatusBar::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
-    int id = command->GetId();
-    if(id == CMDID_BATCH)
+    const int32 commandID = command->GetId();
+    if(commandID == CMDID_BATCH)
     {
-		CommandBatch *batch = (CommandBatch *)command;
-		Command2 *firstCommand = batch->GetCommand(0);
-		if(firstCommand && (firstCommand->GetId() == CMDID_TRANSFORM))
-		{
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        if (batch->ContainsCommand(CMDID_TRANSFORM))
+        {
             UpdateSelectionBoxSize(scene);
-		}
+        }
     }
-    else if(id == CMDID_TRANSFORM)
+    else if (commandID == CMDID_TRANSFORM)
     {
         UpdateSelectionBoxSize(scene);
     }

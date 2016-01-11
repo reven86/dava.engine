@@ -60,9 +60,65 @@ bool NeedUpdateLodInfo(const Command2* command)
     if (commandID == CMDID_BATCH)
     {
         const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        Command2* firstCommand = batch->GetCommand(0);
+        if (batch->ContainsCommand(CMDID_COMPONENT_ADD))
+        {
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                const Command2 *cmd = batch->GetCommand(i);
+                if (cmd->GetId() == CMDID_COMPONENT_ADD)
+                {
+                    const AddComponentCommand* addCommand = static_cast<const AddComponentCommand*>(cmd);
+                    const Component* component = addCommand->GetComponent();
+                    const auto componentType = component->GetType();
+                    if ((componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        if (batch->ContainsCommand(CMDID_COMPONENT_REMOVE))
+        {
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                const Command2 *cmd = batch->GetCommand(i);
+                if (cmd->GetId() == CMDID_COMPONENT_REMOVE)
+                {
+                    const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(cmd);
+                    const Component* component = removeCommand->GetComponent();
+                    const auto componentType = component->GetType();
+                    if ((componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        if (batch->ContainsCommand(CMDID_ENTITY_ADD) || batch->ContainsCommand(CMDID_ENTITY_REMOVE) || batch->ContainsCommand(CMDID_ENTITY_CHANGE_PARENT))
+        {
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                const Command2 *cmd = batch->GetCommand(i);
+                const Entity* entity = cmd->GetEntity();
+                if (entity != nullptr)
+                {
+                    LodComponent* lc = GetLodComponent(entity);
+                    ParticleEffectComponent* effect = GetEffectComponent(entity);
+                    if ((lc != nullptr) || (effect != nullptr))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
 
-        return NeedUpdateLodInfo(firstCommand);
+        return (batch->ContainsCommand(CMDID_LOD_DISTANCE_CHANGE)
+            || batch->ContainsCommand(CMDID_LOD_COPY_LAST_LOD)
+            || batch->ContainsCommand(CMDID_LOD_DELETE)
+            || batch->ContainsCommand(CMDID_LOD_CREATE_PLANE));
     }
     else
     {

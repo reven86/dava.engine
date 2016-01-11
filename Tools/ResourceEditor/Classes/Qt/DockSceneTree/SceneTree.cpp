@@ -266,36 +266,52 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 
 void SceneTree::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {	
-	auto commandID = command->GetId();
+    static const Vector<int32> idsForUpdate = 
+    {{
+            CMDID_COMPONENT_ADD,
+            CMDID_COMPONENT_REMOVE,
+            CMDID_INSP_MEMBER_MODIFY,
+            CMDID_INSP_DYNAMIC_MODIFY,
+            CMDID_ENTITY_LOCK,
+            CMDID_PARTICLE_EMITTER_ADD,
+            CMDID_PARTICLE_EMITTER_MOVE,
+            CMDID_PARTICLE_EMITTER_REMOVE,
+            CMDID_PARTICLE_LAYER_REMOVE,
+            CMDID_PARTICLE_LAYER_MOVE,
+            CMDID_PARTICLE_FORCE_REMOVE,
+            CMDID_PARTICLE_FORCE_MOVE,
+            CMDID_META_OBJ_MODIFY,
+            CMDID_PARTICLE_EMITTER_LAYER_ADD,
+            CMDID_PARTICLE_EMITTER_LAYER_REMOVE,
+            CMDID_PARTICLE_EMITTER_LAYER_CLONE,
+            CMDID_PARTICLE_EMITTER_FORCE_ADD,
+            CMDID_PARTICLE_EMITTER_FORCE_REMOVE
+    }};
 
-	switch (commandID)
-	{
-	case CMDID_COMPONENT_ADD:
-	case CMDID_COMPONENT_REMOVE:
-	case CMDID_INSP_MEMBER_MODIFY:
-	case CMDID_INSP_DYNAMIC_MODIFY:
-	case CMDID_ENTITY_LOCK:
-	case CMDID_PARTICLE_EMITTER_ADD:
-	case CMDID_PARTICLE_EMITTER_MOVE:
-	case CMDID_PARTICLE_EMITTER_REMOVE:
-	case CMDID_PARTICLE_LAYER_REMOVE:
-	case CMDID_PARTICLE_LAYER_MOVE:
-	case CMDID_PARTICLE_FORCE_REMOVE:
-	case CMDID_PARTICLE_FORCE_MOVE:
-	case CMDID_META_OBJ_MODIFY:
-	case CMDID_PARTICLE_EMITTER_LAYER_ADD:
-	case CMDID_PARTICLE_EMITTER_LAYER_REMOVE:
-	case CMDID_PARTICLE_EMITTER_LAYER_CLONE:
-	case CMDID_PARTICLE_EMITTER_FORCE_ADD:
-	case CMDID_PARTICLE_EMITTER_FORCE_REMOVE:
-	{
-		treeUpdater->Update();
-	}
-	break;
-
-	default:
-		break;
-	}
+	const int32 commandID = command->GetId();
+    if (commandID == CMDID_BATCH)
+    {
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        for (const auto id : idsForUpdate)
+        {
+            if (batch->ContainsCommand(id))
+            {
+                treeUpdater->Update();
+                break;
+            }
+        }
+    }
+    else
+    {
+        for (const auto id : idsForUpdate)
+        {
+            if (id == commandID)
+            {
+                treeUpdater->Update();
+                break;
+            }
+        }
+    }
 }
 
 void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
