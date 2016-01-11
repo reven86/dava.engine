@@ -176,12 +176,17 @@ void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField(QToolButton * button)
 	if(archive != nullptr)
 	{
 		KeyedArchiveItemWidget *w = new KeyedArchiveItemWidget(archive, lastAddedType, GetOWViewport());
-        connections.AddConnection(w, &KeyedArchiveItemWidget::ValueReady, [this](const DAVA::String& key, const DAVA::VariantType& value)
-        {
+        connections.AddConnection(w, &KeyedArchiveItemWidget::ValueReady, [this](const DAVA::String& key, const DAVA::VariantType& value) {
+            ForeachMergedItem([&key, &value](QtPropertyData* item) {
+                DVASSERT(dynamic_cast<QtPropertyDataDavaKeyedArcive*>(item) != nullptr);
+                QtPropertyDataDavaKeyedArcive* arciveItem = static_cast<QtPropertyDataDavaKeyedArcive*>(item);
+                arciveItem->NewKeyedArchiveFieldReady(key, value);
+                return true;
+            });
             NewKeyedArchiveFieldReady(key, value);
         });
 
-		w->show();
+        w->show();
 
         QRect bRect = button->geometry();
         QPoint bPos = button->mapToGlobal(button->mapFromParent(bRect.topLeft()));
@@ -208,19 +213,39 @@ void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton * button)
 			{
                 if (button == childData->GetButton(j))
 				{
-					if(NULL != lastCommand)
-					{
-						delete lastCommand;
-					}
-
-					lastCommand = new KeyeadArchiveRemValueCommand(archive, childData->GetName().c_str());
-					ChildRemove(childData);
-					EmitDataChanged(QtPropertyData::VALUE_EDITED);
-					break;
-				}
+                    DAVA::FastName key = childData->GetName();
+                    ForeachMergedItem([&key](QtPropertyData* item) {
+                        DVASSERT(dynamic_cast<QtPropertyDataDavaKeyedArcive*>(item) != nullptr);
+                        QtPropertyDataDavaKeyedArcive* arciveItem = static_cast<QtPropertyDataDavaKeyedArcive*>(item);
+                        arciveItem->RemKeyedArchiveField(key);
+                        return true;
+                    });
+                    RemKeyedArchiveField(key);
+                    break;
+                }
 			}
 		}
 	}
+}
+
+void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(const DAVA::FastName& key)
+{
+    if (archive != nullptr)
+    {
+        if (lastCommand)
+        {
+            delete lastCommand;
+        }
+
+        QtPropertyData* child = ChildGet(key);
+
+        if (child)
+        {
+            lastCommand = new KeyeadArchiveRemValueCommand(archive, key.c_str());
+            ChildRemove(child);
+            EmitDataChanged(QtPropertyData::VALUE_EDITED);
+        }
+    }
 }
 
 void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String &key, const DAVA::VariantType &value)

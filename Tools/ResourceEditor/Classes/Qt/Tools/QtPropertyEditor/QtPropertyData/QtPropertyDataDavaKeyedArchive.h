@@ -70,6 +70,7 @@ private:
     void AddKeyedArchiveField(QToolButton * button);
     void RemKeyedArchiveField(QToolButton * button);
 	void NewKeyedArchiveFieldReady(const DAVA::String &key, const DAVA::VariantType &value);
+    void RemKeyedArchiveField(const DAVA::FastName& key);
 };
 
 class KeyedArchiveItemWidget : public QWidget
