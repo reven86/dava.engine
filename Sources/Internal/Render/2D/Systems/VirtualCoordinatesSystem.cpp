@@ -56,12 +56,12 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
     // calls to this method so here is simple shield
     if (physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0)
     {
-        Logger::Error("physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0");
+        Logger::Error("[VirtualCoordinatesSystem::ScreenSizeChanged] physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0");
         return;
     }
     if (virtualScreenSize.dx == 0 || virtualScreenSize.dy == 0)
     {
-        Logger::Error("virtualScreenSize.dx == 0 || virtualScreenSize.dy == 0");
+        Logger::Error("[VirtualCoordinatesSystem::ScreenSizeChanged] physicalScreenSize.dx == 0 || physicalScreenSize.dy == 0");
         return;
     }
     wasScreenResized = false;

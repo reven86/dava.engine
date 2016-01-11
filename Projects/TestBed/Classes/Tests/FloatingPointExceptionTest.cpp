@@ -36,6 +36,9 @@ FloatingPointExceptionTest::FloatingPointExceptionTest ()
 {
 }
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4723)
+#endif
 void DoFloatingPointException(DAVA::BaseObject*, void*, void*)
 {
     using namespace DAVA;
@@ -93,14 +96,13 @@ void FloatingPointExceptionTest::LoadResources()
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
-    UIButton* resetButton = new UIButton(Rect(420, 30, 200, 30));
+    ScopedPtr<UIButton> resetButton(new UIButton(Rect(420, 30, 200, 30)));
     resetButton->SetDebugDraw(true);
     resetButton->SetStateFont(0xFF, font);
     resetButton->SetStateFontColor(0xFF, Color::White);
     resetButton->SetStateText(0xFF, L"Generate Floating point exception");
     resetButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(&DoFloatingPointException));
-    AddControl(resetButton);
-
+    AddControl(resetButton.get());
 }
 
 void FloatingPointExceptionTest::UnloadResources()

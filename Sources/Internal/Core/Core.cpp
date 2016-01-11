@@ -215,7 +215,6 @@ void DisableFloatingPointExceptions()
 
 void Core::CreateSingletons()
 {
-    // check types size
     new Logger();
     
 #ifdef __DAVAENGINE_DEBUG__
