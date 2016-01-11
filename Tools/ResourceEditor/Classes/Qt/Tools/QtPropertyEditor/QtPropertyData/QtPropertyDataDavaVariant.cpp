@@ -152,8 +152,8 @@ void QtPropertyDataDavaVariant::AddAllowedValue(const DAVA::VariantType& realVal
 {
 	AllowedValue av;
 
-	if(allowedButton != nullptr)
-	{
+    if (allowedButton == nullptr)
+    {
 		allowedButton = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
 		allowedButton->setArrowType(Qt::DownArrow);
 		allowedButton->setAutoRaise(true);
