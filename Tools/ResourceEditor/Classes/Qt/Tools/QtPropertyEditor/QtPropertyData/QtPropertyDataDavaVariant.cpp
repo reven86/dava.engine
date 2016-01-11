@@ -1348,7 +1348,6 @@ QtPropertyDataDavaVariantSubValue::QtPropertyDataDavaVariantSubValue(const DAVA:
     , parentVariant(parent)
     , trackParent(true)
 {
-    valueDependsOnChildren = true;
 }
 
 void QtPropertyDataDavaVariantSubValue::SetValueInternal(QVariant const& value)

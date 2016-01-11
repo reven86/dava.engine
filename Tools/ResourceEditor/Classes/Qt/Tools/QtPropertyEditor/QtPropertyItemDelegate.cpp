@@ -365,8 +365,8 @@ void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data)
         int buttonCount = data->GetButtonsCount();
         visibleButtons.reserve(buttonCount);
 
-		for(int i = 0; i < data->GetButtonsCount(); ++i)
-		{
+        for (int i = 0; i < buttonCount; ++i)
+        {
             QPointer<QtPropertyToolButton> button = data->GetButton(i);
             visibleButtons.push_back(button);
             button->show();
@@ -376,8 +376,9 @@ void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data)
 
 void QtPropertyItemDelegate::hideButtons()
 {
-    for (QPointer<QtPropertyToolButton> & button : visibleButtons)
+    for (size_t i = 0; i < visibleButtons.size(); ++i)
     {
+        QPointer<QtPropertyToolButton>& button = visibleButtons[i];
         if (button != nullptr)
             button->hide();
     }

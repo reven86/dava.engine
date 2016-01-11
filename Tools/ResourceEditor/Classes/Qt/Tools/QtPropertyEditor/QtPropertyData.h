@@ -205,7 +205,6 @@ protected:
 
     DAVA::FastName name;
     Qt::ItemFlags curFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
-    bool valueDependsOnChildren = false;
 
 	QMap<int, QVariant> style;
 	bool updatingValue = false;

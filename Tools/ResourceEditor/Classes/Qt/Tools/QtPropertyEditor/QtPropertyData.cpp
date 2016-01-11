@@ -201,13 +201,12 @@ QVariant QtPropertyData::GetValue() const
     bool hasValue = curValue.isValid() || !curValue.isNull();
     
     if (hasValue)
-	{
-		self->UpdateValue();
-	}
+    {
+        self->UpdateValue();
+    }
 
-    if (!hasValue || valueDependsOnChildren)
-        self->BuildCurrentValue();
-	return curValue;
+    self->BuildCurrentValue();
+    return curValue;
 }
 
 bool QtPropertyData::IsMergedDataEqual() const
