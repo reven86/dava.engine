@@ -127,9 +127,9 @@ void MultilineTest::LoadResources()
     AddControl(textField2);
     AddControl(textFieldMulti);
 
-    const uint32 Y_OFFSET = 500;
-    const uint32 CONTROL_LENGHT = 400;
-    const uint32 CONTROL_HEIGTH = 70;
+    const float32 Y_OFFSET = 500;
+    const float32 CONTROL_LENGHT = 400;
+    const float32 CONTROL_HEIGTH = 70;
 
     BaseScreen::LoadResources();
 

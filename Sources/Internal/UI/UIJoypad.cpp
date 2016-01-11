@@ -269,10 +269,10 @@ void UIJoypad::Input(UIEvent *currentInput)
 {
     if ((TOUCH_INVALID_ID == mainTouch) && currentInput->phase == UIEvent::Phase::BEGAN)
     {
-        mainTouch = currentInput->tid;
+        mainTouch = currentInput->touchId;
     }
 
-    if (mainTouch != currentInput->tid)
+    if (mainTouch != currentInput->touchId)
     {
         return;
     }
@@ -313,8 +313,8 @@ void UIJoypad::Input(UIEvent *currentInput)
 
 void UIJoypad::InputCancelled(UIEvent *currentInput)
 {
-	if(currentInput->tid == mainTouch)
-	{
+    if (currentInput->touchId == mainTouch)
+    {
 		mainTouch = TOUCH_INVALID_ID;
 
 		currentPos.x = 0;
