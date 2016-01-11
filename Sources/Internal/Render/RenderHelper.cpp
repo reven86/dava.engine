@@ -146,7 +146,10 @@ RenderHelper::RenderHelper()
     bool RenderHelper::PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr)
     {
         if (!material->PreBuildMaterial(PASS_FORWARD))
+        {
             return false;
+        }
+
         material->BindParams(packet);
         packet.vertexStreamCount = 1;
         packet.vertexLayoutUID = coloredVertexLayoutUID;
@@ -160,6 +163,7 @@ RenderHelper::RenderHelper()
             packet.vertexCount = vb.allocatedVertices;
             packet.baseVertex = vb.baseVertex;
         }
+
         if (buffersCount.second)
         {
             DynamicBufferAllocator::AllocResultIB ib = DynamicBufferAllocator::AllocateIndexBuffer(buffersCount.second);
@@ -172,41 +176,68 @@ RenderHelper::RenderHelper()
         return true;
     }
 
+    RenderHelper::RenderStruct RenderHelper::AllocateRenderStruct(rhi::HPacketList packetList)
+    {
+        RenderHelper::RenderStruct result;
+        result.packetList = packetList;
+
+        for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
+        {
+            result.valid &= PreparePacket(result.packet[i], materials[i], buffersElemCount[i], &result.vBufferPtr[i], &result.iBufferPtr[i]);
+        }
+
+        result.packet[DRAW_WIRE_DEPTH].primitiveType = rhi::PRIMITIVE_LINELIST;
+        result.packet[DRAW_WIRE_NO_DEPTH].primitiveType = rhi::PRIMITIVE_LINELIST;
+        result.packet[DRAW_SOLID_DEPTH].primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+        result.packet[DRAW_SOLID_NO_DEPTH].primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+
+        return result;
+    }
+
+    void RenderHelper::CommitRenderStruct(const RenderHelper::RenderStruct& rs)
+    {
+        for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
+        {
+            if (rs.packet[i].primitiveCount)
+                rhi::AddPacket(rs.packetList, rs.packet[i]);
+        }
+    }
+
     void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatrix, const Matrix4* projectionMatrix)
     {
         if (commandQueue.empty())
+        {
             return;
-
-        rhi::Packet packet[DRAW_TYPE_COUNT];
-        ColoredVertex* vBufferPtr[DRAW_TYPE_COUNT] = {};
-        uint16* iBufferPtr[DRAW_TYPE_COUNT] = {};
-        uint32 vBufferOffset[DRAW_TYPE_COUNT] = {};
+        }
 
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, viewMatrix, (pointer_size)viewMatrix);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, projectionMatrix, (pointer_size)projectionMatrix);
 
-        bool valid = true;
-        for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-            valid &= PreparePacket(packet[i], materials[i], buffersElemCount[i], &vBufferPtr[i], &iBufferPtr[i]);
-
-        if (!valid)
+        RenderStruct currentRenderStruct = AllocateRenderStruct(packetList);
+        if (!currentRenderStruct.valid)
+        {
             return;
-
-        packet[DRAW_WIRE_DEPTH].primitiveType = packet[DRAW_WIRE_NO_DEPTH].primitiveType = rhi::PRIMITIVE_LINELIST;
-        packet[DRAW_SOLID_DEPTH].primitiveType = packet[DRAW_SOLID_NO_DEPTH].primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+        }
 
         for (const DrawCommand& command : commandQueue)
         {
-            ColoredVertex* const commandVBufferPtr = vBufferPtr[command.drawType];
-            uint16* const commandIBufferPtr = iBufferPtr[command.drawType];
-            const uint32 commandVBufferOffset = vBufferOffset[command.drawType];
+            uint32 vertexCount = 0;
+            uint32 indexCount = 0;
+            GetRequestedVertexCount(command, vertexCount, indexCount);
 
-            const bool isWireDraw = (command.drawType & FLAG_DRAW_SOLID) == 0;
+            if (currentRenderStruct.vBufferOffset[command.drawType] + indexCount >= std::numeric_limits<uint16>::max())
+            {
+                CommitRenderStruct(currentRenderStruct);
+                currentRenderStruct = AllocateRenderStruct(packetList);
+            }
+
+            ColoredVertex* commandVBufferPtr = currentRenderStruct.vBufferPtr[command.drawType];
+            uint16* commandIBufferPtr = currentRenderStruct.iBufferPtr[command.drawType];
+            uint32 commandVBufferOffset = currentRenderStruct.vBufferOffset[command.drawType];
+            bool isWireDraw = (command.drawType & FLAG_DRAW_SOLID) == 0;
 
             uint32 nativePrimitiveColor = rhi::NativeColorRGBA(command.params[0], command.params[1], command.params[2], command.params[3]);
-            uint32 vertexCount = 0, indexCount = 0;
-            GetRequestedVertexCount(command, vertexCount, indexCount);
 
             switch (command.id)
             {
@@ -214,10 +245,10 @@ RenderHelper::RenderHelper()
             {
                 commandVBufferPtr[0].position = Vector3(command.params[4], command.params[5], command.params[6]);
                 commandVBufferPtr[0].color = nativePrimitiveColor;
-
                 commandVBufferPtr[1].position = Vector3(command.params[7], command.params[8], command.params[9]);
                 commandVBufferPtr[1].color = nativePrimitiveColor;
 
+                DVASSERT(commandVBufferOffset + 1 <= std::numeric_limits<uint16>::max());
                 commandIBufferPtr[0] = commandVBufferOffset;
                 commandIBufferPtr[1] = commandVBufferOffset + 1;
             }
@@ -242,7 +273,7 @@ RenderHelper::RenderHelper()
             {
                 const Vector3 basePoint(command.params.data() + 4), xAxis(command.params.data() + 7), yAxis(command.params.data() + 10), zAxis(command.params.data() + 13);
                 FillBoxVBuffer(commandVBufferPtr, basePoint, xAxis, yAxis, zAxis, nativePrimitiveColor);
-                FillIndeciesFromArray(commandIBufferPtr, vBufferOffset[command.drawType], isWireDraw ? gWireBoxIndexes.data() : gSolidBoxIndexes.data(), indexCount);
+                FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, isWireDraw ? gWireBoxIndexes.data() : gSolidBoxIndexes.data(), indexCount);
             }
             break;
 
@@ -250,7 +281,7 @@ RenderHelper::RenderHelper()
             {
                 const Vector3 basePoint(command.params.data() + 4), xAxis(command.params.data() + 7), yAxis(command.params.data() + 10), zAxis(command.params.data() + 13);
                 FillBoxCornersVBuffer(commandVBufferPtr, basePoint, xAxis, yAxis, zAxis, nativePrimitiveColor);
-                FillIndeciesFromArray(commandIBufferPtr, vBufferOffset[command.drawType], isWireDraw ? gWireBoxCornersIndexes.data() : gSolidBoxCornersIndexes.data(), indexCount);
+                FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, isWireDraw ? gWireBoxCornersIndexes.data() : gSolidBoxCornersIndexes.data(), indexCount);
             }
             break;
 
@@ -279,7 +310,7 @@ RenderHelper::RenderHelper()
                     commandVBufferPtr[i].position = gIcosaVertexes[i] * icosaSize + icosaPosition;
                     commandVBufferPtr[i].color = nativePrimitiveColor;
                 }
-                FillIndeciesFromArray(commandIBufferPtr, vBufferOffset[command.drawType], isWireDraw ? gWireIcosaIndexes.data() : gSolidIcosaIndexes.data(), indexCount);
+                FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, isWireDraw ? gWireIcosaIndexes.data() : gSolidIcosaIndexes.data(), indexCount);
             }
             break;
 
@@ -288,7 +319,7 @@ RenderHelper::RenderHelper()
                 const Vector3 from(command.params.data() + 4);
                 const Vector3 to(command.params.data() + 7);
                 FillArrowVBuffer(commandVBufferPtr, from, to, nativePrimitiveColor);
-                FillIndeciesFromArray(commandIBufferPtr, vBufferOffset[command.drawType], isWireDraw ? gWireArrowIndexes.data() : gSolidArrowIndexes.data(), indexCount);
+                FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, isWireDraw ? gWireArrowIndexes.data() : gSolidArrowIndexes.data(), indexCount);
             }
             break;
 
@@ -296,25 +327,26 @@ RenderHelper::RenderHelper()
                 break;
             }
 
-            vBufferPtr[command.drawType] += vertexCount;
-            iBufferPtr[command.drawType] += indexCount;
+            buffersElemCount[command.drawType].first -= vertexCount;
+            buffersElemCount[command.drawType].second -= indexCount;
 
-            vBufferOffset[command.drawType] += vertexCount;
-            packet[command.drawType].primitiveCount += isWireDraw ? indexCount / 2 : indexCount / 3;
+            currentRenderStruct.vBufferPtr[command.drawType] += vertexCount;
+            currentRenderStruct.iBufferPtr[command.drawType] += indexCount;
+            currentRenderStruct.vBufferOffset[command.drawType] += vertexCount;
+            currentRenderStruct.packet[command.drawType].primitiveCount += isWireDraw ? indexCount / 2 : indexCount / 3;
         }
 
-        for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-        {
-            if (packet[i].primitiveCount)
-                rhi::AddPacket(packetList, packet[i]);
-        }
+        CommitRenderStruct(currentRenderStruct);
     }
 
     void RenderHelper::Clear()
     {
         commandQueue.clear();
         for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-            buffersElemCount[i].first = buffersElemCount[i].second = 0;
+        {
+            buffersElemCount[i].first = 0;
+            buffersElemCount[i].second = 0;
+        }
     }
 
     bool RenderHelper::IsEmpty()
@@ -679,6 +711,7 @@ RenderHelper::RenderHelper()
     {
         for (uint32 i = 0; i < indexCount; ++i)
         {
+            DVASSERT(baseIndex + indexArray[i] < std::numeric_limits<uint16>::max());
             buffer[i] = baseIndex + indexArray[i];
         }
     }
@@ -689,6 +722,7 @@ RenderHelper::RenderHelper()
             const uint32 linesCount = vertexCount - 1;
             for (uint32 i = 0; i < linesCount; ++i)
             {
+                DVASSERT(baseIndex + i + 1 < std::numeric_limits<uint16>::max());
                 buffer[i * 2 + 0] = baseIndex + i;
                 buffer[i * 2 + 1] = baseIndex + i + 1;
             }
@@ -698,6 +732,7 @@ RenderHelper::RenderHelper()
             const uint32 triangleCount = vertexCount - 2;
             for (uint32 i = 0; i < triangleCount; ++i)
             {
+                DVASSERT(baseIndex + i + 2 < std::numeric_limits<uint16>::max());
                 buffer[i * 3 + 0] = baseIndex + i + 2;
                 buffer[i * 3 + 1] = baseIndex + i + 1;
                 buffer[i * 3 + 2] = baseIndex;

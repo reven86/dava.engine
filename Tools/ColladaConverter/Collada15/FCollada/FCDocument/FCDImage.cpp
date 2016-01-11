@@ -44,8 +44,8 @@ void FCDImage::SetFilename(const fstring& _filename)
         filename->clear();
     else
     {
-		filename = GetDocument()->GetFileManager()->GetCurrentUri().MakeAbsolute(_filename);
-	}
+        filename = GetDocument()->GetFileManager()->GetCurrentUri().MakeAbsolute(_filename);
+    }
 	SetDirtyFlag();
 }
 

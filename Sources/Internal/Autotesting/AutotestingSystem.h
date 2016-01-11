@@ -83,7 +83,7 @@ public:
     void OnTestStart(const String& testName);
     void OnStepStart(const String& stepName);
     void OnStepFinished();
-	void OnTestStarted();
+    void OnTestStarted();
     void OnError(const String & errorMessage = "");
 	void ForceQuit(const String & logMessage = "");
     void OnTestsFinished();

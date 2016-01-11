@@ -68,8 +68,8 @@ void SceneGridSystem::Draw()
             const DAVA::Vector3 v3(-gridMax, x, 0);
             const DAVA::Vector3 v4(gridMax, x, 0);
 
-            if (x!= 0.0f)
-		    {
+            if (x != 0.0f)
+            {
                 static const DAVA::Color gridColor(0.4f, 0.4f, 0.4f, 1.0f);
 
                 GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawLine(v1, v2, gridColor);

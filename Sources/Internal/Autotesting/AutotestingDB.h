@@ -61,9 +61,9 @@ namespace DAVA
         KeyedArchive* FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
         KeyedArchive* FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String& auxArg);
 
-        KeyedArchive *FindOrInsertGroupArchive(KeyedArchive *buildArchive, const String &groupId);
-		KeyedArchive *InsertTestArchive(KeyedArchive *currentGroupArchive, const String &testId);
-		KeyedArchive *InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description);
+        KeyedArchive* FindOrInsertGroupArchive(KeyedArchive* buildArchive, const String& groupId);
+        KeyedArchive* InsertTestArchive(KeyedArchive* currentGroupArchive, const String& testId);
+        KeyedArchive *InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description);
 
 		KeyedArchive *FindOrInsertTestArchive(MongodbUpdateObject *dbUpdateObject, const String &testId);
 		KeyedArchive *FindOrInsertStepArchive(KeyedArchive *testArchive, const String &stepId);
@@ -92,9 +92,9 @@ namespace DAVA
         FilePath logsFolder;
 
     protected:
-        MongodbClient *dbClient;
-		FilePath logFilePath;
-		AutotestingSystem *autoSys;
+        MongodbClient* dbClient;
+        FilePath logFilePath;
+        AutotestingSystem *autoSys;
 
 	};
 

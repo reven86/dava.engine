@@ -147,9 +147,9 @@ public:
     bool IsPhoneScreen();
 
     // DB storing
-	bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive* archive);
+    bool SaveKeyedArchiveToDevice(const String& archiveName, KeyedArchive* archive);
 
-	String GetTestParameter(const String &device);
+    String GetTestParameter(const String &device);
 
 	String MakeScreenshot();
 

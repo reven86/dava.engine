@@ -77,10 +77,12 @@ namespace DAVA
 	protected:
 		virtual ~UIListCell();
 
-		virtual void WillDisappear();
+        void SetIndex(int32 index)
+        {
+            currentIndex = index;
+        }
 
-		
-	private:
+    private:
 		int32 currentIndex;
 		String identifier;
 		

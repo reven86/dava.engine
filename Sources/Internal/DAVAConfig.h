@@ -80,8 +80,6 @@
 #   define FILEPATH_MAP_KEY(key) key.GetAbsolutePathname()
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
-#define REBUILD_TANGENT_SPACE_ON_IMPORT
-
 //Uncomment this define to using C++11 concurrency instead native
 //#define USE_CPP11_CONCURRENCY
 

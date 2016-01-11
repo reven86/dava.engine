@@ -45,8 +45,6 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
-#define DAVA_WINUAP_MOUSE_HACK
-
 namespace DAVA
 {
 
@@ -129,6 +127,7 @@ private:
     void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
 
     void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
+    void OnBackRequested(Platform::Object ^ sender, Windows::UI::Core::BackRequestedEventArgs ^ args);
 
     // Keyboard handlers
     void OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs);
@@ -165,6 +164,7 @@ private:
     void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
+    void SendBackKeyEvents();
 
 private:
     CorePlatformWinUAP* core = nullptr;
@@ -217,14 +217,9 @@ private:
     //  - transparent background in focus state
     //  - removed 'X' button
     static const wchar_t* xamlTextBoxStyles;
+    static const wchar_t* xamlWebView;
     Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
     Windows::Foundation::EventRegistrationToken token;
-
-#if defined(DAVA_WINUAP_MOUSE_HACK)
-    BOOL (WINAPI* SetCursorPos)(int X, int Y);
-
-    bool skipMouseMoveEvent = false;
-#endif
 };
 
 //////////////////////////////////////////////////////////////////////////

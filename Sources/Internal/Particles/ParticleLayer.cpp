@@ -450,8 +450,8 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         SetPivotPoint(_pivot);
     }
 
-	const YamlNode *lodsNode = node->Get("activeLODS");
-	if (lodsNode)
+    const YamlNode* lodsNode = node->Get("activeLODS");
+    if (lodsNode)
 	{
 		const Vector<YamlNode*> & vec = lodsNode->AsVector();
 		for (uint32 i=0; i<(uint32)vec.size(); ++i)
@@ -661,11 +661,11 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (deltaTimeNode)
         deltaTime = deltaTimeNode->AsFloat();
 
-    const YamlNode * deltaVariationNode = node->Get("deltaVariation");
-	if (deltaVariationNode)
-		deltaVariation = deltaVariationNode->AsFloat();
-		
-	const YamlNode * loopVariationNode = node->Get("loopVariation");
+    const YamlNode* deltaVariationNode = node->Get("deltaVariation");
+    if (deltaVariationNode)
+        deltaVariation = deltaVariationNode->AsFloat();
+
+    const YamlNode * loopVariationNode = node->Get("loopVariation");
 	if (loopVariationNode)
 		loopVariation = loopVariationNode->AsFloat();
 		

@@ -53,8 +53,8 @@ namespace DAVA
         autoSys = AutotestingSystem::Instance();
     }
 
-	AutotestingDB::~AutotestingDB()
-	{
+    AutotestingDB::~AutotestingDB()
+    {
 		CloseConnection();
 	}
 
@@ -145,7 +145,7 @@ namespace DAVA
             autoSys->ForceQuit("Archive name is empty.");
         }
         if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
-		{
+        {
             return nullptr;
 		}
 		dbUpdateObject->LoadData();
@@ -296,8 +296,8 @@ namespace DAVA
     }
 
     // auxiliary methods
-	void AutotestingDB::SetTestStarted()
-	{
+    void AutotestingDB::SetTestStarted()
+    {
 		Logger::Info("AutotestingSystem::SetTestStarted for test: %s", autoSys->testFileName.c_str());
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");

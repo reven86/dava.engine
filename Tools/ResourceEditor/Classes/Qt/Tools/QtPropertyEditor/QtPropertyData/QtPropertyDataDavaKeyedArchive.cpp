@@ -116,9 +116,9 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
             for (; i != data.end(); ++i)
             {
                 DAVA::FastName fieldName = DAVA::FastName(i->first);
-				QtPropertyData *childData = ChildGet(fieldName);
+                QtPropertyData* childData = ChildGet(fieldName);
 
-				// this key already in items list
+                // this key already in items list
 				if(childData != nullptr)
 				{
 					// remove deleting mark
