@@ -51,10 +51,10 @@ DAVA::String SizeInBytesToString(DAVA::float32 size);
 
 DAVA::Image * CreateTopLevelImage(const DAVA::FilePath &imagePathname);
 
-void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors);
+void ShowErrorDialog(const DAVA::Set<DAVA::String>& errors, const DAVA::String& title = "");
 void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title = "Error");
 
-bool IsKeyModificatorPressed(DAVA::int32 key);
+bool IsKeyModificatorPressed(DAVA::Key key);
 bool IsKeyModificatorsPressed();
 
 QColor ColorToQColor(const DAVA::Color& color);

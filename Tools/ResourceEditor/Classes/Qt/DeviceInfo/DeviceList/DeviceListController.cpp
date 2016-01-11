@@ -35,6 +35,7 @@
 #include <QStandardItem>
 #include <QTreeView>
 #include <QUuid>
+#include <QMessageBox>
 
 #include "DeviceListWidget.h"
 
@@ -47,8 +48,6 @@
 using namespace DAVA;
 using namespace DAVA::Net;
 
-const char8 DeviceListController::announceMulticastGroup[] = "239.192.100.1";
-
 DeviceListController::DeviceListController(QObject* parent)
     : QObject(parent)
     , model(NULL)
@@ -56,11 +55,11 @@ DeviceListController::DeviceListController(QObject* parent)
     model = new QStandardItemModel(this);
 
     // Register network service for recieving logs from device
-    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
-    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, MakeFunction(this, &DeviceListController::CreateMemProfiler), MakeFunction(this, &DeviceListController::DeleteMemProfiler), "Memory profiler");
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_LOG, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_MEMPROF, MakeFunction(this, &DeviceListController::CreateMemProfiler), MakeFunction(this, &DeviceListController::DeleteMemProfiler), "Memory profiler");
 
     // Create controller for discovering remote devices
-    DAVA::Net::Endpoint endpoint(announceMulticastGroup, ANNOUNCE_PORT);
+    DAVA::Net::Endpoint endpoint(NetCore::defaultAnnounceMulticastGroup, NetCore::DEFAULT_UDP_ANNOUNCE_PORT);
     DAVA::Net::NetCore::Instance()->CreateDiscoverer(endpoint, DAVA::MakeFunction(this, &DeviceListController::DiscoverCallback));
 }
 
@@ -80,6 +79,7 @@ void DeviceListController::SetView(DeviceListWidget* _view)
     connect(view, &DeviceListWidget::connectClicked, this, &DeviceListController::OnConnectButtonPressed);
     connect(view, &DeviceListWidget::disconnectClicked, this, &DeviceListController::OnDisconnectButtonPressed);
     connect(view, &DeviceListWidget::showLogClicked, this, &DeviceListController::OnShowLogButtonPressed);
+    connect(view, &DeviceListWidget::deviceDiscoverClicked, this, &DeviceListController::OnDeviceDiscover);
 }
 
 void DeviceListController::ShowView()
@@ -90,6 +90,47 @@ void DeviceListController::ShowView()
         view->show();
         view->activateWindow();
         view->raise();
+    }
+}
+
+void DeviceListController::OnDeviceDiscover(const QString& addr)
+{
+    if (!NetCore::IsNetworkEnabled())
+    {
+        Logger::Warning("[DeviceListController] Network is disabled in this build");
+        return;
+    }
+
+    // addr should be in form ipaddress:port, port is optional and by default is 9999
+
+    uint16 port = NetCore::DEFAULT_TCP_ANNOUNCE_PORT;
+    bool valid = true;
+    int delimeter = addr.indexOf(QChar(':'));
+    if (delimeter > 0)
+    {
+        port = addr.mid(delimeter + 1).toUShort(&valid);
+    }
+    if (valid)
+    {
+        String ipaddrPart = addr.mid(0, delimeter).toStdString().c_str();
+
+        IPAddress ipaddr = IPAddress::FromString(ipaddrPart);
+        valid = !ipaddr.IsUnspecified();
+        if (valid)
+        {
+            Endpoint endp(ipaddr, port);
+            if (!NetCore::Instance()->TryDiscoverDevice(endp))
+            {
+                Logger::Warning("Device discoverer is busy now, try later");
+            }
+        }
+    }
+
+    if (!valid)
+    {
+        QMessageBox::critical(view, "Invalid input", "Expected input: xxx.xxx.xxx.xxx[:port]\n"
+                                                     "   xxx.xxx.xxx.xxx - destination IP address\n"
+                                                     "   port - optional port, default is 9998");
     }
 }
 
@@ -178,7 +219,6 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
 
     Endpoint endp = index.data(ROLE_SOURCE_ADDRESS).value<Endpoint>();
     PeerDescription peer = index.data(ROLE_PEER_DESCRIPTION).value<PeerDescription>();
-    if (ifIndex < peer.NetworkInterfaces().size())
     {
         IPAddress addr = endp.Address();    // Use IP address from multicast packets
         NetConfig config = peer.NetworkConfig().Mirror(addr);
@@ -186,7 +226,7 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
 
         // Check whether remote device is under memory profiler and increase read timeout
         // Else leave it zero to allow underlying network system to choose timeout itself
-        bool deviceUnderMemoryProfiler = std::find(servIds.begin(), servIds.end(), SERVICE_MEMPROF) != servIds.end();
+        bool deviceUnderMemoryProfiler = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_MEMPROF) != servIds.end();
         uint32 readTimeout = deviceUnderMemoryProfiler ? 120 * 1000 : Net::DEFAULT_READ_TIMEOUT;
 
         trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()), readTimeout);
@@ -204,12 +244,12 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
             {
                 DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
                 // Check whether remote device has corresponding services
-                auto iterService = std::find(servIds.begin(), servIds.end(), SERVICE_LOG);
+                auto iterService = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_LOG);
                 if (iterService != servIds.end())
                 {
                     services.log = new DeviceLogController(peer, view, this);
                 }
-                iterService = std::find(servIds.begin(), servIds.end(), SERVICE_MEMPROF);
+                iterService = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_MEMPROF);
                 if (iterService != servIds.end())
                 {
                     services.memprof = new MemProfController(peer, view, this);
@@ -247,6 +287,12 @@ void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
 
 void DeviceListController::OnConnectButtonPressed()
 {
+    if (!NetCore::IsNetworkEnabled())
+    {
+        Logger::Warning("[DeviceListController] Network is disabled in this build");
+        return;
+    }
+
     // 'Connect' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)
@@ -262,6 +308,12 @@ void DeviceListController::OnConnectButtonPressed()
 
 void DeviceListController::OnDisconnectButtonPressed()
 {
+    if (!NetCore::IsNetworkEnabled())
+    {
+        Logger::Warning("[DeviceListController] Network is disabled in this build");
+        return;
+    }
+
     // 'Disconnect' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)
@@ -275,6 +327,12 @@ void DeviceListController::OnDisconnectButtonPressed()
 
 void DeviceListController::OnShowLogButtonPressed()
 {
+    if (!NetCore::IsNetworkEnabled())
+    {
+        Logger::Warning("[DeviceListController] Network is disabled in this build");
+        return;
+    }
+
     // 'Show log' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)
@@ -302,11 +360,12 @@ void DeviceListController::OnShowLogButtonPressed()
 
 QStandardItem *DeviceListController::CreateDeviceItem(const Endpoint& endp, const PeerDescription& peerDescr)
 {
-    // Item text in the form of <name> - <platform>
-    // E.g., 9f5656fd - Android
-    const QString caption = QString("%1 - %2")
-        .arg(peerDescr.GetName().c_str())
-        .arg(peerDescr.GetPlatformString().c_str());
+    // Item text in the form of <name> - <platform> - <ip address>
+    // E.g., 9f5656fd - Android - 192.168.0.24
+    const QString caption = QString("%1 - %2 - %3")
+                            .arg(peerDescr.GetName().c_str())
+                            .arg(peerDescr.GetPlatformString().c_str())
+                            .arg(endp.Address().ToString().c_str());
     QStandardItem *item = new QStandardItem();
     item->setText(caption);
 

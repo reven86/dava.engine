@@ -239,7 +239,7 @@ public:
 
     EventSystem* GetEventSystem() const;
     RenderSystem* GetRenderSystem() const;
-    AnimationSystem * GetAnimationSystem() const;
+    AnimationSystem* GetAnimationSystem() const;
 
     SceneFileV2::eError LoadScene(const DAVA::FilePath & pathname);
 	SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);

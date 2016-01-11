@@ -27,6 +27,10 @@
 =====================================================================================*/
 
 
+
+#include "Base/Platform.h"
+#if defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
+
 #include "WebViewControlMacOS.h"
 #include "MainWindowController.h"
 
@@ -304,9 +308,9 @@ void WebViewControl::SetRect(const Rect& rect)
     VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
 
     Rect convertedRect = VCS.ConvertVirtualToPhysical(rect);
-    
-	webViewRect.size.width = convertedRect.dx;
-	webViewRect.size.height = convertedRect.dy;
+
+    webViewRect.size.width = convertedRect.dx;
+    webViewRect.size.height = convertedRect.dy;
 
     NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
     DVASSERT(openGLView);
@@ -489,3 +493,5 @@ void* WebViewControl::GetImageCache() const
 {
     return webImageCachePtr;
 }
+
+#endif //defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__

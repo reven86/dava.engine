@@ -266,14 +266,14 @@ ParticleLayer * ParticleLayer::Clone()
     dstLayer->loopSpriteAnimation = loopSpriteAnimation;
     dstLayer->particleOrientation = particleOrientation;
 
-	dstLayer->scaleVelocityBase = scaleVelocityBase;
-	dstLayer->scaleVelocityFactor = scaleVelocityFactor;
-    
-	dstLayer->spritePath = spritePath;
-	dstLayer->activeLODS = activeLODS;
-	dstLayer->isLong = isLong;
+    dstLayer->scaleVelocityBase = scaleVelocityBase;
+    dstLayer->scaleVelocityFactor = scaleVelocityFactor;
 
-	return dstLayer;
+    dstLayer->spritePath = spritePath;
+    dstLayer->activeLODS = activeLODS;
+    dstLayer->isLong = isLong;
+
+    return dstLayer;
 }
 
 bool ParticleLayer::IsLodActive(int32 lod)
@@ -442,18 +442,17 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         Vector2 _pivot = pivotPointNode->AsPoint();
         if ((format == 0) && sprite)
         {
-			
-			float32 ny=-_pivot.x/sprite->GetWidth()*2;
-			float32 nx=-_pivot.y/sprite->GetHeight()*2;
-			_pivot.Set(nx, ny);
-		}
+            float32 ny = -_pivot.x / sprite->GetWidth() * 2;
+            float32 nx = -_pivot.y / sprite->GetHeight() * 2;
+            _pivot.Set(nx, ny);
+        }
 
-		SetPivotPoint(_pivot);
-	}
+        SetPivotPoint(_pivot);
+    }
 
-	const YamlNode *lodsNode = node->Get("activeLODS");
-	if (lodsNode)
-	{
+    const YamlNode* lodsNode = node->Get("activeLODS");
+    if (lodsNode)
+    {
 		const Vector<YamlNode*> & vec = lodsNode->AsVector();
 		for (uint32 i=0; i<(uint32)vec.size(); ++i)
 			SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
@@ -654,20 +653,20 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     deltaVariation = 0.0f;
     loopVariation = 0.0f;
 
-    const YamlNode * isLoopedNode = node->Get("isLooped");
-	if (isLoopedNode)
-		isLooped = isLoopedNode->AsBool();
-		
-	const YamlNode * deltaTimeNode = node->Get("deltaTime");
-	if (deltaTimeNode)
-		deltaTime = deltaTimeNode->AsFloat();
-		
-	const YamlNode * deltaVariationNode = node->Get("deltaVariation");
-	if (deltaVariationNode)
-		deltaVariation = deltaVariationNode->AsFloat();
-		
-	const YamlNode * loopVariationNode = node->Get("loopVariation");
-	if (loopVariationNode)
+    const YamlNode* isLoopedNode = node->Get("isLooped");
+    if (isLoopedNode)
+        isLooped = isLoopedNode->AsBool();
+
+    const YamlNode* deltaTimeNode = node->Get("deltaTime");
+    if (deltaTimeNode)
+        deltaTime = deltaTimeNode->AsFloat();
+
+    const YamlNode* deltaVariationNode = node->Get("deltaVariation");
+    if (deltaVariationNode)
+        deltaVariation = deltaVariationNode->AsFloat();
+
+    const YamlNode* loopVariationNode = node->Get("loopVariation");
+    if (loopVariationNode)
 		loopVariation = loopVariationNode->AsFloat();
 		
 	const YamlNode * loopEndTimeNode = node->Get("loopEndTime");

@@ -61,14 +61,20 @@ SelectionSystem::~SelectionSystem()
 
 void SelectionSystem::OnActivated()
 {
-    systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
-    connectionID = systemManager->SelectionChanged.Connect(this, &SelectionSystem::SetSelection);
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+    }
+    connectionID = systemManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
 }
 
 void SelectionSystem::OnDeactivated()
 {
     systemManager->SelectionChanged.Disconnect(connectionID);
-    systemManager->SelectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        systemManager->SelectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
+    }
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
@@ -77,11 +83,11 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::BEGAN:
         mousePressed = true;
-        return ProcessMousePress(currentInput->point, static_cast<UIEvent::eButtonID>(currentInput->tid));
+        return ProcessMousePress(currentInput->point, currentInput->mouseButton);
     case UIEvent::Phase::ENDED:
         if (!mousePressed)
         {
-            return ProcessMousePress(currentInput->point, static_cast<UIEvent::eButtonID>(currentInput->tid));
+            return ProcessMousePress(currentInput->point, currentInput->mouseButton);
         }
         mousePressed = false;
         return false;
@@ -91,7 +97,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode*)
 {
     SelectedNodes deselected;
     deselected.insert(node);
@@ -173,7 +179,7 @@ void SelectionSystem::FocusToChild(bool next)
     SetSelection(newSelectedNodes, selectionContainer.selectedNodes);
 }
 
-bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eButtonID buttonID)
+bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::MouseButton buttonID)
 {
     SelectedNodes selected;
     SelectedNodes deselected;
@@ -186,7 +192,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
-        if (buttonID == UIEvent::BUTTON_2)
+        if (buttonID == UIEvent::MouseButton::RIGHT)
         {
             ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPoint, point);
             if (nullptr != selectedNode)
@@ -217,6 +223,11 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
     }
     SetSelection(selected, deselected);
     return !selected.empty() || !deselected.empty();
+}
+
+void SelectionSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    selectionContainer.MergeSelection(selected, deselected);
 }
 
 void SelectionSystem::SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected)

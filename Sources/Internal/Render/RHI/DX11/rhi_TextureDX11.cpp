@@ -352,40 +352,40 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
 static void
 dx11_Texture_Delete(Handle tex)
 {
-        TextureDX11_t* self = TextureDX11Pool::Get(tex);
+    TextureDX11_t* self = TextureDX11Pool::Get(tex);
 
-        if (self->tex2d_srv)
-        {
-            self->tex2d_srv->Release();
-            self->tex2d_srv = nullptr;
-        }
+    if (self->tex2d_srv)
+    {
+        self->tex2d_srv->Release();
+        self->tex2d_srv = nullptr;
+    }
 
-        for (std::vector<TextureDX11_t::rt_view_t>::iterator v = self->rt_view.begin(), v_end = self->rt_view.end(); v != v_end; ++v)
-            v->view->Release();
-        self->rt_view.clear();
+    for (std::vector<TextureDX11_t::rt_view_t>::iterator v = self->rt_view.begin(), v_end = self->rt_view.end(); v != v_end; ++v)
+        v->view->Release();
+    self->rt_view.clear();
 
-        if (self->tex2d_dsv)
-        {
-            self->tex2d_dsv->Release();
-            self->tex2d_dsv = nullptr;
-        }
+    if (self->tex2d_dsv)
+    {
+        self->tex2d_dsv->Release();
+        self->tex2d_dsv = nullptr;
+    }
 
-        self->tex2d->Release();
-        self->tex2d = nullptr;
+    self->tex2d->Release();
+    self->tex2d = nullptr;
 
-        if (self->tex2d_copy)
-        {
-            self->tex2d_copy->Release();
-            self->tex2d_copy = nullptr;
-        }
+    if (self->tex2d_copy)
+    {
+        self->tex2d_copy->Release();
+        self->tex2d_copy = nullptr;
+    }
 
-        if (self->mappedData)
-        {
-            ::free(self->mappedData);
-            self->mappedData = nullptr;
-        }
+    if (self->mappedData)
+    {
+        ::free(self->mappedData);
+        self->mappedData = nullptr;
+    }
 
-        TextureDX11Pool::Free(tex);
+    TextureDX11Pool::Free(tex);
 }
 
 //------------------------------------------------------------------------------

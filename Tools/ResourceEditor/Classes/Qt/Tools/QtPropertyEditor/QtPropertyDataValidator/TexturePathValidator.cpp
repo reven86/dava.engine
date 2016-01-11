@@ -30,6 +30,7 @@
 #include "TexturePathValidator.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Main/mainwindow.h"
 
 TexturePathValidator::TexturePathValidator(const QStringList& value)
 :   PathValidator(value)
@@ -78,8 +79,8 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 				auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
 				if(found != texturesMap.end())
 				{
-                    found->second->Reload();
-				}
+                    found->second->ReloadAs(QtMainWindow::Instance()->GetGPUFormat());
+                }
 
                 v = QVariant(QString::fromStdString(texFile.GetAbsolutePathname()));
             }

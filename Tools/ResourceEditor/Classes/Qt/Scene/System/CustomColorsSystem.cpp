@@ -168,9 +168,9 @@ void CustomColorsSystem::Input(DAVA::UIEvent *event)
 	}
 	
 	UpdateCursorPosition();
-	
-	if (event->tid == UIEvent::BUTTON_1)
-	{
+
+    if (event->mouseButton == UIEvent::MouseButton::LEFT)
+    {
 		Vector3 point;
 		
 		switch(event->phase)
@@ -235,7 +235,11 @@ void CustomColorsSystem::UpdateBrushTool()
     AddRectToAccumulator(updatedRect);
 
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
-    RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = colorTexture;
+    desc.shouldClear = false;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
@@ -356,7 +360,11 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
             Texture* target = drawSystem->GetCustomColorsProxy()->GetTexture();
 
             auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
-            RenderSystem2D::Instance()->BeginRenderTargetPass(target, false);
+            RenderSystem2D::RenderTargetPassDescriptor desc;
+            desc.target = target;
+            desc.shouldClear = false;
+            desc.shouldTransformVirtualToPhysical = false;
+            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
             RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();
         }
