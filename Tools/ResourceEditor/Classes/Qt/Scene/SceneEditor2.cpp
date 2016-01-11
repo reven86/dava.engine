@@ -430,7 +430,6 @@ void SceneEditor2::Draw()
 void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 {
     DVASSERT(command != nullptr);
-    Logger::Info("[%s] command is %d, action is %d", __FUNCTION__, command->GetId(), redo);
 
     if (collisionSystem)
     {
