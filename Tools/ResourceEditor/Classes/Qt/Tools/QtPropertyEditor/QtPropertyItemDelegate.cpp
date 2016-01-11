@@ -184,12 +184,12 @@ bool QtPropertyItemDelegate::eventFilter(QObject* obj, QEvent* event)
         switch (event->type())
         {
         case QEvent::MouseMove:
-	        {
+        {
                 QMouseEvent *me = static_cast<QMouseEvent *>(event);
                 QModelIndex index = view->indexAt(me->pos());
-		        QtPropertyData* data = model->itemFromIndex(index);
-		        showButtons(data);
-	        }
+                QtPropertyData* data = model->itemFromIndex(index);
+                showButtons(data);
+        }
             break;
         default:
             break;
@@ -302,15 +302,9 @@ void QtPropertyItemDelegate::DrawButton(QPainter* painter, QStyleOptionViewItem&
     }
 
     int owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
-    if(btn->isVisible())
-    {
-        btn->move(opt.rect.left(), owYPos);
-    }
-    else
-    {
-        QPixmap pix = btn->grab();
-        painter->drawPixmap(opt.rect.left(), owYPos, pix);
-    }
+    QPixmap pix = btn->grab();
+    painter->drawPixmap(opt.rect.left(), owYPos, pix);
+    btn->move(opt.rect.left(), owYPos);
     int padding = buttonSpacing + btn->width();
     opt.rect.adjust(padding, 0, 0, 0);
 }
@@ -360,8 +354,8 @@ void QtPropertyItemDelegate::showButtons(QtPropertyData *data)
 void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data)
 {
     DVASSERT(visibleButtons.empty());
-	if(nullptr != data)
-	{
+    if (nullptr != data)
+    {
         int buttonCount = data->GetButtonsCount();
         visibleButtons.reserve(buttonCount);
 
@@ -370,8 +364,8 @@ void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data)
             QPointer<QtPropertyToolButton> button = data->GetButton(i);
             visibleButtons.push_back(button);
             button->show();
-		}
-	}
+        }
+    }
 }
 
 void QtPropertyItemDelegate::hideButtons()
