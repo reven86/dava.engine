@@ -191,7 +191,7 @@ DAVA::String SelectPathWidgetBase::ConvertToRelativPath(const DAVA::String& path
     else
     {
         return path;
-	}
+    }
 }
 
 void SelectPathWidgetBase::dropEvent(QDropEvent* event)
@@ -225,7 +225,7 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
     else
     {
         setText(itemName);
-	}
+    }
 	
     event->setDropAction(Qt::LinkAction);
     event->accept();

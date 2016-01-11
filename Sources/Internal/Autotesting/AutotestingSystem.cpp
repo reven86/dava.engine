@@ -83,12 +83,12 @@ AutotestingSystem::AutotestingSystem()
     , waitCheckTimeLeft(0.0f)
     , luaSystem(nullptr)
 {
-        new AutotestingDB();
-	}
+    new AutotestingDB();
+}
 
-	AutotestingSystem::~AutotestingSystem()
-	{
-		SafeRelease(luaSystem);
+AutotestingSystem::~AutotestingSystem()
+{
+        SafeRelease(luaSystem);
 		if (AutotestingDB::Instance())
 			AutotestingDB::Instance()->Release();
 	}
@@ -176,10 +176,10 @@ AutotestingSystem::AutotestingSystem()
     }
 
     // Get test parameters from id.yaml
-	void AutotestingSystem::FetchParametersFromIdYaml()
-	{
-		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
-		RefPtr<KeyedArchive> option = GetIdYamlOptions();
+    void AutotestingSystem::FetchParametersFromIdYaml()
+    {
+        Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
+        RefPtr<KeyedArchive> option = GetIdYamlOptions();
 
 		buildId = option->GetString("BuildId");
 		buildDate = option->GetString("Date");
@@ -275,10 +275,10 @@ AutotestingSystem::AutotestingSystem()
     }
 
     String AutotestingSystem::GetCurrentTimeString()
-	{
-		DateTime time = DateTime::Now();
-		return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
-	}
+    {
+        DateTime time = DateTime::Now();
+        return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
+    }
 
 	void AutotestingSystem::OnTestStart(const String &testDescription)
 	{
@@ -373,11 +373,11 @@ AutotestingSystem::AutotestingSystem()
         }
 
         ExitApp();
-	}
+    }
 
-	void AutotestingSystem::ForceQuit(const String &errorMessage)
-	{
-		DVASSERT_MSG(false, errorMessage.c_str())
+    void AutotestingSystem::ForceQuit(const String& errorMessage)
+    {
+        DVASSERT_MSG(false, errorMessage.c_str())
 		Core::Instance()->Quit();
 	}
 
@@ -428,12 +428,12 @@ AutotestingSystem::AutotestingSystem()
         }
 
         // Mark test as SUCCESS
-		AutotestingDB::Instance()->Log("INFO", "Test finished.");
+        AutotestingDB::Instance()->Log("INFO", "Test finished.");
 
-		ExitApp();
-	}
+        ExitApp();
+    }
 
-	void AutotestingSystem::OnInput(const UIEvent &input)
+    void AutotestingSystem::OnInput(const UIEvent &input)
 	{
 		if (UIScreenManager::Instance())
 		{
@@ -515,11 +515,11 @@ AutotestingSystem::AutotestingSystem()
     }
 
     bool AutotestingSystem::IsTouchDown(int32 id)
-	{
-		return (touches.find(id) != touches.end());
-	}
+    {
+        return (touches.find(id) != touches.end());
+    }
 
-	void AutotestingSystem::ExitApp()
+    void AutotestingSystem::ExitApp()
 	{
 		if (needExitApp)
 		{
