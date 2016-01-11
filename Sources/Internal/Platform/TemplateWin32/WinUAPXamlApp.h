@@ -101,6 +101,7 @@ public:
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
+    void OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args) override;
 
 private:
     void Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
@@ -135,6 +136,7 @@ private:
 
     void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
 
+    void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
 
     void SetupEventHandlers();
