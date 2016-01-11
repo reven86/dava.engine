@@ -37,27 +37,25 @@
 
 namespace DAVA 
 {
-
-bool TextBlock::isBiDiSupportEnabled = false;    //!< Enable BiDi support by default
-
 #define NEW_RENDER 1
 
-static Set<TextBlock*> registredTextBlocks;
-static Mutex textblockListMutex;
+bool TextBlock::isBiDiSupportEnabled = false;
+Set<TextBlock*> TextBlock::registredTextBlocks;
+Mutex TextBlock::textblockListMutex;
 
-void RegisterTextBlock(TextBlock *tbl)
+void TextBlock::RegisterTextBlock(TextBlock *textBlock)
 {
     LockGuard<Mutex> lock(textblockListMutex);
-    registredTextBlocks.insert(tbl);
+    registredTextBlocks.insert(textBlock);
 }
 
-void UnregisterTextBlock(TextBlock *tbl)
+void TextBlock::UnregisterTextBlock(TextBlock *textBlock)
 {
     LockGuard<Mutex> lock(textblockListMutex);
-    registredTextBlocks.erase(tbl);
+    registredTextBlocks.erase(textBlock);
 }
 
-void InvalidateAllTextBlocks()
+void TextBlock::InvalidateAllTextBlocks()
 {
     Logger::FrameworkDebug("Invalidate all text blocks");
     LockGuard<Mutex> lock(textblockListMutex);

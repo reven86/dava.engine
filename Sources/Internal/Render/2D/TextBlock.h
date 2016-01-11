@@ -152,7 +152,10 @@ public:
     void SetAngle(const float32 _angle);
     void SetPivot(const Vector2& _pivot);
 
-protected:
+private:
+    static void RegisterTextBlock(TextBlock *textBlock);
+    static void UnregisterTextBlock(TextBlock *textBlock);
+    static void InvalidateAllTextBlocks();
 
 	TextBlock();
     TextBlock(const TextBlock& src);
@@ -209,11 +212,12 @@ protected:
     bool forceBiDiSupport : 1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
+    static Set<TextBlock*> registredTextBlocks;
+    static Mutex textblockListMutex;
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicRender;
-    friend void InvalidateAllTextBlocks();
 
     TextBlockRender* textBlockRender;
 
