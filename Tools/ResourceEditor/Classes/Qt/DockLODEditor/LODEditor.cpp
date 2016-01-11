@@ -102,7 +102,7 @@ bool NeedUpdateLodInfo(const Command2* command)
             for (uint32 i = 0; i < count; ++i)
             {
                 const Command2 *cmd = batch->GetCommand(i);
-                const Entity* entity = cmd->GetEntity();
+                const DAVA::Entity* entity = cmd->GetEntity();
                 if (entity != nullptr)
                 {
                     LodComponent* lc = GetLodComponent(entity);
