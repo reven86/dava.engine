@@ -101,6 +101,7 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
         {
             AddSelection(entity);
         }
+        entitiesForSelection.clear();
     }
 
     ForceEmitSignals();
