@@ -441,9 +441,9 @@ AutotestingSystem::~AutotestingSystem()
 			Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
 		}
 
-		int32 id = input.tid;
-		switch (input.phase)
-		{
+        int32 id = input.touchId;
+        switch (input.phase)
+        {
         case UIEvent::Phase::BEGAN:
         {
             mouseMove = input;

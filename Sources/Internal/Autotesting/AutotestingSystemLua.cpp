@@ -217,7 +217,7 @@ namespace DAVA
             AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
         }
         lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
-		lua_pushstring(L, path.GetBasename().c_str());
+        lua_pushstring(L, path.GetBasename().c_str());
 		return 2;
 	}
 
@@ -282,7 +282,7 @@ namespace DAVA
 
     String AutotestingSystemLua::GetDeviceName()
     {
-		String deviceName;
+        String deviceName;
 		if (DeviceInfo::GetPlatformString() == "Android")
 		{
 			deviceName = DeviceInfo::GetModel();
@@ -500,17 +500,17 @@ namespace DAVA
 			return;
 		}
 
-		UIEvent keyPress;
-		keyPress.tid = keyChar;
+        UIEvent keyPress;
+        keyPress.keyChar = keyChar;
         keyPress.phase = UIEvent::Phase::CHAR;
         keyPress.tapCount = 1;
         keyPress.keyChar = keyChar;
 
-        Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
+        Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.key, keyPress.phase,
                                keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
-        switch (keyPress.tid)
+        switch (keyPress.keyChar)
         {
-        case DVKEY_BACKSPACE:
+        case '\b':
         {
             //TODO: act the same way on iPhone
             WideString str = L"";
@@ -520,16 +520,16 @@ namespace DAVA
             }
             break;
         }
-        case DVKEY_ENTER:
+        case '\n':
         {
             uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
             break;
         }
-        case DVKEY_ESCAPE:
+        case 27: // ESCAPE
         {
             uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
             break;
-		}
+        }
 		default:
 		{
 			if (keyPress.keyChar == 0)
@@ -537,10 +537,10 @@ namespace DAVA
 				break;
 			}
 			WideString str;
-			str += keyPress.keyChar;
-			if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
-			{
-				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
+            str += keyPress.keyChar;
+            if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
+            {
+                uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
 			}
 			break;
 		}
@@ -685,7 +685,7 @@ namespace DAVA
 	{
 		UIEvent touchDown;
         touchDown.phase = UIEvent::Phase::BEGAN;
-        touchDown.tid = touchId;
+        touchDown.touchId = touchId;
         touchDown.tapCount = tapCount;
         touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchDown.point = point;
@@ -695,7 +695,7 @@ namespace DAVA
     void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
     {
         UIEvent touchMove;
-        touchMove.tid = touchId;
+        touchMove.touchId = touchId;
         touchMove.tapCount = 1;
         touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
         touchMove.point = point;
@@ -724,7 +724,7 @@ namespace DAVA
 			AutotestingSystem::Instance()->OnError("TouchAction::TouchUp touch down not found");
 		}
         touchUp.phase = UIEvent::Phase::ENDED;
-        touchUp.tid = touchId;
+        touchUp.touchId = touchId;
 
         ProcessInput(touchUp);
     }
@@ -769,7 +769,7 @@ namespace DAVA
         if (!luaState)
         {
             return false;
-		}
+        }
 		if (luaL_loadstring(luaState, luaScript.c_str()) != 0)
 		{
 			Logger::Error("AutotestingSystemLua::LoadScript Error: unable to load %s", luaScript.c_str());
