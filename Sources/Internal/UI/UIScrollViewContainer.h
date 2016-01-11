@@ -59,7 +59,7 @@ public:
     void ApplySizeChanges();
 
     // The amount of pixels user must move the finger on the button to switch from button to scrolling (default 15)
-	void SetTouchTreshold(int32 holdDelta);
+    void SetTouchTreshold(int32 holdDelta);
 	int32 GetTouchTreshold();
 
 

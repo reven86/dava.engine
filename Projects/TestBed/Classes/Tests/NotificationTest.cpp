@@ -104,7 +104,7 @@ void NotificationScreen::LoadResources()
     AddControl(showNotificationProgress);
 
     hideNotificationProgress = new UIButton(Rect(500, 100, 450, 60));
-	hideNotificationProgress->SetStateFont(0xFF, font);
+    hideNotificationProgress->SetStateFont(0xFF, font);
 	hideNotificationProgress->SetStateFontColor(0xFF, Color::White);
 	hideNotificationProgress->SetStateText(0xFF, L"Hide progress");
 
