@@ -71,8 +71,8 @@ public:
 
     bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
 
-    void KeyPressed(DAVA::Key key, int32 count, uint64 timestamp);
-    void KeyReleased(DAVA::Key key);
+    void KeyPressed(Key key, int32 count, uint64 timestamp);
+    void KeyReleased(Key key);
 
     void MouseEvent(const UIEvent & event);
 

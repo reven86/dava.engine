@@ -156,7 +156,7 @@ private:
     void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
-    void SendDragEventsIfMouseButtonDown(float32 x, float32 y, UIEvent::Device type);
+    void SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device type);
     void SendBackKeyEvents();
 
 private:

@@ -148,7 +148,22 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
             break;
     }
 
+#ifdef Q_OS_WIN
+    uint32 nativeModif = e->nativeModifiers();
+    uint32 nativeScanCode = e->nativeScanCode();
+    uint32 virtKey = e->nativeVirtualKey();
+    if ((1 << 24) & nativeModif)
+    {
+        virtKey |= 0x100;
+    }
+    if (VK_SHIFT == virtKey && nativeScanCode == 0x36) // is right shift key
+    {
+        virtKey |= 0x100;
+    }
+    const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(virtKey);
+#else
     const auto davaKey = DavaQtKeyboard::GetDavaKeyForSystemKey(e->nativeVirtualKey());
+#endif
     if (davaKey != Key::UNKNOWN)
     {
         DavaQtKeyboard::OnKeyUnpressed(davaKey);
@@ -157,7 +172,7 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 
 void ControlMapper::mouseMoveEvent(QMouseEvent * event)
 {
-    auto mouseButtons = MapMouseEventToDAVA(event->pos(), event->buttons(), event->timestamp());
+    auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->buttons(), event->timestamp());
 
     for (auto& ev : mouseButtons)
     {
@@ -175,7 +190,7 @@ void ControlMapper::mouseMoveEvent(QMouseEvent * event)
 
 void ControlMapper::mousePressEvent(QMouseEvent * event)
 {
-    auto mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
+    auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
 
     for (auto& ev : mouseButtons)
     {
@@ -186,7 +201,7 @@ void ControlMapper::mousePressEvent(QMouseEvent * event)
 
 void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
 {
-    auto mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
+    auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
 
     for (auto& ev : mouseButtons)
     {
@@ -235,14 +250,14 @@ void ControlMapper::releaseKeyboard()
     DAVA::DavaQtKeyboard::ClearAllKeys();
 }
 
-DAVA::Vector<DAVA::UIEvent> ControlMapper::MapMouseEventToDAVA(const QPoint& pos, const Qt::MouseButtons buttons, ulong timestamp)
+DAVA::Vector<DAVA::UIEvent>& ControlMapper::MapMouseEventToDAVA(const QPoint& pos, const Qt::MouseButtons buttons, ulong timestamp) const
 {
     using namespace DAVA;
     static Vector<UIEvent> events;
 
     events.clear();
 
-    auto davaButtons = MapQtButtonToDAVA(buttons);
+    auto& davaButtons = MapQtButtonToDAVA(buttons);
 
     int currentDPR = window->devicePixelRatio();
 
@@ -268,7 +283,7 @@ DAVA::Vector<DAVA::UIEvent> ControlMapper::MapMouseEventToDAVA(const QPoint& pos
     return events;
 }
 
-DAVA::Vector<DAVA::UIEvent::MouseButton> ControlMapper::MapQtButtonToDAVA(const Qt::MouseButtons button) const
+DAVA::Vector<DAVA::UIEvent::MouseButton>& ControlMapper::MapQtButtonToDAVA(const Qt::MouseButtons button)
 {
     using namespace DAVA;
     static Vector<UIEvent::MouseButton> mouseButtons;

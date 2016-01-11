@@ -570,7 +570,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             }
             else
             {
-                SendDragEventsIfMouseButtonDown(x, y, ToDavaDeviceId(type));
+                SendPressedMouseButtons(x, y, ToDavaDeviceId(type));
             }
         }
     }
@@ -726,7 +726,7 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
     });
 }
 
-void WinUAPXamlApp::SendDragEventsIfMouseButtonDown(float32 x, float32 y, UIEvent::Device device)
+void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device device)
 {
     auto SendDragOnButtonChange = [this, x, y, device](UIEvent::MouseButton button) {
         if (GetMouseButtonState(button))
@@ -746,9 +746,6 @@ void WinUAPXamlApp::SendDragEventsIfMouseButtonDown(float32 x, float32 y, UIEven
 
 void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 {
-    float32 dx = static_cast<float32>(args->MouseDelta.X);
-    float32 dy = static_cast<float32>(args->MouseDelta.Y);
-
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
 
     PointerPoint ^ pointerPoint = nullptr;
@@ -775,6 +772,10 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
             core->RunOnMainThread(fn);
         }
 
+        float32 dx = static_cast<float32>(args->MouseDelta.X);
+        float32 dy = static_cast<float32>(args->MouseDelta.Y);
+
+        // win10 send dx == 0 and dy == 0 if mouse buttons change state only if one button already pressed
         if (mouseCaptureMode == InputSystem::eMouseCaptureMode::PINING && (dx != 0.f || dy != 0.f))
         {
             if (mouseButtonsState.none())
@@ -787,7 +788,7 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
             }
             else
             {
-                SendDragEventsIfMouseButtonDown(dx, dy, UIEvent::Device::MOUSE);
+                SendPressedMouseButtons(dx, dy, UIEvent::Device::MOUSE);
             }
         }
     }

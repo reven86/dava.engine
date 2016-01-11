@@ -129,7 +129,7 @@ void QtLayer::Resize(int32 width, int32 height, int32 currentScreen)
     vcs->ScreenSizeChanged();
 }
 
-void QtLayer::KeyPressed(DAVA::Key key, int32 count, uint64 timestamp)
+void QtLayer::KeyPressed(Key key, int32 count, uint64 timestamp)
 {
     UIEvent ev;
     ev.phase = UIEvent::Phase::KEY_DOWN;
