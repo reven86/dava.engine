@@ -59,10 +59,6 @@ public:
     eColladaErrorCodes SaveSC2(const FilePath& scenePath) const;
     void	SaveScene(const FilePath & scenePath, const String & sceneName);
     String  GetTextureName(const FilePath & scenePath, ColladaTexture * texture);
-
-	void	WriteTexture(SceneFile::TextureDef * texture);
-	void	WriteMaterial(SceneFile::MaterialDef * material);
-	void	WriteLight(SceneFile::LightDef * light);
 	
 	//StaticMesh * ConvertMesh(ColladaMesh * mesh);
 	void	WriteStaticMesh(ColladaMesh * mesh, int32 meshIndex);
@@ -85,7 +81,6 @@ public:
 
 private:
 	FCDocument *				document; 
-    SceneFile::Header           header;
 };
 };
 
