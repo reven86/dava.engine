@@ -207,10 +207,11 @@ QtPropertyData* QtPropertyModel::itemFromIndex(const QModelIndex & index) const
 	if(index.isValid() && index.model() == this)
 	{
 		QtPropertyData *parent = static_cast<QtPropertyData *>(index.internalPointer());
-		if(NULL != parent)
-		{
-			ret = parent->ChildGet(index.row());
-		}
+        int row = index.row();
+        if (parent != nullptr && parent->ChildCount() > row)
+        {
+            ret = parent->ChildGet(row);
+        }
 	}
 
 	return ret;

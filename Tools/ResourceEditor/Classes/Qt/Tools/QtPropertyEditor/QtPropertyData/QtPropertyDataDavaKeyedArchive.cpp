@@ -214,8 +214,6 @@ void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField(QToolButton * button)
 					}
 
 					lastCommand = new KeyeadArchiveRemValueCommand(archive, childData->GetName().c_str());
-					archive->DeleteKey(childData->GetName().c_str());
-
 					ChildRemove(childData);
 					EmitDataChanged(QtPropertyData::VALUE_EDITED);
 					break;

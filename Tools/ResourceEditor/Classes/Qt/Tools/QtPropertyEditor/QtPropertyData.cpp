@@ -84,8 +84,8 @@ QtPropertyData::~QtPropertyData()
 
 	for (int i = 0; i < optionalButtons.size(); i++)
 	{
-		delete optionalButtons.at(i);
-	}
+        optionalButtons.at(i)->deleteLater();
+    }
 
     optionalButtons.clear();
 }
@@ -715,6 +715,7 @@ void QtPropertyData::ChildRemove(const QtPropertyData* data)
     {
         size_t index = iter->second;
         DVASSERT(index < childrenData.size());
+        QtPropertyModel::DeletionGuard deletionGuard(model, this, index, index);
         childrenData.erase(childrenData.begin() + index);
         RefillSearchIndex();
     }
