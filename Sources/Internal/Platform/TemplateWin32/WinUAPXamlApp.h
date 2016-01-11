@@ -101,6 +101,7 @@ public:
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
+    void OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args) override;
 
 private:
     void Run(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
@@ -127,6 +128,7 @@ private:
     void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
 
     void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
+    void OnBackRequested(Platform::Object ^ sender, Windows::UI::Core::BackRequestedEventArgs ^ args);
 
     // Keyboard handlers
     void OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs);
@@ -142,6 +144,7 @@ private:
 
     MouseButtonState UpdateMouseButtonsState(Windows::UI::Input::PointerPointProperties ^ pointProperties);
 
+    void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
 
     void SetupEventHandlers();
@@ -163,6 +166,7 @@ private:
     void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
+    void SendBackKeyEvents();
 
 private:
     CorePlatformWinUAP* core = nullptr;

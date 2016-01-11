@@ -418,16 +418,15 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
                 {
                     jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
 
-					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
-					activeInputs.push_back(event);
+                    DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
+                    activeInputs.push_back(event);
 
                     env->DeleteLocalRef(jInput);
                 }
             }
             core->OnInput(action, source, activeInputs, allInputs);
         }
-	}
-
+    }
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode)

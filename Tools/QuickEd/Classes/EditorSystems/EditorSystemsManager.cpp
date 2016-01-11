@@ -52,7 +52,7 @@ public:
 
 private:
     bool SystemInput(UIEvent* currentInput) override;
-    
+
     EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
     Vector2 prevPosition;

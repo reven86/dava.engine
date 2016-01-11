@@ -1570,7 +1570,7 @@ QString PropertyEditor::GetDefaultFilePath()
         {
             defaultPath = scenePath.c_str();
         }
-	}
+    }
 
 	return defaultPath;
 }

@@ -8844,6 +8844,7 @@
 				);
 				PRODUCT_NAME = FrameworkNPAPI;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -8886,6 +8887,7 @@
 				);
 				PRODUCT_NAME = FrameworkNPAPI;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
@@ -8930,6 +8932,7 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
 				PRODUCT_NAME = Framework;
+				SKIP_INSTALL = YES;
 				USE_HEADERMAP = NO;
 			};
 			name = Debug;
@@ -8972,6 +8975,7 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
 				PRODUCT_NAME = Framework;
+				SKIP_INSTALL = YES;
 				USE_HEADERMAP = NO;
 			};
 			name = Release;
@@ -9094,6 +9098,7 @@
 					"-DQT_SHARED",
 				);
 				PRODUCT_NAME = FrameworkQt;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -9136,6 +9141,7 @@
 					"-DQT_SHARED",
 				);
 				PRODUCT_NAME = FrameworkQt;
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};

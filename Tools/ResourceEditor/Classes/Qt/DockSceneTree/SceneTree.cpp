@@ -672,7 +672,7 @@ void SceneTree::EditModel()
                 else
                 {
                     ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
-				}
+                }
 			}
 		}
 	}
@@ -820,7 +820,7 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
     {
         QModelIndex childIndex = indexList[i];
         QModelIndex childParent = childIndex.parent();
-		while(childParent.isValid())
+        while(childParent.isValid())
 		{
 			if(childParent == index)
 			{

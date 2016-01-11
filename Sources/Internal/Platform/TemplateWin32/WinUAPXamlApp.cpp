@@ -187,6 +187,22 @@ bool WinUAPXamlApp::SetCursorVisible(bool isVisible)
     return true;
 }
 
+void WinUAPXamlApp::StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
+{
+    PreStartAppSettings();
+    uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
+
+    CreateBaseXamlUI();
+
+    Thread* mainLoopThread = Thread::Create([this, args]() { Run(args); });
+    mainLoopThread->Start();
+    mainLoopThread->BindToProcessor(0);
+    mainLoopThread->SetPriority(Thread::PRIORITY_HIGH);
+    mainLoopThread->Release();
+
+    mainLoopThreadStarted = true;
+}
+
 void WinUAPXamlApp::PreStartAppSettings()
 {
     if (isPhoneApiDetected)
@@ -204,18 +220,7 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
     // else app is restored from background or resumed from suspended state
     if (!mainLoopThreadStarted)
     {
-        PreStartAppSettings();
-        uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
-
-        CreateBaseXamlUI();
-
-        Thread* mainLoopThread = Thread::Create([this, args]() { Run(args); });
-        mainLoopThread->Start();
-        mainLoopThread->BindToProcessor(0);
-        mainLoopThread->SetPriority(Thread::PRIORITY_HIGH);
-        mainLoopThread->Release();
-
-        mainLoopThreadStarted = true;
+        StartMainLoopThread(args);
     }
     else
     {
@@ -223,6 +228,25 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
     }
 
     Window::Current->Activate();
+}
+
+void WinUAPXamlApp::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
+{
+    using ::Windows::ApplicationModel::Activation::ActivationKind;
+
+    if (args->Kind == ActivationKind::Protocol)
+    {
+        if (!mainLoopThreadStarted)
+        {
+            StartMainLoopThread(nullptr);
+        }
+
+        Window::Current->Activate();
+    }
+    else
+    {
+        Application::OnActivated(args);
+    }
 }
 
 void WinUAPXamlApp::AddUIElement(Windows::UI::Xaml::UIElement^ uiElement)
@@ -301,7 +325,10 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     Core::Instance()->SetIsActive(true);
     Core::Instance()->SystemAppStarted();
 
-    EmitPushNotification(args);
+    if (args != nullptr)
+    {
+        EmitPushNotification(args);
+    }
 
     SystemTimer* sysTimer = SystemTimer::Instance();
     while (!quitFlag)
@@ -603,23 +630,13 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, BackPressedEventArgs ^ args)
 {
-    core->RunOnMainThread([this]() {
-        UIEvent ev;
-        ev.keyChar = 0;
-        ev.tapCount = 1;
-        ev.phase = UIEvent::Phase::KEY_DOWN;
-        ev.tid = DVKEY_BACK;
-        ev.device = UIEvent::Device::KEYBOARD;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    SendBackKeyEvents();
+    args->Handled = true;
+}
 
-        UIControlSystem::Instance()->OnInput(&ev);
-        InputSystem::Instance()->GetKeyboard().OnKeyPressed(static_cast<uint32>(DVKEY_BACK));
-
-        ev.phase = UIEvent::Phase::KEY_UP;
-
-        UIControlSystem::Instance()->OnInput(&ev);
-        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<uint32>(DVKEY_BACK));
-    });
+void WinUAPXamlApp::OnBackRequested(Platform::Object ^ /*sender*/, BackRequestedEventArgs ^ args)
+{
+    SendBackKeyEvents();
     args->Handled = true;
 }
 
@@ -702,13 +719,13 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     int32 pointerOrButtonIndex = UIEvent::BUTTON_NONE;
-    
+
     PointerPoint ^ pointerPoint = nullptr;
     try
     {
         pointerPoint = Windows::UI::Input::PointerPoint::GetCurrentPoint(1);
     }
-    catch (Platform::Exception^ e)
+    catch (Platform::Exception ^ e)
     {
         Logger::FrameworkDebug("Exception in WinUAPXamlApp::OnMouseMoved: 0x%08X - %s", e->HResult, RTStringToString(e->Message).c_str());
     }
@@ -792,6 +809,8 @@ void WinUAPXamlApp::SetupEventHandlers()
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
     }
+
+    SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs ^>(this, &WinUAPXamlApp::OnBackRequested);
 }
 
 void WinUAPXamlApp::CreateBaseXamlUI()
@@ -1020,6 +1039,27 @@ void WinUAPXamlApp::AllowDisplaySleep(bool sleep)
     {
         displayRequest->RequestActive();
     }
+}
+
+void WinUAPXamlApp::SendBackKeyEvents()
+{
+    core->RunOnMainThread([this]() {
+        UIEvent ev;
+        ev.keyChar = 0;
+        ev.tapCount = 1;
+        ev.phase = UIEvent::Phase::KEY_DOWN;
+        ev.tid = DVKEY_BACK;
+        ev.device = UIEvent::Device::KEYBOARD;
+        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+
+        UIControlSystem::Instance()->OnInput(&ev);
+        InputSystem::Instance()->GetKeyboard().OnKeyPressed(static_cast<uint32>(DVKEY_BACK));
+
+        ev.phase = UIEvent::Phase::KEY_UP;
+
+        UIControlSystem::Instance()->OnInput(&ev);
+        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<uint32>(DVKEY_BACK));
+    });
 }
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
