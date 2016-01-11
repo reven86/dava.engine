@@ -71,7 +71,6 @@ namespace
 
 SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	: SceneSystem(scene)
-	, debugCamerasCreated(false)
 	, curSceneCamera(nullptr)
 	, animateToNewPos(false)
 	, animateToNewPosTime(0)
@@ -258,12 +257,6 @@ void SceneCameraSystem::Process(float timeElapsed)
     }
     //TODO: set move speed
 
-    
-	if(!debugCamerasCreated)
-	{
-		CreateDebugCameras();
-	}
-
 	if (nullptr != scene)
 	{
 		DAVA::Camera* camera = scene->GetDrawCamera();
@@ -280,8 +273,7 @@ void SceneCameraSystem::Process(float timeElapsed)
 			
 			// remember current scene camera
 			SafeRelease(curSceneCamera);
-			curSceneCamera = camera;
-			SafeRetain(curSceneCamera);
+            curSceneCamera = SafeRetain(camera);
 
 			// Recalc camera aspect
 			RecalcCameraAspect();
@@ -370,23 +362,21 @@ void SceneCameraSystem::Draw()
 	if(nullptr != sceneEditor)
 	{
 		SceneCollisionSystem *collSystem = sceneEditor->collisionSystem;
-
 		if(nullptr != collSystem)
 		{
-			DAVA::Set<DAVA::Entity *>::iterator it = sceneCameras.begin();
-			for(; it != sceneCameras.end(); ++it)
-			{
-				DAVA::Entity *entity = *it;
-				DAVA::Camera *camera = GetCamera(entity);
+            for (auto & entity : sceneCameras)
+            {
+                DVASSERT(entity != nullptr);
 
-				if(nullptr != entity && nullptr != camera && camera != curSceneCamera)
-				{
-					AABBox3 worldBox;
-					AABBox3 collBox = collSystem->GetBoundingBox(*it);
-					Matrix4 transform;
+                DAVA::Camera *camera = GetCamera(entity);
+                if (nullptr != camera && camera != curSceneCamera)
+                {
+                    AABBox3 worldBox;
+                    AABBox3 collBox = collSystem->GetBoundingBox(entity);
+                    Matrix4 transform;
 
-					transform.Identity();
-					transform.SetTranslationVector(camera->GetPosition());
+                    transform.Identity();
+                    transform.SetTranslationVector(camera->GetPosition());
                     collBox.GetTransformedBox(transform, worldBox);
                     sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
                 }
@@ -397,20 +387,13 @@ void SceneCameraSystem::Draw()
 
 void SceneCameraSystem::AddEntity(DAVA::Entity * entity)
 {
-	DAVA::Camera *camera = GetCamera(entity);
-	if(nullptr != camera)
-	{
-		sceneCameras.insert(entity);
-	}
+    DVASSERT(GetCamera(entity) != nullptr);
+    sceneCameras.push_back(entity);
 }
 
 void SceneCameraSystem::RemoveEntity(DAVA::Entity * entity)
 {
-	DAVA::Set<DAVA::Entity *>::iterator it = sceneCameras.find(entity);
-	if(it != sceneCameras.end())
-	{
-		sceneCameras.erase(it);
-	}
+    sceneCameras.remove(entity);
 }
 
 
@@ -422,7 +405,7 @@ void SceneCameraSystem::CreateDebugCameras()
 	// there already can be other cameras in scene
 	if(nullptr != scene)
 	{
-		DAVA::Camera *topCamera = new DAVA::Camera();
+		ScopedPtr<Camera> topCamera(new DAVA::Camera());
 		topCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
 		topCamera->SetPosition(DAVA::Vector3(-50.0f, 0.0f, 50.0f));
 		topCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
@@ -432,7 +415,7 @@ void SceneCameraSystem::CreateDebugCameras()
 		topCamera->SetupPerspective(cameraFov, 320.0f / 480.0f, cameraNear, cameraFar);
 		topCamera->SetAspect(1.0f);
 
-		DAVA::Entity *topCameraEntity = new DAVA::Entity();
+        ScopedPtr<Entity>topCameraEntity(new DAVA::Entity());
 		topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
@@ -453,10 +436,6 @@ void SceneCameraSystem::CreateDebugCameras()
 		}
         
         scene->AddCamera(topCamera);
-
-		SafeRelease(topCamera);
-
-		debugCamerasCreated = true;
 	}
 }
 
@@ -544,22 +523,15 @@ DAVA::float32 SceneCameraSystem::GetDistanceToCamera() const
 
 DAVA::Entity* SceneCameraSystem::GetEntityFromCamera(DAVA::Camera *c) const
 {
-	DAVA::Entity *ret = nullptr;
+    for (auto & entity : sceneCameras)
+    {
+        if (GetCamera(entity) == c)
+        {
+            return entity;
+        }
+    }
 
-	DAVA::Set<DAVA::Entity *>::iterator it = sceneCameras.begin();
-	for(; it != sceneCameras.end(); ++it)
-	{
-		DAVA::Entity *entity = *it;
-		DAVA::Camera *camera = GetCamera(entity);
-
-		if(camera == c)
-		{
-			ret = entity;
-			break;
-		}
-	}
-
-	return ret;
+    return nullptr;
 }
 
 void SceneCameraSystem::GetRayTo2dPoint(const DAVA::Vector2 &point, DAVA::float32 maxRayLen, DAVA::Vector3 &outPointFrom, DAVA::Vector3 &outPointTo) const
@@ -657,3 +629,9 @@ void SceneCameraSystem::MoveToStep( int ofs )
 
     MoveTo( dest, target );
 }
+
+void SceneCameraSystem::EnableSystem()
+{
+    CreateDebugCameras();
+}
+

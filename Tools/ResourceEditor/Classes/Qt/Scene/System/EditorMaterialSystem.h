@@ -37,6 +37,7 @@ class Command2;
 class EditorMaterialSystem : public DAVA::SceneSystem
 {
 	friend class SceneEditor2;
+    friend class EditorMaterialSystemCommands;
 
 public:
     enum MaterialLightViewMode

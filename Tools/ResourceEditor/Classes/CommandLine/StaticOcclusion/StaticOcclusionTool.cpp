@@ -91,7 +91,7 @@ void StaticOcclusionTool::ProcessInternal()
                 Renderer::EndFrame();
             }
 
-            scene->Save();
+            scene->SaveScene();
         }
         RenderObjectsFlusher::Flush();
     }

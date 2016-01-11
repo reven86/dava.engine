@@ -80,6 +80,9 @@ public:
 
     void MoveToSelection();
     void MoveToStep( int ofs );
+
+    void EnableSystem();
+
     
 protected:
     void OnKeyboardInput( DAVA::UIEvent *event );
@@ -97,7 +100,6 @@ protected:
     DAVA::Entity* GetEntityWithEditorCamera() const;
 
 	DAVA::Rect viewportRect;
-	bool debugCamerasCreated;
 
 	DAVA::Camera* curSceneCamera;
 
@@ -106,7 +108,7 @@ protected:
 	DAVA::Vector3 newPos;
 	DAVA::Vector3 newTar;
 
-	DAVA::Set<DAVA::Entity *> sceneCameras;
+	DAVA::List<DAVA::Entity *> sceneCameras;
 
     DAVA::float32 distanceToCamera;
 

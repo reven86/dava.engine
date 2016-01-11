@@ -77,10 +77,10 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
     case EventSystem::ANIMATION_TRANSFORM_CHANGED:
     {
         if (curSelections.ContainsEntity(component->GetEntity()))
-            {
-                invalidSelectionBoxes = true;
-            }
-            break;
+        {
+            invalidSelectionBoxes = true;
+        }
+        break;
     }
     default:
         break;
@@ -96,10 +96,8 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 
     if (!entitiesForSelection.empty())
     {
-        DAVA::List<DAVA::Entity*> tmpEntities = entitiesForSelection;
-
         Clear();
-        for (auto& entity : tmpEntities)
+        for (auto& entity : entitiesForSelection)
         {
             AddSelection(entity);
         }
@@ -261,11 +259,14 @@ void SceneSelectionSystem::Draw()
 
 void SceneSelectionSystem::AddEntity(DAVA::Entity* entity)
 {
-    auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
-    if (autoSelectionEnabled && !IsLocked())
+    if (systemIsEnabled)
     {
-        //check the situation with change parent: may be we will reset selection
-        entitiesForSelection.push_back(entity);
+        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
+        if (autoSelectionEnabled && !IsLocked())
+        {
+            //check the situation with change parent: may be we will reset selection
+            entitiesForSelection.push_back(entity);
+        }
     }
 }
 
@@ -413,7 +414,6 @@ void SceneSelectionSystem::Clear()
 {
 	if(!IsLocked())
 	{
-        entitiesForSelection.clear();
         while(curSelections.Size() > 0)
 		{
 			DAVA::Entity *entity = curSelections.GetEntity(0);
@@ -659,6 +659,11 @@ void SceneSelectionSystem::Activate()
 void SceneSelectionSystem::Deactivate()
 {
     SetLocked(true);
+}
+
+void SceneSelectionSystem::EnableSystem()
+{
+    systemIsEnabled = true;
 }
 
 

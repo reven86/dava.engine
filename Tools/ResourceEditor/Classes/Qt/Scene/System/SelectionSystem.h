@@ -117,6 +117,8 @@ public:
     bool IsEntitySelected(DAVA::Entity *entity);
     bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
 
+    void EnableSystem();
+
 protected:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
 
@@ -146,6 +148,8 @@ private:
     ST_PivotPoint curPivotPoint;
 
     DAVA::List<DAVA::Entity*> entitiesForSelection;
+
+    bool systemIsEnabled = false;
 };
 
 

@@ -30,10 +30,12 @@
 #include "BeastSystem.h"
 
 
-BeastSystem::BeastSystem(Scene* scene):SceneSystem(scene)
-{}
+BeastSystem::BeastSystem(Scene* scene)
+    : SceneSystem(scene)
+{
+}
 
-BeastSystem::~BeastSystem(){}
+BeastSystem::~BeastSystem() = default;
 
 void BeastSystem::AddEntity(Entity * entity)
 {
@@ -43,7 +45,6 @@ void BeastSystem::AddEntity(Entity * entity)
 void BeastSystem::SetDefaultPropertyValues(Entity * entity)
 {
 	DAVA::KeyedArchive* propertyList = GetOrCreateCustomProperties(entity)->GetArchive();
-
 	if(GetLight(entity))
 	{
 		SetBool(propertyList, "editor.staticlight.enable", true);

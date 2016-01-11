@@ -195,14 +195,14 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
 	return ret;
 }
 
-SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveForGame /*= false*/)
+SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath & path, bool saveForGame /*= false*/)
 {
 	ExtractEditorEntities();
 
     ScopedPtr<Texture> tilemaskTexture(nullptr);
     bool needToRestoreTilemask = false;
     if (landscapeEditorDrawSystem)
-    { //dirty magic to work with new saving of materials and FBO landsacpe texture
+    { //dirty magic to work with new saving of materials and FBO landscape texture
         tilemaskTexture = SafeRetain(landscapeEditorDrawSystem->GetTileMaskTexture());
 
         needToRestoreTilemask = landscapeEditorDrawSystem->SaveTileMaskTexture();
@@ -264,9 +264,9 @@ void SceneEditor2::InjectEditorEntities()
 }
 
 
-SceneFileV2::eError SceneEditor2::Save()
+SceneFileV2::eError SceneEditor2::SaveScene()
 {
-	return Save(curScenePath);
+    return SaveScene(curScenePath);
 }
 
 bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
@@ -432,18 +432,24 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
     DVASSERT(command != nullptr);
     Logger::Info("[%s] command is %d, action is %d", __FUNCTION__, command->GetId(), redo);
 
-    if(collisionSystem)
-		collisionSystem->ProcessCommand(command, redo);
+    if (collisionSystem)
+    {
+        collisionSystem->ProcessCommand(command, redo);
+    }
 
-	if(structureSystem)
-		structureSystem->ProcessCommand(command, redo);
+    if (structureSystem)
+    {
+        structureSystem->ProcessCommand(command, redo);
+    }
 
-	particlesSystem->ProcessCommand(command, redo);
+    particlesSystem->ProcessCommand(command, redo);
 
-	materialSystem->ProcessCommand(command, redo);
+    materialSystem->ProcessCommand(command, redo);
 
     if (landscapeEditorDrawSystem)
+    {
         landscapeEditorDrawSystem->ProcessCommand(command, redo);
+    }
     
     pathSystem->ProcessCommand(command, redo);
     wayEditSystem->ProcessCommand(command, redo);
@@ -690,4 +696,13 @@ void SceneEditor2::Deactivate()
 {
     Scene::Deactivate();
     SceneSignals::Instance()->EmitDeactivated(this);
+}
+
+void SceneEditor2::EnableEditorSystems()
+{
+    cameraSystem->EnableSystem();
+
+
+    // must be last to enable selection after all systems add their entities
+    selectionSystem->EnableSystem();
 }

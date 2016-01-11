@@ -91,7 +91,7 @@ public:
 	};
 
 	SceneEditor2();
-	~SceneEditor2();
+	~SceneEditor2() override;
 
 	// editor systems
 	SceneCameraSystem *cameraSystem;
@@ -126,8 +126,8 @@ public:
     
 	// save/load
 	bool Load(const DAVA::FilePath &path);
-    virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
-	SceneFileV2::eError Save();
+    SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);
+    SceneFileV2::eError SaveScene();
 	bool Export(const DAVA::eGPUFamily newGPU);
 
 	const DAVA::FilePath &GetScenePath();
@@ -160,7 +160,7 @@ public:
 	bool IsHUDVisible() const;
 
 	// DAVA events
-	virtual void Update(float timeElapsed);
+	void Update(float timeElapsed) override;
 
 	// this function should be called each time UI3Dview changes its position
 	// viewport rect is used to calc. ray from camera to any 2d point on this viewport
@@ -182,6 +182,9 @@ public:
     void Deactivate() override;
     
     
+    void EnableEditorSystems();
+
+
 	DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 	
 	INTROSPECTION(SceneEditor2, 
@@ -202,8 +205,8 @@ protected:
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
-    virtual void EditorCommandProcess(const Command2* command, bool redo);
-    virtual void Draw();
+    void EditorCommandProcess(const Command2* command, bool redo);
+    void Draw() override;
 
     void ExtractEditorEntities();
 	void InjectEditorEntities();

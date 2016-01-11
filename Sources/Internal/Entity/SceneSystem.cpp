@@ -72,11 +72,7 @@ bool SceneSystem::IsEntityComponentFitsToSystem(Entity * entity, Component * com
     bool isAllRequiredComponentsAvailable = ((entityComponentFlags & requiredBySystemComponents) == requiredBySystemComponents);
     bool isComponentMarkedForCheckAvailable = ((requiredBySystemComponents & componentToCheckType) == componentToCheckType);
 
-    if (isAllRequiredComponentsAvailable && isComponentMarkedForCheckAvailable)
-    {
-        return true;
-    }
-    return false;
+    return (isAllRequiredComponentsAvailable && isComponentMarkedForCheckAvailable);
 }
     
 void SceneSystem::RegisterComponent( Entity * entity, Component * component )
@@ -144,9 +140,9 @@ void SceneSystem::Process(float32 timeElapsed)
     
 }
 
-void SceneSystem::SetLocked(bool locked)
+void SceneSystem::SetLocked(bool locked_)
 {
-	this->locked = locked;
+	locked = locked_;
 }
 
 bool SceneSystem::IsLocked() const

@@ -78,7 +78,7 @@ void BeastCommandLineTool::ProcessInternal()
     {
         scene->Update(0.1f);
         scene->Exec(std::unique_ptr<Command2>(new BeastAction(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr)));
-        scene->Save();
+        scene->SaveScene();
     }
     RenderObjectsFlusher::Flush();
 }

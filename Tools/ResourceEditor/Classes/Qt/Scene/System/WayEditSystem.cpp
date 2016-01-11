@@ -40,6 +40,8 @@
 #include "Commands2/RemoveComponentCommand.h"
 #include "Utils/Utils.h"
 
+#include "Debug/DVAssert.h"
+
 
 WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selectionSystem, SceneCollisionSystem *_collisionSystem)
     : DAVA::SceneSystem(scene)
@@ -460,15 +462,29 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-     const int commandId = command->GetId();
-     if (commandId == CMDID_ENABLE_WAYEDIT)
-     {
-         EnableWayEdit(redo);
-     }
-     else if (commandId == CMDID_DISABLE_WAYEDIT)
-     {
-         EnableWayEdit(!redo);
-     }
+    const int32 commandId = command->GetId();
+    if (commandId == CMDID_BATCH)
+    {
+        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
+        if (batch->ContainsCommand(CMDID_ENABLE_WAYEDIT))
+        {
+            DVASSERT(batch->ContainsCommand(CMDID_DISABLE_WAYEDIT) == false);
+            EnableWayEdit(redo);
+        }
+        if (batch->ContainsCommand(CMDID_DISABLE_WAYEDIT))
+        {
+            DVASSERT(batch->ContainsCommand(CMDID_ENABLE_WAYEDIT) == false);
+            EnableWayEdit(!redo);
+        }
+    }
+    else if (commandId == CMDID_ENABLE_WAYEDIT)
+    {
+        EnableWayEdit(redo);
+    }
+    else if (commandId == CMDID_DISABLE_WAYEDIT)
+    {
+        EnableWayEdit(!redo);
+    }
 }
 
 void WayEditSystem::Draw()

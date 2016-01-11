@@ -205,8 +205,7 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
             QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
         }
     }
-
-    scene->selectionSystem->Clear();
+    scene->EnableEditorSystems();
 
     SetTabScene(tabIndex, scene);
     SetCurrentTab(tabIndex);
