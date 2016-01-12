@@ -42,6 +42,7 @@
 #include "UI/UIPackage.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
@@ -333,8 +334,8 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root, AbstractUIPac
         LoadComponentPropertiesFromYamlNode(control, node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);
         LoadInternalControlPropertiesFromYamlNode(control, node, builder);
-        
-        if (version == VERSION_WITH_LEGACY_ALIGNS)
+
+        if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
             ProcessLegacyAligns(control, node, builder);
         }
@@ -376,7 +377,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
-    for (auto &nodeDescr : components)
+    for (ComponentNode& nodeDescr : components)
     {
         UIComponent *component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
@@ -385,7 +386,35 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, co
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
-                VariantType res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, member->Name().c_str());
+                VariantType res;
+                if (version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
+                {
+                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && member->Name() == FastName("orientation"))
+                    {
+                        const YamlNode* valueNode = nodeDescr.node->Get(member->Name().c_str());
+                        if (valueNode)
+                        {
+                            if (valueNode->AsString() == "Horizontal")
+                            {
+                                res.SetInt32(UILinearLayoutComponent::LEFT_TO_RIGHT);
+                            }
+                            else if (valueNode->AsString() == "Vertical")
+                            {
+                                res.SetInt32(UILinearLayoutComponent::TOP_DOWN);
+                            }
+                            else
+                            {
+                                DVASSERT(false);
+                            }
+                        }
+                    }
+                }
+
+                if (res.GetType() == VariantType::TYPE_NONE)
+                {
+                    res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, member->Name().c_str());
+                }
+
                 builder->ProcessProperty(member, res);
             }
         }

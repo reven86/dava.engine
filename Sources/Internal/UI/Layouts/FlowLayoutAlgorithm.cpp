@@ -185,7 +185,7 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
         }
     }
 
-    if (firstIndex <= data.GetLastChildIndex())
+    if (firstIndex <= data.GetLastChildIndex() && childrenInLine > 0)
     {
         lines.emplace_back(LineInfo{ firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize });
     }

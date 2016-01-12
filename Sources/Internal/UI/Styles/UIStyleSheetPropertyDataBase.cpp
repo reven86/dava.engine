@@ -74,7 +74,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("textalign"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER)),
 
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("enabled"), VariantType(true)),
-                     UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("orientation"), VariantType(UILinearLayoutComponent::HORIZONTAL)),
+                     UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("orientation"), VariantType(UILinearLayoutComponent::LEFT_TO_RIGHT)),
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("padding"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("dynamicPadding"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("spacing"), VariantType(0.0f)),
