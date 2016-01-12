@@ -132,7 +132,17 @@ void DeferredScreenMetricEvents::DeferredTick()
         w = std::max(w, minWindowWidth);
         h = std::max(h, minWindowHeight);
         Windows::Foundation::Size size(w, h);
-        Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->TryResizeView(size);
+        auto currentView = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView();
+
+        bool success = currentView->TryResizeView(size);
+        if (!success)
+        {
+            Windows::Foundation::Size defaultSize(minWindowWidth, minWindowHeight);
+            if (!currentView->TryResizeView(defaultSize))
+            {
+                Logger::FrameworkDebug("[DeferredScreenMetricEvents::DeferredTick]: Unable to resize window to default size");
+            }
+        }
     }
     else
     {
