@@ -149,8 +149,8 @@ struct ParticleLayer : public BaseObject
     RefPtr<PropertyLine<float32>> spinOverLife;
     bool randomSpinDirection;
 
-    RefPtr< PropertyLine<Color> > colorRandom;		
-	RefPtr< PropertyLine<float32> > alphaOverLife;	
+    RefPtr<PropertyLine<Color>> colorRandom;
+    RefPtr< PropertyLine<float32> > alphaOverLife;	
 	RefPtr< PropertyLine<Color> > colorOverLife;	
 
 	RefPtr< PropertyLine<float32> > angle;				// sprite angle in degrees

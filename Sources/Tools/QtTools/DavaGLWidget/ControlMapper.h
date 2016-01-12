@@ -69,9 +69,8 @@ public slots:
     void releaseKeyboard();
     
 private:
-    DAVA::UIEvent MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button = Qt::NoButton, ulong timestamp = 0 );
-    DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
-    
+    DAVA::Vector<DAVA::UIEvent>& MapMouseEventToDAVA(const QPoint& pos, const Qt::MouseButtons button = Qt::NoButton, ulong timestamp = 0) const;
+    static DAVA::Vector<DAVA::UIEvent::MouseButton>& MapQtButtonToDAVA(const Qt::MouseButtons button);
     QPointer< QWindow > window;
 };
 
