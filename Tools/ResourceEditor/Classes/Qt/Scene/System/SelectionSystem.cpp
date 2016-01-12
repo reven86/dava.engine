@@ -151,8 +151,8 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 			ST_MODIF_OFF == hoodSystem->GetModifMode() ||
 			ST_AXIS_NONE == hoodSystem->GetPassingAxis())
 		{
-			if(event->tid == DAVA::UIEvent::BUTTON_1)
-			{
+            if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+            {
 				const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 				EntityGroup selectableItems = GetSelecetableFromCollision(collisionEntities);
 
@@ -209,8 +209,8 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 	}
     else if (DAVA::UIEvent::Phase::ENDED == event->phase)
     {
-        if(event->tid == DAVA::UIEvent::BUTTON_1)
-		{
+        if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+        {
 			if(applyOnPhaseEnd)
 			{
 				applyOnPhaseEnd = false;

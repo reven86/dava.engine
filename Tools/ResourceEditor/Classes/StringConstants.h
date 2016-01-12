@@ -193,7 +193,7 @@ namespace ResourceEditor
     static const String LANDSCAPE_EDITOR_SYSTEM_FULLTILED_TEXTURE_ABSETN = "Error: full tiled texture is absent.";
     static const String LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE_ABSENT = "Error: tile texture is absent.";
     static const String LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT = "Error: color texture is absent.";
-    static const String LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT		= "Error: heightmap is absent.";
+    static const String LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT = "Error: heightmap is absent.";
     static const String LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT     = "Warning: custom color texture is absent. Default texture will be created.";
 
 	static const String ADD_SWITCH_NODE_DIALOG_NO_CHILDREN			= "Error: switch node must be created with state nodes.";

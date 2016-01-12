@@ -39,7 +39,7 @@ public:
 	DAEConvertAction(const DAVA::FilePath &path);
 
     void Redo() override;
-    
+
 protected:
 	DAVA::FilePath daePath;
 };

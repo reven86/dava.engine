@@ -104,14 +104,13 @@ void Replay::RecordEventsCount(int32 eventsCount)
 
 void Replay::RecordEvent(const UIEvent * ev)
 {
-	Write(ev->tid);
-	Write(ev->point.x);
+    Write(ev->touchId); // union for (key, touch, gamepad...)
+    Write(ev->point.x);
 	Write(ev->point.y);
 	Write(ev->timestamp);
 	Write(ev->phase);
 	Write(ev->controlState);
 	Write(ev->tapCount);
-	Write<uint16>(ev->keyChar);
     Write(static_cast<uint32>(ev->device));
 }
 
@@ -194,8 +193,10 @@ UIEvent	Replay::PlayEvent()
 {
 	UIEvent ev;
 
-	ev.tid = Read<int32>(); if(!isPlayback) return ev;
-	ev.point.x = Read<float32>(); if(!isPlayback) return ev;
+    ev.touchId = Read<uint32>();
+    if (!isPlayback)
+        return ev;
+    ev.point.x = Read<float32>(); if(!isPlayback) return ev;
 	ev.point.y = Read<float32>(); if(!isPlayback) return ev;
 	ev.timestamp = Read<float64>(); if(!isPlayback) return ev;
     ev.phase = static_cast<UIEvent::Phase>(Read<int32>());
@@ -205,9 +206,6 @@ UIEvent	Replay::PlayEvent()
     if (!isPlayback)
         return ev;
     ev.tapCount = Read<int32>();
-    if (!isPlayback)
-        return ev;
-    ev.keyChar = Read<uint16>();
     if (!isPlayback)
         return ev;
     ev.device = Read<UIEvent::Device>();
