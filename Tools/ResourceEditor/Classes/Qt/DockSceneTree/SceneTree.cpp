@@ -244,11 +244,8 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
 	if(scene == treeModel->GetScene())
 	{
-		auto selectionWasBlocked = selectionModel()->blockSignals(true);
-        filteringProxyModel->setSourceModel(nullptr);
+        bool selectionWasBlocked = selectionModel()->blockSignals(true);
         treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-        filteringProxyModel->setSourceModel(treeModel);
-
         treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
 
@@ -667,26 +664,26 @@ void SceneTree::ReloadModel()
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		QDialog *dlg = new QDialog(this);
+        QDialog dlg(this);
 
-		QVBoxLayout *dlgLayout = new QVBoxLayout();
+        QVBoxLayout *dlgLayout = new QVBoxLayout();
 		dlgLayout->setMargin(10);
 
-		dlg->setWindowTitle("Reload Model options");
-		dlg->setLayout(dlgLayout);
-	
-		QCheckBox *lightmapsChBox = new QCheckBox("Leave lightmap settings", dlg);
-		dlgLayout->addWidget(lightmapsChBox);
+        dlg.setWindowTitle("Reload Model options");
+        dlg.setLayout(dlgLayout);
+
+        QCheckBox* lightmapsChBox = new QCheckBox("Leave lightmap settings", &dlg);
+        dlgLayout->addWidget(lightmapsChBox);
 		lightmapsChBox->setCheckState(Qt::Checked);
 
-		QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
-		dlgLayout->addWidget(buttons);
+        QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
+        dlgLayout->addWidget(buttons);
 
-		QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
-		QObject::connect(buttons, SIGNAL(rejected()), dlg, SLOT(reject()));
+        QObject::connect(buttons, SIGNAL(accepted()), &dlg, SLOT(accept()));
+        QObject::connect(buttons, SIGNAL(rejected()), &dlg, SLOT(reject()));
 
-		if(QDialog::Accepted == dlg->exec())
-		{
+        if (QDialog::Accepted == dlg.exec())
+        {
 			EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
 			String wrongPathes;
 			for(size_t i = 0; i < selection.Size(); ++i)
@@ -707,10 +704,9 @@ void SceneTree::ReloadModel()
 			{
 				ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
 			}
-			sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
-		}
-
-		delete dlg;
+            EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
+            sceneEditor->selectionSystem->SetSelection(newSelection);
+        }
 	}
 }
 
@@ -740,7 +736,8 @@ void SceneTree::ReloadModelAs()
             QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-                sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                sceneEditor->selectionSystem->SetSelection(newSelection);
             }
         }
     }
