@@ -923,11 +923,12 @@ bool Landscape::GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int3
     vertices.resize(gridWidth * gridHeight);
     for (uint32 y = 0, index = 0; y < gridHeight; ++y)
     {
-        float ny = static_cast<float32>(y) / static_cast<float>(gridHeight - 1);
+        uint32 row = y * heightmap->Size();
+        float32 ny = static_cast<float32>(y) / static_cast<float32>(gridHeight - 1);
         for (uint32 x = 0; x < gridWidth; ++x)
         {
-            float nx = static_cast<float32>(x) / static_cast<float>(gridWidth - 1);
-            vertices[index].position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
+            float32 nx = static_cast<float32>(x) / static_cast<float32>(gridWidth - 1);
+            vertices[index].position = GetPoint(x, y, heightmap->Data()[row + x]);
             vertices[index].texCoord = Vector2(nx, ny);
             index++;
         }

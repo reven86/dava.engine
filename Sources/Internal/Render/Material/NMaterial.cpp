@@ -44,7 +44,7 @@
 
 namespace DAVA
 {
-const float32 NMaterial::DEFAULT_LIGHTMAP_SIZE = 128.0f;
+const float32 NMaterial::DEFAULT_LIGHTMAP_SIZE = 16.0f;
 
 struct MaterialPropertyBinding
 {
