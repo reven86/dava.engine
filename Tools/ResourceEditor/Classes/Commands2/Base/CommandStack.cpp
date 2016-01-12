@@ -165,7 +165,6 @@ void CommandStack::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCou
     else
     {
         DVASSERT(curBatchCommand);
-        DAVA::Logger::Error("Begin batch(%s) is called inside other batch(&s)", text.c_str(), curBatchCommand->GetText().c_str());
     }
 }
 

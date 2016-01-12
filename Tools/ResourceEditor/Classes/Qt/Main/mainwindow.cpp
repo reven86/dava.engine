@@ -2583,7 +2583,10 @@ void QtMainWindow::OnWayEditor()
         return;
     }
 
+    auto isLocked = sceneEditor->selectionSystem->IsLocked();
+    sceneEditor->selectionSystem->SetLocked(true);
     sceneEditor->pathSystem->EnablePathEdit(toEnable);
+    sceneEditor->selectionSystem->SetLocked(isLocked);
 }
 
 
