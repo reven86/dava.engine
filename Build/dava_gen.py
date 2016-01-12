@@ -13,6 +13,7 @@ g_ios_toolchain = "ios.toolchain.cmake"
 g_android_toolchain = "android.toolchain.cmake"
 
 g_cmake_file_path = ""
+g_add_definitions = ""
 g_generation_dir = ""
 g_supported_platforms = ["macos", "ios", "android", "windows"]
 g_supported_additional_parameters = ["console", "uap"]
@@ -136,6 +137,7 @@ def main():
     parser.add_argument('additional_params', nargs='*', help= 'One of ' + str(g_supported_additional_parameters))
     parser.add_argument('cmake_path', help='relative path to cmake list')
     parser.add_argument('--generation_dir', default="", help="path to generation cmake list" )
+    parser.add_argument('--add_definitions', default="", help="add definitions" )
 
     options = parser.parse_args()
 
@@ -165,6 +167,7 @@ def main():
 
     g_cmake_file_path = os.path.realpath(options.cmake_path)
     g_generation_dir  = options.generation_dir
+    g_add_definitions = options.add_definitions.replace(',',' ')
 
     if len(g_generation_dir) :
         if not os.path.exists(g_generation_dir):
@@ -177,7 +180,7 @@ def main():
         print "cmake command not found."
         exit()
 
-    call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path]
+    call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path, g_add_definitions]
 
     subprocess.check_output(call_string)
     
