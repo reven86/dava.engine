@@ -253,7 +253,7 @@ public:
         {
             if (!con.second.blocked)
             {
-                con.second.fn(std::forward<Args>(args)...);
+                con.second.fn(args...);
             }
         }
     }
