@@ -87,6 +87,9 @@ extern void FrameworkMain(int argc, char *argv[]);
 	// enable vsync
 	GLint swapInt = 1;
     [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    
+    // enable retina resolution
+    [self setWantsBestResolutionOpenGLSurface:YES];
 	
 #if RHI_COMPLETE
     DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
@@ -148,14 +151,26 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 - (void)reshape
 {
-	NSRect rect = self.frame;
-#if RHI_COMPLETE
-    DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
-#endif
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
-
-    sizeChanged = YES;
+    if(Renderer::IsInitialized())
+    {
+        NSRect rect = self.frame;
+        NSRect backingRect = [self convertRectToBacking:rect];
+        
+        float32 userScale = DAVA::Core::Instance()->GetScreenScaleMultiplier();
+        
+        rhi::ResetParam params;
+        params.width = backingRect.size.width;
+        params.height = backingRect.size.height;
+        params.scaleX = userScale;
+        params.scaleY = userScale;
+        Renderer::Reset(params);
+        
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(backingRect.size.width, backingRect.size.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingRect.size.width * userScale, backingRect.size.height * userScale);
+        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        UIScreenManager::Instance()->ScreenSizeChanged();
+    }
+    
     [super reshape];
 }
 
@@ -168,7 +183,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
     if(willQuit)
         return;
-
+    
     DAVA::Core::Instance()->SystemProcessFrame();
 }
 
@@ -204,9 +219,9 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 static Vector<DAVA::UIEvent> activeTouches;
 
-void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
+void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
-    NSPoint p = [curEvent locationInWindow];
+    NSPoint p = [glview convertPointToBacking:[curEvent locationInWindow]];
 
     if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
@@ -223,7 +238,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
         event.tapCount = curEvent.clickCount;
     }
     event.timestamp = curEvent.timestamp;
-    event.phase = phase;
+    event.phase = phase;    
 }
 
 - (void)moveTouchsToVector:(UIEvent::Phase)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
@@ -264,7 +279,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     {
         for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-            ConvertNSEventToUIEvent(curEvent, (*it), phase);
+            ConvertNSEventToUIEvent(self, curEvent, (*it), phase);
         }
     }
 
@@ -274,7 +289,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
         if (it->mouseButton == static_cast<UIEvent::MouseButton>(button))
         {
             isFind = true;
-            ConvertNSEventToUIEvent(curEvent, (*it), phase);
+            ConvertNSEventToUIEvent(self, curEvent, (*it), phase);
 
             break;
         }
@@ -286,7 +301,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
         newTouch.mouseButton = static_cast<UIEvent::MouseButton>(button);
         newTouch.device = UIEvent::Device::MOUSE;
 
-        ConvertNSEventToUIEvent(curEvent, newTouch, phase);
+        ConvertNSEventToUIEvent(self, curEvent, newTouch, phase);
 
         allTouches.push_back(newTouch);
     }
@@ -350,6 +365,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     }
 
     NSPoint posInWindow = [theEvent locationInWindow];
+    
     ev.physPoint.x = posInWindow.x;
     ev.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - posInWindow.y;
 

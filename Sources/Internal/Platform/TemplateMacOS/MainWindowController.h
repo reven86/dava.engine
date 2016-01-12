@@ -30,8 +30,6 @@
 #import <Cocoa/Cocoa.h>
 #import "OpenGLView.h"
 #import "AppDelegate.h"
-#import "NSFullScreenWindow.h"
-
 
 @interface MainWindowController : NSWindowController <NSWindowDelegate, NSFileManagerDelegate>
 {

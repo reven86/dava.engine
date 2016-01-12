@@ -47,12 +47,6 @@ namespace DAVA
 
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
 
-        //detecting physical screen size and initing core system with this size
-        float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
-        const DeviceInfo::ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(screenInfo.width, screenInfo.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(screenInfo.width * scale, screenInfo.height * scale);
-
         int retVal = NSApplicationMain(argc, (const char**)argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
@@ -138,12 +132,9 @@ namespace DAVA
 
 -(void)createWindows
 {
-    NSRect fullscreenRect = [[NSScreen mainScreen] frame];
+    NSRect displayRect = [[NSScreen mainScreen] frame];
 	
 	FrameworkDidLaunched();
-#if RHI_COMPLETE
-    RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-#endif
 
     String title;
     int32 width = 800;
@@ -163,20 +154,12 @@ namespace DAVA
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
     
     NSUInteger wStyle = NSTitledWindowMask + NSMiniaturizableWindowMask + NSClosableWindowMask + NSResizableWindowMask;
-    NSRect wRect = NSMakeRect((fullscreenRect.size.width - width) / 2, (fullscreenRect.size.height - height) / 2, width, height);
+    NSRect wRect = NSMakeRect((displayRect.size.width - width) / 2, (displayRect.size.height - height) / 2, width, height);
     mainWindow = [[NSWindow alloc] initWithContentRect:wRect styleMask:wStyle backing:NSBackingStoreBuffered defer:FALSE];
     [mainWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [mainWindow setDelegate:self];
     [mainWindow setContentView: openGLView];
-    
-    NSRect rect;
-    rect.origin.x = 0;
-    rect.origin.y = 0;
-    rect.size.width = width;
-    rect.size.height = height;
-    
-    [mainWindow setContentSize:rect.size];
-    [openGLView setFrame: rect];
+    [mainWindow setContentSize: NSMakeSize(width, height)];
 
     core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
@@ -186,11 +169,7 @@ namespace DAVA
 #endif
 
 // start animation
-#if RHI_COMPLETE
-    currFPS = RenderManager::Instance()->GetFPS();
-#else
     currFPS = 60;
-#endif
     [self startAnimationTimer];
 
     // make window main
@@ -243,22 +222,6 @@ namespace DAVA
             [mainWindowController->mainWindow toggleFullScreen: nil];
             return YES;
         }
-        // fullsreen for 10.5+ MacOS
-        // this code can be uncommented to have 10.5+ fullscreen support
-        /*
-        else if(macOSVer >= NSAppKitVersionNumber10_5)
-        {
-            fullScreen = _fullScreen;
-            if(fullScreen)
-            {
-                [openGLView enterFullScreenMode:[NSScreen mainScreen] withOptions:nil];
-            }
-            else
-            {
-                [openGLView exitFullScreenModeWithOptions:nil];
-            }
-        }
-        */
         else
         {
             // fullscreen for older macOS isn't supperted
@@ -367,16 +330,13 @@ namespace DAVA
 
 - (void) animationTimerFired:(NSTimer *)timer
 {
-//	NSLog(@"anim timer fired: %@", openGLView);
     [openGLView setNeedsDisplay:YES];
-#if RHI_COMPLETE
-    if (currFPS != RenderManager::Instance()->GetFPS())
+    if (currFPS != Renderer::GetDesiredFPS())
     {
-        currFPS = RenderManager::Instance()->GetFPS();
+        currFPS = Renderer::GetDesiredFPS();
         [self stopAnimationTimer];
         [self startAnimationTimer];
     }
-#endif
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -397,15 +357,21 @@ namespace DAVA
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
 {
-//	[NSMenu setMenuBarVisible: NO];
-//	[NSMenu setMenuBarVisible: YES];
 	[self createWindows];
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
 
+    float32 userScale = DAVA::Core::Instance()->GetScreenScaleMultiplier();
+
+    NSRect backingRect = [openGLView convertRectToBacking:[openGLView frame]];
     DAVA::CoreMacOSPlatform* macCore = (DAVA::CoreMacOSPlatform*)Core::Instance();
     macCore->rendererParams.window = mainWindowController->openGLView;
-    macCore->rendererParams.width = [mainWindowController->openGLView frame].size.width;
-    macCore->rendererParams.height = [mainWindowController->openGLView frame].size.height;
+    macCore->rendererParams.width = backingRect.size.width;
+    macCore->rendererParams.height = backingRect.size.height;
+    macCore->rendererParams.scaleX = userScale;
+    macCore->rendererParams.scaleY = userScale;
+
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(backingRect.size.width, backingRect.size.height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingRect.size.width * userScale, backingRect.size.height * userScale);
 
     Core::Instance()->SystemAppStarted();
 }
