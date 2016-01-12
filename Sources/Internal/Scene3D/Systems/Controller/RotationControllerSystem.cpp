@@ -93,7 +93,7 @@ void RotationControllerSystem::Input(UIEvent *event)
     if(0 == size) return;
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    if(event->tid == UIEvent::BUTTON_2 || event->tid == UIEvent::BUTTON_3)
+    if (event->mouseButton == UIEvent::MouseButton::RIGHT || event->mouseButton == UIEvent::MouseButton::MIDDLE)
 #endif
     {
         if (UIEvent::Phase::BEGAN == event->phase)
@@ -117,14 +117,14 @@ void RotationControllerSystem::Input(UIEvent *event)
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
                     RotateDirection(camera);
 #else
-                    if(event->tid == DAVA::UIEvent::BUTTON_2)
+                    if (event->mouseButton == DAVA::UIEvent::MouseButton::RIGHT)
                     {
                         RotateDirection(camera);
                     }
-                    else if(event->tid == DAVA::UIEvent::BUTTON_3)
+                    else if (event->mouseButton == DAVA::UIEvent::MouseButton::MIDDLE)
                     {
                         KeyboardDevice &keyboard = InputSystem::Instance()->GetKeyboard();
-                        if(keyboard.IsKeyPressed(DVKEY_ALT))
+                        if (keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT))
                         {
                             RotatePositionAroundPoint(camera, rotationPoint);
                         }

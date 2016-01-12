@@ -60,10 +60,10 @@ public:
 	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
 
 	AnimationData* Clone() const;
-    
-    void BakeTransform(const Matrix4 & transform);
 
-	float32 duration;
+    void BakeTransform(const Matrix4& transform);
+
+    float32 duration;
 	
 	DAVA::Vector< SceneNodeAnimationKey > keys;
 

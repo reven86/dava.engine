@@ -61,7 +61,7 @@ public:
     };
 
     LandscapeEditorDrawSystem(Scene* scene);
-	virtual ~LandscapeEditorDrawSystem();
+    virtual ~LandscapeEditorDrawSystem();
 	
 	LandscapeProxy* GetLandscapeProxy();
 	HeightmapProxy* GetHeightmapProxy();

@@ -54,8 +54,8 @@ public:
     int GetFrameHeight(int frame) const;
 
     FilePath filename;
-    int			frameCount;
-	int			spriteWidth;
+    int frameCount;
+    int			spriteWidth;
 	int			spriteHeight;
 	Rect2i		* frameRects;
 
