@@ -68,6 +68,14 @@ void ReleaseDAVA()
 
 int main(int argc, char* argv[])
 {
+    printf("\nAssetCacheClient arguments(%d):\n", argc);
+    for (int i = 0; i < argc; ++i)
+    {
+        printf("[%02d] %s\n", i, argv[i]);
+    }
+    printf("======= DONE =======\n");
+//=============================
+
     CreateDAVA();
 
     AssetCacheClient cacheClient;
