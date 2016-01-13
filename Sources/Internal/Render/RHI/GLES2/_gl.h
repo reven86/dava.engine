@@ -211,6 +211,7 @@ extern int _GLES2_DefaultFrameBuffer_Width;
 extern int _GLES2_DefaultFrameBuffer_Height;
 
 extern GLuint _GLES2_LastSetIB;
+extern void* _GLES2_LastSetIBData;
 extern GLuint _GLES2_LastSetVB;
 extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;

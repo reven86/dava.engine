@@ -303,8 +303,24 @@ SetToRHI(Handle ib)
     IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get(ib);
 
     DVASSERT(!self->isMapped);
-    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->uid));
-    _GLES2_LastSetIB = self->uid;
+
+    if (self->usage == GL_DYNAMIC_DRAW)
+    {
+        DVASSERT(self->mappedData);
+
+        _GLES2_LastSetIBData = self->mappedData;
+        self->updatePending = false;
+
+        GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+        _GLES2_LastSetIB = 0;
+    }
+    else
+    {
+        GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->uid));
+        _GLES2_LastSetIB = self->uid;
+        _GLES2_LastSetIBData = nullptr;
+    }
+
 
     if (self->updatePending)
     {

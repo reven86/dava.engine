@@ -1130,7 +1130,11 @@ void CommandBufferGLES2_t::Execute()
                 i_off = startIndex * sizeof(uint32);
             }
 
-            GL_CALL(glDrawElements(mode, v_cnt, i_sz, (void*)((uint64)i_off)));
+            if (_GLES2_LastSetIB)
+                GL_CALL(glDrawElements(mode, v_cnt, i_sz, (void*)((uint64)i_off)));
+            else
+                GL_CALL(glDrawElements(mode, v_cnt, i_sz, ((uint8*)_GLES2_LastSetIBData) + i_off));
+
             //LCP;
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
