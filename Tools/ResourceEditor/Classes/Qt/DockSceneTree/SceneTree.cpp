@@ -1464,5 +1464,7 @@ void SceneTree::PropagateSolidFlagRecursive(QStandardItem* root)
         }
     }
     else
+    {
         treeModel->SetSolid(rootIndex, true);
+    }
 }
