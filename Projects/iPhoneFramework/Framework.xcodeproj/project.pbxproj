@@ -7101,6 +7101,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Debug;
 		};
@@ -7148,6 +7149,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Release;
 		};
@@ -7190,6 +7192,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = AdHoc;
 		};
@@ -7232,6 +7235,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Distribution;
 		};
@@ -7283,6 +7287,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Debug;
 		};
@@ -7331,6 +7336,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Release;
 		};
@@ -7515,6 +7521,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = AdHoc;
 		};
@@ -7604,6 +7611,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Distribution;
 		};
