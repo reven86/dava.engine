@@ -28,6 +28,9 @@
 
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Concurrency/AutoResetEvent.h"
+#include "Concurrency/ManualResetEvent.h"
+#include <random>
 
 using namespace DAVA;
 
@@ -38,6 +41,15 @@ DAVA_TESTCLASS(ThreadSyncTest)
     Mutex cvMutex;
     ConditionVariable cv;
     int someValue;
+
+    volatile int autoResetValue;
+    volatile int manualResetValue;
+
+    static const int autoResetLoopCount = 10000;
+    static const int autoResetThreadCount = 4;
+
+    AutoResetEvent are;
+    ManualResetEvent mre;
 
     DAVA_TEST(ThreadSyncTestFunction)
     {
@@ -138,6 +150,87 @@ DAVA_TESTCLASS(ThreadSyncTest)
 
         Logger::Debug("[ThreadSyncTest] Done.");
         */
+    }
+
+    DAVA_TEST(TestAutoResetEvent)
+    {
+        Thread* threads[autoResetThreadCount];
+
+        autoResetValue = 0;
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i] = Thread::Create(Message(this, &ThreadSyncTest::AutoResetEventThreadFunc));
+            threads[i]->Start();
+        }
+
+        while (autoResetValue < autoResetThreadCount)
+        {
+            are.Signal();
+        }
+
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i]->Join();
+            threads[i]->Release();
+        }
+    }
+
+    void AutoResetEventThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0, 1);
+        double res = 0;
+
+        for (int i = 0; i < autoResetLoopCount; ++i)
+        {
+            res += dis(gen);
+            are.Wait();
+        }
+
+        autoResetValue++;
+        Logger::Info("%f", res);
+    }
+
+    DAVA_TEST(TestManualResetEvent)
+    {
+        Thread* threads[autoResetThreadCount];
+
+        manualResetValue = 0;
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i] = Thread::Create(Message(this, &ThreadSyncTest::ManualResetEventThreadFunc));
+            threads[i]->Start();
+        }
+
+        while (manualResetValue < autoResetThreadCount)
+        {
+            mre.Wait();
+        }
+
+        for (int i = 0; i < autoResetThreadCount; ++i)
+        {
+            threads[i]->Join();
+            threads[i]->Release();
+        }
+    }
+
+    void ManualResetEventThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0, 1);
+        double res = 0;
+
+        for (int i = 0; i < autoResetLoopCount; ++i)
+        {
+            mre.Reset();
+            res += dis(gen);
+            mre.Signal();
+        }
+
+        manualResetValue++;
+        Logger::Info("%f", res);
     }
 
     void SomeThreadFunc(BaseObject * caller, void * callerData, void * userData)
