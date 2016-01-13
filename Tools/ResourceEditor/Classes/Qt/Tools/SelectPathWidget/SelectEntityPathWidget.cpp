@@ -136,7 +136,7 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
 
         if (NULL != entity)
         {
-			retList.push_back(entity);
+            retList.push_back(entity);
 		}
 	}
 	// for just created entities no need to increase refCouner

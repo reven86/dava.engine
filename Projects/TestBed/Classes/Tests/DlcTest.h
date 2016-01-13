@@ -26,23 +26,75 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
-#include <libuv/uv.h>
+#ifndef __TEST_SCREEN_H__
+#define __TEST_SCREEN_H__
 
-#include "Debug/DVAssert.h"
+#include "DAVAEngine.h"
+#include "DLC/DLC.h"
+#include "Infrastructure/BaseScreen.h"
 
-namespace DAVA
+using namespace DAVA;
+
+struct DLCCrashTest
 {
-namespace Net
+    uint64 cancelTimeout;
+    uint64 exitTimeout;
+    uint32 retryCount;
+
+    DAVA::FilePath testingFileFlag;
+    DAVA::String dbObjectId;
+
+    bool forceExit;
+    bool inExitMode;
+
+    Thread* exitThread;
+
+    void Init(const DAVA::FilePath& workingDir, const DAVA::FilePath& destinationDir);
+    void Update(float32 timeElapsed, DLC* dlc);
+
+    void ExitThread(BaseObject* caller, void* callerData, void* userData);
+};
+
+class DlcTest : public BaseScreen
 {
-const char8* ErrorToString(int32 error)
-{
-#if !defined(DAVA_NETWORK_DISABLE)
-    return uv_strerror(error);
-#else
-    return "DAVA network is disabled";
+public:
+    DlcTest();
+
+protected:
+    ~DlcTest()
+    {
+    }
+
+public:
+    void LoadResources() override;
+    void UnloadResources() override;
+    void WillAppear() override;
+
+    void Update(float32 timeElapsed) override;
+    void Draw(const UIGeometricData& geometricData) override;
+
+private:
+    void Cancel(BaseObject* obj, void* data, void* callerData);
+    void Restart(BaseObject* obj, void* data, void* callerData);
+
+protected:
+    DAVA::FilePath workingDir;
+    DAVA::FilePath sourceDir;
+    DAVA::FilePath destinationDir;
+
+    UIButton* returnButton;
+    UIButton* restartButton;
+
+    UIStaticText* staticText;
+    UIControl* animControl;
+    UIControl* progressControl;
+
+    float32 angle;
+    float32 lastUpdateTime;
+    uint32 lastDLCState;
+
+    DLC* dlc;
+    DLCCrashTest crashTest;
+};
+
 #endif
-}
-
-} // namespace Net
-} // namespace DAVA

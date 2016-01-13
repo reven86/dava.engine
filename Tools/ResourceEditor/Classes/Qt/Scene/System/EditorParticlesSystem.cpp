@@ -288,8 +288,8 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
         {
             const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
             SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
-																	  castedCmd->GetLayer());
-			break;
+                                                                    castedCmd->GetLayer());
+            break;
 		}
 
 		case CMDID_PARTICLE_FORCE_UPDATE:

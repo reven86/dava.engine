@@ -77,8 +77,8 @@ public slots:
     void OnDocumentActivated(Document* document);
     void OnDocumentDeactivated(Document* document);
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnRootControlPositionChanged(const DAVA::Vector2 &pos);
-    void OnNestedControlPositionChanged(const QPoint &pos);
+    void OnRootControlPositionChanged(const DAVA::Vector2& pos);
+    void OnNestedControlPositionChanged(const QPoint& pos);
 
 private slots:
     void OnScaleChanged(qreal scale);
