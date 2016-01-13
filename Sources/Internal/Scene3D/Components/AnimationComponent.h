@@ -56,9 +56,9 @@ public:
 	virtual void GetDataNodes(Set<DataNode*> & dataNodes);
 
 	void SetAnimation(AnimationData* animation);
-    AnimationData * GetAnimation() const;
+    AnimationData* GetAnimation() const;
 
- 	bool GetIsPlaying() const;
+    bool GetIsPlaying() const;
  	void SetIsPlaying(bool value);
 
     void Start();
@@ -95,12 +95,10 @@ public:
 	);
 };
 
-inline AnimationData * AnimationComponent::GetAnimation() const
+inline AnimationData* AnimationComponent::GetAnimation() const
 {
     return animation;
 }
-
-
 };
 
 #endif //__DAVAENGINE_ANIMATION_COMPONENT_H__

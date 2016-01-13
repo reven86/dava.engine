@@ -222,7 +222,7 @@ void UIControlBackground::SetDrawColor(const Color& c)
 
 void UIControlBackground::SetParentColor(const Color& parentColor)
 {
-    switch (colorInheritType)
+    switch (static_cast<eColorInheritType>(colorInheritType))
     {
     case COLOR_MULTIPLY_ON_PARENT:
     {
@@ -262,6 +262,9 @@ void UIControlBackground::SetParentColor(const Color& parentColor)
         drawColor.a = parentColor.a;
     }
     break;
+    default:
+        DVASSERT_MSG(false, Format("Unknown colorInheritType: %d", colorInheritType).c_str());
+        break;
     }
 }
 

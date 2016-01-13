@@ -43,7 +43,18 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
     , changes(0)
     , brushMaterial(new NMaterial())
 {
-    customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888 /*, Texture::DEPTH_NONE*/);
+    Texture::FBODescriptor fboDesc;
+    fboDesc.width = size;
+    fboDesc.height = size;
+    fboDesc.textureType = rhi::TextureType::TEXTURE_TYPE_2D;
+    fboDesc.format = PixelFormat::FORMAT_RGBA8888;
+    fboDesc.needDepth = false;
+    fboDesc.needPixelReadback = true;
+    customColorsRenderTarget = Texture::CreateFBO(fboDesc);
+
+    // clear texture, to initialize frame buffer object
+    // using PRIORITY_SERVICE_2D + 1 to ensure it will be cleared before drawing existing image into render target
+    RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_SERVICE_2D + 1, DAVA::Color::Clear, rhi::Viewport(0, 0, size, size));
 
     brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
     brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));

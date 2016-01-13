@@ -229,7 +229,7 @@ public:
     virtual void CopyDataFrom(UIControl *srcControl);
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
-    
+
     bool GetNeedRefresh();
 
 protected:
@@ -285,6 +285,5 @@ inline bool UIList::GetNeedRefresh()
 {
     return needRefresh;
 }
-
 };
 #endif

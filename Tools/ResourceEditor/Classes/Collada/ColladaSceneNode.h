@@ -39,64 +39,59 @@
 
 namespace DAVA
 {
-
 class ColladaSceneNode
 {
 public:
-	ColladaSceneNode(ColladaScene * scene, FCDSceneNode * _node);
-	~ColladaSceneNode();
-	
-	static bool KeyTimeEqual(float32 first, float32 second);
+    ColladaSceneNode(ColladaScene* scene, FCDSceneNode* _node);
+    ~ColladaSceneNode();
 
-	static SceneNodeAnimationKey ExportAnimationKey(FCDSceneNode * originalNode, float32 t);
-	static SceneNodeAnimation * ExportNodeAnimation(FCDSceneNode * originalNode, float32 startTime, float32 endTime, float32 fps);
-	static FMMatrix44 CalculateTransformForTime(FCDSceneNode * originalNode, float32 time);
+    static bool KeyTimeEqual(float32 first, float32 second);
+
+    static SceneNodeAnimationKey ExportAnimationKey(FCDSceneNode* originalNode, float32 t);
+    static SceneNodeAnimation* ExportNodeAnimation(FCDSceneNode* originalNode, float32 startTime, float32 endTime, float32 fps);
+    static FMMatrix44 CalculateTransformForTime(FCDSceneNode* originalNode, float32 time);
     Matrix4 AccumulateTransformUptoFarParent(ColladaSceneNode* farParent) const;
-    static bool IsAnimated(FCDSceneNode * originalNode);
-	
-	ColladaSceneNode * FindNode(const fstring & daeId);
-	void SetAnimation(SceneNodeAnimation * sceneNodeAnimation, bool recursive = false);
-	
+    static bool IsAnimated(FCDSceneNode* originalNode);
 
-	void AddNode(ColladaSceneNode * node);
-	void AddMeshInstance(ColladaMeshInstance * mesh);
-	void AddLight(ColladaLight * light);
-	void AddCamera(ColladaCamera * cam);
+    ColladaSceneNode* FindNode(const fstring& daeId);
+    void SetAnimation(SceneNodeAnimation* sceneNodeAnimation, bool recursive = false);
 
-	// skeletal animation functions & variables
-	void MarkJoint();
-	bool isJoint;
-	Matrix4 inverse0;
+    void AddNode(ColladaSceneNode* node);
+    void AddMeshInstance(ColladaMeshInstance* mesh);
+    void AddLight(ColladaLight* light);
+    void AddCamera(ColladaCamera* cam);
 
-	// recursive light setup function
-	void PreProcessLights(ColladaLightState & state);
+    // skeletal animation functions & variables
+    void MarkJoint();
+    bool isJoint;
+    Matrix4 inverse0;
 
-	// recursive render scene function
-	void Render(Matrix4 currentMatrix);
+    // recursive light setup function
+    void PreProcessLights(ColladaLightState& state);
 
-	void UpdateTransforms(float t);
-		
-	Matrix4							localTransform; 
-	Matrix4							worldTransform;
+    // recursive render scene function
+    void Render(Matrix4 currentMatrix);
 
-	std::vector<ColladaSceneNode*>	childs;	
-	std::vector<ColladaMeshInstance *> meshInstances;
-	std::vector<ColladaLight *> lights;
-	std::vector<ColladaCamera *> cameras;
+    void UpdateTransforms(float t);
 
-	FCDSceneNode					* originalNode;
-	
-	ColladaScene * scene;
-	ColladaSceneNode * parent;
-	
-	SceneNodeAnimation * animation;
-	
-	// id written to .sce file 
-	int32 writtenNodeId;
+    Matrix4 localTransform;
+    Matrix4 worldTransform;
+
+    std::vector<ColladaSceneNode*> childs;
+    std::vector<ColladaMeshInstance*> meshInstances;
+    std::vector<ColladaLight*> lights;
+    std::vector<ColladaCamera*> cameras;
+
+    FCDSceneNode* originalNode;
+
+    ColladaScene* scene;
+    ColladaSceneNode* parent;
+
+    SceneNodeAnimation* animation;
+
+    // id written to .sce file
+    int32 writtenNodeId;
 };
-
 };
 
 #endif // __COLLADALOADER_COLLADASCENENODE_H__
-
-
