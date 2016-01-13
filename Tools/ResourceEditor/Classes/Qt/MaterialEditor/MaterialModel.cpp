@@ -477,10 +477,10 @@ bool MaterialModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
             ++iter;
     }
     
-    if ( materials.size() <= 0 )
+    if (materials.empty())
         return false;
 
-    if ( dropCanBeAccepted(data, action, targetIndex.row(), targetIndex.column(), targetIndex.parent()) )
+    if (dropCanBeAccepted(data, action, targetIndex.row(), targetIndex.column(), targetIndex.parent()))
     {
 		MaterialItem *targetMaterialItem = itemFromIndex(targetIndex);
 		DAVA::NMaterial *targetMaterial = targetMaterialItem->GetMaterial();
