@@ -36,7 +36,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 IOLoop::IOLoop(bool useDefaultIOLoop)
 {
 #if !defined(DAVA_NETWORK_DISABLE)

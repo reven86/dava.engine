@@ -56,7 +56,7 @@ void RulerController::SetViewPos(QPoint pos)
         viewPos = pos;
         horisontalRulerSettings.startPos = viewPos.x();
         verticalRulerSettings.startPos = viewPos.y();
-        
+
         UpdateRulers();
     }
 }

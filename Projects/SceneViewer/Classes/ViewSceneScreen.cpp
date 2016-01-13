@@ -234,15 +234,15 @@ void ViewSceneScreen::Update(float32 timeElapsed)
     UpdateInfo(timeElapsed);
 
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DVKEY_NUMPAD6))
+    if (keyboard.IsKeyPressed(Key::NUMPAD6))
         cursorPosition.x += timeElapsed / 16.f;
-    if (keyboard.IsKeyPressed(DVKEY_NUMPAD4))
+    if (keyboard.IsKeyPressed(Key::NUMPAD4))
         cursorPosition.x -= timeElapsed / 16.f;
-    if (keyboard.IsKeyPressed(DVKEY_NUMPAD8))
+    if (keyboard.IsKeyPressed(Key::NUMPAD8))
         cursorPosition.y += timeElapsed / 16.f;
-    if (keyboard.IsKeyPressed(DVKEY_NUMPAD2))
+    if (keyboard.IsKeyPressed(Key::NUMPAD2))
         cursorPosition.y -= timeElapsed / 16.f;
-    if (keyboard.IsKeyPressed(DVKEY_SPACE))
+    if (keyboard.IsKeyPressed(Key::SPACE))
         wasdSystem->SetMoveSpeed(30.f);
     else
         wasdSystem->SetMoveSpeed(10.f);
