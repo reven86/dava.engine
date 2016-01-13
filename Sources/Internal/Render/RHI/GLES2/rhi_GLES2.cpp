@@ -199,6 +199,8 @@ gles_check_GL_extensions()
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
     }
 
+    _GLES2_DeviceCaps.instancingSupported = strstr(ext, "GL_EXT_draw_instanced") && strstr(ext, "GL_EXT_instanced_arrays");
+
     const char* version = (const char*)glGetString(GL_VERSION);
     if (!IsEmptyString(version))
     {
@@ -221,7 +223,6 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
             _GLES2_DeviceCaps.isFramebufferFetchSupported = true;
-            _GLES2_DeviceCaps.instancingSupported = true;
         }
     }
 }
