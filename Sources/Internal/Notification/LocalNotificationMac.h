@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_IOS_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_IOS_H__
+#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_MAC_H__
+#define __DAVAENGINE_LOCAL_NOTIFICATION_MAC_H__
 
 #include "Base/BaseTypes.h"
 
