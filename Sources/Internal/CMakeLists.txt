@@ -213,6 +213,7 @@ generated_unity_sources     ( PROJECT_SOURCE_FILES IGNORE_LIST
                                                         "TemplateMacOS/CoreMacOSPlatformBase.cpp"
                                                         "iOS/ICloudKeyValue.cpp"
                                                         "Notification/LocalNotificationIOS.cpp"
+                                                        "Notification/LocalNotificationMac.cpp"
                                                         "Concurrency/ThreadPosix.cpp"
                                                         "Render/Texture.cpp" 
                                                         "Render/RHI/GLES2"
