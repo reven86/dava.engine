@@ -78,7 +78,8 @@ void LocalNotificationMac::Hide()
             NSDictionary* userInfo = n.userInfo;
             if (userInfo && [userInfo[@"uid"] isEqual:uid])
             {
-                //[UIApplication sharedApplication] cancel
+                // i don't know why it is made like that - taken from ios implementation.
+                //[NSUserNotificationCenter.defaultUserNotificationCenter removeScheduledNotification:n];
                 scheduledNotificationFoundAndRemoved = true;
             }
         }
