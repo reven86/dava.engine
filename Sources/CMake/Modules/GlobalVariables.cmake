@@ -47,7 +47,16 @@ set( DAVA_PREDEFINED_TARGETS_FOLDER     "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 
-set( DAVA_TOOLS_BIN_DIR                 "${DAVA_ROOT_DIR}/Tools/Bin" )
+if (WIN32)
+	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
+	else ()
+		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
+	endif ()
+else ()
+	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
+endif()
+
 set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )
 set( DAVA_ENGINE_DIR                    "${DAVA_ROOT_DIR}/Sources/Internal" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )

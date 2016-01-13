@@ -13,7 +13,7 @@ g_ios_toolchain = "ios.toolchain.cmake"
 g_android_toolchain = "android.toolchain.cmake"
 
 g_cmake_file_path = ""
-g_supported_platforms = ["macos", "ios", "android", "windows"]
+g_supported_platforms = ["macos", "ios", "android", "windows", "win64"]
 g_supported_additional_parameters = ["console", "uap"]
 g_is_console = False
 g_is_uap = False
@@ -35,7 +35,7 @@ def parse_additional_params(additional):
             else:
                 print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
                 return False
-    return True
+    return True;
 
 
 def setup_framework_env():
@@ -71,10 +71,16 @@ def setup_framework_env():
 def get_project_type(dst_platform, is_console):
     dst_platform = dst_platform.lower()
     project_string = ""
+
     if "macos" == dst_platform or "ios" == dst_platform:
         project_string += "Xcode"
+
     if "windows" == dst_platform:
         project_string += "Visual Studio 12"
+
+    if "win64" == dst_platform:
+        project_string += "Visual Studio 12 Win64"
+
     if "android" == dst_platform:
         current_platform = platform.system()
 

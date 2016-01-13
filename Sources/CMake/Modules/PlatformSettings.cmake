@@ -219,7 +219,12 @@ elseif ( IOS     )
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" ) 
 
-elseif ( WIN32)
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win" ) 
+elseif ( WIN32 )
+
+	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
+	  else ()
+	    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
+	  endif ()
     
 endif  ()
