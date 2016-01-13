@@ -32,8 +32,12 @@
 
 #include "UI/UITextField.h"
 
+#define DAVA_TEXTFIELD_USE_NATIVE
+
 namespace DAVA
 {
+class UberTextMacOs; // NSTextField, NSTextView, NSSecureTextField
+
 class TextFieldPlatformImpl
 {
 public:
@@ -85,6 +89,7 @@ public:
     void SystemDraw(const UIGeometricData& geometricData);
 
 private:
+    UberTextMacOs* uberText = nullptr;
 };
 } // end namespace DAVA
 
