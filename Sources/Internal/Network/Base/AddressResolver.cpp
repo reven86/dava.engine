@@ -60,6 +60,7 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
     hints.ai_flags = 0;
     hints.ai_protocol = IPPROTO_TCP;
 
+    DVASSERT(handle == nullptr);
     handle = new uv_getaddrinfo_t;
     handle->data = this;
 
@@ -102,9 +103,12 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
     if (nullptr != resolver)
     {
         resolver->GotAddrInfo(status, response);
+        resolver->ReleaseHandle();
     }
-
-    SafeDelete(handle);
+    else
+    {
+        SafeDelete(handle);
+    }
 
     uv_freeaddrinfo(response);
 #endif
@@ -122,6 +126,11 @@ void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
 
         resolverCallbackFn(endpoint, status);
     }
+}
+
+void AddressResolver::ReleaseHandle()
+{
+    SafeDelete(handle);
 }
 
 } // end of namespace Net
