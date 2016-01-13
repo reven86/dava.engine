@@ -749,6 +749,28 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
         CMDID_COLLAPSE_PATH,
     }};
 
+    auto ShouldResetPanel = [this](const Command2* cmd) {
+        if (std::count(idsForUpdate.begin(), idsForUpdate.end(), cmd->GetId()) > 0)
+        {
+            Entity* entity = cmd->GetEntity();
+            if (entity == nullptr)
+            {
+                return true;
+            }
+            else
+            {
+                for (int32 i = 0; i < curNodes.size(); ++i)
+                {
+                    if (entity == curNodes.at(i))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    };
+
     bool resetPropertyPanel = false;
 
 	int32 commandID = command->GetId();
@@ -758,59 +780,12 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
         const uint32 count = batch->Size();
         for (uint32 i = 0; !resetPropertyPanel && i < count; ++i)
         {
-            const Command2 *cmd = batch->GetCommand(i);
-            commandID = cmd->GetId();
-            for (const auto id : idsForUpdate)
-            {
-                if (id == commandID)
-                {
-                    Entity *entity = command->GetEntity();
-                    if (entity == nullptr)
-                    {
-                        resetPropertyPanel == true;
-                    }
-                    else
-                    {
-                        for (int i = 0; i < curNodes.size(); ++i)
-                        {
-                            if (entity == curNodes.at(i))
-                            {
-                                resetPropertyPanel = true;
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
+            resetPropertyPanel = ShouldResetPanel(batch->GetCommand(i));
         }
     }
     else
     {
-        for (const auto id : idsForUpdate)
-        {
-            if (id == commandID)
-            {
-                Entity *entity = command->GetEntity();
-                if (entity == nullptr)
-                {
-                    resetPropertyPanel == true;
-                }
-                else
-                {
-                    for (int i = 0; i < curNodes.size(); ++i)
-                    {
-                        if (entity == curNodes.at(i))
-                        {
-                            resetPropertyPanel = true;
-                            break;
-                        }
-                    }
-                }
-
-                break;
-            }
-        }
+        resetPropertyPanel = ShouldResetPanel(command);
     }
 
     if (resetPropertyPanel)
@@ -843,9 +818,9 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
             dataList << propData->GetMergedData(i);
         }
 
-        uint32 count = dataList.size();
+        int32 count = dataList.size();
         curScene->BeginBatch("Edit properties", count);
-        for (uint32 i = 0; i < count; i++)
+        for (int32 i = 0; i < count; i++)
         {
             std::unique_ptr<Command2> command = dataList.at(i)->CreateLastCommand();
             if (command)
@@ -976,9 +951,9 @@ void PropertyEditor::ConvertToShadow()
                     dataList << dynamicData;
             }
 
-            int count = dataList.size();
+            int32 count = dataList.size();
             curScene->BeginBatch("ConvertToShadow batch", count);
-            for (int i = 0; i < count; i++)
+            for (int32 i = 0; i < count; i++)
             {
 		        DAVA::RenderBatch *batch = (DAVA::RenderBatch *)dataList.at(i)->object;
 		        curScene->Exec(std::unique_ptr<Command2>(new ConvertToShadowCommand(batch)));
@@ -1026,13 +1001,12 @@ void PropertyEditor::DeleteRenderBatch()
                     dataList << dynamicData;
             }
 
-            uint32 count = dataList.size();
+            int32 count = dataList.size();
             curScene->BeginBatch("DeleteRenderBatch", count);
-            for (uint32 j = 0; j < count; j++)
+            for (int32 j = 0; j < count; j++)
             {
                 QtPropertyDataIntrospection *item = dataList.at(j);
 
-                QtPropertyData *pItem = item;
                 Entity *node = curNodes.at(0);
 
                 if (node)
@@ -1392,11 +1366,11 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 void PropertyEditor::OnAddComponent(Component::eType type)
 {
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    uint32 size = curNodes.size();
+    int32 size = curNodes.size();
     if(size > 0)
     {
         curScene->BeginBatch(Format("Add Component: %d", type), size);
-        for(uint32 i = 0; i < size; ++i)
+        for (int32 i = 0; i < size; ++i)
         {
             Component *c = Component::CreateByType(type);
             curScene->Exec(std::unique_ptr<Command2>(new AddComponentCommand(curNodes.at(i), c)));
@@ -1411,11 +1385,11 @@ void PropertyEditor::OnAddComponent(DAVA::Component *component)
     if(!component) return;
     
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    int size = curNodes.size();
+    int32 size = curNodes.size();
     if(size > 0)
     {
         curScene->BeginBatch(Format("Add Component: %d", component->GetType()), size);
-        for(int i = 0; i < size; ++i)
+        for (int32 i = 0; i < size; ++i)
         {
             Entity* node = curNodes.at(i);
             
@@ -1462,7 +1436,7 @@ void PropertyEditor::OnAddSkeletonComponent()
 void PropertyEditor::OnAddPathComponent()
 {
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    uint32 count = curNodes.size();
+    int32 count = curNodes.size();
     if (count > 0)
     {
         curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT), count);
@@ -1525,9 +1499,9 @@ void PropertyEditor::OnRemoveComponent()
                     dataList << dynamicData;
             }
 
-            uint32 count = dataList.size();
+            int32 count = dataList.size();
             curScene->BeginBatch("Remove Component", count);
-            for (uint32 i = 0; i < count; i++)
+            for (int32 i = 0; i < count; i++)
             {
                 QtPropertyDataIntrospection *data = dataList.at(i);
                 Component *component = (Component *)data->object;

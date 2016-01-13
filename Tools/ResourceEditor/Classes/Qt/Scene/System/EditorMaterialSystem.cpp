@@ -45,10 +45,9 @@ using namespace DAVA;
 class EditorMaterialSystemCommands
 {
 public:
-
-    static void ProcessOperation(EditorMaterialSystem *system, RenderBatch *batch, Entity *entity, bool removeBatch)
+    static void ProcessOperation(EditorMaterialSystem* system, RenderBatch* batch, Entity* entity, bool remove)
     {
-        if (removeBatch)
+        if (remove)
         {
             system->RemoveMaterial(batch->GetMaterial());
         }

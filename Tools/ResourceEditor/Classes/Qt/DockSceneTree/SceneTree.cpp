@@ -303,13 +303,9 @@ void SceneTree::CommandExecuted(SceneEditor2 *scene, const Command2* command, bo
     }
     else
     {
-        for (const auto id : idsForUpdate)
+        if (std::count(idsForUpdate.begin(), idsForUpdate.end(), commandID) > 0)
         {
-            if (id == commandID)
-            {
-                treeUpdater->Update();
-                break;
-            }
+            treeUpdater->Update();
         }
     }
 }

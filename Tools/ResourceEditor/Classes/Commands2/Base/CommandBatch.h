@@ -46,7 +46,7 @@ public:
 
     DAVA_DEPRECATED(DAVA::Entity* GetEntity() const override);
 
-    void AddAndExec(std::unique_ptr<Command2> command);
+    void AddAndExec(std::unique_ptr<Command2>&& command);
     void RemoveCommands(DAVA::int32 commandId);
 
     bool Empty() const;

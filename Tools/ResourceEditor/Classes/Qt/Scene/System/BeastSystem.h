@@ -41,7 +41,7 @@ class BeastSystem: public DAVA::SceneSystem
 public:
 
 	BeastSystem(Scene* scene);
-	~BeastSystem();
+    ~BeastSystem() = default;
 
     void static SetDefaultPropertyValues(Entity * entity);
 	

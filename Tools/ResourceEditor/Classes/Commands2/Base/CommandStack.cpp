@@ -43,7 +43,7 @@ CommandStack::~CommandStack()
 
 bool CommandStack::CanUndo() const
 {
-    return (commandList.size() > 0 && nextCommandIndex > 0);
+    return (!commandList.empty() && nextCommandIndex > 0);
 }
 
 bool CommandStack::CanRedo() const
@@ -67,15 +67,15 @@ void CommandStack::RemoveCommands(DAVA::int32 commandId)
         Command2 *command = (*it).get();
         DVASSERT(command != nullptr);
 
-        bool needRemoveCommand = (command->GetId() == commandId);
-        if (!needRemoveCommand && (command->GetId() == CMDID_BATCH))
+        bool shouldRemoveCommand = (command->GetId() == commandId);
+        if (!shouldRemoveCommand && (command->GetId() == CMDID_BATCH))
         {
             CommandBatch* batch = static_cast<CommandBatch *> (command);
             batch->RemoveCommands(commandId);
-            needRemoveCommand = batch->Empty();
+            shouldRemoveCommand = batch->Empty();
         }
 
-        if (needRemoveCommand)
+        if (shouldRemoveCommand)
         {
             it = commandList.erase(it);
 
@@ -132,7 +132,7 @@ void CommandStack::Redo()
     CleanCheck();
 }
 
-void CommandStack::Exec(std::unique_ptr<Command2> command)
+void CommandStack::Exec(std::unique_ptr<Command2>&& command)
 {
     DVASSERT(command);
 
@@ -260,7 +260,7 @@ Command2* CommandStack::GetCommandInternal(DAVA::int32 index) const
     return nullptr;
 }
 
-void CommandStack::ExecInternal(std::unique_ptr<Command2> command, bool runCommand)
+void CommandStack::ExecInternal(std::unique_ptr<Command2>&& command, bool runCommand)
 {
     ClearRedoCommands();
 

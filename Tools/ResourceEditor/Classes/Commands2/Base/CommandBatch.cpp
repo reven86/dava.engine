@@ -63,7 +63,7 @@ DAVA::Entity* CommandBatch::GetEntity() const
     return nullptr;
 }
 
-void CommandBatch::AddAndExec(std::unique_ptr<Command2> command)
+void CommandBatch::AddAndExec(std::unique_ptr<Command2>&& command)
 {
     DVASSERT(command);
 

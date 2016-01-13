@@ -35,8 +35,6 @@ BeastSystem::BeastSystem(Scene* scene)
 {
 }
 
-BeastSystem::~BeastSystem() = default;
-
 void BeastSystem::AddEntity(Entity * entity)
 {
     SetDefaultPropertyValues(entity);

@@ -175,11 +175,10 @@ SceneEditor2::~SceneEditor2()
 	SceneSignals::Instance()->EmitClosed(this);
 }
 
-bool SceneEditor2::Load(const DAVA::FilePath &path)
+SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 {
-	bool ret = structureSystem->Init(path);
-    
-    if(ret)
+    SceneFileV2::eError ret = Scene::LoadScene(path);
+    if (ret == SceneFileV2::ERROR_NO_ERROR)
     {
         curScenePath = path;
 		isLoaded = true;
@@ -337,7 +336,7 @@ void SceneEditor2::EndBatch()
 	commandStack.EndBatch();
 }
 
-void SceneEditor2::Exec(std::unique_ptr<Command2> command)
+void SceneEditor2::Exec(std::unique_ptr<Command2>&& command)
 {
 	commandStack.Exec(std::move(command));
 }

@@ -51,7 +51,7 @@ public:
 
     void Undo();
     void Redo();
-    void Exec(std::unique_ptr<Command2> command);
+    void Exec(std::unique_ptr<Command2>&& command);
 
     void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount);
     void EndBatch();
@@ -72,7 +72,7 @@ protected:
 
     using CommandsContainer = DAVA::List<std::unique_ptr<Command2>>;
 
-    void ExecInternal(std::unique_ptr<Command2> command, bool runCommand);
+    void ExecInternal(std::unique_ptr<Command2>&& command, bool runCommand);
     Command2* GetCommandInternal(DAVA::int32 index) const;
 
     void ClearRedoCommands();

@@ -125,8 +125,8 @@ public:
 	PathSystem *pathSystem;
     
 	// save/load
-	bool Load(const DAVA::FilePath &path);
-    SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);
+    SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
+    SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
     SceneFileV2::eError SaveScene();
 	bool Export(const DAVA::eGPUFamily newGPU);
 
@@ -143,8 +143,8 @@ public:
     void BeginBatch(const DAVA::String &text, DAVA::uint32 commandsCount = 1);
 	void EndBatch();
 
-    void Exec(std::unique_ptr<Command2> command);
-	void RemoveCommands(DAVA::int32 commandId);
+    void Exec(std::unique_ptr<Command2>&& command);
+    void RemoveCommands(DAVA::int32 commandId);
     void ClearAllCommands();
 	const CommandStack* GetCommandStack() const;
 
