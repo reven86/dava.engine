@@ -138,6 +138,7 @@ def main():
     parser.add_argument('cmake_path', help='relative path to cmake list')
     parser.add_argument('--generation_dir', default="", help="path to generation cmake list" )
     parser.add_argument('--add_definitions', default="", help="add definitions" )
+    parser.add_argument('--unity_build', '-ub', action='store_true', help="enable unity build" )
 
     options = parser.parse_args()
 
@@ -169,6 +170,9 @@ def main():
     g_generation_dir  = options.generation_dir
     g_add_definitions = options.add_definitions.replace(',',' ')
 
+    if(options.unity_build):
+        g_add_definitions += '-DUNITY_BUILD=true'
+
     if len(g_generation_dir) :
         if not os.path.exists(g_generation_dir):
             os.makedirs(g_generation_dir)
@@ -180,7 +184,11 @@ def main():
         print "cmake command not found."
         exit()
 
-    call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path, g_add_definitions]
+    call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path]
+
+    if len(g_add_definitions) :
+        call_string.append(g_add_definitions)
+
 
     subprocess.check_output(call_string)
     
