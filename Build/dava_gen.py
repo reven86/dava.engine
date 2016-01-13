@@ -170,9 +170,6 @@ def main():
     g_generation_dir  = options.generation_dir
     g_add_definitions = options.add_definitions.replace(',',' ')
 
-    if(options.unity_build):
-        g_add_definitions += '-DUNITY_BUILD=true'
-
     if len(g_generation_dir) :
         if not os.path.exists(g_generation_dir):
             os.makedirs(g_generation_dir)
@@ -187,14 +184,17 @@ def main():
     call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path]
 
     if len(g_add_definitions) :
-        call_string.append(g_add_definitions)
-
+        call_string +=  g_add_definitions.split(' ') 
+    
+    if(options.unity_build):
+        call_string.append("-DUNITY_BUILD=true")
 
     subprocess.check_output(call_string)
     
     if "android" == destination_platform:
         subprocess.check_output(call_string)
 
+    print call_string
 
 if __name__ == '__main__':
     main()
