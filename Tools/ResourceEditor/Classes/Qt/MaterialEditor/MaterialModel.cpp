@@ -465,7 +465,19 @@ bool MaterialModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         return false;
 
 	QVector<DAVA::NMaterial *> materials = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(data);
-	if ( materials.size() <= 0 )
+    
+    // in some Qt builds QAbstractItemView have bug and drop action can be called like "drop on yourself"
+    // we need check this situation
+    QVector<DAVA::NMaterial *>::iterator iter = materials.begin();
+    while (iter != materials.end())
+    {
+        if (targetIndex == GetIndex(*iter))
+            iter = materials.erase(iter);
+        else
+            ++iter;
+    }
+    
+    if ( materials.size() <= 0 )
         return false;
 
     if ( dropCanBeAccepted(data, action, targetIndex.row(), targetIndex.column(), targetIndex.parent()) )
