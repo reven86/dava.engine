@@ -1205,7 +1205,7 @@ void CommandBufferGLES2_t::Execute()
                 vdecl_pending = false;
             }
 
-            #if defined(__DAVAENGINE_IPHONE__)
+            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
             GL_CALL(glDrawArraysInstancedEXT(mode, 0, v_cnt, instCount));
             #elif defined(__DAVAENGINE_MACOS__)
             GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
@@ -1285,7 +1285,7 @@ void CommandBufferGLES2_t::Execute()
                 i_off = startIndex * sizeof(uint32);
             }
 
-            #if defined(__DAVAENGINE_IPHONE__)
+            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_MACOS__)
             GL_CALL(glDrawElementsInstancedARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
