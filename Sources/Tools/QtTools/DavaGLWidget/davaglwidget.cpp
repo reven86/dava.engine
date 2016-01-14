@@ -40,6 +40,7 @@
 #include <QTimer>
 #include <QBoxLayout>
 #include <QApplication>
+#include <QDesktopWidget>
 #include <QAction>
 
 namespace
@@ -171,7 +172,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     setMinimumSize(cMinSize);
 
     davaGLView = new DavaGLView();
-
+    
     connect(qApp, &QApplication::focusWindowChanged, [this](QWindow* now) //fix bug with actions focus scope
             {
                 bool isActive = (now == davaGLView);
@@ -185,6 +186,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &DavaGLWidget::UpdateView);
     timer->start(16); //62.5 fps :)
+    
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
     connect(davaGLView, &QQuickWindow::beforeSynchronizing, this, &DavaGLWidget::OnSync, Qt::DirectConnection);
@@ -227,9 +229,8 @@ void DavaGLWidget::OnResize()
 {
     if (nullptr != renderer)
     {
-        int screenIndex = qApp->screens().indexOf(davaGLView->screen());
-        DVASSERT(-1 != screenIndex);
-        DAVA::QtLayer::Instance()->Resize(width(), height(), screenIndex);
+        auto dpr = davaGLView->devicePixelRatio();
+        DAVA::QtLayer::Instance()->Resize(width(), height(), dpr);
         emit Resized(width(), height());
     }
 }
@@ -238,6 +239,18 @@ void DavaGLWidget::OnSync()
 {
     if (nullptr == renderer)
     {
+        auto desktop = qApp->desktop();
+        int screenNumber = desktop->screenNumber(this);
+        DVASSERT(screenNumber >= 0 && screenNumber < qApp->screens().size());
+        
+        //qt detect current screen as main screen
+        QWindow *parent = davaGLView;
+        while(parent->parent() != nullptr)
+        {
+            parent = parent->parent();
+        }
+        parent->setScreen(qApp->screens().at(screenNumber));
+
         renderer = new DavaRenderer();
         OnResize();
         connect(davaGLView, &QQuickWindow::beforeRendering, renderer, &DavaRenderer::paint, Qt::DirectConnection);
