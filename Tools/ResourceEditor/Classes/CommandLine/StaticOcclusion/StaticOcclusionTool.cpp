@@ -33,12 +33,12 @@
 
 using namespace DAVA;
 
-
 StaticOcclusionTool::StaticOcclusionTool()
     : CommandLineTool("-staticocclusion")
 {
     options.AddOption(OptionName::Build, VariantType(false), "Enables build of static occlusion");
     options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Full pathname to scene file *.sc2");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
 void StaticOcclusionTool::ConvertOptionsToParamsInternal()
@@ -49,6 +49,7 @@ void StaticOcclusionTool::ConvertOptionsToParamsInternal()
     }
 
     scenePathname = options.GetOption(OptionName::ProcessFile).AsString();
+    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
 }
 
 bool StaticOcclusionTool::InitializeInternal()
@@ -76,7 +77,7 @@ void StaticOcclusionTool::ProcessInternal()
     if (commandAction == ACTION_BUILD)
     {
         ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-        if(scene->Load(scenePathname))
+        if (scene->Load(scenePathname))
         {
             scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
             scene->staticOcclusionBuildSystem->Build();
@@ -98,6 +99,11 @@ void StaticOcclusionTool::ProcessInternal()
 
 DAVA::FilePath StaticOcclusionTool::GetQualityConfigPath() const
 {
-    return CreateQualityConfigPath(scenePathname);
+    if (qualityConfigPath.IsEmpty())
+    {
+        return CreateQualityConfigPath(scenePathname);
+    }
+
+    return qualityConfigPath;
 }
 

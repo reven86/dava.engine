@@ -61,9 +61,11 @@ public:
 
 	AnimationData* Clone() const;
 
-	float32 duration;
-	
-	DAVA::Vector< SceneNodeAnimationKey > keys;
+    void BakeTransform(const Matrix4& transform);
+
+    float32 duration;
+
+    DAVA::Vector< SceneNodeAnimationKey > keys;
 
 	Matrix4 invPose;
 };

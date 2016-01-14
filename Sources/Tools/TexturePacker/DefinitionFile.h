@@ -50,13 +50,13 @@ public:
     void LoadPNG(const FilePath& fullname, const FilePath& processDirectoryPath);
 
     Size2i GetFrameSize(int frame) const;
-	int GetFrameWidth(int frame) const;
-	int GetFrameHeight(int frame) const;
+    int GetFrameWidth(int frame) const;
+    int GetFrameHeight(int frame) const;
 
-	FilePath    filename;
-	int			frameCount;
-	int			spriteWidth;
-	int			spriteHeight;
+    FilePath filename;
+    int frameCount;
+    int spriteWidth;
+    int			spriteHeight;
 	Rect2i		* frameRects;
 
 	Vector<String> pathsInfo;

@@ -135,13 +135,13 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
     switch ( event->phase )
     {
     case UIEvent::Phase::KEY_DOWN:
-        if ( DVKEY_BACKSPACE == event->tid )
+        if (Key::BACKSPACE == event->key)
         {
             RemoveLastPoint();
             previewEnabled = true;
             CalcPreviewPoint( point, true );
         }
-        else if ( DVKEY_ESCAPE == event->tid )
+        else if (Key::ESCAPE == event->key)
         {
             previewEnabled = false;
         }
@@ -157,9 +157,9 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
         break;
 
     case UIEvent::Phase::ENDED:
-        if ( event->tid == UIEvent::BUTTON_1 && isIntersectsLandscape )
+        if (event->mouseButton == UIEvent::MouseButton::LEFT && isIntersectsLandscape)
         {
-            if ( IsKeyModificatorPressed( DVKEY_SHIFT ) )
+            if (IsKeyModificatorPressed(Key::LSHIFT))
             {
                 SetStartPoint(point);
             }
@@ -276,7 +276,10 @@ void RulerToolSystem::DrawPoints()
 
     Texture* targetTexture = drawSystem->GetRulerToolProxy()->GetTexture();
 
-    RenderSystem2D::Instance()->BeginRenderTargetPass(targetTexture);
+    RenderSystem2D::RenderTargetPassDescriptor desc;
+    desc.target = targetTexture;
+    desc.shouldTransformVirtualToPhysical = false;
+    RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
 
     Vector<Vector2> points;
     points.reserve(linePoints.size() + 1);

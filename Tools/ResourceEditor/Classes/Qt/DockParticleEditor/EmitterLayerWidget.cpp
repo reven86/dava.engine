@@ -192,9 +192,9 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     innerEmitterLabel = new QLabel("Inner Emitter", this);
     innerEmitterPathLabel = new QLineEdit(this);
     innerEmitterPathLabel->setReadOnly(true);
-	innerEmitterLayout->addWidget(innerEmitterLabel);
-	innerEmitterLayout->addWidget(innerEmitterPathLabel);
-	mainBox->addLayout(innerEmitterLayout);
+    innerEmitterLayout->addWidget(innerEmitterLabel);
+    innerEmitterLayout->addWidget(innerEmitterPathLabel);
+    mainBox->addLayout(innerEmitterLayout);
 	
 	QVBoxLayout* pivotPointLayout = new QVBoxLayout();
 	pivotPointLabel = new QLabel("Pivot Point", this);
@@ -234,9 +234,9 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addWidget(frameBlendingCheckBox);
 
     //particle orieantation
-	QVBoxLayout* orientationLayout = new QVBoxLayout();	
-	particleOrientationLabel = new QLabel("Particle Orientation");
-	orientationLayout->addWidget(particleOrientationLabel);
+    QVBoxLayout* orientationLayout = new QVBoxLayout();
+    particleOrientationLabel = new QLabel("Particle Orientation");
+    orientationLayout->addWidget(particleOrientationLabel);
 	QHBoxLayout* facingLayout = new QHBoxLayout();
 	
 	cameraFacingCheckBox = new QCheckBox("Camera Facing");
@@ -288,9 +288,9 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addWidget(fogCheckBox);
 
     lifeTimeLine = new TimeLineWidget(this);
-	InitWidget(lifeTimeLine);
-	numberTimeLine = new TimeLineWidget(this);
-	InitWidget(numberTimeLine);
+    InitWidget(lifeTimeLine);
+    numberTimeLine = new TimeLineWidget(this);
+    InitWidget(numberTimeLine);
 	sizeTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeTimeLine);
 	sizeVariationTimeLine = new TimeLineWidget(this);
@@ -971,15 +971,19 @@ void EmitterLayerWidget::UpdateLayerSprite()
 {
     if (layer->sprite)
     {
-        Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-        RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
+        RenderSystem2D::RenderTargetPassDescriptor desc;
+        desc.target = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+        desc.shouldClear = true;
+        desc.shouldTransformVirtualToPhysical = false;
+        desc.clearColor = Color::Clear;
+        RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
         {
             Sprite::DrawState drawState = {};
             drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, layer->sprite->GetWidth(), layer->sprite->GetHeight());
             RenderSystem2D::Instance()->Draw(layer->sprite, &drawState, Color::White);
         }
         RenderSystem2D::Instance()->EndRenderTargetPass();
-        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), renderTarget });
+        spriteUpdateTexturesStack.push({ rhi::GetCurrentFrameSyncObject(), desc.target });
         spriteUpdateTimer->start(0);
         spritePathLabel->setText(QString::fromStdString(layer->spritePath.GetAbsolutePathname()));
     }
@@ -1076,10 +1080,10 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 
     // The same is for "Additive" flag, Color, Alpha and Frame.
     colorRandomGradient->setVisible(!isSuperemitter);
-	colorOverLifeGradient->setVisible(!isSuperemitter);
-	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
+    colorOverLifeGradient->setVisible(!isSuperemitter);
+    alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
-	frameOverlifeCheckBox->setVisible(!isSuperemitter);
+    frameOverlifeCheckBox->setVisible(!isSuperemitter);
 	frameOverlifeFPSSpin->setVisible(!isSuperemitter);
 	frameOverlifeFPSLabel->setVisible(!isSuperemitter);
 	randomFrameOnStartCheckBox->setVisible(!isSuperemitter);

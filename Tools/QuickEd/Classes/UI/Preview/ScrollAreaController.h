@@ -54,6 +54,7 @@ public:
     ~ScrollAreaController() = default;
 
     void SetNestedControl(DAVA::UIControl* nestedControl);
+    void SetMovableControl(DAVA::UIControl* movableControl);
     void AdjustScale(qreal newScale, QPointF mousePos);
 
     QSize GetCanvasSize() const;
@@ -74,11 +75,13 @@ signals:
     void ViewSizeChanged(QSize size);
     void PositionChanged(QPoint position);
     void ScaleChanged(qreal scale);
+    void NestedControlPositionChanged(QPoint position);
 
 private:
     void UpdatePosition();
     DAVA::ScopedPtr<DAVA::UIControl> backgroundControl;
     DAVA::UIControl* nestedControl = nullptr;
+    DAVA::UIControl* movableControl = nullptr;
     QSize canvasSize = QSize(0, 0);
     QSize viewSize = QSize(0, 0);
     QPoint position = QPoint(0, 0);

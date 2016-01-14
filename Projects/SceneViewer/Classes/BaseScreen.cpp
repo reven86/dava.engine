@@ -42,7 +42,7 @@ BaseScreen::BaseScreen()
 
 bool BaseScreen::SystemInput(UIEvent *currentInput)
 {
-    if ((currentInput->tid == DVKEY_BACK) && (UIEvent::Phase::KEY_DOWN == currentInput->phase))
+    if ((currentInput->key == Key::BACK) && (UIEvent::Phase::KEY_DOWN == currentInput->phase))
     {
         SetPreviousScreen();
     }

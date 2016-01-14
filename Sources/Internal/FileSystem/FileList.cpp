@@ -78,8 +78,8 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
             entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
             if (entry.isDirectory)
             {
-				entry.path.MakeDirectoryPathname();
-			}
+                entry.path.MakeDirectoryPathname();
+            }
 
             if (!entry.isHidden || includeHidden)
             {

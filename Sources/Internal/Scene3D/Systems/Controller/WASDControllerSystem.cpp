@@ -75,10 +75,7 @@ void WASDControllerSystem::Process(float32 timeElapsed)
     if(0 == size) return;
     
     KeyboardDevice &keyboard = InputSystem::Instance()->GetKeyboard();
-    if(     keyboard.IsKeyPressed(DVKEY_SHIFT)
-       ||   keyboard.IsKeyPressed(DVKEY_CTRL)
-       ||   keyboard.IsKeyPressed(DVKEY_ALT)
-       )
+    if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::LCTRL) || keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT) || keyboard.IsKeyPressed(Key::RCTRL) || keyboard.IsKeyPressed(Key::LSHIFT))
     {
         return;
     }
@@ -88,19 +85,19 @@ void WASDControllerSystem::Process(float32 timeElapsed)
         Camera *camera = GetCamera(entities[i]);
         if ((camera != nullptr) && (camera == GetScene()->GetDrawCamera()))
         {
-            if(keyboard.IsKeyPressed(DVKEY_W) || keyboard.IsKeyPressed(DVKEY_UP))
+            if (keyboard.IsKeyPressed(Key::KEY_W) || keyboard.IsKeyPressed(Key::UP))
             {
                 MoveForward(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
             }
-            if(keyboard.IsKeyPressed(DVKEY_S) || keyboard.IsKeyPressed(DVKEY_DOWN))
+            if (keyboard.IsKeyPressed(Key::KEY_S) || keyboard.IsKeyPressed(Key::DOWN))
             {
                 MoveForward(camera, actualMoveSpeed, DIRECTION_INVERSE);
             }
-            if(keyboard.IsKeyPressed(DVKEY_D) || keyboard.IsKeyPressed(DVKEY_RIGHT))
+            if (keyboard.IsKeyPressed(Key::KEY_D) || keyboard.IsKeyPressed(Key::RIGHT))
             {
                 MoveRight(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
             }
-            if(keyboard.IsKeyPressed(DVKEY_A) || keyboard.IsKeyPressed(DVKEY_LEFT))
+            if (keyboard.IsKeyPressed(Key::KEY_A) || keyboard.IsKeyPressed(Key::LEFT))
             {
                 MoveRight(camera, actualMoveSpeed, DIRECTION_INVERSE);
             }

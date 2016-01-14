@@ -48,6 +48,7 @@ private:
 
     DAVA::FilePath scenePathname;
     DAVA::FilePath outputPath;
+    DAVA::FilePath qualityConfigPath;
 };
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

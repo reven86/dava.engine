@@ -244,11 +244,8 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
 	if(scene == treeModel->GetScene())
 	{
-		auto selectionWasBlocked = selectionModel()->blockSignals(true);
-        filteringProxyModel->setSourceModel(nullptr);
+        bool selectionWasBlocked = selectionModel()->blockSignals(true);
         treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-        filteringProxyModel->setSourceModel(treeModel);
-
         treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
 
@@ -655,9 +652,9 @@ void SceneTree::EditModel()
                 }
                 else
                 {
-					ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
-				}
-			}
+                    ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
+                }
+            }
 		}
 	}
 }
@@ -667,27 +664,27 @@ void SceneTree::ReloadModel()
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		QDialog *dlg = new QDialog(this);
+        QDialog dlg(this);
 
-		QVBoxLayout *dlgLayout = new QVBoxLayout();
-		dlgLayout->setMargin(10);
+        QVBoxLayout* dlgLayout = new QVBoxLayout();
+        dlgLayout->setMargin(10);
 
-		dlg->setWindowTitle("Reload Model options");
-		dlg->setLayout(dlgLayout);
-	
-		QCheckBox *lightmapsChBox = new QCheckBox("Leave lightmap settings", dlg);
-		dlgLayout->addWidget(lightmapsChBox);
-		lightmapsChBox->setCheckState(Qt::Checked);
+        dlg.setWindowTitle("Reload Model options");
+        dlg.setLayout(dlgLayout);
 
-		QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
-		dlgLayout->addWidget(buttons);
+        QCheckBox* lightmapsChBox = new QCheckBox("Leave lightmap settings", &dlg);
+        dlgLayout->addWidget(lightmapsChBox);
+        lightmapsChBox->setCheckState(Qt::Checked);
 
-		QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
-		QObject::connect(buttons, SIGNAL(rejected()), dlg, SLOT(reject()));
+        QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
+        dlgLayout->addWidget(buttons);
 
-		if(QDialog::Accepted == dlg->exec())
-		{
-			EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
+        QObject::connect(buttons, SIGNAL(accepted()), &dlg, SLOT(accept()));
+        QObject::connect(buttons, SIGNAL(rejected()), &dlg, SLOT(reject()));
+
+        if (QDialog::Accepted == dlg.exec())
+        {
+            EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
 			String wrongPathes;
 			for(size_t i = 0; i < selection.Size(); ++i)
 			{
@@ -707,11 +704,10 @@ void SceneTree::ReloadModel()
 			{
 				ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
 			}
-			sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
-		}
-
-		delete dlg;
-	}
+            EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
+            sceneEditor->selectionSystem->SetSelection(newSelection);
+        }
+    }
 }
 
 void SceneTree::ReloadModelAs()
@@ -740,7 +736,8 @@ void SceneTree::ReloadModelAs()
             QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-                sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                sceneEditor->selectionSystem->SetSelection(newSelection);
             }
         }
     }
@@ -803,9 +800,9 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
     for (int i = 0; i < indexList.size(); ++i)
     {
         QModelIndex childIndex = indexList[i];
-		QModelIndex childParent = childIndex.parent();
-		while(childParent.isValid())
-		{
+        QModelIndex childParent = childIndex.parent();
+        while (childParent.isValid())
+        {
 			if(childParent == index)
 			{
 				selectionModel()->select(childIndex, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);

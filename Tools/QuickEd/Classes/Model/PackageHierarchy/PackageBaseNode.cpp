@@ -203,8 +203,14 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
     {
         leftParent = left->GetParent();
         rightParent = right->GetParent();
-        DVASSERT(nullptr != leftParent);
-        DVASSERT(nullptr != rightParent);
+        if (nullptr == leftParent) //parent can be nullptr if we remove package and than remove it imported package
+        {
+            return false;
+        }
+        else if (nullptr == rightParent)
+        {
+            return true;
+        }
 
         if (leftParent == rightParent)
         {

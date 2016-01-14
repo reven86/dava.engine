@@ -72,9 +72,9 @@ extern "C"
         env->ReleaseByteArrayElements(newText, bufferPtr, 0);
 
         bufferPtr = env->GetByteArrayElements(oldText, NULL);
-		lengthOfArray = env->GetArrayLength(oldText);
-		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
-		env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
+        lengthOfArray = env->GetArrayLength(oldText);
+        DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
+        env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
 
         DAVA::TextFieldPlatformImpl::TextFieldOnTextChanged(id, newString, oldString);
     }

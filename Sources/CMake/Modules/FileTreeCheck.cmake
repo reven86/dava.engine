@@ -23,11 +23,13 @@ MACRO ( FILE_TREE_CHECK arg_folders )
 
         set_target_properties( FILE_TREE_${PROJECT_NAME} PROPERTIES FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )         
 
+        message( ">>> File tree check ${PROJECT_NAME} info" )
+
         FOREACH( item ${arg_folders} )
-            message( " - ${item}" )        
+            message( "     - ${item}" )        
         ENDFOREACH()
 
-        message( "hash  ${FILE_TREE_HASH}" )        
+        message( "    hash  ${FILE_TREE_HASH}" )        
 
 
     endif()    

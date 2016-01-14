@@ -383,11 +383,11 @@ int32	ResourceArchive::LoadResource(const FilePath & pathName, void * data)
             lastResourceName = pathName;
         }
         else
-		{
-			resourceIndex = header.fileCount;
-		}
-	}
-	return LoadResource(resourceIndex, data);
+        {
+            resourceIndex = header.fileCount;
+        }
+    }
+    return LoadResource(resourceIndex, data);
 }
 
 void    ResourceArchive::UnpackToFolder(const FilePath & dirPath)
