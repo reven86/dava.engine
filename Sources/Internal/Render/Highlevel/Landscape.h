@@ -266,6 +266,8 @@ protected:
     void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
 
 private:
+    void AllocateRenderBatch();
+
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;
     Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
     Vector<LandQuadTreeNode<LandscapeQuad>*> lod0quads;
