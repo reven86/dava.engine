@@ -122,9 +122,7 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &
         return false;
 
     case SHOW_INSTANCES_AND_MATERIALS:
-    {
         return isTopLevelMaterial || isSelected;
-    }
 
     case SHOW_ONLY_INSTANCES:
     {
@@ -136,8 +134,9 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &
             const int n = item->rowCount();
             for (int i = 0; i < n; i++)
             {
-                MaterialItem* childItem = static_cast<MaterialItem*>(item->child(i, 0));
-                if ((childItem != nullptr) && childItem->GetFlag(MaterialItem::IS_PART_OF_SELECTION))
+                MaterialItem* childItem = static_cast<MaterialItem*>(item->child(i));
+                DVASSERT(childItem != nullptr);
+                if (childItem->GetFlag(MaterialItem::IS_PART_OF_SELECTION))
                 {
                     return true;
                 }
