@@ -13,29 +13,39 @@ g_ios_toolchain = "ios.toolchain.cmake"
 g_android_toolchain = "android.toolchain.cmake"
 
 g_cmake_file_path = ""
-g_supported_platforms = ["macos", "ios", "android", "windows", "win64"]
-g_supported_additional_parameters = ["console", "uap"]
+g_supported_platforms = ["macos", "ios", "android", "windows"]
+g_supported_additional_parameters = ["console", "uap", "x64"]
 g_is_console = False
 g_is_uap = False
+g_is_x64 = False
 
 def parse_additional_params(additional):
     global g_is_console
     global g_is_uap
+    global g_is_x64
 
     if not additional:
         return True;
 
     for param in additional:
         param = param.lower()
+
         if "console" == param:
             g_is_console = True
-        else:
-            if "uap" == param:
-                g_is_uap = True
-            else:
-                print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
-                return False
-    return True
+            return True
+
+        if "uap" == param:
+            g_is_uap = True
+            return True
+
+        if "x64" == param:
+            g_is_x64 = True
+            return True
+
+        print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
+        return False
+
+    return False
 
 
 def setup_framework_env():
@@ -78,9 +88,6 @@ def get_project_type(dst_platform, is_console):
     if "windows" == dst_platform:
         project_string += "Visual Studio 12"
 
-    if "win64" == dst_platform:
-        project_string += "Visual Studio 12 Win64"
-
     if "android" == dst_platform:
         current_platform = platform.system()
 
@@ -97,19 +104,25 @@ def get_project_type(dst_platform, is_console):
     return project_string
 
 
-def get_toolchain(dst_platform):
+def get_toolchain(input_platform, input_project_type):
     global g_ios_toolchain
     global g_android_toolchain
+    global g_is_x64
 
     toolchain_base = "-DCMAKE_TOOLCHAIN_FILE=" + g_toolchains_full_path;
     toolchain_string = ""
+    output_project = input_project_type
 
-    if "ios" == dst_platform:
+    if "ios" == input_platform:
         toolchain_string = toolchain_base + g_ios_toolchain
-    if "android" == dst_platform:
+
+    if "android" == input_platform:
         toolchain_string = toolchain_base + g_android_toolchain
 
-    return toolchain_string
+    if "windows" == input_platform and g_is_x64:
+        output_project += " Win64";
+
+    return toolchain_string, output_project
 
 def main():
     global g_supported_additional_parameters
@@ -144,7 +157,7 @@ def main():
         parser.print_help()
         exit()
 
-    toolchain = get_toolchain(destination_platform)
+    toolchain, project_type = get_toolchain(destination_platform, project_type)
 
     g_cmake_file_path = options.cmake_path
 
@@ -152,7 +165,6 @@ def main():
 
     print call_string
 
-    subprocess.check_output(call_string)
     subprocess.check_output(call_string)
 
 if __name__ == '__main__':
