@@ -34,6 +34,11 @@
 #include "Platform/TemplateMacOS/DeviceInfoMacOS.h"
 #include "Base/GlobalEnum.h"
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
 #import <AppKit/NSScreen.h>
@@ -42,6 +47,21 @@
 
 namespace DAVA
 {
+String GetSysCtlByName(const String& param)
+{
+    size_t len = 0;
+    sysctlbyname(param.c_str(), NULL, &len, NULL, 0);
+
+    if (len)
+    {
+        char model[len];
+        sysctlbyname(param.c_str(), model, &len, NULL, 0);
+        NSString* model_ns = [NSString stringWithUTF8String:model];
+        return String([model_ns UTF8String]);
+    }
+
+    return String("");
+}
 
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
@@ -59,7 +79,13 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-	return "Not yet implemented";
+    SInt32 versionMajor = 0, versionMinor = 0, versionBugFix = 0;
+    Gestalt(gestaltSystemVersionMajor, &versionMajor);
+    Gestalt(gestaltSystemVersionMinor, &versionMinor);
+    Gestalt(gestaltSystemVersionBugFix, &versionBugFix);
+    NSString* systemVersion = [NSString stringWithFormat:@"%d.%d.%d", versionMajor, versionMinor, versionBugFix];
+
+    return String([systemVersion UTF8String]);
 }
 
 String DeviceInfoPrivate::GetManufacturer()
@@ -69,7 +95,14 @@ String DeviceInfoPrivate::GetManufacturer()
 
 String DeviceInfoPrivate::GetModel()
 {
-	return "Not yet implemented";
+    String model = GetSysCtlByName("hw.model");
+
+    if (0 < model.length())
+    {
+        return model;
+    }
+
+    return "Just an Apple Computer";
 }
 
 String DeviceInfoPrivate::GetLocale()
