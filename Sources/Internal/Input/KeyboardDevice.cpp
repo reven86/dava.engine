@@ -31,10 +31,136 @@
 
 namespace DAVA
 {
+static const Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames =
+{
+  "UNKNOWN",
+  "ESCAPE",
+  "BACKSPACE",
+  "TAB",
+  "ENTER",
+  "SPACE",
+  "LSHIFT",
+  "LCTRL",
+  "LALT",
+
+  "LWIN",
+  "RWIN",
+  "APPS",
+
+  "PAUSE",
+  "CAPSLOCK",
+  "NUMLOCK",
+  "SCROLLLOCK",
+
+  "PGUP",
+  "PGDN",
+  "HOME",
+  "END",
+  "INSERT",
+  "DELETE",
+
+  "LEFT",
+  "UP",
+  "RIGHT",
+  "DOWN",
+
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+
+  "GRAVE",
+  "MINUS",
+  "EQUALS",
+  "BACKSLASH",
+  "LBRACKET",
+  "RBRACKET",
+  "SEMICOLON",
+  "APOSTROPHE",
+  "COMMA",
+  "PERIOD",
+  "SLASH",
+
+  "NUMPAD0",
+  "NUMPAD1",
+  "NUMPAD2",
+  "NUMPAD3",
+  "NUMPAD4",
+  "NUMPAD5",
+  "NUMPAD6",
+  "NUMPAD7",
+  "NUMPAD8",
+  "NUMPAD9",
+
+  "MULTIPLY",
+  "DIVIDE",
+  "ADD",
+  "SUBTRACT",
+  "DECIMAL",
+
+  "F1",
+  "F2",
+  "F3",
+  "F4",
+  "F5",
+  "F6",
+  "F7",
+  "F8",
+  "F9",
+  "F10",
+  "F11",
+  "F12",
+
+  "BACK",
+  "MENU",
+
+  "NONUSBACKSLASH",
+  "NUMPADENTER",
+  "PRINTSCREEN",
+  "RSHIFT",
+  "RCTRL",
+  "RALT",
+};
 
 KeyboardDevice::KeyboardDevice()
 {
-	ClearAllKeys();
+    static_assert(static_cast<size_t>(Key::TOTAL_KEYS_COUNT) < MAX_KEYS, "check array size");
+    DVASSERT(static_cast<size_t>(Key::TOTAL_KEYS_COUNT) == keyNames.size());
+
+    ClearAllKeys();
     PrepareKeyTranslator();
 }
 
@@ -42,232 +168,256 @@ KeyboardDevice::~KeyboardDevice()
 {
 }
 
-bool KeyboardDevice::IsKeyPressed(int32 keyCode) const
+bool KeyboardDevice::IsKeyPressed(Key key) const
 {
-    DVASSERT( keyCode < DVKEY_COUNT );
-    return keyStatus[keyCode];
+    return currentFrameKeyStatus[static_cast<unsigned>(key)];
 }
 
-void KeyboardDevice::OnKeyPressed(uint32 keyCode)
+const String& KeyboardDevice::GetKeyName(Key key)
 {
-    DVASSERT(keyCode < DVKEY_COUNT);
-    keyStatus[keyCode] = true;
-    realKeyStatus[keyCode] = true;
+    return keyNames[static_cast<unsigned>(key)];
 }
 
-void KeyboardDevice::OnKeyUnpressed(uint32 keyCode)
+void KeyboardDevice::OnKeyPressed(Key key)
 {
-    DVASSERT(keyCode < DVKEY_COUNT);
-    realKeyStatus[keyCode] = false;
+    unsigned index = static_cast<unsigned>(key);
+    currentFrameKeyStatus[index] = true;
+    realKeyStatus[index] = true;
 }
 
-void KeyboardDevice::OnBeforeUpdate()
+void KeyboardDevice::OnKeyUnpressed(Key key)
 {
+    realKeyStatus[static_cast<unsigned>(key)] = false;
 }
 
-void KeyboardDevice::OnAfterUpdate()
+void KeyboardDevice::OnFinishFrame()
 {
-    keyStatus = realKeyStatus;
+    currentFrameKeyStatus = realKeyStatus;
 }
 
-uint32 KeyboardDevice::GetDavaKeyForSystemKey(uint32 systemKeyCode) const
+Key KeyboardDevice::GetDavaKeyForSystemKey(uint32 systemKeyCode) const
 {
-    DVASSERT(systemKeyCode < MAX_KEYS);
-    return keyTranslator[systemKeyCode];
+    if (systemKeyCode < MAX_KEYS)
+    {
+        return keyTranslator[systemKeyCode];
+    }
+    DVASSERT(false && "bad system key code");
+    return Key::UNKNOWN;
 }
 
-void KeyboardDevice::OnSystemKeyPressed(uint32 systemKeyCode)
-{
-    DVASSERT(systemKeyCode < MAX_KEYS);
-    OnKeyPressed(keyTranslator[systemKeyCode]);
-}
-
-void KeyboardDevice::OnSystemKeyUnpressed(uint32 systemKeyCode)
-{
-    DVASSERT(systemKeyCode < MAX_KEYS);
-    OnKeyUnpressed(keyTranslator[systemKeyCode]);
-}
-
-    
 void KeyboardDevice::PrepareKeyTranslator()
 {
-    std::uninitialized_fill(begin(keyTranslator), end(keyTranslator), DVKEY_UNKNOWN);
+    std::uninitialized_fill(begin(keyTranslator), end(keyTranslator), Key::UNKNOWN);
 
 #if defined(__DAVAENGINE_WINDOWS__)
     // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 
-    keyTranslator[VK_LEFT] = DVKEY_LEFT;
-    keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
-    keyTranslator[VK_UP] = DVKEY_UP;
-    keyTranslator[VK_DOWN] = DVKEY_DOWN;
-    keyTranslator[VK_ESCAPE] = DVKEY_ESCAPE;
-    keyTranslator[VK_DELETE] = DVKEY_DELETE;
-    keyTranslator[VK_BACK] = DVKEY_BACKSPACE;
-    keyTranslator[VK_RETURN] = DVKEY_ENTER;
-    keyTranslator[VK_CONTROL] = DVKEY_CTRL;
-    keyTranslator[VK_MENU] = DVKEY_ALT;
-    keyTranslator[VK_SHIFT] = DVKEY_SHIFT;
-    keyTranslator[VK_CAPITAL] = DVKEY_CAPSLOCK;
-    keyTranslator[VK_SPACE] = DVKEY_SPACE;
-    keyTranslator[VK_TAB] = DVKEY_TAB;
-    keyTranslator[VK_ADD] = DVKEY_ADD;
-    keyTranslator[VK_SUBTRACT] = DVKEY_SUBTRACT;
-    keyTranslator[VK_HOME] = DVKEY_HOME;
-    keyTranslator[VK_END] = DVKEY_END;
-    keyTranslator[VK_PRIOR] = DVKEY_PGUP;
-    keyTranslator[VK_NEXT] = DVKEY_PGDN;
-    keyTranslator[VK_INSERT] = DVKEY_INSERT;
+    keyTranslator[256 + VK_LEFT] = Key::LEFT; // extended key
+    keyTranslator[256 + VK_RIGHT] = Key::RIGHT; // extended key
+    keyTranslator[256 + VK_UP] = Key::UP; // extended key
+    keyTranslator[256 + VK_DOWN] = Key::DOWN; // extended key
+    keyTranslator[VK_ESCAPE] = Key::ESCAPE;
+    keyTranslator[256 + VK_DELETE] = Key::DELETE; // extended key
+    keyTranslator[VK_BACK] = Key::BACKSPACE;
+    keyTranslator[VK_RETURN] = Key::ENTER;
+    keyTranslator[256 + VK_RETURN] = Key::NUMPADENTER;
 
-    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
-    keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
-    keyTranslator[VK_OEM_PERIOD] = DVKEY_PERIOD;
-    keyTranslator[VK_OEM_COMMA] = DVKEY_COMMA;
-    keyTranslator[VK_OEM_1] = DVKEY_SEMICOLON;
-    keyTranslator[VK_OEM_2] = DVKEY_SLASH;
-    keyTranslator[VK_OEM_3] = DVKEY_GRAVE;
-    keyTranslator[VK_OEM_4] = DVKEY_LBRACKET;
-    keyTranslator[VK_OEM_5] = DVKEY_BACKSLASH;
-    keyTranslator[VK_OEM_6] = DVKEY_RBRACKET;
-    keyTranslator[VK_OEM_7] = DVKEY_APOSTROPHE;
+    keyTranslator[VK_CONTROL] = Key::LCTRL;
+    keyTranslator[VK_MENU] = Key::LALT;
+    keyTranslator[VK_SHIFT] = Key::LSHIFT;
+    keyTranslator[VK_APPS] = Key::APPS;
 
-    for (auto i = 0; i <= DVKEY_F12 - DVKEY_F1; i++)
+    keyTranslator[256 + VK_LWIN] = Key::LWIN; // extended key
+    keyTranslator[256 + VK_RWIN] = Key::RWIN; // extended key
+
+    keyTranslator[256 + VK_CONTROL] = Key::RCTRL;
+    keyTranslator[256 + VK_MENU] = Key::RALT;
+    keyTranslator[256 + VK_SHIFT] = Key::RSHIFT;
+    keyTranslator[256 + VK_APPS] = Key::APPS; // win api mark this key as extended
+
+    keyTranslator[256 + VK_NUMLOCK] = Key::NUMLOCK;
+    keyTranslator[VK_CAPITAL] = Key::CAPSLOCK;
+    keyTranslator[VK_PAUSE] = Key::PAUSE;
+    keyTranslator[VK_SCROLL] = Key::SCROLLLOCK;
+    keyTranslator[256 + VK_SNAPSHOT] = Key::PRINTSCREEN;
+    keyTranslator[VK_SPACE] = Key::SPACE;
+    keyTranslator[VK_TAB] = Key::TAB;
+    keyTranslator[VK_ADD] = Key::ADD;
+    keyTranslator[VK_SUBTRACT] = Key::SUBTRACT;
+    keyTranslator[256 + VK_HOME] = Key::HOME; // extended key
+    keyTranslator[256 + VK_END] = Key::END; // extended key
+    keyTranslator[256 + VK_PRIOR] = Key::PGUP; // extended key
+    keyTranslator[256 + VK_NEXT] = Key::PGDN; // extended key
+    keyTranslator[256 + VK_INSERT] = Key::INSERT; // extended key
+
+    keyTranslator[VK_OEM_PLUS] = Key::EQUALS;
+    keyTranslator[VK_OEM_MINUS] = Key::MINUS;
+    keyTranslator[VK_OEM_PERIOD] = Key::PERIOD;
+    keyTranslator[VK_OEM_COMMA] = Key::COMMA;
+    keyTranslator[VK_OEM_1] = Key::SEMICOLON;
+    keyTranslator[VK_OEM_2] = Key::SLASH;
+    keyTranslator[VK_OEM_3] = Key::GRAVE;
+    keyTranslator[VK_OEM_4] = Key::LBRACKET;
+    keyTranslator[VK_OEM_5] = Key::BACKSLASH;
+    keyTranslator[VK_OEM_6] = Key::RBRACKET;
+    keyTranslator[VK_OEM_7] = Key::APOSTROPHE;
+
+    keyTranslator[VK_OEM_102] = Key::NONUSBACKSLASH;
+
+    const unsigned numFuncKeys = static_cast<unsigned>(Key::F12) - static_cast<unsigned>(Key::F1);
+    for (unsigned i = 0; i <= numFuncKeys; i++)
     {
-        keyTranslator[VK_F1 + i] = DVKEY_F1 + i;
+        unsigned keyValue = static_cast<unsigned>(Key::F1) + i;
+        keyTranslator[VK_F1 + i] = static_cast<Key>(keyValue);
     }
     
     // alpha keys
-    for(auto i = 0; i < 26; ++i)
+    for (unsigned i = 0; i < 26; ++i)
     {
-        keyTranslator[0x41 + i] = DVKEY_A + i;
+        unsigned keyValue = static_cast<unsigned>(Key::KEY_A) + i;
+        keyTranslator[0x41 + i] = static_cast<Key>(keyValue);
     }
     
     // numeric keys & keys at num pad
-    for(auto i = 0; i < 10; ++i)
+    for (unsigned i = 0; i < 10; ++i)
     {
-        keyTranslator[0x30 + i] = DVKEY_0 + i;
-        keyTranslator[0x60 + i] = DVKEY_NUMPAD0 + i;
+        unsigned keyNum = static_cast<unsigned>(Key::KEY_0) + i;
+        unsigned keyNumpad = static_cast<unsigned>(Key::NUMPAD0) + i;
+        keyTranslator[0x30 + i] = static_cast<Key>(keyNum);
+        keyTranslator[0x60 + i] = static_cast<Key>(keyNumpad);
     }
-    keyTranslator[VK_MULTIPLY] = DVKEY_MULTIPLY;
-    keyTranslator[VK_DIVIDE] = DVKEY_DIVIDE;
-    keyTranslator[VK_DECIMAL] = DVKEY_DECIMAL;
-
+    keyTranslator[VK_MULTIPLY] = Key::MULTIPLY;
+    keyTranslator[256 + VK_DIVIDE] = Key::DIVIDE; // extended key
+    keyTranslator[VK_DECIMAL] = Key::DECIMAL;
 #endif
 
 #if defined(__DAVAENGINE_MACOS__)
-    keyTranslator[0x7B] = DVKEY_LEFT;
-    keyTranslator[0x7C] = DVKEY_RIGHT;
-    keyTranslator[0x7E] = DVKEY_UP;
-    keyTranslator[0x7D] = DVKEY_DOWN;
-	keyTranslator[0x75] = DVKEY_DELETE;
-    keyTranslator[0x35] = DVKEY_ESCAPE;
-    keyTranslator[0x33] = DVKEY_BACKSPACE;
-    keyTranslator[0x24] = DVKEY_ENTER;
-    keyTranslator[0x30] = DVKEY_TAB;
-    keyTranslator[59] = DVKEY_CTRL; // left ctrl
-    keyTranslator[58] = DVKEY_ALT; // left alt
-    keyTranslator[56] = DVKEY_SHIFT; // left shift
-    keyTranslator[57] = DVKEY_CAPSLOCK;
-    keyTranslator[55] = DVKEY_LWIN; // LGUI in SDL
-    keyTranslator[0x31] = DVKEY_SPACE;
+    keyTranslator[0x7B] = Key::LEFT;
+    keyTranslator[0x7C] = Key::RIGHT;
+    keyTranslator[0x7E] = Key::UP;
+    keyTranslator[0x7D] = Key::DOWN;
+    keyTranslator[0x75] = Key::DELETE;
+    keyTranslator[0x35] = Key::ESCAPE;
+    keyTranslator[0x33] = Key::BACKSPACE;
+    keyTranslator[0x24] = Key::ENTER;
+    keyTranslator[0x30] = Key::TAB;
+
+    keyTranslator[59] = Key::LCTRL;
+    keyTranslator[58] = Key::LALT;
+    keyTranslator[56] = Key::LSHIFT;
+    keyTranslator[62] = Key::RCTRL;
+    keyTranslator[61] = Key::RALT;
+    keyTranslator[60] = Key::RSHIFT;
+
+    keyTranslator[57] = Key::CAPSLOCK;
+    keyTranslator[55] = Key::LWIN; // LGUI in SDL
+    keyTranslator[0x31] = Key::SPACE;
 
     // from SDL2 scancodes_darwin.h
-    //keyTranslator[10] = DVKEY_NON_US_BACKSLASH;
-    keyTranslator[24] = DVKEY_EQUALS;
-    keyTranslator[27] = DVKEY_MINUS;
-    keyTranslator[47] = DVKEY_PERIOD;
-    keyTranslator[43] = DVKEY_COMMA;
-    keyTranslator[41] = DVKEY_SEMICOLON;
-    keyTranslator[44] = DVKEY_SLASH;
-    keyTranslator[50] = DVKEY_GRAVE;
-    keyTranslator[33] = DVKEY_LBRACKET;
-    keyTranslator[42] = DVKEY_BACKSLASH;
-    keyTranslator[30] = DVKEY_RBRACKET;
-    keyTranslator[39] = DVKEY_APOSTROPHE;
-    keyTranslator[114] = DVKEY_INSERT;
-    keyTranslator[115] = DVKEY_HOME;
-    keyTranslator[116] = DVKEY_PGUP;
-    keyTranslator[119] = DVKEY_END;
-    keyTranslator[121] = DVKEY_PGDN;
-    keyTranslator[69] = DVKEY_ADD;
-    keyTranslator[78] = DVKEY_MINUS;
-    keyTranslator[67] = DVKEY_MULTIPLY;
-    keyTranslator[75] = DVKEY_DIVIDE;
-    keyTranslator[81] = DVKEY_EQUALS;
-    keyTranslator[65] = DVKEY_PERIOD;
+    keyTranslator[10] = Key::NONUSBACKSLASH;
+    keyTranslator[24] = Key::EQUALS;
+    keyTranslator[27] = Key::MINUS;
+    keyTranslator[47] = Key::PERIOD;
+    keyTranslator[43] = Key::COMMA;
+    keyTranslator[41] = Key::SEMICOLON;
+    keyTranslator[44] = Key::SLASH;
+    keyTranslator[50] = Key::GRAVE;
+    keyTranslator[33] = Key::LBRACKET;
+    keyTranslator[42] = Key::BACKSLASH;
+    keyTranslator[30] = Key::RBRACKET;
+    keyTranslator[39] = Key::APOSTROPHE;
+    keyTranslator[114] = Key::INSERT;
+    keyTranslator[115] = Key::HOME;
+    keyTranslator[116] = Key::PGUP;
+    keyTranslator[119] = Key::END;
+    keyTranslator[121] = Key::PGDN;
+    keyTranslator[69] = Key::ADD;
+    keyTranslator[78] = Key::MINUS;
+    keyTranslator[67] = Key::MULTIPLY;
+    keyTranslator[75] = Key::DIVIDE;
+    keyTranslator[81] = Key::EQUALS;
+    keyTranslator[65] = Key::PERIOD;
 
-    keyTranslator[0x00] = DVKEY_A;
-    keyTranslator[0x0B] = DVKEY_B;
-    keyTranslator[0x08] = DVKEY_C;
-    keyTranslator[0x02] = DVKEY_D;
-    keyTranslator[0x0E] = DVKEY_E;
-    keyTranslator[0x03] = DVKEY_F;
-    keyTranslator[0x05] = DVKEY_G;
-    keyTranslator[0x04] = DVKEY_H;
-    keyTranslator[0x22] = DVKEY_I;
-    keyTranslator[0x26] = DVKEY_J;
-    keyTranslator[0x28] = DVKEY_K;
-    keyTranslator[0x25] = DVKEY_L;
-    keyTranslator[0x2D] = DVKEY_M;
-    keyTranslator[0x2E] = DVKEY_N;
-    keyTranslator[0x1F] = DVKEY_O;
-    keyTranslator[0x23] = DVKEY_P;
-    keyTranslator[0x0C] = DVKEY_Q;
-    keyTranslator[0x0F] = DVKEY_R;
-    keyTranslator[0x01] = DVKEY_S;
-    keyTranslator[0x11] = DVKEY_T;
-    keyTranslator[0x20] = DVKEY_U;
-    keyTranslator[0x09] = DVKEY_V;
-    keyTranslator[0x0D] = DVKEY_W;
-    keyTranslator[0x07] = DVKEY_X;
-    keyTranslator[0x10] = DVKEY_Y;
-    keyTranslator[0x06] = DVKEY_Z;
+    keyTranslator[0x00] = Key::KEY_A;
+    keyTranslator[0x0B] = Key::KEY_B;
+    keyTranslator[0x08] = Key::KEY_C;
+    keyTranslator[0x02] = Key::KEY_D;
+    keyTranslator[0x0E] = Key::KEY_E;
+    keyTranslator[0x03] = Key::KEY_F;
+    keyTranslator[0x05] = Key::KEY_G;
+    keyTranslator[0x04] = Key::KEY_H;
+    keyTranslator[0x22] = Key::KEY_I;
+    keyTranslator[0x26] = Key::KEY_J;
+    keyTranslator[0x28] = Key::KEY_K;
+    keyTranslator[0x25] = Key::KEY_L;
+    keyTranslator[0x2D] = Key::KEY_M;
+    keyTranslator[0x2E] = Key::KEY_N;
+    keyTranslator[0x1F] = Key::KEY_O;
+    keyTranslator[0x23] = Key::KEY_P;
+    keyTranslator[0x0C] = Key::KEY_Q;
+    keyTranslator[0x0F] = Key::KEY_R;
+    keyTranslator[0x01] = Key::KEY_S;
+    keyTranslator[0x11] = Key::KEY_T;
+    keyTranslator[0x20] = Key::KEY_U;
+    keyTranslator[0x09] = Key::KEY_V;
+    keyTranslator[0x0D] = Key::KEY_W;
+    keyTranslator[0x07] = Key::KEY_X;
+    keyTranslator[0x10] = Key::KEY_Y;
+    keyTranslator[0x06] = Key::KEY_Z;
 
-    keyTranslator[0x1D] = DVKEY_0;
-    keyTranslator[0x12] = DVKEY_1;
-    keyTranslator[0x13] = DVKEY_2;
-    keyTranslator[0x14] = DVKEY_3;
-    keyTranslator[0x15] = DVKEY_4;
-    keyTranslator[0x17] = DVKEY_5;
-    keyTranslator[0x16] = DVKEY_6;
-    keyTranslator[0x1A] = DVKEY_7;
-    keyTranslator[0x1C] = DVKEY_8;
-    keyTranslator[0x19] = DVKEY_9;
-    keyTranslator[0x1B] = DVKEY_MINUS;
-    keyTranslator[0x18] = DVKEY_EQUALS;
-    
-    keyTranslator[0x7A] = DVKEY_F1;
-    keyTranslator[0x78] = DVKEY_F2;
-    keyTranslator[0x76] = DVKEY_F4;
-    keyTranslator[0x60] = DVKEY_F5;
-    keyTranslator[0x61] = DVKEY_F6;
-    keyTranslator[0x62] = DVKEY_F7;
-    keyTranslator[0x63] = DVKEY_F3;
-    keyTranslator[0x64] = DVKEY_F8;
-    keyTranslator[0x65] = DVKEY_F9;
-    keyTranslator[0x6D] = DVKEY_F10;
-    keyTranslator[0x67] = DVKEY_F11;
-    keyTranslator[0x6F] = DVKEY_F12;
-    
+    keyTranslator[0x1D] = Key::KEY_0;
+    keyTranslator[0x12] = Key::KEY_1;
+    keyTranslator[0x13] = Key::KEY_2;
+    keyTranslator[0x14] = Key::KEY_3;
+    keyTranslator[0x15] = Key::KEY_4;
+    keyTranslator[0x17] = Key::KEY_5;
+    keyTranslator[0x16] = Key::KEY_6;
+    keyTranslator[0x1A] = Key::KEY_7;
+    keyTranslator[0x1C] = Key::KEY_8;
+    keyTranslator[0x19] = Key::KEY_9;
+    keyTranslator[0x1B] = Key::MINUS;
+    keyTranslator[0x18] = Key::EQUALS;
+
+    keyTranslator[0x7A] = Key::F1;
+    keyTranslator[0x78] = Key::F2;
+    keyTranslator[0x76] = Key::F4;
+    keyTranslator[0x60] = Key::F5;
+    keyTranslator[0x61] = Key::F6;
+    keyTranslator[0x62] = Key::F7;
+    keyTranslator[0x63] = Key::F3;
+    keyTranslator[0x64] = Key::F8;
+    keyTranslator[0x65] = Key::F9;
+    keyTranslator[0x6D] = Key::F10;
+    keyTranslator[0x67] = Key::F11;
+    keyTranslator[0x6F] = Key::F12;
+
     // numeric keys at numpad
-    for(auto i = 0; i < 10; ++i)
+    for (unsigned i = 0; i < 8; ++i)
     {
-        keyTranslator[0x52 + i] = DVKEY_0 + i;
+        keyTranslator[0x52 + i] = static_cast<Key>(static_cast<unsigned>(Key::NUMPAD0) + i);
     }
+    keyTranslator[91] = Key::NUMPAD8;
+    keyTranslator[92] = Key::NUMPAD9;
+
+    keyTranslator[71] = Key::NUMLOCK;
+    keyTranslator[76] = Key::NUMPADENTER;
+    keyTranslator[65] = Key::DECIMAL;
+    keyTranslator[110] = Key::APPS;
+    keyTranslator[107] = Key::SCROLLLOCK;
+    keyTranslator[105] = Key::PRINTSCREEN;
 #endif
     
 #if defined(__DAVAENGINE_ANDROID__)
-    keyTranslator[0x04] = DVKEY_BACK;
-    keyTranslator[0x52] = DVKEY_MENU;
+    keyTranslator[0x04] = Key::BACK;
+    keyTranslator[0x52] = Key::MENU;
 #endif
 
 }
 
 void KeyboardDevice::ClearAllKeys()
 {
-    keyStatus.reset();
+    currentFrameKeyStatus.reset();
     realKeyStatus.reset();
 }
-
-
 
 };

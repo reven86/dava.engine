@@ -191,7 +191,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     {
         ProcessCursor(currentInput->point, searchOrder);
         pressedPoint = currentInput->point;
-        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->tid != UIEvent::BUTTON_1)
+        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != UIEvent::MouseButton::LEFT)
         {
             return true;
         }

@@ -88,9 +88,9 @@ AutotestingSystem::AutotestingSystem()
 
 AutotestingSystem::~AutotestingSystem()
 {
-        SafeRelease(luaSystem);
-		if (AutotestingDB::Instance())
-			AutotestingDB::Instance()->Release();
+    SafeRelease(luaSystem);
+    if (AutotestingDB::Instance())
+            AutotestingDB::Instance()->Release();
 	}
 
 	void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
@@ -181,8 +181,8 @@ AutotestingSystem::~AutotestingSystem()
         Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
         RefPtr<KeyedArchive> option = GetIdYamlOptions();
 
-		buildId = option->GetString("BuildId");
-		buildDate = option->GetString("Date");
+        buildId = option->GetString("BuildId");
+        buildDate = option->GetString("Date");
 		branch = option->GetString("Branch");
 		framework = option->GetString("Framework");
 		branchRev = option->GetString("BranchRev");
@@ -280,8 +280,8 @@ AutotestingSystem::~AutotestingSystem()
         return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
     }
 
-	void AutotestingSystem::OnTestStart(const String &testDescription)
-	{
+    void AutotestingSystem::OnTestStart(const String& testDescription)
+    {
 		Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
 		AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
 		if (isDB)
@@ -378,8 +378,8 @@ AutotestingSystem::~AutotestingSystem()
     void AutotestingSystem::ForceQuit(const String& errorMessage)
     {
         DVASSERT_MSG(false, errorMessage.c_str())
-		Core::Instance()->Quit();
-	}
+        Core::Instance()->Quit();
+    }
 
 	void AutotestingSystem::MakeScreenShot()
 	{
@@ -433,17 +433,17 @@ AutotestingSystem::~AutotestingSystem()
         ExitApp();
     }
 
-    void AutotestingSystem::OnInput(const UIEvent &input)
-	{
-		if (UIScreenManager::Instance())
+    void AutotestingSystem::OnInput(const UIEvent& input)
+    {
+        if (UIScreenManager::Instance())
 		{
 			String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
 			Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
 		}
 
-		int32 id = input.tid;
-		switch (input.phase)
-		{
+        int32 id = input.touchId;
+        switch (input.phase)
+        {
         case UIEvent::Phase::BEGAN:
         {
             mouseMove = input;
@@ -520,8 +520,8 @@ AutotestingSystem::~AutotestingSystem()
     }
 
     void AutotestingSystem::ExitApp()
-	{
-		if (needExitApp)
+    {
+        if (needExitApp)
 		{
 			return;
 		}

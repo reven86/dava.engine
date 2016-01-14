@@ -59,11 +59,11 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
     case UIEvent::Phase::BEGAN:
         mousePressed = true;
-        return ProcessMousePress(currentInput->point, static_cast<UIEvent::eButtonID>(currentInput->tid));
+        return ProcessMousePress(currentInput->point, currentInput->mouseButton);
     case UIEvent::Phase::ENDED:
         if (!mousePressed)
         {
-            return ProcessMousePress(currentInput->point, static_cast<UIEvent::eButtonID>(currentInput->tid));
+            return ProcessMousePress(currentInput->point, currentInput->mouseButton);
         }
         mousePressed = false;
         return false;
@@ -177,7 +177,7 @@ void SelectionSystem::FocusToChild(bool next)
     SetSelection(newSelectedNodes, selectionContainer.selectedNodes);
 }
 
-bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eButtonID buttonID)
+bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::MouseButton buttonID)
 {
     SelectedNodes selected;
     SelectedNodes deselected;
@@ -197,7 +197,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::eBu
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
-        if (buttonID == UIEvent::BUTTON_2)
+        if (buttonID == UIEvent::MouseButton::RIGHT)
         {
             Vector<ControlNode*> nodesUnderPointForMenu;
             auto predicateForMenu = [point](const UIControl* control) -> bool {

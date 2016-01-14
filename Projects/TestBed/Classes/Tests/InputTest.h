@@ -30,10 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __INPUTTEST_TEST_H__
 #define __INPUTTEST_TEST_H__
 
-#include <DAVAEngine.h>
 #include "Infrastructure/BaseScreen.h"
-
-using namespace DAVA;
 
 class InputTest : public BaseScreen
 {
@@ -47,14 +44,13 @@ protected:
 private:
     void OnInputChanged(DAVA::DeviceInfo::eHIDType hidType, bool connected);
 
-    void MousePressed(BaseObject* obj, void* data, void* callerData);
-    void TouchPressed(BaseObject* obj, void* data, void* callerData);
-    void KeyboardPressed(BaseObject* obj, void* data, void* callerData);
+    void MousePressed(DAVA::BaseObject* obj, void* data, void* callerData);
+    void TouchPressed(DAVA::BaseObject* obj, void* data, void* callerData);
+    void KeyboardPressed(DAVA::BaseObject* obj, void* data, void* callerData);
 
-    UIButton* mouse;
-    UIButton* touch;
-    UIButton* keyboard;
-    Bitset<DeviceInfo::eHIDType::HID_COUNT_TYPE> input;
+    DAVA::UIButton* mouse = nullptr;
+    DAVA::UIButton* touch = nullptr;
+    DAVA::UIButton* keyboard = nullptr;
+    DAVA::Bitset<DAVA::DeviceInfo::eHIDType::HID_COUNT_TYPE> input;
 };
-
 #endif //__INPUTTEST_TEST_H__

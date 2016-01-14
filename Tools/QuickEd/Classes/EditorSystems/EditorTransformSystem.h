@@ -65,7 +65,7 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
-    bool ProcessKey(const DAVA::int32 key);
+    bool ProcessKey(const DAVA::Key key);
     bool ProcessDrag(DAVA::Vector2 point);
 
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
