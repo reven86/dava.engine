@@ -1286,8 +1286,10 @@ void CommandBufferGLES2_t::Execute()
             }
 
             #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+            DVASSERT(baseInst == 0)
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_MACOS__)
+            DVASSERT(baseInst == 0)
             GL_CALL(glDrawElementsInstancedARB(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #else
             //            if( baseInst )
