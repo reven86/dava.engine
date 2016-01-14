@@ -183,7 +183,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
     davaGLView->setClearBeforeRendering(false);
     QTimer* timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &DavaGLWidget::UpdateView);
+    connect(timer, &QTimer::timeout, davaGLView, &DavaGLView::update);
     timer->start(16); //62.5 fps :)
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
@@ -255,12 +255,4 @@ void DavaGLWidget::resizeEvent(QResizeEvent*)
 void DavaGLWidget::OnCleanup()
 {
     DAVA::SafeDelete(renderer);
-}
-
-void DavaGLWidget::UpdateView()
-{
-    if (!DAVA::DVAssertMessage::IsMessageDisplayed())
-    {
-        davaGLView->update();
-    }
 }
