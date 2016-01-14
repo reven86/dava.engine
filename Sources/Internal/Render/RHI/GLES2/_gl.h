@@ -75,9 +75,9 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-typedef void(GL_APIENTRY PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
-typedef void(GL_APIENTRY PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, count, GLsizei);
-typedef void(GL_APIENTRY PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
+typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
+typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, GLsizei, GLsizei);
+typedef void(GL_APIENTRY* PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
 
 extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstancedEXT;
 extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstancedEXT;
