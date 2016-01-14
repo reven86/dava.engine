@@ -68,12 +68,13 @@ public:
     bool IsFoliageVisible() const;
     
     void DebugDrawVegetation();
-    
-private:
 
-    Entity* landscapeEntity;
-    Entity* foliageEntity;
-    
+private:
+    void ProcessVegetationRenderObject(VegetationRenderObject*, float32 timeElapsed);
+
+private:
+    Entity* landscapeEntity = nullptr;
+    DAVA::Vector<Entity*> foliageEntities;
 };
 
 };

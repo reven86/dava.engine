@@ -459,12 +459,10 @@ void VegetationRenderObject::PrepareToRender(Camera * camera)
         Vector<Vector<VegetationSortedBufferItem> >& rdoVector = indexRenderDataObject[resolutionIndex];
         
         uint32 indexBufferIndex = treeNode->data.rdoIndex;
-        Vector<VegetationSortedBufferItem>& indexBufferVector = rdoVector[indexBufferIndex];
-        
         DVASSERT(indexBufferIndex < rdoVector.size());
-        
-        size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
 
+        Vector<VegetationSortedBufferItem>& indexBufferVector = rdoVector[indexBufferIndex];
+        size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
         VegetationSortedBufferItem& bufferItem = indexBufferVector[directionIndex];
 
         rb->startIndex = bufferItem.startIndex;
