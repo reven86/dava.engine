@@ -89,7 +89,7 @@ public:
     void SystemDraw(const UIGeometricData& geometricData);
 
 private:
-    UberTextMacOs* uberText = nullptr;
+    UberTextMacOs& uberText; // = nullptr;
 };
 } // end namespace DAVA
 

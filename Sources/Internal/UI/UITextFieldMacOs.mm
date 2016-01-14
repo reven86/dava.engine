@@ -31,6 +31,8 @@
 #ifdef __DAVAENGINE_MACOS__
 
 #include <AppKit/NSTextField.h>
+#include <AppKit/NSColor.h>
+#include <AppKit/NSText.h>
 #include "Utils/UTF8Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -47,6 +49,15 @@ class SingleLineText;
 }
 - (id)init;
 - (void)dealloc;
+@end
+
+@interface CustomTextFieldFormatter : NSFormatter
+{
+    int maxLength;
+}
+- (void)setMaximumLength:(int)len;
+- (int)maximumLength;
+
 @end
 // end objective C declarations
 
@@ -111,14 +122,41 @@ public:
     {
         davaText = davaText_;
         nsTextField = [[NSTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        [nsTextField setWantsLayer:YES];
+
+        formatter = [[CustomTextFieldFormatter alloc] init];
+        [nsTextField setFormatter:formatter];
 
         objcDelegate = [[SingleLineDelegate alloc] init];
         objcDelegate->text = this;
 
-        [nsTextField setValue:objcDelegate forKey:@"delegate"];
+        [nsTextField setDelegate:objcDelegate];
 
         NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
         [openGLView addSubview:nsTextField];
+
+        [nsTextField setEditable:YES];
+        [nsTextField setEnabled:YES];
+
+        NSColor* backColor = [NSColor
+        colorWithCalibratedRed:0.f
+                         green:1.f
+                          blue:0.f
+                         alpha:1.f];
+
+        [nsTextField setBackgroundColor:backColor];
+    }
+
+    ~SingleLineText()
+    {
+        davaText = nullptr;
+        [nsTextField removeFromSuperview];
+        [nsTextField release];
+        nsTextField = nullptr;
+        [formatter release];
+        formatter = nullptr;
+        [objcDelegate release];
+        objcDelegate = nullptr;
     }
 
     void OpenKeyboard() override
@@ -142,12 +180,18 @@ public:
         NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
-        [nsTextField setValue:text forKey:@"text"];
+        [nsTextField setStringValue:text];
     }
     void UpdateRect(const Rect& rect) override
     {
-        DAVA::float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
-        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+        float32 divider = Core::Instance()->GetScreenScaleFactor();
+
+        Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+
+        Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+
+        physicalRect.y = screenSize.dy - (physicalRect.y + physicalRect.dy);
+
         CGRect nativeRect = CGRectMake((physicalRect.x) / divider, (physicalRect.y) / divider, physicalRect.dx / divider, physicalRect.dy / divider);
 
         nativeRect = CGRectIntegral(nativeRect);
@@ -156,53 +200,77 @@ public:
 
     void SetTextColor(const DAVA::Color& color) override
     {
-        // TODO
+        NSColor* nsColor = [NSColor
+        colorWithCalibratedRed:color.r
+                         green:color.g
+                          blue:color.b
+                         alpha:color.a];
+        [nsTextField setTextColor:nsColor];
     }
     void SetFontSize(float size) override
     {
+        // TODO
     }
 
     void SetTextAlign(DAVA::int32 align) override
     {
-        // TODO
+        NSTextAlignment aligment = NSCenterTextAlignment;
+        if (align & ALIGN_LEFT)
+        {
+            aligment = NSLeftTextAlignment;
+        }
+        else if (align & ALIGN_RIGHT)
+        {
+            aligment = NSRightTextAlignment;
+        }
+        else if (align & ALIGN_VCENTER)
+        {
+            aligment = NSCenterTextAlignment;
+        }
+        [nsTextField setAlignment:aligment];
+
+        if (useRtlAlign && (aligment == NSLeftTextAlignment ||
+                            aligment == NSRightTextAlignment))
+        {
+            [nsTextField setAlignment:NSNaturalTextAlignment];
+        }
+        alignment = static_cast<eAlign>(align);
     }
     DAVA::int32 GetTextAlign() override
     {
-        // TODO
-        return 0;
+        return alignment;
     }
-    void SetTextUseRtlAlign(bool useRtlAlign) override
+    void SetTextUseRtlAlign(bool useRtlAlign_) override
     {
-        // TODO
+        useRtlAlign = useRtlAlign_;
+        SetTextAlign(alignment);
     }
     bool GetTextUseRtlAlign() const override
     {
-        // TODO
-        return false;
+        return useRtlAlign;
     }
 
     void SetVisible(bool value) override
     {
-        // TODO
+        [nsTextField setHidden:!value];
     }
     void ShowField() override
     {
-        // TODO
+        // TODO do I need it on mac os?
     }
     void HideField() override
     {
-        // TODO
+        // TODO do I need it on mac os?
     }
 
     void SetInputEnabled(bool value) override
     {
-        // TODO
+        [nsTextField setEditable:value];
     }
 
     // Keyboard traits.
     void SetAutoCapitalizationType(DAVA::int32 value) override
     {
-        // TODO
     }
     void SetAutoCorrectionType(DAVA::int32 value) override
     {
@@ -226,18 +294,28 @@ public:
     // Cursor pos.
     uint32 GetCursorPos() override
     {
-        // TODO
-        return 0;
+        uint32 cursorPos = 0;
+        if ([nsTextField isEditable])
+        {
+            NSText* text = [nsTextField currentEditor];
+            NSRange range = [text selectedRange];
+            cursorPos = range.location;
+        }
+        return cursorPos;
     }
     void SetCursorPos(uint32 pos) override
     {
-        // TODO
+        if ([nsTextField isEditable])
+        {
+            NSText* text = [nsTextField currentEditor];
+            [text setSelectedRange:(NSRange){ pos, 0 }];
+        }
     }
 
     // Max text length.
     void SetMaxLength(int maxLength) override
     {
-        // TODO
+        [formatter setMaximumLength:maxLength];
     }
 
     void SetRenderToTexture(bool value) override
@@ -253,6 +331,9 @@ public:
     UITextField* davaText = nullptr;
     NSTextField* nsTextField = nullptr;
     SingleLineDelegate* objcDelegate = nullptr;
+    CustomTextFieldFormatter* formatter = nullptr;
+    eAlign alignment = ALIGN_LEFT;
+    bool useRtlAlign = false;
 };
 
 class UberTextMacOs
@@ -284,6 +365,11 @@ public:
         davaText = nullptr;
     }
 
+    ITextCtrl* operator->()
+    {
+        return textStrategy;
+    }
+
 private:
     TextMode textMode = TextMode::SingleLineText;
     ITextCtrl* textStrategy = nullptr;
@@ -291,119 +377,145 @@ private:
 };
 
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* tf)
+    : uberText{ *(new UberTextMacOs(tf, TextMode::SingleLineText)) }
 {
-    uberText = new UberTextMacOs(tf, TextMode::SingleLineText);
 }
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
+    delete &uberText;
 }
 
 void TextFieldPlatformImpl::OpenKeyboard()
 {
+    uberText->OpenKeyboard();
 }
 void TextFieldPlatformImpl::CloseKeyboard()
 {
+    uberText->CloseKeyboard();
 }
 void TextFieldPlatformImpl::GetText(WideString& string) const
 {
+    uberText->GetText(string);
 }
 void TextFieldPlatformImpl::SetText(const WideString& string)
 {
+    uberText->SetText(string);
 }
 void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 {
+    uberText->UpdateRect(rect);
 }
 
 void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 {
+    uberText->SetTextColor(color);
 }
 void TextFieldPlatformImpl::SetFontSize(float size)
 {
+    uberText->SetFontSize(size);
 }
 
 void TextFieldPlatformImpl::SetTextAlign(DAVA::int32 align)
 {
+    uberText->SetTextAlign(align);
 }
 DAVA::int32 TextFieldPlatformImpl::GetTextAlign()
 {
-    return 0;
+    return uberText->GetTextAlign();
 }
 void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 {
+    uberText->SetTextUseRtlAlign(useRtlAlign);
 }
 bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 {
-    return false;
+    return uberText->GetTextUseRtlAlign();
 }
-
 void TextFieldPlatformImpl::SetVisible(bool value)
 {
+    uberText->SetVisible(value);
 }
 void TextFieldPlatformImpl::TextFieldPlatformImpl::ShowField()
 {
+    uberText->ShowField();
 }
 void TextFieldPlatformImpl::HideField()
 {
+    uberText->HideField();
 }
 
 void TextFieldPlatformImpl::SetIsPassword(bool isPassword)
 {
+    // TODO
+    Logger::Error("SetIsPassword not implemented");
 }
 
 void TextFieldPlatformImpl::SetInputEnabled(bool value)
 {
+    uberText->SetInputEnabled(value);
 }
 
 // Keyboard traits.
 void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
 {
+    uberText->SetAutoCapitalizationType(value);
 }
 void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
 {
+    uberText->SetAutoCorrectionType(value);
 }
 void TextFieldPlatformImpl::SetSpellCheckingType(DAVA::int32 value)
 {
+    uberText->SetSpellCheckingType(value);
 }
 void TextFieldPlatformImpl::SetKeyboardAppearanceType(DAVA::int32 value)
 {
+    uberText->SetKeyboardAppearanceType(value);
 }
 void TextFieldPlatformImpl::SetKeyboardType(DAVA::int32 value)
 {
+    uberText->SetKeyboardType(value);
 }
 void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
 {
+    uberText->SetReturnKeyType(value);
 }
 void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
 {
+    uberText->SetEnableReturnKeyAutomatically(value);
 }
 
 // Cursor pos.
 uint32 TextFieldPlatformImpl::GetCursorPos()
 {
-    return 0;
+    return uberText->GetCursorPos();
 }
 void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 {
+    uberText->SetCursorPos(pos);
 }
-
 // Max text length.
 void TextFieldPlatformImpl::SetMaxLength(int maxLength)
 {
+    uberText->SetMaxLength(maxLength);
 }
-
 void TextFieldPlatformImpl::SetMultiline(bool multiline)
 {
+    // TODO
+    Logger::Error("SetMultiline not implemented");
 }
 
 void TextFieldPlatformImpl::SetRenderToTexture(bool value)
 {
+    uberText->SetRenderToTexture(value);
 }
 bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
-    return false;
+    return uberText->IsRenderToTexture();
 }
 void TextFieldPlatformImpl::SystemDraw(const UIGeometricData& geometricData)
 {
+    // TODO do I need to update rect here? Like in iOS version?
 }
 
 } // end namespace DAVA
@@ -443,6 +555,63 @@ textShouldEndEditing:(NSText*)fieldEditor
 - (void)controlTextDidChange:(NSNotification*)aNotification
 {
     DAVA::Logger::Info("controlTextDidChange");
+}
+
+@end
+
+@implementation CustomTextFieldFormatter
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        maxLength = INT_MAX;
+    }
+
+    return self;
+}
+
+- (void)setMaximumLength:(int)len
+{
+    maxLength = len;
+}
+
+- (int)maximumLength
+{
+    return maxLength;
+}
+
+- (NSString*)stringForObjectValue:(id)object
+{
+    return (NSString*)object;
+}
+
+- (BOOL)getObjectValue:(id*)object
+             forString:(NSString*)string
+      errorDescription:(NSString**)error
+{
+    *object = string;
+    return YES;
+}
+
+- (BOOL)isPartialStringValid:(NSString**)partialStringPtr
+       proposedSelectedRange:(NSRangePointer)proposedSelRangePtr
+              originalString:(NSString*)origString
+       originalSelectedRange:(NSRange)origSelRange
+            errorDescription:(NSString**)error
+{
+    if ([*partialStringPtr length] > maxLength)
+    {
+        return NO;
+    }
+
+    return YES;
+}
+
+- (NSAttributedString*)attributedStringForObjectValue:(id)anObject
+                                withDefaultAttributes:(NSDictionary*)attributes
+{
+    return nil;
 }
 
 @end
