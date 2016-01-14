@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -18,6 +18,11 @@
 #ifndef _MAGICKCORE_COMPOSITE_PRIVATE_H
 #define _MAGICKCORE_COMPOSITE_PRIVATE_H
 
+#include "magick/color.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/pixel-private.h"
+
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -25,11 +30,6 @@ extern "C" {
 /*
   ImageMagick Alpha Composite Inline Methods (special export)
 */
-
-#include "magick/color.h"
-#include "magick/image.h"
-#include "magick/image-private.h"
-
 static inline MagickRealType RoundToUnity(const MagickRealType value)
 {
   return(value < 0.0 ? 0.0 : (value > 1.0) ? 1.0 : value);
@@ -46,7 +46,7 @@ static inline void MagickCompositeOver(const PixelPacket *p,
   const MagickRealType alpha,const PixelPacket *q,const MagickRealType beta,
   PixelPacket *composite)
 {
-  MagickRealType
+    double
     gamma;
 
   /*
@@ -61,28 +61,31 @@ static inline void MagickCompositeOver(const PixelPacket *p,
   gamma=1.0-QuantumScale*QuantumScale*alpha*beta;
 #if !defined(MAGICKCORE_HDRI_SUPPORT)
   composite->opacity=(Quantum) (QuantumRange*(1.0-gamma)+0.5);
-  gamma=1.0/(gamma <= MagickEpsilon ? 1.0 : gamma);
-  SetPixelRed(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelRed(p),alpha,(MagickRealType)
-    GetPixelRed(q),beta)+0.5);
-  SetPixelGreen(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelGreen(p),alpha,(MagickRealType)
-    GetPixelGreen(q),beta)+0.5);
-  SetPixelBlue(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelBlue(p),alpha,(MagickRealType)
-    GetPixelBlue(q),beta)+0.5);
+  gamma = PerceptibleReciprocal(gamma);
+  SetPixelRed(composite, gamma * MagickOver_((MagickRealType)
+                                             GetPixelRed(p),
+                                             alpha, (MagickRealType)GetPixelRed(q), beta) +
+              0.5);
+  SetPixelGreen(composite, gamma * MagickOver_((MagickRealType)
+                                               GetPixelGreen(p),
+                                               alpha, (MagickRealType)GetPixelGreen(q), beta) +
+                0.5);
+  SetPixelBlue(composite, gamma * MagickOver_((MagickRealType)
+                                              GetPixelBlue(p),
+                                              alpha, (MagickRealType)GetPixelBlue(q), beta) +
+               0.5);
 #else
   SetPixelOpacity(composite,QuantumRange*(1.0-gamma));
-  gamma=1.0/(gamma <= MagickEpsilon ? 1.0 : gamma);
-  SetPixelRed(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelRed(p),alpha,(MagickRealType)
-    GetPixelRed(q),beta));
-  SetPixelGreen(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelGreen(p),alpha,(MagickRealType)
-    GetPixelGreen(q),beta));
-  SetPixelBlue(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelBlue(p),alpha,(MagickRealType)
-    GetPixelBlue(q),beta));
+  gamma = PerceptibleReciprocal(gamma);
+  SetPixelRed(composite, gamma * MagickOver_((MagickRealType)
+                                             GetPixelRed(p),
+                                             alpha, (MagickRealType)GetPixelRed(q), beta));
+  SetPixelGreen(composite, gamma * MagickOver_((MagickRealType)
+                                               GetPixelGreen(p),
+                                               alpha, (MagickRealType)GetPixelGreen(q), beta));
+  SetPixelBlue(composite, gamma * MagickOver_((MagickRealType)
+                                              GetPixelBlue(p),
+                                              alpha, (MagickRealType)GetPixelBlue(q), beta));
 #endif
 }
 
@@ -90,7 +93,7 @@ static inline void MagickPixelCompositeOver(const MagickPixelPacket *p,
   const MagickRealType alpha,const MagickPixelPacket *q,
   const MagickRealType beta,MagickPixelPacket *composite)
 {
-  MagickRealType
+    double
     gamma;
 
   /*
@@ -103,7 +106,7 @@ static inline void MagickPixelCompositeOver(const MagickPixelPacket *p,
     }
   gamma=1.0-QuantumScale*QuantumScale*alpha*beta;
   composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-  gamma=1.0/(fabs(gamma) <= MagickEpsilon ? 1.0 : gamma);
+  gamma = PerceptibleReciprocal(gamma);
   composite->red=gamma*MagickOver_(p->red,alpha,q->red,beta);
   composite->green=gamma*MagickOver_(p->green,alpha,q->green,beta);
   composite->blue=gamma*MagickOver_(p->blue,alpha,q->blue,beta);
@@ -115,9 +118,11 @@ static inline void MagickPixelCompositePlus(const MagickPixelPacket *p,
   const MagickRealType alpha,const MagickPixelPacket *q,
   const MagickRealType beta,MagickPixelPacket *composite)
 {
+    double
+    gamma;
+
   MagickRealType
     Da,
-    gamma,
     Sa;
 
   /*
@@ -127,7 +132,7 @@ static inline void MagickPixelCompositePlus(const MagickPixelPacket *p,
   Da=1.0-QuantumScale*beta;
   gamma=RoundToUnity(Sa+Da);  /* 'Plus' blending -- not 'Over' blending */
   composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-  gamma=1.0/(fabs(gamma) <= MagickEpsilon ? 1.0 : gamma);
+  gamma = PerceptibleReciprocal(gamma);
   composite->red=gamma*(Sa*p->red+Da*q->red);
   composite->green=gamma*(Sa*p->green+Da*q->green);
   composite->blue=gamma*(Sa*p->blue+Da*q->blue);

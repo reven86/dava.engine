@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
 #ifndef _MAGICKCORE_STRING_H_
 #define _MAGICKCORE_STRING_H_
 
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
-
 #include <stdarg.h>
 #include <time.h>
 #include "magick/exception.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 typedef struct _StringInfo
 {
@@ -58,7 +58,8 @@ extern MagickExport const char
   *GetStringInfoPath(const StringInfo *);
 
 extern MagickExport double
-  InterpretSiPrefixValue(const char *restrict,char **restrict);
+InterpretSiPrefixValue(const char *restrict, char **restrict),
+*StringToArrayOfDoubles(const char *, ssize_t *, ExceptionInfo *);
 
 extern MagickExport int
   CompareStringInfo(const StringInfo *,const StringInfo *),
@@ -66,15 +67,17 @@ extern MagickExport int
   LocaleNCompare(const char *,const char *,const size_t);
 
 extern MagickExport MagickBooleanType
-  ConcatenateString(char **,const char *),
-  SubstituteString(char **,const char *,const char *);
+ConcatenateString(char **, const char *),
+IsStringTrue(const char *),
+IsStringNotFalse(const char *),
+SubstituteString(char **, const char *, const char *);
 
 extern MagickExport size_t
-  ConcatenateMagickString(char *,const char *,const size_t)
-    magick_attribute((nonnull)),
-  CopyMagickString(char *,const char *,const size_t)
-    magick_attribute((nonnull)),
-  GetStringInfoLength(const StringInfo *);
+ConcatenateMagickString(char *, const char *, const size_t)
+magick_attribute((__nonnull__)),
+CopyMagickString(char *, const char *, const size_t)
+magick_attribute((__nonnull__)),
+GetStringInfoLength(const StringInfo *);
 
 extern MagickExport ssize_t
   FormatMagickSize(const MagickSizeType,const MagickBooleanType,char *),
@@ -94,17 +97,17 @@ extern MagickExport unsigned char
   *GetStringInfoDatum(const StringInfo *);
 
 extern MagickExport void
-  ConcatenateStringInfo(StringInfo *,const StringInfo *)
-    magick_attribute((nonnull)),
-  LocaleLower(char *),
-  LocaleUpper(char *),
-  PrintStringInfo(FILE *file,const char *,const StringInfo *),
-  ResetStringInfo(StringInfo *),
-  SetStringInfo(StringInfo *,const StringInfo *),
-  SetStringInfoDatum(StringInfo *,const unsigned char *),
-  SetStringInfoLength(StringInfo *,const size_t),
-  SetStringInfoPath(StringInfo *,const char *),
-  StripString(char *);
+ConcatenateStringInfo(StringInfo *, const StringInfo *)
+magick_attribute((__nonnull__)),
+LocaleLower(char *),
+LocaleUpper(char *),
+PrintStringInfo(FILE *file, const char *, const StringInfo *),
+ResetStringInfo(StringInfo *),
+SetStringInfo(StringInfo *, const StringInfo *),
+SetStringInfoDatum(StringInfo *, const unsigned char *),
+SetStringInfoLength(StringInfo *, const size_t),
+SetStringInfoPath(StringInfo *, const char *),
+StripString(char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

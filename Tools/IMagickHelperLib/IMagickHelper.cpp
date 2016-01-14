@@ -1,12 +1,9 @@
 #include "IMagickHelper.h"
-
-#include <Magick++.h>
-#include <magick/MagickCore.h>
-#include <magick/property.h>
-
 #include <FileTools.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstring>
 #include <vector>
+#include <Magick++.h>
 
 using namespace std;
 

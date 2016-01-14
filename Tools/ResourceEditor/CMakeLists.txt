@@ -24,10 +24,15 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/FCollada )
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/External/Cg/include )
-include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
 
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet  )
+
+if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+	include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/x64 )
+else ()
+	include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )
+endif ()
 
 include_directories   (.)
 include_directories   ( "../TextureTools" )
@@ -54,7 +59,6 @@ add_definitions       (
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
 -DDAVA_FMOD
--D_DISABLE_IMAGE_MAGICK
 )
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
@@ -110,6 +114,3 @@ DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/con
                          )
 
 setup_main_executable()
-
-
-

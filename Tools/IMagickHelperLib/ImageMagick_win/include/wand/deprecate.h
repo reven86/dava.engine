@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -65,66 +65,70 @@ extern WandExport ssize_t
   MagickGetImageIndex(MagickWand *) magick_attribute((deprecated));
 
 extern WandExport MagickBooleanType
-  DuplexTransferPixelViewIterator(PixelView *,PixelView *,PixelView *,
-    DuplexTransferPixelViewMethod,void *) magick_attribute((deprecated)),
-  GetPixelViewIterator(PixelView *,GetPixelViewMethod,void *)
-    magick_attribute((deprecated)),
-  IsPixelView(const PixelView *) magick_attribute((deprecated)),
-  MagickClipPathImage(MagickWand *,const char *,const MagickBooleanType)
-    magick_attribute((deprecated)),
-  MagickColorFloodfillImage(MagickWand *,const PixelWand *,const double,
-    const PixelWand *,const ssize_t,const ssize_t)
-    magick_attribute((deprecated)),
-  MagickGetImageChannelExtrema(MagickWand *,const ChannelType,size_t *,
-    size_t *) magick_attribute((deprecated)),
-  MagickGetImageExtrema(MagickWand *,size_t *,size_t *)
-    magick_attribute((deprecated)),
-  MagickGetImageMatte(MagickWand *) magick_attribute((deprecated)),
-  MagickGetImagePixels(MagickWand *,const ssize_t,const ssize_t,const size_t,
-    const size_t,const char *,const StorageType,void *)
-    magick_attribute((deprecated)),
-  MagickMapImage(MagickWand *,const MagickWand *,const MagickBooleanType)
-    magick_attribute((deprecated)),
-  MagickMatteFloodfillImage(MagickWand *,const double,const double,
-    const PixelWand *,const ssize_t,const ssize_t)
-    magick_attribute((deprecated)),
-  MagickMedianFilterImage(MagickWand *,const double)
-    magick_attribute((deprecated)),
-  MagickModeImage(MagickWand *,const double) magick_attribute((deprecated)),
-  MagickReduceNoiseImage(MagickWand *,const double)
-    magick_attribute((deprecated)),
-  MagickRemapImage(MagickWand *,const MagickWand *,const DitherMethod),
-  MagickOpaqueImage(MagickWand *,const PixelWand *,const PixelWand *,
-    const double) magick_attribute((deprecated)),
-  MagickPaintFloodfillImage(MagickWand *,const ChannelType,const PixelWand *,
-    const double,const PixelWand *,const ssize_t,const ssize_t)
-    magick_attribute((deprecated)),
-  MagickPaintOpaqueImage(MagickWand *,const PixelWand *,const PixelWand *,
-    const double) magick_attribute((deprecated)),
-  MagickPaintOpaqueImageChannel(MagickWand *,const ChannelType,
-    const PixelWand *,const PixelWand *,const double)
-    magick_attribute((deprecated)),
-  MagickPaintTransparentImage(MagickWand *,const PixelWand *,const double,
-    const double) magick_attribute((deprecated)),
-  MagickRecolorImage(MagickWand *,const size_t,const double *)
-    magick_attribute((deprecated)),
-  MagickSetImageAttribute(MagickWand *,const char *,const char *)
-    magick_attribute((deprecated)),
-  MagickSetImageIndex(MagickWand *,const ssize_t)
-    magick_attribute((deprecated)),
-  MagickSetImageOption(MagickWand *,const char *,const char *,const char *)
-    magick_attribute((deprecated)),
-  MagickSetImagePixels(MagickWand *,const ssize_t,const ssize_t,const size_t,
-    const size_t,const char *,const StorageType,const void *)
-    magick_attribute((deprecated)),
-  MagickTransparentImage(MagickWand *,const PixelWand *,const double,
-    const double) magick_attribute((deprecated)),
-  SetPixelViewIterator(PixelView *,SetPixelViewMethod,void *)
-    magick_attribute((deprecated)),
-  TransferPixelViewIterator(PixelView *,PixelView *,TransferPixelViewMethod,
-    void *) magick_attribute((deprecated)),
-  UpdatePixelViewIterator(PixelView *,UpdatePixelViewMethod,void *)
-    magick_attribute((deprecated));
+DuplexTransferPixelViewIterator(PixelView *, PixelView *, PixelView *,
+                                DuplexTransferPixelViewMethod, void *) magick_attribute((deprecated)),
+GetPixelViewIterator(PixelView *, GetPixelViewMethod, void *)
+magick_attribute((deprecated)),
+IsPixelView(const PixelView *) magick_attribute((deprecated)),
+MagickClipPathImage(MagickWand *, const char *, const MagickBooleanType)
+magick_attribute((deprecated)),
+MagickColorFloodfillImage(MagickWand *, const PixelWand *, const double,
+                          const PixelWand *, const ssize_t, const ssize_t)
+magick_attribute((deprecated)),
+MagickGetImageChannelExtrema(MagickWand *, const ChannelType, size_t *,
+                             size_t *) magick_attribute((deprecated)),
+MagickGetImageExtrema(MagickWand *, size_t *, size_t *)
+magick_attribute((deprecated)),
+MagickGetImageMatte(MagickWand *) magick_attribute((deprecated)),
+MagickGetImagePixels(MagickWand *, const ssize_t, const ssize_t, const size_t,
+                     const size_t, const char *, const StorageType, void *)
+magick_attribute((deprecated)),
+MagickMapImage(MagickWand *, const MagickWand *, const MagickBooleanType)
+magick_attribute((deprecated)),
+MagickMatteFloodfillImage(MagickWand *, const double, const double,
+                          const PixelWand *, const ssize_t, const ssize_t)
+magick_attribute((deprecated)),
+MagickMedianFilterImage(MagickWand *, const double)
+magick_attribute((deprecated)),
+MagickModeImage(MagickWand *, const double) magick_attribute((deprecated)),
+MagickReduceNoiseImage(MagickWand *, const double)
+magick_attribute((deprecated)),
+MagickRemapImage(MagickWand *, const MagickWand *, const DitherMethod),
+MagickOpaqueImage(MagickWand *, const PixelWand *, const PixelWand *,
+                  const double) magick_attribute((deprecated)),
+MagickPaintFloodfillImage(MagickWand *, const ChannelType, const PixelWand *,
+                          const double, const PixelWand *, const ssize_t, const ssize_t)
+magick_attribute((deprecated)),
+MagickPaintOpaqueImage(MagickWand *, const PixelWand *, const PixelWand *,
+                       const double) magick_attribute((deprecated)),
+MagickPaintOpaqueImageChannel(MagickWand *, const ChannelType,
+                              const PixelWand *, const PixelWand *, const double)
+magick_attribute((deprecated)),
+MagickPaintTransparentImage(MagickWand *, const PixelWand *, const double,
+                            const double) magick_attribute((deprecated)),
+MagickRadialBlurImage(MagickWand *, const double)
+magick_attribute((deprecated)),
+MagickRadialBlurImageChannel(MagickWand *, const ChannelType, const double)
+magick_attribute((deprecated)),
+MagickRecolorImage(MagickWand *, const size_t, const double *)
+magick_attribute((deprecated)),
+MagickSetImageAttribute(MagickWand *, const char *, const char *)
+magick_attribute((deprecated)),
+MagickSetImageIndex(MagickWand *, const ssize_t)
+magick_attribute((deprecated)),
+MagickSetImageOption(MagickWand *, const char *, const char *, const char *)
+magick_attribute((deprecated)),
+MagickSetImagePixels(MagickWand *, const ssize_t, const ssize_t, const size_t,
+                     const size_t, const char *, const StorageType, const void *)
+magick_attribute((deprecated)),
+MagickTransparentImage(MagickWand *, const PixelWand *, const double,
+                       const double) magick_attribute((deprecated)),
+SetPixelViewIterator(PixelView *, SetPixelViewMethod, void *)
+magick_attribute((deprecated)),
+TransferPixelViewIterator(PixelView *, PixelView *, TransferPixelViewMethod,
+                          void *) magick_attribute((deprecated)),
+UpdatePixelViewIterator(PixelView *, UpdatePixelViewMethod, void *)
+magick_attribute((deprecated));
 
 extern WandExport MagickWand
   *GetPixelViewWand(const PixelView *) magick_attribute((deprecated)),

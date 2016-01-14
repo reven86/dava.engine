@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,17 +18,15 @@
 #ifndef _MAGICKCORE_MODULE_H
 #define _MAGICKCORE_MODULE_H
 
+#include <time.h>
+#include "magick/version.h"
+
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-#include <time.h>
-#include "magick/version.h"
-
-#define MagickImageCoderSignature  ((size_t) \
-  (((MagickLibVersion) << 8) | MAGICKCORE_QUANTUM_DEPTH))
-#define MagickImageFilterSignature  ((size_t) \
-  (((MagickLibVersion) << 8) | MAGICKCORE_QUANTUM_DEPTH))
+#define MagickImageCoderSignature ((size_t)(((MagickLibInterface) << 8) | MAGICKCORE_QUANTUM_DEPTH))
+#define MagickImageFilterSignature ((size_t)(((MagickLibInterface) << 8) | MAGICKCORE_QUANTUM_DEPTH))
 
 typedef enum
 {
@@ -63,8 +61,8 @@ typedef struct _ModuleInfo
     signature;
 } ModuleInfo;
 
-typedef ModuleExport size_t
-  ImageFilterHandler(Image **,const int,const char **,ExceptionInfo *);
+typedef size_t
+ImageFilterHandler(Image**, const int, const char**, ExceptionInfo*);
 
 extern MagickExport char
   **GetModuleList(const char *,const MagickModuleType,size_t *,ExceptionInfo *);
@@ -73,7 +71,6 @@ extern MagickExport const ModuleInfo
   **GetModuleInfoList(const char *,size_t *,ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  InitializeModuleList(ExceptionInfo *),
   InvokeDynamicImageFilter(const char *,Image **,const int,const char **,
     ExceptionInfo *),
   ListModuleInfo(FILE *,ExceptionInfo *),

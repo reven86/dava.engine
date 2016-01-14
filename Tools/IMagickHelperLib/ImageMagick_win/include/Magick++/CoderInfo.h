@@ -15,65 +15,66 @@
 
 namespace Magick
 {
-  class MagickDLLDecl CoderInfo
+class MagickPPExport CoderInfo
   {
   public:
-
-    enum MatchType {
-      AnyMatch,		// match any coder
-      TrueMatch,	// match coder if true
-      FalseMatch	// match coder if false
-    };
+      enum MatchType
+      {
+          AnyMatch, // match any coder
+          TrueMatch, // match coder if true
+          FalseMatch // match coder if false
+      };
 
     // Default constructor
-    CoderInfo ( void );
+      CoderInfo(void);
 
     // Copy constructor
-    CoderInfo ( const CoderInfo &coder_ );
+      CoderInfo(const CoderInfo& coder_);
 
     // Construct with coder name
-    CoderInfo ( const std::string &name_ );
+      CoderInfo(const std::string& name_);
 
     // Destructor
-    ~CoderInfo ( void );
+      ~CoderInfo(void);
 
-    // Format name
-    std::string name( void ) const;
+      // Assignment operator
+      CoderInfo& operator=(const CoderInfo& coder_);
 
     // Format description
-    std::string description( void ) const;
+      std::string description(void) const;
+
+      // Format supports multiple frames
+      bool isMultiFrame(void) const;
 
     // Format is readable
-    bool isReadable( void ) const;
+      bool isReadable(void) const;
 
     // Format is writeable
-    bool isWritable( void ) const;
+      bool isWritable(void) const;
 
-    // Format supports multiple frames
-    bool isMultiFrame( void ) const;
+      // Format mime type
+      std::string mimeType(void) const;
 
-    // Assignment operator
-    CoderInfo& operator= (const CoderInfo &coder_ );
+      // Format name
+      std::string name(void) const;
+
+      // Unregisters this coder
+      bool unregister(void) const;
 
     //
     // Implemementation methods
     //
-    CoderInfo ( const MagickCore::MagickInfo *magickInfo_ );
+      CoderInfo(const MagickCore::MagickInfo* magickInfo_);
 
   private:
-
-    std::string		_name;
-    std::string		_description;
-    bool		_isReadable;
-    bool		_isWritable;
-    bool		_isMultiFrame;
-    
+      std::string _name;
+      std::string _description;
+      std::string _mimeType;
+      bool _isReadable;
+      bool _isWritable;
+      bool _isMultiFrame;
   };
-} // namespace Magick
 
-//
-// Inlines
-//
-
+  } // namespace Magick
 
 #endif // Magick_CoderInfo_header

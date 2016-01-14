@@ -45,7 +45,7 @@ static float processPixel(const FloatImage * img, uint x, uint y)
 	float fx0 = (float) x / w;
 	float fy0 = (float) y / h;
 
-	float best_ratio = INF;
+	float best_ratio = INFINITY;
 	uint best_x = w;
 	uint best_y = h;
 	
@@ -79,9 +79,9 @@ static float processPixel(const FloatImage * img, uint x, uint y)
 		float dy = float(best_y - y) / h;
 		
 		float cw = sqrtf(dx*dx + dy*dy);
-		float ch = d - img->pixel(xx, yy, 0);
+		float ch = d - img->pixel(dx, dy, 0);
 		
-		return min(1, sqrtf(cw / ch));
+		return min(1.0f, sqrtf(cw / ch));
 	}
 	
 	return 1;

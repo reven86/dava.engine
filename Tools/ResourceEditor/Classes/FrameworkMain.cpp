@@ -38,8 +38,8 @@ void FrameworkDidLaunched()
 {
 	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
 
-    auto title = DAVA::Format("DAVA Framework - ResourceEditor | %s.%s [%d bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
-                              static_cast<int>(sizeof(nullptr_t) * 8));
+    auto title = DAVA::Format("DAVA Framework - ResourceEditor | %s.%s [%u bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
+                              static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8));
     appOptions->SetString("title", title);
 
     appOptions->SetInt32("fullscreen", 0);

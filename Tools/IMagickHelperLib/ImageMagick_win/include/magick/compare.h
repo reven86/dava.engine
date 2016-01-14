@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,24 +18,25 @@
 #ifndef _MAGICKCORE_COMPARE_H
 #define _MAGICKCORE_COMPARE_H
 
+#include "magick/image.h"
+
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-#include "magick/image.h"
-
-typedef enum
-{
-  UndefinedMetric,
-  AbsoluteErrorMetric,
-  MeanAbsoluteErrorMetric,
-  MeanErrorPerPixelMetric,
-  MeanSquaredErrorMetric,
-  PeakAbsoluteErrorMetric,
-  PeakSignalToNoiseRatioMetric,
-  RootMeanSquaredErrorMetric,
-  NormalizedCrossCorrelationErrorMetric,
-  FuzzErrorMetric
+typedef enum {
+    UndefinedMetric,
+    AbsoluteErrorMetric,
+    MeanAbsoluteErrorMetric,
+    MeanErrorPerPixelMetric,
+    MeanSquaredErrorMetric,
+    PeakAbsoluteErrorMetric,
+    PeakSignalToNoiseRatioMetric,
+    RootMeanSquaredErrorMetric,
+    NormalizedCrossCorrelationErrorMetric,
+    FuzzErrorMetric,
+    UndefinedErrorMetric = 0,
+    PerceptualHashErrorMetric = 0xff
 } MetricType;
 
 extern MagickExport double

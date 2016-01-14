@@ -52,11 +52,13 @@ if( APPLE )
 elseif( WIN32 )
     set( IMAGE_MAGICK ImageMagick_win )
 
-    set ( IMAGE_MAGICK_INCLUDES_PATH  
-    "${LIBRARIES_DIR}/${IMAGE_MAGICK}/include" )
+    set ( IMAGE_MAGICK_INCLUDES_PATH "${LIBRARIES_DIR}/${IMAGE_MAGICK}/include" )
 
-    set ( IMAGE_MAGICK_LIBRARIES_PATH  
-    "${LIBRARIES_DIR}/${IMAGE_MAGICK}/lib" )  
+    if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	    set ( IMAGE_MAGICK_LIBRARIES_PATH "${LIBRARIES_DIR}/${IMAGE_MAGICK}/lib_x64" )  
+	else ()
+	    set ( IMAGE_MAGICK_LIBRARIES_PATH "${LIBRARIES_DIR}/${IMAGE_MAGICK}/lib" )  
+	endif ()
 
     file ( GLOB IMAGE_MAGICK_LIBRARIES_RELEASE  "${IMAGE_MAGICK_LIBRARIES_PATH}/CORE_RL_*.lib" )
     file ( GLOB IMAGE_MAGICK_LIBRARIES_DEBUG    "${IMAGE_MAGICK_LIBRARIES_PATH}/CORE_RL_*.lib" )
@@ -77,10 +79,7 @@ add_library( ${PROJECT_NAME} SHARED  ${LIB_SOURCES} )
  
 set_property( TARGET ${PROJECT_NAME} PROPERTY FOLDER "libraries")
 
-if ( MSVC )
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")    
-
-elseif( APPLE )
+if( APPLE )
 
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}

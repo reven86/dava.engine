@@ -35,7 +35,7 @@ def parse_additional_params(additional):
             else:
                 print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
                 return False
-    return True;
+    return True
 
 
 def setup_framework_env():
