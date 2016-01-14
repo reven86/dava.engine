@@ -350,133 +350,72 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
     }
 
     int curScrollPos = ui->materialProperty->verticalScrollBar()->value();
-
-
-    int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    SCOPE_EXIT
     {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_INSP_MEMBER_MODIFY))
+        ui->materialProperty->verticalScrollBar()->setValue(curScrollPos);
+    };
+
+    if (command->MatchCommandID(CMDID_MATERIAL_GLOBAL_SET))
+    {
+        sceneActivated(scene);
+        materialPropertiesUpdater->Update();
+    }
+    if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
+    {
+        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+            if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+            {
+                const InspMemberModifyCommand* inspCommand = static_cast<const InspMemberModifyCommand*>(command);
+                const String memberName(inspCommand->member->Name().c_str());
+                if (memberName == NMaterialSerializationKey::QualityGroup || memberName == NMaterialSerializationKey::FXName)
+                {
+                    for (auto& m : curMaterials)
+                    {
+                        m->InvalidateRenderVariants();
+                    }
+                    materialPropertiesUpdater->Update();
+                }
+            }
+            else if (command->MatchCommandID(CMDID_INSP_DYNAMIC_MODIFY))
+            {
+                const InspDynamicModifyCommand* inspCommand = static_cast<const InspDynamicModifyCommand*>(command);
+                // if material flag was changed we should rebuild list of all properties because their set can be changed
+                if (inspCommand->dynamicInfo->GetMember()->Name() == NMaterialSectionName::LocalFlags)
+                {
+                    if (inspCommand->key == NMaterialFlagName::FLAG_ILLUMINATION_USED)
+                    {
+                        NMaterial* material = static_cast<NMaterial*>(inspCommand->ddata.object);
+                        if (material->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED) && material->GetLocalFlagValue(NMaterialFlagName::FLAG_ILLUMINATION_USED) == 1)
+                        {
+                            AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+                            AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+                            material->InvalidateRenderVariants();
+                        }
+                    }
+
+                    materialPropertiesUpdater->Update();
+                }
+                else
+                {
+                    UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+                }
+            }
+        };
+
+        if (command->GetId() == CMDID_BATCH)
         {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {
-                const Command2 *cmd = batch->GetCommand(i);
-                if (cmd->GetId() == CMDID_INSP_MEMBER_MODIFY)
-                {
-                    const InspMemberModifyCommand* inspCommand = static_cast<const InspMemberModifyCommand*>(cmd);
-                    const String memberName(inspCommand->member->Name().c_str());
-                    if (memberName == NMaterialSerializationKey::QualityGroup || memberName == NMaterialSerializationKey::FXName)
-                    {
-                        for (auto& m : curMaterials)
-                        {
-                            m->InvalidateRenderVariants();
-                        }
-                        materialPropertiesUpdater->Update();
-                        break;
-                    }
-                }
+                ProcessSingleCommand(batch->GetCommand(i), redo);
             }
         }
-        else if (batch->ContainsCommand(CMDID_INSP_DYNAMIC_MODIFY))
+        else
         {
-            const uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
-            {
-                const Command2 *cmd = batch->GetCommand(i);
-                if (cmd->GetId() == CMDID_INSP_DYNAMIC_MODIFY)
-                {
-                    const InspDynamicModifyCommand* inspCommand = static_cast<const InspDynamicModifyCommand*>(cmd);
-
-                    // if material flag was changed we should rebuild list of all properties
-                    // because their set can be changed
-                    if (inspCommand->dynamicInfo->GetMember()->Name() == NMaterialSectionName::LocalFlags)
-                    {
-                        if (inspCommand->key == NMaterialFlagName::FLAG_ILLUMINATION_USED)
-                        {
-                            NMaterial* material = static_cast<NMaterial*>(inspCommand->ddata.object);
-                            if (material->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED) && material->GetLocalFlagValue(NMaterialFlagName::FLAG_ILLUMINATION_USED) == 1)
-                            {
-                                AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
-                                AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
-                                material->InvalidateRenderVariants();
-                            }
-                        }
-
-                        materialPropertiesUpdater->Update();
-                    }
-                    else
-                    {
-                        UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
-                    }
-                }
-            }
-        }
-        else if (batch->ContainsCommand(CMDID_MATERIAL_GLOBAL_SET))
-        {
-            sceneActivated(scene);
-            materialPropertiesUpdater->Update();
+            ProcessSingleCommand(command, redo);
         }
     }
-    else
-    {
-        switch (commandID)
-        {
-        case CMDID_INSP_MEMBER_MODIFY:
-        {
-            InspMemberModifyCommand* inspCommand = (InspMemberModifyCommand*)command;
-
-            const String memberName(inspCommand->member->Name().c_str());
-            if (memberName == NMaterialSerializationKey::QualityGroup || memberName == NMaterialSerializationKey::FXName)
-            {
-                for (auto& m : curMaterials)
-                {
-                    m->InvalidateRenderVariants();
-                }
-                materialPropertiesUpdater->Update();
-            }
-            break;
-        }
-        case CMDID_INSP_DYNAMIC_MODIFY:
-        {
-            InspDynamicModifyCommand *inspCommand = (InspDynamicModifyCommand *)command;
-
-            // if material flag was changed we should rebuild list of all properties
-            // because their set can be changed
-            if (inspCommand->dynamicInfo->GetMember()->Name() == NMaterialSectionName::LocalFlags)
-            {
-                if (inspCommand->key == NMaterialFlagName::FLAG_ILLUMINATION_USED)
-                {
-                    NMaterial* material = static_cast<NMaterial*>(inspCommand->ddata.object);
-                    if (material->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED) && material->GetLocalFlagValue(NMaterialFlagName::FLAG_ILLUMINATION_USED) == 1)
-                    {
-                        AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
-                        AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
-                        material->InvalidateRenderVariants();
-                    }
-                }
-
-                materialPropertiesUpdater->Update();
-            }
-            else
-            {
-                UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
-            }
-            break;
-        }
-        case CMDID_MATERIAL_GLOBAL_SET:
-        {
-            sceneActivated(scene);
-            materialPropertiesUpdater->Update();
-            break;
-        }
-        default:
-            break;
-        }
-
-    }
-
-    ui->materialProperty->verticalScrollBar()->setValue(curScrollPos);
 }
 
 void MaterialEditor::AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName)

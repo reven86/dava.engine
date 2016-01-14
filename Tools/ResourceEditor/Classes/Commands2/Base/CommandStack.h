@@ -34,11 +34,8 @@
 #include "Commands2/Base/Command2.h"
 #include "Commands2/Base/CommandBatch.h"
 
-class CommandStackNotify;
-class CommandStack : public CommandNotifyProvider
+class CommandStack : public CommandNotifyProvider, private CommandNotify
 {
-    friend class CommandStackNotify;
-
 public:
     CommandStack();
     ~CommandStack() override;
@@ -68,7 +65,9 @@ public:
     DAVA::uint32 GetCount() const;
     const Command2* GetCommand(DAVA::int32 index) const;
 
-protected:
+private:
+    //CommandNotify
+    void Notify(const Command2* command, bool redo) override;
 
     using CommandsContainer = DAVA::List<std::unique_ptr<Command2>>;
 
@@ -81,26 +80,15 @@ protected:
     void CleanCheck();
     void CommandExecuted(const Command2* command, bool redo);
 
+private:
     CommandsContainer commandList;
-
     std::unique_ptr<CommandBatch> curBatchCommand;
-    CommandStackNotify* stackCommandsNotify = nullptr;
 
     DAVA::uint32 nestedBatchesCounter = 0;
     DAVA::int32 commandListLimit = 0;
     DAVA::int32 nextCommandIndex = 0;
     DAVA::int32 cleanCommandIndex = 0;
     bool lastCheckCleanState = true;
-};
-
-class CommandStackNotify final : public CommandNotify
-{
-public:
-    CommandStackNotify(CommandStack* _stack);
-    void Notify(const Command2* command, bool redo) override;
-
-private:
-    CommandStack* stack = nullptr;
 };
 
 

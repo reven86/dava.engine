@@ -56,111 +56,55 @@ namespace LODEditorInternal
 {
 bool NeedUpdateLodInfo(const Command2* command)
 {
-    const int32 commandID = static_cast<int32>(command->GetId());
-    if (commandID == CMDID_BATCH)
+    if (command->MatchCommandIDs({ CMDID_LOD_DISTANCE_CHANGE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE }))
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        if (batch->ContainsCommand(CMDID_COMPONENT_ADD))
-        {
-            const uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
+        return true;
+    }
+
+    if (command->MatchCommandIDs({ CMDID_COMPONENT_ADD, CMDID_COMPONENT_REMOVE, CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT }))
+    {
+        auto ProcessSingleCommand = [](const Command2* command) {
+            if (command->MatchCommandID(CMDID_COMPONENT_ADD))
             {
-                const Command2 *cmd = batch->GetCommand(i);
-                if (cmd->GetId() == CMDID_COMPONENT_ADD)
-                {
-                    const AddComponentCommand* addCommand = static_cast<const AddComponentCommand*>(cmd);
-                    const Component* component = addCommand->GetComponent();
-                    const auto componentType = component->GetType();
-                    if ((componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT))
-                    {
-                        return true;
-                    }
-                }
+                const AddComponentCommand* cmd = static_cast<const AddComponentCommand*>(command);
+                const Component* component = cmd->GetComponent();
+                const auto componentType = component->GetType();
+                return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
             }
-        }
-        if (batch->ContainsCommand(CMDID_COMPONENT_REMOVE))
-        {
-            const uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
+            else if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
             {
-                const Command2 *cmd = batch->GetCommand(i);
-                if (cmd->GetId() == CMDID_COMPONENT_REMOVE)
-                {
-                    const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(cmd);
-                    const Component* component = removeCommand->GetComponent();
-                    const auto componentType = component->GetType();
-                    if ((componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT))
-                    {
-                        return true;
-                    }
-                }
+                const RemoveComponentCommand* cmd = static_cast<const RemoveComponentCommand*>(command);
+                const Component* component = cmd->GetComponent();
+                const auto componentType = component->GetType();
+                return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
             }
-        }
-        if (batch->ContainsCommand(CMDID_ENTITY_ADD) || batch->ContainsCommand(CMDID_ENTITY_REMOVE) || batch->ContainsCommand(CMDID_ENTITY_CHANGE_PARENT))
-        {
-            const uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
+            else if (command->MatchCommandIDs({ CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT }))
             {
-                const Command2 *cmd = batch->GetCommand(i);
-                const DAVA::Entity* entity = cmd->GetEntity();
+                const DAVA::Entity* entity = command->GetEntity();
                 if (entity != nullptr)
                 {
-                    LodComponent* lc = GetLodComponent(entity);
-                    ParticleEffectComponent* effect = GetEffectComponent(entity);
-                    if ((lc != nullptr) || (effect != nullptr))
-                    {
-                        return true;
-                    }
+                    return (GetLodComponent(entity) != nullptr) || (GetEffectComponent(entity) != nullptr);
+                }
+            }
+
+            return false;
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                if (ProcessSingleCommand(batch->GetCommand(i)))
+                {
+                    return true;
                 }
             }
         }
-
-        return (batch->ContainsCommand(CMDID_LOD_DISTANCE_CHANGE)
-            || batch->ContainsCommand(CMDID_LOD_COPY_LAST_LOD)
-            || batch->ContainsCommand(CMDID_LOD_DELETE)
-            || batch->ContainsCommand(CMDID_LOD_CREATE_PLANE));
-    }
-    else
-    {
-        switch (commandID)
+        else
         {
-        case CMDID_COMPONENT_ADD:
-        {
-            const AddComponentCommand* cmd = static_cast<const AddComponentCommand*>(command);
-            const Component* component = cmd->GetComponent();
-            const auto componentType = component->GetType();
-            return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
-        }
-        case CMDID_COMPONENT_REMOVE:
-        {
-            const RemoveComponentCommand* cmd = static_cast<const RemoveComponentCommand*>(command);
-            const Component* component = cmd->GetComponent();
-            const auto componentType = component->GetType();
-            return (componentType == Component::LOD_COMPONENT) || (componentType == Component::PARTICLE_EFFECT_COMPONENT);
-        }
-
-        case CMDID_ENTITY_ADD:
-        case CMDID_ENTITY_REMOVE:
-        case CMDID_ENTITY_CHANGE_PARENT: //may be
-        {
-            const DAVA::Entity* entity = command->GetEntity();
-            if (entity != nullptr)
-            {
-                LodComponent* lc = GetLodComponent(entity);
-                ParticleEffectComponent* effect = GetEffectComponent(entity);
-                return (lc != nullptr) || (effect != nullptr);
-            }
-            break;
-        }
-
-        case CMDID_LOD_DISTANCE_CHANGE:
-        case CMDID_LOD_COPY_LAST_LOD:
-        case CMDID_LOD_DELETE:
-        case CMDID_LOD_CREATE_PLANE:
-            return true;
-
-        default:
-            break;
+            return ProcessSingleCommand(command);
         }
     }
 

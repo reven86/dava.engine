@@ -256,17 +256,10 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
     if (commandID == CMDID_BATCH)
     {
         const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_PARTICLE_EMITTER_UPDATE)
-            || batch->ContainsCommand(CMDID_PARTICLE_LAYER_UPDATE)
-            || batch->ContainsCommand(CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES)
-            || batch->ContainsCommand(CMDID_PARTILCE_LAYER_UPDATE_TIME)
-            || batch->ContainsCommand(CMDID_PARTICLE_LAYER_UPDATE_ENABLED)
-            || batch->ContainsCommand(CMDID_PARTICLE_FORCE_UPDATE)
-            || batch->ContainsCommand(CMDID_PARTICLE_EFFECT_START_STOP)
-            || batch->ContainsCommand(CMDID_PARTICLE_EFFECT_RESTART)
-            || batch->ContainsCommand(CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML)
-            || batch->ContainsCommand(CMDID_PARTICLE_EMITTER_SAVE_TO_YAML)
-            || batch->ContainsCommand(CMDID_PARTICLE_EMITTER_LAYER_ADD))
+        if (batch->MatchCommandIDs({ CMDID_PARTICLE_EMITTER_UPDATE, CMDID_PARTICLE_LAYER_UPDATE, CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES,
+                                     CMDID_PARTILCE_LAYER_UPDATE_TIME, CMDID_PARTICLE_LAYER_UPDATE_ENABLED, CMDID_PARTICLE_FORCE_UPDATE,
+                                     CMDID_PARTICLE_EFFECT_START_STOP, CMDID_PARTICLE_EFFECT_RESTART, CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
+                                     CMDID_PARTICLE_EMITTER_SAVE_TO_YAML, CMDID_PARTICLE_EMITTER_LAYER_ADD }))
         {
             uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
@@ -289,8 +282,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
         case CMDID_PARTICLE_LAYER_UPDATE:
         {
             const CommandUpdateParticleLayerBase* castedCmd = static_cast<const CommandUpdateParticleLayerBase*>(command);
-            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene,
-                castedCmd->GetLayer());
+            SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, castedCmd->GetLayer());
             break;
         }
         case CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES:

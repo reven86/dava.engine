@@ -50,6 +50,9 @@ public:
 
     DAVA_DEPRECATED(virtual DAVA::Entity* GetEntity() const = 0);
 
+    virtual bool MatchCommandID(DAVA::int32 commandID) const;
+    virtual bool MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector) const;
+
 protected:
     void UndoInternalCommand(Command2* command);
     void RedoInternalCommand(Command2* command);

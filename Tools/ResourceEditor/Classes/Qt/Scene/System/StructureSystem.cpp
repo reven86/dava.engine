@@ -389,30 +389,9 @@ void StructureSystem::Process(DAVA::float32 timeElapsed)
 
 void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    switch (command->GetId())
+    if (command->MatchCommandIDs({ CMDID_PARTICLE_LAYER_REMOVE, CMDID_PARTICLE_LAYER_MOVE, CMDID_PARTICLE_FORCE_REMOVE, CMDID_PARTICLE_FORCE_MOVE }))
     {
-    case CMDID_BATCH:
-    {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_PARTICLE_LAYER_REMOVE)
-            || batch->ContainsCommand(CMDID_PARTICLE_LAYER_MOVE)
-            || batch->ContainsCommand(CMDID_PARTICLE_FORCE_REMOVE)
-            || batch->ContainsCommand(CMDID_PARTICLE_FORCE_MOVE))
-        {
-            EmitChanged();
-        }
-        return;
-    }
-
-    case CMDID_PARTICLE_LAYER_REMOVE:
-    case CMDID_PARTICLE_LAYER_MOVE:
-    case CMDID_PARTICLE_FORCE_REMOVE:
-    case CMDID_PARTICLE_FORCE_MOVE:
         EmitChanged();
-        return;
-
-    default:
-        break;
     }
 }
 

@@ -288,25 +288,9 @@ void SceneTree::CommandExecuted(SceneEditor2 *scene, const Command2* command, bo
             CMDID_PARTICLE_EMITTER_FORCE_REMOVE
     }};
 
-	const int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    if (command->MatchCommandIDs(idsForUpdate))
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        for (const auto id : idsForUpdate)
-        {
-            if (batch->ContainsCommand(id))
-            {
-                treeUpdater->Update();
-                break;
-            }
-        }
-    }
-    else
-    {
-        if (std::count(idsForUpdate.begin(), idsForUpdate.end(), commandID) > 0)
-        {
-            treeUpdater->Update();
-        }
+        treeUpdater->Update();
     }
 }
 

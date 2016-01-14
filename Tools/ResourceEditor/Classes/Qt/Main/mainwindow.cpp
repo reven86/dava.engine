@@ -1109,27 +1109,14 @@ void QtMainWindow::UpdateModificationActionsState()
 
 void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
 {
-    const int32 commandId = command->GetId();
-    if (commandId == CMDID_BATCH)
+    if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        if (batch->ContainsCommand(CMDID_ENABLE_WAYEDIT))
-        {
-            DVASSERT(batch->ContainsCommand(CMDID_DISABLE_WAYEDIT) == false);
-            SetActionCheckedSilently(ui->actionWayEditor, redo);
-        }
-        else if (batch->ContainsCommand(CMDID_DISABLE_WAYEDIT))
-        {
-            DVASSERT(batch->ContainsCommand(CMDID_ENABLE_WAYEDIT) == false);
-            SetActionCheckedSilently(ui->actionWayEditor, !redo);
-        }
-    }
-    else if(CMDID_ENABLE_WAYEDIT == commandId)
-    {
+        DVASSERT(command->MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
         SetActionCheckedSilently(ui->actionWayEditor, redo);
     }
-    else if(CMDID_DISABLE_WAYEDIT == commandId)
+    else if (command->MatchCommandID(CMDID_DISABLE_WAYEDIT))
     {
+        DVASSERT(command->MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
         SetActionCheckedSilently(ui->actionWayEditor, !redo);
     }
 }
@@ -2904,21 +2891,6 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 	return (GetGPUFormat() == GPU_ORIGIN);
 }
 
-bool QtMainWindow::IsTilemaskModificationCommand(const Command2* cmd)
-{
-	if (cmd->GetId() == CMDID_TILEMASK_MODIFY)
-	{
-		return true;
-	}
-
-	if (cmd->GetId() == CMDID_BATCH)
-	{
-        const CommandBatch* batch = static_cast<const CommandBatch*>(cmd);
-        return batch->ContainsCommand(CMDID_TILEMASK_MODIFY);
-	}
-
-	return false;
-}
 
 bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 {
@@ -2941,8 +2913,8 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 			for(DAVA::int32 j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
 			{
 				const Command2 *cmd = cmdStack->GetCommand(j);
-				if(IsTilemaskModificationCommand(cmd))
-				{
+                if (cmd->MatchCommandID(CMDID_TILEMASK_MODIFY))
+                {
 					// ask user about saving tilemask changes
 					sceneWidget->SetCurrentTab(i);
 

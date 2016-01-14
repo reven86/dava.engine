@@ -667,63 +667,42 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
 {
     static const FastName heightmapPath("heightmapPath");
 
-    const int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_INSP_MEMBER_MODIFY))
+        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+            if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+            {
+                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+                if (heightmapPath == cmd->member->Name() && heightmapProxy)
+                {
+                    baseLandscape->GetHeightmap()->Clone(heightmapProxy);
+                    float32 size = static_cast<float32>(heightmapProxy->Size());
+                    heightmapProxy->UpdateRect(Rect(0.f, 0.f, size, size));
+                }
+            }
+            else if (command->MatchCommandID(CMDID_INSP_DYNAMIC_MODIFY))
+            {
+                const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
+                if (Landscape::TEXTURE_TILEMASK == cmd->key)
+                {
+                    UpdateTilemaskPathname();
+                }
+            }
+
+        };
+
+        if (command->GetId() == CMDID_BATCH)
         {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {
-                const Command2 *cmd = batch->GetCommand(i);
-                if (cmd->GetId() == CMDID_INSP_DYNAMIC_MODIFY)
-                {
-                    const InspMemberModifyCommand* inspCommand = static_cast<const InspMemberModifyCommand*>(cmd);
-                    if (heightmapPath == inspCommand->member->Name() && heightmapProxy)
-                    {
-                        baseLandscape->GetHeightmap()->Clone(heightmapProxy);
-                        float32 size = static_cast<float32>(heightmapProxy->Size());
-                        heightmapProxy->UpdateRect(Rect(0.f, 0.f, size, size));
-                        break;
-                    }
-                }
+                ProcessSingleCommand(batch->GetCommand(i), redo);
             }
         }
-        if (batch->ContainsCommand(CMDID_INSP_DYNAMIC_MODIFY))
+        else
         {
-            const uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
-            {
-                const Command2 *cmd = batch->GetCommand(i);
-                if (cmd->GetId() == CMDID_INSP_DYNAMIC_MODIFY)
-                {
-                    const InspDynamicModifyCommand* inspCommand = static_cast<const InspDynamicModifyCommand*>(cmd);
-                    if (Landscape::TEXTURE_TILEMASK == inspCommand->key)
-                    {
-                        UpdateTilemaskPathname();
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    else if (commandID == CMDID_INSP_MEMBER_MODIFY)
-    {
-        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-        if (heightmapPath == cmd->member->Name() && heightmapProxy)
-        {
-            baseLandscape->GetHeightmap()->Clone(heightmapProxy);
-            float32 size = static_cast<float32>(heightmapProxy->Size());
-            heightmapProxy->UpdateRect(Rect(0.f, 0.f, size, size));
-        }
-    }
-    else if (commandID == CMDID_INSP_DYNAMIC_MODIFY)
-    {
-        const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
-        if (Landscape::TEXTURE_TILEMASK == cmd->key)
-        {
-            UpdateTilemaskPathname();
+            ProcessSingleCommand(command, redo);
         }
     }
 }

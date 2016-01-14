@@ -228,38 +228,13 @@ void MaterialTree::OnCommandExecuted(SceneEditor2 *scene, const Command2 *comman
 {
 	if(QtMainWindow::Instance()->GetCurrentScene() == scene)
 	{
-        const int32 commandID = command->GetId();
-        if (commandID == CMDID_BATCH)
+        if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
-            const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-            if (batch->ContainsCommand(CMDID_INSP_MEMBER_MODIFY))
-            {
-                treeModel->invalidate();
-            }
-            else if (batch->ContainsCommand(CMDID_DELETE_RENDER_BATCH)
-                || batch->ContainsCommand(CMDID_CLONE_LAST_BATCH)
-                || batch->ContainsCommand(CMDID_CONVERT_TO_SHADOW)
-                || batch->ContainsCommand(CMDID_MATERIAL_SWITCH_PARENT))
-            {
-                Update();
-            }
+            treeModel->invalidate();
         }
-        else
+        else if (command->MatchCommandIDs({ CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_MATERIAL_SWITCH_PARENT }))
         {
-            switch (commandID)
-            {
-            case CMDID_INSP_MEMBER_MODIFY:
-                treeModel->invalidate();
-                break;
-            case CMDID_DELETE_RENDER_BATCH:
-            case CMDID_CLONE_LAST_BATCH:
-            case CMDID_CONVERT_TO_SHADOW:
-            case CMDID_MATERIAL_SWITCH_PARENT:
-                Update();
-                break;
-            default:
-                break;
-            }
+            Update();
         }
 	}
 }

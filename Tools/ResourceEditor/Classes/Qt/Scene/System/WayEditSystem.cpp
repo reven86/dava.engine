@@ -462,27 +462,14 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    const int32 commandId = command->GetId();
-    if (commandId == CMDID_BATCH)
+    if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_ENABLE_WAYEDIT))
-        {
-            DVASSERT(batch->ContainsCommand(CMDID_DISABLE_WAYEDIT) == false);
-            EnableWayEdit(redo);
-        }
-        if (batch->ContainsCommand(CMDID_DISABLE_WAYEDIT))
-        {
-            DVASSERT(batch->ContainsCommand(CMDID_ENABLE_WAYEDIT) == false);
-            EnableWayEdit(!redo);
-        }
-    }
-    else if (commandId == CMDID_ENABLE_WAYEDIT)
-    {
+        DVASSERT(command->MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
         EnableWayEdit(redo);
     }
-    else if (commandId == CMDID_DISABLE_WAYEDIT)
+    else if (command->MatchCommandID(CMDID_DISABLE_WAYEDIT))
     {
+        DVASSERT(command->MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
         EnableWayEdit(!redo);
     }
 }

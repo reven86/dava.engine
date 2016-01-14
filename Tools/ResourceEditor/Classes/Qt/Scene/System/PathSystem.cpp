@@ -288,68 +288,65 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
 
 void PathSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    static const FastName NAME("name");
-
-    const int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_INSP_MEMBER_MODIFY))
+        DVASSERT(command->MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
+        isEditingEnabled = redo;
+    }
+    else if (command->MatchCommandID(CMDID_DISABLE_WAYEDIT))
+    {
+        DVASSERT(command->MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
+        isEditingEnabled = !redo;
+    }
+
+    if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+    {
+        auto ProcessInspCommand = [this](const InspMemberModifyCommand* inspCommand, bool redo) {
+            static const FastName NAME("name");
+            if (NAME == inspCommand->member->Name())
+            {
+                const DAVA::uint32 count = pathes.size();
+                for (DAVA::uint32 p = 0; p < count; ++p)
+                {
+                    const DAVA::PathComponent* pc = DAVA::GetPathComponent(pathes[p]);
+                    if (inspCommand->object == pc)
+                    {
+                        FastName newPathName = (redo) ? inspCommand->newValue.AsFastName() : inspCommand->oldValue.AsFastName();
+                        FastName oldPathName = (redo) ? inspCommand->oldValue.AsFastName() : inspCommand->newValue.AsFastName();
+
+                        const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
+                        for (DAVA::uint32 c = 0; c < childrenCount; ++c)
+                        {
+                            DAVA::WaypointComponent* wp = GetWaypointComponent(pathes[p]->GetChild(c));
+                            if (wp && wp->GetPathName() == oldPathName)
+                            {
+                                wp->SetPathName(newPathName);
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+        };
+
+        if (command->GetId() == CMDID_BATCH)
         {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {
-                ProcessCommand(batch->GetCommand(i), redo);
-            }
-        }
-        else if (batch->ContainsCommand(CMDID_ENABLE_WAYEDIT))
-        {
-            DVASSERT(batch->ContainsCommand(CMDID_DISABLE_WAYEDIT) == false);
-            isEditingEnabled = redo;
-
-        }
-        else if (batch->ContainsCommand(CMDID_DISABLE_WAYEDIT))
-        {
-            DVASSERT(batch->ContainsCommand(CMDID_ENABLE_WAYEDIT) == false);
-            isEditingEnabled = !redo;
-        }
-    }
-    else if (commandID == CMDID_INSP_MEMBER_MODIFY)
-    {
-        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-        if (NAME == cmd->member->Name())
-        {
-            const DAVA::uint32 count = pathes.size();
-            for (DAVA::uint32 p = 0; p < count; ++p)
-            {
-                const DAVA::PathComponent *pc = DAVA::GetPathComponent(pathes[p]);
-                if (cmd->object == pc)
+                const Command2* cmd = batch->GetCommand(i);
+                if (cmd->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
                 {
-                    FastName newPathName = (redo) ? cmd->newValue.AsFastName() : cmd->oldValue.AsFastName();
-                    FastName oldPathName = (redo) ? cmd->oldValue.AsFastName() : cmd->newValue.AsFastName();
-
-                    const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
-                    for (DAVA::uint32 c = 0; c < childrenCount; ++c)
-                    {
-                        DAVA::WaypointComponent *wp = GetWaypointComponent(pathes[p]->GetChild(c));
-                        if (wp && wp->GetPathName() == oldPathName)
-                        {
-                            wp->SetPathName(newPathName);
-                        }
-                    }
-
-                    break;
+                    ProcessInspCommand(static_cast<const InspMemberModifyCommand*>(cmd), redo);
                 }
             }
         }
-    }
-    else if (commandID == CMDID_ENABLE_WAYEDIT)
-    {
-        isEditingEnabled = redo;
-    }
-    else if (commandID == CMDID_DISABLE_WAYEDIT)
-    {
-        isEditingEnabled = !redo;
+        else
+        {
+            ProcessInspCommand(static_cast<const InspMemberModifyCommand*>(command), redo);
+        }
     }
 }
 

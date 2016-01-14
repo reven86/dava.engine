@@ -53,8 +53,10 @@ public:
     DAVA::uint32 Size() const;
 
     Command2* GetCommand(DAVA::uint32 index) const;
-    bool ContainsCommand(DAVA::int32 commandId) const;
-    
+
+    bool MatchCommandID(DAVA::int32 commandID) const override;
+    bool MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIDVector) const override;
+
     bool IsMultiCommandBatch() const;
 
 protected:
@@ -73,11 +75,6 @@ inline bool CommandBatch::Empty() const
 inline DAVA::uint32 CommandBatch::Size() const
 {
     return static_cast<DAVA::uint32>(commandList.size());
-}
-
-inline bool CommandBatch::ContainsCommand(DAVA::int32 commandId) const
-{
-    return commandIDs.count(commandId) > 0;
 }
 
 inline bool CommandBatch::IsMultiCommandBatch() const

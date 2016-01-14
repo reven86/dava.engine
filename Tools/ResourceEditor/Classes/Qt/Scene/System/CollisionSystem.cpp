@@ -388,71 +388,41 @@ void SceneCollisionSystem::Draw()
 
 void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    if (command->MatchCommandIDs({ CMDID_LANDSCAPE_SET_HEIGHTMAP, CMDID_HEIGHTMAP_MODIFY }))
     {
-        const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_LANDSCAPE_SET_HEIGHTMAP) || batch->ContainsCommand(CMDID_HEIGHTMAP_MODIFY))
-        {
-            UpdateCollisionObject(curLandscapeEntity);
-        }
-        else if (batch->ContainsCommand(CMDID_LOD_CREATE_PLANE) || batch->ContainsCommand(CMDID_LOD_DELETE))
-        {
-            uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
-            {
-                Command2 *cmd = batch->GetCommand(i);
-                commandID = cmd->GetId();
-                if (commandID == CMDID_LOD_CREATE_PLANE || commandID == CMDID_LOD_DELETE)
-                {
-                    UpdateCollisionObject(cmd->GetEntity());
-                }
-            }
-        }
-        else if (batch->ContainsCommand(CMDID_INSP_MEMBER_MODIFY))
-        {
-            uint32 count = batch->Size();
-            for (uint32 i = 0; i < count; ++i)
-            {
-                Command2 *cmd = batch->GetCommand(i);
-                if (cmd->GetId() == CMDID_INSP_MEMBER_MODIFY)
-                {
-                    const InspMemberModifyCommand* modifCommand = static_cast<const InspMemberModifyCommand*>(cmd);
-                    if (String("heightmapPath") == modifCommand->member->Name().c_str())
-                    {
-                        UpdateCollisionObject(curLandscapeEntity);
-                        break;
-                    }
-                }
-            }
-        }
+        UpdateCollisionObject(curLandscapeEntity);
     }
-    else
+
+    if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE, CMDID_INSP_MEMBER_MODIFY }))
     {
-        switch (commandID)
-        {
-        case CMDID_LANDSCAPE_SET_HEIGHTMAP:
-        case CMDID_HEIGHTMAP_MODIFY:
-            UpdateCollisionObject(curLandscapeEntity);
-            break;
-
-        case CMDID_INSP_MEMBER_MODIFY:
-        {
-            const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-            if (String("heightmapPath") == cmd->member->Name().c_str())
+        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+            if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
-                UpdateCollisionObject(curLandscapeEntity);
+                static const String HEIGHTMAP_PATH = "heightmapPath";
+                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+                if (HEIGHTMAP_PATH == cmd->member->Name().c_str())
+                {
+                    UpdateCollisionObject(curLandscapeEntity);
+                }
             }
-            break;
+            else if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE }))
+            {
+                UpdateCollisionObject(command->GetEntity());
+            }
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            uint32 count = batch->Size();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                ProcessSingleCommand(batch->GetCommand(i), redo);
+            }
         }
-
-        case CMDID_LOD_CREATE_PLANE:
-        case CMDID_LOD_DELETE:
-            UpdateCollisionObject(command->GetEntity());
-            break;
-
-        default:
-            break;
+        else
+        {
+            ProcessSingleCommand(command, redo);
         }
     }
 }

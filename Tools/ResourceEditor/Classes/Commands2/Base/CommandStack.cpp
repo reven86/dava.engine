@@ -32,13 +32,11 @@
 
 CommandStack::CommandStack()
 {
-    stackCommandsNotify = new CommandStackNotify(this);
 }
 
 CommandStack::~CommandStack()
 {
     Clear();
-    SafeRelease(stackCommandsNotify);
 }
 
 bool CommandStack::CanUndo() const
@@ -160,7 +158,7 @@ void CommandStack::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCou
     if (nestedBatchesCounter++ == 0)
     {
         curBatchCommand.reset(new CommandBatch(text, commandsCount));
-        curBatchCommand->SetNotify(stackCommandsNotify);
+        curBatchCommand->SetNotify(this);
     }
     else
     {
@@ -271,7 +269,7 @@ void CommandStack::ExecInternal(std::unique_ptr<Command2>&& command, bool runCom
 
     if (runCommand)
     {
-        actualCommand->SetNotify(stackCommandsNotify);
+        actualCommand->SetNotify(this);
         actualCommand->Redo();
     }
 
@@ -329,15 +327,7 @@ void CommandStack::CommandExecuted(const Command2* command, bool redo)
     EmitNotify(command, redo);
 }
 
-CommandStackNotify::CommandStackNotify(CommandStack* _stack)
-    : stack(_stack)
+void CommandStack::Notify(const Command2* command, bool redo)
 {
-}
-
-void CommandStackNotify::Notify(const Command2* command, bool redo)
-{
-    if (nullptr != stack)
-    {
-        stack->CommandExecuted(command, redo);
-    }
+    CommandExecuted(command, redo);
 }

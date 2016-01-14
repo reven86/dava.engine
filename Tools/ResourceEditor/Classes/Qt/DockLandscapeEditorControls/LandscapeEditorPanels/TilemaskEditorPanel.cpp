@@ -602,15 +602,7 @@ void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const Command2*
 		return;
 	}
 
-    const int32 commandID = command->GetId();
-    bool needUpdateColors = (commandID == CMDID_SET_TILE_COLOR);
-    if (commandID == CMDID_BATCH)
-    {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        needUpdateColors = batch->ContainsCommand(CMDID_SET_TILE_COLOR);
-    }
-
-    if (needUpdateColors)
+    if (command->MatchCommandID(CMDID_SET_TILE_COLOR))
     {
         uint32 count = sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
         for (uint32 i = 0; i < count; ++i)

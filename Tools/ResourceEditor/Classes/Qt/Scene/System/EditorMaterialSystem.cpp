@@ -318,11 +318,7 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
     if (commandID == CMDID_BATCH)
     {
         const CommandBatch *batch = static_cast<const CommandBatch *>(command);
-        if (batch->ContainsCommand(CMDID_LOD_DELETE)
-            || batch->ContainsCommand(CMDID_LOD_CREATE_PLANE)
-            || batch->ContainsCommand(CMDID_DELETE_RENDER_BATCH)
-            || batch->ContainsCommand(CMDID_CONVERT_TO_SHADOW)
-            || batch->ContainsCommand(CMDID_LOD_COPY_LAST_LOD))
+        if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD }))
         {
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)

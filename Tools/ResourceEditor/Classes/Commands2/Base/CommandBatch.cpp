@@ -86,11 +86,28 @@ Command2* CommandBatch::GetCommand(DAVA::uint32 index) const
 
 void CommandBatch::RemoveCommands(DAVA::int32 commandId)
 {
-    std::remove_if(commandList.begin(), commandList.end(), [commandId](const std::unique_ptr<Command2> &cmd)
-    {
+    auto it = std::remove_if(commandList.begin(), commandList.end(), [commandId](const std::unique_ptr<Command2>& cmd) {
         return cmd->GetId() == commandId;
     });
 
+    commandList.erase(it, commandList.end());
     commandIDs.erase(commandId);
 }
 
+bool CommandBatch::MatchCommandID(DAVA::int32 commandId) const
+{
+    return commandIDs.count(commandId) > 0;
+}
+
+bool CommandBatch::MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIdVector) const
+{
+    for (auto id : commandIdVector)
+    {
+        if (MatchCommandID(id))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
