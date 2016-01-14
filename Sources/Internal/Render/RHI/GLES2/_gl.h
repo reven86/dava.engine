@@ -62,7 +62,6 @@
 
 	#include <GLES2/gl2.h>
 	#include <GLES2/gl2ext.h>
-	#include <GLES2/gl3.h>
 
     #define GetGLErrorString(code) "<unknown>"
 
@@ -71,6 +70,18 @@
 #else
 
     #include <GL/GL.h>
+
+#endif
+
+#if defined(__DAVAENGINE_ANDROID__)
+
+typedef void(GL_APIENTRY PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
+typedef void(GL_APIENTRY PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, count, GLsizei);
+typedef void(GL_APIENTRY PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
+
+extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstancedEXT;
+extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstancedEXT;
+extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisorEXT;
 
 #endif
 

@@ -17,6 +17,10 @@ static EGLint _format = 0;
 static EGLConfig _config = 0;
 static ANativeWindow* _nativeWindow = nullptr;
 
+PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstancedEXT = nullptr;
+PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstancedEXT = nullptr;
+PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisorEXT = nullptr;
+
 static bool needRecreateSurface = false;
 
 static const EGLint contextAttribs[] = {
@@ -90,6 +94,11 @@ void android_gl_init(void* _window)
     _GLES2_Context = _context;
 
     eglMakeCurrent(_display, _surface, _surface, _context);
+
+    glDrawElementsInstancedEXT = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
+    ;
+    glDrawArraysInstancedEXT = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
+    glVertexAttribDivisorEXT = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
 }
 
 void android_gl_reset(void* _window)
