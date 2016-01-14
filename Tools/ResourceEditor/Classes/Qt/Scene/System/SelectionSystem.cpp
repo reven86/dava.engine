@@ -73,11 +73,11 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 ev
 void SceneSelectionSystem::UpdateGroupSelectionMode()
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DVKEY_CTRL))
+    if (keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL))
     {
         groupSelectionMode = GroupSelectionMode::Add;
     }
-    else if (keyboard.IsKeyPressed(DVKEY_ALT))
+    else if (keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT))
     {
         groupSelectionMode = GroupSelectionMode::Remove;
     }
@@ -151,11 +151,11 @@ void SceneSelectionSystem::ProcessSelectedGroup(EntityGroup::EntityVector collis
     }
 
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DVKEY_CTRL))
+    if (keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL))
     {
         AddSelection(firstEntity);
     }
-    else if (keyboard.IsKeyPressed(DVKEY_ALT))
+    else if (keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT))
     {
         ExcludeSelection(firstEntity);
     }
@@ -242,7 +242,7 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
 
 void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 {
-    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->tid != DAVA::UIEvent::BUTTON_1))
+    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::UIEvent::MouseButton::LEFT))
     {
 		return;
 	}

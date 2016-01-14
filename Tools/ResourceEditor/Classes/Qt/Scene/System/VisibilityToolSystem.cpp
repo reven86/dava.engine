@@ -154,14 +154,14 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 
     if (UIEvent::Phase::KEY_DOWN == event->phase)
     {
-        if (event->tid == DVKEY_ESCAPE)
-		{
-			SetState(VT_STATE_NORMAL);
+        if (event->key == Key::ESCAPE)
+        {
+            SetState(VT_STATE_NORMAL);
 		}
 	}
-	else if (event->tid == UIEvent::BUTTON_1)
-	{
-		switch(event->phase)
+    else if (event->mouseButton == UIEvent::MouseButton::LEFT)
+    {
+        switch(event->phase)
 		{
         case UIEvent::Phase::BEGAN:
             if (isIntersectsLandscape)

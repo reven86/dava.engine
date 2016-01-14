@@ -639,7 +639,7 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 			break;
         case LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSETN;
-			break;
+            break;
         case LANDSCAPE_EDITOR_SYSTEM_FULLTILED_TEXTURE_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_FULLTILED_TEXTURE_ABSETN;
             break;
@@ -649,8 +649,8 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
         case LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT;
             break;
-		case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
-			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
+        case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
 			break;
         case LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT:
             ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT;
@@ -659,8 +659,8 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 		default:
             DVASSERT(false && "Unknown error");
             break;
-	}
-	return ret;
+        }
+    return ret;
 }
 
 void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool redo)

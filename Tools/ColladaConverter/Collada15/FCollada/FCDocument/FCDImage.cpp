@@ -46,7 +46,7 @@ void FCDImage::SetFilename(const fstring& _filename)
     {
         filename = GetDocument()->GetFileManager()->GetCurrentUri().MakeAbsolute(_filename);
     }
-	SetDirtyFlag();
+    SetDirtyFlag();
 }
 
 // Copies the image entity into a clone.
