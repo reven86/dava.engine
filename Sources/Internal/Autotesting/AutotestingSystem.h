@@ -77,13 +77,13 @@ public:
 	void SetUpConnectionToDB();
 	RefPtr<KeyedArchive> GetIdYamlOptions();
 
-	void InitializeDevice(const String & device);
+    void InitializeDevice();
 
-	// Test organization
-	void OnTestStart(const String &testName);
-	void OnStepStart( const String & stepName );
-	void OnStepFinished();
-	void OnTestStarted();
+    // Test organization
+    void OnTestStart(const String& testName);
+    void OnStepStart(const String& stepName);
+    void OnStepFinished();
+    void OnTestStarted();
     void OnError(const String & errorMessage = "");
 	void ForceQuit(const String & logMessage = "");
     void OnTestsFinished();
@@ -127,7 +127,6 @@ public:
     
     String projectName;
     String groupName;
-	String deviceId;
 	String deviceName;
     String testsDate;
 	String runId;

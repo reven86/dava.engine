@@ -207,10 +207,10 @@ bool Project::CheckAndUnlockProject(const QString& projectPath)
     return true;
 }
 
-RefPtr<PackageNode> Project::OpenPackage(const FilePath &packagePath)
+RefPtr<PackageNode> Project::OpenPackage(const FilePath& packagePath)
 {
     EditorUIPackageBuilder builder;
-    
+
     bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
     if (!packageLoaded)
         packageLoaded = LegacyEditorUIPackageLoader(legacyData).LoadPackage(packagePath, &builder);

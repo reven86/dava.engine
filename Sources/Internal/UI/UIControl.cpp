@@ -76,6 +76,7 @@ UIControl::UIControl(const Rect& rect)
     : styleSheetDirty(true)
     , styleSheetInitialized(false)
     , layoutDirty(true)
+    , layoutPositionDirty(true)
     , family(nullptr)
     , parentWithContext(nullptr)
 {
@@ -518,7 +519,7 @@ Vector2 UIControl::GetAbsolutePosition()
 void UIControl::SetPosition(const Vector2& position)
 {
     relativePosition = position;
-    SetLayoutDirty();
+    SetLayoutPositionDirty();
 }
 
 void UIControl::SetAbsolutePosition(const Vector2& position)
@@ -551,7 +552,7 @@ void UIControl::SetPivotPoint(const Vector2& newPivotPoint)
     pivot.x = (size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x);
     pivot.y = (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y);
 
-    SetLayoutDirty();
+    SetLayoutPositionDirty();
 }
 
 void UIControl::SetPivot(const Vector2& newPivot)
@@ -1272,13 +1273,15 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
             UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
             if (layoutSystem->IsAutoupdatesEnabled())
             {
-                UIControl* dirtyControl = this;
-                if (parent != nullptr)
-                {
-                    dirtyControl = parent;
-                }
-
-                layoutSystem->ApplyLayout(dirtyControl, true);
+                layoutSystem->ApplyLayout(this, true);
+            }
+        }
+        else if (layoutPositionDirty)
+        {
+            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+            if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
+            {
+                layoutSystem->ApplyLayoutNonRecursive(parent);
             }
         }
 
@@ -1320,7 +1323,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         if (clipContents)
         { //WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
             RenderSystem2D::Instance()->PushClip();
-            RenderSystem2D::Instance()->IntersectClipRect(drawData.GetAABBox());
+            RenderSystem2D::Instance()->IntersectClipRect(unrotatedRect); //anyway it doesn't work with rotation
         }
 
         Draw(drawData);
@@ -1511,14 +1514,14 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 if (exclusiveInput)
                 {
                     UIControlSystem::Instance()->SetExclusiveInputLocker(this,
-                                                                         currentInput->tid);
+                                                                         currentInput->touchId);
                 }
 
                 PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
 
                 if (!multiInput)
                 {
-                    currentInputID = currentInput->tid;
+                    currentInputID = currentInput->touchId;
                 }
 
                 Input(currentInput);
@@ -1536,7 +1539,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
             if (currentInput->touchLocker == this)
             {
-                if (multiInput || currentInputID == currentInput->tid)
+                if (multiInput || currentInputID == currentInput->touchId)
                 {
                     if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
                     {
@@ -1581,10 +1584,10 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
             if (currentInput->touchLocker == this)
             {
-                if (multiInput || currentInputID == currentInput->tid)
+                if (multiInput || currentInputID == currentInput->touchId)
                 {
                     Input(currentInput);
-                    if (currentInput->tid == currentInputID)
+                    if (currentInput->touchId == currentInputID)
                     {
                         currentInputID = 0;
                     }
@@ -1690,10 +1693,13 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 if(!current->isUpdated)
                 {
                     current->Retain();
-                    if(current->inputProcessorsCount > 0 && current->SystemInput(currentInput))
+                    if (current->inputProcessorsCount > 0)
                     {
-                        current->Release();
-                        return true;
+                        if (current->SystemInput(currentInput))
+                        {
+                            current->Release();
+                            return true;
+                        }
                     }
                     current->Release();
                     if(isIteratorCorrupted)
@@ -1731,7 +1737,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         }
 
         currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
-        if(currentInput->tid == currentInputID)
+        if (currentInput->touchId == currentInputID)
         {
             currentInputID = 0;
         }
@@ -2805,6 +2811,17 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
     void UIControl::ResetLayoutDirty()
     {
         layoutDirty = false;
+        layoutPositionDirty = false;
+    }
+
+    void UIControl::SetLayoutPositionDirty()
+    {
+        layoutPositionDirty = true;
+    }
+
+    void UIControl::ResetLayoutPositionDirty()
+    {
+        layoutPositionDirty = false;
     }
 
     void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)

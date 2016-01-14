@@ -71,18 +71,29 @@ struct PackageContext : WidgetContext
 };
 
 template <typename NodeType>
-void CollectSelectedNodes(const SelectedNodes &selectedNodes, Vector<NodeType*> &nodes, bool forCopy, bool forRemove)
+void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
-    for (PackageBaseNode *node : selectedNodes)
+    DAVA::Set<PackageBaseNode*> sortedNodes;
+    std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](typename SelectedNodes::value_type node) {
+        return (dynamic_cast<NodeType*>(node) != nullptr);
+    });
+    for (PackageBaseNode* node : sortedNodes)
     {
-        NodeType *convertedNode = dynamic_cast<NodeType*>(node);
-
-        if (convertedNode && node->GetParent() != nullptr)
+        DVASSERT(nullptr != node);
+        if (node->GetParent() != nullptr)
         {
-            if ((!forCopy || convertedNode->CanCopy()) &&
-                (!forRemove || convertedNode->CanRemove()))
+            if ((!forCopy || node->CanCopy()) &&
+                (!forRemove || node->CanRemove()))
             {
-                nodes.push_back(convertedNode);
+                PackageBaseNode* parent = node->GetParent();
+                while (nullptr != parent && sortedNodes.find(parent) == sortedNodes.end())
+                {
+                    parent = parent->GetParent();
+                }
+                if (nullptr == parent)
+                {
+                    nodes.push_back(DynamicTypeCheck<NodeType*>(node));
+                }
             }
         }
     }
@@ -400,8 +411,6 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, c
     }
 }
 
-
-
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     if (nullptr == filteredPackageModel)
@@ -496,17 +505,9 @@ void PackageWidget::OnCut()
 
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, true, true);
-    
-    std::sort(controls.begin(), controls.end(), [](PackageBaseNode* left, PackageBaseNode* right){
-        return !CompareByLCA(left, right);
-    });
-    
-    std::sort(styles.begin(), styles.end(), [](PackageBaseNode* left, PackageBaseNode* right){
-        return !CompareByLCA(left, right);
-    });
-    
+
     CopyNodesToClipboard(controls, styles);
-    
+
     document->GetCommandExecutor()->Remove(controls, styles);
 }
 
@@ -517,15 +518,7 @@ void PackageWidget::OnDelete()
     
     Vector<StyleSheetNode*> styles;
     CollectSelectedStyles(styles, false, true);
-    
-    std::sort(controls.begin(), controls.end(), [](PackageBaseNode* left, PackageBaseNode* right){
-        return !CompareByLCA(left, right);
-    });
-    
-    std::sort(styles.begin(), styles.end(), [](PackageBaseNode* left, PackageBaseNode* right){
-        return !CompareByLCA(left, right);
-    });
-    
+
     if (!controls.empty() || !styles.empty())
     {
         document->GetCommandExecutor()->Remove(controls, styles);
@@ -534,10 +527,6 @@ void PackageWidget::OnDelete()
     {
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
-
-        std::sort(packages.begin(), packages.end(), [](PackageBaseNode* left, PackageBaseNode* right){
-            return !CompareByLCA(left, right);
-        });
 
         document->GetCommandExecutor()->RemoveImportedPackagesFromPackage(packages, document->GetPackage());
     }

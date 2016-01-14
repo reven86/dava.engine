@@ -124,7 +124,6 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
-    systemManager->DPRChanged.Connect(this, &HUDSystem::OnDPRChanged);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
     systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
@@ -167,10 +166,6 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
                 hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
-                for (auto& hudControlsIter : hudMap.at(controlNode)->hudControls)
-                {
-                    hudControlsIter.second->SetDPR(dpr);
-                }
                 sortedControlList.insert(controlNode);
             }
         }
@@ -193,7 +188,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     case UIEvent::Phase::BEGAN:
     {
         ProcessCursor(currentInput->point, searchOrder);
-        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->tid != UIEvent::BUTTON_1)
+        if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != UIEvent::MouseButton::LEFT)
         {
             return true;
         }
@@ -230,7 +225,6 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
                 size.y *= -1.0f;
             }
             selectionRectControl->SetRect(Rect(point, size));
-            FixPositionForScroll(selectionRectControl.Get());
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
@@ -289,20 +283,6 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         control->SetAngle(line.gd->angle);
         hudControl->AddControl(control);
         magnetControls.emplace_back(control);
-
-        FixPositionForScroll(control);
-    }
-}
-
-void HUDSystem::OnDPRChanged(float32 arg)
-{
-    dpr = arg;
-    for (auto& hudMapIter : hudMap)
-    {
-        for (auto& hudControlsIter : hudMapIter.second->hudControls)
-        {
-            hudControlsIter.second->SetDPR(dpr);
-        }
     }
 }
 

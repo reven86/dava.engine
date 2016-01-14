@@ -230,7 +230,7 @@ bool CustomColorsPanel::SaveTexture()
     {
         selectedPathname = sceneEditor->GetScenePath().GetDirectory();
     }
-	
+
     const QString text = "Custom colors texture is not saved. Do you want to save it?";
     QString filePath;
     for ( ;; )
@@ -271,13 +271,13 @@ void CustomColorsPanel::LoadTexture()
     {
         currentPath = sceneEditor->GetScenePath().GetDirectory();
     }
-	
-	FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION,
-												currentPath,
-												PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
-	if(!selectedPathname.IsEmpty())
-	{
-		sceneEditor->customColorsSystem->LoadTexture(selectedPathname);
+
+    FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION,
+                                                currentPath,
+                                                PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
+    if (!selectedPathname.IsEmpty())
+    {
+        sceneEditor->customColorsSystem->LoadTexture(selectedPathname);
 	}
 }
 

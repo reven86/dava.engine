@@ -58,9 +58,8 @@ public:
     void ExportTextureFolder(const String &folderName, Set<String> &errorLog);
     
     void ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
-    
-protected:
-    
+
+private:
     void RemoveEditorNodes(Entity *rootNode);
     void RemoveEditorCustomProperties(Entity *rootNode);
     
@@ -71,7 +70,6 @@ protected:
 
     bool ExportLandscape(Scene *scene, Set<String> &errorLog);
 
-protected:
     SceneUtils sceneUtils;
     eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
     TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
