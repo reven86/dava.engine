@@ -195,8 +195,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 
                 if (DAVA::UIEvent::Phase::BEGAN == event->phase)
                 {
-                    if(event->tid == DAVA::UIEvent::BUTTON_1)
-					{
+                    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+                    {
 						// go to modification state
 						inModifState = true;
 
@@ -283,8 +283,8 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 			// phase ended
             else if (event->phase == DAVA::UIEvent::Phase::ENDED)
             {
-                if(event->tid == DAVA::UIEvent::BUTTON_1)
-				{
+                if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+                {
 					if(modified)
 					{
 						if(cloneState == CLONE_DONE)

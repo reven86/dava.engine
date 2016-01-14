@@ -49,14 +49,13 @@
 
 namespace DAVA
 {
-
 // Creates Dava::Mesh from ColladaMeshInstance and puts it
-Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow)
+Mesh* ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance* mesh, const bool isShadow)
 {
-    Mesh * davaMesh = new Mesh();
+    Mesh* davaMesh = new Mesh();
     for (auto polygonGroupInstance : mesh->polyGroupInstances)
     {
-        PolygonGroup * davaPolygon = library.GetOrCreatePolygon(polygonGroupInstance);
+        PolygonGroup* davaPolygon = library.GetOrCreatePolygon(polygonGroupInstance);
 
         if (isShadow)
         {
@@ -118,9 +117,9 @@ eColladaErrorCodes ColladaToSc2Importer::ImportMeshes(const Vector<ColladaMeshIn
     for (auto meshInstance : meshInstances)
     {
         bool isShadowNode = String::npos != node->GetName().find(ImportSettings::shadowNamePattern);
-        
+
         ScopedPtr<RenderObject> davaMesh(GetMeshFromCollada(meshInstance, isShadowNode));
-        RenderComponent * davaRenderComponent = GetRenderComponent(node);
+        RenderComponent* davaRenderComponent = GetRenderComponent(node);
         if (nullptr == davaRenderComponent)
         {
             davaRenderComponent = new RenderComponent();
@@ -136,17 +135,17 @@ eColladaErrorCodes ColladaToSc2Importer::ImportMeshes(const Vector<ColladaMeshIn
     return retValue;
 }
 
-void ColladaToSc2Importer::ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity)
+void ColladaToSc2Importer::ImportAnimation(ColladaSceneNode* colladaNode, Entity* nodeEntity)
 {
     if (nullptr != colladaNode->animation)
     {
-        auto * animationComponent = new AnimationComponent();
+        auto* animationComponent = new AnimationComponent();
         animationComponent->SetEntity(nodeEntity);
         nodeEntity->AddComponent(animationComponent);
-        
+
         // Calculate actual transform and bake it into animation keys.
         // NOTE: for now usage of the same animation more than once is bad idea
-        AnimationData * animation = library.GetOrCreateAnimation(colladaNode->animation);
+        AnimationData* animation = library.GetOrCreateAnimation(colladaNode->animation);
         Matrix4 totalTransform = colladaNode->AccumulateTransformUptoFarParent(colladaNode->scene->rootNode);
         animation->BakeTransform(totalTransform);
         animationComponent->SetAnimation(animation);
@@ -184,8 +183,8 @@ eColladaErrorCodes ColladaToSc2Importer::BuildSceneAsCollada(Entity* root, Colla
 
     // Import animation
     ImportAnimation(colladaNode, nodeEntity);
-    
-    auto * transformComponent = GetTransformComponent(nodeEntity);
+
+    auto* transformComponent = GetTransformComponent(nodeEntity);
     transformComponent->SetLocalTransform(&colladaNode->localTransform);
 
     root->AddNode(nodeEntity);
@@ -199,23 +198,23 @@ eColladaErrorCodes ColladaToSc2Importer::BuildSceneAsCollada(Entity* root, Colla
     return res;
 }
 
-void ColladaToSc2Importer::LoadMaterialParents(ColladaScene * colladaScene)
+void ColladaToSc2Importer::LoadMaterialParents(ColladaScene* colladaScene)
 {
     for (auto cmaterial : colladaScene->colladaMaterials)
     {
-        NMaterial * globalMaterial = library.GetOrCreateMaterialParent(cmaterial, false);
+        NMaterial* globalMaterial = library.GetOrCreateMaterialParent(cmaterial, false);
         DVASSERT(nullptr != globalMaterial);
     }
 }
-    
-void ColladaToSc2Importer::LoadAnimations(ColladaScene * colladaScene)
+
+void ColladaToSc2Importer::LoadAnimations(ColladaScene* colladaScene)
 {
     for (auto canimation : colladaScene->colladaAnimations)
     {
-        for (auto & pair : canimation->animations)
+        for (auto& pair : canimation->animations)
         {
-            SceneNodeAnimation * colladaAnimation = pair.second;
-            AnimationData * animation = library.GetOrCreateAnimation(colladaAnimation);
+            SceneNodeAnimation* colladaAnimation = pair.second;
+            AnimationData* animation = library.GetOrCreateAnimation(colladaAnimation);
             DVASSERT(nullptr != animation);
         }
     }
@@ -227,10 +226,10 @@ eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, con
 
     // Load scene global materials.
     LoadMaterialParents(colladaScene);
-    
+
     // Load scene global animations
     LoadAnimations(colladaScene);
-    
+
     // Iterate recursive over collada scene and build Dava Scene with same ierarchy
 
     eColladaErrorCodes convertRes = BuildSceneAsCollada(scene, colladaScene->rootNode);
@@ -264,5 +263,4 @@ void ColladaToSc2Importer::ReportError(const String& errMessage)
     errorLogs.insert(errMessage);
     Logger::Error("%s", errMessage.c_str());
 }
-
 };
