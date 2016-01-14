@@ -53,11 +53,10 @@ class SingleLineText;
 
 @interface CustomTextFieldFormatter : NSFormatter
 {
+@public
     int maxLength;
+    DAVA::SingleLineText* text;
 }
-- (void)setMaximumLength:(int)len;
-- (int)maximumLength;
-
 @end
 // end objective C declarations
 
@@ -122,9 +121,10 @@ public:
     {
         davaText = davaText_;
         nsTextField = [[NSTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
-        [nsTextField setWantsLayer:YES];
+        [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
 
         formatter = [[CustomTextFieldFormatter alloc] init];
+        formatter->text = this;
         [nsTextField setFormatter:formatter];
 
         objcDelegate = [[SingleLineDelegate alloc] init];
@@ -209,7 +209,7 @@ public:
     }
     void SetFontSize(float size) override
     {
-        // TODO
+        // TODO do I have to implement it?
     }
 
     void SetTextAlign(DAVA::int32 align) override
@@ -315,7 +315,7 @@ public:
     // Max text length.
     void SetMaxLength(int maxLength) override
     {
-        [formatter setMaximumLength:maxLength];
+        formatter->maxLength = maxLength;
     }
 
     void SetRenderToTexture(bool value) override
@@ -571,16 +571,6 @@ textShouldEndEditing:(NSText*)fieldEditor
     return self;
 }
 
-- (void)setMaximumLength:(int)len
-{
-    maxLength = len;
-}
-
-- (int)maximumLength
-{
-    return maxLength;
-}
-
 - (NSString*)stringForObjectValue:(id)object
 {
     return (NSString*)object;
@@ -603,6 +593,35 @@ textShouldEndEditing:(NSText*)fieldEditor
     if ([*partialStringPtr length] > maxLength)
     {
         return NO;
+    }
+
+    if (text != nullptr)
+    {
+        DAVA::UITextField* davaCtrl = text->davaText;
+        DAVA::UITextFieldDelegate* delegate = davaCtrl->GetDelegate();
+        if (delegate != nullptr)
+        {
+            // simple change whole string for new string
+            NSString* nsReplacement = *partialStringPtr;
+            DAVA::WideString replacement;
+            const char* cstr = [nsReplacement cStringUsingEncoding:NSUTF8StringEncoding];
+            size_t strSize = std::strlen(cstr);
+            DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const uint8*>(cstr), strSize, replacement);
+
+            DAVA::int32 location = 0;
+            DAVA::int32 length = [origString length];
+            bool result = delegate->TextFieldKeyPressed(davaCtrl, location, length, replacement);
+            if (!result)
+            {
+                return NO;
+            }
+            else
+            {
+                DAVA::WideString oldText;
+                text->GetText(oldText);
+                delegate->TextFieldOnTextChanged(davaCtrl, replacement, oldText);
+            }
+        }
     }
 
     return YES;
