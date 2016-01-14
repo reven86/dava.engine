@@ -32,8 +32,6 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "Platform/DPIHelper.h"
-
 #include "Sound/SoundSystem.h"
 
 #include "Input/InputSystem.h"
