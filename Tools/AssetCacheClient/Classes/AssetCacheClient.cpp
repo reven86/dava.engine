@@ -46,7 +46,6 @@ bool AssetCacheClient::ParseCommandLine(int argc, char* argv[])
 {
     if (argc > 1)
     {
-        const DAVA::String command = argv[1];
         for (auto& r : requests)
         {
             auto commandLineIsOk = r->options.Parse(argc, argv);

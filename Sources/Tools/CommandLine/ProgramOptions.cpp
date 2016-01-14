@@ -75,8 +75,7 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
 {
     // if first argument equal command name we should skip it else we should stop parsing
     uint32 argIndex = 1; //skip executable pathname in params
-    const String firstArgument = argv[argIndex];
-    if (argIndex < argc && commandName == firstArgument)
+    if (argIndex < argc && commandName == String(argv[argIndex]))
     {
         argIndex++;
     }

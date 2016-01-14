@@ -102,12 +102,10 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
     if (nullptr != resolver)
     {
         resolver->GotAddrInfo(status, response);
-        resolver->ReleaseHandle();
+        resolver->handle = nullptr;
     }
-    else
-    {
-        SafeDelete(handle);
-    }
+
+    SafeDelete(handle);
 
     uv_freeaddrinfo(response);
 #endif
@@ -127,10 +125,6 @@ void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
     }
 }
 
-void AddressResolver::ReleaseHandle()
-{
-    SafeDelete(handle);
-}
 
 } // end of namespace Net
 } // end of namespace DAVA

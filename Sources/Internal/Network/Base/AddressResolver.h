@@ -55,7 +55,6 @@ public:
 private:
     static void GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, addrinfo* response);
     void GotAddrInfo(int status, addrinfo* response);
-    void ReleaseHandle();
 
 private:
     IOLoop* loop = nullptr;
