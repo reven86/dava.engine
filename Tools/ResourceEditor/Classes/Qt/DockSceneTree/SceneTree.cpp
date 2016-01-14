@@ -219,6 +219,8 @@ void SceneTree::SceneActivated(SceneEditor2 *scene)
     selectionModel()->clear();
     SyncSelectionToTree();
     filteringProxyModel->invalidate();
+
+    PropagateSolidFlag();
 }
 
 void SceneTree::SceneDeactivated(SceneEditor2 *scene)
@@ -785,6 +787,8 @@ void SceneTree::CollapseAll()
 	{
 		SyncSelectionFromTree();
 	}
+
+    PropagateSolidFlag();
 }
 
 void SceneTree::TreeItemCollapsed(const QModelIndex &index)
@@ -824,7 +828,10 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
 void SceneTree::TreeItemExpanded(const QModelIndex &index)
 {
-	treeModel->SetSolid(filteringProxyModel->mapToSource(index), false);
+    QModelIndex mappedIndex = filteringProxyModel->mapToSource(index);
+    treeModel->SetSolid(mappedIndex, false);
+    QStandardItem* item = treeModel->itemFromIndex(mappedIndex);
+    PropagateSolidFlagRecursive(item);
 }
 
 void SceneTree::SyncSelectionToTree()
@@ -1428,4 +1435,33 @@ void SceneTree::SetCustomDrawCamera()
 void SceneTree::UpdateTree()
 {
 	dataChanged(QModelIndex(), QModelIndex());
+}
+
+void SceneTree::PropagateSolidFlag()
+{
+    QStandardItem* root = treeModel->invisibleRootItem();
+    for (int i = 0; i < root->rowCount(); ++i)
+    {
+        PropagateSolidFlagRecursive(root->child(i));
+    }
+}
+
+void SceneTree::PropagateSolidFlagRecursive(QStandardItem* root)
+{
+    DVASSERT(root != nullptr);
+    QModelIndex rootIndex = root->index();
+    DVASSERT(rootIndex.isValid());
+    QModelIndex filteredIndex = filteringProxyModel->mapFromSource(rootIndex);
+    if (isExpanded(filteredIndex))
+    {
+        treeModel->SetSolid(rootIndex, false);
+        for (int i = 0; i < root->rowCount(); ++i)
+        {
+            PropagateSolidFlagRecursive(root->child(i));
+        }
+    }
+    else
+    {
+        treeModel->SetSolid(rootIndex, true);
+    }
 }
