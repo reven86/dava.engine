@@ -52,7 +52,7 @@ public:
     void PrintUsage() const;
 
 private:
-    bool ParseOption(uint32 argc, char* argv[]);
+    bool ParseOption(uint32& argIndex, uint32 argc, char* argv[]);
 
 private:
     struct Option
@@ -74,8 +74,6 @@ private:
         String name;
         String value;
     };
-
-    uint32 argIndex = 1; //skip executable pathname in params
 
     Vector<Argument> arguments;
     Vector<Option> options;

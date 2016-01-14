@@ -60,7 +60,6 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
     hints.ai_flags = 0;
     hints.ai_protocol = IPPROTO_TCP;
 
-    DVASSERT(handle == nullptr);
     handle = new uv_getaddrinfo_t;
     handle->data = this;
 
