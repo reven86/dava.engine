@@ -139,6 +139,7 @@ namespace DAVA
     String title;
     int32 width = 800;
     int32 height = 600;
+    bool isFull = false;
 
     KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
     if(nullptr != options)
@@ -149,6 +150,8 @@ namespace DAVA
             width = options->GetInt32("width");
             height = options->GetInt32("height");
         }
+        
+        isFull = (0 != options->GetInt32("fullscreen", 0));
     }
     
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
@@ -176,6 +179,11 @@ namespace DAVA
     [mainWindow makeKeyAndOrderFront:nil];
     [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
     [mainWindow setAcceptsMouseMovedEvents:YES];
+    
+    if(isFull)
+    {
+        [self setFullScreen:true];
+    }
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
