@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#import "MainWindowController.h"
-#include "CorePlatformMacOS.h"
+#import "Platform/TemplateMacOS/MainWindowController.h"
+#include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
@@ -41,7 +41,7 @@ namespace DAVA
 	{
 		NSAutoreleasePool * globalPool = 0;
 		globalPool = [[NSAutoreleasePool alloc] init];
-		DAVA::CoreMacOSPlatform * core = new DAVA::CoreMacOSPlatform();
+		CoreMacOSPlatform * core = new CoreMacOSPlatform();
 		core->SetCommandLine(argc, argv);
 		core->CreateSingletons();
 
@@ -61,7 +61,7 @@ namespace DAVA
     {
         NSAutoreleasePool* globalPool = 0;
         globalPool = [[NSAutoreleasePool alloc] init];
-        DAVA::CoreMacOSPlatform* core = new DAVA::CoreMacOSPlatform();
+        CoreMacOSPlatform* core = new CoreMacOSPlatform();
         core->SetCommandLine(argc, argv);
         core->EnableConsoleMode();
         core->CreateSingletons();
@@ -105,7 +105,6 @@ namespace DAVA
         Vector2 mouseLocation;
 		mouseLocation.x = p.x;
 		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
-		// mouseLocation.y = 
 		return mouseLocation;
 	}
 }
@@ -141,7 +140,7 @@ namespace DAVA
     int32 height = 600;
     bool isFull = false;
 
-    KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
+    KeyedArchive* options = Core::Instance()->GetOptions();
     if(nullptr != options)
     {
         title = options->GetString("title", "[set application title using core options property 'title']");
@@ -192,11 +191,17 @@ namespace DAVA
 
 - (void)windowDidMiniaturize:(NSNotification *)notification
 {
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Emit(true);
+    
     [self OnSuspend];
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification
 {
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Emit(false);
+    
     [self OnResume];
 }
 
@@ -293,12 +298,12 @@ namespace DAVA
 
 - (void)mouseEntered:(NSEvent *)theEvent
 {
-	NSLog(@"mouse ENTERED");
 }
+
 - (void)mouseExited:(NSEvent *)theEvent
 {
-	NSLog(@"mouse EXITED");
 }
+
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
 	[openGLView rightMouseDown:theEvent];
@@ -424,11 +429,17 @@ namespace DAVA
 - (void)applicationDidHide:(NSNotification *)aNotification
 {
 	NSLog(@"[CoreMacOSPlatform] Application did hide");
+    
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Emit(true);
 }
 
 - (void)applicationDidUnhide:(NSNotification *)aNotification
 {
 	NSLog(@"[CoreMacOSPlatform] Application did unhide");
+    
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Emit(false);
 }
 
 - (void)windowWillClose:(NSNotification *)notification
