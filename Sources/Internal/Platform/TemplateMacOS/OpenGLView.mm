@@ -86,12 +86,6 @@ extern void FrameworkMain(int argc, char *argv[]);
     
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
-	
-#if RHI_COMPLETE
-    DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
-#endif
-
-    activeCursor = 0;
 
     willQuit = false;
 
@@ -181,17 +175,6 @@ extern void FrameworkMain(int argc, char *argv[]);
         return;
     
     DAVA::Core::Instance()->SystemProcessFrame();
-}
-
-- (void) resetCursorRects
-{
-	if (activeCursor)
-	{
-		NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
-		[self addCursorRect: [self bounds] cursor: cursor];
-	}else {
-		[super resetCursorRects];
-	}
 }
 
 -(void)cursorUpdate:(NSEvent *)theEvent
@@ -384,17 +367,14 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
 }
 - (void)mouseEntered:(NSEvent *)theEvent
 {
-    NSLog(@"mouse ENTERED");
-#if RHI_COMPLETE
-    if(RenderManager::Instance()->GetCursor())
+    if(Cursor::GetSystemCursorVisibility())
     {
-        if(RenderManager::Instance()->GetCursor()->IsShow())
-            [NSCursor unhide];
-        else
-            [NSCursor hide];
+        [NSCursor unhide];
     }
-#endif
-    //	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    else
+    {
+        [NSCursor hide];
+    }
 }
 - (void)mouseExited:(NSEvent *)theEvent
 {

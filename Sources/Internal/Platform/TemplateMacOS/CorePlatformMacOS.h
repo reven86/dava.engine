@@ -42,8 +42,6 @@ public:
     eScreenMode GetScreenMode() override;
     bool SetScreenMode(eScreenMode screenMode) override;
     void Quit() override;
-
-    virtual Vector2 GetMousePosition();
 };	
 
 };

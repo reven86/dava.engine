@@ -93,23 +93,6 @@ namespace DAVA
 
 static MainWindowController * mainWindowController = nil;
 
-/* This code disabled for now and left for the future
- */
-namespace DAVA 
-{
-	Vector2 CoreMacOSPlatform::GetMousePosition()
-	{
-		NSPoint p = [mainWindowController->mainWindow mouseLocationOutsideOfEventStream]; //[NSEvent locationInWindow]; 
-		p = [mainWindowController->openGLView convertPointFromBacking: p];
-
-        Vector2 mouseLocation;
-		mouseLocation.x = p.x;
-		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
-		// mouseLocation.y = 
-		return mouseLocation;
-	}
-}
-
 - (id)init
 {
     self = [super init];
@@ -167,12 +150,8 @@ namespace DAVA
     core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
 
-#if RHI_COMPLETE
-    RenderManager::Instance()->DetectRenderingCapabilities();
-#endif
-
 // start animation
-    currFPS = 60;
+    currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
 
     // make window main
@@ -363,15 +342,6 @@ namespace DAVA
 	NSLog(@"[CoreMacOSPlatform] Application did finish launching");	
     
     [self OnResume];
-    
-#if RHI_COMPLETE
-    DAVA::Cursor * activeCursor = RenderManager::Instance()->GetCursor();
-    if (activeCursor)
-    {
-        NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
-        [cursor set];
-    }
-#endif
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
@@ -384,12 +354,12 @@ namespace DAVA
     NSSize windowsSize =[openGLView frame].size;
     NSSize surfaceSize = [openGLView convertSizeToBacking:windowsSize];
     
-    DAVA::CoreMacOSPlatform* macCore = (DAVA::CoreMacOSPlatform*)Core::Instance();
-    macCore->rendererParams.window = mainWindowController->openGLView;
-    macCore->rendererParams.width = surfaceSize.width;
-    macCore->rendererParams.height = surfaceSize.height;
-    macCore->rendererParams.scaleX = userScale;
-    macCore->rendererParams.scaleY = userScale;
+    rhi::InitParam & rendererParams = Core::Instance()->rendererParams;
+    rendererParams.window = mainWindowController->openGLView;
+    rendererParams.width = surfaceSize.width;
+    rendererParams.height = surfaceSize.height;
+    rendererParams.scaleX = userScale;
+    rendererParams.scaleY = userScale;
 
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowsSize.width, windowsSize.height);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
