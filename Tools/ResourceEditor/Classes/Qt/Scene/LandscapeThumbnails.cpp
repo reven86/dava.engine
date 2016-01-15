@@ -179,8 +179,9 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     rhi::HSyncObject syncObject = rhi::CreateSyncObject();
     Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
     {
+        DAVA::Vector<FastName> flagsToDisable{ NMaterialFlagName::FLAG_VERTEXFOG };
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
-        requests.list.emplace_back(syncObject, landscape, { NMaterialFlagName::FLAG_VERTEXFOG }, texture, handler);
+        requests.list.emplace_back(syncObject, landscape, flagsToDisable, texture, handler);
     }
     RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
