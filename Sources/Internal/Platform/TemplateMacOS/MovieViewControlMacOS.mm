@@ -27,7 +27,8 @@
 =====================================================================================*/
 
 
-#include "MovieViewControlMacOS.h"
+#include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
+#include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "FileSystem/Logger.h"
 
 #import <AVFoundation/AVFoundation.h>
@@ -328,10 +329,16 @@ namespace DAVA
 MovieViewControl::MovieViewControl()
 {
 	moviePlayerHelper = [[MoviePlayerHelper alloc] init];
+    
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &MovieViewControl::OnAppMinimizedRestored);
 }
 	
 MovieViewControl::~MovieViewControl()
 {
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
+    
     MoviePlayerHelper* helper = (MoviePlayerHelper*)moviePlayerHelper;
     [helper release];
 }
@@ -380,6 +387,11 @@ void MovieViewControl::Resume()
 bool MovieViewControl::IsPlaying()
 {
     return [(MoviePlayerHelper*)moviePlayerHelper isPlaying];
+}
+
+void MovieViewControl::OnAppMinimizedRestored(bool minimized)
+{
+    SetVisible(!minimized);
 }
 
 }   // namespace DAVA
