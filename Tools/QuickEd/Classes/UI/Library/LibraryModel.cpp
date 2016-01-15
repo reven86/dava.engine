@@ -186,6 +186,17 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
 
 void LibraryModel::SetPackageNode(std::weak_ptr<PackageNode> package_)
 {
+    if (nullptr != controlsRootItem)
+    {
+        removeRow(controlsRootItem->row());
+        controlsRootItem = nullptr;
+    }
+    if (nullptr != importedPackageRootItem)
+    {
+        removeRow(importedPackageRootItem->row());
+        importedPackageRootItem = nullptr;
+    }
+
     {
         auto lastNode = package.lock();
         if (nullptr != lastNode)
@@ -200,16 +211,6 @@ void LibraryModel::SetPackageNode(std::weak_ptr<PackageNode> package_)
         {
             newNode->AddListener(this);
         }
-    }
-    if (nullptr != controlsRootItem)
-    {
-        removeRow(controlsRootItem->row());
-        controlsRootItem = nullptr;
-    }
-    if (nullptr != importedPackageRootItem)
-    {
-        removeRow(importedPackageRootItem->row());
-        importedPackageRootItem = nullptr;
     }
     if(!package.expired())
     {

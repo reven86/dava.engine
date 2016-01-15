@@ -182,12 +182,9 @@ void EditorCore::OnFilesChanged(const QStringList& changedFiles)
             {
                 DAVA::FilePath davaPath = document->GetPackageFilePath();
                 CloseDocument(index);
-                std::shared_ptr<PackageNode> package = project->OpenPackage(davaPath);
-                DVASSERT(nullptr != package);
-                if (nullptr != package)
-                {
-                    index = CreateDocument(index, package);
-                }
+                RefPtr<PackageNode> package = project->OpenPackage(davaPath);
+                DVASSERT(package.Get() != nullptr);
+                CreateDocument(index, package);
             }
         }
     }
@@ -232,11 +229,9 @@ void EditorCore::OnOpenPackageFile(const QString &path)
         int index = GetIndexByPackagePath(davaPath);
         if (index == -1)
         {
-            std::shared_ptr<PackageNode> package = project->OpenPackage(davaPath);
-            if (nullptr != package)
-            {
-                index = CreateDocument(documents.size(), package);
-            }
+            RefPtr<PackageNode> package = project->OpenPackage(davaPath);
+            DVASSERT(package.Get() != nullptr);
+            index = CreateDocument(documents.size(), package);
         }
         mainWindow->SetCurrentTab(index);
     }
@@ -520,8 +515,11 @@ void EditorCore::CloseDocument(int index)
     delete detached; //some widgets hold this document inside :(
 }
 
-int EditorCore::CreateDocument(int index, std::shared_ptr<PackageNode> package)
+int EditorCore::CreateDocument(int index, RefPtr<PackageNode> packageRef)
 {
+    PackageNode *packagePtr = SafeRetain(packageRef.Get());
+    std::shared_ptr<PackageNode> package = std::shared_ptr<PackageNode>(packagePtr, [](BaseObject* obj) { obj->Release(); });
+    
     Document *document = new Document(package, this);
     documents.insert(index, document);
     documentGroup->InsertDocument(index, document);
@@ -544,7 +542,8 @@ void EditorCore::SaveDocument(Document *document)
     }
     QString path = document->GetPackageAbsolutePath();
     fileSystemWatcher->removePath(path);
-    DVVERIFY(project->SavePackage(document->GetPackage())); //TODO:log here
+    auto packagePtr = document->GetPackage().lock();
+    DVVERIFY(project->SavePackage(packagePtr.get())); //TODO:log here
     document->GetUndoStack()->setClean();
     if (!fileSystemWatcher->addPath(path))
     {

@@ -50,8 +50,8 @@ public:
     bool Open(const QString &path);
     bool CheckAndUnlockProject(const QString& projectPath);
 
-    std::shared_ptr<PackageNode> OpenPackage(const DAVA::FilePath& path);
-    bool SavePackage(std::weak_ptr<PackageNode> package);
+    DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
+    bool SavePackage(PackageNode *package);
     EditorFontSystem *GetEditorFontSystem() const;
     EditorLocalizationSystem *GetEditorLocalizationSystem() const;
 signals:

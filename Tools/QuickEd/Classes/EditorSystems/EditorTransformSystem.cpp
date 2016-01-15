@@ -325,12 +325,15 @@ Vector<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* par
 {
     DVASSERT(nullptr != parentGD);
     Vector<MagnetLine> magnets;
-
     Rect parentBox(Vector2(), parentGD->size);
     if (parentBox.GetSize()[axis] <= 0.0f)
     {
         return magnets;
     }
+    const size_t magnetsCountForParent = 7;
+    const size_t magnetsCountForOneNeighbour = 9;
+    magnets.reserve(magnetsCountForParent + magnetsCountForOneNeighbour * neighbours.size()); //TODO: replace digits with calculated values
+
     magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
     magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
     magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);

@@ -275,6 +275,9 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     }
     magnetTargetControls.clear();
 
+    size_t size = magnetLines.size();
+    magnetControls.reserve(size);
+    magnetTargetControls.reserve(size);
     for (const MagnetLineInfo& line : magnetLines)
     {
         const auto& gd = line.gd;
