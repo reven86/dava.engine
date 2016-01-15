@@ -38,11 +38,10 @@
 
 using namespace DAVA;
 
-
-ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(const QString &aResourcefilter, const QString &aResourceDir, PropertiesTreeItemDelegate *delegate)
+ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(const QString& resourceExtension_, const QString& resourceDir_, PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
-    , resourcefilter(aResourcefilter)
-    , resourceDir(aResourceDir)
+    , resourceExtension(resourceExtension_)
+    , resourceDir(resourceDir_)
 {
 
 }
@@ -52,22 +51,21 @@ ResourceFilePropertyDelegate::~ResourceFilePropertyDelegate()
 
 }
 
-QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex&)
 {
-    QLineEdit *lineEdit = new QLineEdit(parent);
+    lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(valueChanged()));
-
+    connect(lineEdit, &QLineEdit::editingFinished, this, &ResourceFilePropertyDelegate::OnEditingFinished);
+    connect(lineEdit, &QLineEdit::textChanged, this, &ResourceFilePropertyDelegate::OnTextChanged);
     return lineEdit;
 }
 
-void ResourceFilePropertyDelegate::setEditorData(QWidget * rawEditor, const QModelIndex & index) const
+void ResourceFilePropertyDelegate::setEditorData(QWidget*, const QModelIndex& index) const
 {
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
-
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
     QString stringValue = StringToQString(variant.AsFilePath().GetStringValue());
-    editor->setText(stringValue);
+    DVASSERT(!lineEdit.isNull());
+    lineEdit->setText(stringValue);
 }
 
 bool ResourceFilePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index) const
@@ -75,10 +73,9 @@ bool ResourceFilePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractIt
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
 
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
-
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    DAVA::FilePath absoluteFilePath = QStringToString(editor->text());
+    DVASSERT(!lineEdit.isNull());
+    DAVA::FilePath absoluteFilePath = QStringToString(lineEdit->text());
     DAVA::FilePath frameworkFilePath = absoluteFilePath.GetFrameworkPath();
     variantType.SetFilePath(frameworkFilePath);
 
@@ -105,15 +102,9 @@ void ResourceFilePropertyDelegate::enumEditorActions(QWidget* parent, const QMod
 
 void ResourceFilePropertyDelegate::selectFileClicked()
 {
-    QAction *openFileDialogAction = qobject_cast<QAction *>(sender());
-    if (!openFileDialogAction)
-        return;
-
-    QWidget *editor = openFileDialogAction->parentWidget();
-    if (!editor)
-        return;
-
-    QLineEdit *lineEdit = editor->findChild<QLineEdit*>("lineEdit");
+    DVASSERT(!lineEdit.isNull());
+    QWidget* editor = lineEdit->parentWidget();
+    DVASSERT(editor != nullptr);
 
     QString dir;
     QString pathText = lineEdit->text();
@@ -127,7 +118,7 @@ void ResourceFilePropertyDelegate::selectFileClicked()
         dir = ResourcesManageHelper::GetResourceRootDirectory() + resourceDir;
     }
 
-    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, resourcefilter);
+    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension);
     if (!filePathText.isEmpty())
     {
         DAVA::FilePath absoluteFilePath = QStringToString(filePathText);
@@ -141,32 +132,41 @@ void ResourceFilePropertyDelegate::selectFileClicked()
 
 void ResourceFilePropertyDelegate::clearFileClicked()
 {
-    QAction *clearSpriteAction = qobject_cast<QAction *>(sender());
-    if (!clearSpriteAction)
-        return;
-
-    QWidget *editor = clearSpriteAction->parentWidget();
-    if (!editor)
-        return;
-
-    QLineEdit *lineEdit = editor->findChild<QLineEdit*>("lineEdit");
-
+    DVASSERT(!lineEdit.isNull());
+    QWidget* editor = lineEdit->parentWidget();
+    DVASSERT(editor != nullptr);
     lineEdit->setText(QString(""));
 
     BasePropertyDelegate::SetValueModified(editor, true);
     itemDelegate->emitCommitData(editor);
 }
 
-void ResourceFilePropertyDelegate::valueChanged()
+void ResourceFilePropertyDelegate::OnEditingFinished()
 {
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
-    if (!lineEdit)
-        return;
-
+    DVASSERT(!lineEdit.isNull());
     QWidget *editor = lineEdit->parentWidget();
-    if (!editor)
+    DVASSERT(editor != nullptr);
+    if (!IsPathValid(lineEdit->text()))
+    {
         return;
-
+    }
     BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
+}
+
+void ResourceFilePropertyDelegate::OnTextChanged(const QString& text)
+{
+    QPalette palette(lineEdit->palette());
+    QString textCopy(text);
+
+    palette.setColor(QPalette::Text, IsPathValid(text) ? Qt::black : Qt::red);
+    lineEdit->setPalette(palette);
+}
+
+bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
+{
+    DAVA::FilePath filePath(QStringToString(path));
+    auto tmp = filePath.GetAbsolutePathname();
+
+    return FileSystem::Instance()->Exists(filePath + resourceExtension.toStdString().c_str());
 }
