@@ -24,13 +24,14 @@ const float encodeDecodeScale = 255.0;
 const float MAGIC_TRESHOLD_2 = 1.0 / encodeDecodeScale;
 const float MAGIC_TRESHOLD_1 = 1.0 + MAGIC_TRESHOLD_2;
 
-float4 EncodeFloatRGBA(float v) 
+float4 EncodeFloatRGBA(float v)
 {
+    v *= encodeDecodeScale;
 	float4 result;
-	result.x = modf(v * encodeDecodeScale, v); 
-	result.y = modf(v / 255.0, v);
-	result.z = modf(v / 255.0, v);
-	result.w = modf(v / 255.0, v);
+    result.x = fract(v); v = (v - result.x) / 255.0;
+    result.y = fract(v); v = (v - result.y) / 255.0;
+    result.z = fract(v); v = (v - result.z) / 255.0;
+    result.w = fract(v);
 	return result;
 }
 
@@ -85,7 +86,10 @@ FPROG_BEGIN
 
 	float2 vpCoords = 0.5 + 0.5 * FP_IN(viewportCoords).xy / FP_IN(viewportCoords).w;
 	float2 vp = viewportSize * vpCoords;
-	float checkboard = 0.25 * float((int(vp.x) / 4 + (int(vp.y) / 4) % 2) % 2);
+
+    float cx = float(int(vp.x) / 4);
+    float cy = float(int(vp.y) / 4);
+    vec4 checkboard = vec4(0.25 * mod(cx + mod(cy, 2.0), 2.0));
 
 	float3 reprojectedUVW = 0.5 + 0.5 * FP_IN(reprojectedCoords).xyz / FP_IN(reprojectedCoords).w;
 	float4 sampledColor = FP_TEXTURE2D(fixedFrame, reprojectedUVW.xy);
