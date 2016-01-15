@@ -87,8 +87,6 @@ extern void FrameworkMain(int argc, char *argv[]);
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
 
-    willQuit = false;
-
     return self;
 }
 
@@ -162,23 +160,6 @@ extern void FrameworkMain(int argc, char *argv[]);
     }
     
     [super reshape];
-}
-
-- (void)userFireTimer: (id)timer
-{
-	[self setNeedsDisplay:YES];
-}
-	
-- (void)drawRect:(NSRect)theRect
-{
-    if(willQuit)
-        return;
-    
-    DAVA::Core::Instance()->SystemProcessFrame();
-}
-
--(void)cursorUpdate:(NSEvent *)theEvent
-{
 }
 
 - (BOOL)acceptsFirstResponder

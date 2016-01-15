@@ -147,6 +147,8 @@ static MainWindowController * mainWindowController = nil;
     [mainWindow setContentView: openGLView];
     [mainWindow setContentSize: NSMakeSize(width, height)];
 
+    willQuit = false;
+    
     core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
 
@@ -328,7 +330,15 @@ static MainWindowController * mainWindowController = nil;
 
 - (void) animationTimerFired:(NSTimer *)timer
 {
+    if(willQuit)
+    {
+        [self stopAnimationTimer];
+        return;
+    }
+    
+    DAVA::Core::Instance()->SystemProcessFrame();
     [openGLView setNeedsDisplay:YES];
+    
     if (currFPS != Renderer::GetDesiredFPS())
     {
         currFPS = Renderer::GetDesiredFPS();
@@ -408,7 +418,7 @@ static MainWindowController * mainWindowController = nil;
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    mainWindowController->openGLView.willQuit = true;
+    mainWindowController->willQuit = true;
     
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
@@ -471,7 +481,7 @@ bool CoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 
 void CoreMacOSPlatform::Quit()
 {
-	mainWindowController->openGLView.willQuit = true;
+	mainWindowController->willQuit = true;
 	[[NSApplication sharedApplication] terminate: nil];
 }
 	

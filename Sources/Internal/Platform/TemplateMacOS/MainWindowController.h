@@ -38,6 +38,7 @@
 	OpenGLView * openGLView;
 	NSWindow * mainWindow;
 	NSTimer * animationTimer;
+    bool willQuit;
 	
 	ApplicationCore * core;
     bool fullScreen;
