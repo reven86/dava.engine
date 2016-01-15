@@ -39,8 +39,6 @@ CommandBatch::CommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
     commandList.reserve(commandsCount);
 }
 
-CommandBatch::~CommandBatch() = default;
-
 void CommandBatch::Redo()
 {
     for (CommandsContainer::iterator i = commandList.begin(), end = commandList.end(); i != end; i++)
