@@ -39,18 +39,78 @@ using namespace DAVA;
 
 namespace
 {
+class TemporaryFlagsDisabler
+{
+public:
+    TemporaryFlagsDisabler(NMaterial* material_, const DAVA::Vector<FastName>& flagNames)
+        : material(material_)
+    {
+        DVASSERT(material != nullptr);
+        flagsInfo.reserve(flagNames.size());
+        for (const FastName& flagName : flagNames)
+        {
+            FlagInfo info;
+            info.flagName = flagName;
+            info.hasFlag = material->HasLocalFlag(info.flagName);
+            if (info.hasFlag)
+            {
+                info.oldValue = material->GetLocalFlagValue(info.flagName);
+                material->SetFlag(info.flagName, 0);
+            }
+            else
+            {
+                material->AddFlag(info.flagName, 0);
+            }
+
+            flagsInfo.push_back(info);
+        }
+
+        material->PreBuildMaterial(DAVA::PASS_FORWARD);
+    }
+
+    ~TemporaryFlagsDisabler()
+    {
+        for (const FlagInfo& info : flagsInfo)
+        {
+            if (info.hasFlag)
+            {
+                material->SetFlag(info.flagName, info.oldValue);
+            }
+            else
+            {
+                material->RemoveFlag(info.flagName);
+            }
+        }
+
+        material->PreBuildMaterial(DAVA::PASS_FORWARD);
+    }
+
+private:
+    NMaterial* material;
+    struct FlagInfo
+    {
+        int32 oldValue = 0;
+        FastName flagName;
+        bool hasFlag = false;
+    };
+
+    DAVA::Vector<FlagInfo> flagsInfo;
+};
+
 struct ThumbnailRequest
 {
     rhi::HSyncObject syncObject;
     Landscape* landscape = nullptr;
     Texture* texture = nullptr;
     LandscapeThumbnails::Callback callback;
+    TemporaryFlagsDisabler flagsDisabler;
 
-    ThumbnailRequest(rhi::HSyncObject so, Landscape* l, Texture* tex, LandscapeThumbnails::Callback cb)
+    ThumbnailRequest(rhi::HSyncObject so, Landscape* l, const DAVA::Vector<FastName>& flagsToDisable, Texture* tex, LandscapeThumbnails::Callback cb)
         : syncObject(so)
         , landscape(l)
         , texture(tex)
         , callback(cb)
+        , flagsDisabler(l->GetMaterial(), flagsToDisable)
     {
     }
 };
@@ -120,7 +180,7 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
     {
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
-        requests.list.emplace_back(syncObject, landscape, texture, handler);
+        requests.list.emplace_back(syncObject, landscape, { NMaterialFlagName::FLAG_VERTEXFOG }, texture, handler);
     }
     RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
