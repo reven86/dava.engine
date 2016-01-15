@@ -51,6 +51,7 @@ Dispatch
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
+    void (*impl_TakeScreenshot)(ScreenShotCallback);
 
     const RenderDeviceCaps& (*impl_DeviceCaps)();
 
