@@ -616,6 +616,18 @@ void Scene::AddCamera(Camera * camera)
 	}
 }
 
+bool Scene::RemoveCamera(Camera *c)
+{
+    const auto &it = std::find(cameras.begin(), cameras.end(), c);
+    if (it != cameras.end())
+    {
+        SafeRelease(*it);
+        cameras.erase(it);
+        return true;
+    }
+    return false;
+}
+
 Camera * Scene::GetCamera(int32 n)
 {
 	if (n >= 0 && n < (int32)cameras.size())
