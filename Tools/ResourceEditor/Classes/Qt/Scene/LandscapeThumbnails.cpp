@@ -39,13 +39,12 @@ using namespace DAVA;
 
 namespace
 {
-class TemporaryFlagsDisabler
+class MaterialFlagsDisabler
 {
 public:
-    TemporaryFlagsDisabler(NMaterial* material_, const DAVA::Vector<FastName>& flagNames)
-        : material(material_)
+    MaterialFlagsDisabler(NMaterial* material_, const DAVA::Vector<FastName>& flagNames)
+        : material(material_->Clone())
     {
-        DVASSERT(material != nullptr);
         flagsInfo.reserve(flagNames.size());
         for (const FastName& flagName : flagNames)
         {
@@ -68,21 +67,33 @@ public:
         material->PreBuildMaterial(DAVA::PASS_FORWARD);
     }
 
-    ~TemporaryFlagsDisabler()
+    MaterialFlagsDisabler(const MaterialFlagsDisabler& other)
     {
-        for (const FlagInfo& info : flagsInfo)
+        *this = other;
+    }
+
+    MaterialFlagsDisabler& operator=(const MaterialFlagsDisabler& other)
+    {
+        if (this != &other)
         {
-            if (info.hasFlag)
-            {
-                material->SetFlag(info.flagName, info.oldValue);
-            }
-            else
-            {
-                material->RemoveFlag(info.flagName);
-            }
+            material = SafeRetain(other.material);
+            flagsInfo = other.flagsInfo;
         }
 
-        material->PreBuildMaterial(DAVA::PASS_FORWARD);
+        return *this;
+    }
+
+    MaterialFlagsDisabler(MaterialFlagsDisabler&& other) = delete;
+    MaterialFlagsDisabler& operator==(MaterialFlagsDisabler&& other) = delete;
+
+    ~MaterialFlagsDisabler()
+    {
+        SafeRelease(material);
+    }
+
+    NMaterial* GetMaterial() const
+    {
+        return material;
     }
 
 private:
@@ -103,7 +114,7 @@ struct ThumbnailRequest
     Landscape* landscape = nullptr;
     Texture* texture = nullptr;
     LandscapeThumbnails::Callback callback;
-    TemporaryFlagsDisabler flagsDisabler;
+    MaterialFlagsDisabler flagsDisabler;
 
     ThumbnailRequest(rhi::HSyncObject so, Landscape* l, const DAVA::Vector<FastName>& flagsToDisable, Texture* tex, LandscapeThumbnails::Callback cb)
         : syncObject(so)
@@ -176,12 +187,14 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     renderData->SetIndex(5, 3);
     renderData->BuildBuffers();
 
+    NMaterial* landscapeMaterialForThumbnail = nullptr;
     rhi::HSyncObject syncObject = rhi::CreateSyncObject();
     Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
     {
         DAVA::Vector<FastName> flagsToDisable{ NMaterialFlagName::FLAG_VERTEXFOG };
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
         requests.list.emplace_back(syncObject, landscape, flagsToDisable, texture, handler);
+        landscapeMaterialForThumbnail = SafeRetain(requests.list.back().flagsDisabler.GetMaterial());
     }
     RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
@@ -202,7 +215,9 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     packet.primitiveCount = GetPrimitiveCount(renderData->indexCount, renderData->primitiveType);
     packet.vertexLayoutUID = renderData->vertexLayoutId;
 
-    landscape->GetMaterial()->BindParams(packet);
+    DVASSERT(landscapeMaterialForThumbnail != nullptr);
+    landscapeMaterialForThumbnail->BindParams(packet);
+    SafeRelease(landscapeMaterialForThumbnail);
 
     rhi::RenderPassConfig passDesc = {};
     passDesc.colorBuffer[0].texture = texture->handle;
