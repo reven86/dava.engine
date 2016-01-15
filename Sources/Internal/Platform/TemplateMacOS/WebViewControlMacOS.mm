@@ -31,8 +31,9 @@
 #include "Base/Platform.h"
 #if defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
 
-#include "WebViewControlMacOS.h"
-#include "MainWindowController.h"
+#include "Platform/TemplateMacOS/WebViewControlMacOS.h"
+#include "Platform/TemplateMacOS/MainWindowController.h"
+#include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 
 #import <WebKit/WebKit.h>
 #import <AppKit/NSWorkspace.h>
@@ -71,7 +72,7 @@ using namespace DAVA;
 #endif
 {
 	IUIWebViewDelegate* delegate;
-    DAVA::UIWebView* webView;
+    UIWebView* webView;
     WebViewControl* webViewControl;
 }
 
@@ -159,8 +160,8 @@ using namespace DAVA;
     }
 }
 
-- (void)setDelegate:(DAVA::IUIWebViewDelegate *)d
-         andWebView:(DAVA::UIWebView *)w
+- (void)setDelegate:(IUIWebViewDelegate *)d
+         andWebView:(UIWebView *)w
 {
 	if (d && w)
 	{
@@ -173,7 +174,7 @@ using namespace DAVA;
 {
     if (delegate)
     {
-        delegate->OnExecuteJScript(webView, DAVA::String([result UTF8String]));
+        delegate->OnExecuteJScript(webView, String([result UTF8String]));
     }
 }
 
@@ -191,7 +192,7 @@ using namespace DAVA;
 
 @end
 
-WebViewControl::WebViewControl(DAVA::UIWebView& ptr) :
+WebViewControl::WebViewControl(UIWebView& ptr) :
     webImageCachePtr(0),
     uiWebViewControl(ptr),
     isRenderToTexture(false),
@@ -223,10 +224,16 @@ WebViewControl::WebViewControl(DAVA::UIWebView& ptr) :
 
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
+    
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 }
 
 WebViewControl::~WebViewControl()
 {
+    CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
+    xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
+    
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
    [imageRep release];
     webImageCachePtr = 0;
@@ -249,7 +256,7 @@ WebViewControl::~WebViewControl()
     webViewDelegatePtr = 0;
 }
 
-void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)
+void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
 {
 	WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
 	[w setDelegate:delegate andWebView:webView];
@@ -348,15 +355,7 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
     
     if (!isRenderToTexture)
     {
-        if (isVisible)
-        {
-            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-            [openGLView addSubview:(WebView*)webViewPtr];
-        }
-        else
-        {
-            [(WebView*)webViewPtr removeFromSuperview];
-        }
+        SetNativeVisible(isVisible);
     }
 }
 
@@ -392,7 +391,7 @@ void WebViewControl::SetRenderToTexture(bool value)
 }
 
 void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
-                                        DAVA::UIWebView& uiWebViewControl)
+                                        UIWebView& uiWebViewControl)
 {
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)GetImageCache();
     DVASSERT(imageRep);
@@ -458,7 +457,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
         
         {
             Texture* tex = Texture::CreateFromData(imageRGB, false);
-            const DAVA::Rect& rect = uiWebViewControl.GetRect();
+            const Rect& rect = uiWebViewControl.GetRect();
             {
                 Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, w, h, rect.dx, rect.dy);
                 
@@ -492,6 +491,27 @@ void WebViewControl::SetImageCache(void* ptr)
 void* WebViewControl::GetImageCache() const
 {
     return webImageCachePtr;
+}
+
+void WebViewControl::SetNativeVisible(bool visible)
+{
+    if (visible)
+    {
+        NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+        [openGLView addSubview:(WebView*)webViewPtr];
+    }
+    else
+    {
+        [(WebView*)webViewPtr removeFromSuperview];
+    }
+}
+
+void WebViewControl::OnAppMinimizedRestored(bool minimized)
+{
+    if (isVisible)
+    {
+        SetNativeVisible(!minimized);
+    }
 }
 
 #endif //defined __DAVAENGINE_MACOS__ && !defined __DISABLE_NATIVE_WEBVIEW__
