@@ -92,8 +92,8 @@ inline DeferredScreenMetricEvents::DeferredScreenMetricEvents(bool isPhoneApi, U
 
 inline void DeferredScreenMetricEvents::SetWindowMinimumSize(float32 minWidth, float32 minHeight)
 {
-    minWindowWidth = static_cast<float32>(minWidth);
-    minWindowHeight = static_cast<float32>(minHeight);
+    minWindowWidth = minWidth;
+    minWindowHeight = minHeight;
 }
 
 inline Vector2 DeferredScreenMetricEvents::GetWindowMinimumSize() const
