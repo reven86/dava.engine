@@ -289,8 +289,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
     lifeTimeLine = new TimeLineWidget(this);
     InitWidget(lifeTimeLine);
-	numberTimeLine = new TimeLineWidget(this);
-	InitWidget(numberTimeLine);
+    numberTimeLine = new TimeLineWidget(this);
+    InitWidget(numberTimeLine);
 	sizeTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeTimeLine);
 	sizeVariationTimeLine = new TimeLineWidget(this);

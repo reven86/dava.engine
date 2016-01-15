@@ -135,13 +135,13 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
     switch ( event->phase )
     {
     case UIEvent::Phase::KEY_DOWN:
-        if ( DVKEY_BACKSPACE == event->tid )
+        if (Key::BACKSPACE == event->key)
         {
             RemoveLastPoint();
             previewEnabled = true;
             CalcPreviewPoint( point, true );
         }
-        else if ( DVKEY_ESCAPE == event->tid )
+        else if (Key::ESCAPE == event->key)
         {
             previewEnabled = false;
         }
@@ -157,9 +157,9 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
         break;
 
     case UIEvent::Phase::ENDED:
-        if ( event->tid == UIEvent::BUTTON_1 && isIntersectsLandscape )
+        if (event->mouseButton == UIEvent::MouseButton::LEFT && isIntersectsLandscape)
         {
-            if ( IsKeyModificatorPressed( DVKEY_SHIFT ) )
+            if (IsKeyModificatorPressed(Key::LSHIFT))
             {
                 SetStartPoint(point);
             }

@@ -152,14 +152,14 @@ void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title
     }
 }
 
-bool IsKeyModificatorPressed(int32 key)
+bool IsKeyModificatorPressed(Key key)
 {
 	return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
 }
 
 bool IsKeyModificatorsPressed()
 {
-	return (IsKeyModificatorPressed(DVKEY_SHIFT) || IsKeyModificatorPressed(DVKEY_CTRL) || IsKeyModificatorPressed(DVKEY_ALT));
+    return (IsKeyModificatorPressed(Key::LSHIFT) || IsKeyModificatorPressed(Key::LCTRL) || IsKeyModificatorPressed(Key::LALT));
 }
 
 QColor ColorToQColor(const DAVA::Color& color)

@@ -376,8 +376,8 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
         ui->labelOriginalFormat->setText(tmp);
     }
     else
-	{
-		ui->labelOriginalFormat->setText("");
+    {
+        ui->labelOriginalFormat->setText("");
 	}
 }
 
