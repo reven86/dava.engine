@@ -25,9 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
-
-#include "Platform/DeviceInfo.h"
+#import "Platform/Reachability.h"
 
 #ifdef __DAVAENGINE_MACOS__
 
@@ -44,6 +42,7 @@
 #import <AppKit/NSScreen.h>
 #include "Utils/StringFormat.h"
 #include "OpenUDIDMacOS.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -181,13 +180,43 @@ int32 DeviceInfoPrivate::GetZBufferSize()
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-    return GPU_INVALID;
+    return GPU_POWERVR_IOS;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
-    // For now return default network info for MacOS.
-    return DeviceInfo::NetworkInfo();
+    static const struct
+    {
+        NetworkStatus platformNetworkStatus;
+        DeviceInfo::eNetworkType internalNetworkType;
+    } networkStatusMap[] =
+    {
+      { NotReachable, DeviceInfo::NETWORK_TYPE_NOT_CONNECTED },
+      { ReachableViaWiFi, DeviceInfo::NETWORK_TYPE_WIFI },
+      { ReachableViaWWAN, DeviceInfo::NETWORK_TYPE_CELLULAR }
+    };
+
+    DeviceInfo::NetworkInfo networkInfo;
+
+    Reachability* reachability = [Reachability reachabilityForInternetConnection];
+    [reachability startNotifier];
+
+    NetworkStatus networkStatus = [reachability currentReachabilityStatus];
+
+    uint32 networkStatusMapCount = COUNT_OF(networkStatusMap);
+    for (uint32 i = 0; i < networkStatusMapCount; i++)
+    {
+        if (networkStatusMap[i].platformNetworkStatus == networkStatus)
+        {
+            networkInfo.networkType = networkStatusMap[i].internalNetworkType;
+            break;
+        }
+    }
+
+    [reachability stopNotifier];
+
+    // No way to determine signal strength under iOS.
+    return networkInfo;
 }
 
 List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
@@ -215,7 +244,6 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 
 bool DeviceInfoPrivate::IsTouchPresented()
 {
-    //TODO: remove this empty realization and implement detection touch
     return false;
 }
 }
