@@ -119,6 +119,9 @@ void CorePlatformAndroid::QuitAction()
     FrameworkWillTerminate();
 
     Logger::Debug("[CorePlatformAndroid::QuitAction] out");
+
+    Logger::Debug("[CorePlatformAndroid::QuitAction] Kill process");
+    exit(0);
 }
 
 void CorePlatformAndroid::ProcessFrame()

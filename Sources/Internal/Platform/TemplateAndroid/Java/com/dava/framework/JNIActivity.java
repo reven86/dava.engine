@@ -497,8 +497,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         super.onDestroy();
 
-        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] out and finish application...");
-        finishActivity();
+        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] out");
     }
     
     @Override
@@ -744,11 +743,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             @Override
             public void run() {
                 activity.finish();
-
-                Log.d(JNIConst.LOG_TAG, "Calling System.exit(0)...");
-                System.exit(0);
             }
         });
+        
         // try NOT to block this GLThread because sometime Main thread
         // can block and waiting for GLThread
         Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] out");
