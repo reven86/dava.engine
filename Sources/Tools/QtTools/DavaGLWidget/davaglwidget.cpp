@@ -235,10 +235,10 @@ void DavaGLWidget::OnResize()
     }
 }
 
-namespace
+namespace DAVAGLWidget_namespace
 {
 //there is a bug in Qt: https://bugreports.qt.io/browse/QTBUG-50465
-void ForceUpdateCurrentScreen(DavaGLWidget* davaGLWidget)
+void Kostil_ForceUpdateCurrentScreen(DavaGLWidget* davaGLWidget)
 {
     auto desktop = qApp->desktop();
     int screenNumber = desktop->screenNumber(davaGLWidget);
@@ -257,7 +257,7 @@ void DavaGLWidget::OnSync()
 {
     if (nullptr == renderer)
     {
-        ForceUpdateCurrentScreen(this);
+        DAVAGLWidget_namespace::Kostil_ForceUpdateCurrentScreen(this);
 
         renderer = new DavaRenderer();
         OnResize();
