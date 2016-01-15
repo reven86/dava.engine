@@ -235,21 +235,29 @@ void DavaGLWidget::OnResize()
     }
 }
 
+namespace
+{
+//there is a bug in Qt: https://bugreports.qt.io/browse/QTBUG-50465
+void ForceUpdateCurrentScreen(DavaGLWidget* davaGLWidget)
+{
+    auto desktop = qApp->desktop();
+    int screenNumber = desktop->screenNumber(davaGLWidget);
+    DVASSERT(screenNumber >= 0 && screenNumber < qApp->screens().size());
+
+    QWindow* parent = davaGLWidget->GetGLView();
+    while (parent->parent() != nullptr)
+    {
+        parent = parent->parent();
+    }
+    parent->setScreen(qApp->screens().at(screenNumber));
+}
+} //unnamed namespace
+
 void DavaGLWidget::OnSync()
 {
     if (nullptr == renderer)
     {
-        auto desktop = qApp->desktop();
-        int screenNumber = desktop->screenNumber(this);
-        DVASSERT(screenNumber >= 0 && screenNumber < qApp->screens().size());
-        
-        //qt detect current screen as main screen
-        QWindow *parent = davaGLView;
-        while(parent->parent() != nullptr)
-        {
-            parent = parent->parent();
-        }
-        parent->setScreen(qApp->screens().at(screenNumber));
+        ForceUpdateCurrentScreen(this);
 
         renderer = new DavaRenderer();
         OnResize();
