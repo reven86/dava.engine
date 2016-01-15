@@ -192,6 +192,17 @@ namespace DAVA
     [self OnResume];
 }
 
+- (void)windowDidBecomeKey:(NSNotification *)notification
+{
+    Core::Instance()->FocusReceived();
+}
+
+- (void)windowDidResignKey:(NSNotification *)notification
+{
+    Core::Instance()->FocusLost();
+    InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+}
+
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
     fullScreen = true;
@@ -225,7 +236,7 @@ namespace DAVA
         else
         {
             // fullscreen for older macOS isn't supperted
-            DVASSERT_MSG(false, "Fullscreen isn't supperted for this MacOS version");
+            DVASSERT_MSG(false, "Fullscreen isn't supported for this MacOS version");
             return NO;
         }
     }
@@ -360,18 +371,20 @@ namespace DAVA
 	[self createWindows];
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
 
-    float32 userScale = DAVA::Core::Instance()->GetScreenScaleMultiplier();
+    float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
 
-    NSRect backingRect = [openGLView convertRectToBacking:[openGLView frame]];
+    NSSize windowsSize =[openGLView frame].size;
+    NSSize surfaceSize = [openGLView convertSizeToBacking:windowsSize];
+    
     DAVA::CoreMacOSPlatform* macCore = (DAVA::CoreMacOSPlatform*)Core::Instance();
     macCore->rendererParams.window = mainWindowController->openGLView;
-    macCore->rendererParams.width = backingRect.size.width;
-    macCore->rendererParams.height = backingRect.size.height;
+    macCore->rendererParams.width = surfaceSize.width;
+    macCore->rendererParams.height = surfaceSize.height;
     macCore->rendererParams.scaleX = userScale;
     macCore->rendererParams.scaleY = userScale;
 
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(backingRect.size.width, backingRect.size.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingRect.size.width * userScale, backingRect.size.height * userScale);
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowsSize.width, windowsSize.height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
 
     Core::Instance()->SystemAppStarted();
 }

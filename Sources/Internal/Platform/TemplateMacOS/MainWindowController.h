@@ -52,6 +52,9 @@
 - (void)windowDidEnterFullScreen:(NSNotification *)notification;
 - (void)windowDidExitFullScreen:(NSNotification *)notification;
 
+- (void)windowDidBecomeKey:(NSNotification *)notification;
+- (void)windowDidResignKey:(NSNotification *)notification;
+
 - (void)OnSuspend;
 - (void)OnResume;
 

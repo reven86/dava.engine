@@ -76,10 +76,6 @@ extern void FrameworkMain(int argc, char *argv[]);
     NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", (unsigned)rendererID);
 	
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-	if (self)
-	{
-
-	}
 	trackingArea = nil;
 	[self enableTrackingArea];
 	isFirstDraw = true;
@@ -153,20 +149,20 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
     if(Renderer::IsInitialized())
     {
-        NSRect rect = self.frame;
-        NSRect backingRect = [self convertRectToBacking:rect];
-        
-        float32 userScale = DAVA::Core::Instance()->GetScreenScaleMultiplier();
-        
+        NSSize windowSize = self.frame.size;
+        NSSize surfaceSize = [self convertRectToBacking:self.frame].size;
+    
+        float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
+
         rhi::ResetParam params;
-        params.width = backingRect.size.width;
-        params.height = backingRect.size.height;
+        params.width = surfaceSize.width;
+        params.height = surfaceSize.height;
         params.scaleX = userScale;
         params.scaleY = userScale;
         Renderer::Reset(params);
         
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(backingRect.size.width, backingRect.size.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingRect.size.width * userScale, backingRect.size.height * userScale);
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
         UIScreenManager::Instance()->ScreenSizeChanged();
     }
@@ -221,7 +217,7 @@ static Vector<DAVA::UIEvent> activeTouches;
 
 void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
-    NSPoint p = [glview convertPointToBacking:[curEvent locationInWindow]];
+    NSPoint p = [curEvent locationInWindow];
 
     if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
@@ -233,12 +229,12 @@ void ConvertNSEventToUIEvent(NSOpenGLView *glview, NSEvent* curEvent, UIEvent& e
     else
     {
         event.physPoint.x = p.x;
-        event.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
+        event.physPoint.y = [glview frame].size.height - p.y;
         
         event.tapCount = curEvent.clickCount;
     }
     event.timestamp = curEvent.timestamp;
-    event.phase = phase;    
+    event.phase = phase;
 }
 
 - (void)moveTouchsToVector:(UIEvent::Phase)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
