@@ -433,7 +433,7 @@ void VisibilityCheckRenderer::RenderCurrentOverlayTexture(DAVA::RenderSystem* re
     auto rs2d = DAVA::RenderSystem2D::Instance();
     DAVA::float32 width = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferWidth());
     DAVA::float32 height = static_cast<DAVA::float32>(DAVA::Renderer::GetFramebufferHeight());
-    DAVA::Rect dstRect(0.0f, height, width, -height);
+    DAVA::Rect dstRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(DAVA::Rect(0.0f, height, width, -height));
 
     if (frameFixed)
     {

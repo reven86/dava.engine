@@ -83,7 +83,7 @@ private:
     };
 
     static const DAVA::uint32 CUBEMAPS_COUNT = 4;
-    static const DAVA::uint32 CUBEMAP_SIZE = 512;
+    static const DAVA::uint32 CUBEMAP_SIZE = 1024;
 
 private:
     EntityMap entitiesWithVisibilityComponent;
