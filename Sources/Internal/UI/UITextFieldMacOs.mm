@@ -36,6 +36,7 @@
 #include <AppKit/NSColor.h>
 #include <AppKit/NSText.h>
 #include <AppKit/NSFont.h>
+#include <AppKit/NSSecureTextField.h>
 #include "Utils/UTF8Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -112,6 +113,9 @@ public:
 
     virtual void SetMultiline(bool value) = 0;
     virtual bool IsMultiline() const = 0;
+
+    virtual void SetIsPassword(bool value) = 0;
+    virtual bool IsPassword() const = 0;
 
     // Max text length.
     virtual void SetMaxLength(int maxLength) = 0;
@@ -194,6 +198,8 @@ public:
     }
     void UpdateRect(const Rect& rect) override
     {
+        currentRect = rect;
+
         float32 divider = Core::Instance()->GetScreenScaleFactor();
 
         Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
@@ -213,6 +219,8 @@ public:
 
     void SetTextColor(const DAVA::Color& color) override
     {
+        currentColor = color;
+
         NSColor* nsColor = [NSColor
         colorWithCalibratedRed:color.r
                          green:color.g
@@ -227,6 +235,8 @@ public:
     }
     void SetFontSize(float virtualFontSize) override
     {
+        currentFontSize = virtualFontSize;
+
         // like in win10
         float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
         size /= Core::Instance()->GetScreenScaleFactor();
@@ -236,6 +246,8 @@ public:
 
     void SetTextAlign(DAVA::int32 align) override
     {
+        alignment = static_cast<eAlign>(align);
+
         NSTextAlignment aligment = NSCenterTextAlignment;
         if (align & ALIGN_LEFT)
         {
@@ -256,7 +268,6 @@ public:
         {
             [nsTextField setAlignment:NSNaturalTextAlignment];
         }
-        alignment = static_cast<eAlign>(align);
     }
     DAVA::int32 GetTextAlign() override
     {
@@ -343,6 +354,39 @@ public:
         return multiline;
     }
 
+    void SetIsPassword(bool value) override
+    {
+        if (IsPassword() != value)
+        {
+            WideString oldText;
+            GetText(oldText);
+
+            NSTextField* oldCtrl = nsTextField;
+            if (value)
+            {
+                nsTextField = [[NSSecureTextField alloc] initWithFrame:[oldCtrl frame]];
+            }
+            else
+            {
+                nsTextField = [[NSTextField alloc] initWithFrame:[oldCtrl frame]];
+            }
+
+            // copy all current properties
+            SetFontSize(currentFontSize);
+            SetTextColor(currentColor);
+            SetText(oldText);
+            SetTextUseRtlAlign(useRtlAlign);
+            SetTextAlign(alignment);
+
+            [oldCtrl removeFromSuperview];
+            [oldCtrl release];
+        }
+    }
+    bool IsPassword() const override
+    {
+        return [nsTextField isKindOfClass:[NSSecureTextField class]];
+    }
+
     // Max text length.
     void SetMaxLength(int maxLength) override
     {
@@ -363,6 +407,11 @@ public:
     NSTextField* nsTextField = nullptr;
     SingleLineDelegate* objcDelegate = nullptr;
     CustomTextFieldFormatter* formatter = nullptr;
+
+    Rect currentRect;
+    Color currentColor;
+    float32 currentFontSize = 0.f;
+
     eAlign alignment = ALIGN_LEFT;
     bool useRtlAlign = false;
     bool multiline = false;
@@ -478,8 +527,7 @@ void TextFieldPlatformImpl::HideField()
 
 void TextFieldPlatformImpl::SetIsPassword(bool isPassword)
 {
-    // TODO
-    Logger::Error("SetIsPassword not implemented");
+    uberText->SetIsPassword(isPassword);
 }
 
 void TextFieldPlatformImpl::SetInputEnabled(bool value)
