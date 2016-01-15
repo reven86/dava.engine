@@ -93,6 +93,8 @@ namespace DAVA
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
+
+- (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height;
 @end
 
 @implementation MainWindowController
@@ -114,6 +116,20 @@ namespace DAVA
 		// mouseLocation.y = 
 		return mouseLocation;
 	}
+    
+    void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
+    {
+        DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+        minWindowWidth = width;
+        minWindowHeight = height;
+
+        [mainWindowController setMinimumWindowSize: minWindowWidth height: minWindowHeight];
+    }
+    
+    Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
+    {
+        return Vector2(minWindowWidth, minWindowHeight);
+    }
 }
 
 - (id)init
@@ -149,6 +165,8 @@ namespace DAVA
     int32 width = 800;
     int32 height = 600;
 
+    float32 minWidth = 0.0f;
+    float32 minHeight = 0.0f;
     KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
     if(nullptr != options)
     {
@@ -158,6 +176,8 @@ namespace DAVA
             width = options->GetInt32("width");
             height = options->GetInt32("height");
         }
+        minWidth = static_cast<float32>(options->GetInt32("min-width", 0));
+        minHeight = static_cast<float32>(options->GetInt32("min-height", 0));
     }
     
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
@@ -168,6 +188,13 @@ namespace DAVA
     [mainWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [mainWindow setDelegate:self];
     [mainWindow setContentView: openGLView];
+    
+    if (minWidth > 0 && minHeight > 0)
+    {
+        // Call Core::SetWindowMinimumSize to save minimum width and height and limit window size
+        // Such a strange way due to my little knowledge of Objective-C
+        Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
+    }
     
     NSRect rect;
     rect.origin.x = 0;
@@ -197,6 +224,11 @@ namespace DAVA
     [mainWindow makeKeyAndOrderFront:nil];
     [mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
     [mainWindow setAcceptsMouseMovedEvents:YES];
+}
+
+-(void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height
+{
+    mainWindow.contentMinSize = NSMakeSize(width, height);
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification

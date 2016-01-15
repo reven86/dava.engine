@@ -44,7 +44,14 @@ public:
     void Quit() override;
 
     virtual Vector2 GetMousePosition();
-};	
+    
+    void SetWindowMinimumSize(float32 width, float32 height) override;
+    Vector2 GetWindowMinimumSize() const override;
+    
+private:
+    float32 minWindowWidth = 0.0f;
+    float32 minWindowHeight = 0.0f;
+};
 
 };
 
