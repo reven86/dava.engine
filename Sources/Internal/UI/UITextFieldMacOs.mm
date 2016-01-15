@@ -110,6 +110,9 @@ public:
     virtual uint32 GetCursorPos() = 0;
     virtual void SetCursorPos(uint32 pos) = 0;
 
+    virtual void SetMultiline(bool value) = 0;
+    virtual bool IsMultiline() const = 0;
+
     // Max text length.
     virtual void SetMaxLength(int maxLength) = 0;
 
@@ -331,6 +334,15 @@ public:
         }
     }
 
+    void SetMultiline(bool value) override
+    {
+        multiline = value;
+    }
+    bool IsMultiline() const override
+    {
+        return multiline;
+    }
+
     // Max text length.
     void SetMaxLength(int maxLength) override
     {
@@ -353,6 +365,7 @@ public:
     CustomTextFieldFormatter* formatter = nullptr;
     eAlign alignment = ALIGN_LEFT;
     bool useRtlAlign = false;
+    bool multiline = false;
 };
 
 class UberTextMacOs
@@ -520,8 +533,7 @@ void TextFieldPlatformImpl::SetMaxLength(int maxLength)
 }
 void TextFieldPlatformImpl::SetMultiline(bool multiline)
 {
-    // TODO
-    Logger::Error("SetMultiline not implemented");
+    uberText->SetMultiline(multiline);
 }
 
 void TextFieldPlatformImpl::SetRenderToTexture(bool value)
@@ -560,20 +572,34 @@ void TextFieldPlatformImpl::SystemDraw(const UIGeometricData& geometricData)
 - (BOOL)control:(NSControl*)control
 textShouldBeginEditing:(NSText*)fieldEditor
 {
-    DAVA::Logger::Info("textShouldBeginEditing");
     return YES;
 }
 
 - (BOOL)control:(NSControl*)control
 textShouldEndEditing:(NSText*)fieldEditor
 {
-    DAVA::Logger::Info("textShouldEndEditing");
     return YES;
 }
 
 - (void)controlTextDidChange:(NSNotification*)aNotification
 {
-    DAVA::Logger::Info("controlTextDidChange");
+}
+
+// https://developer.apple.com/library/mac/qa/qa1454/_index.html
+- (BOOL)control:(NSControl*)control
+           textView:(NSTextView*)textView
+doCommandBySelector:(SEL)commandSelector
+{
+    BOOL result = NO;
+
+    if (text->IsMultiline() && commandSelector == @selector(insertNewline:))
+    {
+        // new line action:
+        // always insert a line-break character and dont cause the receiver to end editing
+        [textView insertNewlineIgnoringFieldEditor:self];
+        result = YES;
+    }
+    return result;
 }
 
 @end
