@@ -450,11 +450,11 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         SetPivotPoint(_pivot);
     }
 
-	const YamlNode *lodsNode = node->Get("activeLODS");
-	if (lodsNode)
-	{
-		const Vector<YamlNode*> & vec = lodsNode->AsVector();
-		for (uint32 i=0; i<(uint32)vec.size(); ++i)
+    const YamlNode* lodsNode = node->Get("activeLODS");
+    if (lodsNode)
+    {
+        const Vector<YamlNode*>& vec = lodsNode->AsVector();
+        for (uint32 i=0; i<(uint32)vec.size(); ++i)
 			SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
 	}
 
@@ -661,15 +661,15 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     if (deltaTimeNode)
         deltaTime = deltaTimeNode->AsFloat();
 
-    const YamlNode * deltaVariationNode = node->Get("deltaVariation");
-	if (deltaVariationNode)
-		deltaVariation = deltaVariationNode->AsFloat();
-		
-	const YamlNode * loopVariationNode = node->Get("loopVariation");
-	if (loopVariationNode)
-		loopVariation = loopVariationNode->AsFloat();
-		
-	const YamlNode * loopEndTimeNode = node->Get("loopEndTime");
+    const YamlNode* deltaVariationNode = node->Get("deltaVariation");
+    if (deltaVariationNode)
+        deltaVariation = deltaVariationNode->AsFloat();
+
+    const YamlNode* loopVariationNode = node->Get("loopVariation");
+    if (loopVariationNode)
+        loopVariation = loopVariationNode->AsFloat();
+
+    const YamlNode * loopEndTimeNode = node->Get("loopEndTime");
 	if (loopEndTimeNode)
 		loopEndTime = loopEndTimeNode->AsFloat();				
 

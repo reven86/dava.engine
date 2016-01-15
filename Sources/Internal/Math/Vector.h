@@ -275,10 +275,9 @@ public:
 	inline Vector4();
 	inline Vector4(float32 _x, float32 _y, float32 _z, float32 _w);
 	inline Vector4(const float32 *_data);
-    inline Vector4(const Vector3& xyz, float32 _w);
-    explicit inline Vector4(const Vector3 & v);
-	inline Vector4 & operator =(const Vector4 & _v);
-	inline Vector4 & operator =(const Vector3 & _v);
+    explicit inline Vector4(const Vector3& v);
+    inline Vector4& operator=(const Vector4& _v);
+    inline Vector4 & operator =(const Vector3 & _v);
 
     //! Get operators
     float32& operator[](eAxis axis);
@@ -308,9 +307,6 @@ public:
     //! Comparison operators
     inline bool operator==(const Vector4& _v) const;
     inline bool operator!=(const Vector4& _v) const;
-
-    inline Vector3& GetVector3();
-    inline const Vector3& GetVector3() const;
 };
 
 //! operators
@@ -900,14 +896,6 @@ inline Vector4::Vector4(const float32 *_data)
 	data[3] = _data[3];
 }
 
-inline Vector4::Vector4(const Vector3& xyz, float32 _w)
-    : x(xyz.x)
-    , y(xyz.y)
-    , z(xyz.z)
-    , w(_w)
-{
-}
-
 inline Vector4::Vector4(const Vector3 & v)
 {
 	x = v.x;
@@ -1058,15 +1046,6 @@ inline bool Vector4::operator != (const Vector4 & _v) const
 	return ((x != _v.x) || (y != _v.y) || (z != _v.z) || (w != _v.w));
 }
 
-inline const Vector3& Vector4::GetVector3() const
-{
-    return *(reinterpret_cast<const Vector3*>(data));
-}
-
-inline Vector3& Vector4::GetVector3()
-{
-    return *(reinterpret_cast<Vector3*>(data));
-}
 
 //! operators
 inline Vector4 operator - (const Vector4 & _v1, const Vector4 & _v2)

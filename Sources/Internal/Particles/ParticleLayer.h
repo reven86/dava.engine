@@ -145,16 +145,15 @@ struct ParticleLayer : public BaseObject
     Vector<ParticleForce*> forces;
 
     RefPtr<PropertyLine<float32>> spin; // spin of angle / second
-    RefPtr< PropertyLine<float32> > spinVariation;
-	RefPtr< PropertyLine<float32> > spinOverLife;
-	bool randomSpinDirection;
-		
-	
-	RefPtr< PropertyLine<Color> > colorRandom;		
-	RefPtr< PropertyLine<float32> > alphaOverLife;	
-	RefPtr< PropertyLine<Color> > colorOverLife;	
+    RefPtr<PropertyLine<float32>> spinVariation;
+    RefPtr<PropertyLine<float32>> spinOverLife;
+    bool randomSpinDirection;
 
-	RefPtr< PropertyLine<float32> > angle;				// sprite angle in degrees
+    RefPtr<PropertyLine<Color>> colorRandom;
+    RefPtr<PropertyLine<float32>> alphaOverLife;
+    RefPtr<PropertyLine<Color>> colorOverLife;
+
+    RefPtr< PropertyLine<float32> > angle;				// sprite angle in degrees
 	RefPtr< PropertyLine<float32> > angleVariation;		// variations in degrees
 
 	RefPtr< PropertyLine<float32> > animSpeedOverLife;	

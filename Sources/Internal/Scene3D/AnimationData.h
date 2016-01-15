@@ -60,14 +60,14 @@ public:
 	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
 
 	AnimationData* Clone() const;
-    
-    void BakeTransform(const Matrix4 & transform);
 
-	float32 duration;
-	
-	DAVA::Vector< SceneNodeAnimationKey > keys;
+    void BakeTransform(const Matrix4& transform);
 
-	Matrix4 invPose;
+    float32 duration;
+
+    DAVA::Vector<SceneNodeAnimationKey> keys;
+
+    Matrix4 invPose;
 };
 	
 inline float32 AnimationData::GetDuration() const

@@ -84,8 +84,8 @@ namespace DAVA
 		}
 		else
 		{
-            Logger::Error("[XMLParser::ParseFile] can't create file %s", fileName.GetStringValue().c_str());
-		}
+            Logger::Error("[XMLParser::ParseFile] can't Open file %s for read", fileName.GetStringValue().c_str());
+        }
 
 //		Logger::FrameworkDebug("[XMLParser::ParseFile] retValue = %d", retValue);
 		return retValue;

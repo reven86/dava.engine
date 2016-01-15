@@ -94,7 +94,6 @@ public:
         numChar = 0;
         numCharRepeat = 0;
         lastChar = L'\0';
-        lastKey = 0;
 
         numMouseEvents = 0;
         numDrag = 0;
@@ -151,7 +150,7 @@ private:
         DVASSERT(event->device == UIEvent::Device::GAMEPAD);
         DVASSERT(event->phase == UIEvent::Phase::JOYSTICK);
 
-        switch (event->tid)
+        switch (event->element)
         {
         case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_A:
             UpdateGamepadElement("button_a", event->point.x == 1);
@@ -197,6 +196,8 @@ private:
             UpdateGamepadElement("button_up", event->point.x > 0);
             UpdateGamepadElement("button_down", event->point.x < 0);
             break;
+        default:
+            Logger::Error("not handled gamepad input event element: %d", event->element);
         }
     }
 
@@ -218,7 +219,7 @@ private:
                 ++numMouseDown;
                 lastMouseX = static_cast<int32>(currentInput->point.x);
                 lastMouseY = static_cast<int32>(currentInput->point.y);
-                lastMouseKey = currentInput->tid;
+                lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
             }
             if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
             {
@@ -230,7 +231,7 @@ private:
                 {
                     it->isActive = true;
                     it->img->SetPosition(currentInput->point);
-                    it->index = currentInput->tid;
+                    it->index = currentInput->touchId;
                 }
             }
             break;
@@ -243,7 +244,7 @@ private:
             }
             if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
             {
-                int32 index = currentInput->tid;
+                int32 index = currentInput->touchId;
                 auto FindTouchById = [index](::Finger& t) {
                     return index == t.index;
                 };
@@ -264,11 +265,11 @@ private:
                 ++numMouseUp;
                 lastMouseX = static_cast<int32>(currentInput->point.x);
                 lastMouseY = static_cast<int32>(currentInput->point.y);
-                lastMouseKey = currentInput->tid;
+                lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
             }
             if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
             {
-                int32 index = currentInput->tid;
+                int32 index = currentInput->touchId;
                 auto FindTouchById = [index](::Finger& t) {
                     return index == t.index;
                 };
@@ -288,17 +289,17 @@ private:
             ++numMouseMove;
             lastMouseX = static_cast<int32>(currentInput->point.x);
             lastMouseY = static_cast<int32>(currentInput->point.y);
-            lastMouseKey = currentInput->tid;
+            lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
             break;
         case UIEvent::Phase::WHEEL: //!<Mouse wheel event. MacOS & Win32 only
             ++numMouseWheel;
-            lastWheel = currentInput->physPoint.y;
+            lastWheel = currentInput->wheelDelta.y;
             break;
         case UIEvent::Phase::CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
             ++numMouseCancel;
             if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
             {
-                int32 index = currentInput->tid;
+                int32 index = currentInput->touchId;
                 auto FindTouchById = [index](::Finger& t) {
                     return index == t.index;
                 };
@@ -316,35 +317,35 @@ private:
             break;
         case UIEvent::Phase::CHAR:
             ++numChar;
-            lastChar = currentInput->keyChar;
+            lastChar = static_cast<wchar_t>(currentInput->keyChar);
             break;
         case UIEvent::Phase::CHAR_REPEAT:
             ++numCharRepeat;
             break;
         case UIEvent::Phase::KEY_DOWN:
             ++numKeyDown;
-            lastKey = currentInput->tid;
+            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
             break;
         case UIEvent::Phase::KEY_DOWN_REPEAT:
             ++numKeyDownRepeat;
-            lastKey = currentInput->tid;
+            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
             break;
         case UIEvent::Phase::KEY_UP:
             ++numKeyUp;
-            lastKey = currentInput->tid;
+            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
             break;
         default:
             break;
         };
 
         std::wstringstream currentText;
-        currentText << L"Keyboards: " << numKeyboardEvents << L"\n"
-                    << L"KD: " << numKeyDown << L"\n"
-                    << L"KU: " << numKeyUp << L"\n"
-                    << L"KDR: " << numKeyDownRepeat << L"\n"
-                    << L"Ch: " << numChar << L"\n"
-                    << L"ChR: " << numCharRepeat << L"\n"
-                    << L"ch: \'" << lastChar << L"\'\n"
+        currentText << L"Keys: " << numKeyboardEvents << L"\n"
+                    << L"D: " << numKeyDown << L"\n"
+                    << L"U: " << numKeyUp << L"\n"
+                    << L"DR: " << numKeyDownRepeat << L"\n"
+                    << L"C: " << numChar << L"\n"
+                    << L"CR: " << numCharRepeat << L"\n"
+                    << L"c: \'" << lastChar << L"\'\n"
                     << L"k: " << lastKey << L"\n"
                     << L"Mouse: " << numMouseEvents << L"\n"
                     << L"Drg: " << numDrag << L"\n"
@@ -353,7 +354,7 @@ private:
                     << L"Up: " << numMouseUp << L"\n"
                     << L"Whl: " << numMouseWheel << L"\n"
                     << L"Cncl: " << numMouseCancel << L"\n"
-                    << L"Key: " << lastMouseKey << L"\n"
+                    << L"Btn: " << lastMouseKey << L"\n"
                     << L"X: " << lastMouseX << L"\n"
                     << L"Y: " << lastMouseY << L"\n"
                     << L"Whl: " << lastWheel;
@@ -371,7 +372,7 @@ private:
     uint32 numChar = 0;
     uint32 numCharRepeat = 0;
     wchar_t lastChar = L'\0';
-    uint32 lastKey = 0;
+    WideString lastKey;
 
     uint32 numMouseEvents = 0;
     uint32 numDrag = 0;

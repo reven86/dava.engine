@@ -35,6 +35,15 @@ EntityGroup::EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox)
     entitiesBbox.AddAABBox(entityBbox);
 }
 
+EntityGroup::EntityGroup(EntityGroup&& other)
+{
+    entities = other.entities;
+    other.entities.clear();
+
+    entitiesBbox = other.entitiesBbox;
+    other.entitiesBbox.Empty();
+}
+
 EntityGroup::EntityGroup(const EntityVector& ss)
 {
     entities.insert(ss.begin(), ss.end());

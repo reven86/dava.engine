@@ -46,6 +46,7 @@ public:
 public:
     EntityGroup() = default;
     EntityGroup(const EntityVector& ss);
+    EntityGroup(EntityGroup&&);
     EntityGroup(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
 
     void Add(DAVA::Entity* entity, const DAVA::AABBox3& entityBbox);
@@ -82,7 +83,6 @@ public:
 
 private:
     EntityGroup(const EntityGroup&) = delete;
-    EntityGroup(EntityGroup&&) = delete;
 
 private:
     EntityMap entities;

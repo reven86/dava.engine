@@ -891,7 +891,7 @@ SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QOb
 
 bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-	if (!treeModel->IsFilterSet())
+    if (!treeModel->IsFilterSet())
         return true;
 
     const QModelIndex& _index = treeModel->index(sourceRow, 0, sourceParent);

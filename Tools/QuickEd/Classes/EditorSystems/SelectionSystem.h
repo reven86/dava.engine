@@ -62,7 +62,7 @@ private:
     void FocusToChild(bool next);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
-    bool ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::eButtonID buttonID);
+    bool ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::MouseButton buttonID);
 
     bool mousePressed = false;
     SelectionContainer selectionContainer;
