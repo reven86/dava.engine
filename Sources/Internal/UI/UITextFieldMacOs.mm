@@ -31,8 +31,11 @@
 #ifdef __DAVAENGINE_MACOS__
 
 #include <AppKit/NSTextField.h>
+#include <AppKit/NSTextView.h>
+#include <AppKit/NSWindow.h>
 #include <AppKit/NSColor.h>
 #include <AppKit/NSText.h>
+#include <AppKit/NSFont.h>
 #include "Utils/UTF8Utils.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -138,13 +141,17 @@ public:
         [nsTextField setEditable:YES];
         [nsTextField setEnabled:YES];
 
-        NSColor* backColor = [NSColor
-        colorWithCalibratedRed:0.f
-                         green:1.f
-                          blue:0.f
-                         alpha:1.f];
+        // make control border and background transparent
+        nsTextField.drawsBackground = NO;
+        nsTextField.bezeled = NO;
 
-        [nsTextField setBackgroundColor:backColor];
+        //        NSColor* backColor = [NSColor
+        //        colorWithCalibratedRed:0.f
+        //                         green:1.f
+        //                          blue:0.f
+        //                         alpha:1.f];
+        //
+        //        [nsTextField setBackgroundColor:backColor];
     }
 
     ~SingleLineText()
@@ -192,7 +199,10 @@ public:
 
         physicalRect.y = screenSize.dy - (physicalRect.y + physicalRect.dy);
 
-        CGRect nativeRect = CGRectMake((physicalRect.x) / divider, (physicalRect.y) / divider, physicalRect.dx / divider, physicalRect.dy / divider);
+        CGRect nativeRect = CGRectMake((physicalRect.x) / divider,
+                                       (physicalRect.y) / divider,
+                                       physicalRect.dx / divider,
+                                       physicalRect.dy / divider);
 
         nativeRect = CGRectIntegral(nativeRect);
         [nsTextField setFrame:nativeRect];
@@ -206,10 +216,19 @@ public:
                           blue:color.b
                          alpha:color.a];
         [nsTextField setTextColor:nsColor];
+
+        // make cursor same color as text (default - black caret on white back)
+        NSTextView* fieldEditor = (NSTextView*)[nsTextField.window fieldEditor:YES
+                                                                     forObject:nsTextField];
+        fieldEditor.insertionPointColor = nsColor;
     }
-    void SetFontSize(float size) override
+    void SetFontSize(float virtualFontSize) override
     {
-        // TODO do I have to implement it?
+        // like in win10
+        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+        size /= Core::Instance()->GetScreenScaleFactor();
+
+        [nsTextField setFont:[NSFont systemFontOfSize:size]];
     }
 
     void SetTextAlign(DAVA::int32 align) override
