@@ -67,11 +67,17 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 ev
 void SceneSelectionSystem::UpdateGroupSelectionMode()
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL))
+    
+    bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL) ||
+        keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
+    
+    bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
+    
+    if (addSelection)
     {
         groupSelectionMode = GroupSelectionMode::Add;
     }
-    else if (keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT))
+    else if (excludeSelection)
     {
         groupSelectionMode = GroupSelectionMode::Remove;
     }
@@ -152,11 +158,17 @@ void SceneSelectionSystem::ProcessSelectedGroup(const EntityGroup::EntityVector&
     }
 
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL))
+    
+    bool addSelection =  keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL) ||
+        keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
+    
+    bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
+    
+    if (addSelection)
     {
         AddSelection(firstEntity);
     }
-    else if (keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT))
+    else if (excludeSelection)
     {
         ExcludeSelection(firstEntity);
     }
