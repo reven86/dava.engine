@@ -29,8 +29,8 @@
 
 #include "FileSystem/Logger.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-    
+#if defined(__DAVAENGINE_MACOS__)
+
 #include <iostream>
 namespace DAVA {
 	void Logger::PlatformLog(eLogLevel ll, const char8* text) const
