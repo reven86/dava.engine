@@ -177,6 +177,8 @@ public:
     void PreCacheFX();
     void PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName = FastName());
 
+    static const float32 DEFAULT_LIGHTMAP_SIZE;
+
 private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);
 
