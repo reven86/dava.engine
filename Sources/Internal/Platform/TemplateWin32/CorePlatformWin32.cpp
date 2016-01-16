@@ -246,19 +246,19 @@ namespace DAVA
         return true;
     }
 
-	void CoreWin32Platform::Run()
-	{
+    void CoreWin32Platform::Run()
+    {
         Instance()->SystemAppStarted();
 
         MSG msg;
-        while(1)
-		{
+        while (1)
+        {
             uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
             // process messages
             willQuit = false;
-			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-			{
+            while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+            {
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 
@@ -267,8 +267,8 @@ namespace DAVA
                     ApplicationCore* appCore = Instance()->GetApplicationCore();
                     if (appCore && appCore->OnQuit())
                     {
-						exit(0);
-					}
+                        exit(0);
+                    }
 					else
 					{
 						willQuit = true;
@@ -409,7 +409,7 @@ namespace DAVA
         {
             mode.width = dmi.dmPelsWidth;
             mode.height = dmi.dmPelsHeight;
-			mode.bpp = dmi.dmBitsPerPel;
+            mode.bpp = dmi.dmBitsPerPel;
 			mode.refreshRate = dmi.dmDisplayFrequency;
 			ZeroMemory (&dmi, sizeof(dmi)) ;
 		}
@@ -781,8 +781,8 @@ namespace DAVA
                     {
                         appCore->OnSuspend();
                     }
-                    else 
-					{
+                    else
+                    {
                         core->SetIsActive(false);
                     }
                 }
@@ -793,8 +793,8 @@ namespace DAVA
                     {
                         appCore->OnResume();
                     }
-                    else 
-					{
+                    else
+                    {
                         core->SetIsActive(true);
                     }
                 }

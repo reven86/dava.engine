@@ -93,7 +93,7 @@ protected:
     void ResetSelection();
     void ProcessSelection();
     void UpdateSelectionMask();
-    void FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup&);
+    void FilterPrevSelection(DAVA::Entity* parentEntity, EntityGroup& selection);
 
 protected:
     bool isEnabled;

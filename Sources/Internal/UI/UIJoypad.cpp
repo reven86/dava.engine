@@ -317,8 +317,8 @@ void UIJoypad::InputCancelled(UIEvent *currentInput)
     {
         mainTouch = TOUCH_INVALID_ID;
 
-		currentPos.x = 0;
-		currentPos.y = 0;
+        currentPos.x = 0;
+        currentPos.y = 0;
 
         if (stick.Valid())
         {

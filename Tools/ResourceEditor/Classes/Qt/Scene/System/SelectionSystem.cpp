@@ -28,15 +28,9 @@
 
 
 #include "Scene/System/SelectionSystem.h"
-#include "Scene/System/CameraSystem.h"
-#include "Scene/System/CollisionSystem.h"
-#include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"
+#include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
-#include "Settings/SettingsManager.h"
-
-#include <QApplication>
-#include "Scene/SceneEditor2.h"
 
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
@@ -73,11 +67,17 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 ev
 void SceneSelectionSystem::UpdateGroupSelectionMode()
 {
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL))
+
+    bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL) ||
+    keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
+
+    bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
+
+    if (addSelection)
     {
         groupSelectionMode = GroupSelectionMode::Add;
     }
-    else if (keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT))
+    else if (excludeSelection)
     {
         groupSelectionMode = GroupSelectionMode::Remove;
     }
@@ -121,12 +121,19 @@ void SceneSelectionSystem::ForceEmitSignals()
     }
 }
 
-void SceneSelectionSystem::ProcessSelectedGroup(EntityGroup::EntityVector collisionEntities)
+void SceneSelectionSystem::ProcessSelectedGroup(const EntityGroup::EntityVector& allObjects)
 {
-    auto i = collisionEntities.begin();
-    while (i != collisionEntities.end())
+    EntityGroup::EntityVector collisionEntities;
+    collisionEntities.reserve(allObjects.size());
+
+    auto i = allObjects.begin();
+    for (const auto& item : allObjects)
     {
-        i = (componentMaskForSelection & i->first->GetAvailableComponentFlags()) ? (i + 1) : collisionEntities.erase(i);
+        if (componentMaskForSelection & i->first->GetAvailableComponentFlags())
+        {
+            auto selectableEntity = GetSelectableEntity(item.first);
+            collisionEntities.emplace_back(selectableEntity, GetSelectionAABox(selectableEntity));
+        }
     }
 
     DAVA::Entity* firstEntity = collisionEntities.empty() ? nullptr : collisionEntities.front().first;
@@ -151,19 +158,26 @@ void SceneSelectionSystem::ProcessSelectedGroup(EntityGroup::EntityVector collis
     }
 
     const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL))
+
+    bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL) ||
+    keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
+
+    bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
+
+    if (addSelection)
     {
         AddSelection(firstEntity);
     }
-    else if (keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT))
+    else if (excludeSelection)
     {
         ExcludeSelection(firstEntity);
     }
     else
     {
+        bool selectOnClick = SettingsManager::GetValue(Settings::Scene_SelectionOnClick).AsBool();
         // if new selection is NULL or is one of already selected items
         // we should change current selection only on phase end
-        if ((nextEntity == nullptr) || (curSelections.IntersectedEntity(collisionEntities) != nullptr))
+        if (selectOnClick || (nextEntity == nullptr) || (curSelections.IntersectedEntity(collisionEntities) != nullptr))
         {
             applyOnPhaseEnd = true;
             objectsToSelect.Clear();
@@ -214,10 +228,10 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
     Vector3 p3;
     Vector3 p4;
     SceneCameraSystem* cameraSystem = ((SceneEditor2*)GetScene())->cameraSystem;
-    cameraSystem->GetRayTo2dPoint(Vector2(minX, minY), 1000.0f, p0, p1);
-    cameraSystem->GetRayTo2dPoint(Vector2(maxX, minY), 1000.0f, p0, p2);
-    cameraSystem->GetRayTo2dPoint(Vector2(minX, maxY), 1000.0f, p0, p4);
-    cameraSystem->GetRayTo2dPoint(Vector2(maxX, maxY), 1000.0f, p0, p3);
+    cameraSystem->GetRayTo2dPoint(Vector2(minX, minY), 1.0f, p0, p1);
+    cameraSystem->GetRayTo2dPoint(Vector2(maxX, minY), 1.0f, p0, p2);
+    cameraSystem->GetRayTo2dPoint(Vector2(minX, maxY), 1.0f, p0, p4);
+    cameraSystem->GetRayTo2dPoint(Vector2(maxX, maxY), 1.0f, p0, p3);
 
     Plane planes[4];
     planes[0] = Plane(p2, p1, p0);
@@ -232,7 +246,11 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
     {
         if (componentMaskForSelection & item.first->GetAvailableComponentFlags())
         {
-            selectedObjects.Add(item.first, GetSelectionAABox(item.first));
+            auto selectableEntity = GetSelectableEntity(item.first);
+            if (!selectableEntity->GetLocked())
+            {
+                selectedObjects.Add(selectableEntity, GetSelectionAABox(selectableEntity));
+            }
         }
     }
 
@@ -252,10 +270,15 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
         // we can select only if mouse isn't over hood axis
 		// or if hood is invisible now
 		// or if current mode is NORMAL (no modification)
-        if (!hoodSystem->IsVisible() || (ST_MODIF_OFF == hoodSystem->GetModifMode()) || (ST_AXIS_NONE == hoodSystem->GetPassingAxis()))
+
+        auto modifSystem = ((SceneEditor2*)GetScene())->modifSystem;
+        bool modificationAllowed = (modifSystem->GetModifMode() != ST_ModifMode::ST_MODIF_OFF) && modifSystem->ModifCanStartByMouse(curSelections);
+        bool selectionAllowed = !hoodSystem->IsVisible() || (ST_MODIF_OFF == hoodSystem->GetModifMode()) || (ST_AXIS_NONE == hoodSystem->GetPassingAxis());
+
+        if (selectionAllowed && !modificationAllowed)
         {
             selecting = true;
-            selectionStartPoint = event->physPoint;
+            selectionStartPoint = event->point;
             selectionEndPoint = selectionStartPoint;
             lastGroupSelection.Clear();
             PerformSelectionAtPoint(selectionStartPoint);
@@ -263,12 +286,12 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 	}
     else if (selecting && (DAVA::UIEvent::Phase::DRAG == event->phase))
     {
-        selectionEndPoint = event->physPoint;
+        selectionEndPoint = event->point;
         PerformSelectionInCurrentBox();
     }
     else if (DAVA::UIEvent::Phase::ENDED == event->phase)
     {
-        if (applyOnPhaseEnd)
+        if ((event->mouseButton == DAVA::UIEvent::MouseButton::LEFT) && applyOnPhaseEnd)
         {
             FinishSelection();
         }
@@ -440,50 +463,57 @@ bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity) const
     return false;
 }
 
+void SceneSelectionSystem::ExcludeSingleItem(DAVA::Entity* entity)
+{
+    auto& selectionContent = curSelections.GetMutableContent();
+
+    auto i = selectionContent.find(entity);
+    if (i != selectionContent.end())
+    {
+        curDeselections.Add(i->first, i->second);
+        selectionContent.erase(i);
+        selectionHasChanges = true;
+    }
+
+    if (objectsToSelect.ContainsEntity(entity))
+    {
+        objectsToSelect.Remove(entity);
+    }
+}
+
 void SceneSelectionSystem::ExcludeSelection(DAVA::Entity* entity)
 {
     if (!IsLocked())
     {
-        if (curSelections.ContainsEntity(entity))
-        {
-            curDeselections.Add(entity, curSelections.GetBoundingBoxForEntity(entity));
-            curSelections.Remove(entity);
-			selectionHasChanges = true;
-		}
-
-		UpdateHoodPos();
-	}
+        ExcludeSingleItem(entity);
+        curSelections.RebuildBoundingBox();
+        UpdateHoodPos();
+    }
 }
 
 void SceneSelectionSystem::ExcludeSelection(const EntityGroup& entities)
 {
-    if (IsLocked())
+    if (!IsLocked())
     {
-        return;
-    }
-
-    for (const auto& item : entities.GetContent())
-    {
-        if (curSelections.ContainsEntity(item.first))
+        for (const auto& item : entities.GetContent())
         {
-            curSelections.Remove(item.first);
-            curDeselections.Add(item.first, item.second);
-            selectionHasChanges = true;
+            ExcludeSingleItem(item.first);
         }
+        curSelections.RebuildBoundingBox();
+        UpdateHoodPos();
     }
-    UpdateHoodPos();
 }
 
 void SceneSelectionSystem::Clear()
 {
-	if(!IsLocked())
-	{
-        for (const auto& item : curSelections.GetContent())
+    if (!IsLocked())
+    {
+        auto allItems = curSelections.CopyContentToVector();
+        for (const auto& item : allItems)
         {
-            curDeselections.Add(item.first, GetSelectionAABox(item.first));
-            selectionHasChanges = true;
-		}
-        curSelections.Clear();
+            ExcludeSingleItem(item.first);
+        }
+        curSelections.RebuildBoundingBox();
         UpdateHoodPos();
 	}
 }
@@ -565,13 +595,13 @@ void SceneSelectionSystem::UpdateHoodPos() const
 		switch (curPivotPoint)
 		{
 		case ST_PIVOT_ENTITY_CENTER:
-            p = curSelections.GetFirstZeroPos();
+            p = curSelections.GetAnyEntityTranslationVector();
             break;
 
         default:
-			p = curSelections.GetCommonZeroPos();
-			break;
-		}
+            p = curSelections.GetCommonTranslationVector();
+            break;
+        }
 
 		// check if we have locked entities in selection group
 		// if so - lock modification hood
@@ -595,31 +625,16 @@ void SceneSelectionSystem::UpdateHoodPos() const
 
 DAVA::Entity* SceneSelectionSystem::GetSelectableEntity(DAVA::Entity* entity)
 {
-    DAVA::Entity* selectableEntity = nullptr;
-
-    if (nullptr != entity)
+    DAVA::Entity* parent = entity;
+    while (nullptr != parent)
     {
-		// find most top solid entity
-		DAVA::Entity *parent = entity;
-        while (nullptr != parent)
+        if (parent->GetSolid())
         {
-			if(parent->GetSolid())
-			{
-				selectableEntity = parent;
-			}
-
-			parent = parent->GetParent();
-		}
-
-		// still not found?
-		if(NULL == selectableEntity)
-		{
-			// let it current entity to be tread as solid
-			selectableEntity = entity;
-		}
-	}
-
-	return selectableEntity;
+            entity = parent;
+        }
+        parent = parent->GetParent();
+    }
+    return entity;
 }
 
 DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity) const
@@ -723,21 +738,28 @@ void SceneSelectionSystem::UpdateSelectionGroup(const EntityGroup& newSelection)
 
 void SceneSelectionSystem::FinishSelection()
 {
+    EntityGroup newSelection;
+
     if (groupSelectionMode == GroupSelectionMode::Replace)
     {
-        SetSelection(objectsToSelect);
+        newSelection.Join(objectsToSelect);
     }
     else if (groupSelectionMode == GroupSelectionMode::Add)
     {
-        objectsToSelect.Join(curSelections);
-        SetSelection(objectsToSelect);
+        newSelection.Join(objectsToSelect);
+        newSelection.Join(curSelections);
+        SetSelection(newSelection);
     }
     else if (groupSelectionMode == GroupSelectionMode::Remove)
     {
-        EntityGroup newSelection;
         newSelection.Join(curSelections);
         newSelection.Exclude(objectsToSelect);
-        SetSelection(newSelection);
+    }
+    else
+    {
+        DVASSERT_MSG(0, "Invalid selection mode");
     }
     objectsToSelect.Clear();
+
+    SetSelection(newSelection);
 }

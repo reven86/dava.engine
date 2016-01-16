@@ -151,10 +151,10 @@ struct ParticleLayer : public BaseObject
 
     RefPtr<PropertyLine<Color>> colorRandom;
     RefPtr<PropertyLine<float32>> alphaOverLife;
-    RefPtr< PropertyLine<Color> > colorOverLife;	
+    RefPtr<PropertyLine<Color>> colorOverLife;
 
-	RefPtr< PropertyLine<float32> > angle;				// sprite angle in degrees
-	RefPtr< PropertyLine<float32> > angleVariation;		// variations in degrees
+    RefPtr<PropertyLine<float32>> angle; // sprite angle in degrees
+    RefPtr< PropertyLine<float32> > angleVariation;		// variations in degrees
 
 	RefPtr< PropertyLine<float32> > animSpeedOverLife;	
 

@@ -26,74 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
+#include "Math/Vector.h"
 
-#ifndef __DAVAENGINE_UI_SCROLLVIEWCONTAINER__
-#define __DAVAENGINE_UI_SCROLLVIEWCONTAINER__
+using namespace DAVA;
 
-#include "Base/BaseTypes.h"
-#include "UI/UIControl.h"
+DAVA_TESTCLASS(VectorTest){
+    DAVA_TEST(Vector4ToVector3Test){
+    Vector4 mutableSource(0.1f, 0.2f, 0.3f, 0.4f);
+Vector3& mutableVector3 = mutableSource.GetVector3();
+TEST_VERIFY((mutableVector3.x == mutableSource.x) && (mutableVector3.y == mutableSource.y) && (mutableVector3.z == mutableSource.z))
 
-namespace DAVA 
-{
-class ScrollHelper;
-
-class UIScrollViewContainer : public UIControl
-{
-protected:
-	virtual ~UIScrollViewContainer();
-public:
-    UIScrollViewContainer(const Rect& rect = Rect());
-
-    UIScrollViewContainer* Clone() override;
-    virtual void CopyDataFrom(UIControl* srcControl);
-
-public:
-	virtual void Update(float32 timeElapsed);
-	virtual void Input(UIEvent *currentTouch);
-    virtual void InputCancelled(UIEvent *currentInput);
-	virtual bool SystemInput(UIEvent *currentInput);
-    virtual void SetSize(const Vector2& size);
-    virtual void WillDisappear();
-
-    // Set container relative position and enable*Scroll properties based on self and parent size
-    void ApplySizeChanges();
-
-    // The amount of pixels user must move the finger on the button to switch from button to scrolling (default 15)
-    void SetTouchTreshold(int32 holdDelta);
-    int32 GetTouchTreshold();
-
-protected:
-
-	enum
-	{
-		STATE_NONE = 0,
-		STATE_SCROLL,
-		STATE_ZOOM,
-		STATE_DECCELERATION,
-		STATE_SCROLL_TO_SPECIAL,
-	};
-
-	int32		state;
-	// Scroll information
-	Vector2		scrollStartInitialPosition;	// position of click
-	int32		touchTreshold;
-	
-	int 		mainTouch;	
-	
-	Vector2 	oldPos;
-	Vector2		newPos;
-
-    float32 oldScroll = 0.f;
-    float32 newScroll = 0.f;
-
-    ScrollHelper *currentScroll;
-
-	// All boolean variables are grouped together because of DF-2149.
-	bool 		lockTouch : 1;
-	bool 		scrollStartMovement : 1;
-	bool		enableHorizontalScroll : 1;
-	bool		enableVerticalScroll : 1;
-};
-};
-
-#endif /* defined(__DAVAENGINE_UI_SCROLLVIEWCONTAINER__) */
+const Vector4 immutableSource(0.3f, 0.2f, 0.1f, 0.0f);
+const Vector3& immutableVector3 = immutableSource.GetVector3();
+TEST_VERIFY((immutableVector3.x == immutableSource.x) && (immutableVector3.y == immutableSource.y) && (immutableVector3.z == immutableSource.z))
+}
+}
+;

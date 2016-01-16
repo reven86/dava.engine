@@ -376,10 +376,10 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 		modifPivotPoint = selectionSystem->GetPivotPoint();
 
 		// center of this bbox will modification center, common for all entities
-		modifEntitiesCenter = entities.GetCommonZeroPos();
+        modifEntitiesCenter = entities.GetCommonTranslationVector();
 
-		// prepare translation matrix's, used before and after rotation
-		moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
+        // prepare translation matrix's, used before and after rotation
+        moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
 		moveFromZeroPosRelativeCenter.CreateTranslation(modifEntitiesCenter);
 
 		// remember axis vector we are rotating around
