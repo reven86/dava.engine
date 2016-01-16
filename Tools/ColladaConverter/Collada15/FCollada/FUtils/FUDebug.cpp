@@ -114,7 +114,7 @@ void FUDebug::DebugOut(uint8 verbosity, const fchar* message, ...)
 void FUDebug::DebugOutV(uint8 verbosity, const char* filename, uint32 line, const fchar* message, va_list& vars)
 {
 	char buffer[256];
-	snprintf(buffer, 256, "[%s@%lu] ", filename, line);
+	snprintf(buffer, 256, "[%s@%u] ", filename, line);
 	buffer[255] = 0;
 	DebugString(buffer);
 

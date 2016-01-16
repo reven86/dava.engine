@@ -54,9 +54,8 @@ void FCDControllerInstance::CalculateRootIds()
 {
 	skeletonRoots.clear();
 
-	for (const FCDSceneNode** itJ = (const FCDSceneNode**) joints.begin(); itJ != joints.end(); ++itJ)
-	{
-		const FCDSceneNode* joint = (*itJ);
+    for (auto joint : joints)
+    {
 		if (joint == NULL) continue;
 
 		bool addToList = true;
