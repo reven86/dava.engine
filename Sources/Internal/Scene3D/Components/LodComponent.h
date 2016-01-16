@@ -92,7 +92,7 @@ public:
 		int32 layer;
 		bool isDummy;
 	};
-protected:
+//protected:
     ~LodComponent(){};
 public:
 	LodComponent();
@@ -132,7 +132,7 @@ public:
 
     
     /**
-         \brief Sets lod layer thet would be forcely used in the whole scene.
+         \brief Sets lod layer that would be forcely used in the whole scene.
          \param[in] layer layer to set on the for the scene. Use -1 to disable forced lod layer.
 	 */
     void SetForceLodLayer(int32 layer);

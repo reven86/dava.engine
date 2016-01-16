@@ -65,14 +65,13 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
-
-
 class SceneCameraSystem;
 class SceneCollisionSystem;
 
 class HoodSystem;
 
 class EditorLODSystem;
+class EditorLODSystemV2;
 class FogSettingsChangedReceiver;
 
 class SceneEditor2 : public DAVA::Scene
@@ -115,7 +114,11 @@ public:
 	OwnersSignatureSystem *ownersSignatureSystem;
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
-	EditorLODSystem *editorLODSystem;
+
+    EditorLODSystem *editorLODSystem;
+    EditorLODSystemV2 *editorLODSystemV2;
+
+
 
 	DAVA::WASDControllerSystem *wasdSystem;
 	DAVA::RotationControllerSystem *rotationSystem;
