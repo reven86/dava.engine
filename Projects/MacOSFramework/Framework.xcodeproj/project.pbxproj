@@ -2947,6 +2947,8 @@
 		028C1B861BD66D3300B2266F /* NPAPIOpenGLLayerMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C1B7E1BD66D3300B2266F /* NPAPIOpenGLLayerMacOS.mm */; };
 		028C1B871BD66D3300B2266F /* NPAPIPluginMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C1B7F1BD66D3300B2266F /* NPAPIPluginMacOS.h */; };
 		028C1B881BD66D3300B2266F /* NPAPIPluginMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C1B801BD66D3300B2266F /* NPAPIPluginMacOS.mm */; };
+		032292781C4A45FF00D5E474 /* UITextFieldMacOs.h in Headers */ = {isa = PBXBuildFile; fileRef = 032292761C4A45FF00D5E474 /* UITextFieldMacOs.h */; };
+		032292791C4A45FF00D5E474 /* UITextFieldMacOs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 032292771C4A45FF00D5E474 /* UITextFieldMacOs.mm */; };
 		176DE930174B5561007A983B /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1D16BD24E400732C04 /* DAVAConfig.h */; };
 		176DE931174B5561007A983B /* DAVAEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B1F16BD24E400732C04 /* DAVAEngine.h */; };
 		176DE93C174B5561007A983B /* DoxygenDocumenation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989B3516BD24E400732C04 /* DoxygenDocumenation.h */; };
@@ -4032,6 +4034,8 @@
 		028C1B7E1BD66D3300B2266F /* NPAPIOpenGLLayerMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NPAPIOpenGLLayerMacOS.mm; sourceTree = "<group>"; };
 		028C1B7F1BD66D3300B2266F /* NPAPIPluginMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NPAPIPluginMacOS.h; sourceTree = "<group>"; };
 		028C1B801BD66D3300B2266F /* NPAPIPluginMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NPAPIPluginMacOS.mm; sourceTree = "<group>"; };
+		032292761C4A45FF00D5E474 /* UITextFieldMacOs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldMacOs.h; sourceTree = "<group>"; };
+		032292771C4A45FF00D5E474 /* UITextFieldMacOs.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldMacOs.mm; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -5398,6 +5402,8 @@
 		028C0C7B1BD66A5F00B2266F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				032292761C4A45FF00D5E474 /* UITextFieldMacOs.h */,
+				032292771C4A45FF00D5E474 /* UITextFieldMacOs.mm */,
 				028C0C7C1BD66A5F00B2266F /* AbstractUIPackageBuilder.cpp */,
 				028C0C7D1BD66A5F00B2266F /* AbstractUIPackageBuilder.h */,
 				028C0C7F1BD66A5F00B2266F /* Components */,
@@ -6751,6 +6757,7 @@
 				028C0F8E1BD66A6000B2266F /* PatchFile.h in Headers */,
 				028C14C81BD66A6000B2266F /* CullingSystem.h in Headers */,
 				028C1A411BD66A6100B2266F /* UIEvent.h in Headers */,
+				032292781C4A45FF00D5E474 /* UITextFieldMacOs.h in Headers */,
 				028C0FBE1BD66A6000B2266F /* FileList.h in Headers */,
 				028C10DB1BD66A6000B2266F /* Rect.h in Headers */,
 				028C162D1BD66A6000B2266F /* mcpp_out.h in Headers */,
@@ -8130,6 +8137,7 @@
 				028C10E71BD66A6000B2266F /* Spline.cpp in Sources */,
 				028C18BB1BD66A6000B2266F /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				028C0FF11BD66A6000B2266F /* LocalizationSystem.cpp in Sources */,
+				032292791C4A45FF00D5E474 /* UITextFieldMacOs.mm in Sources */,
 				028C11111BD66A6000B2266F /* OperatorNewHook.cpp in Sources */,
 				028C1A141BD66A6000B2266F /* UIAggregatorControl.cpp in Sources */,
 				028C13A81BD66A6000B2266F /* MainWindowController.mm in Sources */,

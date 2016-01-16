@@ -62,6 +62,19 @@ class SingleLineText;
     DAVA::SingleLineText* text;
 }
 @end
+
+@interface RSVerticallyCenteredTextFieldCell : NSTextFieldCell
+{
+    BOOL mIsEditingOrSelecting;
+}
+@end
+
+@interface RSVerticallyCenteredSecureTextFieldCell : NSSecureTextFieldCell
+{
+    BOOL mIsEditingOrSelecting;
+}
+
+@end
 // end objective C declarations
 
 namespace DAVA
@@ -130,6 +143,9 @@ public:
     explicit SingleLineText(UITextField* davaText_)
     {
         davaText = davaText_;
+
+        [NSTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
+
         nsTextField = [[NSTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
         [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
 
@@ -151,6 +167,8 @@ public:
         // make control border and background transparent
         nsTextField.drawsBackground = NO;
         nsTextField.bezeled = NO;
+
+        [nsTextField.cell setUsesSingleLineMode:YES];
 
         //        NSColor* backColor = [NSColor
         //        colorWithCalibratedRed:0.f
@@ -263,6 +281,12 @@ public:
         }
         [nsTextField setAlignment:aligment];
 
+        if (align & ALIGN_VCENTER)
+        {
+            // TODO set custom cell properti - vAlignment
+            //[NSSecureTextField setCellClass:[NSSecureTextFieldCell class]];
+        }
+
         if (useRtlAlign && (aligment == NSLeftTextAlignment ||
                             aligment == NSRightTextAlignment))
         {
@@ -348,6 +372,7 @@ public:
     void SetMultiline(bool value) override
     {
         multiline = value;
+        [nsTextField.cell setUsesSingleLineMode:!multiline];
     }
     bool IsMultiline() const override
     {
@@ -364,19 +389,14 @@ public:
             NSTextField* oldCtrl = nsTextField;
             if (value)
             {
-                nsTextField = [[NSSecureTextField alloc] initWithFrame:[oldCtrl frame]];
+                [NSTextField setCellClass:[RSVerticallyCenteredSecureTextFieldCell class]];
             }
             else
             {
-                nsTextField = [[NSTextField alloc] initWithFrame:[oldCtrl frame]];
+                [NSTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
             }
 
-            // copy all current properties
-            SetFontSize(currentFontSize);
-            SetTextColor(currentColor);
-            SetText(oldText);
-            SetTextUseRtlAlign(useRtlAlign);
-            SetTextAlign(alignment);
+            nsTextField = [[NSTextField alloc] initWithFrame:[oldCtrl frame]];
 
             [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
             [nsTextField setFormatter:formatter];
@@ -391,6 +411,13 @@ public:
 
             NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
             [openGLView addSubview:nsTextField];
+
+            // copy all current properties
+            SetFontSize(currentFontSize);
+            SetTextColor(currentColor);
+            SetText(oldText);
+            SetTextUseRtlAlign(useRtlAlign);
+            SetTextAlign(alignment);
 
             [oldCtrl removeFromSuperview];
             [oldCtrl release];
@@ -654,13 +681,21 @@ doCommandBySelector:(SEL)commandSelector
 {
     BOOL result = NO;
 
-    if (text->IsMultiline() && commandSelector == @selector(insertNewline:))
+    if (commandSelector == @selector(insertNewline:))
     {
-        // new line action:
-        // always insert a line-break character and dont cause the receiver to end editing
-        [textView insertNewlineIgnoringFieldEditor:self];
-        result = YES;
+        if (text->IsMultiline())
+        {
+            // new line action:
+            // always insert a line-break character and dont cause the receiver to end editing
+            [textView insertNewlineIgnoringFieldEditor:self];
+            result = YES;
+        }
+        else
+        {
+            text->davaText->GetDelegate()->TextFieldShouldReturn(text->davaText);
+        }
     }
+
     return result;
 }
 
@@ -738,6 +773,100 @@ doCommandBySelector:(SEL)commandSelector
                                 withDefaultAttributes:(NSDictionary*)attributes
 {
     return nil;
+}
+
+@end
+
+@implementation RSVerticallyCenteredTextFieldCell
+
+- (NSRect)drawingRectForBounds:(NSRect)theRect
+{
+    // Get the parent's idea of where we should draw
+    NSRect newRect = [super drawingRectForBounds:theRect];
+
+    // When the text field is being
+    // edited or selected, we have to turn off the magic because it screws up
+    // the configuration of the field editor.  We sneak around this by
+    // intercepting selectWithFrame and editWithFrame and sneaking a
+    // reduced, centered rect in at the last minute.
+    if (mIsEditingOrSelecting == NO)
+    {
+        // Get our ideal size for current text
+        NSSize textSize = [self cellSizeForBounds:theRect];
+
+        // Center that in the proposed rect
+        float heightDelta = newRect.size.height - textSize.height;
+        if (heightDelta > 0)
+        {
+            newRect.size.height -= heightDelta;
+            newRect.origin.y += (heightDelta / 2);
+        }
+    }
+
+    return newRect;
+}
+
+- (void)selectWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject start:(long)selStart length:(long)selLength
+{
+    aRect = [self drawingRectForBounds:aRect];
+    mIsEditingOrSelecting = YES;
+    [super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
+    mIsEditingOrSelecting = NO;
+}
+
+- (void)editWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject event:(NSEvent*)theEvent
+{
+    aRect = [self drawingRectForBounds:aRect];
+    mIsEditingOrSelecting = YES;
+    [super editWithFrame:aRect inView:controlView editor:textObj delegate:anObject event:theEvent];
+    mIsEditingOrSelecting = NO;
+}
+
+@end
+
+@implementation RSVerticallyCenteredSecureTextFieldCell
+
+- (NSRect)drawingRectForBounds:(NSRect)theRect
+{
+    // Get the parent's idea of where we should draw
+    NSRect newRect = [super drawingRectForBounds:theRect];
+
+    // When the text field is being
+    // edited or selected, we have to turn off the magic because it screws up
+    // the configuration of the field editor.  We sneak around this by
+    // intercepting selectWithFrame and editWithFrame and sneaking a
+    // reduced, centered rect in at the last minute.
+    if (mIsEditingOrSelecting == NO)
+    {
+        // Get our ideal size for current text
+        NSSize textSize = [self cellSizeForBounds:theRect];
+
+        // Center that in the proposed rect
+        float heightDelta = newRect.size.height - textSize.height;
+        if (heightDelta > 0)
+        {
+            newRect.size.height -= heightDelta;
+            newRect.origin.y += (heightDelta / 2);
+        }
+    }
+
+    return newRect;
+}
+
+- (void)selectWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject start:(long)selStart length:(long)selLength
+{
+    aRect = [self drawingRectForBounds:aRect];
+    mIsEditingOrSelecting = YES;
+    [super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
+    mIsEditingOrSelecting = NO;
+}
+
+- (void)editWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject event:(NSEvent*)theEvent
+{
+    aRect = [self drawingRectForBounds:aRect];
+    mIsEditingOrSelecting = YES;
+    [super editWithFrame:aRect inView:controlView editor:textObj delegate:anObject event:theEvent];
+    mIsEditingOrSelecting = NO;
 }
 
 @end
