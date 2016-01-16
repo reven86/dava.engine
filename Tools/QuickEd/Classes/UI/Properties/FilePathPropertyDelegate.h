@@ -47,7 +47,7 @@ private slots:
     void OnTextChanged(const QString& text);
 
 private:
-    bool IsPathValid(const QString& path);
+    bool IsPathValid(const QString& path) const;
     QPointer<QLineEdit> lineEdit = nullptr;
 };
 

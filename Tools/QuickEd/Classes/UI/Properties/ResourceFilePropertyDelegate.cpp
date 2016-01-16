@@ -165,8 +165,11 @@ void ResourceFilePropertyDelegate::OnTextChanged(const QString& text)
 
 bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
 {
-    DAVA::FilePath filePath(QStringToString(path));
-    auto tmp = filePath.GetAbsolutePathname();
-
-    return FileSystem::Instance()->Exists(filePath + resourceExtension.toStdString().c_str());
+    QString fullPath = path;
+    if(!fullPath.endsWith(resourceExtension))
+    {
+        fullPath.append(resourceExtension);
+    }
+    DAVA::FilePath filePath(QStringToString(fullPath));
+    return FileSystem::Instance()->Exists(filePath);
 }
