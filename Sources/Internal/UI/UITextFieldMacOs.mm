@@ -378,6 +378,20 @@ public:
             SetTextUseRtlAlign(useRtlAlign);
             SetTextAlign(alignment);
 
+            [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
+            [nsTextField setFormatter:formatter];
+            [nsTextField setDelegate:objcDelegate];
+
+            [nsTextField setEditable:oldCtrl.editable];
+            [nsTextField setEnabled:oldCtrl.enabled];
+
+            // make control border and background transparent
+            nsTextField.drawsBackground = NO;
+            nsTextField.bezeled = NO;
+
+            NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+            [openGLView addSubview:nsTextField];
+
             [oldCtrl removeFromSuperview];
             [oldCtrl release];
         }
