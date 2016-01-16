@@ -395,7 +395,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
 	if(NULL != data)
 	{
 		const DAVA::MetaInfo *meta = data->MetaInfo();
-        const bool isSingleSelection = data->GetMergedItemCount();
+        const bool isSingleSelection = data->GetMergedItemCount() == 0;
 
         if(NULL != meta)
 		{
