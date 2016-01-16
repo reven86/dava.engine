@@ -42,8 +42,8 @@ namespace
 class MaterialFlagsDisabler
 {
 public:
-    MaterialFlagsDisabler(NMaterial* material_, const DAVA::Vector<FastName>& flagNames)
-        : material(SafeRetain(material_))
+    MaterialFlagsDisabler(const ScopedPtr<NMaterial>& material_, const DAVA::Vector<FastName>& flagNames)
+        : material(material_)
     {
         flagsInfo.reserve(flagNames.size());
         for (const FastName& flagName : flagNames)
@@ -67,32 +67,8 @@ public:
         material->PreBuildMaterial(DAVA::PASS_FORWARD);
     }
 
-    MaterialFlagsDisabler(const MaterialFlagsDisabler& other)
-    {
-        *this = other;
-    }
-
-    MaterialFlagsDisabler& operator=(const MaterialFlagsDisabler& other)
-    {
-        if (this != &other)
-        {
-            material = SafeRetain(other.material);
-            flagsInfo = other.flagsInfo;
-        }
-
-        return *this;
-    }
-
-    MaterialFlagsDisabler(MaterialFlagsDisabler&& other) = delete;
-    MaterialFlagsDisabler& operator==(MaterialFlagsDisabler&& other) = delete;
-
-    ~MaterialFlagsDisabler()
-    {
-        SafeRelease(material);
-    }
-
 private:
-    NMaterial* material;
+    ScopedPtr<NMaterial> material;
     struct FlagInfo
     {
         int32 oldValue = 0;
@@ -111,7 +87,7 @@ struct ThumbnailRequest
     LandscapeThumbnails::Callback callback;
     MaterialFlagsDisabler flagsDisabler;
 
-    ThumbnailRequest(rhi::HSyncObject so, Landscape* l, NMaterial* thumbnailMaterial, const DAVA::Vector<FastName>& flagsToDisable, Texture* tex, LandscapeThumbnails::Callback cb)
+    ThumbnailRequest(rhi::HSyncObject so, Landscape* l, const ScopedPtr<NMaterial>& thumbnailMaterial, const DAVA::Vector<FastName>& flagsToDisable, Texture* tex, LandscapeThumbnails::Callback cb)
         : syncObject(so)
         , landscape(l)
         , texture(tex)
@@ -182,7 +158,7 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     renderData->SetIndex(5, 3);
     renderData->BuildBuffers();
 
-    NMaterial* thumbnailMaterial = landscape->GetMaterial()->Clone();
+    ScopedPtr<NMaterial> thumbnailMaterial(landscape->GetMaterial()->Clone());
     rhi::HSyncObject syncObject = rhi::CreateSyncObject();
     Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
     {
@@ -209,9 +185,7 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     packet.primitiveCount = GetPrimitiveCount(renderData->indexCount, renderData->primitiveType);
     packet.vertexLayoutUID = renderData->vertexLayoutId;
 
-    DVASSERT(thumbnailMaterial != nullptr);
     thumbnailMaterial->BindParams(packet);
-    SafeRelease(thumbnailMaterial);
 
     rhi::RenderPassConfig passDesc = {};
     passDesc.colorBuffer[0].texture = texture->handle;
