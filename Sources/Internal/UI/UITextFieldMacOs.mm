@@ -46,6 +46,11 @@ class SingleLineText;
 } // end namespace DAVA forward declaration
 
 // objective C declaration may appeared only in global scope
+@interface CustomTextField : NSTextField
+{
+}
+@end
+
 @interface SingleLineDelegate : NSObject<NSTextFieldDelegate>
 {
 @public
@@ -144,9 +149,9 @@ public:
     {
         davaText = davaText_;
 
-        [NSTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
+        [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
 
-        nsTextField = [[NSTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
+        nsTextField = [[CustomTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
         [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
 
         formatter = [[CustomTextFieldFormatter alloc] init];
@@ -194,10 +199,26 @@ public:
     void OpenKeyboard() override
     {
         [nsTextField becomeFirstResponder];
+
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+
+        if (delegate)
+        {
+            Rect emptyRect;
+            delegate->OnKeyboardShown(emptyRect);
+        }
     }
     void CloseKeyboard() override
     {
         [nsTextField resignFirstResponder];
+
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+
+        if (delegate)
+        {
+            Rect emptyRect;
+            //delegate->OnKeyboardHidden();
+        }
     }
 
     void GetText(WideString& string) const override
@@ -386,17 +407,18 @@ public:
             WideString oldText;
             GetText(oldText);
 
-            NSTextField* oldCtrl = nsTextField;
+            CustomTextField* oldCtrl = nsTextField;
             if (value)
             {
-                [NSTextField setCellClass:[RSVerticallyCenteredSecureTextFieldCell class]];
+                [CustomTextField setCellClass:[RSVerticallyCenteredSecureTextFieldCell class]];
             }
             else
             {
-                [NSTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
+                [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
             }
 
-            nsTextField = [[NSTextField alloc] initWithFrame:[oldCtrl frame]];
+            // TODO need remove next line?
+            nsTextField = [[CustomTextField alloc] initWithFrame:[oldCtrl frame]];
 
             [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
             [nsTextField setFormatter:formatter];
@@ -445,7 +467,7 @@ public:
     }
 
     UITextField* davaText = nullptr;
-    NSTextField* nsTextField = nullptr;
+    CustomTextField* nsTextField = nullptr;
     SingleLineDelegate* objcDelegate = nullptr;
     CustomTextFieldFormatter* formatter = nullptr;
 
@@ -867,6 +889,18 @@ doCommandBySelector:(SEL)commandSelector
     mIsEditingOrSelecting = YES;
     [super editWithFrame:aRect inView:controlView editor:textObj delegate:anObject event:theEvent];
     mIsEditingOrSelecting = NO;
+}
+
+@end
+
+@implementation CustomTextField
+- (void)mouseDown:(NSEvent*)theEvent
+{
+    //[super mouseDown:theEvent];
+
+    // pass event to DAVA input for selection and focus work
+    NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetNativeView();
+    [openGLView mouseDown:theEvent];
 }
 
 @end
