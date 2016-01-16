@@ -94,6 +94,8 @@ elseif ( WIN32 )
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )
+    add_definitions ( -D_UNICODE )
+    add_definitions ( -DUNICODE )
 endif  ()
 
 
@@ -221,10 +223,10 @@ elseif ( MACOS )
 
 elseif ( WIN32 )
 
-	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-	    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
-	  else ()
-	    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
-	  endif ()
+	if ( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x64" ) 
+	else ()
+		set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win/x86" ) 
+	endif ()
     
 endif  ()

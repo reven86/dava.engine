@@ -32,18 +32,10 @@
 
 namespace DAVA 
 {
-
-
-SceneNodeAnimation::SceneNodeAnimation(int32 _keyCount)
+SceneNodeAnimation::SceneNodeAnimation(uint32 _keyCount)
+    : keyCount(_keyCount)
+    , keys(new SceneNodeAnimationKey[_keyCount])
 {
-	keyCount = _keyCount;
-	bindNode = 0;
-	startIdx = 0;
-	keys = new SceneNodeAnimationKey[keyCount];
-	apply = true;
-	weight = 0.0f;
-	delayTime = 0.0f;
-	parent = 0;
 }
 
 SceneNodeAnimation::~SceneNodeAnimation()
@@ -68,9 +60,9 @@ SceneNodeAnimationKey & SceneNodeAnimation::Intepolate(float32 t)
 	{
 		startIdx = 0;
 	}
-	
-	int32 endIdx = 0;
-	for (endIdx = startIdx; endIdx < keyCount; ++endIdx)
+
+    uint32 endIdx = 0;
+    for (endIdx = startIdx; endIdx < keyCount; ++endIdx)
 	{
 		if (keys[endIdx].time > t)
 		{
@@ -147,8 +139,8 @@ void SceneNodeAnimation::Execute()
 Vector3 SceneNodeAnimation::SetStartPosition(const Vector3 & position)
 {
 	Vector3 sPos = keys[0].translation;
-	for (int idx = 0; idx < keyCount; ++idx)
-	{
+    for (uint32 idx = 0; idx < keyCount; ++idx)
+    {
 		keys[idx].translation = position + keys[idx].translation - sPos;
 	}
 	return position - sPos;
@@ -156,8 +148,8 @@ Vector3 SceneNodeAnimation::SetStartPosition(const Vector3 & position)
 
 void SceneNodeAnimation::ShiftStartPosition(const Vector3 & shift)
 {
-	for (int idx = 0; idx < keyCount; ++idx)
-	{
+    for (uint32 idx = 0; idx < keyCount; ++idx)
+    {
 		keys[idx].translation += shift;
 	}
 }

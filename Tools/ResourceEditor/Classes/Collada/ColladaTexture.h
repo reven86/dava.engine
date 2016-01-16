@@ -41,19 +41,16 @@ public:
     ~ColladaTexture();
 
     bool PreLoad();
-    void ProcessDevilImage();
 
     GLuint GetTextureId()
     {
         return textureId;
     };
 
-    FCDImage* image;
-
-    GLuint textureId;
-    bool hasOpacity;
-
     fstring texturePathName;
+    FCDImage* image = nullptr;
+    GLuint textureId = 0;
+    bool hasOpacity = false;
 };
 };
 

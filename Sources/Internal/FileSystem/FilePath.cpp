@@ -32,6 +32,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <pwd.h>
@@ -247,26 +248,34 @@ FilePath::FilePath(const String &pathname)
     Initialize(pathname);
 }
 
-    
+FilePath::FilePath(const wchar_t* sourcePath)
+{
+    Initialize(WideString(sourcePath));
+}
+
+FilePath::FilePath(const WideString& pathname)
+{
+    Initialize(pathname);
+}
+
 FilePath::FilePath(const char * directory, const String &filename)
 {
-    FilePath directoryPath(directory);
-    DVASSERT(!directoryPath.IsEmpty());
-    
-    directoryPath.MakeDirectoryPathname();
-    
-    pathType = directoryPath.pathType;
-    absolutePathname = AddPath(directoryPath, filename);
+    InitializeWithDirectoryAndName(String(directory), filename);
 }
 
 FilePath::FilePath(const String &directory, const String &filename)
 {
-    FilePath directoryPath(directory);
-    DVASSERT(!directoryPath.IsEmpty());
-    directoryPath.MakeDirectoryPathname();
-    
-    pathType = directoryPath.pathType;
-    absolutePathname = AddPath(directoryPath, filename);
+    InitializeWithDirectoryAndName(directory, filename);
+}
+
+FilePath::FilePath(const wchar_t* directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(WideString(directory), filename);
+}
+
+FilePath::FilePath(const WideString& directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(directory, filename);
 }
 
 FilePath::FilePath(const FilePath &directory, const String &filename)
@@ -277,6 +286,20 @@ FilePath::FilePath(const FilePath &directory, const String &filename)
 	absolutePathname = AddPath(directory, filename);
 }
 
+void FilePath::InitializeWithDirectoryAndName(const String& directory, const String& filename)
+{
+    FilePath directoryPath(directory);
+    DVASSERT(!directoryPath.IsEmpty());
+    directoryPath.MakeDirectoryPathname();
+
+    pathType = directoryPath.pathType;
+    absolutePathname = AddPath(directoryPath, filename);
+}
+
+void FilePath::InitializeWithDirectoryAndName(const WideString& directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(UTF8Utils::EncodeToUTF8(directory), UTF8Utils::EncodeToUTF8(filename));
+}
 
 void FilePath::Initialize(const String &_pathname)
 {
@@ -339,8 +362,11 @@ void FilePath::Initialize(const String &_pathname)
     }
 }
 
-    
-    
+void FilePath::Initialize(const WideString& _pathname)
+{
+    Initialize(UTF8Utils::EncodeToUTF8(_pathname));
+}
+
 FilePath::~FilePath()
 {
     

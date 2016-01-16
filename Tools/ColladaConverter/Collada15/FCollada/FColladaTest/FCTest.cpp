@@ -84,8 +84,8 @@ int main(int argc, char* argv[])
 #ifndef _DEBUG
 	}
 	catch (const char* sz) { testBed.GetLogFile().WriteLine(sz); }
-#ifdef UNICODE
-	catch (const fchar* sz) { testBed.GetLogFile().WriteLine(sz); }
+#if (1)
+    catch (const fchar* sz) { testBed.GetLogFile().WriteLine(sz); }
 #endif
 	catch (...) { testBed.GetLogFile().WriteLine("Exception caught!"); }
 #endif

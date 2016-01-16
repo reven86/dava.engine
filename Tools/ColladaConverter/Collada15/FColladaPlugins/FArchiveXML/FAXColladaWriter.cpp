@@ -408,8 +408,8 @@ namespace FUDaeWriter
 	{
 		subId = AddNodeSid(node, subId.c_str());
 	}
-#ifdef UNICODE
-	void AddNodeSid(xmlNode* node, fstring& subId)
+#if (1)
+    void AddNodeSid(xmlNode* node, fstring& subId)
 	{
 		fm::string _subId = TO_STRING(subId);
 		_subId = AddNodeSid(node, _subId.c_str());

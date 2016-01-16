@@ -49,16 +49,16 @@ public:
 		@param linenum A line number.
 		@param message The message to write out. */
 	void WriteLine(const char* filename, uint32 linenum, const char* message, ...);
-#ifdef UNICODE
-	void WriteLine(const char* filename, uint32 line, const fchar* message, ...); /**< See above. */
+#if (1)
+    void WriteLine(const char* filename, uint32 line, const fchar* message, ...); /**< See above. */
 #endif // UNICODE
 
 	/** Writes out a log message.
 		This version of this function is useful for messages aimed at users.
 		@param message The message to write out. */
 	void WriteLine(const char* message, ...);
-#ifdef UNICODE
-	void WriteLine(const fchar* message, ...); /**< See above. */
+#if (1)
+    void WriteLine(const fchar* message, ...); /**< See above. */
 #endif // UNICODE
 
 	/** Writes out a log message.
@@ -66,8 +66,8 @@ public:
 		@param message The message to write out.
 		@param vars A variable list object. */
 	void WriteLineV(const char* message, va_list& vars);
-#ifdef UNICODE
-	void WriteLineV(const fchar* message, va_list& vars); /**< See above. */
+#if (1)
+    void WriteLineV(const fchar* message, va_list& vars); /**< See above. */
 #endif // UNICODE
 
 	/** Flushes the log file. */

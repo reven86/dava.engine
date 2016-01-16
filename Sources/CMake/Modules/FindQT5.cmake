@@ -1,6 +1,16 @@
 include ( GlobalVariables )
 include ( CMake-common )
 
+if( WIN32 )
+	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+		set (QT_ACTUAL_PATH ${QT5_PATH_WIN64})
+	else ()
+		set (QT_ACTUAL_PATH ${QT5_PATH_WIN})
+	endif ()	
+elseif ( MACOS )
+	set (QT_ACTUAL_PATH ${QT5_PATH_MAC})
+endif ()
+
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()
@@ -11,22 +21,22 @@ macro ( qt_deploy )
 
         execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
         foreach ( ITEM  ${BINARY_ITEMS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/bin/${ITEM}.dll  ${DEPLOY_DIR} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT_ACTUAL_PATH}/bin/${ITEM}.dll  ${DEPLOY_DIR} )
         endforeach ()
 
-        file ( GLOB FILE_LIST ${QT5_PATH_WIN}/bin/icu*.dll )
+        file ( GLOB FILE_LIST ${QT_ACTUAL_PATH}/bin/icu*.dll )
         foreach ( ITEM  ${FILE_LIST} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
         execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll
+        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT_ACTUAL_PATH}/plugins/platforms/qwindows.dll
                                                          ${DEPLOY_DIR}/platforms )
 
     elseif( MACOS )
 
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+            COMMAND ${QT_ACTUAL_PATH}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
         )
 
     endif()
@@ -43,7 +53,7 @@ macro(resolve_qt_pathes)
         endif()
 
         find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
-                          PATHS ${QT5_PATH_MAC} ${QT5_PATH_WIN}
+                          PATHS ${QT_ACTUAL_PATH}
                           PATH_SUFFIXES lib)
 
         ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")

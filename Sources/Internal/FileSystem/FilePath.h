@@ -61,13 +61,22 @@ public:
 	FilePath();
     FilePath(const FilePath & path);
     FilePath(FilePath&& path) DAVA_NOEXCEPT;
-    FilePath(const String & sourcePath);
-    FilePath(const char * sourcePath);
-    FilePath(const FilePath & directory, const String & filename);
-    FilePath(const String & directory, const String & filename);
-    FilePath(const char *directory, const String & filename);
 
-	~FilePath();
+    FilePath(const String & sourcePath);
+    FilePath(const WideString& sourcePath);
+
+    FilePath(const char * sourcePath);
+    FilePath(const wchar_t* sourcePath);
+
+    FilePath(const FilePath & directory, const String & filename);
+
+    FilePath(const String & directory, const String & filename);
+    FilePath(const WideString& directory, const WideString& filename);
+
+    FilePath(const char *directory, const String & filename);
+    FilePath(const wchar_t* directory, const WideString& filename);
+
+    ~FilePath();
 
     /**
         \brief Function to retrieve FilePath with new extension without changing of source FilePath object
@@ -289,6 +298,9 @@ public:
 protected:
     
     void Initialize(const String &pathname);
+    void Initialize(const WideString& pathname);
+    void InitializeWithDirectoryAndName(const String& directory, const String& filename);
+    void InitializeWithDirectoryAndName(const WideString& directory, const WideString& filename);
 
     String ResolveResourcesPath() const;
     

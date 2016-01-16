@@ -167,6 +167,9 @@ def main():
 
     subprocess.check_output(call_string)
 
+    if "android" == destination_platform:
+        subprocess.check_output(call_string)
+
 if __name__ == '__main__':
     main()
 

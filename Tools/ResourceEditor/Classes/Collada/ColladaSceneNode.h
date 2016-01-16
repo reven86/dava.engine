@@ -53,7 +53,7 @@ public:
     Matrix4 AccumulateTransformUptoFarParent(ColladaSceneNode* farParent) const;
     static bool IsAnimated(FCDSceneNode* originalNode);
 
-    ColladaSceneNode* FindNode(const fstring& daeId);
+    ColladaSceneNode* FindNode(const fm::string& daeId);
     void SetAnimation(SceneNodeAnimation* sceneNodeAnimation, bool recursive = false);
 
     void AddNode(ColladaSceneNode* node);

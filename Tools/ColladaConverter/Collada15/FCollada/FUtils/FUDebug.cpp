@@ -36,7 +36,7 @@ static void DebugString(const fchar* message)
 	STRING_OUT(message);
 }
 
-#ifdef UNICODE
+#if (1)
 static void DebugString(const char* message)
 {
 	fstring str = TO_FSTRING(message);
@@ -46,7 +46,7 @@ static void DebugString(const char* message)
 #else // _DEBUG
 static void DebugString(const fchar* UNUSED(message)) {}
 
-#ifdef UNICODE
+#if (1)
 static void DebugString(const char* UNUSED(message)) {}
 #endif //UNICODE
 #endif //_DEBUG
@@ -94,7 +94,7 @@ void FUDebug::DebugOutV(uint8 verbosity, const char* message, va_list& vars)
 	SAFE_DELETE_ARRAY(buffer);
 }
 
-#ifdef UNICODE
+#if (1)
 void FUDebug::DebugOut(uint8 verbosity, uint32 line, const char* filename, const fchar* message, ...)
 {
 	va_list vars;

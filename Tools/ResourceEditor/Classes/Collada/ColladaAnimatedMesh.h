@@ -44,8 +44,8 @@ public:
         FCDSkinControllerJoint* joint;
         FCDSkinControllerJoint* parentJoint;
         ColladaSceneNode* node;
-        int index;
-        int parentIndex;
+        int32 index;
+        int32 parentIndex;
 
         // original collada matrices
         FMMatrix44 colladaInverse0;

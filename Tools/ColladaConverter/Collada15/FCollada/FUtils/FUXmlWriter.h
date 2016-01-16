@@ -57,8 +57,8 @@ namespace FUXmlWriter
 		@param content The content to add to the new child XML tree node.
 		@return The new child XML tree node. */
 	FCOLLADA_EXPORT xmlNode* AddChild(xmlNode* parent, const char* name, const char* content);
-#ifdef UNICODE
-	FCOLLADA_EXPORT xmlNode* AddChild(xmlNode* parent, const char* name, const fstring& content); /**< See above. */
+#if (1)
+    FCOLLADA_EXPORT xmlNode* AddChild(xmlNode* parent, const char* name, const fstring& content); /**< See above. */
 #endif
 	inline xmlNode* AddChild(xmlNode* parent, const char* name, const fm::string& content) { return AddChild(parent, name, content.c_str()); } /**< See above. */
 	inline xmlNode* AddChild(xmlNode* parent, const char* name, FUSStringBuilder& content) { return AddChild(parent, name, content.ToCharPtr()); } /**< See above. */
@@ -128,8 +128,8 @@ namespace FUXmlWriter
 		@param node The XML tree node.
 		@param content The content to add to the XML tree node. */
 	FCOLLADA_EXPORT void AddContent(xmlNode* node, const char* content);
-#ifdef UNICODE
-	FCOLLADA_EXPORT void AddContent(xmlNode* node, const fstring& content); /**< See above. */
+#if (1)
+    FCOLLADA_EXPORT void AddContent(xmlNode* node, const fstring& content); /**< See above. */
 #endif
 	inline void AddContent(xmlNode* node, const fm::string& content) { AddContent(node, content.c_str()); } /**< See above. */
 	inline void AddContent(xmlNode* node, FUSStringBuilder& content) { AddContent(node, content.ToCharPtr()); } /**< See above. */
@@ -151,8 +151,8 @@ namespace FUXmlWriter
 		@param attributeName The name of the XML attribute.
 		@param attributeValue The value of the XML attribute. */
 	FCOLLADA_EXPORT void AddAttribute(xmlNode* node, const char* attributeName, const char* attributeValue);
-#ifdef UNICODE
-	FCOLLADA_EXPORT void AddAttribute(xmlNode* node, const char* attributeName, const fstring& attributeValue); /**< See above. */
+#if (1)
+    FCOLLADA_EXPORT void AddAttribute(xmlNode* node, const char* attributeName, const fstring& attributeValue); /**< See above. */
 #endif
 	inline void AddAttribute(xmlNode* node, const char* attributeName, FUSStringBuilder& attributeValue) { AddAttribute(node, attributeName, attributeValue.ToCharPtr()); } /**< See above. */
 	inline void AddAttribute(xmlNode* node, const char* attributeName, const fm::string& attributeValue) { AddAttribute(node, attributeName, attributeValue.c_str()); } /**< See above. */

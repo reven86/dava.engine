@@ -86,8 +86,8 @@ namespace FUXmlWriter
 		return node;
 	}
 
-#ifdef UNICODE
-	xmlNode* AddChild(xmlNode* parent, const char* name, const fstring& content)
+#if (1)
+    xmlNode* AddChild(xmlNode* parent, const char* name, const fstring& content)
 	{
 		fm::string s = FUStringConversion::ToString(content);
 		return AddChild(parent, name, !s.empty() ? s.c_str() : NULL);
@@ -160,8 +160,8 @@ namespace FUXmlWriter
 		}
 	}
 
-#ifdef UNICODE
-	void AddContent(xmlNode* node, const fstring& content)
+#if (1)
+    void AddContent(xmlNode* node, const fstring& content)
 	{
 		fm::string s = FUStringConversion::ToString(content);
 		AddContent(node, s.c_str());
@@ -199,8 +199,8 @@ namespace FUXmlWriter
 		}
 	}
 
-#ifdef UNICODE
-	void AddAttribute(xmlNode* node, const char* attributeName, const fstring& attributeValue)
+#if (1)
+    void AddAttribute(xmlNode* node, const char* attributeName, const fstring& attributeValue)
 	{
 		fm::string s = FUStringConversion::ToString(attributeValue);
 		AddAttribute(node, attributeName, s.c_str());

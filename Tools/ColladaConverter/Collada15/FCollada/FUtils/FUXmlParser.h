@@ -23,8 +23,8 @@ namespace FUXmlParser
 {
 	// Parse an XML compatable string for the std representation
 	FCOLLADA_EXPORT fm::string XmlToString(const char* s);
-#ifdef UNICODE
-	FCOLLADA_EXPORT fstring XmlToString(const fchar* s);
+#if (1)
+    FCOLLADA_EXPORT fstring XmlToString(const fchar* s);
 #endif // UNICODE
 
 	// Retrieve specific child nodes

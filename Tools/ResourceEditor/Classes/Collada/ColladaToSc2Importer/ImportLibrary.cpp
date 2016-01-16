@@ -188,7 +188,7 @@ AnimationData* ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation* colladaAn
         animation->SetDuration(colladaAnimation->duration);
         if (nullptr != colladaAnimation->keys)
         {
-            for (int32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
+            for (uint32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
             {
                 SceneNodeAnimationKey key = colladaAnimation->keys[keyNo];
                 animation->AddKey(key);

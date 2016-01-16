@@ -52,7 +52,7 @@ template<> void FUStringBuilder::append(int32 i)
 	append(sz);
 }
 
-#ifdef UNICODE
+#if (1)
 template<> fm::string FUSStringBuilder::ToString() const
 {
 	return fm::string(ToCharPtr());

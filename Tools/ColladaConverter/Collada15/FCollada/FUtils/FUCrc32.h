@@ -35,8 +35,8 @@ namespace FUCrc32
 		@param text The string to hash.
 		@return The 32-bit hash value. */
 	FCOLLADA_EXPORT crc32 CRC32(const char* text);
-#ifdef UNICODE
-	FCOLLADA_EXPORT crc32 CRC32(const fchar* text); /**< See above. */
+#if (1)
+    FCOLLADA_EXPORT crc32 CRC32(const fchar* text); /**< See above. */
 #endif // UNICODE
 };
 

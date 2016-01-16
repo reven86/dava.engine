@@ -39,31 +39,32 @@ namespace DAVA
 	 \ingroup utils
 	 \brief Class to work with UTF8 strings
  */
-class UTF8Utils
+namespace UTF8Utils
 {
-public:
-
 	/**
 		\brief convert UTF8 string to WideString
 		\param[in] string string in UTF8 format
 		\param[in] size size of buffer allocated for this string
 		\param[out] resultString result unicode string
 	 */
-	static void EncodeToWideString(const uint8 * string, size_t size, WideString & resultString);
+void EncodeToWideString(const uint8* string, size_t size, WideString& resultString);
 
     /**
         \brief convert UTF8 string to WideString
         \param[in] utf8String string in UTF8 format
         \return string in unicode
      */
-    inline static WideString EncodeToWideString(const String & utf8String);
+inline WideString EncodeToWideString(const String& utf8String);
 
-	/**
+    /**
 	 \brief convert WideString string to UTF8
 	 \param[in] wstring string in WideString format
 	 \returns string in UTF8 format, contained in DAVA::String
 	 */
-    static String EncodeToUTF8(const WideString& wstring);
+String EncodeToUTF8(const WideString& wstring);
+
+template <typename CHARTYPE>
+inline String MakeUTF8String(const CHARTYPE* value);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,7 +76,17 @@ inline WideString UTF8Utils::EncodeToWideString(const String & utf8String)
     return str;
 }
 
-};
+template <>
+inline String UTF8Utils::MakeUTF8String<char>(const char* value)
+{
+    return String(value);
+}
 
+template <>
+inline String UTF8Utils::MakeUTF8String<wchar_t>(const wchar_t* value)
+{
+    return EncodeToUTF8(WideString(value));
+}
+};
 
 #endif // __DAVAENGINE_UTF8UTILS_H__

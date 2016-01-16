@@ -42,8 +42,8 @@ namespace FUXmlParser
 		return xmlSBuilder.ToString();
 	}
 
-#ifdef UNICODE
-	// Convert a XML string to a text string: handles the '%' character
+#if (1)
+    // Convert a XML string to a text string: handles the '%' character
 	fstring XmlToString(const fchar* s)
 	{
 		// Replace any '%' character string into the wanted characters: %20 is common.

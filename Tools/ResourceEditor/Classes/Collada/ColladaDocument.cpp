@@ -449,7 +449,7 @@ void ColladaDocument::WriteStaticMesh(ColladaMesh* mesh, int meshIndex)
         std::vector<ColladaVertex>& vertices = group->GetVertices();
         std::vector<int>& indices = group->GetIndices();
         uint32 vertexFormat = group->GetVertexFormat();
-        uint32 vertexCount = vertices.size();
+        uint32 vertexCount = static_cast<uint32>(vertices.size());
         uint32 indexCount = group->GetTriangleCount() * 3;
 
         fwrite(&vertexFormat, sizeof(uint32), 1, sceneFP);
@@ -458,7 +458,7 @@ void ColladaDocument::WriteStaticMesh(ColladaMesh* mesh, int meshIndex)
 
         DAVA::Logger::FrameworkDebug("    group: %d vertexCount: %d indexCount:%d\n", k, vertexCount, indexCount);
 
-        for (int vi = 0; vi < (int)vertexCount; ++vi)
+        for (uint32 vi = 0; vi < vertexCount; ++vi)
         {
             //			ColladaVertex
             //			Vector3 position;
@@ -568,7 +568,7 @@ void ColladaDocument::WriteAnimatedMesh(ColladaAnimatedMesh* animMesh, int meshI
 
     fwrite(&animMesh->bindShapeMatrix, sizeof(Matrix4), 1, sceneFP);
 
-    int32 boneCount = animMesh->joints.size();
+    int32 boneCount = static_cast<int32>(animMesh->joints.size());
     fwrite(&boneCount, sizeof(int32), 1, sceneFP);
     for (int jointIndex = 0; jointIndex < (int)animMesh->joints.size(); ++jointIndex)
     {
