@@ -114,7 +114,7 @@ void SettingsDialog::InitProperties()
 
             if(NULL != parent)
             {
-                QtPropertyDataSettingsNode *settingProp = new QtPropertyDataSettingsNode(name);
+                QtPropertyDataSettingsNode* settingProp = new QtPropertyDataSettingsNode(name, keys.back());
                 settingProp->SetInspDescription(node->desc);
 
                 parent->ChildAdd(std::unique_ptr<QtPropertyData>(settingProp));
@@ -135,9 +135,9 @@ void SettingsDialog::OnResetPressed()
     }
 }
 
-QtPropertyDataSettingsNode::QtPropertyDataSettingsNode(const DAVA::FastName & path)
-: QtPropertyDataDavaVariant(path, DAVA::VariantType())
-, settingPath(path)
+QtPropertyDataSettingsNode::QtPropertyDataSettingsNode(const DAVA::FastName& path, const DAVA::FastName& name)
+    : QtPropertyDataDavaVariant(name, DAVA::VariantType())
+    , settingPath(path)
 { 
     SetVariantValue(SettingsManager::GetValue(settingPath));
 }
