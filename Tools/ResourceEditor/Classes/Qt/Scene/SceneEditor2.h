@@ -70,7 +70,7 @@ class SceneCollisionSystem;
 
 class HoodSystem;
 
-class EditorLODSystem;
+//class EditorLODSystem;
 class EditorLODSystemV2;
 class FogSettingsChangedReceiver;
 
@@ -115,7 +115,7 @@ public:
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
 
-    EditorLODSystem *editorLODSystem;
+//    EditorLODSystem *editorLODSystem;
     EditorLODSystemV2 *editorLODSystemV2;
 
 

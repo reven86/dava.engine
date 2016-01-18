@@ -40,7 +40,7 @@ namespace DAVA
 
 struct ForceValues
 {
-    enum eApplyFlag: DAVA::int32
+    enum eApplyFlag: DAVA::uint32
     {
         APPLY_DISTANCE = 1 << 0,
         APPLY_LAYER = 1 << 1,
@@ -66,34 +66,42 @@ struct ForceValues
 
 class LODComponentHolder
 {
+    friend class EditorLODSystemV2;
 public:
-
-    void SummarizeValues();
-
-    void ApplyForce(const ForceValues &force);
 
     bool IsMultyComponent() const;
 
     DAVA::int32 GetMaxLODLayer() const;
     DAVA::uint32 GetLODLayersCount() const;
 
-    void DeleteLOD(DAVA::int32 layer);
+    const DAVA::LodComponent & GetLODComponent() const;
 
-public:
+protected:
+    void BindToSystem(EditorLODSystemV2 *system, SceneEditor2 *scene);
+
+    void SummarizeValues();
+    void PropagateValues();
+
+    void ApplyForce(const ForceValues &force);
+    bool DeleteLOD(DAVA::int32 layer);
+
+protected:
 
     DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
     DAVA::LodComponent mergedComponent;
     DAVA::Vector<DAVA::LodComponent *> lodComponents;
+
+    EditorLODSystemV2 *system = nullptr;
+    SceneEditor2 * scene = nullptr;
 };
 
 
 
 class EditorLODSystemV2 : public DAVA::SceneSystem
 {
-
 public:
 
-    enum eMode: DAVA::int32 
+    enum eMode: DAVA::uint32 
     {
         MODE_ALL_SCENE = 0,
         MODE_SELECTION,
@@ -113,20 +121,38 @@ public:
     eMode GetMode() const;
     void SetMode(eMode mode);
 
-    //     void SceneSelectionChanged(const EntityGroup *selected, const EntityGroup *deselected);
-    
     //actions
+    bool CanDeleteLOD() const;
+    bool CanCreateLOD() const;
+
     void CreatePlaneLOD();
     void DeleteFirstLOD();
     void DeleteLastLOD();
     void CopyLastLODToFirst();
     //end of actions
 
+    const ForceValues &GetForceValues() const;
+    void SetForceValues(const ForceValues & values);
+
+    const LODComponentHolder * GetActiveLODData() const;
+
+    void SetLODDistances(const DAVA::Array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS> &distances);
+
+    //scene signals
+    void SolidChanged(const DAVA::Entity *entity, bool value);
+    void SelectionChanged(const EntityGroup *selected, const EntityGroup *deselected);
+
 private:
 
     //actions
     void CopyLOD(DAVA::int32 fromLayer, DAVA::int32 toLayer);
     void DeleteLOD(DAVA::int32 layer); 
+
+    //signals
+    void EmitUpdateForceUI(){};
+    void EmitUpdateDistanceUI(){};
+    void EmitUpdateActionsUI(){};
+    //signals
 
 private:
 

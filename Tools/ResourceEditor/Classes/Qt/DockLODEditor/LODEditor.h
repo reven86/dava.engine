@@ -30,6 +30,8 @@
 #ifndef __LOD_EDITOR_H__
 #define __LOD_EDITOR_H__
 
+#include "Base/BaseTypes.h"
+
 #include <QWidget>
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
@@ -43,7 +45,7 @@ class QLabel;
 class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
-class EditorLODSystem;
+class EditorLODSystemV2;
 class EntityGroup;
 class Command2;
 class QPushButton;
@@ -56,73 +58,84 @@ class LODEditor: public QWidget
 
 public:
     explicit LODEditor(QWidget* parent = nullptr);
-    ~LODEditor();
 
 private slots:
+    
+    //Panels buttons
     void LODEditorSettingsButtonReleased();
     void ViewLODButtonReleased();
     void EditLODButtonReleased();
     
+    //force signals
     void ForceDistanceStateChanged(bool checked);
     void ForceDistanceChanged(int distance);
+    void ForceLayerActivated(int index);
 
+    //scene signals
     void SceneActivated(SceneEditor2 *scene);
     void SceneDeactivated(SceneEditor2 *scene);
     void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
     void SolidChanged(SceneEditor2 *scene, const DAVA::Entity *entity, bool value); 
-    void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
-    void LODDataChanged(SceneEditor2 *scene = nullptr);
-
+    //distance signals
     void LODDistanceChangedBySpinbox(double value);
     void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continious);
 
-    void ForceLayerActivated(int index);
+    //mode signal
     void EditorModeChanged(int newMode);
 
-    //TODO: remove after lod editing implementation
+    //action
     void CopyLODToLod0Clicked();
     void CreatePlaneLODClicked();
     void DeleteFirstLOD();
     void DeleteLastLOD();
 
 private:
-    void SetupInternalUI();
-    void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
-    void UpdateSpinboxesBorders();
-
     void SetupSceneSignals();
-      
-    void SetSpinboxValue(QDoubleSpinBox *spinbox, double value);
-    void CreateForceLayerValues(int layersCount);
-   
-    void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
 
-    void SetForceLayerValues(const EditorLODSystem *editorLODSystem, int layersCount);
-    void UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem);
-    void UpdateLODButtons(const EditorLODSystem *editorLODSystem);
-    void UpdateForceLayer(const EditorLODSystem *editorLODSystem);
-    void UpdateForceDistance(const EditorLODSystem *editorLODSystem);
-
-    EditorLODSystem *GetCurrentEditorLODSystem();
-
+    void SetupInternalUI();
     void UpdateUI();
 
-private:
-    Ui::LODEditor *ui;
+    void SetupForceUI();
+    void UpdateForceUI();
+    void CreateForceLayerValues(DAVA::uint32 layersCount);
 
-    bool frameViewVisible;
-    bool frameEditVisible;
+    void UpdateModeUI();
+
+    void SetupPanelsButtonUI();
+    void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
+    void UpdatePanelsUI(SceneEditor2 *forScene);
+    void UpdatePanelsForCurrentScene();
+
+    void SetupDistancesUI();
+    void UpdateDistancesUI();
+    void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
+    void UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS> &distances, DAVA::int32 count);
+   
+    void SetupActionsUI();
+    void UpdateActionsUI();
+    void UpdateLODButtons(const EditorLODSystemV2 *editorLODSystem);
+
+    EditorLODSystemV2 *GetCurrentEditorLODSystem();
+
+private:
+    
+    std::unique_ptr<Ui::LODEditor> ui;
+
+    bool frameViewVisible = true;
+    bool frameEditVisible = true;
 
     struct DistanceWidget
     {
-        QLabel *name;
-        QDoubleSpinBox *distance;
+        QLabel *name = nullptr;
+        QDoubleSpinBox *distance = nullptr;
         void SetVisible(bool visible);
     };
-    DAVA::Map<DAVA::uint32, DistanceWidget> distanceWidgets;
+    
+    DAVA::Array<DistanceWidget, DAVA::LodComponent::MAX_LOD_LAYERS> distanceWidgets;
 
     LazyUpdater* uiUpdater = nullptr;
+    LazyUpdater* panelsUpdater = nullptr;
 };
 
 #endif //#ifndef __LOD_EDITOR_H__

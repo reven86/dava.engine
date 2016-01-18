@@ -80,8 +80,7 @@ namespace ResourceEditor
     static const String DOCUMENTATION_PATH = "~doc:/ResourceEditorHelp/";
     
     //service strings
-    static const String TAG = "tag";
-	
+
 	static const String CUSTOM_COLOR_TEXTURE_PROP = "customColorTexture";
 	
 	static const String TILEMASK_EDITOR_BRUSH_SIZE_CAPTION	= "Brush\nsize:";

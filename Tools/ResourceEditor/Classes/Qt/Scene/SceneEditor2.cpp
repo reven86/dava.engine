@@ -53,7 +53,7 @@
 #include "Scene3D/Entity.h"
 
 
-#include "Scene/System/EditorLODSystem.h"
+//#include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorLODSystemV2.h"
 
 
@@ -159,8 +159,8 @@ SceneEditor2::SceneEditor2()
     modifSystem->AddDelegate(pathSystem);
     modifSystem->AddDelegate(wayEditSystem);
 
-    editorLODSystem = new EditorLODSystem(this);
-    AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+//     editorLODSystem = new EditorLODSystem(this);
+//     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     editorLODSystemV2 = new EditorLODSystemV2(this);
     AddSystem(editorLODSystemV2, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
