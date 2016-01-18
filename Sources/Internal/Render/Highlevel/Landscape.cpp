@@ -311,14 +311,7 @@ void Landscape::AllocateGeometryData()
 
     for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
     {
-        ScopedPtr<RenderBatch> batch(new RenderBatch());
-        AddRenderBatch(batch);
-
-        batch->SetMaterial(landscapeMaterial);
-        batch->SetSortingKey(10);
-
-        batch->vertexLayoutId = vertexLayoutUID;
-        batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+        AllocateRenderBatch();
     }
 }
 
@@ -619,7 +612,12 @@ void Landscape::FlushQueue()
     if (queueIndexCount == 0)
         return;
 
-    DVASSERT(flushQueueCounter < (int32)renderBatchArray.size());
+    DVASSERT(flushQueueCounter <= static_cast<int32>(renderBatchArray.size()));
+    if (static_cast<int32>(renderBatchArray.size()) == flushQueueCounter)
+    {
+        AllocateRenderBatch();
+    }
+
     DVASSERT(queueRdoQuad != -1);
 
     DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
@@ -910,7 +908,7 @@ void Landscape::PrepareToRender(Camera* camera)
     FlushQueue();
 }
 
-bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices) const
+bool Landscape::GetLevel0Geometry(Vector<LandscapeVertex>& vertices, Vector<int32>& indices) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
     if (heightmap->Data() == nullptr)
@@ -918,44 +916,35 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
         return false;
     }
 
-	const LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
-	const LandscapeQuad * quad = &currentNode->data;
-	
-	landscapeVertices.resize((quad->size + 1) * (quad->size + 1));
-
-	int32 index = 0;
-	for (int32 y = quad->y; y < quad->y + quad->size + 1; ++y)
-	{
-		for (int32 x = quad->x; x < quad->x + quad->size + 1; ++x)
-		{
-			landscapeVertices[index].position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
-
-            landscapeVertices[index].texCoord = Vector2(
-            (float32)x / (float32)(heightmap->Size() - 1),
-            1.0f - (float32)y / (float32)(heightmap->Size() - 1));
-
+    uint32 gridWidth = heightmap->Size();
+    uint32 gridHeight = heightmap->Size();
+    vertices.resize(gridWidth * gridHeight);
+    for (uint32 y = 0, index = 0; y < gridHeight; ++y)
+    {
+        uint32 row = y * heightmap->Size();
+        float32 ny = static_cast<float32>(y) / static_cast<float32>(gridHeight - 1);
+        for (uint32 x = 0; x < gridWidth; ++x)
+        {
+            float32 nx = static_cast<float32>(x) / static_cast<float32>(gridWidth - 1);
+            vertices[index].position = GetPoint(x, y, heightmap->Data()[row + x]);
+            vertices[index].texCoord = Vector2(nx, ny);
             index++;
         }
     }
 
-    indices.resize(heightmap->Size() * heightmap->Size() * 6);
-    int32 step = 1;
-    int32 indexIndex = 0;
-    int32 quadWidth = heightmap->Size();
-    for (int32 y = 0; y < currentNode->data.size - 1; y += step)
+    indices.resize((gridWidth - 1) * (gridHeight - 1) * 6);
+    for (uint32 y = 0, index = 0; y < gridHeight - 1; ++y)
     {
-        for (int32 x = 0; x < currentNode->data.size - 1; x += step)
+        for (uint32 x = 0; x < gridWidth - 1; ++x)
         {
-            indices[indexIndex++] = x + y * quadWidth;
-            indices[indexIndex++] = (x + step) + y * quadWidth;
-            indices[indexIndex++] = x + (y + step) * quadWidth;
-
-            indices[indexIndex++] = (x + step) + y * quadWidth;
-            indices[indexIndex++] = (x + step) + (y + step) * quadWidth;
-            indices[indexIndex++] = x + (y + step) * quadWidth;
+            indices[index++] = x + y * gridWidth;
+            indices[index++] = (x + 1) + y * gridWidth;
+            indices[index++] = x + (y + 1) * gridWidth;
+            indices[index++] = (x + 1) + y * gridWidth;
+            indices[index++] = (x + 1) + (y + 1) * gridWidth;
+            indices[index++] = x + (y + 1) * gridWidth;
         }
     }
-
     return true;
 }
 
@@ -1278,6 +1267,18 @@ void Landscape::ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize)
         indices.resize(2 * newSize);
     }
 };
+
+void Landscape::AllocateRenderBatch()
+{
+    ScopedPtr<RenderBatch> batch(new RenderBatch());
+    AddRenderBatch(batch);
+
+    batch->SetMaterial(landscapeMaterial);
+    batch->SetSortingKey(10);
+
+    batch->vertexLayoutId = vertexLayoutUID;
+    batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+}
 
 void Landscape::SetForceFirstLod(bool force)
 {
