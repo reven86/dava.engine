@@ -51,7 +51,7 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::Rend
     newBatch->SetPolygonGroup(shadowPg);
     shadowPg->Release();
 
-    DAVA::NMaterial* shadowMaterialInst = new DAVA::NMaterial();
+    DAVA::ScopedPtr<DAVA::NMaterial> shadowMaterialInst(new DAVA::NMaterial());
     shadowMaterialInst->SetMaterialName(DAVA::FastName("Shadow_Material_Instance"));
 
     newBatch->SetMaterial(shadowMaterialInst);
@@ -70,15 +70,12 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::Rend
     }
     else
     {
-        DAVA::NMaterial* shadowMaterial = new DAVA::NMaterial();
+        ScopedPtr<DAVA::NMaterial> shadowMaterial(new DAVA::NMaterial());
         shadowMaterial->SetMaterialName(DAVA::FastName("Shadow_Material"));
         shadowMaterial->SetFXName(DAVA::NMaterialName::SHADOW_VOLUME);
 
-        shadowMaterialInst->SetParent(shadowMaterial);
-        shadowMaterial->Release();
+        shadowMaterialInst->SetParent(shadowMaterial.get());
     }
-
-    shadowMaterialInst->Release();
 }
 
 ConvertToShadowCommand::~ConvertToShadowCommand()
