@@ -103,8 +103,11 @@ set( LIBRARIES            ${BEAST_LIB} )
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
                                                        
-
-set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
+else ()
+	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+endif ()
 
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
