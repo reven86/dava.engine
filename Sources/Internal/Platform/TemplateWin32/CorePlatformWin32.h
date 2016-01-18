@@ -52,29 +52,27 @@ public:
 
     void SetIcon(int32 iconId) override;
 
+private:
     DisplayMode currentMode;
     DisplayMode fullscreenMode;
     DisplayMode windowedMode;
     bool isFullscreen;
     RECT windowPositionBeforeFullscreen;
 
-private:
     static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
     static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
-    void OnMouseEvent(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
+    void OnMouseMove(float32 x, float32 y);
+    void OnMouseWheel(float32 wheelDelta, float32 x, float32 y);
+    void OnMouseButtonChange(UIEvent::Phase phase, UIEvent::MouseButton button, float32 x, float32 y);
     void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
-    static String GetDeviceName(HANDLE hDevice);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
-    UIEvent::Phase MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, UIEvent& outTouch);
 
     bool willQuit;
 
-    bool isRightButtonPressed;
-    bool isLeftButtonPressed;
-    bool isMiddleButtonPressed;
+    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
 };
 
