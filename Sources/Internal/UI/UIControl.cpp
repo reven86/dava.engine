@@ -1427,8 +1427,9 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
         {
-            point.x = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
-            point.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
+            const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+            point.x = virtScreenSize.dx / 2.f;
+            point.y = virtScreenSize.dy / 2.f;
         }
 
         const UIGeometricData& gd = GetGeometricData();
