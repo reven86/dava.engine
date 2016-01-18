@@ -31,22 +31,23 @@
 #include "QtPropertyModel.h"
 #include "QtPropertyDataValidator.h"
 
-QtPropertyData::ChildKey::ChildKey(const DAVA::FastName & childName_, const DAVA::MetaInfo * childMeta_, bool isChildEnabled_) : childName(childName_)
-, childMeta(childMeta_)
-, isChildEnabled(isChildEnabled_)
+QtPropertyData::ChildKey::ChildKey(const QtPropertyData* child_)
+    : child(child_)
 {
 
 }
 
 bool QtPropertyData::ChildKey::operator<(const ChildKey & other) const
 {
-    if (childName != other.childName)
-        return childName < other.childName;
+    if (child->name != other.child->name)
+        return child->name < other.child->name;
 
-    if (childMeta != other.childMeta)
-        return childMeta < other.childMeta;
+    const DAVA::MetaInfo* thisMeta = child->MetaInfo();
+    const DAVA::MetaInfo* otherMeta = other.child->MetaInfo();
+    if (thisMeta != otherMeta)
+        return thisMeta < otherMeta;
 
-    return isChildEnabled < other.isChildEnabled;
+    return child->IsEnabled() < other.child->IsEnabled();
 }
 
 bool QtPropertyData::ChildKey::operator!=(const ChildKey & other) const
@@ -56,9 +57,9 @@ bool QtPropertyData::ChildKey::operator!=(const ChildKey & other) const
 
 bool QtPropertyData::ChildKey::operator==(const ChildKey & other) const
 {
-    return childName == other.childName &&
-        childMeta == other.childMeta &&
-        isChildEnabled == other.isChildEnabled;
+    return child->name == other.child->name &&
+    child->MetaInfo() == other.child->MetaInfo() &&
+    child->IsEnabled() == other.child->IsEnabled();
 }
 
 QtPropertyData::QtPropertyData(const DAVA::FastName & name_)
@@ -516,7 +517,7 @@ void QtPropertyData::MergeChild(std::unique_ptr<QtPropertyData> && data)
 {
     DVASSERT(data);
 
-    ChildKey key(data->name, data->MetaInfo(), data->IsEnabled());
+    ChildKey key(data.get());
     TChildMap::const_iterator iter = keyToDataMap.find(key);
     if (iter != keyToDataMap.end())
     {
@@ -524,7 +525,17 @@ void QtPropertyData::MergeChild(std::unique_ptr<QtPropertyData> && data)
     }
     else
     {
-        ChildAdd(std::move(data));
+        size_t position = childrenData.size();
+        for (size_t i = 0; i < childrenData.size(); ++i)
+        {
+            if (childrenData[i]->GetName() == data->GetName())
+            {
+                position = i;
+                break;
+            }
+        }
+
+        ChildInsert(std::move(data), static_cast<int>(position));
     }
 }
 
@@ -614,7 +625,7 @@ void QtPropertyData::ChildAdd(std::unique_ptr<QtPropertyData> && data)
     data->parent = this;
     data->SetModel(model);
     data->SetOWViewport(optionalButtonsViewport);
-    keyToDataMap.emplace(ChildKey(data->name, data->MetaInfo(), data->IsEnabled()), childrenData.size());
+    keyToDataMap.emplace(ChildKey(data.get()), childrenData.size());
     childrenData.push_back(std::move(data));
 }
 
@@ -636,7 +647,7 @@ void QtPropertyData::ChildrenAdd(DAVA::Vector<std::unique_ptr<QtPropertyData>> &
         item->SetModel(model);
         item->SetOWViewport(optionalButtonsViewport);
 
-        keyToDataMap.emplace(ChildKey(item->name, item->MetaInfo(), item->IsEnabled()), childrenData.size());
+        keyToDataMap.emplace(ChildKey(item.get()), childrenData.size());
         childrenData.push_back(std::move(item));
     }
     data.clear();
@@ -662,7 +673,7 @@ void QtPropertyData::ChildInsert(std::unique_ptr<QtPropertyData> && data, int po
     }
     else
     {
-        keyToDataMap.emplace(ChildKey(data->name, data->MetaInfo(), data->IsEnabled()), childrenData.size());
+        keyToDataMap.emplace(ChildKey(data.get()), childrenData.size());
         childrenData.push_back(std::move(data));
     }
 }
@@ -691,7 +702,7 @@ QtPropertyData*  QtPropertyData::ChildGet(const DAVA::FastName & key) const
 
 int QtPropertyData::ChildIndex(const QtPropertyData* data) const
 {
-    TChildMap::const_iterator iter = keyToDataMap.find(ChildKey(data->name, data->MetaInfo(), data->IsEnabled()));
+    TChildMap::const_iterator iter = keyToDataMap.find(ChildKey(data));
     if (iter != keyToDataMap.end())
         return iter->second;
 
@@ -710,7 +721,7 @@ void QtPropertyData::ChildrenExtract(DAVA::Vector<std::unique_ptr<QtPropertyData
 
 void QtPropertyData::ChildRemove(const QtPropertyData* data)
 {
-    TChildMap::const_iterator iter = keyToDataMap.find(ChildKey(data->name, data->MetaInfo(), data->IsEnabled()));
+    TChildMap::const_iterator iter = keyToDataMap.find(ChildKey(data));
     if (iter != keyToDataMap.end())
     {
         size_t index = iter->second;
@@ -971,6 +982,6 @@ void QtPropertyData::RefillSearchIndex()
     for (size_t i = 0; i < childrenData.size(); ++i)
     {
         const std::unique_ptr<QtPropertyData> & data = childrenData[i];
-        DVVERIFY(keyToDataMap.emplace(ChildKey(data->name, data->MetaInfo(), data->IsEnabled()), i).second);
+        DVVERIFY(keyToDataMap.emplace(ChildKey(data.get()), i).second);
     }
 }

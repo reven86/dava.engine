@@ -915,8 +915,8 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
         {
             DAVA::Vector<Command2 *> commands;
             commands.reserve(propData->GetMergedItemCount());
-            propData->ForeachMergedItem([&commands](QtPropertyData* item)
-            {
+
+            auto commandsAccumulateFn = [&commands](QtPropertyData* item) {
                 Command2 *command = reinterpret_cast<Command2 *>(item->CreateLastCommand());
                 if (command != nullptr)
                 {
@@ -924,7 +924,10 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
                 }
 
                 return true;
-            });
+            };
+
+            propData->ForeachMergedItem(commandsAccumulateFn);
+            commandsAccumulateFn(propData);
 
             bool useBatch = commands.size() > 1;
             if (useBatch)

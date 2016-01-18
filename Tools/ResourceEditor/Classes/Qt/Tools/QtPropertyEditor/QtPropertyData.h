@@ -216,15 +216,13 @@ protected:
     struct ChildKey
     {
         ChildKey() = default;
-        ChildKey(const DAVA::FastName & childName_, const DAVA::MetaInfo * childMeta_, bool isChildEnabled_);
+        ChildKey(const QtPropertyData* child);
 
         bool operator == (const ChildKey & other) const;
         bool operator != (const ChildKey & other) const;
         bool operator < (const ChildKey & other) const;
 
-        DAVA::FastName childName;
-        const DAVA::MetaInfo * childMeta = nullptr;
-        bool isChildEnabled = false;
+        const QtPropertyData* child;
     };
 
     using TChildMap = DAVA::Map<ChildKey, size_t>;
