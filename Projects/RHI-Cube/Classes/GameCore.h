@@ -73,6 +73,8 @@ public:
     virtual void Draw();
     virtual void EndFrame();
 
+    void OnKeyUp(UIEvent* evt);
+
 protected:
     void SetupTriangle();
     void SetupCube();
@@ -85,6 +87,8 @@ protected:
     void rhiDraw();
     void rtDraw();
     void visibilityTestDraw();
+
+    static void ScreenShotCallback(uint32 width, uint32 height, const void* rgba);
 
     bool inited;
 

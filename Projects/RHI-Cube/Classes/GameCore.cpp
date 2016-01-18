@@ -926,6 +926,7 @@ void GameCore::OnAppStarted()
     Logger::Info( "\n\n====================" );
     fp.Dump();
 */
+
     inited = true;
 }
 
@@ -968,6 +969,16 @@ void GameCore::OnForeground()
 void GameCore::Update(float32 timeElapsed)
 {
     //    sceneRenderTest->Update(timeElapsed);
+
+    static bool old_s_pressed = false;
+    bool new_s_pressed = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DAVA::Key::KEY_S);
+
+    if (!old_s_pressed && new_s_pressed)
+    {
+        DAVA::Logger::Info("taking screenshot...");
+        rhi::TakeScreenshot(&GameCore::ScreenShotCallback);
+    }
+    old_s_pressed = new_s_pressed;
 
     static std::vector<profiler::CounterInfo> counter;
 
@@ -1713,4 +1724,14 @@ void GameCore::EndFrame()
             DbgDraw::Text2D(x1, y, clr, "= %u", StatSet::StatValue(id[i]));
         }
     }
+}
+
+void GameCore::ScreenShotCallback(uint32 width, uint32 height, const void* rgba)
+{
+    DAVA::Logger::Info("saving screenshot");
+
+    DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, (const uint8*)rgba);
+
+    if (img)
+        img->Save("screenshot.png");
 }
