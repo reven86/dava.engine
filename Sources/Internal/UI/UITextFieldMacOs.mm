@@ -174,14 +174,6 @@ public:
         nsTextField.bezeled = NO;
 
         [nsTextField.cell setUsesSingleLineMode:YES];
-
-        //        NSColor* backColor = [NSColor
-        //        colorWithCalibratedRed:0.f
-        //                         green:1.f
-        //                          blue:0.f
-        //                         alpha:1.f];
-        //
-        //        [nsTextField setBackgroundColor:backColor];
     }
 
     ~SingleLineText()
@@ -211,14 +203,6 @@ public:
     void CloseKeyboard() override
     {
         [nsTextField resignFirstResponder];
-
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-
-        if (delegate)
-        {
-            Rect emptyRect;
-            //delegate->OnKeyboardHidden();
-        }
     }
 
     void GetText(WideString& string) const override
@@ -302,6 +286,7 @@ public:
         }
         [nsTextField setAlignment:aligment];
 
+        // several time set align so comment it for now DVASSERT(align & ALIGN_VCENTER);
         if (align & ALIGN_VCENTER)
         {
             // TODO set custom cell properti - vAlignment
@@ -334,11 +319,11 @@ public:
     }
     void ShowField() override
     {
-        // TODO do I need it on mac os?
+        // we always on screen
     }
     void HideField() override
     {
-        // TODO do I need it on mac os?
+        // we always on screen
     }
 
     void SetInputEnabled(bool value) override
@@ -349,24 +334,34 @@ public:
     // Keyboard traits.
     void SetAutoCapitalizationType(DAVA::int32 value) override
     {
+        // not supported implement on client in delegate
     }
     void SetAutoCorrectionType(DAVA::int32 value) override
     {
+        // not supported implement on client in delegate
     }
     void SetSpellCheckingType(DAVA::int32 value) override
     {
+        // not supported for NSTextField
+        // we can implement it in NSTextView with property
+        // setContinuousSpellCheckingEnabled:YES
+        // but does we really need it?
     }
     void SetKeyboardAppearanceType(DAVA::int32 value) override
     {
+        // not aplicable on mac os with hardware keyboard
     }
     void SetKeyboardType(DAVA::int32 value) override
     {
+        // not aplicable on mac os with hardware keyboard
     }
     void SetReturnKeyType(DAVA::int32 value) override
     {
+        // not aplicable on mac os with hardware keyboard
     }
     void SetEnableReturnKeyAutomatically(bool value) override
     {
+        // not aplicable on mac os with hardware keyboard
     }
 
     // Cursor pos.
@@ -402,7 +397,7 @@ public:
 
     void SetIsPassword(bool value) override
     {
-        if (IsPassword() != value)
+        if (password != value)
         {
             WideString oldText;
             GetText(oldText);
@@ -417,7 +412,8 @@ public:
                 [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
             }
 
-            // TODO need remove next line?
+            // we have to recreate nsTextField for new CellClass
+            // do you know way beter?
             nsTextField = [[CustomTextField alloc] initWithFrame:[oldCtrl frame]];
 
             [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
@@ -443,11 +439,13 @@ public:
 
             [oldCtrl removeFromSuperview];
             [oldCtrl release];
+
+            password = value;
         }
     }
     bool IsPassword() const override
     {
-        return [nsTextField isKindOfClass:[NSSecureTextField class]];
+        return password;
     }
 
     // Max text length.
@@ -458,11 +456,11 @@ public:
 
     void SetRenderToTexture(bool value) override
     {
-        // TODO
+        // not implemented
+        Logger::FrameworkDebug("setRenderTotexture not implemented on macos");
     }
     bool IsRenderToTexture() const override
     {
-        // TODO
         return false;
     }
 
@@ -478,6 +476,7 @@ public:
     eAlign alignment = ALIGN_LEFT;
     bool useRtlAlign = false;
     bool multiline = false;
+    bool password = false;
 };
 
 class UberTextMacOs
