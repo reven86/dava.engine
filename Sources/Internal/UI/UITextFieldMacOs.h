@@ -36,13 +36,13 @@
 
 namespace DAVA
 {
-class UberTextMacOs; // NSTextField, NSTextView, NSSecureTextField
+class ObjCWrapper;
 
 class TextFieldPlatformImpl
 {
 public:
     TextFieldPlatformImpl(UITextField* tf);
-    virtual ~TextFieldPlatformImpl();
+    ~TextFieldPlatformImpl();
 
     void OpenKeyboard();
     void CloseKeyboard();
@@ -89,7 +89,7 @@ public:
     void SystemDraw(const UIGeometricData& geometricData);
 
 private:
-    UberTextMacOs& uberText; // = nullptr;
+    ObjCWrapper* objcWrapper = nullptr;
 };
 } // end namespace DAVA
 
