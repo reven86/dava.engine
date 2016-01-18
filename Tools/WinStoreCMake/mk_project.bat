@@ -25,6 +25,12 @@ if not exist "%SOURCE_DIR%CMakeLists.txt" (echo "Can't find CMakeLists.txt in %S
 if "%2" == "Win64" set APPEND_A_PLATFORM=-A"x64"
 if "%2" == "ARM"   set APPEND_A_PLATFORM=-A"ARM"
 if "%2" == "Win32" set APPEND_A_PLATFORM=-A"Win32"
+if "%2" == "UnityBuild" set APPEND_UNITY_BUILD=-DUNITY_BUILD=true
+
+if "%3" == "Win64" set APPEND_A_PLATFORM=-A"x64"
+if "%3" == "ARM"   set APPEND_A_PLATFORM=-A"ARM"
+if "%3" == "Win32" set APPEND_A_PLATFORM=-A"Win32"
+if "%3" == "UnityBuild" set APPEND_UNITY_BUILD=-DUNITY_BUILD=true
 
 @echo on
-%CMAKE_DIR_BIN%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_TOOLCHAIN_FILE=%SCRIPT_DIR%/../../Sources/CMake/Toolchains/win_uap.toolchain.cmake %APPEND_A_PLATFORM% %SOURCE_DIR%
+%CMAKE_DIR_BIN%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_TOOLCHAIN_FILE=%SCRIPT_DIR%/../../Sources/CMake/Toolchains/win_uap.toolchain.cmake %APPEND_A_PLATFORM% %APPEND_UNITY_BUILD% %SOURCE_DIR%

@@ -53,24 +53,23 @@
 
 namespace DAVA
 {
-
 ImportLibrary::~ImportLibrary()
 {
-    for (auto & pair : polygons)
+    for (auto& pair : polygons)
     {
         uint32 refCount = pair.second->Release();
         DVASSERT(0 == refCount);
     }
     polygons.clear();
 
-    for (auto & pair : materialParents)
+    for (auto& pair : materialParents)
     {
         uint32 refCount = pair.second->Release();
         DVASSERT(0 == refCount);
     }
     materialParents.clear();
-    
-    for (auto & pair : animations)
+
+    for (auto& pair : animations)
     {
         uint32 refCount = pair.second->Release();
         DVASSERT(0 == refCount);
@@ -78,17 +77,17 @@ ImportLibrary::~ImportLibrary()
     animations.clear();
 }
 
-PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI)
+PolygonGroup* ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance* colladaPGI)
 {
     // Try to take polygon from library
-    PolygonGroup * davaPolygon = polygons[colladaPGI];
-    
+    PolygonGroup* davaPolygon = polygons[colladaPGI];
+
     // there is no polygon, so create new one
     if (nullptr == davaPolygon)
     {
         davaPolygon = new PolygonGroup();
-        
-        ColladaPolygonGroup *colladaPolygon = colladaPGI->polyGroup;
+
+        ColladaPolygonGroup* colladaPolygon = colladaPGI->polyGroup;
         DVASSERT(nullptr != colladaPolygon && "Empty collada polyton group instance.");
 
         auto& vertices = colladaPolygon->GetVertices();
@@ -99,13 +98,13 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
 
         // Allocate data buffers before fill them
         davaPolygon->AllocateData(vertexFormat, vertexCount, indexCount);
-        
+
         // Fill index array
-        for(uint32 indexNo = 0; indexNo < indexCount; ++indexNo)
+        for (uint32 indexNo = 0; indexNo < indexCount; ++indexNo)
         {
             davaPolygon->indexArray[indexNo] = indecies[indexNo];
         }
-        
+
         // Take collada vertices and set to polygon group
         InitPolygon(davaPolygon, vertexFormat, vertices);
 
@@ -118,13 +117,13 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
         {
             davaPolygon->BuildBuffers();
         }
-        
+
         // Put polygon to the library
         polygons[colladaPGI] = davaPolygon;
     }
-    
+
     // TO VERIFY: polygon
-        
+
     return davaPolygon;
 }
 
@@ -133,8 +132,8 @@ void ImportLibrary::InitPolygon(PolygonGroup* davaPolygon, uint32 vertexFormat, 
     uint32 vertexCount = static_cast<uint32>(vertices.size());
     for (uint32 vertexNo = 0; vertexNo < vertexCount; ++vertexNo)
     {
-        const auto & vertex = vertices[vertexNo];
-        
+        const auto& vertex = vertices[vertexNo];
+
         if (vertexFormat & EVF_VERTEX)
         {
             davaPolygon->SetCoord(vertexNo, vertex.position);
@@ -178,13 +177,13 @@ void ImportLibrary::InitPolygon(PolygonGroup* davaPolygon, uint32 vertexFormat, 
     }
 }
 
-AnimationData * ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * colladaAnimation)
+AnimationData* ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation* colladaAnimation)
 {
-    AnimationData * animation = animations[colladaAnimation];
+    AnimationData* animation = animations[colladaAnimation];
     if (nullptr == animation)
     {
         animation = new AnimationData();
-        
+
         animation->SetInvPose(colladaAnimation->invPose);
         animation->SetDuration(colladaAnimation->duration);
         if (nullptr != colladaAnimation->keys)
@@ -195,10 +194,10 @@ AnimationData * ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * collada
                 animation->AddKey(key);
             }
         }
-        
+
         animations[colladaAnimation] = animation;
     }
-    
+
     return animation;
 }
 
@@ -215,7 +214,7 @@ Texture* ImportLibrary::GetTextureForPath(const FilePath& imagePath) const
     return Texture::CreateFromFile(texturePath);
 }
 
-NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow)
+NMaterial* ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial* colladaMaterial, const bool isShadow)
 {
     FastName parentMaterialTemplate;
     FastName parentMaterialName;
@@ -230,20 +229,20 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
         parentMaterialName = FastName(colladaMaterial->material->GetDaeId().c_str());
         parentMaterialTemplate = NMaterialName::TEXTURED_OPAQUE;
     }
-    
-    NMaterial * davaMaterialParent = materialParents[parentMaterialName];
+
+    NMaterial* davaMaterialParent = materialParents[parentMaterialName];
     if (nullptr == davaMaterialParent)
     {
         davaMaterialParent = new NMaterial();
         davaMaterialParent->SetMaterialName(parentMaterialName);
         davaMaterialParent->SetFXName(parentMaterialTemplate);
-        
+
         materialParents[parentMaterialName] = davaMaterialParent;
-        
+
         FastName textureType;
         FilePath texturePath;
         bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
-        if (!isShadow && hasTexture)
+        if (!isShadow && hasTexture && !texturePath.IsEmpty())
         {
             ScopedPtr<Texture> texture(GetTextureForPath(texturePath));
             davaMaterialParent->AddTexture(textureType, texture);
@@ -256,16 +255,16 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
             }
         }
     }
-    
+
     return davaMaterialParent;
 }
 
 NMaterial* ImportLibrary::CreateMaterialInstance(ColladaPolygonGroupInstance* colladaPolyGroupInst, const bool isShadow)
 {
-    ColladaMaterial * colladaMaterial = colladaPolyGroupInst->material;
+    ColladaMaterial* colladaMaterial = colladaPolyGroupInst->material;
     DVASSERT(nullptr != colladaMaterial && "Empty material");
 
-    NMaterial * davaMaterialParent = GetOrCreateMaterialParent(colladaMaterial, isShadow);
+    NMaterial* davaMaterialParent = GetOrCreateMaterialParent(colladaMaterial, isShadow);
 
     NMaterial* material = new NMaterial();
     static uint32 materialInstanceNo = 0;
@@ -278,7 +277,7 @@ NMaterial* ImportLibrary::CreateMaterialInstance(ColladaPolygonGroupInstance* co
 
 bool ImportLibrary::GetTextureTypeAndPathFromCollada(ColladaMaterial* material, FastName& type, FilePath& path) const
 {
-    ColladaTexture * diffuse = material->diffuseTexture;
+    ColladaTexture* diffuse = material->diffuseTexture;
     bool useDiffuseTexture = (nullptr != diffuse && material->hasDiffuseTexture);
     if (useDiffuseTexture)
     {
@@ -295,6 +294,5 @@ FilePath ImportLibrary::GetNormalMapTexturePath(const FilePath& originalTextureP
     path.ReplaceBasename(path.GetBasename() + ImportSettings::normalMapPattern);
     return path;
 }
-  
 
 } // DAVA namespace

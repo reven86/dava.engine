@@ -162,7 +162,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
     switch (currentInput->phase)
     {
     case UIEvent::Phase::KEY_DOWN:
-        return ProcessKey(currentInput->tid);
+        return ProcessKey(currentInput->key);
 
     case UIEvent::Phase::BEGAN:
     {
@@ -174,8 +174,8 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
     }
     case UIEvent::Phase::DRAG:
     {
-        UIEvent::eButtonID button = static_cast<UIEvent::eButtonID>(currentInput->tid);
-        if (button == UIEvent::BUTTON_1 && currentInput->point != prevPos)
+        UIEvent::MouseButton button = currentInput->mouseButton;
+        if (button == UIEvent::MouseButton::LEFT && currentInput->point != prevPos)
         {
             if (ProcessDrag(currentInput->point))
             {
@@ -208,7 +208,7 @@ void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selected, co
     UpdateNeighboursToMove();
 }
 
-bool EditorTransformSystem::ProcessKey(const int32 key)
+bool EditorTransformSystem::ProcessKey(const Key key)
 {
     if (!selectedControlNodes.empty())
     {
@@ -220,16 +220,16 @@ bool EditorTransformSystem::ProcessKey(const int32 key)
         Vector2 deltaPos;
         switch (key)
         {
-        case DVKEY_LEFT:
+        case Key::LEFT:
             deltaPos.dx -= step;
             break;
-        case DVKEY_UP:
+        case Key::UP:
             deltaPos.dy -= step;
             break;
-        case DVKEY_RIGHT:
+        case Key::RIGHT:
             deltaPos.dx += step;
             break;
-        case DVKEY_DOWN:
+        case Key::DOWN:
             deltaPos.dy += step;
             break;
         default:

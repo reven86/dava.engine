@@ -34,14 +34,12 @@
 
 namespace DAVA
 {
-    
 namespace ImportSettings
 {
 static const String shadowNamePattern("_shadow");
 static const String normalMapPattern("_NM");
 static const FastName shadowMaterialName("Shadow_Material");
 }
-
 }
 
 #endif //IMPORT_SETTINGS_H

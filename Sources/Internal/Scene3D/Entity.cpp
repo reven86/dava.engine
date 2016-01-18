@@ -155,21 +155,22 @@ void Entity::SetScene(Scene * _scene)
 	{
 		scene->UnregisterEntity(this);
 	}
-	scene = _scene;
-	if (scene)
+
+    scene = _scene;
+
+    if (scene)
 	{
 		scene->RegisterEntity(this);
-        for(auto & it : components)
+        for (auto component : components)
         {
-            GlobalEventSystem::Instance()->PerformAllEventsFromCache(it);
+            GlobalEventSystem::Instance()->PerformAllEventsFromCache(component);
         }
 	}
 
-	const Vector<Entity*>::iterator & childrenEnd = children.end();
-	for (Vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
-	{
-		(*t)->SetScene(_scene);
-	}
+    for (auto child : children)
+    {
+        child->SetScene(scene);
+    }
 }
 	
 void Entity::SetParent(Entity * _parent)
