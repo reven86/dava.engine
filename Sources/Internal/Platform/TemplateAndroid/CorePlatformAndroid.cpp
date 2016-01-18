@@ -119,9 +119,6 @@ void CorePlatformAndroid::QuitAction()
     FrameworkWillTerminate();
 
     Logger::Debug("[CorePlatformAndroid::QuitAction] out");
-
-    Logger::Debug("[CorePlatformAndroid::QuitAction] Kill process");
-    exit(0);
 }
 
 void CorePlatformAndroid::ProcessFrame()
@@ -218,16 +215,10 @@ void CorePlatformAndroid::OnDestroyActivity()
 {
     Logger::Info("[CorePlatformAndroid::OnDestroyActivity]");
 
-    rhi::ResetParam params;
-    params.width = 0;
-    params.height = 0;
-    params.window = nullptr;
-    rhi::Reset(params);
-
     renderIsActive = false;
-    QuitAction();
-
     wasCreated = false;
+
+    QuitAction();
 }
 
 void CorePlatformAndroid::StartVisible()

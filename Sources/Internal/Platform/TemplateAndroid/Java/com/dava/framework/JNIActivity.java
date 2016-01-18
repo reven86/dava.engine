@@ -498,6 +498,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onDestroy();
 
         Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] out");
+
+        Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] System exit");
+        System.exit(0);
     }
     
     @Override
@@ -729,6 +732,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		}
 		return isScreenLocked;
 	}
+
 	// Workaround! this function called from c++ when game wish to 
     // Quit it block GLThread because we already destroy singletons and can't 
     // return to GLThread back
@@ -736,9 +740,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     {
     	Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] in");
     	
-        final JNIActivity activity = JNIActivity.GetActivity();
-        activity.mainThreadNeedExit = true; // prevent next iteration in C++ main thread we currently in
-        
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
