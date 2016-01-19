@@ -10,6 +10,7 @@ public class TemplateApp extends JNIApplication {
 	}
 	
 	static {
+		System.loadLibrary("gnustl_shared");
 		System.loadLibrary("TemplateLib");
 		
 		/*try {

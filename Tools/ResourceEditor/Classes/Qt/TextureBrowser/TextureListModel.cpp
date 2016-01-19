@@ -173,7 +173,7 @@ void TextureListModel::setScene(DAVA::Scene *scene)
 
     applyFilterAndSort();
 
-	endResetModel();
+    endResetModel();
 }
 
 void TextureListModel::setHighlight(const EntityGroup *nodes)

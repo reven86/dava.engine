@@ -26,67 +26,75 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __TEST_SCREEN_H__
+#define __TEST_SCREEN_H__
 
-#ifndef __DAVAENGINE_QT_LAYER_H__
-#define __DAVAENGINE_QT_LAYER_H__
+#include "DAVAEngine.h"
+#include "DLC/DLC.h"
+#include "Infrastructure/BaseScreen.h"
 
-#include "Base/Singleton.h"
-#include "Base/BaseTypes.h"
+using namespace DAVA;
 
-#include "UI/UIEvent.h"
-
-namespace DAVA 
+struct DLCCrashTest
 {
+    uint64 cancelTimeout;
+    uint64 exitTimeout;
+    uint32 retryCount;
 
-class QtLayerDelegate
-{
-public:
-	virtual ~QtLayerDelegate() {}
+    DAVA::FilePath testingFileFlag;
+    DAVA::String dbObjectId;
 
-	virtual void Quit() = 0;
+    bool forceExit;
+    bool inExitMode;
+
+    Thread* exitThread;
+
+    void Init(const DAVA::FilePath& workingDir, const DAVA::FilePath& destinationDir);
+    void Update(float32 timeElapsed, DLC* dlc);
+
+    void ExitThread(BaseObject* caller, void* callerData, void* userData);
 };
 
-
-class QtLayer
-	: public Singleton<QtLayer>
+class DlcTest : public BaseScreen
 {
 public:
-    QtLayer();
-    virtual ~QtLayer();
-    
-    void OnSuspend();
-    void OnResume();
-	
-    void AppStarted();
-    void AppFinished();
+    DlcTest();
 
-    void Resize(int32 width, int32 height, float64 dpr);
-    void ProcessFrame();
+protected:
+    ~DlcTest()
+    {
+    }
 
-    void * CreateAutoreleasePool();
-    void ReleaseAutoreleasePool(void *pool);
+public:
+    void LoadResources() override;
+    void UnloadResources() override;
+    void WillAppear() override;
 
-    void Quit();
-    void SetDelegate(QtLayerDelegate *delegate);
-
-    bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
-
-    void KeyPressed(Key key, int32 count, uint64 timestamp);
-    void KeyReleased(Key key);
-
-    void MouseEvent(const UIEvent & event);
-
-#ifdef __DAVAENGINE_MACOS__
-    static void MakeAppForeground( bool foreground = true );
-    static void RestoreMenuBar();
-#endif
+    void Update(float32 timeElapsed) override;
+    void Draw(const UIGeometricData& geometricData) override;
 
 private:
-    QtLayerDelegate *delegate;
-    bool isDAVAEngineEnabled;
+    void Cancel(BaseObject* obj, void* data, void* callerData);
+    void Restart(BaseObject* obj, void* data, void* callerData);
+
+protected:
+    DAVA::FilePath workingDir;
+    DAVA::FilePath sourceDir;
+    DAVA::FilePath destinationDir;
+
+    UIButton* returnButton;
+    UIButton* restartButton;
+
+    UIStaticText* staticText;
+    UIControl* animControl;
+    UIControl* progressControl;
+
+    float32 angle;
+    float32 lastUpdateTime;
+    uint32 lastDLCState;
+
+    DLC* dlc;
+    DLCCrashTest crashTest;
 };
 
-}
-
-
-#endif // __DAVAENGINE_QT_LAYER_H__
+#endif
