@@ -44,6 +44,8 @@ DAVA_TESTCLASS(ThreadSyncTest)
 
     volatile int autoResetValue;
     volatile int manualResetValue;
+    std::atomic<int> autoResetWakeCounter;
+    Mutex autoResetMutex;
 
     static const int autoResetLoopCount = 10000;
     static const int autoResetThreadCount = 4;
@@ -163,6 +165,38 @@ DAVA_TESTCLASS(ThreadSyncTest)
             threads[i]->Start();
         }
 
+        // test that only one thread will wake if we signaling once
+        {
+            autoResetWakeCounter.store(0);
+            are.Signal();
+
+            // unlock threads and test
+            Thread::Sleep(500);
+            TEST_VERIFY(autoResetWakeCounter.load() == 1);
+        }
+
+        // test that only one thread will wake if we signaling multiple times
+        {
+            // make sure all thread are not waiting on autoResetMutex
+            {
+                autoResetMutex.Lock();
+                for (int i = 0; i < autoResetThreadCount; ++i)
+                {
+                    are.Signal();
+                    Thread::Sleep(500);
+                }
+            }
+
+            // signal multiple times
+            autoResetWakeCounter.store(0);
+            for (int i = 0; i < autoResetThreadCount; ++i) are.Signal();
+
+            autoResetMutex.Unlock();
+            Thread::Sleep(500);
+            TEST_VERIFY(autoResetWakeCounter.load() == 1);
+        }
+
+        // continue signaling until all thread finish their work
         while (autoResetValue < autoResetThreadCount)
         {
             are.Signal();
@@ -185,11 +219,15 @@ DAVA_TESTCLASS(ThreadSyncTest)
         for (int i = 0; i < autoResetLoopCount; ++i)
         {
             res += dis(gen);
+
             are.Wait();
+            autoResetWakeCounter++;
+
+            autoResetMutex.Lock();
+            autoResetMutex.Unlock();
         }
 
         autoResetValue++;
-        Logger::Info("%f", res);
     }
 
     DAVA_TEST(TestManualResetEvent)
@@ -202,6 +240,17 @@ DAVA_TESTCLASS(ThreadSyncTest)
             threads[i] = Thread::Create(Message(this, &ThreadSyncTest::ManualResetEventThreadFunc));
             threads[i]->Start();
         }
+
+        // check that wait don't hang if manualResetEvent is signaled
+        autoResetMutex.Lock();
+        Thread::Sleep(500);
+        int check = autoResetWakeCounter;
+        mre.Wait();
+        mre.Wait();
+        mre.Wait();
+        Thread::Sleep(500);
+        TEST_VERIFY(check == autoResetWakeCounter);
+        autoResetMutex.Unlock();
 
         while (manualResetValue < autoResetThreadCount)
         {
@@ -227,6 +276,10 @@ DAVA_TESTCLASS(ThreadSyncTest)
             mre.Reset();
             res += dis(gen);
             mre.Signal();
+            autoResetWakeCounter++;
+
+            autoResetMutex.Lock();
+            autoResetMutex.Unlock();
         }
 
         manualResetValue++;

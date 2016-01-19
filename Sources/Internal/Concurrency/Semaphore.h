@@ -87,6 +87,7 @@ inline Semaphore::~Semaphore()
 
 inline void Semaphore::Post(uint32 count)
 {
+    DVASSERT(count > 0);
     ReleaseSemaphore(semaphore, count, NULL);
 }
 
@@ -113,10 +114,9 @@ inline Semaphore::~Semaphore()
 
 inline void Semaphore::Post(uint32 count)
 {
-    while (count > 0)
+    while (count-- > 0)
     {
         dispatch_semaphore_signal(semaphore);
-        count--;
     }
 }
 
@@ -142,10 +142,9 @@ inline Semaphore::~Semaphore()
 
 inline void Semaphore::Post(uint32 count)
 {
-    while (count > 0)
+    while (count-- > 0)
     {
         sem_post(&semaphore);
-        count--;
     }
 }
 

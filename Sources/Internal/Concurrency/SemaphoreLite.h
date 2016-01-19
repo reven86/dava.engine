@@ -42,23 +42,25 @@ namespace DAVA
 */
 class SemaphoreLite final
 {
+    static const uint32 defaultSpinCount = 4000;
+
 public:
-    SemaphoreLite(uint32 count_ = 0)
-        : count(0)
+    SemaphoreLite(uint32 count = 0, uint32 spinCount_ = defaultSpinCount)
+        : spinCount(spinCount)
     {
-        int32 c = static_cast<int32>(count_);
+        int32 c = static_cast<int32>(count);
         DVASSERT(c >= 0);
 
-        count.store(c);
+        waitCount.store(c);
     }
 
-    inline void Post(uint32 count_ = 1)
+    inline void Post(uint32 count = 1)
     {
-        int32 c = static_cast<int32>(count_);
+        int32 c = static_cast<int32>(count);
         DVASSERT(c > 0);
 
-        int32 oldCount = count.fetch_add(c, std::memory_order_release);
-        int32 toReleaseCount = std::min(-oldCount, static_cast<int32>(count_));
+        int32 oldWaitCount = waitCount.fetch_add(c, std::memory_order_release);
+        int32 toReleaseCount = std::min(-oldWaitCount, static_cast<int32>(count));
         if (toReleaseCount > 0)
         {
             sem.Post(toReleaseCount);
@@ -68,8 +70,8 @@ public:
     inline void Wait()
     {
         // try to spin and wait for count > 0
-        uint32 spinCount = maxSpinCount;
-        while (spinCount--)
+        uint32 spin = spinCount;
+        while (spin--)
         {
             if (TryWait())
                 return;
@@ -78,10 +80,10 @@ public:
             std::atomic_signal_fence(std::memory_order_acquire);
         }
 
-        // we failed waiting for (count >) 0 while sinning,
+        // we failed waiting for (count > 0) while spinning,
         // so now we should wait in kernel semaphore
-        int32 oldCount = count.fetch_sub(1, std::memory_order_acquire);
-        if (oldCount < 0)
+        int32 oldWaitCount = waitCount.fetch_sub(1, std::memory_order_acquire);
+        if (oldWaitCount <= 0)
         {
             sem.Wait();
         }
@@ -91,15 +93,14 @@ public:
     {
         // check if count is > 0 and if so try to decrement it
         // return true if decrement was successful
-        int32 oldCount = count.load(std::memory_order_relaxed);
-        return (oldCount > 0 && count.compare_exchange_strong(oldCount, oldCount - 1, std::memory_order_acquire));
+        int32 oldWaitCount = waitCount.load(std::memory_order_relaxed);
+        return (oldWaitCount > 0 && waitCount.compare_exchange_strong(oldWaitCount, oldWaitCount - 1, std::memory_order_acquire));
     }
 
 private:
     Semaphore sem;
-    std::atomic<int32> count;
-
-    static const uint32 maxSpinCount = 100;
+    uint32 spinCount = defaultSpinCount;
+    std::atomic<int32> waitCount = 0;
 };
 
 } // namespace DAVA
