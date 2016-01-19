@@ -407,12 +407,22 @@ void MainWindow::SetupBackgroundMenu()
 
     backgroundColorMenu->addAction(defaultBackgroundColorAction);
     backgroundColorMenu->addSeparator();
-
-    QStringList colorNames = { "Black", "Gray", "Darkgray", "Lightgrey" };
-    for (const auto& colorName : colorNames)
+    static const struct
     {
-        QAction* colorAction = new QAction(colorName, backgroundColorMenu);
-        QColor color(colorName);
+        QColor color;
+        QString colorName;
+    } colorsMap[] =
+    {
+      { Qt::black, "Black" },
+      { QColor(0x33, 0x33, 0x33, 0xFF), "Grey" },
+      { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
+      { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
+      { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
+    };
+    for (const auto& colorItem : colorsMap)
+    {
+        QAction* colorAction = new QAction(colorItem.colorName, backgroundColorMenu);
+        QColor color(colorItem.color);
         MainWindow_namespace::SetColoredIconToAction(colorAction, color);
 
         actionGroup->addAction(colorAction);
