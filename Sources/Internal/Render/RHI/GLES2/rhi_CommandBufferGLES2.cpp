@@ -1390,7 +1390,7 @@ _GLES2_ExecuteQueuedCommands()
             memcpy(line2, tmp, stride);
         }
         (*_GLES2_PendingScreenshotCallback)(_GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, rgba);
-        delete rgba;
+        delete[] rgba;
         _GLES2_PendingScreenshotCallback = nullptr;
     }
     _GLES2_ScreenshotCallbackSync.Unlock();
