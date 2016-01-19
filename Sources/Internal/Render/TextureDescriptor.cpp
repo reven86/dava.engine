@@ -1162,9 +1162,10 @@ bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
             auto compressToWidth = static_cast<uint32>(compressionArchieve->GetInt32("width"));
             auto compressToHeight = static_cast<uint32>(compressionArchieve->GetInt32("height"));
 
-            if (format != compressionGPU.format ||
-                compressToWidth != compressionGPU.compressToWidth ||
-                compressToHeight != compressionGPU.compressToHeight)
+            if (format != FORMAT_INVALID &&
+                (format != compressionGPU.format ||
+                 compressToWidth != compressionGPU.compressToWidth ||
+                 compressToHeight != compressionGPU.compressToHeight))
             {
                 compressionGPU.format = format;
                 compressionGPU.compressToHeight = compressToHeight;

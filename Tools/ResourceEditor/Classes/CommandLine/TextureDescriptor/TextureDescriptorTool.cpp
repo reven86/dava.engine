@@ -219,6 +219,7 @@ void TextureDescriptorTool::ProcessInternal()
         {
             TextureDescriptorUtils::SetPreset(filePathname, presetPath, convertEnabled, quality);
         }
+        break;
     }
     default:
     {
