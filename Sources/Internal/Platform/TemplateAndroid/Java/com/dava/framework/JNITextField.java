@@ -133,7 +133,8 @@ public class JNITextField {
 
         @Override
         public void run() {
-            if(!JNISurfaceView.isPaused())
+            JNIActivity activity = JNIActivity.GetActivity();
+            if(!activity.GetIsPausing())
             {
                 TextFieldUpdateTexture(id, pixels, width, height);
 
