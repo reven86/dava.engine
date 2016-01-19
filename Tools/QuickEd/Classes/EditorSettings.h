@@ -64,13 +64,11 @@ public:
 
     DAVA::Color GetGrigColor() const;
     void SetGrigColor(const DAVA::Color& color);
+    DAVA::Signal<const DAVA::Color&> GridColorChanged;
 
-    // Background Frame colors.
-    DAVA::Color GetCurrentBackgroundFrameColor() const;
-    void SetCurrentBackgroundFrameColor(const DAVA::Color& color);
-    
-    DAVA::Color GetCustomBackgroundFrameColor() const;
-    void SetCustomBackgroundFrameColor(const DAVA::Color& color);
+    bool IsGridColored() const;
+    void SetGridColored(const bool& type);
+    DAVA::Signal<const bool&> GridColoredChanged;
 
     bool IsUsingAssetCache() const;
     DAVA::String GetAssetCacheIp() const;
@@ -82,6 +80,8 @@ protected:
     void SetColor(const DAVA::String& colorName, const DAVA::Color& color);
 
 private:
+    using HashType = size_t;
+
     DAVA::KeyedArchive *settings;
 };
 
