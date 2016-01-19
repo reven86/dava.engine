@@ -73,10 +73,6 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
 
-    // For testing purpose limit minimum window size to 400x300
-    appOptions->SetInt32("min-width", 960);
-    appOptions->SetInt32("min-height", 640);
-
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
 #else
     screenWidth = WIDTH;
@@ -87,6 +83,10 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("bpp", 32);
     
 #endif
+
+    // For testing purpose limit minimum window size to 960x640
+    appOptions->SetInt32("min-width", 960);
+    appOptions->SetInt32("min-height", 640);
 
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
     appOptions->SetInt32("width", screenWidth);

@@ -87,6 +87,8 @@ namespace DAVA
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
+
+- (void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height;
 @end
 
 @implementation MainWindowController
@@ -107,6 +109,20 @@ namespace DAVA
 		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
 		return mouseLocation;
 	}
+    
+    void CoreMacOSPlatform::SetWindowMinimumSize(float32 width, float32 height)
+    {
+        DVASSERT((width == 0.0f && height == 0.0f) || (width > 0.0f && height > 0.0f));
+        minWindowWidth = width;
+        minWindowHeight = height;
+
+        [mainWindowController setMinimumWindowSize: minWindowWidth height: minWindowHeight];
+    }
+    
+    Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
+    {
+        return Vector2(minWindowWidth, minWindowHeight);
+    }
 }
 
 - (id)init
@@ -140,6 +156,8 @@ namespace DAVA
     int32 height = 600;
     bool isFull = false;
 
+    float32 minWidth = 0.0f;
+    float32 minHeight = 0.0f;
     KeyedArchive* options = Core::Instance()->GetOptions();
     if(nullptr != options)
     {
@@ -151,6 +169,8 @@ namespace DAVA
         }
         
         isFull = (0 != options->GetInt32("fullscreen", 0));
+        minWidth = static_cast<float32>(options->GetInt32("min-width", 0));
+        minHeight = static_cast<float32>(options->GetInt32("min-height", 0));
     }
     
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
@@ -162,6 +182,15 @@ namespace DAVA
     [mainWindow setDelegate:self];
     [mainWindow setContentView: openGLView];
     [mainWindow setContentSize: NSMakeSize(width, height)];
+    mainWindow.contentMinSize = NSMakeSize(width, height);
+    [mainWindowController setMinimumWindowSize: 0.0f height: 0.0f];
+    
+    if (minWidth > 0 && minHeight > 0)
+    {
+        // Call Core::SetWindowMinimumSize to save minimum width and height and limit window size
+        // Such a strange way due to my little knowledge of Objective-C
+        Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
+    }
 
     core = Core::GetApplicationCore();
     Core::Instance()->SetNativeView(openGLView);
@@ -183,6 +212,19 @@ namespace DAVA
     {
         [self setFullScreen:true];
     }
+}
+
+-(void)setMinimumWindowSize:(DAVA::float32)width height:(DAVA::float32)height
+{
+    const float32 MIN_WIDTH = 64.0f;
+    const float32 MIN_HEIGHT = 64.0f;
+ 
+    // Always limit minimum window size to 64x64, as application crashes
+    // when resizing window to zero height (stack overflow occures)
+    // It seems that NSOpenGLView is responsible for that
+    if (width < MIN_WIDTH) width = MIN_WIDTH;
+    if (height < MIN_HEIGHT) height = MIN_HEIGHT;
+    mainWindow.contentMinSize = NSMakeSize(width, height);
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
