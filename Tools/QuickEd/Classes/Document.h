@@ -58,9 +58,12 @@ class PackageModel;
 class ControlNode;
 class AbstractProperty;
 
+class QFileSystemWatcher;
+
 class Document final : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool canSave READ CanSave WRITE SetCanSave NOTIFY CanSaveChanged);
 
 public:
     explicit Document(PackageNode* package, QObject* parent = nullptr);
@@ -78,13 +81,16 @@ public:
     WidgetContext* GetContext(QObject* requester) const;
 
     void SetContext(QObject* requester, WidgetContext* widgetContext);
-
     void RefreshLayout();
+    bool CanSave() const;
+    bool IsDocumentExists() const;
 
 signals:
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
     void RootControlPositionChanged(DAVA::Vector2 position);
+    void FileChanged();
+    void CanSaveChanged(bool canSave);
 
 public slots:
     void SetScale(float scale);
@@ -92,6 +98,11 @@ public slots:
     void SetPixelization(bool hasPixelization);
     void RefreshAllControlProperties();
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void SetCanSave(bool canSave);
+
+private slots:
+    void OnFileChanged(const QString& path);
+    void OnCleanChanged(bool clean);
 
 private:
     void OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
@@ -103,6 +114,9 @@ private:
     QUndoStack* undoStack = nullptr;
 
     EditorSystemsManager systemManager;
+    QFileSystemWatcher* fileSystemWatcher = nullptr;
+    bool fileExists = true;
+    bool canSave = false;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

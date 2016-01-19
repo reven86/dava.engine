@@ -92,9 +92,9 @@ public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
     void OnDocumentChanged(Document* document);
+    void OnDocumentCanSaveChanged(int documentIndex, bool canSave);
 
 private slots:
-    void OnCleanChanged(bool val);
     void OnSaveDocument();
     void OnShowHelp();
     

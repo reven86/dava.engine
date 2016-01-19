@@ -42,7 +42,6 @@ class DocumentGroup;
 class Project;
 class PackageNode;
 class SpritesPacker;
-class QFileSystemWatcher;
 
 class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
@@ -57,8 +56,8 @@ public:
 
 private slots:
     void OnReloadSprites();
-    void OnFilesChanged(const QStringList& changedFiles);
-    void OnFilesRemoved(const QStringList& removedFiles);
+    void OnFilesChanged(const QList<Document*>& changedFiles);
+    void OnFilesRemoved(const QList<Document*>& removedFiles);
 
     void OnOpenPackageFile(const QString &path);
     void OnProjectPathChanged(const QString &path);
@@ -79,7 +78,7 @@ private slots:
     void OnGlobalStyleClassesChanged(const QString &classesStr);
 
     void OnApplicationStateChanged(Qt::ApplicationState state);
-    void OnFileChanged(const QString& path);
+    void OnFileChanged();
 
 private:
     void ApplyFileChanges();
@@ -98,8 +97,7 @@ private:
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
     DAVA::UIControl* rootControl = nullptr;
-    QFileSystemWatcher* fileSystemWatcher = nullptr;
-    QSet<QString> changedFiles;
+    QSet<Document*> changedFiles;
 };
 
 inline EditorFontSystem *GetEditorFontSystem()

@@ -58,6 +58,7 @@ signals:
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
     void RootControlPositionChanged(DAVA::Vector2 position);
+    void CanSaveChanged(int index, bool canSave);
 
 public slots:
     void SetActiveDocument(Document* document);
@@ -68,6 +69,9 @@ public slots:
     void OnSelectAllRequested();
     void FocusNextChild();
     void FocusPreviousChild();
+
+private slots:
+    void OnCanSaveChanged(bool canSave);
 
 protected:
     bool emulationMode = false;

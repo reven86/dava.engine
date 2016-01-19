@@ -87,6 +87,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
         disconnect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::CanvasSizeChanged);
+        disconnect(active, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
         DocumentDeactivated(active);
     }
     
@@ -101,6 +102,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
         connect(active, &Document::RootControlPositionChanged, this, &DocumentGroup::RootControlPositionChanged);
+        connect(active, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
 
         undoGroup->setActiveStack(active->GetUndoStack());
 
@@ -173,6 +175,15 @@ void DocumentGroup::FocusPreviousChild()
     {
         active->GetSystemManager()->FocusPreviousChild.Emit();
     }
+}
+
+void DocumentGroup::OnCanSaveChanged(bool canSave)
+{
+    Document* senderDocument = qobject_cast<Document*>(sender());
+    DVASSERT(nullptr != senderDocument);
+    int index = documentList.indexOf(senderDocument);
+    DVASSERT(index != -1);
+    emit CanSaveChanged(index, canSave);
 }
 
 Document *DocumentGroup::GetActiveDocument() const

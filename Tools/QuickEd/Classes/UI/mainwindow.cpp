@@ -145,7 +145,7 @@ void MainWindow::OnDocumentChanged(Document* document)
     previewWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
 
-    actionSaveDocument->setEnabled(nullptr != document && !document->GetUndoStack()->isClean());
+    actionSaveDocument->setEnabled(nullptr != document && document->CanSave());
 
     for (int index = 0, count = tabBar->count(); index < count; ++index)
     {
@@ -206,31 +206,19 @@ QComboBox* MainWindow::GetComboBoxLanguage()
     return comboboxLanguage;
 }
 
-void MainWindow::OnCleanChanged(bool isClean)
+void MainWindow::OnDocumentCanSaveChanged(int documentIndex, bool canSave)
 {
-    QUndoStack* undoStack = qobject_cast<QUndoStack*>(sender());
-    DVASSERT(nullptr != undoStack);
-    Document* document = qobject_cast<Document*>(undoStack->parent());
-    if (nullptr == document)
+    QVariant var = tabBar->tabData(documentIndex);
+    DVASSERT(var.canConvert<TabState*>());
+    TabState* tabState = var.value<TabState*>();
+
+    QString tabText = tabState->tabText;
+    if (canSave)
     {
-        return; //undostack emit clear when destroyed
+        tabText += "*";
     }
-    for (int index = 0, count = tabBar->count(); index < count; ++index)
-    {
-        QVariant var = tabBar->tabData(index);
-        DVASSERT(var.canConvert<TabState*>());
-        TabState* tabState = var.value<TabState*>();
-        if (tabState->document == document)
-        {
-            QString tabText = tabState->tabText;
-            if (!isClean)
-            {
-                tabText += "*";
-            }
-            tabBar->setTabText(index, tabText);
-            actionSaveDocument->setEnabled(!isClean);
-        }
-    }
+    tabBar->setTabText(documentIndex, tabText);
+    actionSaveDocument->setEnabled(canSave);
 }
 
 bool MainWindow::IsInEmulationMode() const
@@ -470,8 +458,6 @@ void MainWindow::RebuildRecentMenu()
 
 int MainWindow::AddTab(Document* document, int index)
 {
-    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &MainWindow::OnCleanChanged);
-
     QFileInfo fileInfo(document->GetPackageAbsolutePath());
     QString tabText(fileInfo.fileName());
     bool blockSignals = tabBar->blockSignals(true); //block signals, because insertTab emit currentTabChanged

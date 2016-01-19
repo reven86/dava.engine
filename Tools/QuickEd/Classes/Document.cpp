@@ -47,13 +47,21 @@ Document::Document(PackageNode* _package, QObject* parent)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
     , systemManager(_package)
+    , fileSystemWatcher(new QFileSystemWatcher(this))
 {
+    QString path = GetPackageAbsolutePath();
+    DVASSERT(QFile::exists(path));
+    if (!fileSystemWatcher->addPath(path))
+    {
+        DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
+    }
     systemManager.SelectionChanged.Connect(this, &Document::OnSelectedControlNodesChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
     systemManager.RootControlPositionChanged.Connect(this, &Document::RootControlPositionChanged);
     systemManager.PropertiesChanged.Connect(this, &Document::OnPropertiesChanged);
 
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
+    connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged);
 }
 
 Document::~Document()
@@ -132,6 +140,16 @@ void Document::RefreshLayout()
     package->RefreshPackageStylesAndLayout(true);
 }
 
+bool Document::CanSave() const
+{
+    return canSave;
+}
+
+bool Document::IsDocumentExists() const
+{
+    return fileExists;
+}
+
 void Document::SetScale(float scale)
 {
     DAVA::float32 realScale = scale;
@@ -157,6 +175,28 @@ void Document::RefreshAllControlProperties()
 void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     systemManager.SelectionChanged.Emit(selected, deselected);
+}
+
+void Document::SetCanSave(bool arg)
+{
+    if (arg != canSave)
+    {
+        canSave = arg;
+        CanSaveChanged(arg);
+    }
+}
+
+void Document::OnFileChanged(const QString& path)
+{
+    DVASSERT(path == GetPackageAbsolutePath());
+    fileExists = QFile::exists(GetPackageAbsolutePath());
+    emit FileChanged();
+    SetCanSave(!fileExists || !undoStack->isClean());
+}
+
+void Document::OnCleanChanged(bool clean)
+{
+    SetCanSave(fileExists && clean);
 }
 
 void Document::OnSelectedControlNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
