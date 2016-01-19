@@ -1112,7 +1112,7 @@ uint32 TextureDescriptor::GenerateDescriptorCRC(eGPUFamily forGPU) const
     return CRC32::ForBuffer((const char8*)crcBuffer.data(), CRC_BUFFER_SIZE);
 }
 
-bool TextureDescriptor::ApplyTexturePreset(const KeyedArchive* presetArchive)
+bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
 {
     DVASSERT(IsCompressedFile() == false);
     DVASSERT(presetArchive);
@@ -1177,7 +1177,7 @@ bool TextureDescriptor::ApplyTexturePreset(const KeyedArchive* presetArchive)
     return true;
 }
 
-void TextureDescriptor::ExtractTexturePreset(KeyedArchive* presetArchive) const
+void TextureDescriptor::SerializeToPreset(KeyedArchive* presetArchive) const
 {
     DVASSERT(IsCompressedFile() == false);
 

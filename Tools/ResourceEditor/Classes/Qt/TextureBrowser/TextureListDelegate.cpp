@@ -44,7 +44,7 @@
 #include "Main/QtUtils.h"
 
 #include "Project/ProjectManager.h"
-#include "Preset/Preset.h"
+#include "Preset.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -447,66 +447,6 @@ void TextureListDelegate::onOpenTexturePath()
     lastSelectedTextureDescriptor = nullptr;
 }
 
-void ResetIncorrectCompressionParams(TextureDescriptor* descriptor)
-{
-    if (descriptor->IsCompressedFile())
-    {
-        return;
-    }
-
-    const FilePath sourceImagePath = descriptor->GetSourceTexturePathname();
-    const ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(sourceImagePath);
-    if (imageInfo.isEmpty())
-    {
-        return;
-    }
-
-    bool imageIsSquare = (imageInfo.width == imageInfo.height);
-    bool valuesChanged = false;
-
-    for (uint8 gpu = 0; gpu < GPU_FAMILY_COUNT; ++gpu)
-    {
-        bool canApplySizes = true;
-
-        auto& convertedCrc = descriptor->compression[gpu].convertedFileCrc;
-        auto& compressToHeight = descriptor->compression[gpu].compressToHeight;
-        auto& compressToWidth = descriptor->compression[gpu].compressToWidth;
-        bool compressIsSquare = (compressToHeight == compressToWidth);
-
-        if (compressToHeight != 0 && compressToWidth != 0)
-        {
-            if (imageIsSquare == compressIsSquare)
-            {
-                if (compressToWidth >= imageInfo.width)
-                {
-                    valuesChanged = true;
-                    convertedCrc = 0;
-                    compressToWidth = 0;
-                }
-
-                if (compressToHeight >= imageInfo.height)
-                {
-                    valuesChanged = true;
-                    convertedCrc = 0;
-                    compressToHeight = 0;
-                }
-            }
-            else
-            {
-                valuesChanged = true;
-                convertedCrc = 0;
-                compressToWidth = 0;
-                compressToHeight = 0;
-            }
-        }
-    }
-
-    if (valuesChanged)
-    {
-        descriptor->Save();
-    }
-}
-
 void TextureListDelegate::onLoadPreset()
 {
     if (nullptr == lastSelectedTextureDescriptor)
@@ -517,7 +457,6 @@ void TextureListDelegate::onLoadPreset()
     bool loaded = Preset::DialogLoadPresetForTexture(lastSelectedTextureDescriptor);
     if (loaded)
     {
-        ResetIncorrectCompressionParams(lastSelectedTextureDescriptor);
         emit textureDescriptorChanged(lastSelectedTextureDescriptor);
     }
 

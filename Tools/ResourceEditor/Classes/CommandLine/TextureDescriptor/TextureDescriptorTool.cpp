@@ -193,7 +193,7 @@ void TextureDescriptorTool::ProcessInternal()
         }
         else
         {
-            TextureDescriptorUtils::CreateDescriptorIfNeed(filePathname, presetPath);
+            TextureDescriptorUtils::CreateOrUpdateDescriptor(filePathname, presetPath);
         }
         break;
     }

@@ -218,8 +218,8 @@ public:
 
 	bool Reload();
 
-    bool ApplyTexturePreset(const KeyedArchive* presetArchive);
-    void ExtractTexturePreset(KeyedArchive* presetArchive) const;
+    bool DeserializeFromPreset(const KeyedArchive* presetArchive);
+    void SerializeToPreset(KeyedArchive* presetArchive) const;
 
 protected:
 

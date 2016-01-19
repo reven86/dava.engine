@@ -39,7 +39,7 @@ namespace TextureDescriptorUtils
     void ResaveDescriptor(const DAVA::FilePath & descriptorPath);
 
     void CreateDescriptorsForFolder(const DAVA::FilePath &folder, const DAVA::FilePath& presetPath);
-    bool CreateDescriptorIfNeed(const DAVA::FilePath &texturePath, const DAVA::FilePath& presetPath=DAVA::FilePath());
+    bool CreateOrUpdateDescriptor(const DAVA::FilePath& texturePath, const DAVA::FilePath& presetPath = DAVA::FilePath());
 
     void SetCompressionParamsForFolder(const DAVA::FilePath &folder, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
     void SetCompressionParams(const DAVA::FilePath &descriptorPath, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);

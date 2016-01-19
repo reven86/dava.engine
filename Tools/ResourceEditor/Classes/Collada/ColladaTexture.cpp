@@ -107,22 +107,8 @@ ColladaTexture::ColladaTexture(FCDImage* _image)
             Logger::Warning("Too long(%d) path: %s", pathSize, texturePathName.c_str());
         }
 
-        bool pathApplied = false;
-
         const FilePath texturePath(texturePathName);
-        if (FileSystem::Instance()->Exists(texturePath))
-        {
-            const String extension = texturePath.GetExtension();
-            if (!extension.empty())
-            {
-                auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
-                if (imageFormat != IMAGE_FORMAT_UNKNOWN)
-                {
-                    TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
-                    pathApplied = true;
-                }
-            }
-        }
+        bool pathApplied = (FileSystem::Instance()->Exists(texturePath) && TextureDescriptorUtils::CreateOrUpdateDescriptor(texturePath));
 
         if (!pathApplied)
         {
