@@ -47,49 +47,53 @@ struct DLCCrashTest
     bool forceExit;
     bool inExitMode;
 
-    Thread * exitThread;
+    Thread* exitThread;
 
-    void Init(const DAVA::FilePath &workingDir, const DAVA::FilePath &destinationDir);
-    void Update(float32 timeElapsed, DLC *dlc);
+    void Init(const DAVA::FilePath& workingDir, const DAVA::FilePath& destinationDir);
+    void Update(float32 timeElapsed, DLC* dlc);
 
-    void ExitThread(BaseObject *caller, void *callerData, void *userData);
+    void ExitThread(BaseObject* caller, void* callerData, void* userData);
 };
 
 class DlcTest : public BaseScreen
 {
 public:
-	DlcTest();
+    DlcTest();
+
 protected:
-	~DlcTest() {}
+    ~DlcTest()
+    {
+    }
+
 public:
     void LoadResources() override;
     void UnloadResources() override;
     void WillAppear() override;
 
     void Update(float32 timeElapsed) override;
-    void Draw(const UIGeometricData &geometricData) override;
-	
+    void Draw(const UIGeometricData& geometricData) override;
+
 private:
-    void Cancel(BaseObject *obj, void *data, void *callerData);
-    void Restart(BaseObject *obj, void *data, void *callerData);
+    void Cancel(BaseObject* obj, void* data, void* callerData);
+    void Restart(BaseObject* obj, void* data, void* callerData);
 
 protected:
     DAVA::FilePath workingDir;
     DAVA::FilePath sourceDir;
     DAVA::FilePath destinationDir;
-    
-	UIButton *returnButton;
-    UIButton *restartButton;
 
-    UIStaticText * staticText;
-    UIControl * animControl;
-    UIControl * progressControl;
+    UIButton* returnButton;
+    UIButton* restartButton;
+
+    UIStaticText* staticText;
+    UIControl* animControl;
+    UIControl* progressControl;
 
     float32 angle;
     float32 lastUpdateTime;
     uint32 lastDLCState;
 
-    DLC * dlc;
+    DLC* dlc;
     DLCCrashTest crashTest;
 };
 

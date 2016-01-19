@@ -1341,14 +1341,6 @@
 		02E7CC6C1BD624A7002F026D /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4981BD624A6002F026D /* AnimationData.cpp */; };
 		02E7CC6D1BD624A7002F026D /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4991BD624A6002F026D /* AnimationData.h */; };
 		02E7CC6E1BD624A7002F026D /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4991BD624A6002F026D /* AnimationData.h */; };
-		02E7CC6F1BD624A7002F026D /* BillboardNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C49A1BD624A6002F026D /* BillboardNode.cpp */; };
-		02E7CC701BD624A7002F026D /* BillboardNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C49A1BD624A6002F026D /* BillboardNode.cpp */; };
-		02E7CC711BD624A7002F026D /* BillboardNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C49B1BD624A6002F026D /* BillboardNode.h */; };
-		02E7CC721BD624A7002F026D /* BillboardNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C49B1BD624A6002F026D /* BillboardNode.h */; };
-		02E7CC731BD624A7002F026D /* BoneNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C49C1BD624A6002F026D /* BoneNode.cpp */; };
-		02E7CC741BD624A7002F026D /* BoneNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C49C1BD624A6002F026D /* BoneNode.cpp */; };
-		02E7CC751BD624A7002F026D /* BoneNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C49D1BD624A6002F026D /* BoneNode.h */; };
-		02E7CC761BD624A7002F026D /* BoneNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C49D1BD624A6002F026D /* BoneNode.h */; };
 		02E7CC771BD624A7002F026D /* ActionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C49F1BD624A6002F026D /* ActionComponent.cpp */; };
 		02E7CC781BD624A7002F026D /* ActionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C49F1BD624A6002F026D /* ActionComponent.cpp */; };
 		02E7CC791BD624A7002F026D /* ActionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4A01BD624A6002F026D /* ActionComponent.h */; };
@@ -1487,10 +1479,6 @@
 		02E7CCFE1BD624A7002F026D /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4E51BD624A6002F026D /* EntityFamily.cpp */; };
 		02E7CCFF1BD624A7002F026D /* EntityFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4E61BD624A6002F026D /* EntityFamily.h */; };
 		02E7CD001BD624A7002F026D /* EntityFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4E61BD624A6002F026D /* EntityFamily.h */; };
-		02E7CD051BD624A7002F026D /* MeshInstanceNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4E91BD624A6002F026D /* MeshInstanceNode.cpp */; };
-		02E7CD061BD624A7002F026D /* MeshInstanceNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4E91BD624A6002F026D /* MeshInstanceNode.cpp */; };
-		02E7CD071BD624A7002F026D /* MeshInstanceNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4EA1BD624A6002F026D /* MeshInstanceNode.h */; };
-		02E7CD081BD624A7002F026D /* MeshInstanceNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4EA1BD624A6002F026D /* MeshInstanceNode.h */; };
 		02E7CD111BD624A7002F026D /* PathManip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4EF1BD624A6002F026D /* PathManip.cpp */; };
 		02E7CD121BD624A7002F026D /* PathManip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4EF1BD624A6002F026D /* PathManip.cpp */; };
 		02E7CD131BD624A7002F026D /* PathManip.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4F01BD624A6002F026D /* PathManip.h */; };
@@ -1515,18 +1503,6 @@
 		02E7CD321BD624A7002F026D /* SceneNodeAnimationKey.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5001BD624A6002F026D /* SceneNodeAnimationKey.cpp */; };
 		02E7CD331BD624A7002F026D /* SceneNodeAnimationKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5011BD624A6002F026D /* SceneNodeAnimationKey.h */; };
 		02E7CD341BD624A7002F026D /* SceneNodeAnimationKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5011BD624A6002F026D /* SceneNodeAnimationKey.h */; };
-		02E7CD391BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5041BD624A6002F026D /* ShadowVolumeNode.cpp */; };
-		02E7CD3A1BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5041BD624A6002F026D /* ShadowVolumeNode.cpp */; };
-		02E7CD3B1BD624A7002F026D /* ShadowVolumeNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5051BD624A6002F026D /* ShadowVolumeNode.h */; };
-		02E7CD3C1BD624A7002F026D /* ShadowVolumeNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5051BD624A6002F026D /* ShadowVolumeNode.h */; };
-		02E7CD3D1BD624A7002F026D /* SkeletonNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5061BD624A6002F026D /* SkeletonNode.cpp */; };
-		02E7CD3E1BD624A7002F026D /* SkeletonNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5061BD624A6002F026D /* SkeletonNode.cpp */; };
-		02E7CD3F1BD624A7002F026D /* SkeletonNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5071BD624A6002F026D /* SkeletonNode.h */; };
-		02E7CD401BD624A7002F026D /* SkeletonNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5071BD624A6002F026D /* SkeletonNode.h */; };
-		02E7CD411BD624A7002F026D /* SwitchNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5081BD624A6002F026D /* SwitchNode.cpp */; };
-		02E7CD421BD624A7002F026D /* SwitchNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5081BD624A6002F026D /* SwitchNode.cpp */; };
-		02E7CD431BD624A7002F026D /* SwitchNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5091BD624A6002F026D /* SwitchNode.h */; };
-		02E7CD441BD624A7002F026D /* SwitchNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5091BD624A6002F026D /* SwitchNode.h */; };
 		02E7CD451BD624A7002F026D /* ActionUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C50B1BD624A6002F026D /* ActionUpdateSystem.cpp */; };
 		02E7CD461BD624A7002F026D /* ActionUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C50B1BD624A6002F026D /* ActionUpdateSystem.cpp */; };
 		02E7CD471BD624A7002F026D /* ActionUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C50C1BD624A6002F026D /* ActionUpdateSystem.h */; };
@@ -1627,10 +1603,6 @@
 		02E7CDA61BD624A7002F026D /* WindSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C53C1BD624A6002F026D /* WindSystem.cpp */; };
 		02E7CDA71BD624A7002F026D /* WindSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C53D1BD624A6002F026D /* WindSystem.h */; };
 		02E7CDA81BD624A7002F026D /* WindSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C53D1BD624A6002F026D /* WindSystem.h */; };
-		02E7CDA91BD624A7002F026D /* UserNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C53E1BD624A6002F026D /* UserNode.cpp */; };
-		02E7CDAA1BD624A7002F026D /* UserNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C53E1BD624A6002F026D /* UserNode.cpp */; };
-		02E7CDAB1BD624A7002F026D /* UserNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C53F1BD624A6002F026D /* UserNode.h */; };
-		02E7CDAC1BD624A7002F026D /* UserNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C53F1BD624A6002F026D /* UserNode.h */; };
 		02E7CDAF1BD624A7002F026D /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5431BD624A6002F026D /* FMODFileSoundEvent.h */; };
 		02E7CDB01BD624A7002F026D /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5431BD624A6002F026D /* FMODFileSoundEvent.h */; };
 		02E7CDB11BD624A7002F026D /* FMODSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5441BD624A6002F026D /* FMODSoundEvent.cpp */; };
@@ -2761,10 +2733,6 @@
 		02E7C4961BD624A6002F026D /* TextGameObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextGameObject.h; sourceTree = "<group>"; };
 		02E7C4981BD624A6002F026D /* AnimationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationData.cpp; sourceTree = "<group>"; };
 		02E7C4991BD624A6002F026D /* AnimationData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationData.h; sourceTree = "<group>"; };
-		02E7C49A1BD624A6002F026D /* BillboardNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BillboardNode.cpp; sourceTree = "<group>"; };
-		02E7C49B1BD624A6002F026D /* BillboardNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BillboardNode.h; sourceTree = "<group>"; };
-		02E7C49C1BD624A6002F026D /* BoneNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BoneNode.cpp; sourceTree = "<group>"; };
-		02E7C49D1BD624A6002F026D /* BoneNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BoneNode.h; sourceTree = "<group>"; };
 		02E7C49F1BD624A6002F026D /* ActionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActionComponent.cpp; sourceTree = "<group>"; };
 		02E7C4A01BD624A6002F026D /* ActionComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionComponent.h; sourceTree = "<group>"; };
 		02E7C4A11BD624A6002F026D /* AnimationComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationComponent.cpp; sourceTree = "<group>"; };
@@ -2834,8 +2802,6 @@
 		02E7C4E41BD624A6002F026D /* Entity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Entity.h; sourceTree = "<group>"; };
 		02E7C4E51BD624A6002F026D /* EntityFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityFamily.cpp; sourceTree = "<group>"; };
 		02E7C4E61BD624A6002F026D /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
-		02E7C4E91BD624A6002F026D /* MeshInstanceNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshInstanceNode.cpp; sourceTree = "<group>"; };
-		02E7C4EA1BD624A6002F026D /* MeshInstanceNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshInstanceNode.h; sourceTree = "<group>"; };
 		02E7C4EF1BD624A6002F026D /* PathManip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PathManip.cpp; sourceTree = "<group>"; };
 		02E7C4F01BD624A6002F026D /* PathManip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathManip.h; sourceTree = "<group>"; };
 		02E7C4F11BD624A6002F026D /* Scene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Scene.cpp; sourceTree = "<group>"; };
@@ -2848,12 +2814,6 @@
 		02E7C4FD1BD624A6002F026D /* SceneFileV2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneFileV2.h; sourceTree = "<group>"; };
 		02E7C5001BD624A6002F026D /* SceneNodeAnimationKey.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneNodeAnimationKey.cpp; sourceTree = "<group>"; };
 		02E7C5011BD624A6002F026D /* SceneNodeAnimationKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneNodeAnimationKey.h; sourceTree = "<group>"; };
-		02E7C5041BD624A6002F026D /* ShadowVolumeNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShadowVolumeNode.cpp; sourceTree = "<group>"; };
-		02E7C5051BD624A6002F026D /* ShadowVolumeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowVolumeNode.h; sourceTree = "<group>"; };
-		02E7C5061BD624A6002F026D /* SkeletonNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkeletonNode.cpp; sourceTree = "<group>"; };
-		02E7C5071BD624A6002F026D /* SkeletonNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkeletonNode.h; sourceTree = "<group>"; };
-		02E7C5081BD624A6002F026D /* SwitchNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SwitchNode.cpp; sourceTree = "<group>"; };
-		02E7C5091BD624A6002F026D /* SwitchNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchNode.h; sourceTree = "<group>"; };
 		02E7C50B1BD624A6002F026D /* ActionUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActionUpdateSystem.cpp; sourceTree = "<group>"; };
 		02E7C50C1BD624A6002F026D /* ActionUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionUpdateSystem.h; sourceTree = "<group>"; };
 		02E7C50D1BD624A6002F026D /* AnimationSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationSystem.cpp; sourceTree = "<group>"; };
@@ -2904,8 +2864,6 @@
 		02E7C53B1BD624A6002F026D /* WaveSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaveSystem.h; sourceTree = "<group>"; };
 		02E7C53C1BD624A6002F026D /* WindSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WindSystem.cpp; sourceTree = "<group>"; };
 		02E7C53D1BD624A6002F026D /* WindSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindSystem.h; sourceTree = "<group>"; };
-		02E7C53E1BD624A6002F026D /* UserNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UserNode.cpp; sourceTree = "<group>"; };
-		02E7C53F1BD624A6002F026D /* UserNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserNode.h; sourceTree = "<group>"; };
 		02E7C5431BD624A6002F026D /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
 		02E7C5441BD624A6002F026D /* FMODSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODSoundEvent.cpp; sourceTree = "<group>"; };
 		02E7C5451BD624A6002F026D /* FMODSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODSoundEvent.h; sourceTree = "<group>"; };
@@ -4212,10 +4170,6 @@
 			children = (
 				02E7C4981BD624A6002F026D /* AnimationData.cpp */,
 				02E7C4991BD624A6002F026D /* AnimationData.h */,
-				02E7C49A1BD624A6002F026D /* BillboardNode.cpp */,
-				02E7C49B1BD624A6002F026D /* BillboardNode.h */,
-				02E7C49C1BD624A6002F026D /* BoneNode.cpp */,
-				02E7C49D1BD624A6002F026D /* BoneNode.h */,
 				02E7C49E1BD624A6002F026D /* Components */,
 				02E7C4D91BD624A6002F026D /* Converters */,
 				02E7C4E01BD624A6002F026D /* DataNode.cpp */,
@@ -4225,8 +4179,6 @@
 				02E7C4E41BD624A6002F026D /* Entity.h */,
 				02E7C4E51BD624A6002F026D /* EntityFamily.cpp */,
 				02E7C4E61BD624A6002F026D /* EntityFamily.h */,
-				02E7C4E91BD624A6002F026D /* MeshInstanceNode.cpp */,
-				02E7C4EA1BD624A6002F026D /* MeshInstanceNode.h */,
 				02E7C4EF1BD624A6002F026D /* PathManip.cpp */,
 				02E7C4F01BD624A6002F026D /* PathManip.h */,
 				02E7C4F11BD624A6002F026D /* Scene.cpp */,
@@ -4236,15 +4188,7 @@
 				02E7C4FD1BD624A6002F026D /* SceneFileV2.h */,
 				02E7C5001BD624A6002F026D /* SceneNodeAnimationKey.cpp */,
 				02E7C5011BD624A6002F026D /* SceneNodeAnimationKey.h */,
-				02E7C5041BD624A6002F026D /* ShadowVolumeNode.cpp */,
-				02E7C5051BD624A6002F026D /* ShadowVolumeNode.h */,
-				02E7C5061BD624A6002F026D /* SkeletonNode.cpp */,
-				02E7C5071BD624A6002F026D /* SkeletonNode.h */,
-				02E7C5081BD624A6002F026D /* SwitchNode.cpp */,
-				02E7C5091BD624A6002F026D /* SwitchNode.h */,
 				02E7C50A1BD624A6002F026D /* Systems */,
-				02E7C53E1BD624A6002F026D /* UserNode.cpp */,
-				02E7C53F1BD624A6002F026D /* UserNode.h */,
 			);
 			path = Scene3D;
 			sourceTree = "<group>";
@@ -4908,7 +4852,6 @@
 				02FD7F401924997C007762C0 /* DAVAConfig.h in Headers */,
 				02E7CC961BD624A7002F026D /* WASDControllerComponent.h in Headers */,
 				02E7C8FC1BD624A7002F026D /* ParticleRenderObject.h in Headers */,
-				02E7CD401BD624A7002F026D /* SkeletonNode.h in Headers */,
 				02E7CAF81BD624A7002F026D /* SpatialTree.h in Headers */,
 				02E7C0FF1BD6248E002F026D /* NSStringUtils.h in Headers */,
 				02E7CC8A1BD624A7002F026D /* ComponentHelpers.h in Headers */,
@@ -5102,7 +5045,6 @@
 				02E7C7CA1BD624A7002F026D /* KeyboardDevice.h in Headers */,
 				02E7CA701BD624A7002F026D /* VirtualCoordinatesSystem.h in Headers */,
 				02E7CEC41BD624A7002F026D /* UIScrollView.h in Headers */,
-				02E7CDAC1BD624A7002F026D /* UserNode.h in Headers */,
 				02E7CF6E1BD639E1002F026D /* DLC.h in Headers */,
 				02E7CE2E1BD624A7002F026D /* UIStyleSheetSystem.h in Headers */,
 				02E7CBBC1BD624A7002F026D /* rhi_Pool.h in Headers */,
@@ -5119,7 +5061,6 @@
 				02E7CC0A1BD624A7002F026D /* macos_gl.h in Headers */,
 				02E7CD901BD624A7002F026D /* StaticOcclusionBuildSystem.h in Headers */,
 				02E7CE9A1BD624A7002F026D /* UIParticles.h in Headers */,
-				02E7CC761BD624A7002F026D /* BoneNode.h in Headers */,
 				02E7C6941BD624A6002F026D /* IntrospectionBase.h in Headers */,
 				02E7CBB61BD624A7002F026D /* rhi_FormatConversion.h in Headers */,
 				02E7CDF61BD624A7002F026D /* UIAnchorComponent.h in Headers */,
@@ -5134,7 +5075,6 @@
 				02E7C6DE1BD624A6002F026D /* AtomicGNU.h in Headers */,
 				02E7C6CC1BD624A6002F026D /* TypeHolders.h in Headers */,
 				02E7CAC61BD624A7002F026D /* Light.h in Headers */,
-				02E7CD441BD624A7002F026D /* SwitchNode.h in Headers */,
 				02E7CB8E1BD624A7002F026D /* dbg_StatSet.h in Headers */,
 				02E7CE8A1BD624A7002F026D /* UIMovieView.h in Headers */,
 				02E7CBA21BD624A7002F026D /* mcpp_out.h in Headers */,
@@ -5249,7 +5189,6 @@
 				02E7CB141BD624A7002F026D /* VegetationPropertyNames.h in Headers */,
 				02E7C6A41BD624A6002F026D /* Meta.h in Headers */,
 				02E7CA781BD624A7002F026D /* TextBlockGraphicRender.h in Headers */,
-				02E7CC721BD624A7002F026D /* BillboardNode.h in Headers */,
 				02E7C7F81BD624A7002F026D /* Matrix3.h in Headers */,
 				02E7CCA21BD624A7002F026D /* LightComponent.h in Headers */,
 				02E7C8F01BD624A7002F026D /* ParticleGroup.h in Headers */,
@@ -5268,7 +5207,6 @@
 				02E7C7F61BD624A7002F026D /* Matrix2.h in Headers */,
 				02E7CAE41BD624A7002F026D /* RenderPassNames.h in Headers */,
 				02E7CA5E1BD624A7002F026D /* FTFont.h in Headers */,
-				02E7CD081BD624A7002F026D /* MeshInstanceNode.h in Headers */,
 				02E7CE7E1BD624A7002F026D /* UIListCell.h in Headers */,
 				02E7C8641BD624A7002F026D /* TCPSocketTemplate.h in Headers */,
 				02E7C8981BD624A7002F026D /* ProtoDriver.h in Headers */,
@@ -5294,7 +5232,6 @@
 				02E7CCE21BD624A7002F026D /* WaypointComponent.h in Headers */,
 				02E7CE1A1BD624A7002F026D /* UIStyleSheet.h in Headers */,
 				02E7CE521BD624A7002F026D /* UIControlPackageContext.h in Headers */,
-				02E7CD3C1BD624A7002F026D /* ShadowVolumeNode.h in Headers */,
 				02E7CCD21BD624A7002F026D /* UserComponent.h in Headers */,
 				02E7C8421BD624A7002F026D /* DeadlineTimer.h in Headers */,
 				02E7C86C1BD624A7002F026D /* IChannel.h in Headers */,
@@ -5451,7 +5388,6 @@
 				E8B3CAD716B9326E002BD35F /* DAVAConfig.h in Headers */,
 				02E7CC951BD624A7002F026D /* WASDControllerComponent.h in Headers */,
 				02E7C8FB1BD624A7002F026D /* ParticleRenderObject.h in Headers */,
-				02E7CD3F1BD624A7002F026D /* SkeletonNode.h in Headers */,
 				02E7CAF71BD624A7002F026D /* SpatialTree.h in Headers */,
 				02E7C0FE1BD6248E002F026D /* NSStringUtils.h in Headers */,
 				02E7CC891BD624A7002F026D /* ComponentHelpers.h in Headers */,
@@ -5645,7 +5581,6 @@
 				02E7C7C91BD624A7002F026D /* KeyboardDevice.h in Headers */,
 				02E7CA6F1BD624A7002F026D /* VirtualCoordinatesSystem.h in Headers */,
 				02E7CEC31BD624A7002F026D /* UIScrollView.h in Headers */,
-				02E7CDAB1BD624A7002F026D /* UserNode.h in Headers */,
 				02E7CF6D1BD639E1002F026D /* DLC.h in Headers */,
 				02E7CE2D1BD624A7002F026D /* UIStyleSheetSystem.h in Headers */,
 				02E7CBBB1BD624A7002F026D /* rhi_Pool.h in Headers */,
@@ -5662,7 +5597,6 @@
 				02E7CC091BD624A7002F026D /* macos_gl.h in Headers */,
 				02E7CD8F1BD624A7002F026D /* StaticOcclusionBuildSystem.h in Headers */,
 				02E7CE991BD624A7002F026D /* UIParticles.h in Headers */,
-				02E7CC751BD624A7002F026D /* BoneNode.h in Headers */,
 				02E7C6931BD624A6002F026D /* IntrospectionBase.h in Headers */,
 				02E7CBB51BD624A7002F026D /* rhi_FormatConversion.h in Headers */,
 				02E7CDF51BD624A7002F026D /* UIAnchorComponent.h in Headers */,
@@ -5677,7 +5611,6 @@
 				02E7C6DD1BD624A6002F026D /* AtomicGNU.h in Headers */,
 				02E7C6CB1BD624A6002F026D /* TypeHolders.h in Headers */,
 				02E7CAC51BD624A7002F026D /* Light.h in Headers */,
-				02E7CD431BD624A7002F026D /* SwitchNode.h in Headers */,
 				02E7CB8D1BD624A7002F026D /* dbg_StatSet.h in Headers */,
 				02E7CE891BD624A7002F026D /* UIMovieView.h in Headers */,
 				02E7CBA11BD624A7002F026D /* mcpp_out.h in Headers */,
@@ -5792,7 +5725,6 @@
 				02E7CB131BD624A7002F026D /* VegetationPropertyNames.h in Headers */,
 				02E7C6A31BD624A6002F026D /* Meta.h in Headers */,
 				02E7CA771BD624A7002F026D /* TextBlockGraphicRender.h in Headers */,
-				02E7CC711BD624A7002F026D /* BillboardNode.h in Headers */,
 				02E7C7F71BD624A7002F026D /* Matrix3.h in Headers */,
 				02E7CCA11BD624A7002F026D /* LightComponent.h in Headers */,
 				02E7C8EF1BD624A7002F026D /* ParticleGroup.h in Headers */,
@@ -5811,7 +5743,6 @@
 				02E7C7F51BD624A7002F026D /* Matrix2.h in Headers */,
 				02E7CAE31BD624A7002F026D /* RenderPassNames.h in Headers */,
 				02E7CA5D1BD624A7002F026D /* FTFont.h in Headers */,
-				02E7CD071BD624A7002F026D /* MeshInstanceNode.h in Headers */,
 				02E7CE7D1BD624A7002F026D /* UIListCell.h in Headers */,
 				02E7C8631BD624A7002F026D /* TCPSocketTemplate.h in Headers */,
 				02E7C8971BD624A7002F026D /* ProtoDriver.h in Headers */,
@@ -5837,7 +5768,6 @@
 				02E7CCE11BD624A7002F026D /* WaypointComponent.h in Headers */,
 				02E7CE191BD624A7002F026D /* UIStyleSheet.h in Headers */,
 				02E7CE511BD624A7002F026D /* UIControlPackageContext.h in Headers */,
-				02E7CD3B1BD624A7002F026D /* ShadowVolumeNode.h in Headers */,
 				02E7CCD11BD624A7002F026D /* UserComponent.h in Headers */,
 				02E7C8411BD624A7002F026D /* DeadlineTimer.h in Headers */,
 				02E7C86B1BD624A7002F026D /* IChannel.h in Headers */,
@@ -5986,7 +5916,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				02E7CCBC1BD624A7002F026D /* SpeedTreeComponent.cpp in Sources */,
-				02E7CD3A1BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */,
 				02E7C85A1BD624A7002F026D /* TCPAcceptor.cpp in Sources */,
 				02E7CB161BD624A7002F026D /* VegetationRenderData.cpp in Sources */,
 				02E7C10D1BD6248E002F026D /* UTF8Utils.cpp in Sources */,
@@ -6122,7 +6051,6 @@
 				02E7CE401BD624A7002F026D /* UIButton.cpp in Sources */,
 				02E7CE601BD624A7002F026D /* UIFileSystemDialog.cpp in Sources */,
 				02E7CB961BD624A7002F026D /* eval.cpp in Sources */,
-				02E7CD3E1BD624A7002F026D /* SkeletonNode.cpp in Sources */,
 				02E7CD8E1BD624A7002F026D /* StaticOcclusionBuildSystem.cpp in Sources */,
 				02E7CC3A1BD624A7002F026D /* rhi_TextureMetal.mm in Sources */,
 				02E7CE081BD624A7002F026D /* UILinearLayoutComponent.cpp in Sources */,
@@ -6186,7 +6114,6 @@
 				02E7C72C1BD624A7002F026D /* DataStorageIOS.cpp in Sources */,
 				02E7C7461BD624A7002F026D /* Bitstream.cpp in Sources */,
 				02E7CCA81BD624A7002F026D /* ParticleEffectComponent.cpp in Sources */,
-				02E7CD421BD624A7002F026D /* SwitchNode.cpp in Sources */,
 				02E7CB381BD624A7002F026D /* LibPngHelper.cpp in Sources */,
 				02E7CE101BD624A7002F026D /* ScrollHelper.cpp in Sources */,
 				02E7C73A1BD624A7002F026D /* BaseFamily.cpp in Sources */,
@@ -6223,7 +6150,6 @@
 				02E7CE3C1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */,
 				02E7C68C1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F71BD6248E002F026D /* CRC32.cpp in Sources */,
-				02E7CDAA1BD624A7002F026D /* UserNode.cpp in Sources */,
 				02E7C8701BD624A7002F026D /* NetConfig.cpp in Sources */,
 				02E7CECE1BD624A7002F026D /* UISpinner.cpp in Sources */,
 				02E7CACC1BD624A7002F026D /* RenderBatch.cpp in Sources */,
@@ -6291,7 +6217,6 @@
 				02E7CA961BD624A7002F026D /* StaticMesh.cpp in Sources */,
 				02E7CE341BD624A7002F026D /* TheoraPlayer.cpp in Sources */,
 				02E7C8BA1BD624A7002F026D /* NetLogger.cpp in Sources */,
-				02E7CC701BD624A7002F026D /* BillboardNode.cpp in Sources */,
 				02E7CB7A1BD624A7002F026D /* RenderHelper.cpp in Sources */,
 				02E7C6841BD624A6002F026D /* GlobalEnum.cpp in Sources */,
 				02E7CB9C1BD624A7002F026D /* mbchar.cpp in Sources */,
@@ -6413,7 +6338,6 @@
 				02E7C7961BD624A7002F026D /* XMLParser.mm in Sources */,
 				7CF246E91C103C5F00A821DC /* UIScreenManagerDefault.cpp in Sources */,
 				02E7CA821BD624A7002F026D /* TextLayout.cpp in Sources */,
-				02E7CC741BD624A7002F026D /* BoneNode.cpp in Sources */,
 				02E7CD6E1BD624A7002F026D /* LightUpdateSystem.cpp in Sources */,
 				02E7CD621BD624A7002F026D /* EventSystem.cpp in Sources */,
 				02E7CE481BD624A7002F026D /* UIControlBackground.cpp in Sources */,
@@ -6446,7 +6370,6 @@
 				02E7CF6C1BD639E1002F026D /* DLC.cpp in Sources */,
 				02E7CCD81BD624A7002F026D /* EdgeComponent.cpp in Sources */,
 				02E7CF9B1BD63A8E002F026D /* FMODFileSoundEvent.cpp in Sources */,
-				02E7CD061BD624A7002F026D /* MeshInstanceNode.cpp in Sources */,
 				02E7CCDC1BD624A7002F026D /* PathComponent.cpp in Sources */,
 				02E7CE041BD624A7002F026D /* UILayoutSystem.cpp in Sources */,
 				02E7CE701BD624A7002F026D /* UIHoleTransition.cpp in Sources */,
@@ -6473,7 +6396,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				02E7CCBB1BD624A7002F026D /* SpeedTreeComponent.cpp in Sources */,
-				02E7CD391BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */,
 				02E7C8591BD624A7002F026D /* TCPAcceptor.cpp in Sources */,
 				02E7CB151BD624A7002F026D /* VegetationRenderData.cpp in Sources */,
 				02E7C10C1BD6248E002F026D /* UTF8Utils.cpp in Sources */,
@@ -6609,7 +6531,6 @@
 				02E7CE3F1BD624A7002F026D /* UIButton.cpp in Sources */,
 				02E7CE5F1BD624A7002F026D /* UIFileSystemDialog.cpp in Sources */,
 				02E7CB951BD624A7002F026D /* eval.cpp in Sources */,
-				02E7CD3D1BD624A7002F026D /* SkeletonNode.cpp in Sources */,
 				02E7CD8D1BD624A7002F026D /* StaticOcclusionBuildSystem.cpp in Sources */,
 				02E7CC391BD624A7002F026D /* rhi_TextureMetal.mm in Sources */,
 				02E7CE071BD624A7002F026D /* UILinearLayoutComponent.cpp in Sources */,
@@ -6673,7 +6594,6 @@
 				02E7C72B1BD624A7002F026D /* DataStorageIOS.cpp in Sources */,
 				02E7C7451BD624A7002F026D /* Bitstream.cpp in Sources */,
 				02E7CCA71BD624A7002F026D /* ParticleEffectComponent.cpp in Sources */,
-				02E7CD411BD624A7002F026D /* SwitchNode.cpp in Sources */,
 				02E7CB371BD624A7002F026D /* LibPngHelper.cpp in Sources */,
 				02E7CE0F1BD624A7002F026D /* ScrollHelper.cpp in Sources */,
 				02E7C7391BD624A7002F026D /* BaseFamily.cpp in Sources */,
@@ -6710,7 +6630,6 @@
 				02E7CE3B1BD624A7002F026D /* UIAggregatorControl.cpp in Sources */,
 				02E7C68B1BD624A6002F026D /* IndexBitVector.cpp in Sources */,
 				02E7C0F61BD6248E002F026D /* CRC32.cpp in Sources */,
-				02E7CDA91BD624A7002F026D /* UserNode.cpp in Sources */,
 				02E7C86F1BD624A7002F026D /* NetConfig.cpp in Sources */,
 				02E7CECD1BD624A7002F026D /* UISpinner.cpp in Sources */,
 				02E7CACB1BD624A7002F026D /* RenderBatch.cpp in Sources */,
@@ -6778,7 +6697,6 @@
 				02E7CA951BD624A7002F026D /* StaticMesh.cpp in Sources */,
 				02E7CE331BD624A7002F026D /* TheoraPlayer.cpp in Sources */,
 				02E7C8B91BD624A7002F026D /* NetLogger.cpp in Sources */,
-				02E7CC6F1BD624A7002F026D /* BillboardNode.cpp in Sources */,
 				02E7CB791BD624A7002F026D /* RenderHelper.cpp in Sources */,
 				02E7C6831BD624A6002F026D /* GlobalEnum.cpp in Sources */,
 				02E7CB9B1BD624A7002F026D /* mbchar.cpp in Sources */,
@@ -6900,7 +6818,6 @@
 				02E7C7951BD624A7002F026D /* XMLParser.mm in Sources */,
 				7CF246E81C103C5F00A821DC /* UIScreenManagerDefault.cpp in Sources */,
 				02E7CA811BD624A7002F026D /* TextLayout.cpp in Sources */,
-				02E7CC731BD624A7002F026D /* BoneNode.cpp in Sources */,
 				02E7CD6D1BD624A7002F026D /* LightUpdateSystem.cpp in Sources */,
 				02E7CD611BD624A7002F026D /* EventSystem.cpp in Sources */,
 				02E7CE471BD624A7002F026D /* UIControlBackground.cpp in Sources */,
@@ -6933,7 +6850,6 @@
 				02E7CF6B1BD639E1002F026D /* DLC.cpp in Sources */,
 				02E7CCD71BD624A7002F026D /* EdgeComponent.cpp in Sources */,
 				02E7CF9A1BD63A8E002F026D /* FMODFileSoundEvent.cpp in Sources */,
-				02E7CD051BD624A7002F026D /* MeshInstanceNode.cpp in Sources */,
 				02E7CCDB1BD624A7002F026D /* PathComponent.cpp in Sources */,
 				02E7CE031BD624A7002F026D /* UILayoutSystem.cpp in Sources */,
 				02E7CE6F1BD624A7002F026D /* UIHoleTransition.cpp in Sources */,
@@ -7005,6 +6921,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Debug;
 		};
@@ -7052,6 +6969,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Release;
 		};
@@ -7094,6 +7012,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = AdHoc;
 		};
@@ -7136,6 +7055,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Distribution;
 		};
@@ -7187,6 +7107,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Debug;
 		};
@@ -7235,6 +7156,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Release;
 		};
@@ -7419,6 +7341,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = AdHoc;
 		};
@@ -7508,6 +7431,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
 			};
 			name = Distribution;
 		};

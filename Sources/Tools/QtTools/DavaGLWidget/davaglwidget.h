@@ -100,7 +100,6 @@ public slots:
 private slots:
     void OnResize();
     void OnCleanup();
-    void UpdateView();
 
 protected:
     void resizeEvent(QResizeEvent*) override;
