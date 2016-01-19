@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2003
+// Copyright Dirk Lemstra 2014-2015
 //
 // Definition of Magick::Exception and derived classes
 // Magick::Warning* and Magick::Error*.  Derived from C++ STD
@@ -416,11 +417,7 @@ class MagickPPExport Exception : public std::exception
 
   // Thow exception based on ImageMagick's ExceptionInfo
   extern MagickPPExport void throwException(
-  MagickCore::ExceptionInfo* exception_);
-
-  // Thow exception based on ImageMagick's ExceptionInfo
-  extern MagickPPExport void throwException(
-  MagickCore::ExceptionInfo& exception_);
+  MagickCore::ExceptionInfo* exception_, const bool quiet_ = false);
 
 } // namespace Magick
 

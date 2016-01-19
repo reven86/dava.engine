@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2003
+// Copyright Dirk Lemstra 2014-2015
 //
 // Definition of Options
 //
@@ -115,9 +116,21 @@ class Image;
     void font(const std::string& font_);
     std::string font(void) const;
 
+    // Font name
+    void fontFamily(const std::string& family_);
+    std::string fontFamily(void) const;
+
     // Font point size
     void fontPointsize(double pointSize_);
     double fontPointsize(void) const;
+
+    // Font style
+    void fontStyle(const StyleType style_);
+    StyleType fontStyle(void) const;
+
+    // Font weight
+    void fontWeight(const size_t weight_);
+    size_t fontWeight(void) const;
 
     std::string format(void) const;
 
@@ -164,6 +177,10 @@ class Image;
     // Quantization tree-depth
     void quantizeTreeDepth(size_t treeDepth_);
     size_t quantizeTreeDepth(void) const;
+
+    // Suppress all warning messages. Error messages are still reported.
+    void quiet(const bool quiet_);
+    bool quiet(void) const;
 
     // Units of resolution to interpret density
     void resolutionUnits(ResolutionType resolutionUnits_);
@@ -258,6 +275,10 @@ class Image;
     void textKerning(double kerning_);
     double textKerning(void) const;
 
+    // Text undercolor box
+    void textUnderColor(const Color& underColor_);
+    Color textUnderColor(void) const;
+
     void tileName(const std::string& tileName_);
     std::string tileName(void) const;
 
@@ -315,9 +336,14 @@ class Image;
     // Assignment not supported
       Options& operator=(const Options&);
 
+      void setOption(const char* name, const Color& value_);
+
+      void setOption(const char* name, const double value_);
+
       MagickCore::ImageInfo* _imageInfo;
       MagickCore::QuantizeInfo* _quantizeInfo;
       MagickCore::DrawInfo* _drawInfo;
+      bool _quiet;
   };
 } // namespace Magick
 

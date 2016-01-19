@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -56,14 +56,17 @@ typedef enum {
     HSIColorspace,
     HSVColorspace, /* alias for HSB */
     HCLpColorspace,
-    YDbDrColorspace
+    YDbDrColorspace,
+    xyYColorspace
 } ColorspaceType;
 
 extern MagickExport MagickBooleanType
-  RGBTransformImage(Image *,const ColorspaceType),
-  SetImageColorspace(Image *,const ColorspaceType),
-  TransformImageColorspace(Image *,const ColorspaceType),
-  TransformRGBImage(Image *,const ColorspaceType);
+RGBTransformImage(Image *, const ColorspaceType),
+SetImageColorspace(Image *, const ColorspaceType),
+SetImageGray(Image *, ExceptionInfo *),
+SetImageMonochrome(Image *, ExceptionInfo *),
+TransformImageColorspace(Image *, const ColorspaceType),
+TransformRGBImage(Image *, const ColorspaceType);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

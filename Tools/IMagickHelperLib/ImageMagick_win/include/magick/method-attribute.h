@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -123,14 +123,18 @@ extern "C" {
 #define magick_unreferenced(x) /* nothing */
 #endif
 
-#if (defined(__clang__) || (((__GNUC__) > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))) && !defined(__apple_build_version__)
+#if !defined(__clang__) && (((__GNUC__) > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))
 #define magick_alloc_size(x) __attribute__((__alloc_size__(x)))
 #define magick_alloc_sizes(x, y) __attribute__((__alloc_size__(x, y)))
-#define magick_cold_spot __attribute__((__cold__))
-#define magick_hot_spot __attribute__((__hot__))
 #else
 #define magick_alloc_size(x) /* nothing */
 #define magick_alloc_sizes(x, y) /* nothing */
+#endif
+
+#if defined(__clang__) || (((__GNUC__) > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))
+#define magick_cold_spot __attribute__((__cold__))
+#define magick_hot_spot __attribute__((__hot__))
+#else
 #define magick_cold_spot
 #define magick_hot_spot
 #endif

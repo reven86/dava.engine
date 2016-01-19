@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002
+// Copyright Dirk Lemstra 2014
 //
 // Geometry Definition
 //
@@ -138,6 +139,60 @@ class MagickPPExport Geometry
       bool _less; // Resize only if smaller than geometry (<)
       bool _fillArea; // Resize the image based on the smallest fitting dimension (^)
       bool _limitPixels; // Resize using a pixel area count limit (@)
+  };
+
+  class MagickPPExport Offset;
+
+  // Compare two Offset objects
+  MagickPPExport int operator==(const Magick::Offset& left_, const Magick::Offset& right_);
+  MagickPPExport int operator!=(const Magick::Offset& left_, const Magick::Offset& right_);
+
+  class MagickPPExport Offset
+  {
+  public:
+      // Default constructor
+      Offset();
+
+      // Construct Offset from specified string
+      Offset(const char* offset_);
+
+      // Copy constructor
+      Offset(const Offset& offset_);
+
+      // Construct Offset from specified string
+      Offset(const std::string& offset_);
+
+      // Construct Offset from specified x and y
+      Offset(ssize_t x_, ssize_t y_);
+
+      // Destructor
+      ~Offset(void);
+
+      // Set via offset string
+      const Offset& operator=(const char* offset_);
+
+      // Assignment operator
+      Offset& operator=(const Offset& offset_);
+
+      // Set via offset string
+      const Offset& operator=(const std::string& offset_);
+
+      // X offset from origin
+      ssize_t x(void) const;
+
+      // Y offset from origin
+      ssize_t y(void) const;
+
+      //
+      // Public methods below this point are for Magick++ use only.
+      //
+
+      // Return an ImageMagick OffsetInfo struct
+      operator MagickCore::OffsetInfo() const;
+
+  private:
+      ssize_t _x;
+      ssize_t _y;
   };
 } // namespace Magick
 

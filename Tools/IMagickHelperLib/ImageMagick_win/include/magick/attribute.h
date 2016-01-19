@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -26,9 +26,12 @@ extern "C" {
 #endif
 
 extern MagickExport ImageType
-  GetImageType(const Image *,ExceptionInfo *);
+GetImageType(const Image *, ExceptionInfo *),
+IdentifyImageGray(const Image *, ExceptionInfo *),
+IdentifyImageType(const Image *, ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
+IdentifyImageMonochrome(const Image *, ExceptionInfo *),
 IsGrayImage(const Image *, ExceptionInfo *),
 IsMonochromeImage(const Image *, ExceptionInfo *),
 IsOpaqueImage(const Image *, ExceptionInfo *),

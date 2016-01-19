@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ typedef struct _LocaleInfo
     *path,
     *tag,
     *message;
-                                                                                
+
   MagickBooleanType
     stealth;
-                                                                                
+
   struct _LocaleInfo
     *previous,
     *next;  /* deprecated, use GetLocaleInfoList() */
@@ -53,7 +53,11 @@ extern MagickExport const LocaleInfo
   **GetLocaleInfoList(const char *,size_t *,ExceptionInfo *);
 
 extern MagickExport double
-  InterpretLocaleValue(const char *restrict,char **restrict);
+InterpretLocaleValue(const char* magick_restrict, char** magick_restrict);
+
+extern MagickExport int
+LocaleCompare(const char *, const char *),
+LocaleNCompare(const char *, const char *, const size_t);
 
 extern MagickExport LinkedListInfo
   *DestroyLocaleOptions(LinkedListInfo *),
@@ -64,17 +68,21 @@ extern MagickExport MagickBooleanType
   LocaleComponentGenesis(void);
 
 extern MagickExport ssize_t
-FormatLocaleFile(FILE *, const char *restrict, ...)
+FormatLocaleFile(FILE *, const char *magick_restrict, ...)
 magick_attribute((__format__(__printf__, 2, 3))),
-FormatLocaleFileList(FILE *, const char *restrict, va_list)
+FormatLocaleFileList(FILE *, const char *magick_restrict, va_list)
 magick_attribute((__format__(__printf__, 2, 0))),
-FormatLocaleString(char *restrict, const size_t, const char *restrict, ...)
+FormatLocaleString(char *magick_restrict, const size_t,
+                   const char *magick_restrict, ...)
 magick_attribute((__format__(__printf__, 3, 4))),
-FormatLocaleStringList(char *restrict, const size_t, const char *restrict,
+FormatLocaleStringList(char *magick_restrict, const size_t,
+                       const char *magick_restrict,
                        va_list) magick_attribute((__format__(__printf__, 3, 0)));
 
 extern MagickExport void
-  LocaleComponentTerminus(void);
+LocaleComponentTerminus(void),
+LocaleLower(char *),
+LocaleUpper(char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -50,7 +50,7 @@ class MagickPPExport Color
       // Destructor
       virtual ~Color(void);
 
-    // Assignment operator
+      // Assignment operator
       Color& operator=(const Color& color_);
 
       // Set color via X11 color specification string

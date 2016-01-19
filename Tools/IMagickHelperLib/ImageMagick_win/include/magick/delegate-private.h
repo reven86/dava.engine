@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -21,6 +21,14 @@
 #if defined(MAGICKCORE_GS_DELEGATE)
 #include "ghostscript/iapi.h"
 #include "ghostscript/ierrors.h"
+#else
+typedef struct gsapi_revision_s
+{
+    const char* product;
+    const char* copyright;
+    long revision;
+    long revisiondate;
+} gsapi_revision_t;
 #endif
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -61,6 +69,8 @@ typedef struct _GhostInfo
                                                                        char*, int),
                                 int(MagickDLLCall*)(void*, const char*, int),
                                 int(MagickDLLCall*)(void*, const char*, int));
+
+  int(MagickDLLCall* revision)(gsapi_revision_t*, int);
 } GhostInfo;
 
 #if defined(__cplusplus) || defined(c_plusplus)

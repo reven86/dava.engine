@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -55,18 +55,18 @@ typedef enum
   SentinelDistortion
 } DistortImageMethod;
 
-typedef enum
-{
-  UndefinedColorInterpolate = UndefinedDistortion,
-  BarycentricColorInterpolate = AffineDistortion,
-  BilinearColorInterpolate = BilinearReverseDistortion,
-  PolynomialColorInterpolate = PolynomialDistortion,
-  ShepardsColorInterpolate = ShepardsDistortion,
-  /*
+typedef enum {
+    UndefinedColorInterpolate = UndefinedDistortion,
+    BarycentricColorInterpolate = AffineDistortion,
+    BilinearColorInterpolate = BilinearReverseDistortion,
+    PolynomialColorInterpolate = PolynomialDistortion,
+    ShepardsColorInterpolate = ShepardsDistortion,
+    /*
     Methods unique to SparseColor().
   */
-  VoronoiColorInterpolate = SentinelDistortion,
-  InverseColorInterpolate
+    VoronoiColorInterpolate = SentinelDistortion,
+    InverseColorInterpolate,
+    ManhattanColorInterpolate
 } SparseColorMethod;
 
 extern MagickExport Image

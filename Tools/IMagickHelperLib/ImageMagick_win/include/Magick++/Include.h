@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002
+// Copyright Dirk Lemstra 2013-2015
 //
 // Inclusion of ImageMagick headers (with namespace magic)
 
@@ -112,6 +113,9 @@ namespace MagickCore
 #pragma comment(lib, "CORE_DB_bzlib_.lib")
 #endif
 #pragma comment(lib, "CORE_DB_coders_.lib")
+#if defined(MAGICKCORE_OPENEXR_DELEGATE)
+#pragma comment(lib, "CORE_DB_exr_.lib")
+#endif
 #if defined(MAGICKCORE_LQR_DELEGATE)
 #pragma comment(lib, "CORE_DB_ffi_.lib")
 #endif
@@ -174,6 +178,9 @@ namespace MagickCore
 #pragma comment(lib, "CORE_RL_bzlib_.lib")
 #endif
 #pragma comment(lib, "CORE_RL_coders_.lib")
+#if defined(MAGICKCORE_OPENEXR_DELEGATE)
+#pragma comment(lib, "CORE_RL_exr_.lib")
+#endif
 #if defined(MAGICKCORE_LQR_DELEGATE)
 #pragma comment(lib, "CORE_RL_ffi_.lib")
 #endif
@@ -284,6 +291,8 @@ namespace Magick
   using MagickCore::TransparentAlphaChannel;
   using MagickCore::FlattenAlphaChannel;
   using MagickCore::RemoveAlphaChannel;
+  using MagickCore::AssociateAlphaChannel;
+  using MagickCore::DisassociateAlphaChannel;
 
   // Image class types
   using MagickCore::ClassType;
@@ -350,10 +359,14 @@ namespace Magick
   using MagickCore::YIQColorspace;
   using MagickCore::YPbPrColorspace;
   using MagickCore::YUVColorspace;
+  using MagickCore::xyYColorspace;
 
   // Command options
   using MagickCore::CommandOption;
+  using MagickCore::MagickDirectionOptions;
+  using MagickCore::MagickGravityOptions;
   using MagickCore::MagickKernelOptions;
+  using MagickCore::MagickStyleOptions;
 
   // Composition operations
   using MagickCore::CompositeOperator;
@@ -748,6 +761,14 @@ namespace Magick
   using MagickCore::AccelerateEvent;
   using MagickCore::AllEvents;
 
+  // Magick functions
+  using MagickCore::MagickFunction;
+  using MagickCore::UndefinedFunction;
+  using MagickCore::ArcsinFunction;
+  using MagickCore::ArctanFunction;
+  using MagickCore::PolynomialFunction;
+  using MagickCore::SinusoidFunction;
+
   // Metric types
   using MagickCore::MetricType;
   using MagickCore::UndefinedMetric;
@@ -921,6 +942,7 @@ namespace Magick
   using MagickCore::ShepardsColorInterpolate;
   using MagickCore::VoronoiColorInterpolate;
   using MagickCore::InverseColorInterpolate;
+  using MagickCore::ManhattanColorInterpolate;
 
   // Statistic type
   using MagickCore::MedianStatistic;
@@ -985,6 +1007,7 @@ namespace Magick
   //
   using MagickCore::AcquireExceptionInfo;
   using MagickCore::AcquireCacheView;
+  using MagickCore::AcquireDrawingWand;
   using MagickCore::AcquireImage;
   using MagickCore::AcquireKernelInfo;
   using MagickCore::AcquireMagickMemory;
@@ -1042,6 +1065,7 @@ namespace Magick
   using MagickCore::CoderError;
   using MagickCore::CoderFatalError;
   using MagickCore::CoderWarning;
+  using MagickCore::CopyImagePixels;
   using MagickCore::ColorDecisionListImage;
   using MagickCore::ColorizeImage;
   using MagickCore::ColorMatrixImage;
@@ -1053,6 +1077,7 @@ namespace Magick
   using MagickCore::ConfigureError;
   using MagickCore::ConfigureFatalError;
   using MagickCore::ConfigureWarning;
+  using MagickCore::ConnectedComponentsImage;
   using MagickCore::ConstituteImage;
   using MagickCore::ContrastImage;
   using MagickCore::ContrastStretchImageChannel;
@@ -1091,7 +1116,6 @@ namespace Magick
   using MagickCore::DisplayImages;
   using MagickCore::DistortImage;
   using MagickCore::DrawAffine;
-  using MagickCore::DrawAllocateWand;
   using MagickCore::DrawAnnotation;
   using MagickCore::DrawArc;
   using MagickCore::DrawBezier;
@@ -1212,6 +1236,7 @@ namespace Magick
   using MagickCore::GetCacheViewAuthenticIndexQueue;
   using MagickCore::GetCacheViewAuthenticPixels;
   using MagickCore::GetCacheViewVirtualPixels;
+  using MagickCore::GetClientName;
   using MagickCore::GetColorTuple;
   using MagickCore::GetDrawInfo;
   using MagickCore::GetGeometry;
@@ -1272,15 +1297,20 @@ namespace Magick
   using MagickCore::IsEventLogging;
   using MagickCore::IsGeometry;
   using MagickCore::IsImagesEqual;
+  using MagickCore::IsOpaqueImage;
   using MagickCore::KernelInfo;
+  using MagickCore::KuwaharaImage;
   using MagickCore::LessValue;
   using MagickCore::LevelImage;
   using MagickCore::LevelImageChannel;
   using MagickCore::LevelColorsImageChannel;
+  using MagickCore::LevelizeImage;
+  using MagickCore::LevelizeImageChannel;
   using MagickCore::LinearStretchImage;
   using MagickCore::LinkedListInfo;
   using MagickCore::LiquidRescaleImage;
   using MagickCore::LocaleCompare;
+  using MagickCore::LocalContrastImage;
   using MagickCore::LockSemaphoreInfo;
   using MagickCore::LogMagickEvent;
   using MagickCore::MagickCoreTerminus;
@@ -1313,6 +1343,7 @@ namespace Magick
   using MagickCore::NoiseType;
   using MagickCore::NormalizeImage;
   using MagickCore::NoValue;
+  using MagickCore::OffsetInfo;
   using MagickCore::OilPaintImage;
   using MagickCore::OpaquePaintImage;
   using MagickCore::OrderedPosterizeImage;
@@ -1377,7 +1408,6 @@ namespace Magick
   using MagickCore::SelectiveBlurImageChannel;
   using MagickCore::SeparateImageChannel;
   using MagickCore::SepiaToneImage;
-  using MagickCore::SetClientName;
   using MagickCore::SetGeometry;
   using MagickCore::SetImageAlphaChannel;
   using MagickCore::SetImageArtifact;
@@ -1472,9 +1502,11 @@ namespace Magick
 // No user-serviceable parts beyond this point
 //
 //////////////////////////////////////////////////////////////////////
-#define GetPPException MagickCore::ExceptionInfo* exceptionInfo = MagickCore::AcquireExceptionInfo()
-#define ThrowPPException \
-  throwException(exceptionInfo); \
+#define GetPPException \
+  MagickCore::ExceptionInfo* exceptionInfo; \
+  exceptionInfo = MagickCore::AcquireExceptionInfo()
+#define ThrowPPException(quiet) \
+  throwException(exceptionInfo, quiet); \
   (void) MagickCore::DestroyExceptionInfo(exceptionInfo)
 
 #endif // Magick_Include_header

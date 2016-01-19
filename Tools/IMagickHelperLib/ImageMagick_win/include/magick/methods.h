@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -1073,12 +1073,14 @@ extern "C" {
 #define SetImageColorspace  PrependMagickMethod(SetImageColorspace)
 #define SetImageDepth  PrependMagickMethod(SetImageDepth)
 #define SetImageExtent  PrependMagickMethod(SetImageExtent)
+#define SetImageGray PrependMagickMethod(SetImageGray)
 #define SetImageInfoBlob  PrependMagickMethod(SetImageInfoBlob)
 #define SetImageInfoFile  PrependMagickMethod(SetImageInfoFile)
 #define SetImageInfo  PrependMagickMethod(SetImageInfo)
 #define SetImageInfoProgressMonitor  PrependMagickMethod(SetImageInfoProgressMonitor)
 #define SetImageList  PrependMagickMethod(SetImageList)
 #define SetImageMask  PrependMagickMethod(SetImageMask)
+#define SetImageMonochrome PrependMagickMethod(SetImageMonochrome)
 #define SetImageOpacity  PrependMagickMethod(SetImageOpacity)
 #define SetImageOption  PrependMagickMethod(SetImageOption)
 #define SetImagePixels  PrependMagickMethod(SetImagePixels)

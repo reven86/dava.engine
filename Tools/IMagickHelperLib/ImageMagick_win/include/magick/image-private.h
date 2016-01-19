@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -22,7 +22,17 @@
 extern "C" {
 #endif
 
-#define IsNaN(a) ((a) != (a) ? MagickTrue : MagickFalse)
+#if defined(MAGICKCORE_HAVE_ISNAN)
+#define IsNaN(a) isnan(a)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1310)
+#include <float.h>
+#define IsNaN(a) _isnan(a)
+#else
+#define IsNaN(a) (a != a)
+#endif
+#define MagickAbsoluteValue(x) ((x) < 0 ? -(x) : (x))
+#define MagickMax(x, y) (((x) > (y)) ? (x) : (y))
+#define MagickMin(x, y) (((x) < (y)) ? (x) : (y))
 #define MagickPI 3.14159265358979323846264338327950288419716939937510
 #define Magick2PI 6.28318530717958647692528676655900576839433879875020
 #define MagickPHI 1.61803398874989484820458683436563811772030917980576

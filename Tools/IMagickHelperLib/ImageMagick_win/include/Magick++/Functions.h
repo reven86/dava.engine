@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2003
+// Copyright Dirk Lemstra 2014
 //
 // Simple C++ function wrappers for often used or otherwise
 // inconvenient ImageMagick equivalents
@@ -26,5 +27,8 @@ MagickPPExport bool EnableOpenCL(const bool useCache_ = true);
 
 // C library initialization routine
 MagickPPExport void InitializeMagick(const char* path_);
+
+// Seed a new sequence of pseudo-random numbers
+MagickPPExport void SetRandomSeed(const unsigned long seed);
 }
 #endif // Magick_Functions_header

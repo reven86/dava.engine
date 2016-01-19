@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ typedef enum {
     ShapeAlphaChannel,
     TransparentAlphaChannel,
     FlattenAlphaChannel,
-    RemoveAlphaChannel
+    RemoveAlphaChannel,
+    AssociateAlphaChannel,
+    DisassociateAlphaChannel
 } AlphaChannelType;
 
 typedef enum
@@ -350,6 +352,9 @@ struct _Image
 
   size_t
   duration; /* Total animation duration sum(delay*iterations) */
+
+  long
+  tietz_offset;
 };
 
 struct _ImageInfo
@@ -521,28 +526,30 @@ extern MagickExport ImageInfo
   *DestroyImageInfo(ImageInfo *);
 
 extern MagickExport MagickBooleanType
-  ClipImage(Image *),
-  ClipImagePath(Image *,const char *,const MagickBooleanType),
-  IsTaintImage(const Image *),
-  IsMagickConflict(const char *),
-  IsHighDynamicRangeImage(const Image *,ExceptionInfo *),
-  IsImageObject(const Image *),
-  ListMagickInfo(FILE *,ExceptionInfo *),
-  ModifyImage(Image **,ExceptionInfo *),
-  ResetImagePage(Image *,const char *),
-  SetImageBackgroundColor(Image *),
-  SetImageClipMask(Image *,const Image *),
-  SetImageColor(Image *,const MagickPixelPacket *),
-  SetImageExtent(Image *,const size_t,const size_t),
-  SetImageInfo(ImageInfo *,const unsigned int,ExceptionInfo *),
-  SetImageMask(Image *,const Image *),
-  SetImageOpacity(Image *,const Quantum),
-  SetImageChannels(Image *,const size_t),
-  SetImageStorageClass(Image *,const ClassType),
-  StripImage(Image *),
-  SyncImage(Image *),
-  SyncImageSettings(const ImageInfo *,Image *),
-  SyncImagesSettings(ImageInfo *,Image *);
+ClipImage(Image *),
+ClipImagePath(Image *, const char *, const MagickBooleanType),
+CopyImagePixels(Image *, const Image *, const RectangleInfo *,
+                const OffsetInfo *, ExceptionInfo *),
+IsTaintImage(const Image *),
+IsMagickConflict(const char *),
+IsHighDynamicRangeImage(const Image *, ExceptionInfo *),
+IsImageObject(const Image *),
+ListMagickInfo(FILE *, ExceptionInfo *),
+ModifyImage(Image **, ExceptionInfo *),
+ResetImagePage(Image *, const char *),
+SetImageBackgroundColor(Image *),
+SetImageClipMask(Image *, const Image *),
+SetImageColor(Image *, const MagickPixelPacket *),
+SetImageExtent(Image *, const size_t, const size_t),
+SetImageInfo(ImageInfo *, const unsigned int, ExceptionInfo *),
+SetImageMask(Image *, const Image *),
+SetImageOpacity(Image *, const Quantum),
+SetImageChannels(Image *, const size_t),
+SetImageStorageClass(Image *, const ClassType),
+StripImage(Image *),
+SyncImage(Image *),
+SyncImageSettings(const ImageInfo *, Image *),
+SyncImagesSettings(ImageInfo *, Image *);
 
 extern MagickExport size_t
   InterpretImageFilename(const ImageInfo *,Image *,const char *,int,char *);

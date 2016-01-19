@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -32,15 +32,15 @@ typedef struct _DelegateInfo
     *decode,
     *encode,
     *commands;
-                                                                                
+
   ssize_t
     mode;
-                                                                                
+
   MagickBooleanType
     thread_support,
     spawn,
     stealth;
-                                                                                
+
   struct _DelegateInfo
     *previous,
     *next;  /* deprecated, use GetDelegateInfoList() */
@@ -62,6 +62,10 @@ extern MagickExport const char
 extern MagickExport const DelegateInfo
   *GetDelegateInfo(const char *,const char *,ExceptionInfo *exception),
   **GetDelegateInfoList(const char *,size_t *,ExceptionInfo *);
+
+extern MagickExport int
+ExternalDelegateCommand(const MagickBooleanType, const MagickBooleanType,
+                        const char*, char*, ExceptionInfo*);
 
 extern MagickExport ssize_t
   GetDelegateMode(const DelegateInfo *);

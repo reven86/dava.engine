@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -240,8 +240,8 @@ GetVirtualPixelsFromNexus(const Image *, const VirtualPixelMethod,
 *GetVirtualPixelsNexus(const Cache, NexusInfo *);
 
 extern MagickExport MagickBooleanType
-SyncAuthenticPixelCacheNexus(Image*, NexusInfo*, ExceptionInfo*)
-magick_hot_spot;
+SyncAuthenticPixelCacheNexus(Image*, NexusInfo* magick_restrict,
+                             ExceptionInfo*) magick_hot_spot;
 
 extern MagickExport MagickSizeType
   GetPixelCacheNexusExtent(const Cache,NexusInfo *);

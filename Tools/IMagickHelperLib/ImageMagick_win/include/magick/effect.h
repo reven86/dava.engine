@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -82,6 +82,10 @@ AdaptiveBlurImage(const Image *, const double, const double, ExceptionInfo *),
 *GaussianBlurImage(const Image *, const double, const double, ExceptionInfo *),
 *GaussianBlurImageChannel(const Image *, const ChannelType, const double,
                           const double, ExceptionInfo *),
+*KuwaharaImage(const Image *, const double, const double, ExceptionInfo *),
+*KuwaharaImageChannel(const Image *, const ChannelType, const double,
+                      const double, ExceptionInfo *),
+*LocalContrastImage(const Image *, const double, const double, ExceptionInfo *),
 *MotionBlurImage(const Image *, const double, const double, const double,
                  ExceptionInfo *),
 *MotionBlurImageChannel(const Image *, const ChannelType, const double,

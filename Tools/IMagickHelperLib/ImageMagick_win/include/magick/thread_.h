@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -22,9 +22,13 @@
 extern "C" {
 #endif
 
+#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#include <intsafe.h>
+#endif
+
 #if defined(MAGICKCORE_THREAD_SUPPORT)
 typedef pthread_t MagickThreadType;
-#elif defined(MAGICKCORE_HAVE_WINTHREADS)
+#elif defined(MAGICKCORE_WINDOWS_SUPPORT)
 typedef DWORD MagickThreadType;
 #else
 typedef pid_t MagickThreadType;
@@ -32,16 +36,24 @@ typedef pid_t MagickThreadType;
 
 #if defined(MAGICKCORE_THREAD_SUPPORT)
 typedef pthread_key_t MagickThreadKey;
-#elif defined(MAGICKCORE_HAVE_WINTHREADS)
+#elif defined(MAGICKCORE_WINDOWS_SUPPORT)
 typedef DWORD MagickThreadKey;
 #else
-typedef size_t *MagickThreadKey;
+typedef void* MagickThreadKey;
 #endif
 
 extern MagickExport MagickBooleanType
-  MagickCreateThreadKey(MagickThreadKey *),
-  MagickDeleteThreadKey(MagickThreadKey),
-  MagickSetThreadValue(MagickThreadKey,const void *);
+CreateMagickThreadKey(MagickThreadKey *, void (*destructor)(void *)),
+DeleteMagickThreadKey(MagickThreadKey),
+SetMagickThreadValue(MagickThreadKey, const void *);
+
+extern MagickExport void* GetMagickThreadValue(MagickThreadKey);
+
+/* Deprecated */
+extern MagickExport MagickBooleanType
+MagickCreateThreadKey(MagickThreadKey *),
+MagickDeleteThreadKey(MagickThreadKey),
+MagickSetThreadValue(MagickThreadKey, const void *);
 
 extern MagickExport void
   *MagickGetThreadValue(MagickThreadKey);

@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2003
+// Copyright Dirk Lemstra 2013-2014
 //
 // Definition and implementation of template functions for using
 // Magick::Image with STL containers.
@@ -898,6 +899,10 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
       void depth(size_t depth_);
       size_t depth(void) const;
 
+      // Suppress all warning messages. Error messages are still reported.
+      void quiet(const bool quiet_);
+      bool quiet(void) const;
+
       // Image size (required for raw formats)
       void size(const Geometry& geometry_);
       Geometry size(void) const;
@@ -913,6 +918,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
       ReadOptions& operator=(const ReadOptions&);
 
       MagickCore::ImageInfo* _imageInfo;
+      bool _quiet;
   };
 
   // Reduce noise in image using a noise peak elimination filter
@@ -1997,7 +2003,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     MagickCore::AnimateImages( first_->imageInfo(), first_->image() );
     MagickCore::GetImageException(first_->image(), exceptionInfo);
     unlinkImages( first_, last_ );
-    ThrowPPException;
+    ThrowPPException(first_->quiet());
   }
 
   // Append images from list into single image in either horizontal or
@@ -2014,7 +2020,43 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
                                                         exceptionInfo);
     unlinkImages( first_, last_ );
     appendedImage_->replaceImage( image );
-    ThrowPPException;
+    ThrowPPException(appendedImage_->quiet());
+  }
+
+  // Adds the names of the artifacts of the image to the container.
+  template <class Container>
+  void artifactNames(Container* names_, const Image* image_)
+  {
+      char*
+      name;
+
+      names_->clear();
+
+      MagickCore::ResetImageArtifactIterator(image_->constImage());
+      name = MagickCore::GetNextImageArtifact(image_->constImage());
+      while (name != (char*)NULL)
+      {
+          names_->push_back(std::string(name));
+          name = MagickCore::GetNextImageArtifact(image_->constImage());
+      }
+  }
+
+  // Adds the names of the attributes of the image to the container.
+  template <class Container>
+  void attributeNames(Container* names_, const Image* image_)
+  {
+      char*
+      name;
+
+      names_->clear();
+
+      MagickCore::ResetImagePropertyIterator(image_->constImage());
+      name = MagickCore::GetNextImageProperty(image_->constImage());
+      while (name != (char*)NULL)
+      {
+          names_->push_back(std::string(name));
+          name = MagickCore::GetNextImageProperty(image_->constImage());
+      }
   }
 
   // Average a set of images.
@@ -2029,7 +2071,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
                                                           MagickCore::MeanEvaluateOperator, exceptionInfo);
     unlinkImages( first_, last_ );
     averagedImage_->replaceImage( image );
-    ThrowPPException;
+    ThrowPPException(averagedImage_->quiet());
   }
 
   // Merge a sequence of images.
@@ -2057,7 +2099,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     insertImages( coalescedImages_, images );
 
     // Report any error
-    ThrowPPException;
+    ThrowPPException(first_->quiet());
   }
 
   // Return format coders matching specified conditions.
@@ -2082,7 +2124,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     MagickCore::GetMagickList("*", &number_formats, exceptionInfo);
     if( !coder_list )
       {
-        throwException( exceptionInfo );
+          throwException(exceptionInfo);
         throwExceptionExplicit(MagickCore::MissingDelegateError,
                              "Coder array not returned!", 0 );
       }
@@ -2132,7 +2174,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
           }
       }
     coder_list=(char **) MagickCore::RelinquishMagickMemory( coder_list );
-    ThrowPPException;
+    ThrowPPException(false);
   }
 
   //
@@ -2184,7 +2226,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     size_t colors;
     MagickCore::ColorPacket* histogram_array =
     MagickCore::GetImageHistogram(image.constImage(), &colors, exceptionInfo);
-    ThrowPPException;
+    ThrowPPException(image.quiet());
 
     // Clear out container
     histogram_->clear();
@@ -2215,7 +2257,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
       MagickCore::Image* image = CombineImages(first_->image(), channel_, exceptionInfo);
       unlinkImages(first_, last_);
       combinedImage_->replaceImage(image);
-      ThrowPPException;
+      ThrowPPException(combinedImage_->quiet());
   }
 
   template <class Container>
@@ -2227,7 +2269,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
                                                    static_cast<std::string>(geometry_).c_str(), exceptionInfo);
       tiledImages_->clear();
       insertImages(tiledImages_, images);
-      ThrowPPException;
+      ThrowPPException(image_.quiet());
   }
 
   // Break down an image sequence into constituent parts.  This is
@@ -2252,7 +2294,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     insertImages( deconstructedImages_, images );
 
     // Report any error
-    ThrowPPException;
+    ThrowPPException(first_->quiet());
   }
 
   //
@@ -2266,7 +2308,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     MagickCore::DisplayImages( first_->imageInfo(), first_->image() );
     MagickCore::GetImageException(first_->image(), exceptionInfo);
     unlinkImages(first_, last_);
-    ThrowPPException;
+    ThrowPPException(first_->quiet());
   }
 
   // Applies a value to the image with an arithmetic, relational,
@@ -2284,7 +2326,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
       MagickCore::Image* image = EvaluateImages(first_->image(), operator_, exceptionInfo);
     unlinkImages( first_, last_ );
     evaluatedImage_->replaceImage(image);
-    ThrowPPException;
+    ThrowPPException(evaluatedImage_->quiet());
   }
 
   // Merge a sequence of image frames which represent image layers.
@@ -2299,7 +2341,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
                                                             FlattenLayer, exceptionInfo);
     unlinkImages( first_, last_ );
     flattendImage_->replaceImage( image );
-    ThrowPPException;
+    ThrowPPException(flattendImage_->quiet());
   }
 
   // Implements the discrete Fourier transform (DFT) of the image either as a
@@ -2320,7 +2362,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     insertImages( fourierImages_, images );
 
     // Report any error
-    ThrowPPException;
+    ThrowPPException(image_.quiet());
   }
   template <class Container >
   void forwardFourierTransformImage( Container *fourierImages_,
@@ -2339,7 +2381,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     insertImages( fourierImages_, images );
 
     // Report any error
-    ThrowPPException;
+    ThrowPPException(image_.quiet());
   }
 
   // Applies a mathematical expression to a sequence of images.
@@ -2355,7 +2397,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
                              expression.c_str(), exceptionInfo);
       unlinkImages(first_, last_);
       fxImage_->replaceImage(image);
-      ThrowPPException;
+      ThrowPPException(fxImage_->quiet());
   }
 
   // Replace the colors of a sequence of images with the closest color
@@ -2379,7 +2421,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     if (exceptionInfo->severity != MagickCore::UndefinedException)
       {
         unlinkImages( first_, last_ );
-        throwException( exceptionInfo );
+        throwException(exceptionInfo, mapImage_.quiet());
       }
 
     MagickCore::Image* image = first_->image();
@@ -2392,7 +2434,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
             if ( image->exception.severity > MagickCore::UndefinedException )
               {
                 unlinkImages( first_, last_ );
-                throwException( exceptionInfo );
+                throwException(exceptionInfo, mapImage_.quiet());
               }
           }
   
@@ -2401,7 +2443,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
         if ( image->exception.severity > MagickCore::UndefinedException )
           {
             unlinkImages( first_, last_ );
-            throwException( exceptionInfo );
+            throwException(exceptionInfo, mapImage_.quiet());
           }
 
         // Next image
@@ -2425,7 +2467,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
       MagickCore::Image* image = MergeImageLayers(first_->image(), method_, exceptionInfo);
       unlinkImages(first_, last_);
       mergedImage_->replaceImage(image);
-      ThrowPPException;
+      ThrowPPException(mergedImage_->quiet());
   }
 
   // Create a composite image by combining several separate images.
@@ -2468,7 +2510,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     MagickCore::DestroyMontageInfo(montageInfo);
 
     // Report any montage error
-    ThrowPPException;
+    ThrowPPException(first_->quiet());
 
     // Apply transparency to montage images
     if (montageImages_->size() > 0 && options_.transparentColor().isValid())
@@ -2498,7 +2540,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     insertImages( morphedImages_, images );
 
     // Report any error
-    ThrowPPException;
+    ThrowPPException(first_->quiet());
   }
 
   // Inlay a number of images to form a single coherent picture.
@@ -2512,7 +2554,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
                                                             MosaicLayer, exceptionInfo);
     unlinkImages( first_, last_ );
     mosaicImage_->replaceImage( image );
-    ThrowPPException;
+    ThrowPPException(mosaicImage_->quiet());
   }
 
   // Compares each image the GIF disposed forms of the previous image in
@@ -2535,7 +2577,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
 
       insertImages(optimizedImages_, images);
 
-      ThrowPPException;
+      ThrowPPException(first_->quiet());
   }
 
   // optimizeImagePlusLayers is exactly as optimizeImageLayers, but may
@@ -2557,7 +2599,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
 
       insertImages(optimizedImages_, images);
 
-      ThrowPPException;
+      ThrowPPException(first_->quiet());
   }
 
   // Compares each image the GIF disposed forms of the previous image in the
@@ -2572,7 +2614,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
       OptimizeImageTransparency(first_->image(), exceptionInfo);
       unlinkImages(first_, last_);
 
-      ThrowPPException;
+      ThrowPPException(first_->quiet());
   }
 
   // Adds the names of the profiles from the image to the container.
@@ -2608,7 +2650,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
     if (exceptionInfo->severity > MagickCore::UndefinedException)
       {
   unlinkImages( first_, last_ );
-  throwException( exceptionInfo );
+  throwException(exceptionInfo, first_->quiet());
       }
 
     MagickCore::Image* image = first_->image();
@@ -2635,14 +2677,16 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
                   ReadOptions& options)
   {
       MagickCore::Image* images;
+
       MagickCore::ImageInfo* imageInfo;
+
       imageInfo = options.imageInfo();
       imageSpec_.copy(imageInfo->filename, MaxTextExtent - 1);
       imageInfo->filename[imageSpec_.length()] = 0;
       GetPPException;
       images = MagickCore::ReadImage(imageInfo, exceptionInfo);
       insertImages(sequence_, images);
-      ThrowPPException;
+      ThrowPPException(options.quiet());
   }
 
   template <class Container>
@@ -2657,13 +2701,11 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
   {
       MagickCore::Image* images;
 
-      MagickCore::ImageInfo* imageInfo;
-
       GetPPException;
-      images = MagickCore::BlobToImage(imageInfo, blob_.data(), blob_.length(),
-                                       exceptionInfo);
+      images = MagickCore::BlobToImage(options.imageInfo(), blob_.data(),
+                                       blob_.length(), exceptionInfo);
       insertImages(sequence_, images);
-      ThrowPPException;
+      ThrowPPException(options.quiet());
   }
 
   template <class Container>
@@ -2687,7 +2729,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
 
       insertImages(separatedImages_, images);
 
-      ThrowPPException;
+      ThrowPPException(image_.quiet());
   }
 
   // Smush images from list into single image in either horizontal or
@@ -2704,7 +2746,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
                                          (MagickBooleanType)stack_, offset_, exceptionInfo);
       unlinkImages(first_, last_);
       smushedImage_->replaceImage(newImage);
-      ThrowPPException;
+      ThrowPPException(smushedImage_->quiet());
   }
 
   // Write Images
@@ -2731,7 +2773,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
         return;
       }
 
-      ThrowPPException;
+      ThrowPPException(first_->quiet());
   }
   // Write images to BLOB
   template <class InputIterator>
@@ -2754,7 +2796,7 @@ class MagickPPExport adaptiveBlurImage : public std::unary_function<Image&, void
 
     unlinkImages( first_, last_ );
 
-    ThrowPPException;
+    ThrowPPException(first_->quiet());
   }
 
 } // namespace Magick

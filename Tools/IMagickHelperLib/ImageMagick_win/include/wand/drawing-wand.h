@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -31,12 +31,14 @@ extern WandExport AlignType
   DrawGetTextAlignment(const DrawingWand *);
 
 extern WandExport char
-  *DrawGetClipPath(const DrawingWand *),
-  *DrawGetException(const DrawingWand *,ExceptionType *),
-  *DrawGetFont(const DrawingWand *),
-  *DrawGetFontFamily(const DrawingWand *),
-  *DrawGetTextEncoding(const DrawingWand *),
-  *DrawGetVectorGraphics(DrawingWand *);
+*
+DrawGetClipPath(const DrawingWand *),
+*DrawGetDensity(const DrawingWand *),
+*DrawGetException(const DrawingWand *, ExceptionType *),
+*DrawGetFont(const DrawingWand *),
+*DrawGetFontFamily(const DrawingWand *),
+*DrawGetTextEncoding(const DrawingWand *),
+*DrawGetVectorGraphics(DrawingWand *);
 
 extern WandExport ClipPathUnits
   DrawGetClipUnits(const DrawingWand *);
@@ -63,10 +65,11 @@ extern WandExport DrawInfo
   *PeekDrawingWand(const DrawingWand *);
 
 extern WandExport DrawingWand
-  *CloneDrawingWand(const DrawingWand *),
-  *DestroyDrawingWand(DrawingWand *),
-  *DrawAllocateWand(const DrawInfo *,Image *),
-  *NewDrawingWand(void);
+*
+AcquireDrawingWand(const DrawInfo *, Image *),
+*CloneDrawingWand(const DrawingWand *),
+*DestroyDrawingWand(DrawingWand *),
+*NewDrawingWand(void);
 
 extern WandExport ExceptionType
   DrawGetExceptionType(const DrawingWand *);
@@ -85,27 +88,28 @@ extern WandExport LineJoin
   DrawGetStrokeLineJoin(const DrawingWand *);
 
 extern WandExport MagickBooleanType
-  DrawClearException(DrawingWand *),
-  DrawComposite(DrawingWand *,const CompositeOperator,const double,const double,
-    const double,const double,MagickWand *),
-  DrawGetFontResolution(const DrawingWand *,double *,double *),
-  DrawGetStrokeAntialias(const DrawingWand *),
-  DrawGetTextAntialias(const DrawingWand *),
-  DrawPopPattern(DrawingWand *),
-  DrawPushPattern(DrawingWand *,const char *,const double,const double,
-    const double,const double),
-  DrawRender(DrawingWand *),
-  DrawSetClipPath(DrawingWand *,const char *),
-  DrawSetFillPatternURL(DrawingWand *,const char *),
-  DrawSetFont(DrawingWand *,const char *),
-  DrawSetFontFamily(DrawingWand *,const char *),
-  DrawSetFontResolution(DrawingWand *,const double,const double),
-  DrawSetStrokeDashArray(DrawingWand *,const size_t,const double *),
-  DrawSetStrokePatternURL(DrawingWand *,const char *),
-  DrawSetVectorGraphics(DrawingWand *,const char *),
-  IsDrawingWand(const DrawingWand *),
-  PopDrawingWand(DrawingWand *),
-  PushDrawingWand(DrawingWand *);
+DrawClearException(DrawingWand *),
+DrawComposite(DrawingWand *, const CompositeOperator, const double, const double,
+              const double, const double, MagickWand *),
+DrawGetFontResolution(const DrawingWand *, double *, double *),
+DrawGetStrokeAntialias(const DrawingWand *),
+DrawGetTextAntialias(const DrawingWand *),
+DrawPopPattern(DrawingWand *),
+DrawPushPattern(DrawingWand *, const char *, const double, const double,
+                const double, const double),
+DrawRender(DrawingWand *),
+DrawSetClipPath(DrawingWand *, const char *),
+DrawSetDensity(DrawingWand *, const char *),
+DrawSetFillPatternURL(DrawingWand *, const char *),
+DrawSetFont(DrawingWand *, const char *),
+DrawSetFontFamily(DrawingWand *, const char *),
+DrawSetFontResolution(DrawingWand *, const double, const double),
+DrawSetStrokeDashArray(DrawingWand *, const size_t, const double *),
+DrawSetStrokePatternURL(DrawingWand *, const char *),
+DrawSetVectorGraphics(DrawingWand *, const char *),
+IsDrawingWand(const DrawingWand *),
+PopDrawingWand(DrawingWand *),
+PushDrawingWand(DrawingWand *);
 
 extern WandExport StretchType
   DrawGetFontStretch(const DrawingWand *);

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -73,20 +73,6 @@ static inline MagickBooleanType IsMonochromePixel(const PixelPacket *pixel)
     }
 #endif
   return(MagickFalse);
-}
-
-static inline double PerceptibleReciprocal(const double x)
-{
-    double
-    sign;
-
-    /*
-    Return 1/x where x is perceptible (not unlimited or infinitesimal).
-  */
-    sign = x < 0.0 ? -1.0 : 1.0;
-    if ((sign * x) >= MagickEpsilon)
-        return (1.0 / x);
-    return (sign / MagickEpsilon);
 }
 
 static inline void SetMagickPixelPacket(const Image *image,

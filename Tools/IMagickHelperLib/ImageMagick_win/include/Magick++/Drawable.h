@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002
+// Copyright Dirk Lemstra 2014
 //
 // Definition of Drawable (Graphic objects)
 //
@@ -748,6 +749,22 @@ private:
   double             _width;
   double             _height;
   Image*             _image;
+};
+
+// Density
+class MagickPPExport DrawableDensity : public DrawableBase
+{
+public:
+    DrawableDensity(const std::string& density_);
+
+    ~DrawableDensity(void);
+
+    void operator()(MagickCore::DrawingWand* context_) const;
+
+    DrawableBase* copy() const;
+
+private:
+    std::string _density;
 };
 
 // Ellipse

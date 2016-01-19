@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -29,11 +29,25 @@ extern "C" {
 static inline IndexPacket ConstrainColormapIndex(Image *image,
   const size_t index)
 {
-  if (index < image->colors)
+    if ((index < image->colors) && ((ssize_t)index >= 0))
     return((IndexPacket) index);
   (void) ThrowMagickException(&image->exception,GetMagickModule(),
     CorruptImageError,"InvalidColormapIndex","`%s'",image->filename);
   return((IndexPacket) 0);
+}
+
+static inline MagickBooleanType IsValidColormapIndex(Image* image,
+                                                     const ssize_t index, IndexPacket* target, ExceptionInfo* exception)
+{
+    if ((index < 0) || (index >= (ssize_t)image->colors))
+    {
+        (void)ThrowMagickException(exception, GetMagickModule(), CorruptImageError,
+                                   "InvalidColormapIndex", "`%s'", image->filename);
+        *target = (IndexPacket)0;
+        return (MagickFalse);
+    }
+    *target = (IndexPacket)index;
+    return (MagickTrue);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

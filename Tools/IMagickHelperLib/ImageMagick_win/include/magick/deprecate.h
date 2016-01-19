@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -161,10 +161,12 @@ extern MagickExport IndexPacket
   ValidateColormapIndex(Image *,const size_t) magick_attribute((deprecated));
 
 extern MagickExport int
-  GetImageGeometry(Image *,const char *,const unsigned int,RectangleInfo *)
-    magick_attribute((deprecated)),
-  ParseImageGeometry(const char *,ssize_t *,ssize_t *,size_t *,size_t *)
-    magick_attribute((deprecated));
+GetImageGeometry(Image *, const char *, const unsigned int, RectangleInfo *)
+magick_attribute((deprecated)),
+ParseImageGeometry(const char *, ssize_t *, ssize_t *, size_t *, size_t *)
+magick_attribute((deprecated)),
+SystemCommand(const MagickBooleanType, const MagickBooleanType, const char *,
+              ExceptionInfo *) magick_attribute((deprecated));
 
 extern MagickExport MagickBooleanType
 AcquireOneCacheViewPixel(const CacheView *, const ssize_t, const ssize_t,
@@ -373,8 +375,8 @@ static inline double MagickEpsilonReciprocal(const double x)
     return (sign / MagickEpsilon);
 }
 
-static inline Quantum PixelIntensityToQuantum(const Image* restrict image,
-                                              const PixelPacket* restrict pixel)
+static inline Quantum PixelIntensityToQuantum(
+const Image* magick_restrict image, const PixelPacket* magick_restrict pixel)
 {
     return (ClampToQuantum(GetPixelIntensity(image, pixel)));
 }

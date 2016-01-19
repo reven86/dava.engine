@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedCompliance,
-  NoCompliance = 0x0000,
-  SVGCompliance = 0x0001,
-  X11Compliance = 0x0002,
-  XPMCompliance = 0x0004,
-  AllCompliance = 0x7fffffff
+typedef enum {
+    UndefinedCompliance,
+    NoCompliance = 0x0000,
+    CSSCompliance = 0x0001,
+    SVGCompliance = 0x0001,
+    X11Compliance = 0x0002,
+    XPMCompliance = 0x0004,
+    AllCompliance = 0x7fffffff
 } ComplianceType;
 
 typedef struct _ColorInfo

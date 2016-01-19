@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@
 extern "C" {
 #endif
 
-#define ThrowBinaryException(severity,tag,context) \
+#define ThrowBinaryException(severity, tag, context) \
 { \
-  if (image != (Image *) NULL) \
-    (void) ThrowMagickException(&image->exception,GetMagickModule(),severity, \
-      tag == (const char *) NULL ? "unknown" : tag,"`%s'",context); \
-  return(MagickFalse); \
+  if (image != (Image*)NULL) \
+    (void) ThrowMagickException(&image->exception, GetMagickModule(), severity, \
+                                        tag == (const char*)NULL ? "unknown" : tag, "`%s'", context); \
+  return (MagickFalse); \
 }
 #define ThrowFatalException(severity, tag) \
 { \
@@ -41,7 +41,7 @@ extern "C" {
  \
   exception = AcquireExceptionInfo(); \
   message = GetExceptionMessage(errno); \
-  (void) ThrowMagickException(exception, GetMagickModule(), severity,    \
+  (void) ThrowMagickException(exception, GetMagickModule(), severity,             \
                                     tag == (const char*)NULL ? "unknown" : tag, "`%s'", message); \
   message = DestroyString(message); \
   CatchException(exception); \

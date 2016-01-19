@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -36,8 +36,12 @@ extern "C" {
 #if defined(_magickcore_inline) && !defined(inline)
 # define inline _magickcore_inline
 #endif
-#if defined(_magickcore_restrict) && !defined(restrict)
-# define restrict  _magickcore_restrict
+#if !defined(magick_restrict)
+#if !defined(_magickcore_restrict)
+#define magick_restrict restrict
+#else
+#define magick_restrict _magickcore_restrict
+#endif
 #endif
 # if defined(__cplusplus) || defined(c_plusplus)
 #  undef inline
@@ -45,11 +49,11 @@ extern "C" {
 #endif
 
 #define MAGICKCORE_CHECK_VERSION(major, minor, micro) \
-  ((MAGICKCORE_MAJOR_VERSION > (major)) ||            \
-     ((MAGICKCORE_MAJOR_VERSION == (major)) &&          \
-      (MAGICKCORE_MINOR_VERSION > (minor))) ||          \
-     ((MAGICKCORE_MAJOR_VERSION == (major)) &&          \
-      (MAGICKCORE_MINOR_VERSION == (minor)) &&          \
+  ((MAGICKCORE_MAJOR_VERSION > (major)) ||        \
+     ((MAGICKCORE_MAJOR_VERSION == (major)) &&      \
+      (MAGICKCORE_MINOR_VERSION > (minor))) ||      \
+     ((MAGICKCORE_MAJOR_VERSION == (major)) &&      \
+      (MAGICKCORE_MINOR_VERSION == (minor)) &&      \
       (MAGICKCORE_MICRO_VERSION >= (micro))))
 
 #include <stdio.h>
@@ -153,6 +157,7 @@ extern "C" {
 #include "magick/type.h"
 #include "magick/utility.h"
 #include "magick/version.h"
+#include "magick/vision.h"
 #include "magick/xml-tree.h"
 #include "magick/xwindow.h"
 

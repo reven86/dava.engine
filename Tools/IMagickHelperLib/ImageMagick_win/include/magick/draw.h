@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -180,7 +180,11 @@ typedef struct _GradientInfo
     center;
 
   MagickRealType
-    radius;
+  radius,
+  angle;
+
+  PointInfo
+  radii;
 } GradientInfo;
 
 typedef struct _ElementReference

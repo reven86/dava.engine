@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -27,6 +27,19 @@
 extern "C" {
 #endif
 
+static inline void ConvertCMYKToRGB(MagickPixelPacket* pixel)
+{
+    pixel->red = ((QuantumRange - (QuantumScale * pixel->red * (QuantumRange -
+                                                                pixel->index) +
+                                   pixel->index)));
+    pixel->green = ((QuantumRange - (QuantumScale * pixel->green * (QuantumRange -
+                                                                    pixel->index) +
+                                     pixel->index)));
+    pixel->blue = ((QuantumRange - (QuantumScale * pixel->blue * (QuantumRange -
+                                                                  pixel->index) +
+                                    pixel->index)));
+}
+
 static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
 {
     MagickRealType
@@ -46,12 +59,13 @@ static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
     }
     else
     {
-        red = DecodePixelGamma(pixel->red);
-        green = DecodePixelGamma(pixel->green);
-        blue = DecodePixelGamma(pixel->blue);
+        red = QuantumScale * DecodePixelGamma(pixel->red);
+        green = QuantumScale * DecodePixelGamma(pixel->green);
+        blue = QuantumScale * DecodePixelGamma(pixel->blue);
     }
-    if ((fabs(red) < MagickEpsilon) && (fabs(green) < MagickEpsilon) &&
-        (fabs(blue) < MagickEpsilon))
+    if ((fabs((double)red) < MagickEpsilon) &&
+        (fabs((double)green) < MagickEpsilon) &&
+        (fabs((double)blue) < MagickEpsilon))
     {
       pixel->index=(MagickRealType) QuantumRange;
       return;

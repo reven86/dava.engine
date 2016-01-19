@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -123,6 +123,22 @@ static inline FILE *fopen_utf8(const char *path,const char *mode)
    mode_wide = (wchar_t*)RelinquishMagickMemory(mode_wide);
    path_wide = (wchar_t*)RelinquishMagickMemory(path_wide);
    return(file);
+#endif
+}
+
+static inline void getcwd_utf8(char* path, size_t extent)
+{
+#if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__)
+    char* directory;
+
+    directory = getcwd(path, extent);
+    (void)directory;
+#else
+    wchar_t
+    wide_path[MaxTextExtent];
+
+    (void)_wgetcwd(wide_path, MaxTextExtent - 1);
+    (void)WideCharToMultiByte(CP_UTF8, 0, wide_path, -1, path, (int)extent, NULL, NULL);
 #endif
 }
 

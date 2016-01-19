@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -94,6 +94,7 @@ MagickAutoGammaImage(MagickWand *),
 MagickAutoGammaImageChannel(MagickWand *, const ChannelType),
 MagickAutoLevelImage(MagickWand *),
 MagickAutoLevelImageChannel(MagickWand *, const ChannelType),
+MagickAutoOrientImage(MagickWand *),
 MagickBlackThresholdImage(MagickWand *, const PixelWand *),
 MagickBlueShiftImage(MagickWand *, const double),
 MagickBlurImage(MagickWand *, const double, const double),
@@ -118,9 +119,12 @@ MagickColorMatrixImage(MagickWand *, const KernelInfo *),
 MagickCommentImage(MagickWand *, const char *),
 MagickCompositeImage(MagickWand *, const MagickWand *, const CompositeOperator,
                      const ssize_t, const ssize_t),
+MagickCompositeImageChannel(MagickWand *, const ChannelType, const MagickWand *,
+                            const CompositeOperator, const ssize_t, const ssize_t),
+MagickCompositeImageGravity(MagickWand *, const MagickWand *, const CompositeOperator,
+                            const GravityType),
 MagickCompositeLayers(MagickWand *, const MagickWand *, const CompositeOperator,
                       const ssize_t, const ssize_t),
-MagickCompositeImageChannel(MagickWand *, const ChannelType, const MagickWand *, const CompositeOperator, const ssize_t, const ssize_t),
 MagickConstituteImage(MagickWand *, const size_t, const size_t, const char *,
                       const StorageType, const void *),
 MagickContrastImage(MagickWand *, const MagickBooleanType),
@@ -213,6 +217,7 @@ MagickLevelImageChannel(MagickWand *, const ChannelType, const double,
 MagickLinearStretchImage(MagickWand *, const double, const double),
 MagickLiquidRescaleImage(MagickWand *, const size_t, const size_t, const double,
                          const double),
+MagickLocalContrastImage(MagickWand *, const double, const double),
 MagickMagnifyImage(MagickWand *),
 MagickMedianFilterImage(MagickWand *, const double),
 MagickMinifyImage(MagickWand *),

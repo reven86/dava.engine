@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -172,11 +172,11 @@ extern MagickExport QuantumType
   GetQuantumType(Image *,ExceptionInfo *);
 
 extern MagickExport size_t
-  ExportQuantumPixels(const Image *,const CacheView *,const QuantumInfo *,
-    const QuantumType,unsigned char *,ExceptionInfo *),
-  GetQuantumExtent(const Image *,const QuantumInfo *,const QuantumType),
-  ImportQuantumPixels(Image *,CacheView *,const QuantumInfo *,const QuantumType,
-    const unsigned char *,ExceptionInfo *);
+ExportQuantumPixels(const Image *, const CacheView *, const QuantumInfo *,
+                    const QuantumType, unsigned char *magick_restrict, ExceptionInfo *),
+GetQuantumExtent(const Image *, const QuantumInfo *, const QuantumType),
+ImportQuantumPixels(Image *, CacheView *, const QuantumInfo *, const QuantumType,
+                    const unsigned char *magick_restrict, ExceptionInfo *);
 
 extern MagickExport unsigned char
   *GetQuantumPixels(const QuantumInfo *);

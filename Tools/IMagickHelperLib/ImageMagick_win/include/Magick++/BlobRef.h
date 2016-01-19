@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002
+// Copyright Dirk Lemstra 2015
 //
 // Blob reference class
 //
@@ -21,7 +22,7 @@ class BlobRef
 {
   public:
     // Construct with data, making private copy of data
-      BlobRef(const void* data_, size_t length_);
+      BlobRef(const void* data_, const size_t length_);
 
     // Destructor (actually destroys data)
       ~BlobRef(void);

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -79,16 +79,18 @@ extern MagickExport IndexPacket
   *GetCacheViewAuthenticIndexQueue(CacheView *);
 
 extern MagickExport MagickBooleanType
-GetOneCacheViewVirtualPixel(const CacheView *, const ssize_t, const ssize_t,
-                            PixelPacket *, ExceptionInfo *),
+GetOneCacheViewAuthenticPixel(const CacheView *magick_restrict, const ssize_t,
+                              const ssize_t, PixelPacket *magick_restrict, ExceptionInfo *),
 GetOneCacheViewVirtualMethodPixel(const CacheView *,
                                   const VirtualPixelMethod, const ssize_t, const ssize_t, PixelPacket *,
                                   ExceptionInfo *),
-GetOneCacheViewAuthenticPixel(const CacheView *, const ssize_t, const ssize_t,
-                              PixelPacket *, ExceptionInfo *),
+GetOneCacheViewVirtualPixel(const CacheView *magick_restrict, const ssize_t,
+                            const ssize_t, PixelPacket *magick_restrict, ExceptionInfo *),
 SetCacheViewStorageClass(CacheView *, const ClassType),
-SetCacheViewVirtualPixelMethod(CacheView *, const VirtualPixelMethod),
-SyncCacheViewAuthenticPixels(CacheView *, ExceptionInfo *) magick_hot_spot;
+SetCacheViewVirtualPixelMethod(CacheView *magick_restrict,
+                               const VirtualPixelMethod),
+SyncCacheViewAuthenticPixels(CacheView *magick_restrict, ExceptionInfo *)
+magick_hot_spot;
 
 extern MagickExport MagickSizeType
   GetCacheViewExtent(const CacheView *);
