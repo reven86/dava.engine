@@ -9,24 +9,37 @@ macro ( qt_deploy )
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
-        foreach ( ITEM  ${BINARY_ITEMS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/bin/${ITEM}.dll  ${DEPLOY_DIR} )
-        endforeach ()
+        foreach(ITEM ${BINARY_ITEMS})
+            string(TOLOWER ${ITEM} ITEM)
+            if (EXISTS ${QT5_PATH_WIN}/bin/Qt5${ITEM}.dll)
+                LIST(APPEND QT_ITEMS_LIST --${ITEM})
+            endif()
+        endforeach()
 
-        file ( GLOB FILE_LIST ${QT5_PATH_WIN}/bin/icu*.dll )
-        foreach ( ITEM  ${FILE_LIST} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
-        endforeach ()
+        if (NOT QML_SCAN_DIR)
+            set(QML_SCAN_DIR " ")
+        endif()
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll
-                                                         ${DEPLOY_DIR}/platforms )
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
+            "${QT5_PATH_WIN}/bin/"
+            $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
+            --dir  "${DEPLOY_DIR}/"
+            --qmldir ${QML_SCAN_DIR} "$<TARGET_FILE:${PROJECT_NAME}>"
+            ${QT_ITEMS_LIST}
+        )
 
     elseif( MACOS )
 
+        if (QML_SCAN_DIR)
+            set(QML_SCAN_FLAG "-qmldir=${QML_SCAN_DIR}")
+        endif()
+
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt
+                    ${DEPLOY_DIR}/${PROJECT_NAME}.app
+                    -always-overwrite
+                    "${QML_SCAN_FLAG}"
         )
 
     endif()
