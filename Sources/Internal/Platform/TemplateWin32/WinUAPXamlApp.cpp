@@ -49,11 +49,6 @@
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
-#include "Network/Services/NetLogger.h"
-#include "Network/SimpleNetworking/SimpleNetCore.h"
-#endif
-
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
@@ -303,34 +298,6 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     dispatcher = std::make_unique<DispatcherWinUAP>();
     Core::Instance()->CreateSingletons();
 
-#if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
-
-    //Initialize a simple net core and start NetLogger service
-    bool isMobileDevice = DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP;
-    uint16 port;
-    Net::IConnectionManager::ConnectionRole role;
-
-    if (isMobileDevice)
-    {
-        port = Net::SimpleNetCore::UWPRemotePort;
-        role = Net::IConnectionManager::ServerRole;
-    }
-    else
-    {
-        port = Net::SimpleNetCore::UWPLocalPort;
-        role = Net::IConnectionManager::ClientRole;
-    }
-    Net::Endpoint endPoint("127.0.0.1", port);
-    auto netLoggerService = std::make_unique<Net::NetLogger>(true, 200, true);
-
-    Net::SimpleNetCore* simpleNetCore = new Net::SimpleNetCore();
-    const Net::SimpleNetService* service = simpleNetCore->RegisterService(
-    std::move(netLoggerService), role, endPoint, "RawNetLogger");
-
-    DVASSERT_MSG(service != nullptr, "Failed to create a NetLogger service");
-
-#endif // __DAVAENGINE_WIN_UAP__
-
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
 
@@ -398,10 +365,6 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
 
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
-
-#if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
-    Net::SimpleNetCore::Instance()->Release();
-#endif
 
     Core::Instance()->ReleaseSingletons();
 
