@@ -1552,8 +1552,8 @@ QString PropertyEditor::GetDefaultFilePath()
         if (String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
         {
             defaultPath = scenePath.c_str();
-		}
-	}
+        }
+    }
 
 	return defaultPath;
 }

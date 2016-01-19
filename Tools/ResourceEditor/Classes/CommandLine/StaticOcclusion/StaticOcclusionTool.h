@@ -50,6 +50,7 @@ private:
 
     eAction commandAction = ACTION_NONE;
     DAVA::FilePath scenePathname;
+    DAVA::FilePath qualityConfigPath;
 };
 
 

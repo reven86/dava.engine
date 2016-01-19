@@ -32,7 +32,6 @@
 
 using namespace DAVA;
 
-
 ImageSplitterTool::ImageSplitterTool()
     : CommandLineTool("-imagesplitter")
 {

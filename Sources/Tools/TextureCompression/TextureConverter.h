@@ -52,9 +52,9 @@ namespace DAVA
             ECQ_DEFAULT = ECQ_VERY_HIGH
         };
 
-        static FilePath ConvertTexture(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, bool updateAfterConversion, eConvertQuality quality);
-		static FilePath GetOutputPath(const TextureDescriptor &descriptor, eGPUFamily gpuFamily);
-	};
+        static FilePath ConvertTexture(const TextureDescriptor& descriptor, eGPUFamily gpuFamily, bool updateAfterConversion, eConvertQuality quality);
+        static FilePath GetOutputPath(const TextureDescriptor& descriptor, eGPUFamily gpuFamily);
+    };
 }
 
 #endif /* defined(__DAVAENGINE_TEXTURE_CONVERTER_H__) */

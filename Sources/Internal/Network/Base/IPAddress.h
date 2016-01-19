@@ -63,6 +63,7 @@ public:
     String ToString() const;
 
     static IPAddress FromString(const char8* addr);
+    static IPAddress FromString(const String& addr);
 
     friend bool operator == (const IPAddress& left, const IPAddress& right);
 
@@ -102,6 +103,6 @@ inline bool operator < (const IPAddress& left, const IPAddress& right)
 }
 
 }   // namespace Net
-}	// namespace DAVA
+} // namespace DAVA
 
 #endif  // __DAVAENGINE_IPADDRESS_H__

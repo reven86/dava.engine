@@ -219,6 +219,8 @@ void SceneTree::SceneActivated(SceneEditor2 *scene)
     selectionModel()->clear();
     SyncSelectionToTree();
     filteringProxyModel->invalidate();
+
+    PropagateSolidFlag();
 }
 
 void SceneTree::SceneDeactivated(SceneEditor2 *scene)
@@ -244,11 +246,8 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
 	if(scene == treeModel->GetScene())
 	{
-		auto selectionWasBlocked = selectionModel()->blockSignals(true);
-        filteringProxyModel->setSourceModel(nullptr);
+        bool selectionWasBlocked = selectionModel()->blockSignals(true);
         treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-        filteringProxyModel->setSourceModel(treeModel);
-
         treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
 
@@ -655,8 +654,8 @@ void SceneTree::EditModel()
                 }
                 else
                 {
-					ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
-				}
+                    ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
+                }
 			}
 		}
 	}
@@ -667,26 +666,26 @@ void SceneTree::ReloadModel()
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
-		QDialog *dlg = new QDialog(this);
+        QDialog dlg(this);
 
-		QVBoxLayout *dlgLayout = new QVBoxLayout();
+        QVBoxLayout *dlgLayout = new QVBoxLayout();
 		dlgLayout->setMargin(10);
 
-		dlg->setWindowTitle("Reload Model options");
-		dlg->setLayout(dlgLayout);
-	
-		QCheckBox *lightmapsChBox = new QCheckBox("Leave lightmap settings", dlg);
-		dlgLayout->addWidget(lightmapsChBox);
+        dlg.setWindowTitle("Reload Model options");
+        dlg.setLayout(dlgLayout);
+
+        QCheckBox* lightmapsChBox = new QCheckBox("Leave lightmap settings", &dlg);
+        dlgLayout->addWidget(lightmapsChBox);
 		lightmapsChBox->setCheckState(Qt::Checked);
 
-		QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
-		dlgLayout->addWidget(buttons);
+        QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
+        dlgLayout->addWidget(buttons);
 
-		QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
-		QObject::connect(buttons, SIGNAL(rejected()), dlg, SLOT(reject()));
+        QObject::connect(buttons, SIGNAL(accepted()), &dlg, SLOT(accept()));
+        QObject::connect(buttons, SIGNAL(rejected()), &dlg, SLOT(reject()));
 
-		if(QDialog::Accepted == dlg->exec())
-		{
+        if (QDialog::Accepted == dlg.exec())
+        {
 			EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
 			String wrongPathes;
 			for(size_t i = 0; i < selection.Size(); ++i)
@@ -707,10 +706,9 @@ void SceneTree::ReloadModel()
 			{
 				ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
 			}
-			sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
-		}
-
-		delete dlg;
+            EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
+            sceneEditor->selectionSystem->SetSelection(newSelection);
+        }
 	}
 }
 
@@ -740,7 +738,8 @@ void SceneTree::ReloadModelAs()
             QString filePath = FileDialog::getOpenFileName(NULL, QString("Open scene file"), ownerPath.c_str(), QString("DAVA SceneV2 (*.sc2)"));
             if (!filePath.isEmpty())
             {
-                sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                EntityGroup newSelection = sceneEditor->structureSystem->ReloadEntitiesAs(sceneEditor->selectionSystem->GetSelection(), filePath.toStdString());
+                sceneEditor->selectionSystem->SetSelection(newSelection);
             }
         }
     }
@@ -788,6 +787,8 @@ void SceneTree::CollapseAll()
 	{
 		SyncSelectionFromTree();
 	}
+
+    PropagateSolidFlag();
 }
 
 void SceneTree::TreeItemCollapsed(const QModelIndex &index)
@@ -803,8 +804,8 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
     for (int i = 0; i < indexList.size(); ++i)
     {
         QModelIndex childIndex = indexList[i];
-		QModelIndex childParent = childIndex.parent();
-		while(childParent.isValid())
+        QModelIndex childParent = childIndex.parent();
+        while(childParent.isValid())
 		{
 			if(childParent == index)
 			{
@@ -827,7 +828,10 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
 void SceneTree::TreeItemExpanded(const QModelIndex &index)
 {
-	treeModel->SetSolid(filteringProxyModel->mapToSource(index), false);
+    QModelIndex mappedIndex = filteringProxyModel->mapToSource(index);
+    treeModel->SetSolid(mappedIndex, false);
+    QStandardItem* item = treeModel->itemFromIndex(mappedIndex);
+    PropagateSolidFlagRecursive(item);
 }
 
 void SceneTree::SyncSelectionToTree()
@@ -1431,4 +1435,33 @@ void SceneTree::SetCustomDrawCamera()
 void SceneTree::UpdateTree()
 {
 	dataChanged(QModelIndex(), QModelIndex());
+}
+
+void SceneTree::PropagateSolidFlag()
+{
+    QStandardItem* root = treeModel->invisibleRootItem();
+    for (int i = 0; i < root->rowCount(); ++i)
+    {
+        PropagateSolidFlagRecursive(root->child(i));
+    }
+}
+
+void SceneTree::PropagateSolidFlagRecursive(QStandardItem* root)
+{
+    DVASSERT(root != nullptr);
+    QModelIndex rootIndex = root->index();
+    DVASSERT(rootIndex.isValid());
+    QModelIndex filteredIndex = filteringProxyModel->mapFromSource(rootIndex);
+    if (isExpanded(filteredIndex))
+    {
+        treeModel->SetSolid(rootIndex, false);
+        for (int i = 0; i < root->rowCount(); ++i)
+        {
+            PropagateSolidFlagRecursive(root->child(i));
+        }
+    }
+    else
+    {
+        treeModel->SetSolid(rootIndex, true);
+    }
 }

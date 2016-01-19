@@ -476,7 +476,7 @@ static const char* _ShaderHeader_GLES2 =
 
 static const char* _ShaderDefine_GLES2 =
 "#define VPROG_IN_BEGIN          \n"
-"#define VPROG_IN_POSITION       attribute vec3 attr_position;\n"
+"#define VPROG_IN_POSITION       attribute vec4 attr_position;\n"
 "#define VPROG_IN_NORMAL         attribute vec3 attr_normal;\n"
 "#define VPROG_IN_TEXCOORD       attribute vec2 attr_texcoord0;\n"
 "#define VPROG_IN_TEXCOORD0(sz)  attribute vec##sz attr_texcoord0;\n"

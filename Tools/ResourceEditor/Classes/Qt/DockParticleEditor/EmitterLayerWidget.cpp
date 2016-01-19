@@ -192,8 +192,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     innerEmitterLabel = new QLabel("Inner Emitter", this);
     innerEmitterPathLabel = new QLineEdit(this);
     innerEmitterPathLabel->setReadOnly(true);
-	innerEmitterLayout->addWidget(innerEmitterLabel);
-	innerEmitterLayout->addWidget(innerEmitterPathLabel);
+    innerEmitterLayout->addWidget(innerEmitterLabel);
+    innerEmitterLayout->addWidget(innerEmitterPathLabel);
 	mainBox->addLayout(innerEmitterLayout);
 	
 	QVBoxLayout* pivotPointLayout = new QVBoxLayout();
@@ -234,8 +234,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addWidget(frameBlendingCheckBox);
 
     //particle orieantation
-	QVBoxLayout* orientationLayout = new QVBoxLayout();	
-	particleOrientationLabel = new QLabel("Particle Orientation");
+    QVBoxLayout* orientationLayout = new QVBoxLayout();
+    particleOrientationLabel = new QLabel("Particle Orientation");
 	orientationLayout->addWidget(particleOrientationLabel);
 	QHBoxLayout* facingLayout = new QHBoxLayout();
 	
@@ -288,8 +288,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addWidget(fogCheckBox);
 
     lifeTimeLine = new TimeLineWidget(this);
-	InitWidget(lifeTimeLine);
-	numberTimeLine = new TimeLineWidget(this);
+    InitWidget(lifeTimeLine);
+    numberTimeLine = new TimeLineWidget(this);
 	InitWidget(numberTimeLine);
 	sizeTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeTimeLine);
@@ -1080,8 +1080,8 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 
     // The same is for "Additive" flag, Color, Alpha and Frame.
     colorRandomGradient->setVisible(!isSuperemitter);
-	colorOverLifeGradient->setVisible(!isSuperemitter);
-	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
+    colorOverLifeGradient->setVisible(!isSuperemitter);
+    alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
 	frameOverlifeCheckBox->setVisible(!isSuperemitter);
 	frameOverlifeFPSSpin->setVisible(!isSuperemitter);

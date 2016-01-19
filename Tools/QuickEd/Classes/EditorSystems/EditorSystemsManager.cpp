@@ -47,29 +47,37 @@ using namespace DAVA;
 class EditorSystemsManager::RootControl : public UIControl
 {
 public:
-    RootControl(EditorSystemsManager* arg)
-        : UIControl()
-        , systemManager(arg)
-    {
-        DVASSERT(nullptr != systemManager);
-    }
-    bool SystemInput(UIEvent* currentInput) override
-    {
-        if (!emulationMode && nullptr != systemManager)
-        {
-            return systemManager->OnInput(currentInput);
-        }
-        return UIControl::SystemInput(currentInput);
-    }
-    void SetEmulationMode(bool arg)
-    {
-        emulationMode = arg;
-    }
+    RootControl(EditorSystemsManager* arg);
+    void SetEmulationMode(bool arg);
 
 private:
+    bool SystemInput(UIEvent* currentInput) override;
+
     EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
+    Vector2 prevPosition;
 };
+
+EditorSystemsManager::RootControl::RootControl(EditorSystemsManager* arg)
+    : UIControl()
+    , systemManager(arg)
+{
+    DVASSERT(nullptr != systemManager);
+}
+
+void EditorSystemsManager::RootControl::SetEmulationMode(bool arg)
+{
+    emulationMode = arg;
+}
+
+bool EditorSystemsManager::RootControl::SystemInput(UIEvent* currentInput)
+{
+    if (!emulationMode && nullptr != systemManager)
+    {
+        return systemManager->OnInput(currentInput);
+    }
+    return UIControl::SystemInput(currentInput);
+}
 
 EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     : rootControl(new RootControl(this))

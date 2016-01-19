@@ -30,6 +30,7 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "UI/mainwindow.h"
 #include "UI/Preview/ScrollAreaController.h"
+#include "UI/Preview/Ruler/RulerController.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
@@ -119,6 +120,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
+    connect(documentGroup, &DocumentGroup::RootControlPositionChanged, previewWidget, &PreviewWidget::OnRootControlPositionChanged);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
@@ -521,13 +523,23 @@ void EditorCore::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
+    Document *activeDocument = documentGroup->GetActiveDocument();
     int newIndex = mainWindow->CloseTab(index);
-
-    //sync document list with tab list
+    DVASSERT(activeDocument != nullptr);
     Document *detached = documents.takeAt(index);
+    Document *nextDocument = nullptr;
+    if(detached != activeDocument)
+    {
+        nextDocument = activeDocument;
+    }
+    else if(newIndex != -1)
+    {
+        nextDocument = documents.at(newIndex);
+    }
+    //sync document list with tab list
     fileSystemWatcher->removePath(detached->GetPackageAbsolutePath());
 
-    documentGroup->SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
+    documentGroup->SetActiveDocument(nextDocument);
     documentGroup->RemoveDocument(detached);
     delete detached; //some widgets hold this document inside :(
 }

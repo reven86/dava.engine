@@ -42,6 +42,7 @@ SceneSaverTool::SceneSaverTool()
     options.AddOption(OptionName::OutDir, VariantType(String("")), "Path for Project/Data/3d/ folder");
     options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Filename from DataSource/3d/ for exporting");
     options.AddOption(OptionName::CopyConverted, VariantType(false), "Enables copying of converted image files");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
 void SceneSaverTool::ConvertOptionsToParamsInternal()
@@ -49,6 +50,7 @@ void SceneSaverTool::ConvertOptionsToParamsInternal()
     inFolder = options.GetOption(OptionName::InDir).AsString();
     outFolder = options.GetOption(OptionName::OutDir).AsString();
     filename = options.GetOption(OptionName::ProcessFile).AsString();
+    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
 
     if (options.GetOption(OptionName::Save).AsBool())
     {
@@ -138,6 +140,11 @@ void SceneSaverTool::ProcessInternal()
 
 DAVA::FilePath SceneSaverTool::GetQualityConfigPath() const
 {
-    return CreateQualityConfigPath(inFolder);
+    if (qualityConfigPath.IsEmpty())
+    {
+        return CreateQualityConfigPath(inFolder);
+    }
+
+    return qualityConfigPath;
 }
 

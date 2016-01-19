@@ -156,4 +156,18 @@ AnimationData* AnimationData::Clone() const
 	return copy;
 }
 
+void AnimationData::BakeTransform(const Matrix4& transform)
+{
+    for (auto& key : keys)
+    {
+        Matrix4 animationMatrix;
+        key.GetMatrix(animationMatrix);
+
+        Matrix4 inverseTotal;
+        transform.GetInverse(inverseTotal);
+
+        Matrix4 totalAnimation = inverseTotal * animationMatrix;
+        totalAnimation.Decomposition(key.translation, key.scale, key.rotation);
+    }
+}
 }

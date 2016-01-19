@@ -38,6 +38,7 @@
 
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/File.h"
 #include "FileSystem/Logger.h"
 #include "Job/JobManager.h"
 #include "QtTools/FileDialog/FileDialog.h"
@@ -49,6 +50,12 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
+
+#if defined(__DAVAENGINE_WINDOWS__)
+#include <QSettings>
+#elif defined(__DAVAENGINE_MACOS__)
+#include <QXmlStreamReader>
+#endif
 
 namespace
 {
@@ -75,6 +82,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
     connect(ui->autoSaveTimeoutSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAutoSaveTimeoutChanged(int)));
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnPortChanged(int)));
     connect(ui->autoStartCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnAutoStartChanged(int)));
+    connect(ui->systemStartupCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnSystemStartupChanged(int)));
 
     connect(ui->addNewServerButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnRemoteServerAdded);
 
@@ -91,6 +99,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     connect(&serverCore, &ServerCore::ServerStateChanged, this, &AssetCacheServerWindow::OnServerStateChanged);
     LoadSettings();
+    SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked());
     OnServerStateChanged(&serverCore);
 }
 
@@ -159,6 +168,67 @@ void AssetCacheServerWindow::ChangeSettingsState(SettingsState newState)
     ui->applyButton->setEnabled(settingsState == EDITED);
 }
 
+void AssetCacheServerWindow::OnFirstLaunch()
+{
+    show();
+}
+
+void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+
+    QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+    if (toLaunchOnStartup)
+    {
+        settings.setValue("AssetCacheServer", QDir::toNativeSeparators(QCoreApplication::applicationFilePath()));
+    }
+    else
+    {
+        settings.remove("AssetCacheServer");
+    }
+    
+#elif defined(__DAVAENGINE_MACOS__)
+
+    FilePath plist("~/Library/LaunchAgents/AssetCacheServer.plist");
+    FileSystem::Instance()->DeleteFile(plist);
+
+    if (toLaunchOnStartup)
+    {
+        QByteArray buffer;
+        buffer.reserve(1024);
+        QXmlStreamWriter xml(&buffer);
+
+        xml.writeStartDocument();
+        xml.writeDTD("<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
+        xml.writeStartElement("plist");
+        xml.writeAttribute("version", "1.0");
+
+        xml.writeStartElement("dict");
+        xml.writeTextElement("key", "Label");
+        xml.writeTextElement("string", "com.davaconsulting.assetcacheserver");
+        xml.writeTextElement("key", "ProgramArguments");
+        xml.writeStartElement("array");
+        xml.writeTextElement("string", QDir::toNativeSeparators(QCoreApplication::applicationFilePath()));
+        xml.writeEndElement();
+        xml.writeTextElement("key", "RunAtLoad");
+        xml.writeStartElement("true");
+        xml.writeEndElement();
+        xml.writeTextElement("key", "KeepAlive");
+        xml.writeStartElement("false");
+        xml.writeEndElement();
+        xml.writeEndElement();
+
+        xml.writeEndElement();
+        xml.writeEndDocument();
+
+        ScopedPtr<File> file(File::PureCreate(plist, File::CREATE | File::WRITE));
+        DVASSERT(file);
+        file->Write(buffer.data(), buffer.size());
+    }
+    
+#endif
+}
+
 void AssetCacheServerWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason)
@@ -221,6 +291,11 @@ void AssetCacheServerWindow::OnPortChanged(int)
 }
 
 void AssetCacheServerWindow::OnAutoStartChanged(int)
+{
+    VerifyData();
+}
+
+void AssetCacheServerWindow::OnSystemStartupChanged(int val)
 {
     VerifyData();
 }
@@ -309,6 +384,12 @@ void AssetCacheServerWindow::VerifyData()
 
 void AssetCacheServerWindow::OnApplyButtonClicked()
 {
+    bool toLaunchOnStartup = ui->systemStartupCheckBox->isChecked();
+    if (serverCore.Settings().IsLaunchOnSystemStartup() != toLaunchOnStartup)
+    {
+        SetupLaunchOnStartup(toLaunchOnStartup);
+    }
+
     SaveSettings();
 }
 
@@ -330,6 +411,7 @@ void AssetCacheServerWindow::SaveSettings()
     serverCore.Settings().SetAutoSaveTimeoutMin(ui->autoSaveTimeoutSpinBox->value());
     serverCore.Settings().SetPort(ui->portSpinBox->value());
     serverCore.Settings().SetAutoStart(ui->autoStartCheckBox->isChecked());
+    serverCore.Settings().SetLaunchOnSystemStartup(ui->systemStartupCheckBox->isChecked());
 
     serverCore.Settings().ResetServers();
     for (auto& server : remoteServers)
@@ -351,6 +433,7 @@ void AssetCacheServerWindow::LoadSettings()
     ui->autoSaveTimeoutSpinBox->setValue(serverCore.Settings().GetAutoSaveTimeoutMin());
     ui->portSpinBox->setValue(serverCore.Settings().GetPort());
     ui->autoStartCheckBox->setChecked(serverCore.Settings().IsAutoStart());
+    ui->systemStartupCheckBox->setChecked(serverCore.Settings().IsLaunchOnSystemStartup());
 
     RemoveServers();
     auto& servers = serverCore.Settings().GetServers();

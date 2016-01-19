@@ -66,7 +66,7 @@ void NotificationScreen::LoadResources()
     showNotificationText->SetDebugDraw(true);
     showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
     AddControl(showNotificationText);
-    
+
     showNotificationTextDelayed = new UIButton(Rect(10, 100, 450, 60));
     showNotificationTextDelayed->SetStateFont(0xFF, font);
     showNotificationTextDelayed->SetStateFontColor(0xFF, Color::White);
@@ -90,21 +90,21 @@ void NotificationScreen::LoadResources()
     hideNotificationText->SetStateFontColor(0xFF, Color::White);
     hideNotificationText->SetStateText(0xFF, L"Hide text");
 
-	hideNotificationText->SetDebugDraw(false);
-	hideNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideText));
+    hideNotificationText->SetDebugDraw(false);
+    hideNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideText));
     AddControl(hideNotificationText);
 
     showNotificationProgress = new UIButton(Rect(500, 10, 450, 60));
     showNotificationProgress->SetStateFont(0xFF, font);
     showNotificationProgress->SetStateFontColor(0xFF, Color::White);
-	showNotificationProgress->SetStateText(0xFF, L"Notify progress");
+    showNotificationProgress->SetStateText(0xFF, L"Notify progress");
 
-	showNotificationProgress->SetDebugDraw(true);
-	showNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyProgress));
-	AddControl(showNotificationProgress);
+    showNotificationProgress->SetDebugDraw(true);
+    showNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyProgress));
+    AddControl(showNotificationProgress);
 
-	hideNotificationProgress = new UIButton(Rect(500, 100, 450, 60));
-	hideNotificationProgress->SetStateFont(0xFF, font);
+    hideNotificationProgress = new UIButton(Rect(500, 100, 450, 60));
+    hideNotificationProgress->SetStateFont(0xFF, font);
 	hideNotificationProgress->SetStateFontColor(0xFF, Color::White);
 	hideNotificationProgress->SetStateText(0xFF, L"Hide progress");
 

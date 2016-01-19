@@ -135,11 +135,11 @@ public:
     // Keyboard traits.
     void SetAutoCapitalizationType(DAVA::int32 value);
     void SetAutoCorrectionType(DAVA::int32 value);
-	void SetSpellCheckingType(DAVA::int32 value);
-	void SetKeyboardAppearanceType(DAVA::int32 value);
-	void SetKeyboardType(DAVA::int32 value);
-	void SetReturnKeyType(DAVA::int32 value);
-	void SetEnableReturnKeyAutomatically(bool value);
+    void SetSpellCheckingType(DAVA::int32 value);
+    void SetKeyboardAppearanceType(DAVA::int32 value);
+    void SetKeyboardType(DAVA::int32 value);
+    void SetReturnKeyType(DAVA::int32 value);
+    void SetEnableReturnKeyAutomatically(bool value);
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(DAVA::int32 value);

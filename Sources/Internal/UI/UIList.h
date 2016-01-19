@@ -229,7 +229,7 @@ public:
     virtual void CopyDataFrom(UIControl *srcControl);
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
-    
+
     bool GetNeedRefresh();
 
 protected:
@@ -248,6 +248,8 @@ protected:
 
     void OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerData);
 
+    void RemoveCell(UIListCell* cell);
+    void RemoveAllCells();
 
     UIListDelegate *delegate;
     eListOrientation orientation;
@@ -283,6 +285,5 @@ inline bool UIList::GetNeedRefresh()
 {
     return needRefresh;
 }
-
 };
 #endif
