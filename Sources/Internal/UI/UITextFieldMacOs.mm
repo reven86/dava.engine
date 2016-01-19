@@ -65,12 +65,14 @@
 
 @interface RSVerticallyCenteredTextFieldCell : NSTextFieldCell
 {
+@public
     BOOL mIsEditingOrSelecting;
 }
 @end
 
 @interface RSVerticallyCenteredSecureTextFieldCell : NSSecureTextFieldCell
 {
+@public
     BOOL mIsEditingOrSelecting;
 }
 
@@ -726,10 +728,19 @@ doCommandBySelector:(SEL)commandSelector
 
 - (void)selectWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject start:(long)selStart length:(long)selLength
 {
-    aRect = [self drawingRectForBounds:aRect];
-    mIsEditingOrSelecting = YES;
-    [super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
-    mIsEditingOrSelecting = NO;
+    CustomTextField* textField = (CustomTextField*)controlView;
+    CustomTextFieldFormatter* formatter = (CustomTextFieldFormatter*)textField.formatter;
+    if (formatter->text->IsMultiline())
+    {
+        [super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
+    }
+    else
+    {
+        aRect = [self drawingRectForBounds:aRect];
+        mIsEditingOrSelecting = YES;
+        [super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
+        mIsEditingOrSelecting = NO;
+    }
 }
 
 - (void)editWithFrame:(NSRect)aRect inView:(NSView*)controlView editor:(NSText*)textObj delegate:(id)anObject event:(NSEvent*)theEvent
