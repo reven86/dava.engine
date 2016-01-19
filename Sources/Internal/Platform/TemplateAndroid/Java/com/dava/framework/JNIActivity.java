@@ -718,10 +718,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		return isScreenLocked;
 	}
 
-	// Workaround! this function called from c++ when game wish to 
-    // Quit it block GLThread because we already destroy singletons and can't 
-    // return to GLThread back
-    public static void finishActivity()
+	public static void finishActivity()
     {
     	Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] in");
     	
@@ -732,8 +729,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             }
         });
         
-        // try NOT to block this GLThread because sometime Main thread
-        // can block and waiting for GLThread
         Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] out");
     }
 }
