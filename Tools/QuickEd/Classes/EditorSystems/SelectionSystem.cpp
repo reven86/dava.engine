@@ -185,36 +185,43 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
     {
         deselected = selectionContainer.selectedNodes;
     }
-    Vector<ControlNode*> nodesUnderPoint;
-    auto predicate = [point](const UIControl* control) -> bool {
-        return control->GetSystemVisible() && control->IsPointInside(point);
-    };
-    auto stopPredicate = [](const UIControl *control) -> bool {
-        return !control->GetSystemVisible();
-    };
-    systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate, stopPredicate);
 
-    if (!nodesUnderPoint.empty())
+    ControlNode* node = nullptr;
+    if (buttonID == UIEvent::MouseButton::LEFT)
     {
-        auto node = nodesUnderPoint.back();
-        if (buttonID == UIEvent::MouseButton::RIGHT)
+        Vector<ControlNode*> nodesUnderPoint;
+        auto predicate = [point](const UIControl* control) -> bool {
+            return control->GetSystemVisible() && control->IsPointInside(point);
+        };
+        auto stopPredicate = [](const UIControl* control) -> bool {
+            return !control->GetSystemVisible();
+        };
+        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate, stopPredicate);
+        if (!nodesUnderPoint.empty())
         {
-            Vector<ControlNode*> nodesUnderPointForMenu;
-            auto predicateForMenu = [point](const UIControl* control) -> bool {
-                return control->GetVisibleForUIEditor() && control->IsPointInside(point);
-            };
-            systemManager->CollectControlNodes(std::back_inserter(nodesUnderPointForMenu), predicateForMenu);
-            ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPointForMenu, point);
-            if (nullptr != selectedNode)
-            {
-                node = selectedNode;
-            }
-            else
-            {
-                return true; //selection was required but cancelled
-            }
+            node = nodesUnderPoint.back();
         }
+    }
+    else if (buttonID == UIEvent::MouseButton::RIGHT)
+    {
+        Vector<ControlNode*> nodesUnderPointForMenu;
+        auto predicateForMenu = [point](const UIControl* control) -> bool {
+            return control->GetVisibleForUIEditor() && control->IsPointInside(point);
+        };
+        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPointForMenu), predicateForMenu);
+        ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPointForMenu, point);
+        if (nullptr != selectedNode)
+        {
+            node = selectedNode;
+        }
+        else
+        {
+            return true; //selection was required but cancelled
+        }
+    }
 
+    if (node != nullptr)
+    {
         if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && selectionContainer.IsSelected(node))
         {
             deselected.insert(node);
