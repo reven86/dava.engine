@@ -78,8 +78,8 @@ CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
     wasCreated = false;
     renderIsActive = false;
     viewSizeChanged = false;
-    width = 0;
-    height = 0;
+    backbufferWidth = width = 0;
+    backbufferHeight = height = 0;
     screenOrientation = Core::SCREEN_ORIENTATION_PORTRAIT; //no need rotate GL for Android
 
     foreground = false;
@@ -146,10 +146,11 @@ void CorePlatformAndroid::UpdateScreenMode()
 {
     Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backbufferWidth, backbufferHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
-    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", width, height);
+    Logger::Debug("[CorePlatformAndroid::] input w = %d, h = %d", width, height);
+    Logger::Debug("[CorePlatformAndroid::] back buffer w = %d, h = %d", backbufferWidth, backbufferHeight);
     Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
 }
 
@@ -174,13 +175,16 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
     width = w;
     height = h;
+    backbufferWidth = int32(w * GetScreenScaleFactor());
+    backbufferHeight = int32(h * GetScreenScaleFactor());
+
     viewSizeChanged = true;
 
     if (wasCreated)
     {
         rhi::ResetParam params;
-        params.width = (uint32)width;
-        params.height = (uint32)height;
+        params.width = (uint32)backbufferWidth;
+        params.height = (uint32)backbufferHeight;
         params.window = rendererParams.window;
         Renderer::Reset(params);
     }
@@ -189,8 +193,8 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
         wasCreated = true;
 
         ProcessResizeView();
-        rendererParams.width = (uint32)width;
-        rendererParams.height = (uint32)height;
+        rendererParams.width = (uint32)backbufferWidth;
+        rendererParams.height = (uint32)backbufferHeight;
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();

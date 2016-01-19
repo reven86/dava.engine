@@ -77,6 +77,9 @@ public:
     inline float32 ConvertPhysicalToVirtualY(const float32 & value) const;
     inline float32 ConvertVirtualToPhysicalX(const float32 & value) const;
     inline float32 ConvertVirtualToPhysicalY(const float32 & value) const;
+    inline float32 ConvertVirtualToInputX(const float32 & value) const;
+    inline float32 ConvertVirtualToInputY(const float32 & value) const;
+
     inline float32 ConvertResourceToVirtualX(const float32 & value, int32 resourceIndex) const;
     inline float32 ConvertResourceToVirtualY(const float32 & value, int32 resourceIndex) const;
     inline float32 ConvertVirtualToResourceX(const float32 & value, int32 resourceIndex) const;
@@ -94,6 +97,8 @@ public:
     inline Rect ConvertVirtualToPhysical(const Rect & rect) const;
     inline Rect ConvertResourceToVirtual(const Rect & rect, int32 resourceIndex) const;
     inline Rect ConvertResourceToPhysical(const Rect & rect, int32 resourceIndex) const;
+    inline Rect ConvertInputToVirtual(const Rect & rect) const;
+    inline Rect ConvertVirtualToInput(const Rect & rect) const;
     
 	inline const String & GetResourceFolder(int32 resourceIndex) const;
 	inline int32 GetDesirableResourceIndex() const;
@@ -189,6 +194,16 @@ inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalY(const float32
     return virtualToPhysical * value;
 }
 
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputX(const float32 & value) const
+{
+	return value / inputScaleFactor;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToInputY(const float32 & value) const
+{
+	return value / inputScaleFactor;
+}
+
 inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualX(const float32 & value, DAVA::int32 resourceIndex) const
 {
     DVASSERT(resourceIndex < (int32)allowedSizes.size());
@@ -262,7 +277,7 @@ inline Rect VirtualCoordinatesSystem::ConvertResourceToPhysical(const Rect & rec
     DVASSERT(resourceIndex < (int32)allowedSizes.size());
     return ConvertRect(rect, allowedSizes[resourceIndex].toPhysical);
 }
-    
+
 inline Rect VirtualCoordinatesSystem::ConvertRect(const Rect & rect, float32 factor) const
 {
     Rect newRect(rect);
@@ -293,7 +308,17 @@ inline Vector2 VirtualCoordinatesSystem::ConvertInputToVirtual(const Vector2 &po
     
     return calcPoint;
 }
-    
+
+inline Rect VirtualCoordinatesSystem::ConvertInputToVirtual(const Rect & rect) const
+{
+	return Rect(ConvertInputToVirtual(rect.GetPosition()) + inputOffset, ConvertInputToVirtual(rect.GetSize()));
+}
+
+inline Rect VirtualCoordinatesSystem::ConvertVirtualToInput(const Rect & rect) const
+{
+	return Rect(ConvertVirtualToInput(rect.GetPosition() - inputOffset), ConvertVirtualToInput(rect.GetSize()));
+}
+
 inline const String & VirtualCoordinatesSystem::GetResourceFolder(int32 resourceIndex) const
 {
     DVASSERT(resourceIndex < (int32)allowedSizes.size());

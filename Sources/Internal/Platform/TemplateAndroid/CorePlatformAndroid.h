@@ -118,6 +118,8 @@ private:
 private:
 	int32 width;
 	int32 height;
+	int32 backbufferWidth;
+	int32 backbufferHeight;
 
 	bool wasCreated;
 	bool renderIsActive;
