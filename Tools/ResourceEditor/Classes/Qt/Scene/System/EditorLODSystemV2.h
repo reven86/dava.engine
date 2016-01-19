@@ -36,6 +36,7 @@
 namespace DAVA
 {
     class Entity;
+    class RenderObject;
 }
 
 struct ForceValues
@@ -63,7 +64,8 @@ struct ForceValues
     eApplyFlag flag;
 };
 
-
+class SceneEditor2;
+class Command2;
 class LODComponentHolder
 {
     friend class EditorLODSystemV2;
@@ -75,8 +77,10 @@ public:
     DAVA::uint32 GetLODLayersCount() const;
 
     const DAVA::LodComponent & GetLODComponent() const;
+    const DAVA::Array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &GetTriangles() const;
 
 protected:
+
     void BindToSystem(EditorLODSystemV2 *system, SceneEditor2 *scene);
 
     void SummarizeValues();
@@ -85,20 +89,28 @@ protected:
     void ApplyForce(const ForceValues &force);
     bool DeleteLOD(DAVA::int32 layer);
 
+private:
+    
+    void InsertObjectWithTriangles(DAVA::Entity *entity, DAVA::UnorderedSet<DAVA::RenderObject*> &renderObjects);
+    void CalculateTriangles(const DAVA::UnorderedSet<DAVA::RenderObject *> &renderObjects);
+
 protected:
 
     DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
     DAVA::LodComponent mergedComponent;
     DAVA::Vector<DAVA::LodComponent *> lodComponents;
 
+    DAVA::Array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> trianglesCount;
+
     EditorLODSystemV2 *system = nullptr;
     SceneEditor2 * scene = nullptr;
 };
 
-
-
+class EntityGroup;
+class EditorLODSystemV2UIDelegate;
 class EditorLODSystemV2 : public DAVA::SceneSystem
 {
+    friend class SceneEditor2;
 public:
 
     enum eMode: DAVA::uint32 
@@ -113,6 +125,8 @@ public:
     EditorLODSystemV2(DAVA::Scene * scene);
     ~EditorLODSystemV2() override;
 
+    void AddEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
     void AddComponent(DAVA::Entity * entity, DAVA::Component * component);
     void RemoveComponent(DAVA::Entity * entity, DAVA::Component * component);
 
@@ -142,6 +156,11 @@ public:
     void SolidChanged(const DAVA::Entity *entity, bool value);
     void SelectionChanged(const EntityGroup *selected, const EntityGroup *deselected);
 
+    void SetDelegate(EditorLODSystemV2UIDelegate *uiDelegate);
+
+protected:
+    void ProcessCommand(const Command2 *command, bool redo);
+
 private:
 
     //actions
@@ -149,9 +168,11 @@ private:
     void DeleteLOD(DAVA::int32 layer); 
 
     //signals
-    void EmitUpdateForceUI(){};
-    void EmitUpdateDistanceUI(){};
-    void EmitUpdateActionsUI(){};
+    void EmitUpdateModeUI() { updateModeUI = true; };
+    void EmitUpdateForceUI() { updateForceUI = true; };
+    void EmitUpdateDistanceUI() { updateDistanceUI = true; };
+    void EmitUpdateActionsUI() { updateActionUI = true; };
+    void DispatchSignals();
     //signals
 
 private:
@@ -161,6 +182,25 @@ private:
 
     ForceValues forceValues;
     eMode mode = MODE_DEFAULT;
+
+    bool updateModeUI = false;
+    bool updateForceUI = false;
+    bool updateDistanceUI = false;
+    bool updateActionUI = false;
+
+    EditorLODSystemV2UIDelegate *uiDelegate = nullptr;
+};
+
+class EditorLODSystemV2UIDelegate
+{
+public:
+
+    virtual ~EditorLODSystemV2UIDelegate() = default;
+
+    virtual void UpdateModeUI(EditorLODSystemV2 *forSystem, const EditorLODSystemV2::eMode mode){};
+    virtual void UpdateForceUI(EditorLODSystemV2 *forSystem, const ForceValues & forceValues){};
+    virtual void UpdateDistanceUI(EditorLODSystemV2 *forSystem, const LODComponentHolder *lodData){};
+    virtual void UpdateActionUI(EditorLODSystemV2 *forSystem){};
 };
 
 

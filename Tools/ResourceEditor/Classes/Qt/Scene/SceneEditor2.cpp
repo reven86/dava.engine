@@ -474,6 +474,8 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
     
     pathSystem->ProcessCommand(command, redo);
     wayEditSystem->ProcessCommand(command, redo);
+
+    editorLODSystemV2->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity( Entity *editorEntity )

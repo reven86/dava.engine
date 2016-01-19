@@ -183,7 +183,7 @@ DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
 	return ret;
 }
 
-bool EntityGroup::ContainsEntity(DAVA::Entity *entity) const
+bool EntityGroup::ContainsEntity(const DAVA::Entity *entity) const
 {
 	size_t i;
 	return Index(entity, i);
@@ -222,7 +222,7 @@ bool EntityGroup::operator!=( const EntityGroup &ss ) const
 }
 
 
-bool EntityGroup::Index(DAVA::Entity *entity, size_t &index) const
+bool EntityGroup::Index(const DAVA::Entity *entity, size_t &index) const
 {
 	for(size_t i = 0; i < entities.size(); ++i)
 	{

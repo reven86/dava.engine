@@ -70,8 +70,8 @@ public:
 	DAVA::Vector3 GetZeroPos(size_t i) const;
 	DAVA::Vector3 GetCommonZeroPos() const;
 
-	bool ContainsEntity(DAVA::Entity *entity) const;
-	bool Index(DAVA::Entity *entity, size_t &index) const;
+	bool ContainsEntity(const DAVA::Entity *entity) const;
+    bool Index(const DAVA::Entity *entity, size_t &index) const;
 
 	DAVA::Entity* IntersectedEntity(const EntityGroup *group) const;
 

@@ -32,9 +32,10 @@
 
 #include "Base/BaseTypes.h"
 
-#include <QWidget>
+#include "Scene/System/EditorLODSystemV2.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
+#include <QWidget>
 
 namespace Ui
 {
@@ -45,14 +46,13 @@ class QLabel;
 class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
-class EditorLODSystemV2;
 class EntityGroup;
 class Command2;
 class QPushButton;
 class QFrame;
 
 class LazyUpdater;
-class LODEditor: public QWidget
+class LODEditor: public QWidget, private EditorLODSystemV2UIDelegate
 {
     Q_OBJECT
 
@@ -92,15 +92,10 @@ private slots:
 
 private:
     void SetupSceneSignals();
-
     void SetupInternalUI();
-    void UpdateUI();
 
     void SetupForceUI();
-    void UpdateForceUI();
     void CreateForceLayerValues(DAVA::uint32 layersCount);
-
-    void UpdateModeUI();
 
     void SetupPanelsButtonUI();
     void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
@@ -108,15 +103,19 @@ private:
     void UpdatePanelsForCurrentScene();
 
     void SetupDistancesUI();
-    void UpdateDistancesUI();
     void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
     void UpdateDistanceSpinboxesUI(const DAVA::Array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS> &distances, DAVA::int32 count);
    
     void SetupActionsUI();
-    void UpdateActionsUI();
-    void UpdateLODButtons(const EditorLODSystemV2 *editorLODSystem);
 
-    EditorLODSystemV2 *GetCurrentEditorLODSystem();
+    //EditorLODSystemV2UIDelegate
+    void UpdateModeUI(EditorLODSystemV2 *forSystem, const EditorLODSystemV2::eMode mode) override;
+    void UpdateForceUI(EditorLODSystemV2 *forSystem, const ForceValues & forceValues) override;
+    void UpdateDistanceUI(EditorLODSystemV2 *forSystem, const LODComponentHolder *lodData) override;
+    void UpdateActionUI(EditorLODSystemV2 *forSystem) override;
+    //end of EditorLODSystemV2UIDelegate
+
+    EditorLODSystemV2 *GetCurrentEditorLODSystem() const;
 
 private:
     
@@ -134,7 +133,6 @@ private:
     
     DAVA::Array<DistanceWidget, DAVA::LodComponent::MAX_LOD_LAYERS> distanceWidgets;
 
-    LazyUpdater* uiUpdater = nullptr;
     LazyUpdater* panelsUpdater = nullptr;
 };
 

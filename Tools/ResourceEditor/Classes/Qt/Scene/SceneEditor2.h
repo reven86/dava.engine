@@ -114,8 +114,6 @@ public:
 	OwnersSignatureSystem *ownersSignatureSystem;
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
-
-//    EditorLODSystem *editorLODSystem;
     EditorLODSystemV2 *editorLODSystemV2;
 
 
