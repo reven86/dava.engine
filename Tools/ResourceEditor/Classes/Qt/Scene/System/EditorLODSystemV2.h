@@ -188,6 +188,8 @@ private:
     bool updateDistanceUI = false;
     bool updateActionUI = false;
 
+    bool generateCommands = false;
+
     EditorLODSystemV2UIDelegate *uiDelegate = nullptr;
 };
 

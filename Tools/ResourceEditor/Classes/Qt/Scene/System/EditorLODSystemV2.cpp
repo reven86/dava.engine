@@ -433,7 +433,9 @@ void EditorLODSystemV2::DeleteFirstLOD()
 
     if (activeLodData->GetLODLayersCount() > 0)
     {
+        generateCommands = true;
         bool deleted = activeLodData->DeleteLOD(0);
+        generateCommands = false;
         if (deleted)
         {
             activeLodData->SummarizeValues();
@@ -452,7 +454,9 @@ void EditorLODSystemV2::DeleteLastLOD()
     int32 lastLayer = activeLodData->GetMaxLODLayer();
     if (lastLayer >= 0)
     {
+        generateCommands = true;
         bool deleted = activeLodData->DeleteLOD(lastLayer);
+        generateCommands = false;
         if (deleted)
         {
             activeLodData->SummarizeValues();
@@ -483,7 +487,10 @@ void EditorLODSystemV2::SetLODDistances(const Array<float32, LodComponent::MAX_L
         activeLodData->mergedComponent.SetLodLayerDistance(i, distances[i]);
     }
 
+    generateCommands = true;
     activeLodData->PropagateValues();
+    generateCommands = false;
+
     EmitUpdateDistanceUI();
 }
 
@@ -590,6 +597,11 @@ void EditorLODSystemV2::DispatchSignals()
 
 void EditorLODSystemV2::ProcessCommand(const Command2 *command, bool redo)
 {
+    if (generateCommands)
+    {
+        return;
+    }
+
     //this code need to be refactored after commads-notofications-refactoring will be merged
 
     int32 commandID = command->GetId();

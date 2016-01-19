@@ -332,13 +332,16 @@ void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bo
         distances[i] = ui->distanceSlider->GetDistance(i);
     }
 
+    EditorLODSystemV2 *system = GetCurrentEditorLODSystem();
     if (continious)
     {   //update only UI
-        UpdateDistanceSpinboxesUI(distances, LodComponent::MAX_LOD_LAYERS);
+        const LODComponentHolder *lodData = system->GetActiveLODData();
+
+        UpdateDistanceSpinboxesUI(distances, lodData->GetLODLayersCount());
     }
     else
     {
-        EditorLODSystemV2 *system = GetCurrentEditorLODSystem();
+
         system->SetLODDistances(distances);
     }
 }
@@ -364,10 +367,7 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
 void LODEditor::SceneActivated(SceneEditor2 *scene)
 {
     DVASSERT(scene);
-    UpdatePanelsUI(scene);
-
     scene->editorLODSystemV2->SetDelegate(this);
-
 }
 
 void LODEditor::SceneDeactivated(SceneEditor2 *scene)
@@ -493,7 +493,7 @@ void LODEditor::UpdateDistanceUI(EditorLODSystemV2 *forSystem, const LODComponen
 {
     DVASSERT(lodData != nullptr);
 
-    LODEditorInternal::BlockSignalGuard guard(ui->distanceSlider);
+    LODEditorInternal::BlockSignalGuard guard(ui->distanceSlider); 
 
     const LodComponent &lc = lodData->GetLODComponent();
     const auto & triangles = lodData->GetTriangles();
