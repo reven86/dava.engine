@@ -202,7 +202,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             return control->GetVisibleForUIEditor() && control->IsPointInside(point);
         };
         systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-        bool noHudableControls = nodesUnderPoint.empty();
+        bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         SetCanDrawRect(hotKeyDetected || noHudableControls);
         return canDrawRect;
