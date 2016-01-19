@@ -1499,10 +1499,6 @@
 		02E7CD161BD624A7002F026D /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4F11BD624A6002F026D /* Scene.cpp */; };
 		02E7CD171BD624A7002F026D /* Scene.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4F21BD624A6002F026D /* Scene.h */; };
 		02E7CD181BD624A7002F026D /* Scene.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4F21BD624A6002F026D /* Scene.h */; };
-		02E7CD191BD624A7002F026D /* SceneAnimationMixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4F31BD624A6002F026D /* SceneAnimationMixer.cpp */; };
-		02E7CD1A1BD624A7002F026D /* SceneAnimationMixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4F31BD624A6002F026D /* SceneAnimationMixer.cpp */; };
-		02E7CD1B1BD624A7002F026D /* SceneAnimationMixer.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4F41BD624A6002F026D /* SceneAnimationMixer.h */; };
-		02E7CD1C1BD624A7002F026D /* SceneAnimationMixer.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4F41BD624A6002F026D /* SceneAnimationMixer.h */; };
 		02E7CD1D1BD624A7002F026D /* SerializationContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4F61BD624A6002F026D /* SerializationContext.cpp */; };
 		02E7CD1E1BD624A7002F026D /* SerializationContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4F61BD624A6002F026D /* SerializationContext.cpp */; };
 		02E7CD1F1BD624A7002F026D /* SerializationContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4F71BD624A6002F026D /* SerializationContext.h */; };
@@ -1515,18 +1511,10 @@
 		02E7CD2A1BD624A7002F026D /* SceneFileV2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4FC1BD624A6002F026D /* SceneFileV2.cpp */; };
 		02E7CD2B1BD624A7002F026D /* SceneFileV2.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4FD1BD624A6002F026D /* SceneFileV2.h */; };
 		02E7CD2C1BD624A7002F026D /* SceneFileV2.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4FD1BD624A6002F026D /* SceneFileV2.h */; };
-		02E7CD2D1BD624A7002F026D /* SceneNodeAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4FE1BD624A6002F026D /* SceneNodeAnimation.cpp */; };
-		02E7CD2E1BD624A7002F026D /* SceneNodeAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4FE1BD624A6002F026D /* SceneNodeAnimation.cpp */; };
-		02E7CD2F1BD624A7002F026D /* SceneNodeAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4FF1BD624A6002F026D /* SceneNodeAnimation.h */; };
-		02E7CD301BD624A7002F026D /* SceneNodeAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4FF1BD624A6002F026D /* SceneNodeAnimation.h */; };
 		02E7CD311BD624A7002F026D /* SceneNodeAnimationKey.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5001BD624A6002F026D /* SceneNodeAnimationKey.cpp */; };
 		02E7CD321BD624A7002F026D /* SceneNodeAnimationKey.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5001BD624A6002F026D /* SceneNodeAnimationKey.cpp */; };
 		02E7CD331BD624A7002F026D /* SceneNodeAnimationKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5011BD624A6002F026D /* SceneNodeAnimationKey.h */; };
 		02E7CD341BD624A7002F026D /* SceneNodeAnimationKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5011BD624A6002F026D /* SceneNodeAnimationKey.h */; };
-		02E7CD351BD624A7002F026D /* SceneNodeAnimationList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5021BD624A6002F026D /* SceneNodeAnimationList.cpp */; };
-		02E7CD361BD624A7002F026D /* SceneNodeAnimationList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5021BD624A6002F026D /* SceneNodeAnimationList.cpp */; };
-		02E7CD371BD624A7002F026D /* SceneNodeAnimationList.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5031BD624A6002F026D /* SceneNodeAnimationList.h */; };
-		02E7CD381BD624A7002F026D /* SceneNodeAnimationList.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5031BD624A6002F026D /* SceneNodeAnimationList.h */; };
 		02E7CD391BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5041BD624A6002F026D /* ShadowVolumeNode.cpp */; };
 		02E7CD3A1BD624A7002F026D /* ShadowVolumeNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C5041BD624A6002F026D /* ShadowVolumeNode.cpp */; };
 		02E7CD3B1BD624A7002F026D /* ShadowVolumeNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C5051BD624A6002F026D /* ShadowVolumeNode.h */; };
@@ -2852,20 +2840,14 @@
 		02E7C4F01BD624A6002F026D /* PathManip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathManip.h; sourceTree = "<group>"; };
 		02E7C4F11BD624A6002F026D /* Scene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Scene.cpp; sourceTree = "<group>"; };
 		02E7C4F21BD624A6002F026D /* Scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scene.h; sourceTree = "<group>"; };
-		02E7C4F31BD624A6002F026D /* SceneAnimationMixer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneAnimationMixer.cpp; sourceTree = "<group>"; };
-		02E7C4F41BD624A6002F026D /* SceneAnimationMixer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneAnimationMixer.h; sourceTree = "<group>"; };
 		02E7C4F61BD624A6002F026D /* SerializationContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SerializationContext.cpp; sourceTree = "<group>"; };
 		02E7C4F71BD624A6002F026D /* SerializationContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SerializationContext.h; sourceTree = "<group>"; };
 		02E7C4F81BD624A6002F026D /* VersionInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VersionInfo.cpp; sourceTree = "<group>"; };
 		02E7C4F91BD624A6002F026D /* VersionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VersionInfo.h; sourceTree = "<group>"; };
 		02E7C4FC1BD624A6002F026D /* SceneFileV2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneFileV2.cpp; sourceTree = "<group>"; };
 		02E7C4FD1BD624A6002F026D /* SceneFileV2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneFileV2.h; sourceTree = "<group>"; };
-		02E7C4FE1BD624A6002F026D /* SceneNodeAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneNodeAnimation.cpp; sourceTree = "<group>"; };
-		02E7C4FF1BD624A6002F026D /* SceneNodeAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneNodeAnimation.h; sourceTree = "<group>"; };
 		02E7C5001BD624A6002F026D /* SceneNodeAnimationKey.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneNodeAnimationKey.cpp; sourceTree = "<group>"; };
 		02E7C5011BD624A6002F026D /* SceneNodeAnimationKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneNodeAnimationKey.h; sourceTree = "<group>"; };
-		02E7C5021BD624A6002F026D /* SceneNodeAnimationList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneNodeAnimationList.cpp; sourceTree = "<group>"; };
-		02E7C5031BD624A6002F026D /* SceneNodeAnimationList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneNodeAnimationList.h; sourceTree = "<group>"; };
 		02E7C5041BD624A6002F026D /* ShadowVolumeNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShadowVolumeNode.cpp; sourceTree = "<group>"; };
 		02E7C5051BD624A6002F026D /* ShadowVolumeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowVolumeNode.h; sourceTree = "<group>"; };
 		02E7C5061BD624A6002F026D /* SkeletonNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkeletonNode.cpp; sourceTree = "<group>"; };
@@ -4249,17 +4231,11 @@
 				02E7C4F01BD624A6002F026D /* PathManip.h */,
 				02E7C4F11BD624A6002F026D /* Scene.cpp */,
 				02E7C4F21BD624A6002F026D /* Scene.h */,
-				02E7C4F31BD624A6002F026D /* SceneAnimationMixer.cpp */,
-				02E7C4F41BD624A6002F026D /* SceneAnimationMixer.h */,
 				02E7C4F51BD624A6002F026D /* SceneFile */,
 				02E7C4FC1BD624A6002F026D /* SceneFileV2.cpp */,
 				02E7C4FD1BD624A6002F026D /* SceneFileV2.h */,
-				02E7C4FE1BD624A6002F026D /* SceneNodeAnimation.cpp */,
-				02E7C4FF1BD624A6002F026D /* SceneNodeAnimation.h */,
 				02E7C5001BD624A6002F026D /* SceneNodeAnimationKey.cpp */,
 				02E7C5011BD624A6002F026D /* SceneNodeAnimationKey.h */,
-				02E7C5021BD624A6002F026D /* SceneNodeAnimationList.cpp */,
-				02E7C5031BD624A6002F026D /* SceneNodeAnimationList.h */,
 				02E7C5041BD624A6002F026D /* ShadowVolumeNode.cpp */,
 				02E7C5051BD624A6002F026D /* ShadowVolumeNode.h */,
 				02E7C5061BD624A6002F026D /* SkeletonNode.cpp */,
@@ -4908,7 +4884,6 @@
 				02E7C8BE1BD624A7002F026D /* SimpleEchoServer.h in Headers */,
 				02E7C6EA1BD624A7002F026D /* LockGuard.h in Headers */,
 				02E7C7B01BD624A7002F026D /* Signal.h in Headers */,
-				02E7CD301BD624A7002F026D /* SceneNodeAnimation.h in Headers */,
 				02E7CF4F1BD639A4002F026D /* UIDismissionHandlerAlertView.h in Headers */,
 				02E7CCBE1BD624A7002F026D /* SpeedTreeComponent.h in Headers */,
 				02E7C7C61BD624A7002F026D /* InputSystem.h in Headers */,
@@ -5188,7 +5163,6 @@
 				02E7CB9E1BD624A7002F026D /* mcpp_lib.h in Headers */,
 				02E7CDBE1BD624A7002F026D /* SoundEvent.h in Headers */,
 				02E7CBB41BD624A7002F026D /* RegExp.h in Headers */,
-				02E7CD1C1BD624A7002F026D /* SceneAnimationMixer.h in Headers */,
 				02E7CAFC1BD624A7002F026D /* SpeedTreeObject.h in Headers */,
 				02E7CD7C1BD624A7002F026D /* QualitySettingsSystem.h in Headers */,
 				02E7CE4A1BD624A7002F026D /* UIControlBackground.h in Headers */,
@@ -5305,7 +5279,6 @@
 				02E7CCAE1BD624A7002F026D /* QualitySettingsComponent.h in Headers */,
 				02E7CECC1BD624A7002F026D /* UISlider.h in Headers */,
 				02E7CB801BD624A7002F026D /* RenderOptions.h in Headers */,
-				02E7CD381BD624A7002F026D /* SceneNodeAnimationList.h in Headers */,
 				02E7C6D21BD624A6002F026D /* CollisionObject2.h in Headers */,
 				02E7CA5A1BD624A7002F026D /* FontManager.h in Headers */,
 				02E7CAC21BD624A7002F026D /* Landscape.h in Headers */,
@@ -5454,7 +5427,6 @@
 				02E7C8BD1BD624A7002F026D /* SimpleEchoServer.h in Headers */,
 				02E7C6E91BD624A7002F026D /* LockGuard.h in Headers */,
 				02E7C7AF1BD624A7002F026D /* Signal.h in Headers */,
-				02E7CD2F1BD624A7002F026D /* SceneNodeAnimation.h in Headers */,
 				02E7CF4E1BD639A4002F026D /* UIDismissionHandlerAlertView.h in Headers */,
 				02E7CCBD1BD624A7002F026D /* SpeedTreeComponent.h in Headers */,
 				02E7C7C51BD624A7002F026D /* InputSystem.h in Headers */,
@@ -5734,7 +5706,6 @@
 				02E7CB9D1BD624A7002F026D /* mcpp_lib.h in Headers */,
 				02E7CDBD1BD624A7002F026D /* SoundEvent.h in Headers */,
 				02E7CBB31BD624A7002F026D /* RegExp.h in Headers */,
-				02E7CD1B1BD624A7002F026D /* SceneAnimationMixer.h in Headers */,
 				02E7CAFB1BD624A7002F026D /* SpeedTreeObject.h in Headers */,
 				02E7CD7B1BD624A7002F026D /* QualitySettingsSystem.h in Headers */,
 				02E7CE491BD624A7002F026D /* UIControlBackground.h in Headers */,
@@ -5851,7 +5822,6 @@
 				02E7CCAD1BD624A7002F026D /* QualitySettingsComponent.h in Headers */,
 				02E7CECB1BD624A7002F026D /* UISlider.h in Headers */,
 				02E7CB7F1BD624A7002F026D /* RenderOptions.h in Headers */,
-				02E7CD371BD624A7002F026D /* SceneNodeAnimationList.h in Headers */,
 				02E7C6D11BD624A6002F026D /* CollisionObject2.h in Headers */,
 				02E7CA591BD624A7002F026D /* FontManager.h in Headers */,
 				02E7CAC11BD624A7002F026D /* Landscape.h in Headers */,
@@ -6181,7 +6151,6 @@
 				02E7CE881BD624A7002F026D /* UIMovieView.cpp in Sources */,
 				02E7C7261BD624A7002F026D /* SharedPreferences.cpp in Sources */,
 				02E7CA761BD624A7002F026D /* TextBlockGraphicRender.cpp in Sources */,
-				02E7CD361BD624A7002F026D /* SceneNodeAnimationList.cpp in Sources */,
 				02E7CD2A1BD624A7002F026D /* SceneFileV2.cpp in Sources */,
 				02E7CAA01BD624A7002F026D /* CursorWinUAP.cpp in Sources */,
 				02E7C8521BD624A7002F026D /* IPAddress.cpp in Sources */,
@@ -6374,7 +6343,6 @@
 				02E7CC301BD624A7002F026D /* rhi_PipelineStateMetal.mm in Sources */,
 				02E7C7181BD624A7002F026D /* PerformanceSettings.cpp in Sources */,
 				02E7CC3C1BD624A7002F026D /* rhi_VertexBufferMetal.mm in Sources */,
-				02E7CD1A1BD624A7002F026D /* SceneAnimationMixer.cpp in Sources */,
 				02E7C87E1BD624A7002F026D /* PeerDesription.cpp in Sources */,
 				02E7C6981BD624A6002F026D /* IntrospectionDynamic.cpp in Sources */,
 				02E7C8D01BD624A7002F026D /* LocalNotificationDelayed.cpp in Sources */,
@@ -6464,7 +6432,6 @@
 				02E7C7A81BD624A7002F026D /* ZipFile.cpp in Sources */,
 				02E7C63E1BD624A6002F026D /* Polygon2_wrap.cxx in Sources */,
 				02E7C7741BD624A7002F026D /* LocalizationIPhone.mm in Sources */,
-				02E7CD2E1BD624A7002F026D /* SceneNodeAnimation.cpp in Sources */,
 				02E7C5F81BD624A6002F026D /* Animation.cpp in Sources */,
 				02E7CCB81BD624A7002F026D /* SoundComponent.cpp in Sources */,
 				02E7CAD01BD624A7002F026D /* RenderBatchArray.cpp in Sources */,
@@ -6671,7 +6638,6 @@
 				02E7CE871BD624A7002F026D /* UIMovieView.cpp in Sources */,
 				02E7C7251BD624A7002F026D /* SharedPreferences.cpp in Sources */,
 				02E7CA751BD624A7002F026D /* TextBlockGraphicRender.cpp in Sources */,
-				02E7CD351BD624A7002F026D /* SceneNodeAnimationList.cpp in Sources */,
 				02E7CD291BD624A7002F026D /* SceneFileV2.cpp in Sources */,
 				02E7CA9F1BD624A7002F026D /* CursorWinUAP.cpp in Sources */,
 				02E7C8511BD624A7002F026D /* IPAddress.cpp in Sources */,
@@ -6864,7 +6830,6 @@
 				02E7CC2F1BD624A7002F026D /* rhi_PipelineStateMetal.mm in Sources */,
 				02E7C7171BD624A7002F026D /* PerformanceSettings.cpp in Sources */,
 				02E7CC3B1BD624A7002F026D /* rhi_VertexBufferMetal.mm in Sources */,
-				02E7CD191BD624A7002F026D /* SceneAnimationMixer.cpp in Sources */,
 				02E7C87D1BD624A7002F026D /* PeerDesription.cpp in Sources */,
 				02E7C6971BD624A6002F026D /* IntrospectionDynamic.cpp in Sources */,
 				02E7C8CF1BD624A7002F026D /* LocalNotificationDelayed.cpp in Sources */,
@@ -6954,7 +6919,6 @@
 				02E7C7A71BD624A7002F026D /* ZipFile.cpp in Sources */,
 				02E7C63D1BD624A6002F026D /* Polygon2_wrap.cxx in Sources */,
 				02E7C7731BD624A7002F026D /* LocalizationIPhone.mm in Sources */,
-				02E7CD2D1BD624A7002F026D /* SceneNodeAnimation.cpp in Sources */,
 				02E7C5F71BD624A6002F026D /* Animation.cpp in Sources */,
 				02E7CCB71BD624A7002F026D /* SoundComponent.cpp in Sources */,
 				02E7CACF1BD624A7002F026D /* RenderBatchArray.cpp in Sources */,
