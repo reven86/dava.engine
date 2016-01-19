@@ -1373,7 +1373,7 @@ _GLES2_ExecuteQueuedCommands()
         GLCommand cmd[] =
         {
           { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, 0 } },
-          { GLCommand::READ_PIXELS, { 0, 0, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, GL_RGBA, GL_UNSIGNED_BYTE, (uint64)rgba } },
+          { GLCommand::READ_PIXELS, { 0, 0, uint64(_GLES2_DefaultFrameBuffer_Width), uint64(_GLES2_DefaultFrameBuffer_Height), GL_RGBA, GL_UNSIGNED_BYTE, (uint64)rgba } },
           { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
         };
 
