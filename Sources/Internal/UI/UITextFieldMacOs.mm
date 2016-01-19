@@ -156,25 +156,25 @@ public:
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextField setStringValue:text];
     }
-    void UpdateRect(const Rect& rect)
+    void UpdateRect(const Rect& rectSrc)
     {
-        currentRect = rect;
+        if (currentRect != rectSrc)
+        {
+            currentRect = rectSrc;
 
-        float32 divider = Core::Instance()->GetScreenScaleFactor();
+            VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-        Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+            // 1. map virtual to physical
+            Rect rect = coordSystem->ConvertVirtualToPhysical(rectSrc);
+            rect += coordSystem->GetPhysicalDrawOffset();
+            rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
 
-        Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+            // 2. map physical to window
+            NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+            NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
 
-        physicalRect.y = screenSize.dy - (physicalRect.y + physicalRect.dy);
-
-        CGRect nativeRect = CGRectMake((physicalRect.x) / divider,
-                                       (physicalRect.y) / divider,
-                                       physicalRect.dx / divider,
-                                       physicalRect.dy / divider);
-
-        nativeRect = CGRectIntegral(nativeRect);
-        [nsTextField setFrame:nativeRect];
+            [nsTextField setFrame:controlRect];
+        }
     }
 
     void SetTextColor(const DAVA::Color& color)
@@ -394,8 +394,12 @@ public:
 
     void SetRenderToTexture(bool value)
     {
-        // not implemented
-        Logger::FrameworkDebug("SetRenderTotexture not implemented on macos");
+        static bool alreadyPrintLog = false;
+        if (!alreadyPrintLog)
+        {
+            alreadyPrintLog = true;
+            Logger::FrameworkDebug("UITextField::SetRenderTotexture not implemented on macos");
+        }
     }
     bool IsRenderToTexture() const
     {
@@ -423,8 +427,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* tf)
 }
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
-    delete objcWrapper;
-    objcWrapper = nullptr;
+    objcWrapper.reset();
 }
 
 void TextFieldPlatformImpl::OpenKeyboard()
@@ -553,11 +556,6 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
     return objcWrapper->IsRenderToTexture();
 }
-void TextFieldPlatformImpl::SystemDraw(const UIGeometricData& geometricData)
-{
-    // TODO do I need to update rect here? Like in iOS version?
-}
-
 } // end namespace DAVA
 
 @implementation CustomDelegate

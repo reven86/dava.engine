@@ -31,6 +31,7 @@
 #define __DAVAENGINE_UI_TEXT_FIELD_MAC_OS_H__
 
 #include "UI/UITextField.h"
+#include <memory>
 
 #define DAVA_TEXTFIELD_USE_NATIVE
 
@@ -41,7 +42,7 @@ class ObjCWrapper;
 class TextFieldPlatformImpl
 {
 public:
-    TextFieldPlatformImpl(UITextField* tf);
+    explicit TextFieldPlatformImpl(UITextField* tf);
     ~TextFieldPlatformImpl();
 
     void OpenKeyboard();
@@ -86,10 +87,12 @@ public:
 
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
-    void SystemDraw(const UIGeometricData& geometricData);
+    void SystemDraw(const UIGeometricData&)
+    {
+    }
 
 private:
-    ObjCWrapper* objcWrapper = nullptr;
+    std::unique_ptr<ObjCWrapper> objcWrapper;
 };
 } // end namespace DAVA
 
