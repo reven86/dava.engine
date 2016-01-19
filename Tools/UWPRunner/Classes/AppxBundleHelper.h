@@ -27,47 +27,42 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_APPX_BUNDLE_HELPER_H__
-#define __DAVAENGINE_APPX_BUNDLE_HELPER_H__
+#ifndef APPX_BUNDLE_HELPER_H
+#define APPX_BUNDLE_HELPER_H
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
-
-namespace DAVA
-{
 
 class AppxBundleHelper
 {
 public:
     struct PackageInfo
     {
-        String name;
-        String architecture;
+        DAVA::String name;
+        DAVA::String architecture;
         bool isApplication;
-        FilePath path;
+        DAVA::FilePath path;
     };
 
-    AppxBundleHelper(const FilePath &fileName);
+    AppxBundleHelper(const DAVA::FilePath &fileName);
     ~AppxBundleHelper();
 
     void RemoveFiles();
 
-    static bool IsBundle(const FilePath &fileName);
-    const Vector<PackageInfo>& GetPackages() const;
-    Vector<PackageInfo> GetApplications() const;
-    Vector<PackageInfo> GetResources() const;
+    static bool IsBundle(const DAVA::FilePath &fileName);
+    const DAVA::Vector<PackageInfo>& GetPackages() const;
+    DAVA::Vector<PackageInfo> GetApplications() const;
+    DAVA::Vector<PackageInfo> GetResources() const;
     
-    FilePath GetApplication(const String& name);
-    FilePath GetApplicationForArchitecture(const String& name);
-    FilePath GetResource(const String& name);
+    DAVA::FilePath GetApplication(const DAVA::String& name);
+    DAVA::FilePath GetApplicationForArchitecture(const DAVA::String& name);
+    DAVA::FilePath GetResource(const DAVA::String& name);
 
 private:
     void ParseBundleManifest();
 
-    FilePath bundlePackageDir;
-    Vector<PackageInfo> storedPackages;
+    DAVA::FilePath bundlePackageDir;
+    DAVA::Vector<PackageInfo> storedPackages;
 };
 
-}
-
-#endif  // __DAVAENGINE_APPX_BUNDLE_HELPER_H__
+#endif  // APPX_BUNDLE_HELPER_H

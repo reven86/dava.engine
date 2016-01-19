@@ -32,24 +32,55 @@
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
+#include "Network/NetCore.h"
 
-using DAVA::String;
-using DAVA::FilePath;
-using DAVA::Vector;
+#include "UWPLogConsumer.h"
 
 struct PackageOptions
 {
     //TODO: replace on Optional
-    String mainPackage;
-    String packageToInstall;
-    String architecture;
-    String profile;
-    String dependencies;
-    Vector<String> resources;
+    DAVA::String mainPackage;
+    DAVA::String packageToInstall;
+    DAVA::String architecture;
+    DAVA::String profile;
+    DAVA::String dependencies;
+    DAVA::Vector<DAVA::String> resources;
     bool useTeamCityTestOutput = false;
 };
-
 PackageOptions ParseCommandLine();
 bool CheckOptions(const PackageOptions& options);
+
+class Runner;
+class RegKey;
+
+class UWPRunner
+{
+public:
+    UWPRunner(const PackageOptions& opt);
+    ~UWPRunner();
+    void Run();
+
+private:
+    void Run(Runner& runner);
+    void WaitApp();
+
+    void ProcessBundlePackage();
+    void InitializeNetwork(bool isMobileDevice);
+    void UnInitializeNetwork();
+
+    bool UpdateIpOverUsbConfig(RegKey& key);
+    bool ConfigureIpOverUsb();
+    bool RestartIpOverUsb();
+
+    void NetLogOutput(const DAVA::String& logString);
+
+    PackageOptions options;
+    DAVA::Signal<> cleanNeeded;
+    std::unique_ptr<AppxBundleHelper> bundleHelper;
+    std::shared_ptr<UWPLogConsumer> logConsumer;
+    DAVA::SigConnectionID logConsumerConnectionID = DAVA::SigConnectionID();
+    DAVA::Net::NetCore::TrackId controllerId = DAVA::Net::NetCore::TrackId();
+    DAVA::String qtProfile;
+};
 
 #endif  // UWP_RUNNER_H

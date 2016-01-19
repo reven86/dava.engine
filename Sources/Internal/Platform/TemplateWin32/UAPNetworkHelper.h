@@ -1,4 +1,4 @@
-﻿/*==================================================================================
+/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -27,15 +27,28 @@
 =====================================================================================*/
 
 
-#ifndef ARCHIVE_EXTRACTION_H
-#define ARCHIVE_EXTRACTION_H
+#ifndef __DAVAENGINE_UAP_NETWORK_HELPER_H__
+#define __DAVAENGINE_UAP_NETWORK_HELPER_H__
 
 #include "Base/BaseTypes.h"
+#include "Network/Base/Endpoint.h"
+#include "Network/NetworkCommon.h"
 
-bool ExtractFileFromArchive(const DAVA::String& zipFile, 
-                            const DAVA::String& file, 
-                            const DAVA::String& outFile);
+namespace DAVA
+{
+    
+class UAPNetworkHelper
+{
+public:
+    static const uint16 UAP_DESKTOP_TCP_PORT = 777;
+    static const uint16 UAP_MOBILE_TCP_PORT = 1911;
+    static const char* UAP_IP_ADDRESS;
 
-bool ExtractAllFromArchive(const DAVA::String& zipFile, const DAVA::String& outPath);
+    static Net::eNetworkRole GetCurrentNetworkRole();
+    static Net::Endpoint GetCurrentEndPoint();
+    static Net::Endpoint GetEndPoint(Net::eNetworkRole role);
+};
 
-#endif  // ARCHIVE_EXTRACTION_H
+}  // namespace DAVA
+
+#endif  // __DAVAENGINE_UAP_NETWORK_HELPER_H__

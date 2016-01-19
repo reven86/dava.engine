@@ -27,22 +27,19 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SVCHELPER_H__
-#define __DAVAENGINE_SVCHELPER_H__
+#ifndef SVCHELPER_H
+#define SVCHELPER_H
 
 #include "Base/BaseTypes.h"
-
-namespace DAVA
-{
 
 class SvcHelper
 {
 public:
-    SvcHelper(const String &name);
+    SvcHelper(const DAVA::String &name);
     ~SvcHelper();
 
-    String ServiceName() const;
-    String ServiceDescription() const;
+    DAVA::String ServiceName() const;
+    DAVA::String ServiceDescription() const;
 
     bool IsInstalled() const;
     bool IsRunning() const;
@@ -50,11 +47,9 @@ public:
     bool Stop();
 
 private:
-    String serviceName;
+    DAVA::String serviceName;
     SC_HANDLE serviceControlManager = nullptr;
     SC_HANDLE service = nullptr;
 };
 
-}
-
-#endif  // __DAVAENGINE_SVCHELPER_H__
+#endif  // SVCHELPER_H

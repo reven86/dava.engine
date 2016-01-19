@@ -33,6 +33,12 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 
+#if defined (__DAVAENGINE_WIN_UAP__)
+#include "Network/NetCore.h"
+#include "Network/PeerDesription.h"
+#include "Network/Services/NetLogger.h"
+#endif
+
 #include "TeamcityOutput/TeamCityTestsOutput.h"
 
 class GameCore : public DAVA::ApplicationCore
@@ -60,6 +66,11 @@ public:
     void OnDeviceLocked() override {}
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
+#if defined (__DAVAENGINE_WIN_UAP__)
+    void InitNetwork();
+    void UnInitNetwork();
+#endif
+
     void Update(DAVA::float32 update) override;
 
 private:
@@ -78,6 +89,12 @@ private:
 
 private:
     DAVA::TeamcityTestsOutput teamCityOutput;
+
+#if defined (__DAVAENGINE_WIN_UAP__)
+    DAVA::Net::NetLogger netLogger;
+    DAVA::Net::NetCore::TrackId netController;
+    bool loggerInUse = false;
+#endif
 };
 
 #endif // __GAMECORE_H__

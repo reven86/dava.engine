@@ -31,8 +31,7 @@
 #include "Debug/DVAssert.h"
 #include "SvcHelper.h"
 
-namespace DAVA
-{
+using namespace DAVA;
 
 SvcHelper::SvcHelper(const String &name)
     : serviceName(name)
@@ -128,5 +127,3 @@ bool SvcHelper::Stop()
     
     return false;
 }
-
-}  // namespace DAVA

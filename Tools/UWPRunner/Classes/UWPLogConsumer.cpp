@@ -1,4 +1,4 @@
-﻿/*==================================================================================
+/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -27,15 +27,30 @@
 =====================================================================================*/
 
 
-#ifndef ARCHIVE_EXTRACTION_H
-#define ARCHIVE_EXTRACTION_H
+#include "UWPLogConsumer.h"
 
-#include "Base/BaseTypes.h"
+UWPLogConsumer::UWPLogConsumer()
+{
+    newDataNotifier.Connect(DAVA::MakeFunction(this, &UWPLogConsumer::OnNewData));
+}
 
-bool ExtractFileFromArchive(const DAVA::String& zipFile, 
-                            const DAVA::String& file, 
-                            const DAVA::String& outFile);
+bool UWPLogConsumer::IsSessionEnded()
+{
+    return !channelOpened && dataReceived;
+}
 
-bool ExtractAllFromArchive(const DAVA::String& zipFile, const DAVA::String& outPath);
+void UWPLogConsumer::ChannelOpen()
+{
+    channelOpened = true;
+}
 
-#endif  // ARCHIVE_EXTRACTION_H
+void UWPLogConsumer::ChannelClosed(const DAVA::char8* message)
+{
+    channelOpened = false;
+}
+
+void UWPLogConsumer::OnNewData(const DAVA::String& str)
+{
+    dataReceived = true;
+    newMessageNotifier.Emit(str);
+}

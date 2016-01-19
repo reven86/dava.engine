@@ -30,112 +30,52 @@
 #include <QFile>
 #include <QXmlStreamReader>
 
-#include "Concurrency/Atomic.h"
-#include "Concurrency/LockGuard.h"
-#include "Concurrency/Mutex.h"
 #include "Concurrency/Thread.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
+#include "Network/NetConfig.h"
 #include "Network/Services/LogConsumer.h"
-#include "Network/SimpleNetworking/SimpleNetCore.h"
-#include "Network/SimpleNetworking/SimpleNetService.h"
+#include "Platform/TemplateWin32/UAPNetworkHelper.h"
 #include "TeamcityOutput/TeamCityTestsOutput.h"
-
-#include <Objbase.h>
 
 #include "AppxBundleHelper.h"
 #include "ArchiveExtraction.h"
 #include "SvcHelper.h"
 #include "runner.h"
 #include "RegKey.h"
+#include "UWPLogConsumer.h"
 #include "UWPRunner.h"
 
 using namespace DAVA;
-
-const Net::SimpleNetService* gNetLogger = nullptr;
-Vector<Function<void(void)>> cleaningFunctors;
-
-using StringRecv = Function<void(const String&)>;
-
-void Run(Runner& runner);
-void Start(Runner& runner);
-
-bool InitializeNetwork(bool isMobileDevice, const StringRecv& logReceiver);
-void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString);
-bool ConfigureIpOverUsb();
-void WaitApp();
-
-void LaunchPackage(PackageOptions opt);
-void LaunchAppPackage(const PackageOptions& opt);
 
 String GetCurrentArchitecture();
 QString GetQtWinRTRunnerProfile(const String& profile, const FilePath& manifest);
 FilePath ExtractManifest(const FilePath& package);
 
-void FrameworkDidLaunched()
+UWPRunner::UWPRunner(const PackageOptions& opt)
+    : options(opt)
+    , logConsumer(new UWPLogConsumer)
 {
-    //Parse arguments
-    PackageOptions commandLineOptions = ParseCommandLine();
-    if (!CheckOptions(commandLineOptions))
+    //install slot to log consumer
+    logConsumerConnectionID = logConsumer->newMessageNotifier.Connect([this](const String& logStr)
     {
-        return;
-    }
+        NetLogOutput(logStr);
+    });
 
-    LaunchPackage(commandLineOptions);
-}
-
-void LaunchPackage(PackageOptions opt)
-{
     //if package is bundle, extract concrete package from it
-    if (!AppxBundleHelper::IsBundle(opt.mainPackage))
+    if (AppxBundleHelper::IsBundle(options.mainPackage))
     {
-        opt.packageToInstall = opt.mainPackage;
-        LaunchAppPackage(opt);
-        return;
+        ProcessBundlePackage();
     }
-
-    FilePath package = opt.mainPackage;
-    AppxBundleHelper bundle(package);
-    cleaningFunctors.push_back([&]{ bundle.RemoveFiles(); });
-
-    //try to extract package for specified architecture
-    if (!opt.architecture.empty())
-    {
-        package = bundle.GetApplicationForArchitecture(opt.architecture);
-    }
-    //try to extract package for current architecture
     else
     {
-        package = bundle.GetApplicationForArchitecture(GetCurrentArchitecture());
-
-        //try to extract package for any architecture
-        if (package.IsEmpty())
-        {
-            Vector<AppxBundleHelper::PackageInfo> applications = bundle.GetApplications();
-            package = bundle.GetApplication(applications.at(0).name);
-        }
+        options.packageToInstall = options.mainPackage;
     }
 
-    DVASSERT_MSG(!package.IsEmpty(), "Can't extract app package from bundle");
-    if (!package.IsEmpty())
-    {
-        Vector<AppxBundleHelper::PackageInfo> resources = bundle.GetResources();
-        for (const auto& x : resources)
-        {
-            opt.resources.push_back(x.path.GetAbsolutePathname());
-        }
-
-        opt.packageToInstall = package.GetAbsolutePathname();
-        LaunchAppPackage(opt);
-    }
-}
-
-void LaunchAppPackage(const PackageOptions& opt)
-{
     //Extract manifest from package
-    Logger::Instance()->Info("Extracting manifest...");
-    FilePath manifest = ExtractManifest(opt.packageToInstall);
+    Logger::Info("Extracting manifest...");
+    FilePath manifest = ExtractManifest(options.packageToInstall);
     if (manifest.IsEmpty())
     {
         DVASSERT_MSG(false, "Can't extract manifest file from package");
@@ -143,39 +83,38 @@ void LaunchAppPackage(const PackageOptions& opt)
     }
 
     //figure out if app should be started on mobile device
-    QString profile = GetQtWinRTRunnerProfile(opt.profile, manifest);
+    qtProfile = GetQtWinRTRunnerProfile(options.profile, manifest).toStdString();
     FileSystem::Instance()->DeleteFile(manifest);
-    bool isMobileDevice = profile == QStringLiteral("appxphone");
 
     //Init network
-    Logger::Instance()->Info("Initializing network...");
+    Logger::Info("Initializing network...");
+    InitializeNetwork(qtProfile == "appxphone");
+}
 
-    auto logConsumer = [=](const String& logString) 
-    { 
-        LogConsumingFunction(opt.useTeamCityTestOutput, logString); 
-    };
+UWPRunner::~UWPRunner()
+{
+    cleanNeeded.Emit();
+    logConsumer->newMessageNotifier.Disconnect(logConsumerConnectionID);
+    UnInitializeNetwork();
+}
 
-    if (!InitializeNetwork(isMobileDevice, logConsumer))
-    {
-        DVASSERT_MSG(false, "Unable to initialize network");
-        return;
-    }
-
+void UWPRunner::Run()
+{
     //Create Qt runner
-    Logger::Instance()->Info("Preparing to launch...");
+    Logger::Info("Preparing to launch...");
 
     QStringList resources;
-    for (const auto& x : opt.resources)
+    for (const auto& x : options.resources)
     {
         resources.push_back(QString::fromStdString(x));
     }
 
-    Runner runner(QString::fromStdString(opt.mainPackage),
-                  QString::fromStdString(opt.packageToInstall),
-                  resources,
-                  QString::fromStdString(opt.dependencies),
-                  QStringList(),
-                  profile);
+    Runner runner(QString::fromStdString(options.mainPackage),
+        QString::fromStdString(options.packageToInstall),
+        resources,
+        QString::fromStdString(options.dependencies),
+        QStringList(),
+        QString::fromStdString(qtProfile));
 
     //Check runner state
     if (!runner.isValid())
@@ -183,111 +122,140 @@ void LaunchAppPackage(const PackageOptions& opt)
         DVASSERT_MSG(false, "Runner core is not valid");
         return;
     }
+
     Run(runner);
 }
 
-void Run(Runner& runner)
+void UWPRunner::Run(Runner& runner)
 {
-    //Start app
-    Start(runner);
-
-    //Clean 
-    for (const auto& x : cleaningFunctors) { x(); }
-    cleaningFunctors.clear();
-
-    //Wait app exit
-    WaitApp();
-
-    //remove app package after working
-    if (!runner.remove())
-    {
-        DVASSERT_MSG(false, "Unable to remove package");
-    }
-}
-
-void Start(Runner& runner)
-{
-    Logger::Instance()->Info("Installing package...");
+    //installing and starting application
+    Logger::Info("Installing package...");
     if (!runner.install(true))
     {
         DVASSERT_MSG(false, "Can't install application package");
+        return;
     }
 
-    Logger::Instance()->Info("Starting application...");
+    Logger::Info("Starting application...");
     if (!runner.start())
     {
         DVASSERT_MSG(false, "Can't install application package");
+        return;
+    }
+
+    //post-start cleaning
+    cleanNeeded.Emit();
+
+    //wait application exit
+    WaitApp();
+}
+
+void UWPRunner::WaitApp()
+{
+    Logger::Info("Waiting app exit...");
+
+    while (!logConsumer->IsSessionEnded())
+    {
+        Net::NetCore::Instance()->Poll();
+        Thread::Sleep(10);
     }
 }
 
-bool InitializeNetwork(bool isMobileDevice, const StringRecv& logReceiver)
+void UWPRunner::ProcessBundlePackage()
 {
-    if (isMobileDevice)
+    FilePath package = options.mainPackage;
+    bundleHelper.reset(new AppxBundleHelper(package));
+    cleanNeeded.Connect([this] { bundleHelper.reset(); });
+
+    //try to extract package for specified architecture
+    if (!options.architecture.empty())
     {
-        if (!ConfigureIpOverUsb())
+        package = bundleHelper->GetApplicationForArchitecture(options.architecture);
+    }
+    //try to extract package for current architecture
+    else
+    {
+        package = bundleHelper->GetApplicationForArchitecture(GetCurrentArchitecture());
+
+        //try to extract package for any architecture
+        if (package.IsEmpty())
         {
-            DVASSERT_MSG(false, "Can't configure IpOverUsb service");
-            return false;
+            Vector<AppxBundleHelper::PackageInfo> applications = bundleHelper->GetApplications();
+            package = bundleHelper->GetApplication(applications.at(0).name);
         }
     }
 
-    uint16 port;
-    Net::IConnectionManager::ConnectionRole role;
+    DVASSERT_MSG(!package.IsEmpty(), "Can't extract app package from bundle");
+    if (!package.IsEmpty())
+    {
+        Vector<AppxBundleHelper::PackageInfo> resources = bundleHelper->GetResources();
+        for (const auto& x : resources)
+        {
+            options.resources.push_back(x.path.GetAbsolutePathname());
+        }
+
+        options.packageToInstall = package.GetAbsolutePathname();
+    }
+}
+
+void UWPRunner::InitializeNetwork(bool isMobileDevice)
+{
+    using namespace Net;
 
     if (isMobileDevice)
     {
-        port = Net::SimpleNetCore::UWPRemotePort;
-        role = Net::IConnectionManager::ClientRole;
+        bool ipOverUsbConfigured = ConfigureIpOverUsb();
+        if (!ipOverUsbConfigured)
+        {
+            DVASSERT_MSG(false, "Cannot configure IpOverUSB service");
+            return;
+        }
+    }
+
+    std::shared_ptr<UWPLogConsumer> consumer = logConsumer;
+    NetCore::Instance()->RegisterService(
+        NetCore::SERVICE_LOG,
+        [consumer](uint32 serviceId, void*) -> IChannelListener* { return consumer.get(); },
+        [] (IChannelListener* obj, void*) -> void {});
+
+    eNetworkRole role;
+    Endpoint endPoint;
+    if (isMobileDevice)
+    {
+        role = CLIENT_ROLE;
+        endPoint = Endpoint(UAPNetworkHelper::UAP_IP_ADDRESS, UAPNetworkHelper::UAP_MOBILE_TCP_PORT);
     }
     else
     {
-        port = Net::SimpleNetCore::UWPLocalPort;
-        role = Net::IConnectionManager::ServerRole;
+        role = SERVER_ROLE;
+        endPoint = Endpoint(UAPNetworkHelper::UAP_DESKTOP_TCP_PORT);
     }
-    Net::Endpoint endPoint("127.0.0.1", port);
 
-    auto logConsumer = std::make_unique<Net::LogConsumer>();
-    logConsumer->newDataNotifier.Connect(logReceiver);
-
-    Net::SimpleNetCore* netcore = new Net::SimpleNetCore;
-    gNetLogger = netcore->RegisterService(
-        std::move(logConsumer), role, endPoint, "RawLogConsumer");
-
-    return gNetLogger != nullptr;
+    NetConfig config(role);
+    config.AddTransport(TRANSPORT_TCP, endPoint);
+    config.AddService(NetCore::SERVICE_LOG);
+    controllerId = NetCore::Instance()->CreateController(config, nullptr);
 }
 
-void WaitApp()
+void UWPRunner::UnInitializeNetwork()
 {
-    Logger::Instance()->Info("Waiting app exit...");
-
-    while (true)
+    if (controllerId != DAVA::Net::NetCore::TrackId())
     {
-        Thread::Sleep(1000);
-        if (!gNetLogger->IsActive())
-        {
-            break;
-        }
+        Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
+        controllerId = DAVA::Net::NetCore::TrackId();
     }
 }
 
-void FrameworkWillTerminate()
+bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
 {
-    //cleanup network
-    Net::SimpleNetCore::Instance()->Release();
-}
-
-bool UpdateIpOverUsbConfig(RegKey& key)
-{
-    const String desiredDestAddr = "127.0.0.1";
-    const DWORD  desiredDestPort = Net::SimpleNetCore::UWPRemotePort;
-    const String desiredLocalAddr = desiredDestAddr;
-    const DWORD  desiredLocalPort = desiredDestPort;
+    const String desiredAddr = UAPNetworkHelper::UAP_IP_ADDRESS;
+    const DWORD  desiredPort = UAPNetworkHelper::UAP_MOBILE_TCP_PORT;
     bool changed = false;
 
     String address = key.QueryString("DestinationAddress");
-    if (address != desiredDestAddr)
+    if (address != desiredAddr)
     {
-        if (!key.SetValue("DestinationAddress", desiredDestAddr))
+        if (!key.SetValue("DestinationAddress", desiredAddr))
         {
             DVASSERT_MSG(false, "Unable to set DestinationAddress");
             return false;
@@ -296,9 +264,9 @@ bool UpdateIpOverUsbConfig(RegKey& key)
     }
 
     DWORD port = key.QueryDWORD("DestinationPort");
-    if (port != desiredDestPort)
+    if (port != desiredPort)
     {
-        if (!key.SetValue("DestinationPort", desiredDestPort))
+        if (!key.SetValue("DestinationPort", desiredPort))
         {
             DVASSERT_MSG(false, "Unable to set DestinationPort");
             return false;
@@ -307,9 +275,9 @@ bool UpdateIpOverUsbConfig(RegKey& key)
     }
 
     address = key.QueryString("LocalAddress");
-    if (address != desiredLocalAddr)
+    if (address != desiredAddr)
     {
-        if (!key.SetValue("LocalAddress", desiredLocalAddr))
+        if (!key.SetValue("LocalAddress", desiredAddr))
         {
             DVASSERT_MSG(false, "Unable to set LocalAddress");
             return false;
@@ -318,9 +286,9 @@ bool UpdateIpOverUsbConfig(RegKey& key)
     }
 
     port = key.QueryDWORD("LocalPort");
-    if (port != desiredLocalPort)
+    if (port != desiredPort)
     {
-        if (!key.SetValue("LocalPort", desiredLocalPort))
+        if (!key.SetValue("LocalPort", desiredPort))
         {
             DVASSERT_MSG(false, "Unable to set LocalPort");
             return false;
@@ -331,7 +299,7 @@ bool UpdateIpOverUsbConfig(RegKey& key)
     return changed;
 }
 
-bool RestartIpOverUsb()
+bool UWPRunner::RestartIpOverUsb()
 {
     //open service
     SvcHelper service("IpOverUsbSvc");
@@ -347,7 +315,7 @@ bool RestartIpOverUsb()
         DVASSERT_MSG(false, "Can't stop IpOverUsb service");
         return false;
     }
-    
+
     //start it
     if (!service.Start())
     {
@@ -361,7 +329,7 @@ bool RestartIpOverUsb()
     return true;
 }
 
-bool ConfigureIpOverUsb()
+bool UWPRunner::ConfigureIpOverUsb()
 {
     bool needRestart = false;
 
@@ -378,8 +346,8 @@ bool ConfigureIpOverUsb()
     bool result = UpdateIpOverUsbConfig(key);
     /*if (!result.IsSet())
     {
-        DVASSERT_MSG(false, "Unable to update IpOverUsb service config");
-        return false;
+    DVASSERT_MSG(false, "Unable to update IpOverUsb service config");
+    return false;
     }*/
     needRestart |= result;
 
@@ -387,6 +355,61 @@ bool ConfigureIpOverUsb()
     if (needRestart)
         return RestartIpOverUsb();
     return true;
+}
+
+void UWPRunner::NetLogOutput(const String& logString)
+{
+    //incoming string is formatted in style "[ip:port] date time message"
+    //extract only message text
+    String logLevel;
+    String message;
+
+    size_t spaces = 0;
+    for (auto i : logString)
+    {
+        if (::isspace(i))
+        {
+            spaces++;
+        }
+
+        if (spaces == 3)
+        {
+            logLevel += i;
+        }
+        else if (spaces >= 4)
+        {
+            message += i;
+        }
+    }
+
+    if (logLevel.empty())
+    {
+        return;
+    }
+
+    //remove first space
+    logLevel = logLevel.substr(1);
+    message = message.substr(1);
+
+    if (options.useTeamCityTestOutput)
+    {
+        Logger* logger = Logger::Instance();
+        Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevel.c_str());
+
+        if (ll != Logger::LEVEL__DISABLE)
+        {
+            TeamcityTestsOutput testOutput;
+            testOutput.Output(ll, message.c_str());
+        }
+    }
+    else
+    {
+        printf("[%s] %s", logLevel.c_str(), message.c_str());
+        if (message.back() != '\n' || message.back() != '\r')
+        {
+            printf("\n");
+        }
+    }
 }
 
 String GetCurrentArchitecture()
@@ -449,55 +472,4 @@ FilePath ExtractManifest(const FilePath& package)
         return manifestFilePath;
     }
     return FilePath();
-}
-
-void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString)
-{
-    //incoming string is formatted in style "[ip:port] date time message"
-    //extract only message text
-    String logLevel;
-    String message;
-
-    size_t spaces = 0;
-    for (auto i : logString)
-    {
-        if (::isspace(i))
-        {
-            spaces++;
-        }
-
-        if (spaces == 3)
-        {
-            logLevel += i;
-        }
-        else if (spaces >= 4)
-        {
-            message += i;
-        }
-    }
-
-    if (logLevel.empty())
-    {
-        return;
-    }
-
-    //remove first space
-    logLevel = logLevel.substr(1);
-    message = message.substr(1);
-
-    if (useTeamCityTestOutput)
-    {
-        Logger* logger = Logger::Instance();
-        Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevel.c_str());
-
-        if (ll != Logger::LEVEL__DISABLE)
-        {
-            TeamcityTestsOutput testOutput;
-            testOutput.Output(ll, message.c_str());
-        }
-    }
-    else
-    {
-        printf("[%s] %s", logLevel.c_str(), message.c_str());
-    }
 }

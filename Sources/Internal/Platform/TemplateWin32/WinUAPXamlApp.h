@@ -45,10 +45,6 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
-#include "Network/PeerDesription.h"
-#include "Network/Services/NetLogger.h"
-
-
 namespace DAVA
 {
 
@@ -165,8 +161,6 @@ private:
     void SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device type);
     void SendBackKeyEvents();
 
-    size_t AnnounceDataSupplier(size_t length, void* buffer);
-
 private:
     CorePlatformWinUAP* core = nullptr;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
@@ -238,10 +232,6 @@ private:
     static const wchar_t* xamlWebView;
     Windows::System::Display::DisplayRequest^ displayRequest = nullptr;
     Windows::Foundation::EventRegistrationToken token;
-
-    bool loggerInUse = false;
-    DAVA::Net::NetLogger netLogger;
-    DAVA::Net::PeerDescription peerDescr;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -50,7 +50,13 @@
 #include "Tests/DlcTest.h"
 //$UNITTEST_INCLUDE
 
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryProfiler.h"
+#endif
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+#include "Platform/TemplateWin32/UAPNetworkHelper.h"
+#endif
 
 void GameCore::RunOnlyThisTest()
 {
@@ -82,9 +88,6 @@ void GameCore::RegisterTests()
     new InputTest();
     //$UNITTEST_CTOR
 }
-
-#include <fstream>
-#include <algorithm>
 
 using namespace DAVA;
 using namespace DAVA::Net;
@@ -223,8 +226,17 @@ void GameCore::InitNetwork()
     NetCore::Instance()->RegisterService(NetCore::SERVICE_MEMPROF, memprofCreate,
                                          [this](IChannelListener* obj, void*) -> void { memprofInUse = false; });
 #endif
-    NetConfig config(SERVER_ROLE);
-    config.AddTransport(TRANSPORT_TCP, Net::Endpoint(NetCore::DEFAULT_TCP_PORT));
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
+    Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();
+#else
+    eNetworkRole role = SERVER_ROLE;
+    Net::Endpoint endpoint = Net::Endpoint(NetCore::DEFAULT_TCP_PORT);
+#endif
+
+    NetConfig config(role);
+    config.AddTransport(TRANSPORT_TCP, endpoint);
     config.AddService(NetCore::SERVICE_LOG);
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     config.AddService(NetCore::SERVICE_MEMPROF);

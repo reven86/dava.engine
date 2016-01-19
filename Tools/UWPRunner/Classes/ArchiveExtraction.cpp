@@ -32,8 +32,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 
-namespace DAVA
-{
+using namespace DAVA;
 
 //We don't have any API for working with ZIP, so we use Python
 //https://upload.wikimedia.org/wikipedia/ru/7/78/Trollface.svg
@@ -80,5 +79,3 @@ bool ExtractAllFromArchive(const String& zipFile, const String& outPath)
     
     return RunPythonScript(script);
 }
-
-}  // namespace DAVA

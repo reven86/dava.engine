@@ -70,6 +70,7 @@ public:
 
     void Install();
     void Uninstall();
+    bool HasDataForSend();
 
     // IChannelListener
     void OnPacketSent(IChannel* channel, const void* buffer, size_t length) override;

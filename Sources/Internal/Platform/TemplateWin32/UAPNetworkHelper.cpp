@@ -1,4 +1,4 @@
-﻿/*==================================================================================
+/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -27,15 +27,58 @@
 =====================================================================================*/
 
 
-#ifndef ARCHIVE_EXTRACTION_H
-#define ARCHIVE_EXTRACTION_H
+#include "Platform/TemplateWin32/UAPNetworkHelper.h"
+#include "Platform/DeviceInfo.h"
 
-#include "Base/BaseTypes.h"
+namespace DAVA
+{
 
-bool ExtractFileFromArchive(const DAVA::String& zipFile, 
-                            const DAVA::String& file, 
-                            const DAVA::String& outFile);
+const char* UAPNetworkHelper::UAP_IP_ADDRESS = "127.0.0.1";
 
-bool ExtractAllFromArchive(const DAVA::String& zipFile, const DAVA::String& outPath);
+DeviceInfo::ePlatform GetPlatformChecked()
+{
+    DeviceInfo::ePlatform platform = DeviceInfo::GetPlatform();
+    bool uapPlatform = platform == DeviceInfo::PLATFORM_DESKTOP_WIN_UAP ||
+                       platform == DeviceInfo::PLATFORM_PHONE_WIN_UAP;
 
-#endif  // ARCHIVE_EXTRACTION_H
+    DVASSERT_MSG(uapPlatform, "Not UAP platform");
+    return platform;
+}
+
+Net::eNetworkRole UAPNetworkHelper::GetCurrentNetworkRole()
+{
+    DeviceInfo::ePlatform platform = GetPlatformChecked();
+    return platform == DeviceInfo::PLATFORM_DESKTOP_WIN_UAP ? Net::CLIENT_ROLE : Net::SERVER_ROLE;
+}
+
+Net::Endpoint UAPNetworkHelper::GetCurrentEndPoint()
+{
+    return GetEndPoint(GetCurrentNetworkRole());
+}
+
+Net::Endpoint UAPNetworkHelper::GetEndPoint(Net::eNetworkRole role)
+{
+    DeviceInfo::ePlatform platform = GetPlatformChecked();
+    uint16 port;
+    if (platform == DeviceInfo::PLATFORM_DESKTOP_WIN_UAP)
+    {
+        port = UAP_DESKTOP_TCP_PORT;
+    }
+    else
+    {
+        port = UAP_MOBILE_TCP_PORT;
+    }
+
+    switch (role)
+    {
+    case Net::SERVER_ROLE:
+        return Net::Endpoint(port);
+    case Net::CLIENT_ROLE:
+        return Net::Endpoint(UAP_IP_ADDRESS, port);
+    default:
+        DVASSERT_MSG(false, "Something wrong");
+        return Net::Endpoint();
+    }
+}
+
+}  // namespace DAVA

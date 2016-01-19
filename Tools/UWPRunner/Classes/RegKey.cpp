@@ -29,8 +29,7 @@
 
 #include "RegKey.h"
 
-namespace DAVA
-{
+using namespace DAVA;
 
 RegKey::RegKey(HKEY scope, const char* keyName, bool createIfNotExist)
 {
@@ -91,5 +90,3 @@ bool RegKey::SetValue(const String& valName, DWORD val)
         (LPBYTE)&val, sizeof(DWORD));
     return res == ERROR_SUCCESS;
 }
-
-}  // namespace DAVA

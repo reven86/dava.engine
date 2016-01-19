@@ -27,13 +27,10 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_REGKEY_H__
-#define __DAVAENGINE_REGKEY_H__
+#ifndef REGKEY_H
+#define REGKEY_H
 
 #include "Base/BaseTypes.h"
-
-namespace DAVA
-{
 
 class RegKey
 {
@@ -44,12 +41,12 @@ public:
     bool IsCreated() const { return isCreated; }
 
     //TODO: replace on Optional<String>
-    String QueryString(const char* valueName) const;
-    bool SetValue(const String& valName, const String& val);
+    DAVA::String QueryString(const char* valueName) const;
+    bool SetValue(const DAVA::String& valName, const DAVA::String& val);
 
     //TODO: replace on Optional<DWORD>
     DWORD QueryDWORD(const char* valueName) const;
-    bool SetValue(const String& valName, DWORD val);
+    bool SetValue(const DAVA::String& valName, DWORD val);
 
     template <typename T>
     //TODO: replace on Optional<T>
@@ -62,7 +59,7 @@ private:
 };
 
 template <>
-inline String RegKey::QueryValue<String>(const char* valueName)
+inline DAVA::String RegKey::QueryValue<DAVA::String>(const char* valueName)
 {
     return QueryString(valueName);
 }
@@ -73,6 +70,4 @@ inline DWORD RegKey::QueryValue<DWORD>(const char* valueName)
     return QueryDWORD(valueName);
 }
 
-}  // namespace DAVA
-
-#endif  // __DAVAENGINE_REGKEY_H__
+#endif  // REGKEY_H

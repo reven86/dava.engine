@@ -110,8 +110,7 @@ Runner::Runner(const QString &mainPackage,
     d->dependenciesDir = dependenciesDir;
 
     DAVA::String manifestFileName = app.toStdString() + "_manifest.xml";
-    bool result = DAVA::ExtractFileFromArchive(app.toStdString(), 
-                                               "AppxManifest.xml", manifestFileName);
+    bool result = ExtractFileFromArchive(app.toStdString(), "AppxManifest.xml", manifestFileName);
     d->manifest = QString::fromStdString(manifestFileName);
 
     bool deviceIndexKnown;

@@ -49,9 +49,6 @@
 #include "WinUAPXamlApp.h"
 #include "DeferredEvents.h"
 
-#include "Network/NetConfig.h"
-#include "Network/NetCore.h"
-
 #if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_ENABLE_UAP_NETWORK_LOGGING)
 #include "Network/Services/NetLogger.h"
 #include "Network/SimpleNetworking/SimpleNetCore.h"
@@ -333,33 +330,6 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
     DVASSERT_MSG(service != nullptr, "Failed to create a NetLogger service");
 
 #endif // __DAVAENGINE_WIN_UAP__
-
-    using namespace Net;
-
-    auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
-        if (!loggerInUse)
-        {
-            loggerInUse = true;
-            return &netLogger;
-        }
-        return nullptr;
-    };
-    NetCore::Instance()->RegisterService(NetCore::SERVICE_LOG, loggerCreate,
-        [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
-
-    NetConfig config(SERVER_ROLE);
-    config.AddTransport(TRANSPORT_TCP, Net::Endpoint(NetCore::DEFAULT_TCP_PORT));
-    config.AddService(NetCore::SERVICE_LOG);
-    peerDescr = PeerDescription(config);
-    Net::Endpoint annoUdpEndpoint(NetCore::defaultAnnounceMulticastGroup, NetCore::DEFAULT_UDP_ANNOUNCE_PORT);
-    Net::Endpoint annoTcpEndpoint(NetCore::DEFAULT_TCP_ANNOUNCE_PORT);
-
-    auto announcer = [this](size_t size, void* data) -> size_t
-    {
-        return AnnounceDataSupplier(size, data); 
-    };
-    /*id_anno = */NetCore::Instance()->CreateAnnouncer(annoUdpEndpoint, DEFAULT_ANNOUNCE_TIME_PERIOD, announcer, annoTcpEndpoint);
-    /*id_net = */NetCore::Instance()->CreateController(config, nullptr);
 
     // View size and orientation option should be configured in FrameworkDidLaunched
     FrameworkDidLaunched();
@@ -1191,15 +1161,6 @@ void WinUAPXamlApp::AllowDisplaySleep(bool sleep)
     {
         displayRequest->RequestActive();
     }
-}
-
-size_t WinUAPXamlApp::AnnounceDataSupplier(size_t length, void* buffer)
-{
-    if (true == peerDescr.NetworkInterfaces().empty())
-    {
-        peerDescr.SetNetworkInterfaces(Net::NetCore::Instance()->InstalledInterfaces());
-    }
-    return peerDescr.Serialize(buffer, length);
 }
 
 void WinUAPXamlApp::SendBackKeyEvents()

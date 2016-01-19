@@ -1,4 +1,4 @@
-﻿/*==================================================================================
+/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -27,15 +27,29 @@
 =====================================================================================*/
 
 
-#ifndef ARCHIVE_EXTRACTION_H
-#define ARCHIVE_EXTRACTION_H
+#ifndef UWP_LOG_CONSUMER_H
+#define UWP_LOG_CONSUMER_H
 
 #include "Base/BaseTypes.h"
+#include "Network/Services/LogConsumer.h"
 
-bool ExtractFileFromArchive(const DAVA::String& zipFile, 
-                            const DAVA::String& file, 
-                            const DAVA::String& outFile);
+class UWPLogConsumer : public DAVA::Net::LogConsumer
+{
+public:
+    UWPLogConsumer();
 
-bool ExtractAllFromArchive(const DAVA::String& zipFile, const DAVA::String& outPath);
+    bool IsSessionEnded();
+    DAVA::Signal<const DAVA::String&> newMessageNotifier;
 
-#endif  // ARCHIVE_EXTRACTION_H
+private:
+    //NetService method implementation
+    void ChannelOpen() override;
+    void ChannelClosed(const DAVA::char8* message) override;
+
+    void OnNewData(const DAVA::String& str);
+
+    bool channelOpened = false;
+    bool dataReceived = false;
+};
+
+#endif  // UWP_LOG_CONSUMER_H

@@ -72,6 +72,12 @@ void NetLogger::Uninstall()
     }
 }
 
+bool NetLogger::HasDataForSend()
+{
+    LockGuard<Mutex> lock(mutex);
+    return IsChannelOpen() && !recordQueue.empty();
+}
+
 void NetLogger::ChannelOpen()
 {
     SendNextRecord();   // start sending log records if any
