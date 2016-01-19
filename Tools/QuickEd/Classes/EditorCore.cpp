@@ -505,7 +505,11 @@ void EditorCore::CloseDocument(int index)
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
     Document *activeDocument = documentGroup->GetActiveDocument();
+    //we will set active document after check current document
+    disconnect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     int newIndex = mainWindow->CloseTab(index);
+    connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
+
     DVASSERT(activeDocument != nullptr);
     Document *detached = documents.takeAt(index);
     Document *nextDocument = nullptr;

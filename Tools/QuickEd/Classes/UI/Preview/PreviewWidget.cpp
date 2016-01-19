@@ -255,8 +255,9 @@ void PreviewWidget::SaveSystemsContextAndClear()
     }
 }
 
-void PreviewWidget::LoadSystemsContext()
+void PreviewWidget::LoadSystemsContext(Document* arg)
 {
+    DVASSERT(arg == document.data());
     if(document.isNull())
     {
         return;

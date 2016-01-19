@@ -74,7 +74,7 @@ signals:
 public slots:
     void OnDocumentChanged(Document* document);
     void SaveSystemsContextAndClear();
-    void LoadSystemsContext();
+    void LoadSystemsContext(Document* document);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnRootControlPositionChanged(const DAVA::Vector2& pos);
     void OnNestedControlPositionChanged(const QPoint& pos);
