@@ -46,7 +46,7 @@ class SemaphoreLite final
 
 public:
     SemaphoreLite(uint32 count = 0, uint32 spinCount_ = defaultSpinCount)
-        : spinCount(spinCount)
+        : spinCount(spinCount_)
     {
         int32 c = static_cast<int32>(count);
         DVASSERT(c >= 0);
@@ -99,8 +99,8 @@ public:
 
 private:
     Semaphore sem;
-    uint32 spinCount = defaultSpinCount;
-    std::atomic<int32> waitCount = 0;
+    uint32 spinCount;
+    std::atomic<int32> waitCount;
 };
 
 } // namespace DAVA
