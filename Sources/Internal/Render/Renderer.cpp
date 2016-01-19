@@ -66,8 +66,8 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
 
     api = _api;
 
-    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
-    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
+    framebufferWidth = static_cast<int32>(params.width);
+    framebufferHeight = static_cast<int32>(params.height);
 
     if (nullptr == params.FrameCommandExecutionSync)
     {
@@ -101,8 +101,8 @@ bool IsInitialized()
 
 void Reset(const rhi::ResetParam& params)
 {
-    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
-    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
+    framebufferWidth = static_cast<int32>(params.width);
+    framebufferHeight = static_cast<int32>(params.height);
 
     rhi::Reset(params);
 }

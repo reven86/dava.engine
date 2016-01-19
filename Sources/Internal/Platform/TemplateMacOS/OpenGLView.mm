@@ -79,14 +79,14 @@ extern void FrameworkMain(int argc, char *argv[]);
 	trackingArea = nil;
 	[self enableTrackingArea];
 	isFirstDraw = true;
-
+    
 	// enable vsync
 	GLint swapInt = 1;
     [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
     
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
-
+    
     return self;
 }
 
@@ -141,20 +141,20 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
     if(Renderer::IsInitialized())
     {
-        NSSize windowSize = self.frame.size;
-        NSSize surfaceSize = [self convertRectToBacking:self.frame].size;
-    
-        float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
-
+        NSSize windowSize = [self frame].size;
+        float32 backingScale = Core::Instance()->GetScreenScaleFactor();
+        
+        GLint backingSize[2] = {GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale)};
+        CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+        CGLUpdateContext([[self openGLContext] CGLContextObj]);
+        
         rhi::ResetParam params;
-        params.width = surfaceSize.width;
-        params.height = surfaceSize.height;
-        params.scaleX = userScale;
-        params.scaleY = userScale;
+        params.width = backingSize[0];
+        params.height = backingSize[1];
         Renderer::Reset(params);
         
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
         VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
         UIScreenManager::Instance()->ScreenSizeChanged();
     }

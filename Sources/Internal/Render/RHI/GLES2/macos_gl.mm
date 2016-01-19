@@ -37,10 +37,6 @@ void macos_gl_init(void* glView)
 {
     _GLES2_Native_Window = glView;
     _GLES2_Context = [(NSOpenGLView*)_GLES2_Native_Window openGLContext];
-
-    CGSize backingSize = [(NSOpenGLView*)_GLES2_Native_Window convertSizeToBacking:((NSOpenGLView*)_GLES2_Native_Window).frame.size];
-    _GLES2_DefaultFrameBuffer_Width = backingSize.width;
-    _GLES2_DefaultFrameBuffer_Height = backingSize.height;
 }
 
 void macos_gl_end_frame()

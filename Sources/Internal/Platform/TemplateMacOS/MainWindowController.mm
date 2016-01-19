@@ -146,7 +146,7 @@ static MainWindowController * mainWindowController = nil;
     [mainWindow setDelegate:self];
     [mainWindow setContentView: openGLView];
     [mainWindow setContentSize: NSMakeSize(width, height)];
-
+    
     willQuit = false;
     
     core = Core::GetApplicationCore();
@@ -359,21 +359,22 @@ static MainWindowController * mainWindowController = nil;
 	[self createWindows];
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
 
-    float32 userScale = Core::Instance()->GetScreenScaleMultiplier();
-
-    NSSize windowsSize =[openGLView frame].size;
-    NSSize surfaceSize = [openGLView convertSizeToBacking:windowsSize];
+    NSSize windowSize = [openGLView frame].size;
+    float32 backingScale = Core::Instance()->GetScreenScaleFactor();
+    
+    GLint backingSize[2] = {GLint(windowSize.width * backingScale), GLint(windowSize.height * backingScale)};
+    CGLSetParameter([[openGLView openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
+    CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
+    CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
     
     rhi::InitParam & rendererParams = Core::Instance()->rendererParams;
     rendererParams.window = mainWindowController->openGLView;
-    rendererParams.width = surfaceSize.width;
-    rendererParams.height = surfaceSize.height;
-    rendererParams.scaleX = userScale;
-    rendererParams.scaleY = userScale;
+    rendererParams.width = backingSize[0];
+    rendererParams.height = backingSize[1];
 
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowsSize.width, windowsSize.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(surfaceSize.width * userScale, surfaceSize.height * userScale);
-
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
+    
     Core::Instance()->SystemAppStarted();
 }
 
@@ -484,5 +485,5 @@ void CoreMacOSPlatform::Quit()
 	mainWindowController->willQuit = true;
 	[[NSApplication sharedApplication] terminate: nil];
 }
-	
+    
 };
