@@ -250,6 +250,7 @@ void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBa
 
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
+    inEmulationMode = emulationMode;
     if (emulationMode)
     {
         systemManager->GetRootControl()->RemoveControl(hudControl.Get());
@@ -367,6 +368,7 @@ void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
 
 void HUDSystem::SetCanDrawRect(bool canDrawRect_)
 {
+    canDrawRect_ &= !inEmulationMode;
     if (canDrawRect != canDrawRect_)
     {
         canDrawRect = canDrawRect_;

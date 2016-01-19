@@ -77,6 +77,7 @@ private:
     bool dragRequested = false;
     bool hudVisible = false;
     SelectionContainer selectionContainer;
+    bool inEmulationMode = false;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__
