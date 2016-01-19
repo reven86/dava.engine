@@ -85,7 +85,7 @@ extern "C"
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode);
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jobject classthis, jobject surface);
-    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jint width, jint height);
+    JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jobject surface, jint width, jint height);
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
 
     JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
@@ -472,10 +472,18 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jo
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jint width, jint height)
+void Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jobject surface, jint width, jint height)
 {
-	if(core)
-	{
+    if (nativeWindow)
+    {
+        ANativeWindow_release(nativeWindow);
+    }
+
+    nativeWindow = ANativeWindow_fromSurface(env, surface);
+
+    if (core)
+    {
+        core->SetNativeWindow(nativeWindow);
         core->RenderReset(width, height);
     }
 }

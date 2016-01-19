@@ -215,12 +215,6 @@ void CorePlatformAndroid::OnDestroyActivity()
 {
     Logger::Info("[CorePlatformAndroid::OnDestroyActivity]");
 
-    rhi::ResetParam params;
-    params.width = 0;
-    params.height = 0;
-    params.window = nullptr;
-    rhi::Reset(params);
-
     renderIsActive = false;
     wasCreated = false;
 

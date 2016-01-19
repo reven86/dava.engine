@@ -30,7 +30,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
 
 	private native void nativeSurfaceCreated(Surface surface);
-	private native void nativeSurfaceChanged(int width, int height);
+	private native void nativeSurfaceChanged(Surface surface, int width, int height);
 	private native void nativeSurfaceDestroyed();
 
     private native void nativeProcessFrame();
@@ -470,7 +470,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             	queueEvent(new Runnable() {
         			public void run() {
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable in");
-        		    	nativeSurfaceChanged(surfaceWidth, surfaceHeight);
+        		    	nativeSurfaceChanged(surface, surfaceWidth, surfaceHeight);
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable out");
         			}
         		});
