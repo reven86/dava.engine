@@ -1427,8 +1427,9 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
         {
-            point.x = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
-            point.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
+            const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+            point.x = virtScreenSize.dx / 2.f;
+            point.y = virtScreenSize.dy / 2.f;
         }
 
         const UIGeometricData& gd = GetGeometricData();
@@ -1514,14 +1515,14 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 if (exclusiveInput)
                 {
                     UIControlSystem::Instance()->SetExclusiveInputLocker(this,
-                                                                         currentInput->tid);
+                                                                         currentInput->touchId);
                 }
 
                 PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
 
                 if (!multiInput)
                 {
-                    currentInputID = currentInput->tid;
+                    currentInputID = currentInput->touchId;
                 }
 
                 Input(currentInput);
@@ -1539,7 +1540,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
             if (currentInput->touchLocker == this)
             {
-                if (multiInput || currentInputID == currentInput->tid)
+                if (multiInput || currentInputID == currentInput->touchId)
                 {
                     if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
                     {
@@ -1584,10 +1585,10 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         {
             if (currentInput->touchLocker == this)
             {
-                if (multiInput || currentInputID == currentInput->tid)
+                if (multiInput || currentInputID == currentInput->touchId)
                 {
                     Input(currentInput);
-                    if (currentInput->tid == currentInputID)
+                    if (currentInput->touchId == currentInputID)
                     {
                         currentInputID = 0;
                     }
@@ -1693,10 +1694,13 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
                 if(!current->isUpdated)
                 {
                     current->Retain();
-                    if(current->inputProcessorsCount > 0 && current->SystemInput(currentInput))
+                    if (current->inputProcessorsCount > 0)
                     {
-                        current->Release();
-                        return true;
+                        if (current->SystemInput(currentInput))
+                        {
+                            current->Release();
+                            return true;
+                        }
                     }
                     current->Release();
                     if(isIteratorCorrupted)
@@ -1734,7 +1738,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         }
 
         currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
-        if(currentInput->tid == currentInputID)
+        if (currentInput->touchId == currentInputID)
         {
             currentInputID = 0;
         }

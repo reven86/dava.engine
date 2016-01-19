@@ -277,8 +277,8 @@ void CustomColorsPanel::LoadTexture()
                                                 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
     if (!selectedPathname.IsEmpty())
     {
-		sceneEditor->customColorsSystem->LoadTexture(selectedPathname);
-	}
+        sceneEditor->customColorsSystem->LoadTexture(selectedPathname);
+    }
 }
 
 void CustomColorsPanel::SaveTextureIfNeeded(SceneEditor2* scene)

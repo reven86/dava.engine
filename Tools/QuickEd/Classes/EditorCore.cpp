@@ -523,13 +523,23 @@ void EditorCore::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
+    Document* activeDocument = documentGroup->GetActiveDocument();
     int newIndex = mainWindow->CloseTab(index);
-
-    //sync document list with tab list
+    DVASSERT(activeDocument != nullptr);
     Document *detached = documents.takeAt(index);
+    Document* nextDocument = nullptr;
+    if (detached != activeDocument)
+    {
+        nextDocument = activeDocument;
+    }
+    else if (newIndex != -1)
+    {
+        nextDocument = documents.at(newIndex);
+    }
+    //sync document list with tab list
     fileSystemWatcher->removePath(detached->GetPackageAbsolutePath());
 
-    documentGroup->SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
+    documentGroup->SetActiveDocument(nextDocument);
     documentGroup->RemoveDocument(detached);
     delete detached; //some widgets hold this document inside :(
 }

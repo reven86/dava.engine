@@ -145,7 +145,7 @@ void MainWindow::OnDocumentChanged(Document* document)
     previewWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
 
-    actionSaveDocument->setEnabled(nullptr != document && document->GetUndoStack()->isClean());
+    actionSaveDocument->setEnabled(nullptr != document && !document->GetUndoStack()->isClean());
 
     for (int index = 0, count = tabBar->count(); index < count; ++index)
     {

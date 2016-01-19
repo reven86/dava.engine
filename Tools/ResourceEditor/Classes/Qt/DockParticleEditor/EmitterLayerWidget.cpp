@@ -193,8 +193,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     innerEmitterPathLabel = new QLineEdit(this);
     innerEmitterPathLabel->setReadOnly(true);
     innerEmitterLayout->addWidget(innerEmitterLabel);
-	innerEmitterLayout->addWidget(innerEmitterPathLabel);
-	mainBox->addLayout(innerEmitterLayout);
+    innerEmitterLayout->addWidget(innerEmitterPathLabel);
+    mainBox->addLayout(innerEmitterLayout);
 	
 	QVBoxLayout* pivotPointLayout = new QVBoxLayout();
 	pivotPointLabel = new QLabel("Pivot Point", this);
@@ -234,9 +234,9 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     mainBox->addWidget(frameBlendingCheckBox);
 
     //particle orieantation
-    QVBoxLayout* orientationLayout = new QVBoxLayout();	
-	particleOrientationLabel = new QLabel("Particle Orientation");
-	orientationLayout->addWidget(particleOrientationLabel);
+    QVBoxLayout* orientationLayout = new QVBoxLayout();
+    particleOrientationLabel = new QLabel("Particle Orientation");
+    orientationLayout->addWidget(particleOrientationLabel);
 	QHBoxLayout* facingLayout = new QHBoxLayout();
 	
 	cameraFacingCheckBox = new QCheckBox("Camera Facing");
@@ -289,8 +289,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
     lifeTimeLine = new TimeLineWidget(this);
     InitWidget(lifeTimeLine);
-	numberTimeLine = new TimeLineWidget(this);
-	InitWidget(numberTimeLine);
+    numberTimeLine = new TimeLineWidget(this);
+    InitWidget(numberTimeLine);
 	sizeTimeLine = new TimeLineWidget(this);
 	InitWidget(sizeTimeLine);
 	sizeVariationTimeLine = new TimeLineWidget(this);
@@ -1081,9 +1081,9 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
     // The same is for "Additive" flag, Color, Alpha and Frame.
     colorRandomGradient->setVisible(!isSuperemitter);
     colorOverLifeGradient->setVisible(!isSuperemitter);
-	alphaOverLifeTimeLine->setVisible(!isSuperemitter);
+    alphaOverLifeTimeLine->setVisible(!isSuperemitter);
 
-	frameOverlifeCheckBox->setVisible(!isSuperemitter);
+    frameOverlifeCheckBox->setVisible(!isSuperemitter);
 	frameOverlifeFPSSpin->setVisible(!isSuperemitter);
 	frameOverlifeFPSLabel->setVisible(!isSuperemitter);
 	randomFrameOnStartCheckBox->setVisible(!isSuperemitter);

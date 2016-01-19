@@ -39,7 +39,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 const char8 NetCore::defaultAnnounceMulticastGroup[] = "239.192.100.1";
 
 NetCore::NetCore()

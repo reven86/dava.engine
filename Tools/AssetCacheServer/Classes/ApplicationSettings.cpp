@@ -64,7 +64,7 @@ bool ServerData::operator<(const ServerData& right) const
     return ip < right.ip;
 }
 
-const String ApplicationSettings::DEFAULT_FOLDER = "";
+const String ApplicationSettings::DEFAULT_FOLDER = "~doc:/AssetServer/AssetCacheStorage";
 const float64 ApplicationSettings::DEFAULT_CACHE_SIZE_GB = 5.0;
 
 void ApplicationSettings::Save() const
@@ -117,6 +117,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetUInt32("AutoSaveTimeout", autoSaveTimeoutMin);
     archive->SetUInt32("Port", listenPort);
     archive->SetBool("AutoStart", autoStart);
+    archive->SetBool("SystemStartup", launchOnSystemStartup);
 
     auto size = remoteServers.size();
     archive->SetUInt32("ServersSize", size);
@@ -135,7 +136,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
 {
     DVASSERT(nullptr != archive);
 
-    DVASSERT(remoteServers.size() == 0);
+    DVASSERT(remoteServers.empty());
 
     folder = archive->GetString("FolderPath", DEFAULT_FOLDER);
     cacheSizeGb = archive->GetFloat64("FolderSize", DEFAULT_CACHE_SIZE_GB);
@@ -143,6 +144,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     autoSaveTimeoutMin = archive->GetUInt32("AutoSaveTimeout", DEFAULT_AUTO_SAVE_TIMEOUT_MIN);
     listenPort = archive->GetUInt32("Port", DEFAULT_PORT);
     autoStart = archive->GetBool("AutoStart", DEFAULT_AUTO_START);
+    launchOnSystemStartup = archive->GetBool("SystemStartup", DEFAULT_LAUNCH_ON_SYSTEM_STARTUP);
 
     auto count = archive->GetUInt32("ServersSize");
     for (uint32 i = 0; i < count; ++i)
@@ -214,6 +216,16 @@ const bool ApplicationSettings::IsAutoStart() const
 void ApplicationSettings::SetAutoStart(bool val)
 {
     autoStart = val;
+}
+
+const bool ApplicationSettings::IsLaunchOnSystemStartup() const
+{
+    return launchOnSystemStartup;
+}
+
+void ApplicationSettings::SetLaunchOnSystemStartup(bool val)
+{
+    launchOnSystemStartup = val;
 }
 
 const List<ServerData>& ApplicationSettings::GetServers() const

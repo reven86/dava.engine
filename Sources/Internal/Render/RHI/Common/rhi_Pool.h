@@ -99,6 +99,10 @@ public:
             : entry(e)
             , end(e_end)
         {
+            while (entry != end && !entry->allocated)
+            {
+                ++entry;
+            }
         }
 
         Entry* entry;
